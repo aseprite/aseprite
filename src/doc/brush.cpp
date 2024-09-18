@@ -327,13 +327,13 @@ static void algo_hline(int x1, int y, int x2, void *data)
 void Brush::resetSymmetries()
 {
   if (m_symmetryImages.size() == 0) {
-    for (int i=0; i<4; i++) {
+    for (int i=0; i<8; i++) {
       m_symmetryImages.push_back(ImageRef());
       m_symmetryMasks.push_back(ImageRef());
     }
   }
   else {
-    for (int i=0; i<4; i++) {
+    for (int i=0; i<8; i++) {
       m_symmetryImages[i].reset();
       m_symmetryMasks[i].reset();
     }
@@ -342,7 +342,7 @@ void Brush::resetSymmetries()
 
 Image* Brush::getSymmetryImage(const SymmetryIndex index)
 {
-  if (index <= 0 || index > 3)
+  if (index <= 0 || index > 7)
     return m_image.get();
 
   if (m_symmetryImages.size() == 0)
@@ -391,6 +391,53 @@ Image* Brush::getSymmetryImage(const SymmetryIndex index)
         }
         break;
       }
+      case SymmetryIndex::ROT_FLIP_90:
+      case SymmetryIndex::ROT_FLIP_270: {
+        const double angle = (index == SymmetryIndex::ROT_FLIP_90? 90.0 : -90.0);
+        if (m_image) {
+          std::unique_ptr<Image> tempImage(
+            Image::create(m_image->pixelFormat(),
+                          m_image->height(),
+                          m_image->width()));
+          rotate_image(m_image.get(), tempImage.get(), angle);
+          doc::algorithm::flip_image(tempImage.get(),
+                                     tempImage->bounds(),
+                                     doc::algorithm::FlipType::FlipHorizontal);
+          m_symmetryImages[index].reset(Image::createCopy(tempImage.get()));
+        }
+        if (m_maskBitmap && !m_symmetryMasks[index]) {
+          std::unique_ptr<Image> tempImage(
+            Image::create(m_maskBitmap->pixelFormat(),
+                          m_maskBitmap->height(),
+                          m_maskBitmap->width()));
+          rotate_image(m_maskBitmap.get(), tempImage.get(), angle);
+          doc::algorithm::flip_image(tempImage.get(),
+                                     tempImage->bounds(),
+                                     doc::algorithm::FlipType::FlipHorizontal);
+          m_symmetryMasks[index].reset(Image::createCopy(tempImage.get()));
+        }
+        break;
+      }
+      case SymmetryIndex::ROTATED_90:
+      case SymmetryIndex::ROTATED_270: {
+        const double angle = (index == SymmetryIndex::ROTATED_90? 90.0 : -90.0);
+        if (m_image) {
+        std::unique_ptr<Image> tempImage(
+          Image::create(m_image.get()->pixelFormat(),
+                        m_image.get()->height(),
+                        m_image.get()->width()));
+        rotate_image(m_image.get(), tempImage.get(), angle);
+        m_symmetryImages[index].reset(Image::createCopy(tempImage.get()));
+        }
+        if (m_maskBitmap && !m_symmetryMasks[index]) {
+          std::unique_ptr<Image> tempImage(
+            Image::create(m_maskBitmap->pixelFormat(),
+                          m_maskBitmap->height(),
+                          m_maskBitmap->width()));
+          rotate_image(m_maskBitmap.get(), tempImage.get(), angle);
+          m_symmetryMasks[index].reset(Image::createCopy(tempImage.get()));
+        }
+      }
     }
   }
   return m_symmetryImages[index].get();
@@ -398,7 +445,7 @@ Image* Brush::getSymmetryImage(const SymmetryIndex index)
 
 Image* Brush::getSymmetryMask(const SymmetryIndex index)
 {
-  if (index <= 0 || index > 3)
+  if (index <= 0 || index > 7)
     return m_maskBitmap.get();
 
   getSymmetryImage(index); // Update Image and Mask symmetry buffers

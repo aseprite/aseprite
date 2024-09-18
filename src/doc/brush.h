@@ -27,6 +27,10 @@ namespace doc {
     FLIPPED_X = 1,
     FLIPPED_Y = 2,
     FLIPPED_XY = 3,
+    ROTATED_270 = 4,
+    ROT_FLIP_90 = 5,
+    ROTATED_90 = 6,
+    ROT_FLIP_270 = 7
   };
 
   class Brush;

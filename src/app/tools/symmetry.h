@@ -31,8 +31,11 @@ public:
   gen::SymmetryMode mode() const { return m_symmetryMode; }
 
 private:
-  void calculateSymmetricalStroke(const Stroke& refStroke, Stroke& stroke,
-                                  ToolLoop* loop, doc::SymmetryIndex symmetry);
+  void calculateSymmetricalStroke(const Stroke& refStroke,
+                                  Stroke& stroke,
+                                  ToolLoop* loop,
+                                  const doc::SymmetryIndex symmetry,
+                                  const bool isDoubleDiagonalSymmetry = false);
 
   gen::SymmetryMode m_symmetryMode;
   double m_x, m_y;

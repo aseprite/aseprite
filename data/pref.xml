@@ -94,6 +94,10 @@
       <value id="HORIZONTAL" value="1" />
       <value id="VERTICAL" value="2" />
       <value id="BOTH" value="3" />
+      <value id="RIGHT_DIAG" value="4" />
+      <value id="LEFT_DIAG" value="8" />
+      <value id="BOTH_DIAG" value="12" />
+      <value id="ALL" value="15" />
     </enum>
     <enum id="PaintingCursorType">
       <value id="SIMPLE_CROSSHAIR" value="0" />

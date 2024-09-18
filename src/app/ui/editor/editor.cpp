@@ -955,6 +955,48 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
                      enclosingRect.w);
       }
     }
+    if (mode & int(app::gen::SymmetryMode::RIGHT_DIAG)) {
+      double y = m_docPref.symmetry.yAxis();
+      double x = m_docPref.symmetry.xAxis();
+      gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
+      // Bottom point intersection:
+      gfx::Point bottomLeft(spriteRect.x + int(m_proj.applyX<double>(x)) - (spriteRect.h - int(m_proj.applyY<double>(y))), spriteRect.y2());
+      if (bottomLeft.x < spriteRect.x) {
+        // Left intersection
+        bottomLeft.x = spriteRect.x;
+        bottomLeft.y = spriteRect.y + int(m_proj.applyY<double>(y)) + int(m_proj.applyX<double>(x));
+      }
+      // Top intersection
+      gfx::Point topRight(spriteRect.x + int(m_proj.applyX<double>(x)) + int(m_proj.applyY<double>(y)), spriteRect.y);
+      if (spriteRect.x2() < topRight.x) {
+        // Right intersection
+        topRight.y = spriteRect.y + (topRight.x - spriteRect.x2());
+        topRight.x = spriteRect.x2();
+      }
+
+      g->drawLine(color, bottomLeft, topRight);
+    }
+    if (mode & int(app::gen::SymmetryMode::LEFT_DIAG)) {
+      double y = m_docPref.symmetry.yAxis();
+      double x = m_docPref.symmetry.xAxis();
+      gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
+      // Bottom point intersection:
+      gfx::Point bottomRight(spriteRect.x + int(m_proj.applyX<double>(x)) + (spriteRect.h - int(m_proj.applyY<double>(y))), spriteRect.y2());
+      if (spriteRect.x2() < bottomRight.x) {
+        // Left intersection
+        bottomRight.y -= (bottomRight.x - spriteRect.x2());
+        bottomRight.x = spriteRect.x2();
+      }
+      // Top intersection
+      gfx::Point topLeft(spriteRect.x + int(m_proj.applyX<double>(x)) - int(m_proj.applyY<double>(y)), spriteRect.y);
+      if (topLeft.x < spriteRect.x) {
+        // Right intersection
+        topLeft.y = spriteRect.y + (spriteRect.x - topLeft.x);
+        topLeft.x = spriteRect.x;
+      }
+
+      g->drawLine(color, topLeft, bottomRight);
+    }
   }
 
   // Draw active layer/cel edges

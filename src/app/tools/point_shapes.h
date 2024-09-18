@@ -69,7 +69,7 @@ class BrushPointShape : public PointShape {
   bool m_firstPoint;
   Brush* m_lastBrush;
   BrushType m_origBrushType;
-  std::array<std::shared_ptr<CompressedImage>, 4> m_compressedImages;
+  std::array<std::shared_ptr<CompressedImage>, 8> m_compressedImages;
   // For dynamics
   DynamicsOptions m_dynamics;
   bool m_useDynamics;
@@ -217,8 +217,18 @@ public:
       m_compressedImages.fill(nullptr);
     }
 
-    x += brush->bounds().x;
-    y += brush->bounds().y;
+    if (brush->type() == kImageBrushType &&
+        (pt.symmetry == doc::SymmetryIndex::ROTATED_90 ||
+         pt.symmetry == doc::SymmetryIndex::ROTATED_270 ||
+         pt.symmetry == doc::SymmetryIndex::ROT_FLIP_90 ||
+         pt.symmetry == doc::SymmetryIndex::ROT_FLIP_270)) {
+      x += brush->bounds().y;
+      y += brush->bounds().x;
+    }
+    else {
+      x += brush->bounds().x;
+      y += brush->bounds().y;
+    }
 
     if (m_firstPoint) {
       if ((brush->type() == kImageBrushType) &&
@@ -257,7 +267,14 @@ public:
 
   void getModifiedArea(ToolLoop* loop, int x, int y,
                        doc::SymmetryIndex symmetry, Rect& area) override {
-    area = loop->getBrush()->bounds();
+    auto bounds = loop->getBrush()->bounds();
+    if (symmetry == doc::SymmetryIndex::ROTATED_90 ||
+        symmetry == doc::SymmetryIndex::ROTATED_270 ||
+        symmetry == doc::SymmetryIndex::ROT_FLIP_90 ||
+        symmetry == doc::SymmetryIndex::ROT_FLIP_270)
+      area = gfx::Rect(bounds.y, bounds.x, bounds.h, bounds.w);
+    else
+      area = bounds;
     area.x += x;
     area.y += y;
   }

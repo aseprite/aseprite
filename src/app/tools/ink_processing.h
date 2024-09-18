@@ -1146,16 +1146,25 @@ public:
     else
       m_transparentColor = 0;
     m_symmetryIndex = doc::SymmetryIndex::ORIGINAL;
+    m_isBoundsRotated = false;
   }
 
   void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y,
                             doc::SymmetryIndex index) override {
     m_symmetryIndex = index;
+    if (index == ROTATED_90 || index == ROTATED_270 ||
+        index == ROT_FLIP_90 || index == ROT_FLIP_270)
+      m_isBoundsRotated = true;
+    else
+      m_isBoundsRotated = false;
+
+    auto bSize = (m_isBoundsRotated ? gfx::Size(m_height, m_width)
+                                    : gfx::Size(m_width, m_height));
     if (m_brush->pattern() != BrushPattern::ALIGNED_TO_SRC) {
       // Case: during painting process with PaintBucket Tool
       if (loop->getPointShape()->isFloodFill()) {
-        m_u = x - m_width / 2;
-        m_v = y - m_height / 2;
+        m_u = x - bSize.w / 2;
+        m_v = y - bSize.h / 2;
       }
       // Case: during brush preview of PaintBucket Tool
       else if (loop->getController()->isOnePoint()) {
@@ -1163,51 +1172,54 @@ public:
         m_v = 0;
       }
       else {
-        m_u = ((m_brush->patternOrigin().x % loop->sprite()->width()) - loop->getCelOrigin().x) % m_width;
-        m_v = ((m_brush->patternOrigin().y % loop->sprite()->height()) - loop->getCelOrigin().y) % m_height;
+        m_u = ((m_brush->patternOrigin().x % loop->sprite()->width()) - loop->getCelOrigin().x) % bSize.w;
+        m_v = ((m_brush->patternOrigin().y % loop->sprite()->height()) - loop->getCelOrigin().y) % bSize.h;
       }
     }
   }
 
   void prepareVForPointShape(ToolLoop* loop, int y) override {
+    int height = (m_isBoundsRotated ? m_width : m_height);
     if (m_brush->pattern() == doc::BrushPattern::ALIGNED_TO_SRC) {
-      m_v = (m_brush->patternOrigin().y - loop->getCelOrigin().y) % m_height;
-      if (m_v < 0) m_v += m_height;
+      m_v = (m_brush->patternOrigin().y - loop->getCelOrigin().y) % height;
+      if (m_v < 0) m_v += height;
     }
     else {
       int spriteH = loop->sprite()->height();
       if (y/spriteH > 0)
         // 'y' is outside of the center tile.
-        m_v = (m_brush->patternOrigin().y + m_height - (y/spriteH) * spriteH) % m_height;
+        m_v = (m_brush->patternOrigin().y + height - (y/spriteH) * spriteH) % height;
       else
         // 'y' is inside of the center tile.
-        m_v = ((m_brush->patternOrigin().y % spriteH) - loop->getCelOrigin().y) % m_height;
+        m_v = ((m_brush->patternOrigin().y % spriteH) - loop->getCelOrigin().y) % height;
     }
   }
 
   void prepareUForPointShapeWholeScanline(ToolLoop* loop, int x1) override {
+    int width = (m_isBoundsRotated ? m_height : m_width);
     if (m_brush->pattern() == doc::BrushPattern::ALIGNED_TO_SRC) {
-      m_u = (m_brush->patternOrigin().x - loop->getCelOrigin().x) % m_width;
-      if (m_u < 0) m_u += m_height;
+      m_u = (m_brush->patternOrigin().x - loop->getCelOrigin().x) % width;
+      if (m_u < 0) m_u += (m_isBoundsRotated ? m_width : m_height);
     }
     else {
-      m_u = ((m_brush->patternOrigin().x % loop->sprite()->width()) - loop->getCelOrigin().x ) % m_width;
+      m_u = ((m_brush->patternOrigin().x % loop->sprite()->width()) - loop->getCelOrigin().x ) % width;
       if (x1/loop->sprite()->width() > 0)
-        m_u = (m_brush->patternOrigin().x + m_width - (x1/loop->sprite()->width()) * loop->sprite()->width()) % m_width;
+        m_u = (m_brush->patternOrigin().x + width - (x1/loop->sprite()->width()) * loop->sprite()->width()) % width;
     }
   }
 
   void prepareUForPointShapeSlicedScanline(ToolLoop* loop, bool leftSlice, int x1) override {
+    int width = (m_isBoundsRotated ? m_height : m_width);
     if (m_brush->pattern() == doc::BrushPattern::ALIGNED_TO_SRC) {
-      m_u = (m_brush->patternOrigin().x - loop->getCelOrigin().x) % m_width;
-      if (m_u < 0) m_u += m_height;
+      m_u = (m_brush->patternOrigin().x - loop->getCelOrigin().x) % width;
+      if (m_u < 0) m_u += (m_isBoundsRotated ? m_width : m_height);
       return;
     }
     else {
       if (leftSlice)
-        m_u = ((m_brush->patternOrigin().x % loop->sprite()->width()) - loop->getCelOrigin().x ) % m_width;
+        m_u = ((m_brush->patternOrigin().x % loop->sprite()->width()) - loop->getCelOrigin().x ) % width;
       else
-        m_u = (m_brush->patternOrigin().x + m_width - (x1/loop->sprite()->width() + 1) * loop->sprite()->width()) % m_width;
+        m_u = (m_brush->patternOrigin().x + width - (x1/loop->sprite()->width() + 1) * loop->sprite()->width()) % width;
     }
   }
 
@@ -1225,10 +1237,13 @@ public:
 
 protected:
   bool alignPixelPoint(int& x0, int& y0) {
-    int x = (x0 - m_u) % m_width;
-    int y = (y0 - m_v) % m_height;
-    if (x < 0) x = m_width - ((-x) % m_width);
-    if (y < 0) y = m_height - ((-y) % m_height);
+
+    const int width = (m_isBoundsRotated ? m_height : m_width);
+    const int height = (m_isBoundsRotated ? m_width : m_height);
+    int x = (x0 - m_u) % width;
+    int y = (y0 - m_v) % height;
+    if (x < 0) x = width - ((-x) % width);
+    if (y < 0) y = height - ((-y) % height);
 
     if (m_brush->getSymmetryMask(m_symmetryIndex) &&
         !get_pixel_fast<BitmapTraits>(m_brush->getSymmetryMask(m_symmetryIndex), x, y))
@@ -1259,6 +1274,7 @@ protected:
   // in a RGBA sprite.
   color_t m_transparentColor;
   doc::SymmetryIndex m_symmetryIndex;
+  bool m_isBoundsRotated;
 };
 
 template<>

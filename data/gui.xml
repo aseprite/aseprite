@@ -553,6 +553,12 @@
       <key command="SymmetryMode">
         <param name="orientation" value="horizontal" />
       </key>
+      <key command="SymmetryMode">
+        <param name="orientation" value="right_diagonal" />
+      </key>
+      <key command="SymmetryMode">
+        <param name="orientation" value="left_diagonal" />
+      </key>
       <key command="AutocropSprite" />
       <key command="AutocropSprite">
         <param name="byGrid" value="true" />
