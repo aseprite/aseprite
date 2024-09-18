@@ -22,6 +22,7 @@
 #include "app/cmd/set_layer_opacity.h"
 #include "app/cmd/set_layer_blend_mode.h"
 #include "app/cmd/set_cel_opacity.h"
+#include "app/cmd/set_cel_zindex.h"
 #include "app/cmd/set_cel_position.h"
 #include "app/cmd/unlink_cel.h"
 #include "app/doc.h"
@@ -168,7 +169,12 @@ void FlattenLayers::onExecute()
 
         // Reset cel properties when flattening in-place
         if (!newFlatLayer) {
-          executeAndAdd(new cmd::SetCelOpacity(cel, 255));
+          if (cel->opacity() != 255)
+            executeAndAdd(new cmd::SetCelOpacity(cel, 255));
+
+          if (cel->zIndex() != 0)
+            executeAndAdd(new cmd::SetCelZIndex(cel, 0));
+
           executeAndAdd(new cmd::SetCelPosition(cel,
             area.x+bounds.x, area.y+bounds.y));
         }
@@ -206,9 +212,12 @@ void FlattenLayers::onExecute()
   }
   // Reset layer properties when flattening in-place
   else {
-    executeAndAdd(new cmd::SetLayerOpacity(flatLayer, 255));
-    executeAndAdd(new cmd::SetLayerBlendMode(
-      flatLayer, doc::BlendMode::NORMAL));
+    if (flatLayer->opacity() != 255)
+      executeAndAdd(new cmd::SetLayerOpacity(flatLayer, 255));
+
+    if (flatLayer->blendMode() != doc::BlendMode::NORMAL)
+      executeAndAdd(new cmd::SetLayerBlendMode(
+        flatLayer, doc::BlendMode::NORMAL));
   }
 
   // Delete flattened layers.
