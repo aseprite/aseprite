@@ -4515,32 +4515,37 @@ void Timeline::onDrag(ui::DragEvent& e)
 
 void Timeline::onDrop(ui::DragEvent& e)
 {
-  using LayerInsertion = cmd::DropOnTimeline::LayerInsertion;
+  using InsertionPoint = cmd::DropOnTimeline::InsertionPoint;
+  using DroppedOn = cmd::DropOnTimeline::DroppedOn;
   Widget::onDrop(e);
 
   // Determine at which frame and layer the content was dropped on.
   frame_t frame = m_frame;
   layer_t layerIndex = getLayerIndex(m_layer);
-  LayerInsertion insert = LayerInsertion::Before;
+  InsertionPoint insert = InsertionPoint::BeforeLayer;
+  DroppedOn droppedOn = DroppedOn::Unspecified;
   switch(m_dropRange.type()) {
     case Range::kCels:
       frame = m_hot.frame;
       layerIndex = m_hot.layer;
-      insert = (m_dropTarget.vhit == DropTarget::Top ? LayerInsertion::After
-                                                      : LayerInsertion::Before);
+      droppedOn = DroppedOn::Cel;
+      insert = (m_dropTarget.vhit == DropTarget::Top ? InsertionPoint::AfterLayer
+                                                      : InsertionPoint::BeforeLayer);
       break;
     case Range::kFrames:
       frame = m_dropRange.firstFrame();
+      droppedOn = DroppedOn::Frame;
       if (m_dropTarget.hhit == DropTarget::After)
         frame++;
       break;
     case Range::kLayers:
+      droppedOn = DroppedOn::Layer;
       if (m_dropTarget.vhit != DropTarget::VeryBottom) {
         auto* selectedLayer = *m_dropRange.selectedLayers().begin();
         layerIndex = getLayerIndex(selectedLayer);
       }
-      insert = (m_dropTarget.vhit == DropTarget::Top ? LayerInsertion::After
-                                                      : LayerInsertion::Before);
+      insert = (m_dropTarget.vhit == DropTarget::Top ? InsertionPoint::AfterLayer
+                                                      : InsertionPoint::BeforeLayer);
       break;
   }
 
@@ -4551,8 +4556,8 @@ void Timeline::onDrop(ui::DragEvent& e)
   if (e.hasPaths()) {
     base::paths paths = e.getPaths();
     execute_from_ui_thread([=]{
-      Tx tx(m_document);
-      tx(new cmd::DropOnTimeline(m_document, frame, layerIndex, insert, paths));
+      Tx tx(m_document, "Drop on timeline");
+      tx(new cmd::DropOnTimeline(m_document, frame, layerIndex, insert, droppedOn, paths));
       tx.commit();
       m_document->notifyGeneralUpdate();
     });
