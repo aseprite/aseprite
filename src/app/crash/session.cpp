@@ -164,7 +164,7 @@ bool Session::isOldSession()
                                0,
                                0);
     }
-    catch (std::exception& ex) {
+    catch (const std::exception& ex) {
       LOG(ERROR,
           "Failed to parse a date from '%s', error: %s",
           parts[0].c_str(),
