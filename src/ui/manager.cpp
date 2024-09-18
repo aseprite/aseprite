@@ -2041,10 +2041,24 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
   return used;
 }
 
+Widget* Manager::pickForDragAndDrop(const gfx::Point& pt)
+{
+  Widget* widget = pick(pt);
+  // If widget doesn't support drag & drop, try to find the nearest ancestor
+  // that supports it.
+  while(widget && !widget->hasFlags(ALLOW_DROP))
+    widget = widget->parent();
+
+  return widget;
+}
+
 void Manager::dragEnter(os::DragEvent& ev)
 {
-  Widget* widget = pick(ev.position());
-  if (widget && widget->hasFlags(ALLOW_DROP)) {
+  Widget* widget = pickForDragAndDrop(ev.position());
+
+  ASSERT(widget->hasFlags(ALLOW_DROP));
+
+  if (widget) {
     m_dragOverWidget = widget;
     DragEvent uiev(this, widget, ev);
     widget->onDragEnter(uiev);
@@ -2064,7 +2078,9 @@ void Manager::dragLeave(os::DragEvent& ev)
 
 void Manager::drag(os::DragEvent& ev)
 {
-  Widget* widget = pick(ev.position());
+  Widget* widget = pickForDragAndDrop(ev.position());
+
+  ASSERT(widget->hasFlags(ALLOW_DROP));
 
   if (m_dragOverWidget && m_dragOverWidget != widget) {
     DragEvent uiev(this, m_dragOverWidget, ev);
@@ -2072,7 +2088,7 @@ void Manager::drag(os::DragEvent& ev)
     m_dragOverWidget = nullptr;
   }
 
-  if (widget && widget->hasFlags(ALLOW_DROP)) {
+  if (widget) {
     DragEvent uiev(this, widget, ev);
     if (m_dragOverWidget != widget) {
       m_dragOverWidget = widget;
@@ -2086,8 +2102,11 @@ void Manager::drag(os::DragEvent& ev)
 void Manager::drop(os::DragEvent& ev)
 {
   m_dragOverWidget = nullptr;
-  Widget* widget = pick(ev.position());
-  if (widget && widget->hasFlags(ALLOW_DROP)) {
+  Widget* widget = pickForDragAndDrop(ev.position());
+
+  ASSERT(widget->hasFlags(ALLOW_DROP));
+
+  if (widget) {
     DragEvent uiev(this, widget, ev);
     widget->onDrop(uiev);
     if (uiev.handled()) {
