@@ -51,6 +51,26 @@ public:
     m_proc->prepareUForPointShapeSlicedScanline(loop, leftSlice, x1);
   }
 
+  // Common to both SelectionInk and SliceInk
+  gfx::Rect tileSelectionToCanvas(int x1, int y, int x2, ToolLoop* loop, bool offset) {
+    gfx::Rect rc(x1, y, x2-x1+1, 1);
+
+    // For tile point shape, the point shape is done in "tiles"
+    // coordinates, but we want the selection in canvas/pixels
+    // coordinates.
+    if (loop->getPointShape()->isTile()) {
+      const Grid& grid = loop->getGrid();
+      rc = grid.tileToCanvas(rc);
+      if (offset) {
+        // For feedback purposes, the coordinates must be relative to
+        // the getDstImage() and not in absolute sprite canvas
+        // coordinates.
+        rc.offset(-grid.origin());
+      }
+    }
+    return rc;
+  }
+
 protected:
   void setProc(BaseInkProcessing* proc) {
     m_proc.reset(proc);
@@ -293,10 +313,17 @@ public:
   }
 
   void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
+    // Map tile coords to canvas if needed
+    gfx::Rect rc(BaseInk::tileSelectionToCanvas(
+      x1, y, x2, loop, false));
+
     if (m_createSlice)
-      m_maxBounds |= gfx::Rect(x1, y, x2-x1+1, 1);
-    else
-      BaseInk::inkHline(x1, y, x2, loop);
+      m_maxBounds |= rc;
+    else {
+      rc &= loop->getDstImage()->bounds();
+      for (int v=rc.y; v<rc.y2(); ++v)
+        BaseInk::inkHline(rc.x, v, rc.x2()-1, loop);
+    }
   }
 
   void setFinalStep(ToolLoop* loop, bool state) override {
@@ -305,6 +332,7 @@ public:
       m_maxBounds = gfx::Rect(0, 0, 0, 0);
     }
     else {
+      m_maxBounds &= loop->getDstImage()->bounds();
       loop->onSliceRect(m_maxBounds);
     }
   }
@@ -448,21 +476,9 @@ public:
   }
 
   void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
-    gfx::Rect rc(x1, y, x2-x1+1, 1);
-
-    // For tile point shape, the point shape is done in "tiles"
-    // coordinates, but we want the selection in canvas/pixels
-    // coordinates.
-    if (loop->getPointShape()->isTile()) {
-      const Grid& grid = loop->getGrid();
-      rc = grid.tileToCanvas(rc);
-      if (!m_modify_selection) {
-        // For feedback purposes, the coordinates must be relative to
-        // the getDstImage() and not in absolute sprite canvas
-        // coordinates.
-        rc.offset(-grid.origin());
-      }
-    }
+    // Map tile coords to canvas if needed
+    gfx::Rect rc(BaseInk::tileSelectionToCanvas(
+      x1, y, x2, loop, !m_modify_selection));
 
     if (m_modify_selection) {
       int modifiers = int(loop->getModifiers());

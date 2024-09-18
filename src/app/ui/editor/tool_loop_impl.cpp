@@ -226,7 +226,7 @@ public:
       //      tilemap layer to preview the selection, or 2) using a
       //      path to show the selection (so there is no preview layer
       //      at all and nor ExpandCelCanvas)
-      if (m_ink->isSelection())
+      if (m_ink->isSelection() || m_ink->isSlice())
         site.tilemapMode(TilemapMode::Pixels);
     }
 
@@ -762,7 +762,8 @@ static void adjust_ink_for_tilemaps(const Site& site,
                                     ToolLoopParams& params)
 {
   if (!params.ink->isSelection() &&
-      !params.ink->isEraser()) {
+      !params.ink->isEraser() &&
+      !params.ink->isSlice()) {
     params.ink = App::instance()->toolBox()->getInkById(tools::WellKnownInks::PaintCopy);
   }
 }
