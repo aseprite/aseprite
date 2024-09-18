@@ -1567,7 +1567,58 @@ private:
     DocumentPreferences& docPref =
       Preferences::instance().document(doc);
 
+    auto oldMode = docPref.symmetry.mode();
     int mode = 0;
+    if (at(0)->isSelected()) mode |= int(app::gen::SymmetryMode::HORIZONTAL);
+    if (at(1)->isSelected()) mode |= int(app::gen::SymmetryMode::VERTICAL);
+    if (at(2)->isSelected()) mode |= int(app::gen::SymmetryMode::RIGHT_DIAG);
+    if (at(3)->isSelected()) mode |= int(app::gen::SymmetryMode::LEFT_DIAG);
+
+    // Non sense symmetries filter:
+    //  - H + 1Diag
+    //  - V + 1Diag
+    //  - H + V + 1Diag
+    const bool HorV = (mode & int(app::gen::SymmetryMode::HORIZONTAL)) ||
+                      (mode & int(app::gen::SymmetryMode::VERTICAL));
+    const bool HxorV = !(mode & int(app::gen::SymmetryMode::HORIZONTAL)) !=
+                       !(mode & int(app::gen::SymmetryMode::VERTICAL));
+    const bool RDxorLD = !(mode & int(app::gen::SymmetryMode::RIGHT_DIAG)) !=
+                         !(mode & int(app::gen::SymmetryMode::LEFT_DIAG));
+    if (oldMode == gen::SymmetryMode::HORIZONTAL ||
+        oldMode == gen::SymmetryMode::VERTICAL ||
+        oldMode == gen::SymmetryMode::BOTH) {
+      if (HorV && RDxorLD) {
+        mode = int(app::gen::SymmetryMode::ALL);
+        at(0)->setSelected(true);
+        at(1)->setSelected(true);
+        at(2)->setSelected(true);
+        at(3)->setSelected(true);
+      }
+    }
+    else if (oldMode == gen::SymmetryMode::ALL) {
+      if (HxorV) {
+        mode = int(app::gen::SymmetryMode::BOTH_DIAG);
+        at(0)->setSelected(false);
+        at(1)->setSelected(false);
+      }
+      else if (RDxorLD) {
+        mode = int(app::gen::SymmetryMode::BOTH);
+        at(2)->setSelected(false);
+        at(3)->setSelected(false);
+      }
+    }
+    else if ((oldMode == gen::SymmetryMode::RIGHT_DIAG ||
+             oldMode == gen::SymmetryMode::LEFT_DIAG ||
+             oldMode == gen::SymmetryMode::BOTH_DIAG) &&
+             HorV) {
+      mode = int(app::gen::SymmetryMode::ALL);
+      at(0)->setSelected(true);
+      at(1)->setSelected(true);
+      at(2)->setSelected(true);
+      at(3)->setSelected(true);
+    }
+    // Non sense symmetries filter end
+
     if (at(0)->isSelected()) mode |= int(app::gen::SymmetryMode::HORIZONTAL);
     if (at(1)->isSelected()) mode |= int(app::gen::SymmetryMode::VERTICAL);
     if (at(2)->isSelected()) mode |= int(app::gen::SymmetryMode::RIGHT_DIAG);
