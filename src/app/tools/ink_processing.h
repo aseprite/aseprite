@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -33,7 +33,8 @@ public:
   virtual ~BaseInkProcessing() { }
   virtual void processScanline(int x1, int y, int x2, ToolLoop* loop) = 0;
   virtual void prepareForStrokes(ToolLoop* loop, Strokes& strokes) { }
-  virtual void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) { }
+  virtual void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y,
+                                    doc::SymmetryIndex index) { }
   virtual void prepareVForPointShape(ToolLoop* loop, int y) { }
   virtual void prepareUForPointShapeWholeScanline(ToolLoop* loop, int x1) { }
   virtual void prepareUForPointShapeSlicedScanline(ToolLoop* loop, bool leftSlice, int x1) { }
@@ -136,7 +137,8 @@ public:
   CopyInkProcessing(ToolLoop* loop) {
   }
 
-  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override {
+  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y,
+                            doc::SymmetryIndex index) override {
     m_color = loop->getPrimaryColor();
 
     if (loop->getLayer()->isBackground()) {
@@ -166,7 +168,8 @@ public:
     : m_opacity(loop->getOpacity()) {
   }
 
-  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override {
+  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y,
+                            doc::SymmetryIndex index) override {
     m_color = loop->getPrimaryColor();
   }
 
@@ -207,7 +210,8 @@ public:
     , m_maskIndex(loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor()) {
   }
 
-  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override {
+  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y,
+                            doc::SymmetryIndex index) override {
     m_color = m_palette->getEntry(loop->getPrimaryColor());
   }
 
@@ -246,7 +250,8 @@ public:
     m_opacity = loop->getOpacity();
   }
 
-  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override {
+  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y,
+                            doc::SymmetryIndex index) override {
     m_color = loop->getPrimaryColor();
   }
 
@@ -280,7 +285,8 @@ public:
     m_colorIndex(loop->getFgColor()) {
   }
 
-  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override {
+  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y,
+                            doc::SymmetryIndex index) override {
     m_color = m_palette->getEntry(loop->getPrimaryColor());
   }
 
@@ -318,7 +324,8 @@ public:
     m_opacity = loop->getOpacity();
   }
 
-  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override {
+  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y,
+                            doc::SymmetryIndex index) override {
     m_color = loop->getPrimaryColor();
   }
 
@@ -351,7 +358,8 @@ public:
     m_maskIndex(loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor()) {
   }
 
-  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override {
+  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y,
+                            doc::SymmetryIndex index) override {
     m_color = (int(loop->getPrimaryColor()) == m_maskIndex ?
                (m_palette->getEntry(loop->getPrimaryColor()) & rgba_rgb_mask):
                (m_palette->getEntry(loop->getPrimaryColor())));
@@ -1123,10 +1131,6 @@ public:
     m_bgColor = loop->getSecondaryColor();
     m_palette = loop->getPalette();
     m_brush = loop->getBrush();
-    m_brushImage = (m_brush->patternImage() ? m_brush->patternImage():
-                                              m_brush->image());
-    m_brushMask = m_brush->maskBitmap();
-    m_patternAlign = m_brush->pattern();
     m_opacity = loop->getOpacity();
     m_width = m_brush->bounds().w;
     m_height = m_brush->bounds().h;
@@ -1141,14 +1145,17 @@ public:
     }
     else
       m_transparentColor = 0;
+    m_symmetryIndex = doc::SymmetryIndex::ORIGINAL;
   }
 
-  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override {
-    if (m_patternAlign != BrushPattern::ALIGNED_TO_SRC) {
+  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y,
+                            doc::SymmetryIndex index) override {
+    m_symmetryIndex = index;
+    if (m_brush->pattern() != BrushPattern::ALIGNED_TO_SRC) {
       // Case: during painting process with PaintBucket Tool
       if (loop->getPointShape()->isFloodFill()) {
-        m_u = x - m_brush->bounds().w / 2;
-        m_v = y - m_brush->bounds().h / 2;
+        m_u = x - m_width / 2;
+        m_v = y - m_height / 2;
       }
       // Case: during brush preview of PaintBucket Tool
       else if (loop->getController()->isOnePoint()) {
@@ -1163,7 +1170,7 @@ public:
   }
 
   void prepareVForPointShape(ToolLoop* loop, int y) override {
-    if (m_patternAlign == doc::BrushPattern::ALIGNED_TO_SRC) {
+    if (m_brush->pattern() == doc::BrushPattern::ALIGNED_TO_SRC) {
       m_v = (m_brush->patternOrigin().y - loop->getCelOrigin().y) % m_height;
       if (m_v < 0) m_v += m_height;
     }
@@ -1179,7 +1186,7 @@ public:
   }
 
   void prepareUForPointShapeWholeScanline(ToolLoop* loop, int x1) override {
-    if (m_patternAlign == doc::BrushPattern::ALIGNED_TO_SRC) {
+    if (m_brush->pattern() == doc::BrushPattern::ALIGNED_TO_SRC) {
       m_u = (m_brush->patternOrigin().x - loop->getCelOrigin().x) % m_width;
       if (m_u < 0) m_u += m_height;
     }
@@ -1191,7 +1198,7 @@ public:
   }
 
   void prepareUForPointShapeSlicedScanline(ToolLoop* loop, bool leftSlice, int x1) override {
-    if (m_patternAlign == doc::BrushPattern::ALIGNED_TO_SRC) {
+    if (m_brush->pattern() == doc::BrushPattern::ALIGNED_TO_SRC) {
       m_u = (m_brush->patternOrigin().x - loop->getCelOrigin().x) % m_width;
       if (m_u < 0) m_u += m_height;
       return;
@@ -1223,7 +1230,8 @@ protected:
     if (x < 0) x = m_width - ((-x) % m_width);
     if (y < 0) y = m_height - ((-y) % m_height);
 
-    if (m_brushMask && !get_pixel_fast<BitmapTraits>(m_brushMask, x, y))
+    if (m_brush->getSymmetryMask(m_symmetryIndex) &&
+        !get_pixel_fast<BitmapTraits>(m_brush->getSymmetryMask(m_symmetryIndex), x, y))
       return false;
 
     if (m_brush->patternImage()) {
@@ -1243,16 +1251,14 @@ protected:
   color_t m_fgColor;
   color_t m_bgColor;
   const Palette* m_palette;
-  const Brush* m_brush;
-  const Image* m_brushImage;
-  const Image* m_brushMask;
-  BrushPattern m_patternAlign;
+  Brush* m_brush;
   int m_opacity;
   int m_u, m_v, m_width, m_height;
   // When we have a image brush from an INDEXED sprite, we need to know
   // which is the background color in order to translate to transparent color
   // in a RGBA sprite.
   color_t m_transparentColor;
+  doc::SymmetryIndex m_symmetryIndex;
 };
 
 template<>
@@ -1261,9 +1267,9 @@ bool BrushInkProcessingBase<RgbTraits>::preProcessPixel(int x, int y, color_t* r
     return false;
 
   color_t c;
-  switch (m_brushImage->pixelFormat()) {
+  switch (m_brush->image()->pixelFormat()) {
     case IMAGE_RGB: {
-      c = get_pixel_fast<RgbTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<RgbTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
 
       // We blend the previous image brush pixel with a pixel from the
       // image preview (*m_dstAddress). Yes, dstImage, in that way we
@@ -1274,7 +1280,7 @@ bool BrushInkProcessingBase<RgbTraits>::preProcessPixel(int x, int y, color_t* r
       break;
     }
     case IMAGE_INDEXED: {
-      c = get_pixel_fast<IndexedTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<IndexedTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       if (m_transparentColor == c)
         c = 0;
       else
@@ -1283,14 +1289,14 @@ bool BrushInkProcessingBase<RgbTraits>::preProcessPixel(int x, int y, color_t* r
       break;
     }
     case IMAGE_GRAYSCALE: {
-      c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<GrayscaleTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       c = doc::rgba(graya_getv(c), graya_getv(c), graya_getv(c), graya_geta(c));
       c = rgba_blender_normal(*m_dstAddress, c, m_opacity);
       break;
     }
     case IMAGE_BITMAP: {
       // TODO In which circuntance is possible this case?
-      c = get_pixel_fast<BitmapTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<BitmapTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       c = c ? m_fgColor: m_bgColor;
       break;
     }
@@ -1308,15 +1314,15 @@ bool BrushInkProcessingBase<GrayscaleTraits>::preProcessPixel(int x, int y, colo
     return false;
 
   color_t c;
-  switch (m_brushImage->pixelFormat()) {
+  switch (m_brush->image()->pixelFormat()) {
     case IMAGE_RGB: {
-      c = get_pixel_fast<RgbTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<RgbTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       c = graya(rgba_luma(c), rgba_geta(c));
       c = graya_blender_normal(*m_dstAddress, c, m_opacity);
       break;
     }
     case IMAGE_INDEXED: {
-      c = get_pixel_fast<IndexedTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<IndexedTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       if (m_transparentColor == c)
         c = 0;
       else
@@ -1326,13 +1332,13 @@ bool BrushInkProcessingBase<GrayscaleTraits>::preProcessPixel(int x, int y, colo
       break;
     }
     case IMAGE_GRAYSCALE: {
-      c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<GrayscaleTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       c = graya_blender_normal(*m_dstAddress, c, m_opacity);
       break;
     }
     case IMAGE_BITMAP: {
       // TODO In which circuntance is possible this case?
-      c = get_pixel_fast<BitmapTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<BitmapTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       c = c ? m_fgColor: m_bgColor;
       break;
     }
@@ -1350,9 +1356,9 @@ bool BrushInkProcessingBase<IndexedTraits>::preProcessPixel(int x, int y, color_
     return false;
 
   color_t c;
-  switch (m_brushImage->pixelFormat()) {
+  switch (m_brush->image()->pixelFormat()) {
     case IMAGE_RGB: {
-      c = get_pixel_fast<RgbTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<RgbTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       color_t d = m_palette->getEntry(*m_dstAddress);
       c = rgba_blender_normal(d, c, m_opacity);
       c = m_palette->findBestfit(rgba_getr(c),
@@ -1362,7 +1368,7 @@ bool BrushInkProcessingBase<IndexedTraits>::preProcessPixel(int x, int y, color_
       break;
     }
     case IMAGE_INDEXED: {
-      c = get_pixel_fast<IndexedTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<IndexedTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       if (c == m_transparentColor)
         return false;
 
@@ -1381,7 +1387,7 @@ bool BrushInkProcessingBase<IndexedTraits>::preProcessPixel(int x, int y, color_
       break;
     }
     case IMAGE_GRAYSCALE: {
-      c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<GrayscaleTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       color_t b = m_palette->getEntry(*m_dstAddress);
       b = graya(rgba_luma(b),
                 rgba_geta(b));
@@ -1394,7 +1400,7 @@ bool BrushInkProcessingBase<IndexedTraits>::preProcessPixel(int x, int y, color_
     }
     case IMAGE_BITMAP: {
       // TODO In which circuntance is possible this case?
-      c = get_pixel_fast<BitmapTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<BitmapTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       c = c ? m_fgColor: m_bgColor;
       break;
     }
@@ -1504,9 +1510,9 @@ void BrushEraserInkProcessing<RgbTraits>::processPixel(int x, int y) {
     return;
 
   color_t c;
-  switch (m_brushImage->pixelFormat()) {
+  switch (m_brush->image()->pixelFormat()) {
     case IMAGE_RGB: {
-      c = get_pixel_fast<RgbTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<RgbTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       int t;
       c = doc::rgba(rgba_getr(*m_srcAddress),
                     rgba_getg(*m_srcAddress),
@@ -1515,7 +1521,7 @@ void BrushEraserInkProcessing<RgbTraits>::processPixel(int x, int y) {
       break;
     }
     case IMAGE_INDEXED: {
-      c = get_pixel_fast<IndexedTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<IndexedTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       if (m_transparentColor == c)
         c = 0;
       else
@@ -1528,7 +1534,7 @@ void BrushEraserInkProcessing<RgbTraits>::processPixel(int x, int y) {
       break;
     }
     case IMAGE_GRAYSCALE: {
-      c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<GrayscaleTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       int t;
       c = doc::rgba(rgba_getr(*m_srcAddress),
                     rgba_getg(*m_srcAddress),
@@ -1538,7 +1544,7 @@ void BrushEraserInkProcessing<RgbTraits>::processPixel(int x, int y) {
     }
     case IMAGE_BITMAP: {
       // TODO In which circuntance is possible this case?
-      c = get_pixel_fast<BitmapTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<BitmapTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       c = c ? m_bgColor : *m_srcAddress;
       break;
     }
@@ -1555,16 +1561,16 @@ void BrushEraserInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
     return;
 
   color_t c;
-  switch (m_brushImage->pixelFormat()) {
+  switch (m_brush->image()->pixelFormat()) {
     case IMAGE_RGB: {
-      c = get_pixel_fast<RgbTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<RgbTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       int t;
       c = graya(graya_getv(*m_srcAddress),
                 MUL_UN8(graya_geta(*m_dstAddress), 255 - rgba_geta(c), t));
       break;
     }
     case IMAGE_INDEXED: {
-      c = get_pixel_fast<IndexedTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<IndexedTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       if (m_transparentColor == c)
         c = 0;
       else {
@@ -1576,7 +1582,7 @@ void BrushEraserInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
       break;
     }
     case IMAGE_GRAYSCALE: {
-      c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<GrayscaleTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       int t;
       c = graya(graya_getv(*m_srcAddress),
                 MUL_UN8(graya_geta(*m_dstAddress), 255 - graya_geta(c), t));
@@ -1584,7 +1590,7 @@ void BrushEraserInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
     }
     case IMAGE_BITMAP: {
       // TODO In which circuntance is possible this case?
-      c = get_pixel_fast<BitmapTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<BitmapTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       c = c ? m_bgColor : *m_srcAddress;
       break;
     }
@@ -1601,9 +1607,9 @@ void BrushEraserInkProcessing<IndexedTraits>::processPixel(int x, int y) {
     return;
 
   color_t c;
-  switch (m_brushImage->pixelFormat()) {
+  switch (m_brush->image()->pixelFormat()) {
     case IMAGE_RGB: {
-      c = get_pixel_fast<RgbTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<RgbTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       c = m_palette->findBestfit(rgba_getr(c),
                                  rgba_getg(c),
                                  rgba_getb(c),
@@ -1611,11 +1617,11 @@ void BrushEraserInkProcessing<IndexedTraits>::processPixel(int x, int y) {
       break;
     }
     case IMAGE_INDEXED: {
-      c = get_pixel_fast<IndexedTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<IndexedTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       break;
     }
     case IMAGE_GRAYSCALE: {
-      c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<GrayscaleTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       c = m_palette->findBestfit(graya_getv(c),
                                  graya_getv(c),
                                  graya_getv(c),
@@ -1624,7 +1630,7 @@ void BrushEraserInkProcessing<IndexedTraits>::processPixel(int x, int y) {
     }
     case IMAGE_BITMAP: {
       // TODO In which circuntance is possible this case?
-      c = get_pixel_fast<BitmapTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<BitmapTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       c = c ? m_fgColor: m_bgColor;
       break;
     }
@@ -1664,9 +1670,9 @@ void BrushShadingInkProcessing<RgbTraits>::processPixel(int x, int y) {
   if (!alignPixelPoint(x, y))
     return;
 
-  switch (m_brushImage->pixelFormat()) {
+  switch (m_brush->image()->pixelFormat()) {
     case IMAGE_RGB: {
-      auto c = get_pixel_fast<RgbTraits>(m_brushImage, x, y);
+      auto c = get_pixel_fast<RgbTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       int iBrush = m_shading.findIndex(rgba_getr(c),
                                        rgba_getg(c),
                                        rgba_getb(c),
@@ -1676,13 +1682,13 @@ void BrushShadingInkProcessing<RgbTraits>::processPixel(int x, int y) {
       break;
     }
     case IMAGE_INDEXED: {
-      auto c = get_pixel_fast<IndexedTraits>(m_brushImage, x, y);
+      auto c = get_pixel_fast<IndexedTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       if (m_transparentColor != c)
         *m_dstAddress = m_shading(*m_srcAddress);
       break;
     }
     case IMAGE_GRAYSCALE: {
-      auto c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
+      auto c = get_pixel_fast<GrayscaleTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       if (graya_geta(c) != 0)
         *m_dstAddress = m_shading(*m_srcAddress);
       break;
@@ -1698,9 +1704,9 @@ void BrushShadingInkProcessing<IndexedTraits>::processPixel(int x, int y) {
   if (!alignPixelPoint(x, y))
     return;
 
-  switch (m_brushImage->pixelFormat()) {
+  switch (m_brush->image()->pixelFormat()) {
     case IMAGE_RGB: {
-      auto c = get_pixel_fast<RgbTraits>(m_brushImage, x, y);
+      auto c = get_pixel_fast<RgbTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       int iBrush = m_shading.findIndex(rgba_getr(c),
                                        rgba_getg(c),
                                        rgba_getb(c),
@@ -1710,13 +1716,13 @@ void BrushShadingInkProcessing<IndexedTraits>::processPixel(int x, int y) {
       break;
     }
     case IMAGE_INDEXED: {
-      auto c = get_pixel_fast<IndexedTraits>(m_brushImage, x, y);
+      auto c = get_pixel_fast<IndexedTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       if (m_transparentColor != c)
         *m_dstAddress = m_shading(*m_srcAddress);
       break;
     }
     case IMAGE_GRAYSCALE: {
-      auto c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
+      auto c = get_pixel_fast<GrayscaleTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       if (graya_geta(c) != 0)
         *m_dstAddress = m_shading(*m_srcAddress);
       break;
@@ -1732,9 +1738,9 @@ void BrushShadingInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
   if (!alignPixelPoint(x, y))
     return;
 
-  switch (m_brushImage->pixelFormat()) {
+  switch (m_brush->image()->pixelFormat()) {
     case IMAGE_RGB: {
-      auto c = get_pixel_fast<RgbTraits>(m_brushImage, x, y);
+      auto c = get_pixel_fast<RgbTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       int iBrush = m_shading.findIndex(rgba_getr(c),
                                        rgba_getg(c),
                                        rgba_getb(c),
@@ -1744,13 +1750,13 @@ void BrushShadingInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
       break;
     }
     case IMAGE_INDEXED: {
-      auto c = get_pixel_fast<IndexedTraits>(m_brushImage, x, y);
+      auto c = get_pixel_fast<IndexedTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       if (m_transparentColor != c)
         *m_dstAddress = m_shading(*m_srcAddress);
       break;
     }
     case IMAGE_GRAYSCALE: {
-      auto c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
+      auto c = get_pixel_fast<GrayscaleTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       if (graya_geta(c) != 0)
         *m_dstAddress = m_shading(*m_srcAddress);
       break;
@@ -1782,15 +1788,15 @@ void BrushCopyInkProcessing<RgbTraits>::processPixel(int x, int y) {
     return;
 
   color_t c;
-  switch (m_brushImage->pixelFormat()) {
+  switch (m_brush->image()->pixelFormat()) {
     case IMAGE_RGB: {
-      c = get_pixel_fast<RgbTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<RgbTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       if (rgba_geta(c) == 0)
         return;
       break;
     }
     case IMAGE_INDEXED: {
-      c = get_pixel_fast<IndexedTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<IndexedTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       if (c == m_transparentColor) {
         *m_dstAddress = *m_srcAddress;
         return;
@@ -1799,7 +1805,7 @@ void BrushCopyInkProcessing<RgbTraits>::processPixel(int x, int y) {
       break;
     }
     case IMAGE_GRAYSCALE: {
-      c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<GrayscaleTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       if (graya_geta(c) == 0)
         return;
       c = doc::rgba(graya_getv(c), graya_getv(c), graya_getv(c), graya_geta(c));
@@ -1807,7 +1813,7 @@ void BrushCopyInkProcessing<RgbTraits>::processPixel(int x, int y) {
     }
     case IMAGE_BITMAP: {
       // TODO In which circuntance is possible this case?
-      c = get_pixel_fast<BitmapTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<BitmapTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       c = c ? m_fgColor: m_bgColor;
       break;
     }
@@ -1824,9 +1830,9 @@ void BrushCopyInkProcessing<IndexedTraits>::processPixel(int x, int y) {
     return;
 
   color_t c;
-  switch (m_brushImage->pixelFormat()) {
+  switch (m_brush->image()->pixelFormat()) {
     case IMAGE_RGB: {
-      c = get_pixel_fast<RgbTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<RgbTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       if (rgba_geta(c) == 0)
         return;
       c = m_palette->findBestfit(rgba_getr(c),
@@ -1838,13 +1844,13 @@ void BrushCopyInkProcessing<IndexedTraits>::processPixel(int x, int y) {
       break;
     }
     case IMAGE_INDEXED: {
-      c = get_pixel_fast<IndexedTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<IndexedTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       if (c == m_transparentColor)
         c = *m_srcAddress;
       break;
     }
     case IMAGE_GRAYSCALE: {
-      c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<GrayscaleTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       if (graya_geta(c) == 0)
         return;
       c = m_palette->findBestfit(graya_getv(c),
@@ -1855,7 +1861,7 @@ void BrushCopyInkProcessing<IndexedTraits>::processPixel(int x, int y) {
     }
     case IMAGE_BITMAP: {
       // TODO In which circuntance is possible this case?
-      c = get_pixel_fast<BitmapTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<BitmapTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       c = c ? m_fgColor: m_bgColor;
       break;
     }
@@ -1872,16 +1878,16 @@ void BrushCopyInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
     return;
 
   color_t c;
-  switch (m_brushImage->pixelFormat()) {
+  switch (m_brush->image()->pixelFormat()) {
     case IMAGE_RGB: {
-      c = get_pixel_fast<RgbTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<RgbTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       if (rgba_geta(c) == 0)
         return;
       c = graya(rgba_luma(c), rgba_geta(c));
       break;
     }
     case IMAGE_INDEXED: {
-      c = get_pixel_fast<IndexedTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<IndexedTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       if (c == m_transparentColor) {
         *m_dstAddress = *m_srcAddress;
         return;
@@ -1891,14 +1897,14 @@ void BrushCopyInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
       break;
     }
     case IMAGE_GRAYSCALE: {
-      c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<GrayscaleTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       if (graya_geta(c) == 0)
         return;
       break;
     }
     case IMAGE_BITMAP: {
       // TODO In which circuntance is possible this case?
-      c = get_pixel_fast<BitmapTraits>(m_brushImage, x, y);
+      c = get_pixel_fast<BitmapTraits>(m_brush->getSymmetryImage(m_symmetryIndex), x, y);
       c = c ? m_fgColor: m_bgColor;
       break;
     }
