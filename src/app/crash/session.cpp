@@ -150,19 +150,19 @@ bool Session::isOldSession()
 
   int lifespanDays = m_config->keepEditedSpriteDataFor;
   base::Time sessionTime;
-  
+
   // Get the session time from the name if possible, to avoid re-scanning when transferring files
   std::vector<std::string> parts;
   base::split_string(base::get_file_title(m_path), parts, "-");
 
-  if (parts.size() == 3 && parts[0].size() == 8) {
+  if (parts.size() == 3 && parts[0].size() == 8 && parts[1].size() == 6) {
     try {
       sessionTime = base::Time(filenamePartToInt(parts[0].substr(0, 4)),
                                filenamePartToInt(parts[0].substr(4, 2)),
                                filenamePartToInt(parts[0].substr(6, 2)),
-                               0,
-                               0,
-                               0);
+                               filenamePartToInt(parts[1].substr(0, 2)),
+                               filenamePartToInt(parts[1].substr(2, 2)),
+                               filenamePartToInt(parts[1].substr(4, 2)));
     }
     catch (const std::exception& ex) {
       LOG(ERROR,
@@ -171,7 +171,7 @@ bool Session::isOldSession()
           ex.what());
     }
   }
-  
+
   if (!sessionTime.valid()) {
     // Get modification time as a fallback
     sessionTime = base::get_modification_time(verfile);
