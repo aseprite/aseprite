@@ -91,7 +91,12 @@ public:
       if (!id || !ver)
         continue;               // Error converting strings to ID/ver
 
-      if (!check_magic_number(base::join_path(m_dir, fn))) {
+      // Checking for the magic number of each file takes a long time,
+      // we can guess that all files are valid when there is no
+      // m_taskToken, i.e. when we have to just show the description
+      // of the doc in the list of backups.
+      if (m_taskToken &&
+          !check_magic_number(base::join_path(m_dir, fn))) {
         RECO_TRACE("RECO: Ignoring invalid file %s (no magic number)\n", fn.c_str());
         continue;
       }

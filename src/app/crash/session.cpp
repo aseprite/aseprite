@@ -44,22 +44,24 @@ static const char* kOpenFilename = "open"; // File that indicates if the documen
 Session::Backup::Backup(const std::string& dir)
   : m_dir(dir)
 {
-  DocumentInfo info;
-  read_document_info(dir, info);
-
-  m_fn = info.filename;
-  m_desc =
-    fmt::format("{} Sprite {}x{}, {} {}",
-                info.mode == ColorMode::RGB ? "RGB":
-                info.mode == ColorMode::GRAYSCALE ? "Grayscale":
-                info.mode == ColorMode::INDEXED ? "Indexed":
-                info.mode == ColorMode::BITMAP ? "Bitmap": "Unknown",
-                info.width, info.height, info.frames,
-                info.frames == 1 ? "frame": "frames");
 }
 
 std::string Session::Backup::description(const bool withFullPath) const
 {
+  // Lazy initialize description and filename.
+  if (m_desc.empty()) {
+    DocumentInfo info;
+    read_document_info(m_dir, info);
+    m_fn = info.filename;
+    m_desc =
+      fmt::format("{} Sprite {}x{}, {} {}",
+                  info.mode == ColorMode::RGB ? "RGB":
+                  info.mode == ColorMode::GRAYSCALE ? "Grayscale":
+                  info.mode == ColorMode::INDEXED ? "Indexed":
+                  info.mode == ColorMode::BITMAP ? "Bitmap": "Unknown",
+                  info.width, info.height, info.frames,
+                  info.frames == 1 ? "frame": "frames");
+  }
   return fmt::format("{}: {}",
                      m_desc,
                      withFullPath ? m_fn:

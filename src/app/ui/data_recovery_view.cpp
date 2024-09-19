@@ -58,7 +58,6 @@ public:
     : m_session(session)
     , m_backup(backup)
     , m_task(nullptr) {
-    updateText();
   }
 
   crash::Session* session() const { return m_session; }
@@ -150,6 +149,15 @@ public:
   }
 
 private:
+  void onPaint(PaintEvent& ev) override {
+    // The text is lazily initialized. So we read the backup data only
+    // when we have to show its information.
+    if (text().empty()) {
+      updateText();
+    }
+    ListItem::onPaint(ev);
+  }
+
   void onSizeHint(SizeHintEvent& ev) override {
     ListItem::onSizeHint(ev);
     gfx::Size sz = ev.sizeHint();
