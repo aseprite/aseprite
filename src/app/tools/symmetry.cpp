@@ -144,10 +144,16 @@ void Symmetry::calculateSymmetricalStroke(const Stroke& refStroke,
     Stroke::Pt pt2 = pt;
     pt2.symmetry = symmetry;
     switch (symmetry) {
-      case doc::SymmetryIndex::ROT_FLIP_270:
-        pt2.x = -pt.y + m_x + m_y - (brushSize.w % 2 ? 1 : 0);
-        pt2.y = -pt.x + m_x + m_y - (brushSize.h % 2 ? 1 : 0);
+      case doc::SymmetryIndex::ROT_FLIP_270: {
+        int adj_x = 0;
+        int adj_y = 0;
+        if (m_x - double(int(m_x)) > 0) adj_y = 1;
+        if (m_y - double(int(m_y)) > 0) adj_x = 1;
+        if (adj_x == 1 && adj_y == 1) { adj_x = 0; adj_y = 0; }
+        pt2.x = -pt.y + m_x + m_y - (brushSize.w % 2 ? 1 : 0) + adj_x;
+        pt2.y = -pt.x + m_x + m_y - (brushSize.h % 2 ? 1 : 0) + adj_y;
         break;
+      }
       case doc::SymmetryIndex::ROT_FLIP_90:
         pt2.x = pt.y + m_x - m_y + (m_x - int(m_x));
         pt2.y = pt.x - m_x + m_y + (m_y - int(m_y));
