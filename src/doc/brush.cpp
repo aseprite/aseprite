@@ -326,7 +326,7 @@ static void algo_hline(int x1, int y, int x2, void *data)
 
 void Brush::resetSymmetries()
 {
-  if (m_symmetryImages.size() == 0) {
+  if (m_symmetryImages.empty()) {
     for (int i=0; i<8; i++) {
       m_symmetryImages.push_back(ImageRef());
       m_symmetryMasks.push_back(ImageRef());
@@ -345,7 +345,7 @@ Image* Brush::getSymmetryImage(const SymmetryIndex index)
   if (index <= 0 || index > 7)
     return m_image.get();
 
-  if (m_symmetryImages.size() == 0)
+  if (m_symmetryImages.empty())
     resetSymmetries();
 
   if (!m_symmetryImages[index]) {

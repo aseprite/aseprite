@@ -1630,7 +1630,7 @@ private:
       doc->notifyGeneralUpdate();
     }
     else if (at(4)->isSelected()) {
-      auto item = at(4);
+      auto* item = at(4);
 
       gfx::Rect bounds = item->bounds();
       item->setSelected(false);
