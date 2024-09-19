@@ -816,11 +816,8 @@ Extensions::Extensions()
     if (!base::is_directory(extensionsDir))
       continue;
 
-    for (auto& fn : base::list_files(extensionsDir)) {
+    for (const auto& fn : base::list_files(extensionsDir, base::ItemType::Directories)) {
       const auto dir = base::join_path(extensionsDir, fn);
-      if (!base::is_directory(dir))
-        continue;
-
       const bool isBuiltinExtension =
         (m_userExtensionsPath != base::get_file_path(dir));
 

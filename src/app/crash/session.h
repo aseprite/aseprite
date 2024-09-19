@@ -78,6 +78,7 @@ namespace crash {
     void markDocumentAsCorrectlyClosed(Doc* doc);
     void deleteDirectory(const std::string& dir);
     void fixFilename(Doc* doc);
+    int filenamePartToInt(const std::string& part) const;
 
     base::pid m_pid;
     std::string m_path;

@@ -77,7 +77,7 @@ public:
     , m_docVersions(nullptr)
     , m_loadInfo(nullptr)
     , m_taskToken(t) {
-    for (const auto& fn : base::list_files(dir)) {
+    for (const auto& fn : base::list_files(dir, base::ItemType::Files)) {
       auto i = fn.find('-');
       if (i == std::string::npos)
         continue;               // Has no ID
