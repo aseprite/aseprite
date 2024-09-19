@@ -121,7 +121,7 @@ void Symmetry::calculateSymmetricalStroke(const Stroke& refStroke,
   if (!loop->getPointShape()->isFloodFill()) {
     if (symmetry == doc::SymmetryIndex::ORIGINAL ||
         symmetry == doc::SymmetryIndex::FLIPPED_X ||
-        symmetry == doc::SymmetryIndex::FLIPPED_X ||
+        symmetry == doc::SymmetryIndex::FLIPPED_Y ||
         symmetry == doc::SymmetryIndex::FLIPPED_XY) {
       brushSize = brush->bounds().size();
       brushCenter = brush->center();
