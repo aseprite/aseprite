@@ -143,7 +143,7 @@ target_sources(app-lib PRIVATE
   file/qoi_format.cpp
   file/svg_format.cpp
   file/tga_format.cpp)
-if(ENABLE_WEBP)
+if(ENABLE_WEBP AND WEBP_FOUND)
   target_compile_definitions(app-lib PUBLIC -DENABLE_WEBP)
   target_sources(app-lib PRIVATE
     file/webp_format.cpp)
@@ -749,15 +749,27 @@ target_link_libraries(app-lib
   ${JPEG_LIBRARIES}
   ${GIF_LIBRARIES}
   ${PNG_LIBRARIES}
-  ${WEBP_LIBRARIES}
   ${ZLIB_LIBRARIES}
-  ${FREETYPE_LIBRARIES}
-  ${HARFBUZZ_LIBRARIES}
   json11
   archive_static
   fmt
   tinyexpr
   qoi)
+
+if(ENABLE_WEBP AND WEBP_FOUND)
+  target_link_libraries(app-lib ${WEBP_LIBRARIES})
+  target_include_directories(app-lib PUBLIC ${WEBP_INCLUDE_DIR})
+endif()
+
+if(FREETYPE_FOUND)
+  target_link_libraries(app-lib ${FREETYPE_LIBRARIES})
+  target_include_directories(app-lib PUBLIC ${FREETYPE_INCLUDE_DIRS})
+endif()
+
+if(HARFBUZZ_FOUND)
+  target_link_libraries(app-lib ${HARFBUZZ_LIBRARIES})
+  target_include_directories(app-lib PUBLIC ${HARFBUZZ_INCLUDE_DIRS})
+endif()
 
 # Directory where generated files by "gen" utility will stay.
 target_include_directories(app-lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
