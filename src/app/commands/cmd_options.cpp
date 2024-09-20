@@ -1335,6 +1335,7 @@ private:
     jpegOptionsAlert()->resetWithDefaultValue();
     svgOptionsAlert()->resetWithDefaultValue();
     tgaOptionsAlert()->resetWithDefaultValue();
+    webpOptionsAlert()->resetWithDefaultValue();
   }
 
   void onChangeBgScope() {
