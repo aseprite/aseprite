@@ -4485,6 +4485,12 @@ void Timeline::onDragLeave(ui::DragEvent& e)
 void Timeline::onDrag(ui::DragEvent& e)
 {
   Widget::onDrag(e);
+
+  // Dropping images into the timeline is not supported yet, so do nothing.
+  if (e.hasImage()) {
+    return;
+  }
+
   m_range.clearRange();
   setHot(hitTest(nullptr, e.position()));
   switch (m_hot.part) {
@@ -4561,9 +4567,9 @@ void Timeline::onDrop(ui::DragEvent& e)
       tx.commit();
       m_document->notifyGeneralUpdate();
     });
+    e.handled(true);
   }
 
-  e.handled(true);
   m_state = STATE_STANDBY;
   m_range.clearRange();
   m_dropRange.clearRange();

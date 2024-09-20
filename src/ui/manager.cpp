@@ -2041,9 +2041,8 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
   return used;
 }
 
-Widget* Manager::pickForDragAndDrop(const gfx::Point& pt)
+Widget* Manager::findForDragAndDrop(Widget* widget)
 {
-  Widget* widget = pick(pt);
   // If widget doesn't support drag & drop, try to find the nearest ancestor
   // that supports it.
   while(widget && !widget->hasFlags(ALLOW_DROP))
@@ -2054,7 +2053,7 @@ Widget* Manager::pickForDragAndDrop(const gfx::Point& pt)
 
 void Manager::dragEnter(os::DragEvent& ev)
 {
-  Widget* widget = pickForDragAndDrop(ev.position());
+  Widget* widget = findForDragAndDrop(pick(ev.position()));
 
   ASSERT(!widget || widget && widget->hasFlags(ALLOW_DROP));
 
@@ -2078,7 +2077,7 @@ void Manager::dragLeave(os::DragEvent& ev)
 
 void Manager::drag(os::DragEvent& ev)
 {
-  Widget* widget = pickForDragAndDrop(ev.position());
+  Widget* widget = findForDragAndDrop(pick(ev.position()));
 
   ASSERT(!widget || widget && widget->hasFlags(ALLOW_DROP));
 
@@ -2102,17 +2101,20 @@ void Manager::drag(os::DragEvent& ev)
 void Manager::drop(os::DragEvent& ev)
 {
   m_dragOverWidget = nullptr;
-  Widget* widget = pickForDragAndDrop(ev.position());
+  Widget* widget = findForDragAndDrop(pick(ev.position()));
 
   ASSERT(!widget || widget && widget->hasFlags(ALLOW_DROP));
 
-  if (widget) {
-    DragEvent uiev(this, widget, ev);
+  DragEvent uiev(this, widget, ev);
+  while (widget) {
     widget->onDrop(uiev);
     if (uiev.handled()) {
       ev.acceptDrop(true);
       return;
     }
+    // Propagate unhandled drop events to ancestors.
+    // TODO: Should we propagate dragEnter, dragLeave and drag events too?
+    widget = findForDragAndDrop(widget->parent());
   }
 
   // There were no widget that accepted the drop, then see if we can treat it
