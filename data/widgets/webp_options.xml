@@ -48,6 +48,7 @@
     </vbox>
     <separator horizontal="true" />
     <hbox>
+      <check text="@general.dont_show" id="dont_show" tooltip="@general.dont_show_tooltip" />
       <boxfiller />
       <hbox homogeneous="true">
         <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
