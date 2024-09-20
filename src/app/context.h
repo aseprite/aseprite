@@ -14,11 +14,14 @@
 #include "app/context_observer.h"
 #include "app/docs.h"
 #include "app/docs_observer.h"
+#include "app/util/conversion_to_image.h"
 #include "base/disable_copying.h"
 #include "base/exception.h"
 #include "doc/frame.h"
+#include "doc/image_ref.h"
 #include "obs/observable.h"
 #include "obs/signal.h"
+#include "os/surface.h"
 
 #include <memory>
 #include <vector>
@@ -86,6 +89,22 @@ namespace app {
     bool m_canceled;
   };
 
+  class DraggedData
+  {
+  public:
+    DraggedData(const doc::ImageRef& image) {
+      m_image = image;
+    }
+    DraggedData(const os::SurfaceRef& surface) {
+      convert_surface_to_image(surface.get(), 0, 0, surface->width(), surface->height(), m_image);
+    }
+
+    const doc::ImageRef& getImage() const { return m_image; }
+
+  private:
+    doc::ImageRef m_image = nullptr;
+  };
+
   class Context : public obs::observable<ContextObserver>,
                   public DocsObserver {
   public:
@@ -119,6 +138,11 @@ namespace app {
     void setSelectedTiles(const doc::PalettePicks& picks);
     bool hasModifiedDocuments() const;
     void notifyActiveSiteChanged();
+
+    void setDraggedData(std::unique_ptr<DraggedData> draggedData) {
+      m_draggedData = std::move(draggedData);
+    }
+    const DraggedData* draggedData() const { return m_draggedData.get(); }
 
     void executeCommandFromMenuOrShortcut(Command* command, const Params& params = Params());
     virtual void executeCommand(Command* command, const Params& params = Params());
@@ -159,6 +183,7 @@ namespace app {
     ContextFlags m_flags;       // Last updated flags.
     Doc* m_lastSelectedDoc;
     mutable std::unique_ptr<Preferences> m_preferences;
+    std::unique_ptr<DraggedData> m_draggedData = nullptr;
 
     // Result of the execution of a command.
     CommandResult m_result;

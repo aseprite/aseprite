@@ -39,7 +39,10 @@
 #include "app/ui/workspace_tabs.h"
 #include "app/ui_context.h"
 #include "base/fs.h"
+#include "os/event.h"
+#include "os/event_queue.h"
 #include "os/system.h"
+#include "ui/drag_event.h"
 #include "ui/message.h"
 #include "ui/splitter.h"
 #include "ui/system.h"
@@ -91,6 +94,7 @@ MainWindow::MainWindow()
   , m_devConsoleView(nullptr)
 #endif
 {
+  enableFlags(ALLOW_DROP);
 }
 
 // This 'initialize' function is a way to split the creation of the
@@ -432,6 +436,22 @@ void MainWindow::onActiveViewChange()
     UIContext::instance()->setActiveView(docView);
   else
     UIContext::instance()->setActiveView(nullptr);
+}
+
+void MainWindow::onDrop(ui::DragEvent& e)
+{
+  if (e.hasImage()) {
+    auto* cmd = Commands::instance()->byId(CommandId::NewFile());
+    Params params;
+    params.set("fromDraggedData", "true");
+    UIContext::instance()->setDraggedData(std::make_unique<DraggedData>(e.getImage()));
+    UIContext::instance()->executeCommand(cmd, params);
+    e.handled(true);
+    invalidate();
+    flushRedraw();
+    os::Event ev;
+    os::System::instance()->eventQueue()->queueEvent(ev);
+  }
 }
 
 bool MainWindow::isTabModified(Tabs* tabs, TabView* tabView)

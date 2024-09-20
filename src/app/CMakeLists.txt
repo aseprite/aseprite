@@ -689,6 +689,7 @@ target_sources(app-lib PRIVATE
   util/cel_ops.cpp
   util/clipboard.cpp
   util/clipboard_native.cpp
+  util/conversion_to_image.cpp
   util/conversion_to_surface.cpp
   util/expand_cel_canvas.cpp
   util/filetoks.cpp

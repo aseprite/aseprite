@@ -119,6 +119,8 @@ namespace app {
     void onActiveViewChange();
     void onLanguageChange();
 
+    void onDrop(ui::DragEvent& e) override;
+
   private:
     DocView* getDocView();
     HomeView* getHomeView();
