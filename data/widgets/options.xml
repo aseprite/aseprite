@@ -517,14 +517,16 @@
                  pref="color_bar.show_invalid_fg_bg_color_alert" />
           <check id="run_script_alert" text="@.run_script_alert"
                  pref="scripts.show_run_script_alert" />
-	  <hbox>
+	  <grid columns="4">
             <label text="@.image_format_alerts" />
             <check id="css_options_alert" text="!css" pref="css.show_alert" />
             <check id="gif_options_alert" text="!gif" pref="gif.show_alert" />
             <check id="jpeg_options_alert" text="!jpeg" pref="jpeg.show_alert" />
+            <boxfiller />
             <check id="svg_options_alert" text="!svg" pref="svg.show_alert" />
             <check id="tga_options_alert" text="!tga" pref="tga.show_alert" />
-	  </hbox>
+            <check id="webp_options_alert" text="!webp" pref="webp.show_alert" />
+          </grid>
           <separator horizontal="true" />
 	  <hbox>
 	    <hbox expansive="true" />
