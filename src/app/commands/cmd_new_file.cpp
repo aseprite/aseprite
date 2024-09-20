@@ -46,6 +46,7 @@ struct NewFileParams : public NewParams {
   Param<int> height { this, 0, "height" };
   Param<ColorMode> colorMode { this, ColorMode::RGB, "colorMode" };
   Param<bool> fromClipboard { this, false, "fromClipboard" };
+  Param<bool> fromDraggedData { this, false, "fromDraggedData" };
 };
 
 class NewFileCommand : public CommandWithNewParams<NewFileParams> {
@@ -86,8 +87,9 @@ void NewFileCommand::onExecute(Context* ctx)
   doc::Palette clipboardPalette(0, 256);
   const int ncolors = get_default_palette()->size();
 
-  if (params().fromClipboard()) {
-    clipboardImage = ctx->clipboard()->getImage(&clipboardPalette);
+  if (params().fromClipboard() || params().fromDraggedData()) {
+    clipboardImage = (params().fromClipboard() ? ctx->clipboard()->getImage(&clipboardPalette)
+                                               : ctx->draggedData()->getImage());
     if (!clipboardImage)
       return;
 

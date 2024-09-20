@@ -2056,7 +2056,7 @@ void Manager::dragEnter(os::DragEvent& ev)
 {
   Widget* widget = pickForDragAndDrop(ev.position());
 
-  ASSERT(widget->hasFlags(ALLOW_DROP));
+  ASSERT(!widget || widget && widget->hasFlags(ALLOW_DROP));
 
   if (widget) {
     m_dragOverWidget = widget;
@@ -2080,7 +2080,7 @@ void Manager::drag(os::DragEvent& ev)
 {
   Widget* widget = pickForDragAndDrop(ev.position());
 
-  ASSERT(widget->hasFlags(ALLOW_DROP));
+  ASSERT(!widget || widget && widget->hasFlags(ALLOW_DROP));
 
   if (m_dragOverWidget && m_dragOverWidget != widget) {
     DragEvent uiev(this, m_dragOverWidget, ev);
@@ -2104,7 +2104,7 @@ void Manager::drop(os::DragEvent& ev)
   m_dragOverWidget = nullptr;
   Widget* widget = pickForDragAndDrop(ev.position());
 
-  ASSERT(widget->hasFlags(ALLOW_DROP));
+  ASSERT(!widget || widget && widget->hasFlags(ALLOW_DROP));
 
   if (widget) {
     DragEvent uiev(this, widget, ev);
