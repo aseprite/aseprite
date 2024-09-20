@@ -163,7 +163,7 @@ namespace ui {
     int pumpQueue();
     bool sendMessageToWidget(Message* msg, Widget* widget);
 
-    Widget* pickForDragAndDrop(const gfx::Point& pt);
+    Widget* findForDragAndDrop(Widget* widget);
     void dragEnter(os::DragEvent& ev) override;
     void dragLeave(os::DragEvent& ev) override;
     void drag(os::DragEvent& ev) override;
