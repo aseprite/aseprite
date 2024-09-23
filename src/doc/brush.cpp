@@ -359,12 +359,12 @@ Image* Brush::getSymmetryImage(const SymmetryIndex index)
           std::unique_ptr<Image> tempImage(Image::createCopy(m_image.get()));
 
           doc::algorithm::flip_image(tempImage.get(), tempImage->bounds(), flip);
-          m_symmetryImages[index].reset(Image::createCopy(tempImage.get()));
+          m_symmetryImages[index].reset(tempImage.release());
         }
         if (m_maskBitmap && !m_symmetryMasks[index]) {
           std::unique_ptr<Image> tempImage(Image::createCopy(m_maskBitmap.get()));
           doc::algorithm::flip_image(tempImage.get(), tempImage->bounds(), flip);
-          m_symmetryMasks[index].reset(Image::createCopy(tempImage.get()));
+          m_symmetryMasks[index].reset(tempImage.release());
         }
         break;
       }
@@ -377,7 +377,7 @@ Image* Brush::getSymmetryImage(const SymmetryIndex index)
           doc::algorithm::flip_image(tempImage.get(),
                                      tempImage->bounds(),
                                      doc::algorithm::FlipType::FlipHorizontal);
-          m_symmetryImages[index].reset(Image::createCopy(tempImage.get()));
+          m_symmetryImages[index].reset(tempImage.release());
         }
         if (m_maskBitmap && !m_symmetryMasks[index]) {
           std::unique_ptr<Image> tempImage(Image::createCopy(m_maskBitmap.get()));
@@ -387,7 +387,7 @@ Image* Brush::getSymmetryImage(const SymmetryIndex index)
           doc::algorithm::flip_image(tempImage.get(),
                                      tempImage->bounds(),
                                      doc::algorithm::FlipType::FlipHorizontal);
-          m_symmetryMasks[index].reset(Image::createCopy(tempImage.get()));
+          m_symmetryMasks[index].reset(tempImage.release());
         }
         break;
       }
@@ -403,7 +403,7 @@ Image* Brush::getSymmetryImage(const SymmetryIndex index)
           doc::algorithm::flip_image(tempImage.get(),
                                      tempImage->bounds(),
                                      doc::algorithm::FlipType::FlipHorizontal);
-          m_symmetryImages[index].reset(Image::createCopy(tempImage.get()));
+          m_symmetryImages[index].reset(tempImage.release());
         }
         if (m_maskBitmap && !m_symmetryMasks[index]) {
           std::unique_ptr<Image> tempImage(
@@ -414,7 +414,7 @@ Image* Brush::getSymmetryImage(const SymmetryIndex index)
           doc::algorithm::flip_image(tempImage.get(),
                                      tempImage->bounds(),
                                      doc::algorithm::FlipType::FlipHorizontal);
-          m_symmetryMasks[index].reset(Image::createCopy(tempImage.get()));
+          m_symmetryMasks[index].reset(tempImage.release());
         }
         break;
       }
@@ -427,7 +427,7 @@ Image* Brush::getSymmetryImage(const SymmetryIndex index)
                         m_image.get()->height(),
                         m_image.get()->width()));
         rotate_image(m_image.get(), tempImage.get(), angle);
-        m_symmetryImages[index].reset(Image::createCopy(tempImage.get()));
+        m_symmetryImages[index].reset(tempImage.release());
         }
         if (m_maskBitmap && !m_symmetryMasks[index]) {
           std::unique_ptr<Image> tempImage(
@@ -435,7 +435,7 @@ Image* Brush::getSymmetryImage(const SymmetryIndex index)
                           m_maskBitmap->height(),
                           m_maskBitmap->width()));
           rotate_image(m_maskBitmap.get(), tempImage.get(), angle);
-          m_symmetryMasks[index].reset(Image::createCopy(tempImage.get()));
+          m_symmetryMasks[index].reset(tempImage.release());
         }
       }
     }
