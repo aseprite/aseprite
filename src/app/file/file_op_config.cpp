@@ -25,6 +25,7 @@ void FileOpConfig::fillFromPreferences()
   defaultSliceColor = pref.slices.defaultColor();
   workingCS = get_working_rgb_space_from_preferences();
   rgbMapAlgorithm = pref.quantization.rgbmapAlgorithm();
+  fitCriteria = pref.quantization.fitCriteria();
   cacheCompressedTilesets = pref.tileset.cacheCompressedTilesets();
   composeGroups = pref.experimental.composeGroups();
 }

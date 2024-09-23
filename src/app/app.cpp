@@ -861,7 +861,7 @@ int app_get_color_to_clear_layer(Layer* layer)
     if (auto* colorBar = ColorBar::instance())
       color = colorBar->getBgColor();
     else
-      color = app::Color::fromRgb(0, 0, 0); // TODO get background color color from doc::Settings
+      color = Preferences::instance().colorBar.bgColor();
   }
   else { // All transparent layers are cleared with the mask color
     color = app::Color::fromMask();

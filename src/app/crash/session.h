@@ -35,8 +35,8 @@ namespace crash {
       std::string description(const bool withFullPath) const;
     private:
       std::string m_dir;
-      std::string m_desc;
-      std::string m_fn;
+      mutable std::string m_desc;
+      mutable std::string m_fn;
     };
     using BackupPtr = std::shared_ptr<Backup>;
     using Backups = std::vector<BackupPtr>;
@@ -78,6 +78,7 @@ namespace crash {
     void markDocumentAsCorrectlyClosed(Doc* doc);
     void deleteDirectory(const std::string& dir);
     void fixFilename(Doc* doc);
+    int filenamePartToInt(const std::string& part) const;
 
     base::pid m_pid;
     std::string m_path;

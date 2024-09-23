@@ -23,6 +23,8 @@
           <listitem text="@.section_theme" value="section_theme" />
           <listitem text="@.section_extensions" value="section_extensions" />
           <listitem text="@.section_experimental" value="section_experimental" />
+          <separator horizontal="true" style="separator_in_view" />
+          <listitem text="@general.reset" value="section_reset" />
         </listbox>
       </view>
 
@@ -515,14 +517,16 @@
                  pref="color_bar.show_invalid_fg_bg_color_alert" />
           <check id="run_script_alert" text="@.run_script_alert"
                  pref="scripts.show_run_script_alert" />
-	  <hbox>
+	  <grid columns="4">
             <label text="@.image_format_alerts" />
             <check id="css_options_alert" text="!css" pref="css.show_alert" />
             <check id="gif_options_alert" text="!gif" pref="gif.show_alert" />
             <check id="jpeg_options_alert" text="!jpeg" pref="jpeg.show_alert" />
+            <boxfiller />
             <check id="svg_options_alert" text="!svg" pref="svg.show_alert" />
             <check id="tga_options_alert" text="!tga" pref="tga.show_alert" />
-	  </hbox>
+            <check id="webp_options_alert" text="!webp" pref="webp.show_alert" />
+          </grid>
           <separator horizontal="true" />
 	  <hbox>
 	    <hbox expansive="true" />
@@ -592,10 +596,12 @@
             <slider id="nonactive_layers_opacity" min="0" max="255" width="128" />
           </hbox>
           <separator text="@.color_quantization" horizontal="true" />
-          <hbox>
+          <grid columns="2">
             <label text="@rgbmap_algorithm_selector.label" />
             <hbox id="rgbmap_algorithm_placeholder" />
-          </hbox>
+            <label text="@best_fit_criteria_selector.label" />
+            <hbox id="best_fit_criteria_placeholder" />
+          </grid>
           <separator text="@.performance" horizontal="true" />
           <hbox>
             <check id="shaders_for_color_selectors"
@@ -608,6 +614,19 @@
                  pref="tileset.cache_compressed_tilesets" />
         </vbox>
 
+        <!-- Reset -->
+        <vbox id="section_reset">
+          <separator text="@.reset_title" horizontal="true" />
+          <check id="default_reset" text="@.reset_default" />
+          <check id="tools_reset" text="@.reset_tools" />
+          <check id="installed_reset" text="@.reset_installed" />
+          <check id="recent_reset" text="@.reset_recents" />
+          <check id="perfile_reset" text="@.reset_perfile" tooltip="@.reset_perfile_tooltip" />
+	  <hbox>
+	    <hbox expansive="true" />
+            <button id="reset_selected_button" text="@.reset" minwidth="60" />
+	  </hbox>
+        </vbox>
       </panel>
     </hbox>
     <separator horizontal="true" />

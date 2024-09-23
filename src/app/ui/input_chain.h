@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -7,6 +8,8 @@
 #ifndef APP_INPUT_CHAIN_H_INCLUDED
 #define APP_INPUT_CHAIN_H_INCLUDED
 #pragma once
+
+ #include "gfx/point.h"
 
 #include <vector>
 
@@ -35,7 +38,8 @@ namespace app {
 
     void cut(Context* ctx);
     void copy(Context* ctx);
-    void paste(Context* ctx);
+    void paste(Context* ctx,
+               const gfx::Point* position);
     void clear(Context* ctx);
     void cancel(Context* ctx);
 

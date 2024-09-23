@@ -332,3 +332,186 @@ do
               0, 2, 0,
               1, 0, 1})
 end
+
+----------------------------------------------------------------------
+-- Tests for Eraser Tool, normal erase and replace color erasing
+----------------------------------------------------------------------
+do
+  -- Indexed image + background layer +
+  -- the mask color is in the palette and it's defined as
+  -- transparent color
+  local s = Sprite(3, 3, ColorMode.INDEXED)
+  local p = s.palettes[1]
+  p:setColor(0, Color{ r=0  , g=0  , b=0  , a=255 })
+  p:setColor(1, Color{ r=255, g=0  , b=0  , a=255 })
+  p:setColor(2, Color{ r=0  , g=255, b=0  , a=255 })
+  p:setColor(3, Color{ r=0  , g=0  , b=255, a=255 })
+  p:setColor(4, Color{ r=255, g=255, b=0  , a=255 })
+  p:setColor(5, Color{ r=255, g=255, b=255, a=255 })
+  p:setColor(6, Color{ r=0  , g=0  , b=0  , a=0   })
+  p:resize(7)
+
+  app.fgColor = 0
+  app.bgColor = 0
+  app.command.BackgroundFromLayer()
+  expect_img(app.activeImage,
+             { 0, 0, 0,
+               0, 0, 0,
+               0, 0, 0 })
+
+  s.transparentColor = 6 -- mask color as transparent color
+  app.fgColor = 1
+  app.bgColor = 3
+  app.useTool{ tool='pencil',
+               points={ Point(0, 0), Point(2, 0)} }
+  app.useTool{ tool='pencil',
+               color=2,
+               points={ Point(0, 1), Point(2, 1)} }
+  app.useTool{ tool='pencil',
+               button=MouseButton.RIGHT,
+               points={ Point(0, 2), Point(2, 2)} }
+  expect_img(app.activeImage,
+             { 1, 1, 1,
+               2, 2, 2,
+               3, 3, 3 })
+
+  app.fgColor = 2
+  app.bgColor = 6 -- (mask color)
+  app.useTool{ tool='eraser',
+               button=MouseButton.LEFT,
+               points={ Point(0, 0), Point(0, 2) } }
+  expect_img(app.activeImage,
+             { 6, 1, 1,
+               6, 2, 2,
+               6, 3, 3 })
+
+  app.useTool{ tool='eraser',
+               button=MouseButton.RIGHT,
+               points={ Point(1, 0), Point(1, 2) } }
+  expect_img(app.activeImage,
+             { 6, 1, 1,
+               6, 6, 2,
+               6, 3, 3 })
+end
+
+-- Tests for Eraser Tool with RGBA image + background layer
+do
+  local s = Sprite(3, 3, ColorMode.RGB)
+  local p = s.palettes[1]
+  local c0 = pc.rgba(0  ,   0,   0, 255)
+  local c1 = pc.rgba(255,   0,   0, 255)
+  local c2 = pc.rgba(0  , 255,   0, 255)
+  local c3 = pc.rgba(0  ,   0, 255, 255)
+  local c4 = pc.rgba(255, 255,   0, 255)
+  local c5 = pc.rgba(255, 255, 255, 255)
+  local c6 = pc.rgba(0  ,   0,   0,   0)
+  p:setColor(0, c0)
+  p:setColor(1, c1)
+  p:setColor(2, c2)
+  p:setColor(3, c3)
+  p:setColor(4, c4)
+  p:setColor(5, c5)
+  p:setColor(6, c6)
+  p:resize(7)
+
+  app.fgColor = c0
+  app.bgColor = c0
+  app.command.BackgroundFromLayer()
+  expect_img(app.activeImage,
+             { c0, c0, c0,
+               c0, c0, c0,
+               c0, c0, c0 })
+
+  app.fgColor = c1
+  app.bgColor = c3
+  app.useTool{ tool='pencil',
+               points={ Point(0, 0), Point(2, 0)} }
+  app.useTool{ tool='pencil',
+               color=c2,
+               points={ Point(0, 1), Point(2, 1)} }
+  app.useTool{ tool='pencil',
+               button=MouseButton.RIGHT,
+               points={ Point(0, 2), Point(2, 2)} }
+  expect_img(app.activeImage,
+             { c1, c1, c1,
+               c2, c2, c2,
+               c3, c3, c3 })
+
+  app.fgColor = c2
+  app.bgColor = c6
+  app.useTool{ tool='eraser',
+               button=MouseButton.LEFT,
+               points={ Point(0, 0), Point(0, 2) } }
+  expect_img(app.activeImage,
+             { c0, c1, c1,
+               c0, c2, c2,
+               c0, c3, c3 })
+
+  app.useTool{ tool='eraser',
+               button=MouseButton.RIGHT,
+               points={ Point(1, 0), Point(1, 2) } }
+  expect_img(app.activeImage,
+             { c0, c1, c1,
+               c0, c0, c2,
+               c0, c3, c3 })
+end
+
+-- Tests for Eraser Tool with GRAYSCALE image + background layer
+do
+  local s = Sprite(3, 3, ColorMode.GRAYSCALE)
+  local p = s.palettes[1]
+  local c0 = pc.graya(  0, 255)
+  local c1 = pc.graya( 63, 255)
+  local c2 = pc.graya(127, 255)
+  local c3 = pc.graya(191, 255)
+  local c4 = pc.graya(255, 255)
+  local c5 = pc.graya(  0,   0)
+  p:setColor(0, c0)
+  p:setColor(1, c1)
+  p:setColor(2, c2)
+  p:setColor(3, c3)
+  p:setColor(4, c4)
+  p:setColor(5, c5)
+  p:resize(6)
+
+  app.fgColor = c0
+  app.bgColor = c0
+  app.command.BackgroundFromLayer()
+  expect_img(app.activeImage,
+             { c0, c0, c0,
+               c0, c0, c0,
+               c0, c0, c0 })
+
+  app.fgColor = c1
+  app.bgColor = c3
+  app.useTool{ tool='pencil',
+               points={ Point(0, 0), Point(2, 0)} }
+  app.useTool{ tool='pencil',
+               color=c2,
+               points={ Point(0, 1), Point(2, 1)} }
+  app.useTool{ tool='pencil',
+               button=MouseButton.RIGHT,
+               points={ Point(0, 2), Point(2, 2)} }
+  expect_img(app.activeImage,
+             { c1, c1, c1,
+               c2, c2, c2,
+               c3, c3, c3 })
+
+  app.fgColor = c2
+  app.bgColor = c5
+  app.useTool{ tool='eraser',
+               button=MouseButton.LEFT,
+               points={ Point(0, 0), Point(0, 2) } }
+  expect_img(app.activeImage,
+             { c0, c1, c1,
+               c0, c2, c2,
+               c0, c3, c3 })
+
+  app.useTool{ tool='eraser',
+               button=MouseButton.RIGHT,
+               points={ Point(1, 0), Point(1, 2) } }
+  expect_img(app.activeImage,
+             { c0, c1, c1,
+               c0, c0, c2,
+               c0, c3, c3 })
+end

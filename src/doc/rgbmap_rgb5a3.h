@@ -13,7 +13,8 @@
 #include "base/disable_copying.h"
 #include "base/ints.h"
 #include "doc/object.h"
-#include "doc/rgbmap.h"
+#include "doc/palette.h"
+#include "doc/rgbmap_base.h"
 
 #include <vector>
 
@@ -22,7 +23,7 @@ namespace doc {
   class Palette;
 
   // It acts like a cache for Palette:findBestfit() calls.
-  class RgbMapRGB5A3 : public RgbMap {
+  class RgbMapRGB5A3 : public RgbMapBase {
     // Bit activated on m_map entries that aren't yet calculated.
     const uint16_t INVALID = 256;
 
@@ -30,7 +31,14 @@ namespace doc {
     RgbMapRGB5A3();
 
     // RgbMap impl
-    void regenerateMap(const Palette* palette, int maskIndex) override;
+    void regenerateMap(const Palette* palette,
+                       const int maskIndex,
+                       const FitCriteria fitCriteria) override;
+    void regenerateMap(const Palette* palette,
+                       const int maskIndex) override {
+      regenerateMap(palette, maskIndex, m_fitCriteria);
+    }
+
     int mapColor(const color_t rgba) const override {
       const uint8_t r = rgba_getr(rgba);
       const uint8_t g = rgba_getg(rgba);
@@ -42,15 +50,14 @@ namespace doc {
       return (v & INVALID) ? generateEntry(i, r, g, b, a): v;
     }
 
-    int maskIndex() const override { return m_maskIndex; }
+    RgbMapAlgorithm rgbmapAlgorithm() const override {
+      return RgbMapAlgorithm::RGB5A3;
+    }
 
   private:
     int generateEntry(int i, int r, int g, int b, int a) const;
 
     mutable std::vector<uint16_t> m_map;
-    const Palette* m_palette;
-    int m_modifications;
-    int m_maskIndex;
 
     DISABLE_COPYING(RgbMapRGB5A3);
   };

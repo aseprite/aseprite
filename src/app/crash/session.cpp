@@ -30,6 +30,7 @@
 #include "base/thread.h"
 #include "base/time.h"
 #include "doc/cancel_io.h"
+#include "ui/app_state.h"
 #include "fmt/format.h"
 #include "ver/info.h"
 
@@ -43,22 +44,24 @@ static const char* kOpenFilename = "open"; // File that indicates if the documen
 Session::Backup::Backup(const std::string& dir)
   : m_dir(dir)
 {
-  DocumentInfo info;
-  read_document_info(dir, info);
-
-  m_fn = info.filename;
-  m_desc =
-    fmt::format("{} Sprite {}x{}, {} {}",
-                info.mode == ColorMode::RGB ? "RGB":
-                info.mode == ColorMode::GRAYSCALE ? "Grayscale":
-                info.mode == ColorMode::INDEXED ? "Indexed":
-                info.mode == ColorMode::BITMAP ? "Bitmap": "Unknown",
-                info.width, info.height, info.frames,
-                info.frames == 1 ? "frame": "frames");
 }
 
 std::string Session::Backup::description(const bool withFullPath) const
 {
+  // Lazy initialize description and filename.
+  if (m_desc.empty()) {
+    DocumentInfo info;
+    read_document_info(m_dir, info);
+    m_fn = info.filename;
+    m_desc =
+      fmt::format("{} Sprite {}x{}, {} {}",
+                  info.mode == ColorMode::RGB ? "RGB":
+                  info.mode == ColorMode::GRAYSCALE ? "Grayscale":
+                  info.mode == ColorMode::INDEXED ? "Indexed":
+                  info.mode == ColorMode::BITMAP ? "Bitmap": "Unknown",
+                  info.width, info.height, info.frames,
+                  info.frames == 1 ? "frame": "frames");
+  }
   return fmt::format("{}: {}",
                      m_desc,
                      withFullPath ? m_fn:
@@ -114,11 +117,12 @@ std::string Session::version()
 const Session::Backups& Session::backups()
 {
   if (m_backups.empty()) {
-    for (auto& item : base::list_files(m_path)) {
+    for (const auto& item : base::list_files(m_path, base::ItemType::Directories)) {
+      if (ui::is_app_state_closing())
+        continue;
+
       std::string docDir = base::join_path(m_path, item);
-      if (base::is_directory(docDir)) {
-        m_backups.push_back(std::make_shared<Backup>(docDir));
-      }
+      m_backups.push_back(std::make_shared<Backup>(docDir));
     }
   }
   return m_backups;
@@ -147,18 +151,40 @@ bool Session::isOldSession()
     return true;
 
   int lifespanDays = m_config->keepEditedSpriteDataFor;
-  base::Time sessionTime = base::get_modification_time(verfile);
+  base::Time sessionTime;
+
+  // Get the session time from the name if possible, to avoid re-scanning when transferring files
+  std::vector<std::string> parts;
+  base::split_string(base::get_file_title(m_path), parts, "-");
+
+  if (parts.size() == 3 && parts[0].size() == 8 && parts[1].size() == 6) {
+    try {
+      sessionTime = base::Time(filenamePartToInt(parts[0].substr(0, 4)),
+                               filenamePartToInt(parts[0].substr(4, 2)),
+                               filenamePartToInt(parts[0].substr(6, 2)),
+                               filenamePartToInt(parts[1].substr(0, 2)),
+                               filenamePartToInt(parts[1].substr(2, 2)),
+                               filenamePartToInt(parts[1].substr(4, 2)));
+    }
+    catch (const std::exception& ex) {
+      LOG(ERROR,
+          "Failed to parse a date from '%s', error: %s",
+          parts[0].c_str(),
+          ex.what());
+    }
+  }
+
+  if (!sessionTime.valid()) {
+    // Get modification time as a fallback
+    sessionTime = base::get_modification_time(verfile);
+  }
 
   return (sessionTime.addDays(lifespanDays) < base::current_time());
 }
 
 bool Session::isEmpty()
 {
-  for (auto& item : base::list_files(m_path)) {
-    if (base::is_directory(base::join_path(m_path, item)))
-      return false;
-  }
-  return true;
+  return base::list_files(m_path, base::ItemType::Directories).empty();
 }
 
 void Session::create(base::pid pid)
@@ -385,12 +411,13 @@ void Session::deleteDirectory(const std::string& dir)
   if (dir.empty())
     return;
 
-  for (auto& item : base::list_files(dir)) {
+  for (const auto& item : base::list_files(dir, base::ItemType::Files)) {
+    if (ui::is_app_state_closing())
+      return;
+
     std::string objfn = base::join_path(dir, item);
-    if (base::is_file(objfn)) {
-      RECO_TRACE("RECO: Deleting file '%s'\n", objfn.c_str());
-      base::delete_file(objfn);
-    }
+    RECO_TRACE("RECO: Deleting file '%s'\n", objfn.c_str());
+    base::delete_file(objfn);
   }
   base::remove_directory(dir);
 }
@@ -409,6 +436,21 @@ void Session::fixFilename(Doc* doc)
     base::join_path(
       base::get_file_path(fn),
       base::get_file_title(fn) + "-Recovered" + ext));
+}
+
+int Session::filenamePartToInt(const std::string& part) const
+{
+  if (part.empty())
+    throw base::Exception("Invalid part");
+
+  int result = std::strtol(part.c_str(), NULL, 10);
+  if (errno == ERANGE)
+    throw base::Exception("Number out of range");
+
+  if (result < 0)
+    throw base::Exception("Negative value");
+
+  return result;
 }
 
 } // namespace crash

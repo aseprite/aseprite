@@ -64,11 +64,7 @@ std::set<LangInfo> Strings::availableLanguages() const
     if (!base::is_directory(stringsPath))
       continue;
 
-    for (const auto& fn : base::list_files(stringsPath)) {
-      // Ignore README/LICENSE files.
-      if (base::get_file_extension(fn) != "ini")
-        continue;
-
+    for (const auto& fn : base::list_files(stringsPath, base::ItemType::Files, "*.ini")) {
       const std::string langId = base::get_file_title(fn);
       std::string path = base::join_path(stringsPath, fn);
       std::string displayName = langId;

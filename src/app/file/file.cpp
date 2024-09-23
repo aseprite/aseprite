@@ -1356,6 +1356,11 @@ ImageRef FileOp::sequenceImageToLoad(
       // Add the layer
       sprite->root()->addLayer(layer);
 
+      // Assign RgbMap
+      if (sprite->pixelFormat() == IMAGE_INDEXED)
+        sprite->rgbMap(0, Sprite::RgbMapFor(sprite->isOpaque()),
+                       m_config.rgbMapAlgorithm,
+                       m_config.fitCriteria);
       // Done
       createDocument(sprite);
       m_seq.layer = layer;

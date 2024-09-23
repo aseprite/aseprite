@@ -75,7 +75,8 @@ namespace app {
     void copyPalette(const doc::Palette* palette,
                      const doc::PalettePicks& picks);
     void paste(Context* ctx,
-               const bool interactive);
+               const bool interactive,
+               const gfx::Point* position = nullptr);
 
     doc::ImageRef getImage(doc::Palette* palette);
 
@@ -107,7 +108,8 @@ namespace app {
     bool setNativeBitmap(const doc::Image* image,
                          const doc::Mask* mask,
                          const doc::Palette* palette,
-                         const doc::Tileset* tileset = nullptr);
+                         const doc::Tileset* tileset,
+                         const doc::color_t indexMaskColor);
     bool getNativeBitmap(doc::Image** image,
                          doc::Mask** mask,
                          doc::Palette** palette,

@@ -1,4 +1,4 @@
--- Copyright (C) 2019-2022  Igara Studio S.A.
+-- Copyright (C) 2019-2024  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
@@ -48,4 +48,42 @@ do
       assert(app.pixelColor.rgbaA(pixel) == 255)
     end
   end
+end
+
+-- Test of mask color conversion in a opaque sprite with
+-- extra non-opaque layers.
+-- Conditions:
+-- + There is a background layer
+-- + There is an extra layer drawn
+-- + The mask color is in the palette and whose index is greater than 0
+-- + RGBA->INDEXED conversion
+do
+  local sprite = Sprite(3, 3, ColorMode.RGB)
+  app.command.BackgroundFromLayer()
+  local pal = sprite.palettes[1]
+  local backgroundLayer = sprite.layers[1]
+
+  assert(sprite.layers[1].isBackground)
+  assert(sprite.colorMode == ColorMode.RGB)
+  assert(sprite.layers[1]:cel(1).image:getPixel(0, 0) == app.pixelColor.rgba(0,0,0,255))
+  assert(#pal == 256)
+
+  pal:setColor(0, Color{ r=255, g=0  , b=0  , a=255 })
+  pal:setColor(1, Color{ r=0  , g=0  , b=0  , a=0 })
+  pal:setColor(2, Color{ r=0  , g=255, b=0  , a=255 })
+  pal:setColor(3, Color{ r=0  , g=0  , b=255, a=255 })
+  local layer = sprite:newLayer()
+  app.useTool {
+    tool='pencil',
+    color=pal:getColor(2),
+    points={ Point(0, 1), Point(1, 0) },
+    layer=Layer
+  }
+
+  app.command.ChangePixelFormat {
+    format="indexed"
+  }
+
+  assert(pal:getColor(1) == Color{r=0  , g=0  , b=0  , a=0})
+  assert(layer:cel(1).image:getPixel(0, 0) == 1)
 end

@@ -81,9 +81,11 @@ void FlattenLayersCommand::onExecute(Context* context)
       }
     }
     const bool newBlend = Preferences::instance().experimental.newBlend();
+    cmd::FlattenLayers::Options options;
+    options.newBlendMethod = newBlend;
     tx(new cmd::FlattenLayers(sprite,
                               range.selectedLayers(),
-                              newBlend));
+                              options));
     tx.commit();
   }
 

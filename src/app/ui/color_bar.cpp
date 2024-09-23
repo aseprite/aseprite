@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1692,7 +1692,8 @@ bool ColorBar::onCopy(Context* ctx)
   return true;
 }
 
-bool ColorBar::onPaste(Context* ctx)
+bool ColorBar::onPaste(Context* ctx,
+                       const gfx::Point* position)
 {
   if (m_tilemapMode == TilemapMode::Tiles) {
     showRemapTiles();

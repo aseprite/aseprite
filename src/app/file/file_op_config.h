@@ -33,8 +33,13 @@ namespace app {
 
     app::Color defaultSliceColor = app::Color::fromRgb(0, 0, 255);
 
-    // Algorithm used to create a palette from RGB files.
+    // Algorithm used to fit any color into the available palette colors in
+    // Indexed Color Mode.
     doc::RgbMapAlgorithm rgbMapAlgorithm = doc::RgbMapAlgorithm::DEFAULT;
+
+    // Fit criteria used to compare colors during the conversion to
+    // Indexed Color Mode.
+    doc::FitCriteria fitCriteria = doc::FitCriteria::DEFAULT;
 
     // Cache compressed tilesets. When we load a tileset from a
     // .aseprite file, the compressed data will be stored on memory to

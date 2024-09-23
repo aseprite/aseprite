@@ -736,6 +736,10 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
       return;
     }
   }
+  else if (command->id() == CommandId::ToggleTilesMode()) {
+    ev.cancel();
+    return;
+  }
 
   if (m_pixelsMovement)
     dropPixels();

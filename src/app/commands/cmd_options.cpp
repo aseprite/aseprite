@@ -25,7 +25,9 @@
 #include "app/pref/preferences.h"
 #include "app/recent_files.h"
 #include "app/resource_finder.h"
+#include "app/tools/tool_box.h"
 #include "app/tx.h"
+#include "app/ui/best_fit_criteria_selector.h"
 #include "app/ui/color_button.h"
 #include "app/ui/main_window.h"
 #include "app/ui/pref_widget.h"
@@ -272,14 +274,7 @@ public:
     // Theme variants
     fillThemeVariants();
 
-    // Default extension to save files
-    fillExtensionsCombobox(defaultExtension(), m_pref.saveFile.defaultExtension());
-    fillExtensionsCombobox(exportImageDefaultExtension(), m_pref.exportFile.imageDefaultExtension());
-    fillExtensionsCombobox(exportAnimationDefaultExtension(), m_pref.exportFile.animationDefaultExtension());
-    fillExtensionsCombobox(exportSpriteSheetDefaultExtension(), m_pref.spriteSheet.defaultExtension());
-
-    // Number of recent items
-    recentFiles()->setValue(m_pref.general.recentItems());
+    // Recent files
     clearRecentFiles()->Click.connect([this]{ onClearRecentFiles(); });
 
     // Template item for active display color profiles
@@ -295,31 +290,24 @@ public:
         if (cs->gfxColorSpace()->type() != gfx::ColorSpace::None)
           workingRgbCs()->addItem(new ColorSpaceItem(cs));
       }
-      updateColorProfileControls(m_pref.color.manage(),
-                                 m_pref.color.windowProfile(),
-                                 m_pref.color.windowProfileName(),
-                                 m_pref.color.workingRgbSpace(),
-                                 m_pref.color.filesWithProfile(),
-                                 m_pref.color.missingProfile());
     }
 
     // Alerts
-    openSequence()->setSelectedItemIndex(int(m_pref.openFile.openSequence()));
     resetAlerts()->Click.connect([this]{ onResetAlerts(); });
 
     // Cursor
-    paintingCursorType()->setSelectedItemIndex(int(m_pref.cursor.paintingCursorType()));
-    cursorColor()->setColor(m_pref.cursor.cursorColor());
-
-    if (cursorColor()->getColor().getType() == app::Color::MaskType) {
-      cursorColorType()->setSelectedItemIndex(0);
-      cursorColor()->setVisible(false);
-    }
-    else {
-      cursorColorType()->setSelectedItemIndex(1);
-      cursorColor()->setVisible(true);
-    }
     cursorColorType()->Change.connect([this]{ onCursorColorType(); });
+    nativeCursor()->Click.connect([this]{ onNativeCursorChange(); });
+
+    // Dialogs
+    showAsepriteFileDialog()->Click.connect([this]{
+      nativeFileDialog()->setSelected(
+        !showAsepriteFileDialog()->isSelected());
+    });
+    nativeFileDialog()->Click.connect([this]{
+      showAsepriteFileDialog()->setSelected(
+        !nativeFileDialog()->isSelected());
+    });
 
     // Grid
     gridW()->Leave.connect([this] {
@@ -333,27 +321,10 @@ public:
         gridH()->setText("1");
     });
 
-    // Brush preview
-    brushPreview()->setSelectedItemIndex(
-      (int)m_pref.cursor.brushPreview());
-
-    // Guide colors
-    layerEdgesColor()->setColor(m_pref.guides.layerEdgesColor());
-    autoGuidesColor()->setColor(m_pref.guides.autoGuidesColor());
-
-    // Slices default color
-    defaultSliceColor()->setColor(m_pref.slices.defaultColor());
-
     // Timeline
-    firstFrame()->setTextf("%d", m_globPref.timeline.firstFrame());
     resetTimelineSel()->Click.connect([this]{ onResetTimelineSel(); });
 
     // Others
-    if (m_pref.general.expandMenubarOnMouseover())
-      expandMenubarOnMouseover()->setSelected(true);
-
-    if (m_pref.general.dataRecovery())
-      enableDataRecovery()->setSelected(true);
     enableDataRecovery()->Click.connect(
       [this](){
         const bool state = enableDataRecovery()->isSelected();
@@ -362,100 +333,10 @@ public:
         keepEditedSpriteDataFor()->setEnabled(state);
       });
 
-    if (m_pref.general.dataRecovery() &&
-        m_pref.general.keepEditedSpriteData())
-      keepEditedSpriteData()->setSelected(true);
-    else if (!m_pref.general.dataRecovery()) {
-      keepEditedSpriteData()->setEnabled(false);
-      keepEditedSpriteDataFor()->setEnabled(false);
-    }
-
-    if (m_pref.general.keepClosedSpriteOnMemory())
-      keepClosedSpriteOnMemory()->setSelected(true);
-
-    if (m_pref.general.showFullPath())
-      showFullPath()->setSelected(true);
-
-    dataRecoveryPeriod()->setSelectedItemIndex(
-      dataRecoveryPeriod()->findItemIndexByValue(
-        base::convert_to<std::string>(m_pref.general.dataRecoveryPeriod())));
-
-    keepEditedSpriteDataFor()->setSelectedItemIndex(
-      keepEditedSpriteDataFor()->findItemIndexByValue(
-        base::convert_to<std::string>(m_pref.general.keepEditedSpriteDataFor())));
-
-    keepClosedSpriteOnMemoryFor()->setSelectedItemIndex(
-      keepClosedSpriteOnMemoryFor()->findItemIndexByValue(
-        base::convert_to<std::string>(m_pref.general.keepClosedSpriteOnMemoryFor())));
-
-    if (m_pref.editor.zoomFromCenterWithWheel())
-      zoomFromCenterWithWheel()->setSelected(true);
-
-    if (m_pref.editor.zoomFromCenterWithKeys())
-      zoomFromCenterWithKeys()->setSelected(true);
-
-    if (m_pref.selection.autoOpaque())
-      autoOpaque()->setSelected(true);
-
-    if (m_pref.selection.keepSelectionAfterClear())
-      keepSelectionAfterClear()->setSelected(true);
-
-    if (m_pref.selection.autoShowSelectionEdges())
-      autoShowSelectionEdges()->setSelected(true);
-
-    if (m_pref.selection.moveEdges())
-      moveEdges()->setSelected(true);
-
-    if (m_pref.selection.modifiersDisableHandles())
-      modifiersDisableHandles()->setSelected(true);
-
-    if (m_pref.selection.moveOnAddMode())
-      moveOnAddMode()->setSelected(true);
-
-    // If the platform supports native cursors...
-    if (m_system->hasCapability(os::Capabilities::CustomMouseCursor)) {
-      if (m_pref.cursor.useNativeCursor())
-        nativeCursor()->setSelected(true);
-      nativeCursor()->Click.connect([this]{ onNativeCursorChange(); });
-
-      cursorScale()->setSelectedItemIndex(
-        cursorScale()->findItemIndexByValue(
-          base::convert_to<std::string>(m_pref.cursor.cursorScale())));
-    }
-    else {
-      nativeCursor()->setEnabled(false);
-    }
-
-    onNativeCursorChange();
-
-    // "Show Aseprite file dialog" option is the inverse of the old
-    // experimental "use native file dialog" option
-    showAsepriteFileDialog()->setSelected(
-      !m_pref.experimental.useNativeFileDialog());
-    showAsepriteFileDialog()->Click.connect([this]{
-      nativeFileDialog()->setSelected(
-        !showAsepriteFileDialog()->isSelected());
-    });
-    nativeFileDialog()->Click.connect([this]{
-      showAsepriteFileDialog()->setSelected(
-        !nativeFileDialog()->isSelected());
-    });
-
 #ifdef LAF_WINDOWS // Show Tablet section on Windows
-    {
-      const os::TabletAPI tabletAPI = m_system->tabletOptions().api;
-      if (tabletAPI == os::TabletAPI::Wintab)
-        tabletApiWintabSystem()->setSelected(true);
-      else if (tabletAPI == os::TabletAPI::WintabPackets)
-        tabletApiWintabDirect()->setSelected(true);
-      else
-        tabletApiWindowsPointer()->setSelected(true);
-      onTabletAPIChange();
-
-      tabletApiWindowsPointer()->Click.connect([this](){ onTabletAPIChange(); });
-      tabletApiWintabSystem()->Click.connect([this](){ onTabletAPIChange(); });
-      tabletApiWintabDirect()->Click.connect([this](){ onTabletAPIChange(); });
-    }
+    tabletApiWindowsPointer()->Click.connect([this](){ onTabletAPIChange(); });
+    tabletApiWintabSystem()->Click.connect([this](){ onTabletAPIChange(); });
+    tabletApiWintabDirect()->Click.connect([this](){ onTabletAPIChange(); });
 #else  // For macOS and Linux
     {
       // Hide the "section_tablet" item (which is only for Windows at the moment)
@@ -469,26 +350,11 @@ public:
     }
 #endif
 
-    if (m_pref.experimental.flashLayer())
-      flashLayer()->setSelected(true);
-
-    nonactiveLayersOpacity()->setValue(m_pref.experimental.nonactiveLayersOpacity());
-
     rgbmapAlgorithmPlaceholder()->addChild(&m_rgbmapAlgorithmSelector);
     m_rgbmapAlgorithmSelector.setExpansive(true);
-    m_rgbmapAlgorithmSelector.algorithm(m_pref.quantization.rgbmapAlgorithm());
 
-    if (m_pref.editor.showScrollbars())
-      showScrollbars()->setSelected(true);
-
-    if (m_pref.editor.autoScroll())
-      autoScroll()->setSelected(true);
-
-    if (m_pref.editor.straightLinePreview())
-      straightLinePreview()->setSelected(true);
-
-    if (m_pref.eyedropper.discardBrush())
-      discardBrush()->setSelected(true);
+    bestFitCriteriaPlaceholder()->addChild(&m_bestFitCriteriaSelector);
+    m_bestFitCriteriaSelector.setExpansive(true);
 
     // Scope
     bgScope()->addItem(Strings::options_bg_for_new_docs());
@@ -503,9 +369,6 @@ public:
       gridScope()->Change.connect([this]{ onChangeGridScope(); });
     }
 
-    // Update the one/multiple window buttonset (and keep in on sync
-    // with the old/experimental checkbox)
-    uiWindows()->setSelectedItem(multipleWindows()->isSelected() ? 1: 0);
     uiWindows()->ItemChange.connect([this]() {
       multipleWindows()->setSelected(uiWindows()->selectedItem() == 1);
     });
@@ -513,28 +376,16 @@ public:
       uiWindows()->setSelectedItem(multipleWindows()->isSelected() ? 1: 0);
     });
 
-    // Scaling
-    selectScalingItems();
-
-#ifdef ENABLE_DEVMODE // TODO enable this on Release when Aseprite supports
-                      //      GPU-acceleration properly
-    if (m_system->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
-      gpuAcceleration()->setSelected(m_pref.general.gpuAcceleration());
-    }
-    else
-#endif
-    {
+#ifndef ENABLE_DEVMODE // TODO enable this on Release when Aseprite supports
+                       //      GPU-acceleration properly
+    if (!m_system->hasCapability(os::Capabilities::GpuAccelerationSwitch))
       gpuAcceleration()->setVisible(false);
-    }
+#endif
 
     // If the platform does support native menus, we show the option,
     // in other case, the option doesn't make sense for this platform.
-    if (m_system->menus())
-      showMenuBar()->setSelected(m_pref.general.showMenuBar());
-    else
+    if (!m_system->menus())
       showMenuBar()->setVisible(false);
-
-    showHome()->setSelected(m_pref.general.showHome());
 
     // Editor sampling
     samplingPlaceholder()->addChild(
@@ -563,7 +414,6 @@ public:
     rightClickBehavior()->addItem(Strings::options_right_click_rectangular_marquee());
     rightClickBehavior()->addItem(Strings::options_right_click_lasso());
     rightClickBehavior()->addItem(Strings::options_right_click_select_layer_and_move());
-    rightClickBehavior()->setSelectedItemIndex((int)m_pref.editor.rightClickMode());
 
 #ifndef __APPLE__ // Zoom sliding two fingers option only on macOS
     slideZoom()->setVisible(false);
@@ -601,11 +451,6 @@ public:
 
     // Undo preferences
     limitUndo()->Click.connect([this]{ onLimitUndoCheck(); });
-    limitUndo()->setSelected(m_pref.undo.sizeLimit() != 0);
-    onLimitUndoCheck();
-
-    undoGotoModified()->setSelected(m_pref.undo.gotoModified());
-    undoAllowNonlinearHistory()->setSelected(m_pref.undo.allowNonlinearHistory());
 
     // Theme buttons
     themeList()->Change.connect([this]{ onThemeChange(); });
@@ -620,12 +465,26 @@ public:
     uninstallExtension()->Click.connect([this]{ onUninstallExtension(); });
     openExtensionFolder()->Click.connect([this]{ onOpenExtensionFolder(); });
 
+    // Reset checkboxes
+
+    // Prevent the user from clicking "Reset" if they don't have anything selected.
+    auto validateYesButton = [this] {
+      resetSelectedButton()->setEnabled(
+        defaultReset()->isSelected() || installedReset()->isSelected() ||
+        recentReset()->isSelected() || perfileReset()->isSelected() ||
+        toolsReset()->isSelected());
+    };
+    defaultReset()->Click.connect(validateYesButton);
+    installedReset()->Click.connect(validateYesButton);
+    recentReset()->Click.connect(validateYesButton);
+    perfileReset()->Click.connect(validateYesButton);
+    toolsReset()->Click.connect(validateYesButton);
+    resetSelectedButton()->Click.connect([this] { onResetDefault(); });
+
+    defaultReset()->setSelected(true);
+
     // Apply button
     buttonApply()->Click.connect([this]{ onApply(); });
-
-    onChangeBgScope();
-    onChangeGridScope();
-    sectionListbox()->selectIndex(m_curSection);
 
     // Refill languages combobox when extensions are enabled/disabled
     m_extLanguagesChanges =
@@ -636,15 +495,178 @@ public:
     m_extThemesChanges =
       App::instance()->extensions().ThemesChange.connect(
         [this]{ reloadThemes(); });
+
+    loadFromPreferences();
+  }
+
+  void loadFromPreferences() {
+    // Default extension to save files
+    fillExtensionsCombobox(defaultExtension(), m_pref.saveFile.defaultExtension());
+    fillExtensionsCombobox(exportImageDefaultExtension(), m_pref.exportFile.imageDefaultExtension());
+    fillExtensionsCombobox(exportAnimationDefaultExtension(), m_pref.exportFile.animationDefaultExtension());
+    fillExtensionsCombobox(exportSpriteSheetDefaultExtension(), m_pref.spriteSheet.defaultExtension());
+
+    // Number of recent items
+    recentFiles()->setValue(m_pref.general.recentItems());
+
+    // Color profiles
+    updateColorProfileControls(m_pref.color.manage(),
+                               m_pref.color.windowProfile(),
+                               m_pref.color.windowProfileName(),
+                               m_pref.color.workingRgbSpace(),
+                               m_pref.color.filesWithProfile(),
+                               m_pref.color.missingProfile());
+
+    // Alerts
+    openSequence()->setSelectedItemIndex(int(m_pref.openFile.openSequence()));
+
+    // Cursor
+    paintingCursorType()->setSelectedItemIndex(int(m_pref.cursor.paintingCursorType()));
+    cursorColor()->setColor(m_pref.cursor.cursorColor());
+
+    if (cursorColor()->getColor().getType() == app::Color::MaskType) {
+      cursorColorType()->setSelectedItemIndex(0);
+      cursorColor()->setVisible(false);
+    }
+    else {
+      cursorColorType()->setSelectedItemIndex(1);
+      cursorColor()->setVisible(true);
+    }
+
+    // Brush preview
+    brushPreview()->setSelectedItemIndex(
+      (int)m_pref.cursor.brushPreview());
+
+    // Guide colors
+    layerEdgesColor()->setColor(m_pref.guides.layerEdgesColor());
+    autoGuidesColor()->setColor(m_pref.guides.autoGuidesColor());
+
+    // Slices default color
+    defaultSliceColor()->setColor(m_pref.slices.defaultColor());
+
+    // Timeline
+    firstFrame()->setTextf("%d", m_globPref.timeline.firstFrame());
+
+    // Others
+    expandMenubarOnMouseover()->setSelected(m_pref.general.expandMenubarOnMouseover());
+
+    enableDataRecovery()->setSelected(m_pref.general.dataRecovery());
+
+    if (m_pref.general.dataRecovery() &&
+        m_pref.general.keepEditedSpriteData())
+      keepEditedSpriteData()->setSelected(true);
+    else if (!m_pref.general.dataRecovery()) {
+      keepEditedSpriteData()->setEnabled(false);
+      keepEditedSpriteDataFor()->setEnabled(false);
+    }
+
+    keepClosedSpriteOnMemory()->setSelected(m_pref.general.keepClosedSpriteOnMemory());
+    showFullPath()->setSelected(m_pref.general.showFullPath());
+
+    dataRecoveryPeriod()->setSelectedItemIndex(
+      dataRecoveryPeriod()->findItemIndexByValue(
+        base::convert_to<std::string>(m_pref.general.dataRecoveryPeriod())));
+
+    keepEditedSpriteDataFor()->setSelectedItemIndex(
+      keepEditedSpriteDataFor()->findItemIndexByValue(
+        base::convert_to<std::string>(m_pref.general.keepEditedSpriteDataFor())));
+
+    keepClosedSpriteOnMemoryFor()->setSelectedItemIndex(
+      keepClosedSpriteOnMemoryFor()->findItemIndexByValue(
+        base::convert_to<std::string>(m_pref.general.keepClosedSpriteOnMemoryFor())));
+
+    zoomFromCenterWithWheel()->setSelected(m_pref.editor.zoomFromCenterWithWheel());
+    zoomFromCenterWithKeys()->setSelected(m_pref.editor.zoomFromCenterWithKeys());
+    autoOpaque()->setSelected(m_pref.selection.autoOpaque());
+    keepSelectionAfterClear()->setSelected(m_pref.selection.keepSelectionAfterClear());
+    autoShowSelectionEdges()->setSelected( m_pref.selection.autoShowSelectionEdges());
+    moveEdges()->setSelected(m_pref.selection.moveEdges());
+    modifiersDisableHandles()->setSelected(m_pref.selection.modifiersDisableHandles());
+    moveOnAddMode()->setSelected(m_pref.selection.moveOnAddMode());
+
+    // If the platform supports native cursors...
+    if ((int(m_system->capabilities()) &
+         int(os::Capabilities::CustomMouseCursor)) != 0) {
+      nativeCursor()->setSelected(m_pref.cursor.useNativeCursor());
+
+      cursorScale()->setSelectedItemIndex(
+        cursorScale()->findItemIndexByValue(
+          base::convert_to<std::string>(m_pref.cursor.cursorScale())));
+    }
+    else {
+      nativeCursor()->setEnabled(false);
+    }
+
+    onNativeCursorChange();
+
+    // "Show Aseprite file dialog" option is the inverse of the old
+    // experimental "use native file dialog" option
+    showAsepriteFileDialog()->setSelected(
+      !m_pref.experimental.useNativeFileDialog());
+
+#ifdef LAF_WINDOWS  // Show Tablet section on Windows
+    {
+      const os::TabletAPI tabletAPI = m_system->tabletOptions().api;
+      if (tabletAPI == os::TabletAPI::Wintab)
+        tabletApiWintabSystem()->setSelected(true);
+      else if (tabletAPI == os::TabletAPI::WintabPackets)
+        tabletApiWintabDirect()->setSelected(true);
+      else
+        tabletApiWindowsPointer()->setSelected(true);
+
+      onTabletAPIChange();
+    }
+#endif
+
+    flashLayer()->setSelected(m_pref.experimental.flashLayer());
+    nonactiveLayersOpacity()->setValue(m_pref.experimental.nonactiveLayersOpacity());
+
+    m_rgbmapAlgorithmSelector.algorithm(m_pref.quantization.rgbmapAlgorithm());
+    m_bestFitCriteriaSelector.criteria(m_pref.quantization.fitCriteria());
+
+    showScrollbars()->setSelected(m_pref.editor.showScrollbars());
+    autoScroll()->setSelected(m_pref.editor.autoScroll());
+    straightLinePreview()->setSelected(m_pref.editor.straightLinePreview());
+    discardBrush()->setSelected(m_pref.eyedropper.discardBrush());
+
+    // Update the one/multiple window buttonset (and keep in on sync
+    // with the old/experimental checkbox)
+    uiWindows()->setSelectedItem(multipleWindows()->isSelected() ? 1 : 0);
+
+    // Scaling
+    selectScalingItems();
+
+    if (m_system->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
+      gpuAcceleration()->setSelected(m_pref.general.gpuAcceleration());
+    }
+
+    if (m_system->menus())
+      showMenuBar()->setSelected(m_pref.general.showMenuBar());
+
+    showHome()->setSelected(m_pref.general.showHome());
+
+    // Right-click
+    rightClickBehavior()->setSelectedItemIndex((int)m_pref.editor.rightClickMode());
+
+    // Undo preferences
+    limitUndo()->setSelected(m_pref.undo.sizeLimit() != 0);
+    onLimitUndoCheck();
+
+    undoGotoModified()->setSelected(m_pref.undo.gotoModified());
+    undoAllowNonlinearHistory()->setSelected(m_pref.undo.allowNonlinearHistory());
+
+    onChangeBgScope();
+    onChangeGridScope();
+    sectionListbox()->selectIndex(m_curSection);
   }
 
   bool ok() {
     return (closer() == buttonOk());
   }
 
-  void saveConfig() {
+  void saveConfig(bool propagate = true) {
     // Save preferences in widgets that are bound to options automatically
-    {
+    if (propagate) {
       Message msg(kSavePreferencesMessage);
       msg.setPropagateToChildren(true);
       sendMessage(&msg);
@@ -756,7 +778,7 @@ public:
         int j = 2;
         for (auto& cs : m_colorSpaces) {
           // We add ICC profiles only
-          auto gfxCs = cs->gfxColorSpace();
+          auto& gfxCs = cs->gfxColorSpace();
           if (gfxCs->type() != gfx::ColorSpace::ICC)
             continue;
 
@@ -828,6 +850,7 @@ public:
     m_pref.experimental.flashLayer(flashLayer()->isSelected());
     m_pref.experimental.nonactiveLayersOpacity(nonactiveLayersOpacity()->getValue());
     m_pref.quantization.rgbmapAlgorithm(m_rgbmapAlgorithmSelector.algorithm());
+    m_pref.quantization.fitCriteria(m_bestFitCriteriaSelector.criteria());
 
 #ifdef LAF_WINDOWS
     {
@@ -893,9 +916,7 @@ public:
       m_pref.general.showMenuBar(showMenuBar()->isSelected());
     }
 
-    bool newShowHome = showHome()->isSelected();
-    if (newShowHome != m_pref.general.showHome())
-      m_pref.general.showHome(newShowHome);
+    m_pref.general.showHome(showHome()->isSelected());
 
     m_pref.save();
 
@@ -904,8 +925,7 @@ public:
     }
 
     // Probably it's safe to switch this flag in runtime
-    if (m_pref.experimental.multipleWindows() != ui::get_multiple_displays())
-      ui::set_multiple_displays(m_pref.experimental.multipleWindows());
+    ui::set_multiple_displays(m_pref.experimental.multipleWindows());
 
     if (reset_screen)
       updateScreenScaling();
@@ -926,6 +946,15 @@ public:
         updateScreenScaling();
       }
     }
+  }
+
+  void restoreDefaultTheme() {
+    setUITheme(m_pref.theme.selected.defaultValue(), false);
+    m_pref.general.screenScale.setValue(
+      skin::SkinTheme::get(this)->preferredScreenScaling());
+    m_pref.general.uiScale.setValue(
+      skin::SkinTheme::get(this)->preferredUIScaling());
+    updateScreenScaling();
   }
 
   bool showDialogToInstallExtension(const std::string& filename) {
@@ -1037,6 +1066,133 @@ private:
     m_restoreUIScaling = m_pref.general.uiScale();
   }
 
+  void onResetDefault() {
+    if (ui::Alert::show(Strings::alerts_reset_default_confirm()) != 1)
+      return;
+
+    if (recentReset()->isSelected()) {
+      auto prevLimit = m_pref.general.recentItems();
+      App::instance()->recentFiles()->setLimit(0);
+      App::instance()->recentFiles()->setLimit(prevLimit);
+    }
+
+    if (installedReset()->isSelected()) {
+      // If we're not on the default theme, restore it, since we're gonna be deleting it.
+      restoreDefaultTheme();
+
+      // Load a list with the extensions we can uninstall first, to avoid iterator issues when deleting in-loop.
+      Extensions::List uninstall;
+      for (auto* e : App::instance()->extensions()) {
+        if (!e->canBeUninstalled())
+          continue;
+
+        uninstall.push_back(e);
+      }
+
+      for (auto* e : uninstall) {
+        try {
+          App::instance()->extensions().uninstallExtension(
+            e, DeletePluginPref::kYes);
+        }
+        catch (const std::exception& ex) {
+          LOG(ERROR, "Uninstalling extension '%s' failed with error '%s'\n",
+            e->displayName().c_str(),
+            ex.what());
+          Console::showException(ex);
+        }
+      }
+
+      ResourceFinder rf;
+      rf.includeUserDir("palettes");
+      const auto& paletteDir = rf.defaultFilename();
+      for (const auto& item : base::list_files(paletteDir)) {
+        const auto path = base::join_path(paletteDir, item);
+        if (base::is_file(path) &&
+            item != "default.ase" &&
+            base::string_to_lower(base::get_file_extension(path)) == "ase") {
+
+          try {
+            base::delete_file(path);
+            LOG(VERBOSE, "Deleted palette: '%s'\n", item.c_str());
+          }
+          catch (const std::exception& ex) {
+            LOG(ERROR,
+                "Error deleting palette file: %s - %s",
+                path.c_str(),
+                ex.what());
+          }
+        }
+      }
+    }
+
+    if (perfileReset()->isSelected()) {
+      ResourceFinder rf;
+      rf.includeUserDir("files");
+      const auto& filesDirectory = rf.defaultFilename();
+
+      for (const auto& item : base::list_files(filesDirectory)) {
+        const auto path = base::join_path(filesDirectory, item);
+        if (base::is_file(path) && base::string_to_lower(base::get_file_extension(path)) == "ini") {
+          try {
+            base::delete_file(path);
+            LOG(VERBOSE, "Deleted per-file setting '%s'\n", item.c_str());
+          }
+          catch (const std::exception& ex) {
+            LOG(ERROR,
+                "Error deleting ini file: %s - %s",
+                path.c_str(),
+                ex.what());
+          }
+        }
+      }
+    }
+
+    if (toolsReset()->isSelected()) {
+      auto* toolBox = App::instance()->toolBox();
+      for (tools::ToolIterator it = toolBox->begin(); it != toolBox->end(); ++it) {
+        tools::Tool* tool = *it;
+        m_pref.resetToolPreferences(tool);
+        LOG(VERBOSE, "Reset tool preferences for tool '%s'\n", tool->getId().c_str());
+      }
+    }
+
+    if (defaultReset()->isSelected()) {
+      onResetAlerts();
+      onResetBg();
+      onResetColorManagement();
+      onResetGrid();
+      onResetTimelineSel();
+
+      // If we're not on the default theme, restore it.
+      m_restoreThisTheme = m_pref.theme.selected.defaultValue();
+      restoreTheme();
+
+      // Resetting all things.
+      for (Section* section : m_pref.sectionList()) {
+        for (OptionBase* option : section->optionList()) {
+          option->resetToDefault();
+        }
+        section->save();
+      }
+
+      restoreDefaultTheme();
+
+      m_pref.save();
+      loadFromPreferences();
+
+      // Temporarily set the language preference to an empty string
+      // to avoid setCurrentLanguage ignoring the change.
+      m_pref.general.language("");
+      Strings::instance()->setCurrentLanguage(Strings::kDefLanguage);
+
+      // Language reset
+      refillLanguages();
+    }
+
+    saveConfig(false);
+    closeWindow(nullptr);
+  }
+
   void onNativeCursorChange() {
     bool state =
       // If the platform supports custom cursors...
@@ -1126,11 +1282,11 @@ private:
       int j = 2;
       for (auto& cs : m_colorSpaces) {
         // We add ICC profiles only
-        auto gfxCs = cs->gfxColorSpace();
+        auto& gfxCs = cs->gfxColorSpace();
         if (gfxCs->type() != gfx::ColorSpace::ICC)
           continue;
 
-        auto name = gfxCs->name();
+        auto& name = gfxCs->name();
         windowCs()->addItem(fmt::format(m_templateTextForDisplayCS, name));
         if (windowProfile == gen::WindowColorProfile::SPECIFIC &&
             windowProfileName == name) {
@@ -1179,6 +1335,7 @@ private:
     jpegOptionsAlert()->resetWithDefaultValue();
     svgOptionsAlert()->resetWithDefaultValue();
     tgaOptionsAlert()->resetWithDefaultValue();
+    webpOptionsAlert()->resetWithDefaultValue();
   }
 
   void onChangeBgScope() {
@@ -1842,6 +1999,7 @@ private:
   std::vector<os::ColorSpaceRef> m_colorSpaces;
   std::string m_templateTextForDisplayCS;
   RgbMapAlgorithmSelector m_rgbmapAlgorithmSelector;
+  BestFitCriteriaSelector m_bestFitCriteriaSelector;
   ButtonSet* m_themeVars = nullptr;
   SamplingSelector* m_samplingSelector = nullptr;
 };

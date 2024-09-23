@@ -252,7 +252,9 @@ namespace app {
     void setZoomAndCenterInMouse(const render::Zoom& zoom,
       const gfx::Point& mousePos, ZoomBehavior zoomBehavior);
 
-    void pasteImage(const Image* image, const Mask* mask = nullptr);
+    void pasteImage(const Image* image,
+                    const Mask* mask = nullptr,
+                    const gfx::Point* position = nullptr);
 
     void startSelectionTransformation(const gfx::Point& move, double angle);
     void startFlipTransformation(doc::algorithm::FlipType flipType);

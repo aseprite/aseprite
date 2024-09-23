@@ -67,14 +67,6 @@ Preferences::Preferences()
 
   load();
 
-  // Create a connection with the default RgbMapAlgorithm preferences
-  // to change the default algorithm in the "doc" layer.
-  quantization.rgbmapAlgorithm.AfterChange.connect(
-    [](const doc::RgbMapAlgorithm& newValue){
-      doc::Sprite::SetDefaultRgbMapAlgorithm(newValue);
-    });
-  doc::Sprite::SetDefaultRgbMapAlgorithm(quantization.rgbmapAlgorithm());
-
   // Create a connection with the default document preferences grid
   // bounds to sync the default grid bounds for new sprites in the
   // "doc" layer.

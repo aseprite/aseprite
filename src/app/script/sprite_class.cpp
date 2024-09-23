@@ -339,7 +339,9 @@ int Sprite_flatten(lua_State* L)
     range.selectLayer(layer);
 
   Tx tx(sprite);
-  tx(new cmd::FlattenLayers(sprite, range.selectedLayers(), true));
+  cmd::FlattenLayers::Options options;
+  options.newBlendMethod = true;
+  tx(new cmd::FlattenLayers(sprite, range.selectedLayers(), options));
   tx.commit();
   return 0;
 }

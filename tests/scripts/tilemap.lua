@@ -1,4 +1,4 @@
--- Copyright (C) 2019-2023  Igara Studio S.A.
+-- Copyright (C) 2019-2024  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
@@ -193,6 +193,79 @@ do
                                  0, 1, 0,
                                  0, 0, 3 })
 
+end
+
+----------------------------------------------------------------------
+-- Tests of get/set app.fgTile and app.bgTile
+----------------------------------------------------------------------
+
+do
+  local spr = Sprite(32, 32, ColorMode.INDEXED)
+  spr.gridBounds = Rectangle{ 0, 0, 2, 2 }
+  assert(spr.layers[1].isImage)
+  assert(not spr.layers[1].isTilemap)
+
+  ----------------------------------------------------------------------
+  -- Create a tilemap
+  ----------------------------------------------------------------------
+
+  app.command.NewLayer{ tilemap=true }
+  assert(#spr.layers == 2)
+  app.layer = spr.layers[2]
+  assert(app.layer.isImage)
+  assert(app.layer.isTilemap)
+  assert(#app.layer.cels == 0)
+
+  ----------------------------------------------------------------------
+  -- Draw something on the tilemap so new tiles are created
+  ----------------------------------------------------------------------
+
+  app.useTool{
+    tool='pencil',
+    color=1,
+    tilesetMode=TilesetMode.STACK,
+    points={ Point(2, 0), Point(4, 0), Point(5,1) }
+  }
+  assert(#app.layer.cels == 1)
+  assert(app.layer:cel(1).image.colorMode == ColorMode.TILEMAP)
+  local tilemapCel = app.layer:cel(1)
+  assert(tilemapCel.bounds == Rectangle(2, 0, 4, 2))
+  assert(#spr.layers[2].tileset == 3)
+
+  app.fgTile = 1
+  app.useTool{
+    tool='pencil',
+    tilemapMode=TilemapMode.TILES,
+    points={ Point(0, 0), Point(5, 0)}
+  }
+
+  app.fgTile = 2
+  app.useTool{
+    tool='pencil',
+    tilemapMode=TilemapMode.TILES,
+    points={ Point(0, 2), Point(5, 2)}
+  }
+
+  local cel = spr.layers[2].cels[1]
+  expect_img(cel.image, { 1,1,1,
+                          2,2,2 })
+
+  app.fgTile = 0
+  app.useTool{
+    tool='pencil',
+    tilemapMode=TilemapMode.TILES,
+    points={ Point(0, 0), Point(4, 0),
+             Point(4, 2), Point(0, 2)}
+  }
+
+  local cel = spr.layers[2].cels[1]
+  assert(cel == nil)
+  local tileImg1 = spr.layers[2].tileset:tile(1).image
+  expect_img(tileImg1, { 1,1,
+                         0,0 })
+  local tileImg2 = spr.layers[2].tileset:tile(2).image
+  expect_img(tileImg2, { 1,0,
+                         0,1 })
 end
 
 ----------------------------------------------------------------------

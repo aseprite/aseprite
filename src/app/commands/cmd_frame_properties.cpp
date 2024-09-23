@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,6 +15,7 @@
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/doc_api.h"
+#include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
 #include "app/tx.h"
 #include "base/convert_to.h"
@@ -35,6 +37,7 @@ protected:
   void onLoadParams(const Params& params) override;
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
 
 private:
   enum Target {
@@ -135,6 +138,17 @@ void FramePropertiesCommand::onExecute(Context* context)
 
     tx.commit();
   }
+}
+
+std::string FramePropertiesCommand::onGetFriendlyName() const
+{
+  switch (m_target) {
+    case CURRENT_RANGE:
+      return Strings::commands_FrameProperties_Current() ;
+    case ALL_FRAMES:
+      return Strings::commands_FrameProperties_All();
+  }
+  return Command::onGetFriendlyName();
 }
 
 Command* CommandFactory::createFramePropertiesCommand()

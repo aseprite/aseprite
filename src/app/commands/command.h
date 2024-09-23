@@ -11,6 +11,7 @@
 
 #include "app/commands/command_factory.h"
 #include "app/commands/command_ids.h"
+#include "app/ui/key_context.h"
 
 #include <string>
 
@@ -36,6 +37,10 @@ namespace app {
     void loadParams(const Params& params);
     bool isEnabled(Context* context);
     bool isChecked(Context* context);
+
+    // Returns true if the command must be displayed in the Keyboard
+    // Shortcuts list.
+    virtual bool isListed(const Params& params) const { return true; }
 
   protected:
     virtual bool onNeedsParams() const;

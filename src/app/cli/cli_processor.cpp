@@ -23,6 +23,7 @@
 #include "app/filename_formatter.h"
 #include "app/restore_visible_layers.h"
 #include "app/ui_context.h"
+#include "app/util/layer_utils.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/split_string.h"
@@ -42,17 +43,6 @@
 namespace app {
 
 namespace {
-
-std::string get_layer_path(const Layer* layer)
-{
-  std::string path;
-  for (; layer != layer->sprite()->root(); layer=layer->parent()) {
-    if (!path.empty())
-      path.insert(0, "/");
-    path.insert(0, layer->name());
-  }
-  return path;
-}
 
 bool match_path(const std::string& filter,
                 const std::string& layer_path,

@@ -2658,7 +2658,9 @@ void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
   }
 }
 
-void Editor::pasteImage(const Image* image, const Mask* mask)
+void Editor::pasteImage(const Image* image,
+                        const Mask* mask,
+                        const gfx::Point* position)
 {
   ASSERT(image);
 
@@ -2690,11 +2692,14 @@ void Editor::pasteImage(const Image* image, const Mask* mask)
   Sprite* sprite = this->sprite();
 
   // Check bounds where the image will be pasted.
-  int x = mask->bounds().x;
-  int y = mask->bounds().y;
+  int x = (position ? position->x : mask->bounds().x);
+  int y = (position ? position->y : mask->bounds().y);
   {
     const Rect visibleBounds = getViewportBounds();
-    const Point maskCenter = mask->bounds().center();
+    const Point maskCenter = mask->bounds().center() +
+      (position ? gfx::Point(position->x - mask->bounds().x,
+                             position->y - mask->bounds().y)
+                : gfx::Point());
 
     // If the pasted image original location center point isn't
     // visible, we center the image in the editor's visible bounds.
@@ -2747,7 +2752,8 @@ void Editor::pasteImage(const Image* image, const Mask* mask)
   m_brushPreview.hide();
 
   Mask mask2(*mask);
-  mask2.setOrigin(x, y);
+  position ? mask2.setOrigin(position->x, position->y)
+           : mask2.setOrigin(x, y);
 
   PixelsMovementPtr pixelsMovement(
     new PixelsMovement(UIContext::instance(), site,

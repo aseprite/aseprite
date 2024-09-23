@@ -78,6 +78,11 @@ if(NOT USE_SHARED_FREETYPE AND NOT LAF_BACKEND STREQUAL "skia")
       ${CMAKE_CURRENT_BINARY_DIR}/freetype2/include)
   endif()
 
+  if(HARFBUZZ_FOUND)
+    target_link_libraries(freetype PRIVATE ${HARFBUZZ_LIBRARIES})
+    target_include_directories(freetype PRIVATE ${HARFBUZZ_INCLUDE_DIRS})
+  endif()
+
   if(NOT USE_SHARED_LIBPNG)
     add_dependencies(freetype ${PNG_LIBRARIES})
   endif()

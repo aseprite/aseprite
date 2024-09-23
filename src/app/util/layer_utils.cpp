@@ -69,4 +69,15 @@ bool layer_is_locked(Editor* editor)
   return false;
 }
 
+std::string get_layer_path(const Layer* layer)
+{
+  std::string path;
+  for (; layer != layer->sprite()->root(); layer=layer->parent()) {
+    if (!path.empty())
+      path.insert(0, "/");
+    path.insert(0, layer->name());
+  }
+  return path;
+}
+
 } // namespace app

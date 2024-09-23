@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -24,6 +24,10 @@ public:
 protected:
   void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
+  bool isListed(const Params& params) const override {
+    return !params.get("path").empty();
+  }
 
 private:
   enum Type { Url };
@@ -57,6 +61,11 @@ void LaunchCommand::onExecute(Context* context)
       break;
 
   }
+}
+
+std::string LaunchCommand::onGetFriendlyName() const
+{
+  return Command::onGetFriendlyName() + ": " + m_path;
 }
 
 Command* CommandFactory::createLaunchCommand()

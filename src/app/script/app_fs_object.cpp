@@ -110,7 +110,7 @@ int AppFS_listFiles(lua_State* L)
   lua_newtable(L);
   if (path) {
     int i = 0;
-    for (auto fn : base::list_files(path)) {
+    for (const auto& fn : base::list_files(path)) {
       lua_pushstring(L, fn.c_str());
       lua_seti(L, -2, ++i);
     }
