@@ -109,7 +109,7 @@ bool Sentry::areThereCrashesToReport()
 
   // At least one .dmp file in the completed/ directory means that
   // there was at least one crash in the past (this is for macOS).
-  if (!base::join_path(m_dbdir, "completed"), base::ItemType::Files, "*.dmp").empty())
+  if (!base::list_files(base::join_path(m_dbdir, "completed"), base::ItemType::Files, "*.dmp").empty())
     return true;
 
   // In case that "last_crash" doesn't exist we can check for some
