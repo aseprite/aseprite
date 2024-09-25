@@ -26,24 +26,24 @@ FontInfo::FontInfo(Type type,
                    const std::string& name,
                    const float size,
                    const text::FontStyle style,
-                   const bool antialias)
+                   const Flags flags)
   : m_type(type)
   , m_name(name)
   , m_size(size)
   , m_style(style)
-  , m_antialias(antialias)
+  , m_flags(flags)
 {
 }
 
 FontInfo::FontInfo(const FontInfo& other,
                    const float size,
                    const text::FontStyle style,
-                   const bool antialias)
+                   const Flags flags)
   : m_type(other.type())
   , m_name(other.name())
   , m_size(size)
   , m_style(style)
-  , m_antialias(antialias)
+  , m_flags(flags)
 {
 }
 
@@ -89,7 +89,8 @@ FontInfo FontInfo::getFromPreferences()
                         pref.textTool.fontFace(),
                         pref.textTool.fontSize(),
                         text::FontStyle(),
-                        pref.textTool.antialias());
+                        pref.textTool.antialias() ? FontInfo::Flags::Antialias :
+                                                    FontInfo::Flags::None);
   }
   // New configuration
   if (!pref.textTool.fontInfo().empty()) {
@@ -124,7 +125,7 @@ template<> app::FontInfo convert_to(const std::string& from)
   float size = 0.0f;
   bool bold = false;
   bool italic = false;
-  bool antialias = false;
+  app::FontInfo::Flags flags = app::FontInfo::Flags::None;
 
   if (!parts.empty()) {
     if (parts[0].compare(0, 5, "file=") == 0) {
@@ -141,7 +142,9 @@ template<> app::FontInfo convert_to(const std::string& from)
     }
     for (int i=1; i<parts.size(); ++i) {
       if (parts[i] == "antialias")
-        antialias = true;
+        flags |= app::FontInfo::Flags::Antialias;
+      else if (parts[i] == "ligatures")
+        flags |= app::FontInfo::Flags::Ligatures;
       else if (parts[i] == "bold")
         bold = true;
       else if (parts[i] == "italic")
@@ -157,7 +160,7 @@ template<> app::FontInfo convert_to(const std::string& from)
   else if (bold) style = text::FontStyle::Bold();
   else if (italic) style = text::FontStyle::Italic();
 
-  return app::FontInfo(type, name, size, style, antialias);
+  return app::FontInfo(type, name, size, style, flags);
 }
 
 template<> std::string convert_to(const app::FontInfo& from)
@@ -186,6 +189,8 @@ template<> std::string convert_to(const app::FontInfo& from)
       result += ",italic";
     if (from.antialias())
       result += ",antialias";
+    if (from.ligatures())
+      result += ",ligatures";
   }
   return result;
 }

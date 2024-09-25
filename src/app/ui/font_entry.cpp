@@ -144,16 +144,25 @@ FontEntry::FontStyle::FontStyle()
   setMultiMode(MultiMode::Set);
 }
 
+FontEntry::FontLigatures::FontLigatures()
+  : ButtonSet(1, true)
+{
+  addItem("fi");
+  setMultiMode(MultiMode::Set);
+}
+
 FontEntry::FontEntry()
   : m_antialias("Antialias")
 {
   m_face.setExpansive(true);
   m_size.setExpansive(false);
   m_style.setExpansive(false);
+  m_ligatures.setExpansive(false);
   m_antialias.setExpansive(false);
   addChild(&m_face);
   addChild(&m_size);
   addChild(&m_style);
+  addChild(&m_ligatures);
   addChild(&m_antialias);
 
   m_face.setMinSize(gfx::Size(128*guiscale(), 0));
@@ -162,7 +171,7 @@ FontEntry::FontEntry()
     setInfo(FontInfo(newTypeName,
                      m_info.size(),
                      m_info.style(),
-                     m_info.antialias()),
+                     m_info.flags()),
             From::Face);
     invalidate();
   });
@@ -172,7 +181,7 @@ FontEntry::FontEntry()
     setInfo(FontInfo(m_info,
                      newSize,
                      m_info.style(),
-                     m_info.antialias()),
+                     m_info.flags()),
             From::Size);
   });
 
@@ -202,17 +211,21 @@ FontEntry::FontEntry()
     setInfo(FontInfo(m_info,
                      m_info.size(),
                      style,
-                     m_info.antialias()),
+                     m_info.flags()),
             From::Style);
   });
 
-  m_antialias.Click.connect([this](){
-    setInfo(FontInfo(m_info,
-                     m_info.size(),
-                     m_info.style(),
-                     m_antialias.isSelected()),
-            From::Antialias);
-  });
+  auto flagsChange = [this]() {
+    FontInfo::Flags flags = FontInfo::Flags::None;
+    if (m_antialias.isSelected())
+      flags |= FontInfo::Flags::Antialias;
+    if (m_ligatures.getItem(0)->isSelected())
+      flags |= FontInfo::Flags::Ligatures;
+    setInfo(FontInfo(m_info, m_info.size(), m_info.style(), flags),
+            From::Flags);
+  };
+  m_ligatures.ItemChange.connect(flagsChange);
+  m_antialias.Click.connect(flagsChange);
 }
 
 // Defined here as FontPopup type is not fully defined in the header
@@ -236,8 +249,10 @@ void FontEntry::setInfo(const FontInfo& info,
     m_style.getItem(1)->setSelected(info.style().slant() != text::FontStyle::Slant::Upright);
   }
 
-  if (fromField != From::Antialias)
+  if (fromField != From::Flags) {
+    m_ligatures.getItem(0)->setSelected(info.ligatures());
     m_antialias.setSelected(info.antialias());
+  }
 
   FontChange(m_info);
 }

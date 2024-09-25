@@ -148,6 +148,13 @@ private:
     onNewTextBlob();
   }
 
+  text::ShaperFeatures onGetTextShaperFeatures() const override {
+    const FontInfo fontInfo = App::instance()->contextBar()->fontInfo();
+    text::ShaperFeatures features;
+    features.ligatures = fontInfo.ligatures();
+    return features;
+  }
+
   void onNewTextBlob() {
     text::TextBlobRef blob = textBlob();
     if (!blob)

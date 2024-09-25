@@ -958,7 +958,9 @@ void Entry::recalcCharBoxes(const std::string& text)
     text::draw_text(nullptr,
                     theme()->fontMgr(),
                     base::AddRef(font()), text,
-                    gfx::ColorNone, gfx::ColorNone, 0, 0, &delegate).w;
+                    gfx::ColorNone, gfx::ColorNone, 0, 0,
+                    &delegate,
+                    onGetTextShaperFeatures()).w;
   m_boxes = delegate.boxes();
 
   if (!m_boxes.empty()) {

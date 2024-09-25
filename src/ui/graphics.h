@@ -17,6 +17,8 @@
 #include "gfx/size.h"
 #include "os/surface.h"
 #include "text/font.h"
+#include "text/fwd.h"
+#include "text/shaper_features.h"
 #include "ui/paint.h"
 
 #include <memory>
@@ -30,10 +32,6 @@ namespace gfx {
 
 namespace os {
   struct Sampling;
-}
-
-namespace text {
-  class DrawTextDelegate;
 }
 
 namespace ui {
@@ -110,7 +108,8 @@ namespace ui {
     void drawText(const std::string& str,
                   gfx::Color fg, gfx::Color bg,
                   const gfx::Point& pt,
-                  text::DrawTextDelegate* delegate = nullptr);
+                  text::DrawTextDelegate* delegate = nullptr,
+                  text::ShaperFeatures features = {});
 
     void drawUIText(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt, const int mnemonic);
     void drawAlignedUIText(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Rect& rc, const int align);

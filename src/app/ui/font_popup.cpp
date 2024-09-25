@@ -64,7 +64,8 @@ public:
     : ListItem(name)
     , m_fontInfo(FontInfo::Type::Name, name,
                  FontInfo::kDefaultSize,
-                 text::FontStyle(), true) {
+                 text::FontStyle(),
+                 FontInfo::Flags::Antialias) {
     getCachedThumbnail();
   }
 
@@ -72,7 +73,8 @@ public:
     : ListItem(base::get_file_title(fn))
     , m_fontInfo(FontInfo::Type::File, fn,
                  FontInfo::kDefaultSize,
-                 text::FontStyle(), true) {
+                 text::FontStyle(),
+                 FontInfo::Flags::Antialias) {
     getCachedThumbnail();
   }
 
@@ -81,7 +83,8 @@ public:
            const text::FontStyleSetRef& set)
     : ListItem(name)
     , m_fontInfo(FontInfo::Type::System, name,
-                 FontInfo::kDefaultSize, style, true)
+                 FontInfo::kDefaultSize, style,
+                 FontInfo::Flags::Antialias)
     , m_set(set) {
     getCachedThumbnail();
   }

@@ -929,12 +929,8 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
 
 text::TextBlobRef Widget::textBlob() const
 {
-  if (!m_blob && !m_text.empty()) {
-    m_blob = text::TextBlob::MakeWithShaper(
-      theme()->fontMgr(),
-      AddRef(font()),
-      m_text);
-  }
+  if (!m_blob && !m_text.empty())
+    m_blob = onMakeTextBlob();
   return m_blob;
 }
 
@@ -1787,6 +1783,21 @@ int Widget::onGetTextInt() const
 double Widget::onGetTextDouble() const
 {
   return std::strtod(m_text.c_str(), nullptr);
+}
+
+text::TextBlobRef Widget::onMakeTextBlob() const
+{
+  return text::TextBlob::MakeWithShaper(
+    theme()->fontMgr(),
+    AddRef(font()),
+    text(),
+    nullptr,
+    onGetTextShaperFeatures());
+}
+
+text::ShaperFeatures Widget::onGetTextShaperFeatures() const
+{
+  return text::ShaperFeatures();
 }
 
 void Widget::offsetWidgets(int dx, int dy)

@@ -27,7 +27,7 @@ namespace app {
       Face,
       Size,
       Style,
-      Antialias,
+      Flags,
     };
 
     FontEntry();
@@ -63,10 +63,16 @@ namespace app {
       FontStyle();
     };
 
+    class FontLigatures : public ButtonSet {
+    public:
+      FontLigatures();
+    };
+
     FontInfo m_info;
     FontFace m_face;
     FontSize m_size;
     FontStyle m_style;
+    FontLigatures m_ligatures;
     ui::CheckBox m_antialias;
   };
 

@@ -442,6 +442,8 @@ namespace ui {
     virtual void onSetBgColor();
     virtual int onGetTextInt() const;
     virtual double onGetTextDouble() const;
+    virtual text::TextBlobRef onMakeTextBlob() const;
+    virtual text::ShaperFeatures onGetTextShaperFeatures() const;
 
   private:
     void removeChild(const WidgetsList::iterator& it);

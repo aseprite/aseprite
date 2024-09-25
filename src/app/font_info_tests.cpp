@@ -47,9 +47,10 @@ TEST(FontInfo, ByFile)
 TEST(FontInfo, BySystem)
 {
   FontInfo a(FontInfo::Type::System, "FreeMono");
-  FontInfo b(FontInfo::Type::System, "DejaVu Serif", 12, text::FontStyle(), true);
-  FontInfo c(FontInfo::Type::System, "Arial", 14, text::FontStyle::Bold(), false);
-  FontInfo d(FontInfo::Type::System, "Arial", 16, text::FontStyle::BoldItalic(), false);
+  FontInfo b(FontInfo::Type::System, "DejaVu Serif", 12, text::FontStyle(),
+             FontInfo::Flags::Antialias);
+  FontInfo c(FontInfo::Type::System, "Arial", 14, text::FontStyle::Bold());
+  FontInfo d(FontInfo::Type::System, "Arial", 16, text::FontStyle::BoldItalic());
   EXPECT_EQ("system=FreeMono", base::convert_to<std::string>(a));
   EXPECT_EQ("system=DejaVu Serif,size=12,antialias", base::convert_to<std::string>(b));
   EXPECT_EQ("system=Arial,size=14,bold", base::convert_to<std::string>(c));

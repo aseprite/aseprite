@@ -180,8 +180,10 @@ doc::ImageRef render_text(
   // fonts (e.g. if the given font is not enough to shape other code
   // points/languages).
   MeasureHandler handler;
+  text::ShaperFeatures features;
+  features.ligatures = fontInfo.ligatures();
   text::TextBlobRef blob =
-    text::TextBlob::MakeWithShaper(fontMgr, font, text, &handler);
+    text::TextBlob::MakeWithShaper(fontMgr, font, text, &handler, features);
   if (!blob)
     return nullptr;
 
