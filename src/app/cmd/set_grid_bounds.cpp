@@ -21,7 +21,8 @@ namespace cmd {
 
 using namespace doc;
 
-SetGridBounds::SetGridBounds(Sprite* sprite, const gfx::Rect& bounds)
+SetGridBounds::SetGridBounds(Sprite* sprite,
+                             const gfx::Rect& bounds)
   : WithSprite(sprite)
   , m_oldBounds(sprite->gridBounds())
   , m_newBounds(bounds)
@@ -46,7 +47,6 @@ void SetGridBounds::setGrid(const gfx::Rect& grid)
   Doc* doc = static_cast<Doc*>(spr->document());
   auto& docPref = Preferences::instance().document(doc);
   docPref.grid.bounds(grid);
-
   spr->incrementVersion();
 }
 

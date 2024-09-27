@@ -26,6 +26,7 @@
 #include "doc/slices.h"
 #include "doc/tags.h"
 #include "doc/tile.h"
+#include "doc/grid.h"
 #include "doc/with_user_data.h"
 #include "gfx/rect.h"
 
@@ -124,6 +125,8 @@ namespace doc {
     // Defaults
     static gfx::Rect DefaultGridBounds();
     static void SetDefaultGridBounds(const gfx::Rect& defGridBounds);
+    static Grid::Type DefaultGridType();
+    static void SetDefaultGridType(const Grid::Type type);
     static RgbMapAlgorithm DefaultRgbMapAlgorithm();
     static void SetDefaultRgbMapAlgorithm(const RgbMapAlgorithm mapAlgo);
 
@@ -136,6 +139,9 @@ namespace doc {
       if (m_gridBounds.h <= 0)
         m_gridBounds.h = 1;
     }
+
+    void setGridType(const Grid::Type type) { m_gridType = type; }
+    Grid::Type gridType() const { return m_gridType; }
 
     virtual int getMemSize() const override;
 
@@ -263,6 +269,7 @@ namespace doc {
     PalettesList m_palettes;               // list of palettes
     LayerGroup* m_root;                    // main group of layers
     gfx::Rect m_gridBounds;                // grid settings
+    Grid::Type m_gridType;
 
     // Current rgb map
     mutable std::unique_ptr<RgbMap> m_rgbMap;
