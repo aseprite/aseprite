@@ -15,6 +15,7 @@
 #include "doc/color.h"
 #include "doc/fit_criteria.h"
 #include "doc/frame.h"
+#include "doc/grid.h"
 #include "doc/image_buffer.h"
 #include "doc/image_ref.h"
 #include "doc/image_spec.h"
@@ -122,6 +123,8 @@ public:
   // Defaults
   static gfx::Rect DefaultGridBounds();
   static void SetDefaultGridBounds(const gfx::Rect& defGridBounds);
+  static Grid::Type DefaultGridType();
+  static void SetDefaultGridType(Grid::Type type);
   static RgbMapAlgorithm DefaultRgbMapAlgorithm();
   static void SetDefaultRgbMapAlgorithm(const RgbMapAlgorithm mapAlgo);
 
@@ -135,6 +138,9 @@ public:
     if (m_gridBounds.h <= 0)
       m_gridBounds.h = 1;
   }
+
+  void setGridType(const Grid::Type type) { m_gridType = type; }
+  Grid::Type gridType() const { return m_gridType; }
 
   virtual int getMemSize() const override;
 
@@ -253,6 +259,7 @@ private:
   PalettesList m_palettes;   // list of palettes
   LayerGroup* m_root;        // main group of layers
   gfx::Rect m_gridBounds;    // grid settings
+  Grid::Type m_gridType;
 
   // Current rgb map
   mutable std::unique_ptr<RgbMap> m_rgbMap;

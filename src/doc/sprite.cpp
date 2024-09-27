@@ -37,6 +37,7 @@
 namespace doc {
 
 static gfx::Rect g_defaultGridBounds(0, 0, 16, 16);
+static Grid::Type g_defaultGridType = Grid::Type::Orthogonal;
 
 // static
 gfx::Rect Sprite::DefaultGridBounds()
@@ -53,6 +54,18 @@ void Sprite::SetDefaultGridBounds(const gfx::Rect& defGridBounds)
     g_defaultGridBounds.w = 1;
   if (g_defaultGridBounds.h <= 0)
     g_defaultGridBounds.h = 1;
+}
+
+// static
+Grid::Type Sprite::DefaultGridType()
+{
+  return g_defaultGridType;
+}
+
+// static
+void Sprite::SetDefaultGridType(const Grid::Type type)
+{
+  g_defaultGridType = type;
 }
 
 //////////////////////////////////////////////////////////////////////

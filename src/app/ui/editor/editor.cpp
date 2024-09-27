@@ -57,6 +57,7 @@
 #include "app/util/tile_flags_utils.h"
 #include "base/chrono.h"
 #include "base/convert_to.h"
+#include "base/pi.h"
 #include "doc/doc.h"
 #include "doc/mask_boundaries.h"
 #include "doc/slice.h"
@@ -1098,6 +1099,46 @@ void Editor::drawMaskSafe()
   }
 }
 
+static gfx::PointF project(gfx::PointF& p, const gfx::PointF& degrees)
+{
+  const double to_radians = 1.0 / (180.0 / PI);
+  const double cy = cos(degrees.y * to_radians);
+  const double sy = sin(degrees.y * to_radians);
+  const double cx = (degrees.x != 0 ? cos(degrees.x * to_radians) : 1);
+  // Apply Y as rotation and X as scaling
+  gfx::PointF dp(p);
+  if (degrees.y != 0.0) {
+    dp.x = p.x * cy - p.y * sy;
+    dp.y = (p.x * sy + p.y * cy) * cx;
+  }
+  return dp;
+}
+
+static gfx::PointF project_isometric(gfx::PointF& p)
+{
+  const gfx::PointF projection(60, 45);
+  return project(p, projection);
+}
+
+static void project_isometric(PointF& p0, PointF& p1, const PointF& offset)
+{
+  // Get original distance/length of line
+  gfx::PointF vto(p0 - p1);
+  const double oldDist = sqrt(vto.x * vto.x + vto.y * vto.y);
+  // Transform points
+  p0 = project_isometric(p0);
+  p1 = project_isometric(p1);
+  // Get new distance
+  vto = p0 - p1;
+  const double newDist = sqrt(vto.x * vto.x + vto.y * vto.y);
+  const double adjustLength = oldDist / newDist;
+  // Apply adjustments
+  p0 *= adjustLength;
+  p1 *= adjustLength;
+  p0 += offset;
+  p1 += offset;
+}
+
 void Editor::drawGrid(Graphics* g,
                       const gfx::Rect& spriteBounds,
                       const Rect& gridBounds,
@@ -1145,21 +1186,66 @@ void Editor::drawGrid(Graphics* g,
   grid_color =
     gfx::rgba(gfx::getr(grid_color), gfx::getg(grid_color), gfx::getb(grid_color), alpha);
 
-  // Draw horizontal lines
-  int x1 = spriteBounds.x;
-  int y1 = gridF.y;
-  int x2 = spriteBounds.x + spriteBounds.w;
-  int y2 = spriteBounds.y + spriteBounds.h;
+  // Grid without rotation
+  if (getSite().sprite()->gridType() == doc::Grid::Type::Orthogonal) {
+    // Draw horizontal lines
+    int x1 = spriteBounds.x;
+    int y1 = gridF.y;
+    int x2 = spriteBounds.x + spriteBounds.w;
+    int y2 = spriteBounds.y + spriteBounds.h;
 
-  for (double c = y1; c <= y2; c += gridF.h)
-    g->drawHLine(grid_color, x1, c, spriteBounds.w);
+    for (double c = y1; c <= y2; c += gridF.h)
+      g->drawHLine(grid_color, x1, c, spriteBounds.w);
 
-  // Draw vertical lines
-  x1 = gridF.x;
-  y1 = spriteBounds.y;
+    // Draw vertical lines
+    x1 = gridF.x;
+    y1 = spriteBounds.y;
 
-  for (double c = x1; c <= x2; c += gridF.w)
-    g->drawVLine(grid_color, c, y1, spriteBounds.h);
+    for (double c = x1; c <= x2; c += gridF.w)
+      g->drawVLine(grid_color, c, y1, spriteBounds.h);
+  }
+  // Isometric grid
+  else {
+    // Calculate offset due to rotation
+    int x1 = 0;
+    int y1 = 0;
+    int x2 = spriteBounds.w;
+    int y2 = spriteBounds.h;
+
+    const gfx::PointF proj_offset(spriteBounds.center().x - (spriteBounds.x - gridF.x),
+                                  spriteBounds.y - (spriteBounds.y - gridF.y));
+
+    {
+      const gfx::PointF offset(0, 0);
+      gfx::PointF p0(x1, y1);
+      gfx::PointF p1(x2, y1);
+      project_isometric(p0, p1, offset);
+      x1 -= p1.x;
+      y1 -= p1.y;
+      x2 += p1.x;
+      y2 += p1.y;
+    }
+
+    // Rotate and draw horizontal lines
+    for (double c = y1; c <= y2; c += gridF.h) {
+      gfx::PointF p0(x1, c);
+      gfx::PointF p1(x2, c);
+      project_isometric(p0, p1, proj_offset);
+      g->drawLine(grid_color,
+                  gfx::Point(int(std::round(p0.x)), int(std::round(p0.y))),
+                  gfx::Point(int(std::round(p1.x)), int(std::round(p1.y))));
+    }
+
+    // Rotate and draw vertical lines
+    for (double c = x1; c <= x2; c += gridF.w) {
+      gfx::PointF p0(c, y1);
+      gfx::PointF p1(c, y2);
+      project_isometric(p0, p1, proj_offset);
+      g->drawLine(grid_color,
+                  gfx::Point(int(std::round(p0.x)), int(std::round(p0.y))),
+                  gfx::Point(int(std::round(p1.x)), int(std::round(p1.y))));
+    }
+  }
 }
 
 void Editor::drawSlices(ui::Graphics* g)

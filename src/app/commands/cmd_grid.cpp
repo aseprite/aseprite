@@ -11,11 +11,13 @@
 
 #include "app/app.h"
 #include "app/cmd/set_grid_bounds.h"
+#include "app/cmd/set_grid_type.h"
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/doc.h"
 #include "app/find_widget.h"
+#include "app/i18n/strings.h"
 #include "app/load_widget.h"
 #include "app/pref/preferences.h"
 #include "app/tx.h"
@@ -107,6 +109,10 @@ void GridSettingsCommand::onExecute(Context* context)
 
   Site site = context->activeSite();
   Rect bounds = site.gridBounds();
+  doc::Grid::Type type = site.gridType();
+  std::string typestr = (type == doc::Grid::Type::Isometric ?
+                           app::Strings::grid_settings_type_isometric() :
+                           app::Strings::grid_settings_type_orthogonal());
 
   window.gridX()->setTextf("%d", bounds.x);
   window.gridY()->setTextf("%d", bounds.y);
@@ -122,6 +128,7 @@ void GridSettingsCommand::onExecute(Context* context)
     if (window.gridH()->textInt() <= 0)
       window.gridH()->setText("1");
   });
+  window.gridType()->getEntryWidget()->setText(typestr);
   window.openWindowInForeground();
 
   if (window.closer() == window.ok()) {
@@ -132,9 +139,15 @@ void GridSettingsCommand::onExecute(Context* context)
     bounds.w = std::max(bounds.w, 1);
     bounds.h = std::max(bounds.h, 1);
 
+    typestr = window.gridType()->getEntryWidget()->text();
+    type = (typestr == app::Strings::grid_settings_type_isometric() ?
+              doc::Grid::Type::Isometric :
+              doc::Grid::Type::Orthogonal);
+
     ContextWriter writer(context);
     Tx tx(writer, friendlyName(), ModifyDocument);
     tx(new cmd::SetGridBounds(site.sprite(), bounds));
+    tx(new cmd::SetGridType(site.sprite(), type));
     tx.commit();
 
     auto& docPref = Preferences::instance().document(site.document());

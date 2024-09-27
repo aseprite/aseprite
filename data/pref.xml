@@ -526,6 +526,7 @@
     <section id="grid" canforce="true">
       <option id="snap" type="bool" default="false" />
       <option id="bounds" type="gfx::Rect" default="doc::Sprite::DefaultGridBounds()" />
+      <option id="type" type="doc::Grid::Type" default="doc::Sprite::DefaultGridType()" />
       <option id="color" type="app::Color" default="app::Color::fromRgb(0, 0, 255)" />
       <option id="opacity" type="int" default="160" />
       <option id="auto_opacity" type="bool" default="true" />

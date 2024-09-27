@@ -17,6 +17,10 @@ namespace doc {
 
 class Grid {
 public:
+  enum class Type {
+    Orthogonal = 0x00,
+    Isometric = 0x01,
+  };
   explicit Grid(const gfx::Size& sz = gfx::Size(16, 16))
     : m_tileSize(sz)
     , m_origin(0, 0)

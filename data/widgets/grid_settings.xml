@@ -15,6 +15,10 @@
 
     <label text="@.height" />
     <expr id="grid_h" text="" />
+    <combobox id="grid_type" editable="true" expansive="true">
+      <listitem text="@.type_orthogonal" />
+      <listitem text="@.type_isometric" />
+    </combobox>
 
     <separator horizontal="true" cell_hspan="4" />
 
