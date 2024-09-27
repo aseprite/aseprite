@@ -14,6 +14,7 @@
 #include "gfx/size.h"
 #include "ui/display.h"
 #include "ui/intern.h"
+#include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/move_region.h"
 #include "ui/resize_event.h"
@@ -158,6 +159,15 @@ void View::updateView(const bool restoreScrollPos)
   Widget* vw = UI_FIRST_WIDGET(m_viewport.children());
   Point scroll = viewScroll();
 
+  // Get current mouse capture just in case if one of the scroll bars
+  // have the mouse captured, which means that while we were scrolling
+  // this updateView() was called/the viewport area changed (e.g. if
+  // an item thumbnail was generated when it was displayed and the
+  // viewport now is bigger).
+  Manager* man = manager();
+  Widget* mouseCapture = (man ? man->getCapture(): nullptr);
+  ASSERT(man);
+
   // Set minimum (remove scroll-bars)
   setScrollableSize(Size(0, 0), false);
 
@@ -186,6 +196,11 @@ void View::updateView(const bool restoreScrollPos)
   }
 
   invalidate();
+
+  // Restore the mouse capture if it changed, which means that a
+  // scroll bar (when it was temporarily removed) lost the capture.
+  if (man && man->getCapture() != mouseCapture && mouseCapture->isVisible())
+    man->setCapture(mouseCapture);
 }
 
 Viewport* View::viewport()
