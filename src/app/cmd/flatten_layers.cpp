@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -34,6 +34,8 @@
 #include "doc/primitives.h"
 #include "doc/sprite.h"
 #include "render/render.h"
+
+#include <algorithm>
 
 namespace app {
 namespace cmd {
@@ -128,11 +130,24 @@ void FlattenLayers::onExecute()
     RestoreVisibleLayers restore;
     restore.showSelectedLayers(sprite, layers);
 
+    const LayerList visibleLayers = sprite->allVisibleLayers();
+
     // Map draw area to image coords
     const gfx::ClipF area_to_image(0, 0, area);
 
     // Copy all frames to the background.
     for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
+      // If the flatLayer is the only cel in this frame, we can skip
+      // this frame to keep existing links in the flatLayer.
+      const bool anotherCelExists =
+        std::any_of(visibleLayers.begin(),
+                    visibleLayers.end(),
+                    [flatLayer, frame](const Layer* other) {
+                      return (flatLayer != other && other->cel(frame));
+                    });
+      if (!anotherCelExists)
+        continue;
+
       // Clear the image and render this frame.
       clear_image(image.get(), bgcolor);
       render.renderSprite(image.get(), sprite, frame, area_to_image);
