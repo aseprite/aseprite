@@ -120,7 +120,7 @@ int RgbMapBase::findBestfit(int r, int g, int b, int a,
     const double aDiff = double(a - rgba_geta(rgb)) / 128.0;
 
     double diff = xDiff * xDiff + yDiff * yDiff + zDiff * zDiff + aDiff * aDiff;
-    if (diff < lowest) {
+    if (diff < lowest && i != mask_index) {
       lowest = diff;
       bestfit = i;
     }
