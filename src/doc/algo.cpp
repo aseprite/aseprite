@@ -20,6 +20,82 @@
 
 namespace doc {
 
+int algo_line_snap_endpoint(int* x_out, int* y_out, int x1, int y1, int x2, int y2)
+{
+  constexpr int MAX_M = 8;
+
+  int dx = x2 - x1;
+  int dy = y2 - y1;
+  const bool swapxy = std::abs(dy) > std::abs(dx);
+  if (swapxy) {
+    std::swap(dx, dy);
+  }
+
+  const int m_limit = std::min(MAX_M, std::max(1, std::abs(dx) / 2));
+  int m = dy != 0 ? (std::abs(dx) + std::abs(dy)/2) / std::abs(dy) : INT_MAX;
+  if (m > 2 * m_limit) m = INT_MAX;
+  else if (m > m_limit) m = m_limit;
+
+  if (!x_out || !y_out) {
+    return m;
+  }
+
+  if (m != INT_MAX) {
+    const int v2 = m*m + 1;
+    dx = SGN(dx) * (m * (std::abs(dx*m) + std::abs(dy)) + v2/2) / v2;
+    dy = SGN(dy) * std::abs(dx) / m;
+
+    if (swapxy) {
+      std::swap(dx, dy);
+    }
+    *x_out = x1 + dx;
+    *y_out = y1 + dy;
+  }
+  else {
+    if (swapxy) {
+      *x_out = x1;
+      *y_out = y2;
+    }
+    else {
+      *x_out = x2;
+      *y_out = y1;
+    }
+  }
+
+  return m;
+}
+
+void algo_line_snap(int x1, int y1, int x2, int y2, void* data, AlgoPixel proc)
+{
+  const int m = algo_line_snap_endpoint(nullptr, nullptr, x1, y1, x2, y2);
+
+  const bool swapxy = std::abs(y2-y1) > std::abs(x2-x1);
+  if (swapxy) {
+    std::swap(x1, y1);
+    std::swap(x2, y2);
+  }
+
+  const int dx = SGN(x2-x1);
+  const int dy = SGN(y2-y1);
+
+  x2 += dx;
+
+  int e = m;
+  int y = y1;
+  for (int x=x1; x!=x2; x+=dx) {
+    if (swapxy)
+      proc(y, x, data);
+    else
+      proc(x, y, data);
+
+    e--;
+    if (!e) {
+      y += dy;
+      e = m;
+    }
+  }
+}
+
 void algo_line_perfect(int x1, int y1, int x2, int y2, void* data, AlgoPixel proc)
 {
   bool yaxis;
