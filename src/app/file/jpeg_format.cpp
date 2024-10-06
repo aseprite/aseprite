@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -31,6 +31,7 @@
 #include "jpeg_options.xml.h"
 
 #include "jpeglib.h"
+#include "TinyEXIF.h"
 
 namespace app {
 
@@ -177,12 +178,18 @@ bool JpegFormat::onLoad(FileOp* fop)
   // Start decompressor.
   jpeg_start_decompress(&dinfo);
 
+  // Get orientation:
+  TinyEXIF::EXIFInfo info;
+  info.parseFrom(file->_bf._base, file->_bf._size);
+  int orientation = info.Orientation;
+  int outputW = (orientation < 5 ? dinfo.output_width : dinfo.output_height);
+  int outputH = (orientation < 5 ? dinfo.output_height : dinfo.output_width);
   // Create the image.
   ImageRef image = fop->sequenceImageToLoad(
     (dinfo.out_color_space == JCS_RGB ? IMAGE_RGB:
                                         IMAGE_GRAYSCALE),
-    dinfo.output_width,
-    dinfo.output_height);
+    outputW,
+    outputH);
   if (!image) {
     jpeg_destroy_decompress(&dinfo);
     return false;
@@ -217,6 +224,61 @@ bool JpegFormat::onLoad(FileOp* fop)
   while (dinfo.output_scanline < dinfo.output_height) {
     num_scanlines = jpeg_read_scanlines(&dinfo, buffer, buffer_height);
 
+    // Orientation function/variables adjust
+    std::function<int(int)> start_dst_x;
+    std::function<int(int)> start_dst_y;
+    int next_addr_increment = 1;
+    switch (orientation) {
+      case 2:
+        start_dst_x = [image](int y) { return image->width() - 1; };
+        start_dst_y = [dinfo](int y) {
+          return dinfo.output_scanline - 1 + y; };
+        next_addr_increment = -1;
+        break;
+      case 3:
+        start_dst_x = [image](int y) { return image->width() - 1; };
+        start_dst_y = [image, dinfo](int y) {
+          return image->height() - dinfo.output_scanline + y; };
+        next_addr_increment = -1;
+        break;
+      case 4:
+        start_dst_x = [](int y) { return 0; };
+        start_dst_y = [image, dinfo](int y) {
+          return image->height() - dinfo.output_scanline - y; };
+        next_addr_increment = 1;
+        break;
+      case 5:
+        start_dst_x = [dinfo](int y) {
+          return dinfo.output_scanline - 1 + y; };
+        start_dst_y = [](int y) { return 0; };
+        next_addr_increment = image->width();
+        break;
+      case 6:
+        start_dst_x = [image, dinfo](int y) {
+          return image->width() - dinfo.output_scanline - y; };
+        start_dst_y = [](int y) { return 0; };
+        next_addr_increment = image->width();
+        break;
+      case 7:
+        start_dst_x = [image, dinfo](int y) {
+          return image->width() - dinfo.output_scanline - y; };
+        start_dst_y = [image](int y) { return image->height() - 1; };
+        next_addr_increment = -image->width();
+        break;
+      case 8:
+        start_dst_x = [dinfo](int y) {
+          return dinfo.output_scanline - 1 + y; };
+        start_dst_y = [image](int y) { return image->height() - 1; };
+        next_addr_increment = -image->width();
+        break;
+      default:
+        start_dst_x = [](int y) { return 0; };
+        start_dst_y = [dinfo](int y) {
+          return dinfo.output_scanline - 1 + y; };
+        next_addr_increment = 1;
+        break;
+    }
+
     // RGB
     if (image->pixelFormat() == IMAGE_RGB) {
       uint8_t* src_address;
@@ -225,13 +287,14 @@ bool JpegFormat::onLoad(FileOp* fop)
 
       for (y=0; y<(int)num_scanlines; y++) {
         src_address = ((uint8_t**)buffer)[y];
-        dst_address = (uint32_t*)image->getPixelAddress(0, dinfo.output_scanline-1+y);
+        dst_address = (uint32_t*)image->getPixelAddress(start_dst_x(y), start_dst_y(y));
 
-        for (x=0; x<image->width(); x++) {
+        for (x=0; x<dinfo.output_width; x++) {
           r = *(src_address++);
           g = *(src_address++);
           b = *(src_address++);
-          *(dst_address++) = rgba(r, g, b, 255);
+          *dst_address = rgba(r, g, b, 255);
+          dst_address += next_addr_increment;
         }
       }
     }
@@ -243,10 +306,12 @@ bool JpegFormat::onLoad(FileOp* fop)
 
       for (y=0; y<(int)num_scanlines; y++) {
         src_address = ((uint8_t**)buffer)[y];
-        dst_address = (uint16_t*)image->getPixelAddress(0, dinfo.output_scanline-1+y);
+        dst_address = (uint16_t*)image->getPixelAddress(start_dst_x(y), start_dst_y(y));
 
-        for (x=0; x<image->width(); x++)
-          *(dst_address++) = graya(*(src_address++), 255);
+        for (x=0; x<dinfo.output_width; x++) {
+          *dst_address = graya(*(src_address++), 255);
+          dst_address += next_addr_increment;
+        }
       }
     }
 
