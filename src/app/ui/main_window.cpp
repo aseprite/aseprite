@@ -440,7 +440,7 @@ void MainWindow::onActiveViewChange()
 
 void MainWindow::onDrop(ui::DragEvent& e)
 {
-  if (e.hasImage()) {
+  if (e.hasImage() && !e.hasPaths()) {
     auto* cmd = Commands::instance()->byId(CommandId::NewFile());
     Params params;
     params.set("fromDraggedData", "true");

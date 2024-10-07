@@ -4487,7 +4487,7 @@ void Timeline::onDrag(ui::DragEvent& e)
   Widget::onDrag(e);
 
   // Dropping images into the timeline is not supported yet, so do nothing.
-  if (e.hasImage()) {
+  if (e.hasImage() && !e.hasPaths()) {
     return;
   }
 
