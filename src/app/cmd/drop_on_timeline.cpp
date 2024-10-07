@@ -81,13 +81,18 @@ void DropOnTimeline::onExecute()
   LayerGroup* group = nullptr;
 
   int flags =
-    FILE_LOAD_DATA_FILE |
+    FILE_LOAD_DATA_FILE | FILE_LOAD_AVOID_BACKGROUND_LAYER |
     FILE_LOAD_CREATE_PALETTE | FILE_LOAD_SEQUENCE_YES;
 
   int fopCount = 0;
   while(!m_paths.empty()) {
     std::unique_ptr<FileOp> fop(
       FileOp::createLoadDocumentOperation(context, m_paths.front(), flags));
+
+    // Do nothing (the user cancelled or something like that)
+    if (!fop)
+      return;
+
     fopCount++;
 
     base::paths fopFilenames;
@@ -98,10 +103,6 @@ void DropOnTimeline::onExecute()
       if (it != m_paths.end())
         m_paths.erase(it);
     }
-
-    // Do nothing (the user cancelled or something like that)
-    if (!fop)
-      return;
 
     if (fop->hasError()) {
       console.printf(fop->error().c_str());

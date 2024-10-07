@@ -533,6 +533,11 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context,
       fop->m_dataFilename = dataFilename;
   }
 
+  // Avoid creating a background layer?
+  if (flags & FILE_LOAD_AVOID_BACKGROUND_LAYER) {
+    fop->m_avoidBackgroundLayer = true;
+  }
+
 done:;
   return fop.release();
 }
@@ -939,8 +944,9 @@ void FileOp::operate(IFileOpProgress* progress)
 
       // Final setup
       if (m_document) {
-        // Configure the layer as the 'Background'
-        if (!m_seq.has_alpha)
+        // Configure the layer as the 'Background'. Only if background layers
+        // are welcome.
+        if (!m_seq.has_alpha && !m_avoidBackgroundLayer)
           m_seq.layer->configureAsBackground();
 
         // Set the final canvas size (as the bigger loaded
@@ -1522,6 +1528,7 @@ FileOp::FileOp(FileOpType type,
   , m_oneframe(false)
   , m_createPaletteFromRgba(false)
   , m_ignoreEmpty(false)
+  , m_avoidBackgroundLayer(false)
   , m_embeddedColorProfile(false)
   , m_embeddedGridBounds(false)
 {
