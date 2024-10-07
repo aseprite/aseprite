@@ -34,6 +34,7 @@
 #define FILE_LOAD_ONE_FRAME             0x00000010
 #define FILE_LOAD_DATA_FILE             0x00000020
 #define FILE_LOAD_CREATE_PALETTE        0x00000040
+#define FILE_LOAD_NO_BACKGROUND_LAYER   0x00000080
 
 namespace doc {
   class Tag;
@@ -314,6 +315,7 @@ namespace app {
                                 // GIF/FLI/ASE).
     bool m_createPaletteFromRgba;
     bool m_ignoreEmpty;
+    bool m_noBackgroundLayer;
 
     // True if the file contained a color profile when it was loaded.
     bool m_embeddedColorProfile;
