@@ -22,8 +22,7 @@ namespace cmd {
   class SetGridBounds : public Cmd
                       , public WithSprite {
   public:
-    SetGridBounds(doc::Sprite* sprite,
-                  const gfx::Rect& bounds);
+    SetGridBounds(doc::Sprite* sprite, const gfx::Rect& bounds);
 
   protected:
     void onExecute() override;
