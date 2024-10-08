@@ -376,11 +376,13 @@ public:
       uiWindows()->setSelectedItem(multipleWindows()->isSelected() ? 1: 0);
     });
 
-#ifndef ENABLE_DEVMODE // TODO enable this on Release when Aseprite supports
-                       //      GPU-acceleration properly
+#ifdef ENABLE_DEVMODE // TODO enable this on Release when Aseprite supports
+                      //      GPU-acceleration properly
     if (!m_system->hasCapability(os::Capabilities::GpuAccelerationSwitch))
-      gpuAcceleration()->setVisible(false);
 #endif
+    {
+      gpuAcceleration()->setVisible(false);
+    }
 
     // If the platform does support native menus, we show the option,
     // in other case, the option doesn't make sense for this platform.
@@ -636,9 +638,11 @@ public:
     // Scaling
     selectScalingItems();
 
+#ifdef ENABLE_DEVMODE
     if (m_system->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
       gpuAcceleration()->setSelected(m_pref.general.gpuAcceleration());
     }
+#endif
 
     if (m_system->menus())
       showMenuBar()->setSelected(m_pref.general.showMenuBar());
@@ -905,11 +909,13 @@ public:
       reset_screen = true;
     }
 
+#ifdef ENABLE_DEVMODE
     const bool newGpuAccel = gpuAcceleration()->isSelected();
     if (newGpuAccel != m_pref.general.gpuAcceleration()) {
       m_pref.general.gpuAcceleration(newGpuAccel);
       reset_screen = true;
     }
+#endif
 
     if (m_system->menus() &&
         m_pref.general.showMenuBar() != showMenuBar()->isSelected()) {
