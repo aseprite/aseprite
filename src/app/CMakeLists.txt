@@ -105,6 +105,13 @@ else()
   target_sources(app-lib PRIVATE font_path_unix.cpp)
 endif()
 
+# This defines a specific webp decoding utility function for using
+# in Windows when dragging and dropping images that are stored as
+# webp files (like Chrome does).
+if(WIN32 AND ENABLE_WEBP)
+  target_sources(app-lib PRIVATE util/decode_webp.cpp)
+endif()
+
 # Trial-version vs Full version (enable save command)
 if(ENABLE_TRIAL_MODE)
   target_compile_definitions(app-lib PUBLIC -DENABLE_TRIAL_MODE)

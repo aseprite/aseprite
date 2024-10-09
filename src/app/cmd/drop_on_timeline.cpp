@@ -23,6 +23,10 @@
 #include "doc/layer_list.h"
 #include "render/dithering.h"
 
+#if ENABLE_WEBP && LAF_WINDOWS
+#include "app/util/decode_webp.h"
+#endif
+
 #include <algorithm>
 
 namespace app {
