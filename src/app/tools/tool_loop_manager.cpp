@@ -44,8 +44,7 @@ using namespace filters;
 ToolLoopManager::ToolLoopManager(ToolLoop* toolLoop)
   : m_toolLoop(toolLoop)
   , m_canceled(false)
-  , m_brushSize0(toolLoop->getBrush()->size())
-  , m_brushAngle0(toolLoop->getBrush()->angle())
+  , m_brush0(toolLoop->getBrush())
   , m_dynamics(toolLoop->getDynamics())
 {
 }
@@ -209,7 +208,7 @@ void ToolLoopManager::movement(Pointer pointer)
   doLoopStep(false);
 }
 
-void ToolLoopManager::disableMouseStabilizer() 
+void ToolLoopManager::disableMouseStabilizer()
 {
   // Disable mouse stabilizer for the current ToolLoopManager
   m_dynamics.stabilizer = false;
@@ -341,12 +340,14 @@ void ToolLoopManager::calculateDirtyArea(const Strokes& strokes)
     m_toolLoop->getPointShape()->getModifiedArea(
       m_toolLoop,
       strokeBounds.x,
-      strokeBounds.y, r1);
+      strokeBounds.y,
+      stroke.firstPoint().symmetry, r1);
 
     m_toolLoop->getPointShape()->getModifiedArea(
       m_toolLoop,
       strokeBounds.x+strokeBounds.w-1,
-      strokeBounds.y+strokeBounds.h-1, r2);
+      strokeBounds.y+strokeBounds.h-1,
+      stroke.firstPoint().symmetry, r2);
 
     m_dirtyArea.createUnion(m_dirtyArea, Region(r1.createUnion(r2)));
   }
@@ -371,8 +372,8 @@ Stroke::Pt ToolLoopManager::getSpriteStrokePt(const Pointer& pointer)
 {
   // Convert the screen point to a sprite point
   Stroke::Pt spritePoint = pointer.point();
-  spritePoint.size = m_brushSize0;
-  spritePoint.angle = m_brushAngle0;
+  spritePoint.size = m_brush0->size();
+  spritePoint.angle = m_brush0->angle();
 
   // Center the input to some grid point if needed
   snapToGrid(spritePoint);
