@@ -96,7 +96,8 @@ namespace app {
       m_image = image;
     }
     DraggedData(const os::SurfaceRef& surface) {
-      convert_surface_to_image(surface.get(), 0, 0, surface->width(), surface->height(), m_image);
+      if (surface)
+        convert_surface_to_image(surface.get(), 0, 0, surface->width(), surface->height(), m_image);
     }
 
     const doc::ImageRef& getImage() const { return m_image; }
