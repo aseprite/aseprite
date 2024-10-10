@@ -9,7 +9,6 @@
 #pragma once
 
 #include "os/surface.h"
-#include "os/system.h"
 
 namespace app {
 
@@ -18,11 +17,6 @@ namespace util {
 // Decodes webp content passed in buf and returns a surface with just the first
 // frame.
 os::SurfaceRef decode_webp(const uint8_t* buf, uint32_t len);
-
-static void* once = []() {
-  os::set_decode_webp(decode_webp);
-  return nullptr;
-}();
 
 }
 

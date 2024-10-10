@@ -78,6 +78,10 @@
   #include "os/x11/system.h"
 #endif
 
+#if ENABLE_WEBP && LAF_WINDOWS
+  #include "app/util/decode_webp.h"
+#endif
+
 #include <iostream>
 #include <memory>
 
@@ -482,6 +486,10 @@ void App::run()
     manager->display()->nativeWindow()
       ->setInterpretOneFingerGestureAsMouseMovement(
         preferences().experimental.oneFingerAsMouseMovement());
+  #if ENABLE_WEBP
+    // In Windows we use a custom webp decoder for drag & drop operations.
+    os::set_decode_webp(util::decode_webp);
+  #endif
 #endif
 
 #if LAF_LINUX
