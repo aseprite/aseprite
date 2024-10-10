@@ -464,13 +464,10 @@ EditorState::LeaveAction WritingTextState::onLeaveState(Editor* editor, EditorSt
       expand.validateDestCanvas(
         gfx::Region(extraCel->cel()->bounds()));
 
-      doc::blend_image(
-        expand.getDestCanvas(),
+      expand.getDestCanvas()->copy(
         extraCel->image(),
         gfx::Clip(extraCel->cel()->position(),
-                  extraCel->image()->bounds()),
-        site.palette(),
-        255, doc::BlendMode::NORMAL);
+                  extraCel->image()->bounds()));
 
       expand.commit();
       tx.commit();
