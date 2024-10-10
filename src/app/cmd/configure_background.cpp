@@ -25,8 +25,13 @@ ConfigureBackground::ConfigureBackground(Layer* layer)
   LayerFlags newFlags = LayerFlags(int(layer->flags())
     | int(LayerFlags::BackgroundLayerFlags));
 
+  // save previous layer name so it will be the same
+  // if user changes layer from background to layer once again
+  layer->setLayerPrevName(layer->name());
+
   add(new cmd::SetLayerFlags(layer, newFlags));
-  add(new cmd::SetLayerName(layer, "Background"));
+  add(new cmd::SetLayerName(layer, layer->prevBgName().empty() ?
+                            "Background" : layer->prevBgName()));
 
   if (layer->isImage() &&
       static_cast<LayerImage*>(layer)->opacity() < 255) {
