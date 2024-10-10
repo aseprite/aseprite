@@ -6,6 +6,8 @@
 
 #include "app/util/decode_webp.h"
 
+#include "os/system.h"
+
 #include <webp/demux.h>
 #include <webp/mux.h>
 
