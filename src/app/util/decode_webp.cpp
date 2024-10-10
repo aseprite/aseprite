@@ -42,11 +42,10 @@ os::SurfaceRef decode_webp(const uint8_t* buf, uint32_t len)
 
   WebPDecoderConfig config;
   WebPInitDecoderConfig(&config);
-  if (WebPGetFeatures(webp_data.bytes, webp_data.size, &config.input)) {
-
-  }
-  else {
-    config.input.has_alpha = false;
+  auto status = WebPGetFeatures(webp_data.bytes, webp_data.size, &config.input);
+  if (status != VP8_STATUS_OK) {
+    // Error getting WebP features.
+    return nullptr;
   }
 
   const int w = anim_info.canvas_width;
