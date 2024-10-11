@@ -61,6 +61,7 @@ endif()
 if(REQUIRE_CURL AND NOT USE_SHARED_CURL)
   set(BUILD_RELEASE_DEBUG_DIRS ON BOOL)
   set(BUILD_CURL_EXE OFF CACHE BOOL "Set to ON to build curl executable.")
+  set(CURL_DISABLE_TESTS ON CACHE BOOL "Disable Curl tests")
 
   add_subdirectory(curl)
 endif()
