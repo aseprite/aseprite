@@ -58,7 +58,10 @@ namespace app {
   private:
     gfx::Point intCelOffset() const;
     gfx::RectF calcFullBounds() const;
+    void calcPivot();
     bool restoreCelStartPosition() const;
+    void snapOffsetToGrid(gfx::Point& offset) const;
+    void snapBoundsToGrid(gfx::RectF& celBounds) const;
     // ContextObserver
     void onBeforeCommandExecution(CommandExecutionEvent& ev);
 
@@ -71,7 +74,10 @@ namespace app {
     Cel* m_cel;
     CelList m_celList;
     std::vector<gfx::RectF> m_celStarts;
+    gfx::RectF m_fullBounds;
     gfx::PointF m_cursorStart;
+    gfx::PointF m_pivot;
+    gfx::PointF m_pivotOffset;
     gfx::PointF m_celOffset;
     gfx::SizeF m_celMainSize;
     gfx::SizeF m_celScale;

@@ -17,6 +17,7 @@
 #include "app/context_access.h"
 #include "app/doc_api.h"
 #include "app/doc_range.h"
+#include "app/snap_to_grid.h"
 #include "app/tx.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
@@ -125,6 +126,7 @@ MovingCelState::MovingCelState(Editor* editor,
     &MovingCelState::onBeforeCommandExecution, this);
 
   m_cursorStart = editor->screenToEditorF(msg->position());
+  calcPivot();
   editor->captureMouse();
 
   // Hide the mask (temporarily, until mouse-up event)
@@ -156,6 +158,10 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
       Tx tx(writer, "Cel Movement", ModifyDocument);
       DocApi api = document->getApi(tx);
       gfx::Point intOffset = intCelOffset();
+      bool snapToGrid = (Preferences::instance().selection.snapToGrid() &&
+                         m_editor->docPref().grid.snap());
+      if (snapToGrid)
+        snapOffsetToGrid(intOffset);
 
       // And now we move the cel (or all selected range) to the new position.
       for (Cel* cel : m_celList) {
@@ -168,6 +174,9 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
             celBounds.w *= m_celScale.w;
             celBounds.h *= m_celScale.h;
           }
+          if (snapToGrid)
+            snapBoundsToGrid(celBounds);
+
           tx(new cmd::SetCelBoundsF(cel, celBounds));
         }
         else {
@@ -224,6 +233,17 @@ bool MovingCelState::onMouseMove(Editor* editor, MouseMessage* msg)
   return StandbyState::onMouseMove(editor, msg);
 }
 
+void MovingCelState::calcPivot()
+{
+  // Get grid displacement from pivot point, for now hardcoded
+  // to be relative to initial position
+  m_fullBounds = calcFullBounds();
+  m_pivot = gfx::PointF(0,0);
+  const gfx::RectF& gridBounds = m_editor->getSite().gridBounds();
+  m_pivotOffset = gfx::PointF(
+    gridBounds.size()) - (m_pivot-m_fullBounds.origin());
+}
+
 void MovingCelState::onCommitMouseMove(Editor* editor,
                                        const gfx::PointF& newCursorPos)
 {
@@ -262,6 +282,10 @@ void MovingCelState::onCommitMouseMove(Editor* editor,
   }
 
   gfx::Point intOffset = intCelOffset();
+  bool snapToGrid = (Preferences::instance().selection.snapToGrid() &&
+                     m_editor->docPref().grid.snap());
+  if (snapToGrid)
+    snapOffsetToGrid(intOffset);
 
   for (size_t i=0; i<m_celList.size(); ++i) {
     Cel* cel = m_celList[i];
@@ -275,6 +299,9 @@ void MovingCelState::onCommitMouseMove(Editor* editor,
         celBounds.w *= m_celScale.w;
         celBounds.h *= m_celScale.h;
       }
+      if (snapToGrid)
+        snapBoundsToGrid(celBounds);
+
       cel->setBoundsF(celBounds);
     }
     else {
@@ -365,6 +392,45 @@ gfx::RectF MovingCelState::calcFullBounds() const
       bounds |= gfx::RectF(cel->bounds()).floor();
   }
   return bounds;
+}
+
+void MovingCelState::snapOffsetToGrid(gfx::Point& offset) const
+{
+  const gfx::RectF& gridBounds = m_editor->getSite().gridBounds();
+  const gfx::RectF displaceGrid(gridBounds.origin() + m_pivotOffset,
+                                gridBounds.size());
+  offset = snap_to_grid(
+    displaceGrid,
+    gfx::Point(m_fullBounds.origin() + offset),
+    PreferSnapTo::ClosestGridVertex) - m_fullBounds.origin();
+}
+
+void MovingCelState::snapBoundsToGrid(gfx::RectF& celBounds) const
+{
+  const gfx::RectF& gridBounds = m_editor->getSite().gridBounds();
+  const gfx::RectF displaceGrid(gridBounds.origin() + m_pivotOffset,
+                                gridBounds.size());
+  const gfx::PointF& origin = celBounds.origin();
+  if (m_scaled) {
+    gfx::PointF gridOffset(
+      snap_to_grid(
+        displaceGrid,
+        gfx::Point(origin.x + celBounds.w,
+                   origin.y + celBounds.h),
+        PreferSnapTo::ClosestGridVertex) - origin);
+
+    celBounds.w = std::max(gridBounds.w, gridOffset.x);
+    celBounds.h = std::max(gridBounds.h, gridOffset.y);
+  }
+  else if (m_moved) {
+    gfx::PointF gridOffset(
+      snap_to_grid(
+        displaceGrid,
+        gfx::Point(origin),
+        PreferSnapTo::ClosestGridVertex));
+
+    celBounds.setOrigin(gridOffset);
+  }
 }
 
 bool MovingCelState::restoreCelStartPosition() const
