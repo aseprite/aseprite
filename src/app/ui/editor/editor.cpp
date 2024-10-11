@@ -58,6 +58,7 @@
 #include "base/chrono.h"
 #include "base/convert_to.h"
 #include "doc/doc.h"
+#include "doc/algo.h"
 #include "doc/mask_boundaries.h"
 #include "doc/slice.h"
 #include "fmt/format.h"
@@ -1196,8 +1197,8 @@ void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gr
   // Isometric grid
   else {
     RectF pix(editorToScreenF(RectF(0, 0, 1, 1)));
-    int x1 = gridF.x;
-    int y1 = gridF.y;
+    int x1 = std::round(gridF.x);
+    int y1 = std::round(gridF.y);
     int x2 = spriteBounds.x + spriteBounds.w;
     int y2 = spriteBounds.y + spriteBounds.h;
     int dx = std::round(grid.w*pix.w);
@@ -1210,7 +1211,7 @@ void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gr
     while (y1 > spriteBounds.y) y1 -= dy;
 
     // Draw pixel-precise isometric grid when zoomed in
-    if (m_proj.zoom().scale() > 8.00) {
+    if (m_proj.zoom().scale() > 6.00) {
       ui::Paint paint;
       paint.style(ui::Paint::Stroke);
       paint.antialias(false);
@@ -1232,16 +1233,16 @@ void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gr
     // Draw straight isometric line grid
     else {
       // Single side of diamond is line (a, b)
-      Point a(0, std::round(grid.h*0.5*pix.h));
-      Point b(std::round(grid.w*0.5*pix.w), dy);
+      PointF a(0, grid.h*0.5*pix.h);
+      PointF b(grid.w*0.5*pix.w, dy);
 
       // Get length and direction of line (a, b)
-      Point vto = b-a;
-      Point ivto = Point(-vto.x, vto.y);
+      PointF vto = b-a;
+      PointF ivto = PointF(-vto.x, vto.y);
       double lenF = sqrt(vto.x*vto.x + vto.y*vto.y);
 
       // Now displace point (b) to upper edge of canvas
-      b = a+Point(std::round(dx*0.5), std::round(-dy*0.5));
+      b = a+PointF(dx*0.5, -dy*0.5);
 
       // Offset line (a, b) by screen coords
       a += Point(x1, y1);
@@ -1249,30 +1250,35 @@ void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gr
 
       // Calculate number of diamonds required to
       // fill canvas horizontally
-      Point left(std::round(((x2-x1)/dx) * dx), 0);
+      PointF left(((x2-x1)/dx)*dx, 0);
       while (left.x < (x2-x1)) left.x += dx;
 
       // Calculate how much we need to stretch
       // line (a, b) to cover the whole canvas
-      int len = int(std::round(left.x/lenF)) + 1;
+      double len = (left.x/lenF) + 1;
       len += 1*(grid.x > 0);
       len += 1*(grid.y > 0);
 
       // Move these two points across the screen in
       // cell-sized steps to draw the entire grid
       for (int y=y1; y<y2; y+=dy) {
-        g->drawLine(grid_color, a, a+vto*len);
-        g->drawLine(grid_color, a+left, (a+left) + ivto*len);
+        g->drawLine(grid_color, Point(a), Point(a+vto*len));
+        g->drawLine(grid_color, Point(a+left), Point((a+left) + ivto*len));
         a.y += dy;
       }
       for (int x=x1; x<x2; x+=dx) {
-        g->drawLine(grid_color, b, b+vto*len);
-        g->drawLine(grid_color, b, b+ivto*len);
+        g->drawLine(grid_color, Point(b), Point(b+vto*len));
+        g->drawLine(grid_color, Point(b), Point(b+ivto*len));
         b.x += dx;
       }
     }
   }
 }
+
+static void push_line_pixel(int x, int y, std::vector<Point>* data)
+{
+  data->push_back(Point(x, y));
+};
 
 gfx::Path& Editor::getIsometricGridPath(Rect& grid)
 {
@@ -1296,70 +1302,24 @@ gfx::Path& Editor::getIsometricGridPath(Rect& grid)
 
     // Prepare bitmap
     im->clear(0x00);
-    int x = 0;
-    int y = int(std::round(grid.h*0.5));
-    int lx = grid.w;
-    int ly = y-1;
+    Point a(0, std::round(grid.h*0.5));
+    Point b(std::floor(grid.w*0.5), grid.h);
+    std::vector<Point> line;
 
-    im->fillRect(
-      0, std::round(y*pix.h),
-      std::round(lx*pix.w),
-      std::round(y*pix.h), 0x01);
+    // We use the line drawing algorithm to find the points
+    // for a single pixel-precise line
+    doc::algo_line_continuous_with_fix_for_line_brush(
+      a.x, a.y, b.x, b.y,
+      &line, (doc::AlgoPixel) &push_line_pixel);
 
-    y++;
-    x++;
-
-    // 2:1
-    if (grid.w == grid.h*2) {
-      for (; y<grid.h; y++,x+=2)
-        im->fillRect(
-          std::round(x*pix.w),
-          std::round((y-(x+1))*pix.h),
-          std::round((lx-x)*pix.w),
-          std::round(y*pix.h), 0x01);
-
+    // Iterating on said points, we fill in the bitmap
+    // for a single cell grid
+    for (auto p : line)
       im->fillRect(
-        std::round(x*pix.w), 0,
-        std::round((x+2)*pix.w),
-        std::round(y*pix.h), 0x01);
-    }
-    // 1:1
-    else if (grid.w == grid.h) {
-      for (; y<grid.h; y++,x++,ly--)
-        im->fillRect(
-          std::round(x*pix.w),
-          std::round(ly*pix.h),
-          std::round((lx-x)*pix.w),
-          std::round(y*pix.h), 0x01);
-
-      im->fillRect(
-        std::round(x*pix.w), 0,
-        std::round(x*pix.w),
-        std::round(y*pix.h), 0x01);
-    }
-    // Quick test for other ratios
-    else if (grid.w > grid.h*2) {
-      float step = 0.00;
-      float rem = 0.00;
-      float len = float(grid.w)/(grid.h+1);
-
-      for (; y<grid.h; y++,x+=step,ly--) {
-        step = len+rem;
-        rem = step-int(step);
-        if (std::round(step) > std::floor(step)) rem = 0;
-        step = std::round(step);
-        im->fillRect(
-          std::round(x*pix.w),
-          std::round(ly*pix.h),
-          std::round((lx-x)*pix.w),
-          std::round(y*pix.h), 0x01);
-      }
-
-      im->fillRect(
-        std::round((grid.w*0.5-1)*pix.w), 0,
-        std::round((grid.w*0.5+1)*pix.w),
-        std::round(y*pix.h), 0x01);
-    }
+        std::round(p.x*pix.w),
+        std::round((grid.h-p.y)*pix.h),
+        std::floor((grid.w-p.x)*pix.w),
+        std::floor(p.y*pix.h), 0x01);
 
     doc::MaskBoundaries immask;
     immask.regen(im);
