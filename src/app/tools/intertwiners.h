@@ -617,7 +617,7 @@ private:
   // IntertwineAsPixelPerfect.joinStroke() method.
   void savePointshapeStrokePtArea(ToolLoop* loop, const tools::Stroke::Pt& pt) {
     gfx::Rect r;
-    loop->getPointShape()->getModifiedArea(loop, pt.x, pt.y, r);
+    loop->getPointShape()->getModifiedArea(loop, pt.x, pt.y, pt.symmetry, r);
 
     gfx::Region rgn(r);
     // By wrapping the modified area's position when tiled mode is active, the
@@ -689,7 +689,7 @@ private:
     ASSERT(m_tempTileset);
 
     gfx::Rect r;
-    loop->getPointShape()->getModifiedArea(loop, pt.x, pt.y, r);
+    loop->getPointShape()->getModifiedArea(loop, pt.x, pt.y, pt.symmetry, r);
 
     r.offset(-loop->getCelOrigin());
     auto tilesPts = m_dstGrid.tilesInCanvasRegion(gfx::Region(r));

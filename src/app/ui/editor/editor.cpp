@@ -955,6 +955,54 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
                      enclosingRect.w);
       }
     }
+    if (mode & int(app::gen::SymmetryMode::RIGHT_DIAG)) {
+      double y = m_docPref.symmetry.yAxis();
+      double x = m_docPref.symmetry.xAxis();
+      gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
+      // Bottom point intersection:
+      gfx::Point bottomLeft(enclosingRect.x + m_proj.applyY(mainTilePosition().x) + int(m_proj.applyX<double>(x))
+                            - (enclosingRect.h - m_proj.applyY(mainTilePosition().y) - int(m_proj.applyY<double>(y))),
+                            enclosingRect.y2());
+      if (bottomLeft.x < enclosingRect.x) {
+        // Left intersection
+        bottomLeft.y = enclosingRect.y2() - enclosingRect.x + bottomLeft.x;
+        bottomLeft.x = enclosingRect.x;
+      }
+      // Top intersection
+      gfx::Point topRight(enclosingRect.x + m_proj.applyY(mainTilePosition().x) + int(m_proj.applyX<double>(x))
+                          + m_proj.applyY(mainTilePosition().y) + int(m_proj.applyY<double>(y)),
+                          enclosingRect.y);
+      if (enclosingRect.x2() < topRight.x) {
+        // Right intersection
+        topRight.y = enclosingRect.y + topRight.x - enclosingRect.x2();
+        topRight.x = enclosingRect.x2();
+      }
+      g->drawLine(color, bottomLeft, topRight);
+    }
+    if (mode & int(app::gen::SymmetryMode::LEFT_DIAG)) {
+      double y = m_docPref.symmetry.yAxis();
+      double x = m_docPref.symmetry.xAxis();
+      gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
+      // Bottom point intersection:
+      gfx::Point bottomRight(enclosingRect.x + m_proj.applyY(mainTilePosition().x) + int(m_proj.applyX<double>(x))
+                             + (enclosingRect.h - m_proj.applyY(mainTilePosition().y) - int(m_proj.applyX<double>(y))),
+                             enclosingRect.y2());
+      if (enclosingRect.x2() < bottomRight.x) {
+        // Left intersection
+        bottomRight.y = enclosingRect.y2() - bottomRight.x + enclosingRect.x2();
+        bottomRight.x = enclosingRect.x2();
+      }
+      // Top intersection
+      gfx::Point topLeft(enclosingRect.x + m_proj.applyY(mainTilePosition().x) + int(m_proj.applyX<double>(x))
+                         - m_proj.applyY(mainTilePosition().y) - int(m_proj.applyY<double>(y)),
+                         enclosingRect.y);
+      if (topLeft.x < enclosingRect.x) {
+        // Right intersection
+        topLeft.y = enclosingRect.y + enclosingRect.x - topLeft.x;
+        topLeft.x = enclosingRect.x;
+      }
+      g->drawLine(color, topLeft, bottomRight);
+    }
   }
 
   // Draw active layer/cel edges
