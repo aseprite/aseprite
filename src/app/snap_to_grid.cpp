@@ -11,6 +11,11 @@
 
 #include "app/snap_to_grid.h"
 
+#include "app/app.h"
+#include "app/context.h"
+#include "app/doc.h"
+#include "app/pref/preferences.h"
+#include "doc/grid.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 
@@ -18,10 +23,56 @@
 
 namespace app {
 
+gfx::Point snap_to_isometric_grid(const gfx::Rect& grid,
+                                  const gfx::Point& point,
+                                  const PreferSnapTo prefer)
+{
+  // Convert point to grid space
+  gfx::PointF newPoint(int((point.x - grid.x) / double(grid.w)) * grid.w,
+                       int((point.y - grid.y) / double(grid.h)) * grid.h);
+
+  // Substract this from original point (also in grid space)
+  // to obtain newPoint as an offset within the first grid cell
+  const gfx::PointF diff((point - grid.origin()) - newPoint);
+
+  // We now find the closest corner to that offset
+  const gfx::PointF candidates[] = { gfx::PointF(grid.w * 0.5, 0),
+                                     gfx::PointF(grid.w * 0.5, grid.h),
+                                     gfx::PointF(0, grid.h * 0.5),
+                                     gfx::PointF(grid.w, grid.h * 0.5) };
+  gfx::PointF near(grid.origin());
+  double dist = (grid.w + grid.h) * 2;
+  for (const auto& c : candidates) {
+    gfx::PointF vto = diff - c;
+    if (vto.x < 0)
+      vto.x = -vto.x;
+    if (vto.y < 0)
+      vto.y = -vto.y;
+    const double newDist = vto.x + vto.y;
+    if (newDist < dist) {
+      near = c;
+      dist = newDist;
+    }
+  }
+
+  // TODO: translate the use of the 'prefer' argument from
+  //       the orthogonal logic to this function
+
+  // Convert cell offset to pixel space
+  newPoint += near + grid.origin();
+  return gfx::Point(std::round(newPoint.x), std::round(newPoint.y));
+}
+
 gfx::Point snap_to_grid(const gfx::Rect& grid, const gfx::Point& point, const PreferSnapTo prefer)
 {
   if (grid.isEmpty())
     return point;
+
+  // Use different logic for isometric grid
+  const doc::Grid::Type gridType =
+    App::instance()->preferences().document(App::instance()->context()->documents()[0]).grid.type();
+  if (gridType == doc::Grid::Type::Isometric)
+    return snap_to_isometric_grid(grid, point, prefer);
 
   div_t d, dx, dy;
   dx = std::div(grid.x, grid.w);
