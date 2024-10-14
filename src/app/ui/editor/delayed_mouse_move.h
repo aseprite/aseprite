@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -41,6 +41,10 @@ namespace app {
                      Editor* editor,
                      const int interval);
 
+    // Resets internals to receive an onMouseDown() again and
+    // interpret a "one click" correctly again.
+    void reset();
+
     // In case the event wasn't started with onMouseDown() we can
     // initialize the sprite position directly (e.g. starting a line
     // from last painted point with Shift+click with Pencil tool).
@@ -57,6 +61,11 @@ namespace app {
 
     const gfx::PointF& spritePos() const;
 
+    // If the user clicked (pressed and released the mouse button) in
+    // less than 250 milliseconds in "the same place" (inside a 4
+    // pixels rectangle actually, to detect stylus shake).
+    bool canInterpretMouseMovementAsJustOneClick() const;
+
   private:
     void commitMouseMove();
     bool updateSpritePos(const ui::MouseMessage* msg);
@@ -64,6 +73,14 @@ namespace app {
     DelayedMouseMoveDelegate* m_delegate;
     Editor* m_editor;
     ui::Timer m_timer;
+
+    // These fields are used to detect a single click, e.g. in a
+    // selection tool, a single click deselect (press and release the
+    // mouse button in the "same location" approximately).
+    bool m_mouseMoveReceived;
+    gfx::Point m_mouseMaxDelta;
+    gfx::Point m_mouseDownPos;
+    base::tick_t m_mouseDownTime;
 
     // Position of the mouse in the canvas to avoid redrawing when the
     // mouse position changes (only we redraw when the canvas position

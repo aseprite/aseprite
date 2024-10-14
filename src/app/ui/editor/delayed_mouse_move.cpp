@@ -11,8 +11,13 @@
 #include "app/ui/editor/delayed_mouse_move.h"
 
 #include "app/ui/editor/editor.h"
+#include "base/time.h"
+#include "ui/message.h"
 
 namespace app {
+
+static const gfx::Point kNoPosReceived(std::numeric_limits<int>::min(),
+                                       std::numeric_limits<int>::min());
 
 DelayedMouseMove::DelayedMouseMove(DelayedMouseMoveDelegate* delegate,
                                    Editor* editor,
@@ -22,9 +27,18 @@ DelayedMouseMove::DelayedMouseMove(DelayedMouseMoveDelegate* delegate,
   , m_timer(interval)
   , m_spritePos(std::numeric_limits<float>::min(),
                 std::numeric_limits<float>::min())
+  , m_mouseMoveReceived(false)
+  , m_mouseDownPos(kNoPosReceived)
+  , m_mouseDownTime(base::current_tick())
 {
   ASSERT(m_delegate);
   m_timer.Tick.connect([this] { commitMouseMove(); });
+}
+
+void DelayedMouseMove::reset()
+{
+  m_mouseMoveReceived = false;
+  m_mouseDownPos = kNoPosReceived;
 }
 
 void DelayedMouseMove::initSpritePos(const gfx::PointF& pos)
@@ -34,11 +48,23 @@ void DelayedMouseMove::initSpritePos(const gfx::PointF& pos)
 
 void DelayedMouseMove::onMouseDown(const ui::MouseMessage* msg)
 {
+  if (m_mouseDownPos == kNoPosReceived) {
+    m_mouseDownPos = msg->position();
+  }
+
   updateSpritePos(msg);
 }
 
 bool DelayedMouseMove::onMouseMove(const ui::MouseMessage* msg)
 {
+  // Indicate that we've received a real mouse movement event here
+  // (used in the Rectangular Marquee to deselect when we just do a
+  // simple click without moving the mouse).
+  m_mouseMoveReceived = true;
+  gfx::Point delta = (msg->position() - m_mouseDownPos);
+  m_mouseMaxDelta.x = std::max(m_mouseMaxDelta.x, std::abs(delta.x));
+  m_mouseMaxDelta.y = std::max(m_mouseMaxDelta.y, std::abs(delta.y));
+
   if (!updateSpritePos(msg))
     return false;
 
@@ -64,6 +90,15 @@ void DelayedMouseMove::stopTimer()
 {
   if (m_timer.isRunning())
     m_timer.stop();
+}
+
+bool DelayedMouseMove::canInterpretMouseMovementAsJustOneClick() const
+{
+  return
+    !m_mouseMoveReceived ||
+    (m_mouseMaxDelta.x < 4 &&
+     m_mouseMaxDelta.y < 4 &&
+     (base::current_tick() - m_mouseDownTime < 250));
 }
 
 void DelayedMouseMove::commitMouseMove()

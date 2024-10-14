@@ -308,12 +308,14 @@ WritingTextState::~WritingTextState()
 
 bool WritingTextState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
+  if (!editor->hasCapture())
+    m_delayedMouseMove.reset();
+
   m_delayedMouseMove.onMouseDown(msg);
   m_hit = calcHit(editor, msg->position());
 
   if (msg->left()) {
     if (m_hit == Hit::Edges) {
-      m_mouseMoveReceived = false;
       m_movingBounds = true;
       m_cursorStart = editor->screenToEditorF(msg->position());
       m_boundsOrigin = m_bounds.origin();
@@ -322,6 +324,8 @@ bool WritingTextState::onMouseDown(Editor* editor, MouseMessage* msg)
       return true;
     }
 
+    // On mouse down with the left button, we just drop the text
+    // directly when we click outside the edges.
     drop();
     return true;
   }
@@ -338,12 +342,12 @@ bool WritingTextState::onMouseUp(Editor* editor, MouseMessage* msg)
   m_delayedMouseMove.onMouseUp(msg);
 
   const bool result = StandbyState::onMouseUp(editor, msg);
-  if (m_movingBounds) {
+  if (m_movingBounds)
     m_movingBounds = false;
 
-    // Drop if the user just clicked (so other text box is created)
-    if (!m_mouseMoveReceived)
-      drop();
+  // Drop if the user just clicked (so other text box is created)
+  if (m_delayedMouseMove.canInterpretMouseMovementAsJustOneClick()) {
+    drop();
   }
 
   return result;
@@ -366,8 +370,6 @@ void WritingTextState::onCommitMouseMove(Editor* editor,
   gfx::Point delta(spritePos - m_cursorStart);
   if (delta.x == 0 && delta.y == 0)
     return;
-
-  m_mouseMoveReceived = true;
 
   m_bounds.setOrigin(gfx::Point(delta + m_boundsOrigin));
   m_entry->setExtraCelBounds(m_bounds);
