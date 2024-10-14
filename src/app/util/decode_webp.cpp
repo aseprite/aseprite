@@ -14,6 +14,14 @@
 namespace app {
 namespace util {
 
+static WEBP_CSP_MODE colorMode()
+{
+  auto surface = os::instance()->makeSurface(1, 1);
+  os::SurfaceFormatData fd;
+  surface->getFormat(&fd);
+  return (fd.redShift == 0 ? MODE_RGBA : MODE_BGRA);
+}
+
 os::SurfaceRef decode_webp(const uint8_t* buf, uint32_t len)
 {
   // I've considered using the FileFormatsManager here but we don't have a file
@@ -26,7 +34,7 @@ os::SurfaceRef decode_webp(const uint8_t* buf, uint32_t len)
 
   WebPAnimDecoderOptions dec_options;
   WebPAnimDecoderOptionsInit(&dec_options);
-  dec_options.color_mode = MODE_RGBA;
+  dec_options.color_mode = colorMode();
 
   WebPAnimDecoder* dec = WebPAnimDecoderNew(&webp_data, &dec_options);
   if (dec == nullptr) {
