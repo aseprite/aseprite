@@ -18,6 +18,7 @@
 #include "app/doc.h"
 #include "app/doc_event.h"
 #include "app/file/file.h"
+#include "app/util/layer_utils.h"
 #include "app/util/open_file_job.h"
 #include "app/tx.h"
 #include "doc/layer_list.h"
@@ -160,8 +161,7 @@ void DropOnTimeline::onExecute()
           auto* layer = *it;
           // TODO: If we could "relocate" a layer from the source document to the
           // destination document we could avoid making a copy here.
-          auto* layerCopy = Layer::MakeCopyWithSprite(layer, destDoc->sprite());
-          destDoc->copyLayerContent(layer, destDoc, layerCopy);
+          auto* layerCopy = copy_layer_with_sprite(layer, destDoc->sprite());
           layerCopy->displaceFrames(0, m_frame);
 
           if (afterThis) {

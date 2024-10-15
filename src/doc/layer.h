@@ -58,9 +58,6 @@ namespace doc {
   public:
     virtual ~Layer();
 
-    static Layer* MakeCopy(doc::Layer* layer);
-    static Layer* MakeCopyWithSprite(doc::Layer* layer, doc::Sprite* sprite);
-
     virtual int getMemSize() const override;
 
     const std::string& name() const { return m_name; }

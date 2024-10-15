@@ -45,39 +45,6 @@ Layer::~Layer()
 {
 }
 
-// static
-Layer* Layer::MakeCopy(doc::Layer* layer)
-{
-  return MakeCopyWithSprite(layer, layer->sprite());
-}
-
-// static
-Layer* Layer::MakeCopyWithSprite(doc::Layer* layer, doc::Sprite* sprite)
-{
-  std::unique_ptr<doc::Layer> clone;
-  if (layer->isTilemap()) {
-    auto* srcTilemap = static_cast<LayerTilemap*>(layer);
-    tileset_index tilesetIndex = srcTilemap->tilesetIndex();
-    // If the caller is trying to make a copy of a tilemap layer specifying a
-    // different sprite as its owner, then we must copy the tilesets of the
-    // given tilemap layer into the new owner.
-    if (sprite != srcTilemap->sprite()) {
-      auto* srcTilesetCopy = Tileset::MakeCopyCopyingImages(srcTilemap->tileset());
-      tilesetIndex = sprite->tilesets()->add(srcTilesetCopy);
-    }
-
-    clone.reset(new LayerTilemap(sprite, tilesetIndex));
-  }
-  else if (layer->isImage())
-    clone.reset(new LayerImage(sprite));
-  else if (layer->isGroup())
-    clone.reset(new LayerGroup(sprite));
-  else
-    throw std::runtime_error("Invalid layer type");
-
-  return clone.release();
-}
-
 int Layer::getMemSize() const
 {
   return sizeof(Layer);

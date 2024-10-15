@@ -48,6 +48,7 @@
 #include "app/snap_to_grid.h"
 #include "app/transaction.h"
 #include "app/util/autocrop.h"
+#include "app/util/layer_utils.h"
 #include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
@@ -697,9 +698,7 @@ void DocApi::restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeT
 Layer* DocApi::duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer* afterLayer)
 {
   ASSERT(parent);
-  Layer* newLayerPtr = Layer::MakeCopy(sourceLayer);
-
-  m_document->copyLayerContent(sourceLayer, m_document, newLayerPtr);
+  Layer* newLayerPtr = copy_layer(sourceLayer);
 
   newLayerPtr->setName(newLayerPtr->name() + " Copy");
 
