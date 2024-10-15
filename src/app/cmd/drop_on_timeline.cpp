@@ -47,6 +47,22 @@ DropOnTimeline::DropOnTimeline(app::Doc* doc,
     m_size += path.size();
 }
 
+DropOnTimeline::DropOnTimeline(app::Doc* doc,
+                               doc::frame_t frame,
+                               doc::layer_t layerIndex,
+                               InsertionPoint insert,
+                               DroppedOn droppedOn,
+                               const doc::ImageRef& image) : WithDocument(doc)
+                                                         , m_size(0)
+                                                         , m_image(image)
+                                                         , m_frame(frame)
+                                                         , m_layerIndex(layerIndex)
+                                                         , m_insert(insert)
+                                                         , m_droppedOn(droppedOn)
+{
+  ASSERT(m_layerIndex >= 0);
+}
+
 void DropOnTimeline::setupInsertionLayers(Layer** before, Layer** after, LayerGroup** group)
 {
   const LayerList& allLayers = document()->sprite()->allLayers();
@@ -68,12 +84,80 @@ void DropOnTimeline::setupInsertionLayers(Layer** before, Layer** after, LayerGr
   *group  = (*after ? (*after)->parent() : (*before)->parent());
 }
 
+bool DropOnTimeline::hasPendingWork()
+{
+  return m_image || !m_paths.empty();
+}
+
+bool DropOnTimeline::getNextDocFromImage(Doc** srcDoc)
+{
+  if (!m_image)
+    return true;
+
+  Sprite* sprite = new Sprite(m_image->spec(), 256);
+  LayerImage* layer = new LayerImage(sprite);
+  sprite->root()->addLayer(layer);
+  Cel* cel = new Cel(0, m_image);
+  layer->addCel(cel);
+  *srcDoc = new Doc(sprite);
+  m_image = nullptr;
+  return true;
+}
+
+bool DropOnTimeline::getNextDocFromPaths(Doc** srcDoc)
+{
+  Console console;
+  Context* context = document()->context();
+  int flags = FILE_LOAD_DATA_FILE | FILE_LOAD_AVOID_BACKGROUND_LAYER |
+              FILE_LOAD_CREATE_PALETTE | FILE_LOAD_SEQUENCE_YES;
+
+  std::unique_ptr<FileOp> fop(
+    FileOp::createLoadDocumentOperation(context, m_paths.front(), flags));
+
+  // Do nothing (the user cancelled or something like that)
+  if (!fop)
+    return false;
+
+  base::paths fopFilenames;
+  fop->getFilenameList(fopFilenames);
+  // Remove paths that will be loaded by the current file operation.
+  for (const auto& filename : fopFilenames) {
+    auto it = std::find(m_paths.begin(), m_paths.end(), filename);
+    if (it != m_paths.end())
+      m_paths.erase(it);
+  }
+
+  if (fop->hasError()) {
+    console.printf(fop->error().c_str());
+    return true;
+  }
+
+  OpenFileJob task(fop.get(), true);
+  task.showProgressWindow();
+
+  // Post-load processing, it is called from the GUI because may require user intervention.
+  fop->postLoad();
+
+  // Show any error
+  if (fop->hasError() && !fop->isStop())
+    console.printf(fop->error().c_str());
+
+  *srcDoc = fop->releaseDocument();
+  return true;
+}
+
+bool DropOnTimeline::getNextDoc(Doc** srcDoc)
+{
+  *srcDoc = nullptr;
+  if (m_image == nullptr && !m_paths.empty())
+    return getNextDocFromPaths(srcDoc);
+
+  return getNextDocFromImage(srcDoc);
+}
+
 void DropOnTimeline::onExecute()
 {
   Doc* destDoc = document();
-  Console console;
-  Context* context = document()->context();
-
   m_previousTotalFrames = destDoc->sprite()->totalFrames();
   // Layers after/before which the dropped layers will be inserted
   Layer* afterThis = nullptr;
@@ -81,107 +165,78 @@ void DropOnTimeline::onExecute()
   // Parent group of the after/before layers.
   LayerGroup* group = nullptr;
 
-  int flags =
-    FILE_LOAD_DATA_FILE | FILE_LOAD_AVOID_BACKGROUND_LAYER |
-    FILE_LOAD_CREATE_PALETTE | FILE_LOAD_SEQUENCE_YES;
-
-  int fopCount = 0;
-  while(!m_paths.empty()) {
-    std::unique_ptr<FileOp> fop(
-      FileOp::createLoadDocumentOperation(context, m_paths.front(), flags));
-
-    // Do nothing (the user cancelled or something like that)
-    if (!fop)
+  int docsProcessed = 0;
+  while(hasPendingWork()) {
+    Doc* srcDoc;
+    if (!getNextDoc(&srcDoc))
       return;
 
-    fopCount++;
-
-    base::paths fopFilenames;
-    fop->getFilenameList(fopFilenames);
-    // Remove paths that will be loaded by the current file operation.
-    for (const auto& filename : fopFilenames) {
-      auto it = std::find(m_paths.begin(), m_paths.end(), filename);
-      if (it != m_paths.end())
-        m_paths.erase(it);
-    }
-
-    if (fop->hasError()) {
-      console.printf(fop->error().c_str());
-    }
-    else {
-      OpenFileJob task(fop.get(), true);
-      task.showProgressWindow();
-
-      // Post-load processing, it is called from the GUI because may require user intervention.
-      fop->postLoad();
-
-      // Show any error
-      if (fop->hasError() && !fop->isStop())
-        console.printf(fop->error().c_str());
-
-      Doc* srcDoc = fop->document();
-      if (srcDoc) {
-        // If source document doesn't match the destination document's color
-        // mode, change it.
-        if (srcDoc->colorMode() != destDoc->colorMode()) {
-          // Execute in a source doc transaction because we don't need undo/redo
-          // this.
-          Tx tx(srcDoc);
-          tx(new cmd::SetPixelFormat(
-            srcDoc->sprite(), destDoc->sprite()->pixelFormat(),
-            render::Dithering(),
-            Preferences::instance().quantization.rgbmapAlgorithm(),
-            nullptr,
-            nullptr,
-            FitCriteria::DEFAULT));
-          tx.commit();
-        }
-
-        // If there is only one file operation and we can move the cel from the
-        // source document then move the cel into the destination frame.
-        const bool isOnlyFileOperation = (fopCount == 1 && m_paths.empty());
-        if (isOnlyFileOperation && canMoveCelFrom(srcDoc)) {
-          auto* srcLayer = static_cast<LayerImage*>(srcDoc->sprite()->firstLayer());
-          auto* destLayer = static_cast<LayerImage*>(destDoc->sprite()->allLayers()[m_layerIndex]);
-          executeAndAdd(new MoveCel(srcLayer, 0, destLayer, m_frame, false));
-          break;
-        }
-
-        // If there is no room for the source frames, add frames to the
-        // destination sprite.
-        if (m_frame+srcDoc->sprite()->totalFrames() > destDoc->sprite()->totalFrames()) {
-          destDoc->sprite()->setTotalFrames(m_frame+srcDoc->sprite()->totalFrames());
-        }
-
-        setupInsertionLayers(&beforeThis, &afterThis, &group);
-
-        // Insert layers from the source document.
-        auto allLayers = srcDoc->sprite()->allLayers();
-        for (auto it = allLayers.cbegin(); it != allLayers.cend(); ++it) {
-          auto* layer = *it;
-          // TODO: If we could "relocate" a layer from the source document to the
-          // destination document we could avoid making a copy here.
-          auto* layerCopy = copy_layer_with_sprite(layer, destDoc->sprite());
-          layerCopy->displaceFrames(0, m_frame);
-
-          if (afterThis) {
-            group->insertLayer(layerCopy, afterThis);
-            afterThis = layerCopy;
-          }
-          else if (beforeThis) {
-            group->insertLayerBefore(layerCopy, beforeThis);
-            beforeThis = nullptr;
-            afterThis = layerCopy;
-          }
-          else {
-            group->addLayer(layerCopy);
-            afterThis = layerCopy;
-          }
-          m_droppedLayers.push_back(layerCopy);
-          m_size += layerCopy->getMemSize();
-        }
-        group->incrementVersion();
+    if (srcDoc) {
+      docsProcessed++;
+      // If source document doesn't match the destination document's color
+      // mode, change it.
+      if (srcDoc->colorMode() != destDoc->colorMode()) {
+        // Execute in a source doc transaction because we don't need undo/redo
+        // this.
+        Tx tx(srcDoc);
+        tx(new cmd::SetPixelFormat(
+          srcDoc->sprite(), destDoc->sprite()->pixelFormat(),
+          render::Dithering(),
+          Preferences::instance().quantization.rgbmapAlgorithm(),
+          nullptr,
+          nullptr,
+          FitCriteria::DEFAULT));
+        tx.commit();
       }
+
+      // If there is only one source document to process and it has a cel that
+      // can be moved, then move the cel from the source doc into the
+      // destination doc's selected frame.
+      const bool isJustOneDoc = (docsProcessed == 1 && !hasPendingWork());
+      if (isJustOneDoc && canMoveCelFrom(srcDoc)) {
+        auto* srcLayer = static_cast<LayerImage*>(srcDoc->sprite()->firstLayer());
+        auto* destLayer = static_cast<LayerImage*>(destDoc->sprite()->allLayers()[m_layerIndex]);
+        executeAndAdd(new MoveCel(srcLayer, 0, destLayer, m_frame, false));
+        break;
+      }
+
+      // If there is no room for the source frames, add frames to the
+      // destination sprite.
+      if (m_frame+srcDoc->sprite()->totalFrames() > destDoc->sprite()->totalFrames()) {
+        destDoc->sprite()->setTotalFrames(m_frame+srcDoc->sprite()->totalFrames());
+      }
+
+      setupInsertionLayers(&beforeThis, &afterThis, &group);
+
+      // Insert layers from the source document.
+      auto allLayers = srcDoc->sprite()->allLayers();
+      for (auto it = allLayers.cbegin(); it != allLayers.cend(); ++it) {
+        auto* layer = *it;
+        // TODO: If we could "relocate" a layer from the source document to the
+        // destination document we could avoid making a copy here.
+        auto* layerCopy = copy_layer_with_sprite(layer, destDoc->sprite());
+        layerCopy->displaceFrames(0, m_frame);
+
+        if (afterThis) {
+          group->insertLayer(layerCopy, afterThis);
+          afterThis = layerCopy;
+        }
+        else if (beforeThis) {
+          group->insertLayerBefore(layerCopy, beforeThis);
+          beforeThis = nullptr;
+          afterThis = layerCopy;
+        }
+        else {
+          group->addLayer(layerCopy);
+          afterThis = layerCopy;
+        }
+        m_droppedLayers.push_back(layerCopy);
+        m_size += layerCopy->getMemSize();
+      }
+      group->incrementVersion();
+
+      // Source doc is not needed anymore.
+      delete srcDoc;
     }
   }
   destDoc->sprite()->incrementVersion();
@@ -254,14 +309,16 @@ void DropOnTimeline::onRedo()
   notifyDocObservers(afterThis ? afterThis : beforeThis);
 }
 
+// Returns true if the document srcDoc has a cel that can be moved.
+// The cel from the srcDoc can be moved only when all of the following
+// conditions are met:
+// * Drop took place in a cel.
+// * Source doc has only one layer with just one frame.
+// * The layer from the source doc and the destination cel's layer are both
+// Image layers.
+// Otherwise this function returns false.
 bool DropOnTimeline::canMoveCelFrom(app::Doc* srcDoc)
 {
-  // The cel from the source doc can be moved only when the all of the following
-  // conditions are met:
-  // * Drop took place in a cel.
-  // * Source doc has only one layer with just one frame.
-  // * The layer from the source doc and the destination cel's layer are both
-  // Image layers.
   auto* srcLayer = srcDoc->sprite()->firstLayer();
   auto* destLayer = document()->sprite()->allLayers()[m_layerIndex];
   return m_droppedOn == DroppedOn::Cel &&

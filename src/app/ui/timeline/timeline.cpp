@@ -52,6 +52,7 @@
 #include "base/memory.h"
 #include "base/scoped_value.h"
 #include "doc/doc.h"
+#include "doc/image_ref.h"
 #include "fmt/format.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -4486,11 +4487,6 @@ void Timeline::onDrag(ui::DragEvent& e)
 {
   Widget::onDrag(e);
 
-  // Dropping images into the timeline is not supported yet, so do nothing.
-  if (e.hasImage() && !e.hasPaths()) {
-    return;
-  }
-
   m_range.clearRange();
   setHot(hitTest(nullptr, e.position()));
   switch (m_hot.part) {
@@ -4559,11 +4555,22 @@ void Timeline::onDrop(ui::DragEvent& e)
   LOG(LogLevel::VERBOSE, "Dropped at frame: %d, and layerIndex: %d\n", frame, layerIndex);
 #endif
 
-  if (e.hasPaths()) {
+  if (e.hasPaths() || e.hasImage()) {
+    bool droppedImage = e.hasImage() && !e.hasPaths();
     base::paths paths = e.getPaths();
+    auto surface = e.getImage();
+
     execute_from_ui_thread([=]{
-      Tx tx(m_document, "Drop on timeline");
-      tx(new cmd::DropOnTimeline(m_document, frame, layerIndex, insert, droppedOn, paths));
+      std::string txmsg = (droppedImage ? "Dropped image on timeline"
+                                        : "Dropped paths on timeline");
+      Tx tx(m_document, txmsg);
+      if (droppedImage) {
+        doc::ImageRef image = nullptr;
+        convert_surface_to_image(surface.get(), 0, 0, surface->width(), surface->height(), image);
+        tx(new cmd::DropOnTimeline(m_document, frame, layerIndex, insert, droppedOn, image));
+      }
+      else
+        tx(new cmd::DropOnTimeline(m_document, frame, layerIndex, insert, droppedOn, paths));
       tx.commit();
       m_document->notifyGeneralUpdate();
     });
