@@ -43,8 +43,9 @@ option(USE_SHARED_GIFLIB  "Use your installed copy of giflib" off)
 option(USE_SHARED_JPEGLIB "Use your installed copy of jpeglib" off)
 option(USE_SHARED_ZLIB    "Use your installed copy of zlib" off)
 option(USE_SHARED_LIBPNG  "Use your installed copy of libpng" off)
-option(USE_SHARED_TINYXML "Use your installed copy of tinyxml" off)
-option(USE_SHARED_PIXMAN  "Use your installed copy of pixman" off)
+option(USE_SHARED_TINYXML  "Use your installed copy of tinyxml" on)
+option(USE_SHARED_TINYEXIF "Use your installed copy of tinyexif" off)
+option(USE_SHARED_PIXMAN   "Use your installed copy of pixman" off)
 option(USE_SHARED_FREETYPE "Use shared FreeType library" off)
 option(USE_SHARED_HARFBUZZ "Use shared HarfBuzz library" off)
 option(ENABLE_ASEPRITE_EXE "Compile main Aseprite executable" on)
@@ -166,6 +167,7 @@ set(FREETYPE_DIR        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/freetype2)
 set(HARFBUZZ_DIR        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/harfbuzz)
 set(SIMPLEINI_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/third_party/simpleini)
 set(TINYXML_DIR         ${CMAKE_CURRENT_SOURCE_DIR}/third_party/tinyxml2)
+set(TINYEXIF_DIR        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/tinyexif)
 set(ZLIB_DIR            ${CMAKE_CURRENT_SOURCE_DIR}/third_party/zlib)
 
 # Search in the "cmake" directory for additional CMake modules.
@@ -229,13 +231,23 @@ add_definitions(-DPNG_NO_MMX_CODE) # Do not use MMX optimizations in PNG code
 
 # tinyxml2
 if(USE_SHARED_TINYXML)
-  find_library(TINYXML_LIBRARY NAMES tinyxml2)
-  find_path(TINYXML_INCLUDE_DIR NAMES tinyxml2.h)
+  find_package(TINYXML REQUIRED)
 else()
   set(TINYXML_LIBRARY tinyxml2)
   set(TINYXML_INCLUDE_DIR ${TINYXML_DIR})
 endif()
 include_directories(${TINYXML_INCLUDE_DIR})
+
+# tinyexif
+if(USE_SHARED_TINYEXIF)
+  find_library(TINYEXIF_LIBRARY NAMES tinyexif)
+  find_path(TINYEXIF_INCLUDE_DIR NAMES tinyexif.h)
+else()
+  set(TINYEXIF_LIBRARY tinyexif)
+  set(TINYEXIF_INCLUDE_DIR ${TINYEXIF_DIR})
+endif()
+include_directories(${TINYEXIF_INCLUDE_DIR})
+
 
 # pixman
 if(USE_SHARED_PIXMAN)
