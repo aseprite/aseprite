@@ -58,6 +58,12 @@ if(NOT USE_SHARED_TINYXML)
   add_subdirectory(tinyxml2)
 endif()
 
+# Jpeg exif fields
+if(NOT USE_SHARED_TINYEXIF)
+  set(tinyexif_BUILD_TESTING OFF CACHE BOOL "Build tests for tinyexif")
+  add_subdirectory(tinyexif)
+endif()
+
 if(REQUIRE_CURL AND NOT USE_SHARED_CURL)
   set(BUILD_RELEASE_DEBUG_DIRS ON BOOL)
   set(BUILD_CURL_EXE OFF CACHE BOOL "Set to ON to build curl executable.")
