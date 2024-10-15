@@ -34,6 +34,12 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
   const int dsth = loop->getDstImage()->height();
   int x, w, size; // width or height
 
+  // Without this fix, slice preview won't show when tilemap mode
+  // is 'tiles' and slicing at a negative grid index
+  gfx::Point limit(0,0);
+  if (ink->isSlice() && loop->getPointShape()->isTile())
+    limit = -loop->getGrid().origin();
+
   // In case the ink needs original cel coordinates, we have to
   // translate the x1/y/x2 coordinate.
   if (loop->needsCelCoordinates()) {
@@ -48,7 +54,7 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
     size = dsth;      // size = image height
     y = wrap_value(y, size);
   }
-  else if (y < 0 || y >= dsth) {
+  else if (y < limit.y || y >= dsth) {
     return;
   }
 
@@ -82,11 +88,11 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
   }
   // Clipped in X axis
   else {
-    if (x2 < 0 || x1 >= dstw || x2-x1+1 < 1)
+    if (x2 < limit.x || x1 >= dstw || x2-x1+1 < limit.x+1)
       return;
 
-    x1 = std::clamp(x1, 0, dstw-1);
-    x2 = std::clamp(x2, 0, dstw-1);
+    x1 = std::clamp(x1, limit.x, dstw-1);
+    x2 = std::clamp(x2, limit.x, dstw-1);
     ink->inkHline(x1, y, x2, loop);
   }
 }
