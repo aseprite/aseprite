@@ -34,11 +34,14 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
   const int dsth = loop->getDstImage()->height();
   int x, w, size; // width or height
 
-  // Without this fix, slice preview won't show when tilemap mode
-  // is 'tiles' and slicing at a negative grid index
+  // Without this fix, tiled slice preview won't show when
+  // slicing at a negative grid index
   gfx::Point limit(0,0);
-  if (ink->isSlice() && loop->getPointShape()->isTile())
+  if (ink->isSlice() && loop->getPointShape()->isTile()) {
     limit = -loop->getGrid().origin();
+    limit.x *= limit.x < 0;
+    limit.y *= limit.y < 0;
+  }
 
   // In case the ink needs original cel coordinates, we have to
   // translate the x1/y/x2 coordinate.
