@@ -63,25 +63,23 @@ DropOnTimeline::DropOnTimeline(app::Doc* doc,
   ASSERT(m_layerIndex >= 0);
 }
 
-void DropOnTimeline::setupInsertionLayers(Layer** before, Layer** after, LayerGroup** group)
+void DropOnTimeline::setupInsertionLayer(Layer** layer, LayerGroup** group)
 {
   const LayerList& allLayers = document()->sprite()->allLayers();
-  *after  = (m_insert == InsertionPoint::AfterLayer  ? allLayers[m_layerIndex] : nullptr);
-  *before = (m_insert == InsertionPoint::BeforeLayer ? allLayers[m_layerIndex] : nullptr);
-  if (*before && (*before)->isGroup()) {
-    *group = static_cast<LayerGroup*>(*before);
+  *layer  = allLayers[m_layerIndex];
+  if (m_insert == InsertionPoint::BeforeLayer && (*layer)->isGroup()) {
+    *group = static_cast<LayerGroup*>(*layer);
     // The user is trying to drop layers into an empty group, so there is no after
     // nor before layer...
     if ((*group)->layersCount() == 0) {
-      *after = nullptr;
-      *before = nullptr;
+      *layer = nullptr;
       return;
     }
-    *after = static_cast<LayerGroup*>(*before)->lastLayer();
-    *before = nullptr;
+    *layer = (*group)->lastLayer();
+    m_insert = InsertionPoint::AfterLayer;
   }
 
-  *group  = (*after ? (*after)->parent() : (*before)->parent());
+  *group  = (*layer)->parent();
 }
 
 bool DropOnTimeline::hasPendingWork()
@@ -159,11 +157,6 @@ void DropOnTimeline::onExecute()
 {
   Doc* destDoc = document();
   m_previousTotalFrames = destDoc->sprite()->totalFrames();
-  // Layers after/before which the dropped layers will be inserted
-  Layer* afterThis = nullptr;
-  Layer* beforeThis = nullptr;
-  // Parent group of the after/before layers.
-  LayerGroup* group = nullptr;
 
   int docsProcessed = 0;
   while(hasPendingWork()) {
@@ -206,9 +199,7 @@ void DropOnTimeline::onExecute()
         destDoc->sprite()->setTotalFrames(m_frame+srcDoc->sprite()->totalFrames());
       }
 
-      setupInsertionLayers(&beforeThis, &afterThis, &group);
-
-      // Insert layers from the source document.
+      // Save dropped layers from source document.
       auto allLayers = srcDoc->sprite()->allLayers();
       for (auto it = allLayers.cbegin(); it != allLayers.cend(); ++it) {
         auto* layer = *it;
@@ -216,24 +207,9 @@ void DropOnTimeline::onExecute()
         // destination document we could avoid making a copy here.
         auto* layerCopy = copy_layer_with_sprite(layer, destDoc->sprite());
         layerCopy->displaceFrames(0, m_frame);
-
-        if (afterThis) {
-          group->insertLayer(layerCopy, afterThis);
-          afterThis = layerCopy;
-        }
-        else if (beforeThis) {
-          group->insertLayerBefore(layerCopy, beforeThis);
-          beforeThis = nullptr;
-          afterThis = layerCopy;
-        }
-        else {
-          group->addLayer(layerCopy);
-          afterThis = layerCopy;
-        }
         m_droppedLayers.push_back(layerCopy);
         m_size += layerCopy->getMemSize();
       }
-      group->incrementVersion();
 
       // Source doc is not needed anymore.
       delete srcDoc;
@@ -242,7 +218,7 @@ void DropOnTimeline::onExecute()
   destDoc->sprite()->incrementVersion();
   destDoc->incrementVersion();
 
-  notifyDocObservers(afterThis ? afterThis : beforeThis);
+  insertDroppedLayers(true);
 }
 
 void DropOnTimeline::onUndo()
@@ -284,29 +260,44 @@ void DropOnTimeline::onRedo()
   doc->sprite()->setTotalFrames(m_previousTotalFrames);
   m_previousTotalFrames = currentTotalFrames;
 
-  Layer* afterThis = nullptr;
-  Layer* beforeThis = nullptr;
+  insertDroppedLayers(false);
+}
+
+void DropOnTimeline::insertDroppedLayers(bool incGroupVersion)
+{
+  // Layer used as a reference to determine if the dropped layers will be
+  // inserted after or before it.
+  Layer* refLayer = nullptr;
+  // Parent group of the reference layer layer.
   LayerGroup* group = nullptr;
-  setupInsertionLayers(&beforeThis, &afterThis, &group);
+  // Keep track of the current insertion point.
+  InsertionPoint insert = m_insert;
+
+  setupInsertionLayer(&refLayer, &group);
 
   for (auto it = m_droppedLayers.cbegin(); it != m_droppedLayers.cend(); ++it) {
     auto* layer = *it;
 
-    if (afterThis) {
-      group->insertLayer(layer, afterThis);
-      afterThis = layer;
-    }
-    else if (beforeThis) {
-      group->insertLayerBefore(layer, beforeThis);
-      beforeThis = nullptr;
-      afterThis = layer;
-    }
-    else {
+    if (!refLayer) {
       group->addLayer(layer);
-      afterThis = layer;
+      refLayer = layer;
+      insert = InsertionPoint::AfterLayer;
+    }
+    else if (insert == InsertionPoint::AfterLayer) {
+      group->insertLayer(layer, refLayer);
+      refLayer = layer;
+    }
+    else if (insert == InsertionPoint::BeforeLayer) {
+      group->insertLayerBefore(layer, refLayer);
+      refLayer = layer;
+      insert = InsertionPoint::AfterLayer;
     }
   }
-  notifyDocObservers(afterThis ? afterThis : beforeThis);
+
+  if (incGroupVersion)
+    group->incrementVersion();
+
+  notifyDocObservers(refLayer);
 }
 
 // Returns true if the document srcDoc has a cel that can be moved.

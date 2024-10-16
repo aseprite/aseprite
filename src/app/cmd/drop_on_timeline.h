@@ -54,7 +54,8 @@ namespace cmd {
     }
 
   private:
-    void setupInsertionLayers(doc::Layer** before, doc::Layer** after, doc::LayerGroup** group);
+    void setupInsertionLayer(doc::Layer** layer, doc::LayerGroup** group);
+    void insertDroppedLayers(bool incGroupVersion);
     bool canMoveCelFrom(app::Doc* srcDoc);
     void notifyAddLayer(doc::Layer* layer);
     void notifyDocObservers(doc::Layer* layer);
