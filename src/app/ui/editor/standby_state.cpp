@@ -614,6 +614,21 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
             buf += fmt::format(" [{}{}]", ti, str);
           }
         }
+        // Show the grid cell index
+        else if ((!site.layer() ||
+            !site.layer()->isTilemap()) &&
+            (spritePos.x >= 0 && spritePos.x <= sprite->width() &&
+            spritePos.y >= 0 && spritePos.y <= sprite->height())) {
+          int columns = int(std::floor(
+            sprite->bounds().w/grid.tileSize().w));
+          int rows = int(std::floor(
+            sprite->bounds().h/grid.tileSize().h));
+          int column = pt.x%columns;
+          int row = pt.y%rows;
+          if (row < 0) row = row + rows;
+          if (column < 0) column = column + columns;
+          buf += fmt::format(" [{}]", column+row*columns);
+        }
       }
     }
 
