@@ -253,10 +253,11 @@ int LayerImage::getMemSize() const
 
   for (; it != end; ++it) {
     const Cel* cel = *it;
-    size += cel->getMemSize();
 
-    const Image* image = cel->image();
-    size += image->getMemSize();
+    if (cel->link())        // Skip link
+      continue;
+
+    size += cel->getMemSize();
   }
 
   return size;
