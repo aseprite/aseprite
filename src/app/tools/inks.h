@@ -315,7 +315,7 @@ public:
   void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
     // Map tile coords to canvas if needed
     gfx::Rect rc(BaseInk::tileSelectionToCanvas(
-      x1, y, x2, loop, false));
+      x1, y, x2, loop, !m_createSlice));
 
     if (m_createSlice)
       m_maxBounds |= rc;

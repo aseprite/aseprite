@@ -42,15 +42,6 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
     x2 -= origin.x;
     y -= origin.y;
   }
-  // Without this fix, tiled slice preview won't be drawn
-  // correctly if the tilemap's origin is non-zero
-  else if (loop->getPointShape()->isTile() && ink->isSlice()) {
-    const gfx::Point& tileOffset = loop->getGrid().origin();
-    const gfx::Size& tileSize = loop->getGrid().tileSize();
-    x1 += std::ceil(float(tileOffset.x)/tileSize.w);
-    x2 += std::ceil(float(tileOffset.x)/tileSize.w);
-    y += std::ceil(float(tileOffset.y)/tileSize.h);
-  }
 
   // Tiled in Y axis
   if (int(tiledMode) & int(TiledMode::Y_AXIS)) {
@@ -96,16 +87,6 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
 
     x1 = std::clamp(x1, 0, dstw-1);
     x2 = std::clamp(x2, 0, dstw-1);
-
-    // Undo the offset applied to tiled slices
-    if (loop->getPointShape()->isTile() && ink->isSlice()) {
-      const gfx::Point& tileOffset = loop->getGrid().origin();
-      const gfx::Size& tileSize = loop->getGrid().tileSize();
-      x1 -= std::ceil(float(tileOffset.x)/tileSize.w);
-      x2 -= std::ceil(float(tileOffset.x)/tileSize.w);
-      y -= std::ceil(float(tileOffset.y)/tileSize.h);
-    }
-
     ink->inkHline(x1, y, x2, loop);
   }
 }

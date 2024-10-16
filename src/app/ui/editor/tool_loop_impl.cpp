@@ -529,7 +529,7 @@ public:
         ExpandCelCanvas::NeedsSource |
         (m_layer->isTilemap() &&
          (!m_tilesMode ||
-          m_ink->isSelection()) ? ExpandCelCanvas::PixelsBounds:
+          isSelectionPreview) ? ExpandCelCanvas::PixelsBounds:
                                   ExpandCelCanvas::None) |
         (m_layer->isTilemap() &&
          site.tilemapMode() == TilemapMode::Pixels &&
