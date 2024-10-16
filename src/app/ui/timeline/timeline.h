@@ -46,6 +46,7 @@ namespace doc {
 namespace ui {
   class Graphics;
   class TooltipManager;
+  class DragEvent;
 }
 
 namespace app {
@@ -194,6 +195,11 @@ namespace app {
                  const gfx::Point* position) override;
     bool onClear(Context* ctx) override;
     void onCancel(Context* ctx) override;
+
+    void onDragEnter(ui::DragEvent& e) override;
+    void onDragLeave(ui::DragEvent& e) override;
+    void onDrag(ui::DragEvent& e) override;
+    void onDrop(ui::DragEvent& e) override;
 
   private:
     struct DrawCelData;

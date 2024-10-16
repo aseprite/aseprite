@@ -13,6 +13,7 @@
 
 #include "app/app.h"
 #include "app/app_menus.h"
+#include "app/cmd/drop_on_timeline.h"
 #include "app/cmd/set_tag_range.h"
 #include "app/cmd_transaction.h"
 #include "app/color_utils.h"
@@ -51,9 +52,12 @@
 #include "base/memory.h"
 #include "base/scoped_value.h"
 #include "doc/doc.h"
+#include "doc/image_ref.h"
 #include "fmt/format.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
+#include "os/event.h"
+#include "os/event_queue.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "text/font.h"
@@ -257,7 +261,7 @@ Timeline::Timeline(TooltipManager* tooltipManager)
   , m_fromTimeline(false)
   , m_aniControls(tooltipManager)
 {
-  enableFlags(CTRL_RIGHT_CLICK);
+  enableFlags(CTRL_RIGHT_CLICK | ALLOW_DROP);
 
   m_ctxConn1 = m_context->BeforeCommandExecution.connect(
     &Timeline::onBeforeCommandExecution, this);
@@ -3538,7 +3542,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
     else
       hit.part = PART_NOTHING;
 
-    if (!hasCapture()) {
+    if (!hasCapture() && msg) {
       gfx::Rect outline = getPartBounds(Hit(PART_RANGE_OUTLINE));
       if (outline.contains(mousePos)) {
         auto mouseMsg = dynamic_cast<MouseMessage*>(msg);
@@ -4179,8 +4183,11 @@ void Timeline::updateDropRange(const gfx::Point& pt)
     case Range::kLayers:
       m_dropRange.clearRange();
       if (!m_rows.empty()) {
-        m_dropRange.startRange(m_rows[m_hot.layer].layer(), m_hot.frame, m_range.type());
-        m_dropRange.endRange(m_rows[m_hot.layer].layer(), m_hot.frame);
+        auto* layer = (m_hot.layer >= 0 && m_hot.layer < m_rows.size()
+                       ? m_rows[m_hot.layer].layer()
+                       : nullptr);
+        m_dropRange.startRange(layer, m_hot.frame, m_range.type());
+        m_dropRange.endRange(layer, m_hot.frame);
       }
       break;
   }
@@ -4458,6 +4465,125 @@ void Timeline::onCancel(Context* ctx)
 
   clearClipboardRange();
   invalidate();
+}
+
+void Timeline::onDragEnter(ui::DragEvent& e)
+{
+  m_state = STATE_MOVING_RANGE;
+}
+
+void Timeline::onDragLeave(ui::DragEvent& e)
+{
+  m_state = STATE_STANDBY;
+  m_range.clearRange();
+  m_dropRange.clearRange();
+  invalidate();
+  flushRedraw();
+  os::Event ev;
+  os::System::instance()->eventQueue()->queueEvent(ev);
+}
+
+void Timeline::onDrag(ui::DragEvent& e)
+{
+  Widget::onDrag(e);
+
+  m_range.clearRange();
+  setHot(hitTest(nullptr, e.position()));
+  switch (m_hot.part) {
+    case PART_ROW:
+    case PART_ROW_EYE_ICON:
+    case PART_ROW_CONTINUOUS_ICON:
+    case PART_ROW_PADLOCK_ICON:
+    case PART_ROW_TEXT: {
+      m_range.startRange(nullptr, -1, Range::kLayers);
+      break;
+    }
+    case PART_CEL:
+      m_range.startRange(m_rows[m_hot.layer].layer(), m_hot.frame, Range::kCels);
+      m_range.endRange(m_rows[m_hot.layer].layer(), m_hot.frame);
+      m_clk = m_hot;
+      invalidate();
+      break;
+    case PART_HEADER_FRAME:
+      m_range.startRange(nullptr, -1, Range::kFrames);
+      break;
+  }
+
+  updateDropRange(e.position());
+  flushRedraw();
+  os::Event ev;
+  os::System::instance()->eventQueue()->queueEvent(ev);
+}
+
+void Timeline::onDrop(ui::DragEvent& e)
+{
+  using InsertionPoint = cmd::DropOnTimeline::InsertionPoint;
+  using DroppedOn = cmd::DropOnTimeline::DroppedOn;
+  Widget::onDrop(e);
+
+  // Determine at which frame and layer the content was dropped on.
+  frame_t frame = m_frame;
+  layer_t layerIndex = getLayerIndex(m_layer);
+  InsertionPoint insert = InsertionPoint::BeforeLayer;
+  DroppedOn droppedOn = DroppedOn::Unspecified;
+  switch(m_dropRange.type()) {
+    case Range::kCels:
+      frame = m_hot.frame;
+      layerIndex = m_hot.layer;
+      droppedOn = DroppedOn::Cel;
+      insert = (m_dropTarget.vhit == DropTarget::Top ? InsertionPoint::AfterLayer
+                                                      : InsertionPoint::BeforeLayer);
+      break;
+    case Range::kFrames:
+      frame = m_dropRange.firstFrame();
+      droppedOn = DroppedOn::Frame;
+      if (m_dropTarget.hhit == DropTarget::After)
+        frame++;
+      break;
+    case Range::kLayers:
+      droppedOn = DroppedOn::Layer;
+      if (m_dropTarget.vhit != DropTarget::VeryBottom) {
+        auto* selectedLayer = *m_dropRange.selectedLayers().begin();
+        layerIndex = getLayerIndex(selectedLayer);
+      }
+      insert = (m_dropTarget.vhit == DropTarget::Top ? InsertionPoint::AfterLayer
+                                                      : InsertionPoint::BeforeLayer);
+      break;
+  }
+
+#if _DEBUG
+  LOG(LogLevel::VERBOSE, "Dropped at frame: %d, and layerIndex: %d\n", frame, layerIndex);
+#endif
+
+  if (e.hasPaths() || e.hasImage()) {
+    bool droppedImage = e.hasImage() && !e.hasPaths();
+    base::paths paths = e.getPaths();
+    auto surface = e.getImage();
+
+    execute_from_ui_thread([=]{
+      std::string txmsg = (droppedImage ? "Dropped image on timeline"
+                                        : "Dropped paths on timeline");
+      Tx tx(m_document, txmsg);
+      if (droppedImage) {
+        doc::ImageRef image = nullptr;
+        convert_surface_to_image(surface.get(), 0, 0, surface->width(), surface->height(), image);
+        tx(new cmd::DropOnTimeline(m_document, frame, layerIndex, insert, droppedOn, image));
+      }
+      else
+        tx(new cmd::DropOnTimeline(m_document, frame, layerIndex, insert, droppedOn, paths));
+      tx.commit();
+      m_document->notifyGeneralUpdate();
+    });
+    e.handled(true);
+  }
+
+  m_state = STATE_STANDBY;
+  m_range.clearRange();
+  m_dropRange.clearRange();
+  invalidate();
+  flushRedraw();
+  os::Event ev;
+  os::System::instance()->eventQueue()->queueEvent(ev);
 }
 
 int Timeline::tagFramesDuration(const Tag* tag) const

@@ -14,6 +14,7 @@
 #include "app/app.h"
 #include "app/context.h"
 #include "app/site.h"
+#include "app/sprite_position.h"
 #include "app/ui/timeline/timeline.h"
 
 namespace app {
@@ -118,6 +119,12 @@ size_t CmdTransaction::onMemSize() const
 
 SpritePosition CmdTransaction::calcSpritePosition() const
 {
+  // This check was added to allow executing transactions on documents that are
+  // not part of any context. For instance, when dragging and dropping a
+  // document on the timeline, the dragged document doesn't have any context (
+  // it is not associated with any editor).
+  if (!context())
+    return SpritePosition();
   Site site = context()->activeSite();
   return SpritePosition(site.layer(), site.frame());
 }
