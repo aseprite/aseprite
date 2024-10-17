@@ -182,7 +182,7 @@ namespace doc {
     }
 
     operator color_t() const {
-      return (*m_ptr & m_bit) ? 1: 0;
+      return m_ptr && (*m_ptr & m_bit) ? 1: 0;
     }
 
     BitPixelAccess& operator=(color_t value) {
@@ -319,6 +319,9 @@ namespace doc {
 
     ImageIteratorT& operator++() {
       ASSERT(m_image->bounds().contains(gfx::Point(m_x, m_y)));
+
+      if (!m_ptr)
+        return *this;
 
       ++m_x;
       ++m_subPixel;
