@@ -9,7 +9,6 @@
 // #define REPORT_FOCUS_MOVEMENT
 // #define DEBUG_PAINT_EVENTS
 // #define LIMIT_DISPATCH_TIME
-// #define DEBUG_UI_THREADS
 #define GARBAGE_TRACE(...)
 
 #ifdef HAVE_CONFIG_H
@@ -31,14 +30,11 @@
 #include "ui/intern.h"
 #include "ui/ui.h"
 
-#if defined(DEBUG_PAINT_EVENTS) || defined(DEBUG_UI_THREADS)
-#include <thread>
-#endif
-
 #include <algorithm>
 #include <limits>
 #include <list>
 #include <memory>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -82,9 +78,7 @@ typedef std::list<Filter*> Filters;
 
 Manager* Manager::m_defaultManager = nullptr;
 
-#ifdef DEBUG_UI_THREADS
 static std::thread::id manager_thread;
-#endif
 
 static WidgetsList mouse_widgets_list; // List of widgets to send mouse events
 static Messages msg_queue;             // Messages queue
@@ -208,10 +202,8 @@ Manager::Manager(const os::WindowRef& nativeWindow)
   if (nativeWindow)
     nativeWindow->setUserData(&m_display);
 
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::thread::id());
   manager_thread = std::this_thread::get_id();
-#endif
 
   if (!m_defaultManager) {
     // Empty lists
@@ -237,9 +229,7 @@ Manager::Manager(const os::WindowRef& nativeWindow)
 
 Manager::~Manager()
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   // There are some messages in queue? Dispatch everything.
   dispatchMessages();
@@ -334,9 +324,7 @@ void Manager::updateAllDisplays(int scale, bool gpu)
 
 bool Manager::generateMessages()
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   // First check: there are windows to manage?
   if (children().empty())
@@ -400,9 +388,7 @@ static MouseButton mouse_button_from_os_to_ui(const os::Event& osEvent)
 
 void Manager::generateMessagesFromOSEvents()
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   os::Event lastMouseMoveEvent;
 
@@ -1130,9 +1116,7 @@ void Manager::freeCapture()
 
 void Manager::freeWidget(Widget* widget)
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   if (widget->hasFocus() || (widget == focus_widget))
     freeFocus();
@@ -1161,9 +1145,7 @@ void Manager::freeWidget(Widget* widget)
 
 void Manager::removeMessagesFor(Widget* widget)
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   for (Message* msg : msg_queue)
     msg->removeRecipient(widget);
@@ -1174,9 +1156,7 @@ void Manager::removeMessagesFor(Widget* widget)
 
 void Manager::removeMessagesFor(Widget* widget, MessageType type)
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   for (Message* msg : msg_queue)
     if (msg->type() == type)
@@ -1189,9 +1169,7 @@ void Manager::removeMessagesFor(Widget* widget, MessageType type)
 
 void Manager::removeMessagesForTimer(Timer* timer)
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   for (Message* msg : msg_queue) {
     if (msg->type() == kTimerMessage &&
@@ -1212,9 +1190,7 @@ void Manager::removeMessagesForTimer(Timer* timer)
 
 void Manager::removeMessagesForDisplay(Display* display)
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   for (Message* msg : msg_queue) {
     if (msg->display() == display) {
@@ -1233,9 +1209,7 @@ void Manager::removeMessagesForDisplay(Display* display)
 
 void Manager::removePaintMessagesForDisplay(Display* display)
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   for (auto it=msg_queue.begin(); it != msg_queue.end(); ) {
     Message* msg = *it;
@@ -1251,9 +1225,7 @@ void Manager::removePaintMessagesForDisplay(Display* display)
 
 void Manager::addMessageFilter(int message, Widget* widget)
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   LockFilters lock;
   int c = message;
@@ -1265,9 +1237,7 @@ void Manager::addMessageFilter(int message, Widget* widget)
 
 void Manager::removeMessageFilter(int message, Widget* widget)
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   LockFilters lock;
   int c = message;
@@ -1283,9 +1253,7 @@ void Manager::removeMessageFilter(int message, Widget* widget)
 
 void Manager::removeMessageFilterFor(Widget* widget)
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   LockFilters lock;
   for (Filters& msg_filter : msg_filters) {
@@ -1842,9 +1810,7 @@ void Manager::onSizeHint(SizeHintEvent& ev)
 
 int Manager::pumpQueue()
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
 #ifdef LIMIT_DISPATCH_TIME
   base::tick_t t = base::current_tick();
@@ -1916,9 +1882,7 @@ int Manager::pumpQueue()
 
 bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   if (!widget)
     return false;
