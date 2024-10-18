@@ -81,3 +81,7 @@
 [submodule "third_party/tinyxml2"]
 	path = third_party/tinyxml2
 	url = https://github.com/aseprite/tinyxml2.git
+
+[submodule "third_party/tinyexif"]
+	path = third_party/tinyexif
+	url = https://github.com/aseprite/tinyexif.git
