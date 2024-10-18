@@ -746,6 +746,7 @@ target_link_libraries(app-lib
   undo
   ${CMARK_LIBRARIES}
   ${TINYXML_LIBRARY}
+  ${TINYEXIF_LIBRARY}
   ${JPEG_LIBRARIES}
   ${GIF_LIBRARIES}
   ${PNG_LIBRARIES}
