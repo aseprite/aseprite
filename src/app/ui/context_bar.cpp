@@ -219,6 +219,7 @@ protected:
   void onInitTheme(InitThemeEvent& ev) override {
     ButtonSet::onInitTheme(ev);
     m_popupWindow.initTheme();
+    updateBrush();
   }
 
 private:
