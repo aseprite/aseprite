@@ -5,12 +5,14 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-// #define REPORT_EVENTS
-// #define REPORT_FOCUS_MOVEMENT
-// #define DEBUG_PAINT_EVENTS
-// #define LIMIT_DISPATCH_TIME
-// #define DEBUG_UI_THREADS
-#define GARBAGE_TRACE(...)
+// #define REPORT_MESSAGES           1
+// #define REPORT_MOUSE_MESSAGES     1
+// #define REPORT_PAINT_MESSAGES     1
+// #define REPORT_TIMER_MESSAGES     1
+// #define REPORT_FOCUS_MOVEMENT     1
+// #define DEBUG_PAINT_MESSAGES      1
+// #define LIMIT_DISPATCH_TIME       1
+#define GARBAGE_TRACE(...) // TRACE(__VA_ARGS__)
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -22,6 +24,7 @@
 #include "base/scoped_value.h"
 #include "base/thread.h"
 #include "base/time.h"
+#include "fmt/format.h"
 #include "os/event.h"
 #include "os/event_queue.h"
 #include "os/surface.h"
@@ -31,18 +34,15 @@
 #include "ui/intern.h"
 #include "ui/ui.h"
 
-#if defined(DEBUG_PAINT_EVENTS) || defined(DEBUG_UI_THREADS)
-#include <thread>
-#endif
-
 #include <algorithm>
 #include <limits>
 #include <list>
 #include <memory>
+#include <thread>
 #include <utility>
 #include <vector>
 
-#if defined(_WIN32) && defined(DEBUG_PAINT_EVENTS)
+#if defined(_WIN32) && defined(DEBUG_PAINT_MESSAGES)
   #define WIN32_LEAN_AND_MEAN
   #include <windows.h>
   #undef min
@@ -82,9 +82,7 @@ typedef std::list<Filter*> Filters;
 
 Manager* Manager::m_defaultManager = nullptr;
 
-#ifdef DEBUG_UI_THREADS
 static std::thread::id manager_thread;
-#endif
 
 static WidgetsList mouse_widgets_list; // List of widgets to send mouse events
 static Messages msg_queue;             // Messages queue
@@ -208,10 +206,8 @@ Manager::Manager(const os::WindowRef& nativeWindow)
   if (nativeWindow)
     nativeWindow->setUserData(&m_display);
 
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::thread::id());
   manager_thread = std::this_thread::get_id();
-#endif
 
   if (!m_defaultManager) {
     // Empty lists
@@ -237,9 +233,7 @@ Manager::Manager(const os::WindowRef& nativeWindow)
 
 Manager::~Manager()
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   // There are some messages in queue? Dispatch everything.
   dispatchMessages();
@@ -334,9 +328,7 @@ void Manager::updateAllDisplays(int scale, bool gpu)
 
 bool Manager::generateMessages()
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   // First check: there are windows to manage?
   if (children().empty())
@@ -400,9 +392,7 @@ static MouseButton mouse_button_from_os_to_ui(const os::Event& osEvent)
 
 void Manager::generateMessagesFromOSEvents()
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   os::Event lastMouseMoveEvent;
 
@@ -1008,7 +998,7 @@ void Manager::setFocus(Widget* widget)
 
 void Manager::setMouse(Widget* widget)
 {
-#ifdef REPORT_EVENTS
+#if REPORT_MOUSE_MESSAGES
   TRACEARGS("Manager::setMouse ",
             (widget ? typeid(*widget).name(): "null"),
             (widget ? widget->id(): ""));
@@ -1135,9 +1125,7 @@ void Manager::freeCapture()
 
 void Manager::freeWidget(Widget* widget)
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   if (widget->hasFocus() || (widget == focus_widget))
     freeFocus();
@@ -1166,9 +1154,7 @@ void Manager::freeWidget(Widget* widget)
 
 void Manager::removeMessagesFor(Widget* widget)
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   for (Message* msg : msg_queue)
     msg->removeRecipient(widget);
@@ -1179,9 +1165,7 @@ void Manager::removeMessagesFor(Widget* widget)
 
 void Manager::removeMessagesFor(Widget* widget, MessageType type)
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   for (Message* msg : msg_queue)
     if (msg->type() == type)
@@ -1194,9 +1178,7 @@ void Manager::removeMessagesFor(Widget* widget, MessageType type)
 
 void Manager::removeMessagesForTimer(Timer* timer)
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   for (Message* msg : msg_queue) {
     if (msg->type() == kTimerMessage &&
@@ -1217,9 +1199,7 @@ void Manager::removeMessagesForTimer(Timer* timer)
 
 void Manager::removeMessagesForDisplay(Display* display)
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   for (Message* msg : msg_queue) {
     if (msg->display() == display) {
@@ -1238,9 +1218,7 @@ void Manager::removeMessagesForDisplay(Display* display)
 
 void Manager::removePaintMessagesForDisplay(Display* display)
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   for (auto it=msg_queue.begin(); it != msg_queue.end(); ) {
     Message* msg = *it;
@@ -1256,9 +1234,7 @@ void Manager::removePaintMessagesForDisplay(Display* display)
 
 void Manager::addMessageFilter(int message, Widget* widget)
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   LockFilters lock;
   int c = message;
@@ -1270,9 +1246,7 @@ void Manager::addMessageFilter(int message, Widget* widget)
 
 void Manager::removeMessageFilter(int message, Widget* widget)
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   LockFilters lock;
   int c = message;
@@ -1288,9 +1262,7 @@ void Manager::removeMessageFilter(int message, Widget* widget)
 
 void Manager::removeMessageFilterFor(Widget* widget)
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   LockFilters lock;
   for (Filters& msg_filter : msg_filters) {
@@ -1847,17 +1819,15 @@ void Manager::onSizeHint(SizeHintEvent& ev)
 
 int Manager::pumpQueue()
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
-#ifdef LIMIT_DISPATCH_TIME
+#if LIMIT_DISPATCH_TIME
   base::tick_t t = base::current_tick();
 #endif
 
   int count = 0;                // Number of processed messages
   while (!msg_queue.empty()) {
-#ifdef LIMIT_DISPATCH_TIME
+#if LIMIT_DISPATCH_TIME
     if (base::current_tick()-t > 250)
       break;
 #endif
@@ -1921,14 +1891,12 @@ int Manager::pumpQueue()
 
 bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
 {
-#ifdef DEBUG_UI_THREADS
   ASSERT(manager_thread == std::this_thread::get_id());
-#endif
 
   if (!widget)
     return false;
 
-#ifdef REPORT_EVENTS
+#if REPORT_MESSAGES
   {
     static const char* msg_name[] = {
       "kOpenMessage",
@@ -1959,15 +1927,38 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
     static_assert(kOpenMessage == 0 &&
                   kCallbackMessage == sizeof(msg_name)/sizeof(const char*)-1,
                   "MessageType enum has changed");
-    const char* string =
+    const char* messageStr =
       (msg->type() >= 0 &&
        msg->type() < sizeof(msg_name)/sizeof(const char*)) ?
       msg_name[msg->type()]: "Unknown";
 
-    TRACEARGS("Event", msg->type(), "(", string, ")",
-              "for", ((void*)widget),
-              typeid(*widget).name(),
-              widget->id().empty());
+    if (
+#if !REPORT_MOUSE_MESSAGES
+        (msg->type() < kMouseDownMessage ||
+         msg->type() > kTouchMagnifyMessage) &&
+#endif
+#if !REPORT_PAINT_MESSAGES
+        (msg->type() != kPaintMessage) &&
+#endif
+#if !REPORT_TIMER_MESSAGES
+        (msg->type() != kTimerMessage) &&
+#endif
+        true)
+    {
+      TRACEARGS(fmt::format(
+        "-- {} ({}) for {} {}{}{} --",
+        messageStr,
+        (int)msg->type(),
+        ((void*)widget),
+        typeid(*widget).name(),
+        !widget->id().empty() ? " " + widget->id() : "",
+  #if REPORT_PAINT_MESSAGES
+        (msg->type() == kPaintMessage) ?
+          " clipRect=" +
+            base_args_to_string(static_cast<PaintMessage*>(msg)->rect()) :
+  #endif
+          ""));
+    }
   }
 #endif
 
@@ -1994,11 +1985,7 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
     surface->saveClip();
 
     if (surface->clipRect(paintMsg->rect())) {
-#ifdef REPORT_EVENTS
-      TRACEARGS(" - clipRect ", paintMsg->rect());
-#endif
-
-#ifdef DEBUG_PAINT_EVENTS
+#if DEBUG_PAINT_MESSAGES
       {
         os::SurfaceLock lock(surface.get());
         os::Paint p;
@@ -2321,7 +2308,7 @@ bool Manager::processFocusMovementMessage(Message* msg)
             }
           }
 
-#ifdef REPORT_FOCUS_MOVEMENT
+#if REPORT_FOCUS_MOVEMENT
           // Print list of widgets
           for (int i=c; i<count-1; ++i) {
             TRACE("list[%d] = %d (%s)\n",

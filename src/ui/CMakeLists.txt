@@ -64,4 +64,5 @@ target_link_libraries(ui-lib
   laf-text
   laf-gfx
   laf-base
-  obs)
+  obs
+  fmt)
