@@ -498,6 +498,7 @@ void Manager::generateMessagesFromOSEvents()
           set_mouse_cursor(kArrowCursor);
           mouse_display = display;
         });
+        msg->setRecipient(this);
         enqueueMessage(msg);
         lastMouseMoveEvent = osEvent;
         break;
@@ -513,7 +514,7 @@ void Manager::generateMessagesFromOSEvents()
             mouse_display = nullptr;
           }
         });
-
+        msg->setRecipient(this);
         enqueueMessage(msg);
 
         // To avoid calling kSetCursorMessage when the mouse leaves
@@ -1664,6 +1665,11 @@ bool Manager::onProcessMessage(Message* msg)
       }
       else
         return false;
+    }
+    case kCallbackMessage: {
+      CallbackMessage* callback = static_cast<CallbackMessage*>(msg);
+      callback->call();
+      return true;
     }
 
   }
