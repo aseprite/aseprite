@@ -17,6 +17,7 @@
 #include "app/tools/tool_loop_modifiers.h"
 #include "app/ui/context_bar_observer.h"
 #include "app/ui/doc_observer_widget.h"
+#include "app/ui/font_entry.h"
 #include "doc/brush.h"
 #include "obs/connection.h"
 #include "obs/observable.h"
@@ -103,7 +104,7 @@ namespace app {
 
     // Signals
     obs::signal<void()> BrushChange;
-    obs::signal<void()> FontChange;
+    obs::signal<void(const FontInfo&, FontEntry::From)> FontChange;
 
   protected:
     void onInitTheme(ui::InitThemeEvent& ev) override;

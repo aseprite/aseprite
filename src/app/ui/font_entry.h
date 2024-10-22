@@ -23,32 +23,36 @@ namespace app {
   class FontEntry : public ui::HBox {
   public:
     enum class From {
-      User,
+      Init,
       Face,
       Size,
       Style,
       Flags,
+      Popup,
     };
 
     FontEntry();
     ~FontEntry();
 
     FontInfo info() { return m_info; }
-    void setInfo(const FontInfo& info, From from = From::User);
+    void setInfo(const FontInfo& info, From from);
 
-    obs::signal<void(const FontInfo&)> FontChange;
+    obs::signal<void(const FontInfo&, From)> FontChange;
 
   private:
 
     class FontFace : public SearchEntry {
     public:
       FontFace();
-      obs::signal<void(const FontInfo&)> FontChange;
+      obs::signal<void(const FontInfo&, From)> FontChange;
     protected:
       bool onProcessMessage(ui::Message* msg) override;
       void onChange() override;
     private:
+      FontEntry* fontEntry() const { return static_cast<FontEntry*>(parent()); }
+
       std::unique_ptr<FontPopup> m_popup;
+      bool m_fromEntryChange = false;
     };
 
     class FontSize : public ui::ComboBox {
@@ -74,6 +78,7 @@ namespace app {
     FontStyle m_style;
     FontLigatures m_ligatures;
     ui::CheckBox m_antialias;
+    bool m_lockFace = false;
   };
 
 } // namespace app

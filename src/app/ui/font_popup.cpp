@@ -185,6 +185,14 @@ bool FontPopup::FontListBox::onProcessMessage(ui::Message* msg)
   return result;
 }
 
+bool FontPopup::FontListBox::onAcceptKeyInput()
+{
+  // Always accept a kKeyDownMessage so we can get Up/Down keyboard
+  // messages from the FontEntry field (when the user is editing the
+  // font name).
+  return true;
+}
+
 FontPopup::FontPopup(const FontInfo& fontInfo)
   : PopupWindow(std::string(),
                 ClickBehavior::CloseOnClickInOtherWindow,
@@ -299,11 +307,6 @@ FontPopup::~FontPopup()
   m_timer.stop();
 }
 
-void FontPopup::focusListBox()
-{
-  m_listBox.requestFocus();
-}
-
 void FontPopup::setSearchText(const std::string& searchText)
 {
   FontItem* firstItem = nullptr;
@@ -353,7 +356,7 @@ void FontPopup::onFontChange()
 {
   const FontInfo fontInfo = selectedFont();
   if (fontInfo.isValid())
-    ChangeFont(fontInfo);
+    FontChange(fontInfo);
 }
 
 void FontPopup::onLoadFont()
@@ -372,7 +375,7 @@ void FontPopup::onLoadFont()
     return;
 
   ASSERT(!face.empty());
-  ChangeFont(FontInfo(FontInfo::Type::File,
+  FontChange(FontInfo(FontInfo::Type::File,
                       face.front()));
 }
 

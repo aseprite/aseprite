@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -48,6 +48,7 @@ namespace ui {
     virtual void onSizeHint(SizeHintEvent& ev) override;
     virtual void onChange();
     virtual void onDoubleClickItem();
+    virtual bool onAcceptKeyInput();
 
     int advanceIndexThroughVisibleItems(
       int startIndex, int delta, const bool loop);

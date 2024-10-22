@@ -10,11 +10,13 @@
 
 #include "app/ui/editor/delayed_mouse_move.h"
 #include "app/ui/editor/standby_state.h"
+#include "app/ui/font_entry.h"
 
 #include <memory>
 
 namespace app {
   class CommandExecutionEvent;
+  class FontInfo;
 
   class WritingTextState : public StandbyState
                          , DelayedMouseMoveDelegate {
@@ -47,7 +49,8 @@ namespace app {
 
     gfx::Rect calcEntryBounds();
     void onBeforeCommandExecution(CommandExecutionEvent& ev);
-    void onFontChange();
+    void onFontChange(const FontInfo& fontInfo,
+                      FontEntry::From fromField);
     void cancel();
     void drop();
 

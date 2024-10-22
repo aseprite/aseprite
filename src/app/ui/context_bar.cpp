@@ -1877,10 +1877,10 @@ class ContextBar::FontSelector : public FontEntry {
 public:
   FontSelector(ContextBar* contextBar) {
     // Load the font from the preferences
-    setInfo(FontInfo::getFromPreferences());
+    setInfo(FontInfo::getFromPreferences(), FontEntry::From::Init);
 
-    FontChange.connect([contextBar](){
-      contextBar->FontChange();
+    FontChange.connect([contextBar](const FontInfo& fontInfo, From from) {
+      contextBar->FontChange(fontInfo, from);
     });
   }
 

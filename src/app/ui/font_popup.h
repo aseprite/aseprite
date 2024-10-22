@@ -31,24 +31,24 @@ namespace app {
     class FontListBox : public ui::ListBox {
     protected:
       bool onProcessMessage(ui::Message* msg) override;
+      bool onAcceptKeyInput() override;
     };
 
     FontPopup(const FontInfo& fontInfo);
     ~FontPopup();
 
-    void focusListBox();
     void setSearchText(const std::string& searchText);
 
     void showPopup(ui::Display* display,
                    const gfx::Rect& buttonBounds);
 
     FontListBox* getListBox() { return &m_listBox; }
+    FontInfo selectedFont();
 
-    obs::signal<void(const FontInfo&)> ChangeFont;
+    obs::signal<void(const FontInfo&)> FontChange;
     obs::signal<void()> EscKey;
 
   protected:
-    FontInfo currentFontInfo();
     void onFontChange();
     void onLoadFont();
     void onThumbnailGenerated();
@@ -56,8 +56,6 @@ namespace app {
     bool onProcessMessage(ui::Message* msg) override;
 
   private:
-    FontInfo selectedFont();
-
     gen::FontPopup* m_popup;
     FontListBox m_listBox;
     ui::Timer m_timer;

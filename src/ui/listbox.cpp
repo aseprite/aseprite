@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -283,7 +283,7 @@ bool ListBox::onProcessMessage(Message* msg)
     }
 
     case kKeyDownMessage:
-      if (hasFocus() && !children().empty()) {
+      if (onAcceptKeyInput() && !children().empty()) {
         int select = getSelectedIndex();
         int bottom = std::max(0, int(children().size()-1));
         View* view = View::getView(this);
@@ -418,6 +418,11 @@ void ListBox::onChange()
 void ListBox::onDoubleClickItem()
 {
   DoubleClickItem();
+}
+
+bool ListBox::onAcceptKeyInput()
+{
+  return hasFocus();
 }
 
 int ListBox::advanceIndexThroughVisibleItems(

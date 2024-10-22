@@ -12,6 +12,7 @@
 
 #include "app/console.h"
 #include "app/ui/font_popup.h"
+#include "base/scoped_value.h"
 #include "fmt/format.h"
 #include "ui/display.h"
 #include "ui/manager.h"
@@ -63,11 +64,14 @@ bool FontEntry::FontFace::onProcessMessage(Message* msg)
     case kFocusEnterMessage:
       if (!m_popup) {
         try {
-          const FontInfo info = static_cast<FontEntry*>(parent())->info();
+          const FontInfo info = fontEntry()->info();
 
           m_popup.reset(new FontPopup(info));
-          m_popup->ChangeFont.connect([this](const FontInfo& fontInfo){
-            FontChange(fontInfo);
+          m_popup->FontChange.connect([this](const FontInfo& fontInfo){
+            FontChange(fontInfo,
+                       m_fromEntryChange ?
+                       FontEntry::From::Face:
+                       FontEntry::From::Popup);
           });
 
           // If we press ESC in the popup we focus this FontFace field.
@@ -94,21 +98,56 @@ bool FontEntry::FontFace::onProcessMessage(Message* msg)
           newFocus->window() != m_popup.get()) {
         m_popup->closeWindow(nullptr);
       }
+
+      // Restore the face name (e.g. when we press Escape key)
+      const FontInfo info = fontEntry()->info();
+      setText(info.title());
       break;
     }
 
     case kKeyDownMessage:
-      // If the popup is visible and we press the Down arrow key, we
-      // start navigating the popup list.
-      if (hasFocus() &&
-          m_popup &&
-          m_popup->isVisible()) {
+    case kKeyUpMessage:
+      // If the popup is visible and we press the Up/Down arrow key,
+      // we start navigating the popup list.
+      if (hasFocus() && m_popup) {
         const auto* keymsg = static_cast<const KeyMessage*>(msg);
         switch (keymsg->scancode()) {
+          case kKeyEsc:
+          case kKeyEnter:
+          case kKeyEnterPad:
+            if (m_popup && m_popup->isVisible()) {
+              m_popup->closeWindow(nullptr);
+
+              // This final signal will release the focus from this
+              // entry and give the chance to the client to focus
+              // their own text box.
+              FontChange(m_popup->selectedFont(), From::Popup);
+              return true;
+            }
+            break;
+          case kKeyUp:
           case kKeyDown:
-            m_popup->focusListBox();
-            return true;
+            if (m_popup->isVisible()) {
+              base::ScopedValue lock(fontEntry()->m_lockFace, true);
+
+              // Redirect key message to the list box
+              if (msg->recipient() == this) {
+                // Redirect the Up/Down arrow key to the popup list
+                // box, so we move through the list items. This will
+                // not generate a FontChange (as it'd modify the
+                // focused widget and other unexpected behaviors).
+                m_popup->getListBox()->sendMessage(msg);
+
+                // We are explicitly firing the FontChange signal so
+                // the client knows the new selected font from the
+                // popup.
+                FontChange(m_popup->selectedFont(), From::Face);
+              }
+              return true;
+            }
+            break;
         }
+        break;
       }
       break;
 
@@ -118,9 +157,18 @@ bool FontEntry::FontFace::onProcessMessage(Message* msg)
 
 void FontEntry::FontFace::onChange()
 {
+  base::ScopedValue lock(m_fromEntryChange, true);
   SearchEntry::onChange();
 
   m_popup->setSearchText(text());
+
+  // Changing the search text doesn't generate a FontChange
+  // signal. Here we are forcing a FontChange signal with the first
+  // selected font from the search. Indicating "From::Face" we avoid
+  // changing the FontEntry text with the face font name (as the user
+  // is writing the text to search, we don't want to touch this Entry
+  // field).
+  FontChange(m_popup->selectedFont(), From::Face);
 }
 
 FontEntry::FontSize::FontSize()
@@ -167,12 +215,13 @@ FontEntry::FontEntry()
 
   m_face.setMinSize(gfx::Size(128*guiscale(), 0));
 
-  m_face.FontChange.connect([this](const FontInfo& newTypeName) {
+  m_face.FontChange.connect([this](const FontInfo& newTypeName,
+                                   const From from) {
     setInfo(FontInfo(newTypeName,
                      m_info.size(),
                      m_info.style(),
                      m_info.flags()),
-            From::Face);
+            from);
     invalidate();
   });
 
@@ -239,7 +288,8 @@ void FontEntry::setInfo(const FontInfo& info,
 {
   m_info = info;
 
-  m_face.setText(info.title());
+  if (fromField != From::Face)
+    m_face.setText(info.title());
 
   if (fromField != From::Size)
     m_size.setValue(fmt::format("{}", info.size()));
@@ -254,7 +304,7 @@ void FontEntry::setInfo(const FontInfo& info,
     m_antialias.setSelected(info.antialias());
   }
 
-  FontChange(m_info);
+  FontChange(m_info, fromField);
 }
 
 } // namespace app

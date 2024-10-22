@@ -505,9 +505,9 @@ void WritingTextState::onBeforeCommandExecution(CommandExecutionEvent& ev)
   }
 }
 
-void WritingTextState::onFontChange()
+void WritingTextState::onFontChange(const FontInfo& fontInfo,
+                                    FontEntry::From fromField)
 {
-  const FontInfo fontInfo = App::instance()->contextBar()->fontInfo();
   if (auto font = get_font_from_info(fontInfo)) {
     m_entry->setFont(font);
     m_entry->invalidate();
@@ -517,10 +517,10 @@ void WritingTextState::onFontChange()
     // immediately.
     auto dummy = m_entry->extraCel();
 
-    ui::execute_from_ui_thread([this]{
+    if (fromField == FontEntry::From::Popup) {
       if (m_entry)
         m_entry->requestFocus();
-    });
+    }
   }
 }
 

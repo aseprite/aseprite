@@ -57,7 +57,7 @@ class PasteTextWindow : public app::gen::PasteText {
 public:
   PasteTextWindow(const FontInfo& fontInfo,
                   const app::Color& color) {
-    fontFace()->setInfo(fontInfo);
+    fontFace()->setInfo(fontInfo, FontEntry::From::Init);
     fontColor()->setColor(color);
   }
 
