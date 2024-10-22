@@ -12,6 +12,7 @@
 #include "ui/graphics.h"
 
 #include "base/string.h"
+#include "base/utf8_decode.h"
 #include "gfx/clip.h"
 #include "gfx/matrix.h"
 #include "gfx/path.h"
@@ -491,16 +492,23 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
     }
     // With char-wrap
     else if ((align & CHARWRAP) == CHARWRAP) {
-      for (end=beg+1; end<str.size(); ++end) {
-        // If we are out of the available width (rc.w) using the new "end"
-        if ((rc.w > 0) &&
-            (m_font->textLength(str.substr(beg, end-beg).c_str()) > rc.w)) {
-          if (end > beg+1)
-            --end;
-          break;
+      if (rc.w > 0) {
+        // TODO replace all this with std::string_view in the future
+        std::string sub(str.substr(beg));
+        base::utf8_decode it(sub);
+        std::string progress;
+        while (!it.is_end()) {
+          end = beg+(it.pos()-sub.begin());
+          it.next();
+          progress = str.substr(beg, end-beg);
+
+          // If we are out of the available width (rc.w) using the
+          // "progress" string.
+          if (m_font->textLength(progress) > rc.w)
+            break;
         }
       }
-      newBeg = end;
+      newBeg = std::string::npos;
     }
     // With word-wrap
     else {
@@ -512,7 +520,7 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
         // we are out of the available width (rc.w) using the new "end"
         if ((old_end != std::string::npos) &&
             (rc.w > 0) &&
-            (pt.x+m_font->textLength(str.substr(beg, end-beg).c_str()) > rc.w)) {
+            (pt.x+m_font->textLength(str.substr(beg, end-beg)) > rc.w)) {
           // We go back to the "old_end" and paint from "beg" to "end"
           end = old_end;
           break;
@@ -542,7 +550,7 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
       line = str.substr(beg);
 
     gfx::Size lineSize(
-      m_font->textLength(line.c_str()),
+      m_font->textLength(line),
       m_font->height()+lineSeparation);
     calculatedSize.w = std::max(calculatedSize.w, lineSize.w);
 
