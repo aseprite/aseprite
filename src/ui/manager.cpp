@@ -1666,11 +1666,6 @@ bool Manager::onProcessMessage(Message* msg)
       else
         return false;
     }
-    case kCallbackMessage: {
-      CallbackMessage* callback = static_cast<CallbackMessage*>(msg);
-      callback->call();
-      return true;
-    }
 
   }
 
