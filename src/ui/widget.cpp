@@ -1629,6 +1629,11 @@ bool Widget::onProcessMessage(Message* msg)
         return true;
       }
       break;
+    case kCallbackMessage: {
+      CallbackMessage* callback = static_cast<CallbackMessage*>(msg);
+      callback->call();
+      return true;
+    }
 
   }
 
