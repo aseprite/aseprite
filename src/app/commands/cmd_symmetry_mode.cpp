@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -49,6 +49,10 @@ std::string SymmetryModeCommand::onGetFriendlyName() const
       return Strings::symmetry_toggle_horizontal();
     case app::gen::SymmetryMode::VERTICAL:
       return Strings::symmetry_toggle_vertical();
+    case app::gen::SymmetryMode::RIGHT_DIAG:
+      return Strings::symmetry_toggle_right_diagonal();
+    case app::gen::SymmetryMode::LEFT_DIAG:
+      return Strings::symmetry_toggle_left_diagonal();
     default:
       return Strings::symmetry_toggle();
   }
@@ -59,6 +63,8 @@ void SymmetryModeCommand::onLoadParams(const Params& params)
   std::string mode = params.get("orientation");
   if (mode == "vertical") m_mode = app::gen::SymmetryMode::VERTICAL;
   else if (mode == "horizontal") m_mode = app::gen::SymmetryMode::HORIZONTAL;
+  else if (mode == "right_diagonal") m_mode = app::gen::SymmetryMode::RIGHT_DIAG;
+  else if (mode == "left_diagonal") m_mode = app::gen::SymmetryMode::LEFT_DIAG;
   else m_mode = app::gen::SymmetryMode::NONE;
 }
 
