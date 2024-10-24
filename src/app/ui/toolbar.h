@@ -65,6 +65,8 @@ namespace app {
     void openTipWindow(int group_index, tools::Tool* tool);
     void onClosePopup();
     void drawToolIcon(ui::Graphics* g, int group_index, skin::SkinPartPtr skin, os::Surface* icon);
+    int getHiddenGroups();
+    void showHiddenToolPopup();
 
     // ActiveToolObserver impl
     void onActiveToolChange(tools::Tool* tool) override;
@@ -96,6 +98,9 @@ namespace app {
 
     ui::Timer m_tipTimer;
     bool m_tipOpened;
+
+    // Minimum height for all the top toolbar buttons to be visible.
+    int m_minHeight;
 
     obs::connection m_closeConn;
   };
