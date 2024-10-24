@@ -14,8 +14,10 @@
 #include "doc/cel.h"
 #include "doc/grid.h"
 #include "doc/image.h"
+#include "doc/layer_tilemap.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
+#include "doc/tilesets.h"
 
 #include <algorithm>
 #include <cstring>
@@ -251,10 +253,11 @@ int LayerImage::getMemSize() const
 
   for (; it != end; ++it) {
     const Cel* cel = *it;
-    size += cel->getMemSize();
 
-    const Image* image = cel->image();
-    size += image->getMemSize();
+    if (cel->link())        // Skip link
+      continue;
+
+    size += cel->getMemSize();
   }
 
   return size;
@@ -584,6 +587,17 @@ void LayerGroup::insertLayer(Layer* layer, Layer* after)
       ++after_it;
   }
   m_layers.insert(after_it, layer);
+
+  layer->setParent(this);
+}
+
+void LayerGroup::insertLayerBefore(Layer* layer, Layer* before)
+{
+  auto before_it = m_layers.end();
+  if (before) {
+    before_it = std::find(m_layers.begin(), m_layers.end(), before);
+  }
+  m_layers.insert(before_it, layer);
 
   layer->setParent(this);
 }
