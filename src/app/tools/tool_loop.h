@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -207,6 +207,7 @@ namespace app {
       virtual const doc::Grid& getGrid() const = 0;
       virtual gfx::Rect getGridBounds() = 0;
       virtual bool isPixelConnectivityEightConnected() = 0;
+      virtual bool isPointInsideCanvas(const gfx::Point& point) = 0;
 
       // Returns true if the figure must be filled when we release the
       // mouse (e.g. a filled rectangle, etc.)

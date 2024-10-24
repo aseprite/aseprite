@@ -360,6 +360,15 @@ public:
             == app::gen::PixelConnectivity::EIGHT_CONNECTED);
   }
 
+  bool isPointInsideCanvas(const gfx::Point& point) override {
+    const int a = ((getTiledMode() == TiledMode::X_AXIS ||
+                    getTiledMode() == TiledMode::BOTH) ? 3 : 1);
+    const int b = ((getTiledMode() == TiledMode::Y_AXIS ||
+                    getTiledMode() == TiledMode::BOTH) ? 3 : 1);
+    return 0 <= point.x && point.x < a * sprite()->size().w &&
+           0 <= point.y && point.y < b * sprite()->size().h;
+  }
+
   const doc::Grid& getGrid() const override { return m_grid; }
   gfx::Rect getGridBounds() override { return m_gridBounds; }
   gfx::Point getCelOrigin() override { return m_celOrigin; }
