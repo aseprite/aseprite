@@ -81,7 +81,7 @@ jobs:
 
         cmake -S . -B build -G Ninja \
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-          -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
+          -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \.github/workflows/build.yml
           -DENABLE_TESTS=ON \
           -DENABLE_SCRIPTING=$enable_scripting \
           -DENABLE_CCACHE=$enable_ccache \
