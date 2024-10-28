@@ -1281,10 +1281,13 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
     for (int i=0; i<scroll && dec.next(); ++i)
       pos = dec.pos();
 
-    // TODO use a string_view()
-    g->drawText(std::string(pos, textString.end()),
-                colors.text(), ColorNone,
-                bounds.origin(), &delegate);
+    IntersectClip clip(g, bounds);
+    if (clip) {
+      // TODO use a string_view()
+      g->drawText(std::string(pos, textString.end()),
+                  colors.text(), ColorNone,
+                  bounds.origin(), &delegate);
+    }
   }
 
   bounds.x += delegate.textBounds().w;

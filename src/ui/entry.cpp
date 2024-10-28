@@ -131,7 +131,8 @@ void Entry::setCaretPos(const int pos)
   }
   // Forward scroll
   else if (m_caret > m_scroll) {
-    const int xLimit = bounds().x2() - border().right();
+    const gfx::Rect bounds = getEntryTextBounds();
+    const int xLimit = bounds.x2();
 
     while (m_caret > m_scroll) {
       const float visibleTextWidth =
@@ -139,8 +140,7 @@ void Entry::setCaretPos(const int pos)
         m_boxes[m_scroll].x;
 
       const int x =
-        bounds().x + border().left() +
-        visibleTextWidth*m_scale.x + caretSize.w;
+        bounds.x + visibleTextWidth*m_scale.x + caretSize.w;
 
       if (x < xLimit)
         break;
@@ -576,9 +576,10 @@ gfx::Rect Entry::onGetEntryTextBounds() const
 
 int Entry::getCaretFromMouse(MouseMessage* mouseMsg)
 {
+  const gfx::Rect bounds = getEntryTextBounds().offset(this->bounds().origin());
   const int mouseX = mouseMsg->position().x;
 
-  if (mouseX < bounds().x+border().left()) {
+  if (mouseX < bounds.x+border().left()) {
     // Scroll to the left
     return std::max(0, m_scroll-1);
   }
@@ -588,13 +589,13 @@ int Entry::getCaretFromMouse(MouseMessage* mouseMsg)
   int i = std::min(scroll, lastPos);
   int scrollX = m_boxes[scroll].x;
   for (; i<lastPos; ++i) {
-    const int x = bounds().x + border().left() + m_boxes[i].x*m_scale.x - scrollX;
+    const int x = bounds.x + m_boxes[i].x*m_scale.x - scrollX;
 
     if (mouseX >= x && mouseX < x+m_boxes[i].width)
       break;
 
-    if (mouseX > bounds().x2() - border().right()) {
-      if (x >= bounds().x2() - border().right()) {
+    if (mouseX > bounds.x2()) {
+      if (x >= bounds.x2()) {
         // Scroll to the right
         i = std::min(++scroll, lastPos);
         if (i == lastPos)
