@@ -1268,25 +1268,24 @@ private:
 
 void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
 {
-  if (widget->text().empty())
-    return;
-
   // Draw the text
   gfx::Rect bounds = widget->getEntryTextBounds();
 
   DrawEntryTextDelegate delegate(widget, g, bounds.origin(), widget->textHeight());
   int scroll = delegate.index();
 
-  const std::string& textString = widget->text();
-  base::utf8_decode dec(textString);
-  auto pos = dec.pos();
-  for (int i=0; i<scroll && dec.next(); ++i)
-    pos = dec.pos();
+  if (!widget->text().empty()) {
+    const std::string& textString = widget->text();
+    base::utf8_decode dec(textString);
+    auto pos = dec.pos();
+    for (int i=0; i<scroll && dec.next(); ++i)
+      pos = dec.pos();
 
-  // TODO use a string_view()
-  g->drawText(std::string(pos, textString.end()),
-              colors.text(), ColorNone,
-              bounds.origin(), &delegate);
+    // TODO use a string_view()
+    g->drawText(std::string(pos, textString.end()),
+                colors.text(), ColorNone,
+                bounds.origin(), &delegate);
+  }
 
   bounds.x += delegate.textBounds().w;
 
