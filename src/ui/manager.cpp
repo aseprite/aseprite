@@ -1012,13 +1012,6 @@ void Manager::setMouse(Widget* widget)
     msg->setPropagateToParent(true);
     msg->setCommonAncestor(commonAncestor);
     enqueueMessage(msg);
-
-    // Remove HAS_MOUSE from all the hierarchy
-    auto a = mouse_widget;
-    while (a && a != commonAncestor) {
-      a->disableFlags(HAS_MOUSE);
-      a = a->parent();
-    }
   }
 
   // If the mouse is captured, we can just put the HAS_MOUSE flag in
@@ -1049,13 +1042,6 @@ void Manager::setMouse(Widget* widget)
                              mousePos,
                              kKeyUninitializedModifier,
                              PointerType::Unknown);
-
-    // Add HAS_MOUSE to all the hierarchy
-    auto a = mouse_widget;
-    while (a && a != commonAncestor) {
-      a->enableFlags(HAS_MOUSE);
-      a = a->parent();
-    }
   }
 }
 

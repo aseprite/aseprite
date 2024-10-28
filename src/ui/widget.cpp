@@ -1620,6 +1620,14 @@ bool Widget::onProcessMessage(Message* msg)
       else
         break;
 
+    case kMouseEnterMessage:
+      enableFlags(HAS_MOUSE);
+      return true;
+
+    case kMouseLeaveMessage:
+      disableFlags(HAS_MOUSE);
+      return true;
+
     case kSetCursorMessage:
       // Propagate the message to the parent.
       if (parent())
