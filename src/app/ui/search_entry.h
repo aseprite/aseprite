@@ -23,6 +23,9 @@ namespace app {
     void onSizeHint(ui::SizeHintEvent& ev) override;
     gfx::Rect onGetEntryTextBounds() const override;
 
+    virtual os::Surface* onGetCloseIcon() const;
+    virtual void onCloseIconPressed();
+
   private:
     gfx::Rect getCloseIconBounds() const;
   };

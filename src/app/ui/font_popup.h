@@ -42,6 +42,8 @@ namespace app {
     void showPopup(ui::Display* display,
                    const gfx::Rect& buttonBounds);
 
+    void recreatePinnedItems();
+
     FontListBox* getListBox() { return &m_listBox; }
     FontInfo selectedFont();
 
@@ -59,6 +61,7 @@ namespace app {
     gen::FontPopup* m_popup;
     FontListBox m_listBox;
     ui::Timer m_timer;
+    ui::Widget* m_pinnedSeparator = nullptr;
   };
 
 } // namespace app

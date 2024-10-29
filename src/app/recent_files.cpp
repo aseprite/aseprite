@@ -21,13 +21,11 @@
 
 namespace {
 
-enum { kPinnedFiles, kRecentFiles,
-       kPinnedPaths, kRecentPaths };
-
 const char* kSectionName[] = { "PinnedFiles",
                                "RecentFiles",
                                "PinnedPaths",
-                               "RecentPaths" };
+                               "RecentPaths",
+                               "PinnedFonts" };
 
 // Special key used in recent sections (files/paths) to indicate that
 // the section was already converted at least one time.
@@ -183,7 +181,7 @@ void RecentFiles::load()
        !get_config_bool(section, kConversionKey, false));
 
     const bool processOldPaths =
-      (i == kRecentPaths &&
+      (i == kRecentFolders &&
        get_config_string(section, "Path00", nullptr) &&
        !get_config_bool(section, kConversionKey, false));
 
@@ -197,10 +195,13 @@ void RecentFiles::load()
 
       const char* fn = get_config_string(section, key.c_str(), nullptr);
       if (fn && *fn &&
-          ((i < 2 && base::is_file(fn)) ||
-           (i >= 2 && base::is_directory(fn)))) {
+          (((i == kPinnedFiles || i == kRecentFiles) && base::is_file(fn)) ||
+           ((i == kPinnedFolders || i == kRecentFolders) && base::is_directory(fn)))) {
         std::string normalFn = normalizePath(fn);
         m_paths[i].push_back(normalFn);
+      }
+      else if (i == kPinnedFonts) {
+        m_paths[i].push_back(fn);
       }
     }
   }
@@ -215,7 +216,7 @@ void RecentFiles::save()
       if ((i == kRecentFiles &&
            (std::strncmp(key.c_str(), "Filename", 8) == 0 || key == kConversionKey))
           ||
-          (i == kRecentPaths &&
+          (i == kRecentFolders &&
            (std::strncmp(key.c_str(), "Path", 4) == 0 || key == kConversionKey))) {
         // Ignore old entries if we are going to read the new ones
         continue;
@@ -229,7 +230,7 @@ void RecentFiles::save()
                         m_paths[i][j].c_str());
     }
     // Special entry that indicates that we've already converted
-    if ((i == kRecentFiles || i == kRecentPaths) &&
+    if ((i == kRecentFiles || i == kRecentFolders) &&
         !get_config_bool(section, kConversionKey, false)) {
       set_config_bool(section, kConversionKey, true);
     }

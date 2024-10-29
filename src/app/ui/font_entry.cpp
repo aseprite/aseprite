@@ -10,8 +10,11 @@
 
 #include "app/ui/font_entry.h"
 
+#include "app/app.h"
 #include "app/console.h"
+#include "app/recent_files.h"
 #include "app/ui/font_popup.h"
+#include "app/ui/skin/skin_theme.h"
 #include "base/scoped_value.h"
 #include "fmt/format.h"
 #include "ui/display.h"
@@ -19,6 +22,7 @@
 #include "ui/message.h"
 #include "ui/scale.h"
 
+#include <algorithm>
 #include <cstdlib>
 
 namespace app {
@@ -84,6 +88,9 @@ bool FontEntry::FontFace::onProcessMessage(Message* msg)
         }
       }
       if (!m_popup->isVisible()) {
+        // Reset the search filter before opening the popup window.
+        m_popup->setSearchText(std::string());
+
         m_popup->showPopup(display(), bounds());
         requestFocus();
       }
@@ -171,6 +178,47 @@ void FontEntry::FontFace::onChange()
   FontChange(m_popup->selectedFont(), From::Face);
 }
 
+os::Surface* FontEntry::FontFace::onGetCloseIcon() const
+{
+  auto& pinnedFonts = App::instance()->recentFiles()->pinnedFonts();
+  const FontInfo info = fontEntry()->info();
+  const std::string fontInfoStr = base::convert_to<std::string>(info);
+  auto it = std::find(pinnedFonts.begin(),
+                      pinnedFonts.end(),
+                      fontInfoStr);
+  if (it != pinnedFonts.end()) {
+    return skin::SkinTheme::get(this)->parts.pinned()->bitmap(0);
+  }
+  return skin::SkinTheme::get(this)->parts.unpinned()->bitmap(0);
+}
+
+void FontEntry::FontFace::onCloseIconPressed()
+{
+  const FontInfo info = fontEntry()->info();
+  if (info.size() == 0)         // Don't save fonts with size=0pt
+    return;
+
+  auto& pinnedFonts = App::instance()->recentFiles()->pinnedFonts();
+  const std::string fontInfoStr = base::convert_to<std::string>(info);
+
+  auto it = std::find(pinnedFonts.begin(),
+                      pinnedFonts.end(),
+                      fontInfoStr);
+  if (it != pinnedFonts.end()) {
+    pinnedFonts.erase(it);
+  }
+  else {
+    pinnedFonts.push_back(fontInfoStr);
+    std::sort(pinnedFonts.begin(),
+              pinnedFonts.end());
+  }
+
+  // Refill the list with the new pinned/unpinned item
+  m_popup->recreatePinnedItems();
+
+  invalidate();
+}
+
 FontEntry::FontSize::FontSize()
 {
   setEditable(true);
@@ -215,13 +263,16 @@ FontEntry::FontEntry()
 
   m_face.setMinSize(gfx::Size(128*guiscale(), 0));
 
-  m_face.FontChange.connect([this](const FontInfo& newTypeName,
-                                   const From from) {
-    setInfo(FontInfo(newTypeName,
-                     m_info.size(),
-                     m_info.style(),
-                     m_info.flags()),
-            from);
+  m_face.FontChange.connect([this](const FontInfo& newTypeName, const From from) {
+    if (newTypeName.size() > 0)
+      setInfo(newTypeName, from);
+    else {
+      setInfo(FontInfo(newTypeName,
+                       m_info.size(),
+                       m_info.style(),
+                       m_info.flags()),
+              from);
+    }
     invalidate();
   });
 

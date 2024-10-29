@@ -48,6 +48,8 @@ namespace app {
     protected:
       bool onProcessMessage(ui::Message* msg) override;
       void onChange() override;
+      os::Surface* onGetCloseIcon() const override;
+      void onCloseIconPressed() override;
     private:
       FontEntry* fontEntry() const { return static_cast<FontEntry*>(parent()); }
 

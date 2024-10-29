@@ -11,11 +11,13 @@
 
 #include "app/ui/font_popup.h"
 
+#include "app/app.h"
 #include "app/file_selector.h"
 #include "app/font_info.h"
 #include "app/font_path.h"
 #include "app/i18n/strings.h"
 #include "app/match_words.h"
+#include "app/recent_files.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/font_data.h"
 #include "app/ui/skin/skin_theme.h"
@@ -60,6 +62,12 @@ class FontItem : public ListItem {
 public:
   struct ByName { };
 
+  explicit FontItem(const FontInfo& fontInfo)
+    : ListItem(fontInfo.humanString())
+    , m_fontInfo(fontInfo) {
+    getCachedThumbnail();
+  }
+
   FontItem(const std::string& name, ByName)
     : ListItem(name)
     , m_fontInfo(FontInfo::Type::Name, name,
@@ -69,7 +77,7 @@ public:
     getCachedThumbnail();
   }
 
-  FontItem(const std::string& fn)
+  explicit FontItem(const std::string& fn)
     : ListItem(base::get_file_title(fn))
     , m_fontInfo(FontInfo::Type::File, fn,
                  FontInfo::kDefaultSize,
@@ -128,9 +136,14 @@ private:
     const auto* theme = app::skin::SkinTheme::get(this);
 
     try {
+      const FontInfo fontInfoDefSize(m_fontInfo,
+                                     FontInfo::kDefaultSize,
+                                     text::FontStyle(),
+                                     FontInfo::Flags::Antialias);
+
       const gfx::Color color = theme->colors.text();
       doc::ImageRef image =
-        render_text(m_fontInfo, text(), color);
+        render_text(fontInfoDefSize, text(), color);
       if (!image)
         return;
 
@@ -220,13 +233,17 @@ FontPopup::FontPopup(const FontInfo& fontInfo)
 
   m_popup->view()->attachToView(&m_listBox);
 
+  // Pinned fonts
+  m_pinnedSeparator = new SeparatorInView(Strings::font_popup_pinned_fonts());
+  m_listBox.addChild(m_pinnedSeparator);
+
   // Default fonts
-  bool firstThemeFont = true;
+  bool first = true;
   for (auto kv : skin::SkinTheme::get(this)->getWellKnownFonts()) {
     if (!kv.second->filename().empty()) {
-      if (firstThemeFont) {
+      if (first) {
         m_listBox.addChild(new SeparatorInView(Strings::font_popup_theme_fonts()));
-        firstThemeFont = false;
+        first = false;
       }
       m_listBox.addChild(new FontItem(kv.first, FontItem::ByName()));
     }
@@ -332,6 +349,8 @@ void FontPopup::showPopup(Display* display,
 {
   m_listBox.selectChild(nullptr);
 
+  recreatePinnedItems();
+
   ui::fit_bounds(display, this,
                  gfx::Rect(buttonBounds.x, buttonBounds.y2(),
                            buttonBounds.w*2, buttonBounds.h),
@@ -342,6 +361,28 @@ void FontPopup::showPopup(Display* display,
                  });
 
   openWindow();
+}
+
+void FontPopup::recreatePinnedItems()
+{
+  // Update list of pinned fonts
+  if (m_pinnedSeparator) {
+    // Delete pinned elements
+    while (true) {
+      Widget* next = m_pinnedSeparator->nextSibling();
+      if (!next || next->type() == kSeparatorWidget)
+        break;
+      delete next;
+    }
+
+    // Recreate pinned elements
+    auto& pinnedFonts = App::instance()->recentFiles()->pinnedFonts();
+    int i = 1;
+    for (const auto& fontInfoStr : pinnedFonts) {
+      m_listBox.insertChild(i++, new FontItem(base::convert_to<FontInfo>(fontInfoStr)));
+    }
+    m_pinnedSeparator->setVisible(!pinnedFonts.empty());
+  }
 }
 
 FontInfo FontPopup::selectedFont()

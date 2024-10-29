@@ -111,6 +111,34 @@ void FontInfo::updatePreferences()
   }
 }
 
+std::string FontInfo::humanString() const
+{
+  std::string result;
+
+  switch (type()) {
+    case app::FontInfo::Type::Unknown:
+    case app::FontInfo::Type::Name:
+    case app::FontInfo::Type::System:
+      result = name();
+      break;
+    case app::FontInfo::Type::File:
+      result = base::get_file_name(name());
+      break;
+  }
+  result += fmt::format(" {}pt", size());
+  if (!result.empty()) {
+    if (style().weight() >= text::FontStyle::Weight::SemiBold)
+      result += " Bold";
+    if (style().slant() != text::FontStyle::Slant::Upright)
+      result += " Italic";
+    if (antialias())
+      result += " Antialias";
+    if (ligatures())
+      result += " Ligatures";
+  }
+  return result;
+}
+
 } // namespace app
 
 namespace base {

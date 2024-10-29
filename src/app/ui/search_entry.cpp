@@ -40,8 +40,7 @@ bool SearchEntry::onProcessMessage(ui::Message* msg)
         - bounds().origin();
 
       if (closeBounds.contains(mousePos)) {
-        setText("");
-        onChange();
+        onCloseIconPressed();
         return true;
       }
       break;
@@ -63,7 +62,7 @@ void SearchEntry::onPaint(ui::PaintEvent& ev)
     bounds.y + bounds.h/2 - icon->height()/2);
 
   if (!text().empty()) {
-    icon = theme->parts.iconClose()->bitmap(0);
+    icon = onGetCloseIcon();
     ev.graphics()->drawColoredRgbaSurface(
       icon, theme->colors.text(),
       bounds.x + bounds.w - border().right() - childSpacing() - icon->width(),
@@ -88,17 +87,27 @@ Rect SearchEntry::onGetEntryTextBounds() const
   auto theme = SkinTheme::get(this);
   Rect bounds = Entry::onGetEntryTextBounds();
   auto icon1 = theme->parts.iconSearch()->bitmap(0);
-  auto icon2 = theme->parts.iconClose()->bitmap(0);
+  auto icon2 = onGetCloseIcon();
   bounds.x += childSpacing() + icon1->width();
   bounds.w -= 2*childSpacing() + icon1->width() + icon2->width();
   return bounds;
 }
 
+os::Surface* SearchEntry::onGetCloseIcon() const
+{
+  return SkinTheme::get(this)->parts.iconClose()->bitmap(0);
+}
+
+void SearchEntry::onCloseIconPressed()
+{
+  setText("");
+  onChange();
+}
+
 Rect SearchEntry::getCloseIconBounds() const
 {
-  auto theme = SkinTheme::get(this);
   Rect bounds = clientBounds();
-  auto icon = theme->parts.iconClose()->bitmap(0);
+  auto icon = onGetCloseIcon();
   bounds.x += bounds.w - border().right() - childSpacing() - icon->width();
   bounds.y += bounds.h/2 - icon->height()/2;
   bounds.w = icon->width();
