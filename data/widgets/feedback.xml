@@ -1,0 +1,22 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
+<gui>
+<window id="feedback" text="Feedback">
+  <vbox>
+    <buttonset columns="3" minheight="64" id="dir">
+      <item icon="aseprite_face_mouse" />
+      <item icon="aseprite_face" />
+      <item icon="aseprite_face_pushed" />
+    </buttonset>
+    <entry multiline="false" maxsize="200" id="feedback_before" minwidth="140" expansive="true" text="@test.non_multiline" />
+    <entry multiline="true" maxsize="3072" id="feedback" minwidth="140" minheight="64" expansive="true" text="@test.multiline_entry" />
+    <entry multiline="true" maxsize="3072" id="feedback_after" minwidth="140" minheight="64" expansive="true" text="" />
+    <hbox>
+      <link text="More information..." url="https://www.aseprite.org/" />
+      <boxfiller />
+      <button text="Submit" id="submit" minwidth="60" />
+      <button text="@general.close" closewindow="true" id="ok" magnet="true" minwidth="60" />
+    </hbox>
+  </vbox>
+</window>
+</gui>

@@ -28,6 +28,7 @@
 #include "base/fs.h"
 #include "base/log.h"
 #include "base/string.h"
+#include "base/split_string.h"
 #include "base/utf8_decode.h"
 #include "gfx/border.h"
 #include "gfx/point.h"
@@ -1164,22 +1165,27 @@ namespace {
 
 class DrawEntryTextDelegate : public text::DrawTextDelegate {
 public:
-  DrawEntryTextDelegate(Entry* widget, Graphics* graphics,
-                        const gfx::Point& pos, const int h)
+  DrawEntryTextDelegate(Entry* widget, Graphics* graphics)
     : m_widget(widget)
     , m_graphics(graphics)
     , m_caretDrawn(false)
-      // m_lastX is an absolute position on screen
-    , m_lastX(pos.x+m_widget->bounds().x)
-    , m_y(pos.y)
-    , m_h(h)
+    , m_index(0)
+    , m_horizontalOffset(0)
+    , m_lineScroll(0)
+    , m_caret(0)
+    , m_state(0)
+    , m_range()
+    , m_bg(ColorNone)
   {
-    m_widget->getEntryThemeInfo(&m_index, &m_caret, &m_state, &m_range);
+    m_widget->getEntryThemeInfo(&m_index, &m_lineScroll, &m_caret, &m_state, &m_range);
+    ASSERT(m_index >= 0);
   }
 
   int index() const { return m_index; }
+  int lineScroll() const { return m_lineScroll;  }
   bool caretDrawn() const { return m_caretDrawn; }
   const gfx::Rect& textBounds() const { return m_textBounds; }
+  void setHorizontalOffset(int horizontalOffset) { m_horizontalOffset = horizontalOffset; };
 
   void preProcessChar(const int index,
                       const base::codepoint_t codepoint,
@@ -1214,19 +1220,11 @@ public:
 
   bool preDrawChar(const gfx::Rect& charBounds) override {
     m_textBounds |= charBounds;
-    m_charStartX = charBounds.x;
 
     if (charBounds.x2()-m_widget->bounds().x < m_widget->clientBounds().x2()) {
       if (m_bg != ColorNone) {
-        // Fill background e.g. needed for selected/highlighted
-        // regions with TTF fonts where the char is smaller than the
-        // text bounds [m_y,m_y+m_h)
-        gfx::Rect fillThisRect(m_lastX-m_widget->bounds().x,
-                               m_y, charBounds.x2()-m_lastX, m_h);
-        if (charBounds != fillThisRect)
-          m_graphics->fillRect(m_bg, fillThisRect);
+        m_graphics->fillRect(m_bg, charBounds); // TODO: TTF character bounds are broken
       }
-      m_lastX = charBounds.x2();
       return true;
     }
     else
@@ -1234,15 +1232,19 @@ public:
   }
 
   void postDrawChar(const gfx::Rect& charBounds) override {
+    ASSERT(m_index >= 0);
+
     // Caret
     if (m_state &&
         m_index == m_caret &&
         m_widget->hasFocus() &&
         m_widget->isEnabled()) {
       auto theme = SkinTheme::get(m_widget);
-      theme->drawEntryCaret(
-        m_graphics, m_widget,
-        m_charStartX-m_widget->bounds().x, m_y);
+      gfx::Point point(charBounds.x - m_widget->bounds().x + m_horizontalOffset, // TODO: Horizontal offset ends up being too short? How?? Why??
+                       charBounds.y - m_widget->bounds().y);
+
+      theme->drawEntryCaret(m_graphics, m_widget, point.x, point.y);
+      
       m_caretDrawn = true;
     }
 
@@ -1255,46 +1257,67 @@ private:
   int m_index;
   int m_caret;
   int m_state;
+  int m_lineScroll;
+  int m_horizontalOffset;
   Entry::Range m_range;
   gfx::Rect m_textBounds;
   bool m_caretDrawn;
   gfx::Color m_bg;
-  int m_lastX; // Last position used to fill the background
-  int m_y, m_h;
-  int m_charStartX;
 };
 
 } // anonymous namespace
 
 void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
 {
-  if (widget->text().empty())
+  if (widget->text().empty() && !widget->isCaretVisible())
     return;
+  
+  std::vector<std::string> lines;
+  if (widget->isMultiline())
+    base::split_string(widget->text(), lines, "\n");
+  else
+    lines.push_back(widget->text());
 
   // Draw the text
   gfx::Rect bounds = widget->getEntryTextBounds();
 
-  DrawEntryTextDelegate delegate(widget, g, bounds.origin(), widget->textHeight());
-  int scroll = delegate.index();
+  DrawEntryTextDelegate delegate(widget, g);
 
-  const std::string& textString = widget->text();
-  base::utf8_decode dec(textString);
-  auto pos = dec.pos();
-  for (int i=0; i<scroll && dec.next(); ++i)
-    pos = dec.pos();
+  int horizontalScroll = delegate.index();
+  int verticalLineScroll = delegate.lineScroll();
+  int y = (verticalLineScroll * widget->textHeight() * -1);
 
-  // TODO use a string_view()
-  g->drawText(std::string(pos, textString.end()),
-              colors.text(), ColorNone,
-              bounds.origin(), &delegate);
+  int line = 0;
+  int x = 0;
+
+  for (const auto& textString : lines) {
+    x = 0;
+    if (horizontalScroll > 0) {
+      int horizontalOffset = g->font()->textLength(textString.substr(0, horizontalScroll));
+      x = -horizontalOffset;
+
+      delegate.setHorizontalOffset(horizontalOffset); // Unconvinced by this approach
+    }
+
+    g->drawText(
+      textString + " ",  // Intentionally drawing the blank space that would be the newline. //TODO: Does this conflict with RTL?
+      colors.text(),
+      ColorNone,
+      bounds.origin() + gfx::Point(x, y),
+      &delegate);
+
+    y += widget->textHeight() * widget->scale().y;
+
+    ++line;
+  }
 
   bounds.x += delegate.textBounds().w;
-
+  
   // Draw suffix if there is enough space
-  if (!widget->getSuffix().empty()) {
+  if (!widget->isMultiline() && !widget->getSuffix().empty()) {
     Rect sufBounds(bounds.x, bounds.y,
                    bounds.x2()-widget->childSpacing()*guiscale()-bounds.x,
-                   widget->textHeight());
+                   widget->bounds().h);
     IntersectClip clip(g, sufBounds & widget->clientChildrenBounds());
     if (clip) {
       drawText(
@@ -1304,10 +1327,14 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
     }
   }
 
+  int yScrollOffset = verticalLineScroll * (widget->textHeight() * widget->scale().y); // ScaleOffset
+
   // Draw caret at the end of the text
   if (!delegate.caretDrawn()) {
-    gfx::Rect charBounds(bounds.x+widget->bounds().x,
-                         bounds.y+widget->bounds().y, 0, widget->textHeight());
+    gfx::Rect charBounds(x + bounds.x + widget->bounds().x,
+                         bounds.y + widget->bounds().y - yScrollOffset,
+                         0,
+                         widget->bounds().h); // TODO: ?
     delegate.preDrawChar(charBounds);
     delegate.postDrawChar(charBounds);
   }

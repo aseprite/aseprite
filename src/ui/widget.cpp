@@ -133,6 +133,9 @@ double Widget::textDouble() const
 
 void Widget::setText(const std::string& text)
 {
+  if (text == this->text())
+    return;
+
   setTextQuiet(text);
   onSetText();
 }

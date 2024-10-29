@@ -391,6 +391,7 @@ target_sources(app-lib PRIVATE
   commands/cmd_exit.cpp
   commands/cmd_export_sprite_sheet.cpp
   commands/cmd_eyedropper.cpp
+  commands/cmd_feedback.cpp
   commands/cmd_fill_and_stroke.cpp
   commands/cmd_fit_screen.cpp
   commands/cmd_flatten_layers.cpp

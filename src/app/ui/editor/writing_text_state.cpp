@@ -199,7 +199,7 @@ private:
       // Paint caret
       if (isCaretVisible()) {
         int scroll, caret;
-        getEntryThemeInfo(&scroll, &caret, nullptr, nullptr);
+        getEntryThemeInfo(&scroll, nullptr, &caret, nullptr, nullptr);
 
         gfx::RectF caretBounds = getCharBoxBounds(caret);
         caretBounds *= gfx::SizeF(scale());
@@ -242,7 +242,7 @@ private:
     // Invert selected range in the image
     if (withSelection) {
       Range range;
-      getEntryThemeInfo(nullptr, nullptr, nullptr, &range);
+      getEntryThemeInfo(nullptr, nullptr, nullptr, nullptr, &range);
       if (!range.isEmpty()) {
         gfx::RectF selectedBounds =
           getCharBoxBounds(range.from) |

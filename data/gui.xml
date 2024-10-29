@@ -1053,6 +1053,8 @@
         <item command="Refresh" text="@.view_refresh" group="view_screen" />
       </menu>
       <menu text="@.help" id="help_menu">
+        <item command="Feedback" text="@.help_feedback" group="help_feedback" />
+        <separator />
         <item command="OpenBrowser" text="@.help_readme" group="help_readme">
           <param name="filename" value="README.md" />
         </item>

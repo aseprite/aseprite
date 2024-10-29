@@ -22,8 +22,9 @@ namespace ui {
   class Entry : public Widget {
   public:
     struct Range {
-      int from = -1, to = -1;
-      Range() { }
+      int from = -1;
+      int to = -1;
+      Range() = default;
       Range(int from, int to) : from(from), to(to) { }
       bool isEmpty() const { return from < 0; }
       int size() const { return to - from; }
@@ -31,12 +32,15 @@ namespace ui {
     };
 
     Entry(const int maxsize, const char *format, ...);
-    ~Entry();
+    virtual ~Entry();
 
     void setMaxTextLength(const int maxsize);
 
     bool isReadOnly() const;
     void setReadOnly(bool state);
+
+    bool isMultiline() const;
+    void setMultiline(bool state);
 
     void showCaret();
     void hideCaret();
@@ -56,7 +60,7 @@ namespace ui {
 
     // Set to true if you want to persists the selection when the
     // keyboard focus is lost/re-enters.
-    void setPersistSelection(bool state) { m_persist_selection = state; }
+    void setPersistSelection(bool state) { m_persistSelection = state; }
 
     void setSuffix(const std::string& suffix);
     std::string getSuffix();
@@ -64,7 +68,11 @@ namespace ui {
     void setTranslateDeadKeys(bool state);
 
     // for themes
-    void getEntryThemeInfo(int* scroll, int* caret, int* state, Range* range) const;
+    void getEntryThemeInfo(int* scroll,
+                           int* line_scroll,
+                           int* caret,
+                           int* state,
+                           Range* range) const;
     gfx::Rect getEntryTextBounds() const;
 
     gfx::PointF scale() const { return m_scale; }
@@ -100,6 +108,9 @@ namespace ui {
       BackwardWord,
       BeginningOfLine,
       EndOfLine,
+      InsertNewLine,
+      LineDown,
+      LineUp,
       DeleteForward,
       DeleteBackward,
       DeleteBackwardWord,
@@ -110,18 +121,24 @@ namespace ui {
       SelectAll,
     };
 
+    struct EntryLine {
+      int start = -1;
+      int end = -1;
+    };
+
     int getCaretFromMouse(MouseMessage* mousemsg);
     void executeCmd(EntryCmd cmd, base::codepoint_t unicodeChar, bool shift_pressed);
     void forwardWord();
     void backwardWord();
     Range wordRange(int pos);
-    bool isPosInSelection(int pos);
+    bool isPosInSelection(int pos) const;
     void showEditPopupMenu(const gfx::Point& pt);
     void recalcCharBoxes(const std::string& text);
     bool shouldStartTimer(const bool hasFocus);
     void deleteRange(const Range& range, std::string& text);
     void startTimer();
     void stopTimer();
+    int caretToLine(const int caret_position);
 
     class CalcBoxesTextDelegate;
 
@@ -130,24 +147,30 @@ namespace ui {
       int from = 0;
       int to = 0;
       float x = 0.0f;
+      float y = 0.0f;
       float width = 0.0f;
     };
 
     using CharBoxes = std::vector<CharBox>;
+    using EntryLines = std::vector<EntryLine>;
 
     CharBoxes m_boxes;
+    EntryLines m_lines;
     int m_maxsize;
     int m_caret;
-    int m_scroll;
     int m_select;
+    int m_horizontalScroll;
+    int m_verticalLineScroll;
+
     bool m_hidden : 1;
     bool m_state : 1;             // show or not the text caret
     bool m_readonly : 1;
-    bool m_recent_focused : 1;
-    bool m_lock_selection : 1;
-    bool m_persist_selection : 1;
-    bool m_translate_dead_keys : 1;
-    Range m_selecting_words;
+    bool m_recentlyFocused : 1;
+    bool m_lockSelection : 1;
+    bool m_persistSelection : 1;
+    bool m_translateDeadKeys : 1;
+    bool m_multiline : 1;
+    Range m_selectingWords;
     std::unique_ptr<std::string> m_suffix;
 
     // Scale (1.0 by default) applied to each axis. Can be used in

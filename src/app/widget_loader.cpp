@@ -249,6 +249,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem, Widget* 
     const char* suffix = elem->Attribute("suffix");
     const char* decimals = elem->Attribute("decimals");
     const bool readonly = bool_attr(elem, "readonly", false);
+    const bool multiline = bool_attr(elem, "multiline", false);
 
     widget = (elem_name == "expr" ?
               new ExprEntry:
@@ -256,6 +257,9 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem, Widget* 
 
     if (readonly)
       ((Entry*)widget)->setReadOnly(true);
+
+    if (multiline)
+      ((Entry*)widget)->setMultiline(true);
 
     if (suffix)
       ((Entry*)widget)->setSuffix(suffix);
