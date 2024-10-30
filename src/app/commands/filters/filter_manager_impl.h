@@ -125,6 +125,8 @@ namespace app {
     doc::Palette* getNewPalette() override;
     doc::PalettePicks getPalettePicks() override;
 
+    void startWorker();
+
   private:
     void init(doc::Cel* cel);
     void apply();
