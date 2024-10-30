@@ -79,6 +79,10 @@ namespace doc {
     // Returns an array of tile positions that are touching the given region in the canvas
     std::vector<gfx::Point> tilesInCanvasRegion(const gfx::Region& rgn) const;
 
+    // Returns an array of coordinates used for calculating the
+    // pixel-precise bounds of an isometric grid cell
+    std::vector<gfx::Point> getIsometricLinePoints(void);
+
   private:
     gfx::Size m_tileSize;
     gfx::Point m_origin;

@@ -58,7 +58,6 @@
 #include "base/chrono.h"
 #include "base/convert_to.h"
 #include "doc/doc.h"
-#include "doc/algo.h"
 #include "doc/mask_boundaries.h"
 #include "doc/slice.h"
 #include "fmt/format.h"
@@ -1241,7 +1240,7 @@ void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gr
       PointF ivto = PointF(-vto.x, vto.y);
       double lenF = sqrt(vto.x*vto.x + vto.y*vto.y);
 
-      // Now displace point (b) to upper edge of canvas
+      // Now displace point (b) to right edge of canvas
       b = a+PointF(dx*0.5, -dy*0.5);
 
       // Offset line (a, b) by screen coords
@@ -1255,30 +1254,29 @@ void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gr
 
       // Calculate how much we need to stretch
       // line (a, b) to cover the whole canvas
-      double len = (left.x/lenF) + 1;
-      len += 1*(grid.x > 0);
-      len += 1*(grid.y > 0);
+      double len = std::round(left.x/lenF) + std::round(dx/lenF);
+      len += 1*(grid.x > 0) + 1*(grid.y > 0) + 2;
+
+      vto.x = std::round(vto.x*len);
+      vto.y = std::round(vto.y*len);
+      ivto.x = std::round(ivto.x*len);
+      ivto.y = std::round(ivto.y*len);
 
       // Move these two points across the screen in
       // cell-sized steps to draw the entire grid
       for (int y=y1; y<y2; y+=dy) {
-        g->drawLine(grid_color, Point(a), Point(a+vto*len));
-        g->drawLine(grid_color, Point(a+left), Point((a+left) + ivto*len));
+        g->drawLine(grid_color, Point(a), Point(a+vto));
+        g->drawLine(grid_color, Point(a+left), Point((a+left) + ivto));
         a.y += dy;
       }
       for (int x=x1; x<x2; x+=dx) {
-        g->drawLine(grid_color, Point(b), Point(b+vto*len));
-        g->drawLine(grid_color, Point(b), Point(b+ivto*len));
+        g->drawLine(grid_color, Point(b), Point(b+vto));
+        g->drawLine(grid_color, Point(b), Point(b+ivto));
         b.x += dx;
       }
     }
   }
 }
-
-static void push_line_pixel(int x, int y, std::vector<Point>* data)
-{
-  data->push_back(Point(x, y));
-};
 
 gfx::Path& Editor::getIsometricGridPath(Rect& grid)
 {
@@ -1300,21 +1298,10 @@ gfx::Path& Editor::getIsometricGridPath(Rect& grid)
     if (!im)
       return path;
 
-    // Prepare bitmap
+    // Prepare bitmap from points of pixel precise line.
+    // A single grid cell is calculated from these
     im->clear(0x00);
-    Point a(0, std::round(grid.h*0.5));
-    Point b(std::floor(grid.w*0.5), grid.h);
-    std::vector<Point> line;
-
-    // We use the line drawing algorithm to find the points
-    // for a single pixel-precise line
-    doc::algo_line_continuous_with_fix_for_line_brush(
-      a.x, a.y, b.x, b.y,
-      &line, (doc::AlgoPixel) &push_line_pixel);
-
-    // Iterating on said points, we fill in the bitmap
-    // for a single cell grid
-    for (auto p : line)
+    for (auto p : getSite().grid().getIsometricLinePoints())
       im->fillRect(
         std::round(p.x*pix.w),
         std::round((grid.h-p.y)*pix.h),

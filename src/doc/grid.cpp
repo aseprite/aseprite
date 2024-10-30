@@ -14,6 +14,7 @@
 #include "doc/image_impl.h"
 #include "doc/image_ref.h"
 #include "doc/primitives.h"
+#include "doc/algo.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/region.h"
@@ -186,6 +187,29 @@ std::vector<gfx::Point> Grid::tilesInCanvasRegion(const gfx::Region& rgn) const
       result.push_back(gfx::Point(it.x()+bounds.x,
                                   it.y()+bounds.y));
   }
+  return result;
+}
+
+static void push_isometric_line_point(int x,
+                                      int y,
+                                      std::vector<gfx::Point>* data)
+{
+  if (data->empty() || data->back().y != y) {
+    data->push_back(gfx::Point(x, y));
+  }
+};
+
+std::vector<gfx::Point> Grid::getIsometricLinePoints(void)
+{
+  std::vector<gfx::Point> result;
+  gfx::Point a(0, std::round(m_tileSize.h*0.5));
+  gfx::Point b(std::floor(m_tileSize.w*0.5), m_tileSize.h);
+  // We use the line drawing algorithm to find the points
+  // for a single pixel-precise line
+  doc::algo_line_continuous_with_fix_for_line_brush(
+    a.x, a.y, b.x, b.y,
+    &result, (doc::AlgoPixel) &push_isometric_line_point);
+
   return result;
 }
 
