@@ -13,7 +13,6 @@
 #include "app/commands/command.h"
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/commands/filters/filter_window.h"
-#include "app/commands/filters/filter_worker.h"
 #include "app/commands/new_params.h"
 #include "app/context.h"
 #include "app/ini_file.h"
@@ -257,7 +256,7 @@ void OutlineCommand::onExecute(Context* context)
     }
   }
   else {
-    start_filter_worker(&filterMgr);
+    filterMgr.startWorker();
   }
 }
 

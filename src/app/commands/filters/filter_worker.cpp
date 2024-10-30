@@ -220,9 +220,9 @@ void FilterWorker::onMonitoringTick()
 //
 // [main thread]
 //
-void start_filter_worker(FilterManagerImpl* filterMgr)
+void FilterManagerImpl::startWorker()
 {
-  FilterWorker filterWorker(filterMgr);
+  FilterWorker filterWorker(this);
   filterWorker.run();
 }
 
