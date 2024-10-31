@@ -54,6 +54,9 @@ namespace app {
     // Returns the container where derived classes should put controls.
     ui::Widget* getContainer() { return &m_container; }
 
+    void apply();
+
+    void onApply();
     void onOk();
     void onCancel();
     void onShowPreview();
@@ -78,6 +81,7 @@ namespace app {
     ui::Box m_hbox;
     ui::Box m_vbox;
     ui::Box m_container;
+    ui::Button m_applyButton;
     ui::Button m_okButton;
     ui::Button m_cancelButton;
     FilterPreview m_preview;
