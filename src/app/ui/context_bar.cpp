@@ -1525,18 +1525,22 @@ protected:
 
 class ContextBar::SymmetryField : public ButtonSet {
 public:
-  SymmetryField() : ButtonSet(3) {
+  SymmetryField() : ButtonSet(5) {
     setMultiMode(MultiMode::Set);
-    auto* theme = SkinTheme::get(this);
+    auto theme = SkinTheme::get(this);
     addItem(theme->parts.horizontalSymmetry(), theme->styles.symmetryField());
     addItem(theme->parts.verticalSymmetry(), theme->styles.symmetryField());
+    addItem(theme->parts.rightDiagonalSymmetry(), theme->styles.symmetryField());
+    addItem(theme->parts.leftDiagonalSymmetry(), theme->styles.symmetryField());
     addItem("...", theme->styles.symmetryOptions());
   }
 
   void setupTooltips(TooltipManager* tooltipManager) {
     tooltipManager->addTooltipFor(at(0), Strings::symmetry_toggle_horizontal(), BOTTOM);
     tooltipManager->addTooltipFor(at(1), Strings::symmetry_toggle_vertical(), BOTTOM);
-    tooltipManager->addTooltipFor(at(2), Strings::symmetry_show_options(), BOTTOM);
+    tooltipManager->addTooltipFor(at(2), Strings::symmetry_toggle_right_diagonal(), BOTTOM);
+    tooltipManager->addTooltipFor(at(3), Strings::symmetry_toggle_left_diagonal(), BOTTOM);
+    tooltipManager->addTooltipFor(at(4), Strings::symmetry_show_options(), BOTTOM);
   }
 
   void updateWithCurrentDocument() {
@@ -1548,6 +1552,8 @@ public:
 
     at(0)->setSelected(int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::HORIZONTAL) ? true: false);
     at(1)->setSelected(int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::VERTICAL) ? true: false);
+    at(2)->setSelected(int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::RIGHT_DIAG) ? true: false);
+    at(3)->setSelected(int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::LEFT_DIAG) ? true: false);
   }
 
 private:
@@ -1561,16 +1567,70 @@ private:
     DocumentPreferences& docPref =
       Preferences::instance().document(doc);
 
+    auto oldMode = docPref.symmetry.mode();
     int mode = 0;
     if (at(0)->isSelected()) mode |= int(app::gen::SymmetryMode::HORIZONTAL);
     if (at(1)->isSelected()) mode |= int(app::gen::SymmetryMode::VERTICAL);
+    if (at(2)->isSelected()) mode |= int(app::gen::SymmetryMode::RIGHT_DIAG);
+    if (at(3)->isSelected()) mode |= int(app::gen::SymmetryMode::LEFT_DIAG);
+
+    // Non sense symmetries filter:
+    //  - H + 1Diag
+    //  - V + 1Diag
+    //  - H + V + 1Diag
+    const bool HorV = (mode & int(app::gen::SymmetryMode::HORIZONTAL)) ||
+                      (mode & int(app::gen::SymmetryMode::VERTICAL));
+    const bool HxorV = !(mode & int(app::gen::SymmetryMode::HORIZONTAL)) !=
+                       !(mode & int(app::gen::SymmetryMode::VERTICAL));
+    const bool RDxorLD = !(mode & int(app::gen::SymmetryMode::RIGHT_DIAG)) !=
+                         !(mode & int(app::gen::SymmetryMode::LEFT_DIAG));
+    if (oldMode == gen::SymmetryMode::HORIZONTAL ||
+        oldMode == gen::SymmetryMode::VERTICAL ||
+        oldMode == gen::SymmetryMode::BOTH) {
+      if (HorV && RDxorLD) {
+        mode = int(app::gen::SymmetryMode::ALL);
+        at(0)->setSelected(true);
+        at(1)->setSelected(true);
+        at(2)->setSelected(true);
+        at(3)->setSelected(true);
+      }
+    }
+    else if (oldMode == gen::SymmetryMode::ALL) {
+      if (HxorV) {
+        mode = int(app::gen::SymmetryMode::BOTH_DIAG);
+        at(0)->setSelected(false);
+        at(1)->setSelected(false);
+      }
+      else if (RDxorLD) {
+        mode = int(app::gen::SymmetryMode::BOTH);
+        at(2)->setSelected(false);
+        at(3)->setSelected(false);
+      }
+    }
+    else if ((oldMode == gen::SymmetryMode::RIGHT_DIAG ||
+             oldMode == gen::SymmetryMode::LEFT_DIAG ||
+             oldMode == gen::SymmetryMode::BOTH_DIAG) &&
+             HorV) {
+      mode = int(app::gen::SymmetryMode::ALL);
+      at(0)->setSelected(true);
+      at(1)->setSelected(true);
+      at(2)->setSelected(true);
+      at(3)->setSelected(true);
+    }
+    // Non sense symmetries filter end
+
+    if (at(0)->isSelected()) mode |= int(app::gen::SymmetryMode::HORIZONTAL);
+    if (at(1)->isSelected()) mode |= int(app::gen::SymmetryMode::VERTICAL);
+    if (at(2)->isSelected()) mode |= int(app::gen::SymmetryMode::RIGHT_DIAG);
+    if (at(3)->isSelected()) mode |= int(app::gen::SymmetryMode::LEFT_DIAG);
+
     if (app::gen::SymmetryMode(mode) != docPref.symmetry.mode()) {
       docPref.symmetry.mode(app::gen::SymmetryMode(mode));
       // Redraw symmetry rules
       doc->notifyGeneralUpdate();
     }
-    else if (at(2)->isSelected()) {
-      auto item = at(2);
+    else if (at(4)->isSelected()) {
+      auto* item = at(4);
 
       gfx::Rect bounds = item->bounds();
       item->setSelected(false);
@@ -2429,7 +2489,6 @@ void ContextBar::setActiveBrushBySlot(tools::Tool* tool, int slot)
         // the slot.
         if (brush.hasFlag(BrushSlot::Flags::ImageColor))
           brush.brush()->resetImageColors();
-
         setActiveBrush(brush.brush());
       }
       else {

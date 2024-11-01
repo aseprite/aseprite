@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -8,7 +8,9 @@
 #include "app/util/wrap_point.h"
 
 #include "app/tools/ink.h"
+#include "app/tools/symmetry.h"
 #include "doc/algorithm/flip_image.h"
+#include "doc/primitives.h"
 #include "render/gradient.h"
 
 #include <array>
@@ -23,7 +25,8 @@ public:
     // Do nothing
   }
 
-  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
+  void getModifiedArea(ToolLoop* loop, int x, int y,
+                       doc::SymmetryIndex symmetry, Rect& area) override {
     // Do nothing
   }
 };
@@ -33,11 +36,12 @@ public:
   bool isPixel() override { return true; }
 
   void transformPoint(ToolLoop* loop, const Stroke::Pt& pt) override {
-    loop->getInk()->prepareForPointShape(loop, true, pt.x, pt.y);
+    loop->getInk()->prepareForPointShape(loop, true, pt.x, pt.y, pt.symmetry);
     doInkHline(pt.x, pt.y, pt.x, loop);
   }
 
-  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
+  void getModifiedArea(ToolLoop* loop, int x, int y,
+                       doc::SymmetryIndex symmetry, Rect& area) override {
     area = Rect(x, y, 1, 1);
   }
 };
@@ -51,11 +55,12 @@ public:
     const doc::Grid& grid = loop->getGrid();
     gfx::Point newPos = grid.canvasToTile(pt.toPoint());
 
-    loop->getInk()->prepareForPointShape(loop, true, newPos.x, newPos.y);
+    loop->getInk()->prepareForPointShape(loop, true, newPos.x, newPos.y, pt.symmetry);
     doInkHline(newPos.x, newPos.y, newPos.x, loop);
   }
 
-  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
+  void getModifiedArea(ToolLoop* loop, int x, int y,
+                       doc::SymmetryIndex symmetry, Rect& area) override {
     const doc::Grid& grid = loop->getGrid();
     area = grid.alignBounds(Rect(x, y, 1, 1));
   }
@@ -65,7 +70,7 @@ class BrushPointShape : public PointShape {
   bool m_firstPoint;
   Brush* m_lastBrush;
   BrushType m_origBrushType;
-  std::array<std::shared_ptr<CompressedImage>, 4> m_compressedImages;
+  std::array<std::shared_ptr<CompressedImage>, int(SymmetryIndex::ELEMENTS)> m_compressedImages;
   // For dynamics
   DynamicsOptions m_dynamics;
   bool m_useDynamics;
@@ -213,8 +218,15 @@ public:
       m_compressedImages.fill(nullptr);
     }
 
-    x += brush->bounds().x;
-    y += brush->bounds().y;
+    if (brush->type() == kImageBrushType &&
+        does_symmetry_rotate_image(pt.symmetry)) {
+      x += brush->bounds().y;
+      y += brush->bounds().x;
+    }
+    else {
+      x += brush->bounds().x;
+      y += brush->bounds().y;
+    }
 
     if (m_firstPoint) {
       if ((brush->type() == kImageBrushType) &&
@@ -241,7 +253,7 @@ public:
       y = wrap_value(y, loop->sprite()->height());
     }
 
-    ink->prepareForPointShape(loop, m_firstPoint, x, y);
+    ink->prepareForPointShape(loop, m_firstPoint, x, y, pt.symmetry);
 
     for (auto scanline : getCompressedImage(pt.symmetry)) {
       int u = x+scanline.x;
@@ -251,50 +263,24 @@ public:
     m_firstPoint = false;
   }
 
-  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
-    area = loop->getBrush()->bounds();
+  void getModifiedArea(ToolLoop* loop, int x, int y,
+                       doc::SymmetryIndex symmetry, Rect& area) override {
+    auto bounds = loop->getBrush()->bounds();
+    if (does_symmetry_rotate_image(symmetry))
+      area = gfx::Rect(bounds.y, bounds.x, bounds.h, bounds.w);
+    else
+      area = bounds;
     area.x += x;
     area.y += y;
   }
 
 private:
-  CompressedImage& getCompressedImage(gen::SymmetryMode symmetryMode) {
-    auto& compressPtr = m_compressedImages[int(symmetryMode)];
+  CompressedImage& getCompressedImage(doc::SymmetryIndex index) {
+    auto& compressPtr = m_compressedImages[int(index)];
     if (!compressPtr) {
-      switch (symmetryMode) {
-        case gen::SymmetryMode::NONE: {
-          compressPtr.reset(new CompressedImage(m_lastBrush->image(),
-                                                m_lastBrush->maskBitmap(),
-                                                false));
-          break;
-        }
-        case gen::SymmetryMode::HORIZONTAL:
-        case gen::SymmetryMode::VERTICAL: {
-          std::unique_ptr<Image> tempImage(Image::createCopy(m_lastBrush->image()));
-          doc::algorithm::FlipType flip =
-            (symmetryMode == gen::SymmetryMode::HORIZONTAL)?
-              doc::algorithm::FlipType::FlipHorizontal:
-              doc::algorithm::FlipType::FlipVertical;
-          doc::algorithm::flip_image(tempImage.get(), tempImage->bounds(), flip);
-          compressPtr.reset(new CompressedImage(tempImage.get(),
-                                                m_lastBrush->maskBitmap(),
-                                                false));
-          break;
-        }
-        case gen::SymmetryMode::BOTH: {
-          std::unique_ptr<Image> tempImage(Image::createCopy(m_lastBrush->image()));
-          doc::algorithm::flip_image(tempImage.get(),
-                                     tempImage->bounds(),
-                                     doc::algorithm::FlipType::FlipVertical);
-          doc::algorithm::flip_image(tempImage.get(),
-                                     tempImage->bounds(),
-                                     doc::algorithm::FlipType::FlipHorizontal);
-          compressPtr.reset(new CompressedImage(tempImage.get(),
-                                                m_lastBrush->maskBitmap(),
-                                                false));
-          break;
-        }
-      }
+      compressPtr.reset(new CompressedImage(m_lastBrush->getSymmetryImage(index),
+                                            m_lastBrush->getSymmetryMask(index),
+                                            false));
     }
     return *compressPtr;
   }
@@ -319,7 +305,7 @@ public:
                        wpt, true);
     }
 
-    loop->getInk()->prepareForPointShape(loop, true, wpt.x, wpt.y);
+    loop->getInk()->prepareForPointShape(loop, true, wpt.x, wpt.y, pt.symmetry);
 
     doc::algorithm::floodfill(
       srcImage,
@@ -334,7 +320,8 @@ public:
       loop, (AlgoHLine)doInkHline);
   }
 
-  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
+  void getModifiedArea(ToolLoop* loop, int x, int y,
+                       doc::SymmetryIndex symmetry, Rect& area) override {
     area = floodfillBounds(loop, x, y);
   }
 
@@ -387,7 +374,7 @@ public:
   }
 
   void transformPoint(ToolLoop* loop, const Stroke::Pt& pt) override {
-    loop->getInk()->prepareForPointShape(loop, true, pt.x, pt.y);
+    loop->getInk()->prepareForPointShape(loop, true, pt.x, pt.y, pt.symmetry);
 
     int spray_width = loop->getSprayWidth();
     int spray_speed = loop->getSpraySpeed();
@@ -418,15 +405,16 @@ public:
     }
   }
 
-  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
+  void getModifiedArea(ToolLoop* loop, int x, int y,
+                       doc::SymmetryIndex symmetry, Rect& area) override {
     int spray_width = loop->getSprayWidth();
     Point p1(x-spray_width, y-spray_width);
     Point p2(x+spray_width, y+spray_width);
 
     Rect area1;
     Rect area2;
-    m_subPointShape.getModifiedArea(loop, p1.x, p1.y, area1);
-    m_subPointShape.getModifiedArea(loop, p2.x, p2.y, area2);
+    m_subPointShape.getModifiedArea(loop, p1.x, p1.y, symmetry, area1);
+    m_subPointShape.getModifiedArea(loop, p2.x, p2.y, symmetry, area2);
 
     area = area1.createUnion(area2);
   }

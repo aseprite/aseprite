@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/pref/preferences.h"
+#include "doc/brush.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 
@@ -26,7 +27,7 @@ namespace app {
         float size = 0.0f;
         float angle = 0.0f;
         float gradient = 0.0f;
-        gen::SymmetryMode symmetry = gen::SymmetryMode::NONE;
+        doc::SymmetryIndex symmetry = doc::SymmetryIndex::ORIGINAL;
         Pt() { }
         Pt(const gfx::Point& point) : x(point.x), y(point.y) { }
         Pt(int x, int y) : x(x), y(y) { }

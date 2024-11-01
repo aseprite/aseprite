@@ -1107,7 +1107,9 @@ bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, Handles& handle
       auto theme = skin::SkinTheme::get(editor);
       os::Surface* part = theme->parts.transformationHandle()->bitmap(0);
 
-      if (int(mode) & int(app::gen::SymmetryMode::HORIZONTAL)) {
+      if ((int(mode) & int(app::gen::SymmetryMode::HORIZONTAL)) ||
+          (int(mode) & int(app::gen::SymmetryMode::RIGHT_DIAG)) ||
+          (int(mode) & int(app::gen::SymmetryMode::LEFT_DIAG))) {
         double pos = symmetry.xAxis();
         gfx::PointF pt1, pt2;
 
@@ -1128,7 +1130,9 @@ bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, Handles& handle
                  gfx::Rect(int(pt2.x), int(pt2.y), part->width(), part->height())));
       }
 
-      if (int(mode) & int(app::gen::SymmetryMode::VERTICAL)) {
+      if ((int(mode) & int(app::gen::SymmetryMode::VERTICAL)) ||
+          (int(mode) & int(app::gen::SymmetryMode::RIGHT_DIAG)) ||
+          (int(mode) & int(app::gen::SymmetryMode::LEFT_DIAG))) {
         double pos = symmetry.yAxis();
         gfx::PointF pt1, pt2;
 

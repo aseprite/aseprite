@@ -99,10 +99,9 @@ private:
   Pointer m_lastPointer;
   gfx::Region m_dirtyArea;
   gfx::Region m_nextDirtyArea;
-  const int m_brushSize0;
-  const int m_brushAngle0;
   DynamicsOptions m_dynamics;
   gfx::PointF m_stabilizerCenter;
+  doc::Brush* m_brush0 = nullptr;
 };
 
 } // namespace tools
