@@ -148,6 +148,24 @@ protected:
   }
 };
 
+class ShowBrushPreviewInPreviewCommand : public Command {
+public:
+  ShowBrushPreviewInPreviewCommand() : Command(CommandId::ShowBrushPreviewInPreview(), CmdUIOnlyFlag){
+  }
+
+protected:
+  bool onChecked(Context* ctx) override
+  {
+    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
+    return docPref.show.brushPreviewInPreview();
+  }
+  void onExecute(Context* ctx) override
+  {
+    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
+    docPref.show.brushPreviewInPreview(!docPref.show.brushPreviewInPreview());
+  }
+};
+
 class ShowAutoGuidesCommand : public Command {
 public:
   ShowAutoGuidesCommand()
@@ -230,6 +248,11 @@ Command* CommandFactory::createShowSelectionEdgesCommand()
 Command* CommandFactory::createShowBrushPreviewCommand()
 {
   return new ShowBrushPreviewCommand;
+}
+
+Command* CommandFactory::createShowBrushPreviewInPreviewCommand()
+{
+  return new ShowBrushPreviewInPreviewCommand;
 }
 
 Command* CommandFactory::createShowAutoGuidesCommand()

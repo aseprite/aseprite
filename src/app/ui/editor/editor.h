@@ -39,6 +39,7 @@
 #include "ui/timer.h"
 #include "ui/widget.h"
 
+#include <app/ui/doc_view.h>
 #include <memory>
 #include <set>
 
@@ -293,6 +294,7 @@ namespace app {
 
     // Gets the brush preview controller.
     BrushPreview& brushPreview() { return m_brushPreview; }
+    bool useBrushPreviewInPreview() const { return m_docPref.show.brushPreviewInPreview(); }
 
     static EditorRender& renderEngine() { return *m_renderEngine; }
 
@@ -390,6 +392,7 @@ namespace app {
                        const gfx::Rect& scrCelBounds, const gfx::Rect& scrCmpBounds,
                        const int dottedY);
     gfx::Rect getCelScreenBounds(const Cel* cel);
+    void renderPenPreview(ExtraCelRef& extraCel);
 
     void setCursor(const gfx::Point& mouseDisplayPos);
 
@@ -397,6 +400,7 @@ namespace app {
     // You should setup the clip of the screen before calling this
     // routine.
     void drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, int dx, int dy);
+
 
     gfx::Point calcExtraPadding(const render::Projection& proj);
 

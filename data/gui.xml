@@ -143,6 +143,7 @@
       <!-- View -->
       <key command="Refresh" shortcut="F5" />
       <key command="TogglePreview" shortcut="F7" />
+      <key command="ShowBrushPreviewInPreview" />
       <key command="FullscreenPreview" shortcut="F8" />
       <key command="FullscreenMode" shortcut="F11" mac="Cmd+Ctrl+F" />
       <key command="ShowGrid" shortcut="Ctrl+'" mac="Cmd+'" />
@@ -1043,6 +1044,7 @@
             <param name="preview" value="true" />
             <param name="checkedIfZero" value="true" />
           </item>
+          <item command="ShowBrushPreviewInPreview" text="@.view_show_brush_preview_in_preview"/>
         </menu>
         <item command="AdvancedMode" text="@.view_advanced_mode" />
         <item command="FullscreenMode" text="@.view_full_screen_mode" />

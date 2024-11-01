@@ -703,14 +703,12 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     }
 
     ExtraCelRef extraCel = m_document->extraCel();
-    if (extraCel &&
-        extraCel->type() != render::ExtraType::NONE) {
-      m_renderEngine->setExtraImage(
-        extraCel->type(),
-        extraCel->cel(),
-        extraCel->image(),
-        extraCel->blendMode(),
-        m_layer, m_frame);
+    if(m_docView->isPreview()) {
+      if(useBrushPreviewInPreview()) {
+        renderPenPreview(extraCel);
+      }
+    }else {
+      renderPenPreview(extraCel);
     }
 
     // Render background first (e.g. new ShaderRenderer will paint the
@@ -855,6 +853,19 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     }
   }
 }
+
+void Editor::renderPenPreview(ExtraCelRef& extraCel)
+{
+  if (extraCel && extraCel->type() != render::ExtraType::NONE) {
+    m_renderEngine->setExtraImage(
+    extraCel->type(),
+    extraCel->cel(),
+    extraCel->image(),
+    extraCel->blendMode(),
+    m_layer, m_frame);
+  }
+}
+
 
 void Editor::drawBackground(ui::Graphics* g)
 {
