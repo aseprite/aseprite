@@ -22,6 +22,7 @@ namespace tools {
     kSquareAspect       = 0x00000020,
     kFromCenter         = 0x00000040,
     kRotateShape        = 0x00000080,
+    kSpread             = 0x00000100,
   };
 
 } // namespace tools
