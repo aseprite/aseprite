@@ -33,11 +33,6 @@ namespace app {
 using namespace ui;
 using namespace app::skin;
 
-// Disable warning about usage of "this" in initializer list.
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
-
 struct CanvasSizeParams : public NewParams {
   Param<bool> ui { this, true, "ui" };
   Param<int> left { this, 0, "left" };

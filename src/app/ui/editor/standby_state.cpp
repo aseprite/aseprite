@@ -78,10 +78,6 @@ namespace app {
 
 using namespace ui;
 
-#ifdef _MSC_VER
-#pragma warning(disable:4355) // warning C4355: 'this' : used in base member initializer list
-#endif
-
 StandbyState::StandbyState()
   : m_decorator(new Decorator(this))
   , m_transformSelectionHandlesAreVisible(false)
