@@ -34,6 +34,8 @@
 #include "doc/slice.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
+#include "doc/tileset.h"
+#include "doc/tilesets.h"
 #include "os/system.h"
 #include "os/window.h"
 #include "ui/system.h"
@@ -550,7 +552,14 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
       std::unique_ptr<Layer> destChild(nullptr);
 
       if (sourceChild->isImage()) {
-        destChild.reset(new LayerImage(destLayer->sprite()));
+        if (sourceChild->isTilemap()) {
+          auto* tilemapLayer = static_cast<LayerTilemap*>(sourceChild);
+          destChild.reset(new LayerTilemap(destLayer->sprite(), tilemapLayer->tilesetIndex()));
+        }
+        else {
+          destChild.reset(new LayerImage(destLayer->sprite()));
+        }
+
         copyLayerContent(sourceChild, destDoc, destChild.get());
       }
       else if (sourceChild->isGroup()) {
@@ -590,6 +599,7 @@ Doc* Doc::duplicate(DuplicateType type) const
   Sprite* spriteCopy = spriteCopyPtr.release();
 
   spriteCopy->setTotalFrames(sourceSprite->totalFrames());
+  spriteCopy->setTileManagementPlugin(sourceSprite->tileManagementPlugin());
 
   // Copy frames duration
   for (frame_t i(0); i < sourceSprite->totalFrames(); ++i)
@@ -605,6 +615,16 @@ Doc* Doc::duplicate(DuplicateType type) const
     spriteCopy->slices().add(sliceCopy);
 
     ASSERT(sliceCopy->owner() == &spriteCopy->slices());
+  }
+
+  // Copy tilesets
+  if (sourceSprite->hasTilesets()) {
+    for (Tileset* tileset : *sourceSprite->tilesets()) {
+      auto tilesetCopy = new Tileset(spriteCopy, tileset);
+      spriteCopy->tilesets()->add(tilesetCopy);
+
+      ASSERT(tilesetCopy->sprite() == spriteCopy)
+    }
   }
 
   // Copy color palettes
