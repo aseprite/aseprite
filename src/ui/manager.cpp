@@ -488,34 +488,27 @@ void Manager::generateMessagesFromOSEvents()
       }
 
       case os::Event::MouseEnter: {
-        auto msg = new CallbackMessage([osEvent, display]{
-          if (get_multiple_displays()) {
-            if (osEvent.window()) {
-              ASSERT(display != nullptr);
-              _internal_set_mouse_display(display);
-            }
+        if (get_multiple_displays()) {
+          if (osEvent.window()) {
+            ASSERT(display != nullptr);
+            _internal_set_mouse_display(display);
           }
-          set_mouse_cursor(kArrowCursor);
-          mouse_display = display;
-        });
-        msg->setRecipient(this);
-        enqueueMessage(msg);
+        }
+        set_mouse_cursor(kArrowCursor);
+        mouse_display = display;
+
         lastMouseMoveEvent = osEvent;
         break;
       }
 
       case os::Event::MouseLeave: {
-        auto msg = new CallbackMessage([this, display]{
-          if (mouse_display == display) {
-            set_mouse_cursor(kOutsideDisplay);
-            setMouse(nullptr);
+        if (mouse_display == display) {
+          set_mouse_cursor(kOutsideDisplay);
+          setMouse(nullptr);
 
-            _internal_no_mouse_position();
-            mouse_display = nullptr;
-          }
-        });
-        msg->setRecipient(this);
-        enqueueMessage(msg);
+          _internal_no_mouse_position();
+          mouse_display = nullptr;
+        }
 
         // To avoid calling kSetCursorMessage when the mouse leaves
         // the window.
