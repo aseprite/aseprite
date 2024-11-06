@@ -351,6 +351,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
       m_extraCel.reset(new ExtraCel);
 
     m_extraCel->create(
+      ExtraCel::Purpose::BrushPreview,
       tilemapMode,
       document->sprite(),
       extraCelBoundsInCanvas,

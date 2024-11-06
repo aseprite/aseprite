@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -16,12 +16,14 @@
 namespace app {
 
 ExtraCel::ExtraCel()
-  : m_type(render::ExtraType::NONE)
+  : m_purpose(Purpose::Unknown)
+  , m_type(render::ExtraType::NONE)
   , m_blendMode(doc::BlendMode::NORMAL)
 {
 }
 
-void ExtraCel::create(const TilemapMode tilemapMode,
+void ExtraCel::create(Purpose purpose,
+                      const TilemapMode tilemapMode,
                       doc::Sprite* sprite,
                       const gfx::Rect& bounds,
                       const gfx::Size& imageSize,
@@ -29,6 +31,8 @@ void ExtraCel::create(const TilemapMode tilemapMode,
                       const int opacity)
 {
   ASSERT(sprite);
+
+  m_purpose = purpose;
 
   doc::PixelFormat pixelFormat;
   if (tilemapMode == TilemapMode::Tiles)
@@ -60,6 +64,7 @@ void ExtraCel::create(const TilemapMode tilemapMode,
 
 void ExtraCel::reset()
 {
+  m_purpose = Purpose::Unknown;
   m_type = render::ExtraType::NONE;
   m_image.reset();
   m_cel.reset();

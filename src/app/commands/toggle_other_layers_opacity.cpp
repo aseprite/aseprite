@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -87,7 +87,10 @@ void ToggleOtherLayersOpacityCommand::onExecute(Context* ctx)
   if (params().preview()) {
     PreviewEditorWindow* previewWin =
       App::instance()->mainWindow()->getPreviewEditor();
-    previewWin->previewEditor()->invalidate();
+    if (previewWin &&
+        previewWin->previewEditor()) {
+      previewWin->previewEditor()->invalidate();
+    }
   }
   else {
     app_refresh_screen();

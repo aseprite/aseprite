@@ -80,6 +80,11 @@ public:
     : m_brushes(App::instance()->brushes())
     , m_brush(brush)
     , m_slot(slot) {
+    initTheme();
+  }
+
+  void onInitTheme(InitThemeEvent& ev) override {
+    ButtonSet::Item::onInitTheme(ev);
     if (m_brush.hasBrush()) {
       SkinPartPtr icon(new SkinPart);
       icon->setBitmap(0, BrushPopup::createSurfaceForBrush(

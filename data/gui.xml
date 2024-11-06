@@ -1050,6 +1050,7 @@
             <param name="preview" value="true" />
             <param name="checkedIfZero" value="true" />
           </item>
+          <item command="ShowBrushPreviewInPreview" text="@.view_preview_brush_preview"/>
         </menu>
         <item command="AdvancedMode" text="@.view_advanced_mode" />
         <item command="FullscreenMode" text="@.view_full_screen_mode" />

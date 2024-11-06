@@ -1156,6 +1156,7 @@ void PixelsMovement::redrawExtraImage(Transformation* transformation)
     }
 
     m_extraCel->create(
+      ExtraCel::Purpose::TransformationPreview,
       m_site.tilemapMode(),
       m_document->sprite(),
       bounds,
