@@ -12,6 +12,7 @@
 
 #include "app/color.h"
 #include "app/doc_exporter.h"
+#include "app/pref/preferences.h"
 #include "app/sprite_sheet_type.h"
 #include "app/tools/ink_type.h"
 #include "base/convert_to.h"
@@ -241,6 +242,21 @@ void Param<doc::RgbMapAlgorithm>::fromString(const std::string& value)
     setValue(doc::RgbMapAlgorithm::DEFAULT);
 }
 
+template<>
+void Param<gen::SelectionMode>::fromString(const std::string& value)
+{
+  if (base::utf8_icmp(value, "replace") == 0)
+    setValue(gen::SelectionMode::REPLACE);
+  else if (base::utf8_icmp(value, "add") == 0)
+    setValue(gen::SelectionMode::ADD);
+  else if (base::utf8_icmp(value, "subtract") == 0)
+    setValue(gen::SelectionMode::SUBTRACT);
+  else if (base::utf8_icmp(value, "intersect") == 0)
+    setValue(gen::SelectionMode::INTERSECT);
+  else
+    setValue(gen::SelectionMode::DEFAULT);
+}
+
 //////////////////////////////////////////////////////////////////////
 // Convert values from Lua
 //////////////////////////////////////////////////////////////////////
@@ -403,6 +419,15 @@ void Param<doc::RgbMapAlgorithm>::fromLua(lua_State* L, int index)
     fromString(lua_tostring(L, index));
   else
     setValue((doc::RgbMapAlgorithm)lua_tointeger(L, index));
+}
+
+template<>
+void Param<gen::SelectionMode>::fromLua(lua_State* L, int index)
+{
+  if (lua_type(L, index) == LUA_TSTRING)
+    fromString(lua_tostring(L, index));
+  else
+    setValue((gen::SelectionMode)lua_tointeger(L, index));
 }
 
 void CommandWithNewParamsBase::loadParamsFromLuaTable(lua_State* L, int index)
