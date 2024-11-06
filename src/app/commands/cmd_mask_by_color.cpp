@@ -14,6 +14,7 @@
 #include "app/color.h"
 #include "app/color_utils.h"
 #include "app/commands/command.h"
+#include "app/commands/new_params.h"
 #include "app/console.h"
 #include "app/context.h"
 #include "app/context_access.h"
@@ -46,16 +47,38 @@ namespace app {
 
 using namespace ui;
 
+// Disable warning about usage of "this" in initializer list.
+#ifdef _MSC_VER
+#pragma warning(disable:4355)
+#endif
+
 static const char* ConfigSection = "MaskColor";
+
+struct MaskByColorParams : public NewParams {
+  Param<bool> ui { this, true, "ui" };
+  Param<app::Color> color { this, app::Color(), "color" };
+  Param<int> tolerance { this, 0, "tolerance" };
+  Param<gen::SelectionMode> mode { this, gen::SelectionMode::DEFAULT, "mode" };
+};
 
 class MaskByColorWindow : public ui::Window {
 public:
-  MaskByColorWindow(const ContextReader& reader)
+  MaskByColorWindow(MaskByColorParams& params, const ContextReader& reader)
     : Window(Window::WithTitleBar, Strings::mask_by_color_title())
     , m_reader(&reader)
     // Save original mask visibility to process it correctly in
     // ADD/SUBTRACT/INTERSECT Selection Mode
     , m_isOrigMaskVisible(reader.document()->isMaskVisible()) {
+
+    if (!params.color.isSet())
+      params.color(ColorBar::instance()->getFgColor());
+
+    if (!params.tolerance.isSet())
+      params.tolerance(get_config_int(ConfigSection, "Tolerance", 0));
+
+    if (!params.mode.isSet())
+      params.mode(Preferences::instance().selection.mode());
+
     TooltipManager* tooltipManager = new TooltipManager();
     addChild(tooltipManager);
     auto box1 = new Box(VERTICAL);
@@ -64,13 +87,14 @@ public:
     auto box4 = new Box(HORIZONTAL | HOMOGENEOUS);
     auto label_color = new Label(Strings::mask_by_color_label_color());
     m_buttonColor = new ColorButton(
-      ColorBar::instance()->getFgColor(),
+      params.color(),
       reader.sprite()->pixelFormat(),
       ColorButtonOptions());
     auto label_tolerance = new Label(Strings::mask_by_color_tolerance());
-    m_sliderTolerance = new Slider(0, 255, get_config_int(ConfigSection, "Tolerance", 0));
+    m_sliderTolerance = new Slider(0, 255, params.tolerance());
 
     m_selMode = new SelModeField;
+    m_selMode->setSelectionMode(params.mode());
     m_selMode->setupTooltips(tooltipManager);
 
     m_checkPreview = new CheckBox(Strings::mask_by_color_preview());
@@ -214,6 +238,7 @@ bool MaskByColorCommand::onEnabled(Context* context)
 
 void MaskByColorCommand::onExecute(Context* context)
 {
+  const bool ui = (params().ui() && context->isUIAvailable());
   const ContextReader reader(context);
   const Sprite* sprite = reader.sprite();
 
@@ -225,37 +250,50 @@ void MaskByColorCommand::onExecute(Context* context)
   if (!image)
     return;
 
-  MaskByColorWindow window(reader);
   // Save original mask visibility to process it correctly in
   // ADD/SUBTRACT/INTERSECT Selection Mode
   bool isOrigMaskVisible = reader.document()->isMaskVisible();
 
-  // Load window configuration
-  load_window_pos(&window, ConfigSection);
+  bool apply = true;
+  auto& params = this->params();
+  if (ui) {
+    MaskByColorWindow window(params, reader);
 
-  // Open the window
-  window.openWindowInForeground();
+    // Load window configuration
+    load_window_pos(&window, ConfigSection);
 
-  bool apply = window.accepted();
+    // Open the window
+    window.openWindowInForeground();
+
+    // Save window configuration.
+    save_window_pos(&window, ConfigSection);
+
+    apply = window.accepted();
+    if (apply) {
+      params.color(window.getColor());
+      params.mode(window.getSelectionMode());
+      params.tolerance(window.getTolerance());
+
+      set_config_int(ConfigSection, "Tolerance", params.tolerance());
+      set_config_bool(ConfigSection, "Preview", window.isPreviewChecked());
+    }
+  }
 
   ContextWriter writer(reader);
   Doc* document(writer.document());
 
   if (apply) {
-    int color = color_utils::color_for_image(window.getColor(),
+    int color = color_utils::color_for_image(params.color(),
                                             sprite->pixelFormat());
-    int tolerance = window.getTolerance();
+
     Tx tx(writer, "Mask by Color", DoesntModifyDocument);
     std::unique_ptr<Mask> mask(generateMask(*document->mask(),
                                             isOrigMaskVisible,
                                             image, xpos, ypos,
-                                            window.getSelectionMode(),
-                                            color, tolerance));
+                                            params.mode(),
+                                            color, params.tolerance()));
     tx(new cmd::SetMask(document, mask.get()));
     tx.commit();
-
-    set_config_int(ConfigSection, "Tolerance", tolerance);
-    set_config_bool(ConfigSection, "Preview", window.isPreviewChecked());
   }
   else {
     document->generateMaskBoundaries();
@@ -263,9 +301,6 @@ void MaskByColorCommand::onExecute(Context* context)
 
   // Update boundaries and editors.
   update_screen_for_document(document);
-
-  // Save window configuration.
-  save_window_pos(&window, ConfigSection);
 }
 
 void MaskByColorWindow::maskPreview()
