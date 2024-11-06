@@ -720,7 +720,7 @@ void ToolBar::showHiddenToolPopup()
         // TODO: Tooltip with tool->getText(), implement in ButtonSet?
         item->setIcon(theme->getToolPart(tool->getId().c_str()));
         item->setId(tool->getId().c_str());
-        item->setMaxSize(toolIconSize);  // TODO: Need a better way to enforce the button/icon size, this one doesn't look great
+        item->setMaxSize(toolIconSize + (Size(1,1) * guiscale()));  // TODO: Need a better way to enforce the button/icon size, this one doesn't center things properly.
         items.push_back(item);
       }
     }
