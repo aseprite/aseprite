@@ -99,6 +99,7 @@ private:
   void createExtraCel(const Site& site,
                       const gfx::Rect& bounds) {
     m_extraCel->create(
+      ExtraCel::Purpose::TextPreview,
       site.tilemapMode(),
       site.sprite(),
       bounds,

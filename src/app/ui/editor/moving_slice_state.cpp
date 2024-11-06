@@ -225,6 +225,7 @@ void MovingSliceState::drawExtraCel(int layerIdx)
     }
 
     m_extraCel->create(
+      ExtraCel::Purpose::TransformationPreview,
       m_site.tilemapMode(),
       m_site.document()->sprite(),
       bounds,

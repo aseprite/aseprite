@@ -33,6 +33,7 @@ namespace app {
       Unknown,
       BrushPreview,
       TransformationPreview,
+      TextPreview,
     };
 
     ExtraCel();
