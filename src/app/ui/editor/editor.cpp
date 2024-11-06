@@ -705,8 +705,16 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     ExtraCelRef extraCel = m_document->extraCel();
     if (extraCel &&
         extraCel->type() != render::ExtraType::NONE &&
-        (!m_docView->isPreview() ||
-         m_docPref.show.brushPreviewInPreview())) {
+        // We render the extra cel if:
+        (// 1) it doesn't contains the brush preview (e.g. the user
+         // is transforming the selection),
+         extraCel->purpose() != ExtraCel::Purpose::BrushPreview
+         // 2) we are drawing the brush preview in a regular editor,
+         || !m_docView->isPreview()
+         // 3) we are drawing the brush preview in a preview editor
+         // and preferences (brushPreviewInPreview) says that we
+         // should do that.
+         || m_docPref.show.brushPreviewInPreview())) {
       m_renderEngine->setExtraImage(extraCel->type(),
                                     extraCel->cel(),
                                     extraCel->image(),
