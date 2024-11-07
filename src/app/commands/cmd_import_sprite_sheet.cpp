@@ -81,6 +81,8 @@ public:
     y()->Change.connect([this]{ onEntriesChange(); });
     width()->Change.connect([this]{ onEntriesChange(); });
     height()->Change.connect([this]{ onEntriesChange(); });
+    columns()->Change.connect([this]{ onColumnsOrRowsChange(); });
+    rows()->Change.connect([this]{ onColumnsOrRowsChange(); });
     paddingEnabled()->Click.connect([this]{ onPaddingEnabledChange(); });
     horizontalPadding()->Change.connect([this]{ onEntriesChange(); });
     verticalPadding()->Change.connect([this]{ onEntriesChange(); });
@@ -187,7 +189,7 @@ protected:
     return gfx::Size(padW, padH);
   }
 
-  void onEntriesChange() {
+  void updateRulers() {
     m_rect = getRectFromEntries();
     m_padding = getPaddingFromEntries();
 
@@ -203,6 +205,38 @@ protected:
         boxState->clearFlag(SelectBoxState::Flags::IncludePartialTiles);
       m_editor->invalidate();
     }
+  }
+
+  void onEntriesChange() {
+    updateRulers();
+    columns()->setTextf("%d", calcColumns());
+    rows()->setTextf("%d", calcRows());
+  }
+
+  void onColumnsOrRowsChange() {
+    if (!m_editor)
+      return;
+
+    // When columns or rows are changed, the width and height might change
+    // because we try to use all the available space. Padding and rect origin
+    // are kept unchanged.
+    int cols = this->columns()->textInt();
+    int rows = this->rows()->textInt();
+    if (cols <= 0)
+      cols = 1;
+    if (rows <= 0)
+      rows = 1;
+
+    auto availSize = m_editor->sprite()->size();
+    auto entriesRect = getRectFromEntries();
+    auto entriesPadding = getPaddingFromEntries();
+
+    availSize.w -= (entriesRect.x + entriesPadding.w*(cols-1));
+    availSize.h -= (entriesRect.y + entriesPadding.h*(rows-1));
+    width()->setTextf("%d", availSize.w / cols);
+    height()->setTextf("%d", availSize.h / rows);
+
+    updateRulers();
   }
 
   bool onProcessMessage(ui::Message* msg) override {
@@ -223,6 +257,31 @@ protected:
       targets.push_back(View::getView(m_editor));
   }
 
+#define CALC_SPANS(xy, wh)                                \
+    if (!m_editor)                                        \
+      return 0;                                           \
+    int spans = 0;                                        \
+    int rectwh = (m_rect.wh <= 0 ? 1 : m_rect.wh);        \
+    int wh = m_editor->sprite()->size().wh - m_rect.xy;   \
+    while(wh > 0) {                                       \
+      wh -= rectwh;                                       \
+      if (wh >= 0) {                                      \
+        spans++;                                          \
+      }                                                   \
+      wh -= m_padding.wh;                                 \
+    }                                                     \
+    return spans;
+
+  int calcColumns() {
+    CALC_SPANS(x, w);
+  }
+
+  int calcRows() {
+    CALC_SPANS(y, h);
+  }
+
+#undef CALC_SPANS
+
   // SelectBoxDelegate impleentation
   void onChangeRectangle(const gfx::Rect& rect) override {
     m_rect = rect;
@@ -231,6 +290,8 @@ protected:
     y()->setTextf("%d", m_rect.y);
     width()->setTextf("%d", m_rect.w);
     height()->setTextf("%d", m_rect.h);
+    columns()->setTextf("%d", calcColumns());
+    rows()->setTextf("%d", calcRows());
   }
 
   void onChangePadding(const gfx::Size& padding) override {
@@ -248,6 +309,8 @@ protected:
       horizontalPadding()->setTextf("%d", 0);
       verticalPadding()->setTextf("%d", 0);
     }
+    columns()->setTextf("%d", calcColumns());
+    rows()->setTextf("%d", calcRows());
   }
 
   std::string onGetContextBarHelp() override {

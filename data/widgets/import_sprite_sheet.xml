@@ -24,6 +24,14 @@
         <label text="@.height" />
         <expr id="height" text="16" />
 
+        <separator horizontal="true" cell_hspan="4" />
+
+        <label text="@.columns" />
+        <expr id="columns" />
+
+        <label text="@.rows" />
+        <expr id="rows" />
+
         <check id="padding_enabled" text="@.padding" cell_hspan="4" />
 
         <label text="@.horizontal_padding" id="horizontal_padding_label" />
