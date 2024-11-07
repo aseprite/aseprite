@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -36,6 +36,7 @@
 #include "ui/alert.h"
 
 #include "base/string.h"
+#include "fmt/format.h"
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/grid.h"
@@ -46,7 +47,7 @@
 #include "ui/theme.h"
 
 #include <algorithm>
-#include <cstdio>
+#include <string>
 
 namespace ui {
 
@@ -120,9 +121,7 @@ void Alert::addButton(const std::string& text)
   button->setMinSize(gfx::Size(60*guiscale(), 0));
   m_buttons.push_back(button);
 
-  char id[256];
-  std::snprintf(id, sizeof(id), "button-%lu", m_buttons.size());
-  button->setId(id);
+  button->setId(fmt::format("button-{}", m_buttons.size()).c_str());
   button->Click.connect([this, button]{ closeWindow(button); });
 
   m_buttonsPlaceholder->addChild(button);
