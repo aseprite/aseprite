@@ -720,7 +720,6 @@ void ToolBar::showHiddenToolPopup()
         // TODO: Tooltip with tool->getText(), implement in ButtonSet?
         item->setIcon(theme->getToolPart(tool->getId().c_str()));
         item->setId(tool->getId().c_str());
-        item->setMaxSize(toolIconSize + (Size(1,1) * guiscale()));  // TODO: Need a better way to enforce the button/icon size, this one doesn't center things properly.
         items.push_back(item);
       }
     }
@@ -730,7 +729,8 @@ void ToolBar::showHiddenToolPopup()
 
   ButtonSet* hiddenTools = new ButtonSet(items.size());
   for (auto* item : items)
-    hiddenTools->addItem(item);
+    hiddenTools->addItem(item, theme->styles.toolbarOverflowIcon());
+
   hiddenTools->initTheme();
   hiddenTools->ItemChange.connect([this](ButtonSet::Item* toolSelection) {
     selectTool(App::instance()->toolBox()->getToolById(toolSelection->id()));

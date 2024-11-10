@@ -1115,6 +1115,9 @@
         <style id="dynamics_field" extends="context_bar_button" padding-left="1" />
         <style id="pivot_field" extends="context_bar_button" padding-top="1" />
         <style id="pivot_dir" extends="buttonset_item_icon" width="17" height="19" />
+        <style id="toolbar_overflow_icon" extends="buttonset_item_icon" width="18" height="17" padding-top="2">
+          <icon width="16" height="16" />  
+        </style>
         <style id="selection_mode" extends="context_bar_button" padding-top="1" />
         <style id="symmetry_field" extends="context_bar_button" padding-top="1" />
         <style id="symmetry_options" extends="context_bar_text_button" padding-left="3" padding-bottom="3" />
