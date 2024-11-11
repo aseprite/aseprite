@@ -153,12 +153,22 @@ bool ButtonBase::onProcessMessage(Message* msg)
             }
             break;
 
-          case kCheckWidget: {
-            // Fire onClick() event
-            onClick();
-            return true;
-          }
-
+          case kCheckWidget:
+            KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
+            KeyScancode scancode = keymsg->scancode();
+            const bool mnemonicPressed =
+              (mnemonic() &&
+              (!mnemonicRequiresModifiers() ||
+                msg->altPressed() ||
+                msg->cmdPressed()) &&
+              isMnemonicPressed(keymsg));
+            // Fire the onClick() event only if the user pressed space or
+            // Alt+the underscored letter of the checkbox label.
+            if (scancode == kKeySpace || mnemonicPressed) {
+              onClick();
+              return true;
+            }
+            break;
         }
       }
       break;
