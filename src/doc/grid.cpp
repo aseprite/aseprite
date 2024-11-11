@@ -24,6 +24,7 @@
 #include <cmath>
 #include <limits>
 #include <vector>
+#include <array>
 
 namespace doc {
 
@@ -199,15 +200,37 @@ static void push_isometric_line_point(int x,
   }
 };
 
-std::vector<gfx::Point> Grid::getIsometricLinePoints(void)
+std::array<gfx::Point, 3> Grid::getIsometricLinePoints() const
+{
+  int x = 0;
+  int y = std::round(m_tileSize.h*0.5);
+  int dx = m_tileSize.w/2;
+  int dy = m_tileSize.h;
+
+  bool x_uneven = (m_tileSize.w & 1) || (dx & 1);
+  bool y_uneven = (m_tileSize.h & 1) || (y  & 1);
+
+  dx -= x_uneven ^ y_uneven;
+  y -= m_tileSize.w & 1;
+  x -= m_tileSize.w & 1;
+
+  return {
+    gfx::Point(x, y),
+    gfx::Point(dx, dy),
+    gfx::Point(m_tileSize.w - x_uneven,
+               m_tileSize.h - y_uneven)
+  };
+}
+
+std::vector<gfx::Point> Grid::getIsometricLine(void) const
 {
   std::vector<gfx::Point> result;
-  gfx::Point a(0, std::round(m_tileSize.h*0.5));
-  gfx::Point b(std::floor(m_tileSize.w*0.5), m_tileSize.h);
+  auto pts = getIsometricLinePoints();
+
   // We use the line drawing algorithm to find the points
   // for a single pixel-precise line
   doc::algo_line_continuous_with_fix_for_line_brush(
-    a.x, a.y, b.x, b.y,
+    pts[0].x, pts[0].y, pts[1].x, pts[1].y,
     &result, (doc::AlgoPixel) &push_isometric_line_point);
 
   return result;
