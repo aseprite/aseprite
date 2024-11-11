@@ -44,6 +44,7 @@ namespace ui {
   class Style;
   class Theme;
   class Window;
+  class DragEvent;
 
   class Widget : public Component {
   public:
@@ -445,6 +446,11 @@ namespace ui {
     virtual text::TextBlobRef onMakeTextBlob() const;
     virtual text::ShaperFeatures onGetTextShaperFeatures() const;
 
+    virtual void onDragEnter(DragEvent& e);
+    virtual void onDragLeave(DragEvent& e);
+    virtual void onDrag(DragEvent& e);
+    virtual void onDrop(DragEvent& e);
+
   private:
     void removeChild(const WidgetsList::iterator& it);
     void paint(Graphics* graphics,
@@ -483,6 +489,8 @@ namespace ui {
 
     gfx::Border m_border;       // Border separation with the parent
     int m_childSpacing;         // Separation between children
+
+    friend Manager;
   };
 
   WidgetType register_widget_type();

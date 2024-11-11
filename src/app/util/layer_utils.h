@@ -12,6 +12,7 @@
 
 namespace doc {
   class Layer;
+  class Sprite;
 }
 
 namespace app {
@@ -30,6 +31,9 @@ namespace app {
   bool layer_is_locked(Editor* editor);
 
   std::string get_layer_path(const doc::Layer* layer);
+
+  doc::Layer* copy_layer(doc::Layer* layer);
+  doc::Layer* copy_layer_with_sprite(doc::Layer* layer, doc::Sprite* sprite);
 
 } // namespace app
 

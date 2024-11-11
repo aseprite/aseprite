@@ -144,7 +144,7 @@ namespace doc {
 
     BlendMode m_blendmode;
     int m_opacity;
-  
+
     // Disable assigment
     Layer& operator=(const Layer& other);
   };
@@ -183,7 +183,7 @@ namespace doc {
 
   private:
     void destroyAllCels();
-  
+
     CelList m_cels;   // List of all cels inside this layer used by frames.
   };
 
@@ -203,6 +203,7 @@ namespace doc {
     void addLayer(Layer* layer);
     void removeLayer(Layer* layer);
     void insertLayer(Layer* layer, Layer* after);
+    void insertLayerBefore(Layer* layer, Layer* before);
     void stackLayer(Layer* layer, Layer* after);
 
     Layer* firstLayer() const { return (m_layers.empty() ? nullptr: m_layers.front()); }

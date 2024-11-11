@@ -27,13 +27,14 @@
 #include <string>
 
 // Flags for FileOp::createLoadDocumentOperation()
-#define FILE_LOAD_SEQUENCE_NONE         0x00000001
-#define FILE_LOAD_SEQUENCE_ASK          0x00000002
-#define FILE_LOAD_SEQUENCE_ASK_CHECKBOX 0x00000004
-#define FILE_LOAD_SEQUENCE_YES          0x00000008
-#define FILE_LOAD_ONE_FRAME             0x00000010
-#define FILE_LOAD_DATA_FILE             0x00000020
-#define FILE_LOAD_CREATE_PALETTE        0x00000040
+#define FILE_LOAD_SEQUENCE_NONE          0x00000001
+#define FILE_LOAD_SEQUENCE_ASK           0x00000002
+#define FILE_LOAD_SEQUENCE_ASK_CHECKBOX  0x00000004
+#define FILE_LOAD_SEQUENCE_YES           0x00000008
+#define FILE_LOAD_ONE_FRAME              0x00000010
+#define FILE_LOAD_DATA_FILE              0x00000020
+#define FILE_LOAD_CREATE_PALETTE         0x00000040
+#define FILE_LOAD_AVOID_BACKGROUND_LAYER 0x00000080
 
 namespace doc {
   class Tag;
@@ -285,6 +286,8 @@ namespace app {
     bool newBlend() const { return m_config.newBlend; }
     const FileOpConfig& config() const { return m_config; }
 
+    bool avoidBackgroundLayer() const { return m_avoidBackgroundLayer; }
+
   private:
     FileOp();                   // Undefined
     FileOp(FileOpType type,
@@ -314,6 +317,7 @@ namespace app {
                                 // GIF/FLI/ASE).
     bool m_createPaletteFromRgba;
     bool m_ignoreEmpty;
+    bool m_avoidBackgroundLayer;
 
     // True if the file contained a color profile when it was loaded.
     bool m_embeddedColorProfile;

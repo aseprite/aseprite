@@ -31,6 +31,8 @@
 #include "os/system.h"
 #include "os/window.h"
 #include "os/window_spec.h"
+#include "ui/base.h"
+#include "ui/drag_event.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -203,8 +205,10 @@ Manager::Manager(const os::WindowRef& nativeWindow)
   , m_mouseButton(kButtonNone)
 {
   // The native window can be nullptr when running tests
-  if (nativeWindow)
+  if (nativeWindow) {
     nativeWindow->setUserData(&m_display);
+    nativeWindow->setDragTarget(this);
+  }
 
   ASSERT(manager_thread == std::thread::id());
   manager_thread = std::this_thread::get_id();
@@ -2004,6 +2008,97 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
   }
 
   return used;
+}
+
+Widget* Manager::findForDragAndDrop(Widget* widget)
+{
+  // If widget doesn't support drag & drop, try to find the nearest ancestor
+  // that supports it.
+  while(widget && !widget->hasFlags(ALLOW_DROP))
+    widget = widget->parent();
+
+  return widget;
+}
+
+void Manager::dragEnter(os::DragEvent& ev)
+{
+  Widget* widget = findForDragAndDrop(pick(ev.position()));
+
+  ASSERT(!widget || widget && widget->hasFlags(ALLOW_DROP));
+
+  if (widget) {
+    m_dragOverWidget = widget;
+    DragEvent uiev(this, widget, ev);
+    widget->onDragEnter(uiev);
+    ev.dropResult(uiev.supportsOperation());
+  }
+}
+
+void Manager::dragLeave(os::DragEvent& ev)
+{
+  Widget* widget = m_dragOverWidget;
+  if (widget) {
+    DragEvent uiev(this, widget, ev);
+    widget->onDragLeave(uiev);
+    m_dragOverWidget = nullptr;
+  }
+}
+
+void Manager::drag(os::DragEvent& ev)
+{
+  Widget* widget = findForDragAndDrop(pick(ev.position()));
+
+  ASSERT(!widget || widget && widget->hasFlags(ALLOW_DROP));
+
+  if (m_dragOverWidget && m_dragOverWidget != widget) {
+    DragEvent uiev(this, m_dragOverWidget, ev);
+    m_dragOverWidget->onDragLeave(uiev);
+    m_dragOverWidget = nullptr;
+  }
+
+  if (widget) {
+    DragEvent uiev(this, widget, ev);
+    if (m_dragOverWidget != widget) {
+      m_dragOverWidget = widget;
+      widget->onDragEnter(uiev);
+    }
+    widget->onDrag(uiev);
+    ev.dropResult(uiev.supportsOperation());
+  }
+}
+
+void Manager::drop(os::DragEvent& ev)
+{
+  m_dragOverWidget = nullptr;
+  Widget* widget = findForDragAndDrop(pick(ev.position()));
+
+  ASSERT(!widget || widget && widget->hasFlags(ALLOW_DROP));
+
+  DragEvent uiev(this, widget, ev);
+  while (widget) {
+    widget->onDrop(uiev);
+    if (uiev.handled()) {
+      ev.acceptDrop(true);
+      return;
+    }
+    // Propagate unhandled drop events to ancestors.
+    // TODO: Should we propagate dragEnter, dragLeave and drag events too?
+    widget = findForDragAndDrop(widget->parent());
+  }
+
+  // There were no widget that accepted the drop, then see if we can treat it
+  // like a DropFiles event.
+  if (ev.dataProvider()->contains(os::DragDataItemType::Paths)) {
+    ev.acceptDrop(true);
+    // We must queue an os::Event to wakeup the underlying system queue on
+    // masOS. If we had used the enqueueMessage() method instead, it could
+    // happen that the program might look unresponsive because it is waiting
+    // for an OS event.
+    os::Event dropFilesEv;
+    dropFilesEv.setType(os::Event::DropFiles);
+    dropFilesEv.setFiles(ev.dataProvider()->getPaths());
+    os::System::instance()->eventQueue()->queueEvent(dropFilesEv);
+  }
 }
 
 // It's like Widget::onInvalidateRegion() but optimized for the

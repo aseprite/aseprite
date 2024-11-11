@@ -105,6 +105,13 @@ else()
   target_sources(app-lib PRIVATE font_path_unix.cpp)
 endif()
 
+# This defines a specific webp decoding utility function for using
+# in Windows when dragging and dropping images that are stored as
+# webp files (like Chrome does).
+if(WIN32 AND ENABLE_WEBP)
+  target_sources(app-lib PRIVATE util/decode_webp.cpp)
+endif()
+
 # Trial-version vs Full version (enable save command)
 if(ENABLE_TRIAL_MODE)
   target_compile_definitions(app-lib PUBLIC -DENABLE_TRIAL_MODE)
@@ -282,6 +289,7 @@ target_sources(app-lib PRIVATE
   cmd/copy_region.cpp
   cmd/crop_cel.cpp
   cmd/deselect_mask.cpp
+  cmd/drop_on_timeline.cpp
   cmd/flatten_layers.cpp
   cmd/flip_image.cpp
   cmd/flip_mask.cpp
@@ -688,6 +696,7 @@ target_sources(app-lib PRIVATE
   util/cel_ops.cpp
   util/clipboard.cpp
   util/clipboard_native.cpp
+  util/conversion_to_image.cpp
   util/conversion_to_surface.cpp
   util/expand_cel_canvas.cpp
   util/filetoks.cpp
