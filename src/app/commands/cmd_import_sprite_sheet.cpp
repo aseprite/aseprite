@@ -44,18 +44,41 @@ namespace app {
 
 using namespace ui;
 
+gfx::Size calcFrameSize(gfx::Size availSize,
+                        int cols, int rows,
+                        const gfx::Point& frameOrigin,
+                        const gfx::Size& padding)
+{
+  if (cols <= 0)
+    cols = 1;
+  if (rows <= 0)
+    rows = 1;
+
+  availSize.w -= (frameOrigin.x + padding.w*(cols-1));
+  availSize.h -= (frameOrigin.y + padding.h*(rows-1));
+
+  return gfx::Size(availSize.w / cols, availSize.h / rows);
+}
+
 struct ImportSpriteSheetParams : public NewParams {
   Param<bool> ui { this, true, "ui" };
   Param<app::SpriteSheetType> type { this, app::SpriteSheetType::None, "type" };
   Param<gfx::Rect> frameBounds { this, gfx::Rect(0, 0, 0, 0), "frameBounds" };
   Param<gfx::Size> padding { this, gfx::Size(0, 0), "padding" };
   Param<bool> partialTiles { this, false, "partialTiles" };
+  // Columns and rows are optional, and they just help in calculating
+  // frameBounds automatically when the number of columns and rows are known
+  // beforehand. So, if these are specified along frameBounds, then frameBounds
+  // width/height might be recalculated.
+  Param<int> columns { this, 0, "columns" };
+  Param<int> rows { this, 0, "rows" };
 };
 
 class ImportSpriteSheetWindow : public app::gen::ImportSpriteSheet
                               , public SelectBoxDelegate {
 public:
-  ImportSpriteSheetWindow(Context* context)
+  ImportSpriteSheetWindow(const ImportSpriteSheetParams& params,
+                          Context* context)
     : m_context(context)
     , m_document(NULL)
     , m_editor(NULL)
@@ -81,8 +104,8 @@ public:
     y()->Change.connect([this]{ onEntriesChange(); });
     width()->Change.connect([this]{ onEntriesChange(); });
     height()->Change.connect([this]{ onEntriesChange(); });
-    columns()->Change.connect([this]{ onColumnsOrRowsChange(); });
-    rows()->Change.connect([this]{ onColumnsOrRowsChange(); });
+    columns()->Change.connect([this]{ onColumnsChange(); });
+    rows()->Change.connect([this]{ onRowsChange(); });
     paddingEnabled()->Click.connect([this]{ onPaddingEnabledChange(); });
     horizontalPadding()->Change.connect([this]{ onEntriesChange(); });
     verticalPadding()->Change.connect([this]{ onEntriesChange(); });
@@ -98,7 +121,40 @@ public:
       m_fileOpened = false;
     }
 
+    if (params.type.isSet())
+      sheetType()->setSelectedItemIndex((int)params.type()-1);
+
+    if (params.frameBounds.isSet()) {
+      x()->setTextf("%d", params.frameBounds().x);
+      y()->setTextf("%d", params.frameBounds().y);
+      width()->setTextf("%d", params.frameBounds().w);
+      height()->setTextf("%d", params.frameBounds().h);
+    }
+
+    paddingEnabled()->setSelected(params.padding.isSet());
+    if (params.padding.isSet()) {
+      if (m_docPref)
+        m_docPref->importSpriteSheet.paddingBounds(params.padding());
+      else {
+        horizontalPadding()->setTextf("%d", params.padding().w);
+        verticalPadding()->setTextf("%d", params.padding().h);
+      }
+    }
+
+    if (params.partialTiles.isSet())
+      partialTiles()->setSelected(params.partialTiles());
+
     onPaddingEnabledChange();
+
+    if (params.columns.isSet()) {
+      columns()->setTextf("%d", params.columns());
+      onColumnsChange();
+    }
+
+    if (params.rows.isSet()) {
+      rows()->setTextf("%d", params.rows());
+      onRowsChange();
+    }
   }
 
   ~ImportSpriteSheetWindow() {
@@ -213,31 +269,25 @@ protected:
     rows()->setTextf("%d", calcRows());
   }
 
-  void onColumnsOrRowsChange() {
-    if (!m_editor)
-      return;
-
-    // When columns or rows are changed, the width and height might change
-    // because we try to use all the available space. Padding and rect origin
-    // are kept unchanged.
-    int cols = this->columns()->textInt();
-    int rows = this->rows()->textInt();
-    if (cols <= 0)
-      cols = 1;
-    if (rows <= 0)
-      rows = 1;
-
-    auto availSize = m_editor->sprite()->size();
-    auto entriesRect = getRectFromEntries();
-    auto entriesPadding = getPaddingFromEntries();
-
-    availSize.w -= (entriesRect.x + entriesPadding.w*(cols-1));
-    availSize.h -= (entriesRect.y + entriesPadding.h*(rows-1));
-    width()->setTextf("%d", availSize.w / cols);
-    height()->setTextf("%d", availSize.h / rows);
-
+#define ON_COLROWS_CHANGE(widtheigth, wh) \
+    if (!m_editor)                        \
+      return;                             \
+    auto frameSize = calcFrameSize(m_editor->sprite()->size(),              \
+                                   columns()->textInt(), rows()->textInt(), \
+                                   getRectFromEntries().origin(),           \
+                                   getPaddingFromEntries());                \
+    widtheigth()->setTextf("%d", frameSize.wh);                             \
     updateRulers();
+
+  void onColumnsChange() {
+    ON_COLROWS_CHANGE(width, w);
   }
+
+  void onRowsChange() {
+    ON_COLROWS_CHANGE(height, h);
+  }
+
+#undef ON_COLROWS_CHANGE
 
   bool onProcessMessage(ui::Message* msg) override {
     switch (msg->type()) {
@@ -480,9 +530,7 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
   auto& params = this->params();
 
   if (context->isUIAvailable() && params.ui()) {
-    // TODO use params as input values for the ImportSpriteSheetWindow
-
-    ImportSpriteSheetWindow window(context);
+    ImportSpriteSheetWindow window(params, context);
     window.openWindowInForeground();
     if (!window.ok())
       return;
@@ -506,6 +554,21 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
     document = context->activeDocument();
     if (!document)
       return;
+
+    Sprite* sprite = document->sprite();
+
+    auto newFrameBounds = calcFrameSize(sprite->size(), params.columns(), params.rows(), params.frameBounds().origin(), params.padding());
+    if (params.columns.isSet()) {
+      auto fb = params.frameBounds();
+      fb.w = newFrameBounds.w;
+      params.frameBounds(fb);
+    }
+
+    if (params.rows.isSet()) {
+      auto fb = params.frameBounds();
+      fb.h = newFrameBounds.h;
+      params.frameBounds(fb);
+    }
   }
 
   // The list of frames imported from the sheet
