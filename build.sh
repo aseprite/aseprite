@@ -22,7 +22,7 @@ echo "======================= BUILD ASEPRITE HELPER ========================"
 
 # Check that we are running the script from the Aseprite clone directory.
 pwd=$(pwd)
-if [ ! -f "$pwd/README.md" ] ; then
+if [[ ! -f "$pwd/EULA.txt" || ! -f "$pwd/.gitmodules" ]] ; then
     echo ""
     echo "Run build script from the Aseprite directory"
     exit 1
@@ -97,6 +97,44 @@ if ! ninja --version >/dev/null ; then
     echo "  https://github.com/ninja-build/ninja/releases"
     echo ""
     exit 1
+fi
+
+# Check that all submodules are checked out.
+run_submodule_update=
+for module in $(cat "$pwd/.gitmodules" | \
+                    grep '^\[submodule' | \
+                    sed -e 's/^\[.*\"\(.*\)\"\]/\1/') \
+              $(cat "$pwd/laf/.gitmodules" | \
+                    grep '^\[submodule' | \
+                    sed -e 's/^\[.*\"\(.*\)\"\]/laf\/\1/') ; do
+    if [[ ! -f "$module/CMakeLists.txt" &&
+          ! -f "$module/Makefile" &&
+          ! -f "$module/makefile" &&
+          ! -f "$module/Makefile.am" ]] ; then
+        echo ""
+        echo "Module $module doesn't exist."
+        if [ $auto ] ; then
+            run_submodule_update=1
+            break
+        else
+            echo "Run:"
+            echo ""
+            echo "  git submodule update --init --recursive"
+            echo ""
+            exit 1
+        fi
+    fi
+done
+if [ $run_submodule_update ] ; then
+    echo "Running:"
+    echo ""
+    echo "  git submodule update --init --recursive"
+    echo ""
+    if ! git submodule update --init --recursive ; then
+        echo "Failed, try again"
+        exit 1
+    fi
+    echo "Done"
 fi
 
 # Create the directory to store the configuration.
