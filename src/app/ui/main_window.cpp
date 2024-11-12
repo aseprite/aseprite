@@ -134,6 +134,7 @@ void MainWindow::initialize()
   m_timeline = new Timeline(m_tooltipManager);
 
   m_workspace->setTabsBar(m_tabsBar);
+  m_workspace->BeforeViewChanged.connect(&MainWindow::onBeforeViewChange, this);
   m_workspace->ActiveViewChanged.connect(&MainWindow::onActiveViewChange, this);
 
   // configure all widgets to expansives
@@ -415,6 +416,11 @@ void MainWindow::onResize(ui::ResizeEvent& ev)
       }
     }
   }
+}
+
+void MainWindow::onBeforeViewChange()
+{
+  UIContext::instance()->notifyBeforeActiveSiteChanged();
 }
 
 // When the active view is changed from methods like

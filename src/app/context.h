@@ -140,6 +140,7 @@ namespace app {
     void setSelectedTiles(const doc::PalettePicks& picks);
     bool hasModifiedDocuments() const;
     void notifyActiveSiteChanged();
+    void notifyBeforeActiveSiteChanged();
 
     void setDraggedData(std::unique_ptr<DraggedData> draggedData) {
       m_draggedData = std::move(draggedData);
@@ -161,7 +162,9 @@ namespace app {
 
   protected:
     // DocsObserver impl
+    void onBeforeAddDocument(Doc* doc) override;
     void onAddDocument(Doc* doc) override;
+    void onBeforeRemoveDocument(Doc* doc) override;
     void onRemoveDocument(Doc* doc) override;
 
     virtual void onGetActiveSite(Site* site) const;

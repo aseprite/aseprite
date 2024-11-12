@@ -361,6 +361,9 @@ void Editor::setLayer(const Layer* layer)
   if (gridVisible)
     oldGrid = getSite().grid();
 
+  if (isActive())
+    UIContext::instance()->notifyBeforeActiveSiteChanged();
+
   m_observers.notifyBeforeLayerChanged(this);
 
   // Remove extra cel information if we change between different layer
@@ -408,6 +411,9 @@ void Editor::setFrame(frame_t frame)
 {
   if (m_frame == frame)
     return;
+
+  if (isActive())
+    UIContext::instance()->notifyBeforeActiveSiteChanged();
 
   m_observers.notifyBeforeFrameChanged(this);
   {
@@ -1914,6 +1920,9 @@ bool Editor::isSliceSelected(const doc::Slice* slice) const
 void Editor::clearSlicesSelection()
 {
   if (!m_selectedSlices.empty()) {
+    if (isActive())
+      UIContext::instance()->notifyBeforeActiveSiteChanged();
+
     m_selectedSlices.clear();
     invalidate();
 
@@ -1925,6 +1934,9 @@ void Editor::clearSlicesSelection()
 void Editor::selectSlice(const doc::Slice* slice)
 {
   ASSERT(slice);
+  if (isActive())
+    UIContext::instance()->notifyBeforeActiveSiteChanged();
+
   m_selectedSlices.insert(slice->id());
   invalidate();
 
@@ -1934,6 +1946,9 @@ void Editor::selectSlice(const doc::Slice* slice)
 
 bool Editor::selectSliceBox(const gfx::Rect& box)
 {
+  if (isActive())
+    UIContext::instance()->notifyBeforeActiveSiteChanged();
+
   m_selectedSlices.clear();
   for (auto slice : m_sprite->slices()) {
     auto key = slice->getByFrame(m_frame);
@@ -1950,6 +1965,9 @@ bool Editor::selectSliceBox(const gfx::Rect& box)
 
 void Editor::selectAllSlices()
 {
+  if (isActive())
+    UIContext::instance()->notifyBeforeActiveSiteChanged();
+
   for (auto slice : m_sprite->slices())
     m_selectedSlices.insert(slice->id());
   invalidate();

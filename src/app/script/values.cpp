@@ -8,8 +8,8 @@
 #include "config.h"
 #endif
 
+#include "app/site.h"
 #include "app/script/values.h"
-
 #include "app/pref/preferences.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"

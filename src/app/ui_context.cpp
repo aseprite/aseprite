@@ -144,6 +144,10 @@ void UIContext::setActiveView(DocView* docView)
 void UIContext::onSetActiveDocument(Doc* document, bool notify)
 {
   notify = (notify && lastSelectedDoc() != document);
+
+  if (notify)
+    notifyBeforeActiveSiteChanged();
+
   app::Context::onSetActiveDocument(document, false);
 
   DocView* docView = getFirstDocView(document);
