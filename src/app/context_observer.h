@@ -16,7 +16,8 @@ namespace app {
   class ContextObserver {
   public:
     virtual ~ContextObserver() { }
-    virtual void onActiveSiteChange(const Site& site) { }
+    virtual void onActiveSiteChange(const Site& site) { };
+    virtual void onBeforeActiveSiteChange(const Site& fromSite) { };
   };
 
 } // namespace app

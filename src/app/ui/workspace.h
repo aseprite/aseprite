@@ -78,6 +78,7 @@ namespace app {
 
     WorkspacePanel* mainPanel() { return &m_mainPanel; }
 
+    obs::signal<void()> BeforeViewChanged;
     obs::signal<void()> ActiveViewChanged;
 
   protected:

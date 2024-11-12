@@ -137,9 +137,15 @@ bool Context::hasModifiedDocuments() const
   return false;
 }
 
+void Context::notifyBeforeActiveSiteChanged()
+{
+  const Site site = activeSite();
+  notify_observers<const Site&>(&ContextObserver::onBeforeActiveSiteChange, site);
+}
+
 void Context::notifyActiveSiteChanged()
 {
-  Site site = activeSite();
+  const Site site = activeSite();
   notify_observers<const Site&>(&ContextObserver::onActiveSiteChange, site);
 }
 
@@ -250,6 +256,11 @@ void Context::setCommandResult(const CommandResult& result)
   m_result = result;
 }
 
+void Context::onBeforeAddDocument(Doc* doc)
+{
+  notifyBeforeActiveSiteChanged();
+}
+
 void Context::onAddDocument(Doc* doc)
 {
   m_lastSelectedDoc = doc;
@@ -258,6 +269,11 @@ void Context::onAddDocument(Doc* doc)
     m_activeSiteHandler->addDoc(doc);
 
   notifyActiveSiteChanged();
+}
+
+void Context::onBeforeRemoveDocument(Doc* doc)
+{
+  notifyBeforeActiveSiteChanged();
 }
 
 void Context::onRemoveDocument(Doc* doc)

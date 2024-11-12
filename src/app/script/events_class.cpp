@@ -157,6 +157,7 @@ class AppEvents : public Events
 public:
   enum : EventType {
     Unknown = -1,
+    BeforeSiteChange,
     SiteChange,
     FgColorChange,
     BgColorChange,
@@ -164,12 +165,16 @@ public:
     AfterCommand,
   };
 
-  AppEvents() {
+  AppEvents()
+    : m_addedObserver(0)
+  {
   }
 
   EventType eventType(const char* eventName) const override {
     if (std::strcmp(eventName, "sitechange") == 0)
       return SiteChange;
+    else if (std::strcmp(eventName, "beforesitechange") == 0)
+      return BeforeSiteChange;
     else if (std::strcmp(eventName, "fgcolorchange") == 0)
       return FgColorChange;
     else if (std::strcmp(eventName, "bgcolorchange") == 0)
@@ -189,9 +194,14 @@ private:
     auto ctx = app->context();
     auto& pref = Preferences::instance();
     switch (eventType) {
-      case SiteChange:
-        ctx->add_observer(this);
-        break;
+      case BeforeSiteChange:
+        [[fallthrough]];
+      case SiteChange: {
+        if (m_addedObserver == 0)
+          ctx->add_observer(this);
+
+        ++m_addedObserver;
+      }  break;
       case FgColorChange:
         m_fgConn = pref.colorBar.fgColor.AfterChange
           .connect([this]{ onFgColorChange(); });
@@ -213,8 +223,13 @@ private:
 
   void onRemoveLastListener(EventType eventType) override {
     switch (eventType) {
+      case BeforeSiteChange:
+        [[fallthrough]];
       case SiteChange:
-        App::instance()->context()->remove_observer(this);
+        --m_addedObserver;
+
+        if (m_addedObserver == 0)
+          App::instance()->context()->remove_observer(this);
         break;
       case FgColorChange:
         m_fgConn.disconnect();
@@ -265,11 +280,19 @@ private:
     call(SiteChange, { { "fromUndo", fromUndo } });
   }
 
+  void onBeforeActiveSiteChange(const Site& fromSite) override
+  {
+    const bool fromUndo = (fromSite.document() &&
+                           fromSite.document()->isUndoing());
+    call(BeforeSiteChange, { { "fromUndo", fromUndo } });
+  }
+
   obs::scoped_connection m_fgConn;
   obs::scoped_connection m_bgConn;
   obs::scoped_connection m_beforeCmdConn;
   obs::scoped_connection m_afterCmdConn;
   obs::scoped_connection m_beforePaintConn;
+  int m_addedObserver;
 };
 
 class WindowEvents : public Events
