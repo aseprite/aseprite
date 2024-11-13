@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -37,10 +37,26 @@ namespace app {
 
   using namespace doc;
 
-  // Old high-level API. The new way is to create Cmds and add them
-  // directly to the transaction.
+  // High-level API to modify a document adding undo information, i.e.
+  // adding new "Cmd"s in the given transaction.
   //
-  // TODO refactor this class in several Cmd, don't make it bigger
+  // In the past there were plans to remove this class, but it got
+  // bigger and bigger and there wasn't a real replacement. Some
+  // attempts to avoid adding new member functions in DocApi are:
+  //
+  // 1. Creating new standalone functions like the ones from
+  //    doc_range_ops.h, or util/cel_ops.h
+  // 2. Creating a new Command/QuickCommand, although that only makes
+  //    sense if we want to expose the functionality to the end-user,
+  //    and the number of parameters is quite small.
+  //
+  // Sometimes complex sprite changes require storing some special
+  // state until the transaction ends, like HandleLinkedCels and the
+  // m_linkedCels to map linked cels in the source sprite/layer and
+  // replicate them in the destination sprite/layer. This requires
+  // such coordination with moveCel()/copyCel() methods that it would
+  // be quite hard to replicate that in a standalone function.
+  //
   class DocApi {
   public:
     DocApi(Doc* document, Transaction& transaction);
