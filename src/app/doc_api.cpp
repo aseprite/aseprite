@@ -90,6 +90,13 @@ DocApi::HandleLinkedCels::HandleLinkedCels(
           new cmd::CopyCel(
             dstRelated->layer(), dstRelated->frame(),
             dstLayer, dstFrame, true));
+
+        // Copy data that belongs to the original Cel itself (no the
+        // shared CelData) like the z-index.
+        if (Cel* dstCel = dstLayer->cel(dstFrame)) {
+          dstCel->setZIndex(srcCel->zIndex());
+        }
+
         m_created = true;
         return;
       }
