@@ -62,67 +62,75 @@ namespace script {
 using namespace ui;
 
 namespace {
-  
-class DialogWindow : public ui::Window,
-                       public EditorObserver {
-  public:
-    bool moveTool;
-  
-    DialogWindow (Type type, const std::string& text = "")
-      : Window(type, text)
-      , moveTool(false)
-      , m_editor(nullptr)
-      , m_oldTool(nullptr)
-    {
-    }
-    
-    ~DialogWindow() {
-      if (m_editor)
-        m_editor->remove_observer(this);
-      if (m_oldTool)
-        ToolBar::instance()->selectTool(m_oldTool);
-    }
-    
-    void onOpen(Event& ev) override {
-      if (moveTool && Editor::activeEditor()) {
-        m_editor = Editor::activeEditor();
-        m_editor->add_observer(this);
-        m_oldTool = m_editor->getCurrentEditorTool();
-        tools::Tool* hand = App::instance()->toolBox()->getToolById(tools::WellKnownTools::Hand);
-        ToolBar::instance()->selectTool(hand);
-      }
-    }
-    
-    void onBeforeClose(CloseEvent& ev) override {
-      // unset references in case the same dialog is opened again
-      if (m_editor) {
-        m_editor->remove_observer(this);   
-        m_editor = nullptr;
-      }
-      if (m_oldTool) {
-        ToolBar::instance()->selectTool(m_oldTool);
-        m_oldTool = nullptr;   
-      }
-    }
-    
-    void onBroadcastMouseMessage(const gfx::Point& screenPos, ui::WidgetsList& targets) override {
-      if (moveTool) {
-        targets.push_back(this);
-        // Add also the editor as receptor of mouse events.
-        if (m_editor)
-          targets.push_back(ui::View::getView(m_editor));
-        // and add the context bar.
-        if (App::instance()->contextBar())
-          targets.push_back(App::instance()->contextBar());
-      }
-      else {
-        Window::onBroadcastMouseMessage(screenPos, targets);
-      }
-    }
 
-  private:
-    Editor* m_editor;
-    tools::Tool* m_oldTool;
+class DialogWindow : public ui::Window,
+                     public EditorObserver {
+public:
+  DialogWindow(Type type, const std::string& text)
+    : Window(type, text)
+    , m_editor(nullptr)
+    , m_oldTool(nullptr)
+    , m_handTool(false)
+  {
+  }
+
+  ~DialogWindow() {
+    if (m_editor)
+      m_editor->remove_observer(this);
+    if (m_oldTool)
+      ToolBar::instance()->selectTool(m_oldTool);
+  }
+
+  // Enables the Hand tool in the active editor.
+  void setHandTool(const bool flag) {
+    m_handTool = flag;
+  }
+
+protected:
+  void onOpen(Event& ev) override {
+    if (m_handTool && Editor::activeEditor()) {
+      m_editor = Editor::activeEditor();
+      m_editor->add_observer(this);
+      m_oldTool = m_editor->getCurrentEditorTool();
+      tools::Tool* hand = App::instance()->toolBox()->getToolById(tools::WellKnownTools::Hand);
+      ToolBar::instance()->selectTool(hand);
+    }
+  }
+
+  void onBeforeClose(CloseEvent& ev) override {
+    // unset references in case the same dialog is opened again
+    if (m_editor) {
+      m_editor->remove_observer(this);
+      m_editor = nullptr;
+    }
+    if (m_oldTool) {
+      ToolBar::instance()->selectTool(m_oldTool);
+      m_oldTool = nullptr;
+    }
+  }
+
+  void onBroadcastMouseMessage(const gfx::Point& screenPos, ui::WidgetsList& targets) override {
+    if (m_handTool) {
+      // Same impl as in FilterWindow::onBroadcastMouseMessage():
+
+      // Add this Window as receptor of mouse events.
+      targets.push_back(this);
+      // Add also the editor as receptor of mouse events.
+      if (m_editor)
+        targets.push_back(ui::View::getView(m_editor));
+      // and add the context bar.
+      if (App::instance()->contextBar())
+        targets.push_back(App::instance()->contextBar());
+    }
+    else {
+      Window::onBroadcastMouseMessage(screenPos, targets);
+    }
+  }
+
+private:
+  Editor* m_editor;
+  tools::Tool* m_oldTool;
+  bool m_handTool;
 };
 
 struct Dialog;
@@ -470,12 +478,12 @@ int Dialog_show(lua_State* L)
     if (type == LUA_TBOOLEAN)
       wait = lua_toboolean(L, -1);
     lua_pop(L, 1);
-    
-    type = lua_getfield(L, 2, "move");
+
+    type = lua_getfield(L, 2, "hand");
     if (type == LUA_TBOOLEAN)
-      dlg->window.moveTool = lua_toboolean(L, -1);
+      dlg->window.setHandTool(lua_toboolean(L, -1));
     else
-      dlg->window.moveTool = false;
+      dlg->window.setHandTool(false);
     lua_pop(L, 1);
 
     type = lua_getfield(L, 2, "bounds");
@@ -500,15 +508,15 @@ int Dialog_show(lua_State* L)
     dlg->window.remapWindow();
     dlg->window.centerWindow();
     fit_bounds(dlg->parentDisplay(),
-              &dlg->window,
-              dlg->window.bounds(),
-              [dlg](const gfx::Rect& workarea,
-                    gfx::Rect& bounds,
-                    std::function<gfx::Rect(Widget*)> getWidgetBounds) {
-                dlg->addScrollbarsIfNeeded(workarea, bounds);
-              });
+               &dlg->window,
+               dlg->window.bounds(),
+               [dlg](const gfx::Rect& workarea,
+                     gfx::Rect& bounds,
+                     std::function<gfx::Rect(Widget*)> getWidgetBounds) {
+                 dlg->addScrollbarsIfNeeded(workarea, bounds);
+               });
   }
-  
+
   if (wait)
     dlg->window.openWindowInForeground();
   else
@@ -519,25 +527,25 @@ int Dialog_show(lua_State* L)
 }
 
 namespace {
-  class MoveChildren {
-  public:
-    MoveChildren(Dialog* dlg, Widget* to)
-      : m_dlg(dlg)
-      , m_to(to) {
-      for (auto child : m_dlg->mainWidgets) {
-        m_oldParents[child] = child->parent();
-        m_to->addChild(child);
-      }
+class MoveChildren {
+public:
+  MoveChildren(Dialog* dlg, Widget* to)
+    : m_dlg(dlg)
+    , m_to(to) {
+    for (auto child : m_dlg->mainWidgets) {
+      m_oldParents[child] = child->parent();
+      m_to->addChild(child);
     }
-    ~MoveChildren() {
-      for (auto child : m_dlg->mainWidgets)
-        m_oldParents[child]->addChild(child);
-    }
-  private:
-    Dialog* m_dlg;
-    Widget* m_to;
-    std::map<Widget*, Widget*> m_oldParents;
-  };
+  }
+  ~MoveChildren() {
+    for (auto child : m_dlg->mainWidgets)
+      m_oldParents[child]->addChild(child);
+  }
+private:
+  Dialog* m_dlg;
+  Widget* m_to;
+  std::map<Widget*, Widget*> m_oldParents;
+};
 }
 
 int Dialog_showMenu(lua_State* L)
@@ -576,25 +584,25 @@ int Dialog_close(lua_State* L)
 
 void set_widget_flags(lua_State* L, int idx, Widget* widget)
 {
-    // Focus magnet
-    int type = lua_getfield(L, idx, "focus");
-    if (type != LUA_TNIL && lua_toboolean(L, -1))
-      widget->setFocusMagnet(true);
-    lua_pop(L, 1);
+  // Focus magnet
+  int type = lua_getfield(L, idx, "focus");
+  if (type != LUA_TNIL && lua_toboolean(L, -1))
+    widget->setFocusMagnet(true);
+  lua_pop(L, 1);
 
-    // Enabled
-    type = lua_getfield(L, idx, "enabled");
-    if (type != LUA_TNIL)
-      widget->setEnabled(lua_toboolean(L, -1));
-    lua_pop(L, 1);
+  // Enabled
+  type = lua_getfield(L, idx, "enabled");
+  if (type != LUA_TNIL)
+    widget->setEnabled(lua_toboolean(L, -1));
+  lua_pop(L, 1);
 
-    // Visible
-    widget->setVisible(true);
-    type = lua_getfield(L, idx, "visible");
-    if (type != LUA_TNIL) {
-      widget->setVisible(lua_toboolean(L, -1));
-    }
-    lua_pop(L, 1);
+  // Visible
+  widget->setVisible(true);
+  type = lua_getfield(L, idx, "visible");
+  if (type != LUA_TNIL) {
+    widget->setVisible(lua_toboolean(L, -1));
+  }
+  lua_pop(L, 1);
 }
 
 int Dialog_add_widget(lua_State* L, Widget* widget)
@@ -1416,10 +1424,10 @@ int Dialog_tab(lua_State* L)
     int type = lua_getfield(L, 2, "onclick");
     if (type == LUA_TFUNCTION) {
       Dialog_connect_signal(L, 1, tab->Click,
-        [id](lua_State* L){
-          lua_pushstring(L, id.c_str());
-          lua_setfield(L, -2, "tab");
-        });
+                            [id](lua_State* L){
+                              lua_pushstring(L, id.c_str());
+                              lua_setfield(L, -2, "tab");
+                            });
     }
 
     set_widget_flags(L, 2, tab);
@@ -1470,10 +1478,10 @@ int Dialog_endtabs(lua_State* L)
     if (type == LUA_TFUNCTION) {
       auto tab = dlg->wipTab;
       Dialog_connect_signal(L, 1, dlg->wipTab->TabChanged,
-        [tab](lua_State* L){
-          lua_pushstring(L, tab->tabId(tab->selectedTab()).c_str());
-          lua_setfield(L, -2, "tab");
-        });
+                            [tab](lua_State* L){
+                              lua_pushstring(L, tab->tabId(tab->selectedTab()).c_str());
+                              lua_setfield(L, -2, "tab");
+                            });
     }
   }
   dlg->wipTab->setSelectorFlags(align);
@@ -1957,7 +1965,7 @@ const Property Dialog_properties[] = {
   { nullptr, nullptr, nullptr }
 };
 
-} // anonymous namespace
+}  // anonymous namespace
 
 DEF_MTNAME(Dialog);
 
