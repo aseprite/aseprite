@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2023 Igara Studio S.A.
+// Copyright (c) 2019-2024 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -71,6 +71,10 @@ namespace doc {
 
     void setParentLayer(LayerImage* layer);
     Grid grid() const;
+
+    // Copies properties that are not shared between linked cels
+    // (CelData), like the z-index.
+    void copyNonsharedPropertiesFrom(const Cel* fromCel);
 
   private:
     void fixupImage();

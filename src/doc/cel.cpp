@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2023 Igara Studio S.A.
+// Copyright (c) 2019-2024 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -46,7 +46,7 @@ Cel* Cel::MakeCopy(const frame_t newFrame,
 
   cel->setPosition(other->position());
   cel->setOpacity(other->opacity());
-  cel->setZIndex(other->zIndex());
+  cel->copyNonsharedPropertiesFrom(other);
   return cel;
 }
 
@@ -55,7 +55,7 @@ Cel* Cel::MakeLink(const frame_t newFrame,
                    const Cel* other)
 {
   Cel* cel = new Cel(newFrame, other->dataRef());
-  cel->setZIndex(other->zIndex());
+  cel->copyNonsharedPropertiesFrom(other);
   return cel;
 }
 
@@ -168,6 +168,11 @@ Grid Cel::grid() const
       return m_layer->grid();
   }
   return Grid();
+}
+
+void Cel::copyNonsharedPropertiesFrom(const Cel* fromCel)
+{
+  setZIndex(fromCel->zIndex());
 }
 
 void Cel::fixupImage()

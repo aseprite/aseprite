@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -339,7 +339,7 @@ Cel* create_cel_copy(CmdSequence* cmds,
     dstFrame, ImageRef(Image::create(dstPixelFormat, dstSize.w, dstSize.h)));
 
   dstCel->setOpacity(srcCel->opacity());
-  dstCel->setZIndex(srcCel->zIndex());
+  dstCel->copyNonsharedPropertiesFrom(srcCel);
   dstCel->data()->setUserData(srcCel->data()->userData());
 
   // Special case were we copy from a tilemap...
