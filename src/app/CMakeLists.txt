@@ -673,6 +673,7 @@ target_sources(app-lib PRIVATE
   ui/timeline/timeline.cpp
   ui/toolbar.cpp
   ui/user_data_view.cpp
+  ui/window_with_hand.cpp
   ui/workspace.cpp
   ui/workspace_panel.cpp
   ui/workspace_tabs.cpp

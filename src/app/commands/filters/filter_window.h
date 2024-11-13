@@ -11,21 +11,21 @@
 
 #include "app/commands/filters/filter_preview.h"
 #include "app/commands/filters/filter_target_buttons.h"
-#include "app/ui/editor/editor.h"
+#include "app/ui/window_with_hand.h"
 #include "filters/tiled_mode.h"
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/window.h"
 
 namespace app {
+  class Editor;
   class FilterManagerImpl;
 
   using namespace filters;
 
   // A generic window to show parameters for a Filter with integrated
   // preview in the current editor.
-  class FilterWindow : public ui::Window,
-                       public EditorObserver {
+  class FilterWindow : public WindowWithHand {
   public:
     enum WithChannels { WithChannelsSelector, WithoutChannelsSelector };
     enum WithTiled { WithTiledCheckBox, WithoutTiledCheckBox };
@@ -50,9 +50,6 @@ namespace app {
     // Changes the target buttons. Used by convolution matrix filter
     // which specified different targets for each matrix.
     void setNewTarget(Target target);
-
-    void onBroadcastMouseMessage(const gfx::Point& screenPos,
-                                 ui::WidgetsList& targets) override;
 
     // Returns the container where derived classes should put controls.
     ui::Widget* getContainer() { return &m_container; }
@@ -87,8 +84,6 @@ namespace app {
     FilterTargetButtons m_targetButton;
     ui::CheckBox m_showPreview;
     ui::CheckBox* m_tiledCheck;
-    Editor* m_editor;
-    tools::Tool* m_oldTool;
   };
 
 } // namespace app

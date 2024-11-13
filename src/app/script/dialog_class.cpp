@@ -22,13 +22,11 @@
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/color_shades.h"
+#include "app/ui/editor/editor.h"
 #include "app/ui/expr_entry.h"
 #include "app/ui/filename_field.h"
 #include "app/ui/main_window.h"
-#include "app/ui/editor/editor.h"
-#include "app/ui/toolbar.h"
-#include "app/ui/context_bar.h"
-#include "app/tools/tool_box.h"
+#include "app/ui/window_with_hand.h"
 #include "base/paths.h"
 #include "base/remove_from_container.h"
 #include "ui/box.h"
@@ -47,7 +45,6 @@
 #include "ui/slider.h"
 #include "ui/system.h"
 #include "ui/view.h"
-#include "ui/window.h"
 
 #include <map>
 #include <stack>
@@ -63,22 +60,12 @@ using namespace ui;
 
 namespace {
 
-class DialogWindow : public ui::Window,
-                     public EditorObserver {
+class DialogWindow : public WindowWithHand {
 public:
   DialogWindow(Type type, const std::string& text)
-    : Window(type, text)
-    , m_editor(nullptr)
-    , m_oldTool(nullptr)
+    : WindowWithHand(type, text)
     , m_handTool(false)
   {
-  }
-
-  ~DialogWindow() {
-    if (m_editor)
-      m_editor->remove_observer(this);
-    if (m_oldTool)
-      ToolBar::instance()->selectTool(m_oldTool);
   }
 
   // Enables the Hand tool in the active editor.
@@ -89,47 +76,16 @@ public:
 protected:
   void onOpen(Event& ev) override {
     if (m_handTool && Editor::activeEditor()) {
-      m_editor = Editor::activeEditor();
-      m_editor->add_observer(this);
-      m_oldTool = m_editor->getCurrentEditorTool();
-      tools::Tool* hand = App::instance()->toolBox()->getToolById(tools::WellKnownTools::Hand);
-      ToolBar::instance()->selectTool(hand);
+      enableHandTool(true);
     }
   }
 
   void onBeforeClose(CloseEvent& ev) override {
-    // unset references in case the same dialog is opened again
-    if (m_editor) {
-      m_editor->remove_observer(this);
-      m_editor = nullptr;
-    }
-    if (m_oldTool) {
-      ToolBar::instance()->selectTool(m_oldTool);
-      m_oldTool = nullptr;
-    }
-  }
-
-  void onBroadcastMouseMessage(const gfx::Point& screenPos, ui::WidgetsList& targets) override {
-    if (m_handTool) {
-      // Same impl as in FilterWindow::onBroadcastMouseMessage():
-
-      // Add this Window as receptor of mouse events.
-      targets.push_back(this);
-      // Add also the editor as receptor of mouse events.
-      if (m_editor)
-        targets.push_back(ui::View::getView(m_editor));
-      // and add the context bar.
-      if (App::instance()->contextBar())
-        targets.push_back(App::instance()->contextBar());
-    }
-    else {
-      Window::onBroadcastMouseMessage(screenPos, targets);
-    }
+    if (isHandToolEnabled())
+      enableHandTool(false);
   }
 
 private:
-  Editor* m_editor;
-  tools::Tool* m_oldTool;
   bool m_handTool;
 };
 
