@@ -23,6 +23,10 @@
 #include "os/system.h"
 #include "ver/info.h"
 
+#if LAF_WINDOWS
+  #include "base/win/coinit.h"
+#endif
+
 #if ENABLE_SENTRY
   #include "app/sentry_wrapper.h"
   #if LAF_WINDOWS
@@ -54,22 +58,6 @@ namespace {
     MemLeak() { }
 #endif
   };
-
-#if LAF_WINDOWS
-  // Successful calls to CoInitialize() (S_OK or S_FALSE) must match
-  // the calls to CoUninitialize().
-  // From: https://docs.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-couninitialize#remarks
-  struct CoInit {
-    HRESULT hr;
-    CoInit() {
-      hr = CoInitialize(nullptr);
-    }
-    ~CoInit() {
-      if (hr == S_OK || hr == S_FALSE)
-        CoUninitialize();
-    }
-  };
-#endif // LAF_WINDOWS
 
 #if USE_SENTRY_BREADCRUMB_FOR_WINTAB
   // Delegate to write Wintab information as a Sentry breadcrumb (to
@@ -110,7 +98,7 @@ int app_main(int argc, char* argv[])
   std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
 #if LAF_WINDOWS
-  CoInit com;                   // To create COM objects
+  base::CoInit com;             // To create COM objects
 #endif
 
   // Main thread name
