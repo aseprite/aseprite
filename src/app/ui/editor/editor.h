@@ -182,14 +182,14 @@ namespace app {
     // editor/sprite coordinates (pixel in the canvas).
     //
     // TODO we should rename these functions to displayToEditor() and editorToDisplay()
-    gfx::Point screenToEditor(const gfx::Point& pt);
-    gfx::Point screenToEditorCeiling(const gfx::Point& pt);
-    gfx::PointF screenToEditorF(const gfx::Point& pt);
-    gfx::Point editorToScreen(const gfx::Point& pt);
-    gfx::PointF editorToScreenF(const gfx::PointF& pt);
-    gfx::Rect screenToEditor(const gfx::Rect& rc);
-    gfx::Rect editorToScreen(const gfx::Rect& rc);
-    gfx::RectF editorToScreenF(const gfx::RectF& rc);
+    gfx::Point screenToEditor(const gfx::Point& pt) const;
+    gfx::Point screenToEditorCeiling(const gfx::Point& pt) const;
+    gfx::PointF screenToEditorF(const gfx::Point& pt) const;
+    gfx::Point editorToScreen(const gfx::Point& pt) const;
+    gfx::PointF editorToScreenF(const gfx::PointF& pt) const;
+    gfx::Rect screenToEditor(const gfx::Rect& rc) const;
+    gfx::Rect editorToScreen(const gfx::Rect& rc) const;
+    gfx::RectF editorToScreenF(const gfx::RectF& rc) const;
 
     void add_observer(EditorObserver* observer);
     void remove_observer(EditorObserver* observer);
@@ -213,7 +213,9 @@ namespace app {
     void collapseRegionByTiledMode(gfx::Region& rgn) const;
 
     // Changes the scroll to see the given point as the center of the editor.
+    void centerInSpritePoint(const gfx::PointF& spritePos);
     void centerInSpritePoint(const gfx::Point& spritePos);
+    gfx::PointF spritePointInCenter() const;
 
     void updateStatusBar();
 
