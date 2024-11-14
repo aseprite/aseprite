@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -32,8 +32,11 @@ namespace app {
 
 using namespace ui;
 
-// static
+// Static vars
 Params AppMenuItem::s_contextParams;
+#if LAF_MACOS
+AppMenuItem* AppMenuItem::s_standardEditMenu = nullptr;
+#endif
 
 AppMenuItem::AppMenuItem(const std::string& text,
                          const std::string& commandId,
@@ -44,6 +47,14 @@ AppMenuItem::AppMenuItem(const std::string& text,
  , m_params(params)
  , m_native(nullptr)
 {
+}
+
+AppMenuItem::~AppMenuItem()
+{
+#if LAF_MACOS
+  if (s_standardEditMenu == this)
+    s_standardEditMenu = nullptr;
+#endif
 }
 
 Command* AppMenuItem::getCommand() const
@@ -83,6 +94,18 @@ void AppMenuItem::syncNativeMenuItemKeyShortcut()
     m_native->keyContext = (m_key ? m_key->keycontext(): KeyContext::Any);
   }
 }
+
+#if LAF_MACOS
+void AppMenuItem::setAsStandardEditMenu()
+{
+  s_standardEditMenu = this;
+}
+
+AppMenuItem* AppMenuItem::GetStandardEditMenu()
+{
+  return s_standardEditMenu;
+}
+#endif
 
 // static
 void AppMenuItem::setContextParams(const Params& params)

@@ -304,7 +304,7 @@ os::Shortcut get_os_shortcut_from_key(const Key* key)
   if (key && !key->accels().empty()) {
     const ui::Accelerator& accel = key->accels().front();
 
-#ifdef __APPLE__
+#if LAF_MACOS
     // Shortcuts with spacebar as modifier do not work well in macOS
     // (they will be called when the space bar is unpressed too).
     if ((accel.modifiers() & ui::kKeySpaceModifier) == ui::kKeySpaceModifier)
@@ -827,8 +827,10 @@ Widget* AppMenus::convertXmlelemToMenuitem(XMLElement* elem, Menu* menu)
     m_groups[group].end = menuitem;
   }
 
+#if LAF_MACOS
   if (standard && strcmp(standard, "edit") == 0)
-    menuitem->setStandardEditMenu();
+    menuitem->setAsStandardEditMenu();
+#endif
 
   // Has it a ID?
   if (id) {
@@ -933,7 +935,7 @@ void AppMenus::createNativeMenus()
   os::MenuRef oldOSMenu = m_osMenu;
   m_osMenu = menus->makeMenu();
 
-#ifdef __APPLE__ // Create default macOS app menus (App ... Window)
+#if LAF_MACOS       // Create default macOS app menus (App ... Window)
   {
     os::MenuItemInfo about(fmt::format("About {}", get_app_name()));
     auto native = get_native_shortcut_for_command(CommandId::About());
@@ -986,7 +988,7 @@ void AppMenus::createNativeMenus()
 
   createNativeSubmenus(m_osMenu.get(), m_rootMenu.get());
 
-#ifdef __APPLE__
+#if LAF_MACOS
   {
     // Search the index where help menu is located (so the Window menu
     // can take its place/index position)
@@ -1071,10 +1073,6 @@ void AppMenus::createNativeSubmenus(os::Menu* osMenu,
       if (appMenuItem) {
         native.menuItem = osItem;
         appMenuItem->setNative(native);
-
-        // Set this menu item as the standard "Edit" item for macOS
-        if (appMenuItem->isStandardEditMenu())
-          osItem->setAsStandardEditMenuItem();
       }
 
       if (child->type() == ui::kMenuItemWidget &&

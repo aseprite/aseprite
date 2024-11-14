@@ -752,6 +752,7 @@ target_link_libraries(app-lib
   tga-lib
   laf-gfx
   render-lib
+  laf-dlgs
   laf-os
   laf-text
   ui-lib
