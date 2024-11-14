@@ -302,6 +302,71 @@ int Editor_get_mousePos(lua_State* L)
   return 1;
 }
 
+int Editor_get_zoom(lua_State* L)
+{
+  auto obj = get_obj<EditorObj>(L, 1);
+  lua_pushnumber(L, obj->editor()->zoom().scale());
+  return 1;
+}
+
+int Editor_get_scroll(lua_State* L)
+{
+  auto obj = get_obj<EditorObj>(L, 1);
+  gfx::PointF scroll = obj->editor()->spritePointInCenter();
+  // TODO add PointF wrapper or Vec2/Vec3/Vec4 classes/metatables.
+  lua_newtable(L);
+  lua_pushnumber(L, scroll.x);
+  lua_setfield(L, -2, "x");
+  lua_pushnumber(L, scroll.y);
+  lua_setfield(L, -2, "y");
+  return 1;
+}
+
+int Editor_set_zoom(lua_State* L)
+{
+  auto obj = get_obj<EditorObj>(L, 1);
+  auto scale = lua_tonumber(L, 2);
+  obj->editor()->setZoomAndCenterInMouse(
+    render::Zoom::fromScale(scale),
+    gfx::Point(),
+    Editor::ZoomBehavior::CENTER);
+  return 0;
+}
+
+int Editor_set_scroll(lua_State* L)
+{
+  auto obj = get_obj<EditorObj>(L, 1);
+  gfx::PointF pt;
+  // TODO add PointF wrapper or Vec2/Vec3/Vec4 classes/metatables.
+  const int index = 2;
+  if (lua_istable(L, index)) {
+    const int type = lua_getfield(L, index, "x");
+    if (VALID_LUATYPE(type)) {
+      lua_getfield(L, index, "y");
+      pt.x = lua_tonumber(L, -2);
+      pt.y = lua_tonumber(L, -1);
+      lua_pop(L, 2);
+    }
+    else {
+      lua_pop(L, 1);
+
+      lua_geti(L, index, 1);
+      pt.x = lua_tonumber(L, -1);
+      lua_pop(L, 1);
+
+      lua_geti(L, index, 2);
+      pt.y = lua_tonumber(L, -1);
+      lua_pop(L, 1);
+    }
+  }
+  else {
+    pt = convert_args_into_point(L, index);
+  }
+
+  obj->editor()->centerInSpritePoint(pt);
+  return 0;
+}
+
 const luaL_Reg Editor_methods[] = {
   { "__gc", Editor_gc },
   { "__eq", Editor_eq },
@@ -314,6 +379,8 @@ const Property Editor_properties[] = {
   { "sprite", Editor_get_sprite, nullptr },
   { "spritePos", Editor_get_spritePos, nullptr },
   { "mousePos", Editor_get_mousePos, nullptr },
+  { "zoom", Editor_get_zoom, Editor_set_zoom },
+  { "scroll", Editor_get_scroll, Editor_set_scroll },
   { nullptr, nullptr, nullptr }
 };
 
