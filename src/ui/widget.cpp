@@ -232,6 +232,11 @@ void Widget::setVisible(bool state)
         man->freeWidget(this); // Free from manager
       enableFlags(HIDDEN);
 
+      // As this widget was hidden we need to invalidate the area it was
+      // occupying
+      if (auto man = manager())
+        man->invalidateRect(bounds());
+
       onVisible(false);
     }
   }
