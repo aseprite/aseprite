@@ -2051,10 +2051,12 @@ void Manager::onInvalidateRegion(const gfx::Region& region)
       break; // Work done
     }
 
-    // Clip this window area for the next window.
-    gfx::Region reg2;
-    window->getRegion(reg2);
-    reg1.createSubtraction(reg1, reg2);
+    // Clip this window area for the next window, only if not hidden.
+    if (!window->hasFlags(HIDDEN)) {
+      gfx::Region reg2;
+      window->getRegion(reg2);
+      reg1.createSubtraction(reg1, reg2);
+    }
   }
 
   // Invalidate areas outside windows (only when there are not a
