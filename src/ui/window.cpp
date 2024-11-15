@@ -714,6 +714,13 @@ void Window::onSetText()
   initTheme();
 }
 
+void Window::onVisible(bool visible)
+{
+  if (get_multiple_displays() && m_display) {
+    display()->nativeWindow()->setVisible(visible);
+  }
+}
+
 void Window::onBuildTitleLabel()
 {
   if (text().empty()) {
