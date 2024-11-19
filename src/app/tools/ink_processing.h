@@ -1158,7 +1158,8 @@ public:
   void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y,
                             doc::SymmetryIndex index) override {
     m_isBoundsRotated = does_symmetry_rotate_image(index);
-    m_brushImage = m_brush->getSymmetryImage(index);
+    m_brushImage = (m_brush->patternImage() ? m_brush->patternImage():
+                                              m_brush->getSymmetryImage(index));
     m_brushMask = m_brush->getSymmetryMask(index);
     m_patternAlign = m_brush->pattern();
     if (m_patternAlign != BrushPattern::ALIGNED_TO_SRC) {
