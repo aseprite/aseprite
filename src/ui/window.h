@@ -104,6 +104,7 @@ namespace ui {
     virtual void onBroadcastMouseMessage(const gfx::Point& screenPos,
                                          WidgetsList& targets) override;
     virtual void onSetText() override;
+    virtual void onVisible(bool visible) override;
 
     // New events
     virtual void onOpen(Event& ev);

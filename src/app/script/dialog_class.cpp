@@ -22,9 +22,11 @@
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/color_shades.h"
+#include "app/ui/editor/editor.h"
 #include "app/ui/expr_entry.h"
 #include "app/ui/filename_field.h"
 #include "app/ui/main_window.h"
+#include "app/ui/window_with_hand.h"
 #include "base/paths.h"
 #include "base/remove_from_container.h"
 #include "ui/box.h"
@@ -43,7 +45,6 @@
 #include "ui/slider.h"
 #include "ui/system.h"
 #include "ui/view.h"
-#include "ui/window.h"
 
 #include <map>
 #include <stack>
@@ -59,11 +60,40 @@ using namespace ui;
 
 namespace {
 
+class DialogWindow : public WindowWithHand {
+public:
+  DialogWindow(Type type, const std::string& text)
+    : WindowWithHand(type, text)
+    , m_handTool(false)
+  {
+  }
+
+  // Enables the Hand tool in the active editor.
+  void setHandTool(const bool flag) {
+    m_handTool = flag;
+  }
+
+protected:
+  void onOpen(Event& ev) override {
+    if (m_handTool && Editor::activeEditor()) {
+      enableHandTool(true);
+    }
+  }
+
+  void onBeforeClose(CloseEvent& ev) override {
+    if (isHandToolEnabled())
+      enableHandTool(false);
+  }
+
+private:
+  bool m_handTool;
+};
+
 struct Dialog;
 std::vector<Dialog*> all_dialogs;
 
 struct Dialog {
-  ui::Window window;
+  DialogWindow window;
   // Main grid that holds the dialog content.
   ui::Grid grid;
   // Pointer to current grid (might be the main grid or a tab's grid).
@@ -405,6 +435,13 @@ int Dialog_show(lua_State* L)
       wait = lua_toboolean(L, -1);
     lua_pop(L, 1);
 
+    type = lua_getfield(L, 2, "hand");
+    if (type == LUA_TBOOLEAN)
+      dlg->window.setHandTool(lua_toboolean(L, -1));
+    else
+      dlg->window.setHandTool(false);
+    lua_pop(L, 1);
+
     type = lua_getfield(L, 2, "bounds");
     if (VALID_LUATYPE(type)) {
       const auto rc = convert_args_into_rect(L, -1);
@@ -427,13 +464,13 @@ int Dialog_show(lua_State* L)
     dlg->window.remapWindow();
     dlg->window.centerWindow();
     fit_bounds(dlg->parentDisplay(),
-              &dlg->window,
-              dlg->window.bounds(),
-              [dlg](const gfx::Rect& workarea,
-                    gfx::Rect& bounds,
-                    std::function<gfx::Rect(Widget*)> getWidgetBounds) {
-                dlg->addScrollbarsIfNeeded(workarea, bounds);
-              });
+               &dlg->window,
+               dlg->window.bounds(),
+               [dlg](const gfx::Rect& workarea,
+                     gfx::Rect& bounds,
+                     std::function<gfx::Rect(Widget*)> getWidgetBounds) {
+                 dlg->addScrollbarsIfNeeded(workarea, bounds);
+               });
   }
 
   if (wait)
@@ -446,25 +483,25 @@ int Dialog_show(lua_State* L)
 }
 
 namespace {
-  class MoveChildren {
-  public:
-    MoveChildren(Dialog* dlg, Widget* to)
-      : m_dlg(dlg)
-      , m_to(to) {
-      for (auto child : m_dlg->mainWidgets) {
-        m_oldParents[child] = child->parent();
-        m_to->addChild(child);
-      }
+class MoveChildren {
+public:
+  MoveChildren(Dialog* dlg, Widget* to)
+    : m_dlg(dlg)
+    , m_to(to) {
+    for (auto child : m_dlg->mainWidgets) {
+      m_oldParents[child] = child->parent();
+      m_to->addChild(child);
     }
-    ~MoveChildren() {
-      for (auto child : m_dlg->mainWidgets)
-        m_oldParents[child]->addChild(child);
-    }
-  private:
-    Dialog* m_dlg;
-    Widget* m_to;
-    std::map<Widget*, Widget*> m_oldParents;
-  };
+  }
+  ~MoveChildren() {
+    for (auto child : m_dlg->mainWidgets)
+      m_oldParents[child]->addChild(child);
+  }
+private:
+  Dialog* m_dlg;
+  Widget* m_to;
+  std::map<Widget*, Widget*> m_oldParents;
+};
 }
 
 int Dialog_showMenu(lua_State* L)
@@ -503,25 +540,25 @@ int Dialog_close(lua_State* L)
 
 void set_widget_flags(lua_State* L, int idx, Widget* widget)
 {
-    // Focus magnet
-    int type = lua_getfield(L, idx, "focus");
-    if (type != LUA_TNIL && lua_toboolean(L, -1))
-      widget->setFocusMagnet(true);
-    lua_pop(L, 1);
+  // Focus magnet
+  int type = lua_getfield(L, idx, "focus");
+  if (type != LUA_TNIL && lua_toboolean(L, -1))
+    widget->setFocusMagnet(true);
+  lua_pop(L, 1);
 
-    // Enabled
-    type = lua_getfield(L, idx, "enabled");
-    if (type != LUA_TNIL)
-      widget->setEnabled(lua_toboolean(L, -1));
-    lua_pop(L, 1);
+  // Enabled
+  type = lua_getfield(L, idx, "enabled");
+  if (type != LUA_TNIL)
+    widget->setEnabled(lua_toboolean(L, -1));
+  lua_pop(L, 1);
 
-    // Visible
-    widget->setVisible(true);
-    type = lua_getfield(L, idx, "visible");
-    if (type != LUA_TNIL) {
-      widget->setVisible(lua_toboolean(L, -1));
-    }
-    lua_pop(L, 1);
+  // Visible
+  widget->setVisible(true);
+  type = lua_getfield(L, idx, "visible");
+  if (type != LUA_TNIL) {
+    widget->setVisible(lua_toboolean(L, -1));
+  }
+  lua_pop(L, 1);
 }
 
 int Dialog_add_widget(lua_State* L, Widget* widget)
@@ -1343,10 +1380,10 @@ int Dialog_tab(lua_State* L)
     int type = lua_getfield(L, 2, "onclick");
     if (type == LUA_TFUNCTION) {
       Dialog_connect_signal(L, 1, tab->Click,
-        [id](lua_State* L){
-          lua_pushstring(L, id.c_str());
-          lua_setfield(L, -2, "tab");
-        });
+                            [id](lua_State* L){
+                              lua_pushstring(L, id.c_str());
+                              lua_setfield(L, -2, "tab");
+                            });
     }
 
     set_widget_flags(L, 2, tab);
@@ -1397,10 +1434,10 @@ int Dialog_endtabs(lua_State* L)
     if (type == LUA_TFUNCTION) {
       auto tab = dlg->wipTab;
       Dialog_connect_signal(L, 1, dlg->wipTab->TabChanged,
-        [tab](lua_State* L){
-          lua_pushstring(L, tab->tabId(tab->selectedTab()).c_str());
-          lua_setfield(L, -2, "tab");
-        });
+                            [tab](lua_State* L){
+                              lua_pushstring(L, tab->tabId(tab->selectedTab()).c_str());
+                              lua_setfield(L, -2, "tab");
+                            });
     }
   }
   dlg->wipTab->setSelectorFlags(align);
@@ -1884,7 +1921,7 @@ const Property Dialog_properties[] = {
   { nullptr, nullptr, nullptr }
 };
 
-} // anonymous namespace
+}  // anonymous namespace
 
 DEF_MTNAME(Dialog);
 

@@ -47,6 +47,7 @@ private:
 ActiveToolManager::ActiveToolManager(ToolBox* toolbox)
   : m_toolbox(toolbox)
   , m_quickTool(nullptr)
+  , m_allowQuickToolChanges(true)
   , m_rightClick(false)
   , m_rightClickTool(nullptr)
   , m_rightClickInk(nullptr)
@@ -57,14 +58,16 @@ ActiveToolManager::ActiveToolManager(ToolBox* toolbox)
 
 Tool* ActiveToolManager::activeTool() const
 {
-  if (m_quickTool)
-    return m_quickTool;
+  if (m_allowQuickToolChanges) {
+    if (m_quickTool)
+      return m_quickTool;
 
-  if (m_rightClickTool)
-    return m_rightClickTool;
+    if (m_rightClickTool)
+      return m_rightClickTool;
 
-  if (m_proximityTool)
-    return m_proximityTool;
+    if (m_proximityTool)
+      return m_proximityTool;
+  }
 
   // Active tool should never returns null
   ASSERT(m_selectedTool);
@@ -232,6 +235,11 @@ void ActiveToolManager::setSelectedTool(Tool* tool)
 
   m_selectedTool = tool;
   notify_observers(&ActiveToolObserver::onSelectedToolChange, tool);
+}
+
+void ActiveToolManager::setAllowQuickToolChanges(const bool state)
+{
+  m_allowQuickToolChanges = state;
 }
 
 // static

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -91,6 +91,13 @@ DocApi::HandleLinkedCels::HandleLinkedCels(
           new cmd::CopyCel(
             dstRelated->layer(), dstRelated->frame(),
             dstLayer, dstFrame, true));
+
+        // Copy data that belongs to the original Cel itself (no the
+        // shared CelData) like the z-index.
+        if (Cel* dstCel = dstLayer->cel(dstFrame)) {
+          dstCel->copyNonsharedPropertiesFrom(srcCel);
+        }
+
         m_created = true;
         return;
       }

@@ -17,10 +17,6 @@
 #include "app/ini_file.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
-#include "app/tools/tool_box.h"
-#include "app/ui/editor/editor.h"
-#include "app/ui/context_bar.h"
-#include "app/ui/toolbar.h"
 
 namespace app {
 
@@ -32,7 +28,7 @@ FilterWindow::FilterWindow(const char* title, const char* cfgSection,
                            WithChannels withChannels,
                            WithTiled withTiled,
                            TiledMode tiledMode)
-  : Window(WithTitleBar, title)
+  : WindowWithHand(WithTitleBar, title)
   , m_cfgSection(cfgSection)
   , m_filterMgr(filterMgr)
   , m_hbox(HORIZONTAL)
@@ -46,8 +42,6 @@ FilterWindow::FilterWindow(const char* title, const char* cfgSection,
   , m_tiledCheck(withTiled == WithTiledCheckBox ?
                    new CheckBox(Strings::filters_tiled()) :
                    nullptr)
-  , m_editor(nullptr)
-  , m_oldTool(nullptr)
 {
   m_okButton.processMnemonicFromText();
   m_cancelButton.processMnemonicFromText();
@@ -91,20 +85,12 @@ FilterWindow::FilterWindow(const char* title, const char* cfgSection,
   // OK is magnetic (the default button)
   m_okButton.setFocusMagnet(true);
 
-  if (Editor::activeEditor()) {
-    m_editor = Editor::activeEditor();
-    m_editor->add_observer(this);
-    m_oldTool = m_editor->getCurrentEditorTool();
-    tools::Tool* hand = App::instance()->toolBox()->getToolById(tools::WellKnownTools::Hand);
-    ToolBar::instance()->selectTool(hand);
-  }
+  // Enable the Hand tool in the active editor.
+  enableHandTool(true);
 }
 
 FilterWindow::~FilterWindow()
 {
-  if (m_oldTool)
-    ToolBar::instance()->selectTool(m_oldTool);
-
   // Save window configuration
   save_window_pos(this, m_cfgSection);
 
@@ -113,9 +99,6 @@ FilterWindow::~FilterWindow()
 
   // Save cels target button
   Preferences::instance().filters.celsTarget(m_targetButton.celsTarget());
-
-  if (m_editor)
-    m_editor->remove_observer(this);
 }
 
 bool FilterWindow::doModal()
@@ -148,18 +131,6 @@ bool FilterWindow::doModal()
   update_screen_for_document(m_filterMgr->document());
 
   return result;
-}
-
-void FilterWindow::onBroadcastMouseMessage(const gfx::Point& screenPos,
-                                            ui::WidgetsList& targets) {
-  // Add the Filter Window as receptor of mouse events.
-  targets.push_back(this);
-  // Also add the editor
-  if (m_editor)
-    targets.push_back(ui::View::getView(m_editor));
-  // and add the context bar.
-  if (App::instance()->contextBar())
-    targets.push_back(App::instance()->contextBar());
 }
 
 void FilterWindow::restartPreview()

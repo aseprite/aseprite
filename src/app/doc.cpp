@@ -530,6 +530,7 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
       if (it != linked.end()) {
         newCel.reset(Cel::MakeLink(sourceCel->frame(),
                                    it->second));
+        newCel->copyNonsharedPropertiesFrom(sourceCel);
       }
       else {
         newCel.reset(create_cel_copy(nullptr, // TODO add undo information?
