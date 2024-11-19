@@ -716,6 +716,7 @@ void Window::onSetText()
 
 void Window::onVisible(bool visible)
 {
+  Widget::onVisible(visible);
   if (get_multiple_displays() && m_display) {
     display()->nativeWindow()->setVisible(visible);
   }
