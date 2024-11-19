@@ -11,6 +11,7 @@
 #include "app/ui/window_with_hand.h"
 
 #include "app/app.h"
+#include "app/tools/active_tool.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
@@ -30,11 +31,14 @@ WindowWithHand::~WindowWithHand()
 
 void WindowWithHand::enableHandTool(const bool state)
 {
+  auto* atm = App::instance()->activeToolManager();
+
   if (m_editor) {
     m_editor->remove_observer(this);
     m_editor = nullptr;
   }
   if (m_oldTool) {
+    atm->setAllowQuickToolChanges(true);
     ToolBar::instance()->selectTool(m_oldTool);
     m_oldTool = nullptr;
   }
@@ -43,7 +47,13 @@ void WindowWithHand::enableHandTool(const bool state)
   if (state && editor) {
     m_editor = editor;
     m_editor->add_observer(this);
+
+    // Disable quick tools like Ctrl to select the Move tool and move
+    // cels, or Alt for eyedropper. We just want the Hand tool
+    // (selected tool) for preview purposes.
+    atm->setAllowQuickToolChanges(false);
     m_oldTool = m_editor->getCurrentEditorTool();
+
     tools::Tool* hand = App::instance()->toolBox()->getToolById(tools::WellKnownTools::Hand);
     ToolBar::instance()->selectTool(hand);
   }
