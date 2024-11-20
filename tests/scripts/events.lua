@@ -7,68 +7,49 @@ dofile('./test_utils.lua')
 
 -- Test app.events
 do
-  local bc = 0
   local c = 0
-  local beforeListener = app.events:on('beforesitechange',
-                                 function() bc = bc + 1 end)
   local listener = app.events:on('sitechange',
                                  function() c = c + 1 end)
 
-  assert(bc == 0)
   assert(c == 0)
   local a = Sprite(32, 32)
   expect_eq(a, app.activeSprite)
-  expect_eq(1, bc)
   expect_eq(1, c)
 
   local b = Sprite(32, 32)
   expect_eq(b, app.activeSprite)
-  expect_eq(2, bc)
   expect_eq(2, c)
 
   app.activeSprite = a
-  expect_eq(3, bc)
   expect_eq(3, c)
 
   app.events:off(listener)
-  app.events:off(beforeListener)
 
   app.activeSprite = b
-  expect_eq(3, bc)
   expect_eq(3, c)
 end
 
 -- Alternate version of the events test to ensure proper observer disconnection
 do
-  local bc = 0
   local c = 0
-  local beforeListener = app.events:on('beforesitechange',
-                                 function() bc = bc + 1 end)
   local listener = app.events:on('sitechange',
                                  function() c = c + 1 end)
 
-  assert(bc == 0)
   assert(c == 0)
   local a = Sprite(32, 32)
   expect_eq(a, app.activeSprite)
-  expect_eq(1, bc)
   expect_eq(1, c)
-
-  app.events:off(beforeListener)
 
   local b = Sprite(32, 32)
   expect_eq(b, app.activeSprite)
-  expect_eq(1, bc)
   expect_eq(2, c)
 
   app.activeSprite = a
-  expect_eq(1, bc)
   expect_eq(3, c)
 
   app.events:off(listener)
 
   app.activeSprite = b
-  expect_eq(1, bc)
   expect_eq(3, c)
 end
 

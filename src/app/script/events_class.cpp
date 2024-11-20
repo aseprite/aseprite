@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2023  Igara Studio S.A.
+// Copyright (C) 2021-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -34,10 +34,13 @@
 #include <map>
 #include <memory>
 
+// This event was disabled temporarily until we debug some cases.
+//#define ENABLE_BEFORE_SITE_CHANGE_EVENT 1
+
 // This event was disabled because it can be triggered in a background thread
 // when any effect (e.g. like Replace Color or Convolution Matrix) is running.
 // And running script code in a background is not supported.
-//#define ENABLE_REMAP_TILESET_EVENT
+//#define ENABLE_REMAP_TILESET_EVENT 1
 
 namespace app {
 namespace script {
@@ -173,8 +176,10 @@ public:
   EventType eventType(const char* eventName) const override {
     if (std::strcmp(eventName, "sitechange") == 0)
       return SiteChange;
+#if ENABLE_BEFORE_SITE_CHANGE_EVENT
     else if (std::strcmp(eventName, "beforesitechange") == 0)
       return BeforeSiteChange;
+#endif
     else if (std::strcmp(eventName, "fgcolorchange") == 0)
       return FgColorChange;
     else if (std::strcmp(eventName, "bgcolorchange") == 0)
