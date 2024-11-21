@@ -24,7 +24,6 @@
 #include <cmath>
 #include <limits>
 #include <vector>
-#include <array>
 
 namespace doc {
 
@@ -191,46 +190,60 @@ std::vector<gfx::Point> Grid::tilesInCanvasRegion(const gfx::Region& rgn) const
   return result;
 }
 
+Grid::IsometricGuide::IsometricGuide(const gfx::Size& sz)
+{
+  evenWidth = !(sz.w & 1);
+  evenHeight = !(sz.h & 1);
+  evenHalfWidth = !((sz.w/2) & 1);
+  evenHalfHeight = !((sz.h/2) & 1);
+  squareRatio = ABS(sz.w-sz.h) <= 1;
+
+  oddSize = !evenWidth && evenHalfWidth &&
+            !evenHeight && evenHalfHeight;
+
+  // TODO: add 'share edges' checkbox to UI.
+  // For testing the option, set this 'false' to 'true'
+  shareEdges = !(false && !squareRatio && evenHeight);
+
+  start.x = 0;
+  start.y = std::round(sz.h*0.5);
+  end.x = sz.w/2;
+  end.y = sz.h;
+
+  if (!squareRatio) {
+    if (evenWidth) {
+      end.x--;
+    }
+    else if (oddSize) {
+      start.x--;
+      end.x++;
+    }
+  }
+  if (!shareEdges) {
+    start.y++;
+  }
+}
+
 static void push_isometric_line_point(int x,
                                       int y,
                                       std::vector<gfx::Point>* data)
 {
   if (data->empty() || data->back().y != y) {
+    x *= x >= 0;
     data->push_back(gfx::Point(x, y));
   }
-};
-
-std::array<gfx::Point, 3> Grid::getIsometricLinePoints() const
-{
-  int x = 0;
-  int y = std::round(m_tileSize.h*0.5);
-  int dx = m_tileSize.w/2;
-  int dy = m_tileSize.h;
-
-  bool x_uneven = (m_tileSize.w & 1) || (dx & 1);
-  bool y_uneven = (m_tileSize.h & 1) || (y  & 1);
-
-  dx -= x_uneven ^ y_uneven;
-  y -= m_tileSize.w & 1;
-  x -= m_tileSize.w & 1;
-
-  return {
-    gfx::Point(x, y),
-    gfx::Point(dx, dy),
-    gfx::Point(m_tileSize.w - x_uneven,
-               m_tileSize.h - y_uneven)
-  };
 }
 
-std::vector<gfx::Point> Grid::getIsometricLine(void) const
+std::vector<gfx::Point> Grid::getIsometricLine(const gfx::Size& sz)
 {
   std::vector<gfx::Point> result;
-  auto pts = getIsometricLinePoints();
+  auto guide = IsometricGuide(sz);
 
   // We use the line drawing algorithm to find the points
   // for a single pixel-precise line
   doc::algo_line_continuous_with_fix_for_line_brush(
-    pts[0].x, pts[0].y, pts[1].x, pts[1].y,
+    guide.start.x, guide.start.y,
+    guide.end.x, guide.end.y,
     &result, (doc::AlgoPixel) &push_isometric_line_point);
 
   return result;

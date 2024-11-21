@@ -1203,9 +1203,11 @@ void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gr
     int dx = std::round(grid.w*pix.w);
     int dy = std::round(grid.h*pix.h);
 
+    auto guide = doc::Grid::IsometricGuide(grid.size());
+
     // Diamonds share a side when their size is uneven
-    dx -= pix.w * (grid.w & 1);
-    dy -= pix.h * (grid.h & 1);
+    dx -= pix.w * !guide.evenWidth;
+    dy -= pix.h * !guide.evenHeight;
 
     if (dx < 2) dx = 2;
     if (dy < 2) dy = 2;
@@ -1242,7 +1244,6 @@ void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gr
       // Get length and direction of line (a, b)
       PointF vto = b-a;
       PointF ivto = PointF(-vto.x, vto.y);
-      double lenF = sqrt(vto.x*vto.x + vto.y*vto.y);
 
       // Now displace point (b) to right edge of canvas
       b = a+PointF(dx*0.5, -dy*0.5);
@@ -1258,9 +1259,7 @@ void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gr
 
       // Calculate how much we need to stretch
       // line (a, b) to cover the whole canvas
-      double len = std::round(left.x/lenF) + std::round(dx/lenF);
-      len += 1*(grid.x > 0) + 1*(grid.y > 0) + 2;
-
+      double len = (x2-x1) + (y2-y1);
       vto.x = std::round(vto.x*len);
       vto.y = std::round(vto.y*len);
       ivto.x = std::round(ivto.x*len);
@@ -1305,7 +1304,7 @@ gfx::Path& Editor::getIsometricGridPath(Rect& grid)
     // Prepare bitmap from points of pixel precise line.
     // A single grid cell is calculated from these
     im->clear(0x00);
-    for (auto p : getSite().grid().getIsometricLine())
+    for (auto p : doc::Grid::getIsometricLine(grid.size()))
       im->fillRect(
         std::round(p.x*pix.w),
         std::round((grid.h-p.y)*pix.h),

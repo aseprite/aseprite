@@ -32,7 +32,7 @@ static void snap_isometric_line(ToolLoop* loop,
                    kLineBrushType);
 
   // TODO: rectangles and ellipses
-  if (lineCtl && ! loop->getIntertwine()->snapByAngle()) {
+  if (lineCtl && !loop->getIntertwine()->snapByAngle()) {
     return;
   }
 
@@ -41,51 +41,74 @@ static void snap_isometric_line(ToolLoop* loop,
   double len = ABS(vto.x) + ABS(vto.y);
   vto /= len;
 
-  // Offset vertical lines/single point one pixel left for line tool.
+  const gfx::Rect& grid = loop->getGridBounds();
+  auto line = doc::Grid::IsometricGuide(grid.size());
+
+  // Offset vertical lines/single point to the left for line tool.
   // Because pressing the angle snap key will bypass this function,
   // this makes it so one can selectively apply the offset.
   if ((std::isnan(vto.x) && std::isnan(vto.y)) ||
       (int(vto.x) == 0 && int(vto.y))) {
-    a.x -= lineTool;
-    b.x -= lineTool;
+    int step = 1;
+    if (!line.squareRatio) {
+      step += line.oddSize;
+    }
+    a.x -= step*lineTool;
+    b.x -= step*lineTool;
+  }
+  // Horizontal lines
+  else if (int(vto.y) == 0 && int(vto.x)) {
+    if (vto.x > 0)
+      b.x--;
+    else
+      a.x--;
   }
   // Diagonal lines
   else {
-    // Skip horizontal or cross-cell diagonal lines
-    auto line = loop->getGrid().getIsometricLinePoints();
-    PointF normal(line[1].x, line[0].y);
-    normal /= ABS(normal.x) + ABS(normal.y);
-    const double eps = 0.05;
-    if (ABS(vto.x) < normal.x-eps || ABS(vto.x) > normal.x+eps ||
-        ABS(vto.y) < normal.y-eps || ABS(vto.y) > normal.y+eps)
-      return;
-
     // Adjust start/end point based on line direction and grid size
-    const gfx::Rect& grid = loop->getGridBounds();
-    bool x_even = !(grid.w & 1) && !((grid.w/2) & 1);
-    bool y_even = !(grid.h & 1) && !((grid.h/2) & 1);
-    bool stretch = (line[1].x & 1) && !(grid.w & 1);
-    bool square = ABS(grid.w-grid.h) <= 1;
+    if (!line.squareRatio) {
+      if (vto.x < 0) {
+        a.x -= line.evenWidth;
+        b.x -= 2*line.oddSize;
+      }
+      else {
+        a.x -= 2*line.oddSize;
+        b.x -= line.evenWidth;
+      }
 
-    if (vto.x < 0) {
-      if (square && x_even && y_even)
-        b.y -= SGN(vto.y);
+      // Unticking 'share borders' adds one pixel of distance between edges
+      if (!line.shareEdges) {
+        if (vto.y < 0)
+          a.y--;
+        else
+          b.y--;
+      }
 
-      a.x -= ((y_even|stretch) ? 1: -1) * (x_even);
-      b.x += 1 * (x_even && !y_even && !stretch);
+      // Some line angles do not intertwine in the exact same way
+      // when the order of the two points is inverted, so we try to
+      // detect this edge case and flip the points.
+      //
+      // TODO: this fix only works for two-point lines. Support
+      // for freehand strokes would require changes to intertwiners,
+      // not just the freehand controller itself.
+      if (lineTool && vto.x < 0 && a.x % (grid.w - !line.evenWidth)) {
+        auto tmp = a;
+        a = b;
+        b = tmp;
+      }
     }
     else {
-      if (square && x_even && y_even) {
-        b.x--;
-        b.y -= SGN(vto.y);
+      if (vto.x < 0) {
+        a.x -= line.evenWidth;
+        b.y -= SGN(vto.y) * line.evenHeight;
       }
-      b.x -= !y_even*x_even;
-    }
-
-    if (vto.y < 0) {
-      if (square && x_even && y_even) {
-        a.y--;
-        b.y--;
+      else {
+        b.x -= line.evenWidth;
+        b.y -= SGN(vto.y) * line.evenHeight;
+      }
+      if (vto.y < 0) {
+        a.y -= line.evenHeight;
+        b.y -= line.evenHeight;
       }
     }
   }
