@@ -382,6 +382,7 @@ void FontPopup::recreatePinnedItems()
       m_listBox.insertChild(i++, new FontItem(base::convert_to<FontInfo>(fontInfoStr)));
     }
     m_pinnedSeparator->setVisible(!pinnedFonts.empty());
+    layout();
   }
 }
 
