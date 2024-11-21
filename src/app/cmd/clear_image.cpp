@@ -19,15 +19,16 @@ namespace cmd {
 
 using namespace doc;
 
-ClearImage::ClearImage(Image* image, color_t color)
-  : WithImage(image)
-  , m_color(color)
+ClearImage::ClearImage(Cel* cel, color_t color)
+  : WithCel(cel)
+  , m_color(color), m_frame_copy(cel->frame())
 {
 }
 
 void ClearImage::onExecute()
 {
-  Image* image = this->image();
+  Cel* cel = this->cel();
+  Image* image = cel->image();
 
   ASSERT(!m_copy);
   m_copy.reset(Image::createCopy(image));
@@ -38,7 +39,13 @@ void ClearImage::onExecute()
 
 void ClearImage::onUndo()
 {
-  Image* image = this->image();
+  Cel* cel = this->cel();
+  Image* image = cel->image();
+
+  // Restore frame number of the cel, since it could get displaced
+  // during the removal of the frame
+  if (cel->frame() != m_frame_copy)
+    cel->setFrame(m_frame_copy); 
 
   copy_image(image, m_copy.get());
   m_copy.reset();
