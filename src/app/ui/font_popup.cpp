@@ -114,8 +114,11 @@ private:
     generateThumbnail();
 
     if (m_thumbnail) {
+      const auto* theme = app::skin::SkinTheme::get(this);
       Graphics* g = ev.graphics();
-      g->drawRgbaSurface(m_thumbnail.get(), textWidth()+4, 0);
+      g->drawColoredRgbaSurface(m_thumbnail.get(),
+                                theme->colors.text(),
+                                textWidth()+4, 0);
     }
   }
 
@@ -141,9 +144,8 @@ private:
                                      text::FontStyle(),
                                      FontInfo::Flags::Antialias);
 
-      const gfx::Color color = theme->colors.text();
       doc::ImageRef image =
-        render_text(fontInfoDefSize, text(), color);
+        render_text(fontInfoDefSize, text(), gfx::rgba(0, 0, 0));
       if (!image)
         return;
 
