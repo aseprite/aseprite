@@ -123,6 +123,14 @@ void OpenFileCommand::onExecute(Context* context)
   if (context->isUIAvailable() && m_filename.empty()) {
     base::paths exts = get_readable_extensions();
 
+    auto doc = context->activeDocument();
+    if (m_folder.empty() && doc) {
+      auto filename = doc->filename();
+      if (!filename.empty()) {
+        m_folder = base::get_file_path(filename);
+      }
+    }
+
     // Add backslash as show_file_selector() expected a filename as
     // initial path (and the file part is removed from the path).
     if (!m_folder.empty() && !base::is_path_separator(m_folder[m_folder.size()-1]))
