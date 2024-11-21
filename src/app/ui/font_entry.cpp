@@ -33,6 +33,13 @@ FontEntry::FontFace::FontFace()
 {
 }
 
+void FontEntry::FontFace::onInitTheme(InitThemeEvent& ev)
+{
+  SearchEntry::onInitTheme(ev);
+  if (m_popup)
+    m_popup->initTheme();
+}
+
 bool FontEntry::FontFace::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {

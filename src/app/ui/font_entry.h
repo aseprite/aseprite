@@ -46,6 +46,7 @@ namespace app {
       FontFace();
       obs::signal<void(const FontInfo&, From)> FontChange;
     protected:
+      void onInitTheme(ui::InitThemeEvent& ev) override;
       bool onProcessMessage(ui::Message* msg) override;
       void onChange() override;
       os::Surface* onGetCloseIcon() const override;
