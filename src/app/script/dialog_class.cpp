@@ -78,6 +78,7 @@ protected:
     if (m_handTool && Editor::activeEditor()) {
       enableHandTool(true);
     }
+    WindowWithHand::onOpen(ev);
   }
 
   void onBeforeClose(CloseEvent& ev) override {
