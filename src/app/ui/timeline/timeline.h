@@ -369,6 +369,7 @@ namespace app {
                                  const Cel* cel);
     void updateDropRange(const gfx::Point& pt);
     void clearClipboardRange();
+    void resetAllRanges();
 
     // The layer of the bottom (e.g. Background layer)
     constexpr layer_t firstLayer() const { return 0; }

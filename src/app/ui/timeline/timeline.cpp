@@ -332,29 +332,26 @@ void Timeline::onThumbnailsPrefChange()
 
 void Timeline::updateUsingEditor(Editor* editor)
 {
-  // TODO if editor == m_editor, avoid doing a lot of extra work here
+  // Selecting the same editor we can go to a fast path.
+  if (editor == m_editor) {
+    // Deselect range.
+    if (!timelinePref().keepSelection())
+      resetAllRanges();
+
+    return;
+  }
 
   m_aniControls.updateUsingEditor(editor);
 
-  DocRange oldRange;
-  if (editor != m_editor) {
-    // Save active m_tagFocusBand into the old focused editor
-    if (m_editor)
-      m_editor->setTagFocusBand(m_tagFocusBand);
-    m_tagFocusBand = -1;
-  }
-  else {
-    oldRange = m_range;
-  }
+  // Save active m_tagFocusBand into the old focused editor
+  if (m_editor)
+    m_editor->setTagFocusBand(m_tagFocusBand);
+  m_tagFocusBand = -1;
 
   detachDocument();
 
-  if (timelinePref().keepSelection())
-    m_range = oldRange;
-  else {
-    // The range is reset in detachDocument()
-    ASSERT(!m_range.enabled());
-  }
+  // The range is reset in detachDocument()
+  ASSERT(!m_range.enabled());
 
   // We always update the editor. In this way the timeline keeps in
   // sync with the active editor.
@@ -365,29 +362,23 @@ void Timeline::updateUsingEditor(Editor* editor)
   m_editor->add_observer(this);
   m_tagFocusBand = m_editor->tagFocusBand();
 
-  Site site;
-  DocView* view = m_editor->getDocView();
-  view->getSite(&site);
+  // Update active doc/sprite/layer/frame
+  m_document = m_editor->document();
+  m_document->add_observer(this);
+  m_sprite = m_editor->sprite();
+  m_layer = m_editor->layer();
 
-  site.document()->add_observer(this);
+  // Re-create the TimelineAdapter.
+  updateTimelineAdapter(false);
+  m_frame = m_adapter->toColFrame(fr_t(m_editor->frame()));
 
-  Doc* app_document = site.document();
-  DocumentPreferences& docPref = Preferences::instance().document(app_document);
-
+  DocumentPreferences& docPref = Preferences::instance().document(m_document);
   m_thumbnailsPrefConn = docPref.thumbnails.AfterChange.connect(
     [this]{ onThumbnailsPrefChange(); });
-
   setZoom(
     docPref.thumbnails.enabled() ?
     docPref.thumbnails.zoom(): 1.0);
 
-  m_document = site.document();
-  m_sprite = site.sprite();
-  m_layer = site.layer();
-
-  updateTimelineAdapter(false);
-
-  m_frame = m_adapter->toColFrame(fr_t(site.frame()));
   m_state = STATE_STANDBY;
   m_hot.part = PART_NOTHING;
   m_clk.part = PART_NOTHING;
@@ -400,12 +391,17 @@ void Timeline::updateUsingEditor(Editor* editor)
   setFocusStop(true);
   regenerateCols();
   regenerateRows();
-  setViewScroll(view->timelineScroll());
+
+  if (DocView* view = m_editor->getDocView())
+    setViewScroll(view->timelineScroll());
+
   showCurrentCel();
 }
 
 void Timeline::detachDocument()
 {
+  resetAllRanges();
+
   if (m_confPopup && m_confPopup->isVisible())
     m_confPopup->closeWindow(nullptr);
 
@@ -418,14 +414,11 @@ void Timeline::detachDocument()
     m_document = nullptr;
   }
 
-  // Reset all pointers to this document, even DocRanges, we don't
-  // want to store a pointer to a layer of a document that we are not
-  // observing anymore (because the document might be deleted soon).
+  // Reset all pointers to this document, we don't want to store a
+  // pointer to a layer of a document that we are not observing
+  // anymore (because the document might be deleted soon).
   m_sprite = nullptr;
   m_layer = nullptr;
-  m_range.clearRange();
-  m_startRange.clearRange();
-  m_dropRange.clearRange();
 
   if (m_editor) {
     if (DocView* view = m_editor->getDocView())
@@ -436,7 +429,6 @@ void Timeline::detachDocument()
   }
 
   m_adapter.reset();
-
   invalidate();
 }
 
@@ -537,6 +529,9 @@ void Timeline::setFrame(col_t frame, bool byUser)
 
 view::RealRange Timeline::realRange() const
 {
+  ASSERT(m_adapter != nullptr);
+  if (!m_adapter)
+    return view::RealRange();
   return view::to_real_range(m_adapter.get(), m_range);
 }
 
@@ -4355,6 +4350,14 @@ void Timeline::clearClipboardRange()
   m_clipboard_timer.stop();
 }
 
+void Timeline::resetAllRanges()
+{
+  invalidateRange();
+  m_range.clearRange();
+  m_startRange.clearRange();
+  m_dropRange.clearRange();
+}
+
 void Timeline::invalidateRange()
 {
   if (m_range.enabled()) {
@@ -4480,8 +4483,8 @@ void Timeline::onNewInputPriority(InputChainElement* element,
 
     if (element != this && m_rangeLocks == 0) {
       if (!Preferences::instance().timeline.keepSelection()) {
+        invalidateRange();
         m_range.clearRange();
-        invalidate();
       }
     }
   }
