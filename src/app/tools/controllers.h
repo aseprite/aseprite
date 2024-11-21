@@ -153,45 +153,16 @@ public:
     stroke[0] = m_first;
     stroke[1] = pt;
 
-    bool isoAngle = false;
+    int snapM = 0;
 
     if ((int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect))) {
-      int dx = stroke[1].x - m_first.x;
-      int dy = stroke[1].y - m_first.y;
-      int minsize = std::min(ABS(dx), ABS(dy));
-      int maxsize = std::max(ABS(dx), ABS(dy));
+      const int dx = stroke[1].x - m_first.x;
+      const int dy = stroke[1].y - m_first.y;
+      const int minsize = std::min(ABS(dx), ABS(dy));
 
       // Lines
       if (loop->getIntertwine()->snapByAngle()) {
-        double angle = 180.0 * std::atan(static_cast<double>(-dy) /
-                                         static_cast<double>(dx)) / PI;
-        angle = ABS(angle);
-
-        // Snap horizontally
-        if (angle < 18.0) {
-          stroke[1].y = m_first.y;
-        }
-        // Snap at 26.565
-        else if (angle < 36.0) {
-          stroke[1].x = m_first.x + SGN(dx)*maxsize;
-          stroke[1].y = m_first.y + SGN(dy)*maxsize/2;
-          isoAngle = true;
-        }
-        // Snap at 45
-        else if (angle < 54.0) {
-          stroke[1].x = m_first.x + SGN(dx)*minsize;
-          stroke[1].y = m_first.y + SGN(dy)*minsize;
-        }
-        // Snap at 63.435
-        else if (angle < 72.0) {
-          stroke[1].x = m_first.x + SGN(dx)*maxsize/2;
-          stroke[1].y = m_first.y + SGN(dy)*maxsize;
-          isoAngle = true;
-        }
-        // Snap vertically
-        else {
-          stroke[1].x = m_first.x;
-        }
+        snapM = doc::algo_line_snap_endpoint(&stroke[1].x, &stroke[1].y, m_first.x, m_first.y, stroke[1].x, stroke[1].y);
       }
       // Rectangles and ellipses
       else {
@@ -209,12 +180,24 @@ public:
       stroke[1].y = m_center.y + ry;
     }
     else if ((int(loop->getModifiers()) & int(ToolLoopModifiers::kFromCenter))) {
-      int rx = stroke[1].x - m_first.x;
-      int ry = stroke[1].y - m_first.y;
-      stroke[0].x = m_first.x - rx + (isoAngle && ABS(rx) > ABS(ry) ? SGN(rx)*(rx & 1): 0);
-      stroke[0].y = m_first.y - ry + (isoAngle && ABS(rx) < ABS(ry) ? SGN(ry)*(ry & 1): 0);
-      stroke[1].x = m_first.x + rx;
-      stroke[1].y = m_first.y + ry;
+      const int rx = stroke[1].x - stroke[0].x;
+      const int ry = stroke[1].y - stroke[0].y;
+      if (snapM == 0 || snapM == INT_MAX) {
+        stroke[0].x -= rx;
+        stroke[0].y -= ry;
+      }
+      else {
+        if (std::abs(rx) >= std::abs(ry)) {
+          const int c = std::abs(rx) / snapM;
+          stroke[0].x -= SGN(rx) * c * snapM;
+          stroke[0].y -= SGN(ry) * c;
+        }
+        else {
+          const int c = std::abs(ry) / snapM;
+          stroke[0].x -= SGN(rx) * c;
+          stroke[0].y -= SGN(ry) * c * snapM;
+        }
+      }
     }
 
     // Adjust points for selection like tools (so we can select tiles)
