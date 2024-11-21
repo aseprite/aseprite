@@ -129,12 +129,14 @@ SpritePosition CmdTransaction::calcSpritePosition() const
 
 bool CmdTransaction::isDocRangeEnabled() const
 {
-  return context()->range().enabled();
+  return (context() ? context()->range().enabled():
+                      false);
 }
 
 view::RealRange CmdTransaction::calcDocRange() const
 {
-  return context()->range();
+  return (context() ? context()->range():
+                      view::RealRange());
 }
 
 } // namespace app
