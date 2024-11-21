@@ -9,7 +9,6 @@
 #endif
 
 #include "app/cmd/layer_from_background.h"
-
 #include "app/cmd/set_layer_flags.h"
 #include "app/cmd/set_layer_name.h"
 #include "doc/layer.h"
@@ -32,8 +31,12 @@ LayerFromBackground::LayerFromBackground(Layer* layer)
   LayerFlags newFlags = LayerFlags(int(layer->flags())
     & ~int(LayerFlags::BackgroundLayerFlags));
 
+  layer->setBgPrevName(layer->name());
+
   add(new cmd::SetLayerFlags(layer, newFlags));
-  add(new cmd::SetLayerName(layer, "Layer 0"));
+
+  // set previous set layer name before layer got changed to background
+  add(new cmd::SetLayerName(layer, layer->prevName()));
 }
 
 } // namespace cmd
