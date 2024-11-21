@@ -95,6 +95,7 @@ MainWindow::MainWindow()
 #endif
 {
   enableFlags(ALLOW_DROP);
+  setNeedsTabletPressure(true);
 }
 
 // This 'initialize' function is a way to split the creation of the

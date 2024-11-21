@@ -66,6 +66,8 @@ public:
     : WindowWithHand(type, text)
     , m_handTool(false)
   {
+    // As scripts can receive the "pressure" information.
+    setNeedsTabletPressure(true);
   }
 
   // Enables the Hand tool in the active editor.

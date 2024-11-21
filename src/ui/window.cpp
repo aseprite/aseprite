@@ -122,6 +122,8 @@ Window::Window(Type type, const std::string& text)
   , m_isWantFocus(true)
   , m_isForeground(false)
   , m_isAutoRemap(true)
+  , m_isResizing(false)
+  , m_needsTabletPressure(false)
 {
   setVisible(false);
   setAlign(LEFT | MIDDLE);

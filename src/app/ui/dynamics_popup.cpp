@@ -222,6 +222,8 @@ DynamicsPopup::DynamicsPopup(Delegate* delegate)
   , m_ditheringSel(new DitheringSelector(DitheringSelector::SelectMatrix))
   , m_fromTo(tools::ColorFromTo::BgToFg)
 {
+  setNeedsTabletPressure(true);
+
   m_dynamics->stabilizer()->Click.connect(
     [this](){
       if (m_dynamics->stabilizer()->isSelected()) {

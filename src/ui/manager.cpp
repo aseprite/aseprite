@@ -1394,6 +1394,11 @@ void Manager::_openWindow(Window* window, bool center)
         spec.parent(parentDisplay->nativeWindow());
       }
 
+#if LAF_WINDOWS
+      // Just in case we'll try to avoid using WinTab at all costs.
+      spec.useTabletOptions(window->needsTabletPressure());
+#endif
+
       os::WindowRef newNativeWindow = os::System::instance()->makeWindow(spec);
       ui::Display* newDisplay = new ui::Display(parentDisplay, newNativeWindow, window);
 
