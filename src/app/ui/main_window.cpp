@@ -421,7 +421,8 @@ void MainWindow::onResize(ui::ResizeEvent& ev)
 
 void MainWindow::onBeforeViewChange()
 {
-  UIContext::instance()->notifyBeforeActiveSiteChanged();
+  if (!getDocView())
+    UIContext::instance()->notifyBeforeActiveSiteChanged();
 }
 
 // When the active view is changed from methods like
