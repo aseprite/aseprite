@@ -266,7 +266,8 @@ void Context::onAddDocument(Doc* doc)
   if (m_activeSiteHandler)
     m_activeSiteHandler->addDoc(doc);
 
-  notifyActiveSiteChanged();
+  if (m_activeSiteHandler || !isUIAvailable())
+    notifyActiveSiteChanged();
 }
 
 void Context::onBeforeRemoveDocument(Doc* doc)
