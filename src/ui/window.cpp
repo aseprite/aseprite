@@ -723,6 +723,26 @@ void Window::onBuildTitleLabel()
   }
 }
 
+void trimTitleLabelBounds(Window* window)
+{
+  Widget* titleLabel = nullptr;
+  int mostLeftMiniButtonX = window->bounds().x2();
+  for (auto child : window->children()) {
+    if (child->type() == WidgetType::kWindowTitleLabelWidget)
+      titleLabel = child;
+    else if (child->isDecorative() && child->type() != WidgetType::kWindowTitleLabelWidget &&
+             child->bounds().x < mostLeftMiniButtonX)
+      mostLeftMiniButtonX = child->bounds().x;
+  }
+  if (!titleLabel)
+    return;
+  gfx::Rect newBounds(titleLabel->bounds());
+  newBounds.w = (titleLabel->bounds().x2() > mostLeftMiniButtonX ?
+                   mostLeftMiniButtonX - titleLabel->bounds().x :
+                   titleLabel->bounds().w);
+  titleLabel->setBounds(newBounds);
+}
+
 void Window::windowSetPosition(const gfx::Rect& rect)
 {
   m_isResizing = (bounds().size() != rect.size());
@@ -738,6 +758,12 @@ void Window::windowSetPosition(const gfx::Rect& rect)
     else
       child->setBounds(cpos);
   }
+
+  // Title label bounds adjustment due to decorative buttons.
+  // This trim should be done after all decorative widgets have
+  // their final position. It has been seen that it's not convenient
+  // to do it before this point.
+  trimTitleLabelBounds(this);
 
   onWindowResize();
   m_isResizing = false;
