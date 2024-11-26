@@ -20,7 +20,8 @@ namespace ui {
   public:
     DragEvent(Component* source, ui::Widget* target, os::DragEvent& ev)
       : Event(source)
-      , m_position(ev.position() - target->bounds().origin())
+      , m_position((target ? ev.position() - target->bounds().origin()
+                           : ev.position()))
       , m_ev(ev) {}
 
     bool handled() const { return m_handled; }
