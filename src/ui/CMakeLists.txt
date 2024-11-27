@@ -25,6 +25,7 @@ add_library(ui-lib
   int_entry.cpp
   intern.cpp
   label.cpp
+  layer.cpp
   link_label.cpp
   listbox.cpp
   listitem.cpp
@@ -33,8 +34,6 @@ add_library(ui-lib
   message.cpp
   message_loop.cpp
   move_region.cpp
-  overlay.cpp
-  overlay_manager.cpp
   paint.cpp
   paint_event.cpp
   panel.cpp

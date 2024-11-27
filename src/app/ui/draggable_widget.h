@@ -10,10 +10,10 @@
 
 #include "os/surface.h"
 #include "os/system.h"
+#include "ui/display.h"
 #include "ui/graphics.h"
+#include "ui/layer.h"
 #include "ui/message.h"
-#include "ui/overlay.h"
-#include "ui/overlay_manager.h"
 #include "ui/paint_event.h"
 #include "ui/system.h"
 #include "ui/view.h"
@@ -27,15 +27,15 @@ public:
   DraggableWidget(Args...args) : Base(args...) { }
 
   ~DraggableWidget() {
-    if (m_floatingOverlay)
-      destroyFloatingOverlay();
+    if (m_floatingUILayer)
+      destroyFloatingUILayer();
   }
 
   bool onProcessMessage(ui::Message* msg) override {
     switch (msg->type()) {
 
       case ui::kSetCursorMessage:
-        if (m_floatingOverlay) {
+        if (m_floatingUILayer) {
           const ui::MouseMessage* mouseMsg = static_cast<ui::MouseMessage*>(msg);
           const gfx::Point mousePos = mouseMsg->position();
           if (onCanDropItemsOutside() &&
@@ -58,7 +58,7 @@ public:
           const gfx::Point mousePos = mouseMsg->position();
           m_dragMousePos = mousePos;
           m_floatingOffset = mouseMsg->position() - this->bounds().origin();
-          m_createFloatingOverlay = true;
+          m_createFloatingUILayer = true;
         }
         return result;
       }
@@ -67,16 +67,20 @@ public:
         const ui::MouseMessage* mouseMsg = static_cast<ui::MouseMessage*>(msg);
         const gfx::Point mousePos = mouseMsg->position();
 
-        if (this->hasCapture() && m_createFloatingOverlay) {
+        if (this->hasCapture() && m_createFloatingUILayer) {
           if (this->manager()->pick(mousePos) != this) {
-            m_createFloatingOverlay = false;
-            if (!m_floatingOverlay)
-              createFloatingOverlay();
+            m_createFloatingUILayer = false;
+            if (!m_floatingUILayer)
+              createFloatingUILayer();
           }
         }
 
-        if (m_floatingOverlay) {
-          m_floatingOverlay->moveOverlay(mousePos - m_floatingOffset);
+        if (m_floatingUILayer) {
+          ui::Display* display = this->Base::display();
+
+          display->dirtyRect(m_floatingUILayer->bounds());
+          m_floatingUILayer->setPosition(mousePos - m_floatingOffset);
+          display->dirtyRect(m_floatingUILayer->bounds());
 
           bool inside = true;
           if (onCanDropItemsOutside()) {
@@ -104,17 +108,17 @@ public:
         const ui::MouseMessage* mouseMsg = static_cast<ui::MouseMessage*>(msg);
         const gfx::Point mousePos = mouseMsg->position();
 
-        m_wasDragged = (this->hasCapture() && m_floatingOverlay);
+        m_wasDragged = (this->hasCapture() && m_floatingUILayer);
         const bool result = Base::onProcessMessage(msg);
 
         if (!this->hasCapture()) {
-          if (m_floatingOverlay) {
-            destroyFloatingOverlay();
-            ASSERT(!m_createFloatingOverlay);
+          if (m_floatingUILayer) {
+            destroyFloatingUILayer();
+            ASSERT(!m_createFloatingUILayer);
             onFinalDrop(getParentBounds().contains(mousePos));
           }
-          else if (m_createFloatingOverlay)
-            m_createFloatingOverlay = false;
+          else if (m_createFloatingUILayer)
+            m_createFloatingUILayer = false;
         }
 
         m_wasDragged = false;
@@ -135,12 +139,12 @@ public:
 
 private:
 
-  void createFloatingOverlay() {
-    ASSERT(!m_floatingOverlay);
+  void createFloatingUILayer() {
+    ASSERT(!m_floatingUILayer);
 
     m_isDragging = true;
 
-    gfx::Size sz = getFloatingOverlaySize();
+    gfx::Size sz = floatingUILayerSizeHint();
     sz.w = std::max(1, sz.w);
     sz.h = std::max(1, sz.h);
     os::SurfaceRef surface = os::System::instance()->makeRgbaSurface(sz.w, sz.h);
@@ -157,22 +161,24 @@ private:
     {
       ui::Graphics g(display, surface, 0, 0);
       g.setFont(this->font());
-      drawFloatingOverlay(g);
+
+      // Draw this widget on the UILayer surface
+      ui::PaintEvent ev(this, &g);
+      this->onPaint(ev);
     }
 
-    m_floatingOverlay = base::make_ref<ui::Overlay>(
-      display, surface, gfx::Point(),
-      (ui::Overlay::ZOrder)(ui::Overlay::MouseZOrder-1));
-    ui::OverlayManager::instance()->addOverlay(m_floatingOverlay);
+    m_floatingUILayer = ui::UILayer::Make();
+    m_floatingUILayer->setSurface(surface);
+    display->addLayer(m_floatingUILayer);
   }
 
-  void destroyFloatingOverlay() {
-    ui::OverlayManager::instance()->removeOverlay(m_floatingOverlay);
-    m_floatingOverlay.reset();
+  void destroyFloatingUILayer() {
+    this->Base::display()->removeLayer(m_floatingUILayer);
+    m_floatingUILayer.reset();
     m_isDragging = false;
   }
 
-  gfx::Size getFloatingOverlaySize() {
+  gfx::Size floatingUILayerSizeHint() const {
     auto view = ui::View::getView(this->parent());
     if (view)
       return (view->viewportBounds().offset(view->viewScroll()) & this->bounds()).size();
@@ -195,18 +201,13 @@ private:
       return view->updateView();
   }
 
-  void drawFloatingOverlay(ui::Graphics& g) {
-    ui::PaintEvent ev(this, &g);
-    this->onPaint(ev);
-  }
-
   virtual bool onCanDropItemsOutside() { return true; }
   virtual void onReorderWidgets(const gfx::Point& mousePos, bool inside) { }
   virtual void onFinalDrop(bool inside) { }
 
-  // True if we should create the floating overlay after leaving the
+  // True if we should create the floating UILayer after leaving the
   // widget bounds.
-  bool m_createFloatingOverlay = false;
+  bool m_createFloatingUILayer = false;
 
   bool m_isDragging = false;
 
@@ -219,9 +220,9 @@ private:
   // Initial mouse position when we start the dragging process.
   gfx::Point m_dragMousePos;
 
-  // Overlay used to show the floating widget (this overlay floats
-  // next to the mouse cursor).
-  ui::OverlayRef m_floatingOverlay;
+  // UILayer used to show the floating widget (this layer floats next
+  // to the mouse cursor).
+  ui::UILayerRef m_floatingUILayer;
 
   // Relative mouse position between the widget and the overlay.
   gfx::Point m_floatingOffset;

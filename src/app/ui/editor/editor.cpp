@@ -1062,12 +1062,14 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
   Region screenRegion;
   getDrawableRegion(screenRegion, kCutTopWindows);
 
-  ScreenGraphics screenGraphics(display());
+  Display* display = this->display();
+  // TODO clip the editorGraphics directly
+  Graphics backGraphics(display, display->backLayer()->surface(), 0, 0);
   GraphicsPtr editorGraphics = getGraphics(clientBounds());
 
   for (const Rect& updateRect : updateRegion) {
     for (const Rect& screenRect : screenRegion) {
-      IntersectClip clip(&screenGraphics, screenRect);
+      IntersectClip clip(&backGraphics, screenRect);
       if (clip)
         drawSpriteUnclippedRect(editorGraphics.get(), updateRect);
     }

@@ -90,6 +90,13 @@ bool Graphics::clipRect(const gfx::Rect& rc)
   return m_surface->clipRect(gfx::Rect(rc).offset(m_dx, m_dy));
 }
 
+void Graphics::clipRegion(const gfx::Region& rgn)
+{
+  gfx::Region tmp(rgn);
+  tmp.offset(m_dx, m_dy);
+  m_surface->clipRegion(tmp);
+}
+
 void Graphics::save()
 {
   m_surface->save();
@@ -344,6 +351,7 @@ void Graphics::drawText(const std::string& str,
                         text::DrawTextDelegate* delegate,
                         text::ShaperFeatures features)
 {
+  ASSERT(m_font);
   if (str.empty())
     return;
 
@@ -387,6 +395,7 @@ public:
     , m_font(font)
     , m_mnemonic(std::tolower(mnemonic))
     , m_underscoreColor(gfx::ColorNone) {
+    ASSERT(m_font);
   }
 
   gfx::Rect bounds() const { return m_bounds; }
@@ -449,6 +458,7 @@ private:
 void Graphics::drawUIText(const std::string& str, gfx::Color fg, gfx::Color bg,
                           const gfx::Point& pt, const int mnemonic)
 {
+  ASSERT(m_font);
   if (str.empty())
     return;
 
@@ -471,6 +481,7 @@ void Graphics::drawAlignedUIText(const std::string& str, gfx::Color fg, gfx::Col
 
 gfx::Size Graphics::measureText(const std::string& str)
 {
+  ASSERT(m_font);
   return gfx::Size(m_font->textLength(str),
                    m_font->height());
 }
@@ -483,6 +494,8 @@ gfx::Size Graphics::fitString(const std::string& str, int maxWidth, int align)
 
 gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Rect& rc, int align, bool draw)
 {
+  ASSERT(m_font);
+
   gfx::Point pt(0, rc.y);
 
   if ((align & (MIDDLE | BOTTOM)) != 0) {
@@ -621,22 +634,9 @@ void Graphics::invalidate(const gfx::Rect& bounds)
 void Graphics::dirty(const gfx::Rect& bounds)
 {
   gfx::Rect rc = m_surface->getClipBounds();
-  rc = rc.createIntersection(bounds);
+  rc &= bounds;
   if (!rc.isEmpty())
     m_dirtyBounds |= rc;
-}
-
-//////////////////////////////////////////////////////////////////////
-// ScreenGraphics
-
-ScreenGraphics::ScreenGraphics(Display* display)
-  : Graphics(display, base::AddRef(display->surface()), 0, 0)
-{
-  setFont(get_theme()->getDefaultFont());
-}
-
-ScreenGraphics::~ScreenGraphics()
-{
 }
 
 } // namespace ui

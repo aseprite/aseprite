@@ -359,11 +359,6 @@ void Window::centerWindow(Display* parentDisplay)
                        windowSize.w, windowSize.h));
 }
 
-void Window::moveWindow(const gfx::Rect& rect)
-{
-  moveWindow(rect, true);
-}
-
 void Window::expandWindow(const gfx::Size& size)
 {
   const gfx::Rect oldBounds = bounds();
@@ -887,7 +882,7 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
 
     // Move the window's graphics
     Display* display = this->display();
-    ScreenGraphics g(display);
+    Graphics g(display, display->backLayer()->surface(), 0, 0);
     hide_mouse_cursor();
     {
       IntersectClip clip(&g, man_pos);
@@ -902,6 +897,7 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
     invalidateRegion(reg1);
   }
 
+  // We invalidate the old region of the window.
   manager->invalidateRegion(invalidManagerRegion);
 
   onWindowMovement();

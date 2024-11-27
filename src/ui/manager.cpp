@@ -292,13 +292,6 @@ void Manager::run()
 
 void Manager::flipAllDisplays()
 {
-  OverlayManager* overlays = OverlayManager::instance();
-
-  update_cursor_overlay();
-
-  // Draw overlays.
-  overlays->drawOverlays();
-
   m_display.flipDisplay();
   if (get_multiple_displays()) {
     for (auto child : children()) {
@@ -1786,6 +1779,9 @@ void Manager::onNewDisplayConfiguration(Display* display)
   if (!display->nativeWindow())
     return;
 
+  // Create/update the back layer surface of the display.
+  display->configureBackLayer();
+
   _internal_set_mouse_display(display);
   container->invalidate();
   container->flushRedraw();
@@ -1974,11 +1970,11 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
     PaintMessage* paintMsg = static_cast<PaintMessage*>(msg);
     Display* display = paintMsg->display();
 
-    // TODO use paintMsg->display() here
-    // Restore overlays in the region that we're going to paint.
-    OverlayManager::instance()->restoreOverlappedAreas(paintMsg->rect());
+    // Paint in the back layer surface by default.
+    const os::SurfaceRef surface = display->backLayer()->surface();
+    if (!surface)
+      return false;
 
-    os::SurfaceRef surface(base::AddRef(display->surface()));
     surface->saveClip();
 
     if (surface->clipRect(paintMsg->rect())) {

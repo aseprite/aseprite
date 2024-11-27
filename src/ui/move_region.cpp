@@ -13,8 +13,6 @@
 
 #include "os/surface.h"
 #include "os/system.h"
-#include "os/window.h"
-#include "ui/overlay_manager.h"
 
 #include <vector>
 
@@ -28,18 +26,8 @@ void move_region(Display* display, const Region& region, int dx, int dy)
   if (!display)
     return;
 
-  os::Window* window = display->nativeWindow();
-  ASSERT(window);
-  if (!window)
-    return;
-
-  auto overlays = ui::OverlayManager::instance();
-  gfx::Rect bounds = region.bounds();
-  bounds |= gfx::Rect(bounds).offset(dx, dy);
-  overlays->restoreOverlappedAreas(bounds);
-
-  os::Surface* surface = window->surface();
-  os::SurfaceLock lock(surface);
+  os::SurfaceRef surface = display->backLayer()->surface();
+  os::SurfaceLock lock(surface.get());
 
   // Fast path, move one rectangle.
   if (region.isRect()) {
@@ -94,8 +82,6 @@ void move_region(Display* display, const Region& region, int dx, int dy)
       display->dirtyRect(rc);
     }
   }
-
-  overlays->drawOverlays();
 }
 
 } // namespace ui

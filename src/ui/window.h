@@ -49,7 +49,6 @@ namespace ui {
 
     void remapWindow();
     void centerWindow(Display* parentDisplay = nullptr);
-    void moveWindow(const gfx::Rect& rect);
 
     // Expands or shrink the window to the given side (generally sizeHint())
     void expandWindow(const gfx::Size& size);

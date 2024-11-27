@@ -59,7 +59,6 @@ Tabs::Tabs(TabsDelegate* delegate)
   , m_dragCopy(false)
   , m_dragTab(nullptr)
   , m_floatingTab(nullptr)
-  , m_floatingOverlay(nullptr)
   , m_dropNewTab(nullptr)
   , m_dropNewIndex(-1)
 {
@@ -336,12 +335,17 @@ bool Tabs::onProcessMessage(Message* msg)
                 this, m_selected->view, screenPos);
 
             if (result != DropViewPreviewResult::DROP_IN_TABS) {
-              if (!m_floatingOverlay)
-                createFloatingOverlay(m_selected.get());
-              m_floatingOverlay->moveOverlay(mousePos - m_floatingOffset);
+              // First time? Create the UILayer for the floating tab
+              if (!m_floatingUILayer)
+                createFloatingUILayer(m_selected.get());
+              else // In other case dirty the old position of the layer
+                display()->dirtyRect(m_floatingUILayer->bounds());
+
+              m_floatingUILayer->setPosition(mousePos - m_floatingOffset);
+              display()->dirtyRect(m_floatingUILayer->bounds());
             }
             else {
-              destroyFloatingOverlay();
+              destroyFloatingUILayer();
             }
           }
           else {
@@ -986,9 +990,9 @@ void Tabs::startRemoveDragTabAnimation()
   startAnimation(ANI_REMOVING_TAB, ANI_REMOVING_TAB_TICKS);
 }
 
-void Tabs::createFloatingOverlay(Tab* tab)
+void Tabs::createFloatingUILayer(Tab* tab)
 {
-  ASSERT(!m_floatingOverlay);
+  ASSERT(!m_floatingUILayer);
 
   ui::Display* display = this->display();
   os::SurfaceRef surface = os::System::instance()
@@ -1010,15 +1014,14 @@ void Tabs::createFloatingOverlay(Tab* tab)
 
   surface->setImmutable();
 
-  m_floatingOverlay = base::make_ref<ui::Overlay>(
-    display, surface, gfx::Point(),
-    (ui::Overlay::ZOrder)(Overlay::MouseZOrder-1));
-  OverlayManager::instance()->addOverlay(m_floatingOverlay);
+  m_floatingUILayer = UILayer::Make();
+  m_floatingUILayer->setSurface(surface);
+  display->addLayer(m_floatingUILayer);
 }
 
 void Tabs::destroyFloatingTab()
 {
-  destroyFloatingOverlay();
+  destroyFloatingUILayer();
 
   if (m_floatingTab) {
     TabPtr tab(m_floatingTab);
@@ -1035,12 +1038,13 @@ void Tabs::destroyFloatingTab()
   }
 }
 
-void Tabs::destroyFloatingOverlay()
+void Tabs::destroyFloatingUILayer()
 {
-  if (m_floatingOverlay) {
-    OverlayManager::instance()->removeOverlay(m_floatingOverlay);
-    m_floatingOverlay.reset();
+  ui::Display* display = this->display();
+  if (display && m_floatingUILayer) {
+    display->removeLayer(m_floatingUILayer);
   }
+  m_floatingUILayer.reset();
 }
 
 void Tabs::updateMouseCursor()

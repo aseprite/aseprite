@@ -12,6 +12,7 @@
 #include "base/ref.h"
 #include "text/fwd.h"
 #include "ui/animated_widget.h"
+#include "ui/layer.h"
 #include "ui/widget.h"
 
 #include <memory>
@@ -19,7 +20,6 @@
 
 namespace ui {
   class Graphics;
-  class Overlay;
 }
 
 namespace app {
@@ -214,9 +214,9 @@ namespace app {
     gfx::Rect getTabBounds(Tab* tab);
     void startReorderTabsAnimation();
     void startRemoveDragTabAnimation();
-    void createFloatingOverlay(Tab* tab);
+    void createFloatingUILayer(Tab* tab);
     void destroyFloatingTab();
-    void destroyFloatingOverlay();
+    void destroyFloatingUILayer();
     void updateMouseCursor();
     void updateDragTabIndexes(int mouseX, bool force_animation);
     void updateDragCopyCursor(ui::Message* msg);
@@ -295,14 +295,14 @@ namespace app {
     // location).
     TabPtr m_floatingTab;
 
-    // Overlay used to show the floating tab outside the Tabs widget
-    // (this overlay floats next to the mouse cursor).  It's destroyed
+    // UILayer used to show the floating tab outside the Tabs widget
+    // (this layer floats next to the mouse cursor).  It's destroyed
     // and recreated every time the tab is put inside or outside the
     // Tabs widget.
-    base::Ref<ui::Overlay> m_floatingOverlay;
+    ui::UILayerRef m_floatingUILayer;
 
     // Relative mouse position inside the m_dragTab (used to adjust
-    // the m_floatingOverlay precisely).
+    // the m_floatingUILayer precisely).
     gfx::Point m_floatingOffset;
 
     ////////////////////////////////////////

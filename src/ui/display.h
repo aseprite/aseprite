@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -12,6 +12,7 @@
 #include "gfx/region.h"
 #include "gfx/size.h"
 #include "os/window.h"
+#include "ui/layer.h"
 
 #include <vector>
 
@@ -31,7 +32,13 @@ namespace ui {
 
     Display* parentDisplay() { return m_parentDisplay; }
     os::Window* nativeWindow() const { return m_nativeWindow.get(); }
-    os::Surface* surface() const;
+    os::SurfaceRef nativeSurface() const;
+
+    UILayers layers() { return m_layers; }
+    UILayerRef backLayer() { return m_layers.front(); }
+    void addLayer(const UILayerRef& layer);
+    void removeLayer(const UILayerRef& layer);
+    void configureBackLayer();
 
     int scale() const { return m_nativeWindow->scale(); }
     gfx::Size size() const;
@@ -87,6 +94,7 @@ namespace ui {
     os::WindowRef m_nativeWindow;
     Widget* m_containedWidget;      // A ui::Manager or a ui::Window
     std::vector<Window*> m_windows; // Sub-windows in this display
+    UILayers m_layers;              // Layers to paint the surface
     gfx::Region m_invalidRegion;    // Invalid region (we didn't receive paint messages yet for this).
     gfx::Region m_dirtyRegion;      // Region to flip to the os::Display
     gfx::Point m_lastMousePos;

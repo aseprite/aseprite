@@ -22,8 +22,6 @@
 #include "ui/intern.h"
 #include "ui/manager.h"
 #include "ui/message.h"
-#include "ui/overlay.h"
-#include "ui/overlay_manager.h"
 #include "ui/scale.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
@@ -44,40 +42,11 @@ static CursorType mouse_cursor_type = kOutsideDisplay;
 static const Cursor* mouse_cursor_custom = nullptr;
 static const Cursor* mouse_cursor = nullptr;
 static Display* mouse_display = nullptr;
-static OverlayRef mouse_cursor_overlay = nullptr;
 static bool use_native_mouse_cursor = true;
-static bool support_native_custom_cursor = false;
 
 // Mouse information
 static int mouse_cursor_scale = 1;
 static int mouse_scares = 0;
-
-static void update_mouse_overlay(const Cursor* cursor)
-{
-  mouse_cursor = cursor;
-
-  if (mouse_cursor && mouse_scares == 0) {
-    if (!mouse_cursor_overlay) {
-      ASSERT(mouse_display);
-      mouse_cursor_overlay = base::make_ref<Overlay>(
-        mouse_display,
-        mouse_cursor->surface(),
-        mouse_display->nativeWindow()->pointFromScreen(get_mouse_position()),
-        Overlay::MouseZOrder);
-
-      OverlayManager::instance()->addOverlay(mouse_cursor_overlay);
-    }
-    else {
-      mouse_cursor_overlay->setSurface(mouse_cursor->surface());
-      update_cursor_overlay();
-    }
-  }
-  else if (mouse_cursor_overlay) {
-    OverlayManager::instance()->removeOverlay(mouse_cursor_overlay);
-    mouse_cursor_overlay->setSurface(nullptr);
-    mouse_cursor_overlay.reset();
-  }
-}
 
 static bool set_native_cursor_on_all_displays(Display* display,
                                               const Cursor* cursor)
@@ -123,15 +92,7 @@ static bool set_native_cursor_on_all_displays(Display* display,
 
 static bool update_custom_native_cursor(const Cursor* cursor)
 {
-  bool result = false;
-
-  // Check if we can use a custom native mouse in this platform
-  if (support_native_custom_cursor &&
-      mouse_display) {
-    result = set_native_cursor_on_all_displays(mouse_display, cursor);
-  }
-
-  return result;
+  return set_native_cursor_on_all_displays(mouse_display, cursor);
 }
 
 static void update_mouse_cursor()
@@ -196,12 +157,10 @@ static void update_mouse_cursor()
       cursor = mouse_cursor_custom;
   }
 
-  // Try to use a custom native cursor if it's possible
+  // Try to use a custom native cursor if it's possible.
   if (mouse_display &&
-      nativeCursor == os::NativeCursor::Hidden &&
-      !update_custom_native_cursor(cursor)) {
-    // Or an overlay as last resource
-    update_mouse_overlay(cursor);
+      nativeCursor == os::NativeCursor::Hidden) {
+    update_custom_native_cursor(cursor);
   }
 }
 
@@ -223,9 +182,6 @@ UISystem::UISystem()
 
   main_gui_thread = std::this_thread::get_id();
   mouse_cursor_type = kOutsideDisplay;
-  support_native_custom_cursor =
-    (system &&
-     system->hasCapability(os::Capabilities::CustomMouseCursor));
 
   details::initWidgets();
 }
@@ -238,10 +194,7 @@ UISystem::~UISystem()
   details::exitWidgets();
 
   _internal_set_mouse_display(nullptr);
-  if (!update_custom_native_cursor(nullptr))
-    update_mouse_overlay(nullptr);
-
-  OverlayManager::destroyInstance();
+  update_custom_native_cursor(nullptr);
 
   ASSERT(g_instance == this);
   g_instance = nullptr;
@@ -282,19 +235,6 @@ bool get_clipboard_text(std::string& text)
     return delegate->getClipboardText(text);
   else
     return false;
-}
-
-void update_cursor_overlay()
-{
-  if (mouse_cursor_overlay != nullptr && mouse_scares == 0) {
-    gfx::Point newPos =
-      mouse_display->nativeWindow()->pointFromScreen(get_mouse_position())
-      - mouse_cursor->focus();
-
-    if (newPos != mouse_cursor_overlay->position()) {
-      mouse_cursor_overlay->moveOverlay(newPos);
-    }
-  }
 }
 
 void set_use_native_cursors(bool state)
@@ -348,8 +288,7 @@ void show_mouse_cursor()
 
 void _internal_no_mouse_position()
 {
-  if (!update_custom_native_cursor(nullptr))
-    update_mouse_overlay(nullptr);
+  update_custom_native_cursor(nullptr);
 }
 
 gfx::Point get_mouse_position()

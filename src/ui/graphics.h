@@ -19,6 +19,7 @@
 #include "text/font.h"
 #include "text/fwd.h"
 #include "text/shaper_features.h"
+#include "ui/layer.h"
 #include "ui/paint.h"
 
 #include <memory>
@@ -55,6 +56,7 @@ namespace ui {
     void saveClip();
     void restoreClip();
     bool clipRect(const gfx::Rect& rc);
+    void clipRegion(const gfx::Region& rgn);
 
     void save();
     void concat(const gfx::Matrix& matrix);
@@ -137,13 +139,6 @@ namespace ui {
     gfx::Rect m_clipBounds;
     text::FontRef m_font;
     gfx::Rect m_dirtyBounds;
-  };
-
-  // Class to draw directly in the screen.
-  class ScreenGraphics : public Graphics {
-  public:
-    ScreenGraphics(Display* display);
-    virtual ~ScreenGraphics();
   };
 
   // Class to temporary set the Graphics' clip region to the full

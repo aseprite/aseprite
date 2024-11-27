@@ -46,6 +46,25 @@ sk_sp<SkRuntimeEffect> make_shader(const char* code)
   return result.effect;
 }
 
+sk_sp<SkRuntimeEffect> make_blender(const char* code)
+{
+  SkRuntimeEffect::Options options;
+
+  // Allow usage of private functions like $hsl_to_rgb without a SkSL
+  // compilation error at runtime.
+  SkRuntimeEffectPriv::AllowPrivateAccess(&options);
+
+  auto result = SkRuntimeEffect::MakeForBlender(SkString(code), options);
+  if (!result.errorText.isEmpty()) {
+    std::string error = fmt::format("Error compiling blender.\nError: {}\n",
+                                    result.errorText.c_str());
+    LOG(ERROR, error.c_str());
+    std::printf("%s", error.c_str());
+    throw base::Exception(error);
+  }
+  return result.effect;
+}
+
 #endif // SK_ENABLE_SKSL
 
 SkImageInfo get_skimageinfo_for_docimage(const doc::Image* img)

@@ -48,10 +48,6 @@ namespace ui {
 
   // Mouse related
 
-  // Updates the position of the mouse cursor overlay depending on the
-  // current mouse position.
-  void update_cursor_overlay();
-
   void set_use_native_cursors(bool state);
   CursorType get_mouse_cursor();
   void set_mouse_cursor(CursorType type, const Cursor* cursor = nullptr);

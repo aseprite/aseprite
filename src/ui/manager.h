@@ -13,6 +13,7 @@
 #include "os/dnd.h"
 #include "ui/display.h"
 #include "ui/keys.h"
+#include "ui/layer.h"
 #include "ui/message_type.h"
 #include "ui/mouse_button.h"
 #include "ui/pointer_type.h"

@@ -1,8 +1,10 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
+
+//#define DEBUG_DIRTY_RECTS 1
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -11,9 +13,11 @@
 #include "ui/display.h"
 
 #include "base/debug.h"
+#include "base/remove_from_container.h"
 #include "ui/system.h"
 #include "ui/widget.h"
 #include "ui/window.h"
+#include "os/system.h"
 
 #include <algorithm>
 
@@ -25,7 +29,14 @@ Display::Display(Display* parentDisplay,
   : m_parentDisplay(parentDisplay)
   , m_nativeWindow(nativeWindow)
   , m_containedWidget(containedWidget)
+  , m_layers(1)           // One UI layer by default (the backLayer())
 {
+  m_layers[0] = UILayer::Make();
+
+  os::Paint p;
+  p.blendMode(os::BlendMode::Src);
+  m_layers[0]->setPaint(p);
+
 #if 0 // When compiling tests all these values can be nullptr
   ASSERT(m_nativeWindow);
   ASSERT(m_containedWidget);
@@ -35,9 +46,45 @@ Display::Display(Display* parentDisplay,
   m_dirtyRegion = bounds();
 }
 
-os::Surface* Display::surface() const
+os::SurfaceRef Display::nativeSurface() const
 {
-  return m_nativeWindow->surface();
+  return base::AddRef(m_nativeWindow->surface());
+}
+
+void Display::addLayer(const UILayerRef& layer)
+{
+  ASSERT(layer);
+
+  m_layers.push_back(layer);
+
+  // Mark the new UILayer are as dirty so it's visible in the next
+  // flipDisplay() call.
+  dirtyRect(layer->bounds());
+}
+
+void Display::removeLayer(const UILayerRef& layer)
+{
+  ASSERT(layer);
+
+  dirtyRect(layer->bounds());
+  base::remove_from_container(m_layers, layer);
+}
+
+void Display::configureBackLayer()
+{
+  const os::SurfaceRef displaySurface = nativeSurface();
+  UILayerRef layer = backLayer();
+
+  os::SurfaceRef layerSurface = layer->surface();
+  if (!layerSurface ||
+      layerSurface == displaySurface ||
+      layerSurface->width() != displaySurface->width() ||
+      layerSurface->height() != displaySurface->height()) {
+    layerSurface = os::System::instance()
+      ->makeSurface(displaySurface->width(),
+                    displaySurface->height());
+    layer->setSurface(layerSurface);
+  }
 }
 
 gfx::Size Display::size() const
@@ -59,22 +106,62 @@ void Display::dirtyRect(const gfx::Rect& bounds)
 
 void Display::flipDisplay()
 {
-  if (!m_dirtyRegion.isEmpty()) {
+  if (m_dirtyRegion.isEmpty())
+    return;
+
+  // If the GPU acceleration is on, it's recommended to draw the whole
+  // surface on each frame.
+  if (m_nativeWindow->gpuAcceleration()) {
+    m_dirtyRegion = gfx::Region(bounds());
+  }
+  else {
     // Limit the region to the bounds of the window
     m_dirtyRegion &= gfx::Region(bounds());
+    if (m_dirtyRegion.isEmpty())
+      return;
+  }
 
-    if (!m_dirtyRegion.isEmpty()) {
-      // Invalidate the dirty region in the os::Window
-      if (m_nativeWindow->isVisible())
-        m_nativeWindow->invalidateRegion(m_dirtyRegion);
-      else
-        m_nativeWindow->setVisible(true);
+  const os::SurfaceRef windowSurface = nativeSurface();
 
-      m_nativeWindow->swapBuffers();
+  // Compose all UI layers in the dirty regions
+  for (const UILayerRef& layer : m_layers) {
+    const os::SurfaceRef layerSurface = layer->surface();
+    if (!layerSurface || layerSurface == windowSurface)
+      continue;
 
-      m_dirtyRegion.clear();
+    for (const gfx::Rect& rc : m_dirtyRegion) {
+      gfx::Rect srcRc = rc;
+      srcRc.offset(-layer->position());
+
+      windowSurface->saveClip();
+      if (!layer->clipRegion().isEmpty())
+        windowSurface->clipRegion(layer->clipRegion());
+
+      windowSurface->drawSurface(
+        layerSurface.get(), srcRc, rc,
+        os::Sampling(), &layer->paint());
+
+      windowSurface->restoreClip();
     }
   }
+
+#if DEBUG_DIRTY_RECTS
+  for (const gfx::Rect& rc : m_dirtyRegion) {
+    os::Paint paint;
+    paint.color(gfx::rgba(255, 0, 0));
+    paint.style(os::Paint::Stroke);
+    windowSurface->drawRect(rc, paint);
+  }
+#endif
+
+  // Invalidate the dirty region in the os::Window
+  if (m_nativeWindow->isVisible())
+    m_nativeWindow->invalidateRegion(m_dirtyRegion);
+  else
+    m_nativeWindow->setVisible(true);
+
+  m_nativeWindow->swapBuffers();
+  m_dirtyRegion.clear();
 }
 
 void Display::invalidateRect(const gfx::Rect& rect)

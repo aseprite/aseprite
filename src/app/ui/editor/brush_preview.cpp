@@ -28,6 +28,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui_context.h"
+#include "app/util/shader_helpers.h"
 #include "app/util/wrap_value.h"
 #include "base/debug.h"
 #include "base/scoped_value.h"
@@ -42,6 +43,7 @@
 #include "os/system.h"
 #include "os/window.h"
 #include "render/render.h"
+#include "ui/layer.h"
 #include "ui/manager.h"
 #include "ui/system.h"
 
@@ -88,6 +90,19 @@ static int g_cacheCursorScale = 0;
 // without dot at the center, crosshair with dot in the center)
 static std::array<os::CursorRef, 3> g_solidCursors;
 static gfx::Color g_solidCursorColor = gfx::ColorNone;
+
+// Shader used as a blender for the UILayer to draw the Eraser or
+// selection cursors. Based on color_utils::blackandwhite_neg()
+// function.
+static const char* kNegativeBlackAndWhiteShaderCode = R"(
+half4 main(half4 src, half4 dst) {
+ if (src.a > 0) {
+  return ((dst.r*0.30 + dst.g*0.59 + dst.b*0.11) < 0.5*dst.a) ?
+    half4(1): half4(0, 0, 0, 1);
+ }
+ return dst;
+}
+)";
 
 // static
 void BrushPreview::destroyInternals()
@@ -297,7 +312,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
       m_type &= ~BRUSH_BOUNDARIES;
   }
   if (m_type & BRUSH_BOUNDARIES)
-    generateBoundaries(site, spritePos);
+    createBoundaries(site, spritePos);
 
   // Draw pixel/brush preview
   if (showPreview) {
@@ -415,25 +430,95 @@ void BrushPreview::show(const gfx::Point& screenPos)
   // Save area and draw the cursor
   if (!(m_type & NATIVE_CROSSHAIR) ||
       (m_type & BRUSH_BOUNDARIES)) {
-    ui::ScreenGraphics g(m_editor->display());
-    ui::SetClip clip(&g);
+    ui::Display* display = m_editor->display();
     gfx::Color uiCursorColor = color_utils::color_for_ui(appCursorColor);
 
     if (!(m_type & NATIVE_CROSSHAIR)) {
+      // We use the Display back layer to get pixels in createCrosshairCursor().
+      ui::Graphics g(display, display->backLayer()->surface(), 0, 0);
       createCrosshairCursor(&g, uiCursorColor);
     }
 
-    forEachBrushPixel(&g, spritePos, uiCursorColor, &BrushPreview::savePixelDelegate);
-    forEachBrushPixel(&g, spritePos, uiCursorColor, &BrushPreview::drawPixelDelegate);
-    m_withModifiedPixels = true;
+    // Create (or re-use) the UILayer
+    if ((m_type & SELECTION_CROSSHAIR) || (m_type & BRUSH_BOUNDARIES)) {
+      bool cached = createUILayer(brushBounds);
+      const render::Projection& proj = m_editor->projection();
+
+      if (m_uiLayer->surface()) {
+        gfx::Rect layerBounds = m_uiLayer->surface()->bounds();
+
+        if (m_type & SELECTION_CROSSHAIR) {
+          layerBounds.setOrigin(
+            m_editor->editorToScreen(spritePos)
+            - gfx::Point(layerBounds.size()/2)
+            + gfx::Point(proj.applyX(1)/2,
+                         proj.applyY(1)/2));
+        }
+        else if (m_type & BRUSH_BOUNDARIES) {
+          layerBounds.setOrigin(
+            m_editor->editorToScreen(spritePos)
+            - gfx::Point(layerBounds.w/2 - proj.applyX(layerBounds.w%2),
+                         layerBounds.h/2 - proj.applyY(layerBounds.h%2)));
+        }
+
+        m_uiLayer->setPosition(layerBounds.origin());
+        m_uiLayer->setClipRegion(m_clippingRegion);
+      }
+
+      display->addLayer(m_uiLayer);
+      m_layerAdded = true;
+
+      // Check if the cached brush painted in the m_uiLayer is still valid
+      if (m_cachedType != m_type ||
+          m_cachedBrushGen != m_brushGen) {
+        cached = false;
+      }
+
+      // Here we re-use the cached surface
+      if (!cached && m_uiLayer->surface()) {
+        gfx::Rect layerBounds = m_uiLayer->surface()->bounds();
+        ui::Graphics g(display, m_uiLayer->surface(), 0, 0);
+
+        os::Paint paint;
+        paint.style(os::Paint::Stroke);
+        if (m_blackAndWhiteNegative)
+          paint.color(gfx::rgba(255, 255, 255, 255));
+        else
+          paint.color(uiCursorColor);
+
+        if (m_type & SELECTION_CROSSHAIR) {
+          gfx::Point pos(3, 3);
+          strokeSelectionCrossPixels(&g, pos, paint, 1);
+        }
+        else if (m_type & BRUSH_BOUNDARIES) {
+          gfx::Point pos(layerBounds.w/2 - proj.applyX(layerBounds.w%2),
+                         layerBounds.h/2 - proj.applyY(layerBounds.h%2));
+          strokeBrushBoundaries(&g, pos, paint);
+        }
+
+#if LAF_SKIA
+        if (m_blackAndWhiteNegative) {
+          static sk_sp<SkBlender> blender;
+          if (!blender) {
+            SkRuntimeBlendBuilder builder(make_blender(kNegativeBlackAndWhiteShaderCode));
+            blender = builder.makeBlender();
+          }
+          m_uiLayer->paint().skPaint().setBlender(blender);
+        }
+        else {
+          m_uiLayer->paint().skPaint().setBlender(nullptr);
+        }
+#endif // LAF_SKIA
+
+        m_cachedType = m_type;
+        m_cachedBrushGen = m_brushGen;
+      }
+    }
   }
 
   // Cursor in the editor (model)
   m_onScreen = true;
   m_editorPosition = spritePos;
-
-  // Save the clipping-region to know where to clean the pixels
-  m_oldClippingRegion = m_clippingRegion;
 
   if (m_type & NATIVE_CROSSHAIR)
     ui::set_mouse_cursor(ui::kCrosshairCursor);
@@ -458,19 +543,12 @@ void BrushPreview::hide()
   //if (m_cursor)
   //  m_editor->display()->nativeWindow()->setCursor(os::NativeCursor::Hidden);
 
-  // Get drawable region
-  m_editor->getDrawableRegion(m_clippingRegion, ui::Widget::kCutTopWindows);
+  if (m_layerAdded) {
+    ui::Display* display = m_editor->display();
 
-  // Remove the invalidated region in the editor.
-  m_clippingRegion.createSubtraction(m_clippingRegion,
-                                     m_editor->getUpdateRegion());
-
-  if (m_withModifiedPixels) {
-    // Restore pixels
-    ui::ScreenGraphics g(m_editor->display());
-    ui::SetClip clip(&g);
-    forEachBrushPixel(&g, m_editorPosition, gfx::ColorNone,
-                      &BrushPreview::clearPixelDelegate);
+    // Remove the UI layer to hide the brush preview
+    display->removeLayer(m_uiLayer);
+    m_layerAdded = false;
   }
 
   // Clean pixel/brush preview
@@ -491,9 +569,7 @@ void BrushPreview::hide()
   }
 
   m_onScreen = false;
-
   m_clippingRegion.clear();
-  m_oldClippingRegion.clear();
 }
 
 void BrushPreview::discardBrushPreview()
@@ -530,8 +606,43 @@ void BrushPreview::calculateTileBoundariesOrigin(const doc::Grid& grid,
                            canvasPos.y - spritePos.y);
 }
 
-void BrushPreview::generateBoundaries(const Site& site,
-                                      const gfx::Point& spritePos)
+bool BrushPreview::createUILayer(const gfx::Rect& brushBounds)
+{
+  if (!m_uiLayer)
+    m_uiLayer = ui::UILayer::Make();
+
+  gfx::Size sizeHint(0, 0);
+  const render::Projection& proj = m_editor->projection();
+
+  if (m_type & SELECTION_CROSSHAIR) {
+    gfx::Size pixelSize(6+std::max(1, proj.applyX(1)),
+                        6+std::max(1, proj.applyY(1)));
+    sizeHint = pixelSize;
+  }
+  else if (m_type & BRUSH_BOUNDARIES) {
+    gfx::Size brushSize(proj.applyX(brushBounds.w+2),
+                        proj.applyY(brushBounds.h+2));
+    sizeHint = brushSize;
+  }
+
+  if (sizeHint.w == 0 || sizeHint.h == 0)
+    return false;
+
+  os::SurfaceRef surface = m_uiLayer->surface();
+  if (!surface ||
+      surface->width() != sizeHint.w ||
+      surface->height() != sizeHint.h) {
+    surface = os::System::instance()->makeRgbaSurface(sizeHint.w, sizeHint.h);
+    m_uiLayer->setSurface(surface);
+  }
+  else
+    return true;                // We can use the cached UILayer
+
+  return false;
+}
+
+void BrushPreview::createBoundaries(const Site& site,
+                                    const gfx::Point& spritePos)
 {
   BrushRef brush = getCurrentBrush();
   Layer* currentLayer = site.layer();
@@ -761,38 +872,12 @@ void BrushPreview::createCrosshairCursor(ui::Graphics* g,
   }
 }
 
-void BrushPreview::forEachBrushPixel(
-  ui::Graphics* g,
-  const gfx::Point& spritePos,
-  gfx::Color color,
-  PixelDelegate pixelDelegate)
+// Thick crosshair used for selection tools
+void BrushPreview::strokeSelectionCrossPixels(ui::Graphics* g,
+                                              gfx::Point pos,
+                                              const ui::Paint& paint,
+                                              const int thickness)
 {
-  m_savedPixelsIterator = 0;
-
-  if (m_type & SELECTION_CROSSHAIR)
-    traceSelectionCrossPixels(g, spritePos, color, 1, pixelDelegate);
-
-  if (m_type & BRUSH_BOUNDARIES)
-    traceBrushBoundaries(g, spritePos, color, pixelDelegate);
-
-  m_savedPixelsLimit = m_savedPixelsIterator;
-}
-
-// Old thick cross (used for selection tools)
-void BrushPreview::traceSelectionCrossPixels(
-  ui::Graphics* g,
-  const gfx::Point& pt, gfx::Color color,
-  int thickness, PixelDelegate pixelDelegate)
-{
-  static int cross[6*6] = {
-    0, 0, 1, 1, 0, 0,
-    0, 0, 1, 1, 0, 0,
-    1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1,
-    0, 0, 1, 1, 0, 0,
-    0, 0, 1, 1, 0, 0,
-  };
-  gfx::Point out, outpt = m_editor->editorToScreen(pt);
   const render::Projection& proj = m_editor->projection();
   gfx::Size size(proj.applyX(thickness/2),
                  proj.applyY(thickness/2));
@@ -801,100 +886,39 @@ void BrushPreview::traceSelectionCrossPixels(
   if (size2.w == 0) size2.w = 1;
   if (size2.h == 0) size2.h = 1;
 
-  for (int v=0; v<6; v++) {
-    for (int u=0; u<6; u++) {
-      if (!cross[v*6+u])
-        continue;
+  int u0 = pos.x-size.w-3;
+  int v0 = pos.y-size.h-1;
+  int u1 = pos.x-size.w+size2.w;
+  int v1 = pos.y-size.h+size2.h;
+  g->drawHLine(u0, v0, 3, paint);
+  g->drawHLine(u1, v0, 3, paint);
+  g->drawHLine(u0, v1, 3, paint);
+  g->drawHLine(u1, v1, 3, paint);
 
-      out = outpt;
-      out.x += ((u<3) ? u-size.w-3: u-size.w-3+size2.w);
-      out.y += ((v<3) ? v-size.h-3: v-size.h-3+size2.h);
-
-      (this->*pixelDelegate)(g, out, color);
-    }
-  }
+  u0 = pos.x-size.w-1;
+  v0 = pos.y-size.h-3;
+  g->drawVLine(u0, v0, 3, paint);
+  g->drawVLine(u1, v0, 3, paint);
+  g->drawVLine(u0, v1, 3, paint);
+  g->drawVLine(u1, v1, 3, paint);
 }
 
-// Current brush edges
-void BrushPreview::traceBrushBoundaries(ui::Graphics* g,
-                                        gfx::Point pos,
-                                        gfx::Color color,
-                                        PixelDelegate pixelDelegate)
+// Brush edges used for Eraser tool
+void BrushPreview::strokeBrushBoundaries(ui::Graphics* g,
+                                         gfx::Point pos,
+                                         const os::Paint& paint)
 {
-  for (const auto& seg : m_brushBoundaries) {
-    gfx::Rect bounds = seg.bounds();
-    bounds.offset(pos);
-    bounds = m_editor->editorToScreen(bounds);
+  auto& segs = m_brushBoundaries;
+  segs.createPathIfNeeeded();
 
-    if (seg.open()) {
-      if (seg.vertical()) --bounds.x;
-      else --bounds.y;
-    }
+  const render::Projection& proj = m_editor->projection();
 
-    gfx::Point pt(bounds.x, bounds.y);
-    if (seg.vertical()) {
-      for (; pt.y<bounds.y+bounds.h; ++pt.y)
-        (this->*pixelDelegate)(g, pt, color);
-    }
-    else {
-      for (; pt.x<bounds.x+bounds.w; ++pt.x)
-        (this->*pixelDelegate)(g, pt, color);
-    }
-  }
-}
+  gfx::Path path;
+  segs.path().transform(proj.scaleMatrix(), &path);
 
-//////////////////////////////////////////////////////////////////////
-// Pixel delegates
+  path.offset(pos.x, pos.y);
 
-void BrushPreview::savePixelDelegate(ui::Graphics* g, const gfx::Point& pt, gfx::Color color)
-{
-  if (m_clippingRegion.contains(pt)) {
-    color_t c = g->getPixel(pt.x, pt.y);
-
-    if (m_savedPixelsIterator < (int)m_savedPixels.size())
-      m_savedPixels[m_savedPixelsIterator] = c;
-    else
-      m_savedPixels.push_back(c);
-
-    ++m_savedPixelsIterator;
-  }
-}
-
-void BrushPreview::drawPixelDelegate(ui::Graphics* gfx, const gfx::Point& pt, gfx::Color color)
-{
-  if (m_savedPixelsIterator < (int)m_savedPixels.size() &&
-      m_clippingRegion.contains(pt)) {
-    if (m_blackAndWhiteNegative) {
-      int c = m_savedPixels[m_savedPixelsIterator];
-      int r = gfx::getr(c);
-      int g = gfx::getg(c);
-      int b = gfx::getb(c);
-
-      gfx->putPixel(color_utils::blackandwhite_neg(gfx::rgba(r, g, b)), pt.x, pt.y);
-    }
-    else {
-      gfx->putPixel(color, pt.x, pt.y);
-    }
-    ++m_savedPixelsIterator;
-  }
-}
-
-void BrushPreview::clearPixelDelegate(ui::Graphics* g, const gfx::Point& pt, gfx::Color color)
-{
-  if (m_savedPixelsIterator < (int)m_savedPixels.size()) {
-    if (m_oldClippingRegion.contains(pt)) {
-      if (m_clippingRegion.contains(pt))
-        g->putPixel(m_savedPixels[m_savedPixelsIterator], pt.x, pt.y);
-      ++m_savedPixelsIterator;
-    }
-  }
-
-#if _DEBUG
-  if (!(m_savedPixelsIterator <= m_savedPixelsLimit)) {
-    TRACE("m_savedPixelsIterator <= m_savedPixelsLimit: %d <= %d failed\n",
-          m_savedPixelsIterator, m_savedPixelsLimit);
-  }
-#endif
+  g->drawPath(path, paint);
 }
 
 } // namespace app

@@ -88,6 +88,7 @@ inline SkV4 appColorHsl_to_SkV4(const app::Color& color) {
 }
 
 sk_sp<SkRuntimeEffect> make_shader(const char* code);
+sk_sp<SkRuntimeEffect> make_blender(const char* code);
 
 #endif  // SK_ENABLE_SKSL
 

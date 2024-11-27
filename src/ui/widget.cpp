@@ -1341,7 +1341,9 @@ GraphicsPtr Widget::getGraphics(const gfx::Rect& clip)
 {
   GraphicsPtr graphics;
   Display* display = this->display();
-  os::SurfaceRef dstSurface = AddRef(display->surface());
+
+  // We draw widgets in the back layer by default.
+  os::SurfaceRef dstSurface = display->backLayer()->surface();
 
   // In case of double-buffering, we need to create the temporary
   // buffer only if the default surface is the screen.
