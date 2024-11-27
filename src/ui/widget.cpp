@@ -13,6 +13,7 @@
 
 #include "ui/widget.h"
 
+#include "base/log.h"
 #include "base/memory.h"
 #include "base/string.h"
 #include "base/utf8_decode.h"
