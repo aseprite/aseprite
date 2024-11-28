@@ -64,23 +64,23 @@ DropOnTimeline::DropOnTimeline(app::Doc* doc,
   ASSERT(m_layerIndex >= 0);
 }
 
-void DropOnTimeline::setupInsertionLayer(Layer** layer, LayerGroup** group)
+void DropOnTimeline::setupInsertionLayer(Layer*& layer, LayerGroup*& group)
 {
   const LayerList& allLayers = document()->sprite()->allLayers();
-  *layer = allLayers[m_layerIndex];
-  if (m_insert == InsertionPoint::BeforeLayer && (*layer)->isGroup()) {
-    *group = static_cast<LayerGroup*>(*layer);
+  layer = allLayers[m_layerIndex];
+  if (m_insert == InsertionPoint::BeforeLayer && layer->isGroup()) {
+    group = static_cast<LayerGroup*>(layer);
     // The user is trying to drop layers into an empty group, so there is no after
     // nor before layer...
-    if ((*group)->layersCount() == 0) {
-      *layer = nullptr;
+    if (group->layersCount() == 0) {
+      layer = nullptr;
       return;
     }
-    *layer = (*group)->lastLayer();
+    layer = group->lastLayer();
     m_insert = InsertionPoint::AfterLayer;
   }
 
-  *group = (*layer)->parent();
+  group = layer->parent();
 }
 
 bool DropOnTimeline::hasPendingWork()
@@ -88,7 +88,7 @@ bool DropOnTimeline::hasPendingWork()
   return m_image || !m_paths.empty();
 }
 
-bool DropOnTimeline::getNextDocFromImage(Doc** srcDoc)
+bool DropOnTimeline::getNextDocFromImage(Doc*& srcDoc)
 {
   if (!m_image)
     return true;
@@ -98,12 +98,12 @@ bool DropOnTimeline::getNextDocFromImage(Doc** srcDoc)
   sprite->root()->addLayer(layer);
   Cel* cel = new Cel(0, m_image);
   layer->addCel(cel);
-  *srcDoc = new Doc(sprite);
+  srcDoc = new Doc(sprite);
   m_image = nullptr;
   return true;
 }
 
-bool DropOnTimeline::getNextDocFromPaths(Doc** srcDoc)
+bool DropOnTimeline::getNextDocFromPaths(Doc*& srcDoc)
 {
   Console console;
   Context* context = document()->context();
@@ -142,13 +142,13 @@ bool DropOnTimeline::getNextDocFromPaths(Doc** srcDoc)
   if (fop->hasError() && !fop->isStop())
     console.printf(fop->error().c_str());
 
-  *srcDoc = fop->releaseDocument();
+  srcDoc = fop->releaseDocument();
   return true;
 }
 
-bool DropOnTimeline::getNextDoc(Doc** srcDoc)
+bool DropOnTimeline::getNextDoc(Doc*& srcDoc)
 {
-  *srcDoc = nullptr;
+  srcDoc = nullptr;
   if (m_image == nullptr && !m_paths.empty())
     return getNextDocFromPaths(srcDoc);
 
@@ -163,7 +163,7 @@ void DropOnTimeline::onExecute()
   int docsProcessed = 0;
   while (hasPendingWork()) {
     Doc* srcDoc;
-    if (!getNextDoc(&srcDoc))
+    if (!getNextDoc(srcDoc))
       return;
 
     if (srcDoc) {
@@ -275,7 +275,7 @@ void DropOnTimeline::insertDroppedLayers(bool incGroupVersion)
   // Keep track of the current insertion point.
   InsertionPoint insert = m_insert;
 
-  setupInsertionLayer(&refLayer, &group);
+  setupInsertionLayer(refLayer, group);
 
   for (auto it = m_droppedLayers.cbegin(); it != m_droppedLayers.cend(); ++it) {
     auto* layer = *it;

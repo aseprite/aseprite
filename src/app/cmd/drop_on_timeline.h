@@ -59,18 +59,18 @@ protected:
   size_t onMemSize() const override { return sizeof(*this) + m_size; }
 
 private:
-  void setupInsertionLayer(doc::Layer** layer, doc::LayerGroup** group);
+  void setupInsertionLayer(doc::Layer*& layer, doc::LayerGroup*& group);
   void insertDroppedLayers(bool incGroupVersion);
   bool canMoveCelFrom(app::Doc* srcDoc);
   void notifyAddLayer(doc::Layer* layer);
   void notifyDocObservers(doc::Layer* layer);
   bool hasPendingWork();
-  // Sets srcDoc's Doc* pointer to the next document to be processed.
+  // Sets srcDoc's Doc* reference to the next document to be processed.
   // Returns false when the user cancelled the process, or true when the
   // process must go on.
-  bool getNextDoc(Doc** srcDoc);
-  bool getNextDocFromImage(Doc** srcDoc);
-  bool getNextDocFromPaths(Doc** srcDoc);
+  bool getNextDoc(Doc*& srcDoc);
+  bool getNextDocFromImage(Doc*& srcDoc);
+  bool getNextDocFromPaths(Doc*& srcDoc);
 
   size_t m_size;
   base::paths m_paths;
