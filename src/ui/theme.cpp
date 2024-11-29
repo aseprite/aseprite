@@ -135,6 +135,7 @@ int PaintWidgetPartInfo::getStyleFlagsForWidget(const Widget* widget)
 }
 
 Theme::Theme()
+  : m_fontMgr(text::FontMgr::Make())
 {
 }
 

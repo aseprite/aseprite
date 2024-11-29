@@ -279,8 +279,7 @@ SkinTheme* SkinTheme::get(const ui::Widget* widget)
 }
 
 SkinTheme::SkinTheme()
-  : m_fontMgr(text::FontMgr::Make())
-  , m_sheet(nullptr)
+  : m_sheet(nullptr)
   , m_defaultFont(nullptr)
   , m_miniFont(nullptr)
   , m_preferredScreenScaling(-1)

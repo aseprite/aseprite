@@ -13,6 +13,7 @@
 #include "gfx/color.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
+#include "text/font_mgr.h"
 #include "text/fwd.h"
 #include "ui/base.h"
 #include "ui/cursor_type.h"
@@ -64,9 +65,9 @@ namespace ui {
     Theme();
     virtual ~Theme();
 
-    virtual text::FontMgrRef fontMgr() const = 0;
     virtual text::Font* getDefaultFont() const = 0;
     virtual text::Font* getWidgetFont(const Widget* widget) const = 0;
+    virtual text::FontMgrRef fontMgr() const { return m_fontMgr; }
 
     virtual ui::Cursor* getStandardCursor(CursorType type) = 0;
     virtual void initWidget(Widget* widget) = 0;
@@ -148,6 +149,8 @@ namespace ui {
 
   protected:
     virtual void onRegenerateTheme() = 0;
+
+    text::FontMgrRef m_fontMgr;
 
   private:
     void regenerateTheme();

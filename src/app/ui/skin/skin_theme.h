@@ -12,7 +12,6 @@
 #include "app/ui/skin/skin_part.h"
 #include "gfx/color.h"
 #include "gfx/fwd.h"
-#include "text/font_mgr.h"
 #include "ui/cursor.h"
 #include "ui/cursor_type.h"
 #include "ui/manager.h"
@@ -64,7 +63,6 @@ namespace app {
       int preferredScreenScaling() const { return m_preferredScreenScaling; }
       int preferredUIScaling() const { return m_preferredUIScaling; }
 
-      text::FontMgrRef fontMgr() const override { return m_fontMgr; }
       text::Font* getDefaultFont() const override { return m_defaultFont.get(); }
       text::Font* getWidgetFont(const ui::Widget* widget) const override;
       text::Font* getMiniFont() const { return m_miniFont.get(); }
@@ -186,7 +184,6 @@ namespace app {
 
       std::string findThemePath(const std::string& themeId) const;
 
-      text::FontMgrRef m_fontMgr;
       std::string m_path;
       os::SurfaceRef m_sheet;
       // Contains the sheet surface as is, without any scale.
