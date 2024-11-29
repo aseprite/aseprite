@@ -62,6 +62,12 @@ namespace ui {
     bool generateMessages();
     void dispatchMessages();
 
+    // Makes the generateMessages() function to return immediately if
+    // there is no user events in the OS queue. Useful only for tests
+    // or benchmarks where we don't wait the user (or we don't even
+    // have an user). In this case we want to use 100% of the CPU.
+    void dontWaitEvents() { m_waitEvents = false; }
+
     void addToGarbage(Widget* widget);
     void collectGarbage();
 
@@ -200,6 +206,11 @@ namespace ui {
 
     // Widget over which the drag is being hovered in a drag & drop operation.
     Widget* m_dragOverWidget = nullptr;
+
+    // False if we want to continue in case that there is no user
+    // event in the OS queue. Useful when there is no need to wait for
+    // user interaction (tests/benchmarks).
+    bool m_waitEvents = true;
   };
 
 } // namespace ui

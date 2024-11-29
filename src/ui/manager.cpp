@@ -403,27 +403,31 @@ void Manager::generateMessagesFromOSEvents()
   // Events from laf-os
   os::Event osEvent;
   for (;;) {
-    // Calculate how much time we can wait for the next message in the
-    // event queue.
     double timeout = 0.0;
-    if (msg_queue.empty() && redrawState == RedrawState::Normal) {
-      if (!Timer::getNextTimeout(timeout))
-        timeout = os::EventQueue::kWithoutTimeout;
-    }
 
-    if (timeout == os::EventQueue::kWithoutTimeout && used_msg_queue.empty())
-      collectGarbage();
+    // Calculate how much time we can wait for the next message in the
+    // event queue. We use kWithoutTimeout in case that we can wait
+    // indefinitely.
+    if (m_waitEvents) {
+      if (msg_queue.empty() && redrawState == RedrawState::Normal) {
+        if (!Timer::getNextTimeout(timeout))
+          timeout = os::EventQueue::kWithoutTimeout;
+      }
+
+      if (timeout == os::EventQueue::kWithoutTimeout && used_msg_queue.empty())
+        collectGarbage();
 #if _DEBUG
-    else if (!m_garbage.empty()) {
-      GARBAGE_TRACE("collectGarbage() wasn't called #objects=%d"
-                    " (msg_queue=%d used_msg_queue=%d redrawState=%d timeout=%.16g)\n",
-                    int(m_garbage.size()),
-                    msg_queue.size(),
-                    used_msg_queue.size(),
-                    int(redrawState),
-                    timeout);
-    }
+      else if (!m_garbage.empty()) {
+        GARBAGE_TRACE("collectGarbage() wasn't called #objects=%d"
+                      " (msg_queue=%d used_msg_queue=%d redrawState=%d timeout=%.16g)\n",
+                      int(m_garbage.size()),
+                      msg_queue.size(),
+                      used_msg_queue.size(),
+                      int(redrawState),
+                      timeout);
+      }
 #endif
+    }
 
     m_eventQueue->getEvent(osEvent, timeout);
     if (osEvent.type() == os::Event::None)
@@ -853,7 +857,9 @@ void Manager::dispatchMessages()
   // might change the state of widgets, etc. In case pumpQueue()
   // returns a number greater than 0, it means that we've processed
   // some messages, so we've to redraw the screen.
-  if (pumpQueue() > 0 || redrawState == RedrawState::RedrawDelayed) {
+  if (pumpQueue() > 0 ||
+      redrawState == RedrawState::RedrawDelayed ||
+      !m_waitEvents) {
     if (redrawState == RedrawState::ClosingApp) {
       // Do nothing, we don't flush nor process paint messages
     }

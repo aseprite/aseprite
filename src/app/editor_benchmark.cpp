@@ -14,6 +14,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/main_window.h"
 #include "app/ui_context.h"
+#include "doc/palette.h"
 #include "doc/sprite.h"
 #include "os/system.h"
 #include "ui/manager.h"
@@ -40,9 +41,8 @@ void BM_ScrollEditor(benchmark::State& state) {
   editor->setZoom(render::Zoom(zNum, zDen));
 
   auto mgr = ui::Manager::getDefault();
+  mgr->dontWaitEvents();
 
-  ui::Timer timer(1);
-  timer.start();
   while (state.KeepRunning()) {
     editor->setEditorScroll(gfx::Point(0, 0));
     mgr->generateMessages();
@@ -68,9 +68,8 @@ void BM_ZoomEditor(benchmark::State& state) {
   editor->setScrollToCenter();
 
   auto mgr = ui::Manager::getDefault();
+  mgr->dontWaitEvents();
 
-  ui::Timer timer(1);
-  timer.start();
   while (state.KeepRunning()) {
     editor->setZoom(render::Zoom(4, 1));
     editor->invalidate();
@@ -135,6 +134,7 @@ BENCHMARK(BM_ZoomEditor)
 int app_main(int argc, char* argv[])
 {
   os::SystemRef system = os::System::make();
+  doc::Palette::initBestfit();
   App app;
   const char* argv2[] = { argv[0] };
   app.initialize(AppOptions(1, { argv2 }));
