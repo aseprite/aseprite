@@ -922,7 +922,7 @@ os::SurfaceRef SkinTheme::sliceUnscaledSheet(os::SurfaceRef sur, const gfx::Rect
   return app::skin::sliceSheet(m_unscaledSheet, sur, bounds);
 }
 
-text::Font* SkinTheme::getWidgetFont(const Widget* widget) const
+text::FontRef SkinTheme::getWidgetFont(const Widget* widget) const
 {
   auto skinPropery = std::static_pointer_cast<SkinProperty>(widget->getProperty(SkinProperty::Name));
   if (skinPropery && skinPropery->hasMiniFont())
@@ -1610,7 +1610,7 @@ void SkinTheme::drawText(Graphics* g, const char* t,
   if (t || widget->hasText()) {
     Rect textrc;
 
-    g->setFont(AddRef(widget->font()));
+    g->setFont(widget->font());
 
     if (!t)
       t = widget->text().c_str();

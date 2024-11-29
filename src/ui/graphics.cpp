@@ -632,7 +632,7 @@ void Graphics::dirty(const gfx::Rect& bounds)
 ScreenGraphics::ScreenGraphics(Display* display)
   : Graphics(display, base::AddRef(display->surface()), 0, 0)
 {
-  setFont(base::AddRef(get_theme()->getDefaultFont()));
+  setFont(get_theme()->getDefaultFont());
 }
 
 ScreenGraphics::~ScreenGraphics()

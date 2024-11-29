@@ -115,7 +115,7 @@ namespace ui {
     const gfx::Size& minSize() const { return m_minSize; }
     const gfx::Size& maxSize() const { return m_maxSize; }
     const gfx::Size& gap() const { return m_gap; }
-    text::Font* font() const { return m_font.get(); }
+    const text::FontRef& font() const { return m_font; }
     const bool mnemonics() const { return m_mnemonics; }
     const Layers& layers() const { return m_layers; }
     Layers& layers() { return m_layers; }

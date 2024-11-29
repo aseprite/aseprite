@@ -53,10 +53,10 @@ void Canvas::callPaint()
   GraphicsContext gc(m_surface, m_autoScaling ? ui::guiscale() : 1);
   if (m_autoScaling) {
     auto theme = skin::SkinTheme::get(this);
-    gc.font(AddRef(theme->getUnscaledFont(font())));
+    gc.font(theme->getUnscaledFont(font()));
   }
   else
-    gc.font(AddRef(font()));
+    gc.font(font());
 
   Paint(gc);
 }

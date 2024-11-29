@@ -101,7 +101,7 @@ namespace ui {
     // FONT & TEXT
     // ======================================================================
 
-    text::Font* font() { return m_font.get(); }
+    const text::FontRef& font() { return m_font; }
     void setFont(const text::FontRef& font);
 
     [[deprecated]]

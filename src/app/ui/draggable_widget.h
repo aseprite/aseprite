@@ -156,7 +156,7 @@ private:
     ui::Display* display = this->Base::display();
     {
       ui::Graphics g(display, surface, 0, 0);
-      g.setFont(AddRef(this->font()));
+      g.setFont(this->font());
       drawFloatingOverlay(g);
     }
 

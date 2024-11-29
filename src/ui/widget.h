@@ -139,7 +139,7 @@ namespace ui {
     // LOOK & FEEL
     // ===============================================================
 
-    text::Font* font() const;
+    const text::FontRef& font() const;
     void setFont(const text::FontRef& font);
 
     // Gets the background color of the widget.

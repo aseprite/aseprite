@@ -169,11 +169,11 @@ void Widget::setTextQuiet(const std::string& text)
   enableFlags(HAS_TEXT);
 }
 
-text::Font* Widget::font() const
+const text::FontRef& Widget::font() const
 {
   if (!m_font && m_theme)
-    m_font = AddRef(m_theme->getWidgetFont(this));
-  return m_font.get();
+    m_font = m_theme->getWidgetFont(this);
+  return m_font;
 }
 
 void Widget::setFont(const text::FontRef& font)
@@ -223,7 +223,7 @@ void Widget::setStyle(Style* style)
   m_minSize = m_theme->calcMinSize(this, style);
   m_maxSize = m_theme->calcMaxSize(this, style);
   if (style->font())
-    m_font = AddRef(style->font());
+    m_font = style->font();
 }
 
 // ===============================================================
@@ -1192,7 +1192,7 @@ void Widget::paint(Graphics* graphics,
       base::AddRef(graphics->getInternalSurface()),
       widget->bounds().x,
       widget->bounds().y);
-    graphics2.setFont(AddRef(widget->font()));
+    graphics2.setFont(widget->font());
 
     for (const gfx::Rect& rc : region) {
       IntersectClip clip(&graphics2,
@@ -1357,7 +1357,7 @@ GraphicsPtr Widget::getGraphics(const gfx::Rect& clip)
     graphics.reset(new Graphics(display, dstSurface, bounds().x, bounds().y));
   }
 
-  graphics->setFont(AddRef(font()));
+  graphics->setFont(font());
   return graphics;
 }
 
@@ -1809,7 +1809,7 @@ text::TextBlobRef Widget::onMakeTextBlob() const
 {
   return text::TextBlob::MakeWithShaper(
     theme()->fontMgr(),
-    AddRef(font()),
+    font(),
     text(),
     nullptr,
     onGetTextShaperFeatures());

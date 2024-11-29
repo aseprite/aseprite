@@ -445,9 +445,9 @@ void Theme::paintLayer(Graphics* g,
         break;
 
       if (layer.color() != gfx::ColorNone) {
-        text::FontRef oldFont = base::AddRef(g->font());
+        text::FontRef oldFont = g->font();
         if (style->font())
-          g->setFont(AddRef(style->font()));
+          g->setFont(style->font());
 
         if (layer.align() & WORDWRAP) {
           gfx::Rect textBounds = rc;
@@ -614,7 +614,7 @@ void Theme::measureLayer(const Widget* widget,
 
     case Style::Layer::Type::kText:
       if (layer.color() != gfx::ColorNone) {
-        text::Font* styleFont = style->font();
+        const text::FontRef& styleFont = style->font();
         gfx::Size textSize;
         if (styleFont &&
             styleFont != widget->font()) {
@@ -868,7 +868,7 @@ void Theme::drawTextBox(Graphics* g, const Widget* widget,
   int x, y, chr, len;
   gfx::Point scroll;
   int textheight = widget->textHeight();
-  text::Font* font = widget->font();
+  const text::FontRef& font = widget->font();
   char *beg_end, *old_end;
   int width;
   gfx::Rect vp;

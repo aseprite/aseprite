@@ -983,7 +983,7 @@ void Tabs::createFloatingOverlay(Tab* tab)
   }
   {
     Graphics g(display, surface, 0, 0);
-    g.setFont(AddRef(font()));
+    g.setFont(font());
     drawTab(&g, g.getClipBounds(), tab, 0, true, true);
   }
 

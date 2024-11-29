@@ -63,13 +63,13 @@ namespace app {
       int preferredScreenScaling() const { return m_preferredScreenScaling; }
       int preferredUIScaling() const { return m_preferredUIScaling; }
 
-      text::Font* getDefaultFont() const override { return m_defaultFont.get(); }
-      text::Font* getWidgetFont(const ui::Widget* widget) const override;
-      text::Font* getMiniFont() const { return m_miniFont.get(); }
-      text::Font* getUnscaledFont(text::Font* font) const {
-        auto it = m_unscaledFonts.find(font);
+      text::FontRef getDefaultFont() const override { return m_defaultFont; }
+      text::FontRef getWidgetFont(const ui::Widget* widget) const override;
+      text::FontRef getMiniFont() const { return m_miniFont; }
+      text::FontRef getUnscaledFont(const text::FontRef& font) const {
+        auto it = m_unscaledFonts.find(font.get());
         if (it != m_unscaledFonts.end())
-          return it->second.get();
+          return it->second;
         else
           return font;
       }

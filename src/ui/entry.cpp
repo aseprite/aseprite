@@ -505,15 +505,17 @@ bool Entry::onProcessMessage(Message* msg)
 gfx::Size Entry::sizeHintWithText(Entry* entry,
                                   const std::string& text)
 {
+  const auto& font = entry->font();
+
   int w =
-    entry->font()->textLength(text) +
+    font->textLength(text) +
     + 2*entry->theme()->getEntryCaretSize(entry).w
     + entry->border().width();
 
   w = std::min(w, entry->display()->workareaSizeUIScale().w/2);
 
-  int h =
-    + entry->font()->height()
+  const int h =
+    + font->height()
     + entry->border().height();
 
   return gfx::Size(w, h);
@@ -521,18 +523,20 @@ gfx::Size Entry::sizeHintWithText(Entry* entry,
 
 void Entry::onSizeHint(SizeHintEvent& ev)
 {
-  int trailing = font()->textLength(getSuffix());
+  const auto& font = this->font();
+
+  int trailing = font->textLength(getSuffix());
   trailing = std::max(trailing, 2*theme()->getEntryCaretSize(this).w);
 
   int w =
-    font()->textLength("w") * std::min(m_maxsize, 6) +
+    font->textLength("w") * std::min(m_maxsize, 6) +
     + trailing
     + border().width();
 
   w = std::min(w, display()->workareaSizeUIScale().w/2);
 
   int h =
-    + font()->height()
+    + font->height()
     + border().height();
 
   ev.setSizeHint(w, h);
@@ -958,7 +962,7 @@ void Entry::recalcCharBoxes(const std::string& text)
   float lastX =
     text::draw_text(nullptr,
                     theme()->fontMgr(),
-                    base::AddRef(font()), text,
+                    font(), text,
                     gfx::ColorNone, gfx::ColorNone, 0, 0,
                     &delegate,
                     onGetTextShaperFeatures()).w;

@@ -1267,13 +1267,14 @@ void Editor::drawTileNumbers(ui::Graphics* g, const Cel* cel)
   gfx::Color color = color_utils::color_for_ui(Preferences::instance().guides.autoGuidesColor());
   gfx::Color fgColor = color_utils::blackandwhite_neg(color);
 
+  const text::FontRef& font = g->font();
   const doc::Grid grid = getSite().grid();
   const gfx::Size tileSize = editorToScreen(grid.tileToCanvas(gfx::Rect(0, 0, 1, 1))).size();
-  const int th = g->font()->height();
+  const int th = font->height();
   if (tileSize.h > th) {
     const gfx::Point offset =
       gfx::Point(tileSize.w/2,
-                 tileSize.h/2 - g->font()->height()/2)
+                 tileSize.h/2 - font->height()/2)
       + mainTilePosition();
 
     int ti_offset =
@@ -1295,7 +1296,7 @@ void Editor::drawTileNumbers(ui::Graphics* g, const Cel* cel)
           text = fmt::format("{}", ti + ti_offset);
 
           gfx::Point pt2(pt);
-          pt2.x -= g->font()->textLength(text)/2;
+          pt2.x -= font->textLength(text)/2;
           g->drawText(text, fgColor, color, pt2);
 
           if (tf && tileSize.h > 2*th) {

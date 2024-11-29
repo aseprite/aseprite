@@ -940,9 +940,9 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
         m_adapter->drawEntry(g, theme, i, k, childSpacing(),
                              box2, negColor);
 
-        text::Font* minifont = theme->getMiniFont();
+        text::FontRef minifont = theme->getMiniFont();
         const std::string text = base::convert_to<std::string>(k);
-        g->setFont(AddRef(minifont));
+        g->setFont(minifont);
         g->drawText(text, negColor, gfx::ColorNone,
                     gfx::Point(box2.x + box2.w/2 - minifont->textLength(text)/2,
                                box2.y + box2.h/2 - minifont->height()/2));
