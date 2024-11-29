@@ -127,7 +127,7 @@ void Grid::setStyle(Style* style)
 {
   ASSERT(style);
   if (!style)
-    style = Theme::getDefaultStyle();
+    style = Theme::EmptyStyle();
   Widget::setStyle(style);
   setGap(style->gap());
 }

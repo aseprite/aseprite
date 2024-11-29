@@ -62,28 +62,34 @@ namespace ui {
   class Theme {
     friend void set_theme(Theme* theme, const int uiscale);
   public:
+    static constexpr int kDefaultFontHeight = 16;
+
     Theme();
     virtual ~Theme();
 
     virtual text::FontMgrRef fontMgr() const { return m_fontMgr; }
-    virtual text::FontRef getDefaultFont() const = 0;
-    virtual text::FontRef getWidgetFont(const Widget* widget) const = 0;
+    virtual text::FontRef getDefaultFont() const;
+    virtual text::FontRef getWidgetFont(const Widget* widget) const {
+      return getDefaultFont();
+    }
 
-    virtual ui::Cursor* getStandardCursor(CursorType type) = 0;
-    virtual void initWidget(Widget* widget) = 0;
-    virtual void getWindowMask(Widget* widget, gfx::Region& region) = 0;
+    virtual ui::Cursor* getStandardCursor(CursorType type) { return nullptr; }
+    virtual void initWidget(Widget* widget);
+    virtual void getWindowMask(Widget* widget, gfx::Region& region) { }
     virtual void setDecorativeWidgetBounds(Widget* widget);
-    virtual int getScrollbarSize() = 0;
-    virtual gfx::Size getEntryCaretSize(Widget* widget) = 0;
+    virtual int getScrollbarSize() { return kDefaultFontHeight; }
+    virtual gfx::Size getEntryCaretSize(Widget* widget) {
+      return gfx::Size(kDefaultFontHeight, 1);
+    }
 
-    virtual void paintEntry(PaintEvent& ev) = 0;
-    virtual void paintListBox(PaintEvent& ev) = 0;
-    virtual void paintMenu(PaintEvent& ev) = 0;
-    virtual void paintMenuItem(PaintEvent& ev) = 0;
-    virtual void paintSlider(PaintEvent& ev) = 0;
-    virtual void paintComboBoxEntry(PaintEvent& ev) = 0;
-    virtual void paintTextBox(PaintEvent& ev) = 0;
-    virtual void paintViewViewport(PaintEvent& ev) = 0;
+    virtual void paintEntry(PaintEvent& ev) { }
+    virtual void paintListBox(PaintEvent& ev);
+    virtual void paintMenu(PaintEvent& ev) { }
+    virtual void paintMenuItem(PaintEvent& ev) { }
+    virtual void paintSlider(PaintEvent& ev) { }
+    virtual void paintComboBoxEntry(PaintEvent& ev) { }
+    virtual void paintTextBox(PaintEvent& ev) { }
+    virtual void paintViewViewport(PaintEvent& ev);
 
     virtual void paintWidgetPart(Graphics* g,
                                  const Style* style,
@@ -145,10 +151,10 @@ namespace ui {
     static void drawTextBox(Graphics* g, const Widget* textbox,
                             int* w, int* h, gfx::Color bg, gfx::Color fg);
 
-    static ui::Style* getDefaultStyle() { return &m_defaultStyle; }
+    static ui::Style* EmptyStyle() { return &m_emptyStyle; }
 
   protected:
-    virtual void onRegenerateTheme() = 0;
+    virtual void onRegenerateTheme() { }
 
     text::FontMgrRef m_fontMgr;
 
@@ -175,7 +181,8 @@ namespace ui {
                            gfx::Border& borderHint,
                            gfx::Rect& textHint, int& textAlign);
 
-    static ui::Style m_defaultStyle;
+    static ui::Style m_emptyStyle;
+    static ui::Style m_simpleStyle;
   };
 
 } // namespace ui

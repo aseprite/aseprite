@@ -216,7 +216,7 @@ void Widget::setStyle(Style* style)
   assert_ui_thread();
   ASSERT(style);
   if (!style)
-    style = Theme::getDefaultStyle();
+    style = Theme::EmptyStyle();
   m_style = style;
   m_border = m_theme->calcBorder(this, style);
   m_bgColor = m_theme->calcBgColor(this, style);

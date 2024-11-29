@@ -109,7 +109,7 @@ namespace app {
         if (it != m_styles.end())
           return it->second;
         else
-          return getDefaultStyle();
+          return EmptyStyle();
       }
 
       SkinPartPtr getPartById(const std::string& id) const {

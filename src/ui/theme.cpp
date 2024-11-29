@@ -34,6 +34,10 @@ namespace ui {
 
 namespace {
 
+// Colors for a simple default theme.
+constexpr const gfx::Color kBgColor = gfx::rgba(32, 32, 32, 255);
+constexpr const gfx::Color kFgColor = gfx::rgba(255, 255, 200, 255);
+
 int current_ui_scale = 1;       // Global UI Screen Scaling factor
 int old_ui_scale = 1;           // Add this field in InitThemeEvent
 Theme* current_theme = nullptr; // Global active theme
@@ -145,13 +149,40 @@ Theme::~Theme()
     set_theme(nullptr, guiscale());
 }
 
+text::FontRef Theme::getDefaultFont() const
+{
+  return m_fontMgr->defaultFont(kDefaultFontHeight);
+}
+
 // static
-ui::Style Theme::m_defaultStyle(nullptr);
+ui::Style Theme::m_emptyStyle(nullptr);
+ui::Style Theme::m_simpleStyle(nullptr);
 
 void Theme::regenerateTheme()
 {
   set_mouse_cursor(kNoCursor);
   onRegenerateTheme();
+}
+
+void Theme::initWidget(Widget* widget)
+{
+  if (m_simpleStyle.layers().empty()) {
+    Style::Layer bg;
+    Style::Layer br;
+    Style::Layer fg;
+    bg.setType(Style::Layer::Type::kBackground);
+    bg.setColor(kBgColor);
+    br.setType(Style::Layer::Type::kBorder);
+    br.setColor(kFgColor);
+    fg.setType(Style::Layer::Type::kText);
+    fg.setColor(kFgColor);
+    m_simpleStyle.layers().push_back(bg);
+    m_simpleStyle.layers().push_back(br);
+    m_simpleStyle.layers().push_back(fg);
+  }
+
+  widget->setFont(getDefaultFont());
+  widget->setStyle(&m_simpleStyle);
 }
 
 void Theme::setDecorativeWidgetBounds(Widget* widget)
@@ -191,6 +222,18 @@ void Theme::setDecorativeWidgetBounds(Widget* widget)
     }
 
   }
+}
+
+void Theme::paintListBox(PaintEvent& ev)
+{
+  Graphics* g = ev.graphics();
+  g->fillRect(kBgColor, g->getClipBounds());
+}
+
+void Theme::paintViewViewport(PaintEvent& ev)
+{
+  Graphics* g = ev.graphics();
+  g->fillRect(kBgColor, g->getClipBounds());
 }
 
 void Theme::paintWidgetPart(Graphics* g,
