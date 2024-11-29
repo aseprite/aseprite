@@ -384,14 +384,7 @@ bool FileList::onProcessMessage(Message* msg)
           break;
         }
         else {
-          gfx::Point scroll = view->viewScroll();
-
-          if (static_cast<MouseMessage*>(msg)->preciseWheel())
-            scroll += static_cast<MouseMessage*>(msg)->wheelDelta();
-          else
-            scroll += static_cast<MouseMessage*>(msg)->wheelDelta() * 3*(textHeight()+4*guiscale());
-
-          view->setViewScroll(scroll);
+          View::scrollByMessage(this, msg, 3 * (textHeight() + 4 * guiscale()));
         }
       }
       break;

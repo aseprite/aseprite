@@ -172,18 +172,7 @@ public:
           break;
 
         case ui::kMouseWheelMessage: {
-          auto view = ui::View::getView(this);
-          if (view) {
-            auto mouseMsg = static_cast<ui::MouseMessage*>(msg);
-            gfx::Point scroll = view->viewScroll();
-
-            if (mouseMsg->preciseWheel())
-              scroll += mouseMsg->wheelDelta();
-            else
-              scroll += mouseMsg->wheelDelta() * 3*(m_itemHeight+4*ui::guiscale());
-
-            view->setViewScroll(scroll);
-          }
+          ui::View::scrollByMessage(this, msg, 3 * m_itemHeight + 4 * ui::guiscale());
           break;
         }
 

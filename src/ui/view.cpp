@@ -225,6 +225,27 @@ View* View::getView(const Widget* widget)
     return 0;
 }
 
+void View::scrollByMessage(const Widget* widget, Message* message, std::optional<int> multiplier)
+{
+  View* view = View::getView(widget);
+  if (!view)
+    return;
+
+  auto mouseMsg = static_cast<MouseMessage*>(message);
+
+  if (!multiplier.has_value())
+    multiplier = widget->textHeight() * 3;
+
+  gfx::Point scroll = view->viewScroll();
+
+  if (mouseMsg->preciseWheel())
+    scroll += mouseMsg->wheelDelta();
+  else
+    scroll += mouseMsg->wheelDelta() * (*multiplier);
+
+  view->setViewScroll(scroll);
+}
+
 bool View::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {

@@ -170,24 +170,12 @@ public:
 protected:
   bool onProcessMessage(Message* msg) override {
     switch (msg->type()) {
-
       case kMouseWheelMessage: {
-        View* view = View::getView(this);
-        if (view) {
-          auto mouseMsg = static_cast<MouseMessage*>(msg);
-          gfx::Point scroll = view->viewScroll();
-
-          if (mouseMsg->preciseWheel())
-            scroll += mouseMsg->wheelDelta();
-          else
-            scroll += mouseMsg->wheelDelta() * textHeight()*3;
-
-          view->setViewScroll(scroll);
-        }
+        View::scrollByMessage(this, msg);
         break;
       }
-
     }
+
     return Widget::onProcessMessage(msg);
   }
 
