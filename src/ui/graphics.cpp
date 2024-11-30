@@ -28,6 +28,7 @@
 #include "text/font.h"
 #include "text/font_metrics.h"
 #include "text/shaper_features.h"
+#include "text/text_blob.h"
 #include "ui/display.h"
 #include "ui/scale.h"
 #include "ui/theme.h"
@@ -354,6 +355,25 @@ void Graphics::drawText(const std::string& str,
                     m_font, str, fg, bg, pt.x, pt.y, delegate, features);
 
   dirty(gfx::Rect(pt.x, pt.y, textBounds.w, textBounds.h));
+}
+
+void Graphics::drawTextBlob(const text::TextBlobRef& textBlob,
+                            const gfx::PointF& pt0,
+                            const Paint& paint)
+{
+  ASSERT(m_font);
+  if (!textBlob)
+    return;
+
+  gfx::PointF pt(m_dx+pt0.x, m_dy+pt0.y);
+
+  os::SurfaceLock lock(m_surface.get());
+  gfx::RectF textBounds = textBlob->bounds();
+
+  text::draw_text(m_surface.get(), textBlob, pt, &paint);
+
+  textBounds.offset(pt);
+  dirty(textBounds);
 }
 
 namespace {
