@@ -48,6 +48,7 @@ namespace ui {
     gfx::Color bgColor;
     int styleFlags;           // ui::Style::Layer flags
     const std::string* text;
+    text::TextBlobRef textBlob;
     int mnemonic;
     os::Surface* icon;
 
@@ -154,6 +155,7 @@ namespace ui {
                     const Style* style,
                     const Style::Layer& layer,
                     const std::string& text,
+                    const text::TextBlobRef& textBlob,
                     const int mnemonic,
                     os::Surface* icon,
                     gfx::Rect& rc,

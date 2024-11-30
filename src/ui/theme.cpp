@@ -103,6 +103,7 @@ PaintWidgetPartInfo::PaintWidgetPartInfo()
   bgColor = gfx::ColorNone;
   styleFlags = 0;
   text = nullptr;
+  textBlob = nullptr;
   mnemonic = 0;
   icon = nullptr;
 }
@@ -114,6 +115,7 @@ PaintWidgetPartInfo::PaintWidgetPartInfo(const Widget* widget)
              gfx::ColorNone);
   styleFlags = PaintWidgetPartInfo::getStyleFlagsForWidget(widget);
   text = &widget->text();
+  textBlob = widget->textBlob();
   mnemonic = widget->mnemonic();
   icon = nullptr;
   if (const Style::Layer::IconSurfaceProvider* iconProvider = dynamic_cast<const Style::Layer::IconSurfaceProvider*>(widget)) {
@@ -210,6 +212,7 @@ void Theme::paintWidgetPart(Graphics* g,
     (const Style::Layer& layer) {
       paintLayer(g, style, layer,
                  (info.text ? *info.text: std::string()),
+                 info.textBlob,
                  info.mnemonic, info.icon, rc, outBgColor);
     });
 }
@@ -326,6 +329,7 @@ void Theme::paintLayer(Graphics* g,
                        const Style* style,
                        const Style::Layer& layer,
                        const std::string& text,
+                       const text::TextBlobRef& textBlob,
                        const int mnemonic,
                        os::Surface* providedIcon,
                        gfx::Rect& rc,
@@ -481,10 +485,25 @@ void Theme::paintLayer(Graphics* g,
 
           pt += layer.offset();
 
-          g->drawUIText(text,
-                        layer.color(),
-                        bgColor,
-                        pt, style->mnemonics() ? mnemonic : 0);
+          // Fast path with TextBlobs
+          if ((textBlob) &&
+              (!style->mnemonics() || mnemonic == 0) &&
+              (style->font() == nullptr)) {
+            Paint paint;
+            if (gfx::geta(bgColor) > 0) { // Paint background
+              paint.color(bgColor);
+              paint.style(os::Paint::Fill);
+              g->drawRect(gfx::RectF(textBlob->bounds()).offset(pt), paint);
+            }
+            paint.color(layer.color());
+            g->drawTextBlob(textBlob, gfx::PointF(pt), paint);
+          }
+          else {
+            g->drawUIText(text,
+                          layer.color(),
+                          bgColor,
+                          pt, style->mnemonics() ? mnemonic : 0);
+          }
         }
 
         if (style->font())
