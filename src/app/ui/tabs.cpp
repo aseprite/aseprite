@@ -172,7 +172,11 @@ void Tabs::updateTabs()
       x += tabWidth;
     }
 
-    tab->text = tab->view->getTabText();
+    std::string newText = tab->view->getTabText();
+    if (tab->text != newText) {
+      tab->text = newText;
+      tab->textBlob.reset();
+    }
     tab->icon = tab->view->getTabIcon();
     tab->color = tab->view->getTabColor();
     tab->x = int(x);
@@ -480,6 +484,10 @@ void Tabs::onInitTheme(ui::InitThemeEvent& ev)
     m_tabsBottomHeight = theme->dimensions.tabsBottomHeight();
     setStyle(theme->styles.mainTabs());
   }
+
+  for (TabPtr& tab : m_list) {
+    tab->textBlob = nullptr;
+  }
 }
 
 void Tabs::onPaint(PaintEvent& ev)
@@ -643,7 +651,19 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
       Style* stylePtr = theme->styles.tabText();
       Style newStyle(nullptr);
 
+      if (!tab->textBlob) {
+        tab->textBlob =
+          text::TextBlob::MakeWithShaper(
+            theme->fontMgr(),
+            AddRef(font()),
+            tab->text,
+            nullptr,
+            text::ShaperFeatures());
+      }
+
       info.text = &tab->text;
+      info.textBlob = tab->textBlob;
+
       if (tabColor != gfx::ColorNone) {
         // TODO replace these fillRect() with a new theme part (which
         // should be painted with the specific user-defined color)
@@ -664,6 +684,7 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
         gfx::Rect(box.x+dx, box.y+dy, box.w-dx, box.h),
         info);
       info.text = nullptr;
+      info.textBlob = nullptr;
     }
   }
 

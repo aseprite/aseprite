@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +10,7 @@
 #pragma once
 
 #include "base/ref.h"
+#include "text/fwd.h"
 #include "ui/animated_widget.h"
 #include "ui/widget.h"
 
@@ -122,6 +123,7 @@ namespace app {
     struct Tab {
       TabView* view;
       std::string text;
+      text::TextBlobRef textBlob;
       TabIcon icon;
       gfx::Color color;
       int x, width;
