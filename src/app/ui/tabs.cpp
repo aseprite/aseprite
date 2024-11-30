@@ -655,7 +655,7 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
         tab->textBlob =
           text::TextBlob::MakeWithShaper(
             theme->fontMgr(),
-            AddRef(font()),
+            font(),
             tab->text,
             nullptr,
             text::ShaperFeatures());
