@@ -16,6 +16,17 @@ namespace app {
   // Data for PNG files
   class PngOptions : public FormatOptions {
   public:
+    struct TextEntry {
+      // Flags PNG_TEXT_COMPRESSION_NONE/PNG_TEXT_COMPRESSION_zTXt/PNG_ITXT_COMPRESSION_NONE/PNG_ITXT_COMPRESSION_zTXt
+      int compression;
+      size_t text_length;
+      size_t itxt_length;
+      base::buffer key;
+      std::unique_ptr<base::buffer> text;
+      std::unique_ptr<base::buffer> lang;
+      std::unique_ptr<base::buffer> lang_key;
+    };
+
     struct Chunk {
       std::string name;
       base::buffer data;
@@ -23,23 +34,26 @@ namespace app {
       int location;
     };
 
+    using Text = std::vector<TextEntry>;
     using Chunks = std::vector<Chunk>;
+
+    void addTextEntry(TextEntry&& text) {
+      m_Text.emplace_back(std::move(text));
+    }
 
     void addChunk(Chunk&& chunk) {
       m_userChunks.emplace_back(std::move(chunk));
     }
 
-    bool isEmpty() const {
-      return m_userChunks.empty();
+    bool isEmpty() {
+      return m_Text.empty() && m_userChunks.empty();
     }
 
-    int size() const {
-      return int(m_userChunks.size());
-    }
-
+    const Text& text() const { return m_Text; }
     const Chunks& chunks() const { return m_userChunks; }
 
   private:
+    Text m_Text;
     Chunks m_userChunks;
   };
 
