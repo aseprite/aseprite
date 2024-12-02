@@ -2050,8 +2050,6 @@ bool Editor::onProcessMessage(Message* msg)
     }
 
     case kMouseEnterMessage:
-      m_brushPreview.hide();
-
       // Do not update tool loop modifiers when the mouse exits and/re-enters
       // the editor area while we are inside the same tool loop (hasCapture()).
       // E.g. This avoids starting to rotate a rectangular marquee (Alt key
@@ -2064,7 +2062,9 @@ bool Editor::onProcessMessage(Message* msg)
       break;
 
     case kMouseLeaveMessage:
-      m_brushPreview.hide();
+      if (!hasCapture())
+        m_brushPreview.hide();
+
       StatusBar::instance()->showDefaultText();
 
       // Hide autoguides
@@ -2122,7 +2122,7 @@ bool Editor::onProcessMessage(Message* msg)
         updateToolByTipProximity(mouseMsg->pointerType());
         updateAutoCelGuides(msg);
 
-        return m_state->onMouseMove(this, static_cast<MouseMessage*>(msg));
+        return m_state->onMouseMove(this, mouseMsg);
       }
       break;
 
@@ -2142,6 +2142,14 @@ bool Editor::onProcessMessage(Message* msg)
           updateToolLoopModifiersIndicators();
           updateQuicktool();
           setCursor(mouseMsg->position());
+
+          // In case we didn't hide the BrushPreview on the
+          // kMouseLeaveMessage message (because we had the mouse
+          // captured), we can hide the BrushPreview now if the mouse
+          // is outside the widget.
+          if (!hasMouse()) {
+            m_brushPreview.hide();
+          }
         }
 
         if (result)
@@ -2553,8 +2561,6 @@ void Editor::onBeforeLayerVisibilityChange(DocEvent& ev, bool newState)
 void Editor::setCursor(const gfx::Point& mouseDisplayPos)
 {
   Rect vp = View::getView(this)->viewportBounds();
-  if (!vp.contains(mouseDisplayPos))
-    return;
 
   bool used = false;
   if (m_sprite)
