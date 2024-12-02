@@ -300,6 +300,7 @@ else
                 echo "--- Updating $build_dir ---"
                 update_file "$file"
                 for other_file in "$build_dir/CMakeFiles/rules.ninja" \
+                                  "$build_dir"/CMakeFiles/*/*.cmake \
                                   "$build_dir/third_party/libpng/scripts/genout.cmake" ; do
                     update_file "$other_file"
                 done
