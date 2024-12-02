@@ -46,7 +46,6 @@ static bool use_native_mouse_cursor = true;
 
 // Mouse information
 static int mouse_cursor_scale = 1;
-static int mouse_scares = 0;
 
 static bool set_native_cursor_on_all_displays(Display* display,
                                               const Cursor* cursor)
@@ -269,21 +268,6 @@ void set_mouse_cursor_reset_info()
 {
   mouse_cursor_type = kCustomCursor;
   mouse_cursor_custom = nullptr;
-}
-
-void hide_mouse_cursor()
-{
-  ASSERT(mouse_scares >= 0);
-  mouse_scares++;
-}
-
-void show_mouse_cursor()
-{
-  ASSERT(mouse_scares > 0);
-  mouse_scares--;
-
-  if (mouse_scares == 0)
-    update_mouse_cursor();
 }
 
 void _internal_no_mouse_position()

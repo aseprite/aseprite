@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -53,9 +53,6 @@ namespace ui {
   void set_mouse_cursor(CursorType type, const Cursor* cursor = nullptr);
   void set_mouse_cursor_scale(const int newScale);
   void set_mouse_cursor_reset_info();
-
-  void hide_mouse_cursor();
-  void show_mouse_cursor();
 
   void _internal_set_mouse_display(Display* display);
   void _internal_no_mouse_position();

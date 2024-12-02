@@ -883,14 +883,12 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
     // Move the window's graphics
     Display* display = this->display();
     Graphics g(display, display->backLayer()->surface(), 0, 0);
-    hide_mouse_cursor();
     {
       IntersectClip clip(&g, man_pos);
       if (clip) {
         ui::move_region(display, moveableRegion, dx, dy);
       }
     }
-    show_mouse_cursor();
 
     reg1.createSubtraction(reg1, moveableRegion);
     reg1.offset(dx, dy);
