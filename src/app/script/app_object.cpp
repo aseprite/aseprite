@@ -526,6 +526,12 @@ int App_get_editor(lua_State* L)
   return 0;
 }
 
+int App_get_clipboard(lua_State* L)
+{
+  push_app_clipboard(L);
+  return 1;
+}
+
 int App_get_sprite(lua_State* L)
 {
   app::Context* ctx = App::instance()->context();
@@ -854,6 +860,7 @@ const Property App_properties[] = {
   { "theme",          App_get_theme,          nullptr                },
   { "uiScale",        App_get_uiScale,        nullptr                },
   { "editor",         App_get_editor,         nullptr                },
+  { "clipboard",      App_get_clipboard,      nullptr                },
   { nullptr,          nullptr,                nullptr                }
 };
 
