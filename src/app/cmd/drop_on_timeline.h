@@ -60,10 +60,9 @@ protected:
 
 private:
   void setupInsertionLayer(doc::Layer*& layer, doc::LayerGroup*& group);
-  void insertDroppedLayers(bool incGroupVersion);
+  void insertDroppedLayers();
   bool canMoveCelFrom(app::Doc* srcDoc);
-  void notifyAddLayer(doc::Layer* layer);
-  void notifyDocObservers(doc::Layer* layer);
+  void notifyGeneralUpdate();
   bool hasPendingWork();
   // Sets srcDoc's Doc* reference to the next document to be processed.
   // Returns false when the user cancelled the process, or true when the
@@ -72,6 +71,9 @@ private:
   bool getNextDocFromImage(Doc*& srcDoc);
   bool getNextDocFromPaths(Doc*& srcDoc);
 
+  void storeDroppedLayerIds(const doc::Layer* layer);
+  void saveDroppedLayers(const doc::LayerList& layers, doc::Sprite* sprite);
+
   size_t m_size;
   base::paths m_paths;
   doc::ImageRef m_image = nullptr;
@@ -79,9 +81,11 @@ private:
   doc::layer_t m_layerIndex;
   InsertionPoint m_insert;
   DroppedOn m_droppedOn;
-  // Holds the list of layers dropped into the document. Used to support
-  // undo/redo without having to read all the files again.
-  doc::LayerList m_droppedLayers;
+  // Serialized dropped layers' data. Used for redo operation.
+  std::stringstream m_stream;
+  // Holds the Object IDs of the dropped layers. Used when determining which
+  // layers should be removed in an undo operation.
+  std::vector<doc::ObjectId> m_droppedLayersIds;
   // Number of frames the doc had before dropping.
   doc::frame_t m_previousTotalFrames;
 };

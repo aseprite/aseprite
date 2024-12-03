@@ -21,12 +21,17 @@
 #include "app/tx.h"
 #include "app/util/layer_utils.h"
 #include "app/util/open_file_job.h"
+#include "base/serialization.h"
+#include "doc/layer_io.h"
 #include "doc/layer_list.h"
+#include "doc/subobjects_io.h"
 #include "render/dithering.h"
 
 #include <algorithm>
 
 namespace app { namespace cmd {
+
+using namespace base::serialization::little_endian;
 
 DropOnTimeline::DropOnTimeline(app::Doc* doc,
                                doc::frame_t frame,
@@ -45,6 +50,10 @@ DropOnTimeline::DropOnTimeline(app::Doc* doc,
   ASSERT(m_layerIndex >= 0);
   for (const auto& path : m_paths)
     m_size += path.size();
+
+  // Zero layers stored.
+  write32(m_stream, 0);
+  m_size += sizeof(uint32_t);
 }
 
 DropOnTimeline::DropOnTimeline(app::Doc* doc,
@@ -62,6 +71,127 @@ DropOnTimeline::DropOnTimeline(app::Doc* doc,
   , m_droppedOn(droppedOn)
 {
   ASSERT(m_layerIndex >= 0);
+
+  // Zero layers stored.
+  write32(m_stream, 0);
+  m_size += sizeof(uint32_t);
+}
+
+void DropOnTimeline::onExecute()
+{
+  Doc* destDoc = document();
+  m_previousTotalFrames = destDoc->sprite()->totalFrames();
+
+  int docsProcessed = 0;
+  while (hasPendingWork()) {
+    Doc* srcDoc;
+    if (!getNextDoc(srcDoc))
+      return;
+
+    if (srcDoc) {
+      docsProcessed++;
+      // If source document doesn't match the destination document's color
+      // mode, change it.
+      if (srcDoc->colorMode() != destDoc->colorMode()) {
+        // Execute in a source doc transaction because we don't need undo/redo
+        // this.
+        Tx tx(srcDoc);
+        tx(new cmd::SetPixelFormat(srcDoc->sprite(),
+                                   destDoc->sprite()->pixelFormat(),
+                                   render::Dithering(),
+                                   Preferences::instance().quantization.rgbmapAlgorithm(),
+                                   nullptr,
+                                   nullptr,
+                                   FitCriteria::DEFAULT));
+        tx.commit();
+      }
+
+      // If there is only one source document to process and it has a cel that
+      // can be moved, then move the cel from the source doc into the
+      // destination doc's selected frame.
+      const bool isJustOneDoc = (docsProcessed == 1 && !hasPendingWork());
+      if (isJustOneDoc && canMoveCelFrom(srcDoc)) {
+        auto* srcLayer = static_cast<LayerImage*>(srcDoc->sprite()->firstLayer());
+        auto* destLayer = static_cast<LayerImage*>(destDoc->sprite()->allLayers()[m_layerIndex]);
+        executeAndAdd(new MoveCel(srcLayer, 0, destLayer, m_frame, false));
+        break;
+      }
+
+      // If there is no room for the source frames, add frames to the
+      // destination sprite.
+      if (m_frame + srcDoc->sprite()->totalFrames() > destDoc->sprite()->totalFrames()) {
+        destDoc->sprite()->setTotalFrames(m_frame + srcDoc->sprite()->totalFrames());
+      }
+
+      // Save dropped layers from source document.
+      saveDroppedLayers(srcDoc->sprite()->root()->layers(), destDoc->sprite());
+
+      // Source doc is not needed anymore.
+      delete srcDoc;
+    }
+  }
+
+  if (m_droppedLayersIds.empty())
+    return;
+
+  destDoc->sprite()->incrementVersion();
+  destDoc->incrementVersion();
+
+  insertDroppedLayers();
+}
+
+void DropOnTimeline::onUndo()
+{
+  CmdSequence::onUndo();
+
+  if (m_droppedLayersIds.empty()) {
+    notifyGeneralUpdate();
+    return;
+  }
+
+  Doc* doc = document();
+  frame_t currentTotalFrames = doc->sprite()->totalFrames();
+
+  for (auto id : m_droppedLayersIds) {
+    auto* layer = doc::get<Layer>(id);
+    ASSERT(layer);
+    if (layer) {
+      DocEvent ev(doc);
+      ev.sprite(layer->sprite());
+      ev.layer(layer);
+      doc->notify_observers<DocEvent&>(&DocObserver::onBeforeRemoveLayer, ev);
+
+      LayerGroup* group = layer->parent();
+      group->removeLayer(layer);
+      group->incrementVersion();
+      group->sprite()->incrementVersion();
+
+      doc->notify_observers<DocEvent&>(&DocObserver::onAfterRemoveLayer, ev);
+
+      delete layer;
+    }
+  }
+  doc->sprite()->setTotalFrames(m_previousTotalFrames);
+  doc->sprite()->incrementVersion();
+  m_previousTotalFrames = currentTotalFrames;
+}
+
+void DropOnTimeline::onRedo()
+{
+  CmdSequence::onRedo();
+
+  if (m_droppedLayersIds.empty()) {
+    notifyGeneralUpdate();
+    return;
+  }
+
+  Doc* doc = document();
+  frame_t currentTotalFrames = doc->sprite()->totalFrames();
+  doc->sprite()->setTotalFrames(m_previousTotalFrames);
+  doc->sprite()->incrementVersion();
+  m_previousTotalFrames = currentTotalFrames;
+
+  insertDroppedLayers();
 }
 
 void DropOnTimeline::setupInsertionLayer(Layer*& layer, LayerGroup*& group)
@@ -155,117 +285,51 @@ bool DropOnTimeline::getNextDoc(Doc*& srcDoc)
   return getNextDocFromImage(srcDoc);
 }
 
-void DropOnTimeline::onExecute()
+void DropOnTimeline::storeDroppedLayerIds(const Layer* layer)
 {
-  Doc* destDoc = document();
-  m_previousTotalFrames = destDoc->sprite()->totalFrames();
+  if (layer->isGroup()) {
+    const auto* group = static_cast<const LayerGroup*>(layer);
+    for (auto* child : group->layers())
+      storeDroppedLayerIds(child);
 
-  int docsProcessed = 0;
-  while (hasPendingWork()) {
-    Doc* srcDoc;
-    if (!getNextDoc(srcDoc))
-      return;
-
-    if (srcDoc) {
-      docsProcessed++;
-      // If source document doesn't match the destination document's color
-      // mode, change it.
-      if (srcDoc->colorMode() != destDoc->colorMode()) {
-        // Execute in a source doc transaction because we don't need undo/redo
-        // this.
-        Tx tx(srcDoc);
-        tx(new cmd::SetPixelFormat(srcDoc->sprite(),
-                                   destDoc->sprite()->pixelFormat(),
-                                   render::Dithering(),
-                                   Preferences::instance().quantization.rgbmapAlgorithm(),
-                                   nullptr,
-                                   nullptr,
-                                   FitCriteria::DEFAULT));
-        tx.commit();
-      }
-
-      // If there is only one source document to process and it has a cel that
-      // can be moved, then move the cel from the source doc into the
-      // destination doc's selected frame.
-      const bool isJustOneDoc = (docsProcessed == 1 && !hasPendingWork());
-      if (isJustOneDoc && canMoveCelFrom(srcDoc)) {
-        auto* srcLayer = static_cast<LayerImage*>(srcDoc->sprite()->firstLayer());
-        auto* destLayer = static_cast<LayerImage*>(destDoc->sprite()->allLayers()[m_layerIndex]);
-        executeAndAdd(new MoveCel(srcLayer, 0, destLayer, m_frame, false));
-        break;
-      }
-
-      // If there is no room for the source frames, add frames to the
-      // destination sprite.
-      if (m_frame + srcDoc->sprite()->totalFrames() > destDoc->sprite()->totalFrames()) {
-        destDoc->sprite()->setTotalFrames(m_frame + srcDoc->sprite()->totalFrames());
-      }
-
-      // Save dropped layers from source document.
-      auto allLayers = srcDoc->sprite()->allLayers();
-      for (auto it = allLayers.cbegin(); it != allLayers.cend(); ++it) {
-        auto* layer = *it;
-        // TODO: If we could "relocate" a layer from the source document to the
-        // destination document we could avoid making a copy here.
-        auto* layerCopy = copy_layer_with_sprite(layer, destDoc->sprite());
-        layerCopy->displaceFrames(0, m_frame);
-        m_droppedLayers.push_back(layerCopy);
-        m_size += layerCopy->getMemSize();
-      }
-
-      // Source doc is not needed anymore.
-      delete srcDoc;
-    }
+    m_droppedLayersIds.push_back(group->id());
   }
-  destDoc->sprite()->incrementVersion();
-  destDoc->incrementVersion();
-
-  insertDroppedLayers(true);
+  else {
+    m_droppedLayersIds.push_back(layer->id());
+  }
 }
 
-void DropOnTimeline::onUndo()
+void DropOnTimeline::saveDroppedLayers(const LayerList& layers, Sprite* sprite)
 {
-  CmdSequence::onUndo();
+  size_t start = m_stream.tellp();
 
-  if (m_droppedLayers.empty()) {
-    notifyDocObservers(nullptr);
-    return;
+  // Calculate the new number of layers.
+  m_stream.seekg(0);
+  uint32_t nLayers = read32(m_stream) + layers.size();
+
+  // Flat list of all the dropped layers.
+  LayerList allDroppedLayers;
+  // Write number of layers (at the beginning of the stream).
+  m_stream.seekp(0);
+  write32(m_stream, nLayers);
+  // Move to where we must start writing.
+  m_stream.seekp(start);
+  for (auto it = layers.cbegin(); it != layers.cend(); ++it) {
+    auto* layer = *it;
+    // TODO: If we could "relocate" a layer from the source document to the
+    // destination document we could avoid making a copy here.
+    std::unique_ptr<Layer> layerCopy(copy_layer_with_sprite(layer, sprite));
+    layerCopy->displaceFrames(0, m_frame);
+
+    write_layer(m_stream, layerCopy.get());
+
+    storeDroppedLayerIds(layerCopy.get());
   }
-
-  Doc* doc = document();
-  frame_t currentTotalFrames = doc->sprite()->totalFrames();
-  Layer* layerBefore = nullptr;
-  for (auto* layer : m_droppedLayers) {
-    layerBefore = layer->getPrevious();
-    layer->parent()->removeLayer(layer);
-  }
-  doc->sprite()->setTotalFrames(m_previousTotalFrames);
-  m_previousTotalFrames = currentTotalFrames;
-
-  if (!layerBefore)
-    layerBefore = doc->sprite()->firstLayer();
-
-  notifyDocObservers(layerBefore);
+  size_t end = m_stream.tellp();
+  m_size += end - start;
 }
 
-void DropOnTimeline::onRedo()
-{
-  CmdSequence::onRedo();
-
-  if (m_droppedLayers.empty()) {
-    notifyDocObservers(nullptr);
-    return;
-  }
-
-  Doc* doc = document();
-  frame_t currentTotalFrames = doc->sprite()->totalFrames();
-  doc->sprite()->setTotalFrames(m_previousTotalFrames);
-  m_previousTotalFrames = currentTotalFrames;
-
-  insertDroppedLayers(false);
-}
-
-void DropOnTimeline::insertDroppedLayers(bool incGroupVersion)
+void DropOnTimeline::insertDroppedLayers()
 {
   // Layer used as a reference to determine if the dropped layers will be
   // inserted after or before it.
@@ -277,8 +341,11 @@ void DropOnTimeline::insertDroppedLayers(bool incGroupVersion)
 
   setupInsertionLayer(refLayer, group);
 
-  for (auto it = m_droppedLayers.cbegin(); it != m_droppedLayers.cend(); ++it) {
-    auto* layer = *it;
+  SubObjectsFromSprite io(group->sprite());
+  m_stream.seekg(0);
+  auto nLayers = read32(m_stream);
+  for (int i = 0; i < nLayers; ++i) {
+    auto* layer = read_layer(m_stream, &io);
 
     if (!refLayer) {
       group->addLayer(layer);
@@ -294,12 +361,16 @@ void DropOnTimeline::insertDroppedLayers(bool incGroupVersion)
       refLayer = layer;
       insert = InsertionPoint::AfterLayer;
     }
-  }
 
-  if (incGroupVersion)
     group->incrementVersion();
+    group->sprite()->incrementVersion();
 
-  notifyDocObservers(refLayer);
+    Doc* doc = static_cast<Doc*>(group->sprite()->document());
+    DocEvent ev(doc);
+    ev.sprite(group->sprite());
+    ev.layer(layer);
+    doc->notify_observers<DocEvent&>(&DocObserver::onAddLayer, ev);
+  }
 }
 
 // Returns true if the document srcDoc has a cel that can be moved.
@@ -318,24 +389,13 @@ bool DropOnTimeline::canMoveCelFrom(app::Doc* srcDoc)
          srcDoc->sprite()->totalFrames() == 1 && srcLayer->isImage() && destLayer->isImage();
 }
 
-void DropOnTimeline::notifyDocObservers(Layer* layer)
+void DropOnTimeline::notifyGeneralUpdate()
 {
   Doc* doc = document();
   if (!doc)
     return;
 
-  if (!layer) {
-    doc->notifyGeneralUpdate();
-    return;
-  }
-
-  DocEvent ev(doc);
-  ev.sprite(doc->sprite());
-  ev.layer(layer);
-  // TODO: This is a hack, we send this notification because the timeline
-  // has the code we need to execute after this command. We tried using
-  // DocObserver::onAddLayer but it makes the redo crash.
-  doc->notify_observers<DocEvent&>(&DocObserver::onAfterRemoveLayer, ev);
+  doc->notifyGeneralUpdate();
 }
 
 }} // namespace app::cmd
