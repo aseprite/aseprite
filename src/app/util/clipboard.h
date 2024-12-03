@@ -90,6 +90,16 @@ public:
   void setClipboardText(const std::string& text) override;
   bool getClipboardText(std::string& text) override;
 
+  bool setNativeBitmap(const doc::Image* image,
+                       const doc::Mask* mask,
+                       const doc::Palette* palette,
+                       const doc::Tileset* tileset,
+                       const doc::color_t indexMaskColor);
+  bool getNativeBitmap(doc::Image** image,
+                       doc::Mask** mask,
+                       doc::Palette** palette,
+                       doc::Tileset** tileset);
+
 private:
   void setData(doc::Image* image,
                doc::Mask* mask,
@@ -103,15 +113,6 @@ private:
   void clearNativeContent();
   void registerNativeFormats();
   bool hasNativeBitmap() const;
-  bool setNativeBitmap(const doc::Image* image,
-                       const doc::Mask* mask,
-                       const doc::Palette* palette,
-                       const doc::Tileset* tileset,
-                       const doc::color_t indexMaskColor);
-  bool getNativeBitmap(doc::Image** image,
-                       doc::Mask** mask,
-                       doc::Palette** palette,
-                       doc::Tileset** tileset);
   bool getNativeBitmapSize(gfx::Size* size);
 
   bool setNativePalette(const doc::Palette* palette, const doc::PalettePicks& picks);
