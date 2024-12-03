@@ -179,6 +179,16 @@ void Theme::initWidget(Widget* widget)
     m_simpleStyle.layers().push_back(bg);
     m_simpleStyle.layers().push_back(br);
     m_simpleStyle.layers().push_back(fg);
+
+    bg.setFlags(Style::Layer::kSelected);
+    bg.setColor(kFgColor);
+    br.setFlags(Style::Layer::kSelected);
+    br.setColor(kFgColor);
+    fg.setFlags(Style::Layer::kSelected);
+    fg.setColor(kBgColor);
+    m_simpleStyle.layers().push_back(bg);
+    m_simpleStyle.layers().push_back(br);
+    m_simpleStyle.layers().push_back(fg);
   }
 
   widget->setFont(getDefaultFont());
