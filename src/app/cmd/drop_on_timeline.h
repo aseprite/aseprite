@@ -59,12 +59,12 @@ namespace cmd {
     bool canMoveCelFrom(app::Doc* srcDoc);
     void notifyGeneralUpdate();
     bool hasPendingWork();
-    // Sets srcDoc's Doc* reference to the next document to be processed.
+    // Returns the next document to be processed.
     // Returns false when the user cancelled the process, or true when the
     // process must go on.
-    bool getNextDoc(Doc*& srcDoc);
-    bool getNextDocFromImage(Doc*& srcDoc);
-    bool getNextDocFromPaths(Doc*& srcDoc);
+    bool getNextDoc(std::unique_ptr<Doc>& srcDoc);
+    bool getNextDocFromImage(std::unique_ptr<Doc>& srcDoc);
+    bool getNextDocFromPaths(std::unique_ptr<Doc>& srcDoc);
 
     void storeDroppedLayerIds(const doc::Layer* layer);
     void saveDroppedLayers(const doc::LayerList& layers, doc::Sprite* sprite);
