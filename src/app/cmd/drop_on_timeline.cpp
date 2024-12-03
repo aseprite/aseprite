@@ -84,7 +84,7 @@ void DropOnTimeline::onExecute()
 
   int docsProcessed = 0;
   while (hasPendingWork()) {
-    Doc* srcDoc;
+    std::unique_ptr<Doc> srcDoc;
     if (!getNextDoc(srcDoc))
       return;
 
@@ -95,7 +95,7 @@ void DropOnTimeline::onExecute()
       if (srcDoc->colorMode() != destDoc->colorMode()) {
         // Execute in a source doc transaction because we don't need undo/redo
         // this.
-        Tx tx(srcDoc);
+        Tx tx(srcDoc.get());
         tx(new cmd::SetPixelFormat(srcDoc->sprite(),
                                    destDoc->sprite()->pixelFormat(),
                                    render::Dithering(),
@@ -110,7 +110,7 @@ void DropOnTimeline::onExecute()
       // can be moved, then move the cel from the source doc into the
       // destination doc's selected frame.
       const bool isJustOneDoc = (docsProcessed == 1 && !hasPendingWork());
-      if (isJustOneDoc && canMoveCelFrom(srcDoc)) {
+      if (isJustOneDoc && canMoveCelFrom(srcDoc.get())) {
         auto* srcLayer = static_cast<LayerImage*>(srcDoc->sprite()->firstLayer());
         auto* destLayer = static_cast<LayerImage*>(destDoc->sprite()->allLayers()[m_layerIndex]);
         executeAndAdd(new MoveCel(srcLayer, 0, destLayer, m_frame, false));
@@ -125,9 +125,6 @@ void DropOnTimeline::onExecute()
 
       // Save dropped layers from source document.
       saveDroppedLayers(srcDoc->sprite()->root()->layers(), destDoc->sprite());
-
-      // Source doc is not needed anymore.
-      delete srcDoc;
     }
   }
 
@@ -218,7 +215,7 @@ bool DropOnTimeline::hasPendingWork()
   return m_image || !m_paths.empty();
 }
 
-bool DropOnTimeline::getNextDocFromImage(Doc*& srcDoc)
+bool DropOnTimeline::getNextDocFromImage(std::unique_ptr<Doc>& srcDoc)
 {
   if (!m_image)
     return true;
@@ -228,12 +225,12 @@ bool DropOnTimeline::getNextDocFromImage(Doc*& srcDoc)
   sprite->root()->addLayer(layer);
   Cel* cel = new Cel(0, m_image);
   layer->addCel(cel);
-  srcDoc = new Doc(sprite);
+  srcDoc = std::make_unique<Doc>(sprite);
   m_image = nullptr;
   return true;
 }
 
-bool DropOnTimeline::getNextDocFromPaths(Doc*& srcDoc)
+bool DropOnTimeline::getNextDocFromPaths(std::unique_ptr<Doc>& srcDoc)
 {
   Console console;
   Context* context = document()->context();
@@ -272,13 +269,12 @@ bool DropOnTimeline::getNextDocFromPaths(Doc*& srcDoc)
   if (fop->hasError() && !fop->isStop())
     console.printf(fop->error().c_str());
 
-  srcDoc = fop->releaseDocument();
+  srcDoc.reset(fop->releaseDocument());
   return true;
 }
 
-bool DropOnTimeline::getNextDoc(Doc*& srcDoc)
+bool DropOnTimeline::getNextDoc(std::unique_ptr<Doc>& srcDoc)
 {
-  srcDoc = nullptr;
   if (m_image == nullptr && !m_paths.empty())
     return getNextDocFromPaths(srcDoc);
 
