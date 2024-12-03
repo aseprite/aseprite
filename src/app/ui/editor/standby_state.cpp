@@ -615,19 +615,16 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
           }
         }
         // Show the grid cell index
-        else if ((!site.layer() ||
-            !site.layer()->isTilemap()) &&
-            (spritePos.x >= 0 && spritePos.x <= sprite->width() &&
-            spritePos.y >= 0 && spritePos.y <= sprite->height())) {
+        if (sprite->bounds().contains(gfx::Point(spritePos))) {
           int columns = int(std::floor(
             sprite->bounds().w/grid.tileSize().w));
           int rows = int(std::floor(
             sprite->bounds().h/grid.tileSize().h));
-          int column = pt.x%columns;
-          int row = pt.y%rows;
+          int column = (columns ? pt.x%columns: 0);
+          int row = (rows ? pt.y%rows: 0);
           if (row < 0) row = row + rows;
           if (column < 0) column = column + columns;
-          buf += fmt::format(" [{}]", column+row*columns);
+          buf += fmt::format(" :search: {}", column+row*columns);
         }
       }
     }
