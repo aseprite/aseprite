@@ -208,24 +208,6 @@ int init_module_gui()
   if (maximized)
     main_window->maximize();
 
-  // Handle live resize too redraw the entire manager, dispatch the UI
-  // messages, and flip the window.
-  system->handleWindowResize =
-    [](os::Window* window) {
-      Display* display = Manager::getDisplayFromNativeWindow(window);
-      if (!display)
-        display = manager->display();
-      ASSERT(display);
-
-      Message* msg = new Message(kResizeDisplayMessage);
-      msg->setDisplay(display);
-      msg->setRecipient(manager);
-      msg->setPropagateToChildren(false);
-
-      manager->enqueueMessage(msg);
-      manager->dispatchMessages();
-    };
-
   // Set graphics options for next time
   save_gui_config();
 

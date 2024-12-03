@@ -231,6 +231,24 @@ Manager::Manager(const os::WindowRef& nativeWindow)
   if (!m_defaultManager)
     m_defaultManager = this;
 
+  // Handle live resize too redraw the entire manager, dispatch the UI
+  // messages, and flip the window.
+  os::System::instance()->handleWindowResize =
+    [this](os::Window* window) {
+      Display* display = Manager::getDisplayFromNativeWindow(window);
+      if (!display)
+        display = this->display();
+      ASSERT(display);
+
+      Message* msg = new Message(kResizeDisplayMessage);
+      msg->setDisplay(display);
+      msg->setRecipient(this);
+      msg->setPropagateToChildren(false);
+
+      enqueueMessage(msg);
+      dispatchMessages();
+    };
+
   // TODO check if this is needed
   onNewDisplayConfiguration(&m_display);
 }
