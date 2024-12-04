@@ -65,15 +65,6 @@ public:
     // ADD/SUBTRACT/INTERSECT Selection Mode
     , m_isOrigMaskVisible(reader.document()->isMaskVisible()) {
 
-    if (!params.color.isSet())
-      params.color(ColorBar::instance()->getFgColor());
-
-    if (!params.tolerance.isSet())
-      params.tolerance(get_config_int(ConfigSection, "Tolerance", 0));
-
-    if (!params.mode.isSet())
-      params.mode(Preferences::instance().selection.mode());
-
     TooltipManager* tooltipManager = new TooltipManager();
     addChild(tooltipManager);
     auto box1 = new Box(VERTICAL);
@@ -237,7 +228,7 @@ void MaskByColorCommand::onExecute(Context* context)
   const ContextReader reader(context);
   const Sprite* sprite = reader.sprite();
 
-  if (!App::instance()->isGui() || !sprite)
+  if (!sprite)
     return;
 
   int xpos, ypos;
@@ -251,6 +242,19 @@ void MaskByColorCommand::onExecute(Context* context)
 
   bool apply = true;
   auto& params = this->params();
+
+  // If UI is available, set parameters default values from the UI/configuration
+  if (context->isUIAvailable()) {
+    if (!params.color.isSet())
+      params.color(ColorBar::instance()->getFgColor());
+
+    if (!params.tolerance.isSet())
+      params.tolerance(get_config_int(ConfigSection, "Tolerance", 0));
+
+    if (!params.mode.isSet())
+      params.mode(Preferences::instance().selection.mode());
+  }
+
   if (ui) {
     MaskByColorWindow window(params, reader);
 
