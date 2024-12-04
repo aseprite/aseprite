@@ -557,7 +557,10 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
 
     Sprite* sprite = document->sprite();
 
-    auto newFrameBounds = calcFrameSize(sprite->size(), params.columns(), params.rows(), params.frameBounds().origin(), params.padding());
+    auto newFrameBounds = calcFrameSize(sprite->size(),
+                                        params.columns(), params.rows(),
+                                        params.frameBounds().origin(),
+                                        params.padding());
     if (params.columns.isSet()) {
       auto fb = params.frameBounds();
       fb.w = newFrameBounds.w;
