@@ -164,6 +164,8 @@ void FilterWindow::onApply()
 {
   apply();
 
+  update_screen_for_document(m_filterMgr->document());
+
   restartPreview();
 }
 
