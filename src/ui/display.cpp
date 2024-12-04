@@ -44,6 +44,9 @@ Display::Display(Display* parentDisplay,
          m_containedWidget->type() == kWindowWidget);
 #endif
   m_dirtyRegion = bounds();
+
+  // Configure the back layer surface.
+  configureBackLayer();
 }
 
 os::SurfaceRef Display::nativeSurface() const

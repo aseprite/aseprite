@@ -353,7 +353,7 @@ void View::onSetViewScroll(const gfx::Point& pt)
   // scrolled region (which is inverse to the scroll position
   // delta/movement).
   const Point delta = oldScroll - newScroll;
-  if (!display->nativeWindow()->gpuAcceleration()) {
+  if (display && !display->nativeWindow()->gpuAcceleration()) {
     // The movable region includes the given "validRegion"
     // intersecting itself when it's in the new position, so we don't
     // overlap regions outside the "validRegion".
