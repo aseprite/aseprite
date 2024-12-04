@@ -208,6 +208,7 @@ protected:
 
   void onSheetTypeChange() {
     updateGridState();
+    onEntriesChange();
   }
 
   void onSelectFile() {
@@ -323,10 +324,14 @@ protected:
     return spans;
 
   int calcColumns() {
+    if (sheetTypeValue() == SpriteSheetType::Vertical)
+      return 1;
     CALC_SPANS(x, w);
   }
 
   int calcRows() {
+    if (sheetTypeValue() == SpriteSheetType::Horizontal)
+      return 1;
     CALC_SPANS(y, h);
   }
 
@@ -453,13 +458,19 @@ private:
     switch (sheetTypeValue()) {
       case SpriteSheetType::Horizontal:
         flags |= int(SelectBoxState::Flags::HGrid);
+        columns()->setEnabled(true);
+        rows()->setEnabled(false);
         break;
       case SpriteSheetType::Vertical:
         flags |= int(SelectBoxState::Flags::VGrid);
+        columns()->setEnabled(false);
+        rows()->setEnabled(true);
         break;
       case SpriteSheetType::Rows:
       case SpriteSheetType::Columns:
         flags |= int(SelectBoxState::Flags::Grid);
+        columns()->setEnabled(true);
+        rows()->setEnabled(true);
         break;
     }
 
