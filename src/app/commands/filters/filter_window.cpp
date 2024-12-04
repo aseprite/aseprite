@@ -154,10 +154,10 @@ void FilterWindow::setNewTarget(Target target)
 
 void FilterWindow::apply()
 {
-    stopPreview();
+  stopPreview();
 
-    // Apply the filter in background
-    m_filterMgr->startWorker();
+  // Apply the filter in background
+  m_filterMgr->startWorker();
 }
 
 void FilterWindow::onApply()
