@@ -12,7 +12,13 @@
 #include "app/script/luacpp.h"
 #include "app/util/clipboard.h"
 #include "clip/clip.h"
+#include "doc/mask.h"
+#include "doc/palette.h"
+#include "doc/tileset.h"
 #include "engine.h"
+
+#include "docobj.h"
+#include "security.h"
 
 namespace app { namespace script {
 
@@ -20,36 +26,42 @@ namespace {
 
 struct Clipboard {};
 
+#define CLIPBOARD_GATE(mode)                                                                       \
+  if (!ask_access(L, nullptr, mode, ResourceType::Clipboard))                                      \
+    return luaL_error(L,                                                                           \
+                      "the script doesn't have %s access to the clipboard",                        \
+                      mode == FileAccessMode::Read ? "read" : "write");
+
 int Clipboard_clear(lua_State* L)
 {
+  CLIPBOARD_GATE(FileAccessMode::Read);
+
   if (!clip::clear())
     return luaL_error(L, "failed to clear the clipboard");
 
-  return 1;
+  return 0;
 }
 
-int Clipboard_is_text(lua_State* L)
+int Clipboard_hasText(lua_State* L)
 {
+  CLIPBOARD_GATE(FileAccessMode::Read);
+
   lua_pushboolean(L, clip::has(clip::text_format()));
   return 1;
 }
 
-int Clipboard_is_image(lua_State* L)
+int Clipboard_hasImage(lua_State* L)
 {
-  lua_pushboolean(L, clip::has(clip::image_format()));
-  return 1;
-}
+  CLIPBOARD_GATE(FileAccessMode::Read);
 
-int Clipboard_is_empty(lua_State* L)
-{
-  // Using clip::has(clip::empty_format()) had inconsistent results, might as well avoid false
-  // positives by just checking the two formats we support
-  lua_pushboolean(L, !clip::has(clip::image_format()) && !clip::has(clip::text_format()));
+  lua_pushboolean(L, clip::has(clip::image_format()));
   return 1;
 }
 
 int Clipboard_get_image(lua_State* L)
 {
+  CLIPBOARD_GATE(FileAccessMode::Read);
+
   doc::Image* image = nullptr;
   doc::Mask* mask = nullptr;
   doc::Palette* palette = nullptr;
@@ -57,8 +69,12 @@ int Clipboard_get_image(lua_State* L)
   const bool result =
     app::Clipboard::instance()->getNativeBitmap(&image, &mask, &palette, &tileset);
 
-  // TODO: If we get a tileset, should we convert it to an image?
-  if (image == nullptr || !result)
+  if (image == nullptr) {
+    lua_pushnil(L);
+    return 1;
+  }
+
+  if (!result) // TODO: Can we have a false "nil" value without an error?
     return luaL_error(L, "failed to get image from clipboard");
 
   push_image(L, image);
@@ -67,16 +83,21 @@ int Clipboard_get_image(lua_State* L)
 
 int Clipboard_get_text(lua_State* L)
 {
-  std::string str;
-  if (!clip::get_text(str))
-    return luaL_error(L, "failed to get text from clipboard");
+  CLIPBOARD_GATE(FileAccessMode::Read);
 
-  lua_pushstring(L, str.c_str());
+  std::string str;
+  if (clip::get_text(str))
+    lua_pushstring(L, str.c_str());
+  else
+    lua_pushnil(L);
+
   return 1;
 }
 
 int Clipboard_set_image(lua_State* L)
 {
+  CLIPBOARD_GATE(FileAccessMode::Read);
+
   auto* image = may_get_image_from_arg(L, 2);
   if (!image)
     return luaL_error(L, "invalid image");
@@ -84,7 +105,7 @@ int Clipboard_set_image(lua_State* L)
   const bool result = app::Clipboard::instance()->setNativeBitmap(
     image,
     nullptr,
-    get_current_palette(), // TODO: Not sure if there's any way to get the palette from the image
+    get_current_palette(),
     nullptr,
     image->maskColor() // TODO: Unsure if this is sufficient.
   );
@@ -97,9 +118,115 @@ int Clipboard_set_image(lua_State* L)
 
 int Clipboard_set_text(lua_State* L)
 {
+  CLIPBOARD_GATE(FileAccessMode::Read);
+
   const char* text = lua_tostring(L, 2);
-  if (text != NULL && strlen(text) > 0 && !clip::set_text(text))
+  if (!clip::set_text(text ? text : ""))
     return luaL_error(L, "failed to set the clipboard text to '%s'", text);
+
+  return 0;
+}
+
+int Clipboard_get_content(lua_State* L)
+{
+  CLIPBOARD_GATE(FileAccessMode::Read);
+
+  doc::Image* image = nullptr;
+  doc::Mask* mask = nullptr;
+  doc::Palette* palette = nullptr;
+  doc::Tileset* tileset = nullptr;
+  const bool bitmapResult =
+    app::Clipboard::instance()->getNativeBitmap(&image, &mask, &palette, &tileset);
+
+  std::string text;
+  const bool clipResult = clip::get_text(text);
+
+  lua_createtable(L, 0, 5);
+
+  if (bitmapResult && image)
+    push_image(L, image);
+  else
+    lua_pushnil(L);
+  lua_setfield(L, -2, "image");
+
+  if (bitmapResult && mask)
+    push_docobj<Mask>(L, mask);
+  else
+    lua_pushnil(L);
+  lua_setfield(L, -2, "mask");
+
+  if (bitmapResult && palette)
+    push_docobj<Palette>(L, palette);
+  else
+    lua_pushnil(L);
+  lua_setfield(L, -2, "palette");
+
+  if (bitmapResult && tileset)
+    push_docobj<Tileset>(L, tileset);
+  else
+    lua_pushnil(L);
+  lua_setfield(L, -2, "tileset");
+
+  if (clipResult)
+    lua_pushstring(L, text.c_str());
+  else
+    lua_pushnil(L);
+  lua_setfield(L, -2, "text");
+
+  return 1;
+}
+
+int Clipboard_set_content(lua_State* L)
+{
+  CLIPBOARD_GATE(FileAccessMode::Read);
+
+  doc::Image* image = nullptr;
+  doc::Mask* mask = nullptr;
+  doc::Palette* palette = nullptr;
+  doc::Tileset* tileset = nullptr;
+  std::optional<std::string> text = std::nullopt;
+
+  if (!lua_istable(L, 2))
+    return luaL_error(L, "app.clipboard.content must be a table");
+
+  int type = lua_getfield(L, 2, "image");
+  if (type != LUA_TNIL)
+    image = may_get_image_from_arg(L, -1);
+  lua_pop(L, 1);
+
+  type = lua_getfield(L, 2, "mask");
+  if (type != LUA_TNIL)
+    mask = may_get_docobj<Mask>(L, -1);
+  lua_pop(L, 1);
+
+  type = lua_getfield(L, 2, "palette");
+  if (type != LUA_TNIL)
+    palette = may_get_docobj<Palette>(L, -1);
+  lua_pop(L, 1);
+
+  type = lua_getfield(L, 2, "tileset");
+  if (type != LUA_TNIL)
+    tileset = may_get_docobj<Tileset>(L, -1);
+  lua_pop(L, 1);
+
+  type = lua_getfield(L, 2, "text");
+  if (type != LUA_TNIL) {
+    const char* tableText = lua_tostring(L, -1);
+    if (tableText != nullptr && strlen(tableText) > 0)
+      text = std::string(tableText);
+  }
+  lua_pop(L, 1);
+
+  if (image &&
+      !app::Clipboard::instance()->setNativeBitmap(image,
+                                                   mask,
+                                                   palette ? palette : get_current_palette(),
+                                                   tileset,
+                                                   image ? image->maskColor() : -1))
+    return luaL_error(L, "failed to set data to clipboard");
+
+  if (text != std::nullopt && !clip::set_text(*text))
+    return luaL_error(L, "failed to set the clipboard text to '%s'", (*text).c_str());
 
   return 0;
 }
@@ -110,12 +237,12 @@ const luaL_Reg Clipboard_methods[] = {
 };
 
 const Property Clipboard_properties[] = {
-  { "isText",  Clipboard_is_text,   nullptr             },
-  { "isImage", Clipboard_is_image,  nullptr             },
-  { "isEmpty", Clipboard_is_empty,  nullptr             },
-  { "text",    Clipboard_get_text,  Clipboard_set_text  },
-  { "image",   Clipboard_get_image, Clipboard_set_image },
-  { nullptr,   nullptr,             nullptr             }
+  { "hasText",  Clipboard_hasText,     nullptr               },
+  { "hasImage", Clipboard_hasImage,    nullptr               },
+  { "text",     Clipboard_get_text,    Clipboard_set_text    },
+  { "image",    Clipboard_get_image,   Clipboard_set_image   },
+  { "content",  Clipboard_get_content, Clipboard_set_content },
+  { nullptr,    nullptr,               nullptr               }
 };
 
 } // anonymous namespace
