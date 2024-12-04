@@ -664,3 +664,102 @@ do
   expect_img(i, { 1, 1, 1, 1,
                   1, 0, 0, 1 })
 end
+
+-- MaskByColor
+do
+  local s = Sprite(5, 5, ColorMode.INDEXED)
+  local c = s.cels[1]
+  local i = c.image
+  array_to_pixels({
+    1, 1, 0, 0, 1,
+    1, 1, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 1, 1,
+    1, 0, 0, 1, 1,
+  }, i)
+
+  app.command.MaskByColor {
+    color = Color{ index=1 },
+    tolerance = 0,
+  }
+  app.fgColor = Color{ index=2 }
+  app.command.Fill()
+
+  expect_img(i, {
+    2, 2, 0, 0, 2,
+    2, 2, 0, 0, 2,
+    2, 0, 0, 0, 2,
+    2, 0, 0, 2, 2,
+    2, 0, 0, 2, 2,
+  })
+
+  -- Subtract from current selection by color
+  app.command.MaskAll {}
+  app.command.MaskByColor {
+    color = Color{ index=2 },
+    tolerance = 0,
+    mode = SelectionMode.SUBTRACT,
+  }
+
+  app.fgColor = Color{ index=3 }
+  app.command.Fill()
+
+  expect_img(i, {
+    2, 2, 3, 3, 2,
+    2, 2, 3, 3, 2,
+    2, 3, 3, 3, 2,
+    2, 3, 3, 2, 2,
+    2, 3, 3, 2, 2,
+  })
+
+  -- Add to current selection by color
+  app.command.MaskByColor {
+    color = Color{ index=2 },
+    tolerance = 0,
+    mode = SelectionMode.ADD,
+  }
+  app.fgColor = Color{ index=4 }
+  app.command.Fill()
+
+  expect_img(i, {
+    4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4,
+  })
+
+  -- Reset image for new test
+  array_to_pixels({
+    1, 1, 0, 0, 1,
+    1, 1, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 1, 1,
+    1, 0, 0, 1, 1,
+  }, i)
+
+  -- Select a centered 3x3 square
+  app.command.MaskAll {}
+  app.command.ModifySelection {
+    modifier = 'contract',
+    quantity = 1,
+    brush = 'square'
+  }
+  -- Intersect with current selection by color
+  app.command.MaskByColor {
+    color = Color{ index=1 },
+    tolerance = 0,
+    mode = SelectionMode.INTERSECT,
+  }
+
+  app.fgColor = Color{ index=2 }
+  app.command.Fill()
+
+  expect_img(i, {
+    1, 1, 0, 0, 1,
+    1, 2, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 0, 2, 1,
+    1, 0, 0, 1, 1,
+  })
+end
