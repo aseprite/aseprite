@@ -610,6 +610,18 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
             buf += fmt::format(" [{}{}]", ti, str);
           }
         }
+        // Show the grid cell index
+        if (sprite->bounds().contains(gfx::Point(spritePos))) {
+          int columns = int(std::floor(
+            sprite->bounds().w/grid.tileSize().w));
+          int rows = int(std::floor(
+            sprite->bounds().h/grid.tileSize().h));
+          int column = (columns ? pt.x%columns: 0);
+          int row = (rows ? pt.y%rows: 0);
+          if (row < 0) row = row + rows;
+          if (column < 0) column = column + columns;
+          buf += fmt::format(" :search: {}", column+row*columns);
+        }
       }
     }
 
