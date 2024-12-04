@@ -22,6 +22,7 @@
 #include "base/fs.h"
 #include "base/sha1.h"
 #include "fmt/format.h"
+#include "ui/widget_type.h"
 
 #include "script_access.xml.h"
 
@@ -91,7 +92,7 @@ std::string get_script_filename(lua_State* L)
   const char* source = lua_tostring(L, -1);
   std::string script;
   if (source && *source)
-    script = source + 1;
+    script = source;
   lua_pop(L, 2);
   return script;
 }
@@ -242,12 +243,25 @@ bool ask_access(lua_State* L,
     if ((access & int(mode)) == int(mode))
       return true;
 
-    std::string allowButtonText =
-      (mode == FileAccessMode::LoadLib    ? Strings::script_access_allow_load_lib_access() :
-       mode == FileAccessMode::OpenSocket ? Strings::script_access_allow_open_conn_access() :
-       mode == FileAccessMode::Execute    ? Strings::script_access_allow_execute_access() :
-       mode == FileAccessMode::Write      ? Strings::script_access_allow_write_access() :
-                                            Strings::script_access_allow_read_access());
+    std::string allowButtonText;
+    switch (mode) {
+      case FileAccessMode::LoadLib:
+        allowButtonText = Strings::script_access_allow_load_lib_access();
+        break;
+      case FileAccessMode::OpenSocket:
+        allowButtonText = Strings::script_access_allow_open_conn_access();
+        break;
+      case FileAccessMode::Execute:
+        allowButtonText = Strings::script_access_allow_execute_access();
+        break;
+      case FileAccessMode::Write:
+        allowButtonText = Strings::script_access_allow_write_access();
+        break;
+      case FileAccessMode::Read:
+        allowButtonText = Strings::script_access_allow_read_access();
+        break;
+      default: return luaL_error(L, "invalid access request");
+    }
 
     app::gen::ScriptAccess dlg;
     dlg.script()->setText(script);
@@ -258,15 +272,26 @@ bool ask_access(lua_State* L,
         case ResourceType::File:      label = Strings::script_access_file_label(); break;
         case ResourceType::Command:   label = Strings::script_access_command_label(); break;
         case ResourceType::WebSocket: label = Strings::script_access_websocket_label(); break;
+        case ResourceType::Clipboard: label = Strings::script_access_clipboard_label(); break;
       }
       dlg.fileLabel()->setText(label);
     }
 
-    dlg.file()->setText(filename);
+    if (filename && strlen(filename) > 0)
+      dlg.file()->setText(filename);
+    else
+      dlg.fileContainer()->setVisible(false);
+
     dlg.allow()->setText(allowButtonText);
     dlg.allow()->processMnemonicFromText();
 
-    dlg.script()->Click.connect([&dlg] { app::launcher::open_folder(dlg.script()->text()); });
+    if (script == "internal") {
+      // Make it look like a normal label
+      dlg.script()->setType(ui::WidgetType::kLabelWidget);
+      dlg.script()->initTheme();
+    }
+    else
+      dlg.script()->Click.connect([&dlg] { app::launcher::open_folder(dlg.script()->text()); });
 
     dlg.full()->Click.connect([&dlg, &allowButtonText]() {
       if (dlg.full()->isSelected()) {
