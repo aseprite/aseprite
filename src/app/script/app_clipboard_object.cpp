@@ -156,7 +156,7 @@ int Clipboard_get_content(lua_State* L)
   lua_setfield(L, -2, "mask");
 
   if (bitmapResult && palette)
-    push_docobj<Palette>(L, palette);
+    push_palette(L, palette);
   else
     lua_pushnil(L);
   lua_setfield(L, -2, "palette");
@@ -187,7 +187,7 @@ int Clipboard_set_content(lua_State* L)
   std::optional<std::string> text = std::nullopt;
 
   if (!lua_istable(L, 2))
-    return luaL_error(L, "app.clipboard.content must be a table");
+    return luaL_error(L, "clipboard content must be a table");
 
   int type = lua_getfield(L, 2, "image");
   if (type != LUA_TNIL)
@@ -217,6 +217,15 @@ int Clipboard_set_content(lua_State* L)
   }
   lua_pop(L, 1);
 
+  if (!image && !mask && !palette && !tileset && !text.has_value()) {
+    // If we aren't provided anything valid in the table, clear the clipboard.
+    clip::clear();
+    return 0;
+  }
+
+  if (image != nullptr && text.has_value())
+    return luaL_error(L, "can't set both image and text at the same time");
+
   if (image &&
       !app::Clipboard::instance()->setNativeBitmap(image,
                                                    mask,
@@ -225,7 +234,7 @@ int Clipboard_set_content(lua_State* L)
                                                    image ? image->maskColor() : -1))
     return luaL_error(L, "failed to set data to clipboard");
 
-  if (text != std::nullopt && !clip::set_text(*text))
+  if (text.has_value() && !clip::set_text(*text))
     return luaL_error(L, "failed to set the clipboard text to '%s'", (*text).c_str());
 
   return 0;
