@@ -45,6 +45,7 @@ public:
   obs::signal<std::string()> SelectOutputFile;
 
 private:
+  void onOutputFilenameBrowse();
   void updateOutputFilenameEntry();
   void onOutputFilenameEntryChange();
   void updateAniDir();
@@ -57,8 +58,10 @@ private:
   const Doc* m_doc;
   DocumentPreferences& m_docPref;
   std::string m_outputPath;
+  std::string m_outputPathBase;
   std::string m_outputFilename;
   int m_preferredResize;
+  bool m_showFullPath;
 };
 
 } // namespace app
