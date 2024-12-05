@@ -2475,6 +2475,12 @@ void Editor::onBeforeLayerVisibilityChange(DocEvent& ev, bool newState)
     m_state->onBeforeLayerVisibilityChange(this, ev.layer(), newState);
 }
 
+void Editor::onBeforeLayerEditableChange(DocEvent& ev, bool newState)
+{
+  if (m_state)
+    m_state->onBeforeLayerEditableChange(this, ev.layer(), newState);
+}
+
 void Editor::setCursor(const gfx::Point& mouseDisplayPos)
 {
   Rect vp = View::getView(this)->viewportBounds();

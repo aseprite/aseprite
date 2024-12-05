@@ -99,6 +99,10 @@ namespace app {
 
     // The visibility flag of a specific layer is going to change/changed.
     virtual void onBeforeLayerVisibilityChange(DocEvent& ev, bool newState) { }
+
+    // The editable flag of a specific layer is going to change/changed.
+    virtual void onBeforeLayerEditableChange(DocEvent& ev, bool newState) { }
+
     virtual void onAfterLayerVisibilityChange(DocEvent& ev) { }
 
     // The tileset was remapped (e.g. when tiles are re-ordered).

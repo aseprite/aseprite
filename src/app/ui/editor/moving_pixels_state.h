@@ -68,6 +68,7 @@ namespace app {
     bool acceptQuickTool(tools::Tool* tool) override;
     bool requireBrushPreview() override { return false; }
     void onBeforeLayerVisibilityChange(Editor* editor, doc::Layer* layer, bool newState) override;
+    void onBeforeLayerEditableChange(Editor* editor, doc::Layer* layer, bool newState) override;
 
 
     // EditorObserver

@@ -151,6 +151,11 @@ namespace app {
                                                doc::Layer* layer,
                                                bool newState) { }
 
+    // Called when the editable flag of a specific layer is changed.
+    virtual void onBeforeLayerEditableChange(Editor* editor,
+                                             doc::Layer* layer,
+                                             bool newState) { }
+
   private:
     DISABLE_COPYING(EditorState);
   };

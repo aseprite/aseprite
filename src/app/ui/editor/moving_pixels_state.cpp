@@ -597,6 +597,29 @@ void MovingPixelsState::onBeforeLayerVisibilityChange(Editor* editor,
   }
 }
 
+void MovingPixelsState::onBeforeLayerEditableChange(Editor* editor,
+                                                    doc::Layer* layer,
+                                                    bool newState)
+{
+  if (!isActiveDocument())
+    return;
+
+  // If the layer 'editable' flag of any selected layer changes,
+  // we just drop the pixels (it's the easiest way to avoid modifying
+  // hidden pixels and it's the simplest treatment when
+  // locking the layer)
+  // TODO: It would be more convenient not to drop the selected
+  // image if the 'lock' then 'unlock' actions are performed without
+  // any transformation taking place.
+  if (m_pixelsMovement) {
+    const Site& site = m_pixelsMovement->site();
+    if (site.layer() == layer ||
+        site.range().contains(layer)) {
+      dropPixels();
+    }
+  }
+}
+
 // Before executing any command, we drop the pixels (go back to standby).
 void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
 {

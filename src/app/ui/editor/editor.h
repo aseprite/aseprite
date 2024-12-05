@@ -356,6 +356,7 @@ namespace app {
     void onRemoveTag(DocEvent& ev) override;
     void onRemoveSlice(DocEvent& ev) override;
     void onBeforeLayerVisibilityChange(DocEvent& ev, bool newState) override;
+    void onBeforeLayerEditableChange(DocEvent& ev, bool newState) override;
 
     // ActiveToolObserver impl
     void onActiveToolChange(tools::Tool* tool) override;
