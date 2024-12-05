@@ -11,6 +11,11 @@
 
 #include "app/snap_to_grid.h"
 
+#include "app/app.h"
+#include "app/context.h"
+#include "app/doc.h"
+#include "app/pref/preferences.h"
+#include "doc/grid.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 
@@ -18,12 +23,119 @@
 
 namespace app {
 
+gfx::Point snap_to_isometric_grid(const gfx::Rect& grid,
+                                  const gfx::Point& point,
+                                  const PreferSnapTo prefer)
+{
+  // Because we force unworkable grid sizes to share a pixel,
+  // we need to account for that here
+  auto guide = doc::Grid::IsometricGuide(grid.size());
+  int width = grid.w - !guide.evenWidth;
+  int height = grid.h - !guide.evenHeight;
+
+  // Convert point to grid space...
+  gfx::Point newPoint((point.x-grid.x)/width,
+                      (point.y-grid.y)/height);
+  newPoint.x *= width;
+  newPoint.y *= height;
+
+  // And then make it relative to the center of a cell
+  gfx::PointF vto((
+    newPoint + gfx::Point(guide.end.x, guide.start.y)) - point);
+
+  // The following happens here:
+  //
+  //  /\  /\
+  // /A \/B \
+  // \  /\  /
+  //  \/  \/
+  //  /\  /\
+  // /C \/D \
+  //
+  // Only the origin for diamonds (A,B,C,D) can be found by dividing
+  // the original point by grid size.
+  //
+  // In order to snap to a position relative to the "in-between" diamonds,
+  // we need to determine whether the cell coords are outside the
+  // bounds of the current grid cell.
+  bool outside = false;
+
+  if (prefer != PreferSnapTo::ClosestGridVertex) {
+    // We use the pixel-precise grid for this bounds-check
+    auto line = doc::Grid::getIsometricLine(grid.size());
+    int index = int(ABS(vto.y) - (vto.y > 0)) + 1;
+    gfx::Point co(-vto.x + (guide.end.x),
+                  -vto.y + (guide.start.y));
+    gfx::Point& p = line[index];
+    outside = ! (p.x <= co.x && co.x < width-p.x &&
+                 height-p.y <= co.y && co.y < p.y);
+  }
+
+  // Find which of the four corners of the current diamond
+  // should be picked
+  gfx::Point near(0, 0);
+  int offsetEvenX = (!guide.squareRatio ? guide.evenWidth: 0);
+  int offsetOddY = (!guide.squareRatio ?
+    !guide.shareEdges || !guide.evenHeight: !guide.evenHeight);
+
+  int offsetOddX = (!guide.squareRatio ? guide.oddSize: 0);
+
+  const gfx::Point candidates[] = {
+    gfx::Point(guide.end.x+offsetEvenX, 0),
+    gfx::Point(guide.end.x+offsetEvenX, height),
+    gfx::Point(offsetOddX, guide.start.y-offsetOddY),
+    gfx::Point(width+offsetOddX, guide.start.y-offsetOddY)
+  };
+  switch (prefer) {
+
+    case PreferSnapTo::ClosestGridVertex:
+      if (ABS(vto.x) > ABS(vto.y))
+        near = (vto.x < 0 ? candidates[3]: candidates[2]);
+      else
+        near = (vto.y < 0 ? candidates[1]: candidates[0]);
+      break;
+
+    // Pick topmost corner
+    case PreferSnapTo::FloorGrid:
+    case PreferSnapTo::BoxOrigin:
+      if (outside) {
+        near = (vto.x < 0 ? candidates[3]: candidates[2]);
+        near.y -= (vto.y > 0 ? height :0);
+      }
+      else {
+        near = candidates[0];
+      }
+      break;
+
+    // Pick bottom-most corner
+    case PreferSnapTo::CeilGrid:
+    case PreferSnapTo::BoxEnd:
+      if (outside) {
+        near = (vto.x < 0 ? candidates[3]: candidates[2]);
+        near.y += (vto.y < 0 ? height :0);
+      }
+      else {
+        near = candidates[1];
+      }
+      break;
+  }
+
+  // Convert offset back to pixel space
+  return newPoint + near + grid.origin();
+}
+
 gfx::Point snap_to_grid(const gfx::Rect& grid,
                         const gfx::Point& point,
                         const PreferSnapTo prefer)
 {
   if (grid.isEmpty())
     return point;
+
+  // Use different logic for isometric grid
+  const doc::Grid::Type gridType = App::instance()->preferences().document(
+    App::instance()->context()->activeDocument()).grid.type();
+  if (gridType == doc::Grid::Type::Isometric)
+    return snap_to_isometric_grid(grid, point, prefer);
 
   div_t d, dx, dy;
   dx = std::div(grid.x, grid.w);

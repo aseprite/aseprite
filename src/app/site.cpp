@@ -126,6 +126,14 @@ gfx::Rect Site::gridBounds() const
   return doc::Sprite::DefaultGridBounds();
 }
 
+doc::Grid::Type Site::gridType() const
+{
+  if (m_sprite)
+    return m_sprite->gridType();
+  else
+    return doc::Sprite::DefaultGridType();
+}
+
 bool Site::shouldTrimCel(Cel* cel) const
 {
   return (cel &&
