@@ -595,6 +595,9 @@ void App::run()
 
 void App::close()
 {
+  // Just in case close the main window.
+  m_mainWindow.reset(nullptr);
+
   if (isGui()) {
     ExitGui();
 
