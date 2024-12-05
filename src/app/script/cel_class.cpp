@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +9,7 @@
 #include "config.h"
 #endif
 
+#include "app/cmd/remove_cel.h"
 #include "app/cmd/replace_image.h"
 #include "app/cmd/set_cel_opacity.h"
 #include "app/cmd/set_cel_position.h"
@@ -122,13 +123,16 @@ int Cel_set_frame(lua_State* L)
 int Cel_set_image(lua_State* L)
 {
   auto cel = get_docobj<Cel>(L, 1);
-  auto srcImage = get_image_from_arg(L, 2);
-  ImageRef newImage(Image::createCopy(srcImage));
-
   Tx tx(cel->sprite());
-  tx(new cmd::ReplaceImage(cel->sprite(),
-                           cel->imageRef(),
-                           newImage));
+  if (may_get_obj<Image>(L, 2)) {
+    const auto* srcImage = get_image_from_arg(L, 2);
+    const ImageRef newImage(Image::createCopy(srcImage));
+    tx(new cmd::ReplaceImage(cel->sprite(),
+                             cel->imageRef(),
+                             newImage));
+  }
+  else if (lua_isnil(L, 2))
+    tx(new cmd::RemoveCel(cel));
   tx.commit();
   return 0;
 }
