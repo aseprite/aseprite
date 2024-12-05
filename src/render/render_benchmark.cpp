@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2022 Igara Studio S.A.
+// Copyright (c) 2019-2024 Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -54,7 +54,7 @@ static void Bm_Render(benchmark::State& state)
   std::unique_ptr<Image> dst(Image::create(spr->pixelFormat(), w, h));
   clear_image(dst.get(), 0);
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     clear_image(dst.get(), 0);
 
     Render render;

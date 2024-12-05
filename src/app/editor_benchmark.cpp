@@ -43,7 +43,7 @@ void BM_ScrollEditor(benchmark::State& state) {
   auto mgr = ui::Manager::getDefault();
   mgr->dontWaitEvents();
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     editor->setEditorScroll(gfx::Point(0, 0));
     mgr->generateMessages();
     mgr->dispatchMessages();
@@ -70,7 +70,7 @@ void BM_ZoomEditor(benchmark::State& state) {
   auto mgr = ui::Manager::getDefault();
   mgr->dontWaitEvents();
 
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     editor->setZoom(render::Zoom(4, 1));
     editor->invalidate();
     mgr->generateMessages();
@@ -140,9 +140,10 @@ int app_main(int argc, char* argv[])
   app.initialize(AppOptions(1, { argv2 }));
   app.mainWindow()->expandWindow(gfx::Size(400, 300));
 
-  ::benchmark::Initialize(&argc, argv);
-  int status = ::benchmark::RunSpecifiedBenchmarks();
+  benchmark::Initialize(&argc, argv);
+  benchmark::RunSpecifiedBenchmarks();
+  benchmark::Shutdown();
 
   app.close();
-  return status;
+  return 0;
 }

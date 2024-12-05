@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2023 Igara Studio S.A.
+// Copyright (c) 2023-2024 Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -24,7 +24,7 @@ void BM_IsSameImageOld(benchmark::State& state) {
   ImageRef a(Image::create(pf, w, h));
   doc::algorithm::random_image(a.get());
   ImageRef b(Image::createCopy(a.get()));
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     is_same_image_slow(a.get(), b.get());
   }
 }
@@ -36,7 +36,7 @@ void BM_IsSameImageNew(benchmark::State& state) {
   ImageRef a(Image::create(pf, w, h));
   doc::algorithm::random_image(a.get());
   ImageRef b(Image::createCopy(a.get()));
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     is_same_image(a.get(), b.get());
   }
 }
