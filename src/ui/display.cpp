@@ -51,7 +51,10 @@ Display::Display(Display* parentDisplay,
 
 os::SurfaceRef Display::nativeSurface() const
 {
-  return base::AddRef(m_nativeWindow->surface());
+  if (m_nativeWindow)
+    return base::AddRef(m_nativeWindow->surface());
+  else
+    return nullptr;
 }
 
 void Display::addLayer(const UILayerRef& layer)
@@ -76,6 +79,9 @@ void Display::removeLayer(const UILayerRef& layer)
 void Display::configureBackLayer()
 {
   const os::SurfaceRef displaySurface = nativeSurface();
+  if (!displaySurface)
+    return;
+
   UILayerRef layer = backLayer();
 
   os::SurfaceRef layerSurface = layer->surface();
