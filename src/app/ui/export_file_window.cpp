@@ -24,6 +24,7 @@
 #include "doc/tag.h"
 #include "fmt/format.h"
 #include "ui/alert.h"
+#include "ui/menu.h"
 
 #include <algorithm>
 
@@ -34,6 +35,7 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
   , m_docPref(Preferences::instance().document(doc))
   , m_preferredResize(1)
 {
+  m_showFullPath = Preferences::instance().general.showFullPath();
   // Is a default output filename in the preferences?
   if (!m_docPref.saveCopy.filename().empty()) {
     setOutputFilename(m_docPref.saveCopy.filename());
@@ -47,6 +49,8 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
     }
     setOutputFilename(newFn);
   }
+  if (m_outputPathBase.empty())
+    m_outputPathBase = m_outputPath;
 
   // Default export configuration
   setResizeScale(m_docPref.saveCopy.resizeScale());
@@ -84,12 +88,7 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
     m_outputFilename = outputFilename()->text();
     onOutputFilenameEntryChange();
   });
-  outputFilenameBrowse()->Click.connect([this] {
-    std::string fn = SelectOutputFile();
-    if (!fn.empty()) {
-      setOutputFilename(fn);
-    }
-  });
+  outputFilenameBrowse()->Click.connect([this] { onOutputFilenameBrowse(); });
 
   resize()->Change.connect([this] { updateAdjustResizeButton(); });
   frames()->Change.connect([this] {
@@ -188,9 +187,49 @@ void ExportFileWindow::setAniDir(const doc::AniDir aniDir)
   anidir()->setSelectedItemIndex(int(aniDir));
 }
 
+void ExportFileWindow::onOutputFilenameBrowse()
+{
+  auto item = outputFilenameBrowse();
+
+  gfx::Rect bounds = item->bounds();
+  item->setSelected(false);
+
+  ui::Menu menu;
+  ui::MenuItem choose(Strings::export_file_choose_file());
+  ui::MenuItem relative(Strings::export_file_relative_path(m_outputPathBase));
+  ui::MenuItem absolute(Strings::export_file_absolute_path());
+  menu.addChild(&choose);
+  menu.addChild(new ui::MenuSeparator());
+  menu.addChild(&relative);
+  menu.addChild(&absolute);
+
+  choose.Click.connect([this] {
+    std::string fn = SelectOutputFile();
+    if (!fn.empty()) {
+      setOutputFilename(fn);
+    }
+  });
+  relative.Click.connect([this] {
+    const std::string fn = (m_showFullPath ?
+                              outputFilename()->text() :
+                              m_outputPath + base::path_separator + outputFilename()->text());
+    m_showFullPath = false;
+    setOutputFilename(fn);
+  });
+  absolute.Click.connect([this] {
+    const std::string fn = (m_showFullPath ?
+                              outputFilename()->text() :
+                              m_outputPath + base::path_separator + outputFilename()->text());
+    m_showFullPath = true;
+    setOutputFilename(fn);
+  });
+
+  menu.showPopup(gfx::Point(bounds.x, bounds.y2()), display());
+}
+
 void ExportFileWindow::setOutputFilename(const std::string& pathAndFilename)
 {
-  if (base::get_file_path(m_doc->filename()).empty()) {
+  if (m_showFullPath || base::get_file_path(m_doc->filename()).empty()) {
     m_outputPath = base::get_file_path(pathAndFilename);
     m_outputFilename = base::get_file_name(pathAndFilename);
   }
@@ -205,13 +244,18 @@ void ExportFileWindow::setOutputFilename(const std::string& pathAndFilename)
       m_outputFilename = base::get_file_name(pathAndFilename);
     }
   }
+  if (m_showFullPath)
+    m_outputPath = base::get_absolute_path(m_outputPath);
+  else
+    m_outputPathBase = m_outputPath;
 
   updateOutputFilenameEntry();
 }
 
 void ExportFileWindow::updateOutputFilenameEntry()
 {
-  outputFilename()->setText(m_outputFilename);
+  outputFilename()->setText(
+    (m_showFullPath ? m_outputPath + base::path_separator + m_outputFilename : m_outputFilename));
   onOutputFilenameEntryChange();
 }
 
