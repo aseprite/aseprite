@@ -747,6 +747,7 @@ target_link_libraries(app-lib
   undo
   ${CMARK_LIBRARIES}
   ${TINYXML_LIBRARY}
+  ${TINYEXIF_LIBRARY}
   ${JPEG_LIBRARIES}
   ${GIF_LIBRARIES}
   ${PNG_LIBRARIES}
@@ -755,7 +756,6 @@ target_link_libraries(app-lib
   archive_static
   fmt
   tinyexpr
-  TinyEXIFstatic
   qoi)
 
 if(ENABLE_WEBP AND WEBP_FOUND)
