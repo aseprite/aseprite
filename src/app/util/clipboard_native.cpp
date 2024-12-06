@@ -153,12 +153,12 @@ bool Clipboard::setNativeBitmap(const doc::Image* image,
   switch (image->pixelFormat()) {
     case doc::IMAGE_RGB: {
       // We use the RGB image data directly
-      clip::image img(image->getPixelAddress(0, 0), spec);
+      const clip::image img(image->getPixelAddress(0, 0), spec);
       l.set_image(img);
       break;
     }
     case doc::IMAGE_GRAYSCALE: {
-      clip::image img(spec);
+      const clip::image img(spec);
       const doc::LockImageBits<doc::GrayscaleTraits> bits(image);
       auto it = bits.begin();
       uint32_t* dst = (uint32_t*)img.data();
@@ -175,7 +175,10 @@ bool Clipboard::setNativeBitmap(const doc::Image* image,
       break;
     }
     case doc::IMAGE_INDEXED: {
-      clip::image img(spec);
+      if (!palette)
+        return false;
+
+      const clip::image img(spec);
       const doc::LockImageBits<doc::IndexedTraits> bits(image);
       auto it = bits.begin();
       uint32_t* dst = (uint32_t*)img.data();
@@ -193,7 +196,7 @@ bool Clipboard::setNativeBitmap(const doc::Image* image,
       l.set_image(img);
       break;
     }
-    default: TRACE("Unsupported pixelFormat: %d\n", image->pixelFormat()); return false;
+    default: return false;
   }
 
   return true;
@@ -231,7 +234,7 @@ bool Clipboard::getNativeBitmap(doc::Image** image,
         if (bits & 4)
           *palette = doc::read_palette(is);
         if (bits & 8)
-          *tileset = doc::read_tileset(is, nullptr);
+          *tileset = doc::read_tileset(is, nullptr, false);
         if (image)
           return true;
       }
