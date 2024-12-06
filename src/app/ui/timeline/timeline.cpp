@@ -4537,7 +4537,7 @@ void Timeline::setLayerEditableFlag(const layer_t l, const bool state)
   bool regenRows = false;
 
   if (layer->isEditable() != state) {
-    layer->setEditable(state);
+    m_document->setLayerEditableWithNotifications(layer, state);
 
     if (layer->isGroup() && layer->isExpanded())
       regenRows = true;
@@ -4547,7 +4547,7 @@ void Timeline::setLayerEditableFlag(const layer_t l, const bool state)
       layer = layer->parent();
       while (layer) {
         if (!layer->isEditable()) {
-          layer->setEditable(true);
+          m_document->setLayerEditableWithNotifications(layer, true);
           regenRows = true;
         }
         layer = layer->parent();
