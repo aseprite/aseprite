@@ -75,7 +75,7 @@ int Clipboard_get_image(lua_State* L)
     return 1;
   }
     
-  if (!result) // TODO: Can we have a false "nil" value without an error?
+  if (!result)
     return luaL_error(L, "failed to get image from clipboard");
 
   push_image(L, image);
@@ -108,7 +108,7 @@ int Clipboard_set_image(lua_State* L)
     nullptr,
     get_current_palette(),
     nullptr,
-    image->maskColor()  // TODO: Unsure if this is sufficient.
+    image->maskColor()
   );
 
   if (!result)
@@ -141,7 +141,7 @@ int Clipboard_get_content(lua_State* L)
   );
 
   std::string text;
-  const bool clipResult = clip::get_text(text);
+  const bool clipResult = !bitmapResult ? clip::get_text(text) : false;
 
   lua_createtable(L, 0, 5);
 
@@ -155,7 +155,7 @@ int Clipboard_get_content(lua_State* L)
     push_docobj<Mask>(L, mask);
   else
     lua_pushnil(L);
-  lua_setfield(L, -2, "mask");
+  lua_setfield(L, -2, "selection");
 
   if (bitmapResult && palette)
     push_palette(L, palette);
@@ -198,10 +198,10 @@ int Clipboard_set_content(lua_State* L)
   }
   lua_pop(L, 1);
 
-  type = lua_getfield(L, 2, "mask");
+  type = lua_getfield(L, 2, "selection");
   if (type != LUA_TNIL) {
     mask = get_mask_from_arg(L, -1);
-    if (!mask) return luaL_error(L, "invalid mask provided");
+    if (!mask) return luaL_error(L, "invalid selection provided");
   }
   lua_pop(L, 1);
 
