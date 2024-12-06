@@ -10,6 +10,7 @@
 
 #include "app/ui/filename_field.h"
 
+#include "app/pref/preferences.h"
 #include "app/i18n/strings.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/fs.h"
@@ -17,6 +18,7 @@
 #include "ui/button.h"
 #include "ui/entry.h"
 #include "ui/message.h"
+#include "ui/menu.h"
 
 namespace app {
 
@@ -28,6 +30,7 @@ FilenameField::FilenameField(const Type type,
   , m_button(type == EntryAndButton ? Strings::select_file_browse():
                                       Strings::select_file_text())
 {
+  m_showFullPath = Preferences::instance().general.showFullPath();
   setFocusStop(true);
   if (m_entry) {
     m_entry->setExpansive(true);
@@ -40,37 +43,93 @@ FilenameField::FilenameField(const Type type,
 
   setFilename(pathAndFilename);
 
-  if (m_entry) {
-    m_entry->Change.connect(
-      [this]{
-        m_file = m_entry->text();
-        Change();
-      });
-  }
+  if (m_entry)
+    m_entry->Change.connect([this]{ setFilename(updatedFilename()); });
 
-  m_button.Click.connect(
-    [this]{
-      std::string fn = SelectFile();
-      if (!fn.empty()) {
-        setFilename(fn);
-      }
-    });
-
+  m_button.Click.connect([this]{ onBrowse(); });
   initTheme();
 }
 
-std::string FilenameField::filename() const
+std::string FilenameField::fullFilename() const
 {
   return base::join_path(m_path, m_file);
 }
 
-void FilenameField::setFilename(const std::string& fn)
+std::string FilenameField::displayedFilename() const
 {
-  if (filename() == fn)
-    return;
+  return (m_showFullPath ? fullFilename(): filename());
+}
+const std::string FilenameField::updatedFilename() const
+{
+  if (!m_entry) {
+    if (m_button.text().empty())
+      return m_path;
+    else
+      return fullFilename();
+  }
+  else {
+    return (m_showFullPath ? m_entry->text():
+                             base::join_path(m_path, m_entry->text()));
+  }
+}
 
-  m_path = base::get_file_path(fn);
-  m_file = base::get_file_name(fn);
+void FilenameField::setShowFullPath(const bool fullPath)
+{
+  const std::string& fn = updatedFilename();
+  m_showFullPath = fullPath;
+  setFilename(fn);
+}
+
+void FilenameField::onBrowse()
+{
+  gfx::Rect bounds = m_button.bounds();
+  m_button.setSelected(false);
+
+  ui::Menu menu;
+  ui::MenuItem choose(Strings::select_file_choose());
+  ui::MenuItem relative(
+    Strings::select_file_relative_path(m_pathBase));
+  ui::MenuItem absolute(Strings::select_file_absolute_path());
+  menu.addChild(&choose);
+  menu.addChild(new ui::MenuSeparator());
+  menu.addChild(&relative);
+  menu.addChild(&absolute);
+
+  choose.Click.connect(
+    [this]{
+      std::string fn = SelectOutputFile();
+      if (!fn.empty()) {
+        setFilename(fn);
+      }
+    });
+  relative.Click.connect([this]{ setShowFullPath(false); });
+  absolute.Click.connect([this]{ setShowFullPath(true); });
+
+  menu.showPopup(gfx::Point(bounds.x, bounds.y2()), display());
+}
+
+void FilenameField::setFilename(const std::string& pathAndFilename)
+{
+  if (m_showFullPath || base::get_file_path(m_docFilename).empty()) {
+    m_path = base::get_file_path(pathAndFilename);
+    m_file = base::get_file_name(pathAndFilename);
+  }
+  else {
+    m_path = base::get_file_path(m_docFilename);
+    m_file = base::get_relative_path(pathAndFilename,
+      base::get_file_path(m_docFilename));
+
+    // Cannot find a relative path (e.g. we selected other drive)
+    if (m_file == pathAndFilename) {
+      m_path = base::get_file_path(pathAndFilename);
+      m_file = base::get_file_name(pathAndFilename);
+    }
+  }
+  if (m_showFullPath)
+    m_path = base::get_absolute_path(m_path);
+  if (!m_showFullPath || m_pathBase.empty())
+    m_pathBase = m_path;
+
   updateWidgets();
 }
 
@@ -102,12 +161,15 @@ void FilenameField::onInitTheme(ui::InitThemeEvent& ev)
 
 void FilenameField::updateWidgets()
 {
-  if (m_entry)
-    m_entry->setText(m_file);
-  else if (m_file.empty())
-    m_button.setText(Strings::select_file_text());
-  else
-    m_button.setText(m_file);
+  if (!m_entry) {
+    if (m_file.empty())
+      m_button.setText(Strings::select_file_text());
+    else
+      m_button.setText(displayedFilename());
+  }
+  else {
+    m_entry->setText(displayedFilename());
+  }
 
   Change();
 }

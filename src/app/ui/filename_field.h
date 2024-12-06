@@ -24,10 +24,16 @@ namespace app {
     FilenameField(const Type type,
                   const std::string& pathAndFilename);
 
-    std::string filename() const;
-    void setFilename(const std::string& fn);
+    std::string filepath() const { return m_path; };
+    std::string filename() const { return m_file; };
+    std::string fullFilename() const;
+    std::string displayedFilename() const;
+    void setFilename(const std::string& pathAndFilename);
+    void setFilenameQuiet(const std::string& fn) { m_file = fn; };
+    void setShowFullPath(const bool fullPath);
+    void setDocFilename(const std::string& fn) { m_docFilename = fn; };
 
-    obs::signal<std::string()> SelectFile;
+    obs::signal<std::string()> SelectOutputFile;
     obs::signal<void()> Change;
 
   protected:
@@ -35,10 +41,15 @@ namespace app {
     void onInitTheme(ui::InitThemeEvent& ev) override;
 
   private:
+    void onBrowse();
     void updateWidgets();
+    const std::string updatedFilename() const;
 
+    bool m_showFullPath;
     std::string m_path;
+    std::string m_pathBase;
     std::string m_file;
+    std::string m_docFilename;
     ui::Entry* m_entry;
     ui::Button m_button;
   };
