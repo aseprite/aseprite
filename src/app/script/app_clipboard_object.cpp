@@ -30,7 +30,7 @@ struct Clipboard {};
   if (!ask_access(L, nullptr, mode, ResourceType::Clipboard))                                      \
     return luaL_error(L,                                                                           \
                       "the script doesn't have %s access to the clipboard",                        \
-                      mode == FileAccessMode::Read ? "read" : "write");
+                      (mode) == FileAccessMode::Read ? "read" : "write");
 
 int Clipboard_clear(lua_State* L)
 {
@@ -190,23 +190,35 @@ int Clipboard_set_content(lua_State* L)
     return luaL_error(L, "clipboard content must be a table");
 
   int type = lua_getfield(L, 2, "image");
-  if (type != LUA_TNIL)
+  if (type != LUA_TNIL) {
     image = may_get_image_from_arg(L, -1);
+    if (!image)
+      return luaL_error(L, "invalid image provided");
+  }
   lua_pop(L, 1);
 
   type = lua_getfield(L, 2, "mask");
-  if (type != LUA_TNIL)
-    mask = may_get_docobj<Mask>(L, -1);
+  if (type != LUA_TNIL) {
+    mask = get_mask_from_arg(L, -1);
+    if (!mask)
+      return luaL_error(L, "invalid mask provided");
+  }
   lua_pop(L, 1);
 
   type = lua_getfield(L, 2, "palette");
-  if (type != LUA_TNIL)
+  if (type != LUA_TNIL) {
     palette = may_get_docobj<Palette>(L, -1);
+    if (!palette)
+      return luaL_error(L, "invalid palette provided");
+  }
   lua_pop(L, 1);
 
   type = lua_getfield(L, 2, "tileset");
-  if (type != LUA_TNIL)
+  if (type != LUA_TNIL) {
     tileset = may_get_docobj<Tileset>(L, -1);
+    if (!tileset)
+      return luaL_error(L, "invalid tileset provided");
+  }
   lua_pop(L, 1);
 
   type = lua_getfield(L, 2, "text");
@@ -214,13 +226,14 @@ int Clipboard_set_content(lua_State* L)
     const char* tableText = lua_tostring(L, -1);
     if (tableText != nullptr && strlen(tableText) > 0)
       text = std::string(tableText);
+    else
+      return luaL_error(L, "invalid text provided");
   }
   lua_pop(L, 1);
 
   if (!image && !mask && !palette && !tileset && !text.has_value()) {
     // If we aren't provided anything valid in the table, clear the clipboard.
-    clip::clear();
-    return 0;
+    return Clipboard_clear(L);
   }
 
   if (image != nullptr && text.has_value())
