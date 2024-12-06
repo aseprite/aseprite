@@ -23,8 +23,35 @@ set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/laf/cmake/cxx
 project(aseprite C CXX)
 
 # Check repository status
-if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/laf/CMakeLists.txt)
-  message(FATAL_ERROR "Your Aseprite repository is incomplete, initialize submodules using:\n  git submodule update --init --recursive")
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/laf/CMakeLists.txt" OR
+   NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/laf/clip/CMakeLists.txt")
+  message(FATAL_ERROR
+    "Your Aseprite repository looks incomplete. Please read the following "
+    "instructions carefully:"
+    "\n"
+    "1) If you have downloaded Aseprite source using the "
+    "\"Code > Download ZIP\" button from GitHub, you will not be able to "
+    "compile Aseprite. You need to get the code with other methods (continue "
+    "reading)."
+    "\n"
+    "2) You can correctly clone the GitHub repository with the "
+    "\"--recursive\" argument:"
+    "\n"
+    "  git clone --recursive https://github.com/aseprite/aseprite.git"
+    "\n"
+    "3) If you have already cloned the repository and see this message, "
+    "you still need to initialize submodules running the following command:"
+    "\n"
+    "  git submodule update --init --recursive"
+    "\n"
+    "4) Or if you want to download the full source code in a .zip file, "
+    "go to the releases page and get the latest \"Aseprite-v1.x-Source.zip\":"
+    "\n"
+    "  https://github.com/aseprite/aseprite/releases"
+    "\n"
+    "More information in the building instructions:"
+    "\n"
+    "  https://github.com/aseprite/aseprite/blob/main/INSTALL.md#get-the-source-code")
 endif()
 
 # This is required for KDE/Qt destop integration, which sets
@@ -198,7 +225,7 @@ endif()
 if(USE_SHARED_ZLIB)
   find_package(ZLIB REQUIRED)
 else()
-  set(ZLIB_FOUND)
+  set(ZLIB_FOUND ON)
   set(ZLIB_LIBRARY zlibstatic)
   set(ZLIB_LIBRARIES ${ZLIB_LIBRARY})
   set(ZLIB_INCLUDE_DIRS

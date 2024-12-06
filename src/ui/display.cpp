@@ -163,13 +163,19 @@ void Display::flipDisplay()
   }
 #endif
 
-  // Invalidate the dirty region in the os::Window
-  if (m_nativeWindow->isVisible())
+  // Invalidate the dirty region in the os::Window only if the window
+  // is visible (e.g. if the window is hidden or minimized, we don't
+  // need to do this).
+  if (m_nativeWindow->isVisible()) {
     m_nativeWindow->invalidateRegion(m_dirtyRegion);
-  else
+    m_nativeWindow->swapBuffers();
+  }
+  // If the native window is not minimized/hidden by the user, make it
+  // visible (e.g. when we flipDisplay() for the first time).
+  else if (!m_nativeWindow->isMinimized()) {
     m_nativeWindow->setVisible(true);
+  }
 
-  m_nativeWindow->swapBuffers();
   m_dirtyRegion.clear();
 }
 
