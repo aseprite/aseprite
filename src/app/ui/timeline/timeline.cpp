@@ -1135,26 +1135,28 @@ bool Timeline::onProcessMessage(Message* msg)
                     newFrame = hit.frame;
                 }
 
-                layer_t newLayer;
+                layer_t newLayer = -1;
                 if (m_range.type() == Range::kFrames) {
                   // If we are moving only frames we don't change the
                   // current layer.
                   newLayer = getLayerIndex(m_layer);
                 }
                 else {
+                  newLayer = hit.layer;
+
                   layer_t firstDrawableLayer;
                   layer_t lastDrawableLayer;
-                  getDrawableLayers(&firstDrawableLayer, &lastDrawableLayer);
-
-                  if (hit.layer < firstDrawableLayer)
-                    newLayer = firstDrawableLayer - 1;
-                  else if (hit.layer > lastDrawableLayer)
-                    newLayer = lastDrawableLayer + 1;
-                  else
-                    newLayer = hit.layer;
+                  if (getDrawableLayers(&firstDrawableLayer,
+                                        &lastDrawableLayer)) {
+                    if (hit.layer < firstDrawableLayer)
+                      newLayer = firstDrawableLayer - 1;
+                    else if (hit.layer > lastDrawableLayer)
+                      newLayer = lastDrawableLayer + 1;
+                  }
                 }
 
-                showCel(newLayer, newFrame);
+                if (newLayer != -1)
+                  showCel(newLayer, newFrame);
                 break;
             }
 
@@ -1752,7 +1754,8 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     layer_t layer, firstLayer, lastLayer;
     col_t frame, firstFrame, lastFrame;
 
-    getDrawableLayers(&firstLayer, &lastLayer);
+    const bool hasLayers =
+      getDrawableLayers(&firstLayer, &lastLayer);
     getDrawableFrames(&firstFrame, &lastFrame);
 
     drawTop(g);
@@ -1779,98 +1782,100 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     }
 
     // Draw each visible layer.
-    DrawCelData data;
-    const view::fr_t realActiveFrame = m_adapter->toRealFrame(m_frame);
-    for (layer=lastLayer; layer>=firstLayer; --layer) {
-      {
-        IntersectClip clip(g, getLayerHeadersBounds());
-        if (clip)
-          drawLayer(g, layer);
-      }
-
-      IntersectClip clip(g, getCelsBounds());
-      if (!clip)
-        continue;
-
-      Layer* layerPtr = getLayer(layer);
-      if (!layerPtr || !layerPtr->isImage()) {
-        // Draw empty cels
-        for (frame=firstFrame; frame<=lastFrame; frame=col_t(frame+1)) {
-          drawCel(g, layer, frame, nullptr, nullptr);
+    if (hasLayers) {
+      DrawCelData data;
+      const view::fr_t realActiveFrame = m_adapter->toRealFrame(m_frame);
+      for (layer=lastLayer; layer>=firstLayer; --layer) {
+        {
+          IntersectClip clip(g, getLayerHeadersBounds());
+          if (clip)
+            drawLayer(g, layer);
         }
-        continue;
-      }
 
-      // TODO Draw the set of cels by "column blocks" (set of
-      //      consecutive frame columns)
+        IntersectClip clip(g, getCelsBounds());
+        if (!clip)
+          continue;
 
-      // Get the first CelIterator to be drawn (it is the first cel with cel->frame >= first_frame)
-      LayerImage* layerImagePtr = static_cast<LayerImage*>(layerPtr);
-      data.begin = layerImagePtr->getCelBegin();
-      data.end = layerImagePtr->getCelEnd();
+        Layer* layerPtr = getLayer(layer);
+        if (!layerPtr || !layerPtr->isImage()) {
+          // Draw empty cels
+          for (frame=firstFrame; frame<=lastFrame; frame=col_t(frame+1)) {
+            drawCel(g, layer, frame, nullptr, nullptr);
+          }
+          continue;
+        }
 
-      const frame_t firstRealFrame(m_adapter->toRealFrame(firstFrame));
-      const frame_t lastRealFrame(m_adapter->toRealFrame(lastFrame));
-      data.it = layerImagePtr->findFirstCelIteratorAfter(firstRealFrame-1);
+        // TODO Draw the set of cels by "column blocks" (set of
+        //      consecutive frame columns)
 
-      if (firstRealFrame > 0 && data.it != data.begin)
-        data.prevIt = data.it-1;
-      else
-        data.prevIt = data.end;
-      data.nextIt = (data.it != data.end ? data.it+1: data.end);
+        // Get the first CelIterator to be drawn (it is the first cel with cel->frame >= first_frame)
+        LayerImage* layerImagePtr = static_cast<LayerImage*>(layerPtr);
+        data.begin = layerImagePtr->getCelBegin();
+        data.end = layerImagePtr->getCelEnd();
 
-      // Calculate link range for the active cel
-      data.firstLink = data.end;
-      data.lastLink = data.end;
+        const frame_t firstRealFrame(m_adapter->toRealFrame(firstFrame));
+        const frame_t lastRealFrame(m_adapter->toRealFrame(lastFrame));
+        data.it = layerImagePtr->findFirstCelIteratorAfter(firstRealFrame-1);
 
-      if (layerPtr == m_layer) {
-        data.activeIt = layerImagePtr->findCelIterator(frame_t(realActiveFrame));
-        if (data.activeIt != data.end) {
-          data.firstLink = data.activeIt;
-          data.lastLink = data.activeIt;
+        if (firstRealFrame > 0 && data.it != data.begin)
+          data.prevIt = data.it-1;
+        else
+          data.prevIt = data.end;
+        data.nextIt = (data.it != data.end ? data.it+1: data.end);
 
-          ObjectId imageId = (*data.activeIt)->image()->id();
+        // Calculate link range for the active cel
+        data.firstLink = data.end;
+        data.lastLink = data.end;
 
-          auto it2 = data.activeIt;
-          if (it2 != data.begin) {
-            do {
-              --it2;
+        if (layerPtr == m_layer) {
+          data.activeIt = layerImagePtr->findCelIterator(frame_t(realActiveFrame));
+          if (data.activeIt != data.end) {
+            data.firstLink = data.activeIt;
+            data.lastLink = data.activeIt;
+
+            ObjectId imageId = (*data.activeIt)->image()->id();
+
+            auto it2 = data.activeIt;
+            if (it2 != data.begin) {
+              do {
+                --it2;
+                if ((*it2)->image()->id() == imageId) {
+                  data.firstLink = it2;
+                  if ((*it2)->frame() < firstRealFrame)
+                    break;
+                }
+              } while (it2 != data.begin);
+            }
+
+            it2 = data.activeIt;
+            while (it2 != data.end) {
               if ((*it2)->image()->id() == imageId) {
-                data.firstLink = it2;
-                if ((*it2)->frame() < firstRealFrame)
+                data.lastLink = it2;
+                if ((*it2)->frame() > lastRealFrame)
                   break;
               }
-            } while (it2 != data.begin);
-          }
-
-          it2 = data.activeIt;
-          while (it2 != data.end) {
-            if ((*it2)->image()->id() == imageId) {
-              data.lastLink = it2;
-              if ((*it2)->frame() > lastRealFrame)
-                break;
+              ++it2;
             }
-            ++it2;
           }
         }
-      }
-      else
-        data.activeIt = data.end;
+        else
+          data.activeIt = data.end;
 
-      // Draw every visible cel for each layer.
-      for (frame=firstFrame; frame<=lastFrame; frame=col_t(frame+1)) {
-        const view::fr_t realFrame = m_adapter->toRealFrame(frame);
-        Cel* cel =
-          (data.it != data.end &&
-           (*data.it)->frame() == realFrame ? *data.it: nullptr);
+        // Draw every visible cel for each layer.
+        for (frame=firstFrame; frame<=lastFrame; frame=col_t(frame+1)) {
+          const view::fr_t realFrame = m_adapter->toRealFrame(frame);
+          Cel* cel =
+            (data.it != data.end &&
+             (*data.it)->frame() == realFrame ? *data.it: nullptr);
 
-        drawCel(g, layer, frame, cel, &data);
+          drawCel(g, layer, frame, cel, &data);
 
-        if (cel) {
-          data.prevIt = data.it;
-          data.it = data.nextIt; // Point to next cel
-          if (data.nextIt != data.end)
-            ++data.nextIt;
+          if (cel) {
+            data.prevIt = data.it;
+            data.it = data.nextIt; // Point to next cel
+            if (data.nextIt != data.end)
+              ++data.nextIt;
+          }
         }
       }
     }
@@ -2171,9 +2176,12 @@ void Timeline::setCursor(ui::Message* msg, const Hit& hit)
   }
 }
 
-void Timeline::getDrawableLayers(layer_t* firstDrawableLayer,
+bool Timeline::getDrawableLayers(layer_t* firstDrawableLayer,
                                  layer_t* lastDrawableLayer)
 {
+  if (m_rows.empty())
+    return false;               // No layers
+
   layer_t i = lastLayer()
             - ((viewScroll().y + getCelsBounds().h) / layerBoxHeight());
   i = std::clamp(i, firstLayer(), lastLayer());
@@ -2186,6 +2194,7 @@ void Timeline::getDrawableLayers(layer_t* firstDrawableLayer,
 
   *firstDrawableLayer = i;
   *lastDrawableLayer = j;
+  return true;
 }
 
 void Timeline::getDrawableFrames(col_t* firstFrame, col_t* lastFrame)
@@ -3470,12 +3479,12 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
       - m_separator_w
       + scroll.x);
 
-    // Flag which indicates that we are in the are below the Background layer/last layer area
-    if (hit.layer < 0)
-      hit.veryBottom = true;
-
     if (hasCapture()) {
-      hit.layer = std::clamp(hit.layer, firstLayer(), lastLayer());
+      if (!m_rows.empty())
+        hit.layer = std::clamp(hit.layer, firstLayer(), lastLayer());
+      else
+        hit.layer = -1;
+
       if (isMovingCel())
         hit.frame = std::max(firstFrame(), hit.frame);
       else
@@ -3485,6 +3494,10 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
       if (hit.layer > lastLayer()) hit.layer = -1;
       if (hit.frame > lastFrame()) hit.frame = kNoCol;
     }
+
+    // Flag which indicates that we are in the are below the Background layer/last layer area
+    if (hit.layer < 0)
+      hit.veryBottom = true;
 
     // Is the mouse over onionskin handles?
     gfx::Rect bounds = getOnionskinFramesBounds();
@@ -3693,7 +3706,11 @@ Timeline::Hit Timeline::hitTestCel(const gfx::Point& mousePos)
     - m_separator_w
     + scroll.x);
 
-  hit.layer = std::clamp(hit.layer, firstLayer(), lastLayer());
+  if (!m_rows.empty())
+    hit.layer = std::clamp(hit.layer, firstLayer(), lastLayer());
+  else
+    hit.layer = -1;
+
   hit.frame = std::max(firstFrame(), hit.frame);
 
   return hit;

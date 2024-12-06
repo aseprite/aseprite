@@ -297,7 +297,7 @@ namespace app {
     bool allLayersDiscontinuous();
     void detachDocument();
     void setCursor(ui::Message* msg, const Hit& hit);
-    void getDrawableLayers(layer_t* firstLayer, layer_t* lastLayer);
+    bool getDrawableLayers(layer_t* firstLayer, layer_t* lastLayer);
     void getDrawableFrames(col_t* firstFrame, col_t* lastFrame);
     bool getTagFrames(const doc::Tag* tag, col_t* fromFrame, col_t* toFrame) const;
     void drawPart(ui::Graphics* g, const gfx::Rect& bounds,
