@@ -193,6 +193,14 @@ void Theme::initWidget(Widget* widget)
 
   widget->setFont(getDefaultFont());
   widget->setStyle(&m_simpleStyle);
+
+  switch (widget->type()) {
+
+    case kViewScrollbarWidget:
+      static_cast<ScrollBar*>(widget)->setThumbStyle(&m_simpleStyle);
+      break;
+
+  }
 }
 
 void Theme::setDecorativeWidgetBounds(Widget* widget)
