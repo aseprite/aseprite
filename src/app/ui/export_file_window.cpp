@@ -24,7 +24,6 @@
 #include "doc/tag.h"
 #include "fmt/format.h"
 #include "ui/alert.h"
-#include "ui/menu.h"
 
 #include <algorithm>
 
@@ -35,10 +34,10 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
   , m_docPref(Preferences::instance().document(doc))
   , m_preferredResize(1)
 {
-  m_showFullPath = Preferences::instance().general.showFullPath();
   // Is a default output filename in the preferences?
+  outputField()->setDocFilename(doc->filename());
   if (!m_docPref.saveCopy.filename().empty()) {
-    setOutputFilename(m_docPref.saveCopy.filename());
+    outputField()->setFilename(m_docPref.saveCopy.filename());
   }
   else {
     std::string newFn = base::replace_extension(doc->filename(), defaultExtension());
@@ -47,10 +46,8 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
         base::get_file_path(newFn),
         base::get_file_title(newFn) + "-export." + base::get_file_extension(newFn));
     }
-    setOutputFilename(newFn);
+    outputField()->setFilename(newFn);
   }
-  if (m_outputPathBase.empty())
-    m_outputPathBase = m_outputPath;
 
   // Default export configuration
   setResizeScale(m_docPref.saveCopy.resizeScale());
@@ -72,6 +69,7 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
     pixelRatio()->setVisible(false);
   }
 
+  outputField()->Change.connect([this] { onOutputFieldChange(); });
   forTwitter()->setSelected(m_docPref.saveCopy.forTwitter());
   adjustResize()->setVisible(false);
   playSubtags()->setSelected(m_docPref.saveCopy.playSubtags());
@@ -81,14 +79,7 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
   // in the preference (instead of the tag's AniDir).
   // updateAniDir();
   updatePlaySubtags();
-
   updateAdjustResizeButton();
-
-  outputFilename()->Change.connect([this] {
-    m_outputFilename = outputFilename()->text();
-    onOutputFilenameEntryChange();
-  });
-  outputFilenameBrowse()->Click.connect([this] { onOutputFilenameBrowse(); });
 
   resize()->Change.connect([this] { updateAdjustResizeButton(); });
   frames()->Change.connect([this] {
@@ -108,7 +99,7 @@ bool ExportFileWindow::show()
 
 void ExportFileWindow::savePref()
 {
-  m_docPref.saveCopy.filename(outputFilenameValue());
+  m_docPref.saveCopy.filename(outputField()->fullFilename());
   m_docPref.saveCopy.resizeScale(resizeValue());
   m_docPref.saveCopy.area(areaValue());
   m_docPref.saveCopy.layer(layersValue());
@@ -118,11 +109,6 @@ void ExportFileWindow::savePref()
   m_docPref.saveCopy.applyPixelRatio(applyPixelRatio());
   m_docPref.saveCopy.forTwitter(isForTwitter());
   m_docPref.saveCopy.playSubtags(isPlaySubtags());
-}
-
-std::string ExportFileWindow::outputFilenameValue() const
-{
-  return base::get_absolute_path(base::join_path(m_outputPath, m_outputFilename));
 }
 
 double ExportFileWindow::resizeValue() const
@@ -187,81 +173,9 @@ void ExportFileWindow::setAniDir(const doc::AniDir aniDir)
   anidir()->setSelectedItemIndex(int(aniDir));
 }
 
-void ExportFileWindow::onOutputFilenameBrowse()
+void ExportFileWindow::onOutputFieldChange()
 {
-  auto item = outputFilenameBrowse();
-
-  gfx::Rect bounds = item->bounds();
-  item->setSelected(false);
-
-  ui::Menu menu;
-  ui::MenuItem choose(Strings::export_file_choose_file());
-  ui::MenuItem relative(Strings::export_file_relative_path(m_outputPathBase));
-  ui::MenuItem absolute(Strings::export_file_absolute_path());
-  menu.addChild(&choose);
-  menu.addChild(new ui::MenuSeparator());
-  menu.addChild(&relative);
-  menu.addChild(&absolute);
-
-  choose.Click.connect([this] {
-    std::string fn = SelectOutputFile();
-    if (!fn.empty()) {
-      setOutputFilename(fn);
-    }
-  });
-  relative.Click.connect([this] {
-    const std::string fn = (m_showFullPath ?
-                              outputFilename()->text() :
-                              m_outputPath + base::path_separator + outputFilename()->text());
-    m_showFullPath = false;
-    setOutputFilename(fn);
-  });
-  absolute.Click.connect([this] {
-    const std::string fn = (m_showFullPath ?
-                              outputFilename()->text() :
-                              m_outputPath + base::path_separator + outputFilename()->text());
-    m_showFullPath = true;
-    setOutputFilename(fn);
-  });
-
-  menu.showPopup(gfx::Point(bounds.x, bounds.y2()), display());
-}
-
-void ExportFileWindow::setOutputFilename(const std::string& pathAndFilename)
-{
-  if (m_showFullPath || base::get_file_path(m_doc->filename()).empty()) {
-    m_outputPath = base::get_file_path(pathAndFilename);
-    m_outputFilename = base::get_file_name(pathAndFilename);
-  }
-  else {
-    m_outputPath = base::get_file_path(m_doc->filename());
-    m_outputFilename = base::get_relative_path(pathAndFilename,
-                                               base::get_file_path(m_doc->filename()));
-
-    // Cannot find a relative path (e.g. we selected other drive)
-    if (m_outputFilename == pathAndFilename) {
-      m_outputPath = base::get_file_path(pathAndFilename);
-      m_outputFilename = base::get_file_name(pathAndFilename);
-    }
-  }
-  if (m_showFullPath)
-    m_outputPath = base::get_absolute_path(m_outputPath);
-  else
-    m_outputPathBase = m_outputPath;
-
-  updateOutputFilenameEntry();
-}
-
-void ExportFileWindow::updateOutputFilenameEntry()
-{
-  outputFilename()->setText(
-    (m_showFullPath ? m_outputPath + base::path_separator + m_outputFilename : m_outputFilename));
-  onOutputFilenameEntryChange();
-}
-
-void ExportFileWindow::onOutputFilenameEntryChange()
-{
-  ok()->setEnabled(!m_outputFilename.empty());
+  ok()->setEnabled(!outputField()->filename().empty());
 }
 
 void ExportFileWindow::updateAniDir()
@@ -318,12 +232,13 @@ void ExportFileWindow::onAdjustResize()
 void ExportFileWindow::onOK()
 {
   base::paths exts = get_writable_extensions();
-  std::string ext = base::string_to_lower(base::get_file_extension(m_outputFilename));
+  std::string ext = base::string_to_lower(base::get_file_extension(outputField()->filename()));
 
   // Add default extension to output filename
   if (std::find(exts.begin(), exts.end(), ext) == exts.end()) {
     if (ext.empty()) {
-      m_outputFilename = base::replace_extension(m_outputFilename, defaultExtension());
+      outputField()->setFilenameQuiet(
+        base::replace_extension(outputField()->filename(), defaultExtension()));
     }
     else {
       ui::Alert::show(Strings::alerts_unknown_output_file_format_error(ext));
