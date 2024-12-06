@@ -195,7 +195,7 @@ doc::Image* get_image_from_arg(lua_State* L, int index);
 doc::Cel* get_image_cel_from_arg(lua_State* L, int index);
 doc::Tileset* get_image_tileset_from_arg(lua_State* L, int index);
 doc::frame_t get_frame_number_from_arg(lua_State* L, int index);
-const doc::Mask* get_mask_from_arg(lua_State* L, int index);
+doc::Mask* get_mask_from_arg(lua_State* L, int index);
 app::tools::Tool* get_tool_from_arg(lua_State* L, int index);
 doc::BrushRef get_brush_from_arg(lua_State* L, int index);
 doc::Tileset* get_tile_index_from_arg(lua_State* L, int index, doc::tile_index& ts);

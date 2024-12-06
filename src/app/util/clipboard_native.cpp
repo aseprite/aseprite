@@ -193,6 +193,7 @@ bool Clipboard::setNativeBitmap(const doc::Image* image,
       l.set_image(img);
       break;
     }
+    default: TRACE("Unsupported pixelFormat: %d\n", image->pixelFormat()); return false;
   }
 
   return true;
