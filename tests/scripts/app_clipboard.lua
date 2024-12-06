@@ -67,7 +67,7 @@ do -- Image copying and access
 end
 
 do -- Image copying and access (with .content)
-  -- TODO: Using the previous image for now to avoid the IMAGE_TILEMAP format not being supported.
+  -- Using another image to avoid the IMAGE_TILEMAP format not being supported.
   local beforeSprite = Sprite{ fromFile="sprites/abcd.aseprite" }
   local imageBefore = app.image:clone()
 
@@ -87,7 +87,7 @@ do -- Image copying and access (with .content)
   app.clipboard.content = {
     image = imageBefore,
     palettte = sprite.palettes[1],
-    mask = sprite.selection,
+    selection = sprite.selection,
     tileset = app.layer.tileset
   }
 
@@ -100,5 +100,5 @@ do -- Image copying and access (with .content)
   assert(imageBefore:isEqual(c.image))
   expect_eq(sprite.palettes[1]:getColor(1).rgbaPixel, c.palette:getColor(1).rgbaPixel)
   assert(app.layer.tileset:tile(0).image:isEqual(c.tileset:tile(0).image))
-  expect_eq(sprite.selection, c.mask)
+  expect_eq(sprite.selection, c.selection)
 end

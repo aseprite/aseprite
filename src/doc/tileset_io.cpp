@@ -63,11 +63,11 @@ Tileset* read_tileset(std::istream& is,
   const tileset_index ntiles = read32(is);
   const Grid grid = read_grid(is);
   auto* tileset = new Tileset(sprite, grid, sprite ? ntiles : 0);
-  if (sprite && setId)
+  if (setId)
     tileset->setId(id);
 
   for (tileset_index ti = 0; ti < ntiles; ++ti) {
-    const ImageRef image(read_image(is, sprite ? setId : false));
+    const ImageRef image(read_image(is, setId));
 
     if (sprite)
       tileset->set(ti, image);
