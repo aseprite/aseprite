@@ -55,6 +55,28 @@ public:
     setType(kWindowTitleLabelWidget);
     initTheme();
   }
+private:
+  void onSetDecorativeWidgetBounds() override {
+    Label::onSetDecorativeWidgetBounds();
+    // Adjust the bounds of the window title label if a mini-button
+    // overlaps it.
+    if (parent()->window()) {
+      Window* window = parent()->window();
+      gfx::Border margin(0, 0, 0, 0);
+      if (window->style())
+        margin = window->style()->margin();
+      int mostLeftMiniButtonPosition = window->bounds().x2() - margin.right();
+      for (auto child : window->children()) {
+        if (child->isDecorative() &&
+            (child != this) &&
+            child->bounds().x < mostLeftMiniButtonPosition)
+          mostLeftMiniButtonPosition = child->bounds().x;
+      }
+      gfx::Rect newBounds(bounds());
+      newBounds.w -= bounds().x2() - mostLeftMiniButtonPosition;
+      setBounds(newBounds);
+    }
+  }
 };
 
 
