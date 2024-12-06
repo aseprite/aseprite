@@ -12,7 +12,6 @@
 #include "app/commands/filters/filter_window.h"
 
 #include "app/commands/filters/filter_manager_impl.h"
-#include "app/commands/filters/filter_worker.h"
 #include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/modules/gui.h"
@@ -35,6 +34,7 @@ FilterWindow::FilterWindow(const char* title, const char* cfgSection,
   , m_vbox(VERTICAL)
   , m_container(VERTICAL)
   , m_okButton(Strings::filters_ok())
+  , m_applyButton(Strings::filters_apply())
   , m_cancelButton(Strings::filters_cancel())
   , m_preview(filterMgr)
   , m_targetButton(filterMgr->pixelFormat(), (withChannels == WithChannelsSelector))
@@ -44,6 +44,7 @@ FilterWindow::FilterWindow(const char* title, const char* cfgSection,
                    nullptr)
 {
   m_okButton.processMnemonicFromText();
+  m_applyButton.processMnemonicFromText();
   m_cancelButton.processMnemonicFromText();
   m_showPreview.processMnemonicFromText();
   if (m_tiledCheck)
@@ -56,6 +57,7 @@ FilterWindow::FilterWindow(const char* title, const char* cfgSection,
   m_targetButton.setCelsTarget(celsTarget);
   m_targetButton.TargetChange.connect(&FilterWindow::onTargetButtonChange, this);
   m_okButton.Click.connect(&FilterWindow::onOk, this);
+  m_applyButton.Click.connect(&FilterWindow::onApply, this);
   m_cancelButton.Click.connect(&FilterWindow::onCancel, this);
   m_showPreview.Click.connect(&FilterWindow::onShowPreview, this);
 
@@ -65,6 +67,7 @@ FilterWindow::FilterWindow(const char* title, const char* cfgSection,
   m_hbox.addChild(&m_vbox);
 
   m_vbox.addChild(&m_okButton);
+  m_vbox.addChild(&m_applyButton);
   m_vbox.addChild(&m_cancelButton);
   m_vbox.addChild(&m_targetButton);
   m_vbox.addChild(&m_showPreview);
@@ -120,10 +123,7 @@ bool FilterWindow::doModal()
 
   // Did the user press OK?
   if (closer() == &m_okButton) {
-    stopPreview();
-
-    // Apply the filter in background
-    start_filter_worker(m_filterMgr);
+    apply();
     result = true;
   }
 
@@ -150,6 +150,23 @@ void FilterWindow::setNewTarget(Target target)
 
   m_filterMgr->setTarget(target);
   m_targetButton.setTarget(target);
+}
+
+void FilterWindow::apply()
+{
+  stopPreview();
+
+  // Apply the filter in background
+  m_filterMgr->startWorker();
+}
+
+void FilterWindow::onApply()
+{
+  apply();
+
+  update_screen_for_document(m_filterMgr->document());
+
+  restartPreview();
 }
 
 void FilterWindow::onOk()
