@@ -44,8 +44,8 @@ using namespace filters;
 ToolLoopManager::ToolLoopManager(ToolLoop* toolLoop)
   : m_toolLoop(toolLoop)
   , m_canceled(false)
-  , m_brush0(toolLoop->getBrush())
   , m_dynamics(toolLoop->getDynamics())
+  , m_brush0(toolLoop->getBrush())
 {
 }
 
