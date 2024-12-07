@@ -681,7 +681,8 @@ void CustomizedGuiManager::onInitTheme(InitThemeEvent& ev)
   Manager::onInitTheme(ev);
 
   // Update the theme on all menus
-  AppMenus::instance()->initTheme();
+  if (auto* menus = AppMenus::instance())
+    menus->initTheme();
 }
 
 void CustomizedGuiManager::onNewDisplayConfiguration(Display* display)

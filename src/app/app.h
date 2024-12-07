@@ -34,6 +34,7 @@ namespace app {
   }
 #endif
 
+  class AppMenus;
   class AppMod;
   class AppOptions;
   class BackupIndicator;
@@ -135,6 +136,7 @@ namespace app {
     std::unique_ptr<CoreModules> m_coreModules;
     std::unique_ptr<Modules> m_modules;
     std::unique_ptr<LegacyModules> m_legacy;
+    std::unique_ptr<AppMenus> m_appMenus;
     bool m_isGui;
     bool m_isShell;
 #if !LAF_SKIA

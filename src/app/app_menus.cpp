@@ -68,11 +68,6 @@ const int kUnicodeDown     = 0xF701; // NSDownArrowFunctionKey
 
 const char* kFileRecentListGroup = "file_recent_list";
 
-void destroy_instance(AppMenus* instance)
-{
-  delete instance;
-}
-
 bool is_text_entry_shortcut(const os::Shortcut& shortcut)
 {
   const os::KeyModifiers mod = shortcut.modifiers();
@@ -320,24 +315,29 @@ os::Shortcut get_os_shortcut_from_key(const Key* key)
     return os::Shortcut();
 }
 
+AppMenus* AppMenus::s_instance = nullptr;
+
 // static
 AppMenus* AppMenus::instance()
 {
-  static AppMenus* instance = NULL;
-  if (!instance) {
-    instance = new AppMenus;
-    App::instance()->Exit.connect([]{ destroy_instance(instance); });
-  }
-  return instance;
+  return s_instance;
 }
 
-AppMenus::AppMenus()
+AppMenus::AppMenus(RecentFiles* recentFiles)
   : m_recentFilesPlaceholder(nullptr)
   , m_osMenu(nullptr)
 {
+  ASSERT(s_instance == nullptr);
+  s_instance = this;
   m_recentFilesConn =
-    App::instance()->recentFiles()->Changed.connect(
+    recentFiles->Changed.connect(
       [this]{ rebuildRecentList(); });
+}
+
+AppMenus::~AppMenus()
+{
+  ASSERT(s_instance == this);
+  s_instance = nullptr;
 }
 
 void AppMenus::reload()

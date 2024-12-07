@@ -11,6 +11,7 @@
 
 #include "app/app.h"
 
+#include "app/app_menus.h"
 #include "app/app_mod.h"
 #include "app/check_update.h"
 #include "app/cli/app_options.h"
@@ -341,6 +342,7 @@ int App::initialize(const AppOptions& options)
   // Load modules
   m_modules = std::make_unique<Modules>(createLogInDesktop, pref);
   m_legacy = std::make_unique<LegacyModules>(isGui() ? REQUIRE_INTERFACE: 0);
+  m_appMenus = std::make_unique<AppMenus>(recentFiles());
   m_brushes = std::make_unique<AppBrushes>();
 
   // Data recovery is enabled only in GUI mode
@@ -653,6 +655,9 @@ App::~App()
     // Save brushes
     m_brushes.reset();
 
+    // TODO it'd be nice to destroy every module automatically with
+    //      the default ~App() impl.
+    m_appMenus.reset();
     m_legacy.reset();
     m_modules.reset();
 
