@@ -82,6 +82,7 @@
   #include "app/util/decode_webp.h"
 #endif
 
+#include <cstdio>
 #include <iostream>
 #include <memory>
 
@@ -257,7 +258,18 @@ int App::initialize(const AppOptions& options)
 {
   const os::SystemRef system = os::System::instance();
 
-  m_isGui = options.startUI() && !options.previewCLI();
+  // Without Skia backend we don't have GUI.
+  const bool startGui = (options.startUI() && !options.previewCLI());
+#if LAF_SKIA
+  m_isGui = startGui;
+#else
+  // True if we should show a warning when running the main Aseprite
+  // executable (no test/benchmark) without args and the GUI is not
+  // available.
+  m_showCliOnlyWarning =
+    (startGui && base::utf8_icmp(base::get_file_title(options.exeName()),
+                                 get_app_name()) == 0);
+#endif
 
   // Notify the scripting engine that we're going to enter to GUI
   // mode, this is useful so we can mark the stdin file handle as
@@ -605,6 +617,12 @@ void App::close()
     // exceptions, and we are not in a destructor).
     m_modules->deleteDataRecovery();
   }
+#if !LAF_SKIA
+  else if (m_showCliOnlyWarning) {
+    std::printf("You have a CLI-only Aseprite version\n"
+                "To enable GUI support build with LAF_BACKEND=skia\n");
+  }
+#endif
 
   // Just in case close the main window.
   m_mainWindow.reset(nullptr);

@@ -137,6 +137,9 @@ namespace app {
     std::unique_ptr<LegacyModules> m_legacy;
     bool m_isGui;
     bool m_isShell;
+#if !LAF_SKIA
+    bool m_showCliOnlyWarning = false;
+#endif
 #ifdef ENABLE_STEAM
     bool m_inAppSteam = true;
 #endif
