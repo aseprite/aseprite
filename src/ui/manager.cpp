@@ -282,6 +282,10 @@ Manager::~Manager()
 
     // Shutdown system
     mouse_widgets_list.clear();
+
+    focus_widget = nullptr;
+    mouse_widget = nullptr;
+    capture_widget = nullptr;
   }
 
   manager_thread = std::thread::id();
