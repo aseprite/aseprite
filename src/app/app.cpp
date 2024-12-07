@@ -595,9 +595,6 @@ void App::run()
 
 void App::close()
 {
-  // Just in case close the main window.
-  m_mainWindow.reset(nullptr);
-
   if (isGui()) {
     ExitGui();
 
@@ -608,6 +605,9 @@ void App::close()
     // exceptions, and we are not in a destructor).
     m_modules->deleteDataRecovery();
   }
+
+  // Just in case close the main window.
+  m_mainWindow.reset(nullptr);
 }
 
 // Finishes the Aseprite application.
