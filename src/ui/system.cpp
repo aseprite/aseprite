@@ -40,7 +40,6 @@ bool multi_displays = false;
 // Current mouse cursor type.
 static CursorType mouse_cursor_type = kOutsideDisplay;
 static const Cursor* mouse_cursor_custom = nullptr;
-static const Cursor* mouse_cursor = nullptr;
 static Display* mouse_display = nullptr;
 static bool use_native_mouse_cursor = true;
 
