@@ -28,9 +28,11 @@ namespace app {
   public:
     static const char* kDefLanguage;
 
-    static void createInstance(Preferences& pref,
-                               Extensions& exts);
     static Strings* instance();
+
+    Strings(Preferences& pref,
+            Extensions& exts);
+    ~Strings();
 
     const std::string& translate(const char* id) const;
     const std::string& defaultString(const char* id) const;
@@ -60,9 +62,6 @@ namespace app {
     obs::signal<void()> LanguageChange;
 
   private:
-    Strings(Preferences& pref,
-            Extensions& exts);
-
     void loadLanguage(const std::string& langId);
     void loadStringsFromDataDir(const std::string& langId);
     void loadStringsFromExtension(const std::string& langId);

@@ -129,21 +129,12 @@ public:
   app::UIContext m_context;
 };
 
-class App::LoadLanguage {
-public:
-  LoadLanguage(Preferences& pref,
-               Extensions& exts) {
-    Strings::createInstance(pref, exts);
-  }
-};
-
 class App::Modules {
 public:
   LoggerModule m_loggerModule;
   FileSystemModule m_file_system_module;
   Extensions m_extensions;
-  // Load main language (after loading the extensions)
-  LoadLanguage m_loadLanguage;
+  Strings m_strings; // Load main language (after loading the extensions)
   tools::ToolBox m_toolbox;
   tools::ActiveToolManager m_activeToolManager;
   Commands m_commands;
@@ -160,7 +151,7 @@ public:
   Modules(const bool createLogInDesktop,
           Preferences& pref)
     : m_loggerModule(createLogInDesktop)
-    , m_loadLanguage(pref, m_extensions)
+    , m_strings(pref, m_extensions)
     , m_activeToolManager(&m_toolbox)
     , m_recent_files(pref.general.recentItems())
 #ifdef ENABLE_DATA_RECOVERY
