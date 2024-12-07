@@ -871,11 +871,10 @@ void set_theme(Theme* theme, const int uiscale)
 {
   old_ui_scale = current_ui_scale;
   current_ui_scale = uiscale;
+  current_theme = theme;
 
   if (theme) {
     theme->regenerateTheme();
-
-    current_theme = theme;
 
     // Set the theme for all widgets
     details::reinitThemeForAllWidgets();
