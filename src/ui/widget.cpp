@@ -91,7 +91,9 @@ Widget::~Widget()
   // for the parent that will be deleted too.
   Manager* manager = this->manager();
   ASSERT(manager);
-  if (manager) {
+  if (manager &&
+      // Don't call Manager functions when we're just destroying it.
+      manager != this) {
     manager->freeWidget(this);
     manager->removeMessagesFor(this);
     manager->removeMessageFilterFor(this);

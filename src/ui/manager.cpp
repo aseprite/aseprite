@@ -274,6 +274,7 @@ Manager::~Manager()
         ASSERT(msg_filter.empty());
     }
     ASSERT(msg_queue.empty());
+    ASSERT(used_msg_queue.empty());
 #endif
 
     // No more default manager
@@ -282,6 +283,8 @@ Manager::~Manager()
     // Shutdown system
     mouse_widgets_list.clear();
   }
+
+  manager_thread = std::thread::id();
 }
 
 // static
