@@ -597,6 +597,12 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
         gfx::Point pt = grid.canvasToTile(gfx::Point(spritePos));
         buf += fmt::format(" :grid: {} {}", pt.x, pt.y);
 
+        // Number of columns of the current grid/tilemap to show a
+        // "tile index", i.e. a linear index that might be used in a
+        // 1D array to represent the current grid tile/cell. If it's 0
+        // we don't show the index.
+        int tileIndexColumns = 0;
+
         // Show the tile index of this specific tile
         if (site.layer() &&
             site.layer()->isTilemap() &&
@@ -608,20 +614,20 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
             std::string str;
             build_tile_flags_string(tf, str);
             buf += fmt::format(" [{}{}]", ti, str);
+
+            // Show tile index for a tilemaps (using the tilemap size)
+            tileIndexColumns = site.image()->width();
           }
         }
-        // Show the grid cell index
-        if (sprite->bounds().contains(gfx::Point(spritePos))) {
-          int columns = int(std::floor(
-            sprite->bounds().w/grid.tileSize().w));
-          int rows = int(std::floor(
-            sprite->bounds().h/grid.tileSize().h));
-          int column = (columns ? pt.x%columns: 0);
-          int row = (rows ? pt.y%rows: 0);
-          if (row < 0) row = row + rows;
-          if (column < 0) column = column + columns;
-          buf += fmt::format(" :search: {}", column+row*columns);
+        // Show the tile index for a regular layer/grid
+        else if (sprite->bounds().contains(gfx::Point(spritePos))) {
+          tileIndexColumns =
+            int(std::ceil(double(sprite->bounds().w - grid.origin().x)
+                          / grid.tileSize().w));
         }
+
+        if (tileIndexColumns > 0 && pt.x >= 0 && pt.y >= 0)
+            buf += fmt::format(" :search: {}", pt.x+pt.y*tileIndexColumns);
       }
     }
 
