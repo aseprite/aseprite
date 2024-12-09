@@ -34,6 +34,7 @@ static Palette* ase_current_palette = NULL;
 
 int init_module_palette()
 {
+  doc::Palette::initBestfit();
   ase_default_palette = new Palette(frame_t(0), 256);
   ase_current_palette = new Palette(frame_t(0), 256);
   return 0;

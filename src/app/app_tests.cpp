@@ -16,7 +16,6 @@
 #include "app/commands/commands.h"
 #include "app/context.h"
 #include "app/ui/main_window.h"
-#include "doc/palette.h"
 #include "os/system.h"
 #include "os/window.h"
 #include "ui/display.h"
@@ -31,7 +30,6 @@ const char* g_exeName = nullptr;
 TEST(App, JustClose)
 {
   os::SystemRef system = os::System::make();
-  doc::Palette::initBestfit();
   const char* argv[] = { g_exeName };
   app::AppOptions options(sizeof(argv) / sizeof(argv[0]), argv);
   app::App app;
@@ -42,7 +40,6 @@ TEST(App, JustClose)
 TEST(App, ExitCommand)
 {
   os::SystemRef system = os::System::make();
-  doc::Palette::initBestfit();
   const char* argv[] = { g_exeName };
   app::AppOptions options(sizeof(argv) / sizeof(argv[0]), argv);
   app::App app;
@@ -59,7 +56,6 @@ TEST(App, ExitCommand)
 TEST(App, ExitWithOneDoc)
 {
   os::SystemRef system = os::System::make();
-  doc::Palette::initBestfit();
   const char* argv[] = { g_exeName };
   app::AppOptions options(sizeof(argv) / sizeof(argv[0]), argv);
   app::App app;

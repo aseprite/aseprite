@@ -114,7 +114,6 @@ int app_main(int argc, char* argv[])
     base::SystemConsole systemConsole;
     app::AppOptions options(argc, const_cast<const char**>(argv));
     os::SystemRef system = os::System::make();
-    doc::Palette::initBestfit();
     app::App app;
 
 #if ENABLE_SENTRY

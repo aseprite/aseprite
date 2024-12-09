@@ -14,7 +14,6 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/main_window.h"
 #include "app/ui_context.h"
-#include "doc/palette.h"
 #include "doc/sprite.h"
 #include "os/system.h"
 #include "ui/manager.h"
@@ -134,10 +133,9 @@ BENCHMARK(BM_ZoomEditor)
 int app_main(int argc, char* argv[])
 {
   os::SystemRef system = os::System::make();
-  doc::Palette::initBestfit();
   App app;
   const char* argv2[] = { argv[0] };
-  app.initialize(AppOptions(1, { argv2 }));
+  app.initialize(AppOptions(1, argv2));
   app.mainWindow()->expandWindow(gfx::Size(400, 300));
 
   benchmark::Initialize(&argc, argv);
