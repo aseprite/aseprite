@@ -31,6 +31,7 @@ namespace script {
     File,
     Command,
     WebSocket,
+    Clipboard
   };
 
   void overwrite_unsecure_functions(lua_State* L);

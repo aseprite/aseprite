@@ -6,7 +6,7 @@
     <label text="@.script_label" />
     <hbox border="4"><link id="script" /></hbox>
     <label id="file_label" />
-    <hbox border="4"><link id="file" /></hbox>
+    <hbox id="file_container" border="4"><link id="file" /></hbox>
     <separator horizontal="true" />
     <check id="dont_show" text="@.dont_show_for_this_access" />
     <check id="full" text="@.dont_show_for_this_script" />
