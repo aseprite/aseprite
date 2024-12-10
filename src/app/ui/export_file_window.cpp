@@ -35,8 +35,9 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
   , m_preferredResize(1)
 {
   // Is a default output filename in the preferences?
+  outputField()->setDocFilename(doc->filename());
   if (!m_docPref.saveCopy.filename().empty()) {
-    setOutputFilename(m_docPref.saveCopy.filename());
+    outputField()->setFilename(m_docPref.saveCopy.filename());
   }
   else {
     std::string newFn = base::replace_extension(
@@ -47,7 +48,7 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
         base::get_file_path(newFn),
         base::get_file_title(newFn) + "-export." + base::get_file_extension(newFn));
     }
-    setOutputFilename(newFn);
+    outputField()->setFilename(newFn);
   }
 
   // Default export configuration
@@ -67,6 +68,7 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
     pixelRatio()->setVisible(false);
   }
 
+  outputField()->Change.connect([this]{ onOutputFieldChange(); });
   forTwitter()->setSelected(m_docPref.saveCopy.forTwitter());
   adjustResize()->setVisible(false);
   playSubtags()->setSelected(m_docPref.saveCopy.playSubtags());
@@ -76,22 +78,7 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
   // in the preference (instead of the tag's AniDir).
   //updateAniDir();
   updatePlaySubtags();
-
   updateAdjustResizeButton();
-
-  outputFilename()->Change.connect(
-    [this]{
-      m_outputFilename = outputFilename()->text();
-      onOutputFilenameEntryChange();
-    });
-  outputFilenameBrowse()->Click.connect(
-    [this]{
-      std::string fn = SelectOutputFile();
-      if (!fn.empty()) {
-        setOutputFilename(fn);
-      }
-    });
-
   resize()->Change.connect([this]{ updateAdjustResizeButton(); });
   frames()->Change.connect([this]{
     updateAniDir();
@@ -110,7 +97,7 @@ bool ExportFileWindow::show()
 
 void ExportFileWindow::savePref()
 {
-  m_docPref.saveCopy.filename(outputFilenameValue());
+  m_docPref.saveCopy.filename(outputField()->fullFilename());
   m_docPref.saveCopy.resizeScale(resizeValue());
   m_docPref.saveCopy.area(areaValue());
   m_docPref.saveCopy.layer(layersValue());
@@ -120,12 +107,6 @@ void ExportFileWindow::savePref()
   m_docPref.saveCopy.applyPixelRatio(applyPixelRatio());
   m_docPref.saveCopy.forTwitter(isForTwitter());
   m_docPref.saveCopy.playSubtags(isPlaySubtags());
-}
-
-std::string ExportFileWindow::outputFilenameValue() const
-{
-  return base::join_path(m_outputPath,
-                         m_outputFilename);
 }
 
 double ExportFileWindow::resizeValue() const
@@ -190,35 +171,9 @@ void ExportFileWindow::setAniDir(const doc::AniDir aniDir)
   anidir()->setSelectedItemIndex(int(aniDir));
 }
 
-void ExportFileWindow::setOutputFilename(const std::string& pathAndFilename)
+void ExportFileWindow::onOutputFieldChange()
 {
-  if (base::get_file_path(m_doc->filename()).empty()) {
-    m_outputPath = base::get_file_path(pathAndFilename);
-    m_outputFilename = base::get_file_name(pathAndFilename);
-  }
-  else {
-    m_outputPath = base::get_file_path(m_doc->filename());
-    m_outputFilename = base::get_relative_path(pathAndFilename, base::get_file_path(m_doc->filename()));
-
-    // Cannot find a relative path (e.g. we selected other drive)
-    if (m_outputFilename == pathAndFilename) {
-      m_outputPath = base::get_file_path(pathAndFilename);
-      m_outputFilename = base::get_file_name(pathAndFilename);
-    }
-  }
-
-  updateOutputFilenameEntry();
-}
-
-void ExportFileWindow::updateOutputFilenameEntry()
-{
-  outputFilename()->setText(m_outputFilename);
-  onOutputFilenameEntryChange();
-}
-
-void ExportFileWindow::onOutputFilenameEntryChange()
-{
-  ok()->setEnabled(!m_outputFilename.empty());
+  ok()->setEnabled(!outputField()->filename().empty());
 }
 
 void ExportFileWindow::updateAniDir()
@@ -282,14 +237,14 @@ void ExportFileWindow::onOK()
 {
   base::paths exts = get_writable_extensions();
   std::string ext = base::string_to_lower(
-    base::get_file_extension(m_outputFilename));
+    base::get_file_extension(outputField()->filename()));
 
   // Add default extension to output filename
   if (std::find(exts.begin(), exts.end(), ext) == exts.end()) {
     if (ext.empty()) {
-      m_outputFilename =
-        base::replace_extension(m_outputFilename,
-                                defaultExtension());
+      outputField()->setFilenameQuiet(
+        base::replace_extension(outputField()->filename(),
+                                defaultExtension()));
     }
     else {
       ui::Alert::show(
