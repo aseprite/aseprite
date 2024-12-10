@@ -30,9 +30,3 @@ repos:
         additional_dependencies: [clang-tidy==18.1.8]
         require_serial: true
         stages: [manual]
-
-  - repo: https://github.com/codespell-project/codespell
-    rev: v2.3.0
-    hooks:
-      - id: codespell
-        additional_dependencies: [tomli]
