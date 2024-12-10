@@ -153,7 +153,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
             }
             break;
 
-          case kCheckWidget:
+          case kCheckWidget: {
             KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
             KeyScancode scancode = keymsg->scancode();
             const bool mnemonicPressed =
@@ -169,6 +169,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
               return true;
             }
             break;
+          }
         }
       }
       break;
