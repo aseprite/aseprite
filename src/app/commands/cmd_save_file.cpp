@@ -369,12 +369,12 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
     ExportFileWindow win(doc);
     bool askOverwrite = true;
 
-    win.SelectOutputFile.connect(
+    win.outputField()->SelectOutputFile.connect(
       [this, &win, &askOverwrite, context, doc]() -> std::string {
         std::string result =
           saveAsDialog(
             context, Strings::save_file_export(),
-            win.outputFilenameValue(),
+            win.outputField()->fullFilename(),
             MarkAsSaved::Off,
             SaveInBackground::Off,
             (doc->isAssociatedToFile() ? doc->filename():
@@ -391,7 +391,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
         outputPath = base::get_file_path(doc->filename());
         outputFilename = base::join_path(outputPath, outputFilename);
       }
-      win.setOutputFilename(outputFilename);
+      win.outputField()->setFilename(outputFilename);
     }
 
     if (params().scale.isSet()) win.setResizeScale(scale);
@@ -412,7 +412,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
     if (!result)
       return;
 
-    outputFilename = win.outputFilenameValue();
+    outputFilename = win.outputField()->fullFilename();
 
     if (askOverwrite &&
         base::is_file(outputFilename)) {
