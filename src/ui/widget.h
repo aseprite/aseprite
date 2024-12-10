@@ -384,7 +384,7 @@ namespace ui {
 
     // Offer the capture to widgets of the given type. Returns true if
     // the capture was passed to other widget.
-    bool offerCapture(ui::MouseMessage* mouseMsg, int widget_type);
+    bool offerCapture(MouseMessage* mouseMsg, int widget_type);
 
     // Returns lower-case letter that represet the mnemonic of the widget
     // (the underscored character, i.e. the letter after & symbol).
@@ -405,7 +405,11 @@ namespace ui {
     // Returns true if the mnemonic character is pressed (without modifiers).
     // TODO maybe we can add check for modifiers now that this
     //      information is included in the Widget
-    bool isMnemonicPressed(const ui::KeyMessage* keyMsg) const;
+    bool isMnemonicPressed(const KeyMessage* keyMsg) const;
+
+    // Returns true if the mnemonic character is pressed with
+    // modifiers (Alt or Command key).
+    bool isMnemonicPressedWithModifiers(const KeyMessage* msg) const;
 
     // Signals
     obs::signal<void()> InitTheme;
