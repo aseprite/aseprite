@@ -1586,6 +1586,15 @@ bool Widget::isMnemonicPressed(const KeyMessage* keyMsg) const
       (chr >= '0' && chr <= '9' && keyMsg->scancode() == (kKey0 + chr - '0'))));
 }
 
+bool Widget::isMnemonicPressedWithModifiers(const KeyMessage* msg) const
+{
+  return (mnemonic() &&
+          (!mnemonicRequiresModifiers() ||
+           msg->altPressed() ||
+           msg->cmdPressed()) &&
+          isMnemonicPressed(msg));
+}
+
 bool Widget::onProcessMessage(Message* msg)
 {
   ASSERT(msg != nullptr);

@@ -16,7 +16,7 @@ Before you submit an issue:
   click the `Subscribe` or `Watching` button to get notifications
   via email.
 
-# Compilation problem
+# Compilation problems
 
 Before you submit an issue or a post about a **compilation problem**,
 check the following items:
@@ -76,6 +76,20 @@ make comments, or create
 new [features](https://community.aseprite.org/c/features),
 [bug reports](https://community.aseprite.org/c/bugs), etc. You are
 encouraged to create mockups for any issue you see and attach them.
+
+## Pre-commit hooks
+
+We use [pre-commit](https://pre-commit.com/) as way to set up hooks, you can install it with:
+
+```
+pip install pre-commit
+pre-commit install
+```
+
+If you need to run it manually, use `pre-commit run`.
+
+To run `clang-tidy`, you can use `pre-commit run --hook-stage manual clang-tidy`.
+Make sure to check the suggestions and to not apply them arbitrarily, since some might not be 100% applicable to what you're doing.
 
 ## Code submission policy
 
