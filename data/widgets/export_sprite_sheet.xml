@@ -111,10 +111,10 @@
     </hbox>
     <grid id="section_output" columns="4" expansive="true">
       <check id="image_enabled" text="@.output_file" />
-      <button id="image_filename" cell_hspan="3" cell_align="horizontal" />
+      <filename id="image_filename" cell_hspan="3" cell_align="horizontal" />
 
       <check id="data_enabled" text="@.json_data" />
-      <button id="data_filename" cell_hspan="3" cell_align="horizontal" />
+      <filename id="data_filename" cell_hspan="3" cell_align="horizontal" />
 
       <hbox />
       <hbox id="data_meta" cell_hspan="3" cell_align="horizontal">

@@ -92,10 +92,10 @@ bool ask_overwrite(const bool askFilename,
       (askDataname && !dataname.empty() && base::is_file(dataname))) {
     std::string text;
 
-    if (base::is_file(filename))
+    if (base::is_file(filename) && askFilename)
       text += "<<" + base::get_file_name(filename);
 
-    if (base::is_file(dataname))
+    if (base::is_file(dataname) && askDataname)
       text += "<<" + base::get_file_name(dataname);
 
     const int ret = OptionalAlert::show(
@@ -323,8 +323,6 @@ public:
     , m_backBuffer(std::make_shared<doc::ImageBuffer>())
     , m_site(site)
     , m_sprite(site.sprite())
-    , m_filenameAskOverwrite(true)
-    , m_dataFilenameAskOverwrite(true)
     , m_editor(nullptr)
     , m_genTimer(100, nullptr)
     , m_executionID(0)
@@ -405,12 +403,12 @@ public:
     shapePadding()->setTextf("%d", params.shapePadding());
     innerPadding()->setTextf("%d", params.innerPadding());
 
-    m_filename = params.textureFilename();
-    imageEnabled()->setSelected(!m_filename.empty());
+    imageFilename()->setFilename(params.textureFilename());
+    imageEnabled()->setSelected(!imageFilename()->fullFilename().empty());
     imageFilename()->setVisible(imageEnabled()->isSelected());
 
-    m_dataFilename = params.dataFilename();
-    dataEnabled()->setSelected(!m_dataFilename.empty());
+    dataFilename()->setFilename(params.dataFilename());
+    dataEnabled()->setSelected(!dataFilename()->fullFilename().empty());
     dataFormat()->setSelectedItemIndex(int(params.dataFormat()));
     splitLayers()->setSelected(params.splitLayers());
     splitTags()->setSelected(params.splitTags());
@@ -425,17 +423,21 @@ public:
     std::string base = site.document()->filename();
     base = base::join_path(base::get_file_path(base), base::get_file_title(base));
 
-    if (m_filename.empty() || m_filename == kSpecifiedFilename) {
+    imageFilename()->setDocFilename(base);
+    dataFilename()->setDocFilename(base);
+    if (imageFilename()->fullFilename().empty() ||
+        imageFilename()->fullFilename() == kSpecifiedFilename) {
       std::string defExt = pref.spriteSheet.defaultExtension();
 
       if (base::utf8_icmp(base::get_file_extension(site.document()->filename()), defExt) == 0)
-        m_filename = base + "-sheet." + defExt;
+        imageFilename()->setFilename(base + "-sheet." + defExt);
       else
-        m_filename = base + "." + defExt;
+        imageFilename()->setFilename(base + "." + defExt);
     }
 
-    if (m_dataFilename.empty() || m_dataFilename == kSpecifiedFilename)
-      m_dataFilename = base + ".json";
+    if (dataFilename()->fullFilename().empty() ||
+        imageFilename()->fullFilename() == kSpecifiedFilename)
+      dataFilename()->setFilename(base + ".json");
 
     exportButton()->Click.connect([this] { onExport(); });
     sheetType()->Change.connect([this] { onSheetTypeChange(); });
@@ -448,10 +450,18 @@ public:
     extrudeEnabled()->Click.connect([this] { generatePreview(); });
     mergeDups()->Click.connect([this] { generatePreview(); });
     ignoreEmpty()->Click.connect([this] { generatePreview(); });
-    imageEnabled()->Click.connect([this] { onImageEnabledChange(); });
-    imageFilename()->Click.connect([this] { onImageFilename(); });
-    dataEnabled()->Click.connect([this] { onDataEnabledChange(); });
-    dataFilename()->Click.connect([this] { onDataFilename(); });
+
+    imageEnabled()->Click.connect(
+      [this] { onOutputFieldEnabledChange(imageFilename(), imageEnabled()->isSelected()); });
+    imageFilename()->SelectOutputFile.connect(
+      [this]() -> std::string { return onFilenameBrowse(imageFilename()); });
+    imageFilename()->Change.connect([this] { resize(); });
+    dataEnabled()->Click.connect(
+      [this] { onOutputFieldEnabledChange(dataFilename(), dataEnabled()->isSelected()); });
+    dataFilename()->SelectOutputFile.connect(
+      [this]() -> std::string { return onFilenameBrowse(dataFilename()); });
+    dataFilename()->Change.connect([this] { resize(); });
+
     trimSpriteEnabled()->Click.connect([this] { onTrimEnabledChange(); });
     trimEnabled()->Click.connect([this] { onTrimEnabledChange(); });
     gridTrimEnabled()->Click.connect([this] { generatePreview(); });
@@ -481,7 +491,8 @@ public:
 
     onChangeSection();
     onSheetTypeChange();
-    onFileNamesChange();
+    imageFilename()->onUpdateText();
+    dataFilename()->onUpdateText();
     updateExportButton();
 
     preview()->setSelected(pref.spriteSheet.preview());
@@ -658,7 +669,7 @@ private:
   std::string filenameValue() const
   {
     if (imageEnabled()->isSelected())
-      return m_filename;
+      return imageFilename()->fullFilename();
     else
       return std::string();
   }
@@ -666,7 +677,7 @@ private:
   std::string dataFilenameValue() const
   {
     if (dataEnabled()->isSelected())
-      return m_dataFilename;
+      return dataFilename()->fullFilename();
     else
       return std::string();
   }
@@ -756,9 +767,9 @@ private:
 
   void onExport()
   {
-    if (!ask_overwrite(m_filenameAskOverwrite,
+    if (!ask_overwrite(imageFilename()->askOverwrite(),
                        filenameValue(),
-                       m_dataFilenameAskOverwrite,
+                       dataFilename()->askOverwrite(),
                        dataFilenameValue()))
       return;
 
@@ -843,63 +854,34 @@ private:
     generatePreview();
   }
 
-  void onFileNamesChange()
+  std::string onFilenameBrowse(FilenameField* field)
   {
-    imageFilename()->setText(base::get_file_name(m_filename));
-    dataFilename()->setText(base::get_file_name(m_dataFilename));
-    resize();
-  }
-
-  void onImageFilename()
-  {
-    base::paths newFilename;
-    if (!app::show_file_selector(Strings::export_sprite_sheet_save_title(),
-                                 m_filename,
-                                 get_writable_extensions(),
-                                 FileSelectorType::Save,
-                                 newFilename))
-      return;
-
-    ASSERT(!newFilename.empty());
-
-    m_filename = newFilename.front();
-    m_filenameAskOverwrite = false; // Already asked in file selector
-    onFileNamesChange();
-  }
-
-  void onImageEnabledChange()
-  {
-    m_filenameAskOverwrite = true;
-
-    imageFilename()->setVisible(imageEnabled()->isSelected());
-    updateExportButton();
-    resize();
-  }
-
-  void onDataFilename()
-  {
+    const std::string& title = (field == dataFilename() ?
+                                  Strings::export_sprite_sheet_save_json_title() :
+                                  Strings::export_sprite_sheet_save_title());
     // TODO hardcoded "json" extension
-    base::paths exts = { "json" };
+    const base::paths json = { "json" };
+    base::paths exts = (field == imageFilename() ? get_writable_extensions() : json);
     base::paths newFilename;
-    if (!app::show_file_selector(Strings::export_sprite_sheet_save_json_title(),
-                                 m_dataFilename,
+
+    if (!app::show_file_selector(title,
+                                 field->fullFilename(),
                                  exts,
                                  FileSelectorType::Save,
                                  newFilename))
-      return;
+      return std::string();
 
     ASSERT(!newFilename.empty());
-
-    m_dataFilename = newFilename.front();
-    m_dataFilenameAskOverwrite = false; // Already asked in file selector
-    onFileNamesChange();
+    return newFilename.front();
   }
 
-  void onDataEnabledChange()
+  void onOutputFieldEnabledChange(FilenameField* field, bool visible)
   {
-    m_dataFilenameAskOverwrite = true;
+    field->setAskOverwrite(true);
+    field->setVisible(visible);
+    if (field == dataFilename())
+      updateDataFields();
 
-    updateDataFields();
     updateExportButton();
     resize();
   }
@@ -1145,10 +1127,6 @@ private:
   doc::ImageBufferPtr m_backBuffer;  // ImageBuffer in the generator
   Site& m_site;
   Sprite* m_sprite;
-  std::string m_filename;
-  std::string m_dataFilename;
-  bool m_filenameAskOverwrite;
-  bool m_dataFilenameAskOverwrite;
   std::unique_ptr<Doc> m_spriteSheet;
   Editor* m_editor;
   std::unique_ptr<Task> m_genTask;
