@@ -29,6 +29,7 @@ FilenameField::FilenameField(const Type type,
   : m_entry(type == EntryAndButton ? new ui::Entry(1024, ""): nullptr)
   , m_button(type == EntryAndButton ? Strings::select_file_browse():
                                       Strings::select_file_text())
+  , m_askOverwrite(true)
 {
   m_showFullPath = Preferences::instance().general.showFullPath();
   setFocusStop(true);
@@ -73,10 +74,10 @@ const std::string FilenameField::updatedFilename() const
   }
 }
 
-void FilenameField::setShowFullPath(const bool fullPath)
+void FilenameField::setShowFullPath(const bool on)
 {
   const std::string& fn = updatedFilename();
-  m_showFullPath = fullPath;
+  m_showFullPath = on;
   setFilename(fn);
 }
 
@@ -100,6 +101,7 @@ void FilenameField::onBrowse()
       std::string fn = SelectOutputFile();
       if (!fn.empty()) {
         setFilename(fn);
+        m_askOverwrite = false; // Already asked in file selector
       }
     });
   relative.Click.connect([this]{ setShowFullPath(false); });
@@ -157,6 +159,11 @@ void FilenameField::onInitTheme(ui::InitThemeEvent& ev)
   ui::Style* style = theme->styles.miniButton();
   if (style)
     m_button.setStyle(style);
+}
+
+void FilenameField::onUpdateText()
+{
+  setShowFullPath(m_showFullPath);
 }
 
 void FilenameField::updateWidgets()
