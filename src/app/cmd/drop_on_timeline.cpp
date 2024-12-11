@@ -111,10 +111,17 @@ bool DropOnTimeline::getNextDocFromPaths(Doc** srcDoc)
 
   std::unique_ptr<FileOp> fop(
     FileOp::createLoadDocumentOperation(context, m_paths.front(), flags));
+  // Remove the path that is currently being processed
+  m_paths.erase(m_paths.begin());
 
   // Do nothing (the user cancelled or something like that)
   if (!fop)
     return false;
+
+  if (fop->hasError()) {
+    console.printf(fop->error().c_str());
+    return true;
+  }
 
   base::paths fopFilenames;
   fop->getFilenameList(fopFilenames);
@@ -123,11 +130,6 @@ bool DropOnTimeline::getNextDocFromPaths(Doc** srcDoc)
     auto it = std::find(m_paths.begin(), m_paths.end(), filename);
     if (it != m_paths.end())
       m_paths.erase(it);
-  }
-
-  if (fop->hasError()) {
-    console.printf(fop->error().c_str());
-    return true;
   }
 
   OpenFileJob task(fop.get(), true);
