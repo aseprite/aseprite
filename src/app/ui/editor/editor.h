@@ -340,6 +340,7 @@ protected:
   void onRemoveTag(DocEvent& ev) override;
   void onRemoveSlice(DocEvent& ev) override;
   void onBeforeLayerVisibilityChange(DocEvent& ev, bool newState) override;
+  void onBeforeLayerEditableChange(DocEvent& ev, bool newState) override;
 
   // ActiveToolObserver impl
   void onActiveToolChange(tools::Tool* tool) override;
@@ -440,7 +441,7 @@ private:
   obs::scoped_connection m_contextBarBrushChangeConn;
   obs::scoped_connection m_showExtrasConn;
 
-  // Slots listeing document preferences.
+  // Slots listening document preferences.
   obs::scoped_connection m_tiledConnBefore;
   obs::scoped_connection m_tiledConn;
   obs::scoped_connection m_gridConn;

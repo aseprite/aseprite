@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -64,6 +65,7 @@ bool LayerLockCommand::onChecked(Context* context)
 void LayerLockCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
+  Doc* doc = writer.document();
   SelectedLayers selLayers;
   auto range = App::instance()->timeline()->range();
   if (range.enabled()) {
@@ -77,9 +79,8 @@ void LayerLockCommand::onExecute(Context* context)
     if (!layer->isEditable())
       anyLock = true;
   }
-  for (auto layer : selLayers) {
-    layer->setEditable(anyLock);
-  }
+  for (auto* layer : selLayers)
+    doc->setLayerEditableWithNotifications(layer, anyLock);
 
   update_screen_for_document(writer.document());
 }

@@ -559,22 +559,41 @@ bool MovingPixelsState::acceptQuickTool(tools::Tool* tool)
           tool->getInk(0)->isScrollMovement() || tool->getInk(0)->isZoom());
 }
 
-void MovingPixelsState::onBeforeLayerVisibilityChange(Editor* editor,
-                                                      doc::Layer* layer,
-                                                      bool newState)
+void MovingPixelsState::dropPixelsIfLayerIsSelected(doc::Layer* layer)
 {
   if (!isActiveDocument())
     return;
 
-  // If the layer visibility of any selected layer changes, we just
-  // drop the pixels (it's the easiest way to avoid modifying hidden
-  // pixels).
   if (m_pixelsMovement) {
     const Site& site = m_pixelsMovement->site();
     if (site.layer() == layer || site.range().contains(layer)) {
       dropPixels();
     }
   }
+}
+
+void MovingPixelsState::onBeforeLayerVisibilityChange(Editor* editor,
+                                                      doc::Layer* layer,
+                                                      bool newState)
+{
+  // If the layer visibility of any selected layer changes, we just
+  // drop the pixels (it's the easiest way to avoid modifying hidden
+  // pixels).
+  dropPixelsIfLayerIsSelected(layer);
+}
+
+void MovingPixelsState::onBeforeLayerEditableChange(Editor* editor,
+                                                    doc::Layer* layer,
+                                                    bool newState)
+{
+  // If the layer 'editable' flag of any selected layer changes,
+  // we just drop the pixels (it's the easiest way to avoid modifying
+  // hidden pixels and it's the simplest treatment when
+  // locking the layer)
+  // TODO: It would be more convenient not to drop the selected
+  // image if the 'lock' then 'unlock' actions are performed without
+  // any transformation taking place.
+  dropPixelsIfLayerIsSelected(layer);
 }
 
 // Before executing any command, we drop the pixels (go back to standby).

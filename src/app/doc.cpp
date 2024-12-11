@@ -199,6 +199,12 @@ void Doc::setLayerVisibilityWithNotifications(Layer* layer, const bool visible)
   notifyAfterLayerVisibilityChange(layer);
 }
 
+void Doc::setLayerEditableWithNotifications(Layer* layer, const bool editable)
+{
+  notifyBeforeLayerEditableChange(layer, editable);
+  layer->setEditable(editable);
+}
+
 //////////////////////////////////////////////////////////////////////
 // Notifications
 
@@ -262,6 +268,13 @@ void Doc::notifyAfterLayerVisibilityChange(Layer* layer)
   DocEvent ev(this);
   ev.layer(layer);
   notify_observers<DocEvent&>(&DocObserver::onAfterLayerVisibilityChange, ev);
+}
+
+void Doc::notifyBeforeLayerEditableChange(Layer* layer, bool newState)
+{
+  DocEvent ev(this);
+  ev.layer(layer);
+  notify_observers<DocEvent&, bool>(&DocObserver::onBeforeLayerEditableChange, ev, newState);
 }
 
 void Doc::notifyCelMoved(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame)

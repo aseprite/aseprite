@@ -116,6 +116,12 @@ public:
   // invalidated/redrawn, MovingPixelsState can drop pixels, etc.)
   void setLayerVisibilityWithNotifications(Layer* layer, const bool visible);
 
+  // Use this function to change the layer editable flag and
+  // notify all DocObservers about this change (e.g. so the Editor
+  // can be invalidated/redrawn, MovingPixelsState can drop pixels,
+  // etc.)
+  void setLayerEditableWithNotifications(Layer* layer, const bool editable);
+
   //////////////////////////////////////////////////////////////////////
   // Notifications
 
@@ -127,6 +133,7 @@ public:
   void notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer);
   void notifyBeforeLayerVisibilityChange(Layer* layer, bool newState);
   void notifyAfterLayerVisibilityChange(Layer* layer);
+  void notifyBeforeLayerEditableChange(Layer* layer, bool newState);
   void notifyCelMoved(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame);
   void notifyCelCopied(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame);
   void notifySelectionChanged();
