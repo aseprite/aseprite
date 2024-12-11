@@ -1,0 +1,15 @@
+name: pre-commit
+on: [pull_request]
+jobs:
+  precommit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-python@v4
+      with:
+        python-version: 3.x
+    - uses: pre-commit/action@v3.0.1
+      with:
+        extra_args: "--from-ref ${{ github.event.pull_request.base.sha }} --to-ref ${{ github.event.pull_request.head.sha }}"
