@@ -1,0 +1,15 @@
+name: pre-commit
+on: [pull_request]
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v4
+      with:
+        python-version: 3.x
+    - uses: pre-commit/action@v3.0.1
+      with:
+        extra_args: "--from-ref ${{ github.base_ref }} --to-ref ${{ github.head_ref }}"
+    - uses: pre-commit-ci/lite-action@v1.1.0
+      if: always()
