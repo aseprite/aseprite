@@ -142,6 +142,8 @@ protected:
   }
 };
 
+// This command works as a global preference (toogling the Brush
+// Preview in the Preview window), not based on the active document.
 class ShowBrushPreviewInPreviewCommand : public Command {
 public:
   ShowBrushPreviewInPreviewCommand()
@@ -152,14 +154,14 @@ public:
 protected:
   bool onChecked(Context* ctx) override
   {
-    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
-    return docPref.show.brushPreviewInPreview();
+    Preferences& pref = Preferences::instance();
+    return pref.cursor.brushPreviewInPreview();
   }
 
   void onExecute(Context* ctx) override
   {
-    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
-    docPref.show.brushPreviewInPreview(!docPref.show.brushPreviewInPreview());
+    Preferences& pref = Preferences::instance();
+    pref.cursor.brushPreviewInPreview(!pref.cursor.brushPreviewInPreview());
   }
 };
 
