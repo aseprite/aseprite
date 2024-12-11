@@ -128,6 +128,7 @@ int app_main(int argc, char* argv[])
     os::SystemRef system(os::make_system());
     doc::Palette::initBestfit();
     app::App app;
+    int dummy = 0;
 
 #if ENABLE_SENTRY
     sentry.init();
