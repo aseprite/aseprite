@@ -6,6 +6,12 @@ repos:
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
+      - id: mixed-line-ending
+        args: [ --fix=lf ]
+        exclude: '.*\.cmd$|.*\.ps1$'
+      - id: mixed-line-ending
+        args: [ --fix=crlf ]
+        files: '.*\.cmd$|.*\.ps1$'
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.5.5
