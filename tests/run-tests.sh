@@ -15,10 +15,10 @@ function fail() {
 
 function expect() {
     if [[ $1 != "$($2 | tr -d "\r")" ]] ; then
-	echo "FAILED: $2"
-	echo "EXPECTED: $1"
-	echo "RESULT: $($2)"
-	exit 1
+        echo "FAILED: $2"
+        echo "EXPECTED: $1"
+        echo "RESULT: $($2)"
+        exit 1
     fi
 }
 
@@ -53,14 +53,11 @@ if [[ "$filter" == "" ]] || [[ "console" =~ $filter ]]; then
     grep -q "this should not be in the output" $t/tmp && fail "text that shouldn't be in the output is"
 
     if [[ "$(uname)" =~ "MINGW" ]] || [[ "$(uname)" =~ "MSYS" ]] ; then
-	echo Ignore console tests on Windows
+        echo Ignore console tests on Windows
     else
-	$ASEPRITE -b --script scripts/console_print.lua >$t/tmp 2>&1
-	cat >$t/tmp_expected <<EOF
-hello world
-1	2	3
-EOF
-	! diff -u $t/tmp $t/tmp_expected && fail
+        $ASEPRITE -b --script scripts/console_print.lua >$t/tmp 2>&1
+        echo -e "hello world\n1\t2\t3" >$t/tmp_expected
+        ! diff -u $t/tmp $t/tmp_expected && fail
     fi
 fi
 
@@ -69,30 +66,30 @@ result=0
 for script in scripts/*.lua ; do
     [[ $script =~ console ]] && continue
     if [[ "$filter" != "" ]]; then
-	[[ $script =~ $filter ]] || continue
+        [[ $script =~ $filter ]] || continue
     fi
     if [ $first == 0 ]; then
-	echo ----------------------------------------------------------------------
-	echo "Testing scripts..."
-	first=1
+        echo ----------------------------------------------------------------------
+        echo "Testing scripts..."
+        first=1
     fi
     echo "Running $script"
     if ! $ASEPRITE -b --script $script >$t/tmp 2>&1 ; then
-	echo FAILED && cat $t/tmp
-	result=1
+        echo FAILED && cat $t/tmp
+        result=1
     fi
 done
 
 first=0
 for script in cli/*.sh ; do
     if [[ "$filter" == "" ]] || [[ $script =~ $filter ]]; then
-	if [ $first == 0 ]; then
-	    echo ----------------------------------------------------------------------
-	    echo "Testing CLI..."
-	    first=1
-	fi
-	echo "Running $script"
-	source $script
+        if [ $first == 0 ]; then
+            echo ----------------------------------------------------------------------
+            echo "Testing CLI..."
+            first=1
+        fi
+        echo "Running $script"
+        source $script
     fi
 done
 
