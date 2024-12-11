@@ -629,6 +629,7 @@ public:
     autoScroll()->setSelected(m_pref.editor.autoScroll());
     straightLinePreview()->setSelected(m_pref.editor.straightLinePreview());
     discardBrush()->setSelected(m_pref.eyedropper.discardBrush());
+    globalBrushPreviewInPreview()->setSelected(m_pref.cursor.globalBrushPreviewInPreview());
 
     // Update the one/multiple window buttonset (and keep in on sync
     // with the old/experimental checkbox)
@@ -740,6 +741,7 @@ public:
     m_pref.editor.autoScroll(autoScroll()->isSelected());
     m_pref.editor.straightLinePreview(straightLinePreview()->isSelected());
     m_pref.eyedropper.discardBrush(discardBrush()->isSelected());
+    m_pref.cursor.globalBrushPreviewInPreview(globalBrushPreviewInPreview()->isSelected());
     m_pref.editor.rightClickMode(static_cast<app::gen::RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));
     if (m_samplingSelector)
       m_samplingSelector->save();

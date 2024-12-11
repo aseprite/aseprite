@@ -212,6 +212,7 @@
     </section>
     <section id="cursor">
       <option id="use_native_cursor" type="bool" default="false" />
+      <option id="global_brush_preview_in_preview" type="bool" default="false" />
       <option id="cursor_scale" type="int" default="1" />
       <option id="cursor_color" type="app::Color" default="app::Color::fromMask()" />
       <option id="painting_cursor_type" type="PaintingCursorType" default="PaintingCursorType::CROSSHAIR_ON_SPRITE" />
