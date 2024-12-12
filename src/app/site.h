@@ -117,16 +117,8 @@ public:
 
   inline bool operator==(const Site& other) const
   {
-    if (document() != other.document())
-      return false;
-
-    if (frame() != other.frame())
-      return false;
-
-    if (cel() != other.cel())
-      return false;
-
-    return true;
+    return (document() == other.document() && sprite() == other.sprite() &&
+            layer() == other.layer() && frame() == other.frame() && cel() == other.cel());
   }
 
 private:

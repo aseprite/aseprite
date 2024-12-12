@@ -266,6 +266,9 @@ void Context::onAddDocument(Doc* doc)
   if (m_activeSiteHandler)
     m_activeSiteHandler->addDoc(doc);
 
+  // Checking for an active site handler of UI not available avoids a consistency issue
+  // when opening a sprite from the first time, from the home screen, which would notify of an empty
+  // active site twice.
   if (m_activeSiteHandler || !isUIAvailable())
     notifyActiveSiteChanged();
 }

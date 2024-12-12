@@ -269,9 +269,12 @@ void onAfterCommand(CommandExecutionEvent& ev)
 // ContextObserver impl
 void onActiveSiteChange(const Site& site) override
 {
-  if (m_lastActiveSite.has_value() && *m_lastActiveSite == site)
-    return; // Avoid multiple events that can happen when closing since we're changing views at the
-            // same time we're removing documents
+  if (m_lastActiveSite.has_value() && *m_lastActiveSite == site) {
+    // Avoid multiple events that can happen when closing since
+    // we're changing views at the same time we're removing
+    // documents
+    return;
+  }
 
   const bool fromUndo = (site.document() && site.document()->isUndoing());
   call(SiteChange,
