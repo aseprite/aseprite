@@ -31,11 +31,11 @@ AlignConsecutiveMacros:
   Enabled: true
   PadOperators: true
 AlignConsecutiveShortCaseStatements:
-  AcrossComments: false
-  AcrossEmptyLines: false
-  AlignCaseArrows: false
+  AcrossComments: true
+  AcrossEmptyLines: true
+  AlignCaseArrows: true
   AlignCaseColons: false
-  Enabled: false
+  Enabled: true
 AlignConsecutiveTableGenCondOperatorColons:
   AcrossComments: false
   AcrossEmptyLines: false
