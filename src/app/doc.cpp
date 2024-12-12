@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/doc.h"
@@ -14,7 +14,6 @@
 #include "app/app.h"
 #include "app/color_target.h"
 #include "app/color_utils.h"
-#include "app/context.h"
 #include "app/context.h"
 #include "app/doc_api.h"
 #include "app/doc_event.h"
@@ -41,7 +40,7 @@
 #include <limits>
 #include <map>
 
-#define DOC_TRACE(...) // TRACEARGS(__VA_ARGS__)
+#define DOC_TRACE(...)  // TRACEARGS(__VA_ARGS__)
 
 namespace app {
 
@@ -187,8 +186,7 @@ color_t Doc::bgColor(Layer* layer) const
 {
   if (layer->isBackground())
     return color_utils::color_for_layer(
-      Preferences::instance().colorBar.bgColor(),
-      layer);
+      Preferences::instance().colorBar.bgColor(), layer);
   else
     return layer->sprite()->transparentColor();
 }
@@ -201,6 +199,12 @@ void Doc::setLayerVisibilityWithNotifications(Layer* layer, const bool visible)
   notifyBeforeLayerVisibilityChange(layer, visible);
   layer->setVisible(visible);
   notifyAfterLayerVisibilityChange(layer);
+}
+
+void Doc::setLayerEditableWithNotifications(Layer* layer, const bool editable)
+{
+  notifyBeforeLayerEditableChange(layer, editable);
+  layer->setEditable(editable);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -228,7 +232,9 @@ void Doc::notifyPaletteChanged()
   notify_observers<DocEvent&>(&DocObserver::onPaletteChanged, ev);
 }
 
-void Doc::notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region, frame_t frame)
+void Doc::notifySpritePixelsModified(Sprite* sprite,
+                                     const gfx::Region& region,
+                                     frame_t frame)
 {
   DocEvent ev(this);
   ev.sprite(sprite);
@@ -258,7 +264,16 @@ void Doc::notifyBeforeLayerVisibilityChange(Layer* layer, bool newState)
 {
   DocEvent ev(this);
   ev.layer(layer);
-  notify_observers<DocEvent&, bool>(&DocObserver::onBeforeLayerVisibilityChange, ev, newState);
+  notify_observers<DocEvent&, bool>(
+    &DocObserver::onBeforeLayerVisibilityChange, ev, newState);
+}
+
+void Doc::notifyBeforeLayerEditableChange(Layer* layer, bool newState)
+{
+  DocEvent ev(this);
+  ev.layer(layer);
+  notify_observers<DocEvent&, bool>(
+    &DocObserver::onBeforeLayerEditableChange, ev, newState);
 }
 
 void Doc::notifyAfterLayerVisibilityChange(Layer* layer)
@@ -268,7 +283,10 @@ void Doc::notifyAfterLayerVisibilityChange(Layer* layer)
   notify_observers<DocEvent&>(&DocObserver::onAfterLayerVisibilityChange, ev);
 }
 
-void Doc::notifyCelMoved(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame)
+void Doc::notifyCelMoved(Layer* fromLayer,
+                         frame_t fromFrame,
+                         Layer* toLayer,
+                         frame_t toFrame)
 {
   DocEvent ev(this);
   ev.sprite(toLayer->sprite());
@@ -279,11 +297,14 @@ void Doc::notifyCelMoved(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, fr
   notify_observers<DocEvent&>(&DocObserver::onCelMoved, ev);
 }
 
-void Doc::notifyCelCopied(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame)
+void Doc::notifyCelCopied(Layer* fromLayer,
+                          frame_t fromFrame,
+                          Layer* toLayer,
+                          frame_t toFrame)
 {
   DocEvent ev(this);
   ev.sprite(toLayer->sprite());
-  ev.layer(fromLayer);          // From layer can be nullptr
+  ev.layer(fromLayer);  // From layer can be nullptr
   ev.frame(fromFrame);
   ev.targetLayer(toLayer);
   ev.targetFrame(toFrame);
@@ -377,7 +398,7 @@ void Doc::markAsBackedUp()
 
 bool Doc::isFullyBackedUp() const
 {
-  return (m_flags & kFullyBackedUp ? true: false);
+  return (m_flags & kFullyBackedUp ? true : false);
 }
 
 void Doc::markAsReadOnly()
@@ -389,7 +410,7 @@ void Doc::markAsReadOnly()
 
 bool Doc::isReadOnly() const
 {
-  return (m_flags & kReadOnly ? true: false);
+  return (m_flags & kReadOnly ? true : false);
 }
 
 void Doc::removeReadOnlyMark()
@@ -422,18 +443,17 @@ void Doc::generateMaskBoundaries(const Mask* mask)
 
   // No mask specified? Use the current one in the document
   if (!mask) {
-    if (!isMaskVisible())       // The mask is hidden
-      return;                   // Done, without boundaries
+    if (!isMaskVisible())  // The mask is hidden
+      return;              // Done, without boundaries
     else
-      mask = this->mask();      // Use the document mask
+      mask = this->mask();  // Use the document mask
   }
 
   ASSERT(mask);
 
   if (!mask->isEmpty()) {
     m_maskBoundaries.regen(mask->bitmap());
-    m_maskBoundaries.offset(mask->bounds().x,
-                            mask->bounds().y);
+    m_maskBoundaries.offset(mask->bounds().x, mask->bounds().y);
   }
 
   notifySelectionBoundariesChanged();
@@ -454,9 +474,9 @@ void Doc::setMask(const Mask* mask)
 
 bool Doc::isMaskVisible() const
 {
-  return
-    (m_flags & kMaskVisible) && // The mask was not hidden by the user explicitly
-    !m_mask->isEmpty();         // The mask is not empty
+  return (m_flags &
+          kMaskVisible) &&    // The mask was not hidden by the user explicitly
+         !m_mask->isEmpty();  // The mask is not empty
 }
 
 void Doc::setMaskVisible(bool visible)
@@ -482,20 +502,25 @@ void Doc::setTransformation(const Transformation& transform)
 
 void Doc::resetTransformation()
 {
-  m_transformation = Transformation(gfx::RectF(m_mask->bounds()), m_transformation.cornerThick());
+  m_transformation = Transformation(gfx::RectF(m_mask->bounds()),
+                                    m_transformation.cornerThick());
 }
 
 //////////////////////////////////////////////////////////////////////
 // Copying
 
-void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destLayer0) const
+void Doc::copyLayerContent(const Layer* sourceLayer0,
+                           Doc* destDoc,
+                           Layer* destLayer0) const
 {
   LayerFlags dstFlags = sourceLayer0->flags();
 
   // Remove the "background" flag if the destDoc already has a background layer.
-  if (((int)dstFlags & (int)LayerFlags::Background) == (int)LayerFlags::Background &&
+  if (((int)dstFlags & (int)LayerFlags::Background) ==
+        (int)LayerFlags::Background &&
       (destDoc->sprite()->backgroundLayer())) {
-    dstFlags = (LayerFlags)((int)dstFlags & ~(int)(LayerFlags::BackgroundLayerFlags));
+    dstFlags =
+      (LayerFlags)((int)dstFlags & ~(int)(LayerFlags::BackgroundLayerFlags));
   }
 
   // Copy the layer name/flags/user data
@@ -504,7 +529,8 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
   destLayer0->setUserData(sourceLayer0->userData());
 
   if (sourceLayer0->isImage() && destLayer0->isImage()) {
-    const LayerImage* sourceLayer = static_cast<const LayerImage*>(sourceLayer0);
+    const LayerImage* sourceLayer =
+      static_cast<const LayerImage*>(sourceLayer0);
     LayerImage* destLayer = static_cast<LayerImage*>(destLayer0);
 
     // Copy blend mode and opacity
@@ -526,12 +552,11 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
 
       auto it = linked.find(sourceCel->data()->id());
       if (it != linked.end()) {
-        newCel.reset(Cel::MakeLink(sourceCel->frame(),
-                                   it->second));
+        newCel.reset(Cel::MakeLink(sourceCel->frame(), it->second));
         newCel->copyNonsharedPropertiesFrom(sourceCel);
       }
       else {
-        newCel.reset(create_cel_copy(nullptr, // TODO add undo information?
+        newCel.reset(create_cel_copy(nullptr,  // TODO add undo information?
                                      sourceCel,
                                      destLayer->sprite(),
                                      destLayer,
@@ -544,7 +569,8 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
     }
   }
   else if (sourceLayer0->isGroup() && destLayer0->isGroup()) {
-    const LayerGroup* sourceLayer = static_cast<const LayerGroup*>(sourceLayer0);
+    const LayerGroup* sourceLayer =
+      static_cast<const LayerGroup*>(sourceLayer0);
     LayerGroup* destLayer = static_cast<LayerGroup*>(destLayer0);
 
     for (Layer* sourceChild : sourceLayer->layers()) {
@@ -575,7 +601,7 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
       destLayer->stackLayer(newLayer, afterThis);
     }
   }
-  else  {
+  else {
     ASSERT(false && "Trying to copy two incompatible layers");
   }
 }
@@ -584,8 +610,7 @@ Doc* Doc::duplicate(DuplicateType type) const
 {
   const Sprite* sourceSprite = sprite();
   std::unique_ptr<Sprite> spriteCopyPtr(new Sprite(
-      sourceSprite->spec(),
-      sourceSprite->palette(frame_t(0))->size()));
+    sourceSprite->spec(), sourceSprite->palette(frame_t(0))->size()));
 
   std::unique_ptr<Doc> documentCopy(new Doc(spriteCopyPtr.get()));
   Sprite* spriteCopy = spriteCopyPtr.release();
@@ -601,7 +626,7 @@ Doc* Doc::duplicate(DuplicateType type) const
     spriteCopy->tags().add(new Tag(*tag));
 
   // Copy slices
-  for (const Slice *slice : sourceSprite->slices()) {
+  for (const Slice* slice : sourceSprite->slices()) {
     auto sliceCopy = new Slice(*slice);
     spriteCopy->slices().add(sliceCopy);
 
@@ -619,38 +644,36 @@ Doc* Doc::duplicate(DuplicateType type) const
   }
 
   switch (type) {
-
     case DuplicateExactCopy:
       // Copy the layer group
-      copyLayerContent(sourceSprite->root(),
-                       documentCopy.get(),
-                       spriteCopy->root());
+      copyLayerContent(
+        sourceSprite->root(), documentCopy.get(), spriteCopy->root());
 
-      ASSERT((spriteCopy->backgroundLayer() && sourceSprite->backgroundLayer()) ||
-             (!spriteCopy->backgroundLayer() && !sourceSprite->backgroundLayer()));
+      ASSERT(
+        (spriteCopy->backgroundLayer() && sourceSprite->backgroundLayer()) ||
+        (!spriteCopy->backgroundLayer() && !sourceSprite->backgroundLayer()));
       break;
 
-    case DuplicateWithFlattenLayers:
-      {
-        // Flatten layers
-        ASSERT(sourceSprite->root() != NULL);
+    case DuplicateWithFlattenLayers: {
+      // Flatten layers
+      ASSERT(sourceSprite->root() != NULL);
 
-        LayerImage* flatLayer = create_flatten_layer_copy
-            (spriteCopy,
-             sourceSprite->root(),
-             gfx::Rect(0, 0, sourceSprite->width(), sourceSprite->height()),
-             frame_t(0), sourceSprite->lastFrame(),
-             Preferences::instance().experimental.newBlend());
+      LayerImage* flatLayer = create_flatten_layer_copy(
+        spriteCopy,
+        sourceSprite->root(),
+        gfx::Rect(0, 0, sourceSprite->width(), sourceSprite->height()),
+        frame_t(0),
+        sourceSprite->lastFrame(),
+        Preferences::instance().experimental.newBlend());
 
-        // Add and select the new flat layer
-        spriteCopy->root()->addLayer(flatLayer);
+      // Add and select the new flat layer
+      spriteCopy->root()->addLayer(flatLayer);
 
-        // Configure the layer as background only if the original
-        // sprite has a background layer.
-        if (sourceSprite->backgroundLayer() != NULL)
-          flatLayer->configureAsBackground();
-      }
-      break;
+      // Configure the layer as background only if the original
+      // sprite has a background layer.
+      if (sourceSprite->backgroundLayer() != NULL)
+        flatLayer->configureAsBackground();
+    } break;
   }
 
   // Copy only some flags
@@ -703,9 +726,7 @@ void Doc::updateOSColorSpace(bool appWideSignal)
       m_osColorSpace = system->defaultWindow()->colorSpace();
   }
 
-  if (appWideSignal &&
-      context() &&
-      context()->activeDocument() == this) {
+  if (appWideSignal && context() && context()->activeDocument() == this) {
     App::instance()->ColorSpaceChange();
   }
 }
@@ -717,4 +738,4 @@ gfx::Point Doc::NoLastDrawingPoint()
                     std::numeric_limits<int>::min());
 }
 
-} // namespace app
+}  // namespace app
