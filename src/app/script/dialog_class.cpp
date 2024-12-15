@@ -1120,16 +1120,16 @@ int Dialog_file(lua_State* L)
     lua_pop(L, 1);
   }
 
-  widget->SelectFile.connect(
+  widget->SelectOutputFile.connect(
     [=]() -> std::string {
       base::paths newfilename;
       if (app::show_file_selector(
-            title, widget->filename(), exts,
+            title, widget->fullFilename(), exts,
             dlgType,
             newfilename))
         return newfilename.front();
       else
-        return widget->filename();
+        return widget->fullFilename();
     });
   return Dialog_add_widget(L, widget);
 }
@@ -1751,7 +1751,7 @@ int Dialog_get_data(lua_State* L)
           }
         }
         else if (auto filenameField = dynamic_cast<const FilenameField*>(widget)) {
-          lua_pushstring(L, filenameField->filename().c_str());
+          lua_pushstring(L, filenameField->fullFilename().c_str());
         }
         else if (auto tabs = dynamic_cast<const app::script::Tabs*>(widget)) {
           std::string tabStr = tabs->tabId(tabs->selectedTab());

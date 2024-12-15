@@ -115,6 +115,9 @@ static Item convert_to_item(XMLElement* elem)
   if (name == "expr")
     return item.typeIncl("app::ExprEntry",
                          "app/ui/expr_entry.h");
+  if (name == "filename")
+    return item.typeIncl("app::FilenameField",
+                         "app/ui/filename_field.h");
   if (name == "grid")
     return item.typeIncl("ui::Grid",
                          "ui/grid.h");
