@@ -42,6 +42,8 @@ int main(int argc, char* argv[])
     os::SystemRef system = os::System::make();
     ui::UISystem uiSystem;
     ui::Manager uiManager(nullptr);
+    ui::Theme uiTheme;
+    ui::set_theme(&uiTheme, 1);
 #endif
 
     exitcode = RUN_ALL_TESTS();

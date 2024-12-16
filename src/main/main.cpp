@@ -135,7 +135,7 @@ int app_main(int argc, char* argv[])
     if (options.startShell())
       systemConsole.prepareShell();
 
-    app.run();
+    app.run(true);
 
     // After starting the GUI, we'll always return 0, but in batch
     // mode we can return the error code.

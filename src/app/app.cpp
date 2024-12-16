@@ -473,7 +473,7 @@ struct DeleteAllDocs {
 
 } // anonymous namespace
 
-void App::run()
+void App::run(const bool runGuiManager)
 {
   CloseMainWindow closeMainWindow(m_mainWindow);
   DeleteAllDocs deleteAllDocsAtExit(context());
@@ -536,8 +536,7 @@ void App::run()
 #if defined(_DEBUG) || defined(ENABLE_DEVMODE)
     // On OS X, when we compile Aseprite on devmode, we're using it
     // outside an app bundle, so we must active the app explicitly.
-    if (isGui())
-      os::System::instance()->activateApp();
+    os::System::instance()->activateApp();
 #endif
 
 #ifdef ENABLE_UPDATER
@@ -561,13 +560,15 @@ void App::run()
 #endif
 
     // Run the GUI main message loop
-    try {
-      manager->run();
-      set_app_state(AppState::kClosing);
-    }
-    catch (...) {
-      set_app_state(AppState::kClosingWithException);
-      throw;
+    if (runGuiManager) {
+      try {
+        manager->run();
+        set_app_state(AppState::kClosing);
+      }
+      catch (...) {
+        set_app_state(AppState::kClosingWithException);
+        throw;
+      }
     }
   }
 
@@ -587,11 +588,6 @@ void App::run()
   extensions().executeExitActions();
 #endif
 
-  close();
-}
-
-void App::close()
-{
   if (isGui()) {
     ExitGui();
 
@@ -608,9 +604,6 @@ void App::close()
                 "To enable GUI support build with LAF_BACKEND=skia\n");
   }
 #endif
-
-  // Just in case close the main window.
-  m_mainWindow.reset(nullptr);
 }
 
 // Finishes the Aseprite application.

@@ -852,17 +852,17 @@ void set_theme(Theme* theme, const int uiscale)
   current_ui_scale = uiscale;
   current_theme = theme;
 
-  if (theme) {
+  if (theme)
     theme->regenerateTheme();
 
-    // Set the theme for all widgets
-    details::reinitThemeForAllWidgets();
+  // Set the theme for all widgets (even if the theme is nullptr, so
+  // widgets don't contain a pointer to a destroyed theme).
+  details::reinitThemeForAllWidgets();
 
-    // Reinitialize all widget using the new theme/uiscale
-    if (Manager* manager = Manager::getDefault()) {
-      manager->initTheme();
-      manager->invalidate();
-    }
+  // Reinitialize all widget using the new theme/uiscale
+  if (Manager* manager = Manager::getDefault()) {
+    manager->initTheme();
+    manager->invalidate();
   }
 
   old_ui_scale = current_ui_scale;

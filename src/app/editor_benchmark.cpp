@@ -144,6 +144,6 @@ int app_main(int argc, char* argv[])
   benchmark::RunSpecifiedBenchmarks();
   benchmark::Shutdown();
 
-  app.close();
+  app.run(false);
   return 0;
 }

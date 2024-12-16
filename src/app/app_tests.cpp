@@ -33,7 +33,7 @@ TEST(App, JustClose)
   app::AppOptions options(sizeof(argv) / sizeof(argv[0]), argv);
   app::App app;
   app.initialize(options);
-  app.close();
+  app.run(false);
 }
 
 TEST(App, ExitCommand)
@@ -47,7 +47,7 @@ TEST(App, ExitCommand)
   ui::execute_from_ui_thread(
     [&app] { app.context()->executeCommand(Commands::instance()->byId(CommandId::Exit())); });
 
-  app.run();
+  app.run(false);
 }
 
 TEST(App, ExitWithOneDoc)
@@ -65,7 +65,7 @@ TEST(App, ExitWithOneDoc)
     app.context()->executeCommand(Commands::instance()->byId(CommandId::Exit()));
   });
 
-  app.run();
+  app.run(false);
 }
 
 int app_main(int argc, char* argv[])

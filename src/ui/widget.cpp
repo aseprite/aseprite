@@ -120,6 +120,10 @@ void Widget::deferDelete()
 
 void Widget::initTheme()
 {
+  // This can be true if we've destroyed the user defined theme.
+  if (!m_theme)
+    return;
+
   InitThemeEvent ev(this, m_theme);
   onInitTheme(ev);
 }
@@ -1396,15 +1400,20 @@ Size Widget::sizeHint()
 {
   if (m_sizeHint)
     return *m_sizeHint;
-  else {
-    SizeHintEvent ev(this, Size(0, 0));
+
+  SizeHintEvent ev(this, Size(0, 0));
+
+  // Call onSizeHint() only when the theme is set, as generally
+  // onSizeHint() will require some theme/font information to
+  // calculate the best size. The theme can be nullptr only in extreme
+  // cases, i.e. when we're closing a unit test.
+  if (m_theme)
     onSizeHint(ev);
 
-    Size sz(ev.sizeHint());
-    sz.w = std::clamp(sz.w, m_minSize.w, m_maxSize.w);
-    sz.h = std::clamp(sz.h, m_minSize.h, m_maxSize.h);
-    return sz;
-  }
+  Size sz(ev.sizeHint());
+  sz.w = std::clamp(sz.w, m_minSize.w, m_maxSize.w);
+  sz.h = std::clamp(sz.h, m_minSize.h, m_maxSize.h);
+  return sz;
 }
 
 /**
@@ -1676,6 +1685,7 @@ void Widget::onInvalidateRegion(const Region& region)
 
 void Widget::onSizeHint(SizeHintEvent& ev)
 {
+  ASSERT(m_theme);
   if (m_style) {
     ev.setSizeHint(m_theme->calcSizeHint(this, style()));
   }
@@ -1706,7 +1716,7 @@ void Widget::onResize(ResizeEvent& ev)
 
 void Widget::onPaint(PaintEvent& ev)
 {
-  if (m_style)
+  if (m_style && m_theme)
     m_theme->paintWidget(ev.graphics(), this, style(), clientBounds());
 }
 

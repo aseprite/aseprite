@@ -83,8 +83,7 @@ public:
   // window, in console/scripting it just runs the specified
   // scripts.
   int initialize(const AppOptions& options);
-  void run();
-  void close();
+  void run(bool runGuiManager);
 
   AppMod* mod() const { return m_mod; }
   tools::ToolBox* toolBox() const;
