@@ -714,7 +714,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
          // 3) we are drawing the brush preview in a preview editor
          // and preferences (brushPreviewInPreview) says that we
          // should do that.
-         || m_docPref.show.brushPreviewInPreview())) {
+         || (Preferences::instance().cursor.globalBrushPreviewInPreview() || m_docPref.show.brushPreviewInPreview()))) {
       m_renderEngine->setExtraImage(extraCel->type(),
                                     extraCel->cel(),
                                     extraCel->image(),

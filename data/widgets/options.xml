@@ -334,6 +334,7 @@
         <vbox id="section_cursors">
           <separator text="@.ui_mouse_cursor" horizontal="true" />
           <check id="native_cursor" text="@.native_cursor" />
+          <check text="@.global_brush_preview_in_preview" id="global_brush_preview_in_preview" tooltip="@.global_brush_preview_in_preview_tooltip"/>
           <hbox>
             <label id="cursor_scale_label" text="@.cursor_scale_label" />
             <combobox id="cursor_scale">
