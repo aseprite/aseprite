@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/scroll_bar.h"
@@ -19,9 +19,8 @@ void setup_scrollbars(const gfx::Size& scrollableSize,
                       ScrollBar& hbar,
                       ScrollBar& vbar)
 {
-#define NEED_BAR(w, h)                              \
-  ((scrollableSize.w > viewportArea.w) &&           \
-   (vbar.getBarWidth() < fullViewportArea.w) &&     \
+#define NEED_BAR(w, h)                                                                             \
+  ((scrollableSize.w > viewportArea.w) && (vbar.getBarWidth() < fullViewportArea.w) &&             \
    (hbar.getBarWidth() < fullViewportArea.h))
 
   const gfx::Rect fullViewportArea = viewportArea;
@@ -29,8 +28,10 @@ void setup_scrollbars(const gfx::Size& scrollableSize,
   hbar.setSize(scrollableSize.w);
   vbar.setSize(scrollableSize.h);
 
-  if (hbar.parent()) parent.removeChild(&hbar);
-  if (vbar.parent()) parent.removeChild(&vbar);
+  if (hbar.parent())
+    parent.removeChild(&hbar);
+  if (vbar.parent())
+    parent.removeChild(&vbar);
 
   if (NEED_BAR(w, h)) {
     viewportArea.h -= hbar.getBarWidth();
@@ -64,16 +65,16 @@ void setup_scrollbars(const gfx::Size& scrollableSize,
   }
 
   if (parent.hasChild(&hbar)) {
-    hbar.setBounds(gfx::Rect(viewportArea.x, viewportArea.y2(),
-                             viewportArea.w, hbar.getBarWidth()));
+    hbar.setBounds(
+      gfx::Rect(viewportArea.x, viewportArea.y2(), viewportArea.w, hbar.getBarWidth()));
     hbar.setVisible(true);
   }
   else
     hbar.setVisible(false);
 
   if (parent.hasChild(&vbar)) {
-    vbar.setBounds(gfx::Rect(viewportArea.x2(), viewportArea.y,
-                             vbar.getBarWidth(), viewportArea.h));
+    vbar.setBounds(
+      gfx::Rect(viewportArea.x2(), viewportArea.y, vbar.getBarWidth(), viewportArea.h));
     vbar.setVisible(true);
   }
   else

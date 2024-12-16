@@ -11,30 +11,30 @@
 
 #include <vector>
 
-#include "filters/filter.h"
 #include "filters/color_curve.h"
+#include "filters/filter.h"
 
 namespace filters {
 
-  class ColorCurveFilter : public Filter {
-  public:
-    ColorCurveFilter();
+class ColorCurveFilter : public Filter {
+public:
+  ColorCurveFilter();
 
-    void setCurve(const ColorCurve& curve);
-    const ColorCurve& getCurve() const { return m_curve; }
+  void setCurve(const ColorCurve& curve);
+  const ColorCurve& getCurve() const { return m_curve; }
 
-    // Filter implementation
-    const char* getName();
-    void applyToRgba(FilterManager* filterMgr);
-    void applyToGrayscale(FilterManager* filterMgr);
-    void applyToIndexed(FilterManager* filterMgr);
+  // Filter implementation
+  const char* getName();
+  void applyToRgba(FilterManager* filterMgr);
+  void applyToGrayscale(FilterManager* filterMgr);
+  void applyToIndexed(FilterManager* filterMgr);
 
-  private:
-    void generateMap();
+private:
+  void generateMap();
 
-    ColorCurve m_curve;
-    std::vector<int> m_cmap;
-  };
+  ColorCurve m_curve;
+  std::vector<int> m_cmap;
+};
 
 } // namespace filters
 

@@ -17,59 +17,57 @@
 #include "gfx/region.h"
 
 namespace doc {
-  class Tileset;
+class Tileset;
 }
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class CopyRegion : public Cmd
-                   , public WithImage {
-  public:
-    // If alreadyCopied is false, it means that onExecute() will copy
-    // pixels from src to dst. If it's true, it means that "onExecute"
-    // should do nothing, because modified pixels are alreadt on "dst"
-    // (so we use "src" as the original image).
-    CopyRegion(Image* dst, const Image* src,
-               const gfx::Region& region,
-               const gfx::Point& dstPos,
-               bool alreadyCopied = false);
+class CopyRegion : public Cmd,
+                   public WithImage {
+public:
+  // If alreadyCopied is false, it means that onExecute() will copy
+  // pixels from src to dst. If it's true, it means that "onExecute"
+  // should do nothing, because modified pixels are alreadt on "dst"
+  // (so we use "src" as the original image).
+  CopyRegion(Image* dst,
+             const Image* src,
+             const gfx::Region& region,
+             const gfx::Point& dstPos,
+             bool alreadyCopied = false);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onRedo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this) + m_buffer.size();
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onRedo() override;
+  size_t onMemSize() const override { return sizeof(*this) + m_buffer.size(); }
 
-  private:
-    void swap();
-    virtual void rehash() { }
+private:
+  void swap();
+  virtual void rehash() {}
 
-    bool m_alreadyCopied;
-    gfx::Region m_region;
-    base::buffer m_buffer;
-  };
+  bool m_alreadyCopied;
+  gfx::Region m_region;
+  base::buffer m_buffer;
+};
 
-  class CopyTileRegion : public CopyRegion {
-  public:
-    CopyTileRegion(Image* dst, const Image* src,
-                   const gfx::Region& region,
-                   const gfx::Point& dstPos,
-                   bool alreadyCopied,
-                   const doc::tile_index tileIndex,
-                   const doc::Tileset* tileset);
+class CopyTileRegion : public CopyRegion {
+public:
+  CopyTileRegion(Image* dst,
+                 const Image* src,
+                 const gfx::Region& region,
+                 const gfx::Point& dstPos,
+                 bool alreadyCopied,
+                 const doc::tile_index tileIndex,
+                 const doc::Tileset* tileset);
 
-  private:
-    void rehash() override;
+private:
+  void rehash() override;
 
-    doc::tile_index m_tileIndex;
-    doc::ObjectId m_tilesetId;
-  };
+  doc::tile_index m_tileIndex;
+  doc::ObjectId m_tilesetId;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

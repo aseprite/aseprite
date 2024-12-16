@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/pref/preferences.h"
@@ -31,8 +31,7 @@ namespace app {
 
 using namespace gfx;
 
-AlphaEntry::AlphaEntry(AlphaSlider::Type type)
-  : IntEntry(0, 255)
+AlphaEntry::AlphaEntry(AlphaSlider::Type type) : IntEntry(0, 255)
 {
   m_slider = std::make_unique<AlphaSlider>(0, type);
   m_slider->setFocusStop(false); // In this way the IntEntry doesn't lost the focus
@@ -43,8 +42,9 @@ AlphaEntry::AlphaEntry(AlphaSlider::Type type)
 int AlphaEntry::getValue() const
 {
   int value = m_slider->convertTextToValue(text());
-  if (static_cast<AlphaSlider*>(m_slider.get())->getAlphaRange() == app::gen::AlphaRange::PERCENTAGE)
-    value = std::round(((double)m_slider->getMaxValue())*((double)value)/((double)100));
+  if (static_cast<AlphaSlider*>(m_slider.get())->getAlphaRange() ==
+      app::gen::AlphaRange::PERCENTAGE)
+    value = std::round(((double)m_slider->getMaxValue()) * ((double)value) / ((double)100));
 
   return std::clamp(value, m_min, m_max);
 }
@@ -56,8 +56,9 @@ void AlphaEntry::setValue(int value)
   if (m_popupWindow && !m_changeFromSlider)
     m_slider->setValue(value);
 
-  if (static_cast<AlphaSlider*>(m_slider.get())->getAlphaRange() == app::gen::AlphaRange::PERCENTAGE)
-    value = std::round(((double)100)*((double)value)/((double)m_slider->getMaxValue()));
+  if (static_cast<AlphaSlider*>(m_slider.get())->getAlphaRange() ==
+      app::gen::AlphaRange::PERCENTAGE)
+    value = std::round(((double)100) * ((double)value) / ((double)m_slider->getMaxValue()));
 
   setText(m_slider->convertValueToText(value));
 

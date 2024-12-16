@@ -11,56 +11,53 @@
 
 #ifdef ENABLE_UPDATER
 
-#include "ui/timer.h"
-#include "updater/check_update.h"
+  #include "ui/timer.h"
+  #include "updater/check_update.h"
 
-#include <atomic>
-#include <memory>
-#include <thread>
+  #include <atomic>
+  #include <memory>
+  #include <thread>
 
 namespace app {
 
-  class CheckUpdateDelegate;
-  class CheckUpdateBackgroundJob;
-  class Preferences;
+class CheckUpdateDelegate;
+class CheckUpdateBackgroundJob;
+class Preferences;
 
-  class CheckUpdateThreadLauncher {
-  public:
-    CheckUpdateThreadLauncher(CheckUpdateDelegate* delegate);
-    ~CheckUpdateThreadLauncher();
+class CheckUpdateThreadLauncher {
+public:
+  CheckUpdateThreadLauncher(CheckUpdateDelegate* delegate);
+  ~CheckUpdateThreadLauncher();
 
-    void launch();
+  void launch();
 
-    bool isReceived() const;
+  bool isReceived() const;
 
-    const updater::CheckUpdateResponse& getResponse() const
-    {
-      return m_response;
-    }
+  const updater::CheckUpdateResponse& getResponse() const { return m_response; }
 
-  private:
-    void onMonitoringTick();
-    void checkForUpdates();
-    void showUI();
+private:
+  void onMonitoringTick();
+  void checkForUpdates();
+  void showUI();
 
-    CheckUpdateDelegate* m_delegate;
-    Preferences& m_preferences;
-    updater::Uuid m_uuid;
-    std::unique_ptr<std::thread> m_thread;
-    std::unique_ptr<CheckUpdateBackgroundJob> m_bgJob;
-    bool m_doCheck;
-    std::atomic<bool> m_received;
+  CheckUpdateDelegate* m_delegate;
+  Preferences& m_preferences;
+  updater::Uuid m_uuid;
+  std::unique_ptr<std::thread> m_thread;
+  std::unique_ptr<CheckUpdateBackgroundJob> m_bgJob;
+  bool m_doCheck;
+  std::atomic<bool> m_received;
 
-    // Mini-stats
-    int m_inits;
-    int m_exits;
+  // Mini-stats
+  int m_inits;
+  int m_exits;
 
-    // True if this is a developer
-    bool m_isDeveloper;
+  // True if this is a developer
+  bool m_isDeveloper;
 
-    updater::CheckUpdateResponse m_response;
-    ui::Timer m_timer;
-  };
+  updater::CheckUpdateResponse m_response;
+  ui::Timer m_timer;
+};
 
 } // namespace app
 

@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/color_picker.h"
@@ -62,8 +62,8 @@ bool get_cel_pixel(const Cel* cel,
   }
   // Regular images
   else {
-    pos.x = (pos.x-celBounds.x)*image->width()/celBounds.w;
-    pos.y = (pos.y-celBounds.y)*image->height()/celBounds.h;
+    pos.x = (pos.x - celBounds.x) * image->width() / celBounds.w;
+    pos.y = (pos.y - celBounds.y) * image->height() / celBounds.h;
     const gfx::Point ipos(pos);
     if (!image->bounds().contains(ipos))
       return false;
@@ -73,12 +73,9 @@ bool get_cel_pixel(const Cel* cel,
   }
 }
 
-}
+} // namespace
 
-ColorPicker::ColorPicker()
-  : m_tile(doc::notile)
-  , m_alpha(0)
-  , m_layer(nullptr)
+ColorPicker::ColorPicker() : m_tile(doc::notile), m_alpha(0), m_layer(nullptr)
 {
 }
 
@@ -98,13 +95,11 @@ void ColorPicker::pickColor(const Site& site,
     auto doc = static_cast<const Doc*>(site.document());
     DocumentPreferences& docPref = Preferences::instance().document(doc);
 
-    pos = wrap_pointF(docPref.tiled.mode(),
-                      site.sprite()->size(), pos);
+    pos = wrap_pointF(docPref.tiled.mode(), site.sprite()->size(), pos);
   }
 
   // Get the color from the image
   switch (mode) {
-
     // Pick from the composed image
     case FromComposition: {
       doc::RenderPlan plan;
@@ -134,8 +129,11 @@ void ColorPicker::pickColor(const Site& site,
       else if (site.tilemapMode() == TilemapMode::Pixels) {
         m_color = app::Color::fromImage(
           sprite->pixelFormat(),
-          render::get_sprite_pixel(sprite, pos.x, pos.y,
-                                   site.frame(), proj,
+          render::get_sprite_pixel(sprite,
+                                   pos.x,
+                                   pos.y,
+                                   site.frame(),
+                                   proj,
                                    Preferences::instance().experimental.newBlend()));
       }
       break;
@@ -151,28 +149,21 @@ void ColorPicker::pickColor(const Site& site,
         doc::tile_index ti;
         doc::tile_flags tf;
         doc::color_t pixelColor;
-        if (cel->layer()->isTilemap() &&
-            get_tile_pixel(cel, pos, ti, tf, pixelColor)) {
+        if (cel->layer()->isTilemap() && get_tile_pixel(cel, pos, ti, tf, pixelColor)) {
           m_tile = doc::tile(ti, tf);
           m_color = app::Color::fromTile(m_tile);
         }
       }
       else if (site.tilemapMode() == TilemapMode::Pixels) {
         doc::color_t imageColor;
-        if (!get_cel_pixel(cel, pos.x, pos.y,
-                           site.frame(), imageColor))
+        if (!get_cel_pixel(cel, pos.x, pos.y, site.frame(), imageColor))
           return;
 
-        doc::PixelFormat pixelFormat =
-          (cel->layer()->isTilemap() ? sprite->pixelFormat():
-                                       cel->image()->pixelFormat());
+        doc::PixelFormat pixelFormat = (cel->layer()->isTilemap() ? sprite->pixelFormat() :
+                                                                    cel->image()->pixelFormat());
         switch (pixelFormat) {
-          case IMAGE_RGB:
-            m_alpha = doc::rgba_geta(imageColor);
-            break;
-          case IMAGE_GRAYSCALE:
-            m_alpha = doc::graya_geta(imageColor);
-            break;
+          case IMAGE_RGB:       m_alpha = doc::rgba_geta(imageColor); break;
+          case IMAGE_GRAYSCALE: m_alpha = doc::graya_geta(imageColor); break;
         }
 
         m_color = app::Color::fromImage(pixelFormat, imageColor);
@@ -191,10 +182,8 @@ void ColorPicker::pickColor(const Site& site,
 
       for (const Cel* cel : cels) {
         doc::color_t imageColor;
-        if (get_cel_pixel(cel, pos.x, pos.y,
-                          site.frame(), imageColor)) {
-          m_color = app::Color::fromImage(
-            cel->image()->pixelFormat(), imageColor);
+        if (get_cel_pixel(cel, pos.x, pos.y, site.frame(), imageColor)) {
+          m_color = app::Color::fromImage(cel->image()->pixelFormat(), imageColor);
           m_layer = cel->layer();
           break;
         }

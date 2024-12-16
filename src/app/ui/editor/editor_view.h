@@ -12,33 +12,33 @@
 #include "ui/view.h"
 
 namespace app {
-  class Editor;
+class Editor;
 
-  class EditorView : public ui::View {
-  public:
-    enum Type { CurrentEditorMode, AlwaysSelected };
+class EditorView : public ui::View {
+public:
+  enum Type { CurrentEditorMode, AlwaysSelected };
 
-    enum Method { KeepOrigin, KeepCenter };
-    static void SetScrollUpdateMethod(Method method);
+  enum Method { KeepOrigin, KeepCenter };
+  static void SetScrollUpdateMethod(Method method);
 
-    EditorView(Type type);
+  EditorView(Type type);
 
-  protected:
-    void onPaint(ui::PaintEvent& ev) override;
-    void onResize(ui::ResizeEvent& ev) override;
-    void onSetViewScroll(const gfx::Point& pt) override;
-    void onScrollRegion(ui::ScrollRegionEvent& ev) override;
-    void onScrollChange() override;
+protected:
+  void onPaint(ui::PaintEvent& ev) override;
+  void onResize(ui::ResizeEvent& ev) override;
+  void onSetViewScroll(const gfx::Point& pt) override;
+  void onScrollRegion(ui::ScrollRegionEvent& ev) override;
+  void onScrollChange() override;
 
-  private:
-    Editor* editor();
-    void setupScrollbars();
+private:
+  Editor* editor();
+  void setupScrollbars();
 
-    Type m_type;
-    obs::scoped_connection m_scrollSettingsConn;
-    static Method g_scrollUpdateMethod;
-  };
+  Type m_type;
+  obs::scoped_connection m_scrollSettingsConn;
+  static Method g_scrollUpdateMethod;
+};
 
 } // namespace app
 
-#endif  // APP_UI_EDITOR_VIEW_H_INCLUDED
+#endif // APP_UI_EDITOR_VIEW_H_INCLUDED

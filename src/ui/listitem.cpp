@@ -6,14 +6,14 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/listitem.h"
 
 #include "ui/message.h"
-#include "ui/size_hint_event.h"
 #include "ui/resize_event.h"
+#include "ui/size_hint_event.h"
 #include "ui/theme.h"
 #include "ui/view.h"
 
@@ -23,8 +23,7 @@ namespace ui {
 
 using namespace gfx;
 
-ListItem::ListItem(const std::string& text)
-  : Widget(kListItemWidget)
+ListItem::ListItem(const std::string& text) : Widget(kListItemWidget)
 {
   setDoubleBuffered(true);
   setAlign(LEFT | MIDDLE);

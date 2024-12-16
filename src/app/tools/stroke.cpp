@@ -6,13 +6,12 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/tools/stroke.h"
 
-namespace app {
-namespace tools {
+namespace app { namespace tools {
 
 void Stroke::reset()
 {
@@ -41,7 +40,7 @@ void Stroke::erase(int index)
 {
   ASSERT(0 <= index && index < m_pts.size());
   if (0 <= index && index < m_pts.size())
-    m_pts.erase(m_pts.begin()+index);
+    m_pts.erase(m_pts.begin() + index);
 }
 
 gfx::Rect Stroke::bounds() const
@@ -49,29 +48,29 @@ gfx::Rect Stroke::bounds() const
   if (m_pts.empty())
     return gfx::Rect();
 
-  gfx::Point
-    minpt(m_pts[0].x, m_pts[0].y),
-    maxpt(m_pts[0].x, m_pts[0].y);
+  gfx::Point minpt(m_pts[0].x, m_pts[0].y), maxpt(m_pts[0].x, m_pts[0].y);
 
-  for (std::size_t c=1; c<m_pts.size(); ++c) {
+  for (std::size_t c = 1; c < m_pts.size(); ++c) {
     int x = m_pts[c].x;
     int y = m_pts[c].y;
-    if (minpt.x > x) minpt.x = x;
-    if (minpt.y > y) minpt.y = y;
-    if (maxpt.x < x) maxpt.x = x;
-    if (maxpt.y < y) maxpt.y = y;
+    if (minpt.x > x)
+      minpt.x = x;
+    if (minpt.y > y)
+      minpt.y = y;
+    if (maxpt.x < x)
+      maxpt.x = x;
+    if (maxpt.y < y)
+      maxpt.y = y;
   }
 
-  return gfx::Rect(minpt.x, minpt.y,
-                   maxpt.x - minpt.x + 1,
-                   maxpt.y - minpt.y + 1);
+  return gfx::Rect(minpt.x, minpt.y, maxpt.x - minpt.x + 1, maxpt.y - minpt.y + 1);
 }
 
 std::vector<int> Stroke::toXYInts() const
 {
   std::vector<int> output;
   if (!empty()) {
-    output.reserve(2*size());
+    output.reserve(2 * size());
     for (auto pt : m_pts) {
       output.push_back(pt.x);
       output.push_back(pt.y);
@@ -80,5 +79,4 @@ std::vector<int> Stroke::toXYInts() const
   return output;
 }
 
-} // namespace tools
-} // namespace app
+}} // namespace app::tools

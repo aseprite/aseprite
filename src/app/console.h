@@ -12,26 +12,26 @@
 #include <exception>
 
 namespace app {
-  class Context;
+class Context;
 
-  class Console {
-  public:
-    Console(Context* ctx = nullptr);
-    ~Console();
+class Console {
+public:
+  Console(Context* ctx = nullptr);
+  ~Console();
 
-    void printf(const char *format, ...);
+  void printf(const char* format, ...);
 
-    static void showException(const std::exception& e);
-    static void notifyNewDisplayConfiguration();
+  static void showException(const std::exception& e);
+  static void notifyNewDisplayConfiguration();
 
-  private:
-    static bool isUIAvailable();
+private:
+  static bool isUIAvailable();
 
-    bool m_withUI;
+  bool m_withUI;
 
-    class ConsoleWindow;
-    static ConsoleWindow* m_console;
-  };
+  class ConsoleWindow;
+  static ConsoleWindow* m_console;
+};
 
 } // namespace app
 

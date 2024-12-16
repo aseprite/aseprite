@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/object.h"
@@ -23,16 +23,13 @@ static ObjectId newId = 0;
 // TODO Profile this and see if an unordered_map is better
 static std::map<ObjectId, Object*> objects;
 
-Object::Object(ObjectType type)
-  : m_type(type)
-  , m_id(0)
-  , m_version(0)
+Object::Object(ObjectType type) : m_type(type), m_id(0), m_version(0)
 {
 }
 
 Object::Object(const Object& other)
   : m_type(other.m_type)
-  , m_id(0) // We don't copy the ID
+  , m_id(0)      // We don't copy the ID
   , m_version(0) // We don't copy the version
 {
 }
@@ -79,13 +76,16 @@ void Object::setId(ObjectId id)
     if (objects.find(m_id) != objects.end()) {
       Object* obj = objects.find(m_id)->second;
       if (obj) {
-        TRACEARGS("ASSERT FAILED: Object with id", m_id,
-                  "of kind", int(obj->type()),
-                  "version", obj->version(), "should not exist");
+        TRACEARGS("ASSERT FAILED: Object with id",
+                  m_id,
+                  "of kind",
+                  int(obj->type()),
+                  "version",
+                  obj->version(),
+                  "should not exist");
       }
       else {
-        TRACEARGS("ASSERT FAILED: Object with id", m_id,
-                  "registered as nullptr should not exist");
+        TRACEARGS("ASSERT FAILED: Object with id", m_id, "registered as nullptr should not exist");
       }
     }
     ASSERT(objects.find(m_id) == objects.end());

@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -21,8 +21,7 @@
 #include <iterator>
 #include <vector>
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 using namespace doc;
 
@@ -31,7 +30,8 @@ namespace {
 struct SpritesObj {
   ObjectIds docs;
 
-  SpritesObj(const Docs& docs) {
+  SpritesObj(const Docs& docs)
+  {
     for (const Doc* doc : docs)
       this->docs.push_back(doc->sprite()->id());
   }
@@ -58,17 +58,17 @@ int Sprites_index(lua_State* L)
   auto obj = get_obj<SpritesObj>(L, 1);
   const int i = lua_tonumber(L, 2);
   if (i >= 1 && i <= int(obj->docs.size()))
-    push_docobj<Sprite>(L, obj->docs[i-1]);
+    push_docobj<Sprite>(L, obj->docs[i - 1]);
   else
     lua_pushnil(L);
   return 1;
 }
 
 const luaL_Reg Sprites_methods[] = {
-  { "__gc", Sprites_gc },
-  { "__len", Sprites_len },
+  { "__gc",    Sprites_gc    },
+  { "__len",   Sprites_len   },
   { "__index", Sprites_index },
-  { nullptr, nullptr }
+  { nullptr,   nullptr       }
 };
 
 } // anonymous namespace
@@ -87,5 +87,4 @@ void push_sprites(lua_State* L)
   push_new<SpritesObj>(L, ctx->documents());
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

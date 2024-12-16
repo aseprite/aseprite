@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -26,30 +26,34 @@ namespace app {
 using namespace ui;
 
 struct MoveColorsParams : public NewParams {
-  Param<int> before { this, 0, "before" };
+  Param<int> before{ this, 0, "before" };
 };
 
 class MoveColorsCommand : public CommandWithNewParams<MoveColorsParams> {
 public:
   MoveColorsCommand(bool copy)
     : CommandWithNewParams<MoveColorsParams>(
-        (copy ? CommandId::CopyColors():
-                CommandId::MoveColors()), CmdRecordableFlag),
-      m_copy(copy) { }
+        (copy ? CommandId::CopyColors() : CommandId::MoveColors()),
+        CmdRecordableFlag)
+    , m_copy(copy)
+  {
+  }
 
 protected:
-  bool onEnabled(Context* ctx) override {
+  bool onEnabled(Context* ctx) override
+  {
     return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                            ContextFlags::HasSelectedColors);
   }
 
-  void onExecute(Context* ctx) override {
+  void onExecute(Context* ctx) override
+  {
     ContextWriter writer(ctx);
     Site site = ctx->activeSite();
 
     PalettePicks picks = site.selectedColors();
     if (picks.picks() == 0)
-      return;                   // Do nothing
+      return; // Do nothing
 
     ASSERT(writer.palette());
     if (!writer.palette())
@@ -67,13 +71,9 @@ protected:
 
     doc::Palette palette(*writer.palette());
     doc::Palette newPalette(palette);
-    move_or_copy_palette_colors(palette, newPalette, picks,
-                                currentEntry,
-                                beforeIndex,
-                                m_copy);
+    move_or_copy_palette_colors(palette, newPalette, picks, currentEntry, beforeIndex, m_copy);
 
-    writer.document()->getApi(tx)
-      .setPalette(writer.sprite(), writer.frame(), &newPalette);
+    writer.document()->getApi(tx).setPalette(writer.sprite(), writer.frame(), &newPalette);
 
     ctx->setSelectedColors(picks);
 

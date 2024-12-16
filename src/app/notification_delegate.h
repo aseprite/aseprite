@@ -12,13 +12,13 @@
 
 namespace app {
 
-  class INotificationDelegate {
-  public:
-    virtual ~INotificationDelegate() { }
-    virtual std::string notificationText() = 0;
-    virtual void notificationClick() = 0;
-  };
+class INotificationDelegate {
+public:
+  virtual ~INotificationDelegate() {}
+  virtual std::string notificationText() = 0;
+  virtual void notificationClick() = 0;
+};
 
-}
+} // namespace app
 
 #endif

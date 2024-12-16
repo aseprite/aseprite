@@ -17,52 +17,52 @@
 #include <map>
 
 namespace doc {
-  class Layer;
+class Layer;
 }
 
 namespace app {
-  class Doc;
-  class Site;
+class Doc;
+class Site;
 
-  // Pseudo-DocViews to handle active layer/frame in a non-UI context
-  // per Doc.
-  //
-  // TODO we could move code to handle active frame/layer from
-  //      Timeline to this class.
-  class ActiveSiteHandler : public DocObserver {
-  public:
-    ActiveSiteHandler();
-    virtual ~ActiveSiteHandler();
+// Pseudo-DocViews to handle active layer/frame in a non-UI context
+// per Doc.
+//
+// TODO we could move code to handle active frame/layer from
+//      Timeline to this class.
+class ActiveSiteHandler : public DocObserver {
+public:
+  ActiveSiteHandler();
+  virtual ~ActiveSiteHandler();
 
-    void addDoc(Doc* doc);
-    void removeDoc(Doc* doc);
-    void getActiveSiteForDoc(Doc* doc, Site* site);
-    void setActiveLayerInDoc(Doc* doc, doc::Layer* layer);
-    void setActiveFrameInDoc(Doc* doc, doc::frame_t frame);
-    void setRangeInDoc(Doc* doc, const DocRange& range);
-    void setSelectedColorsInDoc(Doc* doc, const doc::PalettePicks& picks);
-    void setSelectedTilesInDoc(Doc* doc, const doc::PalettePicks& picks);
+  void addDoc(Doc* doc);
+  void removeDoc(Doc* doc);
+  void getActiveSiteForDoc(Doc* doc, Site* site);
+  void setActiveLayerInDoc(Doc* doc, doc::Layer* layer);
+  void setActiveFrameInDoc(Doc* doc, doc::frame_t frame);
+  void setRangeInDoc(Doc* doc, const DocRange& range);
+  void setSelectedColorsInDoc(Doc* doc, const doc::PalettePicks& picks);
+  void setSelectedTilesInDoc(Doc* doc, const doc::PalettePicks& picks);
 
-  private:
-    // DocObserver impl
-    void onAddLayer(DocEvent& ev) override;
-    void onAddFrame(DocEvent& ev) override;
-    void onBeforeRemoveLayer(DocEvent& ev) override;
-    void onRemoveFrame(DocEvent& ev) override;
+private:
+  // DocObserver impl
+  void onAddLayer(DocEvent& ev) override;
+  void onAddFrame(DocEvent& ev) override;
+  void onBeforeRemoveLayer(DocEvent& ev) override;
+  void onRemoveFrame(DocEvent& ev) override;
 
-    // Active data for a document
-    struct Data {
-      doc::ObjectId layer;
-      doc::frame_t frame;
-      DocRange range;
-      doc::PalettePicks selectedColors;
-      doc::PalettePicks selectedTiles;
-    };
-
-    Data& getData(Doc* doc);
-
-    std::map<Doc*, Data> m_data;
+  // Active data for a document
+  struct Data {
+    doc::ObjectId layer;
+    doc::frame_t frame;
+    DocRange range;
+    doc::PalettePicks selectedColors;
+    doc::PalettePicks selectedTiles;
   };
+
+  Data& getData(Doc* doc);
+
+  std::map<Doc*, Data> m_data;
+};
 
 } // namespace app
 

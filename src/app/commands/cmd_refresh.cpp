@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -39,8 +39,7 @@ private:
   void postCancelMenuLoop();
 };
 
-RefreshCommand::RefreshCommand()
-  : Command(CommandId::Refresh(), CmdUIOnlyFlag)
+RefreshCommand::RefreshCommand() : Command(CommandId::Refresh(), CmdUIOnlyFlag)
 {
 }
 
@@ -57,10 +56,7 @@ void RefreshCommand::onExecute(Context* context)
   // Now that all menus are going to be closed (the final close
   // messages are enqueued in the UI message queue), we can queue a
   // function call that will reload all menus.
-  ui::execute_from_ui_thread(
-    [this]{
-      postCancelMenuLoop();
-    });
+  ui::execute_from_ui_thread([this] { postCancelMenuLoop(); });
 }
 
 void RefreshCommand::postCancelMenuLoop()
@@ -69,8 +65,7 @@ void RefreshCommand::postCancelMenuLoop()
   App::instance()->mainWindow()->getMenuBar()->reload();
 
   // Reload theme
-  ui::set_theme(ui::get_theme(),
-                ui::guiscale());
+  ui::set_theme(ui::get_theme(), ui::guiscale());
 
   // Redraw screen
   app_refresh_screen();
@@ -80,12 +75,13 @@ void RefreshCommand::postCancelMenuLoop()
   {
     PROCESS_MEMORY_COUNTERS pmc;
     if (::GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))) {
-      StatusBar::instance()->showTip(
-        1000,
-        fmt::format("Current memory: {:.2f} MB ({})\n"
-                    "Peak of memory: {:.2f} MB ({})",
-                    pmc.WorkingSetSize / 1024.0 / 1024.0, pmc.WorkingSetSize,
-                    pmc.PeakWorkingSetSize / 1024.0 / 1024.0, pmc.PeakWorkingSetSize));
+      StatusBar::instance()->showTip(1000,
+                                     fmt::format("Current memory: {:.2f} MB ({})\n"
+                                                 "Peak of memory: {:.2f} MB ({})",
+                                                 pmc.WorkingSetSize / 1024.0 / 1024.0,
+                                                 pmc.WorkingSetSize,
+                                                 pmc.PeakWorkingSetSize / 1024.0 / 1024.0,
+                                                 pmc.PeakWorkingSetSize));
     }
   }
 #endif

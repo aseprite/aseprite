@@ -5,15 +5,14 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "net/http_headers.h"
 
 namespace net {
 
-void HttpHeaders::setHeader(const std::string& name,
-                            const std::string& value)
+void HttpHeaders::setHeader(const std::string& name, const std::string& value)
 {
   m_map[name] = value;
 }

@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/color_button.h"
@@ -65,7 +65,7 @@ ColorButton::~ColorButton()
 {
   UIContext::instance()->remove_observer(this);
 
-  delete m_window;       // widget, window
+  delete m_window; // widget, window
 }
 
 PixelFormat ColorButton::pixelFormat() const
@@ -127,10 +127,8 @@ void ColorButton::onInitTheme(InitThemeEvent& ev)
 bool ColorButton::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
-
     case kOpenMessage:
-      if (!m_windowDefaultBounds.isEmpty() &&
-          this->isVisible()) {
+      if (!m_windowDefaultBounds.isEmpty() && this->isVisible()) {
         openPopup(false);
       }
       break;
@@ -140,13 +138,9 @@ bool ColorButton::onProcessMessage(Message* msg)
         m_window->closeWindow(NULL);
       break;
 
-    case kMouseEnterMessage:
-      StatusBar::instance()->showColor(0, m_color);
-      break;
+    case kMouseEnterMessage: StatusBar::instance()->showColor(0, m_color); break;
 
-    case kMouseLeaveMessage:
-      StatusBar::instance()->showDefaultText();
-      break;
+    case kMouseLeaveMessage: StatusBar::instance()->showDefaultText(); break;
 
     case kMouseMoveMessage:
       // TODO code similar to TileButton::onProcessMessage()
@@ -214,7 +208,6 @@ bool ColorButton::onProcessMessage(Message* msg)
         return true;
       }
       break;
-
   }
 
   return ButtonBase::onProcessMessage(msg);
@@ -226,7 +219,7 @@ void ColorButton::onSizeHint(SizeHintEvent& ev)
 
   gfx::Rect box;
   getTextIconInfo(&box);
-  box.w = 64*guiscale();
+  box.w = 64 * guiscale();
 
   gfx::Size sz = ev.sizeHint();
   sz.w = std::max(sz.w, box.w);
@@ -249,9 +242,9 @@ void ColorButton::onPaint(PaintEvent& ev)
   // When the button is pushed, show the negative
   m_dependOnLayer = false;
   if (isSelected()) {
-    color = app::Color::fromRgb(255-m_color.getRed(),
-                                255-m_color.getGreen(),
-                                255-m_color.getBlue());
+    color = app::Color::fromRgb(255 - m_color.getRed(),
+                                255 - m_color.getGreen(),
+                                255 - m_color.getBlue());
   }
   // When the button is not pressed, show the real color
   else {
@@ -260,28 +253,22 @@ void ColorButton::onPaint(PaintEvent& ev)
     // Show transparent color in indexed sprites as mask color when we
     // are in a transparent layer.
     auto editor = Editor::activeEditor();
-    if (color.getType() == app::Color::IndexType &&
-        editor &&
-        editor->sprite() &&
+    if (color.getType() == app::Color::IndexType && editor && editor->sprite() &&
         editor->sprite()->pixelFormat() == IMAGE_INDEXED) {
       m_dependOnLayer = true;
 
-      if (int(editor->sprite()->transparentColor()) == color.getIndex() &&
-          editor->layer() &&
+      if (int(editor->sprite()->transparentColor()) == color.getIndex() && editor->layer() &&
           !editor->layer()->isBackground()) {
         color = app::Color::fromMask();
       }
     }
   }
 
-  draw_color_button(g, rc,
-                    color,
-                    (doc::ColorMode)m_pixelFormat,
-                    hasMouse(), false);
+  draw_color_button(g, rc, color, (doc::ColorMode)m_pixelFormat, hasMouse(), false);
 
   // Draw text
   std::string str = m_color.toHumanReadableString(m_pixelFormat,
-    app::Color::ShortHumanReadableString);
+                                                  app::Color::ShortHumanReadableString);
 
   setTextQuiet(str.c_str());
 
@@ -332,8 +319,7 @@ void ColorButton::onLoadLayout(ui::LoadLayoutEvent& ev)
     m_desktopCoords = false;
     ev.stream() >> pinned;
     if (ev.stream() && pinned)
-      ev.stream() >> m_windowDefaultBounds
-                  >> m_desktopCoords;
+      ev.stream() >> m_windowDefaultBounds >> m_desktopCoords;
 
     m_hiddenPopupBounds = m_windowDefaultBounds;
   }
@@ -358,8 +344,7 @@ bool ColorButton::isPopupVisible()
 
 void ColorButton::openPopup(const bool forcePinned)
 {
-  const bool pinned = forcePinned ||
-    (!m_windowDefaultBounds.isEmpty());
+  const bool pinned = forcePinned || (!m_windowDefaultBounds.isEmpty());
 
   if (m_window == NULL) {
     m_window = new ColorPopup(m_options);
@@ -370,29 +355,28 @@ void ColorButton::openPopup(const bool forcePinned)
   m_window->setColor(m_color, ColorPopup::ChangeType);
   m_window->remapWindow();
 
-  fit_bounds(
-    display(),
-    m_window,
-    gfx::Rect(m_window->sizeHint()),
-    [this, pinned, forcePinned](const gfx::Rect& workarea,
-                                gfx::Rect& winBounds,
-                                std::function<gfx::Rect(Widget*)> getWidgetBounds) {
-      if (!pinned || (forcePinned && m_hiddenPopupBounds.isEmpty())) {
-        gfx::Rect bounds = getWidgetBounds(this);
+  fit_bounds(display(),
+             m_window,
+             gfx::Rect(m_window->sizeHint()),
+             [this, pinned, forcePinned](const gfx::Rect& workarea,
+                                         gfx::Rect& winBounds,
+                                         std::function<gfx::Rect(Widget*)> getWidgetBounds) {
+               if (!pinned || (forcePinned && m_hiddenPopupBounds.isEmpty())) {
+                 gfx::Rect bounds = getWidgetBounds(this);
 
-        winBounds.x = std::clamp(bounds.x, workarea.x, workarea.x2()-winBounds.w);
-        if (bounds.y2()+winBounds.h <= workarea.y2())
-          winBounds.y = std::max(workarea.y, bounds.y2());
-        else
-          winBounds.y = std::max(workarea.y, bounds.y-winBounds.h);
-      }
-      else if (forcePinned) {
-        winBounds = convertBounds(m_hiddenPopupBounds);
-      }
-      else {
-        winBounds = convertBounds(m_windowDefaultBounds);
-      }
-    });
+                 winBounds.x = std::clamp(bounds.x, workarea.x, workarea.x2() - winBounds.w);
+                 if (bounds.y2() + winBounds.h <= workarea.y2())
+                   winBounds.y = std::max(workarea.y, bounds.y2());
+                 else
+                   winBounds.y = std::max(workarea.y, bounds.y - winBounds.h);
+               }
+               else if (forcePinned) {
+                 winBounds = convertBounds(m_hiddenPopupBounds);
+               }
+               else {
+                 winBounds = convertBounds(m_windowDefaultBounds);
+               }
+             });
 
   m_window->openWindow();
 

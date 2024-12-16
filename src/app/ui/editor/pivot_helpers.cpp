@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/editor/pivot_helpers.h"
@@ -27,30 +27,14 @@ void set_pivot_from_preferences(Transformation& t)
 
   app::gen::PivotPosition pivot = Preferences::instance().selection.pivotPosition();
   switch (pivot) {
-    case app::gen::PivotPosition::NORTHWEST:
-      pivotPos = nw;
-      break;
-    case app::gen::PivotPosition::NORTH:
-      pivotPos = (nw + ne) / 2.0;
-      break;
-    case app::gen::PivotPosition::NORTHEAST:
-      pivotPos = ne;
-      break;
-    case app::gen::PivotPosition::WEST:
-      pivotPos = (nw + sw) / 2.0;
-      break;
-    case app::gen::PivotPosition::EAST:
-      pivotPos = (ne + se) / 2.0;
-      break;
-    case app::gen::PivotPosition::SOUTHWEST:
-      pivotPos = sw;
-      break;
-    case app::gen::PivotPosition::SOUTH:
-      pivotPos = (sw + se) / 2.0;
-      break;
-    case app::gen::PivotPosition::SOUTHEAST:
-      pivotPos = se;
-      break;
+    case app::gen::PivotPosition::NORTHWEST: pivotPos = nw; break;
+    case app::gen::PivotPosition::NORTH:     pivotPos = (nw + ne) / 2.0; break;
+    case app::gen::PivotPosition::NORTHEAST: pivotPos = ne; break;
+    case app::gen::PivotPosition::WEST:      pivotPos = (nw + sw) / 2.0; break;
+    case app::gen::PivotPosition::EAST:      pivotPos = (ne + se) / 2.0; break;
+    case app::gen::PivotPosition::SOUTHWEST: pivotPos = sw; break;
+    case app::gen::PivotPosition::SOUTH:     pivotPos = (sw + se) / 2.0; break;
+    case app::gen::PivotPosition::SOUTHEAST: pivotPos = se; break;
   }
 
   t.displacePivotTo(gfx::PointF(pivotPos));

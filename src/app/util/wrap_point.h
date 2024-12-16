@@ -15,14 +15,14 @@
 
 namespace app {
 
-  gfx::Point wrap_point(const filters::TiledMode tiledMode,
-                        const gfx::Size& spriteSize,
-                        const gfx::Point& pt,
-                        const bool clamp);
+gfx::Point wrap_point(const filters::TiledMode tiledMode,
+                      const gfx::Size& spriteSize,
+                      const gfx::Point& pt,
+                      const bool clamp);
 
-  gfx::PointF wrap_pointF(const filters::TiledMode tiledMode,
-                          const gfx::Size& spriteSize,
-                          const gfx::PointF& pt);
+gfx::PointF wrap_pointF(const filters::TiledMode tiledMode,
+                        const gfx::Size& spriteSize,
+                        const gfx::PointF& pt);
 
 } // namespace app
 

@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/file_selector.h"
@@ -21,20 +21,17 @@
 
 namespace app {
 
-bool show_file_selector(
-  const std::string& title,
-  const std::string& initialPath,
-  const base::paths& extensions,
-  FileSelectorType type,
-  base::paths& output)
+bool show_file_selector(const std::string& title,
+                        const std::string& initialPath,
+                        const base::paths& extensions,
+                        FileSelectorType type,
+                        base::paths& output)
 {
-  const std::string defExtension =
-    Preferences::instance().saveFile.defaultExtension();
+  const std::string defExtension = Preferences::instance().saveFile.defaultExtension();
 
   if (Preferences::instance().experimental.useNativeFileDialog() &&
       os::instance()->nativeDialogs()) {
-    os::FileDialogRef dlg =
-      os::instance()->nativeDialogs()->makeFileDialog();
+    os::FileDialogRef dlg = os::instance()->nativeDialogs()->makeFileDialog();
 
     if (dlg) {
       dlg->setTitle(title);
@@ -50,21 +47,15 @@ bool show_file_selector(
               // start navigating, we use our own
               // get_initial_path_to_select_filename()
       dlg->setFileName(get_initial_path_to_select_filename(initialPath));
-#else  // !LAF_LINUX
+#else // !LAF_LINUX
       dlg->setFileName(initialPath);
 #endif
 
       os::FileDialog::Type nativeType = os::FileDialog::Type::OpenFile;
       switch (type) {
-        case FileSelectorType::Open:
-          nativeType = os::FileDialog::Type::OpenFile;
-          break;
-        case FileSelectorType::OpenMultiple:
-          nativeType = os::FileDialog::Type::OpenFiles;
-          break;
-        case FileSelectorType::Save:
-          nativeType = os::FileDialog::Type::SaveFile;
-          break;
+        case FileSelectorType::Open:         nativeType = os::FileDialog::Type::OpenFile; break;
+        case FileSelectorType::OpenMultiple: nativeType = os::FileDialog::Type::OpenFiles; break;
+        case FileSelectorType::Save:         nativeType = os::FileDialog::Type::SaveFile; break;
       }
       dlg->setType(nativeType);
 

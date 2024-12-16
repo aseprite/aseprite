@@ -12,12 +12,12 @@
 
 namespace doc {
 
-  class Cel;
+class Cel;
 
-  typedef std::vector<Cel*> CelList;
-  typedef CelList::iterator CelIterator;
-  typedef CelList::const_iterator CelConstIterator;
+typedef std::vector<Cel*> CelList;
+typedef CelList::iterator CelIterator;
+typedef CelList::const_iterator CelConstIterator;
 
 } // namespace doc
 
-#endif  // DOC_CEL_LIST_H_INCLUDED
+#endif // DOC_CEL_LIST_H_INCLUDED

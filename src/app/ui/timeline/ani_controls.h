@@ -16,27 +16,27 @@
 #include <vector>
 
 namespace ui {
-  class TooltipManager;
+class TooltipManager;
 }
 
 namespace app {
-  class Editor;
+class Editor;
 
-  class AniControls : public ButtonSet {
-  public:
-    AniControls(ui::TooltipManager* tooltipManager);
+class AniControls : public ButtonSet {
+public:
+  AniControls(ui::TooltipManager* tooltipManager);
 
-    void updateUsingEditor(Editor* editor);
+  void updateUsingEditor(Editor* editor);
 
-  protected:
-    void onRightClick(Item* item) override;
+protected:
+  void onRightClick(Item* item) override;
 
-  private:
-    void onClickButton();
+private:
+  void onClickButton();
 
-    const char* getCommandId(int index) const;
-    std::string getTooltipFor(int index) const;
-  };
+  const char* getCommandId(int index) const;
+  std::string getTooltipFor(int index) const;
+};
 
 } // namespace app
 

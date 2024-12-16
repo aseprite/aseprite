@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/commands/new_params.h"
@@ -16,12 +16,13 @@
 namespace app {
 
 struct SetPlaybackSpeedParams : public NewParams {
-  Param<double> multiplier { this, 1.0, "multiplier" };
+  Param<double> multiplier{ this, 1.0, "multiplier" };
 };
 
 class SetPlaybackSpeedCommand : public CommandWithNewParams<SetPlaybackSpeedParams> {
 public:
   SetPlaybackSpeedCommand();
+
 protected:
   bool onChecked(Context* ctx) override;
   void onExecute(Context* ctx) override;

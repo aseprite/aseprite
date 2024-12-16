@@ -10,31 +10,31 @@
 
 namespace app {
 
-  class Editor;
+class Editor;
 
-  class EditorObserver {
-  public:
-    virtual ~EditorObserver() { }
-    virtual void dispose() { }
+class EditorObserver {
+public:
+  virtual ~EditorObserver() {}
+  virtual void dispose() {}
 
-    virtual void onDestroyEditor(Editor* editor) { }
+  virtual void onDestroyEditor(Editor* editor) {}
 
-    // Called when the editor's state changes.
-    virtual void onStateChanged(Editor* editor) { }
+  // Called when the editor's state changes.
+  virtual void onStateChanged(Editor* editor) {}
 
-    // Called when the scroll or zoom of the editor changes.
-    virtual void onScrollChanged(Editor* editor) { }
-    virtual void onZoomChanged(Editor* editor) { }
+  // Called when the scroll or zoom of the editor changes.
+  virtual void onScrollChanged(Editor* editor) {}
+  virtual void onZoomChanged(Editor* editor) {}
 
-    // Called when the current frame of the editor changes.
-    virtual void onBeforeFrameChanged(Editor* editor) { }
-    virtual void onAfterFrameChanged(Editor* editor) { }
+  // Called when the current frame of the editor changes.
+  virtual void onBeforeFrameChanged(Editor* editor) {}
+  virtual void onAfterFrameChanged(Editor* editor) {}
 
-    // Called when the current layer of the editor changes.
-    virtual void onBeforeLayerChanged(Editor* editor) { }
-    virtual void onAfterLayerChanged(Editor* editor) { }
-  };
+  // Called when the current layer of the editor changes.
+  virtual void onBeforeLayerChanged(Editor* editor) {}
+  virtual void onAfterLayerChanged(Editor* editor) {}
+};
 
 } // namespace app
 
-#endif  // APP_UI_EDITOR_OBSERVER_H_INCLUDED
+#endif // APP_UI_EDITOR_OBSERVER_H_INCLUDED

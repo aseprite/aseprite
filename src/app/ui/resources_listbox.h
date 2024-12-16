@@ -18,61 +18,61 @@
 #include <memory>
 
 namespace app {
-  class ResourceListItem;
+class ResourceListItem;
 
 class ResourceListItem : public ui::ListItem {
-  public:
-    ResourceListItem(Resource* resource);
+public:
+  ResourceListItem(Resource* resource);
 
-    Resource* resource() const { return m_resource.get(); }
+  Resource* resource() const { return m_resource.get(); }
 
-  protected:
-    bool onProcessMessage(ui::Message* msg) override;
-    void onPaint(ui::PaintEvent& ev) override;
-    void onSizeHint(ui::SizeHintEvent& ev) override;
+protected:
+  bool onProcessMessage(ui::Message* msg) override;
+  void onPaint(ui::PaintEvent& ev) override;
+  void onSizeHint(ui::SizeHintEvent& ev) override;
 
-  private:
-    std::unique_ptr<Resource> m_resource;
-  };
+private:
+  std::unique_ptr<Resource> m_resource;
+};
 
-  class ResourcesListBox : public ui::ListBox {
-  public:
-    friend class ResourceListItem;
+class ResourcesListBox : public ui::ListBox {
+public:
+  friend class ResourceListItem;
 
-    ResourcesListBox(ResourcesLoader* resourcesLoader);
+  ResourcesListBox(ResourcesLoader* resourcesLoader);
 
-    Resource* selectedResource();
+  Resource* selectedResource();
 
-    void markToReload();
-    void reload();
+  void markToReload();
+  void reload();
 
-    obs::signal<void()> FinishLoading;
+  obs::signal<void()> FinishLoading;
 
-  protected:
-    virtual bool onProcessMessage(ui::Message* msg) override;
-    virtual void onChange() override;
-    virtual ResourceListItem* onCreateResourceItem(Resource* resource);
+protected:
+  virtual bool onProcessMessage(ui::Message* msg) override;
+  virtual void onChange() override;
+  virtual ResourceListItem* onCreateResourceItem(Resource* resource);
 
-    // abstract
-    virtual void onResourceChange(Resource* resource) = 0;
-    virtual void onPaintResource(ui::Graphics* g, gfx::Rect& bounds, Resource* resource) = 0;
-    virtual void onResourceSizeHint(Resource* resource, gfx::Size& size) = 0;
+  // abstract
+  virtual void onResourceChange(Resource* resource) = 0;
+  virtual void onPaintResource(ui::Graphics* g, gfx::Rect& bounds, Resource* resource) = 0;
+  virtual void onResourceSizeHint(Resource* resource, gfx::Size& size) = 0;
 
-  private:
-    void deleteAllChildren();
-    void paintResource(ui::Graphics* g, gfx::Rect& bounds, Resource* resource);
-    gfx::Size resourceSizeHint(Resource* resource);
+private:
+  void deleteAllChildren();
+  void paintResource(ui::Graphics* g, gfx::Rect& bounds, Resource* resource);
+  gfx::Size resourceSizeHint(Resource* resource);
 
-    void onTick();
-    void stop();
+  void onTick();
+  void stop();
 
-    std::unique_ptr<ResourcesLoader> m_resourcesLoader;
-    ui::Timer m_resourcesTimer;
-    bool m_reloadOnOpen = false;
+  std::unique_ptr<ResourcesLoader> m_resourcesLoader;
+  ui::Timer m_resourcesTimer;
+  bool m_reloadOnOpen = false;
 
-    class LoadingItem;
-    LoadingItem* m_loadingItem = nullptr;
-  };
+  class LoadingItem;
+  LoadingItem* m_loadingItem = nullptr;
+};
 
 } // namespace app
 

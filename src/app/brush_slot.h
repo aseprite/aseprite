@@ -19,17 +19,17 @@ namespace app {
 class BrushSlot {
 public:
   enum class Flags {
-    Locked       = 0x0001,
-    BrushType    = 0x0002,
-    BrushSize    = 0x0004,
-    BrushAngle   = 0x0008,
-    FgColor      = 0x0010,
-    BgColor      = 0x0020,
-    InkType      = 0x0040,
-    InkOpacity   = 0x0080,
-    Shade        = 0x0100,
+    Locked = 0x0001,
+    BrushType = 0x0002,
+    BrushSize = 0x0004,
+    BrushAngle = 0x0008,
+    FgColor = 0x0010,
+    BgColor = 0x0020,
+    InkType = 0x0040,
+    InkOpacity = 0x0080,
+    Shade = 0x0100,
     PixelPerfect = 0x0200,
-    ImageColor   = 0x0400,
+    ImageColor = 0x0400,
   };
 
   BrushSlot(Flags flags = Flags(0),
@@ -47,26 +47,21 @@ public:
     , m_inkType(inkType)
     , m_inkOpacity(inkOpacity)
     , m_shade(shade)
-    , m_pixelPerfect(pixelPerfect) {
+    , m_pixelPerfect(pixelPerfect)
+  {
   }
 
   Flags flags() const { return m_flags; }
   void setFlags(Flags flags) { m_flags = flags; }
 
-  bool isEmpty() const {
-    return int(m_flags) == 0;
-  }
+  bool isEmpty() const { return int(m_flags) == 0; }
 
-  bool hasFlag(Flags flag) const {
-    return ((int(m_flags) & int(flag)) == int(flag));
-  }
+  bool hasFlag(Flags flag) const { return ((int(m_flags) & int(flag)) == int(flag)); }
 
-  bool hasBrush() const {
-    return
-      (brush() &&
-       (hasFlag(Flags::BrushType) ||
-        hasFlag(Flags::BrushSize) ||
-        hasFlag(Flags::BrushAngle)));
+  bool hasBrush() const
+  {
+    return (brush() &&
+            (hasFlag(Flags::BrushType) || hasFlag(Flags::BrushSize) || hasFlag(Flags::BrushAngle)));
   }
 
   // Can be null if the user deletes the brush.
@@ -80,11 +75,10 @@ public:
 
   // True if the user locked the brush using the shortcut key to
   // access it.
-  bool locked() const {
-    return hasFlag(Flags::Locked);
-  }
+  bool locked() const { return hasFlag(Flags::Locked); }
 
-  void setLocked(bool locked) {
+  void setLocked(bool locked)
+  {
     if (locked)
       m_flags = static_cast<Flags>(int(m_flags) | int(Flags::Locked));
     else

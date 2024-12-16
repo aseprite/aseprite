@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -29,22 +29,18 @@ protected:
   void onExecute(Context* context) override;
 };
 
-RemoveFrameCommand::RemoveFrameCommand()
-  : Command(CommandId::RemoveFrame(), CmdRecordableFlag)
+RemoveFrameCommand::RemoveFrameCommand() : Command(CommandId::RemoveFrame(), CmdRecordableFlag)
 {
 }
 
 bool RemoveFrameCommand::onEnabled(Context* context)
 {
-  if (!context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                           ContextFlags::HasActiveSprite))
+  if (!context->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasActiveSprite))
     return false;
 
   const ContextReader reader(context);
   const Sprite* sprite(reader.sprite());
-  return
-    sprite &&
-    sprite->totalFrames() > 1;
+  return sprite && sprite->totalFrames() > 1;
 }
 
 void RemoveFrameCommand::onExecute(Context* context)
@@ -56,8 +52,7 @@ void RemoveFrameCommand::onExecute(Context* context)
     Tx tx(writer, "Remove Frame");
     DocApi api = document->getApi(tx);
     const Site* site = writer.site();
-    if (site->inTimeline() &&
-        !site->selectedFrames().empty()) {
+    if (site->inTimeline() && !site->selectedFrames().empty()) {
       for (frame_t frame : site->selectedFrames().reversed()) {
         api.removeFrame(sprite, frame);
       }

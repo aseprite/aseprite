@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "render/rasterize.h"
@@ -18,12 +18,7 @@
 
 namespace render {
 
-void rasterize(
-  doc::Image* dst,
-  const doc::Cel* cel,
-  const int x,
-  const int y,
-  const bool clear)
+void rasterize(doc::Image* dst, const doc::Cel* cel, const int x, const int y, const bool clear)
 {
   ASSERT(dst);
   ASSERT(dst->pixelFormat() != IMAGE_TILEMAP);
@@ -41,48 +36,42 @@ void rasterize(
 
   if (cel->image()->pixelFormat() == IMAGE_TILEMAP) {
     render::Render render;
-    render.renderCel(
-      dst,
-      cel,
-      sprite,
-      cel->image(),
-      cel->layer(),
-      sprite->palette(cel->frame()),
-      gfx::RectF(cel->bounds()),
-      gfx::Clip(x, y, 0, 0, dst->width(), dst->height()),
-      clear ? 255: opacity,
-      clear ? BlendMode::NORMAL: cel->layer()->blendMode());
+    render.renderCel(dst,
+                     cel,
+                     sprite,
+                     cel->image(),
+                     cel->layer(),
+                     sprite->palette(cel->frame()),
+                     gfx::RectF(cel->bounds()),
+                     gfx::Clip(x, y, 0, 0, dst->width(), dst->height()),
+                     clear ? 255 : opacity,
+                     clear ? BlendMode::NORMAL : cel->layer()->blendMode());
   }
   else {
     if (clear)
-      copy_image(dst, cel->image(), x+cel->x(), y+cel->y());
+      copy_image(dst, cel->image(), x + cel->x(), y + cel->y());
     else
-      composite_image(
-        dst, cel->image(),
-        sprite->palette(cel->frame()),
-        x+cel->x(),
-        y+cel->y(),
-        opacity,
-        cel->layer()->blendMode());
+      composite_image(dst,
+                      cel->image(),
+                      sprite->palette(cel->frame()),
+                      x + cel->x(),
+                      y + cel->y(),
+                      opacity,
+                      cel->layer()->blendMode());
   }
 }
 
-void rasterize_with_cel_bounds(
-  doc::Image* dst,
-  const doc::Cel* cel)
+void rasterize_with_cel_bounds(doc::Image* dst, const doc::Cel* cel)
 {
   rasterize(dst, cel, -cel->x(), -cel->y(), true);
 }
 
-void rasterize_with_sprite_bounds(
-  doc::Image* dst,
-  const doc::Cel* cel)
+void rasterize_with_sprite_bounds(doc::Image* dst, const doc::Cel* cel)
 {
   rasterize(dst, cel, 0, 0, true);
 }
 
-doc::Image* rasterize_with_cel_bounds(
-  const doc::Cel* cel)
+doc::Image* rasterize_with_cel_bounds(const doc::Cel* cel)
 {
   ASSERT(cel);
 
@@ -98,8 +87,7 @@ doc::Image* rasterize_with_cel_bounds(
   return dst.release();
 }
 
-doc::Image* rasterize_with_sprite_bounds(
-  const doc::Cel* cel)
+doc::Image* rasterize_with_sprite_bounds(const doc::Cel* cel)
 {
   ASSERT(cel);
 

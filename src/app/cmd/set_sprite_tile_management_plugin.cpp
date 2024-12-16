@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_sprite_tile_management_plugin.h"
@@ -14,12 +14,10 @@
 #include "app/doc_event.h"
 #include "doc/sprite.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
-SetSpriteTileManagementPlugin::SetSpriteTileManagementPlugin(
-  Sprite* sprite,
-  const std::string& value)
+SetSpriteTileManagementPlugin::SetSpriteTileManagementPlugin(Sprite* sprite,
+                                                             const std::string& value)
   : WithSprite(sprite)
   , m_oldValue(sprite->tileManagementPlugin())
   , m_newValue(value)
@@ -49,5 +47,4 @@ void SetSpriteTileManagementPlugin::onFireNotifications()
   doc->notify_observers<DocEvent&>(&DocObserver::onTileManagementPluginChange, ev);
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

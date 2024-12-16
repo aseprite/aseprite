@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -25,7 +25,8 @@
 using namespace app;
 using namespace doc;
 
-void BM_ScrollEditor(benchmark::State& state) {
+void BM_ScrollEditor(benchmark::State& state)
+{
   const int w = state.range(0);
   const int h = state.range(1);
   const int zNum = state.range(2);
@@ -54,7 +55,8 @@ void BM_ScrollEditor(benchmark::State& state) {
   }
 }
 
-void BM_ZoomEditor(benchmark::State& state) {
+void BM_ZoomEditor(benchmark::State& state)
+{
   const int w = state.range(0);
   const int h = state.range(1);
   auto ctx = UIContext::instance();

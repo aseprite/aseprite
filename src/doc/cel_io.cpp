@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/cel_io.h"
@@ -51,4 +51,4 @@ Cel* read_cel(std::istream& is, SubObjectsIO* subObjects, bool setId)
   return cel.release();
 }
 
-}
+} // namespace doc

@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/mask_io.h"
@@ -35,25 +35,26 @@ void write_mask(std::ostream& os, const Mask* mask)
 {
   const gfx::Rect& bounds = mask->bounds();
 
-  write16(os, bounds.x);                        // Xpos
-  write16(os, bounds.y);                        // Ypos
-  write16(os, mask->bitmap() ? bounds.w: 0);    // Width
-  write16(os, mask->bitmap() ? bounds.h: 0);    // Height
+  write16(os, bounds.x);                      // Xpos
+  write16(os, bounds.y);                      // Ypos
+  write16(os, mask->bitmap() ? bounds.w : 0); // Width
+  write16(os, mask->bitmap() ? bounds.h : 0); // Height
 
   if (mask->bitmap()) {
     int size = BitmapTraits::width_bytes(bounds.w);
 
-    for (int c=0; c<bounds.h; c++)
+    for (int c = 0; c < bounds.h; c++)
       os.write((char*)mask->bitmap()->getPixelAddress(0, c), size);
   }
 }
 
 Mask* read_mask(std::istream& is)
 {
-  int x = int16_t(read16(is));  // Xpos (it's a signed int16 because we support negative mask coordinates)
-  int y = int16_t(read16(is));  // Ypos
-  int w = read16(is);           // Width
-  int h = read16(is);           // Height
+  int x = int16_t(read16(is)); // Xpos (it's a signed int16 because we support negative mask
+                               // coordinates)
+  int y = int16_t(read16(is)); // Ypos
+  int w = read16(is);          // Width
+  int h = read16(is);          // Height
 
   std::unique_ptr<Mask> mask(new Mask());
 
@@ -61,11 +62,11 @@ Mask* read_mask(std::istream& is)
     int size = BitmapTraits::width_bytes(w);
 
     mask->add(gfx::Rect(x, y, w, h));
-    for (int c=0; c<mask->bounds().h; c++)
+    for (int c = 0; c < mask->bounds().h; c++)
       is.read((char*)mask->bitmap()->getPixelAddress(0, c), size);
   }
 
   return mask.release();
 }
 
-}
+} // namespace doc

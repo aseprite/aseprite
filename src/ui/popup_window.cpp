@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "gfx/size.h"
@@ -24,7 +24,7 @@ PopupWindow::PopupWindow(const std::string& text,
                          const ClickBehavior clickBehavior,
                          const EnterBehavior enterBehavior,
                          const bool withCloseButton)
-  : Window(text.empty() ? WithoutTitleBar: WithTitleBar, text)
+  : Window(text.empty() ? WithoutTitleBar : WithTitleBar, text)
   , m_clickBehavior(clickBehavior)
   , m_enterBehavior(enterBehavior)
 {
@@ -89,7 +89,6 @@ void PopupWindow::makeFixed()
 bool PopupWindow::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
-
     // There are cases where startFilteringMessages() is called when a
     // kCloseMessage for this same PopupWindow is enqueued. Processing
     // the kOpenMessage we ensure that the popup will be filtering
@@ -100,9 +99,7 @@ bool PopupWindow::onProcessMessage(Message* msg)
         startFilteringMessages();
       break;
 
-    case kCloseMessage:
-      stopFilteringMessages();
-      break;
+    case kCloseMessage: stopFilteringMessages(); break;
 
     case kMouseLeaveMessage:
       if (m_hotRegion.isEmpty() && m_fixed)
@@ -118,8 +115,7 @@ bool PopupWindow::onProcessMessage(Message* msg)
           closeWindow(nullptr);
 
         if (m_enterBehavior == EnterBehavior::CloseOnEnter &&
-            (scancode == kKeyEnter ||
-             scancode == kKeyEnterPad)) {
+            (scancode == kKeyEnter || scancode == kKeyEnterPad)) {
           closeWindow(this);
           return true;
         }
@@ -139,7 +135,6 @@ bool PopupWindow::onProcessMessage(Message* msg)
         gfx::Point screenPos = mouseMsg->screenPosition();
 
         switch (m_clickBehavior) {
-
           // If the user click outside the window, we have to close
           // the tooltip window.
           case ClickBehavior::CloseOnClickInOtherWindow: {
@@ -162,9 +157,7 @@ bool PopupWindow::onProcessMessage(Message* msg)
       break;
 
     case kMouseMoveMessage:
-      if (m_fixed &&
-          !m_hotRegion.isEmpty() &&
-          manager()->getCapture() == nullptr &&
+      if (m_fixed && !m_hotRegion.isEmpty() && manager()->getCapture() == nullptr &&
           msg->display()) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
         gfx::Point screenPos = msg->display()->nativeWindow()->pointToScreen(mousePos);
@@ -175,7 +168,6 @@ bool PopupWindow::onProcessMessage(Message* msg)
           closeWindow(nullptr);
       }
       break;
-
   }
 
   return Window::onProcessMessage(msg);
@@ -189,27 +181,20 @@ void PopupWindow::onHitTest(HitTestEvent& ev)
   if (picked) {
     WidgetType type = picked->type();
     if (type == kWindowWidget && picked == this) {
-      if (isSizeable() && (ev.hit() == HitTestBorderNW ||
-                           ev.hit() == HitTestBorderN ||
-                           ev.hit() == HitTestBorderNE ||
-                           ev.hit() == HitTestBorderE ||
-                           ev.hit() == HitTestBorderSE ||
-                           ev.hit() == HitTestBorderS ||
-                           ev.hit() == HitTestBorderSW ||
-                           ev.hit() == HitTestBorderW)) {
+      if (isSizeable() && (ev.hit() == HitTestBorderNW || ev.hit() == HitTestBorderN ||
+                           ev.hit() == HitTestBorderNE || ev.hit() == HitTestBorderE ||
+                           ev.hit() == HitTestBorderSE || ev.hit() == HitTestBorderS ||
+                           ev.hit() == HitTestBorderSW || ev.hit() == HitTestBorderW)) {
         // Use the hit value from Window::onHitTest()
         return;
       }
       else {
-        ev.setHit(isMoveable() ? HitTestCaption: HitTestClient);
+        ev.setHit(isMoveable() ? HitTestCaption : HitTestClient);
       }
     }
-    else if (type == kBoxWidget ||
-             type == kLabelWidget ||
-             type == kLinkLabelWidget ||
-             type == kGridWidget ||
-             type == kSeparatorWidget) {
-      ev.setHit(isMoveable() ? HitTestCaption: HitTestClient);
+    else if (type == kBoxWidget || type == kLabelWidget || type == kLinkLabelWidget ||
+             type == kGridWidget || type == kSeparatorWidget) {
+      ev.setHit(isMoveable() ? HitTestCaption : HitTestClient);
     }
   }
 }
@@ -260,7 +245,7 @@ void TransparentPopupWindow::onInitTheme(InitThemeEvent& ev)
   PopupWindow::onInitTheme(ev);
   // TODO fix this, if we use alpha=0 (gfx::ColorNone), we get
   // "window_face" color as background the transparent popup window.
-  //setBgColor(gfx::ColorNone);
+  // setBgColor(gfx::ColorNone);
   setBgColor(gfx::rgba(0, 0, 0, 1));
 }
 

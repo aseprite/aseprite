@@ -13,35 +13,35 @@
 
 namespace ui {
 
-  class Splitter : public Widget {
-  public:
-    enum Type { ByPercentage, ByPixel };
+class Splitter : public Widget {
+public:
+  enum Type { ByPercentage, ByPixel };
 
-    Splitter(Type type, int align);
+  Splitter(Type type, int align);
 
-    double getPosition() const { return m_userPos; }
-    void setPosition(double pos);
+  double getPosition() const { return m_userPos; }
+  void setPosition(double pos);
 
-  protected:
-    // Events
-    bool onProcessMessage(Message* msg) override;
-    void onInitTheme(InitThemeEvent& ev) override;
-    void onResize(ResizeEvent& ev) override;
-    void onSizeHint(SizeHintEvent& ev) override;
-    void onLoadLayout(LoadLayoutEvent& ev) override;
-    void onSaveLayout(SaveLayoutEvent& ev) override;
+protected:
+  // Events
+  bool onProcessMessage(Message* msg) override;
+  void onInitTheme(InitThemeEvent& ev) override;
+  void onResize(ResizeEvent& ev) override;
+  void onSizeHint(SizeHintEvent& ev) override;
+  void onLoadLayout(LoadLayoutEvent& ev) override;
+  void onSaveLayout(SaveLayoutEvent& ev) override;
 
-    virtual void onPositionChange();
+  virtual void onPositionChange();
 
-  private:
-    Widget* panel1() const;
-    Widget* panel2() const;
-    void calcPos();
+private:
+  Widget* panel1() const;
+  Widget* panel2() const;
+  void calcPos();
 
-    Type m_type;
-    double m_userPos, m_pos;
-    int m_guiscale;
-  };
+  Type m_type;
+  double m_userPos, m_pos;
+  int m_guiscale;
+};
 
 } // namespace ui
 

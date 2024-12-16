@@ -10,22 +10,19 @@
 
 #include "app/cmd/add_tileset.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class RemoveTileset : public AddTileset {
-  public:
-    RemoveTileset(Sprite* sprite,
-                  const tileset_index si);
+class RemoveTileset : public AddTileset {
+public:
+  RemoveTileset(Sprite* sprite, const tileset_index si);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onRedo() override;
-  };
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onRedo() override;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

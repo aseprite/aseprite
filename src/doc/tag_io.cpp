@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/tag_io.h"
@@ -37,9 +37,7 @@ void write_tag(std::ostream& os, const Tag* tag)
   write32(os, tag->repeat());
 }
 
-Tag* read_tag(std::istream& is,
-              const bool setId,
-              const SerialFormat serial)
+Tag* read_tag(std::istream& is, const bool setId, const SerialFormat serial)
 {
   ObjectId id = read32(is);
   frame_t from = read32(is);
@@ -75,4 +73,4 @@ Tag* read_tag(std::istream& is,
   return tag.release();
 }
 
-}
+} // namespace doc

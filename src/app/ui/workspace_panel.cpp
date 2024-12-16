@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/workspace_panel.h"
@@ -23,7 +23,7 @@
 
 namespace app {
 
-#define ANI_DROPAREA_TICKS  4
+#define ANI_DROPAREA_TICKS 4
 
 using namespace app::skin;
 using namespace ui;
@@ -49,11 +49,10 @@ WorkspacePanel::WorkspacePanel(PanelType panelType)
   , m_bottomTime(0)
 {
   enableFlags(IGNORE_MOUSE);
-  InitTheme.connect(
-    [this]{
-      auto theme = SkinTheme::get(this);
-      setBgColor(theme->colors.workspace());
-    });
+  InitTheme.connect([this] {
+    auto theme = SkinTheme::get(this);
+    setBgColor(theme->colors.workspace());
+  });
   initTheme();
 }
 
@@ -74,7 +73,7 @@ void WorkspacePanel::addView(WorkspaceView* view, bool from_drop, int pos)
   if (pos < 0)
     m_views.push_back(view);
   else
-    m_views.insert(m_views.begin()+pos, view);
+    m_views.insert(m_views.begin() + pos, view);
 
   if (m_tabs)
     m_tabs->addTab(dynamic_cast<TabView*>(view), from_drop, pos);
@@ -120,10 +119,8 @@ void WorkspacePanel::removeView(WorkspaceView* view)
 
     Widget* parent = splitter->parent();
 
-    Widget* side =
-      (splitter->firstChild() == self ?
-        splitter->lastChild():
-        splitter->firstChild());
+    Widget* side = (splitter->firstChild() == self ? splitter->lastChild() :
+                                                     splitter->firstChild());
 
     splitter->removeChild(side);
     parent->replaceChild(splitter, side);
@@ -171,7 +168,7 @@ void WorkspacePanel::adjustActiveViewBounds()
   gfx::Rect rc = childrenBounds();
 
   // Preview to drop tabs in workspace
-  if (m_leftTime+m_topTime+m_rightTime+m_bottomTime > 1e-4) {
+  if (m_leftTime + m_topTime + m_rightTime + m_bottomTime > 1e-4) {
     double left = double(m_leftTime) / double(ANI_DROPAREA_TICKS);
     double top = double(m_topTime) / double(ANI_DROPAREA_TICKS);
     double right = double(m_rightTime) / double(ANI_DROPAREA_TICKS);
@@ -189,8 +186,7 @@ void WorkspacePanel::adjustActiveViewBounds()
       child->setBounds(rc);
 }
 
-void WorkspacePanel::setDropViewPreview(const gfx::Point& screenPos,
-                                        WorkspaceView* view)
+void WorkspacePanel::setDropViewPreview(const gfx::Point& screenPos, WorkspaceView* view)
 {
   int newDropArea = calculateDropArea(screenPos);
   if (newDropArea != m_dropArea) {
@@ -250,8 +246,10 @@ DropViewAtResult WorkspacePanel::dropViewAt(const gfx::Point& screenPos,
     return DropViewAtResult::NOTHING;
 
   int splitterAlign = 0;
-  if (dropArea & (LEFT | RIGHT)) splitterAlign = HORIZONTAL;
-  else if (dropArea & (TOP | BOTTOM)) splitterAlign = VERTICAL;
+  if (dropArea & (LEFT | RIGHT))
+    splitterAlign = HORIZONTAL;
+  else if (dropArea & (TOP | BOTTOM))
+    splitterAlign = VERTICAL;
 
   ASSERT(from);
   DropViewAtResult result;
@@ -274,21 +272,17 @@ DropViewAtResult WorkspacePanel::dropViewAt(const gfx::Point& screenPos,
 
   Widget* self = this;
   VBox* side = new VBox;
-  side->InitTheme.connect(
-    [side]{
-      side->noBorderNoChildSpacing();
-    });
+  side->InitTheme.connect([side] { side->noBorderNoChildSpacing(); });
   side->initTheme();
   side->addChild(newTabs);
   side->addChild(newPanel);
 
   Splitter* splitter = new Splitter(Splitter::ByPercentage, splitterAlign);
   splitter->setExpansive(true);
-  splitter->InitTheme.connect(
-    [splitter]{
-      auto theme = SkinTheme::get(splitter);
-      splitter->setStyle(theme->styles.workspaceSplitter());
-    });
+  splitter->InitTheme.connect([splitter] {
+    auto theme = SkinTheme::get(splitter);
+    splitter->setStyle(theme->styles.workspaceSplitter());
+  });
   splitter->initTheme();
 
   Widget* parent = this->parent();
@@ -297,8 +291,7 @@ DropViewAtResult WorkspacePanel::dropViewAt(const gfx::Point& screenPos,
     parent = self->parent();
     ASSERT(parent->type() == kSplitterWidget);
   }
-  if (parent->type() == Workspace::Type() ||
-      parent->type() == kSplitterWidget) {
+  if (parent->type() == Workspace::Type() || parent->type() == kSplitterWidget) {
     parent->replaceChild(self, splitter);
   }
   else {
@@ -320,7 +313,7 @@ DropViewAtResult WorkspacePanel::dropViewAt(const gfx::Point& screenPos,
       break;
     case RIGHT:
     case BOTTOM:
-      splitter->setPosition(100-sideSpace);
+      splitter->setPosition(100 - sideSpace);
       splitter->addChild(self);
       splitter->addChild(side);
       break;
@@ -365,9 +358,11 @@ int WorkspacePanel::calculateDropArea(const gfx::Point& screenPos) const
 int WorkspacePanel::getDropThreshold() const
 {
   gfx::Rect cpos = childrenBounds();
-  int threshold = 32*guiscale();
-  if (threshold > cpos.w/2) threshold = cpos.w/2;
-  if (threshold > cpos.h/2) threshold = cpos.h/2;
+  int threshold = 32 * guiscale();
+  if (threshold > cpos.w / 2)
+    threshold = cpos.w / 2;
+  if (threshold > cpos.h / 2)
+    threshold = cpos.h / 2;
   return threshold;
 }
 

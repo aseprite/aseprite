@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/tag.h"
@@ -25,7 +25,7 @@ Tag::Tag(frame_t from, frame_t to)
   , m_to(to)
   , m_name("Tag")
 {
-  color_t defaultColor = rgba_a_mask;// black color with full opacity.
+  color_t defaultColor = rgba_a_mask; // black color with full opacity.
   userData().setColor(defaultColor);
 }
 
@@ -83,10 +83,8 @@ void Tag::setColor(color_t color)
 
 void Tag::setAniDir(AniDir aniDir)
 {
-  ASSERT(m_aniDir == AniDir::FORWARD ||
-         m_aniDir == AniDir::REVERSE ||
-         m_aniDir == AniDir::PING_PONG ||
-         m_aniDir == AniDir::PING_PONG_REVERSE);
+  ASSERT(m_aniDir == AniDir::FORWARD || m_aniDir == AniDir::REVERSE ||
+         m_aniDir == AniDir::PING_PONG || m_aniDir == AniDir::PING_PONG_REVERSE);
 
   m_aniDir = aniDir;
 }

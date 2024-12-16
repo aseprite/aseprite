@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -26,8 +26,7 @@ protected:
   bool onEnabled(Context* context) override;
 };
 
-HomeCommand::HomeCommand()
-  : Command(CommandId::Home(), CmdUIOnlyFlag)
+HomeCommand::HomeCommand() : Command(CommandId::Home(), CmdUIOnlyFlag)
 {
 }
 

@@ -15,14 +15,11 @@
 
 namespace doc {
 
-  class Tag;
+class Tag;
 
-  void write_tag(std::ostream& os,
-                 const Tag* tag);
+void write_tag(std::ostream& os, const Tag* tag);
 
-  Tag* read_tag(std::istream& is,
-                bool setId = true,
-                SerialFormat serial = SerialFormat::LastVer);
+Tag* read_tag(std::istream& is, bool setId = true, SerialFormat serial = SerialFormat::LastVer);
 
 } // namespace doc
 

@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/cel_data.h"
@@ -24,9 +24,7 @@ CelData::CelData(const ImageRef& image)
   : WithUserData(ObjectType::CelData)
   , m_image(image)
   , m_opacity(255)
-  , m_bounds(0, 0,
-             image ? image->width(): 0,
-             image ? image->height(): 0)
+  , m_bounds(0, 0, image ? image->width() : 0, image ? image->height() : 0)
   , m_boundsF(nullptr)
 {
 }
@@ -36,8 +34,7 @@ CelData::CelData(const CelData& celData)
   , m_image(celData.m_image)
   , m_opacity(celData.m_opacity)
   , m_bounds(celData.m_bounds)
-  , m_boundsF(celData.m_boundsF ? std::make_unique<gfx::RectF>(*celData.m_boundsF):
-                                  nullptr)
+  , m_boundsF(celData.m_boundsF ? std::make_unique<gfx::RectF>(*celData.m_boundsF) : nullptr)
 {
 }
 
@@ -68,10 +65,8 @@ void CelData::adjustBounds(Layer* layer)
     if (layer && layer->isTilemap())
       tileset = static_cast<LayerTilemap*>(layer)->tileset();
     if (tileset) {
-      gfx::Size canvasSize =
-        tileset->grid().tilemapSizeToCanvas(
-          gfx::Size(m_image->width(),
-                    m_image->height()));
+      gfx::Size canvasSize = tileset->grid().tilemapSizeToCanvas(
+        gfx::Size(m_image->width(), m_image->height()));
       m_bounds.w = canvasSize.w;
       m_bounds.h = canvasSize.h;
       return;

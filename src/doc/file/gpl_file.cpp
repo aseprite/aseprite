@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "base/fstream_path.h"
@@ -23,19 +23,21 @@
 #include <sstream>
 #include <string>
 
-namespace doc {
-namespace file {
+namespace doc { namespace file {
 
 std::unique_ptr<Palette> load_gpl_file(const char* filename)
 {
   std::ifstream f(FSTREAM_PATH(filename));
-  if (f.bad()) return NULL;
+  if (f.bad())
+    return NULL;
 
   // Read first line, it must be "GIMP Palette"
   std::string line;
-  if (!std::getline(f, line)) return NULL;
+  if (!std::getline(f, line))
+    return NULL;
   base::trim_string(line, line);
-  if (line != "GIMP Palette") return NULL;
+  if (line != "GIMP Palette")
+    return NULL;
 
   std::unique_ptr<Palette> pal(new Palette(frame_t(0), 0));
   std::string comment;
@@ -63,8 +65,7 @@ std::unique_ptr<Palette> load_gpl_file(const char* filename)
       std::vector<std::string> parts;
       base::split_string(line, parts, ":");
       // Aseprite extension for palettes with alpha channel.
-      if (parts.size() == 2 &&
-          parts[0] == "Channels") {
+      if (parts.size() == 2 && parts[0] == "Channels") {
         base::trim_string(parts[1], parts[1]);
         if (parts[1] == "RGBA")
           hasAlpha = true;
@@ -82,13 +83,13 @@ std::unique_ptr<Palette> load_gpl_file(const char* filename)
     lineIn >> entryName;
 
     if (lineIn.fail())
-        continue;
+      continue;
 
     pal->addEntry(rgba(r, g, b, a));
     if (!entryName.empty()) {
       base::trim_string(entryName, entryName);
       if (!entryName.empty())
-        pal->setEntryName(pal->size()-1, entryName);
+        pal->setEntryName(pal->size() - 1, entryName);
     }
   }
 
@@ -104,7 +105,8 @@ std::unique_ptr<Palette> load_gpl_file(const char* filename)
 bool save_gpl_file(const Palette* pal, const char* filename)
 {
   std::ofstream f(FSTREAM_PATH(filename));
-  if (f.bad()) return false;
+  if (f.bad())
+    return false;
 
   const bool hasAlpha = pal->hasAlpha();
 
@@ -113,18 +115,17 @@ bool save_gpl_file(const Palette* pal, const char* filename)
     f << "Channels: RGBA\n";
   f << "#\n";
 
-  for (int i=0; i<pal->size(); ++i) {
+  for (int i = 0; i < pal->size(); ++i) {
     uint32_t col = pal->getEntry(i);
-    f << std::setfill(' ') << std::setw(3) << ((int)rgba_getr(col)) << " "
-      << std::setfill(' ') << std::setw(3) << ((int)rgba_getg(col)) << " "
-      << std::setfill(' ') << std::setw(3) << ((int)rgba_getb(col));
+    f << std::setfill(' ') << std::setw(3) << ((int)rgba_getr(col)) << " " << std::setfill(' ')
+      << std::setw(3) << ((int)rgba_getg(col)) << " " << std::setfill(' ') << std::setw(3)
+      << ((int)rgba_getb(col));
     if (hasAlpha)
       f << " " << std::setfill(' ') << std::setw(3) << ((int)rgba_geta(col));
-    f << "\tUntitled\n";        // TODO add support for color name entries
+    f << "\tUntitled\n"; // TODO add support for color name entries
   }
 
   return true;
 }
 
-} // namespace file
-} // namespace doc
+}} // namespace doc::file

@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/slice.h"
@@ -21,24 +21,18 @@ namespace doc {
 const gfx::Point SliceKey::NoPivot(std::numeric_limits<int32_t>::min(),
                                    std::numeric_limits<int32_t>::min());
 
-SliceKey::SliceKey()
-  : m_pivot(NoPivot)
+SliceKey::SliceKey() : m_pivot(NoPivot)
 {
 }
 
-SliceKey::SliceKey(const gfx::Rect& bounds,
-                   const gfx::Rect& center,
-                   const gfx::Point& pivot)
+SliceKey::SliceKey(const gfx::Rect& bounds, const gfx::Rect& center, const gfx::Point& pivot)
   : m_bounds(bounds)
   , m_center(center)
   , m_pivot(pivot)
 {
 }
 
-Slice::Slice()
-  : WithUserData(ObjectType::Slice)
-  , m_owner(nullptr)
-  , m_name("Slice")
+Slice::Slice() : WithUserData(ObjectType::Slice), m_owner(nullptr), m_name("Slice")
 {
 }
 
@@ -57,7 +51,7 @@ Slice::~Slice()
 
 int Slice::getMemSize() const
 {
-  return sizeof(*this) + sizeof(SliceKey)*m_keys.size();
+  return sizeof(*this) + sizeof(SliceKey) * m_keys.size();
 }
 
 void Slice::insert(const frame_t frame, const SliceKey& key)

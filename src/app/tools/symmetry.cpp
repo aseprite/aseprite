@@ -5,27 +5,23 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/tools/symmetry.h"
 
- #include "app/tools/point_shape.h"
- #include "app/tools/tool_loop.h"
+#include "app/tools/point_shape.h"
+#include "app/tools/tool_loop.h"
 
-namespace app {
-namespace tools {
+namespace app { namespace tools {
 
-void Symmetry::generateStrokes(const Stroke& stroke, Strokes& strokes,
-                               ToolLoop* loop)
+void Symmetry::generateStrokes(const Stroke& stroke, Strokes& strokes, ToolLoop* loop)
 {
   Stroke stroke2;
   strokes.push_back(stroke);
   gen::SymmetryMode symmetryMode = loop->getSymmetry()->mode();
   switch (symmetryMode) {
-    case gen::SymmetryMode::NONE:
-      ASSERT(false);
-      break;
+    case gen::SymmetryMode::NONE: ASSERT(false); break;
 
     case gen::SymmetryMode::HORIZONTAL:
     case gen::SymmetryMode::VERTICAL:
@@ -49,8 +45,10 @@ void Symmetry::generateStrokes(const Stroke& stroke, Strokes& strokes,
   }
 }
 
-void Symmetry::calculateSymmetricalStroke(const Stroke& refStroke, Stroke& stroke,
-                                          ToolLoop* loop, gen::SymmetryMode symmetryMode)
+void Symmetry::calculateSymmetricalStroke(const Stroke& refStroke,
+                                          Stroke& stroke,
+                                          ToolLoop* loop,
+                                          gen::SymmetryMode symmetryMode)
 {
   int brushSize, brushCenter;
   if (loop->getPointShape()->isFloodFill()) {
@@ -87,5 +85,4 @@ void Symmetry::calculateSymmetricalStroke(const Stroke& refStroke, Stroke& strok
   }
 }
 
-} // namespace tools
-} // namespace app
+}} // namespace app::tools

@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/doc_undo.h"
@@ -31,8 +31,7 @@
 
 namespace app {
 
-DocUndo::DocUndo()
-  : m_undoHistory(this)
+DocUndo::DocUndo() : m_undoHistory(this)
 {
 }
 
@@ -56,8 +55,7 @@ void DocUndo::add(CmdTransaction* cmd)
              base::get_pretty_memory_size(m_totalUndoSize).c_str());
 
   // A linear undo history is the default behavior
-  if (!App::instance() ||
-      !App::instance()->preferences().undo.allowNonlinearHistory()) {
+  if (!App::instance() || !App::instance()->preferences().undo.allowNonlinearHistory()) {
     clearRedo();
   }
 
@@ -68,28 +66,23 @@ void DocUndo::add(CmdTransaction* cmd)
   notify_observers(&DocUndoObserver::onTotalUndoSizeChange, this);
 
   if (App::instance()) {
-    const size_t undoLimitSize =
-      int(App::instance()->preferences().undo.sizeLimit())
-      * 1024 * 1024;
+    const size_t undoLimitSize = int(App::instance()->preferences().undo.sizeLimit()) * 1024 * 1024;
 
     // If undo limit is 0, it means "no limit", so we ignore the
     // complete logic to discard undo states.
-    if (undoLimitSize > 0 &&
-        m_totalUndoSize > undoLimitSize) {
+    if (undoLimitSize > 0 && m_totalUndoSize > undoLimitSize) {
       UNDO_TRACE("UNDO: Reducing undo history from %s to %s\n",
                  base::get_pretty_memory_size(m_totalUndoSize).c_str(),
                  base::get_pretty_memory_size(undoLimitSize).c_str());
 
-      while (m_undoHistory.firstState() &&
-             m_totalUndoSize > undoLimitSize) {
+      while (m_undoHistory.firstState() && m_totalUndoSize > undoLimitSize) {
         if (!m_undoHistory.deleteFirstState())
           break;
       }
     }
   }
 
-  UNDO_TRACE("UNDO: New undo size %s\n",
-             base::get_pretty_memory_size(m_totalUndoSize).c_str());
+  UNDO_TRACE("UNDO: New undo size %s\n", base::get_pretty_memory_size(m_totalUndoSize).c_str());
 }
 
 bool DocUndo::canUndo() const
@@ -185,7 +178,7 @@ bool DocUndo::isInSavedStateOrSimilar() const
     return true;
 
   // Now we try with redoes.
-  state = (currentState() ? currentState()->next(): firstState());
+  state = (currentState() ? currentState()->next() : firstState());
   while (state) {
     if (STATE_CMD(state)->doesChangeSavedState()) {
       return false;

@@ -392,7 +392,7 @@ end
 ----------------------------------------------------------------------
 
 function drawing_with_symmetry(imageColorMode, colorInImage,
-			       brushColorMode, colorInBrush, palette)
+                               brushColorMode, colorInBrush, palette)
   print("drawing_with_symmetry", imageColorMode, brushColorMode)
   local s = Sprite(8, 3, imageColorMode)
   local c = colorInImage
@@ -412,8 +412,8 @@ function drawing_with_symmetry(imageColorMode, colorInImage,
   expect_eq(cel.bounds, Rectangle(0, 0, 8, 3))
   expect_img(cel.image,
              { 0, 0, 0, 0, 0, 0, 0, 0,
-	       0, 0, 0, 0, 0, 0, 0, 0,
-	       0, 0, 0, 0, 0, 0, 0, 0 })
+               0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0 })
 
   local b = Brush { size=1 }
   app.fgColor = c
@@ -457,7 +457,7 @@ function drawing_with_symmetry(imageColorMode, colorInImage,
   expect_eq(cel.bounds, Rectangle(0, 0, 8, 3))
   expect_img(cel.image,
              { 0, c, 0, 0, 0, 0, c, 0,
-	       c, c, c, 0, 0, c, c, c,
+               c, c, c, 0, 0, c, c, c,
                0, c, 0, 0, 0, 0, c, 0 })
   app.undo()
 
@@ -467,7 +467,7 @@ function drawing_with_symmetry(imageColorMode, colorInImage,
   expect_eq(cel.bounds, Rectangle(1, 0, 6, 3))
   expect_img(cel.image,
              { 0, c, 0, 0, c, 0,
-	       c, c, c, c, c, c,
+               c, c, c, c, c, c,
                0, c, 0, 0, c, 0 })
   app.undo()
 
@@ -521,7 +521,7 @@ end
 
 do
   drawing_with_symmetry(ColorMode.RGB, rgba(255, 0, 0),
-			ColorMode.RGB, rgba(255, 0, 0))
+                        ColorMode.RGB, rgba(255, 0, 0))
 end
 
 ----------------------------------------------------------------------

@@ -14,42 +14,40 @@
 #include <memory>
 
 namespace ui {
-  class Widget;
+class Widget;
 }
 
-namespace app {
-  namespace skin {
+namespace app { namespace skin {
 
-    enum LookType {
-      NormalLook,
-      MiniLook,
-      WithoutBordersLook,
-    };
+enum LookType {
+  NormalLook,
+  MiniLook,
+  WithoutBordersLook,
+};
 
-    // Property to show widgets with a special look (e.g.: buttons or sliders with mini-borders)
-    class SkinProperty : public ui::Property {
-    public:
-      static const char* Name;
+// Property to show widgets with a special look (e.g.: buttons or sliders with mini-borders)
+class SkinProperty : public ui::Property {
+public:
+  static const char* Name;
 
-      SkinProperty();
-      ~SkinProperty();
+  SkinProperty();
+  ~SkinProperty();
 
-      LookType getLook() const { return m_look; }
-      void setLook(LookType look) { m_look = look; }
+  LookType getLook() const { return m_look; }
+  void setLook(LookType look) { m_look = look; }
 
-      bool hasMiniFont() const { return m_miniFont; }
-      void setMiniFont() { m_miniFont = true; }
+  bool hasMiniFont() const { return m_miniFont; }
+  void setMiniFont() { m_miniFont = true; }
 
-    private:
-      LookType m_look;
-      bool m_miniFont;
-    };
+private:
+  LookType m_look;
+  bool m_miniFont;
+};
 
-    typedef std::shared_ptr<SkinProperty> SkinPropertyPtr;
+typedef std::shared_ptr<SkinProperty> SkinPropertyPtr;
 
-    SkinPropertyPtr get_skin_property(ui::Widget* widget);
+SkinPropertyPtr get_skin_property(ui::Widget* widget);
 
-  } // namespace skin
-} // namespace app
+}} // namespace app::skin
 
 #endif

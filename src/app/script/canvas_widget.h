@@ -13,11 +13,10 @@
 #include "ui/widget.h"
 
 namespace ui {
-  class TouchMessage;
+class TouchMessage;
 }
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 class GraphicsContext;
 
@@ -31,17 +30,11 @@ public:
 
   void callPaint();
 
-  void setMouseCursor(const ui::CursorType cursor) {
-    m_cursorType = cursor;
-  }
+  void setMouseCursor(const ui::CursorType cursor) { m_cursorType = cursor; }
 
-  void setAutoScaling(const bool v) {
-    m_autoScaling = v;
-  }
+  void setAutoScaling(const bool v) { m_autoScaling = v; }
 
-  bool isAutoScaling() const {
-    return m_autoScaling;
-  }
+  bool isAutoScaling() const { return m_autoScaling; }
 
   obs::signal<void(GraphicsContext&)> Paint;
   obs::signal<void(ui::KeyMessage*)> KeyDown;
@@ -72,7 +65,6 @@ private:
   bool m_autoScaling = true;
 };
 
-} // namespace script
-} // namespace app
+}} // namespace app::script
 
 #endif

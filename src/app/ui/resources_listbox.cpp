@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/resources_listbox.h"
@@ -29,7 +29,8 @@ using namespace skin;
 // ResourceListItem
 
 ResourceListItem::ResourceListItem(Resource* resource)
-  : ListItem(resource->id()), m_resource(resource)
+  : ListItem(resource->id())
+  , m_resource(resource)
 {
 }
 
@@ -37,9 +38,7 @@ bool ResourceListItem::onProcessMessage(ui::Message* msg)
 {
   switch (msg->type()) {
     case kMouseLeaveMessage:
-    case kMouseEnterMessage:
-      invalidate();
-      break;
+    case kMouseEnterMessage: invalidate(); break;
   }
   return ListItem::onProcessMessage(msg);
 }
@@ -62,20 +61,18 @@ void ResourceListItem::onPaint(PaintEvent& ev)
 
   g->fillRect(bgcolor, bounds);
 
-  static_cast<ResourcesListBox*>(parent())->
-    paintResource(g, bounds, m_resource.get());
+  static_cast<ResourcesListBox*>(parent())->paintResource(g, bounds, m_resource.get());
 
-  g->drawText(text(), fgcolor, gfx::ColorNone,
-              gfx::Point(
-                bounds.x + 2*guiscale(),
-                bounds.y + bounds.h/2 - g->measureUIText(text()).h/2));
+  g->drawText(text(),
+              fgcolor,
+              gfx::ColorNone,
+              gfx::Point(bounds.x + 2 * guiscale(),
+                         bounds.y + bounds.h / 2 - g->measureUIText(text()).h / 2));
 }
 
 void ResourceListItem::onSizeHint(SizeHintEvent& ev)
 {
-  ev.setSizeHint(
-    static_cast<ResourcesListBox*>(parent())->
-    resourceSizeHint(m_resource.get()));
+  ev.setSizeHint(static_cast<ResourcesListBox*>(parent())->resourceSizeHint(m_resource.get()));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -83,12 +80,10 @@ void ResourceListItem::onSizeHint(SizeHintEvent& ev)
 
 class ResourcesListBox::LoadingItem : public ListItem {
 public:
-  LoadingItem()
-    : ListItem("Loading")
-    , m_state(0) {
-  }
+  LoadingItem() : ListItem("Loading"), m_state(0) {}
 
-  void makeProgress() {
+  void makeProgress()
+  {
     std::string text = "Loading ";
 
     switch ((++m_state) % 4) {
@@ -112,7 +107,7 @@ ResourcesListBox::ResourcesListBox(ResourcesLoader* resourcesLoader)
   : m_resourcesLoader(resourcesLoader)
   , m_resourcesTimer(100)
 {
-  m_resourcesTimer.Tick.connect([this]{ onTick(); });
+  m_resourcesTimer.Tick.connect([this] { onTick(); });
 }
 
 Resource* ResourcesListBox::selectedResource()
@@ -168,7 +163,6 @@ gfx::Size ResourcesListBox::resourceSizeHint(Resource* resource)
 bool ResourcesListBox::onProcessMessage(ui::Message* msg)
 {
   switch (msg->type()) {
-
     case kOpenMessage: {
       if (m_reloadOnOpen) {
         m_reloadOnOpen = false;
@@ -181,7 +175,6 @@ bool ResourcesListBox::onProcessMessage(ui::Message* msg)
       }
       break;
     }
-
   }
   return ListBox::onProcessMessage(msg);
 }
@@ -216,7 +209,7 @@ void ResourcesListBox::onTick()
 
   while (m_resourcesLoader->next(resource)) {
     std::unique_ptr<ResourceListItem> listItem(onCreateResourceItem(resource.get()));
-    insertChild(getItemsCount()-1, listItem.get());
+    insertChild(getItemsCount() - 1, listItem.get());
     sortItems();
     layout();
 

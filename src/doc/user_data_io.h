@@ -15,13 +15,11 @@
 
 namespace doc {
 
-  class UserData;
+class UserData;
 
-  void write_user_data(std::ostream& os,
-                       const UserData& userData);
+void write_user_data(std::ostream& os, const UserData& userData);
 
-  UserData read_user_data(std::istream& is,
-                          SerialFormat serial = SerialFormat::LastVer);
+UserData read_user_data(std::istream& is, SerialFormat serial = SerialFormat::LastVer);
 
 } // namespace doc
 

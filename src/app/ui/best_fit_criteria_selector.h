@@ -14,13 +14,13 @@
 
 namespace app {
 
-  class BestFitCriteriaSelector : public ui::ComboBox {
-  public:
-    BestFitCriteriaSelector();
+class BestFitCriteriaSelector : public ui::ComboBox {
+public:
+  BestFitCriteriaSelector();
 
-    doc::FitCriteria criteria();
-    void criteria(doc::FitCriteria criteria);
-  };
+  doc::FitCriteria criteria();
+  void criteria(doc::FitCriteria criteria);
+};
 
 } // namespace app
 

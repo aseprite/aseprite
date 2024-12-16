@@ -11,18 +11,16 @@
 #include "app/cmd_sequence.h"
 
 namespace doc {
-  class Cel;
+class Cel;
 }
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
-  class TrimCel : public CmdSequence {
-  public:
-    TrimCel(doc::Cel* cel);
-  };
+class TrimCel : public CmdSequence {
+public:
+  TrimCel(doc::Cel* cel);
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

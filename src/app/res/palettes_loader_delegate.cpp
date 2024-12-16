@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/res/palettes_loader_delegate.h"
@@ -48,8 +48,7 @@ void PalettesLoaderDelegate::getResourcesPaths(std::map<std::string, std::string
       for (const auto& fn : base::list_files(path, base::ItemType::Files)) {
         // Ignore the default palette that is inside the palettes/ dir
         // in the user home dir.
-        if (fn == "default.ase" ||
-            fn == "default.gpl")
+        if (fn == "default.ase" || fn == "default.gpl")
           continue;
 
         std::string fullFn = base::join_path(path, fn);
@@ -59,8 +58,7 @@ void PalettesLoaderDelegate::getResourcesPaths(std::map<std::string, std::string
   }
 }
 
-Resource* PalettesLoaderDelegate::loadResource(const std::string& id,
-                                               const std::string& path)
+Resource* PalettesLoaderDelegate::loadResource(const std::string& id, const std::string& path)
 {
   auto palette = load_palette(path.c_str(), &m_config);
   if (palette)

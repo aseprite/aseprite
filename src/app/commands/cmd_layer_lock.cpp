@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -30,22 +30,19 @@ protected:
   void onExecute(Context* context) override;
 };
 
-LayerLockCommand::LayerLockCommand()
-  : Command(CommandId::LayerLock(), CmdRecordableFlag)
+LayerLockCommand::LayerLockCommand() : Command(CommandId::LayerLock(), CmdRecordableFlag)
 {
 }
 
 bool LayerLockCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasActiveLayer);
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasActiveLayer);
 }
 
 bool LayerLockCommand::onChecked(Context* context)
 {
   const ContextReader reader(context);
-  if (!reader.document() ||
-      !reader.layer())
+  if (!reader.document() || !reader.layer())
     return false;
 
   SelectedLayers selLayers;

@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/commands/command.h"
@@ -30,8 +30,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-SaveMaskCommand::SaveMaskCommand()
-  : Command(CommandId::SaveMask(), CmdUIOnlyFlag)
+SaveMaskCommand::SaveMaskCommand() : Command(CommandId::SaveMask(), CmdUIOnlyFlag)
 {
 }
 
@@ -47,9 +46,11 @@ void SaveMaskCommand::onExecute(Context* context)
 
   base::paths exts = { "msk" };
   base::paths selFilename;
-  if (!app::show_file_selector(
-        Strings::save_selection_title(), "default.msk", exts,
-        FileSelectorType::Save, selFilename))
+  if (!app::show_file_selector(Strings::save_selection_title(),
+                               "default.msk",
+                               exts,
+                               FileSelectorType::Save,
+                               selFilename))
     return;
 
   std::string filename = selFilename.front();

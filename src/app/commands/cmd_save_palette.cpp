@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -41,8 +41,7 @@ private:
   bool m_saveAsPreset = false;
 };
 
-SavePaletteCommand::SavePaletteCommand()
-  : Command(CommandId::SavePalette(), CmdRecordableFlag)
+SavePaletteCommand::SavePaletteCommand() : Command(CommandId::SavePalette(), CmdRecordableFlag)
 {
 }
 
@@ -63,11 +62,12 @@ void SavePaletteCommand::onExecute(Context* ctx)
   else {
     base::paths exts = get_writable_palette_extensions();
     base::paths selFilename;
-    std::string initialPath = (m_saveAsPreset ? get_preset_palettes_dir(): "");
+    std::string initialPath = (m_saveAsPreset ? get_preset_palettes_dir() : "");
     if (!app::show_file_selector(Strings::save_palette_title(),
                                  initialPath,
                                  exts,
-                                 FileSelectorType::Save, selFilename))
+                                 FileSelectorType::Save,
+                                 selFilename))
       return;
 
     filename = selFilename.front();
@@ -78,8 +78,7 @@ void SavePaletteCommand::onExecute(Context* ctx)
     if (!base::has_file_extension(filename, exts)) {
       if (ctx->isUIAvailable()) {
         ui::Alert::show(
-          Strings::alerts_file_format_doesnt_support_palette(
-            base::get_file_extension(filename)));
+          Strings::alerts_file_format_doesnt_support_palette(base::get_file_extension(filename)));
       }
       return;
     }
@@ -98,7 +97,7 @@ void SavePaletteCommand::onExecute(Context* ctx)
       set_current_palette(palette, false);
   }
   if (m_saveAsPreset) {
-      App::instance()->PalettePresetsChange();
+    App::instance()->PalettePresetsChange();
   }
 }
 

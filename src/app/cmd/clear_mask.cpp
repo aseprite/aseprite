@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/clear_mask.h"
@@ -21,13 +21,11 @@
 #include "doc/mask.h"
 #include "doc/primitives.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 using namespace doc;
 
-ClearMask::ClearMask(Cel* cel)
-  : WithCel(cel)
+ClearMask::ClearMask(Cel* cel) : WithCel(cel)
 {
   Doc* doc = static_cast<Doc*>(cel->document());
 
@@ -51,8 +49,7 @@ ClearMask::ClearMask(Cel* cel)
   gfx::Rect maskBounds;
   if (image->pixelFormat() == IMAGE_TILEMAP) {
     auto grid = cel->grid();
-    imageBounds = gfx::Rect(grid.canvasToTile(cel->position()),
-                            cel->image()->size());
+    imageBounds = gfx::Rect(grid.canvasToTile(cel->position()), cel->image()->size());
     maskBounds = grid.canvasToTile(mask->bounds());
     m_bgcolor = doc::notile; // TODO configurable empty tile
   }
@@ -100,12 +97,11 @@ void ClearMask::clear()
   Mask* mask = doc->mask();
 
   Grid grid = cel->grid();
-  doc::algorithm::fill_selection(
-    cel->image(),
-    cel->bounds(),
-    mask,
-    m_bgcolor,
-    (cel->image()->isTilemap() ? &grid: nullptr));
+  doc::algorithm::fill_selection(cel->image(),
+                                 cel->bounds(),
+                                 mask,
+                                 m_bgcolor,
+                                 (cel->image()->isTilemap() ? &grid : nullptr));
 }
 
 void ClearMask::restore()
@@ -114,11 +110,7 @@ void ClearMask::restore()
     return;
 
   Cel* cel = this->cel();
-  copy_image(cel->image(),
-             m_copy.get(),
-             m_cropPos.x,
-             m_cropPos.y);
+  copy_image(cel->image(), m_copy.get(), m_cropPos.x, m_cropPos.y);
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

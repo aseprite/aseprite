@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #ifndef ENABLE_SCRIPTING
@@ -54,24 +54,26 @@ struct FileContent {
   base::buffer content;
   std::vector<const uint8_t*> lines;
 
-  FileContent() { }
+  FileContent() {}
   FileContent(const FileContent&) = delete;
   FileContent& operator=(const FileContent&) = delete;
 
-  void clear() {
+  void clear()
+  {
     content.clear();
     lines.clear();
   }
 
-  void setContent(const std::string& c) {
-    content = base::buffer(
-      (const uint8_t*)c.c_str(),
-      (const uint8_t*)c.c_str() + c.size() + 1); // Include nul char
+  void setContent(const std::string& c)
+  {
+    content = base::buffer((const uint8_t*)c.c_str(),
+                           (const uint8_t*)c.c_str() + c.size() + 1); // Include nul char
 
     update();
   }
 
-  void readContentFromFile(const std::string& filename) {
+  void readContentFromFile(const std::string& filename)
+  {
     if (base::is_file(filename))
       content = base::read_file_content(filename);
     else
@@ -84,7 +86,8 @@ struct FileContent {
   }
 
 private:
-  void update() {
+  void update()
+  {
     ASSERT(content.back() == 0);
 
     // Replace all '\r' to ' ' (for Windows EOL and to avoid to paint
@@ -96,11 +99,11 @@ private:
 
     // Generate the lines array
     lines.clear();
-    for (size_t i=0; i<content.size(); ++i) {
+    for (size_t i = 0; i < content.size(); ++i) {
       lines.push_back(&content[i]);
 
       size_t j = i;
-      for (; j<content.size() && content[j] != '\n'; ++j)
+      for (; j < content.size() && content[j] != '\n'; ++j)
         ;
       if (j < content.size())
         content[j] = 0;
@@ -117,10 +120,10 @@ std::unordered_map<std::string, FileContentPtr> g_fileContent;
 
 class DebuggerSource : public Widget {
 public:
-  DebuggerSource() {
-  }
+  DebuggerSource() {}
 
-  void clearFile() {
+  void clearFile()
+  {
     m_fileContent.reset();
     m_maxLineWidth = 0;
 
@@ -128,7 +131,8 @@ public:
       view->updateView();
   }
 
-  void setFileContent(const FileContentPtr& fileContent) {
+  void setFileContent(const FileContentPtr& fileContent)
+  {
     m_fileContent = fileContent;
     m_maxLineWidth = 0;
 
@@ -138,8 +142,8 @@ public:
     setCurrentLine(1);
   }
 
-  void setFile(const std::string& filename,
-               const std::string& content) {
+  void setFile(const std::string& filename, const std::string& content)
+  {
     FileContentPtr newFileContent(new FileContent);
     if (!content.empty()) {
       newFileContent->setContent(content);
@@ -152,13 +156,14 @@ public:
     setFileContent(newFileContent);
   }
 
-  void setCurrentLine(int currentLine) {
+  void setCurrentLine(int currentLine)
+  {
     m_currentLine = currentLine;
     if (m_currentLine > 0) {
       if (View* view = View::getView(this)) {
         const gfx::Rect vp = view->viewportBounds();
         const int th = textHeight();
-        int y = m_currentLine*th - vp.h/2 + th/2;
+        int y = m_currentLine * th - vp.h / 2 + th / 2;
         if (y < 0)
           y = 0;
         view->setViewScroll(gfx::Point(0, y));
@@ -168,9 +173,9 @@ public:
   }
 
 protected:
-  bool onProcessMessage(Message* msg) override {
+  bool onProcessMessage(Message* msg) override
+  {
     switch (msg->type()) {
-
       case kMouseWheelMessage: {
         View* view = View::getView(this);
         if (view) {
@@ -180,25 +185,25 @@ protected:
           if (mouseMsg->preciseWheel())
             scroll += mouseMsg->wheelDelta();
           else
-            scroll += mouseMsg->wheelDelta() * textHeight()*3;
+            scroll += mouseMsg->wheelDelta() * textHeight() * 3;
 
           view->setViewScroll(scroll);
         }
         break;
       }
-
     }
     return Widget::onProcessMessage(msg);
   }
 
-  void onPaint(PaintEvent& ev) override {
+  void onPaint(PaintEvent& ev) override
+  {
     auto theme = SkinTheme::get(this);
     Graphics* g = ev.graphics();
     View* view = View::getView(this);
     gfx::Color linesBg = theme->colors.textboxCodeFace();
     gfx::Color bg = theme->colors.textboxFace();
     gfx::Color fg = theme->colors.textboxText();
-    int nlines = (m_fileContent ? m_fileContent->lines.size(): 0);
+    int nlines = (m_fileContent ? m_fileContent->lines.size() : 0);
 
     gfx::Rect vp;
     if (view)
@@ -217,31 +222,31 @@ protected:
       auto icon = theme->parts.debugContinue()->bitmap(0);
       gfx::Point pt = clientBounds().origin();
       for (int i = 0; i < nlines; ++i) {
-        if (i+1 == m_currentLine) {
-          g->drawRgbaSurface(icon, pt.x+linesVp.w, pt.y);
+        if (i + 1 == m_currentLine) {
+          g->drawRgbaSurface(icon, pt.x + linesVp.w, pt.y);
         }
 
         // Draw the line number
         {
-          auto lineNumText = base::convert_to<std::string>(i+1);
+          auto lineNumText = base::convert_to<std::string>(i + 1);
           int lw = Graphics::measureUITextLength(lineNumText, f);
-          g->drawText(
-            lineNumText.c_str(),
-            fg, linesBg,
-            gfx::Point(pt.x+linesVp.w-lw-2*guiscale(), pt.y));
+          g->drawText(lineNumText.c_str(),
+                      fg,
+                      linesBg,
+                      gfx::Point(pt.x + linesVp.w - lw - 2 * guiscale(), pt.y));
         }
 
         // Draw the this line of source code
         const char* line = (const char*)m_fileContent->lines[i];
-        g->drawText(line, fg, bg,
-                    gfx::Point(pt.x + icon->width() + linesVp.w, pt.y));
+        g->drawText(line, fg, bg, gfx::Point(pt.x + icon->width() + linesVp.w, pt.y));
 
         pt.y += textHeight();
       }
     }
   }
 
-  void onSizeHint(SizeHintEvent& ev) override {
+  void onSizeHint(SizeHintEvent& ev) override
+  {
     if (m_fileContent) {
       if (m_maxLineWidth == 0) {
         auto f = font();
@@ -259,13 +264,12 @@ protected:
   }
 
 private:
-
-  int getLineNumberColumnWidth() const {
+  int getLineNumberColumnWidth() const
+  {
     auto f = font();
-    int nlines = (m_fileContent ? m_fileContent->lines.size(): 0);
-    return
-      Graphics::measureUITextLength(base::convert_to<std::string>(nlines), f)
-      + 4*guiscale();           // TODO configurable from the theme?
+    int nlines = (m_fileContent ? m_fileContent->lines.size() : 0);
+    return Graphics::measureUITextLength(base::convert_to<std::string>(nlines), f) +
+           4 * guiscale(); // TODO configurable from the theme?
   }
 
   FileContentPtr m_fileContent;
@@ -280,7 +284,8 @@ public:
     Item(lua_Debug* ar, const int stackLevel)
       : m_fn(ar->short_src)
       , m_ln(ar->currentline)
-      , m_stackLevel(stackLevel) {
+      , m_stackLevel(stackLevel)
+    {
       std::string lineContent;
 
       auto it = g_fileContent.find(m_fn);
@@ -291,8 +296,7 @@ public:
       }
       base::trim_string(lineContent, lineContent);
 
-      setText(fmt::format(
-        "{}:{}: {}", base::get_file_name(m_fn), m_ln, lineContent));
+      setText(fmt::format("{}:{}: {}", base::get_file_name(m_fn), m_ln, lineContent));
     }
 
     const std::string& filename() const { return m_fn; }
@@ -305,17 +309,18 @@ public:
     int m_stackLevel;
   };
 
-  StacktraceBox() {
-  }
+  StacktraceBox() {}
 
-  void clear() {
+  void clear()
+  {
     while (auto item = lastChild()) {
       removeChild(item);
       item->deferDelete();
     }
   }
 
-  void update(lua_State* L) {
+  void update(lua_State* L)
+  {
     clear();
 
     lua_Debug ar;
@@ -327,21 +332,19 @@ public:
       ++level;
     }
   }
-
 };
 
 // TODO similar to DevConsoleView::CommmandEntry, merge both widgets
 //      or remove the DevConsoleView
 class EvalEntry : public Entry {
 public:
-  EvalEntry() : Entry(2048, "") {
-    setFocusStop(true);
-  }
+  EvalEntry() : Entry(2048, "") { setFocusStop(true); }
 
   obs::signal<void(const std::string&)> Execute;
 
 protected:
-  bool onProcessMessage(Message* msg) override {
+  bool onProcessMessage(Message* msg) override
+  {
     switch (msg->type()) {
       case kKeyDownMessage:
         if (hasFocus()) {
@@ -364,11 +367,11 @@ protected:
   }
 };
 
-} // anonmous namespace
+} // namespace
 
-class Debugger : public gen::Debugger
-               , public script::EngineDelegate
-               , public script::DebuggerDelegate {
+class Debugger : public gen::Debugger,
+                 public script::EngineDelegate,
+                 public script::DebuggerDelegate {
   enum State {
     Hidden,
     WaitingStart,
@@ -379,7 +382,7 @@ class Debugger : public gen::Debugger
 
   enum Button {
     None = -1,
-    Start = 0,                  // Start/Pause/Continue
+    Start = 0, // Start/Pause/Continue
     StepInto,
     StepOver,
     StepOut,
@@ -387,8 +390,8 @@ class Debugger : public gen::Debugger
   };
 
 public:
-
-  Debugger() {
+  Debugger()
+  {
     control()->ItemChange.connect([this] {
       auto button = (Button)control()->selectedItem();
       control()->deselectItems();
@@ -401,7 +404,7 @@ public:
       onControl(Button::Breakpoint);
     });
 
-    Close.connect([this]{
+    Close.connect([this] {
       m_state = State::Hidden;
 
       auto app = App::instance();
@@ -416,13 +419,9 @@ public:
       clearLocals();
     });
 
-    m_stacktrace.Change.connect([this]{
-      onStacktraceChange();
-    });
+    m_stacktrace.Change.connect([this] { onStacktraceChange(); });
 
-    m_evalEntry.Execute.connect([this](const std::string& expr){
-      onEvalExpression(expr);
-    });
+    m_evalEntry.Execute.connect([this](const std::string& expr) { onEvalExpression(expr); });
 
     mainArea()->setVisible(false);
 
@@ -432,7 +431,7 @@ public:
     stackPlaceholder()->attachToView(&m_stacktrace);
     stackPlaceholder()->setVisible(false);
 
-    outputButtons()->ItemChange.connect([this]{ onOutputButtonChange(); });
+    outputButtons()->ItemChange.connect([this] { onOutputButtonChange(); });
     outputButtons()->setSelectedItem(0);
     onOutputButtonChange();
 
@@ -442,7 +441,8 @@ public:
     evalPlaceholder()->addChild(&m_evalEntry);
   }
 
-  void openDebugger() {
+  void openDebugger()
+  {
     m_state = State::WaitingHook;
 
     updateControls();
@@ -454,13 +454,13 @@ public:
     app->scriptEngine()->startDebugger(this);
   }
 
-  void onControl(Button button) {
+  void onControl(Button button)
+  {
     ASSERT(m_state != State::Hidden);
 
     m_lastCommand = button;
 
     switch (button) {
-
       case Button::Start:
         if (m_state == State::WaitingStart) {
           m_state = State::WaitingHook;
@@ -490,15 +490,14 @@ public:
     updateControls();
   }
 
-  void updateControls() {
-    bool isRunning = (m_state == State::WaitingHook ||
-                      m_state == State::ProcessingCommand);
+  void updateControls()
+  {
+    bool isRunning = (m_state == State::WaitingHook || m_state == State::ProcessingCommand);
     bool canRunCommands = (m_state == State::WaitingNextCommand);
 
     auto theme = SkinTheme::get(this);
     control()->getItem(0)->setIcon(
-      (isRunning ? theme->parts.debugPause() :
-                   theme->parts.debugContinue()));
+      (isRunning ? theme->parts.debugPause() : theme->parts.debugContinue()));
 
     control()->getItem(1)->setEnabled(canRunCommands);
     control()->getItem(2)->setEnabled(canRunCommands);
@@ -515,7 +514,8 @@ public:
   }
 
   // script::EngineDelegate impl
-  void onConsoleError(const char* text) override {
+  void onConsoleError(const char* text) override
+  {
     m_fileOk = false;
 
     onConsolePrint(text);
@@ -529,8 +529,7 @@ public:
         const std::string& ln = parts[1];
         if (base::is_file(fn)) {
           m_sourceViewer.setFile(fn, std::string());
-          m_sourceViewer.setCurrentLine(
-            std::strtol(ln.c_str(), nullptr, 10));
+          m_sourceViewer.setCurrentLine(std::strtol(ln.c_str(), nullptr, 10));
 
           sourcePlaceholder()->setVisible(true);
           layout();
@@ -544,7 +543,8 @@ public:
     updateControls();
   }
 
-  void onConsolePrint(const char* text) override {
+  void onConsolePrint(const char* text) override
+  {
     console()->setVisible(true);
     consoleView()->setViewScroll(gfx::Point(0, 0));
 
@@ -557,25 +557,23 @@ public:
 
     layout();
 
-    consoleView()->setViewScroll(
-      gfx::Point(0, consoleView()->getScrollableSize().h));
+    consoleView()->setViewScroll(gfx::Point(0, consoleView()->getScrollableSize().h));
   }
 
   // script::DebuggerDelegate impl
-  void hook(lua_State* L, lua_Debug* ar) override {
+  void hook(lua_State* L, lua_Debug* ar) override
+  {
     lua_getinfo(L, "lnS", ar);
 
     switch (ar->event) {
-      case LUA_HOOKCALL: ++m_stackLevel; break;
-      case LUA_HOOKRET: --m_stackLevel; break;
+      case LUA_HOOKCALL:     ++m_stackLevel; break;
+      case LUA_HOOKRET:      --m_stackLevel; break;
       case LUA_HOOKLINE:
       case LUA_HOOKCOUNT:
-      case LUA_HOOKTAILCALL:
-        break;
+      case LUA_HOOKTAILCALL: break;
     }
 
     switch (m_state) {
-
       case State::WaitingStart:
         // Do nothing (the execution continues regularly, unexpected
         // script being executed)
@@ -590,7 +588,6 @@ public:
 
       case State::ProcessingCommand:
         switch (m_lastCommand) {
-
           case Button::Start:
             if (ar->event == LUA_HOOKLINE) {
               // TODO Wait next error...
@@ -610,8 +607,7 @@ public:
             break;
 
           case Button::StepOver:
-            if (ar->event == LUA_HOOKLINE &&
-                m_stackLevel == m_commandStackLevel) {
+            if (ar->event == LUA_HOOKLINE && m_stackLevel == m_commandStackLevel) {
               waitNextCommand(L);
             }
             else {
@@ -620,8 +616,7 @@ public:
             break;
 
           case Button::StepOut:
-            if (ar->event == LUA_HOOKLINE &&
-                m_stackLevel < m_commandStackLevel) {
+            if (ar->event == LUA_HOOKLINE && m_stackLevel < m_commandStackLevel) {
               waitNextCommand(L);
             }
             else {
@@ -647,8 +642,7 @@ public:
       stackPlaceholder()->setVisible(true);
       layout();
 
-      if (m_lastFile != ar->short_src &&
-          base::is_file(ar->short_src)) {
+      if (m_lastFile != ar->short_src && base::is_file(ar->short_src)) {
         m_lastFile = ar->short_src;
         m_sourceViewer.setFile(m_lastFile, std::string());
       }
@@ -660,8 +654,8 @@ public:
         m_expanded = true;
         gfx::Rect bounds = this->bounds();
         if (m_sourceViewer.isVisible()) {
-          bounds.w = std::max(bounds.w, 256*guiscale());
-          bounds.h = std::max(bounds.h, 256*guiscale());
+          bounds.w = std::max(bounds.w, 256 * guiscale());
+          bounds.h = std::max(bounds.h, 256 * guiscale());
         }
         expandWindow(bounds.size());
         invalidate();
@@ -673,14 +667,15 @@ public:
     }
   }
 
-  void startFile(const std::string& file,
-                 const std::string& content) override {
+  void startFile(const std::string& file, const std::string& content) override
+  {
     m_stackLevel = 0;
     m_fileOk = true;
     m_sourceViewer.setFile(file, content);
   }
 
-  void endFile(const std::string& file) override {
+  void endFile(const std::string& file) override
+  {
     if (m_fileOk)
       m_sourceViewer.clearFile();
     m_stacktrace.clear();
@@ -689,27 +684,26 @@ public:
   }
 
 private:
-  void waitNextCommand(lua_State* L) {
+  void waitNextCommand(lua_State* L)
+  {
     m_state = State::WaitingNextCommand;
     m_stacktrace.update(L);
     updateLocals(L, 0);
   }
 
-  void onOutputButtonChange() {
+  void onOutputButtonChange()
+  {
     consoleView()->setVisible(isConsoleSelected());
     localsView()->setVisible(isLocalsSelected());
     layout();
   }
 
-  bool isConsoleSelected() const {
-    return (outputButtons()->selectedItem() == 0);
-  }
+  bool isConsoleSelected() const { return (outputButtons()->selectedItem() == 0); }
 
-  bool isLocalsSelected() const {
-    return (outputButtons()->selectedItem() == 1);
-  }
+  bool isLocalsSelected() const { return (outputButtons()->selectedItem() == 1); }
 
-  void onStacktraceChange() {
+  void onStacktraceChange()
+  {
     if (auto item = dynamic_cast<StacktraceBox::Item*>(m_stacktrace.getSelectedChild())) {
       auto it = g_fileContent.find(item->filename());
       if (it != g_fileContent.end())
@@ -723,67 +717,49 @@ private:
     }
   }
 
-  void onEvalExpression(const std::string& expr) {
+  void onEvalExpression(const std::string& expr)
+  {
     auto app = App::instance();
     app->scriptEngine()->evalCode(expr);
   }
 
-  void clearLocals() {
+  void clearLocals()
+  {
     while (auto item = locals()->lastChild()) {
       locals()->removeChild(item);
       item->deferDelete();
     }
   }
 
-  void updateLocals(lua_State* L, int level) {
+  void updateLocals(lua_State* L, int level)
+  {
     clearLocals();
 
     lua_Debug ar;
     if (lua_getstack(L, level, &ar)) {
-      for (int n=1; ; ++n) {
+      for (int n = 1;; ++n) {
         const char* name = lua_getlocal(L, &ar, n);
         if (!name)
           break;
 
         // These special names are returned by luaG_findlocal()
-        if (strcmp(name, "(temporary)") == 0 ||
-            strcmp(name, "(C temporary)") == 0) {
+        if (strcmp(name, "(temporary)") == 0 || strcmp(name, "(C temporary)") == 0) {
           lua_pop(L, 1);
           continue;
         }
 
         std::string v = "?";
         switch (lua_type(L, -1)) {
-          case LUA_TNONE:
-            v = "none";
-            break;
-          case LUA_TNIL:
-            v = "nil";
-            break;
-          case LUA_TBOOLEAN:
-            v = (lua_toboolean(L, -1) ? "true": "false");
-            break;
-          case LUA_TLIGHTUSERDATA:
-            v = "lightuserdata";
-            break;
-          case LUA_TNUMBER:
-            v = lua_tostring(L, -1);
-            break;
-          case LUA_TSTRING:
-            v = lua_tostring(L, -1);
-            break;
-          case LUA_TTABLE:
-            v = "table";
-            break;
-          case LUA_TFUNCTION:
-            v = "function";
-            break;
-          case LUA_TUSERDATA:
-            v = "userdata";
-            break;
-          case LUA_TTHREAD:
-            v = "thread";
-            break;
+          case LUA_TNONE:          v = "none"; break;
+          case LUA_TNIL:           v = "nil"; break;
+          case LUA_TBOOLEAN:       v = (lua_toboolean(L, -1) ? "true" : "false"); break;
+          case LUA_TLIGHTUSERDATA: v = "lightuserdata"; break;
+          case LUA_TNUMBER:        v = lua_tostring(L, -1); break;
+          case LUA_TSTRING:        v = lua_tostring(L, -1); break;
+          case LUA_TTABLE:         v = "table"; break;
+          case LUA_TFUNCTION:      v = "function"; break;
+          case LUA_TUSERDATA:      v = "userdata"; break;
+          case LUA_TTHREAD:        v = "thread"; break;
         }
         std::string itemText = fmt::format("{}={}", name, v);
         lua_pop(L, 1);
@@ -809,8 +785,7 @@ private:
   bool m_fileOk = true;
 };
 
-DebuggerCommand::DebuggerCommand()
-  : Command(CommandId::Debugger(), CmdRecordableFlag)
+DebuggerCommand::DebuggerCommand() : Command(CommandId::Debugger(), CmdRecordableFlag)
 {
 }
 
@@ -830,9 +805,7 @@ void DebuggerCommand::onExecute(Context* ctx)
     // Create the debugger window for the first time
     if (!m_debugger) {
       m_debugger.reset(new Debugger);
-      app->Exit.connect([this]{
-        m_debugger.reset();
-      });
+      app->Exit.connect([this] { m_debugger.reset(); });
     }
 
     if (!m_debugger->isVisible()) {

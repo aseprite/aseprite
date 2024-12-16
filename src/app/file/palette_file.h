@@ -15,22 +15,21 @@
 #include <memory>
 
 namespace doc {
-  class Palette;
+class Palette;
 }
 
 namespace app {
-  struct FileOpConfig;
+struct FileOpConfig;
 
-  base::paths get_readable_palette_extensions();
-  base::paths get_writable_palette_extensions();
+base::paths get_readable_palette_extensions();
+base::paths get_writable_palette_extensions();
 
-  std::unique_ptr<doc::Palette> load_palette(
-    const char *filename,
-    const FileOpConfig* config = nullptr);
-  bool save_palette(const char *filename,
-                    const doc::Palette* pal,
-                    int columns,
-                    const gfx::ColorSpaceRef& colorSpace);
+std::unique_ptr<doc::Palette> load_palette(const char* filename,
+                                           const FileOpConfig* config = nullptr);
+bool save_palette(const char* filename,
+                  const doc::Palette* pal,
+                  int columns,
+                  const gfx::ColorSpaceRef& colorSpace);
 
 } // namespace app
 

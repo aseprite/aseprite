@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include <cstdlib>
@@ -21,8 +21,7 @@ namespace app {
 
 using namespace ui;
 
-HexColorEntry::CustomEntry::CustomEntry()
-  : Entry(16, "")
+HexColorEntry::CustomEntry::CustomEntry() : Entry(16, "")
 {
 }
 
@@ -33,16 +32,12 @@ bool HexColorEntry::CustomEntry::onProcessMessage(ui::Message* msg)
       setFocusStop(true);
       requestFocus();
       break;
-    case kFocusLeaveMessage:
-      setFocusStop(false);
-      break;
+    case kFocusLeaveMessage: setFocusStop(false); break;
   }
   return Entry::onProcessMessage(msg);
 }
 
-HexColorEntry::HexColorEntry()
-  : Box(HORIZONTAL)
-  , m_label("#")
+HexColorEntry::HexColorEntry() : Box(HORIZONTAL), m_label("#")
 {
   addChild(&m_label);
   addChild(&m_entry);
@@ -52,16 +47,13 @@ HexColorEntry::HexColorEntry()
 
   initTheme();
 
-  setBorder(gfx::Border(2*ui::guiscale(), 0, 0, 0));
+  setBorder(gfx::Border(2 * ui::guiscale(), 0, 0, 0));
   setChildSpacing(0);
 }
 
 void HexColorEntry::setColor(const app::Color& color)
 {
-  m_entry.setTextf("%02x%02x%02x",
-                   color.getRed(),
-                   color.getGreen(),
-                   color.getBlue());
+  m_entry.setTextf("%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
 }
 
 void HexColorEntry::onEntryChange()

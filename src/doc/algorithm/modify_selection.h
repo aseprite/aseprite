@@ -13,22 +13,22 @@
 #include "gfx/point.h"
 
 namespace doc {
-  class Mask;
-  namespace algorithm {
+class Mask;
+namespace algorithm {
 
-    enum class SelectionModifier {
-      Border,
-      Expand,
-      Contract,
-    };
+enum class SelectionModifier {
+  Border,
+  Expand,
+  Contract,
+};
 
-    void modify_selection(const SelectionModifier modifier,
-                          const Mask* srcMask,
-                          Mask* dstMask,
-                          const int radius,
-                          const BrushType brush);
+void modify_selection(const SelectionModifier modifier,
+                      const Mask* srcMask,
+                      Mask* dstMask,
+                      const int radius,
+                      const BrushType brush);
 
-  } // namespace algorithm
+} // namespace algorithm
 } // namespace doc
 
 #endif

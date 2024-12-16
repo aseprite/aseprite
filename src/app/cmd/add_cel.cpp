@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/add_cel.h"
@@ -21,17 +21,13 @@
 #include "doc/layer.h"
 #include "doc/subobjects_io.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 using namespace base::serialization;
 using namespace base::serialization::little_endian;
 using namespace doc;
 
-AddCel::AddCel(Layer* layer, Cel* cel)
-  : WithLayer(layer)
-  , WithCel(cel)
-  , m_size(0)
+AddCel::AddCel(Layer* layer, Cel* cel) : WithLayer(layer), WithCel(cel), m_size(0)
 {
 }
 
@@ -54,7 +50,7 @@ void AddCel::onUndo()
 
   // Save the CelData only if the cel isn't linked
   bool has_data = (cel->links() == 0);
-  write8(m_stream, has_data ? 1: 0);
+  write8(m_stream, has_data ? 1 : 0);
   if (has_data) {
     write_image(m_stream, cel->image());
     write_celdata(m_stream, cel->data());
@@ -119,5 +115,4 @@ void AddCel::removeCel(Layer* layer, Cel* cel)
   delete cel;
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

@@ -12,10 +12,10 @@
 
 namespace doc {
 
-  class Palette;
+class Palette;
 
-  void write_palette(std::ostream& os, const Palette* palette);
-  Palette* read_palette(std::istream& is);
+void write_palette(std::ostream& os, const Palette* palette);
+Palette* read_palette(std::istream& is);
 
 } // namespace doc
 

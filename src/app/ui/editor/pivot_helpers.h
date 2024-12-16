@@ -9,9 +9,9 @@
 #pragma once
 
 namespace app {
-  class Transformation;
+class Transformation;
 
-  void set_pivot_from_preferences(Transformation& t);
+void set_pivot_from_preferences(Transformation& t);
 
 } // namespace app
 

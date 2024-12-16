@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/backup_indicator.h"
@@ -16,12 +16,9 @@
 
 namespace app {
 
-BackupIndicator::BackupIndicator()
-  : m_timer(100)
-  , m_small(false)
-  , m_running(false)
+BackupIndicator::BackupIndicator() : m_timer(100), m_small(false), m_running(false)
 {
-  m_timer.Tick.connect([this]{ onTick(); });
+  m_timer.Tick.connect([this] { onTick(); });
 }
 
 BackupIndicator::~BackupIndicator()
@@ -48,9 +45,8 @@ void BackupIndicator::onTick()
     return;
   }
 
-  StatusBar::instance()->showBackupIcon(
-    m_small ? StatusBar::BackupIcon::Small:
-              StatusBar::BackupIcon::Normal);
+  StatusBar::instance()->showBackupIcon(m_small ? StatusBar::BackupIcon::Small :
+                                                  StatusBar::BackupIcon::Normal);
 
   m_small = !m_small;
 }

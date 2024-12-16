@@ -17,8 +17,7 @@
 
 namespace dio {
 
-bool decode_file(DecodeDelegate* delegate,
-                 FileInterface* f)
+bool decode_file(DecodeDelegate* delegate, FileInterface* f)
 {
   assert(delegate);
   assert(f);
@@ -26,7 +25,7 @@ bool decode_file(DecodeDelegate* delegate,
   uint8_t buf[12];
   size_t n = f->readBytes(&buf[0], 12);
   FileFormat format = detect_format_by_file_content_bytes(&buf[0], n);
-  f->seek(0);                // Rewind
+  f->seek(0); // Rewind
 
   Decoder* decoder = nullptr;
 

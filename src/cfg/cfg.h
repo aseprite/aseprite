@@ -14,36 +14,36 @@
 
 namespace cfg {
 
-  class CfgFile {
-  public:
-    CfgFile();
-    ~CfgFile();
+class CfgFile {
+public:
+  CfgFile();
+  ~CfgFile();
 
-    const std::string& filename() const;
+  const std::string& filename() const;
 
-    void getAllSections(std::vector<std::string>& sections) const;
-    void getAllKeys(const char* section, std::vector<std::string>& keys) const;
+  void getAllSections(std::vector<std::string>& sections) const;
+  void getAllKeys(const char* section, std::vector<std::string>& keys) const;
 
-    const char* getValue(const char* section, const char* name, const char* defaultValue) const;
-    bool getBoolValue(const char* section, const char* name, bool defaultValue);
-    int getIntValue(const char* section, const char* name, int defaultValue);
-    double getDoubleValue(const char* section, const char* name, double defaultValue);
+  const char* getValue(const char* section, const char* name, const char* defaultValue) const;
+  bool getBoolValue(const char* section, const char* name, bool defaultValue);
+  int getIntValue(const char* section, const char* name, int defaultValue);
+  double getDoubleValue(const char* section, const char* name, double defaultValue);
 
-    void setValue(const char* section, const char* name, const char* value);
-    void setBoolValue(const char* section, const char* name, bool value);
-    void setIntValue(const char* section, const char* name, int value);
-    void setDoubleValue(const char* section, const char* name, double value);
+  void setValue(const char* section, const char* name, const char* value);
+  void setBoolValue(const char* section, const char* name, bool value);
+  void setIntValue(const char* section, const char* name, int value);
+  void setDoubleValue(const char* section, const char* name, double value);
 
-    void deleteValue(const char* section, const char* name);
-    void deleteSection(const char* section);
+  void deleteValue(const char* section, const char* name);
+  void deleteSection(const char* section);
 
-    bool load(const std::string& filename);
-    void save();
+  bool load(const std::string& filename);
+  void save();
 
-  private:
-    class CfgFileImpl;
-    CfgFileImpl* m_impl;
-  };
+private:
+  class CfgFileImpl;
+  CfgFileImpl* m_impl;
+};
 
 } // namespace cfg
 

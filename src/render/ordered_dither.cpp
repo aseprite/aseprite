@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "render/ordered_dither.h"
@@ -21,41 +21,34 @@
 namespace render {
 
 // Base 2x2 dither matrix, called D(2):
-int BayerMatrix::D2[4] = { 0, 2,
-                           3, 1 };
+int BayerMatrix::D2[4] = { 0, 2, 3, 1 };
 
-static int colorDistance(int r1, int g1, int b1, int a1,
-                         int r2, int g2, int b2, int a2)
+static int colorDistance(int r1, int g1, int b1, int a1, int r2, int g2, int b2, int a2)
 {
   int result = 0;
 
   // The factor for RGB components came from doc::rba_luma()
   if (a1 && a2) {
-    result += int(std::abs(r1-r2) * 2126 +
-                  std::abs(g1-g2) * 7152 +
-                  std::abs(b1-b2) *  722);
+    result += int(std::abs(r1 - r2) * 2126 + std::abs(g1 - g2) * 7152 + std::abs(b1 - b2) * 722);
   }
 
-  result += (std::abs(a1-a2) * 20000);
+  result += (std::abs(a1 - a2) * 20000);
   return result;
 }
 
-OrderedDither::OrderedDither(int transparentIndex)
-  : m_transparentIndex(transparentIndex)
+OrderedDither::OrderedDither(int transparentIndex) : m_transparentIndex(transparentIndex)
 {
 }
 
-doc::color_t OrderedDither::ditherRgbPixelToIndex(
-  const DitheringMatrix& matrix,
-  const doc::color_t color,
-  const int x,
-  const int y,
-  const doc::RgbMap* rgbmap,
-  const doc::Palette* palette)
+doc::color_t OrderedDither::ditherRgbPixelToIndex(const DitheringMatrix& matrix,
+                                                  const doc::color_t color,
+                                                  const int x,
+                                                  const int y,
+                                                  const doc::RgbMap* rgbmap,
+                                                  const doc::Palette* palette)
 {
   // Alpha=0, output transparent color
-  if (m_transparentIndex >= 0 &&
-      doc::rgba_geta(color) == 0)
+  if (m_transparentIndex >= 0 && doc::rgba_geta(color) == 0)
     return m_transparentIndex;
 
   // Get the nearest color in the palette with the given RGB
@@ -64,9 +57,8 @@ doc::color_t OrderedDither::ditherRgbPixelToIndex(
   int g = doc::rgba_getg(color);
   int b = doc::rgba_getb(color);
   int a = doc::rgba_geta(color);
-  doc::color_t nearest1idx =
-    (rgbmap ? rgbmap->mapColor(r, g, b, a):
-              palette->findBestfit(r, g, b, a, m_transparentIndex));
+  doc::color_t nearest1idx = (rgbmap ? rgbmap->mapColor(r, g, b, a) :
+                                       palette->findBestfit(r, g, b, a, m_transparentIndex));
 
   doc::color_t nearest1rgb = palette->getEntry(nearest1idx);
   int r1 = doc::rgba_getr(nearest1rgb);
@@ -78,17 +70,16 @@ doc::color_t OrderedDither::ditherRgbPixelToIndex(
   // index, we have an error (r1-r, g1-g, b1-b). Here we try to
   // find the other nearest color with the same error but with
   // different sign.
-  int r2 = r - (r1-r);
-  int g2 = g - (g1-g);
-  int b2 = b - (b1-b);
-  int a2 = a - (a1-a);
+  int r2 = r - (r1 - r);
+  int g2 = g - (g1 - g);
+  int b2 = b - (b1 - b);
+  int a2 = a - (a1 - a);
   r2 = std::clamp(r2, 0, 255);
   g2 = std::clamp(g2, 0, 255);
   b2 = std::clamp(b2, 0, 255);
   a2 = std::clamp(a2, 0, 255);
-  doc::color_t nearest2idx =
-    (rgbmap ? rgbmap->mapColor(r2, g2, b2, a2):
-              palette->findBestfit(r2, g2, b2, a2, m_transparentIndex));
+  doc::color_t nearest2idx = (rgbmap ? rgbmap->mapColor(r2, g2, b2, a2) :
+                                       palette->findBestfit(r2, g2, b2, a2, m_transparentIndex));
 
   // If both possible RGB colors use the same index, we cannot
   // make any dither with these two colors.
@@ -115,12 +106,10 @@ doc::color_t OrderedDither::ditherRgbPixelToIndex(
   d = matrix.maxValue() * d / D;
   int threshold = matrix(y, x);
 
-  return (d > threshold ? nearest2idx:
-                          nearest1idx);
+  return (d > threshold ? nearest2idx : nearest1idx);
 }
 
-OrderedDither2::OrderedDither2(int transparentIndex)
-  : m_transparentIndex(transparentIndex)
+OrderedDither2::OrderedDither2(int transparentIndex) : m_transparentIndex(transparentIndex)
 {
 }
 
@@ -134,17 +123,15 @@ OrderedDither2::OrderedDither2(int transparentIndex)
 // Some ideas from:
 // http://bisqwit.iki.fi/story/howto/dither/jy/
 //
-doc::color_t OrderedDither2::ditherRgbPixelToIndex(
-  const DitheringMatrix& matrix,
-  const doc::color_t color,
-  const int x,
-  const int y,
-  const doc::RgbMap* rgbmap,
-  const doc::Palette* palette)
+doc::color_t OrderedDither2::ditherRgbPixelToIndex(const DitheringMatrix& matrix,
+                                                   const doc::color_t color,
+                                                   const int x,
+                                                   const int y,
+                                                   const doc::RgbMap* rgbmap,
+                                                   const doc::Palette* palette)
 {
   // Alpha=0, output transparent color
-  if (m_transparentIndex >= 0 &&
-      doc::rgba_geta(color) == 0) {
+  if (m_transparentIndex >= 0 && doc::rgba_geta(color) == 0) {
     return m_transparentIndex;
   }
 
@@ -155,9 +142,8 @@ doc::color_t OrderedDither2::ditherRgbPixelToIndex(
   const int a = doc::rgba_geta(color);
 
   // Find the best palette entry for the given color.
-  const int index =
-    (rgbmap ? rgbmap->mapColor(r, g, b, a):
-              palette->findBestfit(r, g, b, a, m_transparentIndex));
+  const int index = (rgbmap ? rgbmap->mapColor(r, g, b, a) :
+                              palette->findBestfit(r, g, b, a, m_transparentIndex));
 
   const doc::color_t color0 = palette->getEntry(index);
   const int r0 = doc::rgba_getr(color0);
@@ -170,7 +156,7 @@ doc::color_t OrderedDither2::ditherRgbPixelToIndex(
   int bestMix = 0;
   int altIndex = -1;
   int closestDistance = std::numeric_limits<int>::max();
-  for (int i=0; i<palette->size(); ++i) {
+  for (int i = 0; i < palette->size(); ++i) {
     if (i == m_transparentIndex)
       continue;
 
@@ -192,25 +178,28 @@ doc::color_t OrderedDither2::ditherRgbPixelToIndex(
     int div = 0;
     // If Alpha=0, RGB values are not representative for this entry.
     if (a && a0 && a1) {
-      if (r1-r0) mix += 2126 * maxMixValue * (r-r0) / (r1-r0), div += 2126;
-      if (g1-g0) mix += 7152 * maxMixValue * (g-g0) / (g1-g0), div += 7152;
-      if (b1-b0) mix +=  722 * maxMixValue * (b-b0) / (b1-b0), div +=  722;
+      if (r1 - r0)
+        mix += 2126 * maxMixValue * (r - r0) / (r1 - r0), div += 2126;
+      if (g1 - g0)
+        mix += 7152 * maxMixValue * (g - g0) / (g1 - g0), div += 7152;
+      if (b1 - b0)
+        mix += 722 * maxMixValue * (b - b0) / (b1 - b0), div += 722;
     }
-    if (a1-a0) mix += 20000 * maxMixValue * (a-a0) / (a1-a0), div += 20000;
+    if (a1 - a0)
+      mix += 20000 * maxMixValue * (a - a0) / (a1 - a0), div += 20000;
     if (mix) {
       if (div)
         mix /= div;
       mix = std::clamp(mix, 0, maxMixValue);
     }
 
-    const int rM = r0 + (r1-r0) * mix / maxMixValue;
-    const int gM = g0 + (g1-g0) * mix / maxMixValue;
-    const int bM = b0 + (b1-b0) * mix / maxMixValue;
-    const int aM = a0 + (a1-a0) * mix / maxMixValue;
-    const int d =
-      colorDistance(r, g, b, a, rM, gM, bM, aM)
-      // Don't use an alternative index if it's too far away from the first index
-      + colorDistance(r0, g0, b0, a0, r1, g1, b1, a1) / 10;
+    const int rM = r0 + (r1 - r0) * mix / maxMixValue;
+    const int gM = g0 + (g1 - g0) * mix / maxMixValue;
+    const int bM = b0 + (b1 - b0) * mix / maxMixValue;
+    const int aM = a0 + (a1 - a0) * mix / maxMixValue;
+    const int d = colorDistance(r, g, b, a, rM, gM, bM, aM)
+                  // Don't use an alternative index if it's too far away from the first index
+                  + colorDistance(r0, g0, b0, a0, r1, g1, b1, a1) / 10;
 
     if (closestDistance > d) {
       closestDistance = d;
@@ -227,14 +216,13 @@ doc::color_t OrderedDither2::ditherRgbPixelToIndex(
     return index;
 }
 
-void dither_rgb_image_to_indexed(
-  DitheringAlgorithmBase& algorithm,
-  const Dithering& dithering,
-  const doc::Image* srcImage,
-  doc::Image* dstImage,
-  const doc::RgbMap* rgbmap,
-  const doc::Palette* palette,
-  TaskDelegate* delegate)
+void dither_rgb_image_to_indexed(DitheringAlgorithmBase& algorithm,
+                                 const Dithering& dithering,
+                                 const doc::Image* srcImage,
+                                 doc::Image* dstImage,
+                                 const doc::RgbMap* rgbmap,
+                                 const doc::Palette* palette,
+                                 TaskDelegate* delegate)
 {
   const int w = srcImage->width();
   const int h = srcImage->height();
@@ -247,12 +235,11 @@ void dither_rgb_image_to_indexed(
     auto srcIt = srcBits.begin();
     auto dstIt = dstBits.begin();
 
-    for (int y=0; y<h; ++y) {
-      for (int x=0; x<w; ++x, ++srcIt, ++dstIt) {
+    for (int y = 0; y < h; ++y) {
+      for (int x = 0; x < w; ++x, ++srcIt, ++dstIt) {
         ASSERT(srcIt != srcBits.end());
         ASSERT(dstIt != dstBits.end());
-        *dstIt = algorithm.ditherRgbPixelToIndex(
-          dithering.matrix(), *srcIt, x, y, rgbmap, palette);
+        *dstIt = algorithm.ditherRgbPixelToIndex(dithering.matrix(), *srcIt, x, y, rgbmap, palette);
 
         if (delegate) {
           if (!delegate->continueTask())
@@ -261,8 +248,7 @@ void dither_rgb_image_to_indexed(
       }
 
       if (delegate) {
-        delegate->notifyTaskProgress(
-          double(y+1) / double(h));
+        delegate->notifyTaskProgress(double(y + 1) / double(h));
       }
     }
   }
@@ -270,10 +256,10 @@ void dither_rgb_image_to_indexed(
     auto dstIt = doc::get_pixel_address_fast<doc::IndexedTraits>(dstImage, 0, 0);
     const bool zigZag = algorithm.zigZag();
 
-    for (int y=0; y<h; ++y) {
+    for (int y = 0; y < h; ++y) {
       if (zigZag && (y & 1)) { // Odd row: go from right-to-left
-        dstIt += w-1;
-        for (int x=w-1; x>=0; --x, --dstIt) {
+        dstIt += w - 1;
+        for (int x = w - 1; x >= 0; --x, --dstIt) {
           ASSERT(dstIt == doc::get_pixel_address_fast<doc::IndexedTraits>(dstImage, x, y));
           *dstIt = algorithm.ditherRgbToIndex2D(x, y, rgbmap, palette);
           if (delegate) {
@@ -281,10 +267,10 @@ void dither_rgb_image_to_indexed(
               return;
           }
         }
-        dstIt += w+1;
+        dstIt += w + 1;
       }
-      else {                    // Even row: go fromo left-to-right
-        for (int x=0; x<w; ++x, ++dstIt) {
+      else { // Even row: go fromo left-to-right
+        for (int x = 0; x < w; ++x, ++dstIt) {
           ASSERT(dstIt == doc::get_pixel_address_fast<doc::IndexedTraits>(dstImage, x, y));
           *dstIt = algorithm.ditherRgbToIndex2D(x, y, rgbmap, palette);
 
@@ -295,8 +281,7 @@ void dither_rgb_image_to_indexed(
         }
       }
       if (delegate) {
-        delegate->notifyTaskProgress(
-          double(y+1) / double(h));
+        delegate->notifyTaskProgress(double(y + 1) / double(h));
       }
     }
   }

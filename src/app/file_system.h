@@ -19,79 +19,75 @@
 
 namespace app {
 
-  class IFileItem;
-  using FileItemList = std::vector<IFileItem*>;
+class IFileItem;
+using FileItemList = std::vector<IFileItem*>;
 
-  class FileSystemModule {
-    static FileSystemModule* m_instance;
+class FileSystemModule {
+  static FileSystemModule* m_instance;
 
-  public:
-    FileSystemModule();
-    ~FileSystemModule();
+public:
+  FileSystemModule();
+  ~FileSystemModule();
 
-    static FileSystemModule* instance();
+  static FileSystemModule* instance();
 
-    // Marks all FileItems as deprecated to be refresh the next time
-    // they are queried through @ref FileItem::children().
-    void refresh();
+  // Marks all FileItems as deprecated to be refresh the next time
+  // they are queried through @ref FileItem::children().
+  void refresh();
 
-    IFileItem* getRootFileItem();
+  IFileItem* getRootFileItem();
 
-    // Returns the FileItem through the specified "path".
-    // Warning: You have to call path.fix_separators() before.
-    IFileItem* getFileItemFromPath(const std::string& path);
+  // Returns the FileItem through the specified "path".
+  // Warning: You have to call path.fix_separators() before.
+  IFileItem* getFileItemFromPath(const std::string& path);
 
-    void lock() { m_mutex.lock(); }
-    void unlock() { m_mutex.unlock(); }
+  void lock() { m_mutex.lock(); }
+  void unlock() { m_mutex.unlock(); }
 
-    obs::signal<void(IFileItem*)> ItemRemoved;
+  obs::signal<void(IFileItem*)> ItemRemoved;
 
-  private:
-    std::mutex m_mutex;
-  };
+private:
+  std::mutex m_mutex;
+};
 
-  class LockFS {
-  public:
-    LockFS(FileSystemModule* fs) : m_fs(fs) {
-      m_fs->lock();
-    }
-    ~LockFS() {
-      m_fs->unlock();
-    }
-  private:
-    FileSystemModule* m_fs;
-  };
+class LockFS {
+public:
+  LockFS(FileSystemModule* fs) : m_fs(fs) { m_fs->lock(); }
+  ~LockFS() { m_fs->unlock(); }
 
-  class IFileItem {
-  public:
-    virtual ~IFileItem() { }
+private:
+  FileSystemModule* m_fs;
+};
 
-    virtual bool isFolder() const = 0;
-    virtual bool isBrowsable() const = 0;
-    virtual bool isHidden() const = 0;
+class IFileItem {
+public:
+  virtual ~IFileItem() {}
 
-    // Returns false if this item doesn't exist anymore (e.g. a file
-    // or folder that was deleted from other process).
-    virtual bool isExistent() const = 0;
+  virtual bool isFolder() const = 0;
+  virtual bool isBrowsable() const = 0;
+  virtual bool isHidden() const = 0;
 
-    virtual const std::string& keyName() const = 0;
-    virtual const std::string& fileName() const = 0;
-    virtual const std::string& displayName() const = 0;
+  // Returns false if this item doesn't exist anymore (e.g. a file
+  // or folder that was deleted from other process).
+  virtual bool isExistent() const = 0;
 
-    virtual IFileItem* parent() const = 0;
-    virtual const FileItemList& children() = 0;
-    virtual void createDirectory(const std::string& dirname) = 0;
+  virtual const std::string& keyName() const = 0;
+  virtual const std::string& fileName() const = 0;
+  virtual const std::string& displayName() const = 0;
 
-    virtual bool hasExtension(const base::paths& extensions) = 0;
+  virtual IFileItem* parent() const = 0;
+  virtual const FileItemList& children() = 0;
+  virtual void createDirectory(const std::string& dirname) = 0;
 
-    virtual double getThumbnailProgress() = 0;
-    virtual void setThumbnailProgress(double progress) = 0;
+  virtual bool hasExtension(const base::paths& extensions) = 0;
 
-    virtual bool needThumbnail() const = 0;
-    virtual os::SurfaceRef getThumbnail() = 0;
-    virtual void setThumbnail(const os::SurfaceRef& thumbnail) = 0;
+  virtual double getThumbnailProgress() = 0;
+  virtual void setThumbnailProgress(double progress) = 0;
 
-  };
+  virtual bool needThumbnail() const = 0;
+  virtual os::SurfaceRef getThumbnail() = 0;
+  virtual void setThumbnail(const os::SurfaceRef& thumbnail) = 0;
+};
 
 } // namespace app
 

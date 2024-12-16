@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/deselect_mask.h"
@@ -20,8 +20,7 @@
 #include "app/tx.h"
 #include "doc/mask.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 using namespace doc;
 
@@ -31,23 +30,24 @@ struct SelectionObj {
   ObjectId maskId;
   ObjectId spriteId;
   SelectionObj(Mask* mask, Sprite* sprite)
-    : maskId(mask ? mask->id(): 0)
-    , spriteId(sprite ? sprite->id(): 0) {
+    : maskId(mask ? mask->id() : 0)
+    , spriteId(sprite ? sprite->id() : 0)
+  {
   }
   SelectionObj(const SelectionObj&) = delete;
   SelectionObj& operator=(const SelectionObj&) = delete;
 
-  ~SelectionObj() {
-    ASSERT(!maskId);
-  }
+  ~SelectionObj() { ASSERT(!maskId); }
 
-  void gc(lua_State* L) {
+  void gc(lua_State* L)
+  {
     if (!spriteId)
       delete this->mask(L);
     maskId = 0;
   }
 
-  Mask* mask(lua_State* L) {
+  Mask* mask(lua_State* L)
+  {
     if (maskId)
       return check_docobj(L, doc::get<Mask>(maskId));
     else {
@@ -67,7 +67,8 @@ struct SelectionObj {
       return doc->mask();
     }
   }
-  Sprite* sprite(lua_State* L) {
+  Sprite* sprite(lua_State* L)
+  {
     if (spriteId)
       return check_docobj(L, doc::get<Sprite>(spriteId));
     else
@@ -101,10 +102,9 @@ int Selection_eq(lua_State* L)
   auto b = get_obj<SelectionObj>(L, 2);
   auto aMask = a->mask(L);
   auto bMask = b->mask(L);
-  const bool result =
-    (aMask->isEmpty() && bMask->isEmpty()) ||
-    (!aMask->isEmpty() && !bMask->isEmpty() &&
-     is_same_image(aMask->bitmap(), bMask->bitmap()));
+  const bool result = (aMask->isEmpty() && bMask->isEmpty()) ||
+                      (!aMask->isEmpty() && !bMask->isEmpty() &&
+                       is_same_image(aMask->bitmap(), bMask->bitmap()));
   lua_pushboolean(L, result);
   return 1;
 }
@@ -130,7 +130,8 @@ int Selection_deselect(lua_State* L)
 }
 
 template<typename T>
-void replace(Mask& dst, const Mask& a, const T& b) {
+void replace(Mask& dst, const Mask& a, const T& b)
+{
   if (b.isEmpty())
     dst.clear();
   else
@@ -138,7 +139,8 @@ void replace(Mask& dst, const Mask& a, const T& b) {
 }
 
 template<typename T>
-void add(Mask& dst, const Mask& a, const T& b) {
+void add(Mask& dst, const Mask& a, const T& b)
+{
   if (&dst != &a)
     dst.replace(a);
   if (!b.isEmpty())
@@ -146,7 +148,8 @@ void add(Mask& dst, const Mask& a, const T& b) {
 }
 
 template<typename T>
-void subtract(Mask& dst, const Mask& a, const T& b) {
+void subtract(Mask& dst, const Mask& a, const T& b)
+{
   if (&dst != &a)
     dst.replace(a);
   if (!b.isEmpty())
@@ -154,7 +157,8 @@ void subtract(Mask& dst, const Mask& a, const T& b) {
 }
 
 template<typename T>
-void intersect(Mask& dst, const Mask& a, const T& b) {
+void intersect(Mask& dst, const Mask& a, const T& b)
+{
   if (b.isEmpty())
     dst.clear();
   else {
@@ -209,10 +213,22 @@ int Selection_op(lua_State* L, OpMask opMask, OpRect opRect)
   return 0;
 }
 
-int Selection_select(lua_State* L) { return Selection_op(L, replace<Mask>, replace<gfx::Rect>); }
-int Selection_add(lua_State* L) { return Selection_op(L, add<Mask>, add<gfx::Rect>); }
-int Selection_subtract(lua_State* L) { return Selection_op(L, subtract<Mask>, subtract<gfx::Rect>); }
-int Selection_intersect(lua_State* L) { return Selection_op(L, intersect<Mask>, intersect<gfx::Rect>); }
+int Selection_select(lua_State* L)
+{
+  return Selection_op(L, replace<Mask>, replace<gfx::Rect>);
+}
+int Selection_add(lua_State* L)
+{
+  return Selection_op(L, add<Mask>, add<gfx::Rect>);
+}
+int Selection_subtract(lua_State* L)
+{
+  return Selection_op(L, subtract<Mask>, subtract<gfx::Rect>);
+}
+int Selection_intersect(lua_State* L)
+{
+  return Selection_op(L, intersect<Mask>, intersect<gfx::Rect>);
+}
 
 int Selection_selectAll(lua_State* L)
 {
@@ -253,7 +269,7 @@ int Selection_get_bounds(lua_State* L)
     if (doc->isMaskVisible()) {
       push_obj(L, doc->mask()->bounds());
     }
-    else {   // Empty rectangle
+    else { // Empty rectangle
       push_new<gfx::Rect>(L, 0, 0, 0, 0);
     }
   }
@@ -311,23 +327,23 @@ int Selection_get_isEmpty(lua_State* L)
 }
 
 const luaL_Reg Selection_methods[] = {
-  { "deselect", Selection_deselect },
-  { "select", Selection_select },
+  { "deselect",  Selection_deselect  },
+  { "select",    Selection_select    },
   { "selectAll", Selection_selectAll },
-  { "add", Selection_add },
-  { "subtract", Selection_subtract },
+  { "add",       Selection_add       },
+  { "subtract",  Selection_subtract  },
   { "intersect", Selection_intersect },
-  { "contains", Selection_contains },
-  { "__gc", Selection_gc },
-  { "__eq", Selection_eq },
-  { nullptr, nullptr }
+  { "contains",  Selection_contains  },
+  { "__gc",      Selection_gc        },
+  { "__eq",      Selection_eq        },
+  { nullptr,     nullptr             }
 };
 
 const Property Selection_properties[] = {
-  { "bounds", Selection_get_bounds, nullptr },
-  { "origin", Selection_get_origin, Selection_set_origin },
-  { "isEmpty", Selection_get_isEmpty, nullptr },
-  { nullptr, nullptr, nullptr }
+  { "bounds",  Selection_get_bounds,  nullptr              },
+  { "origin",  Selection_get_origin,  Selection_set_origin },
+  { "isEmpty", Selection_get_isEmpty, nullptr              },
+  { nullptr,   nullptr,               nullptr              }
 };
 
 } // anonymous namespace
@@ -353,5 +369,4 @@ const doc::Mask* get_mask_from_arg(lua_State* L, int index)
   return get_obj<SelectionObj>(L, index)->mask(L);
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

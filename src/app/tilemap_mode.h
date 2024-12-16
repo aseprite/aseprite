@@ -10,11 +10,11 @@
 
 namespace app {
 
-  // Should we edit the pixels or the tiles of the tilemap?
-  enum class TilemapMode {
-    Pixels,                     // Edit tile pixels
-    Tiles,                      // Edit tiles
-  };
+// Should we edit the pixels or the tiles of the tilemap?
+enum class TilemapMode {
+  Pixels, // Edit tile pixels
+  Tiles,  // Edit tiles
+};
 
 } // namespace app
 

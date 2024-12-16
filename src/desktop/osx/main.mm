@@ -22,14 +22,23 @@
 static HRESULT Plugin_QueryInterface(void*, REFIID, LPVOID*);
 static ULONG Plugin_AddRef(void*);
 static ULONG Plugin_Release(void*);
-static OSStatus Plugin_GenerateThumbnailForURL(void*, QLThumbnailRequestRef, CFURLRef, CFStringRef, CFDictionaryRef, CGSize);
+static OSStatus Plugin_GenerateThumbnailForURL(void*,
+                                               QLThumbnailRequestRef,
+                                               CFURLRef,
+                                               CFStringRef,
+                                               CFDictionaryRef,
+                                               CGSize);
 static void Plugin_CancelThumbnailGeneration(void*, QLThumbnailRequestRef);
-static OSStatus Plugin_GeneratePreviewForURL(void*, QLPreviewRequestRef, CFURLRef, CFStringRef, CFDictionaryRef);
+static OSStatus Plugin_GeneratePreviewForURL(void*,
+                                             QLPreviewRequestRef,
+                                             CFURLRef,
+                                             CFStringRef,
+                                             CFDictionaryRef);
 static void Plugin_CancelPreviewGeneration(void*, QLPreviewRequestRef);
 
 static QLGeneratorInterfaceStruct Plugin_vtbl = { // kQLGeneratorTypeID interface
   // IUnknown
-  nullptr,                      // void* reserved
+  nullptr, // void* reserved
   Plugin_QueryInterface,
   Plugin_AddRef,
   Plugin_Release,
@@ -45,16 +54,17 @@ static QLGeneratorInterfaceStruct Plugin_vtbl = { // kQLGeneratorTypeID interfac
 struct Plugin {
   QLGeneratorInterfaceStruct* interface; // Must be a pointer
   CFUUIDRef factoryID;
-  ULONG refCount = 1;           // Starts with one reference when it's created
+  ULONG refCount = 1; // Starts with one reference when it's created
 
   Plugin(CFUUIDRef factoryID)
     : interface(new QLGeneratorInterfaceStruct(Plugin_vtbl))
-    , factoryID(factoryID) {
+    , factoryID(factoryID)
+  {
     CFPlugInAddInstanceForFactory(factoryID);
   }
 
-
-  ~Plugin() {
+  ~Plugin()
+  {
     delete interface;
     if (factoryID) {
       CFPlugInRemoveInstanceForFactory(factoryID);
@@ -64,7 +74,8 @@ struct Plugin {
 
   // IUnknown impl
 
-  HRESULT QueryInterface(REFIID iid, LPVOID* ppv) {
+  HRESULT QueryInterface(REFIID iid, LPVOID* ppv)
+  {
     CFUUIDRef interfaceID = CFUUIDCreateFromUUIDBytes(kCFAllocatorDefault, iid);
 
     if (CFEqual(interfaceID, kQLGeneratorCallbacksInterfaceID)) {
@@ -80,11 +91,10 @@ struct Plugin {
     }
   }
 
-  ULONG AddRef() {
-    return ++refCount;
-  }
+  ULONG AddRef() { return ++refCount; }
 
-  ULONG Release() {
+  ULONG Release()
+  {
     if (refCount == 1) {
       delete this;
       return 0;
@@ -101,7 +111,8 @@ struct Plugin {
                                           CFURLRef url,
                                           CFStringRef contentTypeUTI,
                                           CFDictionaryRef options,
-                                          CGSize maxSize) {
+                                          CGSize maxSize)
+  {
     CGImageRef image = desktop::get_thumbnail(url, options, maxSize);
     if (!image)
       return -1;
@@ -111,14 +122,16 @@ struct Plugin {
     return 0;
   }
 
-  static void CancelThumbnailGeneration(QLThumbnailRequestRef thumbnail) {
+  static void CancelThumbnailGeneration(QLThumbnailRequestRef thumbnail)
+  {
     // TODO
   }
 
   OSStatus GeneratePreviewForURL(QLPreviewRequestRef preview,
                                  CFURLRef url,
                                  CFStringRef contentTypeUTI,
-                                 CFDictionaryRef options) {
+                                 CFDictionaryRef options)
+  {
     CGImageRef image = desktop::get_thumbnail(url, options, CGSizeMake(0, 0));
     if (!image)
       return -1;
@@ -140,10 +153,10 @@ struct Plugin {
     return 0;
   }
 
-  void CancelPreviewGeneration(QLPreviewRequestRef preview) {
+  void CancelPreviewGeneration(QLPreviewRequestRef preview)
+  {
     // TODO
   }
-
 };
 
 static HRESULT Plugin_QueryInterface(void* p, REFIID iid, LPVOID* ppv)
@@ -164,10 +177,19 @@ static ULONG Plugin_Release(void* p)
   return reinterpret_cast<Plugin*>(p)->Release();
 }
 
-static OSStatus Plugin_GenerateThumbnailForURL(void* p, QLThumbnailRequestRef thumbnail, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options, CGSize maxSize)
+static OSStatus Plugin_GenerateThumbnailForURL(void* p,
+                                               QLThumbnailRequestRef thumbnail,
+                                               CFURLRef url,
+                                               CFStringRef contentTypeUTI,
+                                               CFDictionaryRef options,
+                                               CGSize maxSize)
 {
   ASSERT(p);
-  return reinterpret_cast<Plugin*>(p)->GenerateThumbnailForURL(thumbnail, url, contentTypeUTI, options, maxSize);
+  return reinterpret_cast<Plugin*>(p)->GenerateThumbnailForURL(thumbnail,
+                                                               url,
+                                                               contentTypeUTI,
+                                                               options,
+                                                               maxSize);
 }
 
 static void Plugin_CancelThumbnailGeneration(void* p, QLThumbnailRequestRef thumbnail)
@@ -176,7 +198,11 @@ static void Plugin_CancelThumbnailGeneration(void* p, QLThumbnailRequestRef thum
   reinterpret_cast<Plugin*>(p)->CancelThumbnailGeneration(thumbnail);
 }
 
-static OSStatus Plugin_GeneratePreviewForURL(void* p, QLPreviewRequestRef preview, CFURLRef url, CFStringRef contentTypeUTI, CFDictionaryRef options)
+static OSStatus Plugin_GeneratePreviewForURL(void* p,
+                                             QLPreviewRequestRef preview,
+                                             CFURLRef url,
+                                             CFStringRef contentTypeUTI,
+                                             CFDictionaryRef options)
 {
   ASSERT(p);
   return reinterpret_cast<Plugin*>(p)->GeneratePreviewForURL(preview, url, contentTypeUTI, options);
@@ -196,8 +222,7 @@ static void Plugin_CancelPreviewGeneration(void* p, QLPreviewRequestRef preview)
 // This function is used to create an instance of an object of
 // kQLGeneratorTypeID type, which should implement the
 // QLGeneratorInterfaceStruct interface.
-extern "C" void* QuickLookGeneratorPluginFactory(CFAllocatorRef allocator,
-                                                 CFUUIDRef typeID)
+extern "C" void* QuickLookGeneratorPluginFactory(CFAllocatorRef allocator, CFUUIDRef typeID)
 {
   if (CFEqual(typeID, kQLGeneratorTypeID)) {
     CFUUIDRef uuid = CFUUIDCreateFromString(kCFAllocatorDefault, CFSTR(PLUGIN_ID));
@@ -205,5 +230,5 @@ extern "C" void* QuickLookGeneratorPluginFactory(CFAllocatorRef allocator,
     CFRelease(uuid);
     return plugin;
   }
-  return nullptr;               // Unknown typeID
+  return nullptr; // Unknown typeID
 }

@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_mask.h"
@@ -31,8 +31,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-InvertMaskCommand::InvertMaskCommand()
-  : Command(CommandId::InvertMask(), CmdRecordableFlag)
+InvertMaskCommand::InvertMaskCommand() : Command(CommandId::InvertMask(), CmdRecordableFlag)
 {
 }
 
@@ -54,8 +53,7 @@ void InvertMaskCommand::onExecute(Context* context)
   // without mask?...
   if (!hasMask) {
     // so we select all
-    Command* mask_all_cmd =
-      Commands::instance()->byId(CommandId::MaskAll());
+    Command* mask_all_cmd = Commands::instance()->byId(CommandId::MaskAll());
     context->executeCommand(mask_all_cmd);
   }
   // invert the current mask
@@ -71,9 +69,11 @@ void InvertMaskCommand::onExecute(Context* context)
     // Remove in the new mask the current sprite marked region
     const gfx::Rect& maskBounds = document->mask()->bounds();
     doc::fill_rect(mask->bitmap(),
-      maskBounds.x, maskBounds.y,
-      maskBounds.x + maskBounds.w-1,
-      maskBounds.y + maskBounds.h-1, 0);
+                   maskBounds.x,
+                   maskBounds.y,
+                   maskBounds.x + maskBounds.w - 1,
+                   maskBounds.y + maskBounds.h - 1,
+                   0);
 
     Mask* curMask = document->mask();
     if (curMask->bitmap()) {
@@ -81,10 +81,7 @@ void InvertMaskCommand::onExecute(Context* context)
       // document's mask temporaly here)
       curMask->freeze();
       curMask->invert();
-      doc::copy_image(mask->bitmap(),
-        curMask->bitmap(),
-        curMask->bounds().x,
-        curMask->bounds().y);
+      doc::copy_image(mask->bitmap(), curMask->bitmap(), curMask->bounds().x, curMask->bounds().y);
       curMask->invert();
       curMask->unfreeze();
     }

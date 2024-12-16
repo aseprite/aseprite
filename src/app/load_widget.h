@@ -12,11 +12,12 @@
 
 namespace app {
 
-  template<class T>
-  inline T* load_widget(const char* fileName, const char* widgetId, T* widget = NULL) {
-    WidgetLoader loader;
-    return loader.loadWidgetT<T>(fileName, widgetId, widget);
-  }
+template<class T>
+inline T* load_widget(const char* fileName, const char* widgetId, T* widget = NULL)
+{
+  WidgetLoader loader;
+  return loader.loadWidgetT<T>(fileName, widgetId, widget);
+}
 
 } // namespace app
 

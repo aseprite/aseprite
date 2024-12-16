@@ -16,14 +16,14 @@
 
 namespace app {
 
-  // Shows the window to offer a solution for forward compatibility
-  // (don't save/overwrite files that were saved with future Aseprite
-  // versions/unknown data in the original .aseprite file).
-  class IncompatFileWindow : public app::gen::IncompatFile {
-  public:
-    void show(std::string incompatibilities = std::string());
-  };
+// Shows the window to offer a solution for forward compatibility
+// (don't save/overwrite files that were saved with future Aseprite
+// versions/unknown data in the original .aseprite file).
+class IncompatFileWindow : public app::gen::IncompatFile {
+public:
+  void show(std::string incompatibilities = std::string());
+};
 
-}
+} // namespace app
 
 #endif

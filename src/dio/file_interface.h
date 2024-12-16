@@ -16,7 +16,7 @@ namespace dio {
 
 class FileInterface {
 public:
-  virtual ~FileInterface() { }
+  virtual ~FileInterface() {}
 
   // Returns true if we can read/write bytes from/into the file
   virtual bool ok() const = 0;
@@ -33,7 +33,6 @@ public:
 
   // Writes one byte in the file (or do nothing if ok() = false)
   virtual void write8(uint8_t value) = 0;
-
 };
 
 class StdioFileInterface : public FileInterface {
@@ -45,6 +44,7 @@ public:
   uint8_t read8() override;
   size_t readBytes(uint8_t* buf, size_t n) override;
   void write8(uint8_t value) override;
+
 private:
   FILE* m_file;
   bool m_ok;

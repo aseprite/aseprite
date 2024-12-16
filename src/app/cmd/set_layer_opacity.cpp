@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_layer_opacity.h"
@@ -15,8 +15,7 @@
 #include "doc/layer.h"
 #include "doc/sprite.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 SetLayerOpacity::SetLayerOpacity(LayerImage* layer, int opacity)
   : WithLayer(layer)
@@ -47,5 +46,4 @@ void SetLayerOpacity::onFireNotifications()
   doc->notify_observers<DocEvent&>(&DocObserver::onLayerOpacityChange, ev);
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

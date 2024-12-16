@@ -12,14 +12,14 @@
 
 namespace doc {
 
-  class Layer;
+class Layer;
 
-  typedef std::vector<Layer*> LayerList;
-  typedef int layer_t;
+typedef std::vector<Layer*> LayerList;
+typedef int layer_t;
 
-  layer_t find_layer_index(const LayerList& layers, const Layer* layer);
-  bool are_layers_adjacent(const LayerList& layers);
+layer_t find_layer_index(const LayerList& layers, const Layer* layer);
+bool are_layers_adjacent(const LayerList& layers);
 
 } // namespace doc
 
-#endif  // DOC_LAYER_LIST_H_INCLUDED
+#endif // DOC_LAYER_LIST_H_INCLUDED

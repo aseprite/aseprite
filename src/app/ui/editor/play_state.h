@@ -17,58 +17,56 @@
 #include "ui/timer.h"
 
 namespace doc {
-  class Tag;
+class Tag;
 }
 
 namespace app {
 
-  class CommandExecutionEvent;
+class CommandExecutionEvent;
 
-  class PlayState : public StateWithWheelBehavior {
-  public:
-    PlayState(const bool playOnce,
-              const bool playAll,
-              const bool playSubtags);
+class PlayState : public StateWithWheelBehavior {
+public:
+  PlayState(const bool playOnce, const bool playAll, const bool playSubtags);
 
-    doc::Tag* playingTag() const;
+  doc::Tag* playingTag() const;
 
-    void onEnterState(Editor* editor) override;
-    LeaveAction onLeaveState(Editor* editor, EditorState* newState) override;
-    void onBeforePopState(Editor* editor) override;
-    bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
-    bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
-    bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
-    bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
-    bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
-    bool onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos) override;
-    void onRemoveTag(Editor* editor, doc::Tag* tag) override;
+  void onEnterState(Editor* editor) override;
+  LeaveAction onLeaveState(Editor* editor, EditorState* newState) override;
+  void onBeforePopState(Editor* editor) override;
+  bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
+  bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
+  bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
+  bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
+  bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
+  bool onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos) override;
+  void onRemoveTag(Editor* editor, doc::Tag* tag) override;
 
-  private:
-    void onPlaybackTick();
+private:
+  void onPlaybackTick();
 
-    // ContextObserver
-    void onBeforeCommandExecution(CommandExecutionEvent& ev);
+  // ContextObserver
+  void onBeforeCommandExecution(CommandExecutionEvent& ev);
 
-    double getNextFrameTime();
+  double getNextFrameTime();
 
-    Editor* m_editor;
-    doc::Playback m_playback;
-    bool m_playOnce;
-    bool m_playAll;
-    bool m_playSubtags;
-    bool m_toScroll;
-    ui::Timer m_playTimer;
+  Editor* m_editor;
+  doc::Playback m_playback;
+  bool m_playOnce;
+  bool m_playAll;
+  bool m_playSubtags;
+  bool m_toScroll;
+  ui::Timer m_playTimer;
 
-    // Number of milliseconds to go to the next frame if m_playTimer
-    // is activated.
-    double m_nextFrameTime;
-    base::tick_t m_curFrameTick;
+  // Number of milliseconds to go to the next frame if m_playTimer
+  // is activated.
+  double m_nextFrameTime;
+  base::tick_t m_curFrameTick;
 
-    doc::frame_t m_refFrame;
-    doc::Tag* m_tag;
+  doc::frame_t m_refFrame;
+  doc::Tag* m_tag;
 
-    obs::scoped_connection m_ctxConn;
-  };
+  obs::scoped_connection m_ctxConn;
+};
 
 } // namespace app
 

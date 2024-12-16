@@ -22,49 +22,49 @@
 namespace app {
 class Context;
 namespace crash {
-  class BackupObserver;
+class BackupObserver;
 
-  class DataRecovery {
-  public:
-    typedef std::vector<SessionPtr> Sessions;
+class DataRecovery {
+public:
+  typedef std::vector<SessionPtr> Sessions;
 
-    DataRecovery(Context* context);
-    ~DataRecovery();
+  DataRecovery(Context* context);
+  ~DataRecovery();
 
-    // Launches the thread to search for sessions.
-    void launchSearch();
+  // Launches the thread to search for sessions.
+  void launchSearch();
 
-    bool isSearching() const { return m_searching; }
+  bool isSearching() const { return m_searching; }
 
-    // Returns true if there is at least one sessions with sprites to
-    // recover (i.e. a crashed session were changes weren't saved)
-    bool hasRecoverySessions() const;
+  // Returns true if there is at least one sessions with sprites to
+  // recover (i.e. a crashed session were changes weren't saved)
+  bool hasRecoverySessions() const;
 
-    Session* activeSession() { return m_inProgress.get(); }
+  Session* activeSession() { return m_inProgress.get(); }
 
-    // Returns a copy of the list of sessions that can be recovered.
-    Sessions sessions();
+  // Returns a copy of the list of sessions that can be recovered.
+  Sessions sessions();
 
-    // Triggered in the UI-thread from the m_thread using an
-    // ui::execute_from_ui_thread() when the list of sessions is ready
-    // to be used.
-    obs::signal<void()> SessionsListIsReady;
+  // Triggered in the UI-thread from the m_thread using an
+  // ui::execute_from_ui_thread() when the list of sessions is ready
+  // to be used.
+  obs::signal<void()> SessionsListIsReady;
 
-  private:
-    // Executed from m_thread to search for the list of sessions.
-    void searchForSessions();
+private:
+  // Executed from m_thread to search for the list of sessions.
+  void searchForSessions();
 
-    std::string m_sessionsDir;
-    mutable std::mutex m_sessionsMutex;
-    std::thread m_thread;
-    RecoveryConfig m_config;
-    Sessions m_sessions;
-    SessionPtr m_inProgress;
-    BackupObserver* m_backup;
-    std::atomic<bool> m_searching;
+  std::string m_sessionsDir;
+  mutable std::mutex m_sessionsMutex;
+  std::thread m_thread;
+  RecoveryConfig m_config;
+  Sessions m_sessions;
+  SessionPtr m_inProgress;
+  BackupObserver* m_backup;
+  std::atomic<bool> m_searching;
 
-    DISABLE_COPYING(DataRecovery);
-  };
+  DISABLE_COPYING(DataRecovery);
+};
 
 } // namespace crash
 } // namespace app

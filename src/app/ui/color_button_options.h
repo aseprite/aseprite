@@ -10,28 +10,30 @@
 
 namespace app {
 
-  struct ColorButtonOptions {
-    bool canPinSelector;
-    bool showSimpleColors;
-    bool showIndexTab;
+struct ColorButtonOptions {
+  bool canPinSelector;
+  bool showSimpleColors;
+  bool showIndexTab;
 
-    ColorButtonOptions() {
-      // Default values for regular color buttons in dialogs like
-      // "Replace Color"
-      canPinSelector = false;
-      showSimpleColors = false;
-      showIndexTab = true;
-    }
-  };
+  ColorButtonOptions()
+  {
+    // Default values for regular color buttons in dialogs like
+    // "Replace Color"
+    canPinSelector = false;
+    showSimpleColors = false;
+    showIndexTab = true;
+  }
+};
 
-  struct ColorBarButtonsOptions : public ColorButtonOptions {
-    ColorBarButtonsOptions() {
-      // Default values for color buttons inside the color bar
-      canPinSelector = true;
-      showSimpleColors = false;
-      showIndexTab = false;
-    }
-  };
+struct ColorBarButtonsOptions : public ColorButtonOptions {
+  ColorBarButtonsOptions()
+  {
+    // Default values for color buttons inside the color bar
+    canPinSelector = true;
+    showSimpleColors = false;
+    showIndexTab = false;
+  }
+};
 
 } // namespace app
 

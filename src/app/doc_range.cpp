@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/doc_range.h"
@@ -111,8 +111,7 @@ void DocRange::eraseAndAdjust(const Layer* layer)
   // "m_selectingFromLayer" for too much time this could fail (even
   // more, "m_selectingFromLayer" could be pointing to an already
   // closed/deleted sprite).
-  ASSERT(!m_selectingFromLayer || !layer ||
-         m_selectingFromLayer->sprite() == layer->sprite());
+  ASSERT(!m_selectingFromLayer || !layer || m_selectingFromLayer->sprite() == layer->sprite());
 
   if (m_selectingFromLayer)
     m_selectingFromLayer = candidate_if_layer_is_deleted(m_selectingFromLayer, layer);
@@ -134,14 +133,11 @@ bool DocRange::contains(const Layer* layer) const
     return false;
 }
 
-bool DocRange::contains(const Layer* layer,
-                        const frame_t frame) const
+bool DocRange::contains(const Layer* layer, const frame_t frame) const
 {
   switch (m_type) {
-    case DocRange::kNone:
-      return false;
-    case DocRange::kCels:
-      return contains(layer) && contains(frame);
+    case DocRange::kNone: return false;
+    case DocRange::kCels: return contains(layer) && contains(frame);
     case DocRange::kFrames:
       if (contains(frame)) {
         if ((m_flags & (kCels | kLayers)) != 0)
@@ -171,10 +167,8 @@ void DocRange::displace(layer_t layerDelta, frame_t frameDelta)
 bool DocRange::convertToCels(const Sprite* sprite)
 {
   switch (m_type) {
-    case DocRange::kNone:
-      return false;
-    case DocRange::kCels:
-      break;
+    case DocRange::kNone:   return false;
+    case DocRange::kCels:   break;
     case DocRange::kFrames: {
       if ((m_flags & (kCels | kLayers)) == 0) {
         for (auto layer : sprite->allBrowsableLayers())
@@ -197,10 +191,12 @@ bool DocRange::write(std::ostream& os) const
   write32(os, m_type);
   write32(os, m_flags);
 
-  if (!m_selectedLayers.write(os)) return false;
-  if (!m_selectedFrames.write(os)) return false;
+  if (!m_selectedLayers.write(os))
+    return false;
+  if (!m_selectedFrames.write(os))
+    return false;
 
-  write32(os, m_selectingFromLayer ? m_selectingFromLayer->id(): 0);
+  write32(os, m_selectingFromLayer ? m_selectingFromLayer->id() : 0);
   write32(os, m_selectingFromFrame);
   return os.good();
 }
@@ -212,8 +208,10 @@ bool DocRange::read(std::istream& is)
   m_type = (Type)read32(is);
   m_flags = read32(is);
 
-  if (!m_selectedLayers.read(is)) return false;
-  if (!m_selectedFrames.read(is)) return false;
+  if (!m_selectedLayers.read(is))
+    return false;
+  if (!m_selectedFrames.read(is))
+    return false;
 
   ObjectId id = read32(is);
   m_selectingFromLayer = doc::get<Layer>(id);
@@ -278,7 +276,7 @@ void DocRange::setType(const Type type)
     m_type = type;
     m_flags |= type;
   }
-  else  {
+  else {
     m_type = kNone;
     m_flags = kNone;
   }

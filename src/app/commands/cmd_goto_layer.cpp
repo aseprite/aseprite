@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -24,22 +24,21 @@ namespace app {
 
 class GotoLayerCommand : public Command {
 public:
-  GotoLayerCommand(int offset,
-                   const char* id,
-                   CommandFlags flags)
-    : Command(id, flags),
-      m_offset(offset) {
+  GotoLayerCommand(int offset, const char* id, CommandFlags flags)
+    : Command(id, flags)
+    , m_offset(offset)
+  {
   }
 
 protected:
-
-  bool onEnabled(Context* context) override {
+  bool onEnabled(Context* context) override
+  {
     auto editor = Editor::activeEditor();
-    return (editor &&
-            editor->document());
+    return (editor && editor->document());
   }
 
-  void onExecute(Context* context) override {
+  void onExecute(Context* context) override
+  {
     auto editor = Editor::activeEditor();
     Site site = editor->getSite();
 
@@ -73,12 +72,14 @@ protected:
     updateStatusBar(site);
   }
 
-  void updateStatusBar(Site& site) {
+  void updateStatusBar(Site& site)
+  {
     if (site.layer() != NULL)
       StatusBar::instance()->setStatusText(
-        1000, fmt::format("{} '{}' selected",
-                          (site.layer()->isGroup() ? "Group": "Layer"),
-                          site.layer()->name()));
+        1000,
+        fmt::format("{} '{}' selected",
+                    (site.layer()->isGroup() ? "Group" : "Layer"),
+                    site.layer()->name()));
   }
 
 private:
@@ -87,18 +88,12 @@ private:
 
 class GotoPreviousLayerCommand : public GotoLayerCommand {
 public:
-  GotoPreviousLayerCommand()
-    : GotoLayerCommand(-1, "GotoPreviousLayer",
-                       CmdUIOnlyFlag) {
-  }
+  GotoPreviousLayerCommand() : GotoLayerCommand(-1, "GotoPreviousLayer", CmdUIOnlyFlag) {}
 };
 
 class GotoNextLayerCommand : public GotoLayerCommand {
 public:
-  GotoNextLayerCommand()
-    : GotoLayerCommand(+1, "GotoNextLayer",
-                       CmdUIOnlyFlag) {
-  }
+  GotoNextLayerCommand() : GotoLayerCommand(+1, "GotoNextLayer", CmdUIOnlyFlag) {}
 };
 
 Command* CommandFactory::createGotoPreviousLayerCommand()

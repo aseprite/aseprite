@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -30,16 +30,17 @@
 
 namespace app {
 
-MoveMaskCommand::MoveMaskCommand()
-  : Command(CommandId::MoveMask(), CmdRecordableFlag)
+MoveMaskCommand::MoveMaskCommand() : Command(CommandId::MoveMask(), CmdRecordableFlag)
 {
 }
 
 void MoveMaskCommand::onLoadParams(const Params& params)
 {
   std::string target = params.get("target");
-  if (target == "boundaries") m_target = Boundaries;
-  else if (target == "content") m_target = Content;
+  if (target == "boundaries")
+    m_target = Boundaries;
+  else if (target == "content")
+    m_target = Content;
 
   if (params.has_param("wrap"))
     m_wrap = params.get_as<bool>("wrap");
@@ -52,25 +53,20 @@ void MoveMaskCommand::onLoadParams(const Params& params)
 bool MoveMaskCommand::onEnabled(Context* context)
 {
   switch (m_target) {
-
     case Boundaries:
-      return context->checkFlags(ContextFlags::HasActiveDocument |
-                                 ContextFlags::HasVisibleMask);
+      return context->checkFlags(ContextFlags::HasActiveDocument | ContextFlags::HasVisibleMask);
 
     case Content:
       if (m_wrap)
         return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                                   ContextFlags::HasVisibleMask |
-                                   ContextFlags::HasActiveImage |
+                                   ContextFlags::HasVisibleMask | ContextFlags::HasActiveImage |
                                    ContextFlags::ActiveLayerIsEditable);
       else {
         auto editor = Editor::activeEditor();
         return (editor != nullptr) &&
-          context->checkFlags(ContextFlags::HasActiveDocument |
-                              ContextFlags::HasVisibleMask |
-                              ContextFlags::HasActiveImage);
+               context->checkFlags(ContextFlags::HasActiveDocument | ContextFlags::HasVisibleMask |
+                                   ContextFlags::HasActiveImage);
       }
-
   }
 
   return false;
@@ -81,14 +77,13 @@ void MoveMaskCommand::onExecute(Context* context)
   gfx::Point delta = m_moveThing.getDelta(context);
 
   switch (m_target) {
-
     case Boundaries: {
       ContextWriter writer(context);
       Doc* document(writer.document());
       {
         Tx tx(writer, "Move Selection", DoesntModifyDocument);
         gfx::Point pt = document->mask()->bounds().origin();
-        document->getApi(tx).setMaskPosition(pt.x+delta.x, pt.y+delta.y);
+        document->getApi(tx).setMaskPosition(pt.x + delta.x, pt.y + delta.y);
         tx.commit();
       }
 
@@ -112,7 +107,6 @@ void MoveMaskCommand::onExecute(Context* context)
         editor->startSelectionTransformation(delta, 0.0);
       }
       break;
-
   }
 }
 
@@ -121,10 +115,9 @@ std::string MoveMaskCommand::onGetFriendlyName() const
   std::string content;
   switch (m_target) {
     case Boundaries: content = Strings::commands_MoveMask_Boundaries(); break;
-    case Content: content = Strings::commands_MoveMask_Content(); break;
+    case Content:    content = Strings::commands_MoveMask_Content(); break;
   }
-  return Strings::commands_MoveMask(content,
-                                    m_moveThing.getFriendlyString());
+  return Strings::commands_MoveMask(content, m_moveThing.getFriendlyString());
 }
 
 Command* CommandFactory::createMoveMaskCommand()

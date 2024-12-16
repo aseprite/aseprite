@@ -12,15 +12,14 @@
 
 namespace ui {
 
-  class Widget;
+class Widget;
 
-  class LayoutIO
-  {
-  public:
-    virtual ~LayoutIO() { }
-    virtual std::string loadLayout(Widget* widget) = 0;
-    virtual void saveLayout(Widget* widget, const std::string& str) = 0;
-  };
+class LayoutIO {
+public:
+  virtual ~LayoutIO() {}
+  virtual std::string loadLayout(Widget* widget) = 0;
+  virtual void saveLayout(Widget* widget, const std::string& str) = 0;
+};
 
 } // namespace ui
 

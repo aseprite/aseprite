@@ -14,34 +14,34 @@
 #include <memory>
 
 namespace filters {
-  class ConvolutionMatrix;
+class ConvolutionMatrix;
 }
 
 namespace app {
-  using namespace filters;
+using namespace filters;
 
-  // A container of all convolution matrices in the convmatr.def file.
-  class ConvolutionMatrixStock {
-  public:
-    typedef std::vector<std::shared_ptr<ConvolutionMatrix> >::iterator iterator;
-    typedef std::vector<std::shared_ptr<ConvolutionMatrix> >::const_iterator const_iterator;
+// A container of all convolution matrices in the convmatr.def file.
+class ConvolutionMatrixStock {
+public:
+  typedef std::vector<std::shared_ptr<ConvolutionMatrix>>::iterator iterator;
+  typedef std::vector<std::shared_ptr<ConvolutionMatrix>>::const_iterator const_iterator;
 
-    ConvolutionMatrixStock();
-    virtual ~ConvolutionMatrixStock();
+  ConvolutionMatrixStock();
+  virtual ~ConvolutionMatrixStock();
 
-    iterator begin() { return m_matrices.begin(); }
-    iterator end() { return m_matrices.end(); }
-    const_iterator begin() const { return m_matrices.begin(); }
-    const_iterator end() const { return m_matrices.end(); }
+  iterator begin() { return m_matrices.begin(); }
+  iterator end() { return m_matrices.end(); }
+  const_iterator begin() const { return m_matrices.begin(); }
+  const_iterator end() const { return m_matrices.end(); }
 
-    std::shared_ptr<ConvolutionMatrix> getByName(const char* name);
+  std::shared_ptr<ConvolutionMatrix> getByName(const char* name);
 
-    void reloadStock();
-    void cleanStock();
+  void reloadStock();
+  void cleanStock();
 
-  private:
-    std::vector<std::shared_ptr<ConvolutionMatrix> > m_matrices;
-  };
+private:
+  std::vector<std::shared_ptr<ConvolutionMatrix>> m_matrices;
+};
 
 } // namespace app
 

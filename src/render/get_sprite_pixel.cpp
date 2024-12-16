@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/doc.h"
@@ -26,17 +26,17 @@ color_t get_sprite_pixel(const Sprite* sprite,
 {
   color_t color = 0;
 
-  if ((x >= 0.0) && (x < sprite->width()) &&
-      (y >= 0.0) && (y < sprite->height())) {
+  if ((x >= 0.0) && (x < sprite->width()) && (y >= 0.0) && (y < sprite->height())) {
     std::unique_ptr<Image> image(Image::create(sprite->pixelFormat(), 1, 1));
 
     render::Render render;
     render.setNewBlend(newBlend);
     render.setRefLayersVisiblity(true);
     render.setProjection(proj);
-    render.renderSprite(
-      image.get(), sprite, frame,
-      gfx::ClipF(0, 0, proj.applyX(x), proj.applyY(y), 1, 1));
+    render.renderSprite(image.get(),
+                        sprite,
+                        frame,
+                        gfx::ClipF(0, 0, proj.applyX(x), proj.applyY(y), 1, 1));
 
     color = get_pixel(image.get(), 0, 0);
   }

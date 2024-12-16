@@ -12,13 +12,13 @@
 
 #include <string>
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 class SetPluginForRequire {
 public:
   SetPluginForRequire(lua_State* L, int pluginRef);
   ~SetPluginForRequire();
+
 private:
   lua_State* L;
 };
@@ -27,13 +27,13 @@ class SetScriptForRequire {
 public:
   SetScriptForRequire(lua_State* L, const char* path);
   ~SetScriptForRequire();
+
 private:
   lua_State* L;
 };
 
 void custom_require_function(lua_State* L);
 
-} // namespace script
-} // namespace app
+}} // namespace app::script
 
 #endif

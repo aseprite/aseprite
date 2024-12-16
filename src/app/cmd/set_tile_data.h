@@ -13,30 +13,27 @@
 #include "doc/tile.h"
 #include "doc/user_data.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
-  class SetTileData : public Cmd,
-                      public WithTileset {
-  public:
-    SetTileData(doc::Tileset* ts,
-                doc::tile_index ti,
-                const doc::UserData& ud);
+class SetTileData : public Cmd,
+                    public WithTileset {
+public:
+  SetTileData(doc::Tileset* ts, doc::tile_index ti, const doc::UserData& ud);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this);     // TODO + properties size
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  size_t onMemSize() const override
+  {
+    return sizeof(*this); // TODO + properties size
+  }
 
-  private:
-    doc::tile_index m_ti;
-    doc::UserData m_oldUserData;
-    doc::UserData m_newUserData;
-  };
+private:
+  doc::tile_index m_ti;
+  doc::UserData m_oldUserData;
+  doc::UserData m_newUserData;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

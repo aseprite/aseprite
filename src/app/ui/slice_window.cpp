@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/slice_window.h"
@@ -32,7 +32,7 @@ SliceWindow::SliceWindow(const doc::Sprite* sprite,
 
   Slice* slice = slices.frontAs<Slice>();
   m_userDataView.configureAndSet(slice->userData(), propertiesGrid());
-  userData()->Click.connect([this]{ onToggleUserData(); });
+  userData()->Click.connect([this] { onToggleUserData(); });
 
   if (slices.size() == 1) {
     // If we are going to edit just one slice, we indicate like all
@@ -53,8 +53,8 @@ SliceWindow::SliceWindow(const doc::Sprite* sprite,
     boundsW()->setTextf("%d", key->bounds().w);
     boundsH()->setTextf("%d", key->bounds().h);
 
-    center()->Click.connect([this]{ onCenterChange(); });
-    pivot()->Click.connect([this]{ onPivotChange(); });
+    center()->Click.connect([this] { onCenterChange(); });
+    pivot()->Click.connect([this] { onPivotChange(); });
 
     if (key->hasCenter()) {
       center()->setSelected(true);
@@ -78,34 +78,25 @@ SliceWindow::SliceWindow(const doc::Sprite* sprite,
   }
   // Edit multiple slices
   else {
-    ui::Entry* entries[] = {
-      name(),
-      boundsX(), boundsY(), boundsW(), boundsH(),
-      centerX(), centerY(), centerW(), centerH(),
-      pivotX(), pivotY() };
-    const Mods entryMods[] = {
-      kName,
-      kBoundsX, kBoundsY, kBoundsW, kBoundsH,
-      kCenterX, kCenterY, kCenterW, kCenterH,
-      kPivotX, kPivotY };
+    ui::Entry* entries[] = { name(),    boundsX(), boundsY(), boundsW(), boundsH(), centerX(),
+                             centerY(), centerW(), centerH(), pivotX(),  pivotY() };
+    const Mods entryMods[] = { kName,    kBoundsX, kBoundsY, kBoundsW, kBoundsH, kCenterX,
+                               kCenterY, kCenterW, kCenterH, kPivotX,  kPivotY };
 
-    for (int i=0; i<sizeof(entries)/sizeof(entries[0]); ++i) {
+    for (int i = 0; i < sizeof(entries) / sizeof(entries[0]); ++i) {
       auto entry = entries[i];
       Mods mod = entryMods[i];
       entry->setSuffix("*");
-      entry->Change.connect(
-        [this, entry, mod]{
-          onModifyField(entry, mod);
-        });
+      entry->Change.connect([this, entry, mod] { onModifyField(entry, mod); });
     }
 
     ui::Entry* userDataEntry = m_userDataView.entry();
     userDataEntry->setSuffix("*");
     userDataEntry->Change.connect(
-      [this, userDataEntry]{ onModifyField(userDataEntry, kUserData); });
+      [this, userDataEntry] { onModifyField(userDataEntry, kUserData); });
 
     ColorButton* colorButton = m_userDataView.color();
-    colorButton->Click.connect([this]{ onPossibleColorChange(); });
+    colorButton->Click.connect([this] { onPossibleColorChange(); });
   }
 }
 
@@ -126,8 +117,10 @@ gfx::Rect SliceWindow::boundsValue() const
                boundsY()->textInt(),
                boundsW()->textInt(),
                boundsH()->textInt());
-  if (rc.w < 1) rc.w = 1;
-  if (rc.h < 1) rc.h = 1;
+  if (rc.w < 1)
+    rc.w = 1;
+  if (rc.h < 1)
+    rc.h = 1;
   return rc;
 }
 
@@ -140,8 +133,10 @@ gfx::Rect SliceWindow::centerValue() const
                centerY()->textInt(),
                centerW()->textInt(),
                centerH()->textInt());
-  if (rc.w < 1) rc.w = 1;
-  if (rc.h < 1) rc.h = 1;
+  if (rc.w < 1)
+    rc.w = 1;
+  if (rc.h < 1)
+    rc.h = 1;
   return rc;
 }
 
@@ -150,8 +145,7 @@ gfx::Point SliceWindow::pivotValue() const
   if (!pivot()->isSelected())
     return doc::SliceKey::NoPivot;
 
-  return gfx::Point(pivotX()->textInt(),
-                    pivotY()->textInt());
+  return gfx::Point(pivotX()->textInt(), pivotY()->textInt());
 }
 
 void SliceWindow::onCenterChange()
@@ -166,8 +160,8 @@ void SliceWindow::onCenterChange()
   if (state) {
     centerX()->setText("1");
     centerY()->setText("1");
-    centerW()->setTextf("%d", std::max(1, boundsW()->textInt()-2));
-    centerH()->setTextf("%d", std::max(1, boundsH()->textInt()-2));
+    centerW()->setTextf("%d", std::max(1, boundsW()->textInt() - 2));
+    centerH()->setTextf("%d", std::max(1, boundsH()->textInt() - 2));
   }
 }
 
@@ -191,8 +185,7 @@ void SliceWindow::onToggleUserData()
   manager()->invalidate();
 }
 
-void SliceWindow::onModifyField(ui::Entry* entry,
-                                const Mods mods)
+void SliceWindow::onModifyField(ui::Entry* entry, const Mods mods)
 {
   if (entry)
     entry->setSuffix(std::string());

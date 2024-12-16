@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/tooltips.h"
@@ -32,8 +32,7 @@ namespace ui {
 
 using namespace gfx;
 
-TooltipManager::TooltipManager()
-  : Widget(kGenericWidget)
+TooltipManager::TooltipManager() : Widget(kGenericWidget)
 {
   Manager* manager = Manager::getDefault();
   manager->addMessageFilter(kMouseEnterMessage, this);
@@ -67,7 +66,6 @@ void TooltipManager::removeTooltipFor(Widget* widget)
 bool TooltipManager::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
-
     case kMouseEnterMessage: {
       // Tooltips are only for widgets that can directly get the mouse
       // (get the kMouseEnterMessage directly).
@@ -120,13 +118,11 @@ void TooltipManager::onTick()
     int arrowAlign = m_target.tipInfo.arrowAlign;
     gfx::Rect target = m_target.widget->bounds();
     if (!arrowAlign)
-      target.setOrigin(m_target.widget->mousePosInDisplay()+12*guiscale());
+      target.setOrigin(m_target.widget->mousePosInDisplay() + 12 * guiscale());
 
     ui::Display* targetDisplay = m_target.widget->display();
 
-    if (m_tipWindow->pointAt(arrowAlign,
-                             target,
-                             targetDisplay)) {
+    if (m_tipWindow->pointAt(arrowAlign, target, targetDisplay)) {
       m_tipWindow->openWindow();
       m_tipWindow->adjustTargetFrom(targetDisplay);
     }
@@ -166,9 +162,7 @@ void TipWindow::setCloseOnKeyDown(bool state)
   m_closeOnKeyDown = state;
 }
 
-bool TipWindow::pointAt(int arrowAlign,
-                        const gfx::Rect& target,
-                        const ui::Display* display)
+bool TipWindow::pointAt(int arrowAlign, const gfx::Rect& target, const ui::Display* display)
 {
   // TODO merge this code with the new ui::fit_bounds() algorithm
 
@@ -204,36 +198,36 @@ bool TipWindow::pointAt(int arrowAlign,
         y = m_target.y - h;
         break;
       case TOP:
-        x = m_target.x + m_target.w/2 - w/2;
+        x = m_target.x + m_target.w / 2 - w / 2;
         y = m_target.y + m_target.h;
         break;
       case BOTTOM:
-        x = m_target.x + m_target.w/2 - w/2;
+        x = m_target.x + m_target.w / 2 - w / 2;
         y = m_target.y - h;
         break;
       case LEFT:
         x = m_target.x + m_target.w;
-        y = m_target.y + m_target.h/2 - h/2;
+        y = m_target.y + m_target.h / 2 - h / 2;
         break;
       case RIGHT:
         x = m_target.x - w;
-        y = m_target.y + m_target.h/2 - h/2;
+        y = m_target.y + m_target.h / 2 - h / 2;
         break;
     }
 
     if (get_multiple_displays()) {
       const gfx::Rect waBounds = nativeParentWindow->screen()->workarea();
       gfx::Point pt = nativeParentWindow->pointToScreen(gfx::Point(x, y));
-      pt.x = std::clamp(pt.x, waBounds.x, waBounds.x2()-w);
-      pt.y = std::clamp(pt.y, waBounds.y, waBounds.y2()-h);
+      pt.x = std::clamp(pt.x, waBounds.x, waBounds.x2() - w);
+      pt.y = std::clamp(pt.y, waBounds.y, waBounds.y2() - h);
       pt = nativeParentWindow->pointFromScreen(pt);
       x = pt.x;
       y = pt.y;
     }
     else {
       const gfx::Rect displayBounds = display->bounds();
-      x = std::clamp(x, displayBounds.x, displayBounds.x2()-w);
-      y = std::clamp(y, displayBounds.y, displayBounds.y2()-h);
+      x = std::clamp(x, displayBounds.x, displayBounds.x2() - w);
+      y = std::clamp(y, displayBounds.y, displayBounds.y2() - h);
     }
 
     if (m_target.intersects(gfx::Rect(x, y, w, h))) {
@@ -241,13 +235,17 @@ bool TipWindow::pointAt(int arrowAlign,
         case 0:
         case 2:
           // Switch position
-          if (arrowAlign & (TOP | BOTTOM)) arrowAlign ^= TOP | BOTTOM;
-          if (arrowAlign & (LEFT | RIGHT)) arrowAlign ^= LEFT | RIGHT;
+          if (arrowAlign & (TOP | BOTTOM))
+            arrowAlign ^= TOP | BOTTOM;
+          if (arrowAlign & (LEFT | RIGHT))
+            arrowAlign ^= LEFT | RIGHT;
           break;
         case 1:
           // Rotate positions
-          if (arrowAlign & (TOP | LEFT)) arrowAlign ^= TOP | LEFT;
-          if (arrowAlign & (BOTTOM | RIGHT)) arrowAlign ^= BOTTOM | RIGHT;
+          if (arrowAlign & (TOP | LEFT))
+            arrowAlign ^= TOP | LEFT;
+          if (arrowAlign & (BOTTOM | RIGHT))
+            arrowAlign ^= BOTTOM | RIGHT;
           break;
       }
     }
@@ -278,13 +276,10 @@ void TipWindow::adjustTargetFrom(const ui::Display* targetDisplay)
 bool TipWindow::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
-
     case kKeyDownMessage:
-      if (m_closeOnKeyDown &&
-          static_cast<KeyMessage*>(msg)->scancode() < kKeyFirstModifierScancode)
+      if (m_closeOnKeyDown && static_cast<KeyMessage*>(msg)->scancode() < kKeyFirstModifierScancode)
         closeWindow(nullptr);
       break;
-
   }
 
   return PopupWindow::onProcessMessage(msg);
@@ -292,10 +287,13 @@ bool TipWindow::onProcessMessage(Message* msg)
 
 void TipWindow::onPaint(PaintEvent& ev)
 {
-  theme()->paintTooltip(
-    ev.graphics(), this, style(), arrowStyle(),
-    clientBounds(), arrowAlign(),
-    target());
+  theme()->paintTooltip(ev.graphics(),
+                        this,
+                        style(),
+                        arrowStyle(),
+                        clientBounds(),
+                        arrowAlign(),
+                        target());
 }
 
 void TipWindow::onBuildTitleLabel()

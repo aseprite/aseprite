@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/util/freetype_utils.h"
@@ -26,7 +26,8 @@
 
 namespace app {
 
-doc::Image* render_text(const std::string& fontfile, int fontsize,
+doc::Image* render_text(const std::string& fontfile,
+                        int fontsize,
                         const std::string& text,
                         doc::color_t color,
                         bool antialias)
@@ -54,21 +55,21 @@ doc::Image* render_text(const std::string& fontfile, int fontsize,
         if (!glyph)
           continue;
 
-        int t, yimg = - bounds.y + int(glyph->y);
+        int t, yimg = -bounds.y + int(glyph->y);
 
-        for (int v=0; v<int(glyph->bitmap->rows); ++v, ++yimg) {
-          const uint8_t* p = glyph->bitmap->buffer + v*glyph->bitmap->pitch;
-          int ximg = - bounds.x + int(glyph->x);
+        for (int v = 0; v < int(glyph->bitmap->rows); ++v, ++yimg) {
+          const uint8_t* p = glyph->bitmap->buffer + v * glyph->bitmap->pitch;
+          int ximg = -bounds.x + int(glyph->x);
           int bit = 0;
 
-          for (int u=0; u<int(glyph->bitmap->width); ++u, ++ximg) {
+          for (int u = 0; u < int(glyph->bitmap->width); ++u, ++ximg) {
             int alpha;
 
             if (antialias) {
               alpha = *(p++);
             }
             else {
-              alpha = ((*p) & (1 << (7 - (bit++))) ? 255: 0);
+              alpha = ((*p) & (1 << (7 - (bit++))) ? 255 : 0);
               if (bit == 8) {
                 bit = 0;
                 ++p;
@@ -77,17 +78,16 @@ doc::Image* render_text(const std::string& fontfile, int fontsize,
 
             int output_alpha = MUL_UN8(doc::rgba_geta(color), alpha, t);
             if (output_alpha) {
-              doc::color_t output_color =
-                doc::rgba(doc::rgba_getr(color),
-                          doc::rgba_getg(color),
-                          doc::rgba_getb(color),
-                          output_alpha);
+              doc::color_t output_color = doc::rgba(doc::rgba_getr(color),
+                                                    doc::rgba_getg(color),
+                                                    doc::rgba_getb(color),
+                                                    output_alpha);
 
               doc::put_pixel(
-                image.get(), ximg, yimg,
-                doc::rgba_blender_normal(
-                  doc::get_pixel(image.get(), ximg, yimg),
-                  output_color));
+                image.get(),
+                ximg,
+                yimg,
+                doc::rgba_blender_normal(doc::get_pixel(image.get(), ximg, yimg), output_color));
             }
           }
         }
@@ -101,7 +101,7 @@ doc::Image* render_text(const std::string& fontfile, int fontsize,
     throw std::runtime_error("Error loading font face");
   }
 
-  return (image ? image.release(): nullptr);
+  return (image ? image.release() : nullptr);
 }
 
 } // namespace app

@@ -10,41 +10,42 @@
 #pragma once
 
 namespace ui {
-  class Widget;
+class Widget;
 }
 
 namespace app {
-  class InputChainElement;
-  class Workspace;
+class InputChainElement;
+class Workspace;
 
-  class WorkspaceView {
-  public:
-    virtual ~WorkspaceView() { }
+class WorkspaceView {
+public:
+  virtual ~WorkspaceView() {}
 
-    virtual ui::Widget* getContentWidget() = 0;
+  virtual ui::Widget* getContentWidget() = 0;
 
-    virtual bool canCloneWorkspaceView() { return false; }
-    virtual WorkspaceView* cloneWorkspaceView() { return nullptr; }
+  virtual bool canCloneWorkspaceView() { return false; }
+  virtual WorkspaceView* cloneWorkspaceView() { return nullptr; }
 
-    // Called after the view is added in the correct position inside
-    // the workspace. It can be used to copy/clone scroll position
-    // from the original view.
-    virtual void onClonedFrom(WorkspaceView* from) {
-      // Do nothing
-    }
+  // Called after the view is added in the correct position inside
+  // the workspace. It can be used to copy/clone scroll position
+  // from the original view.
+  virtual void onClonedFrom(WorkspaceView* from)
+  {
+    // Do nothing
+  }
 
-    virtual void onWorkspaceViewSelected() = 0;
+  virtual void onWorkspaceViewSelected() = 0;
 
-    // Returns true if the view was closed successfully or false if
-    // the user cancels the operation.
-    virtual bool onCloseView(Workspace* workspace, bool quitting) = 0;
+  // Returns true if the view was closed successfully or false if
+  // the user cancels the operation.
+  virtual bool onCloseView(Workspace* workspace, bool quitting) = 0;
 
-    virtual void onAfterRemoveView(Workspace* workspace) { }
+  virtual void onAfterRemoveView(Workspace* workspace) {}
 
-    virtual void onTabPopup(Workspace* workspace) = 0;
+  virtual void onTabPopup(Workspace* workspace) = 0;
 
-    virtual InputChainElement* onGetInputChainElement() { return nullptr; }
-  };
+  virtual InputChainElement* onGetInputChainElement() { return nullptr; }
+};
 
 } // namespace app
 

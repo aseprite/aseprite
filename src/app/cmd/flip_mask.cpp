@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/flip_mask.h"
@@ -15,8 +15,7 @@
 #include "doc/algorithm/flip_image.h"
 #include "doc/mask.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 using namespace doc;
 
@@ -46,12 +45,10 @@ void FlipMask::swap()
     return;
 
   mask->freeze();
-  doc::algorithm::flip_image(mask->bitmap(),
-    mask->bitmap()->bounds(), m_flipType);
+  doc::algorithm::flip_image(mask->bitmap(), mask->bitmap()->bounds(), m_flipType);
   mask->unfreeze();
 
   doc->notifySelectionChanged();
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

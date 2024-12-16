@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -27,14 +27,13 @@ protected:
   void onExecute(Context* context) override;
 };
 
-SwitchColorsCommand::SwitchColorsCommand()
-  : Command(CommandId::SwitchColors(), CmdUIOnlyFlag)
+SwitchColorsCommand::SwitchColorsCommand() : Command(CommandId::SwitchColors(), CmdUIOnlyFlag)
 {
 }
 
 bool SwitchColorsCommand::onEnabled(Context* context)
 {
-  return (Editor::activeEditor() ? true: false);
+  return (Editor::activeEditor() ? true : false);
 }
 
 void SwitchColorsCommand::onExecute(Context* context)

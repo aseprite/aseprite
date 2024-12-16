@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/extra_cel.h"
@@ -40,15 +40,11 @@ void ExtraCel::create(Purpose purpose,
   else
     pixelFormat = sprite->pixelFormat();
 
-  if (!m_image ||
-      m_image->pixelFormat() != pixelFormat ||
-      m_image->width() != imageSize.w ||
+  if (!m_image || m_image->pixelFormat() != pixelFormat || m_image->width() != imageSize.w ||
       m_image->height() != imageSize.h) {
     if (!m_imageBuffer)
       m_imageBuffer.reset(new doc::ImageBuffer(1));
-    doc::Image* newImage = doc::Image::create(pixelFormat,
-                                              imageSize.w, imageSize.h,
-                                              m_imageBuffer);
+    doc::Image* newImage = doc::Image::create(pixelFormat, imageSize.w, imageSize.h, m_imageBuffer);
     m_image.reset(newImage);
   }
 

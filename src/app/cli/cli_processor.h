@@ -21,51 +21,47 @@
 #include <vector>
 
 namespace doc {
-  class Sprite;
+class Sprite;
 }
 
 namespace app {
 
-  class AppOptions;
-  class Context;
-  class DocExporter;
+class AppOptions;
+class Context;
+class DocExporter;
 
-  class CliProcessor {
-  public:
-    CliProcessor(CliDelegate* delegate,
-                 const AppOptions& options);
-    int process(Context* ctx);
+class CliProcessor {
+public:
+  CliProcessor(CliDelegate* delegate, const AppOptions& options);
+  int process(Context* ctx);
 
-    // Public so it can be tested
-    static void FilterLayers(const doc::Sprite* sprite,
-                             // By value because these vectors will be modified inside
-                             std::vector<std::string> includes,
-                             std::vector<std::string> excludes,
-                             doc::SelectedLayers& filteredLayers);
+  // Public so it can be tested
+  static void FilterLayers(const doc::Sprite* sprite,
+                           // By value because these vectors will be modified inside
+                           std::vector<std::string> includes,
+                           std::vector<std::string> excludes,
+                           doc::SelectedLayers& filteredLayers);
 
-  private:
-    bool openFile(Context* ctx, CliOpenFile& cof);
-    void saveFile(Context* ctx, const CliOpenFile& cof);
+private:
+  bool openFile(Context* ctx, CliOpenFile& cof);
+  void saveFile(Context* ctx, const CliOpenFile& cof);
 
-    void filterLayers(const doc::Sprite* sprite,
-                      const CliOpenFile& cof,
-                      doc::SelectedLayers& filteredLayers) {
-      CliProcessor::FilterLayers(
-        sprite,
-        cof.includeLayers,
-        cof.excludeLayers,
-        filteredLayers);
-    }
+  void filterLayers(const doc::Sprite* sprite,
+                    const CliOpenFile& cof,
+                    doc::SelectedLayers& filteredLayers)
+  {
+    CliProcessor::FilterLayers(sprite, cof.includeLayers, cof.excludeLayers, filteredLayers);
+  }
 
-    CliDelegate* m_delegate;
-    const AppOptions& m_options;
-    std::unique_ptr<DocExporter> m_exporter;
+  CliDelegate* m_delegate;
+  const AppOptions& m_options;
+  std::unique_ptr<DocExporter> m_exporter;
 
-    // Files already used in the CLI processing (e.g. when used to
-    // load a sequence of files) so we don't ask for them again.
-    std::set<std::string> m_usedFiles;
-    OpenBatchOfFiles m_batch;
-  };
+  // Files already used in the CLI processing (e.g. when used to
+  // load a sequence of files) so we don't ask for them again.
+  std::set<std::string> m_usedFiles;
+  OpenBatchOfFiles m_batch;
+};
 
 } // namespace app
 

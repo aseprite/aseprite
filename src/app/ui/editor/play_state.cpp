@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/editor/play_state.h"
@@ -30,9 +30,7 @@ namespace app {
 
 using namespace ui;
 
-PlayState::PlayState(const bool playOnce,
-                     const bool playAll,
-                     const bool playSubtags)
+PlayState::PlayState(const bool playOnce, const bool playAll, const bool playSubtags)
   : m_editor(nullptr)
   , m_playOnce(playOnce)
   , m_playAll(playAll)
@@ -48,7 +46,8 @@ PlayState::PlayState(const bool playOnce,
   // Hook BeforeCommandExecution signal so we know if the user wants
   // to execute other command, so we can stop the animation.
   m_ctxConn = UIContext::instance()->BeforeCommandExecution.connect(
-    &PlayState::onBeforeCommandExecution, this);
+    &PlayState::onBeforeCommandExecution,
+    this);
 }
 
 Tag* PlayState::playingTag() const
@@ -67,16 +66,11 @@ void PlayState::onEnterState(Editor* editor)
 
   // Get the tag
   if (!m_playAll) {
-    m_tag = m_editor
-      ->getCustomizationDelegate()
-      ->getTagProvider()
-      ->getTagByFrame(m_refFrame, true);
+    m_tag = m_editor->getCustomizationDelegate()->getTagProvider()->getTagByFrame(m_refFrame, true);
 
     // Don't repeat the tag infinitely if the tag repeat field doesn't
     // say so.
-    if (m_playSubtags &&
-        m_tag &&
-        m_tag->repeat() != 0) {
+    if (m_playSubtags && m_tag && m_tag->repeat() != 0) {
       m_tag = nullptr;
     }
   }
@@ -89,9 +83,7 @@ void PlayState::onEnterState(Editor* editor)
     frame_t frame = 0;
 
     if (m_tag) {
-      frame = (m_tag->aniDir() == AniDir::REVERSE ?
-               m_tag->toFrame():
-               m_tag->fromFrame());
+      frame = (m_tag->aniDir() == AniDir::REVERSE ? m_tag->toFrame() : m_tag->fromFrame());
     }
 
     m_editor->setFrame(frame);
@@ -112,7 +104,7 @@ void PlayState::onEnterState(Editor* editor)
       m_editor->frame(),
       m_playOnce ? doc::Playback::PlayOnce :
       m_playAll  ? doc::Playback::PlayWithoutTagsInLoop :
-                  doc::Playback::PlayInLoop,
+                   doc::Playback::PlayInLoop,
       m_tag);
     m_nextFrameTime = getNextFrameTime();
     m_curFrameTick = base::current_tick();
@@ -195,8 +187,7 @@ bool PlayState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
   if (ink) {
     if (ink->isZoom()) {
       auto theme = skin::SkinTheme::get(editor);
-      editor->showMouseCursor(
-        kCustomCursor, theme->cursors.magnifier());
+      editor->showMouseCursor(kCustomCursor, theme->cursors.magnifier());
       return true;
     }
   }
@@ -258,10 +249,8 @@ void PlayState::onBeforeCommandExecution(CommandExecutionEvent& ev)
   //
   // There are other commands that just doesn't stop the animation
   // (zoom, scroll, etc.)
-  if (ev.command()->id() == CommandId::PlayAnimation() ||
-      ev.command()->id() == CommandId::Zoom() ||
-      ev.command()->id() == CommandId::Scroll() ||
-      ev.command()->id() == CommandId::Timeline()) {
+  if (ev.command()->id() == CommandId::PlayAnimation() || ev.command()->id() == CommandId::Zoom() ||
+      ev.command()->id() == CommandId::Scroll() || ev.command()->id() == CommandId::Timeline()) {
     return;
   }
 
@@ -270,9 +259,8 @@ void PlayState::onBeforeCommandExecution(CommandExecutionEvent& ev)
 
 double PlayState::getNextFrameTime()
 {
-  return
-    m_editor->sprite()->frameDuration(m_editor->frame())
-    / m_editor->getAnimationSpeedMultiplier(); // The "speed multiplier" is a "duration divider"
+  return m_editor->sprite()->frameDuration(m_editor->frame()) /
+         m_editor->getAnimationSpeedMultiplier(); // The "speed multiplier" is a "duration divider"
 }
 
 } // namespace app

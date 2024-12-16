@@ -15,48 +15,37 @@
 
 namespace app {
 
-  class MarchingAnts {
-  public:
-    MarchingAnts()
-      : m_timer(100)
-      , m_offset(0)
-    {
-      m_scopedConn = m_timer.Tick.connect(&MarchingAnts::onTick, this);
-    }
+class MarchingAnts {
+public:
+  MarchingAnts() : m_timer(100), m_offset(0)
+  {
+    m_scopedConn = m_timer.Tick.connect(&MarchingAnts::onTick, this);
+  }
 
-    ~MarchingAnts() {
-      m_timer.stop();
-    }
+  ~MarchingAnts() { m_timer.stop(); }
 
-  protected:
-    virtual void onDrawMarchingAnts() = 0;
+protected:
+  virtual void onDrawMarchingAnts() = 0;
 
-    int getMarchingAntsOffset() const {
-      return m_offset;
-    }
+  int getMarchingAntsOffset() const { return m_offset; }
 
-    bool isMarchingAntsRunning() const {
-      return m_timer.isRunning();
-    }
+  bool isMarchingAntsRunning() const { return m_timer.isRunning(); }
 
-    void startMarchingAnts() {
-      m_timer.start();
-    }
+  void startMarchingAnts() { m_timer.start(); }
 
-    void stopMarchingAnts() {
-      m_timer.stop();
-    }
+  void stopMarchingAnts() { m_timer.stop(); }
 
-  private:
-    void onTick() {
-      m_offset = ((m_offset+1) % 8);
-      onDrawMarchingAnts();
-    }
+private:
+  void onTick()
+  {
+    m_offset = ((m_offset + 1) % 8);
+    onDrawMarchingAnts();
+  }
 
-    ui::Timer m_timer;
-    int m_offset;
-    obs::scoped_connection m_scopedConn;
-  };
+  ui::Timer m_timer;
+  int m_offset;
+  obs::scoped_connection m_scopedConn;
+};
 
 } // namespace app
 

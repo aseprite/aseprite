@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/util/wrap_point.h"
@@ -27,14 +27,14 @@ gfx::Point wrap_point(const filters::TiledMode tiledMode,
   if (int(tiledMode) & int(filters::TiledMode::X_AXIS))
     out.x = wrap_value(pt.x, spriteSize.w);
   else if (clamp)
-    out.x = std::clamp(pt.x, 0, spriteSize.w-1);
+    out.x = std::clamp(pt.x, 0, spriteSize.w - 1);
   else
     out.x = pt.x;
 
   if (int(tiledMode) & int(filters::TiledMode::Y_AXIS))
     out.y = wrap_value(pt.y, spriteSize.h);
   else if (clamp)
-    out.y = std::clamp(pt.y, 0, spriteSize.h-1);
+    out.y = std::clamp(pt.y, 0, spriteSize.h - 1);
   else
     out.y = pt.y;
 

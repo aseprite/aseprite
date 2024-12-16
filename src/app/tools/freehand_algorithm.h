@@ -8,17 +8,15 @@
 #define APP_TOOLS_FREEHAND_ALGORITHM_H_INCLUDED
 #pragma once
 
-namespace app {
-namespace tools {
+namespace app { namespace tools {
 
-  enum class FreehandAlgorithm {
-    DEFAULT = 0,
-    REGULAR = 0,
-    PIXEL_PERFECT = 1,
-    DOTS = 2,
-  };
+enum class FreehandAlgorithm {
+  DEFAULT = 0,
+  REGULAR = 0,
+  PIXEL_PERFECT = 1,
+  DOTS = 2,
+};
 
-} // namespace tools
-} // namespace app
+}} // namespace app::tools
 
 #endif

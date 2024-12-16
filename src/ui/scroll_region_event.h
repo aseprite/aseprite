@@ -13,17 +13,15 @@
 
 namespace ui {
 
-  class ScrollRegionEvent : public Event {
-  public:
-    ScrollRegionEvent(Component* source, gfx::Region& region)
-      : Event(source), m_region(region) {
-    }
+class ScrollRegionEvent : public Event {
+public:
+  ScrollRegionEvent(Component* source, gfx::Region& region) : Event(source), m_region(region) {}
 
-    gfx::Region& region() { return m_region; }
+  gfx::Region& region() { return m_region; }
 
-  private:
-    gfx::Region& m_region;
-  };
+private:
+  gfx::Region& m_region;
+};
 
 } // namespace ui
 

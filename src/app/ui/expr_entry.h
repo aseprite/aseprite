@@ -12,27 +12,27 @@
 
 namespace app {
 
-  // Support math expressions.
-  class ExprEntry : public ui::Entry {
-  public:
-    ExprEntry();
+// Support math expressions.
+class ExprEntry : public ui::Entry {
+public:
+  ExprEntry();
 
-    int decimals() const { return m_decimals; }
-    void setDecimals(int decimals) { m_decimals = decimals; }
+  int decimals() const { return m_decimals; }
+  void setDecimals(int decimals) { m_decimals = decimals; }
 
-    // Signals
-    obs::signal<void()> Leave;
+  // Signals
+  obs::signal<void()> Leave;
 
-  protected:
-    bool onProcessMessage(ui::Message* msg) override;
-    void onChange() override;
-    int onGetTextInt() const override;
-    double onGetTextDouble() const override;
+protected:
+  bool onProcessMessage(ui::Message* msg) override;
+  void onChange() override;
+  int onGetTextInt() const override;
+  double onGetTextDouble() const override;
 
-    virtual void onFormatExprFocusLeave(std::string& buf);
+  virtual void onFormatExprFocusLeave(std::string& buf);
 
-    int m_decimals;
-  };
+  int m_decimals;
+};
 
 } // namespace app
 

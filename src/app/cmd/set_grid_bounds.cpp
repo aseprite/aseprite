@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_grid_bounds.h"
@@ -16,8 +16,7 @@
 #include "app/pref/preferences.h"
 #include "doc/sprite.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 using namespace doc;
 
@@ -59,5 +58,4 @@ void SetGridBounds::onFireNotifications()
   doc->notify_observers<DocEvent&>(&DocObserver::onSpriteGridBoundsChanged, ev);
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

@@ -184,4 +184,4 @@ FOR_EACH_COMMAND(Debugger)
 FOR_EACH_COMMAND(DeveloperConsole)
 FOR_EACH_COMMAND(OpenScriptFolder)
 FOR_EACH_COMMAND(RunScript)
-#endif  // ENABLE_SCRIPTING
+#endif // ENABLE_SCRIPTING

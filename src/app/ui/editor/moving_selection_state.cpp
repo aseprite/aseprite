@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/editor/moving_selection_state.h"
@@ -20,7 +20,6 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
-#include "app/ui_context.h"
 #include "app/ui_context.h"
 #include "doc/mask.h"
 #include "fmt/format.h"
@@ -41,7 +40,8 @@ MovingSelectionState::MovingSelectionState(Editor* editor, MouseMessage* msg)
   // Hook BeforeCommandExecution signal so we know if the user wants
   // to execute other command, so we can unfreeze the document mask.
   m_ctxConn = UIContext::instance()->BeforeCommandExecution.connect(
-    &MovingSelectionState::onBeforeCommandExecution, this);
+    &MovingSelectionState::onBeforeCommandExecution,
+    this);
 }
 
 void MovingSelectionState::onBeforeCommandExecution(CommandExecutionEvent& ev)
@@ -72,8 +72,7 @@ EditorState::LeaveAction MovingSelectionState::onLeaveState(Editor* editor, Edit
 
   // Restore the mask to the original state so we can transform it
   // with the a undoable transaction.
-  mask->setOrigin(m_selOrigin.x,
-                  m_selOrigin.y);
+  mask->setOrigin(m_selOrigin.x, m_selOrigin.y);
   mask->unfreeze();
 
   if (m_selectionCanceled) {
@@ -126,14 +125,12 @@ bool MovingSelectionState::onMouseMove(Editor* editor, MouseMessage* msg)
   ASSERT(editor->document()->mask()->isFrozen());
 
   if (oldMaskOrigin != newMaskOrigin) {
-    editor->document()->mask()->setOrigin(newMaskOrigin.x,
-                                          newMaskOrigin.y);
+    editor->document()->mask()->setOrigin(newMaskOrigin.x, newMaskOrigin.y);
 
     if (editor->document()->hasMaskBoundaries()) {
       MaskBoundaries& boundaries = editor->document()->maskBoundaries();
       const gfx::Point boundariesDelta = newMaskOrigin - oldMaskOrigin;
-      boundaries.offset(boundariesDelta.x,
-                        boundariesDelta.y);
+      boundaries.offset(boundariesDelta.x, boundariesDelta.y);
     }
     else {
       ASSERT(false);
@@ -149,8 +146,7 @@ bool MovingSelectionState::onMouseMove(Editor* editor, MouseMessage* msg)
 bool MovingSelectionState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 {
   auto theme = skin::SkinTheme::get(editor);
-  editor->showMouseCursor(
-    kCustomCursor, theme->cursors.moveSelection());
+  editor->showMouseCursor(kCustomCursor, theme->cursors.moveSelection());
   return true;
 }
 
@@ -158,15 +154,16 @@ bool MovingSelectionState::onUpdateStatusBar(Editor* editor)
 {
   const gfx::Rect bounds = editor->document()->mask()->bounds();
 
-  StatusBar::instance()->setStatusText(
-    100,
-    fmt::format(
-      ":pos: {} {}"
-      " :size: {} {}"
-      " :delta: {} {}",
-      bounds.x, bounds.y,
-      bounds.w, bounds.h,
-      m_delta.x, m_delta.y));
+  StatusBar::instance()->setStatusText(100,
+                                       fmt::format(":pos: {} {}"
+                                                   " :size: {} {}"
+                                                   " :delta: {} {}",
+                                                   bounds.x,
+                                                   bounds.y,
+                                                   bounds.w,
+                                                   bounds.h,
+                                                   m_delta.x,
+                                                   m_delta.y));
 
   return true;
 }

@@ -10,7 +10,7 @@
 
 namespace doc {
 
-  typedef void (*AlgoHLine)(int x1, int y, int x2, void *data);
+typedef void (*AlgoHLine)(int x1, int y, int x2, void* data);
 
 } // namespace doc
 

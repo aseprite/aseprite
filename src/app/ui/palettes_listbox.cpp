@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/palettes_listbox.h"
@@ -42,46 +42,42 @@ using namespace app::skin;
 
 static bool is_url_char(int chr)
 {
-  return ((chr >= 'a' && chr <= 'z') ||
-          (chr >= 'A' && chr <= 'Z') ||
-          (chr >= '0' && chr <= '9') ||
-          (chr == ':' || chr == '/' || chr == '@' ||
-           chr == '?' || chr == '!' || chr == '#' ||
-           chr == '-' || chr == '_' || chr == '~' ||
-           chr == '.' || chr == ',' || chr == ';' ||
-           chr == '*' || chr == '+' || chr == '=' ||
-           chr == '[' || chr == ']' ||
-           chr == '(' || chr == ')' ||
-           chr == '$' || chr == '\''));
+  return ((chr >= 'a' && chr <= 'z') || (chr >= 'A' && chr <= 'Z') || (chr >= '0' && chr <= '9') ||
+          (chr == ':' || chr == '/' || chr == '@' || chr == '?' || chr == '!' || chr == '#' ||
+           chr == '-' || chr == '_' || chr == '~' || chr == '.' || chr == ',' || chr == ';' ||
+           chr == '*' || chr == '+' || chr == '=' || chr == '[' || chr == ']' || chr == '(' ||
+           chr == ')' || chr == '$' || chr == '\''));
 }
 
 class PalettesListItem : public ResourceListItem {
-
   class CommentButton : public IconButton {
   public:
     CommentButton(const std::string& comment)
       : IconButton(SkinTheme::instance()->parts.iconUserData())
-      , m_comment(comment) {
+      , m_comment(comment)
+    {
       setFocusStop(false);
       initTheme();
     }
 
   private:
-    void onInitTheme(InitThemeEvent& ev) override {
+    void onInitTheme(InitThemeEvent& ev) override
+    {
       IconButton::onInitTheme(ev);
 
       auto theme = SkinTheme::get(this);
       setBgColor(theme->colors.listitemNormalFace());
     }
 
-    void onClick() override {
+    void onClick() override
+    {
       IconButton::onClick();
 
       std::string::size_type j, i = m_comment.find("http");
       if (i != std::string::npos) {
-        for (j=i+4; j != m_comment.size() && is_url_char(m_comment[j]); ++j)
+        for (j = i + 4; j != m_comment.size() && is_url_char(m_comment[j]); ++j)
           ;
-        base::launcher::open_url(m_comment.substr(i, j-i));
+        base::launcher::open_url(m_comment.substr(i, j - i));
       }
     }
 
@@ -102,15 +98,16 @@ public:
   }
 
 private:
-  void onResize(ResizeEvent& ev) override {
+  void onResize(ResizeEvent& ev) override
+  {
     ResourceListItem::onResize(ev);
 
     if (m_comment) {
       auto reqSz = m_comment->sizeHint();
-      m_comment->setBounds(
-        gfx::Rect(ev.bounds().x+ev.bounds().w-reqSz.w,
-                  ev.bounds().y+ev.bounds().h/2-reqSz.h/2,
-                  reqSz.w, reqSz.h));
+      m_comment->setBounds(gfx::Rect(ev.bounds().x + ev.bounds().w - reqSz.w,
+                                     ev.bounds().y + ev.bounds().h / 2 - reqSz.h / 2,
+                                     reqSz.w,
+                                     reqSz.h));
     }
   }
 
@@ -118,18 +115,13 @@ private:
 };
 
 PalettesListBox::PalettesListBox()
-  : ResourcesListBox(
-    new ResourcesLoader(
-      std::make_unique<PalettesLoaderDelegate>()))
+  : ResourcesListBox(new ResourcesLoader(std::make_unique<PalettesLoaderDelegate>()))
 {
   addChild(&m_tooltips);
 
-  m_extPaletteChanges =
-    App::instance()->extensions().PalettesChange.connect(
-      [this]{ markToReload(); });
-  m_extPresetsChanges =
-    App::instance()->PalettePresetsChange.connect(
-      [this]{ markToReload(); });
+  m_extPaletteChanges = App::instance()->extensions().PalettesChange.connect(
+    [this] { markToReload(); });
+  m_extPresetsChanges = App::instance()->PalettePresetsChange.connect([this] { markToReload(); });
 }
 
 const doc::Palette* PalettesListBox::selectedPalette()
@@ -164,23 +156,18 @@ void PalettesListBox::onPaintResource(Graphics* g, gfx::Rect& bounds, Resource* 
   if (view && view->document()) {
     auto docPal = view->document()->sprite()->palette(view->editor()->frame());
     if (docPal && *docPal == *palette)
-      g->drawRgbaSurface(tick, bounds.x, bounds.y+bounds.h/2-tick->height()/2);
+      g->drawRgbaSurface(tick, bounds.x, bounds.y + bounds.h / 2 - tick->height() / 2);
   }
 
   bounds.x += tick->width();
   bounds.w -= tick->width();
 
-  gfx::Rect box(
-    bounds.x, bounds.y+bounds.h-6*guiscale(),
-    4*guiscale(), 4*guiscale());
+  gfx::Rect box(bounds.x, bounds.y + bounds.h - 6 * guiscale(), 4 * guiscale(), 4 * guiscale());
 
-  for (int i=0; i<palette->size(); ++i) {
+  for (int i = 0; i < palette->size(); ++i) {
     doc::color_t c = palette->getEntry(i);
 
-    g->fillRect(gfx::rgba(
-        doc::rgba_getr(c),
-        doc::rgba_getg(c),
-        doc::rgba_getb(c)), box);
+    g->fillRect(gfx::rgba(doc::rgba_getr(c), doc::rgba_getg(c), doc::rgba_getb(c)), box);
 
     box.x += box.w;
   }
@@ -188,7 +175,7 @@ void PalettesListBox::onPaintResource(Graphics* g, gfx::Rect& bounds, Resource* 
 
 void PalettesListBox::onResourceSizeHint(Resource* resource, gfx::Size& size)
 {
-  size = gfx::Size(0, (2+16+2)*guiscale());
+  size = gfx::Size(0, (2 + 16 + 2) * guiscale());
 }
 
 } // namespace app

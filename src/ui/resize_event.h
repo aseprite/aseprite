@@ -13,17 +13,17 @@
 
 namespace ui {
 
-  class Widget;
+class Widget;
 
-  class ResizeEvent : public Event {
-  public:
-    ResizeEvent(Widget* source, const gfx::Rect& bounds);
+class ResizeEvent : public Event {
+public:
+  ResizeEvent(Widget* source, const gfx::Rect& bounds);
 
-    const gfx::Rect& bounds() { return m_bounds; }
+  const gfx::Rect& bounds() { return m_bounds; }
 
-  private:
-    gfx::Rect m_bounds;
-  };
+private:
+  gfx::Rect m_bounds;
+};
 
 } // namespace ui
 

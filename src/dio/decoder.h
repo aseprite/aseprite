@@ -13,7 +13,7 @@
 #include <cstring>
 
 namespace doc {
-  class Document;
+class Document;
 }
 
 namespace dio {

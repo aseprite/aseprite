@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/editor/editor_render.h"
@@ -24,8 +24,7 @@ EditorRender::EditorRender()
   // TODO create a switch in the preferences
   : m_renderer(std::make_unique<SimpleRenderer>())
 {
-  m_renderer->setNewBlendMethod(
-    Preferences::instance().experimental.newBlend());
+  m_renderer->setNewBlendMethod(Preferences::instance().experimental.newBlend());
 }
 
 EditorRender::~EditorRender()
@@ -53,8 +52,7 @@ void EditorRender::setType(const Type type)
     m_renderer = std::make_unique<SimpleRenderer>();
   }
 
-  m_renderer->setNewBlendMethod(
-    Preferences::instance().experimental.newBlend());
+  m_renderer->setNewBlendMethod(Preferences::instance().experimental.newBlend());
 }
 
 void EditorRender::setRefLayersVisiblity(const bool visible)
@@ -108,9 +106,7 @@ void EditorRender::setupBackground(Doc* doc, doc::PixelFormat pixelFormat)
       bgType = render::BgType::CHECKERED;
       tile = docPref.bg.size();
       break;
-    default:
-      bgType = render::BgType::TRANSPARENT;
-      break;
+    default: bgType = render::BgType::TRANSPARENT; break;
   }
 
   render::BgOptions bg;
@@ -140,8 +136,7 @@ void EditorRender::setPreviewImage(const doc::Layer* layer,
                                    const gfx::Point& pos,
                                    const doc::BlendMode blendMode)
 {
-  m_renderer->setPreviewImage(layer, frame, image, tileset,
-                              pos, blendMode);
+  m_renderer->setPreviewImage(layer, frame, image, tileset, pos, blendMode);
 }
 
 void EditorRender::removePreviewImage()
@@ -149,16 +144,14 @@ void EditorRender::removePreviewImage()
   m_renderer->removePreviewImage();
 }
 
-void EditorRender::setExtraImage(
-  render::ExtraType type,
-  const doc::Cel* cel,
-  const doc::Image* image,
-  doc::BlendMode blendMode,
-  const doc::Layer* currentLayer,
-  doc::frame_t currentFrame)
+void EditorRender::setExtraImage(render::ExtraType type,
+                                 const doc::Cel* cel,
+                                 const doc::Image* image,
+                                 doc::BlendMode blendMode,
+                                 const doc::Layer* currentLayer,
+                                 doc::frame_t currentFrame)
 {
-  m_renderer->setExtraImage(type, cel, image, blendMode,
-                          currentLayer, currentFrame);
+  m_renderer->setExtraImage(type, cel, image, blendMode, currentLayer, currentFrame);
 }
 
 void EditorRender::removeExtraImage()
@@ -176,34 +169,30 @@ void EditorRender::disableOnionskin()
   m_renderer->disableOnionskin();
 }
 
-void EditorRender::renderSprite(
-  os::Surface* dstSurface,
-  const doc::Sprite* sprite,
-  doc::frame_t frame,
-  const gfx::ClipF& area)
+void EditorRender::renderSprite(os::Surface* dstSurface,
+                                const doc::Sprite* sprite,
+                                doc::frame_t frame,
+                                const gfx::ClipF& area)
 {
   m_renderer->renderSprite(dstSurface, sprite, frame, area);
 }
 
-void EditorRender::renderCheckeredBackground(
-  os::Surface* dstSurface,
-  const doc::Sprite* sprite,
-  const gfx::Clip& area)
+void EditorRender::renderCheckeredBackground(os::Surface* dstSurface,
+                                             const doc::Sprite* sprite,
+                                             const gfx::Clip& area)
 {
   m_renderer->renderCheckeredBackground(dstSurface, sprite, area);
 }
 
-void EditorRender::renderImage(
-  doc::Image* dst_image,
-  const doc::Image* src_image,
-  const doc::Palette* pal,
-  const int x,
-  const int y,
-  const int opacity,
-  const doc::BlendMode blendMode)
+void EditorRender::renderImage(doc::Image* dst_image,
+                               const doc::Image* src_image,
+                               const doc::Palette* pal,
+                               const int x,
+                               const int y,
+                               const int opacity,
+                               const doc::BlendMode blendMode)
 {
-  m_renderer->renderImage(dst_image, src_image, pal,
-                          x, y, opacity, blendMode);
+  m_renderer->renderImage(dst_image, src_image, pal, x, y, opacity, blendMode);
 }
 // static
 doc::ImageBufferPtr EditorRender::getRenderImageBuffer()

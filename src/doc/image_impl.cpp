@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/image_impl.h"
@@ -24,12 +24,10 @@ void copy_bitmaps(Image* dst, const Image* src, gfx::Clip area)
   ImageConstIterator<BitmapTraits> src_it(src, area.srcBounds(), area.src.x, area.src.y);
   ImageIterator<BitmapTraits> dst_it(dst, area.dstBounds(), area.dst.x, area.dst.y);
 
-  int end_x = area.dst.x+area.size.w;
+  int end_x = area.dst.x + area.size.w;
 
-  for (int end_y=area.dst.y+area.size.h;
-       area.dst.y<end_y;
-       ++area.dst.y, ++area.src.y) {
-    for (int x=area.dst.x; x<end_x; ++x) {
+  for (int end_y = area.dst.y + area.size.h; area.dst.y < end_y; ++area.dst.y, ++area.src.y) {
+    for (int x = area.dst.x; x < end_x; ++x) {
       *dst_it = *src_it;
       ++src_it;
       ++dst_it;

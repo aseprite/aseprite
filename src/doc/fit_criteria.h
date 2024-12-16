@@ -10,13 +10,7 @@
 
 namespace doc {
 
-  enum class FitCriteria {
-    DEFAULT = 0,
-    RGB = 1,
-    linearizedRGB = 2,
-    CIEXYZ = 3,
-    CIELAB = 4
-  };
+enum class FitCriteria { DEFAULT = 0, RGB = 1, linearizedRGB = 2, CIEXYZ = 3, CIELAB = 4 };
 
 } // namespace doc
 

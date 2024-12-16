@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/fit_bounds.h"
@@ -61,39 +61,43 @@ int fit_bounds(Display* display, int arrowAlign, const gfx::Rect& target, gfx::R
         bounds.y = target.y - bounds.h;
         break;
       case TOP:
-        bounds.x = target.x + target.w/2 - bounds.w/2;
+        bounds.x = target.x + target.w / 2 - bounds.w / 2;
         bounds.y = target.y + target.h;
         break;
       case BOTTOM:
-        bounds.x = target.x + target.w/2 - bounds.w/2;
+        bounds.x = target.x + target.w / 2 - bounds.w / 2;
         bounds.y = target.y - bounds.h;
         break;
       case LEFT:
         bounds.x = target.x + target.w;
-        bounds.y = target.y + target.h/2 - bounds.h/2;
+        bounds.y = target.y + target.h / 2 - bounds.h / 2;
         break;
       case RIGHT:
         bounds.x = target.x - bounds.w;
-        bounds.y = target.y + target.h/2 - bounds.h/2;
+        bounds.y = target.y + target.h / 2 - bounds.h / 2;
         break;
     }
 
     gfx::Size displaySize = display->size();
-    bounds.x = std::clamp(bounds.x, 0, displaySize.w-bounds.w);
-    bounds.y = std::clamp(bounds.y, 0, displaySize.h-bounds.h);
+    bounds.x = std::clamp(bounds.x, 0, displaySize.w - bounds.w);
+    bounds.y = std::clamp(bounds.y, 0, displaySize.h - bounds.h);
 
     if (target.intersects(bounds)) {
       switch (trycount) {
         case 0:
         case 2:
           // Switch position
-          if (arrowAlign & (TOP | BOTTOM)) arrowAlign ^= TOP | BOTTOM;
-          if (arrowAlign & (LEFT | RIGHT)) arrowAlign ^= LEFT | RIGHT;
+          if (arrowAlign & (TOP | BOTTOM))
+            arrowAlign ^= TOP | BOTTOM;
+          if (arrowAlign & (LEFT | RIGHT))
+            arrowAlign ^= LEFT | RIGHT;
           break;
         case 1:
           // Rotate positions
-          if (arrowAlign & (TOP | LEFT)) arrowAlign ^= TOP | LEFT;
-          if (arrowAlign & (BOTTOM | RIGHT)) arrowAlign ^= BOTTOM | RIGHT;
+          if (arrowAlign & (TOP | LEFT))
+            arrowAlign ^= TOP | LEFT;
+          if (arrowAlign & (BOTTOM | RIGHT))
+            arrowAlign ^= BOTTOM | RIGHT;
           break;
       }
     }
@@ -121,12 +125,11 @@ void fit_bounds(const Display* parentDisplay,
     const int scale = nativeWindow->scale();
 
     // Screen frame bounds
-    gfx::Rect frame(
-      nativeWindow->pointToScreen(pos),
-      candidateBoundsRelativeToParentDisplay.size() * scale);
+    gfx::Rect frame(nativeWindow->pointToScreen(pos),
+                    candidateBoundsRelativeToParentDisplay.size() * scale);
 
     if (fitLogic)
-      fitLogic(workarea, frame, [](Widget* widget){ return widget->boundsOnScreen(); });
+      fitLogic(workarea, frame, [](Widget* widget) { return widget->boundsOnScreen(); });
 
     frame.x = std::clamp(frame.x, workarea.x, std::max(workarea.x, workarea.x2() - frame.w));
     frame.y = std::clamp(frame.y, workarea.y, std::max(workarea.y, workarea.y2() - frame.h));
@@ -146,7 +149,7 @@ void fit_bounds(const Display* parentDisplay,
     gfx::Rect frame(candidateBoundsRelativeToParentDisplay);
 
     if (fitLogic)
-      fitLogic(displayBounds, frame, [](Widget* widget){ return widget->bounds(); });
+      fitLogic(displayBounds, frame, [](Widget* widget) { return widget->bounds(); });
 
     frame.x = std::clamp(frame.x, 0, std::max(0, displayBounds.w - frame.w));
     frame.y = std::clamp(frame.y, 0, std::max(0, displayBounds.h - frame.h));
@@ -169,8 +172,10 @@ void limit_with_workarea(Display* parentDisplay, gfx::Rect& frame)
   ASSERT(parentDisplay);
 
   gfx::Rect waBounds = parentDisplay->nativeWindow()->screen()->workarea();
-  if (frame.x < waBounds.x) frame.x = waBounds.x;
-  if (frame.y < waBounds.y) frame.y = waBounds.y;
+  if (frame.x < waBounds.x)
+    frame.x = waBounds.x;
+  if (frame.y < waBounds.y)
+    frame.y = waBounds.y;
   if (frame.x2() > waBounds.x2()) {
     frame.x -= frame.x2() - waBounds.x2();
     if (frame.x < waBounds.x) {

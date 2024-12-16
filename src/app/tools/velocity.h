@@ -13,8 +13,7 @@
 #include "base/vector2d.h"
 #include "gfx/point.h"
 
-namespace app {
-namespace tools {
+namespace app { namespace tools {
 
 // Mouse velocity sensor
 class VelocitySensor {
@@ -43,7 +42,6 @@ private:
   base::tick_t m_lastUpdate;
 };
 
-} // namespace tools
-} // namespace app
+}} // namespace app::tools
 
 #endif

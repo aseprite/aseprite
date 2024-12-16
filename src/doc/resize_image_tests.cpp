@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include <gtest/gtest.h>
@@ -23,16 +23,11 @@ using namespace doc;
 // Test data
 
 // Base image
-color_t test_image_base_3x3[9] =
-{
-  0x000000, 0xffffff, 0x000000,
-  0xffffff, 0xffffff, 0xffffff,
-  0x000000, 0xffffff, 0x000000
-};
+color_t test_image_base_3x3[9] = { 0x000000, 0xffffff, 0x000000, 0xffffff, 0xffffff,
+                                   0xffffff, 0x000000, 0xffffff, 0x000000 };
 
 // Base image scaled to 9x9 with nearest neighbor interpolation
-color_t test_image_scaled_9x9_nearest[81] =
-{
+color_t test_image_scaled_9x9_nearest[81] = {
   0x000000, 0x000000, 0x000000, 0xffffff, 0xffffff, 0xffffff, 0x000000, 0x000000, 0x000000,
   0x000000, 0x000000, 0x000000, 0xffffff, 0xffffff, 0xffffff, 0x000000, 0x000000, 0x000000,
   0x000000, 0x000000, 0x000000, 0xffffff, 0xffffff, 0xffffff, 0x000000, 0x000000, 0x000000,
@@ -45,8 +40,7 @@ color_t test_image_scaled_9x9_nearest[81] =
 };
 
 // Base image scalled to 9x9 with bilinear interpolation
-color_t test_image_scaled_9x9_bilinear[81] =
-{
+color_t test_image_scaled_9x9_bilinear[81] = {
   0x000000, 0x000000, 0x565656, 0xa9a9a9, 0xffffff, 0xa9a9a9, 0x565656, 0x000000, 0x000000,
   0x000000, 0x000000, 0x565656, 0xa9a9a9, 0xffffff, 0xa9a9a9, 0x565656, 0x000000, 0x000000,
   0x565656, 0x565656, 0x8f8f8f, 0xc6c6c6, 0xffffff, 0xc6c6c6, 0x8f8f8f, 0x565656, 0x565656,
@@ -73,20 +67,26 @@ TEST(ResizeImage, NearestNeighborInterp)
   ImageRef dst_expected(create_image_from_data(IMAGE_RGB, test_image_scaled_9x9_nearest, 9, 9));
 
   ImageRef dst(Image::create(IMAGE_RGB, 9, 9));
-  algorithm::resize_image(src.get(), dst.get(),
+  algorithm::resize_image(src.get(),
+                          dst.get(),
                           algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR,
-                          nullptr, nullptr, -1);
+                          nullptr,
+                          nullptr,
+                          -1);
 
   ASSERT_EQ(0, count_diff_between_images(dst.get(), dst_expected.get()));
 
   ImageRef dst2(Image::create(IMAGE_RGB, 3, 3));
-  algorithm::resize_image(dst.get(), dst2.get(),
+  algorithm::resize_image(dst.get(),
+                          dst2.get(),
                           algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR,
-                          nullptr, nullptr, -1);
+                          nullptr,
+                          nullptr,
+                          -1);
   ASSERT_EQ(0, count_diff_between_images(src.get(), dst2.get()));
 }
 
-#if 0                           // TODO complete this test
+#if 0 // TODO complete this test
 TEST(ResizeImage, BilinearInterpRGBType)
 {
   ImageRef src(create_image_from_data(IMAGE_RGB, test_image_base_3x3, 3, 3));

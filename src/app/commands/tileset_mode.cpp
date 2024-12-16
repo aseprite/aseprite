@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -20,36 +20,42 @@ using namespace gfx;
 
 class TilesetModeCommand : public Command {
 public:
-  TilesetModeCommand()
-    : Command(CommandId::TilesetMode(), CmdUIOnlyFlag) {
+  TilesetModeCommand() : Command(CommandId::TilesetMode(), CmdUIOnlyFlag)
+  {
     m_mode = TilesetMode::Auto;
   }
 
 protected:
-
-  void onLoadParams(const Params& params) override {
+  void onLoadParams(const Params& params) override
+  {
     std::string mode = params.get("mode");
-    if (mode == "manual") m_mode = TilesetMode::Manual;
-    else if (mode == "stack") m_mode = TilesetMode::Stack;
-    else m_mode = TilesetMode::Auto;
+    if (mode == "manual")
+      m_mode = TilesetMode::Manual;
+    else if (mode == "stack")
+      m_mode = TilesetMode::Stack;
+    else
+      m_mode = TilesetMode::Auto;
   }
 
-  bool onChecked(Context* context) override {
+  bool onChecked(Context* context) override
+  {
     auto colorBar = ColorBar::instance();
     return (colorBar->tilesetMode() == m_mode);
   }
 
-  void onExecute(Context* context) override {
+  void onExecute(Context* context) override
+  {
     auto colorBar = ColorBar::instance();
     colorBar->setTilesetMode(m_mode);
   }
 
-  std::string onGetFriendlyName() const override {
+  std::string onGetFriendlyName() const override
+  {
     std::string mode;
     switch (m_mode) {
       case TilesetMode::Manual: mode = Strings::commands_TilesetMode_Manual(); break;
-      case TilesetMode::Auto:   mode = Strings::commands_TilesetMode_Auto();   break;
-      case TilesetMode::Stack:  mode = Strings::commands_TilesetMode_Stack();  break;
+      case TilesetMode::Auto:   mode = Strings::commands_TilesetMode_Auto(); break;
+      case TilesetMode::Stack:  mode = Strings::commands_TilesetMode_Stack(); break;
     }
     return Strings::commands_TilesetMode(mode);
   }

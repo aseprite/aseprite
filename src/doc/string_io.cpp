@@ -5,15 +5,15 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/string_io.h"
 
 #include "base/serialization.h"
 
-#include <vector>
 #include <iostream>
+#include <vector>
 
 namespace doc {
 
@@ -30,7 +30,7 @@ void write_string(std::ostream& os, const std::string& str)
 std::string read_string(std::istream& is)
 {
   uint16_t length = read16(is);
-  std::vector<char> str(length+1);
+  std::vector<char> str(length + 1);
   if (length > 0) {
     is.read(&str[0], length);
     str[length] = 0;
@@ -41,4 +41,4 @@ std::string read_string(std::istream& is)
   return std::string(&str[0]);
 }
 
-}
+} // namespace doc

@@ -10,16 +10,16 @@
     </grid>
     <hbox>
       <vbox>
-	<hbox>
-	  <buttonset id="outline_type" columns="2">
+        <hbox>
+          <buttonset id="outline_type" columns="2">
             <item icon="outline_circle" tooltip="@.circle" tooltip_dir="right" />
             <item icon="outline_square" tooltip="@.square" tooltip_dir="left" />
             <item icon="outline_horizontal" tooltip="@.horizontal" tooltip_dir="right" />
             <item icon="outline_vertical" tooltip="@.vertical" tooltip_dir="left" />
-	  </buttonset>
-	</hbox>
-	<hbox>
-	  <buttonset id="outline_matrix" columns="3">
+          </buttonset>
+        </hbox>
+        <hbox>
+          <buttonset id="outline_matrix" columns="3">
             <item icon="outline_empty_pixel" style="outline_cell" />
             <item icon="outline_empty_pixel" style="outline_cell" />
             <item icon="outline_empty_pixel" style="outline_cell" />
@@ -29,14 +29,14 @@
             <item icon="outline_empty_pixel" style="outline_cell" />
             <item icon="outline_empty_pixel" style="outline_cell" />
             <item icon="outline_empty_pixel" style="outline_cell" />
-	  </buttonset>
-	</hbox>
+          </buttonset>
+        </hbox>
       </vbox>
       <vbox>
-	<buttonset id="place" columns="1">
-	  <item text="@.outside" />
-	  <item text="@.inside" />
-	</buttonset>
+        <buttonset id="place" columns="1">
+          <item text="@.outside" />
+          <item text="@.inside" />
+        </buttonset>
       </vbox>
     </hbox>
   </vbox>

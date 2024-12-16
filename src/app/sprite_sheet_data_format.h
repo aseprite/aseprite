@@ -10,11 +10,7 @@
 
 namespace app {
 
-  enum class SpriteSheetDataFormat {
-    JsonHash,
-    JsonArray,
-    Default = JsonHash
-  };
+enum class SpriteSheetDataFormat { JsonHash, JsonArray, Default = JsonHash };
 
 } // namespace app
 

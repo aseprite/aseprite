@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -103,13 +103,10 @@ namespace {
 
 class ConsoleEngineDelegate : public script::EngineDelegate {
 public:
-  ConsoleEngineDelegate(Console& console) : m_console(console) { }
-  void onConsoleError(const char* text) override {
-    onConsolePrint(text);
-  }
-  void onConsolePrint(const char* text) override {
-    m_console.printf("%s\n", text);
-  }
+  ConsoleEngineDelegate(Console& console) : m_console(console) {}
+  void onConsoleError(const char* text) override { onConsolePrint(text); }
+  void onConsolePrint(const char* text) override { m_console.printf("%s\n", text); }
+
 private:
   Console& m_console;
 };
@@ -126,10 +123,7 @@ public:
 
 class App::LoadLanguage {
 public:
-  LoadLanguage(Preferences& pref,
-               Extensions& exts) {
-    Strings::createInstance(pref, exts);
-  }
+  LoadLanguage(Preferences& pref, Extensions& exts) { Strings::createInstance(pref, exts); }
 };
 
 class App::Modules {
@@ -152,8 +146,7 @@ public:
   std::unique_ptr<app::crash::DataRecovery> m_recovery;
 #endif
 
-  Modules(const bool createLogInDesktop,
-          Preferences& pref)
+  Modules(const bool createLogInDesktop, Preferences& pref)
     : m_loggerModule(createLogInDesktop)
     , m_loadLanguage(pref, m_extensions)
     , m_activeToolManager(&m_toolbox)
@@ -164,14 +157,15 @@ public:
   {
   }
 
-  ~Modules() {
+  ~Modules()
+  {
 #ifdef ENABLE_DATA_RECOVERY
-    ASSERT(m_recovery == nullptr ||
-           ui::get_app_state() == ui::AppState::kClosingWithException);
+    ASSERT(m_recovery == nullptr || ui::get_app_state() == ui::AppState::kClosingWithException);
 #endif
   }
 
-  app::crash::DataRecovery* recovery() {
+  app::crash::DataRecovery* recovery()
+  {
 #ifdef ENABLE_DATA_RECOVERY
     return m_recovery.get();
 #else
@@ -179,36 +173,39 @@ public:
 #endif
   }
 
-  void createDataRecovery(Context* ctx) {
+  void createDataRecovery(Context* ctx)
+  {
 #ifdef ENABLE_DATA_RECOVERY
 
-#ifdef ENABLE_TRIAL_MODE
-    DRM_INVALID{
+  #ifdef ENABLE_TRIAL_MODE
+    DRM_INVALID
+    {
       return;
     }
-#endif
+  #endif
 
     m_recovery = std::make_unique<app::crash::DataRecovery>(ctx);
-    m_recovery->SessionsListIsReady.connect(
-      [] {
-        ui::assert_ui_thread();
-        auto app = App::instance();
-        if (app && app->mainWindow()) {
-          // Notify that the list of sessions is ready.
-          app->mainWindow()->dataRecoverySessionsAreReady();
-        }
-      });
+    m_recovery->SessionsListIsReady.connect([] {
+      ui::assert_ui_thread();
+      auto app = App::instance();
+      if (app && app->mainWindow()) {
+        // Notify that the list of sessions is ready.
+        app->mainWindow()->dataRecoverySessionsAreReady();
+      }
+    });
 #endif
   }
 
-  void searchDataRecoverySessions() {
+  void searchDataRecoverySessions()
+  {
 #ifdef ENABLE_DATA_RECOVERY
 
-#ifdef ENABLE_TRIAL_MODE
-    DRM_INVALID{
+  #ifdef ENABLE_TRIAL_MODE
+    DRM_INVALID
+    {
       return;
     }
-#endif
+  #endif
 
     ASSERT(m_recovery);
     if (m_recovery)
@@ -216,19 +213,20 @@ public:
 #endif
   }
 
-  void deleteDataRecovery() {
+  void deleteDataRecovery()
+  {
 #ifdef ENABLE_DATA_RECOVERY
 
-#ifdef ENABLE_TRIAL_MODE
-    DRM_INVALID{
+  #ifdef ENABLE_TRIAL_MODE
+    DRM_INVALID
+    {
       return;
     }
-#endif
+  #endif
 
     m_recovery.reset();
 #endif
   }
-
 };
 
 App* App::m_instance = nullptr;
@@ -273,8 +271,7 @@ int App::initialize(const AppOptions& options)
 
 #if LAF_WINDOWS
 
-  if (options.disableWintab() ||
-      !pref.experimental.loadWintabDriver() ||
+  if (options.disableWintab() || !pref.experimental.loadWintabDriver() ||
       pref.tablet.api() == "pointer") {
     tabletOptions.api = os::TabletAPI::WindowsPointerInput;
   }
@@ -299,20 +296,15 @@ int App::initialize(const AppOptions& options)
 
   system->setTabletOptions(tabletOptions);
   system->setAppName(get_app_name());
-  system->setAppMode(m_isGui ? os::AppMode::GUI:
-                               os::AppMode::CLI);
+  system->setAppMode(m_isGui ? os::AppMode::GUI : os::AppMode::CLI);
 
   if (m_isGui)
     m_uiSystem.reset(new ui::UISystem);
 
   bool createLogInDesktop = false;
   switch (options.verboseLevel()) {
-    case AppOptions::kNoVerbose:
-      base::set_log_level(ERROR);
-      break;
-    case AppOptions::kVerbose:
-      base::set_log_level(INFO);
-      break;
+    case AppOptions::kNoVerbose: base::set_log_level(ERROR); break;
+    case AppOptions::kVerbose:   base::set_log_level(INFO); break;
     case AppOptions::kHighlyVerbose:
       base::set_log_level(VERBOSE);
       createLogInDesktop = true;
@@ -333,7 +325,7 @@ int App::initialize(const AppOptions& options)
 
   // Load modules
   m_modules = std::make_unique<Modules>(createLogInDesktop, pref);
-  m_legacy = std::make_unique<LegacyModules>(isGui() ? REQUIRE_INTERFACE: 0);
+  m_legacy = std::make_unique<LegacyModules>(isGui() ? REQUIRE_INTERFACE : 0);
   m_brushes = std::make_unique<AppBrushes>();
 
   // Data recovery is enabled only in GUI mode
@@ -425,47 +417,48 @@ int App::initialize(const AppOptions& options)
 
 namespace {
 
-  struct CloseMainWindow {
-    std::unique_ptr<MainWindow>& m_win;
-    CloseMainWindow(std::unique_ptr<MainWindow>& win) : m_win(win) { }
-    ~CloseMainWindow() { m_win.reset(nullptr); }
-  };
+struct CloseMainWindow {
+  std::unique_ptr<MainWindow>& m_win;
+  CloseMainWindow(std::unique_ptr<MainWindow>& win) : m_win(win) {}
+  ~CloseMainWindow() { m_win.reset(nullptr); }
+};
 
-  // Deletes all docs.
-  struct DeleteAllDocs {
-    Context* m_ctx;
-    DeleteAllDocs(Context* ctx) : m_ctx(ctx) { }
-    ~DeleteAllDocs() {
-      std::vector<Doc*> docs;
+// Deletes all docs.
+struct DeleteAllDocs {
+  Context* m_ctx;
+  DeleteAllDocs(Context* ctx) : m_ctx(ctx) {}
+  ~DeleteAllDocs()
+  {
+    std::vector<Doc*> docs;
 
-      // Add all documents that were closed in the past, these docs
-      // are not part of any context and they are just temporarily in
-      // memory just in case the user wants to recover them.
-      for (Doc* doc : static_cast<UIContext*>(m_ctx)->getAndRemoveAllClosedDocs())
-        docs.push_back(doc);
+    // Add all documents that were closed in the past, these docs
+    // are not part of any context and they are just temporarily in
+    // memory just in case the user wants to recover them.
+    for (Doc* doc : static_cast<UIContext*>(m_ctx)->getAndRemoveAllClosedDocs())
+      docs.push_back(doc);
 
-      // Add documents that are currently opened/in tabs/in the
-      // context.
-      for (Doc* doc : m_ctx->documents())
-        docs.push_back(doc);
+    // Add documents that are currently opened/in tabs/in the
+    // context.
+    for (Doc* doc : m_ctx->documents())
+      docs.push_back(doc);
 
-      for (Doc* doc : docs) {
-        // First we close the document. In this way we receive recent
-        // notifications related to the document as a app::Doc. If
-        // we delete the document directly, we destroy the app::Doc
-        // too early, and then doc::~Document() call
-        // DocsObserver::onRemoveDocument(). In this way, observers
-        // could think that they have a fully created app::Doc when
-        // in reality it's a doc::Document (in the middle of a
-        // destruction process).
-        //
-        // TODO: This problem is because we're extending doc::Document,
-        // in the future, we should remove app::Doc.
-        doc->close();
-        delete doc;
-      }
+    for (Doc* doc : docs) {
+      // First we close the document. In this way we receive recent
+      // notifications related to the document as a app::Doc. If
+      // we delete the document directly, we destroy the app::Doc
+      // too early, and then doc::~Document() call
+      // DocsObserver::onRemoveDocument(). In this way, observers
+      // could think that they have a fully created app::Doc when
+      // in reality it's a doc::Document (in the middle of a
+      // destruction process).
+      //
+      // TODO: This problem is because we're extending doc::Document,
+      // in the future, we should remove app::Doc.
+      doc->close();
+      delete doc;
     }
-  };
+  }
+};
 
 } // anonymous namespace
 
@@ -479,9 +472,8 @@ void App::run()
     auto manager = ui::Manager::getDefault();
 #if LAF_WINDOWS
     // How to interpret one finger on Windows tablets.
-    manager->display()->nativeWindow()
-      ->setInterpretOneFingerGestureAsMouseMovement(
-        preferences().experimental.oneFingerAsMouseMovement());
+    manager->display()->nativeWindow()->setInterpretOneFingerGestureAsMouseMovement(
+      preferences().experimental.oneFingerAsMouseMovement());
 #endif
 
 #if LAF_LINUX
@@ -535,8 +527,7 @@ void App::run()
 
 #ifdef ENABLE_UPDATER
     // Launch the thread to check for updates.
-    app::CheckUpdateThreadLauncher checkUpdate(
-      m_mainWindow->getCheckUpdateDelegate());
+    app::CheckUpdateThreadLauncher checkUpdate(m_mainWindow->getCheckUpdateDelegate());
     checkUpdate.launch();
 #endif
 
@@ -572,7 +563,7 @@ void App::run()
     Shell shell;
     shell.run(*m_engine);
   }
-#endif  // ENABLE_SCRIPTING
+#endif // ENABLE_SCRIPTING
 
   // ----------------------------------------------------------------------
 
@@ -672,10 +663,8 @@ bool App::isPortable()
 {
   static std::optional<bool> is_portable;
   if (!is_portable) {
-    is_portable =
-      base::is_file(base::join_path(
-                      base::get_file_path(base::get_app_path()),
-                      "aseprite.ini"));
+    is_portable = base::is_file(
+      base::join_path(base::get_file_path(base::get_app_path()), "aseprite.ini"));
   }
   return *is_portable;
 }
@@ -870,14 +859,20 @@ int app_get_color_to_clear_layer(Layer* layer)
 }
 
 #ifdef ENABLE_DRM
-void app_configure_drm() {
+void app_configure_drm()
+{
   ResourceFinder userDirRf, dataDirRf;
   userDirRf.includeUserDir("");
   dataDirRf.includeDataDir("");
   std::map<std::string, std::string> config = {
-    {"data", dataDirRf.getFirstOrCreateDefault()}
+    { "data", dataDirRf.getFirstOrCreateDefault() }
   };
-  DRM_CONFIGURE(get_app_url(), get_app_name(), get_app_version(), userDirRf.getFirstOrCreateDefault(), updater::getUserAgent(), config);
+  DRM_CONFIGURE(get_app_url(),
+                get_app_name(),
+                get_app_version(),
+                userDirRf.getFirstOrCreateDefault(),
+                updater::getUserAgent(),
+                config);
 }
 #endif
 

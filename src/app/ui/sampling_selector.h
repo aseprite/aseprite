@@ -18,10 +18,7 @@ namespace app {
 
 class SamplingSelector : public ui::HBox {
 public:
-  enum class Behavior {
-    ChangeOnRealTime,
-    ChangeOnSave
-  };
+  enum class Behavior { ChangeOnRealTime, ChangeOnSave };
 
   SamplingSelector(Behavior behavior = Behavior::ChangeOnRealTime);
 

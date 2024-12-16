@@ -22,13 +22,11 @@ namespace {
 
 class DecodeDelegate : public dio::DecodeDelegate {
 public:
-  DecodeDelegate() : m_sprite(nullptr) { }
+  DecodeDelegate() : m_sprite(nullptr) {}
   ~DecodeDelegate() { delete m_sprite; }
 
   bool decodeOneFrame() override { return true; }
-  void onSprite(doc::Sprite* sprite) override {
-    m_sprite = sprite;
-  }
+  void onSprite(doc::Sprite* sprite) override { m_sprite = sprite; }
 
   doc::Sprite* sprite() { return m_sprite; }
 
@@ -38,25 +36,16 @@ private:
 
 class StreamAdaptor : public dio::FileInterface {
 public:
-  StreamAdaptor(NSData* data)
-    : m_data(data)
-    , m_ok(m_data != nullptr)
-    , m_pos(0) {
-  }
+  StreamAdaptor(NSData* data) : m_data(data), m_ok(m_data != nullptr), m_pos(0) {}
 
-  bool ok() const {
-    return m_ok;
-  }
+  bool ok() const { return m_ok; }
 
-  size_t tell() {
-    return m_pos;
-  }
+  size_t tell() { return m_pos; }
 
-  void seek(size_t absPos) {
-    m_pos = absPos;
-  }
+  void seek(size_t absPos) { m_pos = absPos; }
 
-  uint8_t read8() {
+  uint8_t read8()
+  {
     if (!m_ok)
       return 0;
 
@@ -68,14 +57,15 @@ public:
     }
   }
 
-  size_t readBytes(uint8_t* buf, size_t n) {
+  size_t readBytes(uint8_t* buf, size_t n)
+  {
     if (!m_ok)
       return 0;
 
     if (m_pos < m_data.length) {
       n = std::min(n, m_data.length - m_pos);
 
-      memcpy(buf, ((const uint8_t*)m_data.bytes)+m_pos, n);
+      memcpy(buf, ((const uint8_t*)m_data.bytes) + m_pos, n);
       m_pos += n;
       return n;
     }
@@ -85,7 +75,8 @@ public:
     }
   }
 
-  void write8(uint8_t value) {
+  void write8(uint8_t value)
+  {
     // Do nothing, we don't write in the file
   }
 
@@ -96,9 +87,7 @@ public:
 
 } // anonymous namespace
 
-CGImageRef get_thumbnail(CFURLRef url,
-                         CFDictionaryRef options,
-                         CGSize maxSize)
+CGImageRef get_thumbnail(CFURLRef url, CFDictionaryRef options, CGSize maxSize)
 {
   auto data = [[NSData alloc] initWithContentsOfURL:(NSURL*)url];
   if (!data)
@@ -126,18 +115,16 @@ CGImageRef get_thumbnail(CFURLRef url,
     else
       cx = wh;
 
-    image.reset(doc::Image::create(doc::IMAGE_RGB,
-                                   cx * w / wh,
-                                   cx * h / wh));
+    image.reset(doc::Image::create(doc::IMAGE_RGB, cx * w / wh, cx * h / wh));
     image->clear(0);
 
     render::Render render;
     render.setBgOptions(render::BgOptions::MakeTransparent());
-    render.setProjection(render::Projection(doc::PixelRatio(1, 1),
-                                            render::Zoom(cx, wh)));
-    render.renderSprite(image.get(), spr, 0,
-                        gfx::ClipF(0, 0, 0, 0,
-                                   image->width(), image->height()));
+    render.setProjection(render::Projection(doc::PixelRatio(1, 1), render::Zoom(cx, wh)));
+    render.renderSprite(image.get(),
+                        spr,
+                        0,
+                        gfx::ClipF(0, 0, 0, 0, image->width(), image->height()));
 
     w = image->width();
     h = image->height();
@@ -151,10 +138,13 @@ CGImageRef get_thumbnail(CFURLRef url,
   //      support unpremultiplied alpha (kCGImageAlphaFirst).
 
   CGColorSpaceRef cs = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
-  CGContextRef gc = CGBitmapContextCreate(
-    image->getPixelAddress(0, 0),
-    w, h, 8, image->rowBytes(), cs,
-    kCGImageAlphaPremultipliedLast);
+  CGContextRef gc = CGBitmapContextCreate(image->getPixelAddress(0, 0),
+                                          w,
+                                          h,
+                                          8,
+                                          image->rowBytes(),
+                                          cs,
+                                          kCGImageAlphaPremultipliedLast);
   CGColorSpaceRelease(cs);
 
   CGImageRef img = CGBitmapContextCreateImage(gc);

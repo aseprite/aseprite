@@ -11,29 +11,29 @@
 #include <string>
 
 namespace doc {
-  class Palette;
+class Palette;
 }
 
 namespace app {
-  using namespace doc;
+using namespace doc;
 
-  int init_module_palette();
-  void exit_module_palette();
+int init_module_palette();
+void exit_module_palette();
 
-  // Loads the default palette or creates it. Also it migrates the
-  // palette if the palette format changes, etc.
-  void load_default_palette();
+// Loads the default palette or creates it. Also it migrates the
+// palette if the palette format changes, etc.
+void load_default_palette();
 
-  Palette* get_default_palette();
-  Palette* get_current_palette();
+Palette* get_default_palette();
+Palette* get_current_palette();
 
-  void set_default_palette(const Palette* palette);
-  bool set_current_palette(const Palette* palette, bool forced);
+void set_default_palette(const Palette* palette);
+bool set_current_palette(const Palette* palette, bool forced);
 
-  std::string get_preset_palette_filename(const std::string& preset,
-                                          const std::string& dot_extension);
-  std::string get_default_palette_preset_name();
-  std::string get_preset_palettes_dir();
+std::string get_preset_palette_filename(const std::string& preset,
+                                        const std::string& dot_extension);
+std::string get_default_palette_preset_name();
+std::string get_preset_palettes_dir();
 
 } // namespace app
 

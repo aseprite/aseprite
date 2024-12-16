@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_mask.h"
@@ -66,8 +66,7 @@ bool SelectTileCommand::onEnabled(Context* ctx)
 void SelectTileCommand::onExecute(Context* ctx)
 {
   auto editor = Editor::activeEditor();
-  if (!editor ||
-      !editor->hasMouse())
+  if (!editor || !editor->hasMouse())
     return;
 
   // Lock sprite
@@ -87,22 +86,14 @@ void SelectTileCommand::onExecute(Context* ctx)
 
     switch (m_mode) {
       case gen::SelectionMode::DEFAULT:
-      case gen::SelectionMode::ADD:
-        mask->add(gridBounds);
-        break;
-      case gen::SelectionMode::SUBTRACT:
-        mask->subtract(gridBounds);
-        break;
-      case gen::SelectionMode::INTERSECT:
-        mask->intersect(gridBounds);
-        break;
+      case gen::SelectionMode::ADD:       mask->add(gridBounds); break;
+      case gen::SelectionMode::SUBTRACT:  mask->subtract(gridBounds); break;
+      case gen::SelectionMode::INTERSECT: mask->intersect(gridBounds); break;
     }
   }
 
   // Set the new mask
-  Tx tx(writer,
-        friendlyName(),
-        DoesntModifyDocument);
+  Tx tx(writer, friendlyName(), DoesntModifyDocument);
   tx(new cmd::SetMask(doc, mask.get()));
   tx.commit();
 
@@ -113,18 +104,10 @@ std::string SelectTileCommand::onGetFriendlyName() const
 {
   std::string text;
   switch (m_mode) {
-    case gen::SelectionMode::ADD:
-      text = Strings::commands_SelectTile_Add();
-      break;
-    case gen::SelectionMode::SUBTRACT:
-      text = Strings::commands_SelectTile_Subtract();
-      break;
-    case gen::SelectionMode::INTERSECT:
-      text = Strings::commands_SelectTile_Intersect();
-      break;
-    default:
-      text = Strings::commands_SelectTile();
-      break;
+    case gen::SelectionMode::ADD:       text = Strings::commands_SelectTile_Add(); break;
+    case gen::SelectionMode::SUBTRACT:  text = Strings::commands_SelectTile_Subtract(); break;
+    case gen::SelectionMode::INTERSECT: text = Strings::commands_SelectTile_Intersect(); break;
+    default:                            text = Strings::commands_SelectTile(); break;
   }
   return text;
 }

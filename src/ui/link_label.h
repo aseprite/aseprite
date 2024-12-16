@@ -15,22 +15,22 @@
 
 namespace ui {
 
-  class LinkLabel : public Label {
-  public:
-    LinkLabel(const std::string& urlOrText = "");
-    LinkLabel(const std::string& url, const std::string& text);
+class LinkLabel : public Label {
+public:
+  LinkLabel(const std::string& urlOrText = "");
+  LinkLabel(const std::string& url, const std::string& text);
 
-    const std::string& url() const { return m_url; }
-    void setUrl(const std::string& url);
+  const std::string& url() const { return m_url; }
+  void setUrl(const std::string& url);
 
-    obs::signal<void()> Click;
+  obs::signal<void()> Click;
 
-  protected:
-    bool onProcessMessage(Message* msg) override;
-    virtual void onClick();
+protected:
+  bool onProcessMessage(Message* msg) override;
+  virtual void onClick();
 
-    std::string m_url;
-  };
+  std::string m_url;
+};
 
 } // namespace ui
 

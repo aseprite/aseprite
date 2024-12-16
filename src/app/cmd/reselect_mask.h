@@ -14,28 +14,26 @@
 #include <memory>
 
 namespace doc {
-  class Mask;
+class Mask;
 }
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class ReselectMask : public Cmd
-                     , public WithDocument {
-  public:
-    ReselectMask(Doc* doc);
+class ReselectMask : public Cmd,
+                     public WithDocument {
+public:
+  ReselectMask(Doc* doc);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    size_t onMemSize() const override;
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  size_t onMemSize() const override;
 
-  private:
-    std::unique_ptr<Mask> m_oldMask;
-  };
+private:
+  std::unique_ptr<Mask> m_oldMask;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

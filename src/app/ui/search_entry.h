@@ -12,18 +12,18 @@
 
 namespace app {
 
-  class SearchEntry : public ui::Entry {
-  public:
-    SearchEntry();
+class SearchEntry : public ui::Entry {
+public:
+  SearchEntry();
 
-  private:
-    bool onProcessMessage(ui::Message* msg) override;
-    void onPaint(ui::PaintEvent& ev) override;
-    void onSizeHint(ui::SizeHintEvent& ev) override;
-    gfx::Rect onGetEntryTextBounds() const override;
+private:
+  bool onProcessMessage(ui::Message* msg) override;
+  void onPaint(ui::PaintEvent& ev) override;
+  void onSizeHint(ui::SizeHintEvent& ev) override;
+  gfx::Rect onGetEntryTextBounds() const override;
 
-    gfx::Rect getCloseIconBounds() const;
-  };
+  gfx::Rect getCloseIconBounds() const;
+};
 
 } // namespace app
 

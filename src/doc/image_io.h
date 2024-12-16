@@ -12,11 +12,11 @@
 
 namespace doc {
 
-  class CancelIO;
-  class Image;
+class CancelIO;
+class Image;
 
-  bool write_image(std::ostream& os, const Image* image, CancelIO* cancel = nullptr);
-  Image* read_image(std::istream& is, bool setId = true);
+bool write_image(std::ostream& os, const Image* image, CancelIO* cancel = nullptr);
+Image* read_image(std::istream& is, bool setId = true);
 
 } // namespace doc
 

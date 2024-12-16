@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/file_list.h"
@@ -105,7 +105,7 @@ FileItemList FileList::selectedFileItems() const
   ASSERT(m_selectedItems.size() == m_list.size());
 
   FileItemList result;
-  for (int i=0; i<int(m_list.size()); ++i) {
+  for (int i = 0; i < int(m_list.size()); ++i) {
     if (m_selectedItems[i])
       result.push_back(m_list[i]);
   }
@@ -119,7 +119,7 @@ void FileList::deselectedFileItems()
 
   bool redraw = false;
 
-  for (int i=0; i<int(m_list.size()); ++i) {
+  for (int i = 0; i < int(m_list.size()); ++i) {
     if (m_selected == m_list[i]) {
       if (!m_selectedItems[i]) {
         m_selectedItems[i] = true;
@@ -175,10 +175,7 @@ void FileList::animateToZoom(const double zoom)
 bool FileList::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
-
-    case kMouseDownMessage:
-      captureMouse();
-      [[fallthrough]];
+    case kMouseDownMessage: captureMouse(); [[fallthrough]];
 
     case kMouseMoveMessage:
       if (hasCapture()) {
@@ -191,28 +188,21 @@ bool FileList::onProcessMessage(Message* msg)
 
         // rows
         int i = 0;
-        for (auto begin=m_list.begin(), end=m_list.end(), it=begin;
-             it!=end; ++it, ++i) {
+        for (auto begin = m_list.begin(), end = m_list.end(), it = begin; it != end; ++it, ++i) {
           IFileItem* fi = *it;
           ItemInfo info = getFileItemInfo(i);
 
           if ((info.bounds.contains(mousePos)) ||
-              (isListView() &&
-               ((it == begin && mousePos.y < info.bounds.y) ||
-                (it == end-1 && mousePos.y >= info.bounds.y2())))) {
+              (isListView() && ((it == begin && mousePos.y < info.bounds.y) ||
+                                (it == end - 1 && mousePos.y >= info.bounds.y2())))) {
             m_selected = fi;
 
-            if (m_multiselect &&
-                oldSelected != fi &&
-                m_selectedItems.size() == m_list.size()) {
-              if (msg->shiftPressed() ||
-                  msg->ctrlPressed() ||
-                  msg->cmdPressed()) {
+            if (m_multiselect && oldSelected != fi && m_selectedItems.size() == m_list.size()) {
+              if (msg->shiftPressed() || msg->ctrlPressed() || msg->cmdPressed()) {
                 m_selectedItems[i] = !m_selectedItems[i];
               }
               else {
-                std::fill(m_selectedItems.begin(),
-                          m_selectedItems.end(), false);
+                std::fill(m_selectedItems.begin(), m_selectedItems.end(), false);
                 m_selectedItems[i] = true;
               }
               invalidate();
@@ -253,7 +243,6 @@ bool FileList::onProcessMessage(Message* msg)
         int bottom = m_list.size();
 
         switch (scancode) {
-
           case kKeyUp:
             if (select >= 0)
               select -= m_itemsPerRow;
@@ -268,27 +257,23 @@ bool FileList::onProcessMessage(Message* msg)
               select = 0;
             break;
 
-          case kKeyHome:
-            select = 0;
-            break;
+          case kKeyHome:     select = 0; break;
 
-          case kKeyEnd:
-            select = bottom-1;
-            break;
+          case kKeyEnd:      select = bottom - 1; break;
 
           case kKeyPageUp:
           case kKeyPageDown: {
-            int sgn = (scancode == kKeyPageUp) ? -1: 1;
+            int sgn = (scancode == kKeyPageUp) ? -1 : 1;
             gfx::Rect vp = view->viewportBounds();
             if (select < 0)
               select = 0;
-            select += sgn * vp.h / (textHeight()+4*guiscale());
+            select += sgn * vp.h / (textHeight() + 4 * guiscale());
             break;
           }
 
           case kKeyLeft:
           case kKeyRight: {
-            const int delta = (scancode == kKeyLeft ? -1: 1);
+            const int delta = (scancode == kKeyLeft ? -1 : 1);
             if (isIconView()) {
               if (select >= 0)
                 select += delta;
@@ -298,7 +283,7 @@ bool FileList::onProcessMessage(Message* msg)
             else if (select >= 0) {
               gfx::Rect vp = view->viewportBounds();
               gfx::Point scroll = view->viewScroll();
-              scroll.x += vp.w/2*delta;
+              scroll.x += vp.w / 2 * delta;
               view->setViewScroll(scroll);
             }
             break;
@@ -324,26 +309,21 @@ bool FileList::onProcessMessage(Message* msg)
             else
               return Widget::onProcessMessage(msg);
 
-          case kKeyBackspace:
-            goUp();
-            return true;
+          case kKeyBackspace: goUp(); return true;
 
           default:
             if (unicodeChar == ' ' ||
-                (std::tolower(unicodeChar) >= 'a' &&
-                 std::tolower(unicodeChar) <= 'z') ||
-                (unicodeChar >= '0' &&
-                 unicodeChar <= '9')) {
+                (std::tolower(unicodeChar) >= 'a' && std::tolower(unicodeChar) <= 'z') ||
+                (unicodeChar >= '0' && unicodeChar <= '9')) {
               if ((base::current_tick() - m_isearchClock) > ISEARCH_KEYPRESS_INTERVAL_MSECS)
                 m_isearch.clear();
 
               m_isearch.push_back(unicodeChar);
 
               int i, chrs = m_isearch.size();
-              FileItemList::iterator
-                link = m_list.begin() + ((select >= 0) ? select: 0);
+              FileItemList::iterator link = m_list.begin() + ((select >= 0) ? select : 0);
 
-              for (i=std::max(select, 0); i<bottom; ++i, ++link) {
+              for (i = std::max(select, 0); i < bottom; ++i, ++link) {
                 IFileItem* fi = *link;
                 if (base::utf8_icmp(fi->displayName(), m_isearch, chrs) == 0) {
                   select = i;
@@ -358,7 +338,7 @@ bool FileList::onProcessMessage(Message* msg)
         }
 
         if (bottom > 0)
-          selectIndex(std::clamp(select, 0, bottom-1));
+          selectIndex(std::clamp(select, 0, bottom - 1));
 
         return true;
       }
@@ -376,8 +356,10 @@ bool FileList::onProcessMessage(Message* msg)
 
           if (precise) {
             dz /= 1.5;
-            if (dz < -1.0) dz = -1.0;
-            else if (dz > 1.0) dz = 1.0;
+            if (dz < -1.0)
+              dz = -1.0;
+            else if (dz > 1.0)
+              dz = 1.0;
           }
 
           setZoom(zoom() - dz);
@@ -389,7 +371,8 @@ bool FileList::onProcessMessage(Message* msg)
           if (static_cast<MouseMessage*>(msg)->preciseWheel())
             scroll += static_cast<MouseMessage*>(msg)->wheelDelta();
           else
-            scroll += static_cast<MouseMessage*>(msg)->wheelDelta() * 3*(textHeight()+4*guiscale());
+            scroll += static_cast<MouseMessage*>(msg)->wheelDelta() * 3 *
+                      (textHeight() + 4 * guiscale());
 
           view->setViewScroll(scroll);
         }
@@ -404,17 +387,16 @@ bool FileList::onProcessMessage(Message* msg)
           return true;
         }
         else {
-          onFileAccepted();         // Emit "FileAccepted" event.
+          onFileAccepted(); // Emit "FileAccepted" event.
           return true;
         }
       }
       break;
 
     case kTouchMagnifyMessage: {
-      setZoom(zoom() + 4.0*static_cast<ui::TouchMessage*>(msg)->magnification());
+      setZoom(zoom() + 4.0 * static_cast<ui::TouchMessage*>(msg)->magnification());
       break;
     }
-
   }
 
   return Widget::onProcessMessage(msg);
@@ -456,9 +438,7 @@ void FileList::onPaint(ui::PaintEvent& ev)
 
   // Draw main thumbnail for the selected item when there are no
   // thumbnails per item.
-  if (isListView() &&
-      m_selected &&
-      m_selected->getThumbnail()) {
+  if (isListView() && m_selected && m_selected->getThumbnail()) {
     gfx::Rect tbounds = mainThumbnailBounds();
     tbounds.enlarge(1);
     g->drawRect(gfx::rgba(0, 0, 0, 64), tbounds);
@@ -470,10 +450,8 @@ void FileList::onPaint(ui::PaintEvent& ev)
     paint.blendMode(os::BlendMode::SrcOver);
 
     os::Sampling sampling;
-    if (thumbnail->width() > tbounds.w &&
-        thumbnail->height() > tbounds.h) {
-      sampling = os::Sampling(os::Sampling::Filter::Linear,
-                              os::Sampling::Mipmap::Nearest);
+    if (thumbnail->width() > tbounds.w && thumbnail->height() > tbounds.h) {
+      sampling = os::Sampling(os::Sampling::Filter::Linear, os::Sampling::Mipmap::Nearest);
     }
 
     g->drawSurface(thumbnail.get(),
@@ -497,21 +475,17 @@ void FileList::paintItem(ui::Graphics* g, IFileItem* fi, const int i)
   gfx::Color bgcolor;
   gfx::Color fgcolor;
   if ((!m_multiselect && fi == m_selected) ||
-      (m_multiselect &&
-       m_selectedItems.size() == m_list.size() &&
-       m_selectedItems[i])) {
+      (m_multiselect && m_selectedItems.size() == m_list.size() && m_selectedItems[i])) {
     fgcolor = theme->colors.filelistSelectedRowText();
     bgcolor = theme->colors.filelistSelectedRowFace();
   }
   else {
-    bgcolor = evenRow ? theme->colors.filelistEvenRowFace():
-                        theme->colors.filelistOddRowFace();
+    bgcolor = evenRow ? theme->colors.filelistEvenRowFace() : theme->colors.filelistOddRowFace();
 
     if (fi->isFolder() && !fi->isBrowsable())
       fgcolor = theme->colors.filelistDisabledRowText();
     else
-      fgcolor = evenRow ? theme->colors.filelistEvenRowText():
-                          theme->colors.filelistOddRowText();
+      fgcolor = evenRow ? theme->colors.filelistEvenRowText() : theme->colors.filelistOddRowText();
   }
 
   // Item background
@@ -525,15 +499,13 @@ void FileList::paintItem(ui::Graphics* g, IFileItem* fi, const int i)
     if (isListView()) {
       thumbnail = theme->parts.folderIconSmall()->bitmapRef(0);
       tbounds = textBounds;
-      tbounds.x += 2*guiscale();
+      tbounds.x += 2 * guiscale();
       tbounds.w = tbounds.h;
       textBounds.x += tbounds.x2();
     }
     else {
-      thumbnail =
-        (m_zoom < 4.0 ?
-         theme->parts.folderIconMedium()->bitmapRef(0):
-         theme->parts.folderIconBig()->bitmapRef(0));
+      thumbnail = (m_zoom < 4.0 ? theme->parts.folderIconMedium()->bitmapRef(0) :
+                                  theme->parts.folderIconBig()->bitmapRef(0));
     }
   }
   else {
@@ -542,18 +514,17 @@ void FileList::paintItem(ui::Graphics* g, IFileItem* fi, const int i)
 
   // item name
   if (isIconView() && textBounds.w > info.bounds.w) {
-    g->drawAlignedUIText(
-      fi->displayName().c_str(),
-      fgcolor, bgcolor,
-      (textBounds & gfx::Rect(info.bounds).shrink(2*guiscale())),
-      ui::CENTER | ui::TOP | ui::CHARWRAP);
+    g->drawAlignedUIText(fi->displayName().c_str(),
+                         fgcolor,
+                         bgcolor,
+                         (textBounds & gfx::Rect(info.bounds).shrink(2 * guiscale())),
+                         ui::CENTER | ui::TOP | ui::CHARWRAP);
   }
   else {
-    g->drawText(
-      fi->displayName().c_str(),
-      fgcolor, bgcolor,
-      gfx::Point(textBounds.x+2*guiscale(),
-                 textBounds.y+2*guiscale()));
+    g->drawText(fi->displayName().c_str(),
+                fgcolor,
+                bgcolor,
+                gfx::Point(textBounds.x + 2 * guiscale(), textBounds.y + 2 * guiscale()));
   }
 
   // Draw thumbnail progress bar
@@ -565,9 +536,7 @@ void FileList::paintItem(ui::Graphics* g, IFileItem* fi, const int i)
 
   if (!tbounds.isEmpty()) {
     if (thumbnail) {
-      tbounds =
-        gfx::Rect(0, 0,  thumbnail->width(), thumbnail->height())
-        .fitIn(tbounds);
+      tbounds = gfx::Rect(0, 0, thumbnail->width(), thumbnail->height()).fitIn(tbounds);
 
       if (!fi->isFolder()) {
         g->drawRect(gfx::rgba(0, 0, 0, 64), tbounds);
@@ -578,10 +547,8 @@ void FileList::paintItem(ui::Graphics* g, IFileItem* fi, const int i)
       paint.blendMode(os::BlendMode::SrcOver);
 
       os::Sampling sampling;
-      if (thumbnail->width() > tbounds.w &&
-          thumbnail->height() > tbounds.h) {
-        sampling = os::Sampling(os::Sampling::Filter::Linear,
-                                os::Sampling::Mipmap::Nearest);
+      if (thumbnail->width() > tbounds.w && thumbnail->height() > tbounds.h) {
+        sampling = os::Sampling(os::Sampling::Filter::Linear, os::Sampling::Mipmap::Nearest);
       }
 
       g->drawSurface(thumbnail.get(),
@@ -591,8 +558,8 @@ void FileList::paintItem(ui::Graphics* g, IFileItem* fi, const int i)
                      &paint);
     }
     else {
-      tbounds = gfx::Rect(0, 0, 20*guiscale(), 2+4*(8.0-m_zoom)/8.0*guiscale())
-        .fitIn(tbounds);
+      tbounds =
+        gfx::Rect(0, 0, 20 * guiscale(), 2 + 4 * (8.0 - m_zoom) / 8.0 * guiscale()).fitIn(tbounds);
 
       // Start thumbnail generation for this item
       generateThumbnailForFileItem(fi);
@@ -618,9 +585,9 @@ gfx::Rect FileList::mainThumbnailBounds()
 
   View* view = View::getView(this);
   gfx::Rect vp = view->viewportBounds();
-  int x = vp.x+vp.w - 2*guiscale() - thumbnail->width();
-  int y = info.bounds.center().y - thumbnail->height()/2 + bounds().y;
-  y = std::clamp(y, vp.y+2*guiscale(), vp.y+vp.h-3*guiscale()-thumbnail->height());
+  int x = vp.x + vp.w - 2 * guiscale() - thumbnail->width();
+  int y = info.bounds.center().y - thumbnail->height() / 2 + bounds().y;
+  y = std::clamp(y, vp.y + 2 * guiscale(), vp.y + vp.h - 3 * guiscale() - thumbnail->height());
   x -= bounds().x;
   y -= bounds().y;
   return gfx::Rect(x, y, thumbnail->width(), thumbnail->height());
@@ -632,7 +599,7 @@ void FileList::onSizeHint(SizeHintEvent& ev)
     gfx::Rect req;
 
     // rows
-    for (int i=0; i<int(m_list.size()); ++i) {
+    for (int i = 0; i < int(m_list.size()); ++i) {
       ItemInfo info = getFileItemInfo(i);
       req |= info.bounds;
     }
@@ -695,7 +662,7 @@ void FileList::recalcAllFileItemInfo()
     return;
   }
 
-  for (int i=0; i<int(m_info.size()); ++i)
+  for (int i = 0; i < int(m_info.size()); ++i)
     m_info[i] = calcFileItemInfo(i);
 
   m_itemsPerRow = 1;
@@ -717,25 +684,26 @@ void FileList::recalcAllFileItemInfo()
     int maxWidth = 0;
     int maxTextWidth = 0;
     for (const auto& info : m_info) {
-      int w = std::min(info.bounds.w, info.thumbnail.w*2);
+      int w = std::min(info.bounds.w, info.thumbnail.w * 2);
       maxWidth = std::max(maxWidth, w);
       maxTextWidth = std::max(maxTextWidth, info.text.w);
     }
     if (maxWidth == 0)
       return;
 
-    gfx::Size vp = (view ? view->viewportBounds().size(): size());
+    gfx::Size vp = (view ? view->viewportBounds().size() : size());
 
     int itemsPerRow = vp.w / maxWidth;
-    if (itemsPerRow < 3) itemsPerRow = 3;
+    if (itemsPerRow < 3)
+      itemsPerRow = 3;
     int itemWidth = vp.w / itemsPerRow;
 
     int i = 0;
-    for (int y=0; i<int(m_info.size()); ) {
+    for (int y = 0; i < int(m_info.size());) {
       int h = 0;
       int j = 0;
       int x = 0;
-      for (; j<itemsPerRow && i<int(m_info.size()); ++j, ++i, x += itemWidth) {
+      for (; j < itemsPerRow && i < int(m_info.size()); ++j, ++i, x += itemWidth) {
         auto& info = m_info[i];
         int deltax = x - info.bounds.x;
         int deltay = y - info.bounds.y;
@@ -748,9 +716,9 @@ void FileList::recalcAllFileItemInfo()
           info.text.h += info.text.h;
         }
 
-        info.text.x = info.bounds.x + info.bounds.w/2 - info.text.w/2;
+        info.text.x = info.bounds.x + info.bounds.w / 2 - info.text.w / 2;
         info.text.y += deltay;
-        info.thumbnail.x = info.bounds.x + info.bounds.w/2 - info.thumbnail.w/2;
+        info.thumbnail.x = info.bounds.x + info.bounds.w / 2 - info.thumbnail.w / 2;
         info.thumbnail.y += deltay;
         h = info.bounds.h;
       }
@@ -780,27 +748,25 @@ FileList::ItemInfo FileList::calcFileItemInfo(int i) const
 
   if (fi->isFolder() && isListView()) {
     auto theme = SkinTheme::get(this);
-    len += theme->parts.folderIconSmall()->bitmap(0)->width() + 2*guiscale();
+    len += theme->parts.folderIconSmall()->bitmap(0)->width() + 2 * guiscale();
   }
 
   len += font()->textLength(fi->displayName().c_str());
 
-  int textHeight = this->textHeight() + 4*guiscale();
-  int rowHeight = textHeight + (withThumbnails ? 8*m_zoom+2*guiscale(): 0);
+  int textHeight = this->textHeight() + 4 * guiscale();
+  int rowHeight = textHeight + (withThumbnails ? 8 * m_zoom + 2 * guiscale() : 0);
 
   ItemInfo info;
-  info.text = gfx::Rect(0, 0+rowHeight*i, len+4*guiscale(), textHeight);
+  info.text = gfx::Rect(0, 0 + rowHeight * i, len + 4 * guiscale(), textHeight);
   if (withThumbnails) {
-    info.thumbnail = gfx::Rect(0, info.text.y,
-                               8*m_zoom*guiscale(),
-                               8*m_zoom*guiscale());
-    info.text.y += info.thumbnail.h + 2*guiscale();
+    info.thumbnail = gfx::Rect(0, info.text.y, 8 * m_zoom * guiscale(), 8 * m_zoom * guiscale());
+    info.text.y += info.thumbnail.h + 2 * guiscale();
   }
 
   info.bounds = info.text | info.thumbnail;
   if (withThumbnails) {
-    info.text.x = info.bounds.x + info.bounds.w/2 - info.text.w/2;
-    info.thumbnail.x = info.bounds.x + info.bounds.w/2 - info.thumbnail.w/2;
+    info.text.x = info.bounds.x + info.bounds.w / 2 - info.text.w / 2;
+    info.thumbnail.x = info.bounds.x + info.bounds.w / 2 - info.thumbnail.w / 2;
   }
   else {
     info.bounds.x = 0;
@@ -833,14 +799,14 @@ void FileList::makeSelectedFileitemVisible()
   gfx::Point scroll = view->viewScroll();
   ItemInfo info = getFileItemInfo(i);
 
-  if (info.bounds.x+bounds().x <= vp.x)
+  if (info.bounds.x + bounds().x <= vp.x)
     scroll.x = info.bounds.x;
-  else if (info.bounds.x+bounds().x > vp.x2() - info.bounds.w)
+  else if (info.bounds.x + bounds().x > vp.x2() - info.bounds.w)
     scroll.x = info.bounds.x - vp.w + info.bounds.w;
 
-  if (info.bounds.y+bounds().y < vp.y)
+  if (info.bounds.y + bounds().y < vp.y)
     scroll.y = info.bounds.y;
-  else if (info.bounds.y+bounds().y > vp.y2() - info.bounds.h)
+  else if (info.bounds.y + bounds().y > vp.y2() - info.bounds.h)
     scroll.y = info.bounds.y - vp.h + info.bounds.h;
 
   view->setViewScroll(scroll);
@@ -853,15 +819,12 @@ void FileList::regenerateList()
 
   // filter the list by the available extensions
   if (!m_exts.empty()) {
-    for (FileItemList::iterator
-           it=m_list.begin();
-         it!=m_list.end(); ) {
+    for (FileItemList::iterator it = m_list.begin(); it != m_list.end();) {
       IFileItem* fileitem = *it;
 
       if (fileitem->isHidden())
         it = m_list.erase(it);
-      else if (!fileitem->isFolder() &&
-               !fileitem->hasExtension(m_exts)) {
+      else if (!fileitem->isFolder() && !fileitem->hasExtension(m_exts)) {
         it = m_list.erase(it);
       }
       else
@@ -881,8 +844,7 @@ void FileList::regenerateList()
 
 int FileList::selectedIndex() const
 {
-  for (auto it = m_list.begin(), end = m_list.end();
-       it != end; ++it) {
+  for (auto it = m_list.begin(), end = m_list.end(); it != end; ++it) {
     if (*it == m_selected)
       return it - m_list.begin();
   }
@@ -912,7 +874,8 @@ void FileList::generateThumbnailForFileItem(IFileItem* fi)
 {
   if (fi && fi->needThumbnail() && animation() == ANI_NONE) {
     auto it = std::find(m_generateThumbnailsForTheseItems.begin(),
-                        m_generateThumbnailsForTheseItems.end(), fi);
+                        m_generateThumbnailsForTheseItems.end(),
+                        fi);
     if (it != m_generateThumbnailsForTheseItems.end())
       m_generateThumbnailsForTheseItems.erase(it);
     m_generateThumbnailsForTheseItems.push_front(fi);
@@ -921,9 +884,7 @@ void FileList::generateThumbnailForFileItem(IFileItem* fi)
 
 void FileList::delayThumbnailGenerationForSelectedItem()
 {
-  if (m_selected &&
-      !m_selected->isFolder() &&
-      !m_selected->getThumbnail()) {
+  if (m_selected && !m_selected->isFolder() && !m_selected->getThumbnail()) {
     m_itemToGenerateThumbnail = m_selected;
     m_generateThumbnailTimer.start();
   }

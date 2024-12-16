@@ -10,11 +10,11 @@
 
 namespace render {
 
-  enum class OnionskinType {
-    NONE,
-    MERGE,
-    RED_BLUE_TINT,
-  };
+enum class OnionskinType {
+  NONE,
+  MERGE,
+  RED_BLUE_TINT,
+};
 
 } // namespace render
 

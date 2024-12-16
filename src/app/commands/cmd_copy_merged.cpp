@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/commands/command.h"
@@ -24,15 +24,13 @@ protected:
   void onExecute(Context* ctx) override;
 };
 
-CopyMergedCommand::CopyMergedCommand()
-  : Command(CommandId::CopyMerged(), CmdUIOnlyFlag)
+CopyMergedCommand::CopyMergedCommand() : Command(CommandId::CopyMerged(), CmdUIOnlyFlag)
 {
 }
 
 bool CopyMergedCommand::onEnabled(Context* ctx)
 {
-  return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                         ContextFlags::HasVisibleMask);
+  return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasVisibleMask);
 }
 
 void CopyMergedCommand::onExecute(Context* ctx)

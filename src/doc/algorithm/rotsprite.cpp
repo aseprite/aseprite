@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/algorithm/rotate.h"
@@ -16,8 +16,7 @@
 #include <algorithm>
 #include <memory>
 
-namespace doc {
-namespace algorithm {
+namespace doc { namespace algorithm {
 
 // More information about EPX/Scale2x:
 // http://en.wikipedia.org/wiki/Pixel_art_scaling_algorithms#EPX.2FScale2.C3.97.2FAdvMAME2.C3.97
@@ -26,8 +25,8 @@ namespace algorithm {
 template<typename ImageTraits>
 static void image_scale2x_tpl(Image* dst, const Image* src, int src_w, int src_h)
 {
-#if 0      // TODO complete this implementation that should be faster
-           // than using a lot of get/put_pixel_fast calls.
+#if 0 // TODO complete this implementation that should be faster
+      // than using a lot of get/put_pixel_fast calls.
   int dst_w = src_w*2;
   int dst_h = src_h*2;
 
@@ -118,37 +117,37 @@ static void image_scale2x_tpl(Image* dst, const Image* src, int src_w, int src_h
   ASSERT(dstRow1_it == dstRow1_end);
 #else
 
-#define A c[0]
-#define B c[1]
-#define C c[2]
-#define D c[3]
-#define P c[4]
+  #define A c[0]
+  #define B c[1]
+  #define C c[2]
+  #define D c[3]
+  #define P c[4]
 
-  LockImageBits<ImageTraits> dstBits(dst, gfx::Rect(0, 0, src_w*2, src_h*2));
+  LockImageBits<ImageTraits> dstBits(dst, gfx::Rect(0, 0, src_w * 2, src_h * 2));
   auto dstIt = dstBits.begin();
   auto dstIt2 = dstIt;
 
   color_t c[5];
-  for (int y=0; y<src_h; ++y) {
-    dstIt2 += src_w*2;
-    for (int x=0; x<src_w; ++x) {
+  for (int y = 0; y < src_h; ++y) {
+    dstIt2 += src_w * 2;
+    for (int x = 0; x < src_w; ++x) {
       P = get_pixel_fast<ImageTraits>(src, x, y);
-      A = (y > 0 ? get_pixel_fast<ImageTraits>(src, x, y-1): P);
-      B = (x < src_w-1 ? get_pixel_fast<ImageTraits>(src, x+1, y): P);
-      C = (x > 0 ? get_pixel_fast<ImageTraits>(src, x-1, y): P);
-      D = (y < src_h-1 ? get_pixel_fast<ImageTraits>(src, x, y+1): P);
+      A = (y > 0 ? get_pixel_fast<ImageTraits>(src, x, y - 1) : P);
+      B = (x < src_w - 1 ? get_pixel_fast<ImageTraits>(src, x + 1, y) : P);
+      C = (x > 0 ? get_pixel_fast<ImageTraits>(src, x - 1, y) : P);
+      D = (y < src_h - 1 ? get_pixel_fast<ImageTraits>(src, x, y + 1) : P);
 
-      *dstIt = (C == A && C != D && A != B ? A: P);
+      *dstIt = (C == A && C != D && A != B ? A : P);
       ++dstIt;
-      *dstIt = (A == B && A != C && B != D ? B: P);
+      *dstIt = (A == B && A != C && B != D ? B : P);
       ++dstIt;
 
-      *dstIt2 = (D == C && D != B && C != A ? C: P);
+      *dstIt2 = (D == C && D != B && C != A ? C : P);
       ++dstIt2;
-      *dstIt2 = (B == D && B != A && D != C ? D: P);
+      *dstIt2 = (B == D && B != A && D != C ? D : P);
       ++dstIt2;
     }
-    dstIt += src_w*2;
+    dstIt += src_w * 2;
   }
 
 #endif
@@ -164,13 +163,21 @@ static void image_scale2x(Image* dst, const Image* src, int src_w, int src_h)
   }
 }
 
-void rotsprite_image(Image* bmp, const Image* spr, const Image* mask,
-  int x1, int y1, int x2, int y2,
-  int x3, int y3, int x4, int y4)
+void rotsprite_image(Image* bmp,
+                     const Image* spr,
+                     const Image* mask,
+                     int x1,
+                     int y1,
+                     int x2,
+                     int y2,
+                     int x3,
+                     int y3,
+                     int x4,
+                     int y4)
 {
   static ImageBufferPtr buf[3]; // TODO non-thread safe
 
-  for (int i=0; i<3; ++i)
+  for (int i = 0; i < 3; ++i)
     if (!buf[i])
       buf[i].reset(new ImageBuffer(1));
 
@@ -185,9 +192,12 @@ void rotsprite_image(Image* bmp, const Image* spr, const Image* mask,
     return;
 
   int scale = 8;
-  std::unique_ptr<Image> bmp_copy(Image::create(bmp->pixelFormat(), rot_width*scale, rot_height*scale, buf[0]));
-  std::unique_ptr<Image> tmp_copy(Image::create(spr->pixelFormat(), spr->width()*scale, spr->height()*scale, buf[1]));
-  std::unique_ptr<Image> spr_copy(Image::create(spr->pixelFormat(), spr->width()*scale, spr->height()*scale, buf[2]));
+  std::unique_ptr<Image> bmp_copy(
+    Image::create(bmp->pixelFormat(), rot_width * scale, rot_height * scale, buf[0]));
+  std::unique_ptr<Image> tmp_copy(
+    Image::create(spr->pixelFormat(), spr->width() * scale, spr->height() * scale, buf[1]));
+  std::unique_ptr<Image> spr_copy(
+    Image::create(spr->pixelFormat(), spr->width() * scale, spr->height() * scale, buf[2]));
   std::unique_ptr<Image> msk_copy;
 
   color_t maskColor = spr->maskColor();
@@ -199,34 +209,52 @@ void rotsprite_image(Image* bmp, const Image* spr, const Image* mask,
   spr_copy->clear(maskColor);
   spr_copy->copy(spr, gfx::Clip(spr->bounds()));
 
-  for (int i=0; i<3; ++i) {
+  for (int i = 0; i < 3; ++i) {
     // clear_image(tmp_copy, maskColor);
-    image_scale2x(tmp_copy.get(), spr_copy.get(), spr->width()*(1<<i), spr->height()*(1<<i));
+    image_scale2x(tmp_copy.get(), spr_copy.get(), spr->width() * (1 << i), spr->height() * (1 << i));
     spr_copy->copy(tmp_copy.get(), gfx::Clip(tmp_copy->bounds()));
   }
 
   if (mask) {
     // Same ImageBuffer than tmp_copy
-    msk_copy.reset(Image::create(IMAGE_BITMAP, mask->width()*scale, mask->height()*scale, buf[1]));
+    msk_copy.reset(
+      Image::create(IMAGE_BITMAP, mask->width() * scale, mask->height() * scale, buf[1]));
     clear_image(msk_copy.get(), 0);
-    scale_image(msk_copy.get(), mask,
-                0, 0, msk_copy->width(), msk_copy->height(),
-                0, 0, mask->width(), mask->height());
+    scale_image(msk_copy.get(),
+                mask,
+                0,
+                0,
+                msk_copy->width(),
+                msk_copy->height(),
+                0,
+                0,
+                mask->width(),
+                mask->height());
   }
 
   clear_image(bmp_copy.get(), maskColor);
-  parallelogram(
-    bmp_copy.get(), spr_copy.get(), msk_copy.get(),
-    (x1-xmin)*scale, (y1-ymin)*scale, (x2-xmin)*scale, (y2-ymin)*scale,
-    (x3-xmin)*scale, (y3-ymin)*scale, (x4-xmin)*scale, (y4-ymin)*scale);
+  parallelogram(bmp_copy.get(),
+                spr_copy.get(),
+                msk_copy.get(),
+                (x1 - xmin) * scale,
+                (y1 - ymin) * scale,
+                (x2 - xmin) * scale,
+                (y2 - ymin) * scale,
+                (x3 - xmin) * scale,
+                (y3 - ymin) * scale,
+                (x4 - xmin) * scale,
+                (y4 - ymin) * scale);
 
-  scale_image(bmp, bmp_copy.get(),
+  scale_image(bmp,
+              bmp_copy.get(),
               std::max(0, xmin),
               std::max(0, ymin),
               std::clamp(rot_width, 0, std::max(0, bmp->width() - std::max(0, xmin))),
               std::clamp(rot_height, 0, std::max(0, bmp->height() - std::max(0, ymin))),
-              0, 0, bmp_copy->width(), bmp_copy->height());
+              0,
+              0,
+              bmp_copy->width(),
+              bmp_copy->height());
 }
 
-} // namespace algorithm
-} // namespace doc
+}} // namespace doc::algorithm

@@ -15,19 +15,19 @@
 
 namespace render {
 
-  struct BgOptions {
-    BgType type = BgType::TRANSPARENT;
-    bool zoom = false;
-    doc::PixelFormat colorPixelFormat = doc::PixelFormat::IMAGE_RGB;
-    doc::color_t color1 = 0;
-    doc::color_t color2 = 0;
-    gfx::Size stripeSize{16, 16};
+struct BgOptions {
+  BgType type = BgType::TRANSPARENT;
+  bool zoom = false;
+  doc::PixelFormat colorPixelFormat = doc::PixelFormat::IMAGE_RGB;
+  doc::color_t color1 = 0;
+  doc::color_t color2 = 0;
+  gfx::Size stripeSize{ 16, 16 };
 
-    BgOptions(BgType type = BgType::TRANSPARENT) : type(type) { }
+  BgOptions(BgType type = BgType::TRANSPARENT) : type(type) {}
 
-    static BgOptions MakeNone() { return BgOptions(BgType::NONE); }
-    static BgOptions MakeTransparent() { return BgOptions(BgType::TRANSPARENT); }
-  };
+  static BgOptions MakeNone() { return BgOptions(BgType::NONE); }
+  static BgOptions MakeTransparent() { return BgOptions(BgType::TRANSPARENT); }
+};
 
 } // namespace render
 

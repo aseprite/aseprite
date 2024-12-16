@@ -10,12 +10,10 @@
 
 #include "ui/keys.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
-  const char* vkcode_to_code(const ui::KeyScancode vkcode);
+const char* vkcode_to_code(const ui::KeyScancode vkcode);
 
-} // namespace script
-} // namespace app
+}} // namespace app::script
 
 #endif

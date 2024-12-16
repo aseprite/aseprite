@@ -12,30 +12,26 @@
 #include "app/cmd/with_document.h"
 #include "gfx/point.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class SetMaskPosition : public Cmd
-                        , public WithDocument {
-  public:
-    SetMaskPosition(Doc* doc, const gfx::Point& pos);
+class SetMaskPosition : public Cmd,
+                        public WithDocument {
+public:
+  SetMaskPosition(Doc* doc, const gfx::Point& pos);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this);
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  size_t onMemSize() const override { return sizeof(*this); }
 
-  private:
-    void setMaskPosition(const gfx::Point& pos);
+private:
+  void setMaskPosition(const gfx::Point& pos);
 
-    gfx::Point m_oldPosition;
-    gfx::Point m_newPosition;
-  };
+  gfx::Point m_oldPosition;
+  gfx::Point m_newPosition;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

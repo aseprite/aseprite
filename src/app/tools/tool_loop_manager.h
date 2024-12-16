@@ -18,10 +18,11 @@
 
 #include <vector>
 
-namespace gfx { class Region; }
+namespace gfx {
+class Region;
+}
 
-namespace app {
-namespace tools {
+namespace app { namespace tools {
 
 class ToolLoop;
 
@@ -105,7 +106,6 @@ private:
   gfx::PointF m_stabilizerCenter;
 };
 
-} // namespace tools
-} // namespace app
+}} // namespace app::tools
 
 #endif

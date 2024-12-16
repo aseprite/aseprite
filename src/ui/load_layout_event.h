@@ -13,20 +13,17 @@
 
 namespace ui {
 
-  class Widget;
+class Widget;
 
-  class LoadLayoutEvent : public Event {
-  public:
-    LoadLayoutEvent(Widget* source, std::istream& stream)
-      : Event(source)
-      , m_stream(stream) {
-    }
+class LoadLayoutEvent : public Event {
+public:
+  LoadLayoutEvent(Widget* source, std::istream& stream) : Event(source), m_stream(stream) {}
 
-    std::istream& stream() { return m_stream; }
+  std::istream& stream() { return m_stream; }
 
-  private:
-    std::istream& m_stream;
-  };
+private:
+  std::istream& m_stream;
+};
 
 } // namespace ui
 

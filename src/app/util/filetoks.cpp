@@ -5,11 +5,11 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
-#include <cstring>
 #include <cstdio>
+#include <cstring>
 
 static int line_num;
 
@@ -44,7 +44,7 @@ char* tok_read(FILE* f, char* buf, char* leavings, int sizeof_leavings)
 
     s = leavings;
 
-    for (ch=*s; ch; ch=*s) {
+    for (ch = *s; ch; ch = *s) {
       if (ch == ' ') {
         s++;
       }
@@ -55,7 +55,7 @@ char* tok_read(FILE* f, char* buf, char* leavings, int sizeof_leavings)
       else if (ch == '\"') {
         s++;
 
-        for (ch=*s; ; ch=*s) {
+        for (ch = *s;; ch = *s) {
           if (!ch) {
             line_num++;
             if (!tok_fgets(leavings, sizeof_leavings, f))
@@ -69,7 +69,7 @@ char* tok_read(FILE* f, char* buf, char* leavings, int sizeof_leavings)
             s++;
             switch (*s) {
               case 'n': ch = '\n'; break;
-              default: ch = *s; break;
+              default:  ch = *s; break;
             }
           }
           else if (ch == '\"') {
@@ -82,7 +82,7 @@ char* tok_read(FILE* f, char* buf, char* leavings, int sizeof_leavings)
         break;
       }
       else {
-        for (ch=*s; (ch) && (ch != ' '); ch=*s) {
+        for (ch = *s; (ch) && (ch != ' '); ch = *s) {
           buf[len++] = ch;
           s++;
         }
@@ -90,7 +90,7 @@ char* tok_read(FILE* f, char* buf, char* leavings, int sizeof_leavings)
       }
     }
 
-    memmove(leavings, s, strlen(s)+1);
+    memmove(leavings, s, strlen(s) + 1);
   }
 
   buf[len] = 0;

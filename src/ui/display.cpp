@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/display.h"
@@ -19,9 +19,7 @@
 
 namespace ui {
 
-Display::Display(Display* parentDisplay,
-                 const os::WindowRef& nativeWindow,
-                 Widget* containedWidget)
+Display::Display(Display* parentDisplay, const os::WindowRef& nativeWindow, Widget* containedWidget)
   : m_parentDisplay(parentDisplay)
   , m_nativeWindow(nativeWindow)
   , m_containedWidget(containedWidget)
@@ -48,8 +46,7 @@ gfx::Size Display::size() const
 
   const int scale = m_nativeWindow->scale();
   ASSERT(scale > 0);
-  return gfx::Size(m_nativeWindow->width() / scale,
-                   m_nativeWindow->height() / scale);
+  return gfx::Size(m_nativeWindow->width() / scale, m_nativeWindow->height() / scale);
 }
 
 void Display::dirtyRect(const gfx::Rect& bounds)
@@ -118,25 +115,21 @@ void Display::handleWindowZOrder(Window* window)
   else {
     int pos = (int)m_windows.size();
 
-    for (auto it=m_windows.rbegin(),
-           end=m_windows.rend();
-         it != end; ++it) {
+    for (auto it = m_windows.rbegin(), end = m_windows.rend(); it != end; ++it) {
       if (static_cast<Window*>(*it)->isOnTop())
         break;
 
       --pos;
     }
 
-    m_windows.insert(m_windows.begin()+pos, window);
+    m_windows.insert(m_windows.begin() + pos, window);
   }
 }
 
 gfx::Size Display::workareaSizeUIScale()
 {
   if (get_multiple_displays()) {
-    return
-      nativeWindow()->screen()->workarea().size() /
-      nativeWindow()->scale();
+    return nativeWindow()->screen()->workarea().size() / nativeWindow()->scale();
   }
   else {
     return size();

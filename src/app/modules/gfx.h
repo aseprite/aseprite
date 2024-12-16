@@ -18,59 +18,50 @@
 #include "ui/base.h"
 
 namespace os {
-  class Surface;
+class Surface;
 }
 
 namespace ui {
-  class Graphics;
+class Graphics;
 }
 
 namespace app {
-  class Site;
+class Site;
 
-  gfx::Color grid_color1();
-  gfx::Color grid_color2();
+gfx::Color grid_color1();
+gfx::Color grid_color2();
 
-  void draw_checkered_grid(ui::Graphics* g,
-                           const gfx::Rect& rc,
-                           const gfx::Size& tile);
+void draw_checkered_grid(ui::Graphics* g, const gfx::Rect& rc, const gfx::Size& tile);
 
-  void draw_checkered_grid(ui::Graphics* g,
-                           const gfx::Rect& rc,
-                           const gfx::Size& tile,
-                           DocumentPreferences& docPref);
-
-  void draw_color(ui::Graphics* g,
-                  const gfx::Rect& rc,
-                  const app::Color& color,
-                  const doc::ColorMode colorMode);
-
-  void draw_color_button(ui::Graphics* g,
+void draw_checkered_grid(ui::Graphics* g,
                          const gfx::Rect& rc,
-                         const app::Color& color,
-                         const doc::ColorMode colorMode,
-                         const bool hot,
-                         const bool drag);
+                         const gfx::Size& tile,
+                         DocumentPreferences& docPref);
 
-  void draw_tile(ui::Graphics* g,
-                 const gfx::Rect& rc,
-                 const Site& site,
-                 const doc::tile_t tile);
+void draw_color(ui::Graphics* g,
+                const gfx::Rect& rc,
+                const app::Color& color,
+                const doc::ColorMode colorMode);
 
-  void draw_tile_button(ui::Graphics* g,
-                        const gfx::Rect& rc,
-                        const Site& site,
-                        doc::tile_t tile,
-                        const bool hot,
-                        const bool drag);
+void draw_color_button(ui::Graphics* g,
+                       const gfx::Rect& rc,
+                       const app::Color& color,
+                       const doc::ColorMode colorMode,
+                       const bool hot,
+                       const bool drag);
 
-  void draw_alpha_slider(ui::Graphics* g,
-                         const gfx::Rect& rc,
-                         const app::Color& color);
+void draw_tile(ui::Graphics* g, const gfx::Rect& rc, const Site& site, const doc::tile_t tile);
 
-  void draw_alpha_slider(os::Surface* s,
-                         const gfx::Rect& rc,
-                         const app::Color& color);
+void draw_tile_button(ui::Graphics* g,
+                      const gfx::Rect& rc,
+                      const Site& site,
+                      doc::tile_t tile,
+                      const bool hot,
+                      const bool drag);
+
+void draw_alpha_slider(ui::Graphics* g, const gfx::Rect& rc, const app::Color& color);
+
+void draw_alpha_slider(os::Surface* s, const gfx::Rect& rc, const app::Color& color);
 
 } // namespace app
 

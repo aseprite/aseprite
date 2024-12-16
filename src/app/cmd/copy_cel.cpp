@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/copy_cel.h"
@@ -27,14 +27,15 @@
 #include "render/rasterize.h"
 #include "render/render.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 using namespace doc;
 
-CopyCel::CopyCel(
-  Layer* srcLayer, frame_t srcFrame,
-  Layer* dstLayer, frame_t dstFrame, bool continuous)
+CopyCel::CopyCel(Layer* srcLayer,
+                 frame_t srcFrame,
+                 Layer* dstLayer,
+                 frame_t dstFrame,
+                 bool continuous)
   : m_srcLayer(srcLayer)
   , m_dstLayer(dstLayer)
   , m_srcFrame(srcFrame)
@@ -73,24 +74,22 @@ void CopyCel::onExecute()
   while (dstSprite->totalFrames() <= m_dstFrame)
     executeAndAdd(new cmd::AddFrame(dstSprite, dstSprite->totalFrames()));
 
-  Image* srcImage = (srcCel ? srcCel->image(): NULL);
+  Image* srcImage = (srcCel ? srcCel->image() : NULL);
   ImageRef dstImage;
   dstCel = dstLayer->cel(m_dstFrame);
   if (dstCel)
     dstImage = dstCel->imageRef();
 
-  bool createLink =
-    (srcLayer == dstLayer && m_continuous);
+  bool createLink = (srcLayer == dstLayer && m_continuous);
 
   // For background layer
   if (dstLayer->isBackground()) {
     ASSERT(dstCel);
     ASSERT(dstImage);
-    if (!dstCel || !dstImage ||
-        !srcCel || !srcImage)
+    if (!dstCel || !dstImage || !srcCel || !srcImage)
       return;
 
-    ASSERT(!dstLayer->isTilemap());  // TODO support background tilemaps
+    ASSERT(!dstLayer->isTilemap()); // TODO support background tilemaps
 
     if (createLink) {
       executeAndAdd(new cmd::SetCelData(dstCel, srcCel->dataRef()));
@@ -102,15 +101,16 @@ void CopyCel::onExecute()
       executeAndAdd(new cmd::CopyRect(dstImage.get(), tmp.get(), gfx::Clip(tmp->bounds())));
     }
     else {
-      BlendMode blend = (srcLayer->isBackground() ?
-                         BlendMode::SRC:
-                         BlendMode::NORMAL);
+      BlendMode blend = (srcLayer->isBackground() ? BlendMode::SRC : BlendMode::NORMAL);
 
       ImageRef tmp(Image::createCopy(dstImage.get()));
-      render::composite_image(
-        tmp.get(), srcImage,
-        srcSprite->palette(m_srcFrame),
-        srcCel->x(), srcCel->y(), 255, blend);
+      render::composite_image(tmp.get(),
+                              srcImage,
+                              srcSprite->palette(m_srcFrame),
+                              srcCel->x(),
+                              srcCel->y(),
+                              255,
+                              blend);
       executeAndAdd(new cmd::CopyRect(dstImage.get(), tmp.get(), gfx::Clip(tmp->bounds())));
     }
   }
@@ -137,15 +137,12 @@ void CopyCel::onFireNotifications()
   // The m_srcLayer can be nullptr now because the layer from where we
   // copied this cel might not exist anymore (e.g. if we copied the
   // cel from another document that is already closed)
-  //ASSERT(m_srcLayer.layer());
+  // ASSERT(m_srcLayer.layer());
 
   ASSERT(m_dstLayer.layer());
 
   static_cast<Doc*>(m_dstLayer.layer()->sprite()->document())
-    ->notifyCelCopied(
-      m_srcLayer.layer(), m_srcFrame,
-      m_dstLayer.layer(), m_dstFrame);
+    ->notifyCelCopied(m_srcLayer.layer(), m_srcFrame, m_dstLayer.layer(), m_dstFrame);
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

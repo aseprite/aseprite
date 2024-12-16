@@ -13,31 +13,25 @@
 #include "doc/frame.h"
 #include "doc/slice.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class SetSliceKey : public Cmd
-                    , public WithSlice {
-  public:
-    SetSliceKey(Slice* slice,
-                const doc::frame_t frame,
-                const doc::SliceKey& sliceKey);
+class SetSliceKey : public Cmd,
+                    public WithSlice {
+public:
+  SetSliceKey(Slice* slice, const doc::frame_t frame, const doc::SliceKey& sliceKey);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this);
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  size_t onMemSize() const override { return sizeof(*this); }
 
-  private:
-    doc::frame_t m_frame;
-    doc::SliceKey m_oldSliceKey;
-    doc::SliceKey m_newSliceKey;
-  };
+private:
+  doc::frame_t m_frame;
+  doc::SliceKey m_oldSliceKey;
+  doc::SliceKey m_newSliceKey;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

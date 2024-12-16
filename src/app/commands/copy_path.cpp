@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/commands/command.h"
@@ -20,28 +20,25 @@ namespace app {
 class CopyPathCommand : public Command {
 public:
   CopyPathCommand();
+
 protected:
   bool onEnabled(Context* ctx) override;
   void onExecute(Context* ctx) override;
 };
 
-CopyPathCommand::CopyPathCommand()
-  : Command(CommandId::CopyPath(), CmdRecordableFlag)
+CopyPathCommand::CopyPathCommand() : Command(CommandId::CopyPath(), CmdRecordableFlag)
 {
 }
 
 bool CopyPathCommand::onEnabled(Context* ctx)
 {
   const ContextReader reader(ctx);
-  return
-    reader.document() &&
-    reader.document()->isAssociatedToFile();
+  return reader.document() && reader.document()->isAssociatedToFile();
 }
 
 void CopyPathCommand::onExecute(Context* ctx)
 {
-  Clipboard::instance()->setClipboardText(
-    ctx->activeDocument()->filename());
+  Clipboard::instance()->setClipboardText(ctx->activeDocument()->filename());
 }
 
 Command* CommandFactory::createCopyPathCommand()

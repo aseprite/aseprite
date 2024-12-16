@@ -10,11 +10,11 @@
 
 namespace doc {
 
-  class CancelIO {
-  public:
-    virtual ~CancelIO() { }
-    virtual bool isCanceled() = 0;
-  };
+class CancelIO {
+public:
+  virtual ~CancelIO() {}
+  virtual bool isCanceled() = 0;
+};
 
 } // namespace doc
 

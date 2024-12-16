@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include <gtest/gtest.h>
@@ -28,7 +28,7 @@ using namespace render;
 template<typename T>
 class RenderAllModes : public testing::Test {
 protected:
-  RenderAllModes() { }
+  RenderAllModes() {}
 };
 
 typedef testing::Types<RgbTraits, GrayscaleTraits, IndexedTraits> ImageAllTraits;
@@ -36,32 +36,32 @@ TYPED_TEST_SUITE(RenderAllModes, ImageAllTraits);
 
 // a b
 // c d
-#define EXPECT_2X2_PIXELS(image, a, b, c, d) \
-  EXPECT_EQ(a, get_pixel(image, 0, 0));      \
-  EXPECT_EQ(b, get_pixel(image, 1, 0));      \
-  EXPECT_EQ(c, get_pixel(image, 0, 1));      \
+#define EXPECT_2X2_PIXELS(image, a, b, c, d)                                                       \
+  EXPECT_EQ(a, get_pixel(image, 0, 0));                                                            \
+  EXPECT_EQ(b, get_pixel(image, 1, 0));                                                            \
+  EXPECT_EQ(c, get_pixel(image, 0, 1));                                                            \
   EXPECT_EQ(d, get_pixel(image, 1, 1))
 
 // a b c d
 // e f g h
 // i j k l
 // m n o p
-#define EXPECT_4X4_PIXELS(image, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) \
-  EXPECT_EQ(a, get_pixel(image, 0, 0));                                 \
-  EXPECT_EQ(b, get_pixel(image, 1, 0));                                 \
-  EXPECT_EQ(c, get_pixel(image, 2, 0));                                 \
-  EXPECT_EQ(d, get_pixel(image, 3, 0));                                 \
-  EXPECT_EQ(e, get_pixel(image, 0, 1));                                 \
-  EXPECT_EQ(f, get_pixel(image, 1, 1));                                 \
-  EXPECT_EQ(g, get_pixel(image, 2, 1));                                 \
-  EXPECT_EQ(h, get_pixel(image, 3, 1));                                 \
-  EXPECT_EQ(i, get_pixel(image, 0, 2));                                 \
-  EXPECT_EQ(j, get_pixel(image, 1, 2));                                 \
-  EXPECT_EQ(k, get_pixel(image, 2, 2));                                 \
-  EXPECT_EQ(l, get_pixel(image, 3, 2));                                 \
-  EXPECT_EQ(m, get_pixel(image, 0, 3));                                 \
-  EXPECT_EQ(n, get_pixel(image, 1, 3));                                 \
-  EXPECT_EQ(o, get_pixel(image, 2, 3));                                 \
+#define EXPECT_4X4_PIXELS(image, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p)                   \
+  EXPECT_EQ(a, get_pixel(image, 0, 0));                                                            \
+  EXPECT_EQ(b, get_pixel(image, 1, 0));                                                            \
+  EXPECT_EQ(c, get_pixel(image, 2, 0));                                                            \
+  EXPECT_EQ(d, get_pixel(image, 3, 0));                                                            \
+  EXPECT_EQ(e, get_pixel(image, 0, 1));                                                            \
+  EXPECT_EQ(f, get_pixel(image, 1, 1));                                                            \
+  EXPECT_EQ(g, get_pixel(image, 2, 1));                                                            \
+  EXPECT_EQ(h, get_pixel(image, 3, 1));                                                            \
+  EXPECT_EQ(i, get_pixel(image, 0, 2));                                                            \
+  EXPECT_EQ(j, get_pixel(image, 1, 2));                                                            \
+  EXPECT_EQ(k, get_pixel(image, 2, 2));                                                            \
+  EXPECT_EQ(l, get_pixel(image, 3, 2));                                                            \
+  EXPECT_EQ(m, get_pixel(image, 0, 3));                                                            \
+  EXPECT_EQ(n, get_pixel(image, 1, 3));                                                            \
+  EXPECT_EQ(o, get_pixel(image, 2, 3));                                                            \
   EXPECT_EQ(p, get_pixel(image, 3, 3))
 
 TEST(Render, Basic)
@@ -150,39 +150,23 @@ TEST(Render, CheckeredBackground)
   bg.stripeSize = gfx::Size(1, 1);
   render.setBgOptions(bg);
   render.renderSprite(dst.get(), doc->sprite(), frame_t(0));
-  EXPECT_4X4_PIXELS(dst.get(),
-    1, 2, 1, 2,
-    2, 1, 2, 1,
-    1, 2, 1, 2,
-    2, 1, 2, 1);
+  EXPECT_4X4_PIXELS(dst.get(), 1, 2, 1, 2, 2, 1, 2, 1, 1, 2, 1, 2, 2, 1, 2, 1);
 
   bg.stripeSize = gfx::Size(2, 2);
   render.setBgOptions(bg);
   render.renderSprite(dst.get(), doc->sprite(), frame_t(0));
-  EXPECT_4X4_PIXELS(dst.get(),
-    1, 1, 2, 2,
-    1, 1, 2, 2,
-    2, 2, 1, 1,
-    2, 2, 1, 1);
+  EXPECT_4X4_PIXELS(dst.get(), 1, 1, 2, 2, 1, 1, 2, 2, 2, 2, 1, 1, 2, 2, 1, 1);
 
   bg.stripeSize = gfx::Size(3, 3);
   render.setBgOptions(bg);
   render.renderSprite(dst.get(), doc->sprite(), frame_t(0));
-  EXPECT_4X4_PIXELS(dst.get(),
-    1, 1, 1, 2,
-    1, 1, 1, 2,
-    1, 1, 1, 2,
-    2, 2, 2, 1);
+  EXPECT_4X4_PIXELS(dst.get(), 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 2, 2, 2, 1);
 
   bg.stripeSize = gfx::Size(1, 1);
   render.setProjection(Projection(PixelRatio(1, 1), Zoom(2, 1)));
   render.setBgOptions(bg);
   render.renderSprite(dst.get(), doc->sprite(), frame_t(0));
-  EXPECT_4X4_PIXELS(dst.get(),
-    1, 1, 2, 2,
-    1, 1, 2, 2,
-    2, 2, 1, 1,
-    2, 2, 1, 1);
+  EXPECT_4X4_PIXELS(dst.get(), 1, 1, 2, 2, 1, 1, 2, 2, 2, 2, 1, 1, 2, 2, 1, 1);
 }
 
 TEST(Render, ZoomAndDstBounds)
@@ -210,14 +194,8 @@ TEST(Render, ZoomAndDstBounds)
   bg.stripeSize = gfx::Size(1, 1);
   render.setBgOptions(bg);
 
-  render.renderSprite(
-    dst.get(), doc->sprite(), frame_t(0),
-    gfx::Clip(1, 1, 0, 0, 2, 2));
-  EXPECT_4X4_PIXELS(dst.get(),
-    0, 0, 0, 0,
-    0, 1, 2, 0,
-    0, 2, 4, 0,
-    0, 0, 0, 0);
+  render.renderSprite(dst.get(), doc->sprite(), frame_t(0), gfx::Clip(1, 1, 0, 0, 2, 2));
+  EXPECT_4X4_PIXELS(dst.get(), 0, 0, 0, 0, 0, 1, 2, 0, 0, 2, 4, 0, 0, 0, 0, 0);
 }
 
 TEST(Render, BugWithMultiplesOf3ZoomFactors)
@@ -229,11 +207,10 @@ TEST(Render, BugWithMultiplesOf3ZoomFactors)
   draw_line(src, 0, 0, 3, 3, rgba(255, 0, 0, 255));
 
   // Added other factors (like 1, 2, 4, etc.) too
-  int zooms[] = { 1, 2, 3, 4, 6, 8, 9, 12, 15, 16, 18, 21, 24, 27,
-                  30, 32, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60,
-                  63, 66, 69, 72, 75, 78, 81 };
+  int zooms[] = { 1,  2,  3,  4,  6,  8,  9,  12, 15, 16, 18, 21, 24, 27, 30, 32, 33,
+                  36, 39, 42, 45, 48, 51, 54, 57, 60, 63, 66, 69, 72, 75, 78, 81 };
   for (int zoom : zooms) {
-    std::unique_ptr<Image> dst(Image::create(IMAGE_RGB, 4*zoom, 4*zoom));
+    std::unique_ptr<Image> dst(Image::create(IMAGE_RGB, 4 * zoom, 4 * zoom));
     clear_image(dst.get(), 0);
 
     Render render;
@@ -246,30 +223,27 @@ TEST(Render, BugWithMultiplesOf3ZoomFactors)
     bg.stripeSize = gfx::Size(2, 2);
     render.setBgOptions(bg);
     render.setProjection(Projection(PixelRatio(1, 1), Zoom(zoom, 1)));
-    render.renderSprite(
-      dst.get(), doc->sprite(), frame_t(0),
-      gfx::Clip(0, 0, 0, 0, 4*zoom, 4*zoom));
+    render.renderSprite(dst.get(),
+                        doc->sprite(),
+                        frame_t(0),
+                        gfx::Clip(0, 0, 0, 0, 4 * zoom, 4 * zoom));
 
-    for (int y=0; y<dst->height(); ++y) {
-      for (int x=0; x<dst->width(); ++x) {
+    for (int y = 0; y < dst->height(); ++y) {
+      for (int x = 0; x < dst->width(); ++x) {
         color_t c = get_pixel(dst.get(), x, y);
 
         if (x / zoom == y / zoom) {
-          EXPECT_EQ(c, rgba(255, 0, 0, 255))
-            << " zoom=" << zoom << " x=" << x << " y=" << y;
+          EXPECT_EQ(c, rgba(255, 0, 0, 255)) << " zoom=" << zoom << " x=" << x << " y=" << y;
         }
         else {
-          EXPECT_NE(c, rgba(255, 0, 0, 255))
-            << " zoom=" << zoom << " x=" << x << " y=" << y;
+          EXPECT_NE(c, rgba(255, 0, 0, 255)) << " zoom=" << zoom << " x=" << x << " y=" << y;
 
           int gridBg = ((x / 2) + (y / 2)) % 2;
           if (gridBg == 0) {
-            EXPECT_EQ(c, rgba(128, 128, 128, 255))
-              << " zoom=" << zoom << " x=" << x << " y=" << y;
+            EXPECT_EQ(c, rgba(128, 128, 128, 255)) << " zoom=" << zoom << " x=" << x << " y=" << y;
           }
           else {
-            EXPECT_EQ(c, rgba(64, 64, 64, 255))
-              << " zoom=" << zoom << " x=" << x << " y=" << y;
+            EXPECT_EQ(c, rgba(64, 64, 64, 255)) << " zoom=" << zoom << " x=" << x << " y=" << y;
           }
         }
       }

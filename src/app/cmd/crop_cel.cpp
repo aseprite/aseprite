@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/crop_cel.h"
@@ -16,8 +16,7 @@
 #include "doc/layer_tilemap.h"
 #include "doc/primitives.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 using namespace doc;
 
@@ -45,8 +44,7 @@ void CropCel::onUndo()
 }
 
 // Crops the cel image leaving the same ID in the image.
-void CropCel::cropImage(const gfx::Point& origin,
-                        const gfx::Rect& bounds)
+void CropCel::cropImage(const gfx::Point& origin, const gfx::Rect& bounds)
 {
   Cel* cel = this->cel();
 
@@ -60,8 +58,10 @@ void CropCel::cropImage(const gfx::Point& origin,
   }
   if (bounds != cel->image()->bounds()) {
     ImageRef image(crop_image(cel->image(),
-                              localBounds.x, localBounds.y,
-                              localBounds.w, localBounds.h,
+                              localBounds.x,
+                              localBounds.y,
+                              localBounds.w,
+                              localBounds.h,
                               cel->image()->maskColor()));
     ObjectId id = cel->image()->id();
     ObjectVersion ver = cel->image()->version();
@@ -80,5 +80,4 @@ void CropCel::cropImage(const gfx::Point& origin,
   }
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

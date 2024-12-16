@@ -15,33 +15,33 @@
 
 namespace doc {
 
-  class Document : public Object {
-  public:
-    Document();
-    ~Document();
+class Document : public Object {
+public:
+  Document();
+  ~Document();
 
-    const Sprites& sprites() const { return m_sprites; }
-    Sprites& sprites() { return m_sprites; }
+  const Sprites& sprites() const { return m_sprites; }
+  Sprites& sprites() { return m_sprites; }
 
-    const Sprite* sprite() const { return m_sprites.empty() ? NULL: m_sprites.front(); }
-    Sprite* sprite() { return m_sprites.empty() ? NULL: m_sprites.front(); }
+  const Sprite* sprite() const { return m_sprites.empty() ? NULL : m_sprites.front(); }
+  Sprite* sprite() { return m_sprites.empty() ? NULL : m_sprites.front(); }
 
-    int width() const;
-    int height() const;
-    ColorMode colorMode() const;
+  int width() const;
+  int height() const;
+  ColorMode colorMode() const;
 
-    std::string name() const;
-    const std::string& filename() const { return m_filename; }
-    void setFilename(const std::string& filename);
+  std::string name() const;
+  const std::string& filename() const { return m_filename; }
+  void setFilename(const std::string& filename);
 
-  protected:
-    virtual void onFileNameChange();
+protected:
+  virtual void onFileNameChange();
 
-  private:
-    std::string m_filename; // Document's file name. From where it was
-                            // loaded, where it is saved.
-    Sprites m_sprites;
-  };
+private:
+  std::string m_filename; // Document's file name. From where it was
+                          // loaded, where it is saved.
+  Sprites m_sprites;
+};
 
 } // namespace doc
 

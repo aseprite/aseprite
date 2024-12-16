@@ -11,23 +11,21 @@
 #include "doc/object_id.h"
 
 namespace doc {
-  class Image;
+class Image;
 }
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class WithImage {
-  public:
-    WithImage(Image* image);
-    Image* image();
+class WithImage {
+public:
+  WithImage(Image* image);
+  Image* image();
 
-  private:
-    ObjectId m_imageId;
-  };
+private:
+  ObjectId m_imageId;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

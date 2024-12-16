@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "steam/steam.h"
@@ -47,23 +47,28 @@ struct CallbackMsg_t {
 #endif
 
 // Steam main API
-typedef bool (__cdecl *SteamAPI_InitSafe_Func)();
-typedef void (__cdecl *SteamAPI_Shutdown_Func)();
-typedef HSteamPipe (__cdecl *SteamAPI_GetHSteamPipe_Func)();
+typedef bool(__cdecl* SteamAPI_InitSafe_Func)();
+typedef void(__cdecl* SteamAPI_Shutdown_Func)();
+typedef HSteamPipe(__cdecl* SteamAPI_GetHSteamPipe_Func)();
 
 // Steam callbacks
-typedef void (__cdecl *SteamAPI_ManualDispatch_Init_Func)();
-typedef void (__cdecl *SteamAPI_ManualDispatch_RunFrame_Func)(HSteamPipe);
-typedef bool (__cdecl *SteamAPI_ManualDispatch_GetNextCallback_Func)(HSteamPipe, CallbackMsg_t*);
-typedef void (__cdecl *SteamAPI_ManualDispatch_FreeLastCallback_Func)(HSteamPipe);
+typedef void(__cdecl* SteamAPI_ManualDispatch_Init_Func)();
+typedef void(__cdecl* SteamAPI_ManualDispatch_RunFrame_Func)(HSteamPipe);
+typedef bool(__cdecl* SteamAPI_ManualDispatch_GetNextCallback_Func)(HSteamPipe, CallbackMsg_t*);
+typedef void(__cdecl* SteamAPI_ManualDispatch_FreeLastCallback_Func)(HSteamPipe);
 
 // ISteamScreenshots
-typedef ISteamScreenshots* (__cdecl *SteamAPI_SteamScreenshots_v003_Func)();
-typedef ScreenshotHandle (__cdecl *SteamAPI_ISteamScreenshots_WriteScreenshot_Func)(ISteamScreenshots*, void*, uint32_t, int, int);
+typedef ISteamScreenshots*(__cdecl* SteamAPI_SteamScreenshots_v003_Func)();
+typedef ScreenshotHandle(__cdecl* SteamAPI_ISteamScreenshots_WriteScreenshot_Func)(
+  ISteamScreenshots*,
+  void*,
+  uint32_t,
+  int,
+  int);
 
 // ISteamUtils
-typedef ISteamUtils* (__cdecl *SteamAPI_SteamUtils_v009_Func)();
-typedef uint32_t (__cdecl *SteamAPI_ISteamUtils_GetAppID_Func)(ISteamUtils*);
+typedef ISteamUtils*(__cdecl* SteamAPI_SteamUtils_v009_Func)();
+typedef uint32_t(__cdecl* SteamAPI_ISteamUtils_GetAppID_Func)(ISteamUtils*);
 
 #ifdef _WIN32
   #ifdef _WIN64
@@ -81,10 +86,10 @@ typedef uint32_t (__cdecl *SteamAPI_ISteamUtils_GetAppID_Func)(ISteamUtils*);
 
 class SteamAPI::Impl {
 public:
-  Impl() {
+  Impl()
+  {
     m_steamLib = base::load_dll(
-      base::join_path(base::get_file_path(base::get_app_path()),
-                      STEAM_API_DLL_FILENAME));
+      base::join_path(base::get_file_path(base::get_app_path()), STEAM_API_DLL_FILENAME));
     if (!m_steamLib) {
       LOG("STEAM: Steam library not found...\n");
       return;
@@ -108,10 +113,8 @@ public:
     SteamAPI_ManualDispatch_GetNextCallback = GETPROC(SteamAPI_ManualDispatch_GetNextCallback);
     SteamAPI_ManualDispatch_FreeLastCallback = GETPROC(SteamAPI_ManualDispatch_FreeLastCallback);
     auto SteamAPI_GetHSteamPipe = GETPROC(SteamAPI_GetHSteamPipe);
-    if (SteamAPI_ManualDispatch_Init &&
-        SteamAPI_ManualDispatch_RunFrame &&
-        SteamAPI_ManualDispatch_GetNextCallback &&
-        SteamAPI_ManualDispatch_FreeLastCallback &&
+    if (SteamAPI_ManualDispatch_Init && SteamAPI_ManualDispatch_RunFrame &&
+        SteamAPI_ManualDispatch_GetNextCallback && SteamAPI_ManualDispatch_FreeLastCallback &&
         SteamAPI_GetHSteamPipe) {
       SteamAPI_ManualDispatch_Init();
       m_pipe = SteamAPI_GetHSteamPipe();
@@ -121,7 +124,8 @@ public:
     m_initialized = true;
   }
 
-  ~Impl() {
+  ~Impl()
+  {
     if (!m_steamLib)
       return;
 
@@ -134,11 +138,10 @@ public:
     unloadLib();
   }
 
-  bool isInitialized() const {
-    return m_initialized;
-  }
+  bool isInitialized() const { return m_initialized; }
 
-  void runCallbacks() {
+  void runCallbacks()
+  {
     if (!m_pipe)
       return;
 
@@ -150,23 +153,20 @@ public:
 
     CallbackMsg_t msg;
     if (SteamAPI_ManualDispatch_GetNextCallback(m_pipe, &msg)) {
-      //TRACEARGS("SteamAPI_ManualDispatch_GetNextCallback", msg.callback);
+      // TRACEARGS("SteamAPI_ManualDispatch_GetNextCallback", msg.callback);
 
       bool disconnected = false;
       switch (msg.callback) {
         case kSteamServersDisconnected:
-        case kSteamUndocumentedLastCallback:
-          disconnected = true;
-          break;
+        case kSteamUndocumentedLastCallback: disconnected = true; break;
 
         // When a screenshot is ready, we open the Steam library of screenshots
-        case kScreenshotReady: {
+        case kScreenshotReady:               {
           std::string url = "steam://open/screenshots/";
 
           auto SteamAPI_SteamUtils_v009 = GETPROC(SteamAPI_SteamUtils_v009);
           auto SteamAPI_ISteamUtils_GetAppID = GETPROC(SteamAPI_ISteamUtils_GetAppID);
-          if (SteamAPI_SteamUtils_v009 &&
-              SteamAPI_ISteamUtils_GetAppID) {
+          if (SteamAPI_SteamUtils_v009 && SteamAPI_ISteamUtils_GetAppID) {
             ISteamUtils* utils = SteamAPI_SteamUtils_v009();
             if (utils) {
               int appId = SteamAPI_ISteamUtils_GetAppID(utils);
@@ -189,9 +189,8 @@ public:
     }
   }
 
-  bool writeScreenshot(void* rgbBuffer,
-                       uint32_t sizeInBytes,
-                       int width, int height) {
+  bool writeScreenshot(void* rgbBuffer, uint32_t sizeInBytes, int width, int height)
+  {
     if (!m_initialized)
       return false;
 
@@ -213,7 +212,8 @@ public:
   }
 
 private:
-  void unloadLib() {
+  void unloadLib()
+  {
     base::unload_dll(m_steamLib);
     m_steamLib = nullptr;
     m_initialized = false;
@@ -238,8 +238,7 @@ SteamAPI* SteamAPI::instance()
   return g_instance;
 }
 
-SteamAPI::SteamAPI()
-  : m_impl(std::make_unique<Impl>())
+SteamAPI::SteamAPI() : m_impl(std::make_unique<Impl>())
 {
   ASSERT(g_instance == nullptr);
   g_instance = this;
@@ -261,9 +260,7 @@ void SteamAPI::runCallbacks()
   m_impl->runCallbacks();
 }
 
-bool SteamAPI::writeScreenshot(void* rgbBuffer,
-                               uint32_t sizeInBytes,
-                               int width, int height)
+bool SteamAPI::writeScreenshot(void* rgbBuffer, uint32_t sizeInBytes, int width, int height)
 {
   return m_impl->writeScreenshot(rgbBuffer, sizeInBytes, width, height);
 }

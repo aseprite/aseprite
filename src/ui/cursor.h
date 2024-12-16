@@ -15,23 +15,22 @@
 
 namespace ui {
 
-  class Cursor {
-  public:
-    Cursor(const os::SurfaceRef& surface = nullptr,
-           const gfx::Point& focus = gfx::Point(0, 0));
+class Cursor {
+public:
+  Cursor(const os::SurfaceRef& surface = nullptr, const gfx::Point& focus = gfx::Point(0, 0));
 
-    const os::SurfaceRef& surface() const { return m_surface; }
-    const gfx::Point& focus() const { return m_focus; }
-    os::CursorRef nativeCursor(const int scale) const;
+  const os::SurfaceRef& surface() const { return m_surface; }
+  const gfx::Point& focus() const { return m_focus; }
+  os::CursorRef nativeCursor(const int scale) const;
 
-    void reset();
+  void reset();
 
-  private:
-    os::SurfaceRef m_surface;
-    gfx::Point m_focus;
-    mutable os::CursorRef m_cursor;
-    mutable int m_scale;
-  };
+private:
+  os::SurfaceRef m_surface;
+  gfx::Point m_focus;
+  mutable os::CursorRef m_cursor;
+  mutable int m_scale;
+};
 
 } // namespace ui
 

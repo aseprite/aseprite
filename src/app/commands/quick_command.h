@@ -14,16 +14,16 @@
 
 namespace app {
 
-  class QuickCommand : public Command {
-  public:
-    QuickCommand(const char* id, std::function<void()> execute);
-    ~QuickCommand();
+class QuickCommand : public Command {
+public:
+  QuickCommand(const char* id, std::function<void()> execute);
+  ~QuickCommand();
 
-  protected:
-    void onExecute(Context* context) override;
+protected:
+  void onExecute(Context* context) override;
 
-    std::function<void()> m_execute;
-  };
+  std::function<void()> m_execute;
+};
 
 } // namespace app
 

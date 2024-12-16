@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_tileset_base_index.h"
@@ -14,8 +14,7 @@
 #include "app/doc_event.h"
 #include "doc/tileset.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 SetTilesetBaseIndex::SetTilesetBaseIndex(Tileset* tileset, int baseIndex)
   : WithTileset(tileset)
@@ -40,5 +39,4 @@ void SetTilesetBaseIndex::onUndo()
   ts->sprite()->incrementVersion();
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

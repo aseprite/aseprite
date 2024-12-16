@@ -30,14 +30,13 @@ public:
   bool isHandToolEnabled() const { return m_editor != nullptr; }
 
 protected:
-  void onBroadcastMouseMessage(const gfx::Point& screenPos,
-                               ui::WidgetsList& targets) override;
+  void onBroadcastMouseMessage(const gfx::Point& screenPos, ui::WidgetsList& targets) override;
 
 private:
   Editor* m_editor = nullptr;
   tools::Tool* m_oldTool = nullptr;
 };
 
-}  // namespace app
+} // namespace app
 
 #endif

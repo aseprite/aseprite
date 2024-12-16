@@ -14,18 +14,15 @@
 using namespace doc;
 using namespace gfx;
 
-::testing::AssertionResult cmp_img(const std::vector<color_t>& pixels,
-                                   const Image* image)
+::testing::AssertionResult cmp_img(const std::vector<color_t>& pixels, const Image* image)
 {
   int c = 0;
-  for (int y=0; y<image->height(); ++y) {
-    for (int x=0; x<image->width(); ++x) {
+  for (int y = 0; y < image->height(); ++y) {
+    for (int x = 0; x < image->width(); ++x) {
       if (pixels[c] != image->getPixel(x, y)) {
         return ::testing::AssertionFailure()
-          << "ExpectedPixel=" << (int)pixels[c]
-          << " ActualPixel=" << (int)image->getPixel(x, y)
-          << " x=" << x
-          << " y=" << y;
+               << "ExpectedPixel=" << (int)pixels[c]
+               << " ActualPixel=" << (int)image->getPixel(x, y) << " x=" << x << " y=" << y;
       }
       ++c;
     }
@@ -42,24 +39,15 @@ TEST(FillSelection, Image)
   Mask mask;
   mask.replace(Rect(0, 0, 1, 5));
   algorithm::fill_selection(image.get(), Rect(1, 1, 4, 4), &mask, 2, nullptr);
-  EXPECT_TRUE(cmp_img({ 1, 1, 1, 1,
-                        1, 1, 1, 1,
-                        1, 1, 1, 1,
-                        1, 1, 1, 1 }, image.get()));
+  EXPECT_TRUE(cmp_img({ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }, image.get()));
 
   mask.replace(Rect(1, 0, 2, 3));
   algorithm::fill_selection(image.get(), Rect(1, 1, 4, 4), &mask, 2, nullptr);
-  EXPECT_TRUE(cmp_img({ 2, 2, 1, 1,
-                        2, 2, 1, 1,
-                        1, 1, 1, 1,
-                        1, 1, 1, 1 }, image.get()));
+  EXPECT_TRUE(cmp_img({ 2, 2, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }, image.get()));
 
   mask.replace(Rect(2, 2, 2, 3));
   algorithm::fill_selection(image.get(), Rect(1, 3, 4, 4), &mask, 3, nullptr);
-  EXPECT_TRUE(cmp_img({ 2, 3, 3, 1,
-                        2, 3, 3, 1,
-                        1, 1, 1, 1,
-                        1, 1, 1, 1 }, image.get()));
+  EXPECT_TRUE(cmp_img({ 2, 3, 3, 1, 2, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1 }, image.get()));
 }
 
 TEST(FillSelection, Tilemap)
@@ -74,24 +62,15 @@ TEST(FillSelection, Tilemap)
   Mask mask;
   mask.replace(Rect(0, 0, 4, 4));
   algorithm::fill_selection(image.get(), Rect(4, 4, 32, 32), &mask, 2, &grid);
-  EXPECT_TRUE(cmp_img({ 1, 1, 1, 1,
-                        1, 1, 1, 1,
-                        1, 1, 1, 1,
-                        1, 1, 1, 1 }, image.get()));
+  EXPECT_TRUE(cmp_img({ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }, image.get()));
 
   mask.replace(Rect(0, 0, 5, 5));
   algorithm::fill_selection(image.get(), Rect(4, 4, 32, 32), &mask, 2, &grid);
-  EXPECT_TRUE(cmp_img({ 2, 1, 1, 1,
-                        1, 1, 1, 1,
-                        1, 1, 1, 1,
-                        1, 1, 1, 1 }, image.get()));
+  EXPECT_TRUE(cmp_img({ 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }, image.get()));
 
   mask.replace(Rect(12, 12, 9, 8));
   algorithm::fill_selection(image.get(), Rect(4, 4, 32, 32), &mask, 3, &grid);
-  EXPECT_TRUE(cmp_img({ 2, 1, 1, 1,
-                        1, 3, 3, 1,
-                        1, 1, 1, 1,
-                        1, 1, 1, 1 }, image.get()));
+  EXPECT_TRUE(cmp_img({ 2, 1, 1, 1, 1, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1 }, image.get()));
 }
 
 int main(int argc, char** argv)

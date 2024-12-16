@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_user_data.h"
@@ -16,12 +16,9 @@
 #include "doc/sprite.h"
 #include "doc/with_user_data.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
-SetUserData::SetUserData(doc::WithUserData* obj,
-                         const doc::UserData& userData,
-                         app::Doc* doc)
+SetUserData::SetUserData(doc::WithUserData* obj, const doc::UserData& userData, app::Doc* doc)
   : WithDocument(doc)
   , m_objId(obj->id())
   , m_oldUserData(obj->userData())
@@ -52,5 +49,4 @@ void SetUserData::onFireNotifications()
   doc->notify_observers<DocEvent&>(&DocObserver::onUserDataChange, ev);
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

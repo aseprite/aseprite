@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_tag_anidir.h"
@@ -22,8 +22,7 @@
 #include "doc/sprite.h"
 #include "doc/tag.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 using namespace doc;
 
@@ -97,8 +96,7 @@ int Tag_set_fromFrame(lua_State* L)
   auto tag = get_docobj<Tag>(L, 1);
   const auto fromFrame = get_frame_number_from_arg(L, 2);
   Tx tx(tag->sprite());
-  tx(new cmd::SetTagRange(tag, fromFrame,
-                          std::max(fromFrame, tag->toFrame())));
+  tx(new cmd::SetTagRange(tag, fromFrame, std::max(fromFrame, tag->toFrame())));
   tx.commit();
   return 0;
 }
@@ -108,9 +106,7 @@ int Tag_set_toFrame(lua_State* L)
   auto tag = get_docobj<Tag>(L, 1);
   const auto toFrame = get_frame_number_from_arg(L, 2);
   Tx tx(tag->sprite());
-  tx(new cmd::SetTagRange(tag,
-                               std::min(tag->fromFrame(), toFrame),
-                               toFrame));
+  tx(new cmd::SetTagRange(tag, std::min(tag->fromFrame(), toFrame), toFrame));
   tx.commit();
   return 0;
 }
@@ -148,22 +144,22 @@ int Tag_set_repeats(lua_State* L)
 }
 
 const luaL_Reg Tag_methods[] = {
-  { "__eq", Tag_eq },
+  { "__eq",  Tag_eq  },
   { nullptr, nullptr }
 };
 
 const Property Tag_properties[] = {
-  { "sprite", Tag_get_sprite, nullptr },
-  { "fromFrame", Tag_get_fromFrame, Tag_set_fromFrame },
-  { "toFrame", Tag_get_toFrame, Tag_set_toFrame },
-  { "frames", Tag_get_frames, nullptr },
-  { "name", Tag_get_name, Tag_set_name },
-  { "aniDir", Tag_get_aniDir, Tag_set_aniDir },
-  { "repeats", Tag_get_repeats, Tag_set_repeats }, // Cannot be "repeat" because it's a Lua keyword
-  { "color", UserData_get_color<Tag>, UserData_set_color<Tag> },
-  { "data", UserData_get_text<Tag>, UserData_set_text<Tag> },
+  { "sprite",     Tag_get_sprite,               nullptr                      },
+  { "fromFrame",  Tag_get_fromFrame,            Tag_set_fromFrame            },
+  { "toFrame",    Tag_get_toFrame,              Tag_set_toFrame              },
+  { "frames",     Tag_get_frames,               nullptr                      },
+  { "name",       Tag_get_name,                 Tag_set_name                 },
+  { "aniDir",     Tag_get_aniDir,               Tag_set_aniDir               },
+  { "repeats",    Tag_get_repeats,              Tag_set_repeats              }, // Cannot be "repeat" because it's a Lua keyword
+  { "color",      UserData_get_color<Tag>,      UserData_set_color<Tag>      },
+  { "data",       UserData_get_text<Tag>,       UserData_set_text<Tag>       },
   { "properties", UserData_get_properties<Tag>, UserData_set_properties<Tag> },
-  { nullptr, nullptr, nullptr }
+  { nullptr,      nullptr,                      nullptr                      }
 };
 
 } // anonymous namespace
@@ -177,5 +173,4 @@ void register_tag_class(lua_State* L)
   REG_CLASS_PROPERTIES(L, Tag);
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

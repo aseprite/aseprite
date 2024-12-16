@@ -14,8 +14,8 @@ class ContextBarObserver {
 public:
   enum DropAction { DropPixels, CancelDrag };
 
-  virtual ~ContextBarObserver() { }
-  virtual void onDropPixels(DropAction action) { }
+  virtual ~ContextBarObserver() {}
+  virtual void onDropPixels(DropAction action) {}
 };
 
 } // namespace app

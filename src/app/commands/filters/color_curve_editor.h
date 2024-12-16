@@ -15,36 +15,36 @@
 #include "ui/widget.h"
 
 namespace app {
-  using namespace filters;
+using namespace filters;
 
-  class ColorCurveEditor : public ui::Widget {
-  public:
-    ColorCurveEditor(const ColorCurve& curve, const gfx::Rect& viewBounds);
+class ColorCurveEditor : public ui::Widget {
+public:
+  ColorCurveEditor(const ColorCurve& curve, const gfx::Rect& viewBounds);
 
-    const ColorCurve& getCurve() const { return m_curve; }
+  const ColorCurve& getCurve() const { return m_curve; }
 
-    obs::signal<void()> CurveEditorChange;
+  obs::signal<void()> CurveEditorChange;
 
-  protected:
-    bool onProcessMessage(ui::Message* msg) override;
-    void onSizeHint(ui::SizeHintEvent& ev) override;
-    void onPaint(ui::PaintEvent& ev) override;
+protected:
+  bool onProcessMessage(ui::Message* msg) override;
+  void onSizeHint(ui::SizeHintEvent& ev) override;
+  void onPaint(ui::PaintEvent& ev) override;
 
-  private:
-    gfx::Point* getClosestPoint(const gfx::Point& viewPt);
-    bool editNodeManually(gfx::Point& viewPt);
-    gfx::Point viewToClient(const gfx::Point& viewPt);
-    gfx::Point screenToView(const gfx::Point& screenPt);
-    gfx::Point clientToView(const gfx::Point& clientPt);
-    void addPoint(const gfx::Point& viewPoint);
-    void removePoint(const gfx::Point& viewPoint);
+private:
+  gfx::Point* getClosestPoint(const gfx::Point& viewPt);
+  bool editNodeManually(gfx::Point& viewPt);
+  gfx::Point viewToClient(const gfx::Point& viewPt);
+  gfx::Point screenToView(const gfx::Point& screenPt);
+  gfx::Point clientToView(const gfx::Point& clientPt);
+  void addPoint(const gfx::Point& viewPoint);
+  void removePoint(const gfx::Point& viewPoint);
 
-    ColorCurve m_curve;
-    int m_status;
-    gfx::Rect m_viewBounds;
-    gfx::Point* m_hotPoint;
-    gfx::Point* m_editPoint;
-  };
+  ColorCurve m_curve;
+  int m_status;
+  gfx::Rect m_viewBounds;
+  gfx::Point* m_hotPoint;
+  gfx::Point* m_editPoint;
+};
 
 } // namespace app
 

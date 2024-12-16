@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -45,15 +45,17 @@ void TiledModeCommand::onLoadParams(const Params& params)
   m_mode = filters::TiledMode::NONE;
 
   std::string mode = params.get("axis");
-  if (mode == "both") m_mode = filters::TiledMode::BOTH;
-  else if (mode == "x") m_mode = filters::TiledMode::X_AXIS;
-  else if (mode == "y") m_mode = filters::TiledMode::Y_AXIS;
+  if (mode == "both")
+    m_mode = filters::TiledMode::BOTH;
+  else if (mode == "x")
+    m_mode = filters::TiledMode::X_AXIS;
+  else if (mode == "y")
+    m_mode = filters::TiledMode::Y_AXIS;
 }
 
 bool TiledModeCommand::onEnabled(Context* ctx)
 {
-  return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                         ContextFlags::HasActiveSprite);
+  return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasActiveSprite);
 }
 
 bool TiledModeCommand::onChecked(Context* ctx)
@@ -72,8 +74,8 @@ std::string TiledModeCommand::onGetFriendlyName() const
 {
   std::string mode;
   switch (m_mode) {
-    case filters::TiledMode::NONE: mode = Strings::commands_TiledMode_None(); break;
-    case filters::TiledMode::BOTH: mode = Strings::commands_TiledMode_Both(); break;
+    case filters::TiledMode::NONE:   mode = Strings::commands_TiledMode_None(); break;
+    case filters::TiledMode::BOTH:   mode = Strings::commands_TiledMode_Both(); break;
     case filters::TiledMode::X_AXIS: mode = Strings::commands_TiledMode_X(); break;
     case filters::TiledMode::Y_AXIS: mode = Strings::commands_TiledMode_Y(); break;
   }

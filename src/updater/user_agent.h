@@ -13,9 +13,9 @@
 
 namespace updater {
 
-  std::string getFullOSString();
-  std::string getUserAgent();
+std::string getFullOSString();
+std::string getUserAgent();
 
 } // namespace updater
 
-#endif  // UPDATER_USER_AGENT_H_INCLUDED
+#endif // UPDATER_USER_AGENT_H_INCLUDED

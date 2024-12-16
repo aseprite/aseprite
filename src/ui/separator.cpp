@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/separator.h"
@@ -22,8 +22,7 @@ namespace ui {
 
 using namespace gfx;
 
-Separator::Separator(const std::string& text, int align)
- : Widget(kSeparatorWidget)
+Separator::Separator(const std::string& text, int align) : Widget(kSeparatorWidget)
 {
   enableFlags(IGNORE_MOUSE);
   setAlign(align);

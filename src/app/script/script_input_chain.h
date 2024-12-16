@@ -16,24 +16,21 @@
 
 namespace app {
 
-  class ScriptInputChain : public InputChainElement {
-  public:
-
-    // InputChainElement impl
-    ~ScriptInputChain() override;
-    void onNewInputPriority(InputChainElement* element,
-                            const ui::Message* msg) override;
-    bool onCanCut(Context* ctx) override;
-    bool onCanCopy(Context* ctx) override;
-    bool onCanPaste(Context* ctx) override;
-    bool onCanClear(Context* ctx) override;
-    bool onCut(Context* ctx) override;
-    bool onCopy(Context* ctx) override;
-    bool onPaste(Context* ctx,
-                 const gfx::Point* position) override;
-    bool onClear(Context* ctx) override;
-    void onCancel(Context* ctx) override;
-  };
+class ScriptInputChain : public InputChainElement {
+public:
+  // InputChainElement impl
+  ~ScriptInputChain() override;
+  void onNewInputPriority(InputChainElement* element, const ui::Message* msg) override;
+  bool onCanCut(Context* ctx) override;
+  bool onCanCopy(Context* ctx) override;
+  bool onCanPaste(Context* ctx) override;
+  bool onCanClear(Context* ctx) override;
+  bool onCut(Context* ctx) override;
+  bool onCopy(Context* ctx) override;
+  bool onPaste(Context* ctx, const gfx::Point* position) override;
+  bool onClear(Context* ctx) override;
+  void onCancel(Context* ctx) override;
+};
 
 } // namespace app
 

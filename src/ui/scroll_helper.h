@@ -13,13 +13,13 @@
 
 namespace ui {
 
-  class ScrollBar;
+class ScrollBar;
 
-  void setup_scrollbars(const gfx::Size& scrollableSize,
-                        gfx::Rect& viewportArea,
-                        Widget& parent,
-                        ScrollBar& hbar,
-                        ScrollBar& vbar);
+void setup_scrollbars(const gfx::Size& scrollableSize,
+                      gfx::Rect& viewportArea,
+                      Widget& parent,
+                      ScrollBar& hbar,
+                      ScrollBar& vbar);
 
 } // namespace ui
 

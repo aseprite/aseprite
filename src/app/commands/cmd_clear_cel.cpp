@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -32,8 +32,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-ClearCelCommand::ClearCelCommand()
-  : Command(CommandId::ClearCel(), CmdRecordableFlag)
+ClearCelCommand::ClearCelCommand() : Command(CommandId::ClearCel(), CmdRecordableFlag)
 {
 }
 
@@ -51,9 +50,7 @@ void ClearCelCommand::onExecute(Context* context)
     Tx tx(writer, "Clear Cel");
 
     const Site* site = writer.site();
-    if (site->inTimeline() &&
-        !site->selectedLayers().empty() &&
-        !site->selectedFrames().empty()) {
+    if (site->inTimeline() && !site->selectedLayers().empty() && !site->selectedFrames().empty()) {
       for (Layer* layer : site->selectedLayers()) {
         if (!layer->isImage())
           continue;
@@ -80,8 +77,7 @@ void ClearCelCommand::onExecute(Context* context)
   }
 
   if (nonEditableLayers)
-    StatusBar::instance()->showTip(1000,
-      Strings::statusbar_tips_locked_layers());
+    StatusBar::instance()->showTip(1000, Strings::statusbar_tips_locked_layers());
 
   update_screen_for_document(document);
 }

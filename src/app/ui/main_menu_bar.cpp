@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/main_menu_bar.h"
@@ -27,8 +27,8 @@ MainMenuBar::MainMenuBar()
   // Reload the main menu if there are changes in keyboard shortcuts
   // or scripts when extensions are installed/uninstalled or
   // enabled/disabled.
-  m_extKeys = extensions.KeysChange.connect( [this]{ reload(); });
-  m_extScripts = extensions.ScriptsChange.connect( [this]{ reload(); });
+  m_extKeys = extensions.KeysChange.connect([this] { reload(); });
+  m_extScripts = extensions.ScriptsChange.connect([this] { reload(); });
 }
 
 void MainMenuBar::reload()

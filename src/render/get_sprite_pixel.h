@@ -12,23 +12,23 @@
 #include "doc/frame.h"
 
 namespace doc {
-  class Sprite;
+class Sprite;
 }
 
 namespace render {
-  using namespace doc;
+using namespace doc;
 
-  class Projection;
+class Projection;
 
-  // Gets a pixel from the sprite in the specified position. If in the
-  // specified coordinates there're background this routine will
-  // return the 0 color (the mask-color).
-  color_t get_sprite_pixel(const Sprite* sprite,
-                           const double x,
-                           const double y,
-                           const frame_t frame,
-                           const Projection& proj,
-                           const bool newBlend);
+// Gets a pixel from the sprite in the specified position. If in the
+// specified coordinates there're background this routine will
+// return the 0 color (the mask-color).
+color_t get_sprite_pixel(const Sprite* sprite,
+                         const double x,
+                         const double y,
+                         const frame_t frame,
+                         const Projection& proj,
+                         const bool newBlend);
 
 } // namespace render
 

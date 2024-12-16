@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/mask_boundaries.h"
@@ -28,51 +28,57 @@ void MaskBoundaries::regen(const Image* bitmap)
   int x, y, w = bitmap->width(), h = bitmap->height();
 
   const LockImageBits<BitmapTraits> bits(bitmap);
-  auto it = bits.begin();       // Current pixel iterator
+  auto it = bits.begin(); // Current pixel iterator
 #if _DEBUG
-  auto prevIt = bits.begin();   // Previous row iterator (same X pos)
+  auto prevIt = bits.begin(); // Previous row iterator (same X pos)
 #endif
 
   // Vertical segments being expanded from the previous row.
-  std::vector<int> vertSegs(w+1, -1);
+  std::vector<int> vertSegs(w + 1, -1);
 
   // Horizontal segment being expanded from the previous column.
   int horzSeg;
 
-#define new_hseg(open) {                                        \
-    m_segs.push_back(Segment(open, gfx::Rect(x, y, 1, 0)));     \
-    horzSeg = int(m_segs.size()-1);                             \
+#define new_hseg(open)                                                                             \
+  {                                                                                                \
+    m_segs.push_back(Segment(open, gfx::Rect(x, y, 1, 0)));                                        \
+    horzSeg = int(m_segs.size() - 1);                                                              \
   }
-#define new_vseg(open) {                                        \
-    m_segs.push_back(Segment(open, gfx::Rect(x, y, 0, 1)));     \
-    vertSegs[x] = int(m_segs.size()-1);                         \
+#define new_vseg(open)                                                                             \
+  {                                                                                                \
+    m_segs.push_back(Segment(open, gfx::Rect(x, y, 0, 1)));                                        \
+    vertSegs[x] = int(m_segs.size() - 1);                                                          \
   }
-#define expand_hseg() { \
-    ASSERT(hseg);       \
-    ++hseg->m_bounds.w; \
+#define expand_hseg()                                                                              \
+  {                                                                                                \
+    ASSERT(hseg);                                                                                  \
+    ++hseg->m_bounds.w;                                                                            \
   }
-#define expand_vseg() { \
-    ASSERT(vseg);       \
-    ++vseg->m_bounds.h; \
+#define expand_vseg()                                                                              \
+  {                                                                                                \
+    ASSERT(vseg);                                                                                  \
+    ++vseg->m_bounds.h;                                                                            \
   }
-#define stop_expanding_hseg() {                 \
-    horzSeg = -1;                               \
+#define stop_expanding_hseg()                                                                      \
+  {                                                                                                \
+    horzSeg = -1;                                                                                  \
   }
-#define stop_expanding_vseg() {                 \
-    vertSegs[x] = -1;                           \
+#define stop_expanding_vseg()                                                                      \
+  {                                                                                                \
+    vertSegs[x] = -1;                                                                              \
   }
 
-  for (y=0; y<=h; ++y) {
-    bool prevColor = false;         // Previous color (X-1) same Y row
+  for (y = 0; y <= h; ++y) {
+    bool prevColor = false; // Previous color (X-1) same Y row
     horzSeg = -1;
 
-    for (x=0; x<=w; ++x) {
-      bool color = (x < w && y < h && *it ? true: false);
+    for (x = 0; x <= w; ++x) {
+      bool color = (x < w && y < h && *it ? true : false);
 #if _DEBUG
-      bool prevRowColor = (x < w && y > 0 && *prevIt ? true: false);
+      bool prevRowColor = (x < w && y > 0 && *prevIt ? true : false);
 #endif
-      Segment* hseg = (horzSeg >= 0 ? &m_segs[horzSeg]: nullptr);
-      Segment* vseg = (vertSegs[x] >= 0 ? &m_segs[vertSegs[x]]: nullptr);
+      Segment* hseg = (horzSeg >= 0 ? &m_segs[horzSeg] : nullptr);
+      Segment* vseg = (vertSegs[x] >= 0 ? &m_segs[vertSegs[x]] : nullptr);
 
       //
       // -   -
@@ -328,9 +334,11 @@ void MaskBoundaries::regen(const Image* bitmap)
       prevColor = color;
       if (x < w) {
 #if _DEBUG
-        if (y > 0) ++prevIt;
+        if (y > 0)
+          ++prevIt;
 #endif
-        if (y < h) ++it;
+        if (y < h)
+          ++it;
       }
     }
   }

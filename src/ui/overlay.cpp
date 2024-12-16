@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/overlay.h"
@@ -61,17 +61,13 @@ gfx::Rect Overlay::bounds() const
 
 void Overlay::drawOverlay()
 {
-  if (!m_surface ||
-      !m_captured)
+  if (!m_surface || !m_captured)
     return;
 
   os::SurfaceLock lock(m_surface.get());
   m_captured->drawRgbaSurface(m_surface.get(), m_pos.x, m_pos.y);
 
-  m_display->dirtyRect(
-    gfx::Rect(m_pos.x, m_pos.y,
-              m_surface->width(),
-              m_surface->height()));
+  m_display->dirtyRect(gfx::Rect(m_pos.x, m_pos.y, m_surface->width(), m_surface->height()));
 }
 
 void Overlay::moveOverlay(const gfx::Point& newPos)
@@ -84,8 +80,7 @@ void Overlay::moveOverlay(const gfx::Point& newPos)
 
 void Overlay::captureOverlappedArea()
 {
-  if (!m_surface ||
-      m_captured)
+  if (!m_surface || m_captured)
     return;
 
   os::Surface* displaySurface = m_display->surface();
@@ -99,31 +94,28 @@ void Overlay::captureOverlappedArea()
   }
 
   os::SurfaceLock lock(m_overlap.get());
-  displaySurface->blitTo(m_overlap.get(), m_pos.x, m_pos.y, 0, 0,
-                         m_overlap->width(), m_overlap->height());
+  displaySurface
+    ->blitTo(m_overlap.get(), m_pos.x, m_pos.y, 0, 0, m_overlap->width(), m_overlap->height());
   // TODO uncomment and test this when GPU support is added
-  //m_overlap->setImmutable();
+  // m_overlap->setImmutable();
 
   m_captured = base::AddRef(displaySurface);
 }
 
 void Overlay::restoreOverlappedArea(const gfx::Rect& restoreBounds)
 {
-  if (!m_surface ||
-      !m_overlap ||
-      !m_captured)
+  if (!m_surface || !m_overlap || !m_captured)
     return;
 
-  if (!restoreBounds.isEmpty() &&
-      !restoreBounds.intersects(bounds()))
+  if (!restoreBounds.isEmpty() && !restoreBounds.intersects(bounds()))
     return;
 
   os::SurfaceLock lock(m_overlap.get());
-  m_overlap->blitTo(m_captured.get(), 0, 0, m_pos.x, m_pos.y,
-                    m_overlap->width(), m_overlap->height());
+  m_overlap
+    ->blitTo(m_captured.get(), 0, 0, m_pos.x, m_pos.y, m_overlap->width(), m_overlap->height());
 
   m_display->dirtyRect(bounds());
   m_captured = nullptr;
 }
 
-}
+} // namespace ui
