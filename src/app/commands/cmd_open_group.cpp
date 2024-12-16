@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/commands/command.h"
@@ -29,11 +29,10 @@ protected:
 
   // TODO onGetFriendlyName() needs the Context so we can return "Open
   //      Group" or "Close Group" depending on the context
-  //std::string onGetFriendlyName() const override;
+  // std::string onGetFriendlyName() const override;
 };
 
-OpenGroupCommand::OpenGroupCommand()
-  : Command(CommandId::OpenGroup(), CmdRecordableFlag)
+OpenGroupCommand::OpenGroupCommand() : Command(CommandId::OpenGroup(), CmdRecordableFlag)
 {
 }
 

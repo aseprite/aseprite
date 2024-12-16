@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/algorithm/flip_image.h"
@@ -16,7 +16,8 @@
 
 using namespace doc;
 
-void BM_FlipSlow(benchmark::State& state) {
+void BM_FlipSlow(benchmark::State& state)
+{
   const auto pf = (PixelFormat)state.range(0);
   const int w = state.range(1);
   const int h = state.range(2);
@@ -27,7 +28,8 @@ void BM_FlipSlow(benchmark::State& state) {
   }
 }
 
-void BM_FlipRawPtr(benchmark::State& state) {
+void BM_FlipRawPtr(benchmark::State& state)
+{
   const auto pf = (PixelFormat)state.range(0);
   const int w = state.range(1);
   const int h = state.range(2);
@@ -38,26 +40,22 @@ void BM_FlipRawPtr(benchmark::State& state) {
   }
 }
 
-#define DEFARGS()                                                       \
-  ->Args({ IMAGE_RGB, 8192, 8192, doc::algorithm::FlipHorizontal })     \
-  ->Args({ IMAGE_RGB, 8192, 8192, doc::algorithm::FlipVertical })       \
-  ->Args({ IMAGE_GRAYSCALE, 8192, 8192, doc::algorithm::FlipHorizontal }) \
-  ->Args({ IMAGE_GRAYSCALE, 8192, 8192, doc::algorithm::FlipVertical }) \
-  ->Args({ IMAGE_INDEXED, 8192, 8192, doc::algorithm::FlipHorizontal }) \
-  ->Args({ IMAGE_INDEXED, 8192, 8192, doc::algorithm::FlipVertical })   \
-  ->Args({ IMAGE_BITMAP, 8192, 8192, doc::algorithm::FlipHorizontal })  \
-  ->Args({ IMAGE_BITMAP, 8192, 8192, doc::algorithm::FlipVertical })    \
-  ->Args({ IMAGE_TILEMAP, 8192, 8192, doc::algorithm::FlipHorizontal }) \
-  ->Args({ IMAGE_TILEMAP, 8192, 8192, doc::algorithm::FlipVertical })
+#define DEFARGS()                                                                                  \
+  ->Args({ IMAGE_RGB, 8192, 8192, doc::algorithm::FlipHorizontal })                                \
+    ->Args({ IMAGE_RGB, 8192, 8192, doc::algorithm::FlipVertical })                                \
+    ->Args({ IMAGE_GRAYSCALE, 8192, 8192, doc::algorithm::FlipHorizontal })                        \
+    ->Args({ IMAGE_GRAYSCALE, 8192, 8192, doc::algorithm::FlipVertical })                          \
+    ->Args({ IMAGE_INDEXED, 8192, 8192, doc::algorithm::FlipHorizontal })                          \
+    ->Args({ IMAGE_INDEXED, 8192, 8192, doc::algorithm::FlipVertical })                            \
+    ->Args({ IMAGE_BITMAP, 8192, 8192, doc::algorithm::FlipHorizontal })                           \
+    ->Args({ IMAGE_BITMAP, 8192, 8192, doc::algorithm::FlipVertical })                             \
+    ->Args({ IMAGE_TILEMAP, 8192, 8192, doc::algorithm::FlipHorizontal })                          \
+    ->Args({ IMAGE_TILEMAP, 8192, 8192, doc::algorithm::FlipVertical })
 
 BENCHMARK(BM_FlipSlow)
-  DEFARGS()
-  ->Unit(benchmark::kMicrosecond)
-  ->UseRealTime();
+DEFARGS()->Unit(benchmark::kMicrosecond)->UseRealTime();
 
 BENCHMARK(BM_FlipRawPtr)
-  DEFARGS()
-  ->Unit(benchmark::kMicrosecond)
-  ->UseRealTime();
+DEFARGS()->Unit(benchmark::kMicrosecond)->UseRealTime();
 
 BENCHMARK_MAIN();

@@ -8,29 +8,28 @@
 #define APP_UI_ALPHA_ENTRY_H_INCLUDED
 #pragma once
 
-#include "ui/int_entry.h"
 #include "app/ui/alpha_slider.h"
+#include "ui/int_entry.h"
 
 #include <memory>
 
 using namespace ui;
 
-
 namespace ui {
-  class CloseEvent;
-  class PopupWindow;
-}
+class CloseEvent;
+class PopupWindow;
+} // namespace ui
 
 namespace app {
 
-  class AlphaEntry : public IntEntry {
-  public:
-    AlphaEntry(AlphaSlider::Type type);
+class AlphaEntry : public IntEntry {
+public:
+  AlphaEntry(AlphaSlider::Type type);
 
-    int getValue() const override;
-    void setValue(int value) override;
-  };
+  int getValue() const override;
+  void setValue(int value) override;
+};
 
-} // namespace ui
+} // namespace app
 
 #endif

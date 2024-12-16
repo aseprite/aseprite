@@ -12,29 +12,25 @@
 #include "app/cmd/with_cel.h"
 #include "gfx/rect.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class SetCelBoundsF : public Cmd
-                      , public WithCel {
-  public:
-    SetCelBoundsF(Cel* cel, const gfx::RectF& bounds);
+class SetCelBoundsF : public Cmd,
+                      public WithCel {
+public:
+  SetCelBoundsF(Cel* cel, const gfx::RectF& bounds);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onFireNotifications() override;
-    size_t onMemSize() const override {
-      return sizeof(*this);
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onFireNotifications() override;
+  size_t onMemSize() const override { return sizeof(*this); }
 
-  private:
-    gfx::RectF m_oldBounds;
-    gfx::RectF m_newBounds;
-  };
+private:
+  gfx::RectF m_oldBounds;
+  gfx::RectF m_newBounds;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

@@ -21,8 +21,8 @@ class AppOptions {
 public:
   enum VerboseLevel {
     kNoVerbose,
-    kVerbose,                   // --verbose
-    kHighlyVerbose,             // --debug
+    kVerbose,       // --verbose
+    kHighlyVerbose, // --debug
   };
 
   typedef base::ProgramOptions PO;
@@ -41,9 +41,7 @@ public:
   bool showVersion() const { return m_showVersion; }
   VerboseLevel verboseLevel() const { return m_verboseLevel; }
 
-  const ValueList& values() const {
-    return m_po.values();
-  }
+  const ValueList& values() const { return m_po.values(); }
 
   // Export options
   const Option& saveAs() const { return m_saveAs; }
@@ -181,7 +179,6 @@ private:
 #endif
   Option& m_help;
   Option& m_version;
-
 };
 
 } // namespace app

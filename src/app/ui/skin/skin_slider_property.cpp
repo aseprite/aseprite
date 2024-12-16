@@ -5,13 +5,12 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/skin/skin_slider_property.h"
 
-namespace app {
-namespace skin {
+namespace app { namespace skin {
 
 const char* SkinSliderProperty::Name = "SkinSliderProperty";
 
@@ -31,5 +30,4 @@ ISliderBgPainter* SkinSliderProperty::getBgPainter() const
   return m_painter;
 }
 
-} // namespace skin
-} // namespace app
+}} // namespace app::skin

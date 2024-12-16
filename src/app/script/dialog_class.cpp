@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -53,8 +53,7 @@
 
 #define TRACE_DIALOG(...) // TRACEARGS(__VA_ARGS__)
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 using namespace ui;
 
@@ -62,28 +61,26 @@ namespace {
 
 class DialogWindow : public WindowWithHand {
 public:
-  DialogWindow(Type type, const std::string& text)
-    : WindowWithHand(type, text)
-    , m_handTool(false)
+  DialogWindow(Type type, const std::string& text) : WindowWithHand(type, text), m_handTool(false)
   {
     // As scripts can receive the "pressure" information.
     setNeedsTabletPressure(true);
   }
 
   // Enables the Hand tool in the active editor.
-  void setHandTool(const bool flag) {
-    m_handTool = flag;
-  }
+  void setHandTool(const bool flag) { m_handTool = flag; }
 
 protected:
-  void onOpen(Event& ev) override {
+  void onOpen(Event& ev) override
+  {
     if (m_handTool && Editor::activeEditor()) {
       enableHandTool(true);
     }
     WindowWithHand::onOpen(ev);
   }
 
-  void onBeforeClose(CloseEvent& ev) override {
+  void onBeforeClose(CloseEvent& ev) override
+  {
     if (isHandToolEnabled())
       enableHandTool(false);
   }
@@ -127,27 +124,27 @@ struct Dialog {
   int showRef = LUA_REFNIL;
   lua_State* L = nullptr;
 
-  Dialog(const ui::Window::Type windowType,
-         const std::string& title)
-    : window(windowType, title),
-      grid(2, false),
-      currentGrid(&grid) {
+  Dialog(const ui::Window::Type windowType, const std::string& title)
+    : window(windowType, title)
+    , grid(2, false)
+    , currentGrid(&grid)
+  {
     window.addChild(&grid);
     all_dialogs.push_back(this);
   }
 
-  ~Dialog() {
-    base::remove_from_container(all_dialogs, this);
-  }
+  ~Dialog() { base::remove_from_container(all_dialogs, this); }
 
-  void unrefShowOnClose() {
-    window.Close.connect([this](ui::CloseEvent&){ unrefShow(); });
+  void unrefShowOnClose()
+  {
+    window.Close.connect([this](ui::CloseEvent&) { unrefShow(); });
   }
 
   // When we show the dialog, we reference it from the registry to
   // keep the dialog alive in case that the user declared it as a
   // "local" variable but called Dialog:show{wait=false}
-  void refShow(lua_State* L) {
+  void refShow(lua_State* L)
+  {
     if (showRef == LUA_REFNIL) {
       this->L = L;
       lua_pushvalue(L, 1);
@@ -160,7 +157,8 @@ struct Dialog {
   // (all references to the dialog itself from callbacks are stored in
   // the same dialog uservalue, so when the dialog+callbacks are not
   // used anymore they are GC'd as a group)
-  void unrefShow() {
+  void unrefShow()
+  {
     if (showRef != LUA_REFNIL) {
       luaL_unref(this->L, LUA_REGISTRYINDEX, showRef);
       showRef = LUA_REFNIL;
@@ -168,7 +166,8 @@ struct Dialog {
     }
   }
 
-  Widget* findDataWidgetById(const char* id) {
+  Widget* findDataWidgetById(const char* id)
+  {
     auto it = dataWidgets.find(id);
     if (it != dataWidgets.end())
       return it->second;
@@ -176,19 +175,22 @@ struct Dialog {
       return nullptr;
   }
 
-  void setLabelVisibility(const char* id, bool visible) {
+  void setLabelVisibility(const char* id, bool visible)
+  {
     auto it = labelWidgets.find(id);
     if (it != labelWidgets.end())
       it->second->setVisible(visible);
   }
 
-  void setLabelText(const char* id, const char* text) {
+  void setLabelText(const char* id, const char* text)
+  {
     auto it = labelWidgets.find(id);
     if (it != labelWidgets.end())
       it->second->setText(text);
   }
 
-  Display* parentDisplay() const {
+  Display* parentDisplay() const
+  {
     Display* parentDisplay = window.parentDisplay();
     if (!parentDisplay) {
       const auto mainWindow = App::instance()->mainWindow();
@@ -197,7 +199,8 @@ struct Dialog {
     return parentDisplay;
   }
 
-  gfx::Rect getWindowBounds() const {
+  gfx::Rect getWindowBounds() const
+  {
     gfx::Rect bounds = window.bounds();
     // Bounds in scripts will be relative to the parent window
     // origin/scale (or main window if a parent window wasn't specified).
@@ -211,7 +214,8 @@ struct Dialog {
     return bounds;
   }
 
-  void setWindowBounds(const gfx::Rect& rc) {
+  void setWindowBounds(const gfx::Rect& rc)
+  {
     if (window.ownDisplay()) {
       window.expandWindow(rc.size());
 
@@ -230,8 +234,7 @@ struct Dialog {
 
   // TODO merge this code with add_scrollbars_if_needed() from
   //      ui/menu.cpp (creating a new function in the ui library)
-  void addScrollbarsIfNeeded(const gfx::Rect& workarea,
-                             gfx::Rect& bounds)
+  void addScrollbarsIfNeeded(const gfx::Rect& workarea, gfx::Rect& bounds)
   {
     gfx::Rect rc = bounds;
 
@@ -264,15 +267,16 @@ struct Dialog {
       return;
 
     View* view = new View();
-    view->InitTheme.connect([view]{ view->noBorderNoChildSpacing(); });
+    view->InitTheme.connect([view] { view->noBorderNoChildSpacing(); });
     view->initTheme();
 
     if (vscrollbarsAdded) {
-      int barWidth = view->verticalBar()->getBarWidth();;
+      int barWidth = view->verticalBar()->getBarWidth();
+      ;
       if (get_multiple_displays())
         barWidth *= window.display()->scale();
 
-      rc.w += 2*barWidth;
+      rc.w += 2 * barWidth;
       if (rc.x2() > workarea.x2()) {
         rc.x = workarea.x2() - rc.w;
         if (rc.x < workarea.x) {
@@ -291,8 +295,7 @@ struct Dialog {
   }
 };
 
-template<typename...Args,
-         typename Callback>
+template<typename... Args, typename Callback>
 void Dialog_connect_signal(lua_State* L,
                            int dlgIdx,
                            obs::signal<void(Args...)>& signal,
@@ -305,52 +308,49 @@ void Dialog_connect_signal(lua_State* L,
   // the stack (index=-1) in that table.
   lua_getuservalue(L, dlgIdx);
   lua_len(L, -1);
-  const int n = 1+lua_tointegerx(L, -1, nullptr);
-  lua_pop(L, 1);           // Pop the length of the table
-  lua_pushvalue(L, -2);    // Copy the function in stack
-  lua_rawseti(L, -2, n);   // Put the copy of the function in the uservalue
-  lua_pop(L, 1);           // Pop the uservalue
+  const int n = 1 + lua_tointegerx(L, -1, nullptr);
+  lua_pop(L, 1);         // Pop the length of the table
+  lua_pushvalue(L, -2);  // Copy the function in stack
+  lua_rawseti(L, -2, n); // Put the copy of the function in the uservalue
+  lua_pop(L, 1);         // Pop the uservalue
 
-  signal.connect(
-    [=](Args...args) {
-      // In case that the dialog is hidden, we cannot access to the
-      // global LUA_REGISTRYINDEX to get its reference.
-      if (dlg->showRef == LUA_REFNIL)
-        return;
+  signal.connect([=](Args... args) {
+    // In case that the dialog is hidden, we cannot access to the
+    // global LUA_REGISTRYINDEX to get its reference.
+    if (dlg->showRef == LUA_REFNIL)
+      return;
 
-      // Get the function "n" from the uservalue table of the dialog
-      lua_rawgeti(L, LUA_REGISTRYINDEX, dlg->showRef);
-      lua_getuservalue(L, -1);
-      lua_rawgeti(L, -1, n);
+    // Get the function "n" from the uservalue table of the dialog
+    lua_rawgeti(L, LUA_REGISTRYINDEX, dlg->showRef);
+    lua_getuservalue(L, -1);
+    lua_rawgeti(L, -1, n);
 
-      // Use the callback with a special table in the Lua stack to
-      // send it as parameter to the Lua function in the
-      // lua_pcall() (that table is like an "event data" parameter
-      // for the function).
-      lua_newtable(L);
-      callback(L, std::forward<Args>(args)...);
+    // Use the callback with a special table in the Lua stack to
+    // send it as parameter to the Lua function in the
+    // lua_pcall() (that table is like an "event data" parameter
+    // for the function).
+    lua_newtable(L);
+    callback(L, std::forward<Args>(args)...);
 
-      if (lua_isfunction(L, -2)) {
-        try {
-          if (lua_pcall(L, 1, 0, 0)) {
-            if (const char* s = lua_tostring(L, -1))
-              App::instance()
-                ->scriptEngine()
-                ->consolePrint(s);
-          }
-        }
-        catch(const std::exception& ex) {
-          // This is used to catch unhandled exception or for
-          // example, std::runtime_error exceptions when a Tx() is
-          // created without an active sprite.
-          App::instance()->scriptEngine()->handleException(ex);
+    if (lua_isfunction(L, -2)) {
+      try {
+        if (lua_pcall(L, 1, 0, 0)) {
+          if (const char* s = lua_tostring(L, -1))
+            App::instance()->scriptEngine()->consolePrint(s);
         }
       }
-      else {
-        lua_pop(L, 1); // Pop the value which should have been a function
+      catch (const std::exception& ex) {
+        // This is used to catch unhandled exception or for
+        // example, std::runtime_error exceptions when a Tx() is
+        // created without an active sprite.
+        App::instance()->scriptEngine()->handleException(ex);
       }
-      lua_pop(L, 2);   // Pop uservalue & userdata
-    });
+    }
+    else {
+      lua_pop(L, 1); // Pop the value which should have been a function
+    }
+    lua_pop(L, 2); // Pop uservalue & userdata
+  });
 }
 
 int Dialog_new(lua_State* L)
@@ -398,11 +398,9 @@ int Dialog_new(lua_State* L)
 
     type = lua_getfield(L, 1, "onclose");
     if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(
-        L, -2, dlg->window.Close,
-        [](lua_State*, CloseEvent&){
-          // Do nothing
-        });
+      Dialog_connect_signal(L, -2, dlg->window.Close, [](lua_State*, CloseEvent&) {
+        // Do nothing
+      });
     }
     lua_pop(L, 1);
   }
@@ -449,7 +447,7 @@ int Dialog_show(lua_State* L)
     if (VALID_LUATYPE(type)) {
       const auto rc = convert_args_into_rect(L, -1);
       if (!rc.isEmpty()) {
-        conn = dlg->window.Open.connect([dlg, rc]{
+        conn = dlg->window.Open.connect([dlg, rc] {
           dlg->setWindowBounds(rc);
           dlg->window.setAutoRemap(false);
         });
@@ -488,24 +486,25 @@ int Dialog_show(lua_State* L)
 namespace {
 class MoveChildren {
 public:
-  MoveChildren(Dialog* dlg, Widget* to)
-    : m_dlg(dlg)
-    , m_to(to) {
+  MoveChildren(Dialog* dlg, Widget* to) : m_dlg(dlg), m_to(to)
+  {
     for (auto child : m_dlg->mainWidgets) {
       m_oldParents[child] = child->parent();
       m_to->addChild(child);
     }
   }
-  ~MoveChildren() {
+  ~MoveChildren()
+  {
     for (auto child : m_dlg->mainWidgets)
       m_oldParents[child]->addChild(child);
   }
+
 private:
   Dialog* m_dlg;
   Widget* m_to;
   std::map<Widget*, Widget*> m_oldParents;
 };
-}
+} // namespace
 
 int Dialog_showMenu(lua_State* L)
 {
@@ -514,9 +513,7 @@ int Dialog_showMenu(lua_State* L)
   MoveChildren moveChildren(dlg, &popup);
 
   // By default show the menu in the mouse position
-  gfx::Point pt =
-    dlg->parentDisplay()->nativeWindow()
-    ->pointFromScreen(ui::get_mouse_position());
+  gfx::Point pt = dlg->parentDisplay()->nativeWindow()->pointFromScreen(ui::get_mouse_position());
 
   if (lua_istable(L, 2)) {
     if (lua_getfield(L, 2, "position") != LUA_TNIL) {
@@ -576,8 +573,7 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
 
   // This is to separate different kind of widgets without label in
   // different rows.
-  if (dlg->lastWidgetType != widget->type() ||
-      dlg->autoNewRow) {
+  if (dlg->lastWidgetType != widget->type() || dlg->autoNewRow) {
     dlg->lastWidgetType = widget->type();
     dlg->hbox = nullptr;
   }
@@ -612,10 +608,12 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
     // specific widget is not expansive (e.g. a canvas with a fixed
     // size)
     type = lua_getfield(L, 2, "hexpand");
-    if (type != LUA_TNIL) hexpand = lua_toboolean(L, -1);
+    if (type != LUA_TNIL)
+      hexpand = lua_toboolean(L, -1);
     lua_pop(L, 1);
     type = lua_getfield(L, 2, "vexpand");
-    if (type != LUA_TNIL) vexpand = lua_toboolean(L, -1);
+    if (type != LUA_TNIL)
+      vexpand = lua_toboolean(L, -1);
     lua_pop(L, 1);
   }
 
@@ -642,10 +640,11 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
 
     // For tabs we don't want the empty space of an unspecified label, so
     // span 2 columns.
-    const int hspan = (widget->type() == Tabs::Type() ? 2: 1);
-    dlg->currentGrid->addChildInCell(
-      hbox, hspan, 1,
-      ui::HORIZONTAL | (vexpand ? ui::VERTICAL: ui::TOP));
+    const int hspan = (widget->type() == Tabs::Type() ? 2 : 1);
+    dlg->currentGrid->addChildInCell(hbox,
+                                     hspan,
+                                     1,
+                                     ui::HORIZONTAL | (vexpand ? ui::VERTICAL : ui::TOP));
 
     dlg->hbox = hbox;
   }
@@ -762,26 +761,19 @@ int Dialog_button_base(lua_State* L, T** outputWidget = nullptr)
 
     type = lua_getfield(L, 2, "onclick");
     if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(
-        L, 1, widget->Click,
-        [](lua_State*){
-          // Do nothing
-        });
+      Dialog_connect_signal(L, 1, widget->Click, [](lua_State*) {
+        // Do nothing
+      });
       closeWindowByDefault = false;
     }
     lua_pop(L, 1);
   }
 
   if (closeWindowByDefault) {
-    widget->Click.connect([widget](){
-      widget->closeWindow();
-    });
+    widget->Click.connect([widget]() { widget->closeWindow(); });
   }
-  if (widget->type() == ui::kButtonWidget ||
-      widget->type() == ui::kMenuItemWidget) {
-    widget->Click.connect([dlg, widget](){
-      dlg->lastButton = widget;
-    });
+  if (widget->type() == ui::kButtonWidget || widget->type() == ui::kMenuItemWidget) {
+    widget->Click.connect([dlg, widget]() { dlg->lastButton = widget; });
   }
 
   return Dialog_add_widget(L, widget);
@@ -812,8 +804,7 @@ int Dialog_radio(lua_State* L)
       lua_pop(L, 1);
     }
 
-    if (dlg->currentRadioGroup == 0 ||
-        hasLabelField) {
+    if (dlg->currentRadioGroup == 0 || hasLabelField) {
       ++dlg->currentRadioGroup;
     }
 
@@ -844,11 +835,9 @@ int Dialog_entry(lua_State* L)
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "onchange");
     if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(
-        L, 1, widget->Change,
-        [](lua_State* L){
-          // Do nothing
-        });
+      Dialog_connect_signal(L, 1, widget->Change, [](lua_State* L) {
+        // Do nothing
+      });
     }
     lua_pop(L, 1);
   }
@@ -876,11 +865,9 @@ int Dialog_number(lua_State* L)
 
     type = lua_getfield(L, 2, "onchange");
     if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(
-        L, 1, widget->Change,
-        [](lua_State* L){
-          // Do nothing
-        });
+      Dialog_connect_signal(L, 1, widget->Change, [](lua_State* L) {
+        // Do nothing
+      });
     }
     lua_pop(L, 1);
   }
@@ -919,21 +906,17 @@ int Dialog_slider(lua_State* L)
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "onchange");
     if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(
-        L, 1, widget->Change,
-        [](lua_State* L){
-          // Do nothing
-        });
+      Dialog_connect_signal(L, 1, widget->Change, [](lua_State* L) {
+        // Do nothing
+      });
     }
     lua_pop(L, 1);
 
     type = lua_getfield(L, 2, "onrelease");
     if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(
-        L, 1, widget->SliderReleased,
-        [](lua_State* L){
-          // Do nothing
-        });
+      Dialog_connect_signal(L, 1, widget->SliderReleased, [](lua_State* L) {
+        // Do nothing
+      });
     }
     lua_pop(L, 1);
   }
@@ -969,11 +952,9 @@ int Dialog_combobox(lua_State* L)
 
     type = lua_getfield(L, 2, "onchange");
     if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(
-        L, 1, widget->Change,
-        [](lua_State* L){
-          // Do nothing
-        });
+      Dialog_connect_signal(L, 1, widget->Change, [](lua_State* L) {
+        // Do nothing
+      });
     }
     lua_pop(L, 1);
   }
@@ -990,19 +971,15 @@ int Dialog_color(lua_State* L)
     lua_pop(L, 1);
   }
 
-  auto widget = new ColorButton(color,
-                                app_get_current_pixel_format(),
-                                ColorButtonOptions());
+  auto widget = new ColorButton(color, app_get_current_pixel_format(), ColorButtonOptions());
 
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "onchange");
     if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(
-        L, 1, widget->Change,
-        [](lua_State* L, const app::Color& color){
-          push_obj<app::Color>(L, color);
-          lua_setfield(L, -2, "color");
-        });
+      Dialog_connect_signal(L, 1, widget->Change, [](lua_State* L, const app::Color& color) {
+        push_obj<app::Color>(L, color);
+        lua_setfield(L, -2, "color");
+      });
     }
   }
 
@@ -1044,19 +1021,20 @@ int Dialog_shades(lua_State* L)
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "onclick");
     if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(
-        L, 1, widget->Click,
-        [widget](lua_State* L, ColorShades::ClickEvent& ev){
-          lua_pushinteger(L, (int)ev.button());
-          lua_setfield(L, -2, "button");
+      Dialog_connect_signal(L,
+                            1,
+                            widget->Click,
+                            [widget](lua_State* L, ColorShades::ClickEvent& ev) {
+                              lua_pushinteger(L, (int)ev.button());
+                              lua_setfield(L, -2, "button");
 
-          const int i = widget->getHotEntry();
-          const Shade shade = widget->getShade();
-          if (i >= 0 && i < int(shade.size())) {
-            push_obj<app::Color>(L, shade[i]);
-            lua_setfield(L, -2, "color");
-          }
-        });
+                              const int i = widget->getHotEntry();
+                              const Shade shade = widget->getShade();
+                              if (i >= 0 && i < int(shade.size())) {
+                                push_obj<app::Color>(L, shade[i]);
+                                lua_setfield(L, -2, "color");
+                              }
+                            });
     }
     lua_pop(L, 1);
   }
@@ -1113,26 +1091,20 @@ int Dialog_file(lua_State* L)
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "onchange");
     if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(
-        L, 1, widget->Change,
-        [](lua_State* L){
-          // Do nothing
-        });
+      Dialog_connect_signal(L, 1, widget->Change, [](lua_State* L) {
+        // Do nothing
+      });
     }
     lua_pop(L, 1);
   }
 
-  widget->SelectFile.connect(
-    [=]() -> std::string {
-      base::paths newfilename;
-      if (app::show_file_selector(
-            title, widget->filename(), exts,
-            dlgType,
-            newfilename))
-        return newfilename.front();
-      else
-        return widget->filename();
-    });
+  widget->SelectFile.connect([=]() -> std::string {
+    base::paths newfilename;
+    if (app::show_file_selector(title, widget->filename(), exts, dlgType, newfilename))
+      return newfilename.front();
+    else
+      return widget->filename();
+  });
   return Dialog_add_widget(L, widget);
 }
 
@@ -1276,12 +1248,10 @@ int Dialog_canvas(lua_State* L)
     if (lua_istable(L, 2)) {
       int type = lua_getfield(L, 2, "onpaint");
       if (type == LUA_TFUNCTION) {
-        Dialog_connect_signal(
-          L, 1, widget->Paint,
-          [](lua_State* L, GraphicsContext& gc) {
-            push_new<GraphicsContext>(L, std::move(gc));
-            lua_setfield(L, -2, "context");
-          });
+        Dialog_connect_signal(L, 1, widget->Paint, [](lua_State* L, GraphicsContext& gc) {
+          push_new<GraphicsContext>(L, std::move(gc));
+          lua_setfield(L, -2, "context");
+        });
       }
       lua_pop(L, 1);
 
@@ -1367,7 +1337,8 @@ int Dialog_tab(lua_State* L)
     lua_pop(L, 1);
 
     // If there was no id set, then use the tab text as the tab id.
-    if (!hasId) id = text;
+    if (!hasId)
+      id = text;
   }
 
   if (!dlg->wipTab) {
@@ -1377,16 +1348,16 @@ int Dialog_tab(lua_State* L)
   auto tab = dlg->wipTab->addTab(id, text);
   dlg->currentGrid = tab->content();
 
-  if (hasId) dlg->dataWidgets[id] = tab;
+  if (hasId)
+    dlg->dataWidgets[id] = tab;
 
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "onclick");
     if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(L, 1, tab->Click,
-                            [id](lua_State* L){
-                              lua_pushstring(L, id.c_str());
-                              lua_setfield(L, -2, "tab");
-                            });
+      Dialog_connect_signal(L, 1, tab->Click, [id](lua_State* L) {
+        lua_pushstring(L, id.c_str());
+        lua_setfield(L, -2, "tab");
+      });
     }
 
     set_widget_flags(L, 2, tab);
@@ -1429,18 +1400,18 @@ int Dialog_endtabs(lua_State* L)
     if (type != LUA_TNIL) {
       // Filter invalid flags.
       int v = lua_tointeger(L, -1) & (ui::CENTER | ui::LEFT | ui::RIGHT | ui::TOP | ui::BOTTOM);
-      if (v) align = v;
+      if (v)
+        align = v;
     }
     lua_pop(L, 1);
 
     type = lua_getfield(L, 2, "onchange");
     if (type == LUA_TFUNCTION) {
       auto tab = dlg->wipTab;
-      Dialog_connect_signal(L, 1, dlg->wipTab->TabChanged,
-                            [tab](lua_State* L){
-                              lua_pushstring(L, tab->tabId(tab->selectedTab()).c_str());
-                              lua_setfield(L, -2, "tab");
-                            });
+      Dialog_connect_signal(L, 1, dlg->wipTab->TabChanged, [tab](lua_State* L) {
+        lua_pushstring(L, tab->tabId(tab->selectedTab()).c_str());
+        lua_setfield(L, -2, "tab");
+      });
     }
   }
   dlg->wipTab->setSelectorFlags(align);
@@ -1644,8 +1615,7 @@ int Dialog_modify(lua_State* L)
     if (relayout && !dlg->window.isResizing()) {
       dlg->window.layout();
 
-      gfx::Rect bounds(dlg->window.bounds().w,
-                       dlg->window.sizeHint().h);
+      gfx::Rect bounds(dlg->window.bounds().w, dlg->window.sizeHint().h);
       dlg->window.expandWindow(bounds.size());
     }
   }
@@ -1688,9 +1658,9 @@ int Dialog_get_data(lua_State* L)
       case ui::kCheckWidget:
       case ui::kRadioWidget:
       case ui::kMenuItemWidget:
-        lua_pushboolean(L, widget->isSelected() ||
-                           dlg->window.closer() == widget ||
-                           dlg->lastButton == widget);
+        lua_pushboolean(
+          L,
+          widget->isSelected() || dlg->window.closer() == widget || dlg->lastButton == widget);
         break;
       case ui::kEntryWidget:
         if (auto expr = dynamic_cast<const ExprEntry*>(widget)) {
@@ -1703,9 +1673,7 @@ int Dialog_get_data(lua_State* L)
           lua_pushstring(L, widget->text().c_str());
         }
         break;
-      case ui::kLabelWidget:
-        lua_pushstring(L, widget->text().c_str());
-        break;
+      case ui::kLabelWidget: lua_pushstring(L, widget->text().c_str()); break;
       case ui::kSliderWidget:
         if (auto slider = dynamic_cast<const ui::Slider*>(widget)) {
           lua_pushinteger(L, slider->getValue());
@@ -1725,7 +1693,6 @@ int Dialog_get_data(lua_State* L)
         }
         else if (auto colorShade = dynamic_cast<const ColorShades*>(widget)) {
           switch (colorShade->clickType()) {
-
             case ColorShades::ClickEntries: {
               Shade shade = colorShade->getShade();
               int i = colorShade->getHotEntry();
@@ -1739,17 +1706,14 @@ int Dialog_get_data(lua_State* L)
             case ColorShades::DragAndDropEntries: {
               lua_newtable(L);
               Shade shade = colorShade->getShade();
-              for (int i=0; i<int(shade.size()); ++i) {
+              for (int i = 0; i < int(shade.size()); ++i) {
                 push_obj<app::Color>(L, shade[i]);
-                lua_rawseti(L, -2, i+1);
+                lua_rawseti(L, -2, i + 1);
               }
               break;
             }
 
-            default:
-              lua_pushnil(L);
-              break;
-
+            default: lua_pushnil(L); break;
           }
         }
         else if (auto filenameField = dynamic_cast<const FilenameField*>(widget)) {
@@ -1784,9 +1748,7 @@ int Dialog_set_data(lua_State* L)
         break;
       case ui::kButtonWidget:
       case ui::kCheckWidget:
-      case ui::kRadioWidget:
-        widget->setSelected(lua_toboolean(L, -1));
-        break;
+      case ui::kRadioWidget:  widget->setSelected(lua_toboolean(L, -1)); break;
       case ui::kEntryWidget:
         if (auto expr = dynamic_cast<ExprEntry*>(widget)) {
           if (expr->decimals() == 0)
@@ -1823,7 +1785,6 @@ int Dialog_set_data(lua_State* L)
         }
         else if (auto colorShade = dynamic_cast<ColorShades*>(widget)) {
           switch (colorShade->clickType()) {
-
             case ColorShades::ClickEntries: {
               // TODO change hot entry?
               break;
@@ -1842,7 +1803,6 @@ int Dialog_set_data(lua_State* L)
               colorShade->setShade(shade);
               break;
             }
-
           }
         }
         else if (auto filenameField = dynamic_cast<FilenameField*>(widget)) {
@@ -1852,7 +1812,7 @@ int Dialog_set_data(lua_State* L)
         else if (auto tabs = dynamic_cast<app::script::Tabs*>(widget)) {
           int type = lua_type(L, -1);
           if (type == LUA_TNUMBER)
-            tabs->selectTab(lua_tointeger(L, -1)-1);
+            tabs->selectTab(lua_tointeger(L, -1) - 1);
           else if (type == LUA_TSTRING) {
             std::string tabStr = lua_tostring(L, -1);
             int tabIndex = tabs->tabIndexById(tabStr);
@@ -1892,39 +1852,39 @@ int Dialog_set_bounds(lua_State* L)
 }
 
 const luaL_Reg Dialog_methods[] = {
-  { "__gc", Dialog_gc },
-  { "show", Dialog_show },
-  { "showMenu", Dialog_showMenu },
-  { "close", Dialog_close },
-  { "newrow", Dialog_newrow },
+  { "__gc",      Dialog_gc        },
+  { "show",      Dialog_show      },
+  { "showMenu",  Dialog_showMenu  },
+  { "close",     Dialog_close     },
+  { "newrow",    Dialog_newrow    },
   { "separator", Dialog_separator },
-  { "label", Dialog_label },
-  { "button", Dialog_button },
-  { "check", Dialog_check },
-  { "radio", Dialog_radio },
-  { "menuItem", Dialog_menuItem },
-  { "entry", Dialog_entry },
-  { "number", Dialog_number },
-  { "slider", Dialog_slider },
-  { "combobox", Dialog_combobox },
-  { "color", Dialog_color },
-  { "shades", Dialog_shades },
-  { "file", Dialog_file },
-  { "canvas", Dialog_canvas },
-  { "tab", Dialog_tab },
-  { "endtabs", Dialog_endtabs },
-  { "modify", Dialog_modify },
-  { "repaint", Dialog_repaint },
-  { nullptr, nullptr }
+  { "label",     Dialog_label     },
+  { "button",    Dialog_button    },
+  { "check",     Dialog_check     },
+  { "radio",     Dialog_radio     },
+  { "menuItem",  Dialog_menuItem  },
+  { "entry",     Dialog_entry     },
+  { "number",    Dialog_number    },
+  { "slider",    Dialog_slider    },
+  { "combobox",  Dialog_combobox  },
+  { "color",     Dialog_color     },
+  { "shades",    Dialog_shades    },
+  { "file",      Dialog_file      },
+  { "canvas",    Dialog_canvas    },
+  { "tab",       Dialog_tab       },
+  { "endtabs",   Dialog_endtabs   },
+  { "modify",    Dialog_modify    },
+  { "repaint",   Dialog_repaint   },
+  { nullptr,     nullptr          }
 };
 
 const Property Dialog_properties[] = {
-  { "data", Dialog_get_data, Dialog_set_data },
+  { "data",   Dialog_get_data,   Dialog_set_data   },
   { "bounds", Dialog_get_bounds, Dialog_set_bounds },
-  { nullptr, nullptr, nullptr }
+  { nullptr,  nullptr,           nullptr           }
 };
 
-}  // anonymous namespace
+} // anonymous namespace
 
 DEF_MTNAME(Dialog);
 
@@ -1945,5 +1905,4 @@ void close_all_dialogs()
   }
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

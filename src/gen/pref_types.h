@@ -9,8 +9,8 @@
 #define GEN_PREF_CLASS_H_INCLUDED
 #pragma once
 
-#include <string>
 #include "tinyxml2.h"
+#include <string>
 
 void gen_pref_header(tinyxml2::XMLDocument* doc, const std::string& inputFn);
 void gen_pref_impl(tinyxml2::XMLDocument* doc, const std::string& inputFn);

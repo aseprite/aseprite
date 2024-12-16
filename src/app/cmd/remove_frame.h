@@ -13,31 +13,27 @@
 #include "app/cmd_sequence.h"
 #include "doc/frame.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class RemoveFrame : public Cmd
-                    , public WithSprite {
-  public:
-    RemoveFrame(Sprite* sprite, frame_t frame);
+class RemoveFrame : public Cmd,
+                    public WithSprite {
+public:
+  RemoveFrame(Sprite* sprite, frame_t frame);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this) + m_seq.memSize();
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  size_t onMemSize() const override { return sizeof(*this) + m_seq.memSize(); }
 
-  private:
-    frame_t m_frame;
-    int m_frameDuration;
-    CmdSequence m_seq;
-    bool m_firstTime;
-    bool m_frameRemoved;
-  };
+private:
+  frame_t m_frame;
+  int m_frameDuration;
+  CmdSequence m_seq;
+  bool m_firstTime;
+  bool m_frameRemoved;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

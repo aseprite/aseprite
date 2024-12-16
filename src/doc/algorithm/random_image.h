@@ -9,13 +9,13 @@
 #pragma once
 
 namespace doc {
-  class Image;
+class Image;
 
-  namespace algorithm {
+namespace algorithm {
 
-    void random_image(Image* image);
+void random_image(Image* image);
 
-  }
 }
+} // namespace doc
 
 #endif

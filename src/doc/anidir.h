@@ -13,15 +13,15 @@
 
 namespace doc {
 
-  enum class AniDir {
-    FORWARD = 0,
-    REVERSE = 1,
-    PING_PONG = 2,              // First playback is in forward
-    PING_PONG_REVERSE = 3,      // First playback is in reverse
-  };
+enum class AniDir {
+  FORWARD = 0,
+  REVERSE = 1,
+  PING_PONG = 2,         // First playback is in forward
+  PING_PONG_REVERSE = 3, // First playback is in reverse
+};
 
-  std::string convert_anidir_to_string(AniDir anidir);
-  doc::AniDir convert_string_to_anidir(const std::string& s);
+std::string convert_anidir_to_string(AniDir anidir);
+doc::AniDir convert_string_to_anidir(const std::string& s);
 
 } // namespace doc
 

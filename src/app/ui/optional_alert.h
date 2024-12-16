@@ -14,13 +14,11 @@
 
 namespace app {
 
-  class OptionalAlert {
-  public:
-    static int show(Option<bool>& option,
-                    const int optionWhenDisabled,
-                    const std::string& msg);
-  };
+class OptionalAlert {
+public:
+  static int show(Option<bool>& option, const int optionWhenDisabled, const std::string& msg);
+};
 
-}
+} // namespace app
 
 #endif

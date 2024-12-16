@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/util/layer_boundaries.h"
@@ -28,9 +28,7 @@ using namespace doc;
 
 namespace app {
 
-void select_layer_boundaries(Layer* layer,
-                             const frame_t frame,
-                             const SelectLayerBoundariesOp op)
+void select_layer_boundaries(Layer* layer, const frame_t frame, const SelectLayerBoundariesOp op)
 {
   Mask newMask;
 
@@ -50,18 +48,14 @@ void select_layer_boundaries(Layer* layer,
         case SelectLayerBoundariesOp::REPLACE:
           // newMask is the new mask
           break;
-        case SelectLayerBoundariesOp::ADD:
-          newMask.add(*doc->mask());
-          break;
+        case SelectLayerBoundariesOp::ADD:      newMask.add(*doc->mask()); break;
         case SelectLayerBoundariesOp::SUBTRACT: {
           Mask oldMask(*doc->mask());
           oldMask.subtract(newMask);
           newMask.copyFrom(&oldMask); // TODO use something like std::swap()
           break;
         }
-        case SelectLayerBoundariesOp::INTERSECT:
-          newMask.intersect(*doc->mask());
-          break;
+        case SelectLayerBoundariesOp::INTERSECT: newMask.intersect(*doc->mask()); break;
       }
     }
 

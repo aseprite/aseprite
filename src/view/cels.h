@@ -12,17 +12,17 @@
 #include "doc/cel_list.h"
 
 namespace doc {
-  class Sprite;
+class Sprite;
 }
 
 namespace view {
-  class Range;
+class Range;
 
-  doc::CelList get_cels(const doc::Sprite* sprite, const Range& range);
-  doc::CelList get_unique_cels(const doc::Sprite* sprite, const Range& range);
-  doc::CelList get_unique_cels_to_edit_pixels(const doc::Sprite* sprite, const Range& range);
-  doc::CelList get_unique_cels_to_move_cel(const doc::Sprite* sprite, const Range& range);
+doc::CelList get_cels(const doc::Sprite* sprite, const Range& range);
+doc::CelList get_unique_cels(const doc::Sprite* sprite, const Range& range);
+doc::CelList get_unique_cels_to_edit_pixels(const doc::Sprite* sprite, const Range& range);
+doc::CelList get_unique_cels_to_move_cel(const doc::Sprite* sprite, const Range& range);
 
 } // namespace view
 
-#endif  // VIEW_CELS_H_INCLUDED
+#endif // VIEW_CELS_H_INCLUDED

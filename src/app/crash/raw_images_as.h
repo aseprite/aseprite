@@ -8,15 +8,13 @@
 #define APP_CRASH_RAW_IMAGES_H_INCLUDED
 #pragma once
 
-namespace app {
-namespace crash {
+namespace app { namespace crash {
 
-  enum class RawImagesAs {
-    kFrames,
-    kLayers,
-  };
+enum class RawImagesAs {
+  kFrames,
+  kLayers,
+};
 
-} // namespace crash
-} // namespace app
+}} // namespace app::crash
 
 #endif

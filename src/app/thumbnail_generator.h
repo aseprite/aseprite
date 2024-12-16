@@ -16,55 +16,54 @@
 #include <vector>
 
 namespace base {
-  class thread;
+class thread;
 }
 
 namespace app {
-  class FileOp;
-  class IFileItem;
+class FileOp;
+class IFileItem;
 
-  class ThumbnailGenerator {
-    ThumbnailGenerator();
-  public:
-    static ThumbnailGenerator* instance();
+class ThumbnailGenerator {
+  ThumbnailGenerator();
 
-    // Generate a thumbnail for the given file-item.  It must be called
-    // from the GUI thread.
-    void generateThumbnail(IFileItem* fileitem);
+public:
+  static ThumbnailGenerator* instance();
 
-    // Checks the status of workers. If there are workers that already
-    // done its job, we've to destroy them. This function must be called
-    // from the GUI thread (because a thread is joint to it).
-    // Returns true if there are workers generating thumbnails.
-    bool checkWorkers();
+  // Generate a thumbnail for the given file-item.  It must be called
+  // from the GUI thread.
+  void generateThumbnail(IFileItem* fileitem);
 
-    // Stops all workers generating thumbnails. This is an non-blocking
-    // operation. The cancelation of all workers is done in a background
-    // thread.
-    void stopAllWorkers();
+  // Checks the status of workers. If there are workers that already
+  // done its job, we've to destroy them. This function must be called
+  // from the GUI thread (because a thread is joint to it).
+  // Returns true if there are workers generating thumbnails.
+  bool checkWorkers();
 
-  private:
-    void startWorker();
+  // Stops all workers generating thumbnails. This is an non-blocking
+  // operation. The cancelation of all workers is done in a background
+  // thread.
+  void stopAllWorkers();
 
-    class Worker;
-    using WorkerPtr = std::unique_ptr<Worker>;
-    using WorkerList = std::vector<WorkerPtr>;
+private:
+  void startWorker();
 
-    struct Item {
-      IFileItem* fileitem;
-      FileOp* fop;
-      Item() : fileitem(nullptr), fop(nullptr) { }
-      Item(const Item& item) : fileitem(item.fileitem), fop(item.fop) { }
-      Item(IFileItem* fileitem, FileOp* fop)
-        : fileitem(fileitem), fop(fop) {
-      }
-    };
+  class Worker;
+  using WorkerPtr = std::unique_ptr<Worker>;
+  using WorkerList = std::vector<WorkerPtr>;
 
-    int m_maxWorkers;
-    WorkerList m_workers;
-    std::mutex m_workersAccess;
-    base::concurrent_queue<Item> m_remainingItems;
+  struct Item {
+    IFileItem* fileitem;
+    FileOp* fop;
+    Item() : fileitem(nullptr), fop(nullptr) {}
+    Item(const Item& item) : fileitem(item.fileitem), fop(item.fop) {}
+    Item(IFileItem* fileitem, FileOp* fop) : fileitem(fileitem), fop(fop) {}
   };
+
+  int m_maxWorkers;
+  WorkerList m_workers;
+  std::mutex m_workersAccess;
+  base::concurrent_queue<Item> m_remainingItems;
+};
 
 } // namespace app
 

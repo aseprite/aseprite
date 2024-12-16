@@ -9,16 +9,16 @@
 #define APP_TOOLS_SYMMETRY_H_INCLUDED
 #pragma once
 
-#include "app/tools/stroke.h"
 #include "app/pref/preferences.h"
+#include "app/tools/stroke.h"
 #include "doc/brush.h"
 
-namespace app {
-namespace tools {
+namespace app { namespace tools {
 
 class ToolLoop;
 
-static inline bool does_symmetry_rotate_image(doc::SymmetryIndex symmetry) {
+static inline bool does_symmetry_rotate_image(doc::SymmetryIndex symmetry)
+{
   return symmetry == doc::SymmetryIndex::ROTATED_90 ||
          symmetry == doc::SymmetryIndex::ROTATED_270 ||
          symmetry == doc::SymmetryIndex::ROT_FLIP_90 ||
@@ -30,7 +30,8 @@ public:
   Symmetry(gen::SymmetryMode symmetryMode, double x, double y)
     : m_symmetryMode(symmetryMode)
     , m_x(x)
-    , m_y(y) {
+    , m_y(y)
+  {
   }
 
   void generateStrokes(const Stroke& stroke, Strokes& strokes, ToolLoop* loop);
@@ -48,7 +49,6 @@ private:
   double m_x, m_y;
 };
 
-} // namespace tools
-} // namespace app
+}} // namespace app::tools
 
 #endif

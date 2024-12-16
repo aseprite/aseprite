@@ -16,104 +16,96 @@
 #include <string>
 
 namespace doc {
-  class Image;
-  class Layer;
-}
+class Image;
+class Layer;
+} // namespace doc
 
 namespace app {
 
-  class Color {
-  public:
-    enum Type {
-      MaskType,
-      RgbType,
-      HsvType,
-      HslType,
-      GrayType,
-      IndexType,
-      TileType,
-    };
-
-    enum HumanReadableString {
-      ShortHumanReadableString,
-      LongHumanReadableString
-    };
-
-    // Default ctor is mask color
-    Color() : m_type(MaskType) { }
-
-    static Color fromMask();
-    static Color fromRgb(int r, int g, int b, int a = 255);
-    static Color fromHsv(double h, double s, double v, int a = 255); // h=[0,360], s=[0,1], v=[0,1]
-    static Color fromHsl(double h, double s, double l, int a = 255); // h=[0,360], s=[0,1], v=[0,1]
-    static Color fromGray(int g, int a = 255);
-    static Color fromIndex(int index);
-    static Color fromTile(doc::tile_t tile);
-
-    static Color fromImage(doc::PixelFormat pixelFormat, doc::color_t c);
-    static Color fromImageGetPixel(doc::Image* image, int x, int y);
-    static Color fromString(const std::string& str);
-
-    Color toRgb() const;
-    std::string toString() const;
-    std::string toHumanReadableString(doc::PixelFormat format,
-                                      HumanReadableString type) const;
-
-    bool operator==(const Color& other) const;
-    bool operator!=(const Color& other) const {
-      return !operator==(other);
-    }
-
-    Type getType() const {
-      return m_type;
-    }
-
-    bool isValid() const;
-
-    // Getters
-    int getRed() const;
-    int getGreen() const;
-    int getBlue() const;
-    double getHsvHue() const;
-    double getHsvSaturation() const;
-    double getHsvValue() const;
-    double getHslHue() const;
-    double getHslSaturation() const;
-    double getHslLightness() const;
-    int getGray() const;
-    int getIndex() const;
-    doc::tile_t getTile() const;
-    int getAlpha() const;
-
-    // Setters
-    void setAlpha(int alpha);
-
-  private:
-    Color(Type type) : m_type(type) { }
-
-    // Color type
-    Type m_type;
-
-    // Color value
-    union {
-      struct {
-        int r, g, b, a;
-      } rgb;
-      struct {
-        double h, s, v;
-        int a;
-      } hsv;
-      struct {
-        double h, s, l;
-        int a;
-      } hsl;
-      struct {
-        int g, a;
-      } gray;
-      int index;
-      doc::tile_t tile;
-    } m_value;
+class Color {
+public:
+  enum Type {
+    MaskType,
+    RgbType,
+    HsvType,
+    HslType,
+    GrayType,
+    IndexType,
+    TileType,
   };
+
+  enum HumanReadableString { ShortHumanReadableString, LongHumanReadableString };
+
+  // Default ctor is mask color
+  Color() : m_type(MaskType) {}
+
+  static Color fromMask();
+  static Color fromRgb(int r, int g, int b, int a = 255);
+  static Color fromHsv(double h, double s, double v, int a = 255); // h=[0,360], s=[0,1], v=[0,1]
+  static Color fromHsl(double h, double s, double l, int a = 255); // h=[0,360], s=[0,1], v=[0,1]
+  static Color fromGray(int g, int a = 255);
+  static Color fromIndex(int index);
+  static Color fromTile(doc::tile_t tile);
+
+  static Color fromImage(doc::PixelFormat pixelFormat, doc::color_t c);
+  static Color fromImageGetPixel(doc::Image* image, int x, int y);
+  static Color fromString(const std::string& str);
+
+  Color toRgb() const;
+  std::string toString() const;
+  std::string toHumanReadableString(doc::PixelFormat format, HumanReadableString type) const;
+
+  bool operator==(const Color& other) const;
+  bool operator!=(const Color& other) const { return !operator==(other); }
+
+  Type getType() const { return m_type; }
+
+  bool isValid() const;
+
+  // Getters
+  int getRed() const;
+  int getGreen() const;
+  int getBlue() const;
+  double getHsvHue() const;
+  double getHsvSaturation() const;
+  double getHsvValue() const;
+  double getHslHue() const;
+  double getHslSaturation() const;
+  double getHslLightness() const;
+  int getGray() const;
+  int getIndex() const;
+  doc::tile_t getTile() const;
+  int getAlpha() const;
+
+  // Setters
+  void setAlpha(int alpha);
+
+private:
+  Color(Type type) : m_type(type) {}
+
+  // Color type
+  Type m_type;
+
+  // Color value
+  union {
+    struct {
+      int r, g, b, a;
+    } rgb;
+    struct {
+      double h, s, v;
+      int a;
+    } hsv;
+    struct {
+      double h, s, l;
+      int a;
+    } hsl;
+    struct {
+      int g, a;
+    } gray;
+    int index;
+    doc::tile_t tile;
+  } m_value;
+};
 
 } // namespace app
 

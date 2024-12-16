@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/util/clipboard.h"
@@ -37,43 +37,45 @@ using namespace base::serialization;
 using namespace base::serialization::little_endian;
 
 namespace {
-  clip::format custom_image_format = 0;
-  bool show_clip_errors = true;
+clip::format custom_image_format = 0;
+bool show_clip_errors = true;
 
-  class InhibitClipErrors {
-    bool m_saved;
-  public:
-    InhibitClipErrors() {
-      m_saved = show_clip_errors;
-      show_clip_errors = false;
-    }
-    ~InhibitClipErrors() {
-      show_clip_errors = m_saved;
-    }
-  };
+class InhibitClipErrors {
+  bool m_saved;
 
-  void* native_window_handle() {
-    auto system = os::System::instance();
-    if (system && system->defaultWindow())
-      return system->defaultWindow()->nativeHandle();
-    return nullptr;
+public:
+  InhibitClipErrors()
+  {
+    m_saved = show_clip_errors;
+    show_clip_errors = false;
   }
+  ~InhibitClipErrors() { show_clip_errors = m_saved; }
+};
 
-  void custom_error_handler(clip::ErrorCode code) {
-    if (!show_clip_errors)
-      return;
-
-    switch (code) {
-      case clip::ErrorCode::CannotLock:
-        ui::Alert::show(Strings::alerts_clipboard_access_locked());
-        break;
-      case clip::ErrorCode::ImageNotSupported:
-        ui::Alert::show(Strings::alerts_clipboard_image_format_not_supported());
-        break;
-    }
-  }
-
+void* native_window_handle()
+{
+  auto system = os::System::instance();
+  if (system && system->defaultWindow())
+    return system->defaultWindow()->nativeHandle();
+  return nullptr;
 }
+
+void custom_error_handler(clip::ErrorCode code)
+{
+  if (!show_clip_errors)
+    return;
+
+  switch (code) {
+    case clip::ErrorCode::CannotLock:
+      ui::Alert::show(Strings::alerts_clipboard_access_locked());
+      break;
+    case clip::ErrorCode::ImageNotSupported:
+      ui::Alert::show(Strings::alerts_clipboard_image_format_not_supported());
+      break;
+  }
+}
+
+} // namespace
 
 void Clipboard::clearNativeContent()
 {
@@ -111,15 +113,15 @@ bool Clipboard::setNativeBitmap(const doc::Image* image,
   // Set custom clipboard formats
   if (custom_image_format) {
     std::stringstream os;
-    write32(os,
-            (image   ? 1: 0) |
-            (mask    ? 2: 0) |
-            (palette ? 4: 0) |
-            (tileset ? 8: 0));
-    if (image) doc::write_image(os, image);
-    if (mask) doc::write_mask(os, mask);
-    if (palette) doc::write_palette(os, palette);
-    if (tileset) doc::write_tileset(os, tileset);
+    write32(os, (image ? 1 : 0) | (mask ? 2 : 0) | (palette ? 4 : 0) | (tileset ? 8 : 0));
+    if (image)
+      doc::write_image(os, image);
+    if (mask)
+      doc::write_mask(os, mask);
+    if (palette)
+      doc::write_palette(os, palette);
+    if (tileset)
+      doc::write_tileset(os, tileset);
 
     if (os.good()) {
       size_t size = (size_t)os.tellp();
@@ -137,15 +139,15 @@ bool Clipboard::setNativeBitmap(const doc::Image* image,
   spec.width = image->width();
   spec.height = image->height();
   spec.bits_per_pixel = 32;
-  spec.bytes_per_row = (image->pixelFormat() == doc::IMAGE_RGB ?
-                        image->rowBytes(): 4*spec.width);
-  spec.red_mask    = doc::rgba_r_mask;
-  spec.green_mask  = doc::rgba_g_mask;
-  spec.blue_mask   = doc::rgba_b_mask;
-  spec.alpha_mask  = doc::rgba_a_mask;
-  spec.red_shift   = doc::rgba_r_shift;
+  spec.bytes_per_row = (image->pixelFormat() == doc::IMAGE_RGB ? image->rowBytes() :
+                                                                 4 * spec.width);
+  spec.red_mask = doc::rgba_r_mask;
+  spec.green_mask = doc::rgba_g_mask;
+  spec.blue_mask = doc::rgba_b_mask;
+  spec.alpha_mask = doc::rgba_a_mask;
+  spec.red_shift = doc::rgba_r_shift;
   spec.green_shift = doc::rgba_g_shift;
-  spec.blue_shift  = doc::rgba_b_shift;
+  spec.blue_shift = doc::rgba_b_shift;
   spec.alpha_shift = doc::rgba_a_shift;
 
   switch (image->pixelFormat()) {
@@ -160,8 +162,8 @@ bool Clipboard::setNativeBitmap(const doc::Image* image,
       const doc::LockImageBits<doc::GrayscaleTraits> bits(image);
       auto it = bits.begin();
       uint32_t* dst = (uint32_t*)img.data();
-      for (int y=0; y<image->height(); ++y) {
-        for (int x=0; x<image->width(); ++x, ++it) {
+      for (int y = 0; y < image->height(); ++y) {
+        for (int x = 0; x < image->width(); ++x, ++it) {
           doc::color_t c = *it;
           *(dst++) = doc::rgba(doc::graya_getv(c),
                                doc::graya_getv(c),
@@ -177,8 +179,8 @@ bool Clipboard::setNativeBitmap(const doc::Image* image,
       const doc::LockImageBits<doc::IndexedTraits> bits(image);
       auto it = bits.begin();
       uint32_t* dst = (uint32_t*)img.data();
-      for (int y=0; y<image->height(); ++y) {
-        for (int x=0; x<image->width(); ++x, ++it) {
+      for (int y = 0; y < image->height(); ++y) {
+        for (int x = 0; x < image->width(); ++x, ++it) {
           doc::color_t c = palette->getEntry(*it);
 
           // Use alpha=0 for mask color
@@ -221,10 +223,14 @@ bool Clipboard::getNativeBitmap(doc::Image** image,
         is.seekp(0);
 
         int bits = read32(is);
-        if (bits & 1) *image   = doc::read_image(is, false);
-        if (bits & 2) *mask    = doc::read_mask(is);
-        if (bits & 4) *palette = doc::read_palette(is);
-        if (bits & 8) *tileset = doc::read_tileset(is, nullptr);
+        if (bits & 1)
+          *image = doc::read_image(is, false);
+        if (bits & 2)
+          *mask = doc::read_mask(is);
+        if (bits & 4)
+          *palette = doc::read_palette(is);
+        if (bits & 8)
+          *tileset = doc::read_tileset(is, nullptr);
         if (image)
           return true;
       }
@@ -240,23 +246,20 @@ bool Clipboard::getNativeBitmap(doc::Image** image,
 
   const clip::image_spec& spec = img.spec();
 
-  std::unique_ptr<doc::Image> dst(
-    doc::Image::create(doc::IMAGE_RGB,
-                       spec.width, spec.height));
+  std::unique_ptr<doc::Image> dst(doc::Image::create(doc::IMAGE_RGB, spec.width, spec.height));
 
   switch (spec.bits_per_pixel) {
     case 64: {
       doc::LockImageBits<doc::RgbTraits> bits(dst.get(), doc::Image::WriteLock);
       auto it = bits.begin();
-      for (unsigned long y=0; y<spec.height; ++y) {
-        const uint64_t* src = (const uint64_t*)(img.data()+spec.bytes_per_row*y);
-        for (unsigned long x=0; x<spec.width; ++x, ++it, ++src) {
+      for (unsigned long y = 0; y < spec.height; ++y) {
+        const uint64_t* src = (const uint64_t*)(img.data() + spec.bytes_per_row * y);
+        for (unsigned long x = 0; x < spec.width; ++x, ++it, ++src) {
           uint64_t c = *((const uint64_t*)src);
-          *it = doc::rgba(
-            uint8_t((c & spec.red_mask) >> spec.red_shift >> 8),
-            uint8_t((c & spec.green_mask) >> spec.green_shift >> 8),
-            uint8_t((c & spec.blue_mask) >> spec.blue_shift >> 8),
-            uint8_t((c & spec.alpha_mask) >> spec.alpha_shift >> 8));
+          *it = doc::rgba(uint8_t((c & spec.red_mask) >> spec.red_shift >> 8),
+                          uint8_t((c & spec.green_mask) >> spec.green_shift >> 8),
+                          uint8_t((c & spec.blue_mask) >> spec.blue_shift >> 8),
+                          uint8_t((c & spec.alpha_mask) >> spec.alpha_shift >> 8));
         }
       }
       break;
@@ -264,22 +267,19 @@ bool Clipboard::getNativeBitmap(doc::Image** image,
     case 32: {
       doc::LockImageBits<doc::RgbTraits> bits(dst.get(), doc::Image::WriteLock);
       auto it = bits.begin();
-      for (unsigned long y=0; y<spec.height; ++y) {
-        const uint32_t* src = (const uint32_t*)(img.data()+spec.bytes_per_row*y);
-        for (unsigned long x=0; x<spec.width; ++x, ++it, ++src) {
+      for (unsigned long y = 0; y < spec.height; ++y) {
+        const uint32_t* src = (const uint32_t*)(img.data() + spec.bytes_per_row * y);
+        for (unsigned long x = 0; x < spec.width; ++x, ++it, ++src) {
           const uint32_t c = *((const uint32_t*)src);
 
           // The alpha mask can be zero (which means that the image is
           // just RGB).
-          int alpha =
-            (spec.alpha_mask ?
-             uint8_t((c & spec.alpha_mask) >> spec.alpha_shift): 255);
+          int alpha = (spec.alpha_mask ? uint8_t((c & spec.alpha_mask) >> spec.alpha_shift) : 255);
 
-          *it = doc::rgba(
-            uint8_t((c & spec.red_mask  ) >> spec.red_shift  ),
-            uint8_t((c & spec.green_mask) >> spec.green_shift),
-            uint8_t((c & spec.blue_mask ) >> spec.blue_shift ),
-            alpha);
+          *it = doc::rgba(uint8_t((c & spec.red_mask) >> spec.red_shift),
+                          uint8_t((c & spec.green_mask) >> spec.green_shift),
+                          uint8_t((c & spec.blue_mask) >> spec.blue_shift),
+                          alpha);
         }
       }
       break;
@@ -287,15 +287,14 @@ bool Clipboard::getNativeBitmap(doc::Image** image,
     case 24: {
       doc::LockImageBits<doc::RgbTraits> bits(dst.get(), doc::Image::WriteLock);
       auto it = bits.begin();
-      for (unsigned long y=0; y<spec.height; ++y) {
-        const char* src = (const char*)(img.data()+spec.bytes_per_row*y);
-        for (unsigned long x=0; x<spec.width; ++x, ++it, src+=3) {
+      for (unsigned long y = 0; y < spec.height; ++y) {
+        const char* src = (const char*)(img.data() + spec.bytes_per_row * y);
+        for (unsigned long x = 0; x < spec.width; ++x, ++it, src += 3) {
           unsigned long c = *((const unsigned long*)src);
-          *it = doc::rgba(
-            uint8_t((c & spec.red_mask) >> spec.red_shift),
-            uint8_t((c & spec.green_mask) >> spec.green_shift),
-            uint8_t((c & spec.blue_mask) >> spec.blue_shift),
-            255);
+          *it = doc::rgba(uint8_t((c & spec.red_mask) >> spec.red_shift),
+                          uint8_t((c & spec.green_mask) >> spec.green_shift),
+                          uint8_t((c & spec.blue_mask) >> spec.blue_shift),
+                          255);
         }
       }
       break;
@@ -303,15 +302,14 @@ bool Clipboard::getNativeBitmap(doc::Image** image,
     case 16: {
       doc::LockImageBits<doc::RgbTraits> bits(dst.get(), doc::Image::WriteLock);
       auto it = bits.begin();
-      for (unsigned long y=0; y<spec.height; ++y) {
-        const uint16_t* src = (const uint16_t*)(img.data()+spec.bytes_per_row*y);
-        for (unsigned long x=0; x<spec.width; ++x, ++it, ++src) {
+      for (unsigned long y = 0; y < spec.height; ++y) {
+        const uint16_t* src = (const uint16_t*)(img.data() + spec.bytes_per_row * y);
+        for (unsigned long x = 0; x < spec.width; ++x, ++it, ++src) {
           const uint16_t c = *((const uint16_t*)src);
-          *it = doc::rgba(
-            doc::scale_5bits_to_8bits((c & spec.red_mask  ) >> spec.red_shift  ),
-            doc::scale_6bits_to_8bits((c & spec.green_mask) >> spec.green_shift),
-            doc::scale_5bits_to_8bits((c & spec.blue_mask ) >> spec.blue_shift ),
-            255);
+          *it = doc::rgba(doc::scale_5bits_to_8bits((c & spec.red_mask) >> spec.red_shift),
+                          doc::scale_6bits_to_8bits((c & spec.green_mask) >> spec.green_shift),
+                          doc::scale_5bits_to_8bits((c & spec.blue_mask) >> spec.blue_shift),
+                          255);
         }
       }
       break;
@@ -338,8 +336,7 @@ bool Clipboard::getNativeBitmapSize(gfx::Size* size)
     return false;
 }
 
-bool Clipboard::setNativePalette(const doc::Palette* palette,
-                                 const doc::PalettePicks& picks)
+bool Clipboard::setNativePalette(const doc::Palette* palette, const doc::PalettePicks& picks)
 {
   clip::lock l(native_window_handle());
   if (!l.locked())
@@ -349,11 +346,12 @@ bool Clipboard::setNativePalette(const doc::Palette* palette,
 
   // Save the palette in hex format as text
   std::stringstream os;
-  doc::file::save_hex_file(
-    palette, &picks,
-    true, // include '#' on each line
-    false, // don't include a EOL char at the end (so we can copy one color without \n chars)
-    os);
+  doc::file::save_hex_file(palette,
+                           &picks,
+                           true,  // include '#' on each line
+                           false, // don't include a EOL char at the end (so we can copy one color
+                                  // without \n chars)
+                           os);
 
   std::string value = os.str();
   l.set_data(clip::text_format(), value.c_str(), value.size());

@@ -12,20 +12,20 @@
 #include "obs/observable.h"
 
 namespace app {
-  class Editor;
+class Editor;
 
-  class EditorObservers : public obs::observable<EditorObserver> {
-  public:
-    void notifyDestroyEditor(Editor* editor);
-    void notifyStateChanged(Editor* editor);
-    void notifyScrollChanged(Editor* editor);
-    void notifyZoomChanged(Editor* editor);
-    void notifyBeforeFrameChanged(Editor* editor);
-    void notifyAfterFrameChanged(Editor* editor);
-    void notifyBeforeLayerChanged(Editor* editor);
-    void notifyAfterLayerChanged(Editor* editor);
-  };
+class EditorObservers : public obs::observable<EditorObserver> {
+public:
+  void notifyDestroyEditor(Editor* editor);
+  void notifyStateChanged(Editor* editor);
+  void notifyScrollChanged(Editor* editor);
+  void notifyZoomChanged(Editor* editor);
+  void notifyBeforeFrameChanged(Editor* editor);
+  void notifyAfterFrameChanged(Editor* editor);
+  void notifyBeforeLayerChanged(Editor* editor);
+  void notifyAfterLayerChanged(Editor* editor);
+};
 
 } // namespace app
 
-#endif  // APP_UI_EDITOR_OBSERVERS_H_INCLUDED
+#endif // APP_UI_EDITOR_OBSERVERS_H_INCLUDED

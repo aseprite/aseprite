@@ -9,8 +9,8 @@
 #pragma once
 
 #include "app/pref/preferences.h"
-#include "base/split_string.h"
 #include "base/exception.h"
+#include "base/split_string.h"
 #include "ui/message.h"
 #include "ui/register_message.h"
 
@@ -21,13 +21,14 @@ extern ui::RegisterMessage kSavePreferencesMessage;
 template<class Base>
 class BoolPrefWidget : public Base {
 public:
-  template<typename...Args>
-  BoolPrefWidget(Args&&...args)
-    : Base(args...)
-    , m_option(nullptr) {
+  template<typename... Args>
+  BoolPrefWidget(Args&&... args) : Base(args...)
+                                 , m_option(nullptr)
+  {
   }
 
-  void setPref(const char* prefString) {
+  void setPref(const char* prefString)
+  {
     ASSERT(prefString);
 
     std::vector<std::string> parts;
@@ -38,9 +39,7 @@ public:
       if (!section)
         throw base::Exception("Preference section not found: %s", prefString);
 
-      m_option =
-        dynamic_cast<Option<bool>*>(
-          section->option(parts[1].c_str()));
+      m_option = dynamic_cast<Option<bool>*>(section->option(parts[1].c_str()));
 
       if (!m_option)
         throw base::Exception("Preference option not found: %s", prefString);
@@ -50,14 +49,16 @@ public:
     }
   }
 
-  void resetWithDefaultValue() {
+  void resetWithDefaultValue()
+  {
     // Reset to default value in preferences
     if (m_option)
       this->setSelected(m_option->defaultValue());
   }
 
 protected:
-  bool onProcessMessage(ui::Message* msg) override {
+  bool onProcessMessage(ui::Message* msg) override
+  {
     if (msg->type() == kSavePreferencesMessage) {
       ASSERT(m_option);
 

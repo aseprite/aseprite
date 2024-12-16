@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "view/range.h"
@@ -111,8 +111,7 @@ void Range::eraseAndAdjust(const Layer* layer)
   // "m_selectingFromLayer" for too much time this could fail (even
   // more, "m_selectingFromLayer" could be pointing to an already
   // closed/deleted sprite).
-  ASSERT(!m_selectingFromLayer || !layer ||
-         m_selectingFromLayer->sprite() == layer->sprite());
+  ASSERT(!m_selectingFromLayer || !layer || m_selectingFromLayer->sprite() == layer->sprite());
 
   if (m_selectingFromLayer)
     m_selectingFromLayer = candidate_if_layer_is_deleted(m_selectingFromLayer, layer);
@@ -134,14 +133,11 @@ bool Range::contains(const Layer* layer) const
     return false;
 }
 
-bool Range::contains(const Layer* layer,
-                        const frame_t frame) const
+bool Range::contains(const Layer* layer, const frame_t frame) const
 {
   switch (m_type) {
-    case Range::kNone:
-      return false;
-    case Range::kCels:
-      return contains(layer) && contains(frame);
+    case Range::kNone: return false;
+    case Range::kCels: return contains(layer) && contains(frame);
     case Range::kFrames:
       if (contains(frame)) {
         if ((m_flags & (kCels | kLayers)) != 0)
@@ -162,8 +158,7 @@ bool Range::contains(const Layer* layer,
   return false;
 }
 
-void Range::displace(const layer_t layerDelta,
-                     const frame_t frameDelta)
+void Range::displace(const layer_t layerDelta, const frame_t frameDelta)
 {
   m_selectedLayers.displace(layerDelta);
   m_selectedFrames.displace(frameDelta);
@@ -172,10 +167,8 @@ void Range::displace(const layer_t layerDelta,
 bool Range::convertToCels(const Sprite* sprite)
 {
   switch (m_type) {
-    case Range::kNone:
-      return false;
-    case Range::kCels:
-      break;
+    case Range::kNone:   return false;
+    case Range::kCels:   break;
     case Range::kFrames: {
       if ((m_flags & (kCels | kLayers)) == 0) {
         for (auto layer : sprite->allBrowsableLayers())
@@ -198,10 +191,12 @@ bool Range::write(std::ostream& os) const
   write32(os, m_type);
   write32(os, m_flags);
 
-  if (!m_selectedLayers.write(os)) return false;
-  if (!m_selectedFrames.write(os)) return false;
+  if (!m_selectedLayers.write(os))
+    return false;
+  if (!m_selectedFrames.write(os))
+    return false;
 
-  write32(os, m_selectingFromLayer ? m_selectingFromLayer->id(): 0);
+  write32(os, m_selectingFromLayer ? m_selectingFromLayer->id() : 0);
   write32(os, m_selectingFromFrame);
   return os.good();
 }
@@ -213,8 +208,10 @@ bool Range::read(std::istream& is)
   m_type = (Type)read32(is);
   m_flags = read32(is);
 
-  if (!m_selectedLayers.read(is)) return false;
-  if (!m_selectedFrames.read(is)) return false;
+  if (!m_selectedLayers.read(is))
+    return false;
+  if (!m_selectedFrames.read(is))
+    return false;
 
   ObjectId id = read32(is);
   m_selectingFromLayer = doc::get<Layer>(id);
@@ -279,14 +276,13 @@ void Range::setType(const Type type)
     m_type = type;
     m_flags |= type;
   }
-  else  {
+  else {
     m_type = kNone;
     m_flags = kNone;
   }
 }
 
-void Range::setSelectedLayers(const SelectedLayers& layers,
-                              const bool touchFlags)
+void Range::setSelectedLayers(const SelectedLayers& layers, const bool touchFlags)
 {
   if (layers.empty()) {
     if (touchFlags)
@@ -302,8 +298,7 @@ void Range::setSelectedLayers(const SelectedLayers& layers,
   m_selectedLayers = layers;
 }
 
-void Range::setSelectedFrames(const SelectedFrames& frames,
-                              const bool touchFlags)
+void Range::setSelectedFrames(const SelectedFrames& frames, const bool touchFlags)
 {
   if (frames.empty()) {
     if (touchFlags)

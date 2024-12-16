@@ -5,9 +5,9 @@
 // Read LICENSE.txt for more information.
 
 #define TEST_GUI
-#include "tests/app_test.h"
 #include "gfx/rect_io.h"
 #include "gfx/size.h"
+#include "tests/app_test.h"
 
 using namespace gfx;
 using namespace ui;

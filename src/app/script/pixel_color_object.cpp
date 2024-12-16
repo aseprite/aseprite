@@ -5,15 +5,14 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/script/luacpp.h"
 #include "doc/color.h"
 #include "doc/tile.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 namespace {
 
@@ -22,7 +21,7 @@ int PixelColor_rgba(lua_State* L)
   const int r = lua_tointeger(L, 1);
   const int g = lua_tointeger(L, 2);
   const int b = lua_tointeger(L, 3);
-  const int a = (lua_isnoneornil(L, 4) ? 255: lua_tointeger(L, 4));
+  const int a = (lua_isnoneornil(L, 4) ? 255 : lua_tointeger(L, 4));
   lua_pushinteger(L, doc::rgba(r, g, b, a));
   return 1;
 }
@@ -54,7 +53,7 @@ int PixelColor_rgbaA(lua_State* L)
 int PixelColor_graya(lua_State* L)
 {
   int v = lua_tointeger(L, 1);
-  int a = (lua_isnoneornil(L, 2) ? 255: lua_tointeger(L, 2));
+  int a = (lua_isnoneornil(L, 2) ? 255 : lua_tointeger(L, 2));
   lua_pushinteger(L, doc::graya(v, a));
   return 1;
 }
@@ -92,18 +91,18 @@ int PixelColor_tileF(lua_State* L)
 }
 
 const luaL_Reg PixelColor_methods[] = {
-  { "rgba", PixelColor_rgba },
-  { "rgbaR", PixelColor_rgbaR },
-  { "rgbaG", PixelColor_rgbaG },
-  { "rgbaB", PixelColor_rgbaB },
-  { "rgbaA", PixelColor_rgbaA },
-  { "graya", PixelColor_graya },
+  { "rgba",   PixelColor_rgba   },
+  { "rgbaR",  PixelColor_rgbaR  },
+  { "rgbaG",  PixelColor_rgbaG  },
+  { "rgbaB",  PixelColor_rgbaB  },
+  { "rgbaA",  PixelColor_rgbaA  },
+  { "graya",  PixelColor_graya  },
   { "grayaV", PixelColor_grayaV },
   { "grayaA", PixelColor_grayaA },
-  { "tile", PixelColor_tile },
-  { "tileI", PixelColor_tileI },
-  { "tileF", PixelColor_tileF },
-  { nullptr, nullptr }
+  { "tile",   PixelColor_tile   },
+  { "tileI",  PixelColor_tileI  },
+  { "tileF",  PixelColor_tileF  },
+  { nullptr,  nullptr           }
 };
 
 } // anonymous namespace
@@ -111,9 +110,9 @@ const luaL_Reg PixelColor_methods[] = {
 void register_app_pixel_color_object(lua_State* L)
 {
   lua_getglobal(L, "app");
-  lua_newtable(L);              // New table for pixelColor
+  lua_newtable(L); // New table for pixelColor
   lua_pushstring(L, "pixelColor");
-  lua_pushvalue(L, -2);         // Copy table
+  lua_pushvalue(L, -2); // Copy table
   lua_rawset(L, -4);
   luaL_setfuncs(L, PixelColor_methods, 0);
 
@@ -122,8 +121,7 @@ void register_app_pixel_color_object(lua_State* L)
   setfield_uinteger(L, "TILE_YFLIP", doc::tile_f_yflip);
   setfield_uinteger(L, "TILE_DFLIP", doc::tile_f_dflip);
 
-  lua_pop(L, 2);                // Pop table & app global
+  lua_pop(L, 2); // Pop table & app global
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

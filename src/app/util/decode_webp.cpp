@@ -11,8 +11,7 @@
 #include <webp/demux.h>
 #include <webp/mux.h>
 
-namespace app {
-namespace util {
+namespace app { namespace util {
 
 static WEBP_CSP_MODE colorMode()
 {
@@ -86,5 +85,4 @@ os::SurfaceRef decode_webp(const uint8_t* buf, uint32_t len)
   return surface;
 }
 
-}  // namespace util
-}  // namespace app
+}} // namespace app::util

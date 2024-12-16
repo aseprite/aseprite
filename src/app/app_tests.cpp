@@ -4,9 +4,8 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include <gtest/gtest.h>
@@ -45,10 +44,8 @@ TEST(App, ExitCommand)
   app::App app;
   app.initialize(options);
 
-  ui::execute_from_ui_thread([&app] {
-    app.context()->executeCommand(
-      Commands::instance()->byId(CommandId::Exit()));
-  });
+  ui::execute_from_ui_thread(
+    [&app] { app.context()->executeCommand(Commands::instance()->byId(CommandId::Exit())); });
 
   app.run();
 }
@@ -64,10 +61,8 @@ TEST(App, ExitWithOneDoc)
   ui::execute_from_ui_thread([&app] {
     Params params;
     params.set("ui", "false");
-    app.context()->executeCommand(
-      Commands::instance()->byId(CommandId::NewFile()), params);
-    app.context()->executeCommand(
-      Commands::instance()->byId(CommandId::Exit()));
+    app.context()->executeCommand(Commands::instance()->byId(CommandId::NewFile()), params);
+    app.context()->executeCommand(Commands::instance()->byId(CommandId::Exit()));
   });
 
   app.run();

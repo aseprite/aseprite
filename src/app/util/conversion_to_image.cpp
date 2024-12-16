@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/util/conversion_to_image.h"
@@ -20,9 +20,7 @@ namespace app {
 
 using namespace doc;
 
-uint32_t convert_color_to_image(
-  gfx::Color c,
-  const os::SurfaceFormatData* fd)
+uint32_t convert_color_to_image(gfx::Color c, const os::SurfaceFormatData* fd)
 {
   uint8_t r = ((c & fd->redMask) >> fd->redShift);
   uint8_t g = ((c & fd->greenMask) >> fd->greenShift);
@@ -41,11 +39,12 @@ uint32_t convert_color_to_image(
 // TODO: This implementation has a lot of room for improvement, I made the bare
 // minimum to make it work. Right now it only supports converting RGBA surfaces,
 // other kind of surfaces won't be converted to an image as expected.
-void convert_surface_to_image(
-  const os::Surface* surface,
-  int src_x, int src_y,
-  int w, int h,
-  ImageRef& image)
+void convert_surface_to_image(const os::Surface* surface,
+                              int src_x,
+                              int src_y,
+                              int w,
+                              int h,
+                              ImageRef& image)
 {
   gfx::Rect srcBounds(src_x, src_y, w, h);
   srcBounds = srcBounds.createIntersection(surface->getClipBounds());
@@ -62,11 +61,10 @@ void convert_surface_to_image(
   os::SurfaceFormatData fd;
   surface->getFormat(&fd);
 
-  for (int v=0; v<h; ++v) {
-    for (int u=0; u<w; ++u) {
+  for (int v = 0; v < h; ++v) {
+    for (int u = 0; u < w; ++u) {
       uint32_t* c = (uint32_t*)(surface->getData(u, v));
-      image->putPixel(src_x + u,
-                      src_y + v, convert_color_to_image(*c, &fd));
+      image->putPixel(src_x + u, src_y + v, convert_color_to_image(*c, &fd));
     }
   }
 }

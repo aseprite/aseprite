@@ -14,29 +14,29 @@
 
 namespace filters {
 
-  class ReplaceColorFilter : public Filter {
-  public:
-    ReplaceColorFilter();
+class ReplaceColorFilter : public Filter {
+public:
+  ReplaceColorFilter();
 
-    void setFrom(const doc::color_t from);
-    void setTo(const doc::color_t to);
-    void setTolerance(int tolerance);
+  void setFrom(const doc::color_t from);
+  void setTo(const doc::color_t to);
+  void setTolerance(int tolerance);
 
-    doc::color_t getFrom() const { return m_from; }
-    doc::color_t getTo() const { return m_to; }
-    int getTolerance() const { return m_tolerance; }
+  doc::color_t getFrom() const { return m_from; }
+  doc::color_t getTo() const { return m_to; }
+  int getTolerance() const { return m_tolerance; }
 
-    // Filter implementation
-    const char* getName();
-    void applyToRgba(FilterManager* filterMgr);
-    void applyToGrayscale(FilterManager* filterMgr);
-    void applyToIndexed(FilterManager* filterMgr);
+  // Filter implementation
+  const char* getName();
+  void applyToRgba(FilterManager* filterMgr);
+  void applyToGrayscale(FilterManager* filterMgr);
+  void applyToIndexed(FilterManager* filterMgr);
 
-  private:
-    doc::color_t m_from;
-    doc::color_t m_to;
-    int m_tolerance;
-  };
+private:
+  doc::color_t m_from;
+  doc::color_t m_to;
+  int m_tolerance;
+};
 
 } // namespace filters
 

@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -36,8 +36,7 @@ private:
   MoveThing m_moveThing;
 };
 
-ScrollCommand::ScrollCommand()
-  : Command(CommandId::Scroll(), CmdUIOnlyFlag)
+ScrollCommand::ScrollCommand() : Command(CommandId::Scroll(), CmdUIOnlyFlag)
 {
 }
 
@@ -58,7 +57,7 @@ void ScrollCommand::onExecute(Context* context)
   gfx::Point scroll = view->viewScroll();
   gfx::Point delta = m_moveThing.getDelta(context);
 
-  editor->setEditorScroll(scroll+delta);
+  editor->setEditorScroll(scroll + delta);
 }
 
 std::string ScrollCommand::onGetFriendlyName() const

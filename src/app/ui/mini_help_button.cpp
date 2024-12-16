@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/mini_help_button.h"
@@ -21,9 +21,7 @@ namespace app {
 using namespace app::skin;
 using namespace ui;
 
-MiniHelpButton::MiniHelpButton(const std::string& link)
-  : Button(std::string())
-  , m_link(link)
+MiniHelpButton::MiniHelpButton(const std::string& link) : Button(std::string()), m_link(link)
 {
   setDecorative(true);
   initTheme();
@@ -65,9 +63,8 @@ void MiniHelpButton::onSetDecorativeWidgetBounds()
 
   rect.w = thisSize.w;
   rect.h = thisSize.h;
-  rect.offset(window->bounds().x2()
-              - theme->styles.windowCloseButton()->margin().width() - closeSize.w
-              - style()->margin().right() - thisSize.w,
+  rect.offset(window->bounds().x2() - theme->styles.windowCloseButton()->margin().width() -
+                closeSize.w - style()->margin().right() - thisSize.w,
               window->bounds().y + style()->margin().top());
 
   setBounds(rect);

@@ -11,22 +11,22 @@
 #include <string>
 
 namespace doc {
-  class Layer;
-  class Sprite;
-}
+class Layer;
+class Sprite;
+} // namespace doc
 
 namespace app {
 
-  class Editor;
+class Editor;
 
-  // True if the active layer is locked (itself or its hierarchy),
-  // also, it sends a tip to the user 'Layer ... is locked'
-  bool layer_is_locked(Editor* editor);
+// True if the active layer is locked (itself or its hierarchy),
+// also, it sends a tip to the user 'Layer ... is locked'
+bool layer_is_locked(Editor* editor);
 
-  std::string get_layer_path(const doc::Layer* layer);
+std::string get_layer_path(const doc::Layer* layer);
 
-  doc::Layer* copy_layer(doc::Layer* layer);
-  doc::Layer* copy_layer_with_sprite(doc::Layer* layer, doc::Sprite* sprite);
+doc::Layer* copy_layer(doc::Layer* layer);
+doc::Layer* copy_layer_with_sprite(doc::Layer* layer, doc::Sprite* sprite);
 
 } // namespace app
 

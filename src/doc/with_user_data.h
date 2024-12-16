@@ -13,21 +13,18 @@
 
 namespace doc {
 
-  class WithUserData : public Object {
-  public:
-    WithUserData(ObjectType type) : Object(type) {
-    }
+class WithUserData : public Object {
+public:
+  WithUserData(ObjectType type) : Object(type) {}
 
-    const UserData& userData() const { return m_userData; }
-    UserData& userData() { return m_userData; }
+  const UserData& userData() const { return m_userData; }
+  UserData& userData() { return m_userData; }
 
-    void setUserData(const UserData& userData) {
-      m_userData = userData;
-    }
+  void setUserData(const UserData& userData) { m_userData = userData; }
 
-  private:
-    UserData m_userData;
-  };
+private:
+  UserData m_userData;
+};
 
 } // namespace doc
 

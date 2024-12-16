@@ -17,28 +17,28 @@
 #include <vector>
 
 namespace app {
-  class Command;
+class Command;
 
-  class Commands {
-    static Commands* m_instance;
+class Commands {
+  static Commands* m_instance;
 
-  public:
-    Commands();
-    ~Commands();
+public:
+  Commands();
+  ~Commands();
 
-    static Commands* instance();
+  static Commands* instance();
 
-    Command* byId(const char* id);
-    Commands* add(Command* command);
+  Command* byId(const char* id);
+  Commands* add(Command* command);
 
-    // Remove the command but doesn't delete it
-    void remove(Command* command);
+  // Remove the command but doesn't delete it
+  void remove(Command* command);
 
-    void getAllIds(std::vector<std::string>& ids);
+  void getAllIds(std::vector<std::string>& ids);
 
-  private:
-    std::map<std::string, Command*> m_commands;
-  };
+private:
+  std::map<std::string, Command*> m_commands;
+};
 
 } // namespace app
 

@@ -10,21 +10,19 @@
 
 #include "app/cmd/add_layer.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class RemoveLayer : public AddLayer {
-  public:
-    RemoveLayer(Layer* layer);
+class RemoveLayer : public AddLayer {
+public:
+  RemoveLayer(Layer* layer);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onRedo() override;
-  };
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onRedo() override;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

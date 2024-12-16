@@ -5,15 +5,15 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/console.h"
 #include "app/context_access.h"
-#include "app/doc_undo.h"
 #include "app/doc_api.h"
+#include "app/doc_undo.h"
 #include "app/modules/gui.h"
 #include "app/tx.h"
 #include "app/ui/editor/editor.h"
@@ -39,8 +39,7 @@ DuplicateLayerCommand::DuplicateLayerCommand()
 
 bool DuplicateLayerCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasActiveLayer);
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasActiveLayer);
 }
 
 void DuplicateLayerCommand::onExecute(Context* context)
@@ -52,9 +51,7 @@ void DuplicateLayerCommand::onExecute(Context* context)
     Tx tx(writer, "Layer Duplication");
     LayerImage* sourceLayer = static_cast<LayerImage*>(writer.layer());
     DocApi api = document->getApi(tx);
-    api.duplicateLayerAfter(sourceLayer,
-                            sourceLayer->parent(),
-                            sourceLayer);
+    api.duplicateLayerAfter(sourceLayer, sourceLayer->parent(), sourceLayer);
     tx.commit();
   }
 

@@ -15,33 +15,29 @@
 
 #include <sstream>
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class AddSlice : public Cmd
-                 , public WithSprite
-                 , public WithSlice {
-  public:
-    AddSlice(Sprite* sprite, Slice* slice);
+class AddSlice : public Cmd,
+                 public WithSprite,
+                 public WithSlice {
+public:
+  AddSlice(Sprite* sprite, Slice* slice);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onRedo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this) + m_size;
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onRedo() override;
+  size_t onMemSize() const override { return sizeof(*this) + m_size; }
 
-  private:
-    void addSlice(Sprite* sprite, Slice* slice);
-    void removeSlice(Sprite* sprite, Slice* slice);
+private:
+  void addSlice(Sprite* sprite, Slice* slice);
+  void removeSlice(Sprite* sprite, Slice* slice);
 
-    size_t m_size;
-    std::stringstream m_stream;
-  };
+  size_t m_size;
+  std::stringstream m_stream;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

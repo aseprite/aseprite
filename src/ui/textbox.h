@@ -12,19 +12,19 @@
 
 namespace ui {
 
-  class TextBox : public Widget {
-  public:
-    TextBox(const std::string& text, int align);
+class TextBox : public Widget {
+public:
+  TextBox(const std::string& text, int align);
 
-  protected:
-    bool onProcessMessage(Message* msg) override;
-    void onPaint(PaintEvent& ev) override;
-    void onSizeHint(SizeHintEvent& ev) override;
-    void onSetText() override;
+protected:
+  bool onProcessMessage(Message* msg) override;
+  void onPaint(PaintEvent& ev) override;
+  void onSizeHint(SizeHintEvent& ev) override;
+  void onSetText() override;
 
-  private:
-    gfx::Point m_oldPos;
-  };
+private:
+  gfx::Point m_oldPos;
+};
 
 } // namespace ui
 

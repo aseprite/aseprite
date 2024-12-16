@@ -75,36 +75,36 @@ function expect_img(image, expectedPixels)
       local value = image:getPixel(x, y)
       local expected = expectedPixels[1+y*w+x]
       if value ~= expected then
-	dump_img(image)
+        dump_img(image)
         print('In pixel (' .. x .. ', ' .. y .. '):')
 
-	local a = value
-	local b = expected
-	print(debug.traceback())
-	print('Expected A == B but:')
-	if image.colorMode == ColorMode.RGB then
-	  print(string.format(' - Value A = rgba(%d,%d,%d,%d)',
-			      app.pixelColor.rgbaR(a),
-			      app.pixelColor.rgbaG(a),
-			      app.pixelColor.rgbaB(a),
-			      app.pixelColor.rgbaA(a)))
-	  print(string.format(' - Value B = rgba(%d,%d,%d,%d)',
-			      app.pixelColor.rgbaR(b),
-			      app.pixelColor.rgbaG(b),
-			      app.pixelColor.rgbaB(b),
-			      app.pixelColor.rgbaA(b)))
-	elseif image.colorMode == ColorMode.GRAY then
-	  print(string.format(' - Value A = gray(%d,%d)',
-			      app.pixelColor.grayaV(a),
-			      app.pixelColor.grayaA(a)))
-	  print(string.format(' - Value B = gray(%d,%d)',
-			      app.pixelColor.grayaV(b),
-			      app.pixelColor.grayaA(b)))
-	else
-	  print(' - Value A = ' .. tostring(a))
-	  print(' - Value B = ' .. tostring(b))
-	end
-	assert(a == b)
+        local a = value
+        local b = expected
+        print(debug.traceback())
+        print('Expected A == B but:')
+        if image.colorMode == ColorMode.RGB then
+          print(string.format(' - Value A = rgba(%d,%d,%d,%d)',
+                              app.pixelColor.rgbaR(a),
+                              app.pixelColor.rgbaG(a),
+                              app.pixelColor.rgbaB(a),
+                              app.pixelColor.rgbaA(a)))
+          print(string.format(' - Value B = rgba(%d,%d,%d,%d)',
+                              app.pixelColor.rgbaR(b),
+                              app.pixelColor.rgbaG(b),
+                              app.pixelColor.rgbaB(b),
+                              app.pixelColor.rgbaA(b)))
+        elseif image.colorMode == ColorMode.GRAY then
+          print(string.format(' - Value A = gray(%d,%d)',
+                              app.pixelColor.grayaV(a),
+                              app.pixelColor.grayaA(a)))
+          print(string.format(' - Value B = gray(%d,%d)',
+                              app.pixelColor.grayaV(b),
+                              app.pixelColor.grayaA(b)))
+        else
+          print(' - Value A = ' .. tostring(a))
+          print(' - Value B = ' .. tostring(b))
+        end
+        assert(a == b)
       end
     end
   end
@@ -145,13 +145,13 @@ function expect_rendered_layers(expectedImage, sprite, layerNames, frame)
   function render_layers(prefix, layers)
     for _,layer in ipairs(layers) do
       if layer.isGroup then
-	render_layers(layer.name.."/", layer.layers)
+        render_layers(layer.name.."/", layer.layers)
       end
       if contains_layer(prefix..layer.name) then
-	local cel = layer:cel(frame)
-	if cel then
-	  render:drawImage(cel.image, cel.position)
-	end
+        local cel = layer:cel(frame)
+        if cel then
+          render:drawImage(cel.image, cel.position)
+        end
       end
     end
   end

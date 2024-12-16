@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/layer.h"
@@ -35,9 +35,7 @@ gfx::Rect UILayer::bounds() const
   if (!m_surface)
     return gfx::Rect();
 
-  return gfx::Rect(m_pos.x, m_pos.y,
-                   m_surface->width(),
-                   m_surface->height());
+  return gfx::Rect(m_pos.x, m_pos.y, m_surface->width(), m_surface->height());
 }
 
-}
+} // namespace ui

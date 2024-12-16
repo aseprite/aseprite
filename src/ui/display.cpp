@@ -4,32 +4,30 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-//#define DEBUG_DIRTY_RECTS 1
+// #define DEBUG_DIRTY_RECTS 1
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/display.h"
 
 #include "base/debug.h"
 #include "base/remove_from_container.h"
+#include "os/system.h"
 #include "ui/system.h"
 #include "ui/widget.h"
 #include "ui/window.h"
-#include "os/system.h"
 
 #include <algorithm>
 
 namespace ui {
 
-Display::Display(Display* parentDisplay,
-                 const os::WindowRef& nativeWindow,
-                 Widget* containedWidget)
+Display::Display(Display* parentDisplay, const os::WindowRef& nativeWindow, Widget* containedWidget)
   : m_parentDisplay(parentDisplay)
   , m_nativeWindow(nativeWindow)
   , m_containedWidget(containedWidget)
-  , m_layers(1)           // One UI layer by default (the backLayer())
+  , m_layers(1) // One UI layer by default (the backLayer())
 {
   m_layers[0] = UILayer::Make();
 
@@ -85,13 +83,11 @@ void Display::configureBackLayer()
   UILayerRef layer = backLayer();
 
   os::SurfaceRef layerSurface = layer->surface();
-  if (!layerSurface ||
-      layerSurface == displaySurface ||
+  if (!layerSurface || layerSurface == displaySurface ||
       layerSurface->width() != displaySurface->width() ||
       layerSurface->height() != displaySurface->height()) {
-    layerSurface = os::System::instance()
-      ->makeSurface(displaySurface->width(),
-                    displaySurface->height());
+    layerSurface = os::System::instance()->makeSurface(displaySurface->width(),
+                                                       displaySurface->height());
     layer->setSurface(layerSurface);
   }
 }
@@ -104,8 +100,7 @@ gfx::Size Display::size() const
 
   const int scale = m_nativeWindow->scale();
   ASSERT(scale > 0);
-  return gfx::Size(m_nativeWindow->width() / scale,
-                   m_nativeWindow->height() / scale);
+  return gfx::Size(m_nativeWindow->width() / scale, m_nativeWindow->height() / scale);
 }
 
 void Display::dirtyRect(const gfx::Rect& bounds)
@@ -146,9 +141,7 @@ void Display::flipDisplay()
       if (!layer->clipRegion().isEmpty())
         windowSurface->clipRegion(layer->clipRegion());
 
-      windowSurface->drawSurface(
-        layerSurface.get(), srcRc, rc,
-        os::Sampling(), &layer->paint());
+      windowSurface->drawSurface(layerSurface.get(), srcRc, rc, os::Sampling(), &layer->paint());
 
       windowSurface->restoreClip();
     }
@@ -214,25 +207,21 @@ void Display::handleWindowZOrder(Window* window)
   else {
     int pos = (int)m_windows.size();
 
-    for (auto it=m_windows.rbegin(),
-           end=m_windows.rend();
-         it != end; ++it) {
+    for (auto it = m_windows.rbegin(), end = m_windows.rend(); it != end; ++it) {
       if (static_cast<Window*>(*it)->isOnTop())
         break;
 
       --pos;
     }
 
-    m_windows.insert(m_windows.begin()+pos, window);
+    m_windows.insert(m_windows.begin() + pos, window);
   }
 }
 
 gfx::Size Display::workareaSizeUIScale()
 {
   if (get_multiple_displays()) {
-    return
-      nativeWindow()->screen()->workarea().size() /
-      nativeWindow()->scale();
+    return nativeWindow()->screen()->workarea().size() / nativeWindow()->scale();
   }
   else {
     return size();

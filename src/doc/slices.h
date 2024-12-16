@@ -16,41 +16,41 @@
 
 namespace doc {
 
-  class Slice;
-  class Sprite;
+class Slice;
+class Sprite;
 
-  class Slices {
-    typedef std::vector<Slice*> List;
+class Slices {
+  typedef std::vector<Slice*> List;
 
-  public:
-    typedef List::iterator iterator;
-    typedef List::const_iterator const_iterator;
+public:
+  typedef List::iterator iterator;
+  typedef List::const_iterator const_iterator;
 
-    Slices(Sprite* sprite);
-    ~Slices();
+  Slices(Sprite* sprite);
+  ~Slices();
 
-    Sprite* sprite() { return m_sprite; }
+  Sprite* sprite() { return m_sprite; }
 
-    void add(Slice* slice);
-    void remove(Slice* slice);
+  void add(Slice* slice);
+  void remove(Slice* slice);
 
-    Slice* getByName(const std::string& name) const;
-    Slice* getById(const ObjectId id) const;
+  Slice* getByName(const std::string& name) const;
+  Slice* getById(const ObjectId id) const;
 
-    iterator begin() { return m_slices.begin(); }
-    iterator end() { return m_slices.end(); }
-    const_iterator begin() const { return m_slices.begin(); }
-    const_iterator end() const { return m_slices.end(); }
+  iterator begin() { return m_slices.begin(); }
+  iterator end() { return m_slices.end(); }
+  const_iterator begin() const { return m_slices.begin(); }
+  const_iterator end() const { return m_slices.end(); }
 
-    std::size_t size() const { return m_slices.size(); }
-    bool empty() const { return m_slices.empty(); }
+  std::size_t size() const { return m_slices.size(); }
+  bool empty() const { return m_slices.empty(); }
 
-  private:
-    Sprite* m_sprite;
-    List m_slices;
+private:
+  Sprite* m_sprite;
+  List m_slices;
 
-    DISABLE_COPYING(Slices);
-  };
+  DISABLE_COPYING(Slices);
+};
 
 } // namespace doc
 

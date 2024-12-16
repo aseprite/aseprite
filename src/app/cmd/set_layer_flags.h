@@ -12,28 +12,24 @@
 #include "app/cmd/with_layer.h"
 #include "doc/layer.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class SetLayerFlags : public Cmd
-                     , public WithLayer {
-  public:
-    SetLayerFlags(Layer* layer, LayerFlags flags);
+class SetLayerFlags : public Cmd,
+                      public WithLayer {
+public:
+  SetLayerFlags(Layer* layer, LayerFlags flags);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this);
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  size_t onMemSize() const override { return sizeof(*this); }
 
-  private:
-    LayerFlags m_oldFlags;
-    LayerFlags m_newFlags;
-  };
+private:
+  LayerFlags m_oldFlags;
+  LayerFlags m_newFlags;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

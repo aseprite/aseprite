@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/remap_tilemaps.h"
@@ -20,13 +20,11 @@
 #include "doc/sprite.h"
 #include "doc/tileset.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 using namespace doc;
 
-RemapTilemaps::RemapTilemaps(Tileset* tileset,
-                             const Remap& remap)
+RemapTilemaps::RemapTilemaps(Tileset* tileset, const Remap& remap)
   : WithTileset(tileset)
   , m_remap(remap)
 {
@@ -69,5 +67,4 @@ void RemapTilemaps::incrementVersions(Tileset* tileset)
   }
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

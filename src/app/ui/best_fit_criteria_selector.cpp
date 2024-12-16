@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/best_fit_criteria_selector.h"
@@ -17,11 +17,9 @@ namespace app {
 BestFitCriteriaSelector::BestFitCriteriaSelector()
 {
   // addItem() must match the FitCriteria enum
-  static_assert(int(doc::FitCriteria::DEFAULT) == 0 &&
-                int(doc::FitCriteria::RGB) == 1 &&
-                int(doc::FitCriteria::linearizedRGB) == 2 &&
-                int(doc::FitCriteria::CIEXYZ) == 3 &&
-                int(doc::FitCriteria::CIELAB) == 4,
+  static_assert(int(doc::FitCriteria::DEFAULT) == 0 && int(doc::FitCriteria::RGB) == 1 &&
+                  int(doc::FitCriteria::linearizedRGB) == 2 && int(doc::FitCriteria::CIEXYZ) == 3 &&
+                  int(doc::FitCriteria::CIELAB) == 4,
                 "Unexpected doc::FitCriteria values");
 
   addItem(Strings::best_fit_criteria_selector_default());

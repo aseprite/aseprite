@@ -14,23 +14,24 @@
 
 namespace doc {
 
-  class Image;
-  class Mask;
+class Image;
+class Mask;
 
-  namespace algorithm {
+namespace algorithm {
 
-    void floodfill(const Image* image,
-                   const Mask* mask,
-                   const int x, const int y,
-                   const gfx::Rect& bounds,
-                   const doc::color_t srcColor,
-                   const int tolerance,
-                   const bool contiguous,
-                   const bool isEightConnected,
-                   void* data,
-                   AlgoHLine proc);
+void floodfill(const Image* image,
+               const Mask* mask,
+               const int x,
+               const int y,
+               const gfx::Rect& bounds,
+               const doc::color_t srcColor,
+               const int tolerance,
+               const bool contiguous,
+               const bool isEightConnected,
+               void* data,
+               AlgoHLine proc);
 
-  }
 }
+} // namespace doc
 
 #endif

@@ -12,21 +12,18 @@
 
 namespace ui {
 
-  class Theme;
+class Theme;
 
-  class InitThemeEvent : public Event {
-  public:
-    InitThemeEvent(Component* source,
-                   Theme* theme)
-      : Event(source)
-      , m_theme(theme) { }
+class InitThemeEvent : public Event {
+public:
+  InitThemeEvent(Component* source, Theme* theme) : Event(source), m_theme(theme) {}
 
-    Theme* theme() const { return m_theme; }
+  Theme* theme() const { return m_theme; }
 
-  private:
-    Theme* m_theme;
-  };
+private:
+  Theme* m_theme;
+};
 
 } // namespace ui
 
-#endif  // UI_INIT_THEME_EVENT_H_INCLUDED
+#endif // UI_INIT_THEME_EVENT_H_INCLUDED

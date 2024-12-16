@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -44,10 +44,10 @@ using namespace filters;
 using namespace ui;
 
 struct ConvolutionMatrixParams : public NewParams {
-  Param<bool> ui { this, true, "ui" };
-  Param<filters::Target> channels { this, 0, "channels" };
-  Param<filters::TiledMode> tiledMode { this, filters::TiledMode::NONE, "tiledMode" };
-  Param<std::string> fromResource { this, std::string(), "fromResource" };
+  Param<bool> ui{ this, true, "ui" };
+  Param<filters::Target> channels{ this, 0, "channels" };
+  Param<filters::TiledMode> tiledMode{ this, filters::TiledMode::NONE, "tiledMode" };
+  Param<std::string> fromResource{ this, std::string(), "fromResource" };
 };
 
 static const char* ConfigSection = "ConvolutionMatrix";
@@ -57,7 +57,9 @@ public:
   ConvolutionMatrixWindow(ConvolutionMatrixFilter& filter,
                           FilterManagerImpl& filterMgr,
                           ConvolutionMatrixStock& stock)
-    : FilterWindow("Convolution Matrix", ConfigSection, &filterMgr,
+    : FilterWindow("Convolution Matrix",
+                   ConfigSection,
+                   &filterMgr,
                    WithChannelsSelector,
                    WithTiledCheckBox,
                    filter.getTiledMode())
@@ -70,24 +72,24 @@ public:
   {
     getContainer()->addChild(m_controlsWidget.get());
 
-    m_reloadButton->Click.connect([this]{ onReloadStock(); });
-    m_stockListBox->Change.connect([this]{ onMatrixChange(); });
+    m_reloadButton->Click.connect([this] { onReloadStock(); });
+    m_stockListBox->Change.connect([this] { onMatrixChange(); });
 
     fillStockListBox();
   }
 
 private:
-  void onReloadStock() {
+  void onReloadStock()
+  {
     m_stock.reloadStock();
     fillStockListBox();
   }
 
-  void setupTiledMode(TiledMode tiledMode) override {
-    m_filter.setTiledMode(tiledMode);
-  }
+  void setupTiledMode(TiledMode tiledMode) override { m_filter.setTiledMode(tiledMode); }
 
-  void fillStockListBox() {
-    const char* oldSelected = (m_filter.getMatrix() ? m_filter.getMatrix()->getName(): NULL);
+  void fillStockListBox()
+  {
+    const char* oldSelected = (m_filter.getMatrix() ? m_filter.getMatrix()->getName() : NULL);
 
     // Clean the list
     while (!m_stockListBox->children().empty()) {
@@ -96,8 +98,8 @@ private:
       delete listitem;
     }
 
-    for (ConvolutionMatrixStock::iterator it = m_stock.begin(), end = m_stock.end();
-         it != end; ++it) {
+    for (ConvolutionMatrixStock::iterator it = m_stock.begin(), end = m_stock.end(); it != end;
+         ++it) {
       std::shared_ptr<ConvolutionMatrix> matrix = *it;
       ListItem* listitem = new ListItem(matrix->getName());
       m_stockListBox->addChild(listitem);
@@ -175,21 +177,23 @@ void ConvolutionMatrixCommand::onExecute(Context* context)
   const bool ui = (params().ui() && context->isUIAvailable());
 
   static ConvolutionMatrixStock stock; // Load stock
-  ConvolutionMatrixFilter filter; // Create the filter and setup initial settings
+  ConvolutionMatrixFilter filter;      // Create the filter and setup initial settings
 
   std::shared_ptr<ConvolutionMatrix> matrix;
   if (ui) {
     // Get last used (selected) matrix
     matrix = stock.getByName(get_config_string(ConfigSection, "Selected", ""));
 
-    DocumentPreferences& docPref = Preferences::instance()
-      .document(context->activeDocument());
+    DocumentPreferences& docPref = Preferences::instance().document(context->activeDocument());
     filter.setTiledMode(docPref.tiled.mode());
   }
 
-  if (params().tiledMode.isSet()) filter.setTiledMode(params().tiledMode());
-  if (params().fromResource.isSet()) matrix = stock.getByName(params().fromResource().c_str());
-  if (matrix) filter.setMatrix(matrix);
+  if (params().tiledMode.isSet())
+    filter.setTiledMode(params().tiledMode());
+  if (params().fromResource.isSet())
+    matrix = stock.getByName(params().fromResource().c_str());
+  if (matrix)
+    filter.setMatrix(matrix);
 
   FilterManagerImpl filterMgr(context, &filter);
 

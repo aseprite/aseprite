@@ -14,28 +14,28 @@
 
 namespace app {
 
-  class MoveMaskCommand : public Command {
-  public:
-    enum Target { Boundaries, Content };
+class MoveMaskCommand : public Command {
+public:
+  enum Target { Boundaries, Content };
 
-    MoveMaskCommand();
+  MoveMaskCommand();
 
-    Target getTarget() const { return m_target; }
-    MoveThing getMoveThing() const { return m_moveThing; }
-    bool isWrap() const { return m_wrap; }
+  Target getTarget() const { return m_target; }
+  MoveThing getMoveThing() const { return m_moveThing; }
+  bool isWrap() const { return m_wrap; }
 
-  protected:
-    bool onNeedsParams() const override { return true; }
-    void onLoadParams(const Params& params) override;
-    bool onEnabled(Context* context) override;
-    void onExecute(Context* context) override;
-    std::string onGetFriendlyName() const override;
+protected:
+  bool onNeedsParams() const override { return true; }
+  void onLoadParams(const Params& params) override;
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
 
-  private:
-    Target m_target;
-    MoveThing m_moveThing;
-    bool m_wrap;
-  };
+private:
+  Target m_target;
+  MoveThing m_moveThing;
+  bool m_wrap;
+};
 
 } // namespace app
 

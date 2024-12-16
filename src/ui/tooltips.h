@@ -19,79 +19,75 @@
 
 namespace ui {
 
-  class Display;
-  class TextBox;
-  class TipWindow;
+class Display;
+class TextBox;
+class TipWindow;
 
-  class TooltipManager : public Widget {
-  public:
-    TooltipManager();
-    ~TooltipManager();
+class TooltipManager : public Widget {
+public:
+  TooltipManager();
+  ~TooltipManager();
 
-    void addTooltipFor(Widget* widget, const std::string& text, int arrowAlign = 0);
-    void removeTooltipFor(Widget* widget);
+  void addTooltipFor(Widget* widget, const std::string& text, int arrowAlign = 0);
+  void removeTooltipFor(Widget* widget);
 
-  protected:
-    bool onProcessMessage(Message* msg) override;
-    void onInitTheme(InitThemeEvent& ev) override;
+protected:
+  bool onProcessMessage(Message* msg) override;
+  void onInitTheme(InitThemeEvent& ev) override;
 
-  private:
-    void onTick();
+private:
+  void onTick();
 
-    struct TipInfo {
-      std::string text;
-      int arrowAlign;
+  struct TipInfo {
+    std::string text;
+    int arrowAlign;
 
-      TipInfo() { }
-      TipInfo(const std::string& text, int arrowAlign)
-        : text(text), arrowAlign(arrowAlign) {
-      }
-    };
-
-    typedef std::map<Widget*, TipInfo> Tips;
-    Tips m_tips;                      // All tips.
-    std::unique_ptr<TipWindow> m_tipWindow; // Frame to show tooltips.
-    std::unique_ptr<Timer> m_timer;         // Timer to control the tooltip delay.
-    struct {
-      Widget* widget;
-      TipInfo tipInfo;
-    } m_target;
+    TipInfo() {}
+    TipInfo(const std::string& text, int arrowAlign) : text(text), arrowAlign(arrowAlign) {}
   };
 
-  class TipWindow : public PopupWindow {
-  public:
-    TipWindow(const std::string& text = "");
+  typedef std::map<Widget*, TipInfo> Tips;
+  Tips m_tips;                            // All tips.
+  std::unique_ptr<TipWindow> m_tipWindow; // Frame to show tooltips.
+  std::unique_ptr<Timer> m_timer;         // Timer to control the tooltip delay.
+  struct {
+    Widget* widget;
+    TipInfo tipInfo;
+  } m_target;
+};
 
-    Style* arrowStyle() { return m_arrowStyle; }
-    void setArrowStyle(Style* style) { m_arrowStyle = style; }
+class TipWindow : public PopupWindow {
+public:
+  TipWindow(const std::string& text = "");
 
-    int arrowAlign() const { return m_arrowAlign; }
-    const gfx::Rect& target() const { return m_target; }
+  Style* arrowStyle() { return m_arrowStyle; }
+  void setArrowStyle(Style* style) { m_arrowStyle = style; }
 
-    void setCloseOnKeyDown(bool state);
+  int arrowAlign() const { return m_arrowAlign; }
+  const gfx::Rect& target() const { return m_target; }
 
-    // Returns false there is no enough screen space to show the
-    // window.
-    bool pointAt(int arrowAlign,
-                 const gfx::Rect& target,
-                 const ui::Display* display);
+  void setCloseOnKeyDown(bool state);
 
-    void adjustTargetFrom(const ui::Display* targetDisplay);
+  // Returns false there is no enough screen space to show the
+  // window.
+  bool pointAt(int arrowAlign, const gfx::Rect& target, const ui::Display* display);
 
-    TextBox* textBox() const { return m_textBox; }
+  void adjustTargetFrom(const ui::Display* targetDisplay);
 
-  protected:
-    bool onProcessMessage(Message* msg) override;
-    void onPaint(PaintEvent& ev) override;
-    void onBuildTitleLabel() override;
+  TextBox* textBox() const { return m_textBox; }
 
-  private:
-    Style* m_arrowStyle;
-    int m_arrowAlign;
-    gfx::Rect m_target;
-    bool m_closeOnKeyDown;
-    TextBox* m_textBox;
-  };
+protected:
+  bool onProcessMessage(Message* msg) override;
+  void onPaint(PaintEvent& ev) override;
+  void onBuildTitleLabel() override;
+
+private:
+  Style* m_arrowStyle;
+  int m_arrowAlign;
+  gfx::Rect m_target;
+  bool m_closeOnKeyDown;
+  TextBox* m_textBox;
+};
 
 } // namespace ui
 

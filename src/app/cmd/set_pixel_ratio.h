@@ -13,32 +13,28 @@
 #include "doc/pixel_ratio.h"
 
 namespace doc {
-  class Sprite;
+class Sprite;
 }
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class SetPixelRatio : public Cmd
-                      , public WithSprite {
-  public:
-    SetPixelRatio(Sprite* sprite, PixelRatio pixelRatio);
+class SetPixelRatio : public Cmd,
+                      public WithSprite {
+public:
+  SetPixelRatio(Sprite* sprite, PixelRatio pixelRatio);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onFireNotifications() override;
-    size_t onMemSize() const override {
-      return sizeof(*this);
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onFireNotifications() override;
+  size_t onMemSize() const override { return sizeof(*this); }
 
-  private:
-    PixelRatio m_oldRatio;
-    PixelRatio m_newRatio;
-  };
+private:
+  PixelRatio m_oldRatio;
+  PixelRatio m_newRatio;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

@@ -12,9 +12,7 @@
 
 namespace dio {
 
-Decoder::Decoder()
-  : m_delegate(nullptr)
-  , m_f(nullptr)
+Decoder::Decoder() : m_delegate(nullptr), m_f(nullptr)
 {
 }
 
@@ -73,14 +71,9 @@ uint64_t Decoder::read64()
 
   if (m_f->ok()) {
     // Little endian
-    return (((long long)b8 << 56) |
-            ((long long)b7 << 48) |
-            ((long long)b6 << 40) |
-            ((long long)b5 << 32) |
-            ((long long)b4 << 24) |
-            ((long long)b3 << 16) |
-            ((long long)b2 << 8) |
-            (long long)b1);
+    return (((long long)b8 << 56) | ((long long)b7 << 48) | ((long long)b6 << 40) |
+            ((long long)b5 << 32) | ((long long)b4 << 24) | ((long long)b3 << 16) |
+            ((long long)b2 << 8) | (long long)b1);
   }
   else
     return 0;

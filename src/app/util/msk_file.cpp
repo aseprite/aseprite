@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/util/pic_file.h"
@@ -56,10 +56,10 @@ Mask* load_msk_file(const char* filename)
     mask->replace(gfx::Rect(0, 0, 320, 200));
 
     u = v = 0;
-    for (i=0; i<8000; i++) {
+    for (i = 0; i < 8000; i++) {
       byte = getc(f);
-      for (c=0; c<8; c++) {
-        mask->bitmap()->putPixel(u, v, byte & (1<<(7-c)));
+      for (c = 0; c < 8; c++) {
+        mask->bitmap()->putPixel(u, v, byte & (1 << (7 - c)));
         u++;
         if (u == 320) {
           u = 0;
@@ -80,10 +80,7 @@ Mask* load_msk_file(const char* filename)
 int save_msk_file(const Mask* mask, const char* filename)
 {
   if (mask->bitmap())
-    return save_pic_file(filename,
-                         mask->bounds().x,
-                         mask->bounds().y, NULL,
-                         mask->bitmap());
+    return save_pic_file(filename, mask->bounds().x, mask->bounds().y, NULL, mask->bitmap());
   else
     return -1;
 }

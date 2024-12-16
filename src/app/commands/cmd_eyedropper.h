@@ -14,36 +14,36 @@
 #include "gfx/point.h"
 
 namespace render {
-  class Projection;
+class Projection;
 }
 
 namespace app {
-  class Editor;
-  class Site;
+class Editor;
+class Site;
 
-  class EyedropperCommand : public Command {
-  public:
-    EyedropperCommand();
+class EyedropperCommand : public Command {
+public:
+  EyedropperCommand();
 
-    // Returns the color in the given sprite pos.
-    void pickSample(const Site& site,
-                    const gfx::PointF& pixelPos,
-                    const render::Projection& proj,
-                    app::Color& color,
-                    doc::tile_t& tile);
+  // Returns the color in the given sprite pos.
+  void pickSample(const Site& site,
+                  const gfx::PointF& pixelPos,
+                  const render::Projection& proj,
+                  app::Color& color,
+                  doc::tile_t& tile);
 
-    void executeOnMousePos(Context* context,
-                           Editor* editor,
-                           const gfx::Point& mousePos,
-                           const bool foreground);
+  void executeOnMousePos(Context* context,
+                         Editor* editor,
+                         const gfx::Point& mousePos,
+                         const bool foreground);
 
-  protected:
-    void onLoadParams(const Params& params) override;
-    void onExecute(Context* context) override;
+protected:
+  void onLoadParams(const Params& params) override;
+  void onExecute(Context* context) override;
 
-    // True means "pick background color", false the foreground color.
-    bool m_background;
-  };
+  // True means "pick background color", false the foreground color.
+  bool m_background;
+};
 
 } // namespace app
 

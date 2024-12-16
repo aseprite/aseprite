@@ -13,10 +13,10 @@
 
 namespace app {
 
-  // Now DocRange is just an alias for view::Range
-  //
-  // TODO replace DocRange with view::Range in the future
-  using DocRange = view::Range;
+// Now DocRange is just an alias for view::Range
+//
+// TODO replace DocRange with view::Range in the future
+using DocRange = view::Range;
 
 } // namespace app
 

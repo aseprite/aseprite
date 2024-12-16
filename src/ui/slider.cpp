@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/slider.h"
@@ -70,9 +70,12 @@ void Slider::setValue(int value)
 
 void Slider::getSliderThemeInfo(int* min, int* max, int* value) const
 {
-  if (min) *min = m_min;
-  if (max) *max = m_max;
-  if (value) *value = m_value;
+  if (min)
+    *min = m_min;
+  if (max)
+    *max = m_max;
+  if (value)
+    *value = m_value;
 }
 
 void Slider::updateValue(int value)
@@ -103,7 +106,6 @@ int Slider::convertTextToValue(const std::string& text) const
 bool Slider::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
-
     case kFocusEnterMessage:
     case kFocusLeaveMessage:
       if (isEnabled())
@@ -138,7 +140,7 @@ bool Slider::onProcessMessage(Message* msg)
 
         getSliderThemeInfo(&min, &max, &value);
 
-        range =  max - min + 1;
+        range = max - min + 1;
 
         // With left click
         if (slider_press_left) {
@@ -152,8 +154,7 @@ bool Slider::onProcessMessage(Message* msg)
             range = 1;
           }
 
-          value = slider_press_value +
-            (mousePos.x - slider_press_x) * range / w;
+          value = slider_press_value + (mousePos.x - slider_press_x) * range / w;
         }
 
         value = std::clamp(value, min, max);
@@ -192,12 +193,11 @@ bool Slider::onProcessMessage(Message* msg)
         switch (static_cast<KeyMessage*>(msg)->scancode()) {
           case kKeyLeft:     --value; break;
           case kKeyRight:    ++value; break;
-          case kKeyPageDown: value -= (max-min+1)/4; break;
-          case kKeyPageUp:   value += (max-min+1)/4; break;
+          case kKeyPageDown: value -= (max - min + 1) / 4; break;
+          case kKeyPageUp:   value += (max - min + 1) / 4; break;
           case kKeyHome:     value = min; break;
           case kKeyEnd:      value = max; break;
-          default:
-            goto not_used;
+          default:           goto not_used;
         }
 
         value = std::clamp(value, min, max);
@@ -212,9 +212,8 @@ bool Slider::onProcessMessage(Message* msg)
 
     case kMouseWheelMessage:
       if (isEnabled() && !isReadOnly()) {
-        int value = m_value
-          + static_cast<MouseMessage*>(msg)->wheelDelta().x
-          - static_cast<MouseMessage*>(msg)->wheelDelta().y;
+        int value = m_value + static_cast<MouseMessage*>(msg)->wheelDelta().x -
+                    static_cast<MouseMessage*>(msg)->wheelDelta().y;
 
         value = std::clamp(value, m_min, m_max);
 
@@ -226,9 +225,7 @@ bool Slider::onProcessMessage(Message* msg)
       }
       break;
 
-    case kSetCursorMessage:
-      setupSliderCursor();
-      return true;
+    case kSetCursorMessage: setupSliderCursor(); return true;
   }
 
 not_used:;

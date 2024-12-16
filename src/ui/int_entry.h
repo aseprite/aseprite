@@ -16,40 +16,39 @@
 
 namespace ui {
 
-  class CloseEvent;
-  class PopupWindow;
+class CloseEvent;
+class PopupWindow;
 
-  class IntEntry : public Entry {
-  public:
-    IntEntry(int min, int max, SliderDelegate* sliderDelegate = nullptr);
-    virtual ~IntEntry();
+class IntEntry : public Entry {
+public:
+  IntEntry(int min, int max, SliderDelegate* sliderDelegate = nullptr);
+  virtual ~IntEntry();
 
-    virtual int getValue() const;
-    virtual void setValue(int value);
+  virtual int getValue() const;
+  virtual void setValue(int value);
 
-  protected:
-    bool onProcessMessage(Message* msg) override;
-    void onInitTheme(InitThemeEvent& ev) override;
-    void onSizeHint(SizeHintEvent& ev) override;
-    void onChange() override;
-    virtual void onChangeSlider();
+protected:
+  bool onProcessMessage(Message* msg) override;
+  void onInitTheme(InitThemeEvent& ev) override;
+  void onSizeHint(SizeHintEvent& ev) override;
+  void onChange() override;
+  virtual void onChangeSlider();
 
-    // New events
-    virtual void onValueChange();
+  // New events
+  virtual void onValueChange();
 
-    int m_min;
-    int m_max;
-    std::unique_ptr<PopupWindow> m_popupWindow;
-    bool m_changeFromSlider;
-    std::unique_ptr<Slider> m_slider;
+  int m_min;
+  int m_max;
+  std::unique_ptr<PopupWindow> m_popupWindow;
+  bool m_changeFromSlider;
+  std::unique_ptr<Slider> m_slider;
 
-  private:
-    void openPopup();
-    void closePopup();
-    void onPopupClose(CloseEvent& ev);
-    void removeSlider();
-
-  };
+private:
+  void openPopup();
+  void closePopup();
+  void onPopupClose(CloseEvent& ev);
+  void removeSlider();
+};
 
 } // namespace ui
 

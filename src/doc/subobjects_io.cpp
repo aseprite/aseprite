@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/subobjects_io.h"
@@ -22,8 +22,7 @@ namespace doc {
 
 using namespace doc;
 
-SubObjectsFromSprite::SubObjectsFromSprite(Sprite* sprite)
-  : m_sprite(sprite)
+SubObjectsFromSprite::SubObjectsFromSprite(Sprite* sprite) : m_sprite(sprite)
 {
 }
 

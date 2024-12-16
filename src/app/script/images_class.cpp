@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/script/docobj.h"
@@ -14,8 +14,7 @@
 #include "doc/cel.h"
 #include "doc/object_ids.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 using namespace doc;
 
@@ -24,9 +23,7 @@ namespace {
 struct ImagesObj {
   ObjectIds cels;
 
-  ImagesObj(const ObjectIds& cels)
-    : cels(cels) {
-  }
+  ImagesObj(const ObjectIds& cels) : cels(cels) {}
 
   ImagesObj(const ImagesObj&) = delete;
   ImagesObj& operator=(const ImagesObj&) = delete;
@@ -50,7 +47,7 @@ int Images_index(lua_State* L)
   auto obj = get_obj<ImagesObj>(L, 1);
   const int i = lua_tointeger(L, 2);
   if (i >= 1 && i <= obj->cels.size()) {
-    if (auto cel = doc::get<doc::Cel>(obj->cels[i-1])) {
+    if (auto cel = doc::get<doc::Cel>(obj->cels[i - 1])) {
       push_cel_image(L, cel);
       return 1;
     }
@@ -60,10 +57,10 @@ int Images_index(lua_State* L)
 }
 
 const luaL_Reg Images_methods[] = {
-  { "__gc", Images_gc },
-  { "__len", Images_len },
+  { "__gc",    Images_gc    },
+  { "__len",   Images_len   },
   { "__index", Images_index },
-  { nullptr, nullptr }
+  { nullptr,   nullptr      }
 };
 
 } // anonymous namespace
@@ -81,5 +78,4 @@ void push_cel_images(lua_State* L, const ObjectIds& cels)
   push_new<ImagesObj>(L, cels);
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

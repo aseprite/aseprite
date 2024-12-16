@@ -18,72 +18,73 @@
 
 namespace app {
 
-  // A widget that observes the active document.
-  template<typename BaseWidget>
-  class DocObserverWidget : public BaseWidget
-                          , public ContextObserver
-                          , public DocsObserver
-                          , public DocObserver {
-  public:
-    template<typename... Args>
-    DocObserverWidget(Args&&... args)
-      : BaseWidget(std::forward<Args>(args)...)
-      , m_doc(nullptr) {
-      UIContext::instance()->add_observer(this);
-      UIContext::instance()->documents().add_observer(this);
+// A widget that observes the active document.
+template<typename BaseWidget>
+class DocObserverWidget : public BaseWidget,
+                          public ContextObserver,
+                          public DocsObserver,
+                          public DocObserver {
+public:
+  template<typename... Args>
+  DocObserverWidget(Args&&... args) : BaseWidget(std::forward<Args>(args)...)
+                                    , m_doc(nullptr)
+  {
+    UIContext::instance()->add_observer(this);
+    UIContext::instance()->documents().add_observer(this);
+  }
+
+  ~DocObserverWidget()
+  {
+    ASSERT(!m_doc);
+    UIContext::instance()->documents().remove_observer(this);
+    UIContext::instance()->remove_observer(this);
+  }
+
+protected:
+  Doc* doc() const { return m_doc; }
+
+  virtual void onDocChange(Doc* doc) {}
+
+  // ContextObserver impl
+  void onActiveSiteChange(const Site& site) override
+  {
+    if (m_doc && site.document() != m_doc) {
+      m_doc->remove_observer(this);
+      m_doc = nullptr;
     }
 
-    ~DocObserverWidget() {
-      ASSERT(!m_doc);
-      UIContext::instance()->documents().remove_observer(this);
-      UIContext::instance()->remove_observer(this);
-    }
+    if (site.document() && site.sprite()) {
+      if (!m_doc) {
+        m_doc = const_cast<Doc*>(site.document());
+        m_doc->add_observer(this);
 
-  protected:
-    Doc* doc() const { return m_doc; }
-
-    virtual void onDocChange(Doc* doc) {
-    }
-
-    // ContextObserver impl
-    void onActiveSiteChange(const Site& site) override {
-      if (m_doc && site.document() != m_doc) {
-        m_doc->remove_observer(this);
-        m_doc = nullptr;
-      }
-
-      if (site.document() && site.sprite()) {
-        if (!m_doc) {
-          m_doc = const_cast<Doc*>(site.document());
-          m_doc->add_observer(this);
-
-          onDocChange(m_doc);
-        }
-        else {
-          ASSERT(m_doc == site.document());
-        }
+        onDocChange(m_doc);
       }
       else {
-        ASSERT(m_doc == nullptr);
+        ASSERT(m_doc == site.document());
       }
     }
-
-    // DocsObservers impl
-    void onRemoveDocument(Doc* doc) override {
-      if (m_doc &&
-          m_doc == doc) {
-        m_doc->remove_observer(this);
-        m_doc = nullptr;
-
-        onDocChange(nullptr);
-      }
+    else {
+      ASSERT(m_doc == nullptr);
     }
+  }
 
-    // The DocObserver impl will be in the derived class.
+  // DocsObservers impl
+  void onRemoveDocument(Doc* doc) override
+  {
+    if (m_doc && m_doc == doc) {
+      m_doc->remove_observer(this);
+      m_doc = nullptr;
 
-  private:
-    Doc* m_doc;
-  };
+      onDocChange(nullptr);
+    }
+  }
+
+  // The DocObserver impl will be in the derived class.
+
+private:
+  Doc* m_doc;
+};
 
 } // namespace app
 

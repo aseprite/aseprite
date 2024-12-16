@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cli/default_cli_delegate.h"
@@ -42,16 +42,12 @@ namespace app {
 
 void DefaultCliDelegate::showHelp(const AppOptions& options)
 {
-  std::cout
-    << get_app_name() << " v" << get_app_version()
-    << " | A pixel art program\n"
-    << get_app_copyright()
-    << "\n\nUsage:\n"
-    << "  " << options.exeName() << " [OPTIONS] [FILES]...\n\n"
-    << "Options:\n"
-    << options.programOptions()
-    << "\nFind more information in " << get_app_name()
-    << " web site: " << get_app_url() << "\n\n";
+  std::cout << get_app_name() << " v" << get_app_version() << " | A pixel art program\n"
+            << get_app_copyright() << "\n\nUsage:\n"
+            << "  " << options.exeName() << " [OPTIONS] [FILES]...\n\n"
+            << "Options:\n"
+            << options.programOptions() << "\nFind more information in " << get_app_name()
+            << " web site: " << get_app_url() << "\n\n";
 }
 
 void DefaultCliDelegate::showVersion()
@@ -61,7 +57,7 @@ void DefaultCliDelegate::showVersion()
 
 void DefaultCliDelegate::afterOpenFile(const CliOpenFile& cof)
 {
-  if (!cof.document)            // Do nothing
+  if (!cof.document) // Do nothing
     return;
 
   if (cof.listLayers) {
@@ -111,8 +107,7 @@ void DefaultCliDelegate::saveFile(Context* ctx, const CliOpenFile& cof)
   ctx->executeCommand(saveAsCommand, params);
 }
 
-void DefaultCliDelegate::loadPalette(Context* ctx,
-                                     const std::string& filename)
+void DefaultCliDelegate::loadPalette(Context* ctx, const std::string& filename)
 {
   std::unique_ptr<doc::Palette> palette(load_palette(filename.c_str()));
   if (palette) {
@@ -123,8 +118,7 @@ void DefaultCliDelegate::loadPalette(Context* ctx,
     ctx->executeCommand(loadPalCommand, params);
   }
   else {
-    Console().printf("Error loading palette in --palette '%s'\n",
-                     filename.c_str());
+    Console().printf("Error loading palette in --palette '%s'\n", filename.c_str());
   }
 }
 
@@ -133,8 +127,7 @@ void DefaultCliDelegate::exportFiles(Context* ctx, DocExporter& exporter)
   LOG("APP: Exporting sheet...\n");
 
   base::task_token token;
-  std::unique_ptr<Doc> spriteSheet(
-    exporter.exportSheet(ctx, token));
+  std::unique_ptr<Doc> spriteSheet(exporter.exportSheet(ctx, token));
 
   // Sprite sheet isn't used, we just delete it.
 
@@ -142,8 +135,7 @@ void DefaultCliDelegate::exportFiles(Context* ctx, DocExporter& exporter)
 }
 
 #ifdef ENABLE_SCRIPTING
-int DefaultCliDelegate::execScript(const std::string& filename,
-                                   const Params& params)
+int DefaultCliDelegate::execScript(const std::string& filename, const Params& params)
 {
   ScriptInputChain scriptInputChain;
   if (!App::instance()->isGui()) {

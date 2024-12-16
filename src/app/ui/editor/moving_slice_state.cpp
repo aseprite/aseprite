@@ -6,13 +6,13 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/editor/moving_slice_state.h"
 
-#include "app/cmd/set_slice_key.h"
 #include "app/cmd/clear_slices.h"
+#include "app/cmd/set_slice_key.h"
 #include "app/context_access.h"
 #include "app/tx.h"
 #include "app/ui/editor/editor.h"
@@ -22,8 +22,8 @@
 #include "doc/algorithm/rotate.h"
 #include "doc/blend_internals.h"
 #include "doc/slice.h"
-#include "ui/message.h"
 #include "render/render.h"
+#include "ui/message.h"
 
 #include <algorithm>
 #include <cmath>
@@ -40,7 +40,8 @@ MovingSliceState::MovingSliceState(Editor* editor,
   : m_frame(editor->frame())
   , m_hit(hit)
   , m_items(std::max<std::size_t>(1, selectedSlices.size()))
-  , m_tx(Tx::DontLockDoc, UIContext::instance(),
+  , m_tx(Tx::DontLockDoc,
+         UIContext::instance(),
          UIContext::instance()->activeDocument(),
          (editor->slicesTransforms() ? "Slices Transformation" : "Slice Movement"))
 {
@@ -84,11 +85,13 @@ MovingSliceState::MovingSliceState(Editor* editor,
   editor->captureMouse();
 }
 
-void MovingSliceState::initializeItemsContent() {
+void MovingSliceState::initializeItemsContent()
+{
   for (auto& item : m_items) {
     // Align slice origin to tiles origin under Tiles mode.
     if (m_site.tilemapMode() == TilemapMode::Tiles) {
-      auto origin = m_site.grid().tileToCanvas(m_site.grid().canvasToTile(item.newKey.bounds().origin()));
+      auto origin = m_site.grid().tileToCanvas(
+        m_site.grid().canvasToTile(item.newKey.bounds().origin()));
       auto bounds = gfx::Rect(origin, item.newKey.bounds().size());
       item.newKey.setBounds(bounds);
     }
@@ -100,17 +103,14 @@ void MovingSliceState::initializeItemsContent() {
       ImageRef image = ImageRef();
 
       mask.add(item.newKey.bounds());
-      if (layer &&
-          layer->isTilemap() &&
-          m_site.tilemapMode() == TilemapMode::Tiles) {
+      if (layer && layer->isTilemap() && m_site.tilemapMode() == TilemapMode::Tiles) {
         image.reset(new_tilemap_from_mask(m_site, &mask));
       }
       else {
-        image.reset(new_image_from_mask(
-          *layer,
-          m_frame,
-          &mask,
-          Preferences::instance().experimental.newBlend()));
+        image.reset(new_image_from_mask(*layer,
+                                        m_frame,
+                                        &mask,
+                                        Preferences::instance().experimental.newBlend()));
       }
 
       item.pushContent(image);
@@ -143,18 +143,17 @@ bool MovingSliceState::onMouseUp(Editor* editor, MouseMessage* msg)
     CmdTransaction* cmds = m_tx;
     for (const auto& item : m_items) {
       item.slice->insert(m_frame, item.oldKey);
-      cmds->addAndExecute(writer.context(),
-                          new cmd::SetSliceKey(item.slice, m_frame, item.newKey));
+      cmds->addAndExecute(writer.context(), new cmd::SetSliceKey(item.slice, m_frame, item.newKey));
 
       if (editor->slicesTransforms()) {
-          for (int i=0; i<m_selectedLayers.size(); ++i) {
-            auto* layer = m_selectedLayers[i];
-            m_site.layer(layer);
-            m_site.frame(m_frame);
-            drawExtraCel(i);
-            stampExtraCelImage();
-          }
-          m_site.document()->setExtraCel(ExtraCelRef(nullptr));
+        for (int i = 0; i < m_selectedLayers.size(); ++i) {
+          auto* layer = m_selectedLayers[i];
+          m_site.layer(layer);
+          m_site.frame(m_frame);
+          drawExtraCel(i);
+          stampExtraCelImage();
+        }
+        m_site.document()->setExtraCel(ExtraCelRef(nullptr));
       }
     }
 
@@ -175,10 +174,7 @@ void MovingSliceState::stampExtraCelImage()
 
   const Cel* cel = m_extraCel->cel();
 
-  ExpandCelCanvas expand(
-    m_site, m_site.layer(),
-    TiledMode::NONE, m_tx,
-    ExpandCelCanvas::None);
+  ExpandCelCanvas expand(m_site, m_site.layer(), TiledMode::NONE, m_tx, ExpandCelCanvas::None);
 
   gfx::Point dstPt;
   gfx::Size canvasImageSize = image->size();
@@ -188,11 +184,10 @@ void MovingSliceState::stampExtraCelImage()
     canvasImageSize = grid.tileToCanvas(gfx::Rect(dstPt, canvasImageSize)).size();
   }
   else {
-    dstPt =  cel->position() - expand.getCel()->position();
+    dstPt = cel->position() - expand.getCel()->position();
   }
 
-  expand.validateDestCanvas(
-    gfx::Region(gfx::Rect(cel->position(), canvasImageSize)));
+  expand.validateDestCanvas(gfx::Region(gfx::Rect(cel->position(), canvasImageSize)));
 
   expand.getDestCanvas()->copy(image, gfx::Clip(dstPt, image->bounds()));
 
@@ -201,10 +196,11 @@ void MovingSliceState::stampExtraCelImage()
 
 void MovingSliceState::drawExtraCel(int layerIdx)
 {
-  int t, opacity = (m_site.layer()->isImage() ?
-                    static_cast<LayerImage*>(m_site.layer())->opacity(): 255);
+  int t, opacity =
+           (m_site.layer()->isImage() ? static_cast<LayerImage*>(m_site.layer())->opacity() : 255);
   Cel* cel = m_site.cel();
-  if (cel) opacity = MUL_UN8(opacity, cel->opacity(), t);
+  if (cel)
+    opacity = MUL_UN8(opacity, cel->opacity(), t);
 
   if (!m_extraCel)
     m_extraCel.reset(new ExtraCel);
@@ -224,18 +220,17 @@ void MovingSliceState::drawExtraCel(int layerIdx)
       extraCelSize = bounds.size();
     }
 
-    m_extraCel->create(
-      ExtraCel::Purpose::TransformationPreview,
-      m_site.tilemapMode(),
-      m_site.document()->sprite(),
-      bounds,
-      extraCelSize,
-      m_site.frame(),
-      opacity);
+    m_extraCel->create(ExtraCel::Purpose::TransformationPreview,
+                       m_site.tilemapMode(),
+                       m_site.document()->sprite(),
+                       bounds,
+                       extraCelSize,
+                       m_site.frame(),
+                       opacity);
     m_extraCel->setType(render::ExtraType::PATCH);
     m_extraCel->setBlendMode(m_site.layer()->isImage() ?
-                             static_cast<LayerImage*>(m_site.layer())->blendMode():
-                             doc::BlendMode::NORMAL);
+                               static_cast<LayerImage*>(m_site.layer())->blendMode() :
+                               doc::BlendMode::NORMAL);
   }
   else
     m_extraCel.reset();
@@ -250,8 +245,7 @@ void MovingSliceState::drawExtraCel(int layerIdx)
 
       if (m_site.cel()) {
         doc::Grid grid = m_site.grid();
-        dst->copy(m_site.cel()->image(),
-                  gfx::Clip(0, 0, grid.canvasToTile(bounds)));
+        dst->copy(m_site.cel()->image(), gfx::Clip(0, 0, grid.canvasToTile(bounds)));
       }
     }
     else {
@@ -259,10 +253,11 @@ void MovingSliceState::drawExtraCel(int layerIdx)
       dst->clear(dst->maskColor());
 
       render::Render render;
-      render.renderLayer(
-        dst, m_site.layer(), m_site.frame(),
-        gfx::Clip(0, 0, bounds),
-        doc::BlendMode::SRC);
+      render.renderLayer(dst,
+                         m_site.layer(),
+                         m_site.frame(),
+                         gfx::Clip(0, 0, bounds),
+                         doc::BlendMode::SRC);
     }
 
     for (auto& item : m_items) {
@@ -278,14 +273,13 @@ void MovingSliceState::drawItem(doc::Image* dst,
                                 const gfx::Point& itemsBoundsOrigin,
                                 int layerIdx)
 {
-  const ItemContentRef content = (layerIdx >= 0 ? item.content[layerIdx]
-                                                : item.mergedContent);
+  const ItemContentRef content = (layerIdx >= 0 ? item.content[layerIdx] : item.mergedContent);
 
-  content->forEachPart(
-    [this, dst, itemsBoundsOrigin]
-    (const doc::Image* src, const doc::Mask* mask, const gfx::Rect& bounds) {
-      drawImage(dst, src, mask, gfx::Rect(bounds).offset(-itemsBoundsOrigin));
-    });
+  content->forEachPart([this, dst, itemsBoundsOrigin](const doc::Image* src,
+                                                      const doc::Mask* mask,
+                                                      const gfx::Rect& bounds) {
+    drawImage(dst, src, mask, gfx::Rect(bounds).offset(-itemsBoundsOrigin));
+  });
 }
 
 void MovingSliceState::drawImage(doc::Image* dst,
@@ -295,26 +289,35 @@ void MovingSliceState::drawImage(doc::Image* dst,
 {
   ASSERT(dst);
 
-  if (!src) return;
+  if (!src)
+    return;
 
   if (m_site.tilemapMode() == TilemapMode::Tiles) {
     gfx::Rect tilesBounds = m_site.grid().canvasToTile(bounds);
-    doc::algorithm::parallelogram(
-      dst, src, nullptr,
-      tilesBounds.x         , tilesBounds.y,
-      tilesBounds.x+tilesBounds.w, tilesBounds.y,
-      tilesBounds.x+tilesBounds.w, tilesBounds.y+tilesBounds.h,
-      tilesBounds.x         , tilesBounds.y+tilesBounds.h
-    );
+    doc::algorithm::parallelogram(dst,
+                                  src,
+                                  nullptr,
+                                  tilesBounds.x,
+                                  tilesBounds.y,
+                                  tilesBounds.x + tilesBounds.w,
+                                  tilesBounds.y,
+                                  tilesBounds.x + tilesBounds.w,
+                                  tilesBounds.y + tilesBounds.h,
+                                  tilesBounds.x,
+                                  tilesBounds.y + tilesBounds.h);
   }
   else {
-    doc::algorithm::parallelogram(
-      dst, src, (mask ? mask->bitmap() : nullptr),
-      bounds.x         , bounds.y,
-      bounds.x+bounds.w, bounds.y,
-      bounds.x+bounds.w, bounds.y+bounds.h,
-      bounds.x         , bounds.y+bounds.h
-    );
+    doc::algorithm::parallelogram(dst,
+                                  src,
+                                  (mask ? mask->bitmap() : nullptr),
+                                  bounds.x,
+                                  bounds.y,
+                                  bounds.x + bounds.w,
+                                  bounds.y,
+                                  bounds.x + bounds.w,
+                                  bounds.y + bounds.h,
+                                  bounds.x,
+                                  bounds.y + bounds.h);
   }
 }
 
@@ -336,9 +339,7 @@ bool MovingSliceState::onMouseMove(Editor* editor, MouseMessage* msg)
     auto& key = item.newKey;
     key = item.oldKey;
 
-    gfx::Rect rc =
-      (m_hit.type() == EditorHit::SliceCenter ? key.center():
-                                                key.bounds());
+    gfx::Rect rc = (m_hit.type() == EditorHit::SliceCenter ? key.center() : key.bounds());
 
     // Move slice
     if (m_hit.border() == (CENTER | MIDDLE)) {
@@ -351,7 +352,7 @@ bool MovingSliceState::onMouseMove(Editor* editor, MouseMessage* msg)
         rc.x += delta.x;
         rc.w -= delta.x;
         if (rc.w < 1) {
-          rc.x += rc.w-1;
+          rc.x += rc.w - 1;
           rc.w = 1;
         }
       }
@@ -359,7 +360,7 @@ bool MovingSliceState::onMouseMove(Editor* editor, MouseMessage* msg)
         rc.y += delta.y;
         rc.h -= delta.y;
         if (rc.h < 1) {
-          rc.y += rc.h-1;
+          rc.y += rc.h - 1;
           rc.h = 1;
         }
       }
@@ -380,7 +381,7 @@ bool MovingSliceState::onMouseMove(Editor* editor, MouseMessage* msg)
         rc.x += delta.x * (totalBounds.x2() - rc.x) / totalBounds.w;
         rc.w -= delta.x * rc.w / totalBounds.w;
         if (rc.w < 1) {
-          rc.x += rc.w-1;
+          rc.x += rc.w - 1;
           rc.w = 1;
         }
       }
@@ -388,7 +389,7 @@ bool MovingSliceState::onMouseMove(Editor* editor, MouseMessage* msg)
         rc.y += delta.y * (totalBounds.y2() - rc.y) / totalBounds.h;
         rc.h -= delta.y * rc.h / totalBounds.h;
         if (rc.h < 1) {
-          rc.y += rc.h-1;
+          rc.y += rc.h - 1;
           rc.h = 1;
         }
       }
@@ -437,30 +438,14 @@ bool MovingSliceState::onMouseMove(Editor* editor, MouseMessage* msg)
 bool MovingSliceState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 {
   switch (m_hit.border()) {
-    case TOP | LEFT:
-      editor->showMouseCursor(kSizeNWCursor);
-      break;
-    case TOP:
-      editor->showMouseCursor(kSizeNCursor);
-      break;
-    case TOP | RIGHT:
-      editor->showMouseCursor(kSizeNECursor);
-      break;
-    case LEFT:
-      editor->showMouseCursor(kSizeWCursor);
-      break;
-    case RIGHT:
-      editor->showMouseCursor(kSizeECursor);
-      break;
-    case BOTTOM | LEFT:
-      editor->showMouseCursor(kSizeSWCursor);
-      break;
-    case BOTTOM:
-      editor->showMouseCursor(kSizeSCursor);
-      break;
-    case BOTTOM | RIGHT:
-      editor->showMouseCursor(kSizeSECursor);
-      break;
+    case TOP | LEFT:     editor->showMouseCursor(kSizeNWCursor); break;
+    case TOP:            editor->showMouseCursor(kSizeNCursor); break;
+    case TOP | RIGHT:    editor->showMouseCursor(kSizeNECursor); break;
+    case LEFT:           editor->showMouseCursor(kSizeWCursor); break;
+    case RIGHT:          editor->showMouseCursor(kSizeECursor); break;
+    case BOTTOM | LEFT:  editor->showMouseCursor(kSizeSWCursor); break;
+    case BOTTOM:         editor->showMouseCursor(kSizeSCursor); break;
+    case BOTTOM | RIGHT: editor->showMouseCursor(kSizeSECursor); break;
   }
   return true;
 }

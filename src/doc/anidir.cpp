@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/anidir.h"
@@ -16,9 +16,9 @@ namespace doc {
 std::string convert_anidir_to_string(AniDir anidir)
 {
   switch (anidir) {
-    case AniDir::FORWARD: return "forward";
-    case AniDir::REVERSE: return "reverse";
-    case AniDir::PING_PONG: return "pingpong";
+    case AniDir::FORWARD:           return "forward";
+    case AniDir::REVERSE:           return "reverse";
+    case AniDir::PING_PONG:         return "pingpong";
     case AniDir::PING_PONG_REVERSE: return "pingpong_reverse";
   }
   return "";
@@ -26,10 +26,14 @@ std::string convert_anidir_to_string(AniDir anidir)
 
 doc::AniDir convert_string_to_anidir(const std::string& s)
 {
-  if (s == "forward") return AniDir::FORWARD;
-  if (s == "reverse") return AniDir::REVERSE;
-  if (s == "pingpong") return AniDir::PING_PONG;
-  if (s == "pingpong_reverse") return AniDir::PING_PONG_REVERSE;
+  if (s == "forward")
+    return AniDir::FORWARD;
+  if (s == "reverse")
+    return AniDir::REVERSE;
+  if (s == "pingpong")
+    return AniDir::PING_PONG;
+  if (s == "pingpong_reverse")
+    return AniDir::PING_PONG_REVERSE;
   return AniDir::FORWARD;
 }
 

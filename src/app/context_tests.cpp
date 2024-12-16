@@ -14,9 +14,10 @@ using namespace doc;
 
 namespace doc {
 
-  std::ostream& operator<<(std::ostream& os, ColorMode mode) {
-    return os << (int)mode;
-  }
+std::ostream& operator<<(std::ostream& os, ColorMode mode)
+{
+  return os << (int)mode;
+}
 
 } // namespace doc
 

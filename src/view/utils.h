@@ -14,12 +14,10 @@ namespace view {
 
 class TimelineAdapter;
 
-VirtualRange to_virtual_range(const TimelineAdapter* adapter,
-                              const RealRange& realRange);
+VirtualRange to_virtual_range(const TimelineAdapter* adapter, const RealRange& realRange);
 
-RealRange to_real_range(const TimelineAdapter* adapter,
-                        const VirtualRange& virtualRange);
+RealRange to_real_range(const TimelineAdapter* adapter, const VirtualRange& virtualRange);
 
 } // namespace view
 
-#endif  // VIEW_RANGE_H_INCLUDED
+#endif // VIEW_RANGE_H_INCLUDED

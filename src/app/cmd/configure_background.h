@@ -11,19 +11,17 @@
 #include "app/cmd_sequence.h"
 
 namespace doc {
-  class Layer;
+class Layer;
 }
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class ConfigureBackground : public CmdSequence {
-  public:
-    ConfigureBackground(Layer* layer);
-  };
+class ConfigureBackground : public CmdSequence {
+public:
+  ConfigureBackground(Layer* layer);
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

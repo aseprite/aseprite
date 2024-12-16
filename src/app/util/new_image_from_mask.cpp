@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/util/new_image_from_mask.h"
@@ -58,18 +58,20 @@ doc::Image* new_image_from_mask(const Site& site,
     render::Render render;
     render.setNewBlend(newBlend);
     if (merged)
-      render.renderSprite(dst.get(), srcSprite, site.frame(),
-                          gfx::Clip(0, 0, srcBounds));
+      render.renderSprite(dst.get(), srcSprite, site.frame(), gfx::Clip(0, 0, srcBounds));
     else {
       ASSERT(site.layer()->isTilemap());
       if (auto cel = site.cel()) {
-        render.renderCel(
-          dst.get(), cel, srcSprite,
-          cel->image(), cel->layer(),
-          srcSprite->palette(cel->frame()),
-          cel->bounds(),
-          gfx::Clip(0, 0, srcBounds),
-          255, BlendMode::NORMAL);
+        render.renderCel(dst.get(),
+                         cel,
+                         srcSprite,
+                         cel->image(),
+                         cel->layer(),
+                         srcSprite->palette(cel->frame()),
+                         cel->bounds(),
+                         gfx::Clip(0, 0, srcBounds),
+                         255,
+                         BlendMode::NORMAL);
       }
     }
 
@@ -116,13 +118,16 @@ doc::Image* new_image_from_mask(const Layer& layer,
     render.setNewBlend(newBlend);
     ASSERT(layer.isTilemap());
     if (cel) {
-      render.renderCel(
-        dst.get(), cel, srcSprite,
-        cel->image(), cel->layer(),
-        srcSprite->palette(cel->frame()),
-        cel->bounds(),
-        gfx::Clip(0, 0, srcBounds),
-        255, BlendMode::NORMAL);
+      render.renderCel(dst.get(),
+                       cel,
+                       srcSprite,
+                       cel->image(),
+                       cel->layer(),
+                       srcSprite->palette(cel->frame()),
+                       cel->bounds(),
+                       gfx::Clip(0, 0, srcBounds),
+                       255,
+                       BlendMode::NORMAL);
     }
     src = dst.get();
   }
@@ -144,7 +149,8 @@ doc::Image* new_image_from_mask(const Layer& layer,
 void copy_masked_zones(Image* dst,
                        const Image* src,
                        const Mask* srcMask,
-                       int srcXoffset, int srcYoffset)
+                       int srcXoffset,
+                       int srcYoffset)
 {
   ASSERT(srcMask);
 
@@ -157,22 +163,21 @@ void copy_masked_zones(Image* dst,
 
     if (srcMaskBitmap) {
       // Copy active layer with mask
-      const LockImageBits<BitmapTraits> maskBits(srcMaskBitmap, gfx::Rect(0, 0, srcBounds.w, srcBounds.h));
+      const LockImageBits<BitmapTraits> maskBits(srcMaskBitmap,
+                                                 gfx::Rect(0, 0, srcBounds.w, srcBounds.h));
       LockImageBits<BitmapTraits>::const_iterator mask_it = maskBits.begin();
 
-      for (int v=0; v<srcBounds.h; ++v) {
-        for (int u=0; u<srcBounds.w; ++u, ++mask_it) {
+      for (int v = 0; v < srcBounds.h; ++v) {
+        for (int u = 0; u < srcBounds.w; ++u, ++mask_it) {
           ASSERT(mask_it != maskBits.end());
 
           if (src != dst) {
             if (*mask_it) {
-              int getx = u+srcBounds.x-srcXoffset;
-              int gety = v+srcBounds.y-srcYoffset;
+              int getx = u + srcBounds.x - srcXoffset;
+              int gety = v + srcBounds.y - srcYoffset;
 
-              if ((getx >= 0) && (getx < src->width()) &&
-                  (gety >= 0) && (gety < src->height()) &&
-                  (u < dst->width()) &&
-                  (v < dst->height()))
+              if ((getx >= 0) && (getx < src->width()) && (gety >= 0) && (gety < src->height()) &&
+                  (u < dst->width()) && (v < dst->height()))
                 dst->putPixel(u, v, src->getPixel(getx, gety));
             }
           }
@@ -190,8 +195,7 @@ void copy_masked_zones(Image* dst,
   }
 }
 
-doc::Image* new_tilemap_from_mask(const Site& site,
-                                  const doc::Mask* srcMask)
+doc::Image* new_tilemap_from_mask(const Site& site, const doc::Mask* srcMask)
 {
   ASSERT(site.sprite());
   ASSERT(srcMask);
@@ -209,9 +213,7 @@ doc::Image* new_tilemap_from_mask(const Site& site,
   ASSERT(!srcTilesBounds.isEmpty());
   ASSERT(site.layer()->isTilemap());
 
-  std::unique_ptr<Image> dst(Image::create(IMAGE_TILEMAP,
-                                           srcTilesBounds.w,
-                                           srcTilesBounds.h));
+  std::unique_ptr<Image> dst(Image::create(IMAGE_TILEMAP, srcTilesBounds.w, srcTilesBounds.h));
   if (!dst)
     return nullptr;
 
@@ -221,19 +223,19 @@ doc::Image* new_tilemap_from_mask(const Site& site,
   // Copy the masked zones
   if (srcMaskBitmap) {
     // Copy active layer with mask
-    const LockImageBits<BitmapTraits> maskBits(srcMaskBitmap, gfx::Rect(0, 0, srcBounds.w, srcBounds.h));
+    const LockImageBits<BitmapTraits> maskBits(srcMaskBitmap,
+                                               gfx::Rect(0, 0, srcBounds.w, srcBounds.h));
     auto mask_it = maskBits.begin();
     const gfx::Point originPt = grid.canvasToTile(srcBounds.origin());
 
-    for (int v=0; v<srcBounds.h; ++v) {
-      for (int u=0; u<srcBounds.w; ++u, ++mask_it) {
+    for (int v = 0; v < srcBounds.h; ++v) {
+      for (int u = 0; u < srcBounds.w; ++u, ++mask_it) {
         ASSERT(mask_it != maskBits.end());
         if (*mask_it) {
-          gfx::Point srcPt = grid.canvasToTile(gfx::Point(srcBounds.x+u, srcBounds.y+v));
+          gfx::Point srcPt = grid.canvasToTile(gfx::Point(srcBounds.x + u, srcBounds.y + v));
           gfx::Point dstPt = srcPt - originPt;
 
-          if (dst->bounds().contains(dstPt) &&
-              srcCel->image()->bounds().contains(srcPt)) {
+          if (dst->bounds().contains(dstPt) && srcCel->image()->bounds().contains(srcPt)) {
             dst->putPixel(dstPt.x, dstPt.y, srcCel->image()->getPixel(srcPt.x, srcPt.y));
           }
         }

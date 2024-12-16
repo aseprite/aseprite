@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/commands/cmd_open_file.h"
@@ -57,13 +57,10 @@ void OpenFileCommand::onLoadParams(const Params& params)
   m_oneFrame = params.get_as<bool>("oneframe");
 
   std::string sequence = params.get("sequence");
-  if (m_oneFrame ||
-      sequence == "skip" ||
-      sequence == "no") {
+  if (m_oneFrame || sequence == "skip" || sequence == "no") {
     m_seqDecision = gen::SequenceDecision::NO;
   }
-  else if (sequence == "agree" ||
-           sequence == "yes") {
+  else if (sequence == "agree" || sequence == "yes") {
     m_seqDecision = gen::SequenceDecision::YES;
   }
   else {
@@ -85,10 +82,12 @@ void OpenFileCommand::onExecute(Context* context)
 
     // Add backslash as show_file_selector() expected a filename as
     // initial path (and the file part is removed from the path).
-    if (!m_folder.empty() && !base::is_path_separator(m_folder[m_folder.size()-1]))
+    if (!m_folder.empty() && !base::is_path_separator(m_folder[m_folder.size() - 1]))
       m_folder.push_back(base::path_separator);
 
-    if (!app::show_file_selector(Strings::open_file_title(), m_folder, exts,
+    if (!app::show_file_selector(Strings::open_file_title(),
+                                 m_folder,
+                                 exts,
                                  FileSelectorType::OpenMultiple,
                                  filenames)) {
       // The user cancelled the operation through UI
@@ -108,13 +107,10 @@ void OpenFileCommand::onExecute(Context* context)
   if (filenames.empty())
     return;
 
-  int flags =
-    FILE_LOAD_DATA_FILE |
-    FILE_LOAD_CREATE_PALETTE |
-    (m_repeatCheckbox ? FILE_LOAD_SEQUENCE_ASK_CHECKBOX: 0);
+  int flags = FILE_LOAD_DATA_FILE | FILE_LOAD_CREATE_PALETTE |
+              (m_repeatCheckbox ? FILE_LOAD_SEQUENCE_ASK_CHECKBOX : 0);
 
-  if (context->isUIAvailable() &&
-      m_seqDecision == gen::SequenceDecision::ASK) {
+  if (context->isUIAvailable() && m_seqDecision == gen::SequenceDecision::ASK) {
     if (Preferences::instance().openFile.openSequence() == gen::SequenceDecision::ASK) {
       // Do nothing (ask by default, or whatever the command params
       // specified)
@@ -125,15 +121,9 @@ void OpenFileCommand::onExecute(Context* context)
   }
 
   switch (m_seqDecision) {
-    case gen::SequenceDecision::ASK:
-      flags |= FILE_LOAD_SEQUENCE_ASK;
-      break;
-    case gen::SequenceDecision::YES:
-      flags |= FILE_LOAD_SEQUENCE_YES;
-      break;
-    case gen::SequenceDecision::NO:
-      flags |= FILE_LOAD_SEQUENCE_NONE;
-      break;
+    case gen::SequenceDecision::ASK: flags |= FILE_LOAD_SEQUENCE_ASK; break;
+    case gen::SequenceDecision::YES: flags |= FILE_LOAD_SEQUENCE_YES; break;
+    case gen::SequenceDecision::NO:  flags |= FILE_LOAD_SEQUENCE_NONE; break;
   }
 
   if (m_oneFrame)
@@ -144,9 +134,7 @@ void OpenFileCommand::onExecute(Context* context)
     filename = filenames[0];
     filenames.erase(filenames.begin());
 
-    std::unique_ptr<FileOp> fop(
-      FileOp::createLoadDocumentOperation(
-        context, filename, flags));
+    std::unique_ptr<FileOp> fop(FileOp::createLoadDocumentOperation(context, filename, flags));
     bool unrecent = false;
 
     // Do nothing (the user cancelled or something like that)
@@ -200,8 +188,7 @@ void OpenFileCommand::onExecute(Context* context)
           App::instance()->recentFiles()->addRecentFile(fop->filename().c_str());
           auto& docPref = Preferences::instance().document(doc);
 
-          if (fop->hasEmbeddedGridBounds() &&
-              !doc->sprite()->gridBounds().isEmpty()) {
+          if (fop->hasEmbeddedGridBounds() && !doc->sprite()->gridBounds().isEmpty()) {
             // If the sprite contains the grid bounds inside, we put
             // those grid bounds into the settings (e.g. useful to
             // interact with old versions of Aseprite saving the grid
@@ -238,10 +225,9 @@ std::string OpenFileCommand::onGetFriendlyName() const
   int pos(68.0 / double(uiScale) / double(scScale));
   return Command::onGetFriendlyName().append(
     (m_filename.empty() ?
-      "" :
-      (": " + (m_filename.size() >= pos ?
-                 m_filename.substr(m_filename.size() - pos, pos) :
-                 m_filename))));
+       "" :
+       (": " + (m_filename.size() >= pos ? m_filename.substr(m_filename.size() - pos, pos) :
+                                           m_filename))));
 }
 
 Command* CommandFactory::createOpenFileCommand()

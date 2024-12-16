@@ -14,19 +14,19 @@
 namespace app {
 
 class AlphaSlider : public ui::Slider,
-                    ui::SliderDelegate
-{
+                    ui::SliderDelegate {
 public:
-  enum Type {ALPHA, OPACITY};
+  enum Type { ALPHA, OPACITY };
 
   AlphaSlider(int value, Type type);
 
   void getSliderThemeInfo(int* min, int* max, int* value) const override;
   void updateValue(int value) override;
 
-  app::gen::AlphaRange getAlphaRange() const {
-    return (m_type == ALPHA ? Preferences::instance().range.alpha()
-                            : Preferences::instance().range.opacity());
+  app::gen::AlphaRange getAlphaRange() const
+  {
+    return (m_type == ALPHA ? Preferences::instance().range.alpha() :
+                              Preferences::instance().range.opacity());
   }
 
 private:
@@ -37,6 +37,6 @@ private:
   Type m_type;
 };
 
-}
+} // namespace app
 
 #endif

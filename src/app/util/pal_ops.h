@@ -9,20 +9,19 @@
 #pragma once
 
 namespace doc {
-  class Palette;
-  class PalettePicks;
-}
+class Palette;
+class PalettePicks;
+} // namespace doc
 
 namespace app {
-  class Tx;
+class Tx;
 
-  void move_or_copy_palette_colors(
-    doc::Palette& palette,
-    doc::Palette& newPalette,
-    doc::PalettePicks& picks,
-    int& currentEntry,
-    const int beforeIndex,
-    const bool copy);
+void move_or_copy_palette_colors(doc::Palette& palette,
+                                 doc::Palette& newPalette,
+                                 doc::PalettePicks& picks,
+                                 int& currentEntry,
+                                 const int beforeIndex,
+                                 const bool copy);
 
 } // namespace app
 

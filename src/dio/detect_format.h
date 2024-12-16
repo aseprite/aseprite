@@ -16,8 +16,7 @@
 namespace dio {
 
 FileFormat detect_format(const std::string& filename);
-FileFormat detect_format_by_file_content_bytes(const uint8_t* buf,
-                                               const int n);
+FileFormat detect_format_by_file_content_bytes(const uint8_t* buf, const int n);
 FileFormat detect_format_by_file_content(const std::string& filename);
 FileFormat detect_format_by_file_extension(const std::string& filename);
 

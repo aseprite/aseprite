@@ -17,38 +17,36 @@
 #include <memory>
 
 namespace doc {
-  class Cel;
+class Cel;
 }
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class ClearRect : public Cmd {
-  public:
-    ClearRect(Cel* cel, const gfx::Rect& bounds);
+class ClearRect : public Cmd {
+public:
+  ClearRect(Cel* cel, const gfx::Rect& bounds);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onRedo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this) + m_seq.memSize() +
-        (m_copy ? m_copy->getMemSize(): 0);
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onRedo() override;
+  size_t onMemSize() const override
+  {
+    return sizeof(*this) + m_seq.memSize() + (m_copy ? m_copy->getMemSize() : 0);
+  }
 
-  private:
-    void clear();
-    void restore();
+private:
+  void clear();
+  void restore();
 
-    CmdSequence m_seq;
-    std::unique_ptr<WithImage> m_dstImage;
-    ImageRef m_copy;
-    int m_offsetX, m_offsetY;
-    color_t m_bgcolor;
-  };
+  CmdSequence m_seq;
+  std::unique_ptr<WithImage> m_dstImage;
+  ImageRef m_copy;
+  int m_offsetX, m_offsetY;
+  color_t m_bgcolor;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

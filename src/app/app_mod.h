@@ -9,13 +9,13 @@
 #pragma once
 
 namespace app {
-  class MainWindow;
+class MainWindow;
 
-  class AppMod {
-  public:
-    virtual ~AppMod() { }
-    virtual void modMainWindow(MainWindow* mainWindow) = 0;
-  };
+class AppMod {
+public:
+  virtual ~AppMod() {}
+  virtual void modMainWindow(MainWindow* mainWindow) = 0;
+};
 
 } // namespace app
 

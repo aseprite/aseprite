@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "base/fstream_path.h"
@@ -18,14 +18,13 @@
 #include <fstream>
 #include <memory>
 
-namespace doc {
-namespace file {
+namespace doc { namespace file {
 
 using namespace base::serialization::big_endian;
 
 const int ActMaxColors = 256;
 
-std::unique_ptr<Palette> load_act_file(const char *filename)
+std::unique_ptr<Palette> load_act_file(const char* filename)
 {
   std::ifstream f(FSTREAM_PATH(filename), std::ios::binary);
   if (f.bad())
@@ -43,7 +42,7 @@ std::unique_ptr<Palette> load_act_file(const char *filename)
 
   std::unique_ptr<Palette> pal(new Palette(frame_t(0), colors));
 
-  uint8_t *c = rgb;
+  uint8_t* c = rgb;
   for (int i = 0; i < colors; ++i) {
     uint8_t r = *(c++);
     uint8_t g = *(c++);
@@ -55,7 +54,7 @@ std::unique_ptr<Palette> load_act_file(const char *filename)
   return pal;
 }
 
-bool save_act_file(const Palette *pal, const char *filename)
+bool save_act_file(const Palette* pal, const char* filename)
 {
   std::ofstream f(FSTREAM_PATH(filename), std::ios::binary);
   if (f.bad())
@@ -63,7 +62,7 @@ bool save_act_file(const Palette *pal, const char *filename)
 
   // Need to write 256 colors even if the palette is smaller
   uint8_t rgb[ActMaxColors * 3] = { 0 };
-  uint8_t *c = rgb;
+  uint8_t* c = rgb;
 
   int colors = std::min(pal->size(), ActMaxColors);
   for (int i = 0; i < colors; ++i) {
@@ -81,5 +80,4 @@ bool save_act_file(const Palette *pal, const char *filename)
   return true;
 }
 
-} // namespace file
-} // namespace doc
+}} // namespace doc::file

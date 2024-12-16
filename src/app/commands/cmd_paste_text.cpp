@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -42,8 +42,7 @@ protected:
   void onExecute(Context* ctx) override;
 };
 
-PasteTextCommand::PasteTextCommand()
-  : Command(CommandId::PasteText(), CmdUIOnlyFlag)
+PasteTextCommand::PasteTextCommand() : Command(CommandId::PasteText(), CmdUIOnlyFlag)
 {
 }
 
@@ -55,16 +54,13 @@ bool PasteTextCommand::onEnabled(Context* ctx)
 
 class PasteTextWindow : public app::gen::PasteText {
 public:
-  PasteTextWindow(const FontInfo& fontInfo,
-                  const app::Color& color) {
+  PasteTextWindow(const FontInfo& fontInfo, const app::Color& color)
+  {
     fontFace()->setInfo(fontInfo, FontEntry::From::Init);
     fontColor()->setColor(color);
   }
 
-  FontInfo fontInfo() const {
-    return fontFace()->info();
-  }
-
+  FontInfo fontInfo() const { return fontFace()->info(); }
 };
 
 void PasteTextCommand::onExecute(Context* ctx)
@@ -93,22 +89,21 @@ void PasteTextCommand::onExecute(Context* ctx)
     app::Color color = window.fontColor()->getColor();
 
     doc::ImageRef image = render_text(
-      fontInfo, text,
-      gfx::rgba(color.getRed(),
-                color.getGreen(),
-                color.getBlue(),
-                color.getAlpha()));
+      fontInfo,
+      text,
+      gfx::rgba(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()));
     if (image) {
       Sprite* sprite = editor->sprite();
       if (image->pixelFormat() != sprite->pixelFormat()) {
         RgbMap* rgbmap = sprite->rgbMap(editor->frame());
-        image.reset(
-          render::convert_pixel_format(
-            image.get(), NULL, sprite->pixelFormat(),
-            render::Dithering(),
-            rgbmap, sprite->palette(editor->frame()),
-            false,
-            sprite->transparentColor()));
+        image.reset(render::convert_pixel_format(image.get(),
+                                                 NULL,
+                                                 sprite->pixelFormat(),
+                                                 render::Dithering(),
+                                                 rgbmap,
+                                                 sprite->palette(editor->frame()),
+                                                 false,
+                                                 sprite->transparentColor()));
       }
 
       // TODO we don't support pasting text in multiple cels at the

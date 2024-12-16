@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/remap_colors.h"
@@ -16,14 +16,11 @@
 #include "doc/remap.h"
 #include "doc/sprite.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 using namespace doc;
 
-RemapColors::RemapColors(Sprite* sprite, const Remap& remap)
-  : WithSprite(sprite)
-  , m_remap(remap)
+RemapColors::RemapColors(Sprite* sprite, const Remap& remap) : WithSprite(sprite), m_remap(remap)
 {
 }
 
@@ -51,5 +48,4 @@ void RemapColors::incrementVersions(Sprite* spr)
     cel->image()->incrementVersion();
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

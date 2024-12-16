@@ -10,7 +10,7 @@
 
 namespace doc {
 
-  typedef int frame_t;
+typedef int frame_t;
 
 } // namespace doc
 

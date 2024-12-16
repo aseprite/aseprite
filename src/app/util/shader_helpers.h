@@ -10,28 +10,28 @@
 
 #if LAF_SKIA
 
-#include "app/color.h"
-#include "gfx/color.h"
-#include "os/surface.h"
+  #include "app/color.h"
+  #include "gfx/color.h"
+  #include "os/surface.h"
 
-#include "include/core/SkCanvas.h"
-#include "include/core/SkImage.h"
-#include "include/core/SkM44.h"
-#include "include/core/SkRefCnt.h"
+  #include "include/core/SkCanvas.h"
+  #include "include/core/SkImage.h"
+  #include "include/core/SkM44.h"
+  #include "include/core/SkRefCnt.h"
 
-#if SK_ENABLE_SKSL
-  #include "include/effects/SkRuntimeEffect.h"
-#endif
+  #if SK_ENABLE_SKSL
+    #include "include/effects/SkRuntimeEffect.h"
+  #endif
 
-#include <memory>
+  #include <memory>
 
 namespace doc {
-  class Image;
+class Image;
 }
 
 namespace app {
 
-#if SK_ENABLE_SKSL
+  #if SK_ENABLE_SKSL
 
 // rgb_to_hsl() and hsv_to_hsl() functions by Sam Hocevar licensed
 // under WTFPL (https://en.wikipedia.org/wiki/WTFPL)
@@ -59,38 +59,42 @@ half3 hsv_to_rgb(half3 c) {
 }
 )";
 
-inline SkV4 gfxColor_to_SkV4(gfx::Color color) {
-  return SkV4{float(gfx::getr(color) / 255.0),
-              float(gfx::getg(color) / 255.0),
-              float(gfx::getb(color) / 255.0),
-              float(gfx::geta(color) / 255.0)};
+inline SkV4 gfxColor_to_SkV4(gfx::Color color)
+{
+  return SkV4{ float(gfx::getr(color) / 255.0),
+               float(gfx::getg(color) / 255.0),
+               float(gfx::getb(color) / 255.0),
+               float(gfx::geta(color) / 255.0) };
 }
 
-inline SkV4 appColor_to_SkV4(const app::Color& color) {
-  return SkV4{float(color.getRed() / 255.0),
-              float(color.getGreen() / 255.0),
-              float(color.getBlue() / 255.0),
-              float(color.getAlpha() / 255.0)};
+inline SkV4 appColor_to_SkV4(const app::Color& color)
+{
+  return SkV4{ float(color.getRed() / 255.0),
+               float(color.getGreen() / 255.0),
+               float(color.getBlue() / 255.0),
+               float(color.getAlpha() / 255.0) };
 }
 
-inline SkV4 appColorHsv_to_SkV4(const app::Color& color) {
-  return SkV4{float(color.getHsvHue() / 360.0),
-              float(color.getHsvSaturation()),
-              float(color.getHsvValue()),
-              float(color.getAlpha() / 255.0)};
+inline SkV4 appColorHsv_to_SkV4(const app::Color& color)
+{
+  return SkV4{ float(color.getHsvHue() / 360.0),
+               float(color.getHsvSaturation()),
+               float(color.getHsvValue()),
+               float(color.getAlpha() / 255.0) };
 }
 
-inline SkV4 appColorHsl_to_SkV4(const app::Color& color) {
-  return SkV4{float(color.getHslHue() / 360.0),
-              float(color.getHslSaturation()),
-              float(color.getHslLightness()),
-              float(color.getAlpha() / 255.0)};
+inline SkV4 appColorHsl_to_SkV4(const app::Color& color)
+{
+  return SkV4{ float(color.getHslHue() / 360.0),
+               float(color.getHslSaturation()),
+               float(color.getHslLightness()),
+               float(color.getAlpha() / 255.0) };
 }
 
 sk_sp<SkRuntimeEffect> make_shader(const char* code);
 sk_sp<SkRuntimeEffect> make_blender(const char* code);
 
-#endif  // SK_ENABLE_SKSL
+  #endif // SK_ENABLE_SKSL
 
 SkImageInfo get_skimageinfo_for_docimage(const doc::Image* img);
 sk_sp<SkImage> make_skimage_for_docimage(const doc::Image* img);
@@ -100,6 +104,6 @@ os::SurfaceRef wrap_docimage_in_surface(const doc::Image* img);
 
 } // namespace app
 
-#endif  // LAF_SKIA
+#endif // LAF_SKIA
 
 #endif

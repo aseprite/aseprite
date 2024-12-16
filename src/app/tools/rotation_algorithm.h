@@ -8,16 +8,14 @@
 #define APP_TOOLS_ROTATION_ALGORITHM_H_INCLUDED
 #pragma once
 
-namespace app {
-namespace tools {
+namespace app { namespace tools {
 
-  enum class RotationAlgorithm {
-    DEFAULT = 0,
-    FAST = 0,
-    ROTSPRITE = 1,
-  };
+enum class RotationAlgorithm {
+  DEFAULT = 0,
+  FAST = 0,
+  ROTSPRITE = 1,
+};
 
-} // namespace tools
-} // namespace app
+}} // namespace app::tools
 
 #endif

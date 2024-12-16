@@ -10,21 +10,19 @@
 
 #include "app/cmd/add_cel.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class RemoveCel : public AddCel {
-  public:
-    RemoveCel(Cel* cel);
+class RemoveCel : public AddCel {
+public:
+  RemoveCel(Cel* cel);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onRedo() override;
-  };
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onRedo() override;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

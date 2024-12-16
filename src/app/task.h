@@ -15,55 +15,55 @@
 
 namespace app {
 
-  class Task {
-  public:
-    Task();
-    ~Task();
+class Task {
+public:
+  Task();
+  ~Task();
 
-    void run(base::task::func_t&& func);
-    void wait();
+  void run(base::task::func_t&& func);
+  void wait();
 
-    // Returns true when the task is completed (whether it was
-    // canceled or not)
-    bool completed() const {
-      return m_task.completed();
-    }
+  // Returns true when the task is completed (whether it was
+  // canceled or not)
+  bool completed() const { return m_task.completed(); }
 
-    bool running() const {
-      return m_task.running();
-    }
+  bool running() const { return m_task.running(); }
 
-    bool canceled() const {
-      const std::lock_guard lock(m_token_mutex);
-      if (m_token)
-        return m_token->canceled();
-      return false;
-    }
+  bool canceled() const
+  {
+    const std::lock_guard lock(m_token_mutex);
+    if (m_token)
+      return m_token->canceled();
+    return false;
+  }
 
-    float progress() const {
-      const std::lock_guard lock(m_token_mutex);
-      if (m_token)
-        return m_token->progress();
-      return 0.0f;
-    }
+  float progress() const
+  {
+    const std::lock_guard lock(m_token_mutex);
+    if (m_token)
+      return m_token->progress();
+    return 0.0f;
+  }
 
-    void cancel() {
-      const std::lock_guard lock(m_token_mutex);
-      if (m_token)
-        m_token->cancel();
-    }
+  void cancel()
+  {
+    const std::lock_guard lock(m_token_mutex);
+    if (m_token)
+      m_token->cancel();
+  }
 
-    void set_progress(float progress) {
-      const std::lock_guard lock(m_token_mutex);
-      if (m_token)
-        m_token->set_progress(progress);
-    }
+  void set_progress(float progress)
+  {
+    const std::lock_guard lock(m_token_mutex);
+    if (m_token)
+      m_token->set_progress(progress);
+  }
 
-  private:
-    base::task m_task;
-    mutable std::mutex m_token_mutex;
-    base::task_token* m_token;
-  };
+private:
+  base::task m_task;
+  mutable std::mutex m_token_mutex;
+  base::task_token* m_token;
+};
 
 } // namespace app
 

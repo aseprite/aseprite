@@ -20,13 +20,13 @@ $ASEPRITE -b -script "$d/gen.lua" || exit 1
 
 # Load image and save in all formats using CLI
 $ASEPRITE -b "$d/test.aseprite" \
-	  -save-as "$d/test2.gif" \
-	  -save-as "$d/test2.ico" \
-	  -save-as "$d/test2.jpg" \
-	  -save-as "$d/test2.pcx" \
-	  -save-as "$d/test2.svg" \
-	  -save-as "$d/test2.tga" \
-	  -save-as "$d/test2.webp" \
+          -save-as "$d/test2.gif" \
+          -save-as "$d/test2.ico" \
+          -save-as "$d/test2.jpg" \
+          -save-as "$d/test2.pcx" \
+          -save-as "$d/test2.svg" \
+          -save-as "$d/test2.tga" \
+          -save-as "$d/test2.webp" \
     || exit 1
 
 # Compare that all images are the same/equivalent

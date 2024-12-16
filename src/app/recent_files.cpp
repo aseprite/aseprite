@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/recent_files.h"
@@ -33,18 +33,15 @@ const char* kConversionKey = "_";
 
 struct compare_path {
   std::string a;
-  compare_path(const std::string& a) : a(a) { }
-  bool operator()(const std::string& b) const {
-    return base::compare_filenames(a, b) == 0;
-  }
+  compare_path(const std::string& a) : a(a) {}
+  bool operator()(const std::string& b) const { return base::compare_filenames(a, b) == 0; }
 };
 
-}
+} // namespace
 
 namespace app {
 
-RecentFiles::RecentFiles(const int limit)
-  : m_limit(limit)
+RecentFiles::RecentFiles(const int limit) : m_limit(limit)
 {
   load();
 }
@@ -60,16 +57,14 @@ void RecentFiles::addRecentFile(const std::string& filename)
 
   // If the filename is already pinned, we don't add it in the
   // collection of recent files collection.
-  auto it = std::find(m_paths[kPinnedFiles].begin(),
-                      m_paths[kPinnedFiles].end(), fn);
+  auto it = std::find(m_paths[kPinnedFiles].begin(), m_paths[kPinnedFiles].end(), fn);
   if (it != m_paths[kPinnedFiles].end())
     return;
   addItem(m_paths[kRecentFiles], fn);
 
   // Add recent folder
   std::string path = base::get_file_path(fn);
-  it = std::find(m_paths[kPinnedFolders].begin(),
-                 m_paths[kPinnedFolders].end(), path);
+  it = std::find(m_paths[kPinnedFolders].begin(), m_paths[kPinnedFolders].end(), path);
   if (it == m_paths[kPinnedFolders].end()) {
     addItem(m_paths[kRecentFolders], path);
   }
@@ -122,15 +117,13 @@ void RecentFiles::clear()
   Changed();
 }
 
-void RecentFiles::setFiles(const base::paths& pinnedFiles,
-                           const base::paths& recentFiles)
+void RecentFiles::setFiles(const base::paths& pinnedFiles, const base::paths& recentFiles)
 {
   m_paths[kPinnedFiles] = pinnedFiles;
   m_paths[kRecentFiles] = recentFiles;
 }
 
-void RecentFiles::setFolders(const base::paths& pinnedFolders,
-                             const base::paths& recentFolders)
+void RecentFiles::setFolders(const base::paths& pinnedFolders, const base::paths& recentFolders)
 {
   m_paths[kPinnedFolders] = pinnedFolders;
   m_paths[kRecentFolders] = recentFolders;
@@ -169,25 +162,22 @@ void RecentFiles::removeItem(base::paths& list, const std::string& fn)
 
 void RecentFiles::load()
 {
-  for (int i=0; i<kCollections; ++i) {
+  for (int i = 0; i < kCollections; ++i) {
     const char* section = kSectionName[i];
 
     // For recent files: If there is an item called "Filename00" and no "0" key
     // For recent paths: If there is an item called "Path00" and no "0" key
     // -> We are migrating from and old version to a new one
-    const bool processOldFilenames =
-      (i == kRecentFiles &&
-       get_config_string(section, "Filename00", nullptr) &&
-       !get_config_bool(section, kConversionKey, false));
+    const bool processOldFilenames = (i == kRecentFiles &&
+                                      get_config_string(section, "Filename00", nullptr) &&
+                                      !get_config_bool(section, kConversionKey, false));
 
-    const bool processOldPaths =
-      (i == kRecentFolders &&
-       get_config_string(section, "Path00", nullptr) &&
-       !get_config_bool(section, kConversionKey, false));
+    const bool processOldPaths = (i == kRecentFolders &&
+                                  get_config_string(section, "Path00", nullptr) &&
+                                  !get_config_bool(section, kConversionKey, false));
 
     for (const auto& key : enum_config_keys(section)) {
-      if ((!processOldFilenames && std::strncmp(key.c_str(), "Filename", 8) == 0)
-          ||
+      if ((!processOldFilenames && std::strncmp(key.c_str(), "Filename", 8) == 0) ||
           (!processOldPaths && std::strncmp(key.c_str(), "Path", 4) == 0)) {
         // Ignore old entries if we are going to read the new ones
         continue;
@@ -209,13 +199,12 @@ void RecentFiles::load()
 
 void RecentFiles::save()
 {
-  for (int i=0; i<kCollections; ++i) {
+  for (int i = 0; i < kCollections; ++i) {
     const char* section = kSectionName[i];
 
     for (const auto& key : enum_config_keys(section)) {
       if ((i == kRecentFiles &&
-           (std::strncmp(key.c_str(), "Filename", 8) == 0 || key == kConversionKey))
-          ||
+           (std::strncmp(key.c_str(), "Filename", 8) == 0 || key == kConversionKey)) ||
           (i == kRecentFolders &&
            (std::strncmp(key.c_str(), "Path", 4) == 0 || key == kConversionKey))) {
         // Ignore old entries if we are going to read the new ones
@@ -224,10 +213,8 @@ void RecentFiles::save()
       del_config_value(section, key.c_str());
     }
 
-    for (int j=0; j<m_paths[i].size(); ++j) {
-      set_config_string(section,
-                        fmt::format("{:04d}", j).c_str(),
-                        m_paths[i][j].c_str());
+    for (int j = 0; j < m_paths[i].size(); ++j) {
+      set_config_string(section, fmt::format("{:04d}", j).c_str(), m_paths[i][j].c_str());
     }
     // Special entry that indicates that we've already converted
     if ((i == kRecentFiles || i == kRecentFolders) &&

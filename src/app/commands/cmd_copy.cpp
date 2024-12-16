@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -23,8 +23,7 @@ protected:
   void onExecute(Context* ctx) override;
 };
 
-CopyCommand::CopyCommand()
-  : Command(CommandId::Copy(), CmdUIOnlyFlag)
+CopyCommand::CopyCommand() : Command(CommandId::Copy(), CmdUIOnlyFlag)
 {
 }
 

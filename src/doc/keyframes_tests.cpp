@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include <gtest/gtest.h>
@@ -100,13 +100,12 @@ TEST(Keyframes, Range)
   frame_t f = 1;
   for (int* value : k.range(1, 5)) {
     switch (f) {
-      case 1: EXPECT_EQ(5, *value); break;
-      case 2: EXPECT_EQ(nullptr, value); break;
-      case 3: EXPECT_EQ(nullptr, value); break;
-      case 4: EXPECT_EQ(8, *value); break;
-      case 5: EXPECT_EQ(8, *value); break;
-      default:
-        ASSERT_TRUE(false);
+      case 1:  EXPECT_EQ(5, *value); break;
+      case 2:  EXPECT_EQ(nullptr, value); break;
+      case 3:  EXPECT_EQ(nullptr, value); break;
+      case 4:  EXPECT_EQ(8, *value); break;
+      case 5:  EXPECT_EQ(8, *value); break;
+      default: ASSERT_TRUE(false);
     }
     ++f;
   }

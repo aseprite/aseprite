@@ -9,18 +9,17 @@
 #pragma once
 
 namespace doc {
-  class Layer;
+class Layer;
 }
 
 namespace view {
 
-  // Calculates a possible candidate to be selected in case that we
-  // have a specific "selectedLayer" and are going to delete the given
-  // "layerToDelete".
-  doc::Layer* candidate_if_layer_is_deleted(
-    const doc::Layer* selectedLayer,
-    const doc::Layer* layerToDelete);
+// Calculates a possible candidate to be selected in case that we
+// have a specific "selectedLayer" and are going to delete the given
+// "layerToDelete".
+doc::Layer* candidate_if_layer_is_deleted(const doc::Layer* selectedLayer,
+                                          const doc::Layer* layerToDelete);
 
 } // namespace view
 
-#endif  // VIEW_LAYERS_H_INCLUDED
+#endif // VIEW_LAYERS_H_INCLUDED

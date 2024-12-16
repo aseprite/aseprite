@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef ASEPRITE_CONFIG_H_INCLUDED
-#error You cannot use config.h two times
+  #error You cannot use config.h two times
 #endif
 
 #define ASEPRITE_CONFIG_H_INCLUDED

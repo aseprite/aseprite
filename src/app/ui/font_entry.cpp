@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/font_entry.h"
@@ -43,26 +43,23 @@ void FontEntry::FontFace::onInitTheme(InitThemeEvent& ev)
 bool FontEntry::FontFace::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
-
     // If we press the mouse button in the FontFace widget, and drag
     // the mouse (without releasing the mouse button) to the popup, we
     // send the mouse message to the popup.
     case kMouseMoveMessage:
       if (hasCapture() && m_popup) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-        const gfx::Point screenPos =
-          mouseMsg->display()->nativeWindow()->pointToScreen(mouseMsg->position());
+        const gfx::Point screenPos = mouseMsg->display()->nativeWindow()->pointToScreen(
+          mouseMsg->position());
         Widget* pick = manager()->pickFromScreenPos(screenPos);
         Widget* target = m_popup->getListBox();
 
-        if (pick && (pick == target ||
-                     pick->hasAncestor(target))) {
+        if (pick && (pick == target || pick->hasAncestor(target))) {
           releaseMouse();
 
-          MouseMessage mouseMsg2(
-            kMouseDownMessage,
-            *mouseMsg,
-            mouseMsg->positionForDisplay(pick->display()));
+          MouseMessage mouseMsg2(kMouseDownMessage,
+                                 *mouseMsg,
+                                 mouseMsg->positionForDisplay(pick->display()));
           mouseMsg2.setRecipient(pick);
           mouseMsg2.setDisplay(pick->display());
           pick->sendMessage(&mouseMsg2);
@@ -78,17 +75,13 @@ bool FontEntry::FontFace::onProcessMessage(Message* msg)
           const FontInfo info = fontEntry()->info();
 
           m_popup.reset(new FontPopup(info));
-          m_popup->FontChange.connect([this](const FontInfo& fontInfo){
+          m_popup->FontChange.connect([this](const FontInfo& fontInfo) {
             FontChange(fontInfo,
-                       m_fromEntryChange ?
-                       FontEntry::From::Face:
-                       FontEntry::From::Popup);
+                       m_fromEntryChange ? FontEntry::From::Face : FontEntry::From::Popup);
           });
 
           // If we press ESC in the popup we focus this FontFace field.
-          m_popup->EscKey.connect([this](){
-            requestFocus();
-          });
+          m_popup->EscKey.connect([this]() { requestFocus(); });
         }
         catch (const std::exception& ex) {
           Console::showException(ex);
@@ -107,9 +100,7 @@ bool FontEntry::FontFace::onProcessMessage(Message* msg)
       // If we lost focus by a widget that is not part of the popup,
       // we close the popup.
       auto* newFocus = static_cast<FocusMessage*>(msg)->newFocus();
-      if (m_popup &&
-          newFocus &&
-          newFocus->window() != m_popup.get()) {
+      if (m_popup && newFocus && newFocus->window() != m_popup.get()) {
         m_popup->closeWindow(nullptr);
       }
 
@@ -164,7 +155,6 @@ bool FontEntry::FontFace::onProcessMessage(Message* msg)
         break;
       }
       break;
-
   }
   return SearchEntry::onProcessMessage(msg);
 }
@@ -190,9 +180,7 @@ os::Surface* FontEntry::FontFace::onGetCloseIcon() const
   auto& pinnedFonts = App::instance()->recentFiles()->pinnedFonts();
   const FontInfo info = fontEntry()->info();
   const std::string fontInfoStr = base::convert_to<std::string>(info);
-  auto it = std::find(pinnedFonts.begin(),
-                      pinnedFonts.end(),
-                      fontInfoStr);
+  auto it = std::find(pinnedFonts.begin(), pinnedFonts.end(), fontInfoStr);
   if (it != pinnedFonts.end()) {
     return skin::SkinTheme::get(this)->parts.pinned()->bitmap(0);
   }
@@ -202,22 +190,19 @@ os::Surface* FontEntry::FontFace::onGetCloseIcon() const
 void FontEntry::FontFace::onCloseIconPressed()
 {
   const FontInfo info = fontEntry()->info();
-  if (info.size() == 0)         // Don't save fonts with size=0pt
+  if (info.size() == 0) // Don't save fonts with size=0pt
     return;
 
   auto& pinnedFonts = App::instance()->recentFiles()->pinnedFonts();
   const std::string fontInfoStr = base::convert_to<std::string>(info);
 
-  auto it = std::find(pinnedFonts.begin(),
-                      pinnedFonts.end(),
-                      fontInfoStr);
+  auto it = std::find(pinnedFonts.begin(), pinnedFonts.end(), fontInfoStr);
   if (it != pinnedFonts.end()) {
     pinnedFonts.erase(it);
   }
   else {
     pinnedFonts.push_back(fontInfoStr);
-    std::sort(pinnedFonts.begin(),
-              pinnedFonts.end());
+    std::sort(pinnedFonts.begin(), pinnedFonts.end());
   }
 
   // Refill the list with the new pinned/unpinned item
@@ -239,23 +224,20 @@ void FontEntry::FontSize::onEntryChange()
   Change();
 }
 
-FontEntry::FontStyle::FontStyle()
-  : ButtonSet(2, true)
+FontEntry::FontStyle::FontStyle() : ButtonSet(2, true)
 {
   addItem("B");
   addItem("I");
   setMultiMode(MultiMode::Set);
 }
 
-FontEntry::FontLigatures::FontLigatures()
-  : ButtonSet(1, true)
+FontEntry::FontLigatures::FontLigatures() : ButtonSet(1, true)
 {
   addItem("fi");
   setMultiMode(MultiMode::Set);
 }
 
-FontEntry::FontEntry()
-  : m_antialias("Antialias")
+FontEntry::FontEntry() : m_antialias("Antialias")
 {
   m_face.setExpansive(true);
   m_size.setExpansive(false);
@@ -268,58 +250,46 @@ FontEntry::FontEntry()
   addChild(&m_ligatures);
   addChild(&m_antialias);
 
-  m_face.setMinSize(gfx::Size(128*guiscale(), 0));
+  m_face.setMinSize(gfx::Size(128 * guiscale(), 0));
 
   m_face.FontChange.connect([this](const FontInfo& newTypeName, const From from) {
     if (newTypeName.size() > 0)
       setInfo(newTypeName, from);
     else {
-      setInfo(FontInfo(newTypeName,
-                       m_info.size(),
-                       m_info.style(),
-                       m_info.flags()),
-              from);
+      setInfo(FontInfo(newTypeName, m_info.size(), m_info.style(), m_info.flags()), from);
     }
     invalidate();
   });
 
-  m_size.Change.connect([this](){
+  m_size.Change.connect([this]() {
     const float newSize = std::strtof(m_size.getValue().c_str(), nullptr);
-    setInfo(FontInfo(m_info,
-                     newSize,
-                     m_info.style(),
-                     m_info.flags()),
-            From::Size);
+    setInfo(FontInfo(m_info, newSize, m_info.style(), m_info.flags()), From::Size);
   });
 
-  m_style.ItemChange.connect([this](ButtonSet::Item* item){
+  m_style.ItemChange.connect([this](ButtonSet::Item* item) {
     text::FontStyle style = m_info.style();
     switch (m_style.getItemIndex(item)) {
       // Bold button changed
       case 0: {
         const bool bold = m_style.getItem(0)->isSelected();
-        style = text::FontStyle(bold ? text::FontStyle::Weight::Bold:
-                                       text::FontStyle::Weight::Normal,
-                                style.width(),
-                                style.slant());
+        style = text::FontStyle(
+          bold ? text::FontStyle::Weight::Bold : text::FontStyle::Weight::Normal,
+          style.width(),
+          style.slant());
         break;
       }
       // Italic button changed
       case 1: {
         const bool italic = m_style.getItem(1)->isSelected();
-        style = text::FontStyle(style.weight(),
-                                style.width(),
-                                italic ? text::FontStyle::Slant::Italic:
-                                         text::FontStyle::Slant::Upright);
+        style = text::FontStyle(
+          style.weight(),
+          style.width(),
+          italic ? text::FontStyle::Slant::Italic : text::FontStyle::Slant::Upright);
         break;
       }
     }
 
-    setInfo(FontInfo(m_info,
-                     m_info.size(),
-                     style,
-                     m_info.flags()),
-            From::Style);
+    setInfo(FontInfo(m_info, m_info.size(), style, m_info.flags()), From::Style);
   });
 
   auto flagsChange = [this]() {
@@ -328,8 +298,7 @@ FontEntry::FontEntry()
       flags |= FontInfo::Flags::Antialias;
     if (m_ligatures.getItem(0)->isSelected())
       flags |= FontInfo::Flags::Ligatures;
-    setInfo(FontInfo(m_info, m_info.size(), m_info.style(), flags),
-            From::Flags);
+    setInfo(FontInfo(m_info, m_info.size(), m_info.style(), flags), From::Flags);
   };
   m_ligatures.ItemChange.connect(flagsChange);
   m_antialias.Click.connect(flagsChange);
@@ -341,8 +310,7 @@ FontEntry::~FontEntry()
 {
 }
 
-void FontEntry::setInfo(const FontInfo& info,
-                        const From fromField)
+void FontEntry::setInfo(const FontInfo& info, const From fromField)
 {
   m_info = info;
 

@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/context_flags.h"
@@ -54,14 +54,9 @@ void ContextFlags::update(Context* context)
     // TODO this is a hack, try to find a better design to handle this
     // "moving pixels" state.
     auto editor = Editor::activeEditor();
-    if (editor &&
-        editor->document() == document &&
-        editor->isMovingPixels()) {
+    if (editor && editor->document() == document && editor->isMovingPixels()) {
       // Flags enabled when we are in MovingPixelsState
-      m_flags |=
-        HasVisibleMask |
-        ActiveDocumentIsReadable |
-        ActiveDocumentIsWritable;
+      m_flags |= HasVisibleMask | ActiveDocumentIsReadable | ActiveDocumentIsWritable;
 
       updateFlagsFromSite(editor->getSite());
     }

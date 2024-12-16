@@ -13,28 +13,24 @@
 #include "app/cmd/with_tag.h"
 #include "doc/anidir.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class SetTagAniDir : public Cmd
-                     , public WithTag {
-  public:
-    SetTagAniDir(Tag* tag, doc::AniDir anidir);
+class SetTagAniDir : public Cmd,
+                     public WithTag {
+public:
+  SetTagAniDir(Tag* tag, doc::AniDir anidir);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this);
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  size_t onMemSize() const override { return sizeof(*this); }
 
-  private:
-    doc::AniDir m_oldAniDir;
-    doc::AniDir m_newAniDir;
-  };
+private:
+  doc::AniDir m_oldAniDir;
+  doc::AniDir m_newAniDir;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/doc.h"
@@ -39,8 +39,7 @@ Preferences& Preferences::instance()
   return *singleton;
 }
 
-Preferences::Preferences()
-  : app::gen::GlobalPref("")
+Preferences::Preferences() : app::gen::GlobalPref("")
 {
   ASSERT(!singleton);
   singleton = this;
@@ -72,9 +71,7 @@ Preferences::Preferences()
   // "doc" layer.
   auto& defPref = document(nullptr);
   defPref.grid.bounds.AfterChange.connect(
-    [](const gfx::Rect& newValue){
-      doc::Sprite::SetDefaultGridBounds(newValue);
-    });
+    [](const gfx::Rect& newValue) { doc::Sprite::SetDefaultGridBounds(newValue); });
   doc::Sprite::SetDefaultGridBounds(defPref.grid.bounds());
 
   // Reset confusing defaults for a new instance of the program.
@@ -98,7 +95,7 @@ Preferences::~Preferences()
 {
   // Don't save preferences, this must be done by the client of the
   // Preferences instance (the App class).
-  //save();
+  // save();
 
   for (auto& pair : m_tools)
     delete pair.second;
@@ -156,8 +153,7 @@ ToolPreferences& Preferences::tool(tools::Tool* tool)
     ToolPreferences* toolPref = new ToolPreferences(section);
 
     // Default size for eraser, blur, etc.
-    if (tool && (tool->getInk(0)->isEraser() ||
-                 tool->getInk(0)->isEffect())) {
+    if (tool && (tool->getInk(0)->isEraser() || tool->getInk(0)->isEffect())) {
       toolPref->brush.size.setDefaultValue(8);
     }
 
@@ -188,8 +184,8 @@ DocumentPreferences& Preferences::document(const Doc* doc)
       *docPref = defPref;
 
       // Default values for symmetry
-      docPref->symmetry.xAxis.setValueAndDefault(doc->sprite()->width()/2);
-      docPref->symmetry.yAxis.setValueAndDefault(doc->sprite()->height()/2);
+      docPref->symmetry.xAxis.setValueAndDefault(doc->sprite()->width() / 2);
+      docPref->symmetry.yAxis.setValueAndDefault(doc->sprite()->height() / 2);
     }
 
     // Load specific settings of this document
@@ -250,7 +246,7 @@ std::string Preferences::docConfigFileName(const Doc* doc)
 
   ResourceFinder rf;
   std::string fn = doc->filename();
-  for (size_t i=0; i<fn.size(); ++i) {
+  for (size_t i = 0; i < fn.size(); ++i) {
     if (fn[i] == ' ' || fn[i] == '/' || fn[i] == '\\' || fn[i] == ':' || fn[i] == '.') {
       fn[i] = '-';
     }

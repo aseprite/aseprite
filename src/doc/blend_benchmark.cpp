@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/blend_funcs.h"
@@ -15,8 +15,9 @@
 
 using namespace doc;
 
-static void CustomArguments(benchmark::internal::Benchmark* b) {
-  b ->Args({ int(rgba(200, 128, 64, 255)), int(rgba(32, 128, 200, 255)), 255 })
+static void CustomArguments(benchmark::internal::Benchmark* b)
+{
+  b->Args({ int(rgba(200, 128, 64, 255)), int(rgba(32, 128, 200, 255)), 255 })
     ->Args({ int(rgba(200, 128, 64, 255)), int(rgba(32, 128, 200, 255)), 128 })
     ->Args({ int(rgba(200, 128, 64, 255)), int(rgba(32, 128, 200, 255)), 0 })
     ->Args({ int(rgba(200, 128, 64, 128)), int(rgba(32, 128, 200, 128)), 255 })
@@ -26,7 +27,8 @@ static void CustomArguments(benchmark::internal::Benchmark* b) {
 }
 
 template<BlendFunc F>
-void BM_Rgba(benchmark::State& state) {
+void BM_Rgba(benchmark::State& state)
+{
   color_t a = color_t(state.range(0));
   color_t b = color_t(state.range(1));
   int opacity = state.range(2);

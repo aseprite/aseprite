@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd_transaction.h"
@@ -17,8 +17,7 @@
 
 namespace app {
 
-CmdTransaction::CmdTransaction(const std::string& label,
-                               bool changeSavedState)
+CmdTransaction::CmdTransaction(const std::string& label, bool changeSavedState)
   : m_ranges(nullptr)
   , m_label(label)
   , m_changeSavedState(changeSavedState)
@@ -27,8 +26,7 @@ CmdTransaction::CmdTransaction(const std::string& label,
 
 CmdTransaction* CmdTransaction::moveToEmptyCopy()
 {
-  CmdTransaction* copy = new CmdTransaction(m_label,
-                                            m_changeSavedState);
+  CmdTransaction* copy = new CmdTransaction(m_label, m_changeSavedState);
   copy->m_spritePositionBefore = m_spritePositionBefore;
   copy->m_spritePositionAfter = m_spritePositionAfter;
   if (m_ranges) {
@@ -109,8 +107,7 @@ size_t CmdTransaction::onMemSize() const
 {
   size_t size = CmdSequence::onMemSize();
   if (m_ranges) {
-    size += (m_ranges->m_before.tellp() +
-             m_ranges->m_after.tellp());
+    size += (m_ranges->m_before.tellp() + m_ranges->m_after.tellp());
   }
   return size;
 }
@@ -129,14 +126,12 @@ SpritePosition CmdTransaction::calcSpritePosition() const
 
 bool CmdTransaction::isDocRangeEnabled() const
 {
-  return (context() ? context()->range().enabled():
-                      false);
+  return (context() ? context()->range().enabled() : false);
 }
 
 view::RealRange CmdTransaction::calcDocRange() const
 {
-  return (context() ? context()->range():
-                      view::RealRange());
+  return (context() ? context()->range() : view::RealRange());
 }
 
 } // namespace app

@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/commands/filters/filter_window.h"
@@ -22,7 +22,8 @@ namespace app {
 using namespace filters;
 using namespace ui;
 
-FilterWindow::FilterWindow(const char* title, const char* cfgSection,
+FilterWindow::FilterWindow(const char* title,
+                           const char* cfgSection,
                            FilterManagerImpl* filterMgr,
                            WithChannels withChannels,
                            WithTiled withTiled,
@@ -39,9 +40,7 @@ FilterWindow::FilterWindow(const char* title, const char* cfgSection,
   , m_preview(filterMgr)
   , m_targetButton(filterMgr->pixelFormat(), (withChannels == WithChannelsSelector))
   , m_showPreview(Strings::filters_preview())
-  , m_tiledCheck(withTiled == WithTiledCheckBox ?
-                   new CheckBox(Strings::filters_tiled()) :
-                   nullptr)
+  , m_tiledCheck(withTiled == WithTiledCheckBox ? new CheckBox(Strings::filters_tiled()) : nullptr)
 {
   m_okButton.processMnemonicFromText();
   m_applyButton.processMnemonicFromText();
@@ -77,7 +76,7 @@ FilterWindow::FilterWindow(const char* title, const char* cfgSection,
 
   if (m_tiledCheck) {
     m_tiledCheck->setSelected(tiledMode != TiledMode::NONE);
-    m_tiledCheck->Click.connect([this]{ onTiledChange(); });
+    m_tiledCheck->Click.connect([this] { onTiledChange(); });
 
     m_vbox.addChild(m_tiledCheck);
   }
@@ -207,9 +206,7 @@ void FilterWindow::onTiledChange()
 
   // Call derived class implementation of setupTiledMode() so the
   // filter is modified.
-  setupTiledMode(m_tiledCheck->isSelected() ?
-    TiledMode::BOTH:
-    TiledMode::NONE);
+  setupTiledMode(m_tiledCheck->isSelected() ? TiledMode::BOTH : TiledMode::NONE);
 
   // Restart the preview.
   restartPreview();

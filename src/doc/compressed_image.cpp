@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/compressed_image.h"
@@ -15,17 +15,15 @@
 
 namespace doc {
 
-CompressedImage::CompressedImage(const Image* image,
-                                 const Image* maskBitmap,
-                                 bool diffColors)
+CompressedImage::CompressedImage(const Image* image, const Image* maskBitmap, bool diffColors)
   : m_image(image)
 {
   color_t c1, c2, mask = image->maskColor();
 
-  for (int y=0; y<image->height(); ++y) {
+  for (int y = 0; y < image->height(); ++y) {
     Scanline scanline(y);
 
-    for (int x=0; x<image->width(); ) {
+    for (int x = 0; x < image->width();) {
       if (maskBitmap && !get_pixel_fast<BitmapTraits>(maskBitmap, x, y)) {
         ++x;
         continue;
@@ -41,7 +39,7 @@ CompressedImage::CompressedImage(const Image* image,
       scanline.color = c1;
       scanline.x = x;
 
-      for (++x; x<image->width(); ++x) {
+      for (++x; x < image->width(); ++x) {
         if (maskBitmap && !get_pixel_fast<BitmapTraits>(maskBitmap, x, y))
           break;
 

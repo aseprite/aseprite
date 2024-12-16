@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/document.h"
@@ -15,9 +15,7 @@
 
 namespace doc {
 
-Document::Document()
-  : Object(ObjectType::Document)
-  , m_sprites(this)
+Document::Document() : Object(ObjectType::Document), m_sprites(this)
 {
 }
 

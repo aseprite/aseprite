@@ -12,22 +12,22 @@
 #include "ui/widget.h"
 
 namespace os {
-  class Surface;
+class Surface;
 }
 
 namespace ui {
 
-  class ImageView : public Widget {
-  public:
-    ImageView(const os::Ref<os::Surface>& sur, int align);
+class ImageView : public Widget {
+public:
+  ImageView(const os::Ref<os::Surface>& sur, int align);
 
-  protected:
-    void onSizeHint(SizeHintEvent& ev) override;
-    void onPaint(PaintEvent& ev) override;
+protected:
+  void onSizeHint(SizeHintEvent& ev) override;
+  void onPaint(PaintEvent& ev) override;
 
-  private:
-    os::Ref<os::Surface> m_sur;
-  };
+private:
+  os::Ref<os::Surface> m_sur;
+};
 
 } // namespace ui
 

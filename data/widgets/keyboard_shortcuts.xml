@@ -40,7 +40,7 @@
             <listbox id="actions" />
           </view>
           <vbox id="wheel_section" expansive="true">
-	    <hbox>
+            <hbox>
               <buttonset columns="2" id="wheel_behavior">
                 <item text="@.default_wheel_behavior" />
                 <item text="@.custom_wheel_behavior" />

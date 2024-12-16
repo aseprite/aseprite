@@ -49,10 +49,9 @@ public:
   void releaseButtons();
   void setSelectedTool(Tool* tool);
 
-  Ink* adjustToolInkDependingOnSelectedInkType(
-    Ink* ink,
-    const InkType inkType,
-    const app::Color& color) const;
+  Ink* adjustToolInkDependingOnSelectedInkType(Ink* ink,
+                                               const InkType inkType,
+                                               const app::Color& color) const;
 
   void setAllowQuickToolChanges(bool state);
 

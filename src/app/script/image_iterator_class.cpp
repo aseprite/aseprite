@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/copy_region.h"
@@ -20,8 +20,7 @@
 #include "doc/image_ref.h"
 #include "doc/primitives.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 namespace {
 
@@ -30,10 +29,11 @@ struct ImageIteratorObj {
   typename doc::LockImageBits<ImageTraits> bits;
   typename doc::LockImageBits<ImageTraits>::iterator begin, next, end;
   ImageIteratorObj(const doc::Image* image, const gfx::Rect& bounds)
-    : bits(image, bounds),
-      begin(bits.begin()),
-      next(begin),
-      end(bits.end()) {
+    : bits(image, bounds)
+    , begin(bits.begin())
+    , next(begin)
+    , end(bits.end())
+  {
   }
   ImageIteratorObj(const ImageIteratorObj&) = delete;
   ImageIteratorObj& operator=(const ImageIteratorObj&) = delete;
@@ -85,12 +85,12 @@ int ImageIterator_index(lua_State* L)
   return 0;
 }
 
-#define DEFINE_METHODS(Prefix)                          \
-  const luaL_Reg Prefix##ImageIterator_methods[] = {    \
-    { "__index", ImageIterator_index<Prefix##Traits> }, \
-    { "__call", ImageIterator_call<Prefix##Traits> },   \
-    { "__gc", ImageIterator_gc<Prefix##Traits> },       \
-    { nullptr, nullptr }                                \
+#define DEFINE_METHODS(Prefix)                                                                     \
+  const luaL_Reg Prefix##ImageIterator_methods[] = {                                               \
+    { "__index", ImageIterator_index<Prefix##Traits> },                                            \
+    { "__call",  ImageIterator_call<Prefix##Traits>  },                                              \
+    { "__gc",    ImageIterator_gc<Prefix##Traits>    },                                                  \
+    { nullptr,   nullptr                             }                                                                           \
   }
 
 DEFINE_METHODS(Rgb);
@@ -169,10 +169,8 @@ int push_image_iterator_function(lua_State* L, const doc::Image* image, int extr
       push_new<TilemapImageIterator>(L, image, bounds);
       lua_pushcclosure(L, image_iterator_step_closure<doc::TilemapTraits>, 1);
       return 1;
-    default:
-      return 0;
+    default: return 0;
   }
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

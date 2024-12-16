@@ -11,20 +11,21 @@
 #include "doc/image_ref.h"
 
 namespace os {
-  class Surface;
+class Surface;
 }
 
 namespace doc {
-  class Palette;
+class Palette;
 }
 
 namespace app {
 
-void convert_surface_to_image(
-  const os::Surface* surface,
-  int src_x, int src_y,
-  int w, int h,
-  doc::ImageRef& image);
+void convert_surface_to_image(const os::Surface* surface,
+                              int src_x,
+                              int src_y,
+                              int w,
+                              int h,
+                              doc::ImageRef& image);
 
 } // namespace app
 

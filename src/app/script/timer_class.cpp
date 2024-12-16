@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -15,27 +15,26 @@
 
 #include <algorithm>
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 namespace {
 
 class Timer : public ui::Timer {
 public:
-  Timer() : ui::Timer(100) { }
+  Timer() : ui::Timer(100) {}
 
-  int runningRef() const {
-    return m_runningRef;
-  }
+  int runningRef() const { return m_runningRef; }
 
-  void refTimer(lua_State* L) {
+  void refTimer(lua_State* L)
+  {
     if (m_runningRef == LUA_REFNIL) {
       lua_pushvalue(L, 1);
       m_runningRef = luaL_ref(L, LUA_REGISTRYINDEX);
     }
   }
 
-  void unrefTimer(lua_State* L) {
+  void unrefTimer(lua_State* L)
+  {
     if (m_runningRef != LUA_REFNIL) {
       luaL_unref(L, LUA_REGISTRYINDEX, m_runningRef);
       m_runningRef = LUA_REFNIL;
@@ -63,35 +62,30 @@ int Timer_new(lua_State* L)
       lua_pushvalue(L, -1);    // Copy the function in the stack
       lua_setuservalue(L, -3); // Put the function as uservalue of the timer
 
-      timer->Tick.connect(
-        [timer, L]() {
-          if (timer->runningRef() == LUA_REFNIL)
-            return;
+      timer->Tick.connect([timer, L]() {
+        if (timer->runningRef() == LUA_REFNIL)
+          return;
 
-          try {
-            // Get the timer, and get the function that is inside the
-            // timer uservalue
-            lua_rawgeti(L, LUA_REGISTRYINDEX, timer->runningRef());
-            lua_getuservalue(L, -1);
-            if (lua_isfunction(L, -1)) {
-              if (lua_pcall(L, 0, 0, 0)) {
-                if (const char* s = lua_tostring(L, -1))
-                  App::instance()
-                    ->scriptEngine()
-                    ->consolePrint(s);
-              }
+        try {
+          // Get the timer, and get the function that is inside the
+          // timer uservalue
+          lua_rawgeti(L, LUA_REGISTRYINDEX, timer->runningRef());
+          lua_getuservalue(L, -1);
+          if (lua_isfunction(L, -1)) {
+            if (lua_pcall(L, 0, 0, 0)) {
+              if (const char* s = lua_tostring(L, -1))
+                App::instance()->scriptEngine()->consolePrint(s);
             }
-            else {
-              lua_pop(L, 1); // Pop the value which should have been a function
-            }
-            lua_pop(L, 1);   // Pop timer
           }
-          catch (const std::exception& ex) {
-            App::instance()
-              ->scriptEngine()
-              ->consolePrint(ex.what());
+          else {
+            lua_pop(L, 1); // Pop the value which should have been a function
           }
-        });
+          lua_pop(L, 1); // Pop timer
+        }
+        catch (const std::exception& ex) {
+          App::instance()->scriptEngine()->consolePrint(ex.what());
+        }
+      });
     }
     lua_pop(L, 1);
   }
@@ -144,16 +138,16 @@ int Timer_get_isRunning(lua_State* L)
 }
 
 const luaL_Reg Timer_methods[] = {
-  { "__gc", Timer_gc },
+  { "__gc",  Timer_gc    },
   { "start", Timer_start },
-  { "stop", Timer_stop },
-  { nullptr, nullptr }
+  { "stop",  Timer_stop  },
+  { nullptr, nullptr     }
 };
 
 const Property Timer_properties[] = {
-  { "interval", Timer_get_interval, Timer_set_interval },
-  { "isRunning", Timer_get_isRunning, nullptr },
-  { nullptr, nullptr, nullptr }
+  { "interval",  Timer_get_interval,  Timer_set_interval },
+  { "isRunning", Timer_get_isRunning, nullptr            },
+  { nullptr,     nullptr,             nullptr            }
 };
 
 } // anonymous namespace
@@ -167,5 +161,4 @@ void register_timer_class(lua_State* L)
   REG_CLASS_PROPERTIES(L, Timer);
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

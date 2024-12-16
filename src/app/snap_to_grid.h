@@ -13,15 +13,15 @@
 
 namespace app {
 
-  enum class PreferSnapTo {
-    ClosestGridVertex,
-    BoxOrigin, BoxEnd,
-    FloorGrid, CeilGrid,
-  };
+enum class PreferSnapTo {
+  ClosestGridVertex,
+  BoxOrigin,
+  BoxEnd,
+  FloorGrid,
+  CeilGrid,
+};
 
-  gfx::Point snap_to_grid(const gfx::Rect& grid,
-                          const gfx::Point& point,
-                          const PreferSnapTo prefer);
+gfx::Point snap_to_grid(const gfx::Rect& grid, const gfx::Point& point, const PreferSnapTo prefer);
 
 } // namespace app
 

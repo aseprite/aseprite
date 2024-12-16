@@ -38,87 +38,87 @@ do
 
   local s, a, b, g = create_group_layer()
 
-	-- draw in b layer
-	local cel = s:newCel(b, 1, Image(2, 2, ColorMode.RGB))
-	local img = cel.image
+        -- draw in b layer
+        local cel = s:newCel(b, 1, Image(2, 2, ColorMode.RGB))
+        local img = cel.image
 
-	img:drawPixel(0, 0, Color(255, 0, 0, 255))
-	img:drawPixel(1, 0, Color(0, 255, 0, 255))
-	img:drawPixel(0, 1, Color(0, 0, 255, 255))
-	img:drawPixel(1, 1, Color(255, 255, 0, 255))
+        img:drawPixel(0, 0, Color(255, 0, 0, 255))
+        img:drawPixel(1, 0, Color(0, 255, 0, 255))
+        img:drawPixel(0, 1, Color(0, 0, 255, 255))
+        img:drawPixel(1, 1, Color(255, 255, 0, 255))
 
-	local r = Image(s.spec) -- render
-	r:drawSprite(s, 1, 0, 0)
+        local r = Image(s.spec) -- render
+        r:drawSprite(s, 1, 0, 0)
 
-	expect_clr(r:getPixel(0, 0), app.pixelColor.rgba(255, 0, 0, 255))
-	expect_clr(r:getPixel(1, 0), app.pixelColor.rgba(0, 255, 0, 255))
-	expect_clr(r:getPixel(0, 1), app.pixelColor.rgba(0, 0, 255, 255))
-	expect_clr(r:getPixel(1, 1), app.pixelColor.rgba(255, 255, 0, 255))
+        expect_clr(r:getPixel(0, 0), app.pixelColor.rgba(255, 0, 0, 255))
+        expect_clr(r:getPixel(1, 0), app.pixelColor.rgba(0, 255, 0, 255))
+        expect_clr(r:getPixel(0, 1), app.pixelColor.rgba(0, 0, 255, 255))
+        expect_clr(r:getPixel(1, 1), app.pixelColor.rgba(255, 255, 0, 255))
 
-	-- Set opacity to 50%
-	g.opacity = 128
+        -- Set opacity to 50%
+        g.opacity = 128
 
-	r = Image(s.spec)
-	r:drawSprite(s, 1, 0, 0)
+        r = Image(s.spec)
+        r:drawSprite(s, 1, 0, 0)
 
-	print(g.opacity)
+        print(g.opacity)
 
-	print(r:getPixel(0, 0), app.pixelColor.rgba(255, 0, 0, 255))
+        print(r:getPixel(0, 0), app.pixelColor.rgba(255, 0, 0, 255))
 
-	-- Assert that the image is drawn with 50% opacity
-	expect_clr(r:getPixel(0, 0), app.pixelColor.rgba(255, 0, 0, 128))
-	expect_clr(r:getPixel(1, 0), app.pixelColor.rgba(0, 255, 0, 128))
-	expect_clr(r:getPixel(0, 1), app.pixelColor.rgba(0, 0, 255, 128))
-	expect_clr(r:getPixel(1, 1), app.pixelColor.rgba(255, 255, 0, 128))
+        -- Assert that the image is drawn with 50% opacity
+        expect_clr(r:getPixel(0, 0), app.pixelColor.rgba(255, 0, 0, 128))
+        expect_clr(r:getPixel(1, 0), app.pixelColor.rgba(0, 255, 0, 128))
+        expect_clr(r:getPixel(0, 1), app.pixelColor.rgba(0, 0, 255, 128))
+        expect_clr(r:getPixel(1, 1), app.pixelColor.rgba(255, 255, 0, 128))
 
-	-- Set opacity to 100%
-	g.opacity = 255
+        -- Set opacity to 100%
+        g.opacity = 255
 
-	r = Image(s.spec)
-	r:drawSprite(s, 1, 0, 0)
+        r = Image(s.spec)
+        r:drawSprite(s, 1, 0, 0)
 
-	expect_eq(g.opacity, 255)
+        expect_eq(g.opacity, 255)
 
-	-- Assert that the image is drawn with 100% opacity
-	expect_clr(r:getPixel(0, 0), app.pixelColor.rgba(255, 0, 0, 255))
-	expect_clr(r:getPixel(1, 0), app.pixelColor.rgba(0, 255, 0, 255))
-	expect_clr(r:getPixel(0, 1), app.pixelColor.rgba(0, 0, 255, 255))
-	expect_clr(r:getPixel(1, 1), app.pixelColor.rgba(255, 255, 0, 255))
+        -- Assert that the image is drawn with 100% opacity
+        expect_clr(r:getPixel(0, 0), app.pixelColor.rgba(255, 0, 0, 255))
+        expect_clr(r:getPixel(1, 0), app.pixelColor.rgba(0, 255, 0, 255))
+        expect_clr(r:getPixel(0, 1), app.pixelColor.rgba(0, 0, 255, 255))
+        expect_clr(r:getPixel(1, 1), app.pixelColor.rgba(255, 255, 0, 255))
 
-	-- Set group opacity to 50% and layer opacity to 50%
-	g.opacity = 128
-	b.opacity = 128
+        -- Set group opacity to 50% and layer opacity to 50%
+        g.opacity = 128
+        b.opacity = 128
 
-	r = Image(s.spec)
-	r:drawSprite(s, 1, 0, 0)
+        r = Image(s.spec)
+        r:drawSprite(s, 1, 0, 0)
 
-	assert(g.opacity == 128)
-	assert(b.opacity == 128)
+        assert(g.opacity == 128)
+        assert(b.opacity == 128)
 
-	-- Assert that the image is drawn with 25% opacity
-	expect_clr(r:getPixel(0, 0), app.pixelColor.rgba(255, 0, 0, 64))
-	expect_clr(r:getPixel(1, 0), app.pixelColor.rgba(0, 255, 0, 64))
-	expect_clr(r:getPixel(0, 1), app.pixelColor.rgba(0, 0, 255, 64))
-	expect_clr(r:getPixel(1, 1), app.pixelColor.rgba(255, 255, 0, 64))
+        -- Assert that the image is drawn with 25% opacity
+        expect_clr(r:getPixel(0, 0), app.pixelColor.rgba(255, 0, 0, 64))
+        expect_clr(r:getPixel(1, 0), app.pixelColor.rgba(0, 255, 0, 64))
+        expect_clr(r:getPixel(0, 1), app.pixelColor.rgba(0, 0, 255, 64))
+        expect_clr(r:getPixel(1, 1), app.pixelColor.rgba(255, 255, 0, 64))
 
-	-- Create a new layer in front of the group and check that it's not affected by the group opacity
-	local c = s:newLayer()
-	c.name = "c"
+        -- Create a new layer in front of the group and check that it's not affected by the group opacity
+        local c = s:newLayer()
+        c.name = "c"
 
-	-- draw in c layer
-	local cel = s:newCel(c, 1, Image(1, 1, ColorMode.RGB))
-	local img = cel.image
+        -- draw in c layer
+        local cel = s:newCel(c, 1, Image(1, 1, ColorMode.RGB))
+        local img = cel.image
 
-	img:drawPixel(0, 0, Color(255, 0, 255, 255))
+        img:drawPixel(0, 0, Color(255, 0, 255, 255))
 
-	r = Image(s.spec)
-	r:drawSprite(s, 1, 0, 0)
+        r = Image(s.spec)
+        r:drawSprite(s, 1, 0, 0)
 
-	-- Assert that the first pixel is drawn with 100% opacity and the remaining ones with 25% opacity
-	expect_clr(r:getPixel(0, 0), app.pixelColor.rgba(255, 0, 255, 255))
-	expect_clr(r:getPixel(1, 0), app.pixelColor.rgba(0, 255, 0, 64))
-	expect_clr(r:getPixel(0, 1), app.pixelColor.rgba(0, 0, 255, 64))
-	expect_clr(r:getPixel(1, 1), app.pixelColor.rgba(255, 255, 0, 64))
+        -- Assert that the first pixel is drawn with 100% opacity and the remaining ones with 25% opacity
+        expect_clr(r:getPixel(0, 0), app.pixelColor.rgba(255, 0, 255, 255))
+        expect_clr(r:getPixel(1, 0), app.pixelColor.rgba(0, 255, 0, 64))
+        expect_clr(r:getPixel(0, 1), app.pixelColor.rgba(0, 0, 255, 64))
+        expect_clr(r:getPixel(1, 1), app.pixelColor.rgba(255, 255, 0, 64))
 
 end
 

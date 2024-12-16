@@ -11,13 +11,12 @@
 
 #include <vector>
 
-#define UI_FIRST_WIDGET(list_name)                      \
-  ((list_name).empty() ? nullptr: (list_name).front())
+#define UI_FIRST_WIDGET(list_name) ((list_name).empty() ? nullptr : (list_name).front())
 
 namespace ui {
 
-  class Widget;
-  typedef std::vector<Widget*> WidgetsList;
+class Widget;
+typedef std::vector<Widget*> WidgetsList;
 
 } // namespace ui
 

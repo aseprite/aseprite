@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/algorithm/fill_selection.h"
@@ -16,8 +16,7 @@
 #include "doc/mask.h"
 #include "doc/primitives.h"
 
-namespace doc {
-namespace algorithm {
+namespace doc { namespace algorithm {
 
 void fill_selection(Image* image,
                     const gfx::Rect& imageBounds,
@@ -34,16 +33,14 @@ void fill_selection(Image* image,
   if (rc.isEmpty())
     return; // <- There is no intersection between image bounds and mask bounds
 
-  const LockImageBits<BitmapTraits> maskBits(mask->bitmap(),
-                                             gfx::Rect(rc).offset(-mask->origin()));
+  const LockImageBits<BitmapTraits> maskBits(mask->bitmap(), gfx::Rect(rc).offset(-mask->origin()));
   auto it = maskBits.begin();
 
-  for (int v=0; v<rc.h; ++v) {
-    for (int u=0; u<rc.w; ++u, ++it) {
+  for (int v = 0; v < rc.h; ++v) {
+    for (int u = 0; u < rc.w; ++u, ++it) {
       ASSERT(it != maskBits.end());
       if (*it) {
-        gfx::Point pt(u + rc.x,
-                      v + rc.y);
+        gfx::Point pt(u + rc.x, v + rc.y);
 
         if (grid) {
           pt = grid->canvasToTile(pt);
@@ -61,5 +58,4 @@ void fill_selection(Image* image,
   ASSERT(it == maskBits.end());
 }
 
-} // namespace algorithm
-} // namespace doc
+}} // namespace doc::algorithm

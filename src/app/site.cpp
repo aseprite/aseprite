@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/site.h"
@@ -28,12 +28,12 @@ using namespace doc;
 
 Palette* Site::palette()
 {
-  return (m_sprite ? m_sprite->palette(m_frame): nullptr);
+  return (m_sprite ? m_sprite->palette(m_frame) : nullptr);
 }
 
 RgbMap* Site::rgbMap() const
 {
-  return (m_sprite ? m_sprite->rgbMap(m_frame): nullptr);
+  return (m_sprite ? m_sprite->rgbMap(m_frame) : nullptr);
 }
 
 Cel* Site::cel() const
@@ -51,9 +51,12 @@ Image* Site::image(int* x, int* y, int* opacity) const
   if (m_sprite) {
     if (const Cel* cel = this->cel()) {
       image = cel->image();
-      if (x) *x = cel->x();
-      if (y) *y = cel->y();
-      if (opacity) *opacity = std::clamp(cel->opacity(), 0, 255);
+      if (x)
+        *x = cel->x();
+      if (y)
+        *y = cel->y();
+      if (opacity)
+        *opacity = std::clamp(cel->opacity(), 0, 255);
     }
   }
 
@@ -62,7 +65,7 @@ Image* Site::image(int* x, int* y, int* opacity) const
 
 Palette* Site::palette() const
 {
-  return (m_sprite ? m_sprite->palette(m_frame): nullptr);
+  return (m_sprite ? m_sprite->palette(m_frame) : nullptr);
 }
 
 void Site::range(const view::RealRange& range)
@@ -128,12 +131,9 @@ gfx::Rect Site::gridBounds() const
 
 bool Site::shouldTrimCel(Cel* cel) const
 {
-  return (cel &&
-          cel->layer() &&
-          cel->layer()->isTransparent() &&
+  return (cel && cel->layer() && cel->layer()->isTransparent() &&
           // Don't trim tiles in manual mode
-          !(m_tilemapMode == TilemapMode::Pixels &&
-            m_tilesetMode == TilesetMode::Manual &&
+          !(m_tilemapMode == TilemapMode::Pixels && m_tilesetMode == TilesetMode::Manual &&
             cel->layer()->isTilemap()));
 }
 
@@ -155,8 +155,7 @@ CelList Site::selectedUniqueCelsToEditPixels() const
     return view::get_unique_cels_to_edit_pixels(m_sprite, m_range);
   }
   else if (auto c = cel()) {
-    if (m_layer &&
-        m_layer->canEditPixels())
+    if (m_layer && m_layer->canEditPixels())
       return CelList{ c };
   }
   return CelList();

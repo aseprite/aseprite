@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/convert_color_profile.h"
@@ -20,8 +20,7 @@
 #include "os/color_space.h"
 #include "os/system.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 static doc::ImageRef convert_image_color_space(const doc::Image* srcImage,
                                                const gfx::ColorSpaceRef& newCS,
@@ -37,7 +36,7 @@ static doc::ImageRef convert_image_color_space(const doc::Image* srcImage,
   }
 
   if (spec.colorMode() == doc::ColorMode::RGB) {
-    for (int y=0; y<spec.height(); ++y) {
+    for (int y = 0; y < spec.height(); ++y) {
       conversion->convertRgba((uint32_t*)dstImage->getPixelAddress(0, y),
                               (const uint32_t*)srcImage->getPixelAddress(0, y),
                               spec.width());
@@ -47,22 +46,22 @@ static doc::ImageRef convert_image_color_space(const doc::Image* srcImage,
     // TODO create a set of functions to create pixel format
     // conversions (this should be available when we add new kind of
     // pixel formats).
-    std::vector<uint8_t> buf(spec.width()*spec.height());
+    std::vector<uint8_t> buf(spec.width() * spec.height());
 
     auto it = buf.begin();
-    for (int y=0; y<spec.height(); ++y) {
+    for (int y = 0; y < spec.height(); ++y) {
       auto srcPtr = (const uint16_t*)srcImage->getPixelAddress(0, y);
-      for (int x=0; x<spec.width(); ++x, ++srcPtr, ++it)
+      for (int x = 0; x < spec.width(); ++x, ++srcPtr, ++it)
         *it = doc::graya_getv(*srcPtr);
     }
 
-    conversion->convertGray(&buf[0], &buf[0], spec.width()*spec.height());
+    conversion->convertGray(&buf[0], &buf[0], spec.width() * spec.height());
 
     it = buf.begin();
-    for (int y=0; y<spec.height(); ++y) {
+    for (int y = 0; y < spec.height(); ++y) {
       auto srcPtr = (const uint16_t*)srcImage->getPixelAddress(0, y);
       auto dstPtr = (uint16_t*)dstImage->getPixelAddress(0, y);
-      for (int x=0; x<spec.width(); ++x, ++dstPtr, ++srcPtr, ++it)
+      for (int x = 0; x < spec.width(); ++x, ++dstPtr, ++srcPtr, ++it)
         *dstPtr = doc::graya(*it, doc::graya_geta(*srcPtr));
     }
   }
@@ -70,8 +69,7 @@ static doc::ImageRef convert_image_color_space(const doc::Image* srcImage,
   return dstImage;
 }
 
-void convert_color_profile(doc::Sprite* sprite,
-                           const gfx::ColorSpaceRef& newCS)
+void convert_color_profile(doc::Sprite* sprite, const gfx::ColorSpaceRef& newCS)
 {
   ASSERT(sprite->colorSpace());
   ASSERT(newCS);
@@ -89,8 +87,7 @@ void convert_color_profile(doc::Sprite* sprite,
     for (Cel* cel : sprite->uniqueCels()) {
       ImageRef old_image = cel->imageRef();
       if (old_image.get()->pixelFormat() != IMAGE_TILEMAP) {
-        ImageRef new_image = convert_image_color_space(
-          old_image.get(), newCS, conversion.get());
+        ImageRef new_image = convert_image_color_space(old_image.get(), newCS, conversion.get());
 
         sprite->replaceImage(old_image->id(), new_image);
       }
@@ -103,11 +100,10 @@ void convert_color_profile(doc::Sprite* sprite,
       for (auto& pal : sprite->getPalettes()) {
         Palette newPal(pal->frame(), pal->size());
 
-        for (int i=0; i<pal->size(); ++i) {
+        for (int i = 0; i < pal->size(); ++i) {
           color_t oldCol = pal->entry(i);
           color_t newCol = pal->entry(i);
-          conversion->convertRgba((uint32_t*)&newCol,
-                                  (const uint32_t*)&oldCol, 1);
+          conversion->convertRgba((uint32_t*)&newCol, (const uint32_t*)&oldCol, 1);
           newPal.setEntry(i, newCol);
         }
 
@@ -142,19 +138,17 @@ void convert_color_profile(doc::Image* image,
     switch (image->pixelFormat()) {
       case doc::IMAGE_RGB:
       case doc::IMAGE_GRAYSCALE: {
-        ImageRef newImage = convert_image_color_space(
-          image, newCS, conversion.get());
+        ImageRef newImage = convert_image_color_space(image, newCS, conversion.get());
 
         image->copy(newImage.get(), gfx::Clip(image->bounds()));
         break;
       }
 
       case doc::IMAGE_INDEXED: {
-        for (int i=0; i<palette->size(); ++i) {
+        for (int i = 0; i < palette->size(); ++i) {
           color_t oldCol, newCol;
           oldCol = newCol = palette->entry(i);
-          conversion->convertRgba((uint32_t*)&newCol,
-                                  (const uint32_t*)&oldCol, 1);
+          conversion->convertRgba((uint32_t*)&newCol, (const uint32_t*)&oldCol, 1);
           palette->setEntry(i, newCol);
         }
         break;
@@ -184,8 +178,7 @@ ConvertColorProfile::ConvertColorProfile(doc::Sprite* sprite, const gfx::ColorSp
     for (Cel* cel : sprite->uniqueCels()) {
       ImageRef old_image = cel->imageRef();
       if (old_image.get()->pixelFormat() != IMAGE_TILEMAP) {
-        ImageRef new_image = convert_image_color_space(
-          old_image.get(), newCS, conversion.get());
+        ImageRef new_image = convert_image_color_space(old_image.get(), newCS, conversion.get());
 
         m_seq.add(new cmd::ReplaceImage(sprite, old_image, new_image));
       }
@@ -198,11 +191,10 @@ ConvertColorProfile::ConvertColorProfile(doc::Sprite* sprite, const gfx::ColorSp
       for (auto& pal : sprite->getPalettes()) {
         Palette newPal(pal->frame(), pal->size());
 
-        for (int i=0; i<pal->size(); ++i) {
+        for (int i = 0; i < pal->size(); ++i) {
           color_t oldCol = pal->entry(i);
           color_t newCol = pal->entry(i);
-          conversion->convertRgba((uint32_t*)&newCol,
-                                  (const uint32_t*)&oldCol, 1);
+          conversion->convertRgba((uint32_t*)&newCol, (const uint32_t*)&oldCol, 1);
           newPal.setEntry(i, newCol);
         }
 
@@ -230,5 +222,4 @@ void ConvertColorProfile::onRedo()
   m_seq.redo();
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

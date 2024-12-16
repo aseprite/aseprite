@@ -13,22 +13,21 @@
 #include "gfx/rect.h"
 
 namespace doc {
-  class Grid;
-  class Image;
-  class Mask;
+class Grid;
+class Image;
+class Mask;
 
-  namespace algorithm {
+namespace algorithm {
 
-    void fill_selection(
-      Image* image,
-      const gfx::Rect& imageBounds,
-      const Mask* mask,
-      // This can be a color_t or a tile_t if the image is a tilemap
-      const color_t color,
-      // Optional grid for tilemaps
-      const Grid* grid = nullptr);
+void fill_selection(Image* image,
+                    const gfx::Rect& imageBounds,
+                    const Mask* mask,
+                    // This can be a color_t or a tile_t if the image is a tilemap
+                    const color_t color,
+                    // Optional grid for tilemaps
+                    const Grid* grid = nullptr);
 
-  } // namespace algorithm
+} // namespace algorithm
 } // namespace doc
 
 #endif

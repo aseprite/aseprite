@@ -19,47 +19,48 @@
 #include "tag_properties.xml.h"
 
 namespace doc {
-  class Sprite;
-  class Tag;
-}
+class Sprite;
+class Tag;
+} // namespace doc
 
 namespace app {
 
-  class TagWindow : protected app::gen::TagProperties {
+class TagWindow : protected app::gen::TagProperties {
+public:
+  TagWindow(const doc::Sprite* sprite, const doc::Tag* tag);
+
+  bool show();
+
+  std::string nameValue() const;
+  void rangeValue(doc::frame_t& from, doc::frame_t& to) const;
+  doc::AniDir aniDirValue() const;
+  int repeatValue() const;
+  const doc::UserData& userDataValue() const { return m_userDataView.userData(); }
+
+private:
+  class Repeat : public ExprEntry {
   public:
-    TagWindow(const doc::Sprite* sprite, const doc::Tag* tag);
-
-    bool show();
-
-    std::string nameValue() const;
-    void rangeValue(doc::frame_t& from, doc::frame_t& to) const;
-    doc::AniDir aniDirValue() const;
-    int repeatValue() const;
-    const doc::UserData& userDataValue() const { return m_userDataView.userData(); }
+    Repeat();
 
   private:
-    class Repeat : public ExprEntry {
-    public:
-      Repeat();
-    private:
-      bool onProcessMessage(ui::Message* msg) override;
-      void onFormatExprFocusLeave(std::string& buf) override;
-    };
-
-    const Repeat* repeat() const { return &m_repeat; }
-    Repeat* repeat() { return &m_repeat; }
-
-    void onLimitRepeat();
-    void onRepeatChange();
-    void onToggleUserData();
-
-    const doc::Sprite* m_sprite;
-    int m_base;
-    doc::UserData m_userData;
-    UserDataView m_userDataView;
-    Repeat m_repeat;
+    bool onProcessMessage(ui::Message* msg) override;
+    void onFormatExprFocusLeave(std::string& buf) override;
   };
 
-}
+  const Repeat* repeat() const { return &m_repeat; }
+  Repeat* repeat() { return &m_repeat; }
+
+  void onLimitRepeat();
+  void onRepeatChange();
+  void onToggleUserData();
+
+  const doc::Sprite* m_sprite;
+  int m_base;
+  doc::UserData m_userData;
+  UserDataView m_userDataView;
+  Repeat m_repeat;
+};
+
+} // namespace app
 
 #endif

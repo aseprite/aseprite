@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_pixel_ratio.h"
@@ -15,8 +15,7 @@
 #include "app/doc_observer.h"
 #include "doc/sprite.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 using namespace doc;
 
@@ -50,5 +49,4 @@ void SetPixelRatio::onFireNotifications()
   doc->notify_observers<DocEvent&>(&DocObserver::onSpritePixelRatioChanged, ev);
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

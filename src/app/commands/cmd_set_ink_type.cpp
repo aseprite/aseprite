@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -20,7 +20,7 @@
 namespace app {
 
 struct SetInkTypeParams : public NewParams {
-  Param<app::tools::InkType> type { this, app::tools::InkType::DEFAULT, "type" };
+  Param<app::tools::InkType> type{ this, app::tools::InkType::DEFAULT, "type" };
 };
 
 class SetInkTypeCommand : public CommandWithNewParams<SetInkTypeParams> {
@@ -55,21 +55,11 @@ std::string SetInkTypeCommand::onGetFriendlyName() const
 {
   std::string ink;
   switch (params().type()) {
-    case tools::InkType::SIMPLE:
-      ink = Strings::inks_simple_ink();
-      break;
-    case tools::InkType::ALPHA_COMPOSITING:
-      ink = Strings::inks_alpha_compositing();
-      break;
-    case tools::InkType::COPY_COLOR:
-      ink = Strings::inks_copy_color();
-      break;
-    case tools::InkType::LOCK_ALPHA:
-      ink = Strings::inks_lock_alpha();
-      break;
-    case tools::InkType::SHADING:
-      ink = Strings::inks_shading();
-      break;
+    case tools::InkType::SIMPLE:            ink = Strings::inks_simple_ink(); break;
+    case tools::InkType::ALPHA_COMPOSITING: ink = Strings::inks_alpha_compositing(); break;
+    case tools::InkType::COPY_COLOR:        ink = Strings::inks_copy_color(); break;
+    case tools::InkType::LOCK_ALPHA:        ink = Strings::inks_lock_alpha(); break;
+    case tools::InkType::SHADING:           ink = Strings::inks_shading(); break;
   }
   return Strings::commands_SetInkType(ink);
 }

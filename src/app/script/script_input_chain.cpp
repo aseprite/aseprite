@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/script/script_input_chain.h"
@@ -18,8 +18,8 @@
 #include "app/site.h"
 #include "app/tx.h"
 #include "app/util/clipboard.h"
-#include "doc/mask.h"
 #include "doc/layer.h"
+#include "doc/mask.h"
 #include "doc/primitives.h"
 
 #include <cstring>
@@ -28,15 +28,17 @@
 
 namespace app {
 
-ScriptInputChain::~ScriptInputChain() { }
+ScriptInputChain::~ScriptInputChain()
+{
+}
 
-void ScriptInputChain::onNewInputPriority(InputChainElement* element,
-                                          const ui::Message* msg) { }
+void ScriptInputChain::onNewInputPriority(InputChainElement* element, const ui::Message* msg)
+{
+}
 
 bool ScriptInputChain::onCanCut(Context* ctx)
 {
-  return ctx->activeDocument() &&
-         ctx->activeDocument()->isMaskVisible();
+  return ctx->activeDocument() && ctx->activeDocument()->isMaskVisible();
 }
 
 bool ScriptInputChain::onCanCopy(Context* ctx)
@@ -49,8 +51,7 @@ bool ScriptInputChain::onCanPaste(Context* ctx)
   const Clipboard* clipboard(ctx->clipboard());
   if (!clipboard)
     return false;
-  return clipboard->format() == ClipboardFormat::Image &&
-         ctx->activeSite().layer() &&
+  return clipboard->format() == ClipboardFormat::Image && ctx->activeSite().layer() &&
          ctx->activeSite().layer()->type() == ObjectType::LayerImage;
 }
 
@@ -85,8 +86,7 @@ bool ScriptInputChain::onCopy(Context* ctx)
   return false;
 }
 
-bool ScriptInputChain::onPaste(Context* ctx,
-                               const gfx::Point* position)
+bool ScriptInputChain::onPaste(Context* ctx, const gfx::Point* position)
 {
   Clipboard* clipboard = ctx->clipboard();
   if (!clipboard)
@@ -108,11 +108,10 @@ bool ScriptInputChain::onClear(Context* ctx)
     CelList cels;
     const Site site = ctx->activeSite();
     cels.push_back(site.cel());
-    if (cels.empty())            // No cels to modify
+    if (cels.empty()) // No cels to modify
       return false;
     Tx tx(writer, "Clear");
-    ctx->clipboard()->clearMaskFromCels(
-      tx, document, site, cels, true);
+    ctx->clipboard()->clearMaskFromCels(tx, document, site, cels, true);
     tx.commit();
     return true;
   }
@@ -122,8 +121,7 @@ bool ScriptInputChain::onClear(Context* ctx)
 void ScriptInputChain::onCancel(Context* ctx)
 {
   // Deselect mask
-  if (ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                      ContextFlags::HasVisibleMask)) {
+  if (ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasVisibleMask)) {
     Command* deselectMask = Commands::instance()->byId(CommandId::DeselectMask());
     ctx->executeCommand(deselectMask);
     ctx->activeDocument()->setMaskVisible(false);

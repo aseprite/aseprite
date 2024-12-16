@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/util/pal_ops.h"
@@ -16,13 +16,12 @@
 
 namespace app {
 
-void move_or_copy_palette_colors(
-  doc::Palette& palette,
-  doc::Palette& newPalette,
-  doc::PalettePicks& picks,
-  int& currentEntry,
-  const int beforeIndex,
-  const bool copy)
+void move_or_copy_palette_colors(doc::Palette& palette,
+                                 doc::Palette& newPalette,
+                                 doc::PalettePicks& picks,
+                                 int& currentEntry,
+                                 const int beforeIndex,
+                                 const bool copy)
 {
   if (beforeIndex >= palette.size()) {
     palette.resize(beforeIndex); // TODO is need to resize the
@@ -37,19 +36,18 @@ void move_or_copy_palette_colors(
     int npicks = picks.picks();
     ASSERT(npicks >= 1);
 
-    auto remap = doc::create_remap_to_expand_palette(palette.size()+npicks,
-                                                     npicks, beforeIndex);
+    auto remap = doc::create_remap_to_expand_palette(palette.size() + npicks, npicks, beforeIndex);
 
-    newPalette.resize(palette.size()+npicks);
-    for (int i=0; i<palette.size(); ++i)
+    newPalette.resize(palette.size() + npicks);
+    for (int i = 0; i < palette.size(); ++i)
       newPalette.setEntry(remap[i], palette.getEntry(i));
 
-    for (int i=0, j=0; i<palette.size(); ++i) {
+    for (int i = 0, j = 0; i < palette.size(); ++i) {
       if (picks[i])
         newPalette.setEntry(beforeIndex + (j++), palette.getEntry(i));
     }
 
-    for (int i=0, j=0; i<palette.size(); ++i) {
+    for (int i = 0, j = 0; i < palette.size(); ++i) {
       if (picks[i]) {
         if (currentEntry == i) {
           currentEntry = beforeIndex + j;
@@ -59,7 +57,7 @@ void move_or_copy_palette_colors(
       }
     }
 
-    for (int i=0; i<palette.size(); ++i)
+    for (int i = 0; i < palette.size(); ++i)
       picks[i] = (i >= beforeIndex && i < beforeIndex + npicks);
   }
   // Move colors
@@ -67,7 +65,7 @@ void move_or_copy_palette_colors(
     auto remap = doc::create_remap_to_move_picks(picks, beforeIndex);
 
     auto oldPicks = picks;
-    for (int i=0; i<palette.size(); ++i) {
+    for (int i = 0; i < palette.size(); ++i) {
       newPalette.setEntry(remap[i], palette.getEntry(i));
       picks[remap[i]] = oldPicks[i];
     }

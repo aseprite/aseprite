@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/clear_slices.h"
@@ -20,8 +20,7 @@
 #include "doc/layer_list.h"
 #include "doc/primitives.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 using namespace doc;
 
@@ -29,8 +28,8 @@ ClearSlices::ClearSlices(const Site& site,
                          const LayerList& layers,
                          frame_t frame,
                          const std::vector<SliceKey>& slicesKeys)
-                         : m_tilemapMode(site.tilemapMode())
-                         , m_tilesetMode(site.tilesetMode())
+  : m_tilemapMode(site.tilemapMode())
+  , m_tilesetMode(site.tilesetMode())
 {
   if (layers.empty())
     return;
@@ -58,8 +57,7 @@ ClearSlices::ClearSlices(const Site& site,
     color_t bgcolor = doc->bgColor(layer);
     if (image->pixelFormat() == IMAGE_TILEMAP) {
       auto grid = cel->grid();
-      imageBounds = gfx::Rect(grid.canvasToTile(cel->position()),
-                              cel->image()->size());
+      imageBounds = gfx::Rect(grid.canvasToTile(cel->position()), cel->image()->size());
       maskBounds = grid.canvasToTile(maskBounds);
       bgcolor = doc::notile; // TODO configurable empty tile
     }
@@ -101,36 +99,34 @@ void ClearSlices::clear()
     if (!sc.copy)
       continue;
 
-
     if (sc.cel()->layer()->isTilemap() && m_tilemapMode == TilemapMode::Pixels) {
-
       Doc* doc = static_cast<Doc*>(sc.cel()->document());
       color_t bgcolor = doc->bgColor(sc.cel()->layer());
 
       modify_tilemap_cel_region(
-        &m_seq, sc.cel(), nullptr,
+        &m_seq,
+        sc.cel(),
+        nullptr,
         gfx::Region(sc.mask.bounds()),
         m_tilesetMode,
         [sc, bgcolor](const doc::ImageRef& origTile,
                       const gfx::Rect& tileBoundsInCanvas) -> doc::ImageRef {
           doc::ImageRef modified(doc::Image::createCopy(origTile.get()));
-          doc::algorithm::fill_selection(
-            modified.get(),
-            tileBoundsInCanvas,
-            &sc.mask,
-            bgcolor,
-            nullptr);
+          doc::algorithm::fill_selection(modified.get(),
+                                         tileBoundsInCanvas,
+                                         &sc.mask,
+                                         bgcolor,
+                                         nullptr);
           return modified;
         });
     }
     else {
       Grid grid = sc.cel()->grid();
-      doc::algorithm::fill_selection(
-        sc.cel()->image(),
-        sc.cel()->bounds(),
-        &sc.mask,
-        sc.bgcolor,
-        (sc.cel()->image()->isTilemap() ? &grid: nullptr));
+      doc::algorithm::fill_selection(sc.cel()->image(),
+                                     sc.cel()->bounds(),
+                                     &sc.mask,
+                                     sc.bgcolor,
+                                     (sc.cel()->image()->isTilemap() ? &grid : nullptr));
     }
   }
 }
@@ -141,12 +137,8 @@ void ClearSlices::restore()
     if (!sc.copy)
       continue;
 
-    copy_image(sc.cel()->image(),
-               sc.copy.get(),
-               sc.cropPos.x,
-               sc.cropPos.y);
+    copy_image(sc.cel()->image(), sc.copy.get(), sc.cropPos.x, sc.cropPos.y);
   }
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

@@ -5,13 +5,12 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_layer_flags.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 SetLayerFlags::SetLayerFlags(Layer* layer, LayerFlags flags)
   : WithLayer(layer)
@@ -32,5 +31,4 @@ void SetLayerFlags::onUndo()
   layer()->incrementVersion();
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

@@ -11,22 +11,20 @@
 #include "doc/object_id.h"
 
 namespace doc {
-  class Tileset;
+class Tileset;
 }
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
-  class WithTileset {
-  public:
-    WithTileset(doc::Tileset* tileset);
-    doc::Tileset* tileset();
+class WithTileset {
+public:
+  WithTileset(doc::Tileset* tileset);
+  doc::Tileset* tileset();
 
-  private:
-    doc::ObjectId m_tilesetId;
-  };
+private:
+  doc::ObjectId m_tilesetId;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

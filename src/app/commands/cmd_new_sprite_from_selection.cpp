@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/commands/command.h"
@@ -45,8 +45,7 @@ NewSpriteFromSelectionCommand::NewSpriteFromSelectionCommand()
 
 bool NewSpriteFromSelectionCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsReadable |
-                             ContextFlags::HasVisibleMask);
+  return context->checkFlags(ContextFlags::ActiveDocumentIsReadable | ContextFlags::HasVisibleMask);
 }
 
 void NewSpriteFromSelectionCommand::onExecute(Context* context)
@@ -55,38 +54,36 @@ void NewSpriteFromSelectionCommand::onExecute(Context* context)
   const Doc* doc = site.document();
   const Sprite* sprite = site.sprite();
   const Mask* mask = doc->mask();
-  ImageRef image(
-    new_image_from_mask(site, mask, true));
+  ImageRef image(new_image_from_mask(site, mask, true));
   if (!image)
     return;
 
   Palette* palette = sprite->palette(site.frame());
 
-  std::unique_ptr<Sprite> dstSprite(
-    Sprite::MakeStdSprite(
-      ImageSpec((ColorMode)image->pixelFormat(),
-                image->width(),
-                image->height(),
-                sprite->transparentColor(),
-                sprite->colorSpace()),
-      palette->size()));
+  std::unique_ptr<Sprite> dstSprite(Sprite::MakeStdSprite(ImageSpec((ColorMode)image->pixelFormat(),
+                                                                    image->width(),
+                                                                    image->height(),
+                                                                    sprite->transparentColor(),
+                                                                    sprite->colorSpace()),
+                                                          palette->size()));
 
   palette->copyColorsTo(dstSprite->palette(frame_t(0)));
 
   LayerImage* dstLayer = static_cast<LayerImage*>(dstSprite->root()->firstLayer());
   if (site.layer()->isBackground())
-    dstLayer->configureAsBackground(); // Configure layer name as background
+    dstLayer->configureAsBackground();       // Configure layer name as background
   dstLayer->setFlags(site.layer()->flags()); // Copy all flags
   copy_image(dstLayer->cel(frame_t(0))->image(), image.get());
 
   std::unique_ptr<Doc> dstDoc(new Doc(dstSprite.get()));
   dstSprite.release();
 
-  const std::string buf =
-    fmt::format("{}-{}x{}-{}x{}",
-                base::get_file_title(doc->filename()),
-                mask->bounds().x, mask->bounds().y,
-                mask->bounds().w, mask->bounds().h);
+  const std::string buf = fmt::format("{}-{}x{}-{}x{}",
+                                      base::get_file_title(doc->filename()),
+                                      mask->bounds().x,
+                                      mask->bounds().y,
+                                      mask->bounds().w,
+                                      mask->bounds().h);
 
   dstDoc->setFilename(buf);
   dstDoc->setContext(context);

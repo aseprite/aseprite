@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -40,8 +40,7 @@ private:
   int m_opacity;
 };
 
-LayerOpacityCommand::LayerOpacityCommand()
-  : Command(CommandId::LayerOpacity(), CmdUIOnlyFlag)
+LayerOpacityCommand::LayerOpacityCommand() : Command(CommandId::LayerOpacity(), CmdUIOnlyFlag)
 {
   m_opacity = 255;
 }
@@ -54,17 +53,14 @@ void LayerOpacityCommand::onLoadParams(const Params& params)
 
 bool LayerOpacityCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasActiveLayer);
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasActiveLayer);
 }
 
 void LayerOpacityCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
   Layer* layer = writer.layer();
-  if (!layer ||
-      !layer->isImage() ||
-      static_cast<LayerImage*>(layer)->opacity() == m_opacity)
+  if (!layer || !layer->isImage() || static_cast<LayerImage*>(layer)->opacity() == m_opacity)
     return;
 
   {
@@ -93,8 +89,7 @@ void LayerOpacityCommand::onExecute(Context* context)
 
 std::string LayerOpacityCommand::onGetFriendlyName() const
 {
-  return Strings::commands_LayerOpacity(m_opacity,
-                                        int(100.0 * m_opacity / 255.0));
+  return Strings::commands_LayerOpacity(m_opacity, int(100.0 * m_opacity / 255.0));
 }
 
 Command* CommandFactory::createLayerOpacityCommand()

@@ -5,15 +5,14 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/event.h"
 
 namespace ui {
 
-Event::Event(Component* source)
-  : m_source(source)
+Event::Event(Component* source) : m_source(source)
 {
 }
 

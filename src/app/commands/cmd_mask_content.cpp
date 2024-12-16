@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -38,8 +38,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-MaskContentCommand::MaskContentCommand()
-  : Command(CommandId::MaskContent(), CmdRecordableFlag)
+MaskContentCommand::MaskContentCommand() : Command(CommandId::MaskContent(), CmdRecordableFlag)
 {
 }
 
@@ -88,8 +87,8 @@ void MaskContentCommand::onExecute(Context* context)
   }
 
   // Select marquee tool
-  if (tools::Tool* tool = App::instance()->toolBox()
-      ->getToolById(tools::WellKnownTools::RectangularMarquee)) {
+  if (tools::Tool* tool = App::instance()->toolBox()->getToolById(
+        tools::WellKnownTools::RectangularMarquee)) {
     ToolBar::instance()->selectTool(tool);
   }
 

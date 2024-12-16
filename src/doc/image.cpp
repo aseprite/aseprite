@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/image.h"
@@ -20,9 +20,7 @@
 
 namespace doc {
 
-Image::Image(const ImageSpec& spec)
-  : Object(ObjectType::Image)
-  , m_spec(spec)
+Image::Image(const ImageSpec& spec) : Object(ObjectType::Image), m_spec(spec)
 {
 }
 
@@ -32,19 +30,17 @@ Image::~Image()
 
 int Image::getMemSize() const
 {
-  return sizeof(Image) + rowBytes()*height();
+  return sizeof(Image) + rowBytes() * height();
 }
 
 // static
-Image* Image::create(PixelFormat format, int width, int height,
-                     const ImageBufferPtr& buffer)
+Image* Image::create(PixelFormat format, int width, int height, const ImageBufferPtr& buffer)
 {
   return Image::create(ImageSpec((ColorMode)format, width, height, 0), buffer);
 }
 
 // static
-Image* Image::create(const ImageSpec& spec,
-                     const ImageBufferPtr& buffer)
+Image* Image::create(const ImageSpec& spec, const ImageBufferPtr& buffer)
 {
   ASSERT(spec.width() >= 1 && spec.height() >= 1);
   if (spec.width() < 1 || spec.height() < 1)
@@ -64,8 +60,7 @@ Image* Image::create(const ImageSpec& spec,
 Image* Image::createCopy(const Image* image, const ImageBufferPtr& buffer)
 {
   ASSERT(image);
-  return crop_image(image, 0, 0, image->width(), image->height(),
-                    image->maskColor(), buffer);
+  return crop_image(image, 0, 0, image->width(), image->height(), image->maskColor(), buffer);
 }
 
 } // namespace doc

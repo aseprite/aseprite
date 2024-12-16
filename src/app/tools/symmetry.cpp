@@ -5,28 +5,24 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/tools/symmetry.h"
 
- #include "app/tools/point_shape.h"
- #include "app/tools/tool_loop.h"
- #include "doc/brush.h"
+#include "app/tools/point_shape.h"
+#include "app/tools/tool_loop.h"
+#include "doc/brush.h"
 
-namespace app {
-namespace tools {
+namespace app { namespace tools {
 
-void Symmetry::generateStrokes(const Stroke& stroke, Strokes& strokes,
-                               ToolLoop* loop)
+void Symmetry::generateStrokes(const Stroke& stroke, Strokes& strokes, ToolLoop* loop)
 {
   Stroke stroke2;
   strokes.push_back(stroke);
   gen::SymmetryMode symmetryMode = loop->getSymmetry()->mode();
   switch (symmetryMode) {
-    case gen::SymmetryMode::NONE:
-      ASSERT(false);
-      break;
+    case gen::SymmetryMode::NONE: ASSERT(false); break;
 
     case gen::SymmetryMode::HORIZONTAL:
       calculateSymmetricalStroke(stroke, stroke2, loop, doc::SymmetryIndex::FLIPPED_X);
@@ -124,10 +120,8 @@ void Symmetry::calculateSymmetricalStroke(const Stroke& refStroke,
       brushCenter = brush->center();
     }
     else {
-      brushSize = gfx::Size(brush->bounds().h,
-                            brush->bounds().w);
-      brushCenter = gfx::Point(brush->center().y,
-                               brush->center().x);
+      brushSize = gfx::Size(brush->bounds().h, brush->bounds().w);
+      brushCenter = gfx::Point(brush->center().y, brush->center().x);
     }
   }
 
@@ -144,9 +138,14 @@ void Symmetry::calculateSymmetricalStroke(const Stroke& refStroke,
       case doc::SymmetryIndex::ROT_FLIP_270: {
         int adj_x = 0;
         int adj_y = 0;
-        if (m_x - double(int(m_x)) > 0) adj_y = 1;
-        if (m_y - double(int(m_y)) > 0) adj_x = 1;
-        if (adj_x == 1 && adj_y == 1) { adj_x = 0; adj_y = 0; }
+        if (m_x - double(int(m_x)) > 0)
+          adj_y = 1;
+        if (m_y - double(int(m_y)) > 0)
+          adj_x = 1;
+        if (adj_x == 1 && adj_y == 1) {
+          adj_x = 0;
+          adj_y = 0;
+        }
         pt2.x = -pt.y + m_x + m_y - (brushSize.w % 2 ? 1 : 0) + adj_x;
         pt2.y = -pt.x + m_x + m_y - (brushSize.h % 2 ? 1 : 0) + adj_y;
         break;
@@ -166,13 +165,10 @@ void Symmetry::calculateSymmetricalStroke(const Stroke& refStroke,
           pt2.y = 2 * (m_y + brushCenter.y) - pt.y - brushSize.h;
         break;
       }
-      default:
-        pt2.y = 2 * (m_y + brushCenter.y) - pt.y - brushSize.h;
-        break;
+      default: pt2.y = 2 * (m_y + brushCenter.y) - pt.y - brushSize.h; break;
     }
     stroke.addPoint(pt2);
   }
 }
 
-} // namespace tools
-} // namespace app
+}} // namespace app::tools

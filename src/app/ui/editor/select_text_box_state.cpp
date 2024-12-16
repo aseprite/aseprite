@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/editor/select_text_box_state.h"
@@ -21,11 +21,10 @@
 
 namespace app {
 
-SelectTextBoxState::SelectTextBoxState(Editor* editor,
-                                       ui::MouseMessage* msg)
-  : SelectBoxState(this, editor->sprite()->bounds(),
-                   Flags(int(Flags::QuickBox) |
-                         int(Flags::DarkOutside)))
+SelectTextBoxState::SelectTextBoxState(Editor* editor, ui::MouseMessage* msg)
+  : SelectBoxState(this,
+                   editor->sprite()->bounds(),
+                   Flags(int(Flags::QuickBox) | int(Flags::DarkOutside)))
   , m_editor(editor)
 {
   onMouseDown(editor, msg);
@@ -33,17 +32,18 @@ SelectTextBoxState::SelectTextBoxState(Editor* editor,
 
 bool SelectTextBoxState::onUpdateStatusBar(Editor* editor)
 {
-  gfx::PointF spritePos =
-    editor->screenToEditorF(editor->mousePosInDisplay())
-    - gfx::PointF(editor->mainTilePosition());
+  gfx::PointF spritePos = editor->screenToEditorF(editor->mousePosInDisplay()) -
+                          gfx::PointF(editor->mainTilePosition());
 
   const gfx::Rect bounds = getBoxBounds();
-  const std::string buf = fmt::format(
-    ":pos: {} {}"
-    " :start: {} {} :size: {} {}",
-    int(spritePos.x), int(spritePos.y),
-    int(bounds.x), int(bounds.y),
-    int(bounds.w), int(bounds.h));
+  const std::string buf = fmt::format(":pos: {} {}"
+                                      " :start: {} {} :size: {} {}",
+                                      int(spritePos.x),
+                                      int(spritePos.y),
+                                      int(bounds.x),
+                                      int(bounds.y),
+                                      int(bounds.w),
+                                      int(bounds.h));
 
   StatusBar::instance()->setStatusText(0, buf);
   return true;
@@ -54,9 +54,7 @@ void SelectTextBoxState::onChangeRectangle(const gfx::Rect&)
   onUpdateStatusBar(m_editor);
 }
 
-void SelectTextBoxState::onQuickboxEnd(Editor* editor,
-                                       const gfx::Rect& rect0,
-                                       ui::MouseButton)
+void SelectTextBoxState::onQuickboxEnd(Editor* editor, const gfx::Rect& rect0, ui::MouseButton)
 {
   editor->backToPreviousState();
 
@@ -65,7 +63,7 @@ void SelectTextBoxState::onQuickboxEnd(Editor* editor,
   if (rect.w <= 3 || rect.h <= 3) {
     FontInfo fontInfo = App::instance()->contextBar()->fontInfo();
     if (auto font = get_font_from_info(fontInfo)) {
-      rect.w = std::min(4*font->height(), editor->sprite()->width());
+      rect.w = std::min(4 * font->height(), editor->sprite()->width());
       rect.h = font->height();
     }
   }

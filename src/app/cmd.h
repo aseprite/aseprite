@@ -16,44 +16,44 @@
 
 namespace app {
 
-  class Context;
+class Context;
 
-  class Cmd : public undo::UndoCommand {
-  public:
-    Cmd();
-    virtual ~Cmd();
+class Cmd : public undo::UndoCommand {
+public:
+  Cmd();
+  virtual ~Cmd();
 
-    void execute(Context* ctx);
+  void execute(Context* ctx);
 
-    // undo::UndoCommand impl
-    void undo() override;
-    void redo() override;
-    void dispose() override;
+  // undo::UndoCommand impl
+  void undo() override;
+  void redo() override;
+  void dispose() override;
 
-    std::string label() const;
-    size_t memSize() const;
+  std::string label() const;
+  size_t memSize() const;
 
-    Context* context() const { return m_ctx; }
+  Context* context() const { return m_ctx; }
 
-  protected:
-    virtual void onExecute();
-    virtual void onUndo();
-    virtual void onRedo();
-    virtual void onFireNotifications();
-    virtual std::string onLabel() const;
-    virtual size_t onMemSize() const;
+protected:
+  virtual void onExecute();
+  virtual void onUndo();
+  virtual void onRedo();
+  virtual void onFireNotifications();
+  virtual std::string onLabel() const;
+  virtual size_t onMemSize() const;
 
-  private:
-    // TODO I think we could just remove this field (but we'll need to
-    //      include the Context* in all onEvent() member functions)
-    Context* m_ctx;
+private:
+  // TODO I think we could just remove this field (but we'll need to
+  //      include the Context* in all onEvent() member functions)
+  Context* m_ctx;
 #if _DEBUG
-    enum class State { NotExecuted, Executed, Undone, Redone };
-    State m_state;
+  enum class State { NotExecuted, Executed, Undone, Redone };
+  State m_state;
 #endif
 
-    DISABLE_COPYING(Cmd);
-  };
+  DISABLE_COPYING(Cmd);
+};
 
 } // namespace app
 

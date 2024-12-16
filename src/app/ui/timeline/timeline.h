@@ -38,495 +38,481 @@
 #include <vector>
 
 namespace doc {
-  class Cel;
-  class Layer;
-  class LayerImage;
-  class Sprite;
-}
+class Cel;
+class Layer;
+class LayerImage;
+class Sprite;
+} // namespace doc
 
 namespace ui {
-  class Graphics;
-  class TooltipManager;
-  class DragEvent;
-}
+class Graphics;
+class TooltipManager;
+class DragEvent;
+} // namespace ui
 
 namespace app {
 
-  namespace skin {
-    class SkinTheme;
-  }
+namespace skin {
+class SkinTheme;
+}
 
-  using namespace doc;
+using namespace doc;
 
-  class CommandExecutionEvent;
-  class ConfigureTimelinePopup;
-  class Context;
-  class Doc;
-  class Editor;
+class CommandExecutionEvent;
+class ConfigureTimelinePopup;
+class Context;
+class Doc;
+class Editor;
 
-  class Timeline : public ui::Widget,
-                   public ui::ScrollableViewDelegate,
-                   public obs::observable<TimelineObserver>,
-                   public ContextObserver,
-                   public DocsObserver,
-                   public DocObserver,
-                   public EditorObserver,
-                   public InputChainElement,
-                   public TagProvider {
-  public:
-    using Range = view::Range;
-    using RealRange = view::RealRange;
-    using VirtualRange = view::VirtualRange;
-    using fr_t = view::fr_t;
-    using col_t = view::col_t;
-    static constexpr const auto kNoCol = view::kNoCol;
+class Timeline : public ui::Widget,
+                 public ui::ScrollableViewDelegate,
+                 public obs::observable<TimelineObserver>,
+                 public ContextObserver,
+                 public DocsObserver,
+                 public DocObserver,
+                 public EditorObserver,
+                 public InputChainElement,
+                 public TagProvider {
+public:
+  using Range = view::Range;
+  using RealRange = view::RealRange;
+  using VirtualRange = view::VirtualRange;
+  using fr_t = view::fr_t;
+  using col_t = view::col_t;
+  static constexpr const auto kNoCol = view::kNoCol;
 
-    enum State {
-      STATE_STANDBY,
-      STATE_SCROLLING,
-      STATE_SELECTING_LAYERS,
-      STATE_SELECTING_FRAMES,
-      STATE_SELECTING_CELS,
-      STATE_MOVING_SEPARATOR,
-      STATE_MOVING_RANGE,
-      STATE_MOVING_ONIONSKIN_RANGE_LEFT,
-      STATE_MOVING_ONIONSKIN_RANGE_RIGHT,
-      STATE_MOVING_TAG,
-      STATE_RESIZING_TAG_LEFT,
-      STATE_RESIZING_TAG_RIGHT,
-      // Changing layers flags states
-      STATE_SHOWING_LAYERS,
-      STATE_HIDING_LAYERS,
-      STATE_LOCKING_LAYERS,
-      STATE_UNLOCKING_LAYERS,
-      STATE_ENABLING_CONTINUOUS_LAYERS,
-      STATE_DISABLING_CONTINUOUS_LAYERS,
-      STATE_EXPANDING_LAYERS,
-      STATE_COLLAPSING_LAYERS,
-    };
+  enum State {
+    STATE_STANDBY,
+    STATE_SCROLLING,
+    STATE_SELECTING_LAYERS,
+    STATE_SELECTING_FRAMES,
+    STATE_SELECTING_CELS,
+    STATE_MOVING_SEPARATOR,
+    STATE_MOVING_RANGE,
+    STATE_MOVING_ONIONSKIN_RANGE_LEFT,
+    STATE_MOVING_ONIONSKIN_RANGE_RIGHT,
+    STATE_MOVING_TAG,
+    STATE_RESIZING_TAG_LEFT,
+    STATE_RESIZING_TAG_RIGHT,
+    // Changing layers flags states
+    STATE_SHOWING_LAYERS,
+    STATE_HIDING_LAYERS,
+    STATE_LOCKING_LAYERS,
+    STATE_UNLOCKING_LAYERS,
+    STATE_ENABLING_CONTINUOUS_LAYERS,
+    STATE_DISABLING_CONTINUOUS_LAYERS,
+    STATE_EXPANDING_LAYERS,
+    STATE_COLLAPSING_LAYERS,
+  };
 
-    enum DropOp { kMove, kCopy };
+  enum DropOp { kMove, kCopy };
 
-    Timeline(ui::TooltipManager* tooltipManager);
-    ~Timeline();
+  Timeline(ui::TooltipManager* tooltipManager);
+  ~Timeline();
 
-    void updateUsingEditor(Editor* editor);
+  void updateUsingEditor(Editor* editor);
 
-    Sprite* sprite() { return m_sprite; }
+  Sprite* sprite() { return m_sprite; }
 
-    bool isMovingCel() const;
+  bool isMovingCel() const;
 
-    // The range is specified in "virtual frames" (not real sprite
-    // frames, we'll have to do a conversion each time we want to use
-    // this range with the sprite).
-    VirtualRange virtualRange() const { return m_range; }
-    bool isRangeEnabled() const { return m_range.enabled(); }
+  // The range is specified in "virtual frames" (not real sprite
+  // frames, we'll have to do a conversion each time we want to use
+  // this range with the sprite).
+  VirtualRange virtualRange() const { return m_range; }
+  bool isRangeEnabled() const { return m_range.enabled(); }
 
-    // Returns the range in "real sprite frames."
-    RealRange realRange() const;
+  // Returns the range in "real sprite frames."
+  RealRange realRange() const;
 
-    void prepareToMoveRange();
-    void moveRange(const VirtualRange& range);
-    void setVirtualRange(const VirtualRange& range);
-    void setRealRange(const RealRange& range);
+  void prepareToMoveRange();
+  void moveRange(const VirtualRange& range);
+  void setVirtualRange(const VirtualRange& range);
+  void setRealRange(const RealRange& range);
 
-    void activateClipboardRange();
+  void activateClipboardRange();
 
-    // Drag-and-drop operations. These actions are used by commands
-    // called from popup menus.
-    void dropRange(DropOp op);
+  // Drag-and-drop operations. These actions are used by commands
+  // called from popup menus.
+  void dropRange(DropOp op);
 
-    // TagProvider impl
-    // Returns the active frame tag depending on the timeline status
-    // E.g. if other frame tags are collapsed, the focused band has
-    // priority and tags in other bands are ignored.
-    Tag* getTagByFrame(const frame_t frame,
-                       const bool getLoopTagIfNone) override;
+  // TagProvider impl
+  // Returns the active frame tag depending on the timeline status
+  // E.g. if other frame tags are collapsed, the focused band has
+  // priority and tags in other bands are ignored.
+  Tag* getTagByFrame(const frame_t frame, const bool getLoopTagIfNone) override;
 
-    // ScrollableViewDelegate impl
-    gfx::Size visibleSize() const override;
-    gfx::Point viewScroll() const override;
-    void setViewScroll(const gfx::Point& pt) override;
+  // ScrollableViewDelegate impl
+  gfx::Size visibleSize() const override;
+  gfx::Point viewScroll() const override;
+  void setViewScroll(const gfx::Point& pt) override;
 
-    void lockRange();
-    void unlockRange();
+  void lockRange();
+  void unlockRange();
 
-    void clearAndInvalidateRange();
+  void clearAndInvalidateRange();
 
-  protected:
-    bool onProcessMessage(ui::Message* msg) override;
-    void onInitTheme(ui::InitThemeEvent& ev) override;
-    void onInvalidateRegion(const gfx::Region& region) override;
-    void onSizeHint(ui::SizeHintEvent& ev) override;
-    void onResize(ui::ResizeEvent& ev) override;
-    void onPaint(ui::PaintEvent& ev) override;
+protected:
+  bool onProcessMessage(ui::Message* msg) override;
+  void onInitTheme(ui::InitThemeEvent& ev) override;
+  void onInvalidateRegion(const gfx::Region& region) override;
+  void onSizeHint(ui::SizeHintEvent& ev) override;
+  void onResize(ui::ResizeEvent& ev) override;
+  void onPaint(ui::PaintEvent& ev) override;
 
-    // DocObserver impl.
-    void onGeneralUpdate(DocEvent& ev) override;
-    void onAddLayer(DocEvent& ev) override;
-    void onBeforeRemoveLayer(DocEvent& ev) override;
-    void onAfterRemoveLayer(DocEvent& ev) override;
-    void onAddFrame(DocEvent& ev) override;
-    void onRemoveFrame(DocEvent& ev) override;
-    void onAddCel(DocEvent& ev) override;
-    void onAfterRemoveCel(DocEvent& ev) override;
-    void onLayerNameChange(DocEvent& ev) override;
-    void onAddTag(DocEvent& ev) override;
-    void onRemoveTag(DocEvent& ev) override;
-    void onTagChange(DocEvent& ev) override;
-    void onTagRename(DocEvent& ev) override;
-    void onLayerCollapsedChanged(DocEvent& ev) override;
-    void onAfterLayerVisibilityChange(DocEvent& ev) override;
+  // DocObserver impl.
+  void onGeneralUpdate(DocEvent& ev) override;
+  void onAddLayer(DocEvent& ev) override;
+  void onBeforeRemoveLayer(DocEvent& ev) override;
+  void onAfterRemoveLayer(DocEvent& ev) override;
+  void onAddFrame(DocEvent& ev) override;
+  void onRemoveFrame(DocEvent& ev) override;
+  void onAddCel(DocEvent& ev) override;
+  void onAfterRemoveCel(DocEvent& ev) override;
+  void onLayerNameChange(DocEvent& ev) override;
+  void onAddTag(DocEvent& ev) override;
+  void onRemoveTag(DocEvent& ev) override;
+  void onTagChange(DocEvent& ev) override;
+  void onTagRename(DocEvent& ev) override;
+  void onLayerCollapsedChanged(DocEvent& ev) override;
+  void onAfterLayerVisibilityChange(DocEvent& ev) override;
 
-    // app::Context slots.
-    void onBeforeCommandExecution(CommandExecutionEvent& ev);
-    void onAfterCommandExecution(CommandExecutionEvent& ev);
+  // app::Context slots.
+  void onBeforeCommandExecution(CommandExecutionEvent& ev);
+  void onAfterCommandExecution(CommandExecutionEvent& ev);
 
-    // ContextObserver impl
-    void onActiveSiteChange(const Site& site) override;
+  // ContextObserver impl
+  void onActiveSiteChange(const Site& site) override;
 
-    // DocsObserver impl.
-    void onRemoveDocument(Doc* document) override;
+  // DocsObserver impl.
+  void onRemoveDocument(Doc* document) override;
 
-    // EditorObserver impl.
-    void onStateChanged(Editor* editor) override;
-    void onAfterFrameChanged(Editor* editor) override;
-    void onAfterLayerChanged(Editor* editor) override;
-    void onDestroyEditor(Editor* editor) override;
+  // EditorObserver impl.
+  void onStateChanged(Editor* editor) override;
+  void onAfterFrameChanged(Editor* editor) override;
+  void onAfterLayerChanged(Editor* editor) override;
+  void onDestroyEditor(Editor* editor) override;
 
-    // InputChainElement impl
-    void onNewInputPriority(InputChainElement* element,
-                            const ui::Message* msg) override;
-    bool onCanCut(Context* ctx) override;
-    bool onCanCopy(Context* ctx) override;
-    bool onCanPaste(Context* ctx) override;
-    bool onCanClear(Context* ctx) override;
-    bool onCut(Context* ctx) override;
-    bool onCopy(Context* ctx) override;
-    bool onPaste(Context* ctx,
-                 const gfx::Point* position) override;
-    bool onClear(Context* ctx) override;
-    void onCancel(Context* ctx) override;
+  // InputChainElement impl
+  void onNewInputPriority(InputChainElement* element, const ui::Message* msg) override;
+  bool onCanCut(Context* ctx) override;
+  bool onCanCopy(Context* ctx) override;
+  bool onCanPaste(Context* ctx) override;
+  bool onCanClear(Context* ctx) override;
+  bool onCut(Context* ctx) override;
+  bool onCopy(Context* ctx) override;
+  bool onPaste(Context* ctx, const gfx::Point* position) override;
+  bool onClear(Context* ctx) override;
+  void onCancel(Context* ctx) override;
 
-    void onDragEnter(ui::DragEvent& e) override;
-    void onDragLeave(ui::DragEvent& e) override;
-    void onDrag(ui::DragEvent& e) override;
-    void onDrop(ui::DragEvent& e) override;
+  void onDragEnter(ui::DragEvent& e) override;
+  void onDragLeave(ui::DragEvent& e) override;
+  void onDrag(ui::DragEvent& e) override;
+  void onDrop(ui::DragEvent& e) override;
+
+private:
+  struct DrawCelData;
+
+  struct Hit {
+    int part;
+    layer_t layer;
+    col_t frame;
+    ObjectId tag;
+    bool veryBottom;
+    int band;
+
+    Hit(int part = 0,
+        layer_t layer = -1,
+        col_t frame = kNoCol,
+        ObjectId tag = NullId,
+        int band = -1);
+    bool operator!=(const Hit& other) const;
+    Tag* getTag() const;
+  };
+
+  struct DropTarget {
+    enum HHit { HNone, Before, After };
+    enum VHit { VNone, Bottom, Top, FirstChild, VeryBottom };
+    DropTarget();
+    DropTarget(const DropTarget& o);
+    bool operator!=(const DropTarget& o) const
+    {
+      return (hhit != o.hhit || vhit != o.vhit || outside != o.outside);
+    }
+    HHit hhit;
+    VHit vhit;
+    bool outside;
+  };
+
+  struct Row {
+    Row();
+    Row(Layer* layer, const int level, const LayerFlags inheritedFlags);
+
+    Layer* layer() const { return m_layer; }
+    int level() const { return m_level; }
+
+    bool parentVisible() const;
+    bool parentEditable() const;
 
   private:
-    struct DrawCelData;
-
-    struct Hit {
-      int part;
-      layer_t layer;
-      col_t frame;
-      ObjectId tag;
-      bool veryBottom;
-      int band;
-
-      Hit(int part = 0,
-          layer_t layer = -1,
-          col_t frame = kNoCol,
-          ObjectId tag = NullId,
-          int band = -1);
-      bool operator!=(const Hit& other) const;
-      Tag* getTag() const;
-    };
-
-    struct DropTarget {
-      enum HHit {
-        HNone,
-        Before,
-        After
-      };
-      enum VHit {
-        VNone,
-        Bottom,
-        Top,
-        FirstChild,
-        VeryBottom
-      };
-      DropTarget();
-      DropTarget(const DropTarget& o);
-      bool operator!=(const DropTarget& o) const {
-        return (hhit != o.hhit ||
-                vhit != o.vhit ||
-                outside != o.outside);
-      }
-      HHit hhit;
-      VHit vhit;
-      bool outside;
-    };
-
-    struct Row {
-      Row();
-      Row(Layer* layer,
-          const int level,
-          const LayerFlags inheritedFlags);
-
-      Layer* layer() const { return m_layer; }
-      int level() const { return m_level; }
-
-      bool parentVisible() const;
-      bool parentEditable() const;
-
-    private:
-      Layer* m_layer;
-      int m_level;
-      LayerFlags m_inheritedFlags;
-    };
-
-    void handleRangeMouseDown(const ui::Message* msg,
-                              const Range::Type rangeType,
-                              doc::Layer* fromLayer,
-                              const col_t fromFrame);
-
-    void handleRangeMouseMove(doc::Layer* fromLayer,
-                              const col_t fromFrame);
-
-    bool selectedLayersBounds(const SelectedLayers& layers,
-                              layer_t* first, layer_t* last) const;
-
-    void setLayer(Layer* layer);
-    void setFrame(col_t frame, bool byUser);
-    bool allLayersVisible();
-    bool allLayersInvisible();
-    bool allLayersLocked();
-    bool allLayersUnlocked();
-    bool allLayersContinuous();
-    bool allLayersDiscontinuous();
-    void detachDocument();
-    void setCursor(ui::Message* msg, const Hit& hit);
-    bool getDrawableLayers(layer_t* firstLayer, layer_t* lastLayer);
-    void getDrawableFrames(col_t* firstFrame, col_t* lastFrame);
-    bool getTagFrames(const doc::Tag* tag, col_t* fromFrame, col_t* toFrame) const;
-    void drawPart(ui::Graphics* g, const gfx::Rect& bounds,
-                  const std::string* text,
-                  ui::Style* style,
-                  const bool is_active = false,
-                  const bool is_hover = false,
-                  const bool is_clicked = false,
-                  const bool is_disabled = false);
-    void drawTop(ui::Graphics* g);
-    void drawHeader(ui::Graphics* g);
-    void drawHeaderFrame(ui::Graphics* g, const col_t col);
-    void drawLayer(ui::Graphics* g, const layer_t layerIdx);
-    void drawCel(ui::Graphics* g,
-                 const layer_t layerIdx, const col_t col,
-                 const Cel* cel, const DrawCelData* data);
-    void drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
-                               const Cel* cel, const col_t col,
-                               const bool is_active, const bool is_hover,
-                               const DrawCelData* data);
-    void drawTags(ui::Graphics* g);
-    void drawTagBraces(ui::Graphics* g,
-                       gfx::Color tagColor,
-                       const gfx::Rect& bounds,
-                       const gfx::Rect& clipBounds);
-    void drawRangeOutline(ui::Graphics* g);
-    void drawPaddings(ui::Graphics* g);
-    bool drawPart(ui::Graphics* g, int part, layer_t layer, col_t frame);
-    void drawClipboardRange(ui::Graphics* g);
-    gfx::Rect getLayerHeadersBounds() const;
-    gfx::Rect getFrameHeadersBounds() const;
-    gfx::Rect getOnionskinFramesBounds() const;
-    gfx::Rect getCelsBounds() const;
-    gfx::Rect getPartBounds(const Hit& hit) const;
-    gfx::Rect getRangeBounds(const Range& range) const;
-    gfx::Rect getRangeClipBounds(const Range& range) const;
-    int getFrameXPos(const col_t frame) const;
-    int getFrameWidth(const col_t frame) const;
-    col_t getFrameInXPos(const int x) const;
-    void invalidateHit(const Hit& hit);
-    void invalidateLayer(const Layer* layer);
-    void invalidateFrame(const col_t frame);
-    void invalidateRange();
-    void regenerateCols();
-    void regenerateRows();
-    void regenerateTagBands();
-    int visibleTagBands() const;
-    void updateScrollBars();
-    void updateByMousePos(ui::Message* msg, const gfx::Point& mousePos);
-    Hit hitTest(ui::Message* msg, const gfx::Point& mousePos);
-    Hit hitTestCel(const gfx::Point& mousePos);
-    void setHot(const Hit& hit);
-    void showCel(layer_t layer, col_t frame);
-    void showCurrentCel();
-    void focusTagBand(int band);
-    void cleanClk();
-    gfx::Size getScrollableSize() const;
-    gfx::Point getMaxScrollablePos() const;
-    doc::Layer* getLayer(int layerIndex) const;
-    layer_t getLayerIndex(const Layer* layer) const;
-    bool isLayerActive(const layer_t layerIdx) const;
-    bool isFrameActive(const col_t frame) const;
-    bool isCelActive(const layer_t layerIdx, const col_t frame) const;
-    bool isCelLooselyActive(const layer_t layerIdx, const col_t frame) const;
-
-    void updateStatusBar(ui::Message* msg);
-    void updateStatusBarForFrame(const col_t frame,
-                                 const Tag* tag,
-                                 const Cel* cel);
-    void updateDropRange(const gfx::Point& pt);
-    void clearClipboardRange();
-    void resetAllRanges();
-
-    // The layer of the bottom (e.g. Background layer)
-    constexpr layer_t firstLayer() const { return 0; }
-    // The layer of the top.
-    layer_t lastLayer() const { return m_rows.size()-1; }
-
-    constexpr col_t firstFrame() const { return col_t(0); }
-    col_t lastFrame() const;
-
-    bool validLayer(layer_t layer) const { return layer >= firstLayer() && layer <= lastLayer(); }
-    bool validFrame(col_t frame) const { return frame >= firstFrame() && frame <= lastFrame(); }
-
-    int topHeight() const;
-
-    app::gen::GlobalPref::Timeline& timelinePref() const;
-    DocumentPreferences& docPref() const;
-
-    // Theme/dimensions
-    skin::SkinTheme* skinTheme() const;
-    int headerBoxWidth() const;
-    int headerBoxHeight() const;
-    int layerBoxHeight() const;
-    int frameBoxWidth() const;
-    int outlineWidth() const;
-    int oneTagHeight() const;
-    col_t calcTagVisibleToFrame(Tag* tag) const;
-
-    void updateCelOverlayBounds(const Hit& hit);
-    void drawCelOverlay(ui::Graphics* g);
-    void onThumbnailsPrefChange();
-    void setZoom(const double zoom);
-    void setZoomAndUpdate(const double zoom,
-                          const bool updatePref);
-
-    double zoom() const;
-    int tagFramesDuration(const Tag* tag) const;
-    // Calculate the duration of the selected range of frames
-    int selectedFramesDuration() const;
-
-    void setLayerVisibleFlag(const layer_t layer, const bool state);
-    void setLayerEditableFlag(const layer_t layer, const bool state);
-    void setLayerContinuousFlag(const layer_t layer, const bool state);
-    void setLayerCollapsedFlag(const layer_t layer, const bool state);
-
-    int separatorX() const;
-    void setSeparatorX(int newValue);
-    void updateTimelineAdapter(bool allTags);
-
-    static gfx::Color highlightColor(const gfx::Color color);
-
-    std::unique_ptr<view::TimelineAdapter> m_adapter;
-    ui::ScrollBar m_hbar;
-    ui::ScrollBar m_vbar;
-    gfx::Rect m_viewportArea;
-    double m_zoom;
-    Context* m_context;
-    Editor* m_editor;
-    Doc* m_document;
-    Sprite* m_sprite;
     Layer* m_layer;
-    col_t m_frame;
-    int m_rangeLocks;
-    VirtualRange m_range;
-    VirtualRange m_startRange;
-    VirtualRange m_dropRange;
-    State m_state;
+    int m_level;
+    LayerFlags m_inheritedFlags;
+  };
 
-    // Version of the sprite before executing a command. Used to check
-    // if the sprite was modified after executing a command to avoid
-    // regenerating all rows if it's not necessary.
-    doc::ObjectVersion m_savedVersion;
+  void handleRangeMouseDown(const ui::Message* msg,
+                            const Range::Type rangeType,
+                            doc::Layer* fromLayer,
+                            const col_t fromFrame);
 
-    // Data used to display columns in the timeline
-    col_t m_ncols;
+  void handleRangeMouseMove(doc::Layer* fromLayer, const col_t fromFrame);
 
-    // Data used to display each row in the timeline
-    std::vector<Row> m_rows;
+  bool selectedLayersBounds(const SelectedLayers& layers, layer_t* first, layer_t* last) const;
 
-    // Data used to display frame tags
-    int m_tagBands;
-    int m_tagFocusBand;
-    std::map<Tag*, int> m_tagBand;
+  void setLayer(Layer* layer);
+  void setFrame(col_t frame, bool byUser);
+  bool allLayersVisible();
+  bool allLayersInvisible();
+  bool allLayersLocked();
+  bool allLayersUnlocked();
+  bool allLayersContinuous();
+  bool allLayersDiscontinuous();
+  void detachDocument();
+  void setCursor(ui::Message* msg, const Hit& hit);
+  bool getDrawableLayers(layer_t* firstLayer, layer_t* lastLayer);
+  void getDrawableFrames(col_t* firstFrame, col_t* lastFrame);
+  bool getTagFrames(const doc::Tag* tag, col_t* fromFrame, col_t* toFrame) const;
+  void drawPart(ui::Graphics* g,
+                const gfx::Rect& bounds,
+                const std::string* text,
+                ui::Style* style,
+                const bool is_active = false,
+                const bool is_hover = false,
+                const bool is_clicked = false,
+                const bool is_disabled = false);
+  void drawTop(ui::Graphics* g);
+  void drawHeader(ui::Graphics* g);
+  void drawHeaderFrame(ui::Graphics* g, const col_t col);
+  void drawLayer(ui::Graphics* g, const layer_t layerIdx);
+  void drawCel(ui::Graphics* g,
+               const layer_t layerIdx,
+               const col_t col,
+               const Cel* cel,
+               const DrawCelData* data);
+  void drawCelLinkDecorators(ui::Graphics* g,
+                             const gfx::Rect& bounds,
+                             const Cel* cel,
+                             const col_t col,
+                             const bool is_active,
+                             const bool is_hover,
+                             const DrawCelData* data);
+  void drawTags(ui::Graphics* g);
+  void drawTagBraces(ui::Graphics* g,
+                     gfx::Color tagColor,
+                     const gfx::Rect& bounds,
+                     const gfx::Rect& clipBounds);
+  void drawRangeOutline(ui::Graphics* g);
+  void drawPaddings(ui::Graphics* g);
+  bool drawPart(ui::Graphics* g, int part, layer_t layer, col_t frame);
+  void drawClipboardRange(ui::Graphics* g);
+  gfx::Rect getLayerHeadersBounds() const;
+  gfx::Rect getFrameHeadersBounds() const;
+  gfx::Rect getOnionskinFramesBounds() const;
+  gfx::Rect getCelsBounds() const;
+  gfx::Rect getPartBounds(const Hit& hit) const;
+  gfx::Rect getRangeBounds(const Range& range) const;
+  gfx::Rect getRangeClipBounds(const Range& range) const;
+  int getFrameXPos(const col_t frame) const;
+  int getFrameWidth(const col_t frame) const;
+  col_t getFrameInXPos(const int x) const;
+  void invalidateHit(const Hit& hit);
+  void invalidateLayer(const Layer* layer);
+  void invalidateFrame(const col_t frame);
+  void invalidateRange();
+  void regenerateCols();
+  void regenerateRows();
+  void regenerateTagBands();
+  int visibleTagBands() const;
+  void updateScrollBars();
+  void updateByMousePos(ui::Message* msg, const gfx::Point& mousePos);
+  Hit hitTest(ui::Message* msg, const gfx::Point& mousePos);
+  Hit hitTestCel(const gfx::Point& mousePos);
+  void setHot(const Hit& hit);
+  void showCel(layer_t layer, col_t frame);
+  void showCurrentCel();
+  void focusTagBand(int band);
+  void cleanClk();
+  gfx::Size getScrollableSize() const;
+  gfx::Point getMaxScrollablePos() const;
+  doc::Layer* getLayer(int layerIndex) const;
+  layer_t getLayerIndex(const Layer* layer) const;
+  bool isLayerActive(const layer_t layerIdx) const;
+  bool isFrameActive(const col_t frame) const;
+  bool isCelActive(const layer_t layerIdx, const col_t frame) const;
+  bool isCelLooselyActive(const layer_t layerIdx, const col_t frame) const;
 
-    int m_separator_x;
-    int m_separator_w;
-    int m_origFrames;
-    Hit m_hot;       // The 'hot' part is where the mouse is on top of
-    DropTarget m_dropTarget;
-    Hit m_clk; // The 'clk' part is where the mouse's button was pressed (maybe for a drag & drop operation)
-    // Absolute mouse positions for scrolling.
-    gfx::Point m_oldPos;
-    // Configure timeline
-    std::unique_ptr<ConfigureTimelinePopup> m_confPopup;
-    obs::scoped_connection m_ctxConn1, m_ctxConn2;
-    obs::connection m_firstFrameConn;
-    obs::connection m_onionskinConn;
+  void updateStatusBar(ui::Message* msg);
+  void updateStatusBarForFrame(const col_t frame, const Tag* tag, const Cel* cel);
+  void updateDropRange(const gfx::Point& pt);
+  void clearClipboardRange();
+  void resetAllRanges();
 
-    // Marching ants stuff to show the range in the clipboard.
-    // TODO merge this with the marching ants of the sprite editor (ui::Editor)
-    ui::Timer m_clipboard_timer;
-    int m_offset_count;
-    bool m_redrawMarchingAntsOnly;
+  // The layer of the bottom (e.g. Background layer)
+  constexpr layer_t firstLayer() const { return 0; }
+  // The layer of the top.
+  layer_t lastLayer() const { return m_rows.size() - 1; }
 
-    bool m_scroll;   // True if the drag-and-drop operation is a scroll operation.
-    bool m_copy;     // True if the drag-and-drop operation is a copy.
-    bool m_fromTimeline;
+  constexpr col_t firstFrame() const { return col_t(0); }
+  col_t lastFrame() const;
 
-    AniControls m_aniControls;
+  bool validLayer(layer_t layer) const { return layer >= firstLayer() && layer <= lastLayer(); }
+  bool validFrame(col_t frame) const { return frame >= firstFrame() && frame <= lastFrame(); }
 
-    // Data used for thumbnails.
-    bool m_thumbnailsOverlayVisible;
-    gfx::Rect m_thumbnailsOverlayBounds;
-    Hit m_thumbnailsOverlayHit;
-    gfx::Point m_thumbnailsOverlayDirection;
-    obs::connection m_thumbnailsPrefConn;
+  int topHeight() const;
 
-    // Temporal data used to move the range.
-    struct MoveRange {
-      layer_t activeRelativeLayer;
-      col_t activeRelativeFrame;
-    } m_moveRangeData;
+  app::gen::GlobalPref::Timeline& timelinePref() const;
+  DocumentPreferences& docPref() const;
 
-    // Temporal data used to move tags.
-    struct ResizeTag {
-      doc::ObjectId tag = doc::NullId;
-      col_t from, to;
-      void reset() {
+  // Theme/dimensions
+  skin::SkinTheme* skinTheme() const;
+  int headerBoxWidth() const;
+  int headerBoxHeight() const;
+  int layerBoxHeight() const;
+  int frameBoxWidth() const;
+  int outlineWidth() const;
+  int oneTagHeight() const;
+  col_t calcTagVisibleToFrame(Tag* tag) const;
+
+  void updateCelOverlayBounds(const Hit& hit);
+  void drawCelOverlay(ui::Graphics* g);
+  void onThumbnailsPrefChange();
+  void setZoom(const double zoom);
+  void setZoomAndUpdate(const double zoom, const bool updatePref);
+
+  double zoom() const;
+  int tagFramesDuration(const Tag* tag) const;
+  // Calculate the duration of the selected range of frames
+  int selectedFramesDuration() const;
+
+  void setLayerVisibleFlag(const layer_t layer, const bool state);
+  void setLayerEditableFlag(const layer_t layer, const bool state);
+  void setLayerContinuousFlag(const layer_t layer, const bool state);
+  void setLayerCollapsedFlag(const layer_t layer, const bool state);
+
+  int separatorX() const;
+  void setSeparatorX(int newValue);
+  void updateTimelineAdapter(bool allTags);
+
+  static gfx::Color highlightColor(const gfx::Color color);
+
+  std::unique_ptr<view::TimelineAdapter> m_adapter;
+  ui::ScrollBar m_hbar;
+  ui::ScrollBar m_vbar;
+  gfx::Rect m_viewportArea;
+  double m_zoom;
+  Context* m_context;
+  Editor* m_editor;
+  Doc* m_document;
+  Sprite* m_sprite;
+  Layer* m_layer;
+  col_t m_frame;
+  int m_rangeLocks;
+  VirtualRange m_range;
+  VirtualRange m_startRange;
+  VirtualRange m_dropRange;
+  State m_state;
+
+  // Version of the sprite before executing a command. Used to check
+  // if the sprite was modified after executing a command to avoid
+  // regenerating all rows if it's not necessary.
+  doc::ObjectVersion m_savedVersion;
+
+  // Data used to display columns in the timeline
+  col_t m_ncols;
+
+  // Data used to display each row in the timeline
+  std::vector<Row> m_rows;
+
+  // Data used to display frame tags
+  int m_tagBands;
+  int m_tagFocusBand;
+  std::map<Tag*, int> m_tagBand;
+
+  int m_separator_x;
+  int m_separator_w;
+  int m_origFrames;
+  Hit m_hot; // The 'hot' part is where the mouse is on top of
+  DropTarget m_dropTarget;
+  Hit m_clk; // The 'clk' part is where the mouse's button was pressed (maybe for a drag & drop
+             // operation)
+  // Absolute mouse positions for scrolling.
+  gfx::Point m_oldPos;
+  // Configure timeline
+  std::unique_ptr<ConfigureTimelinePopup> m_confPopup;
+  obs::scoped_connection m_ctxConn1, m_ctxConn2;
+  obs::connection m_firstFrameConn;
+  obs::connection m_onionskinConn;
+
+  // Marching ants stuff to show the range in the clipboard.
+  // TODO merge this with the marching ants of the sprite editor (ui::Editor)
+  ui::Timer m_clipboard_timer;
+  int m_offset_count;
+  bool m_redrawMarchingAntsOnly;
+
+  bool m_scroll; // True if the drag-and-drop operation is a scroll operation.
+  bool m_copy;   // True if the drag-and-drop operation is a copy.
+  bool m_fromTimeline;
+
+  AniControls m_aniControls;
+
+  // Data used for thumbnails.
+  bool m_thumbnailsOverlayVisible;
+  gfx::Rect m_thumbnailsOverlayBounds;
+  Hit m_thumbnailsOverlayHit;
+  gfx::Point m_thumbnailsOverlayDirection;
+  obs::connection m_thumbnailsPrefConn;
+
+  // Temporal data used to move the range.
+  struct MoveRange {
+    layer_t activeRelativeLayer;
+    col_t activeRelativeFrame;
+  } m_moveRangeData;
+
+  // Temporal data used to move tags.
+  struct ResizeTag {
+    doc::ObjectId tag = doc::NullId;
+    col_t from, to;
+    void reset() { tag = doc::NullId; }
+    void reset(const view::TimelineAdapter& adapter, const doc::ObjectId tagId)
+    {
+      if (auto t = doc::get<doc::Tag>(tagId)) {
+        tag = tagId;
+        from = adapter.toColFrame(fr_t(t->fromFrame()));
+        to = adapter.toColFrame(fr_t(t->toFrame()));
+      }
+      else {
         tag = doc::NullId;
       }
-      void reset(const view::TimelineAdapter& adapter,
-                 const doc::ObjectId tagId) {
-        if (auto t = doc::get<doc::Tag>(tagId)) {
-          tag = tagId;
-          from = adapter.toColFrame(fr_t(t->fromFrame()));
-          to = adapter.toColFrame(fr_t(t->toFrame()));
-        }
-        else {
-          tag = doc::NullId;
-        }
-      }
-    } m_resizeTagData;
-  };
+    }
+  } m_resizeTagData;
+};
 
-  class LockTimelineRange {
-  public:
-    LockTimelineRange(Timeline* timeline)
-      : m_timeline(timeline) {
-      if (m_timeline)
-        m_timeline->lockRange();
-    }
-    ~LockTimelineRange() {
-      if (m_timeline)
-        m_timeline->unlockRange();
-    }
-  private:
-    Timeline* m_timeline;
-  };
+class LockTimelineRange {
+public:
+  LockTimelineRange(Timeline* timeline) : m_timeline(timeline)
+  {
+    if (m_timeline)
+      m_timeline->lockRange();
+  }
+  ~LockTimelineRange()
+  {
+    if (m_timeline)
+      m_timeline->unlockRange();
+  }
+
+private:
+  Timeline* m_timeline;
+};
 
 } // namespace app
 

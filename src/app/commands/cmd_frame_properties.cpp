@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -40,11 +40,7 @@ protected:
   std::string onGetFriendlyName() const override;
 
 private:
-  enum Target {
-    ALL_FRAMES = -1,
-    CURRENT_RANGE = 0,
-    SPECIFIC_FRAME = 1
-  };
+  enum Target { ALL_FRAMES = -1, CURRENT_RANGE = 0, SPECIFIC_FRAME = 1 };
 
   // Frame to be shown. It can be ALL_FRAMES, CURRENT_RANGE, or a
   // number indicating a specific frame (1 is the first frame).
@@ -87,10 +83,7 @@ void FramePropertiesCommand::onExecute(Context* context)
   SelectedFrames selFrames;
 
   switch (m_target) {
-
-    case ALL_FRAMES:
-      selFrames.insert(0, sprite->lastFrame());
-      break;
+    case ALL_FRAMES:    selFrames.insert(0, sprite->lastFrame()); break;
 
     case CURRENT_RANGE: {
       Site site = context->activeSite();
@@ -103,9 +96,7 @@ void FramePropertiesCommand::onExecute(Context* context)
       break;
     }
 
-    case SPECIFIC_FRAME:
-      selFrames.insert(m_frame-base);
-      break;
+    case SPECIFIC_FRAME: selFrames.insert(m_frame - base); break;
   }
 
   ASSERT(!selFrames.empty());
@@ -113,17 +104,16 @@ void FramePropertiesCommand::onExecute(Context* context)
     return;
 
   if (selFrames.size() == 1)
-    window.frame()->setTextf("%d", selFrames.firstFrame()+base);
+    window.frame()->setTextf("%d", selFrames.firstFrame() + base);
   else if (selFrames.ranges() == 1) {
     window.frame()->setTextf("[%d...%d]",
-                             selFrames.firstFrame()+base,
-                             selFrames.lastFrame()+base);
+                             selFrames.firstFrame() + base,
+                             selFrames.lastFrame() + base);
   }
   else
     window.frame()->setTextf("Multiple Frames");
 
-  window.frlen()->setTextf(
-    "%d", sprite->frameDuration(selFrames.firstFrame()));
+  window.frlen()->setTextf("%d", sprite->frameDuration(selFrames.firstFrame()));
 
   window.openWindowInForeground();
   if (window.closer() == window.ok()) {
@@ -143,10 +133,8 @@ void FramePropertiesCommand::onExecute(Context* context)
 std::string FramePropertiesCommand::onGetFriendlyName() const
 {
   switch (m_target) {
-    case CURRENT_RANGE:
-      return Strings::commands_FrameProperties_Current() ;
-    case ALL_FRAMES:
-      return Strings::commands_FrameProperties_All();
+    case CURRENT_RANGE: return Strings::commands_FrameProperties_Current();
+    case ALL_FRAMES:    return Strings::commands_FrameProperties_All();
   }
   return Command::onGetFriendlyName();
 }

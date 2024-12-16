@@ -13,28 +13,24 @@
 #include "app/cmd/with_tag.h"
 #include "doc/color.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class SetTagColor : public Cmd
-                    , public WithTag {
-  public:
-    SetTagColor(Tag* tag, doc::color_t color);
+class SetTagColor : public Cmd,
+                    public WithTag {
+public:
+  SetTagColor(Tag* tag, doc::color_t color);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this);
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  size_t onMemSize() const override { return sizeof(*this); }
 
-  private:
-    doc::color_t m_oldColor;
-    doc::color_t m_newColor;
-  };
+private:
+  doc::color_t m_oldColor;
+  doc::color_t m_newColor;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -48,42 +48,41 @@
 
 namespace {
 
-  // Memory leak detector wrapper
-  class MemLeak {
-  public:
+// Memory leak detector wrapper
+class MemLeak {
+public:
 #ifdef LAF_MEMLEAK
-    MemLeak() { base_memleak_init(); }
-    ~MemLeak() { base_memleak_exit(); }
+  MemLeak() { base_memleak_init(); }
+  ~MemLeak() { base_memleak_exit(); }
 #else
-    MemLeak() { }
+  MemLeak() {}
 #endif
-  };
+};
 
 #if USE_SENTRY_BREADCRUMB_FOR_WINTAB
-  // Delegate to write Wintab information as a Sentry breadcrumb (to
-  // know if there is a specific Wintab driver giving problems)
-  class WintabApiDelegate : public os::WintabAPI::Delegate {
-    bool m_done = false;
-  public:
-    WintabApiDelegate() {
-      os::System::instance()->setWintabDelegate(this);
+// Delegate to write Wintab information as a Sentry breadcrumb (to
+// know if there is a specific Wintab driver giving problems)
+class WintabApiDelegate : public os::WintabAPI::Delegate {
+  bool m_done = false;
+
+public:
+  WintabApiDelegate() { os::System::instance()->setWintabDelegate(this); }
+  ~WintabApiDelegate() { os::System::instance()->setWintabDelegate(nullptr); }
+  void onWintabID(const std::string& id) override
+  {
+    if (!m_done) {
+      m_done = true;
+      app::Sentry::addBreadcrumb("Wintab ID=" + id);
     }
-    ~WintabApiDelegate() {
-      os::System::instance()->setWintabDelegate(nullptr);
-    }
-    void onWintabID(const std::string& id) override {
-      if (!m_done) {
-        m_done = true;
-        app::Sentry::addBreadcrumb("Wintab ID=" + id);
-      }
-    }
-    void onWintabFields(const std::map<std::string, std::string>& fields) override {
-      app::Sentry::addBreadcrumb("Wintab DLL", fields);
-    }
-  };
+  }
+  void onWintabFields(const std::map<std::string, std::string>& fields) override
+  {
+    app::Sentry::addBreadcrumb("Wintab DLL", fields);
+  }
+};
 #endif // USE_SENTRY_BREADCRUMB_FOR_WINTAB
 
-}
+} // namespace
 
 // Aseprite entry point. (Called from "os" library.)
 int app_main(int argc, char* argv[])
@@ -98,7 +97,7 @@ int app_main(int argc, char* argv[])
   std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
 #if LAF_WINDOWS
-  base::CoInit com;             // To create COM objects
+  base::CoInit com; // To create COM objects
 #endif
 
   // Main thread name
@@ -140,7 +139,7 @@ int app_main(int argc, char* argv[])
 
     // After starting the GUI, we'll always return 0, but in batch
     // mode we can return the error code.
-    return (app.isGui() ? 0: code);
+    return (app.isGui() ? 0 : code);
   }
   catch (std::exception& e) {
     std::cerr << e.what() << '\n';

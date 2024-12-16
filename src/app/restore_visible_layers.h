@@ -11,26 +11,26 @@
 #include <vector>
 
 namespace doc {
-  class Layer;
-  class LayerGroup;
-  class SelectedLayers;
-  class Sprite;
-}
+class Layer;
+class LayerGroup;
+class SelectedLayers;
+class Sprite;
+} // namespace doc
 
 namespace app {
 
-  class RestoreVisibleLayers {
-  public:
-    ~RestoreVisibleLayers();
+class RestoreVisibleLayers {
+public:
+  ~RestoreVisibleLayers();
 
-    void showLayer(doc::Layer* layer);
-    void showSelectedLayers(doc::Sprite* sprite, const doc::SelectedLayers& selLayers);
+  void showLayer(doc::Layer* layer);
+  void showSelectedLayers(doc::Sprite* sprite, const doc::SelectedLayers& selLayers);
 
-  private:
-    void setLayerVisiblity(doc::LayerGroup* group, const doc::SelectedLayers& selLayers);
+private:
+  void setLayerVisiblity(doc::LayerGroup* group, const doc::SelectedLayers& selLayers);
 
-    std::vector<std::pair<doc::Layer*, bool> > m_restore;
-  };
+  std::vector<std::pair<doc::Layer*, bool>> m_restore;
+};
 
 } // namespace app
 

@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/remove_cel.h"
@@ -13,13 +13,11 @@
 #include "doc/cel.h"
 #include "doc/layer.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 using namespace doc;
 
-RemoveCel::RemoveCel(Cel* cel)
-  : AddCel(cel->layer(), cel)
+RemoveCel::RemoveCel(Cel* cel) : AddCel(cel->layer(), cel)
 {
 }
 
@@ -38,5 +36,4 @@ void RemoveCel::onRedo()
   AddCel::onUndo();
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

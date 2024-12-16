@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/skin/font_data.h"
@@ -18,8 +18,7 @@
 
 #include <set>
 
-namespace app {
-namespace skin {
+namespace app { namespace skin {
 
 FontData::FontData(text::FontType type)
   : m_type(type)
@@ -34,7 +33,7 @@ text::FontRef FontData::getFont(text::FontMgrRef& fontMgr, int size, int uiscale
   ASSERT(fontMgr);
 
   if (m_type == text::FontType::SpriteSheet)
-    size = 1;                   // Same size always
+    size = 1; // Same size always
 
   // Use cache
   size *= uiscale;
@@ -57,12 +56,11 @@ text::FontRef FontData::getFont(text::FontMgrRef& fontMgr, int size, int uiscale
   }
 
   if (m_fallback) {
-    text::FontRef fallback = m_fallback->getFont(fontMgr,
-                                                 m_fallbackSize);
+    text::FontRef fallback = m_fallback->getFont(fontMgr, m_fallbackSize);
     if (font)
       font->setFallback(fallback.get());
     else
-      return fallback;          // Don't double-cache the fallback font
+      return fallback; // Don't double-cache the fallback font
   }
 
   // Cache this font
@@ -75,5 +73,4 @@ text::FontRef FontData::getFont(text::FontMgrRef& fontMgr, int size)
   return getFont(fontMgr, size, ui::guiscale());
 }
 
-} // namespace skin
-} // namespace app
+}} // namespace app::skin

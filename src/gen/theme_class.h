@@ -9,8 +9,8 @@
 #define GEN_THEME_CLASS_H_INCLUDED
 #pragma once
 
-#include <string>
 #include "tinyxml2.h"
+#include <string>
 
 void gen_theme_class(tinyxml2::XMLDocument* doc, const std::string& inputFn);
 

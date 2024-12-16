@@ -10,15 +10,15 @@
 
 namespace app {
 
-  class Doc;
-  class Site;
+class Doc;
+class Site;
 
-  class ContextObserver {
-  public:
-    virtual ~ContextObserver() { }
-    virtual void onActiveSiteChange(const Site& site) { };
-    virtual void onBeforeActiveSiteChange(const Site& fromSite) { };
-  };
+class ContextObserver {
+public:
+  virtual ~ContextObserver() {}
+  virtual void onActiveSiteChange(const Site& site) {};
+  virtual void onBeforeActiveSiteChange(const Site& fromSite) {};
+};
 
 } // namespace app
 

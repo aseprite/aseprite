@@ -12,29 +12,25 @@
 #include "app/cmd/with_sprite.h"
 #include "doc/remap.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class RemapColors : public Cmd
-                    , public WithSprite {
-  public:
-    RemapColors(Sprite* sprite, const Remap& remap);
+class RemapColors : public Cmd,
+                    public WithSprite {
+public:
+  RemapColors(Sprite* sprite, const Remap& remap);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this) + m_remap.getMemSize();
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  size_t onMemSize() const override { return sizeof(*this) + m_remap.getMemSize(); }
 
-  private:
-    void incrementVersions(Sprite* spr);
+private:
+  void incrementVersions(Sprite* spr);
 
-    Remap m_remap;
-  };
+  Remap m_remap;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/color.h"
@@ -31,8 +31,8 @@
 namespace app {
 
 struct InvertColorParams : public NewParams {
-  Param<bool> ui { this, true, "ui" };
-  Param<filters::Target> channels { this, 0, "channels" };
+  Param<bool> ui{ this, true, "ui" };
+  Param<filters::Target> channels{ this, 0, "channels" };
 };
 
 static const char* ConfigSection = "InvertColor";
@@ -40,9 +40,12 @@ static const char* ConfigSection = "InvertColor";
 class InvertColorWindow : public FilterWindow {
 public:
   InvertColorWindow(FilterManagerImpl& filterMgr)
-    : FilterWindow("Invert Color", ConfigSection, &filterMgr,
+    : FilterWindow("Invert Color",
+                   ConfigSection,
+                   &filterMgr,
                    WithChannelsSelector,
-                   WithoutTiledCheckBox) {
+                   WithoutTiledCheckBox)
+  {
   }
 };
 
@@ -72,12 +75,11 @@ void InvertColorCommand::onExecute(Context* context)
 
   InvertColorFilter filter;
   FilterManagerImpl filterMgr(context, &filter);
-  filterMgr.setTarget(TARGET_RED_CHANNEL |
-                      TARGET_GREEN_CHANNEL |
-                      TARGET_BLUE_CHANNEL |
+  filterMgr.setTarget(TARGET_RED_CHANNEL | TARGET_GREEN_CHANNEL | TARGET_BLUE_CHANNEL |
                       TARGET_GRAY_CHANNEL);
 
-  if (params().channels.isSet()) filterMgr.setTarget(params().channels());
+  if (params().channels.isSet())
+    filterMgr.setTarget(params().channels());
 
   if (ui) {
     InvertColorWindow window(filterMgr);

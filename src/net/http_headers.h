@@ -13,8 +13,7 @@
 
 namespace net {
 
-class HttpHeaders
-{
+class HttpHeaders {
 public:
   typedef std::map<std::string, std::string> Map;
   typedef Map::iterator iterator;
@@ -25,8 +24,7 @@ public:
   const_iterator begin() const { return m_map.begin(); }
   const_iterator end() const { return m_map.end(); }
 
-  void setHeader(const std::string& name,
-                 const std::string& value);
+  void setHeader(const std::string& name, const std::string& value);
 
 private:
   Map m_map;
@@ -34,4 +32,4 @@ private:
 
 } // namespace net
 
-#endif  // NET_HTTP_HEADERS_H_INCLUDED
+#endif // NET_HTTP_HEADERS_H_INCLUDED

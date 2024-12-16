@@ -10,7 +10,7 @@
         <link id="new_file" text="@.new_file" style="workspace_link" />
         <link id="open_file" text="@.open_file" style="workspace_link" />
         <link id="recover_sprites" text="@.recover_files" style="workspace_link"
-	      tooltip="@.recover_files_tooltip" />
+              tooltip="@.recover_files_tooltip" />
       </vbox>
       <boxfiller />
       <vbox border="4">

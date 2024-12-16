@@ -6,14 +6,13 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
-#include "app/tools/ink_type.h"
 #include "app/i18n/strings.h"
+#include "app/tools/ink_type.h"
 
-namespace app {
-namespace tools {
+namespace app { namespace tools {
 
 std::string ink_type_to_string(InkType inkType)
 {
@@ -30,11 +29,11 @@ std::string ink_type_to_string(InkType inkType)
 std::string ink_type_to_string_id(InkType inkType)
 {
   switch (inkType) {
-    case tools::InkType::SIMPLE: return "simple";
+    case tools::InkType::SIMPLE:            return "simple";
     case tools::InkType::ALPHA_COMPOSITING: return "alpha_compositing";
-    case tools::InkType::COPY_COLOR: return "copy_color";
-    case tools::InkType::LOCK_ALPHA: return "lock_alpha";
-    case tools::InkType::SHADING: return "shading";
+    case tools::InkType::COPY_COLOR:        return "copy_color";
+    case tools::InkType::LOCK_ALPHA:        return "lock_alpha";
+    case tools::InkType::SHADING:           return "shading";
   }
   return "unknown";
 }
@@ -44,16 +43,13 @@ InkType string_id_to_ink_type(const std::string& s)
   if (s == "simple")
     return tools::InkType::SIMPLE;
 
-  if (s == "alpha_compositing" ||
-      s == "alpha-compositing")
+  if (s == "alpha_compositing" || s == "alpha-compositing")
     return tools::InkType::ALPHA_COMPOSITING;
 
-  if (s == "copy_color" ||
-      s == "copy-color")
+  if (s == "copy_color" || s == "copy-color")
     return tools::InkType::COPY_COLOR;
 
-  if (s == "lock_alpha" ||
-      s == "lock-alpha")
+  if (s == "lock_alpha" || s == "lock-alpha")
     return tools::InkType::LOCK_ALPHA;
 
   if (s == "shading")
@@ -62,5 +58,4 @@ InkType string_id_to_ink_type(const std::string& s)
   return tools::InkType::DEFAULT;
 }
 
-} // namespace tools
-} // namespace app
+}} // namespace app::tools

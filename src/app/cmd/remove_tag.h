@@ -11,21 +11,19 @@
 
 #include "app/cmd/add_tag.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class RemoveTag : public AddTag {
-  public:
-    RemoveTag(Sprite* sprite, Tag* tag);
+class RemoveTag : public AddTag {
+public:
+  RemoveTag(Sprite* sprite, Tag* tag);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onRedo() override;
-  };
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onRedo() override;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

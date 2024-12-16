@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_slice_key.h"
@@ -102,9 +102,10 @@ void SlicePropertiesCommand::onExecute(Context* context)
       }
 
       // Change user data
-      if ((mods & SliceWindow::kUserData) &&
-          slice->userData() != window.userDataValue()) {
-        tx(new cmd::SetUserData(slice, window.userDataValue(), static_cast<Doc*>(sprite->document())));
+      if ((mods & SliceWindow::kUserData) && slice->userData() != window.userDataValue()) {
+        tx(new cmd::SetUserData(slice,
+                                window.userDataValue(),
+                                static_cast<Doc*>(sprite->document())));
       }
 
       // Change slice properties
@@ -116,22 +117,31 @@ void SlicePropertiesCommand::onExecute(Context* context)
       gfx::Rect newBounds = newKey.bounds();
       gfx::Rect newCenter = newKey.center();
       gfx::Point newPivot = newKey.pivot();
-      if (mods & SliceWindow::kBoundsX) newBounds.x = window.boundsValue().x;
-      if (mods & SliceWindow::kBoundsY) newBounds.y = window.boundsValue().y;
-      if (mods & SliceWindow::kBoundsW) newBounds.w = window.boundsValue().w;
-      if (mods & SliceWindow::kBoundsH) newBounds.h = window.boundsValue().h;
-      if (mods & SliceWindow::kCenterX) newCenter.x = window.centerValue().x;
-      if (mods & SliceWindow::kCenterY) newCenter.y = window.centerValue().y;
-      if (mods & SliceWindow::kCenterW) newCenter.w = window.centerValue().w;
-      if (mods & SliceWindow::kCenterH) newCenter.h = window.centerValue().h;
-      if (mods & SliceWindow::kPivotX) newPivot.x = window.pivotValue().x;
-      if (mods & SliceWindow::kPivotY) newPivot.y = window.pivotValue().y;
+      if (mods & SliceWindow::kBoundsX)
+        newBounds.x = window.boundsValue().x;
+      if (mods & SliceWindow::kBoundsY)
+        newBounds.y = window.boundsValue().y;
+      if (mods & SliceWindow::kBoundsW)
+        newBounds.w = window.boundsValue().w;
+      if (mods & SliceWindow::kBoundsH)
+        newBounds.h = window.boundsValue().h;
+      if (mods & SliceWindow::kCenterX)
+        newCenter.x = window.centerValue().x;
+      if (mods & SliceWindow::kCenterY)
+        newCenter.y = window.centerValue().y;
+      if (mods & SliceWindow::kCenterW)
+        newCenter.w = window.centerValue().w;
+      if (mods & SliceWindow::kCenterH)
+        newCenter.h = window.centerValue().h;
+      if (mods & SliceWindow::kPivotX)
+        newPivot.x = window.pivotValue().x;
+      if (mods & SliceWindow::kPivotY)
+        newPivot.y = window.pivotValue().y;
       newKey.setBounds(newBounds);
       newKey.setCenter(newCenter);
       newKey.setPivot(newPivot);
 
-      if (key->bounds() != newKey.bounds() ||
-          key->center() != newKey.center() ||
+      if (key->bounds() != newKey.bounds() || key->center() != newKey.center() ||
           key->pivot() != newKey.pivot()) {
         tx(new cmd::SetSliceKey(slice, frame, newKey));
       }

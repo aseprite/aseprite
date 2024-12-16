@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -34,15 +34,13 @@ protected:
   void onExecute(Context* ctx) override;
 };
 
-PlayAnimationCommand::PlayAnimationCommand()
-  : Command(CommandId::PlayAnimation(), CmdUIOnlyFlag)
+PlayAnimationCommand::PlayAnimationCommand() : Command(CommandId::PlayAnimation(), CmdUIOnlyFlag)
 {
 }
 
 bool PlayAnimationCommand::onEnabled(Context* ctx)
 {
-  return ctx->checkFlags(ContextFlags::ActiveDocumentIsReadable |
-                         ContextFlags::HasActiveSprite);
+  return ctx->checkFlags(ContextFlags::ActiveDocumentIsReadable | ContextFlags::HasActiveSprite);
 }
 
 bool PlayAnimationCommand::onChecked(Context* ctx)
@@ -93,16 +91,13 @@ PlayPreviewAnimationCommand::PlayPreviewAnimationCommand()
 
 bool PlayPreviewAnimationCommand::onEnabled(Context* ctx)
 {
-  return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                         ContextFlags::HasActiveSprite);
+  return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasActiveSprite);
 }
 
 bool PlayPreviewAnimationCommand::onChecked(Context* ctx)
 {
   PreviewEditorWindow* preview = App::instance()->mainWindow()->getPreviewEditor();
-  return (preview &&
-          preview->previewEditor() &&
-          preview->previewEditor()->isPlaying());
+  return (preview && preview->previewEditor() && preview->previewEditor()->isPlaying());
 }
 
 void PlayPreviewAnimationCommand::onExecute(Context* ctx)

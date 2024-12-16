@@ -11,23 +11,21 @@
 #include "doc/object_id.h"
 
 namespace doc {
-  class Layer;
+class Layer;
 }
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class WithLayer {
-  public:
-    WithLayer(Layer* layer);
-    Layer* layer();
+class WithLayer {
+public:
+  WithLayer(Layer* layer);
+  Layer* layer();
 
-  private:
-    ObjectId m_layerId;
-  };
+private:
+  ObjectId m_layerId;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

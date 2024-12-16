@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "render/error_diffusion.h"
@@ -23,15 +23,14 @@ ErrorDiffusionDither::ErrorDiffusionDither(int transparentIndex)
 {
 }
 
-void ErrorDiffusionDither::start(
-  const doc::Image* srcImage,
-  doc::Image* dstImage,
-  const double factor)
+void ErrorDiffusionDither::start(const doc::Image* srcImage,
+                                 doc::Image* dstImage,
+                                 const double factor)
 {
   m_srcImage = srcImage;
-  m_width = 2+srcImage->width();
-  for (int i=0; i<kChannels; ++i)
-    m_err[i].resize(m_width*2, 0);
+  m_width = 2 + srcImage->width();
+  for (int i = 0; i < kChannels; ++i)
+    m_err[i].resize(m_width * 2, 0);
   m_lastY = -1;
   m_factor = int(factor * 100.0);
 }
@@ -40,13 +39,13 @@ void ErrorDiffusionDither::finish()
 {
 }
 
-doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(
-  const int x, const int y,
-  const doc::RgbMap* rgbmap,
-  const doc::Palette* palette)
+doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(const int x,
+                                                      const int y,
+                                                      const doc::RgbMap* rgbmap,
+                                                      const doc::Palette* palette)
 {
   if (y != m_lastY) {
-    for (int i=0; i<kChannels; ++i) {
+    for (int i = 0; i < kChannels; ++i) {
       int* row0 = &m_err[i][0];
       int* row1 = row0 + m_width;
       int* end1 = row1 + m_width;
@@ -56,24 +55,21 @@ doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(
     m_lastY = y;
   }
 
-  doc::color_t color =
-    doc::get_pixel_fast<doc::RgbTraits>(m_srcImage, x, y);
+  doc::color_t color = doc::get_pixel_fast<doc::RgbTraits>(m_srcImage, x, y);
 
   // Get RGB values + quatization error
-  int v[kChannels] = {
-    doc::rgba_getr(color),
-    doc::rgba_getg(color),
-    doc::rgba_getb(color),
-    doc::rgba_geta(color)
-  };
-  for (int i=0; i<kChannels; ++i) {
-    v[i] += m_err[i][x+1];
+  int v[kChannels] = { doc::rgba_getr(color),
+                       doc::rgba_getg(color),
+                       doc::rgba_getb(color),
+                       doc::rgba_geta(color) };
+  for (int i = 0; i < kChannels; ++i) {
+    v[i] += m_err[i][x + 1];
     v[i] = std::clamp(v[i], 0, 255);
   }
 
-  const doc::color_t index =
-    (rgbmap ? rgbmap->mapColor(v[0], v[1], v[2], v[3]):
-              palette->findBestfit(v[0], v[1], v[2], v[3], m_transparentIndex));
+  const doc::color_t index = (rgbmap ?
+                                rgbmap->mapColor(v[0], v[1], v[2], v[3]) :
+                                palette->findBestfit(v[0], v[1], v[2], v[3], m_transparentIndex));
 
   doc::color_t palColor = palette->getEntry(index);
   if (m_transparentIndex == index || doc::rgba_geta(palColor) == 0) {
@@ -81,15 +77,13 @@ doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(
     palColor = (color & doc::rgba_rgb_mask);
   }
 
-  const int quantError[kChannels] = {
-    v[0] - doc::rgba_getr(palColor),
-    v[1] - doc::rgba_getg(palColor),
-    v[2] - doc::rgba_getb(palColor),
-    v[3] - doc::rgba_geta(palColor)
-  };
+  const int quantError[kChannels] = { v[0] - doc::rgba_getr(palColor),
+                                      v[1] - doc::rgba_getg(palColor),
+                                      v[2] - doc::rgba_getb(palColor),
+                                      v[3] - doc::rgba_geta(palColor) };
 
   // TODO using Floyd-Steinberg matrix here but it should be configurable
-  for (int i=0; i<kChannels; ++i) {
+  for (int i = 0; i < kChannels; ++i) {
     int* err = &m_err[i][x];
     const int q = quantError[i] * m_factor / 100;
     const int a = q * 7 / 16;
@@ -98,16 +92,16 @@ doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(
     const int d = q * 1 / 16;
 
     if (y & 1) {
-      err[0        ] += a;
-      err[m_width+2] += b;
-      err[m_width+1] += c;
-      err[m_width  ] += d;
+      err[0] += a;
+      err[m_width + 2] += b;
+      err[m_width + 1] += c;
+      err[m_width] += d;
     }
     else {
-      err[       +2] += a;
-      err[m_width  ] += b;
-      err[m_width+1] += c;
-      err[m_width+2] += d;
+      err[+2] += a;
+      err[m_width] += b;
+      err[m_width + 1] += c;
+      err[m_width + 2] += d;
     }
   }
 

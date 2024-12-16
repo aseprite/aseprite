@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/commands/command.h"
@@ -25,17 +25,14 @@ protected:
   void onExecute(Context* context) override;
 };
 
-OpenWithAppCommand::OpenWithAppCommand()
-  : Command(CommandId::OpenWithApp(), CmdUIOnlyFlag)
+OpenWithAppCommand::OpenWithAppCommand() : Command(CommandId::OpenWithApp(), CmdUIOnlyFlag)
 {
 }
 
 bool OpenWithAppCommand::onEnabled(Context* context)
 {
   const ContextReader reader(context);
-  return
-    reader.document() &&
-    reader.document()->isAssociatedToFile();
+  return reader.document() && reader.document()->isAssociatedToFile();
 }
 
 void OpenWithAppCommand::onExecute(Context* context)

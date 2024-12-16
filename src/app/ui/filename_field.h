@@ -17,31 +17,30 @@
 
 namespace app {
 
-  class FilenameField : public ui::HBox {
-  public:
-    enum Type { EntryAndButton, ButtonOnly };
+class FilenameField : public ui::HBox {
+public:
+  enum Type { EntryAndButton, ButtonOnly };
 
-    FilenameField(const Type type,
-                  const std::string& pathAndFilename);
+  FilenameField(const Type type, const std::string& pathAndFilename);
 
-    std::string filename() const;
-    void setFilename(const std::string& fn);
+  std::string filename() const;
+  void setFilename(const std::string& fn);
 
-    obs::signal<std::string()> SelectFile;
-    obs::signal<void()> Change;
+  obs::signal<std::string()> SelectFile;
+  obs::signal<void()> Change;
 
-  protected:
-    bool onProcessMessage(ui::Message* msg) override;
-    void onInitTheme(ui::InitThemeEvent& ev) override;
+protected:
+  bool onProcessMessage(ui::Message* msg) override;
+  void onInitTheme(ui::InitThemeEvent& ev) override;
 
-  private:
-    void updateWidgets();
+private:
+  void updateWidgets();
 
-    std::string m_path;
-    std::string m_file;
-    ui::Entry* m_entry;
-    ui::Button m_button;
-  };
+  std::string m_path;
+  std::string m_file;
+  ui::Entry* m_entry;
+  ui::Button m_button;
+};
 
 } // namespace app
 

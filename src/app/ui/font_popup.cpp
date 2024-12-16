@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/font_popup.h"
@@ -60,55 +60,58 @@ static std::map<std::string, os::SurfaceRef> g_thumbnails;
 
 class FontItem : public ListItem {
 public:
-  struct ByName { };
+  struct ByName {};
 
   explicit FontItem(const FontInfo& fontInfo)
     : ListItem(fontInfo.humanString())
-    , m_fontInfo(fontInfo) {
+    , m_fontInfo(fontInfo)
+  {
     getCachedThumbnail();
   }
 
   FontItem(const std::string& name, ByName)
     : ListItem(name)
-    , m_fontInfo(FontInfo::Type::Name, name,
+    , m_fontInfo(FontInfo::Type::Name,
+                 name,
                  FontInfo::kDefaultSize,
                  text::FontStyle(),
-                 FontInfo::Flags::Antialias) {
+                 FontInfo::Flags::Antialias)
+  {
     getCachedThumbnail();
   }
 
   explicit FontItem(const std::string& fn)
     : ListItem(base::get_file_title(fn))
-    , m_fontInfo(FontInfo::Type::File, fn,
+    , m_fontInfo(FontInfo::Type::File,
+                 fn,
                  FontInfo::kDefaultSize,
                  text::FontStyle(),
-                 FontInfo::Flags::Antialias) {
-    getCachedThumbnail();
-  }
-
-  FontItem(const std::string& name,
-           const text::FontStyle& style,
-           const text::FontStyleSetRef& set)
-    : ListItem(name)
-    , m_fontInfo(FontInfo::Type::System, name,
-                 FontInfo::kDefaultSize, style,
                  FontInfo::Flags::Antialias)
-    , m_set(set) {
+  {
     getCachedThumbnail();
   }
 
-  FontInfo fontInfo() const {
-    return m_fontInfo;
+  FontItem(const std::string& name, const text::FontStyle& style, const text::FontStyleSetRef& set)
+    : ListItem(name)
+    , m_fontInfo(FontInfo::Type::System,
+                 name,
+                 FontInfo::kDefaultSize,
+                 style,
+                 FontInfo::Flags::Antialias)
+    , m_set(set)
+  {
+    getCachedThumbnail();
   }
+
+  FontInfo fontInfo() const { return m_fontInfo; }
 
   obs::signal<void()> ThumbnailGenerated;
 
 private:
-  void getCachedThumbnail() {
-    m_thumbnail = g_thumbnails[m_fontInfo.thumbnailId()];
-  }
+  void getCachedThumbnail() { m_thumbnail = g_thumbnails[m_fontInfo.thumbnailId()]; }
 
-  void onPaint(PaintEvent& ev) override {
+  void onPaint(PaintEvent& ev) override
+  {
     ListItem::onPaint(ev);
 
     generateThumbnail();
@@ -116,23 +119,21 @@ private:
     if (m_thumbnail) {
       const auto* theme = app::skin::SkinTheme::get(this);
       Graphics* g = ev.graphics();
-      g->drawColoredRgbaSurface(m_thumbnail.get(),
-                                theme->colors.text(),
-                                textWidth()+4, 0);
+      g->drawColoredRgbaSurface(m_thumbnail.get(), theme->colors.text(), textWidth() + 4, 0);
     }
   }
 
-  void onSizeHint(SizeHintEvent& ev) override {
+  void onSizeHint(SizeHintEvent& ev) override
+  {
     ListItem::onSizeHint(ev);
     if (m_thumbnail) {
       gfx::Size sz = ev.sizeHint();
-      ev.setSizeHint(
-        sz.w + 4 + m_thumbnail->width(),
-        std::max(sz.h, m_thumbnail->height()));
+      ev.setSizeHint(sz.w + 4 + m_thumbnail->width(), std::max(sz.h, m_thumbnail->height()));
     }
   }
 
-  void generateThumbnail() {
+  void generateThumbnail()
+  {
     if (m_thumbnail)
       return;
 
@@ -144,18 +145,21 @@ private:
                                      text::FontStyle(),
                                      FontInfo::Flags::Antialias);
 
-      doc::ImageRef image =
-        render_text(fontInfoDefSize, text(), gfx::rgba(0, 0, 0));
+      doc::ImageRef image = render_text(fontInfoDefSize, text(), gfx::rgba(0, 0, 0));
       if (!image)
         return;
 
       // Convert the doc::Image into a os::Surface
-      m_thumbnail = os::System::instance()
-        ->makeRgbaSurface(image->width(),
-                          image->height());
-      convert_image_to_surface(
-        image.get(), nullptr, m_thumbnail.get(),
-        0, 0, 0, 0, image->width(), image->height());
+      m_thumbnail = os::System::instance()->makeRgbaSurface(image->width(), image->height());
+      convert_image_to_surface(image.get(),
+                               nullptr,
+                               m_thumbnail.get(),
+                               0,
+                               0,
+                               0,
+                               0,
+                               image->width(),
+                               image->height());
 
       // Save the thumbnail for future FontPopups
       g_thumbnails[m_fontInfo.thumbnailId()] = m_thumbnail;
@@ -167,13 +171,14 @@ private:
     }
   }
 
-  void onSelect(bool selected) override {
+  void onSelect(bool selected) override
+  {
     if (!selected || m_thumbnail)
       return;
 
     ListBox* listbox = static_cast<ListBox*>(parent());
     if (!listbox)
-     return;
+      return;
 
     generateThumbnail();
     listbox->makeChildVisible(this);
@@ -216,22 +221,19 @@ FontPopup::FontPopup(const FontInfo& fontInfo)
   , m_timer(100)
 {
   setAutoRemap(false);
-  setBorder(gfx::Border(4*guiscale()));
+  setBorder(gfx::Border(4 * guiscale()));
 
   addChild(m_popup);
 
-  m_timer.Tick.connect([this]{ onTickRelayout(); });
-  m_popup->loadFont()->Click.connect([this]{ onLoadFont(); });
+  m_timer.Tick.connect([this] { onTickRelayout(); });
+  m_popup->loadFont()->Click.connect([this] { onLoadFont(); });
   m_listBox.setFocusMagnet(true);
-  m_listBox.Change.connect([this]{
-    if (m_listBox.hasFocus() ||
-        m_listBox.hasCapture()) {
+  m_listBox.Change.connect([this] {
+    if (m_listBox.hasFocus() || m_listBox.hasCapture()) {
       onFontChange();
     }
   });
-  m_listBox.DoubleClickItem.connect([this]{
-    onFontChange();
-  });
+  m_listBox.DoubleClickItem.connect([this] { onFontChange(); });
 
   m_popup->view()->attachToView(&m_listBox);
 
@@ -259,7 +261,7 @@ FontPopup::FontPopup(const FontInfo& fontInfo)
   const text::FontMgrRef fontMgr = theme()->fontMgr();
   const int n = fontMgr->countFamilies();
   if (n > 0) {
-    for (int i=0; i<n; ++i) {
+    for (int i = 0; i < n; ++i) {
       std::string name = fontMgr->familyName(i);
       text::FontStyleSetRef set = fontMgr->familyStyleSet(i);
       if (set && set->count() > 0) {
@@ -268,7 +270,7 @@ FontPopup::FontPopup(const FontInfo& fontInfo)
         auto typeface = set->matchStyle(text::FontStyle());
         if (typeface) {
           auto* item = new FontItem(name, typeface->fontStyle(), set);
-          item->ThumbnailGenerated.connect([this]{ onThumbnailGenerated(); });
+          item->ThumbnailGenerated.connect([this] { onThumbnailGenerated(); });
           m_listBox.addChild(item);
           empty = false;
         }
@@ -292,16 +294,13 @@ FontPopup::FontPopup(const FontInfo& fontInfo)
     }
 
     // Sort all files by "file title"
-    std::sort(
-      files.begin(), files.end(),
-      [](const std::string& a, const std::string& b){
-        return base::utf8_icmp(base::get_file_title(a), base::get_file_title(b)) < 0;
-      });
+    std::sort(files.begin(), files.end(), [](const std::string& a, const std::string& b) {
+      return base::utf8_icmp(base::get_file_title(a), base::get_file_title(b)) < 0;
+    });
 
     for (auto& file : files) {
       std::string ext = base::string_to_lower(base::get_file_extension(file));
-      if (ext == "ttf" || ext == "ttc" ||
-          ext == "otf" || ext == "dfont") {
+      if (ext == "ttf" || ext == "ttc" || ext == "otf" || ext == "dfont") {
         m_listBox.addChild(new FontItem(file));
         empty = false;
       }
@@ -346,21 +345,19 @@ void FontPopup::setSearchText(const std::string& searchText)
   layout();
 }
 
-void FontPopup::showPopup(Display* display,
-                          const gfx::Rect& buttonBounds)
+void FontPopup::showPopup(Display* display, const gfx::Rect& buttonBounds)
 {
   m_listBox.selectChild(nullptr);
 
   recreatePinnedItems();
 
-  ui::fit_bounds(display, this,
-                 gfx::Rect(buttonBounds.x, buttonBounds.y2(),
-                           buttonBounds.w*2, buttonBounds.h),
-                 [](const gfx::Rect& workarea,
-                    gfx::Rect& bounds,
-                    std::function<gfx::Rect(Widget*)> getWidgetBounds) {
-                   bounds.h = workarea.y2() - bounds.y;
-                 });
+  ui::fit_bounds(
+    display,
+    this,
+    gfx::Rect(buttonBounds.x, buttonBounds.y2(), buttonBounds.w * 2, buttonBounds.h),
+    [](const gfx::Rect& workarea,
+       gfx::Rect& bounds,
+       std::function<gfx::Rect(Widget*)> getWidgetBounds) { bounds.h = workarea.y2() - bounds.y; });
 
   openWindow();
 }
@@ -412,15 +409,15 @@ void FontPopup::onLoadFont()
 
   base::paths exts = { "ttf", "ttc", "otf", "dfont" };
   base::paths face;
-  if (!show_file_selector(
-        Strings::font_popup_select_truetype_fonts(),
-        currentFile, exts,
-        FileSelectorType::Open, face))
+  if (!show_file_selector(Strings::font_popup_select_truetype_fonts(),
+                          currentFile,
+                          exts,
+                          FileSelectorType::Open,
+                          face))
     return;
 
   ASSERT(!face.empty());
-  FontChange(FontInfo(FontInfo::Type::File,
-                      face.front()));
+  FontChange(FontInfo(FontInfo::Type::File, face.front()));
 }
 
 void FontPopup::onThumbnailGenerated()
@@ -437,20 +434,17 @@ void FontPopup::onTickRelayout()
 bool FontPopup::onProcessMessage(ui::Message* msg)
 {
   switch (msg->type()) {
-
     case kKeyDownMessage: {
       const auto* keymsg = static_cast<const KeyMessage*>(msg);
 
       // Pressing Esc or Enter will just close the popup.
-      if (keymsg->scancode() == kKeyEsc ||
-          keymsg->scancode() == kKeyEnter ||
+      if (keymsg->scancode() == kKeyEsc || keymsg->scancode() == kKeyEnter ||
           keymsg->scancode() == kKeyEnterPad) {
         EscKey();
         return true;
       }
       break;
     }
-
   }
   return ui::PopupWindow::onProcessMessage(msg);
 }

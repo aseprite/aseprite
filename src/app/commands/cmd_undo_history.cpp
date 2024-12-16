@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -49,13 +49,14 @@ class UndoHistoryWindow : public app::gen::UndoHistory,
 public:
   class ActionsList final : public ui::Widget {
   public:
-    ActionsList(UndoHistoryWindow* window)
-      : m_window(window) {
+    ActionsList(UndoHistoryWindow* window) : m_window(window)
+    {
       setFocusStop(true);
       initTheme();
     }
 
-    void setUndoHistory(Doc* doc, DocUndo* history) {
+    void setUndoHistory(Doc* doc, DocUndo* history)
+    {
       m_doc = doc;
       m_undoHistory = history;
 
@@ -64,7 +65,8 @@ public:
       invalidate();
     }
 
-    void selectState(const undo::UndoState* state) {
+    void selectState(const undo::UndoState* state)
+    {
       auto view = ui::View::getView(this);
       if (!view)
         return;
@@ -101,22 +103,21 @@ public:
       view->setViewScroll(scroll);
     }
 
-    void updateSavedState() {
+    void updateSavedState()
+    {
       const auto oldIsAssociatedToFile = m_isAssociatedToFile;
       const auto oldSavedState = m_savedState;
 
-      m_isAssociatedToFile =
-        (m_doc && m_undoHistory ?
-         m_doc->isAssociatedToFile() && !m_undoHistory->isSavedStateIsLost() :
-         false);
+      m_isAssociatedToFile = (m_doc && m_undoHistory ? m_doc->isAssociatedToFile() &&
+                                                         !m_undoHistory->isSavedStateIsLost() :
+                                                       false);
 
       // Get the state where this sprite was saved.
       m_savedState = nullptr;
       if (m_undoHistory && m_isAssociatedToFile)
         m_savedState = m_undoHistory->savedState();
 
-      if (oldIsAssociatedToFile != m_isAssociatedToFile ||
-          oldSavedState != m_savedState) {
+      if (oldIsAssociatedToFile != m_isAssociatedToFile || oldSavedState != m_savedState) {
         invalidate();
       }
     }
@@ -124,20 +125,17 @@ public:
     obs::signal<void(const undo::UndoState*)> Change;
 
   protected:
-    void onInitTheme(ui::InitThemeEvent& ev) override {
+    void onInitTheme(ui::InitThemeEvent& ev) override
+    {
       Widget::onInitTheme(ev);
       auto theme = SkinTheme::get(this);
-      m_itemHeight =
-        textHeight() +
-        theme->calcBorder(this, theme->styles.listItem()).height();
+      m_itemHeight = textHeight() + theme->calcBorder(this, theme->styles.listItem()).height();
     }
 
-    bool onProcessMessage(ui::Message* msg) override {
+    bool onProcessMessage(ui::Message* msg) override
+    {
       switch (msg->type()) {
-
-        case ui::kMouseDownMessage:
-          captureMouse();
-          [[fallthrough]];
+        case ui::kMouseDownMessage: captureMouse(); [[fallthrough]];
 
         case ui::kMouseMoveMessage:
           if (hasCapture() && m_undoHistory) {
@@ -167,9 +165,7 @@ public:
           }
           break;
 
-        case ui::kMouseUpMessage:
-          releaseMouse();
-          break;
+        case ui::kMouseUpMessage:    releaseMouse(); break;
 
         case ui::kMouseWheelMessage: {
           ui::View::scrollByMessage(this, msg, 3 * m_itemHeight + 4 * ui::guiscale());
@@ -186,8 +182,10 @@ public:
             ui::KeyScancode scancode = keymsg->scancode();
 
             if (keymsg->onlyCmdPressed()) {
-              if (scancode == ui::kKeyUp) scancode = ui::kKeyHome;
-              if (scancode == ui::kKeyDown) scancode = ui::kKeyEnd;
+              if (scancode == ui::kKeyUp)
+                scancode = ui::kKeyHome;
+              if (scancode == ui::kKeyDown)
+                scancode = ui::kKeyEnd;
             }
 
             switch (scancode) {
@@ -203,14 +201,10 @@ public:
                 else
                   select = m_undoHistory->firstState();
                 break;
-              case ui::kKeyHome:
-                select = nullptr;
-                break;
-              case ui::kKeyEnd:
-                select = m_undoHistory->lastState();
-                break;
+              case ui::kKeyHome: select = nullptr; break;
+              case ui::kKeyEnd:  select = m_undoHistory->lastState(); break;
               case ui::kKeyPageUp:
-                for (int i=0; select && i<vp.h / m_itemHeight; ++i)
+                for (int i = 0; select && i < vp.h / m_itemHeight; ++i)
                   select = select->prev();
                 break;
               case ui::kKeyPageDown: {
@@ -219,12 +213,11 @@ public:
                   select = m_undoHistory->firstState();
                   i = 1;
                 }
-                for (; select && i<vp.h / m_itemHeight; ++i)
+                for (; select && i < vp.h / m_itemHeight; ++i)
                   select = select->next();
                 break;
               }
-              default:
-                return Widget::onProcessMessage(msg);
+              default: return Widget::onProcessMessage(msg);
             }
 
             if (select != current)
@@ -232,12 +225,12 @@ public:
             return true;
           }
           break;
-
       }
       return Widget::onProcessMessage(msg);
     }
 
-    void onPaint(ui::PaintEvent& ev) override {
+    void onPaint(ui::PaintEvent& ev) override
+    {
       ui::Graphics* g = ev.graphics();
       auto theme = SkinTheme::get(this);
       gfx::Rect bounds = clientBounds();
@@ -266,7 +259,8 @@ public:
       }
     }
 
-    void onSizeHint(ui::SizeHintEvent& ev) override {
+    void onSizeHint(ui::SizeHintEvent& ev) override
+    {
       if (m_window->m_nitems == 0) {
         int size = 0;
         if (m_undoHistory) {
@@ -287,13 +281,16 @@ public:
                    SkinTheme* theme,
                    const undo::UndoState* state,
                    const gfx::Rect& itemBounds,
-                   const bool selected) {
+                   const bool selected)
+    {
       const std::string itemText =
         (state ? static_cast<Cmd*>(state->cmd())->label()
 #if _DEBUG
-         + std::string(" ") + base::get_pretty_memory_size(static_cast<Cmd*>(state->cmd())->memSize())
+                   + std::string(" ") +
+                   base::get_pretty_memory_size(static_cast<Cmd*>(state->cmd())->memSize())
 #endif
-         : std::string("Initial State"));
+                 :
+                 std::string("Initial State"));
 
       if ((g->getClipBounds() & itemBounds).isEmpty())
         return;
@@ -305,7 +302,7 @@ public:
 
       ui::PaintWidgetPartInfo info;
       info.text = &itemText;
-      info.styleFlags = (selected ? ui::Style::Layer::kSelected: 0);
+      info.styleFlags = (selected ? ui::Style::Layer::kSelected : 0);
       theme->paintWidgetPart(g, style, itemBounds, info);
     }
 
@@ -317,19 +314,17 @@ public:
     int m_itemHeight;
   };
 
-  UndoHistoryWindow(Context* ctx)
-    : m_ctx(ctx)
-    , m_doc(nullptr)
-    , m_actions(this) {
+  UndoHistoryWindow(Context* ctx) : m_ctx(ctx), m_doc(nullptr), m_actions(this)
+  {
     m_title = text();
     m_actions.Change.connect(&UndoHistoryWindow::onChangeAction, this);
     view()->attachToView(&m_actions);
   }
 
 private:
-  bool onProcessMessage(ui::Message* msg) override {
+  bool onProcessMessage(ui::Message* msg) override
+  {
     switch (msg->type()) {
-
       case ui::kOpenMessage:
         load_window_pos(this, "UndoHistory");
 
@@ -356,7 +351,8 @@ private:
     return app::gen::UndoHistory::onProcessMessage(msg);
   }
 
-  void onChangeAction(const undo::UndoState* state) {
+  void onChangeAction(const undo::UndoState* state)
+  {
     if (m_doc && m_doc->undoHistory()->currentState() != state) {
       try {
         DocWriter writer(m_doc, 100);
@@ -377,7 +373,8 @@ private:
   }
 
   // ContextObserver
-  void onActiveSiteChange(const Site& site) override {
+  void onActiveSiteChange(const Site& site) override
+  {
     m_frame = site.frame();
 
     if (m_doc == site.document())
@@ -387,13 +384,15 @@ private:
   }
 
   // DocsObserver
-  void onRemoveDocument(Doc* doc) override {
+  void onRemoveDocument(Doc* doc) override
+  {
     if (m_doc && m_doc == doc)
       detachDocument();
   }
 
   // DocUndoObserver
-  void onAddUndoState(DocUndo* history) override {
+  void onAddUndoState(DocUndo* history) override
+  {
     ASSERT(history->currentState());
 
     ++m_nitems;
@@ -405,32 +404,28 @@ private:
     selectCurrentState();
   }
 
-  void onDeleteUndoState(DocUndo* history,
-                         undo::UndoState* state) override {
+  void onDeleteUndoState(DocUndo* history, undo::UndoState* state) override
+  {
     m_actions.updateSavedState();
     --m_nitems;
   }
 
-  void onCurrentUndoStateChange(DocUndo* history) override {
+  void onCurrentUndoStateChange(DocUndo* history) override
+  {
     selectCurrentState();
 
     // TODO DocView should be an DocUndoObserver and update its state automatically
     App::instance()->workspace()->updateTabs();
   }
 
-  void onClearRedo(DocUndo* history) override {
-    setUndoHistory(history);
-  }
+  void onClearRedo(DocUndo* history) override { setUndoHistory(history); }
 
-  void onTotalUndoSizeChange(DocUndo* history) override {
-    updateTitle();
-  }
+  void onTotalUndoSizeChange(DocUndo* history) override { updateTitle(); }
 
-  void onNewSavedState(DocUndo* history) override {
-    m_actions.updateSavedState();
-  }
+  void onNewSavedState(DocUndo* history) override { m_actions.updateSavedState(); }
 
-  void attachDocument(Doc* doc) {
+  void attachDocument(Doc* doc)
+  {
     if (m_doc == doc)
       return;
 
@@ -446,7 +441,8 @@ private:
     updateTitle();
   }
 
-  void detachDocument() {
+  void detachDocument()
+  {
     if (!m_doc)
       return;
 
@@ -457,7 +453,8 @@ private:
     updateTitle();
   }
 
-  void setUndoHistory(DocUndo* history) {
+  void setUndoHistory(DocUndo* history)
+  {
     m_nitems = 0;
     m_actions.setUndoHistory(m_doc, history);
     view()->updateView();
@@ -466,19 +463,16 @@ private:
       selectCurrentState();
   }
 
-  void selectCurrentState() {
-    m_actions.selectState(m_doc->undoHistory()->currentState());
-  }
+  void selectCurrentState() { m_actions.selectState(m_doc->undoHistory()->currentState()); }
 
-  void updateTitle() {
+  void updateTitle()
+  {
     if (!m_doc)
       setText(m_title);
     else {
-      setText(
-        fmt::format(
-          "{} ({})",
-          m_title,
-          base::get_pretty_memory_size(m_doc->undoHistory()->totalUndoSize())));
+      setText(fmt::format("{} ({})",
+                          m_title,
+                          base::get_pretty_memory_size(m_doc->undoHistory()->totalUndoSize())));
     }
   }
 
@@ -500,8 +494,7 @@ protected:
 
 static UndoHistoryWindow* g_window = NULL;
 
-UndoHistoryCommand::UndoHistoryCommand()
-  : Command(CommandId::UndoHistory(), CmdUIOnlyFlag)
+UndoHistoryCommand::UndoHistoryCommand() : Command(CommandId::UndoHistory(), CmdUIOnlyFlag)
 {
 }
 

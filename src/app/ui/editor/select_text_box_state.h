@@ -12,8 +12,8 @@
 
 namespace app {
 
-class SelectTextBoxState : public SelectBoxState
-                         , public SelectBoxDelegate {
+class SelectTextBoxState : public SelectBoxState,
+                           public SelectBoxDelegate {
 public:
   SelectTextBoxState(Editor* editor, ui::MouseMessage* msg);
 
@@ -32,4 +32,4 @@ private:
 
 } // namespace app
 
-#endif  // APP_UI_EDITOR_DRAWING_STATE_H_INCLUDED
+#endif // APP_UI_EDITOR_DRAWING_STATE_H_INCLUDED

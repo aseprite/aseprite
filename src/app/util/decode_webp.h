@@ -10,16 +10,12 @@
 
 #include "os/surface.h"
 
-namespace app {
-
-namespace util {
+namespace app { namespace util {
 
 // Decodes webp content passed in buf and returns a surface with just the first
 // frame.
 os::SurfaceRef decode_webp(const uint8_t* buf, uint32_t len);
 
-}
-
-}
+}} // namespace app::util
 
 #endif

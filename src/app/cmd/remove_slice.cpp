@@ -5,18 +5,16 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/remove_slice.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 using namespace doc;
 
-RemoveSlice::RemoveSlice(Sprite* sprite, Slice* slice)
-  : AddSlice(sprite, slice)
+RemoveSlice::RemoveSlice(Sprite* sprite, Slice* slice) : AddSlice(sprite, slice)
 {
 }
 
@@ -35,5 +33,4 @@ void RemoveSlice::onRedo()
   AddSlice::onUndo();
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

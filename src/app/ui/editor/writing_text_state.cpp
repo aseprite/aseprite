@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/editor/writing_text_state.h"
@@ -48,13 +48,12 @@ using namespace ui;
 
 class WritingTextState::TextEditor : public Entry {
 public:
-  TextEditor(Editor* editor,
-             const Site& site,
-             const gfx::Rect& bounds)
+  TextEditor(Editor* editor, const Site& site, const gfx::Rect& bounds)
     : Entry(4096, "")
     , m_editor(editor)
     , m_doc(site.document())
-    , m_extraCel(new ExtraCel) {
+    , m_extraCel(new ExtraCel)
+  {
     // We have to draw the editor as background of this ui::Entry.
     setTransparent(true);
 
@@ -68,22 +67,24 @@ public:
       setFont(font);
   }
 
-  ~TextEditor() {
+  ~TextEditor()
+  {
     m_doc->setExtraCel(ExtraCelRef(nullptr));
     m_doc->generateMaskBoundaries();
   }
 
   // Returns the extra cel with the text rendered (but without the
   // selected text highlighted).
-  ExtraCelRef extraCel() {
+  ExtraCelRef extraCel()
+  {
     renderExtraCelBase();
     renderExtraCelText(false);
     return m_extraCel;
   }
 
-  void setExtraCelBounds(const gfx::Rect& bounds) {
-    if (bounds.w != m_extraCel->image()->width() ||
-        bounds.h != m_extraCel->image()->height()) {
+  void setExtraCelBounds(const gfx::Rect& bounds)
+  {
+    if (bounds.w != m_extraCel->image()->width() || bounds.h != m_extraCel->image()->height()) {
       createExtraCel(m_editor->getSite(), bounds);
     }
     else {
@@ -96,24 +97,24 @@ public:
   obs::signal<void(const gfx::Size&)> NewRequiredBounds;
 
 private:
-  void createExtraCel(const Site& site,
-                      const gfx::Rect& bounds) {
-    m_extraCel->create(
-      ExtraCel::Purpose::TextPreview,
-      site.tilemapMode(),
-      site.sprite(),
-      bounds,
-      bounds.size(),
-      site.frame(),
-      255);
+  void createExtraCel(const Site& site, const gfx::Rect& bounds)
+  {
+    m_extraCel->create(ExtraCel::Purpose::TextPreview,
+                       site.tilemapMode(),
+                       site.sprite(),
+                       bounds,
+                       bounds.size(),
+                       site.frame(),
+                       255);
 
     m_extraCel->setType(render::ExtraType::PATCH);
     m_extraCel->setBlendMode(site.layer()->isImage() ?
-                             static_cast<LayerImage*>(site.layer())->blendMode():
-                             doc::BlendMode::NORMAL);
+                               static_cast<LayerImage*>(site.layer())->blendMode() :
+                               doc::BlendMode::NORMAL);
   }
 
-  bool onProcessMessage(Message* msg) override {
+  bool onProcessMessage(Message* msg) override
+  {
     switch (msg->type()) {
       case kMouseDownMessage:
       case kMouseMoveMessage: {
@@ -121,9 +122,7 @@ private:
         // Ignore middle mouse button so we can scroll with it.
         if (mouseMsg->middle()) {
           auto* parent = this->parent();
-          MouseMessage mouseMsg2(kMouseDownMessage,
-                                 *mouseMsg,
-                                 mouseMsg->position());
+          MouseMessage mouseMsg2(kMouseDownMessage, *mouseMsg, mouseMsg->position());
           mouseMsg2.setRecipient(parent);
           parent->sendMessage(&mouseMsg2);
           return true;
@@ -134,29 +133,34 @@ private:
     return Entry::onProcessMessage(msg);
   }
 
-  void onInitTheme(InitThemeEvent& ev) override {
+  void onInitTheme(InitThemeEvent& ev) override
+  {
     Entry::onInitTheme(ev);
     setBgColor(gfx::ColorNone);
   }
 
-  void onSetText() override {
+  void onSetText() override
+  {
     Entry::onSetText();
     onNewTextBlob();
   }
 
-  void onSetFont() override {
+  void onSetFont() override
+  {
     Entry::onSetFont();
     onNewTextBlob();
   }
 
-  text::ShaperFeatures onGetTextShaperFeatures() const override {
+  text::ShaperFeatures onGetTextShaperFeatures() const override
+  {
     const FontInfo fontInfo = App::instance()->contextBar()->fontInfo();
     text::ShaperFeatures features;
     features.ligatures = fontInfo.ligatures();
     return features;
   }
 
-  void onNewTextBlob() {
+  void onNewTextBlob()
+  {
     text::TextBlobRef blob = textBlob();
     if (!blob)
       return;
@@ -166,11 +170,12 @@ private:
     NewRequiredBounds(get_text_blob_required_size(blob));
   }
 
-  void onPaint(PaintEvent& ev) override {
+  void onPaint(PaintEvent& ev) override
+  {
     Graphics* g = ev.graphics();
 
     // Don't paint the base Entry borders
-    //Entry::onPaint(ev);
+    // Entry::onPaint(ev);
 
     if (!hasText())
       return;
@@ -179,9 +184,7 @@ private:
     {
       ui::Paint paint;
       paint.style(ui::Paint::Stroke);
-      set_checkered_paint_mode(paint, 0,
-                               gfx::rgba(0, 0, 0, 255),
-                               gfx::rgba(255, 255, 255, 255));
+      set_checkered_paint_mode(paint, 0, gfx::rgba(0, 0, 0, 255), gfx::rgba(255, 255, 255, 255));
       g->drawRect(clientBounds(), paint);
     }
 
@@ -215,22 +218,21 @@ private:
     }
   }
 
-  void renderExtraCelBase() {
+  void renderExtraCelBase()
+  {
     auto extraImg = m_extraCel->image();
     extraImg->clear(extraImg->maskColor());
-    render::Render().renderLayer(
-      extraImg,
-      m_editor->layer(),
-      m_editor->frame(),
-      gfx::Clip(0, 0, m_extraCel->cel()->bounds()),
-      doc::BlendMode::SRC);
+    render::Render().renderLayer(extraImg,
+                                 m_editor->layer(),
+                                 m_editor->frame(),
+                                 gfx::Clip(0, 0, m_extraCel->cel()->bounds()),
+                                 doc::BlendMode::SRC);
   }
 
-  void renderExtraCelText(const bool withSelection) {
-    const auto textColor =
-      color_utils::color_for_image(
-        Preferences::instance().colorBar.fgColor(),
-        IMAGE_RGB);
+  void renderExtraCelText(const bool withSelection)
+  {
+    const auto textColor = color_utils::color_for_image(Preferences::instance().colorBar.fgColor(),
+                                                        IMAGE_RGB);
 
     text::TextBlobRef blob = textBlob();
     if (!blob)
@@ -245,9 +247,7 @@ private:
       Range range;
       getEntryThemeInfo(nullptr, nullptr, nullptr, &range);
       if (!range.isEmpty()) {
-        gfx::RectF selectedBounds =
-          getCharBoxBounds(range.from) |
-          getCharBoxBounds(range.to-1);
+        gfx::RectF selectedBounds = getCharBoxBounds(range.from) | getCharBoxBounds(range.to - 1);
 
         if (!selectedBounds.isEmpty()) {
 #ifdef LAF_SKIA
@@ -263,11 +263,12 @@ private:
       }
     }
 
-    doc::blend_image(
-      m_extraCel->image(), image.get(),
-      gfx::Clip(image->bounds().size()),
-      m_doc->sprite()->palette(m_editor->frame()),
-      255, doc::BlendMode::NORMAL);
+    doc::blend_image(m_extraCel->image(),
+                     image.get(),
+                     gfx::Clip(image->bounds().size()),
+                     m_doc->sprite()->palette(m_editor->frame()),
+                     255,
+                     doc::BlendMode::NORMAL);
   }
 
   Editor* m_editor;
@@ -275,24 +276,21 @@ private:
   ExtraCelRef m_extraCel;
 };
 
-WritingTextState::WritingTextState(Editor* editor,
-                                   const gfx::Rect& bounds)
+WritingTextState::WritingTextState(Editor* editor, const gfx::Rect& bounds)
   : m_delayedMouseMove(this, editor, 5)
   , m_editor(editor)
   , m_bounds(bounds)
   , m_entry(new TextEditor(editor, editor->getSite(), bounds))
 {
-  m_beforeCmdConn =
-    UIContext::instance()->BeforeCommandExecution.connect(
-      &WritingTextState::onBeforeCommandExecution, this);
+  m_beforeCmdConn = UIContext::instance()->BeforeCommandExecution.connect(
+    &WritingTextState::onBeforeCommandExecution,
+    this);
 
   m_fontChangeConn =
-    App::instance()->contextBar()->FontChange.connect(
-      &WritingTextState::onFontChange, this);
+    App::instance()->contextBar()->FontChange.connect(&WritingTextState::onFontChange, this);
 
   m_entry->NewRequiredBounds.connect([this](const gfx::Size& blobSize) {
-    if (m_bounds.w < blobSize.w ||
-        m_bounds.h < blobSize.h) {
+    if (m_bounds.w < blobSize.w || m_bounds.h < blobSize.h) {
       m_bounds.w = std::max(m_bounds.w, blobSize.w);
       m_bounds.h = std::max(m_bounds.h, blobSize.h);
       m_entry->setExtraCelBounds(m_bounds);
@@ -362,8 +360,7 @@ bool WritingTextState::onMouseMove(Editor* editor, ui::MouseMessage* msg)
   return StandbyState::onMouseMove(editor, msg);
 }
 
-void WritingTextState::onCommitMouseMove(Editor* editor,
-                                         const gfx::PointF& spritePos)
+void WritingTextState::onCommitMouseMove(Editor* editor, const gfx::PointF& spritePos)
 {
   if (!m_movingBounds)
     return;
@@ -377,8 +374,7 @@ void WritingTextState::onCommitMouseMove(Editor* editor,
   m_entry->setBounds(calcEntryBounds());
 }
 
-bool WritingTextState::onSetCursor(Editor* editor,
-                                   const gfx::Point& mouseScreenPos)
+bool WritingTextState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 {
   if (calcHit(editor, mouseScreenPos) == Hit::Edges) {
     editor->showMouseCursor(kMoveCursor);
@@ -418,8 +414,7 @@ void WritingTextState::onEditorGotFocus(Editor* editor)
 
 void WritingTextState::onEditorResize(Editor* editor)
 {
-  const gfx::PointF scale(editor->projection().scaleX(),
-                          editor->projection().scaleY());
+  const gfx::PointF scale(editor->projection().scaleX(), editor->projection().scaleY());
   m_entry->setScale(scale);
   m_entry->setBounds(calcEntryBounds());
 }
@@ -459,18 +454,13 @@ EditorState::LeaveAction WritingTextState::onLeaveState(Editor* editor, EditorSt
       Site site = m_editor->getSite();
       ExtraCelRef extraCel = m_entry->extraCel();
       Tx tx(site.document(), "Text Tool");
-      ExpandCelCanvas expand(
-        site, site.layer(),
-        TiledMode::NONE, tx,
-        ExpandCelCanvas::None);
+      ExpandCelCanvas expand(site, site.layer(), TiledMode::NONE, tx, ExpandCelCanvas::None);
 
-      expand.validateDestCanvas(
-        gfx::Region(extraCel->cel()->bounds()));
+      expand.validateDestCanvas(gfx::Region(extraCel->cel()->bounds()));
 
       expand.getDestCanvas()->copy(
         extraCel->image(),
-        gfx::Clip(extraCel->cel()->position(),
-                  extraCel->image()->bounds()));
+        gfx::Clip(extraCel->cel()->position(), extraCel->image()->bounds()));
 
       expand.commit();
       tx.commit();
@@ -495,10 +485,9 @@ void WritingTextState::onBeforePopState(Editor* editor)
 
 void WritingTextState::onBeforeCommandExecution(CommandExecutionEvent& ev)
 {
-  if (// Undo/Redo/Cancel will cancel this state
-      ev.command()->id() == CommandId::Undo() ||
-      ev.command()->id() == CommandId::Redo() ||
-      ev.command()->id() == CommandId::Cancel()) {
+  if ( // Undo/Redo/Cancel will cancel this state
+    ev.command()->id() == CommandId::Undo() || ev.command()->id() == CommandId::Redo() ||
+    ev.command()->id() == CommandId::Cancel()) {
     cancel();
   }
   else {
@@ -506,8 +495,7 @@ void WritingTextState::onBeforeCommandExecution(CommandExecutionEvent& ev)
   }
 }
 
-void WritingTextState::onFontChange(const FontInfo& fontInfo,
-                                    FontEntry::From fromField)
+void WritingTextState::onFontChange(const FontInfo& fontInfo, FontEntry::From fromField)
 {
   if (auto font = get_font_from_info(fontInfo)) {
     m_entry->setFont(font);
@@ -539,12 +527,10 @@ void WritingTextState::drop()
   m_editor->invalidate();
 }
 
-WritingTextState::Hit WritingTextState::calcHit(Editor* editor,
-                                                const gfx::Point& mouseScreenPos)
+WritingTextState::Hit WritingTextState::calcHit(Editor* editor, const gfx::Point& mouseScreenPos)
 {
   auto edges = editor->editorToScreen(m_bounds);
-  if (!edges.contains(mouseScreenPos) &&
-      edges.enlarge(32*guiscale()).contains(mouseScreenPos)) {
+  if (!edges.contains(mouseScreenPos) && edges.enlarge(32 * guiscale()).contains(mouseScreenPos)) {
     return Hit::Edges;
   }
 

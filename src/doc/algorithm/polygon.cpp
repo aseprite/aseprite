@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "base/debug.h"
@@ -23,8 +23,7 @@ namespace doc {
 static void addPointsWithoutDuplicatingLastOne(int x, int y, std::vector<gfx::Point>* pts)
 {
   const gfx::Point newPoint(x, y);
-  if (pts->empty() ||
-      *(pts->end()-1) != newPoint) {
+  if (pts->empty() || *(pts->end() - 1) != newPoint) {
     pts->push_back(newPoint);
   }
 }
@@ -41,9 +40,7 @@ static void addPointsWithoutDuplicatingLastOne(int x, int y, std::vector<gfx::Po
 // overlapped situations respect to the nexts scan segments "i+2",
 // "i+4", etc.
 // Note: "pairs" must be sorted prior execution of this function.
-bool algorithm::createUnion(std::vector<int>& pairs,
-                            const int x,
-                            int& ints)
+bool algorithm::createUnion(std::vector<int>& pairs, const int x, int& ints)
 {
   if (ints == 0) {
     pairs.insert(pairs.begin(), 2, x);
@@ -54,10 +51,10 @@ bool algorithm::createUnion(std::vector<int>& pairs,
     // Error
     return false;
   }
-  else if (ints%2 == 1)
+  else if (ints % 2 == 1)
     ints--;
 
-  for (int i=0; i < ints; i+=2) {
+  for (int i = 0; i < ints; i += 2) {
     // Case:     pairs[i]      pairs[i+1]
     //               O --------- O
     //            -x-
@@ -77,13 +74,13 @@ bool algorithm::createUnion(std::vector<int>& pairs,
     //            O --------- O
     //                         -x-
     // or                    -x-
-    else if (x == pairs[i+1] + 1 || x == pairs[i+1]) {
-      pairs[i+1] = x;
-      while (ints > i+2 && pairs[i+2] <= x+1) {
-        pairs.erase(pairs.begin() + (i+1));
-        pairs.erase(pairs.begin() + (i+1));
+    else if (x == pairs[i + 1] + 1 || x == pairs[i + 1]) {
+      pairs[i + 1] = x;
+      while (ints > i + 2 && pairs[i + 2] <= x + 1) {
+        pairs.erase(pairs.begin() + (i + 1));
+        pairs.erase(pairs.begin() + (i + 1));
         ints -= 2;
-        if (i+2 >= pairs.size())
+        if (i + 2 >= pairs.size())
           break;
       }
       return true;
@@ -91,13 +88,13 @@ bool algorithm::createUnion(std::vector<int>& pairs,
     // Case:   pairs[i]      pairs[i+1]
     //            O --------- O
     //                 -x-
-    else if (x >= pairs[i] && x < pairs[i+1])
+    else if (x >= pairs[i] && x < pairs[i + 1])
       return true;
   }
   // Case:    pairs[i]      pairs[i+1]
   //             O --------- O
   //                             -x-
-  if (x > pairs[ints-1]) {
+  if (x > pairs[ints - 1]) {
     pairs.insert(pairs.begin() + ints, 2, x);
     ints += 2;
     return true;
@@ -114,32 +111,32 @@ void algorithm::polygon(int vertices, const int* points, void* data, AlgoHLine p
   // to manage easily the input vector, by the way, we find
   // "ymin" and "ymax" to use them later like vertical scan limits
   // on the scan line loop.
-  int ymin = *(points+1);
-  int ymax = *(points+1);
+  int ymin = *(points + 1);
+  int ymax = *(points + 1);
   std::vector<gfx::Point> verts(1);
   verts[0].x = *points;
-  verts[0].y = *(points+1);
+  verts[0].y = *(points + 1);
   int verticesAux = vertices;
-  for (int i=2; i < vertices*2; i+=2) {
+  for (int i = 2; i < vertices * 2; i += 2) {
     int last = verts.size() - 1;
-    if (verts[last].x == *(points+i) && verts[last].y == *(points + (i+1))) {
+    if (verts[last].x == *(points + i) && verts[last].y == *(points + (i + 1))) {
       verticesAux--;
       continue;
     }
-    verts.push_back(gfx::Point(*(points + i), *(points + (i+1))));
+    verts.push_back(gfx::Point(*(points + i), *(points + (i + 1))));
     ASSERT(last + 1 == verts.size() - 1);
-    if (verts[last+1].y < ymin)
-      ymin = verts[last+1].y;
-    if (verts[last+1].y > ymax)
-      ymax = verts[last+1].y;
+    if (verts[last + 1].y < ymin)
+      ymin = verts[last + 1].y;
+    if (verts[last + 1].y > ymax)
+      ymax = verts[last + 1].y;
   }
   vertices = verticesAux;
 
   std::vector<gfx::Point> pts;
-  for (int c=0; c < verts.size(); ++c) {
+  for (int c = 0; c < verts.size(); ++c) {
     if (c == verts.size() - 1) {
-      algo_line_continuous(verts[verts.size()-1].x,
-                           verts[verts.size()-1].y,
+      algo_line_continuous(verts[verts.size() - 1].x,
+                           verts[verts.size() - 1].y,
                            verts[0].x,
                            verts[0].y,
                            (void*)&pts,
@@ -155,8 +152,8 @@ void algorithm::polygon(int vertices, const int* points, void* data, AlgoHLine p
     else {
       algo_line_continuous(verts[c].x,
                            verts[c].y,
-                           verts[c+1].x,
-                           verts[c+1].y,
+                           verts[c + 1].x,
+                           verts[c + 1].y,
                            (void*)&pts,
                            (AlgoPixel)&addPointsWithoutDuplicatingLastOne);
     }
@@ -171,7 +168,7 @@ void algorithm::polygon(int vertices, const int* points, void* data, AlgoHLine p
   std::vector<int> polyInts(pts.size());
   for (y = ymin; y <= ymax; y++) {
     ints = 0;
-    for (int i=0; i < pts.size(); i++) {
+    for (int i = 0; i < pts.size(); i++) {
       if (!i) {
         ind1 = pts.size() - 1;
         ind2 = 0;
@@ -195,22 +192,21 @@ void algorithm::polygon(int vertices, const int* points, void* data, AlgoHLine p
       else
         continue;
 
-      if ((y >= y1 && y < y2) ||
-          (y == ymax && y > y1 && y <= y2)) {
-        polyInts[ints] = (int) ((float)((y - y1)*(x2 - x1)) / (float)(y2 - y1) + 0.5f + (float)x1);
+      if ((y >= y1 && y < y2) || (y == ymax && y > y1 && y <= y2)) {
+        polyInts[ints] = (int)((float)((y - y1) * (x2 - x1)) / (float)(y2 - y1) + 0.5f + (float)x1);
         ints++;
       }
     }
 
     std::sort(polyInts.begin(), polyInts.begin() + ints);
 
-    for (int i=0; i < pts.size(); i++) {
+    for (int i = 0; i < pts.size(); i++) {
       if (pts[i].y == y)
         createUnion(polyInts, pts[i].x, ints);
     }
 
-    for (int i=0; i < ints; i+=2)
-      proc(polyInts[i], y, polyInts[i+1], data);
+    for (int i = 0; i < ints; i += 2)
+      proc(polyInts[i], y, polyInts[i + 1], data);
   }
 }
 

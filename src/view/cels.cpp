@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "view/cels.h"
@@ -29,9 +29,7 @@ enum class Target {
 
 // TODO the view::Range should be "iteratable" to replace this function
 //      or we can wait to C++20 coroutines and co_yield
-static CelList get_cels_templ(const Sprite* sprite,
-                              Range range,
-                              const Target target)
+static CelList get_cels_templ(const Sprite* sprite, Range range, const Target target)
 {
   CelList cels;
   if (!range.convertToCels(sprite))
@@ -41,8 +39,7 @@ static CelList get_cels_templ(const Sprite* sprite,
   std::set<ObjectId> visited;
 
   for (Layer* layer : range.selectedLayers()) {
-    if (!layer ||
-        !layer->isImage() ||
+    if (!layer || !layer->isImage() ||
         (target == Target::kUniqueCanMoveCels && !layer->isEditableHierarchy()) ||
         (target == Target::kUniqueCanEditPixelsCels && !layer->canEditPixels())) {
       continue;
@@ -54,8 +51,7 @@ static CelList get_cels_templ(const Sprite* sprite,
       if (!cel)
         continue;
 
-      if (target == Target::kAllCels ||
-          visited.find(cel->data()->id()) == visited.end()) {
+      if (target == Target::kAllCels || visited.find(cel->data()->id()) == visited.end()) {
         // Only unique cels (avoid visited cels)
         if (target != Target::kAllCels)
           visited.insert(cel->data()->id());

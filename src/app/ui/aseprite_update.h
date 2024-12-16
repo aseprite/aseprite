@@ -8,9 +8,9 @@
 #define APP_UI_ASEPRITE_UPDATE_H_INCLUDED
 #pragma once
 
+#include "aseprite_update.xml.h"
 #include "drm/download_thread.h"
 #include "drm/installation_thread.h"
-#include "aseprite_update.xml.h"
 #include "ui/timer.h"
 
 namespace app {
@@ -20,12 +20,13 @@ public:
   AsepriteUpdate(std::string version);
 
 protected:
-
   void onBeforeClose(ui::CloseEvent& ev) override;
   void onDataReceived(long total, long now);
   void onDownloadFailed(drm::LicenseManager::DownloadException& e);
   void onDownloadFinished(drm::Package& package);
-  void onInstallationPhaseChanged(drm::InstallationPhase oldPhase, drm::InstallationPhase phase, bool skipped);
+  void onInstallationPhaseChanged(drm::InstallationPhase oldPhase,
+                                  drm::InstallationPhase phase,
+                                  bool skipped);
   void onInstallationStarted(drm::Package& package);
   void onInstallationPhaseStarted(drm::InstallationPhase phase);
   void onInstallationPhaseSkipped(drm::InstallationPhase phase);
@@ -44,6 +45,6 @@ private:
   void log(std::string text);
 };
 
-}
+} // namespace app
 
 #endif

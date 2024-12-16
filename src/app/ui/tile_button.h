@@ -16,36 +16,36 @@
 
 namespace app {
 
-  class TileButton : public ui::ButtonBase,
-                     public ContextObserver,
-                     public ITileSource {
-  public:
-    TileButton();
-    ~TileButton();
+class TileButton : public ui::ButtonBase,
+                   public ContextObserver,
+                   public ITileSource {
+public:
+  TileButton();
+  ~TileButton();
 
-    doc::tile_t getTile() const;
-    void setTile(doc::tile_t tile);
+  doc::tile_t getTile() const;
+  void setTile(doc::tile_t tile);
 
-    // ITileSource
-    doc::tile_t getTileByPosition(const gfx::Point& pos) override;
+  // ITileSource
+  doc::tile_t getTileByPosition(const gfx::Point& pos) override;
 
-    // Signals
-    obs::signal<void(doc::tile_t&)> BeforeChange;
-    obs::signal<void(doc::tile_t)> Change;
+  // Signals
+  obs::signal<void(doc::tile_t&)> BeforeChange;
+  obs::signal<void(doc::tile_t)> Change;
 
-  protected:
-    // Events
-    void onInitTheme(ui::InitThemeEvent& ev) override;
-    bool onProcessMessage(ui::Message* msg) override;
-    void onSizeHint(ui::SizeHintEvent& ev) override;
-    void onPaint(ui::PaintEvent& ev) override;
+protected:
+  // Events
+  void onInitTheme(ui::InitThemeEvent& ev) override;
+  bool onProcessMessage(ui::Message* msg) override;
+  void onSizeHint(ui::SizeHintEvent& ev) override;
+  void onPaint(ui::PaintEvent& ev) override;
 
-  private:
-    // ContextObserver impl
-    void onActiveSiteChange(const Site& site) override;
+private:
+  // ContextObserver impl
+  void onActiveSiteChange(const Site& site) override;
 
-    doc::tile_t m_tile = doc::notile;
-  };
+  doc::tile_t m_tile = doc::notile;
+};
 
 } // namespace app
 

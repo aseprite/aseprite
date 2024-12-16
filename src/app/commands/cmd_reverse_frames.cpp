@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -27,25 +27,22 @@ protected:
   void onExecute(Context* context) override;
 };
 
-ReverseFramesCommand::ReverseFramesCommand()
-  : Command(CommandId::ReverseFrames(), CmdUIOnlyFlag)
+ReverseFramesCommand::ReverseFramesCommand() : Command(CommandId::ReverseFrames(), CmdUIOnlyFlag)
 {
 }
 
 bool ReverseFramesCommand::onEnabled(Context* context)
 {
   const view::RealRange& range = context->range();
-  return
-    context->checkFlags(ContextFlags::ActiveDocumentIsWritable) &&
-    range.enabled() &&
-    range.frames() >= 2;         // We need at least 2 frames to reverse
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable) && range.enabled() &&
+         range.frames() >= 2; // We need at least 2 frames to reverse
 }
 
 void ReverseFramesCommand::onExecute(Context* context)
 {
   const view::RealRange& range = context->range();
   if (!range.enabled())
-    return;                     // Nothing to do
+    return; // Nothing to do
 
   Doc* doc = context->activeDocument();
 

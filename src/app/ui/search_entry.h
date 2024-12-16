@@ -13,22 +13,22 @@
 
 namespace app {
 
-  class SearchEntry : public ui::Entry {
-  public:
-    SearchEntry();
+class SearchEntry : public ui::Entry {
+public:
+  SearchEntry();
 
-  protected:
-    bool onProcessMessage(ui::Message* msg) override;
-    void onPaint(ui::PaintEvent& ev) override;
-    void onSizeHint(ui::SizeHintEvent& ev) override;
-    gfx::Rect onGetEntryTextBounds() const override;
+protected:
+  bool onProcessMessage(ui::Message* msg) override;
+  void onPaint(ui::PaintEvent& ev) override;
+  void onSizeHint(ui::SizeHintEvent& ev) override;
+  gfx::Rect onGetEntryTextBounds() const override;
 
-    virtual os::Surface* onGetCloseIcon() const;
-    virtual void onCloseIconPressed();
+  virtual os::Surface* onGetCloseIcon() const;
+  virtual void onCloseIconPressed();
 
-  private:
-    gfx::Rect getCloseIconBounds() const;
-  };
+private:
+  gfx::Rect getCloseIconBounds() const;
+};
 
 } // namespace app
 

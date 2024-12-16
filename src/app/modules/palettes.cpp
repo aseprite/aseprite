@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/modules/palettes.h"
@@ -49,8 +49,8 @@ void exit_module_palette()
 void load_default_palette()
 {
   std::unique_ptr<Palette> pal;
-  std::string defaultPalName = get_preset_palette_filename(
-    get_default_palette_preset_name(), ".ase");
+  std::string defaultPalName = get_preset_palette_filename(get_default_palette_preset_name(),
+                                                           ".ase");
 
   // If there is no palette in command line, we use the default one.
   std::string palFile = defaultPalName;
@@ -59,8 +59,7 @@ void load_default_palette()
   }
   else {
     // Migrate old default.gpl to default.ase format
-    palFile = get_preset_palette_filename(
-      get_default_palette_preset_name(), ".gpl");
+    palFile = get_preset_palette_filename(get_default_palette_preset_name(), ".gpl");
 
     if (base::is_file(palFile)) {
       pal = load_palette(palFile.c_str());
@@ -72,26 +71,26 @@ void load_default_palette()
 
         // Get the last non-black entry
         int i = 0;
-        for (i=pal->size()-1; i>0; --i) {
+        for (i = pal->size() - 1; i > 0; --i) {
           if (pal->getEntry(i) != black)
             break;
         }
 
-        if (i < pal->size()-1) {
+        if (i < pal->size() - 1) {
           // Check if there is a black entry in the first entries.
           bool hasBlack = false;
-          for (int j=0; j<i; ++j) {
+          for (int j = 0; j < i; ++j) {
             if (pal->getEntry(j) == black) {
               hasBlack = true;
               break;
             }
           }
           if (!hasBlack)
-            ++i;                // Leave one black entry
+            ++i; // Leave one black entry
 
           // Resize the palette
-          if (i < pal->size()-1)
-            pal->resize(i+1);
+          if (i < pal->size() - 1)
+            pal->resize(i + 1);
         }
       }
 
@@ -142,14 +141,13 @@ void set_default_palette(const Palette* palette)
 // App::PaletteChange signal.
 //
 // If "_palette" is nullptr the default palette is set.
-bool set_current_palette(const Palette *_palette, bool forced)
+bool set_current_palette(const Palette* _palette, bool forced)
 {
-  const Palette* palette = (_palette ? _palette: ase_default_palette);
+  const Palette* palette = (_palette ? _palette : ase_default_palette);
   bool ret = false;
 
   // Have changes
-  if (forced ||
-      palette->countDiff(ase_current_palette, NULL, NULL) > 0) {
+  if (forced || palette->countDiff(ase_current_palette, NULL, NULL) > 0) {
     // Copy current palette
     palette->copyColorsTo(ase_current_palette);
 
@@ -162,8 +160,7 @@ bool set_current_palette(const Palette *_palette, bool forced)
   return ret;
 }
 
-std::string get_preset_palette_filename(const std::string& preset,
-                                        const std::string& dot_extension)
+std::string get_preset_palette_filename(const std::string& preset, const std::string& dot_extension)
 {
   std::string palettesDir = get_preset_palettes_dir();
 

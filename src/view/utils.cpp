@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "view/utils.h"
@@ -15,8 +15,7 @@
 
 namespace view {
 
-VirtualRange to_virtual_range(const TimelineAdapter* adapter,
-                              const RealRange& realRange)
+VirtualRange to_virtual_range(const TimelineAdapter* adapter, const RealRange& realRange)
 {
   VirtualRange range(realRange);
   if (range.enabled()) {
@@ -31,8 +30,7 @@ VirtualRange to_virtual_range(const TimelineAdapter* adapter,
   return range;
 }
 
-RealRange to_real_range(const TimelineAdapter* adapter,
-                        const VirtualRange& virtualRange)
+RealRange to_real_range(const TimelineAdapter* adapter, const VirtualRange& virtualRange)
 {
   RealRange range(virtualRange);
   if (range.enabled()) {

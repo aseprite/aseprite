@@ -14,60 +14,60 @@
 
 namespace ui {
 
-  class SliderDelegate {
-  public:
-    virtual ~SliderDelegate() { }
-    virtual std::string onGetTextFromValue(int value) = 0;
-    virtual int onGetValueFromText(const std::string& text) = 0;
-  };
+class SliderDelegate {
+public:
+  virtual ~SliderDelegate() {}
+  virtual std::string onGetTextFromValue(int value) = 0;
+  virtual int onGetValueFromText(const std::string& text) = 0;
+};
 
-  class Slider : public Widget {
-  public:
-    Slider(int min, int max, int value, SliderDelegate* delegate = nullptr);
+class Slider : public Widget {
+public:
+  Slider(int min, int max, int value, SliderDelegate* delegate = nullptr);
 
-    int getMinValue() const { return m_min; }
-    int getMaxValue() const { return m_max; }
-    int getValue() const    { return m_value; }
+  int getMinValue() const { return m_min; }
+  int getMaxValue() const { return m_max; }
+  int getValue() const { return m_value; }
 
-    void setRange(int min, int max);
-    void setValue(int value);
+  void setRange(int min, int max);
+  void setValue(int value);
 
-    bool isReadOnly() const { return m_readOnly; }
-    void setReadOnly(bool readOnly) { m_readOnly = readOnly; }
+  bool isReadOnly() const { return m_readOnly; }
+  void setReadOnly(bool readOnly) { m_readOnly = readOnly; }
 
-    virtual void getSliderThemeInfo(int* min, int* max, int* value) const;
-    virtual void updateValue(int value);
+  virtual void getSliderThemeInfo(int* min, int* max, int* value) const;
+  virtual void updateValue(int value);
 
-    std::string convertValueToText(int value) const;
-    int convertTextToValue(const std::string& text) const;
+  std::string convertValueToText(int value) const;
+  int convertTextToValue(const std::string& text) const;
 
-    // Signals
-    obs::signal<void()> Change;
-    obs::signal<void()> SliderReleased;
+  // Signals
+  obs::signal<void()> Change;
+  obs::signal<void()> SliderReleased;
 
-  protected:
-    static int slider_press_x;
-    static int slider_press_value;
-    static bool slider_press_left;
+protected:
+  static int slider_press_x;
+  static int slider_press_value;
+  static bool slider_press_left;
 
-    // Events
-    bool onProcessMessage(Message* msg) override;
-    void onPaint(PaintEvent& ev) override;
+  // Events
+  bool onProcessMessage(Message* msg) override;
+  void onPaint(PaintEvent& ev) override;
 
-    // New events
-    virtual void onChange();
-    virtual void onSliderReleased();
+  // New events
+  virtual void onChange();
+  virtual void onSliderReleased();
 
-  private:
-    void setupSliderCursor();
-    void enforceValidRange(int min, int max);
+private:
+  void setupSliderCursor();
+  void enforceValidRange(int min, int max);
 
-    int m_min;
-    int m_max;
-    int m_value;
-    bool m_readOnly;
-    SliderDelegate* m_delegate;
-  };
+  int m_min;
+  int m_max;
+  int m_value;
+  bool m_readOnly;
+  SliderDelegate* m_delegate;
+};
 
 } // namespace ui
 

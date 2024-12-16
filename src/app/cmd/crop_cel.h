@@ -14,32 +14,27 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
-  class CropCel : public Cmd
-                , public WithCel {
-  public:
-    CropCel(doc::Cel* cel, const gfx::Rect& newBounds);
+class CropCel : public Cmd,
+                public WithCel {
+public:
+  CropCel(doc::Cel* cel, const gfx::Rect& newBounds);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this);
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  size_t onMemSize() const override { return sizeof(*this); }
 
-  private:
-    void cropImage(const gfx::Point& origin,
-                   const gfx::Rect& bounds);
+private:
+  void cropImage(const gfx::Point& origin, const gfx::Rect& bounds);
 
-    gfx::Point m_oldOrigin;
-    gfx::Point m_newOrigin;
-    gfx::Rect m_oldBounds;
-    gfx::Rect m_newBounds;
-  };
+  gfx::Point m_oldOrigin;
+  gfx::Point m_newOrigin;
+  gfx::Rect m_oldBounds;
+  gfx::Rect m_newBounds;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

@@ -18,71 +18,73 @@
 #include <string>
 
 namespace app {
-  class FontPopup;
+class FontPopup;
 
-  class FontEntry : public ui::HBox {
+class FontEntry : public ui::HBox {
+public:
+  enum class From {
+    Init,
+    Face,
+    Size,
+    Style,
+    Flags,
+    Popup,
+  };
+
+  FontEntry();
+  ~FontEntry();
+
+  FontInfo info() { return m_info; }
+  void setInfo(const FontInfo& info, From from);
+
+  obs::signal<void(const FontInfo&, From)> FontChange;
+
+private:
+  class FontFace : public SearchEntry {
   public:
-    enum class From {
-      Init,
-      Face,
-      Size,
-      Style,
-      Flags,
-      Popup,
-    };
-
-    FontEntry();
-    ~FontEntry();
-
-    FontInfo info() { return m_info; }
-    void setInfo(const FontInfo& info, From from);
-
+    FontFace();
     obs::signal<void(const FontInfo&, From)> FontChange;
 
+  protected:
+    void onInitTheme(ui::InitThemeEvent& ev) override;
+    bool onProcessMessage(ui::Message* msg) override;
+    void onChange() override;
+    os::Surface* onGetCloseIcon() const override;
+    void onCloseIconPressed() override;
+
   private:
+    FontEntry* fontEntry() const { return static_cast<FontEntry*>(parent()); }
 
-    class FontFace : public SearchEntry {
-    public:
-      FontFace();
-      obs::signal<void(const FontInfo&, From)> FontChange;
-    protected:
-      void onInitTheme(ui::InitThemeEvent& ev) override;
-      bool onProcessMessage(ui::Message* msg) override;
-      void onChange() override;
-      os::Surface* onGetCloseIcon() const override;
-      void onCloseIconPressed() override;
-    private:
-      FontEntry* fontEntry() const { return static_cast<FontEntry*>(parent()); }
-
-      std::unique_ptr<FontPopup> m_popup;
-      bool m_fromEntryChange = false;
-    };
-
-    class FontSize : public ui::ComboBox {
-    public:
-      FontSize();
-    protected:
-      void onEntryChange() override;
-    };
-
-    class FontStyle : public ButtonSet {
-    public:
-      FontStyle();
-    };
-
-    class FontLigatures : public ButtonSet {
-    public:
-      FontLigatures();
-    };
-
-    FontInfo m_info;
-    FontFace m_face;
-    FontSize m_size;
-    FontStyle m_style;
-    FontLigatures m_ligatures;
-    ui::CheckBox m_antialias;
-    bool m_lockFace = false;
+    std::unique_ptr<FontPopup> m_popup;
+    bool m_fromEntryChange = false;
   };
+
+  class FontSize : public ui::ComboBox {
+  public:
+    FontSize();
+
+  protected:
+    void onEntryChange() override;
+  };
+
+  class FontStyle : public ButtonSet {
+  public:
+    FontStyle();
+  };
+
+  class FontLigatures : public ButtonSet {
+  public:
+    FontLigatures();
+  };
+
+  FontInfo m_info;
+  FontFace m_face;
+  FontSize m_size;
+  FontStyle m_style;
+  FontLigatures m_ligatures;
+  ui::CheckBox m_antialias;
+  bool m_lockFace = false;
+};
 
 } // namespace app
 

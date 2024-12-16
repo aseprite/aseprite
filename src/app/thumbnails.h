@@ -13,20 +13,17 @@
 #include "os/surface.h"
 
 namespace doc {
-  class Cel;
+class Cel;
 }
 
 namespace os {
-  class Surface;
+class Surface;
 }
 
-namespace app {
-namespace thumb {
+namespace app { namespace thumb {
 
-  os::SurfaceRef get_cel_thumbnail(const doc::Cel* cel,
-                                   const gfx::Size& fitInSize);
+os::SurfaceRef get_cel_thumbnail(const doc::Cel* cel, const gfx::Size& fitInSize);
 
-} // thumb
-} // app
+}} // namespace app::thumb
 
 #endif

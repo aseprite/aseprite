@@ -13,15 +13,15 @@
 
 namespace app {
 
-  // Extra options loaded from a file that can be useful to save the
-  // file later in the same loaded format (e.g. same color depth, same
-  // jpeg quality, etc.).
-  class FormatOptions {
-  public:
-    virtual ~FormatOptions() { }
-  };
+// Extra options loaded from a file that can be useful to save the
+// file later in the same loaded format (e.g. same color depth, same
+// jpeg quality, etc.).
+class FormatOptions {
+public:
+  virtual ~FormatOptions() {}
+};
 
-  typedef std::shared_ptr<FormatOptions> FormatOptionsPtr;
+typedef std::shared_ptr<FormatOptions> FormatOptionsPtr;
 
 } // namespace app
 

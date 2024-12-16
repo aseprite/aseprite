@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -33,8 +33,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-NewFrameTagCommand::NewFrameTagCommand()
-  : Command(CommandId::NewFrameTag(), CmdRecordableFlag)
+NewFrameTagCommand::NewFrameTagCommand() : Command(CommandId::NewFrameTag(), CmdRecordableFlag)
 {
 }
 
@@ -53,8 +52,7 @@ void NewFrameTagCommand::onExecute(Context* context)
 
   view::RealRange range = context->range();
   if (range.enabled() &&
-      (range.type() == view::Range::kFrames ||
-       range.type() == view::Range::kCels)) {
+      (range.type() == view::Range::kFrames || range.type() == view::Range::kCels)) {
     from = range.selectedFrames().firstFrame();
     to = range.selectedFrames().lastFrame();
   }

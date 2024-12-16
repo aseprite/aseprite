@@ -12,7 +12,7 @@
 
 namespace doc {
 
-  typedef uint32_t ObjectVersion;
+typedef uint32_t ObjectVersion;
 
 } // namespace doc
 

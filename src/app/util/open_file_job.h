@@ -14,7 +14,8 @@
 
 namespace app {
 
-class OpenFileJob : public Job, public IFileOpProgress {
+class OpenFileJob : public Job,
+                    public IFileOpProgress {
 public:
   OpenFileJob(FileOp* fop, const bool showProgress)
     : Job(Strings::open_file_loading(), showProgress)
@@ -22,7 +23,8 @@ public:
   {
   }
 
-  void showProgressWindow() {
+  void showProgressWindow()
+  {
     startJob();
 
     if (isCanceled())
@@ -33,7 +35,8 @@ public:
 
 private:
   // Thread to do the hard work: load the file from the disk.
-  virtual void onJob() override {
+  virtual void onJob() override
+  {
     try {
       m_fop->operate(this);
     }
@@ -47,9 +50,7 @@ private:
     m_fop->done();
   }
 
-  virtual void ackFileOpProgress(double progress) override {
-    jobProgress(progress);
-  }
+  virtual void ackFileOpProgress(double progress) override { jobProgress(progress); }
 
   FileOp* m_fop;
 };

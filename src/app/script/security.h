@@ -15,32 +15,30 @@
 
 #include "app/script/engine.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
-  enum class FileAccessMode {
-    Execute = 1,
-    Write = 2,
-    Read = 4,
-    OpenSocket = 8,
-    LoadLib = 16,
-    Full = Execute | Write | Read | OpenSocket | LoadLib,
-  };
+enum class FileAccessMode {
+  Execute = 1,
+  Write = 2,
+  Read = 4,
+  OpenSocket = 8,
+  LoadLib = 16,
+  Full = Execute | Write | Read | OpenSocket | LoadLib,
+};
 
-  enum class ResourceType {
-    File,
-    Command,
-    WebSocket,
-  };
+enum class ResourceType {
+  File,
+  Command,
+  WebSocket,
+};
 
-  void overwrite_unsecure_functions(lua_State* L);
+void overwrite_unsecure_functions(lua_State* L);
 
-  bool ask_access(lua_State* L,
-                  const char* filename,
-                  const FileAccessMode mode,
-                  const ResourceType resourceType);
+bool ask_access(lua_State* L,
+                const char* filename,
+                const FileAccessMode mode,
+                const ResourceType resourceType);
 
-} // namespace script
-} // namespace app
+}} // namespace app::script
 
 #endif

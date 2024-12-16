@@ -11,14 +11,14 @@
 
 namespace ui {
 
-  enum MouseButton {            // Matches the values of os::Event::MouseButton
-    kButtonNone = 0,
-    kButtonLeft = 1,
-    kButtonRight = 2,
-    kButtonMiddle = 3,
-    kButtonX1 = 4,
-    kButtonX2 = 5,
-  };
+enum MouseButton { // Matches the values of os::Event::MouseButton
+  kButtonNone = 0,
+  kButtonLeft = 1,
+  kButtonRight = 2,
+  kButtonMiddle = 3,
+  kButtonX1 = 4,
+  kButtonX2 = 5,
+};
 
 } // namespace ui
 

@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/script/engine.h"
@@ -13,8 +13,7 @@
 #include "base/convert_to.h"
 #include "base/uuid.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 using Uuid = base::Uuid;
 
@@ -65,18 +64,18 @@ int Uuid_index(lua_State* L)
   const auto uuid = get_obj<Uuid>(L, 1);
   const int i = lua_tointeger(L, 2);
   if (i >= 1 && i <= 16)
-    lua_pushinteger(L, (*uuid)[i-1]);
+    lua_pushinteger(L, (*uuid)[i - 1]);
   else
     lua_pushnil(L);
   return 1;
 }
 
 const luaL_Reg Uuid_methods[] = {
-  { "__gc", Uuid_gc },
-  { "__eq", Uuid_eq },
+  { "__gc",       Uuid_gc       },
+  { "__eq",       Uuid_eq       },
   { "__tostring", Uuid_tostring },
-  { "__index", Uuid_index },
-  { nullptr, nullptr }
+  { "__index",    Uuid_index    },
+  { nullptr,      nullptr       }
 };
 
 } // anonymous namespace
@@ -94,5 +93,4 @@ base::Uuid convert_args_into_uuid(lua_State* L, int index)
   return Uuid_new(L, index);
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

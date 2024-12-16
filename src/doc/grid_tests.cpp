@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include <gtest/gtest.h>
@@ -19,16 +19,14 @@
 // TODO add gfx/point_io.h and gfx/size_io.h
 namespace gfx {
 
-inline std::ostream& operator<<(std::ostream& os, const Point& pt) {
-  return os << "("
-            << pt.x << ", "
-            << pt.y << ")";
+inline std::ostream& operator<<(std::ostream& os, const Point& pt)
+{
+  return os << "(" << pt.x << ", " << pt.y << ")";
 }
 
-inline std::ostream& operator<<(std::ostream& os, const Size& sz) {
-  return os << "("
-            << sz.w << ", "
-            << sz.h << ")";
+inline std::ostream& operator<<(std::ostream& os, const Size& sz)
+{
+  return os << "(" << sz.w << ", " << sz.h << ")";
 }
 
 } // namespace gfx
@@ -70,8 +68,8 @@ TEST(Grid, RectWithOffset)
   grid.origin(gfx::Point(17, 16));
 
   EXPECT_EQ(Point(0, 0), grid.canvasToTile(Point(17, 16)));
-  EXPECT_EQ(Point(0, 0), grid.canvasToTile(Point(17+15, 16)));
-  EXPECT_EQ(Point(1, 0), grid.canvasToTile(Point(17+16, 16)));
+  EXPECT_EQ(Point(0, 0), grid.canvasToTile(Point(17 + 15, 16)));
+  EXPECT_EQ(Point(1, 0), grid.canvasToTile(Point(17 + 16, 16)));
 
   EXPECT_EQ(Point(-1, 0), grid.canvasToTile(Point(16, 16)));
   EXPECT_EQ(Point(-1, 0), grid.canvasToTile(Point(2, 16)));
@@ -84,35 +82,29 @@ TEST(Grid, RectWithOffset)
 TEST(Grid, MakeAlignedMask)
 {
   auto grid = Grid::MakeRect(Size(4, 4));
-  grid.origin(gfx::Point(1,1));
+  grid.origin(gfx::Point(1, 1));
   auto mask = Mask();
   mask.replace(gfx::Rect(3, 3, 4, 4));
   auto gridAlignedMask = make_aligned_mask(&grid, &mask);
-  EXPECT_EQ(gfx::Rect(1,1,8,8), gridAlignedMask.bounds());
+  EXPECT_EQ(gfx::Rect(1, 1, 8, 8), gridAlignedMask.bounds());
 
   mask.replace(gfx::Rect(1, 1, 4, 4));
   auto gridAlignedMask2 = make_aligned_mask(&grid, &mask);
-  EXPECT_EQ(gfx::Rect(1,1,4,4), gridAlignedMask2.bounds());
+  EXPECT_EQ(gfx::Rect(1, 1, 4, 4), gridAlignedMask2.bounds());
 
   mask.add(gfx::Rect(8, 4, 1, 1));
   mask.add(gfx::Rect(7, 7, 1, 1));
   auto gridAlignedMask3 = make_aligned_mask(&grid, &mask);
   const bool _ = false;
   const bool X = true;
-  bool expected[8*8] = {
-     X, X, X, X,  X, X, X, X,
-     X, X, X, X,  X, X, X, X,
-     X, X, X, X,  X, X, X, X,
-     X, X, X, X,  X, X, X, X,
+  bool expected[8 * 8] = {
+    X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X,
 
-     _, _, _, _,  X, X, X, X,
-     _, _, _, _,  X, X, X, X,
-     _, _, _, _,  X, X, X, X,
-     _, _, _, _,  X, X, X, X,
+    _, _, _, _, X, X, X, X, _, _, _, _, X, X, X, X, _, _, _, _, X, X, X, X, _, _, _, _, X, X, X, X,
   };
-  int c=0;
-  for (int j=0; j<8; ++j)
-    for (int i=0; i<8; ++i)
+  int c = 0;
+  for (int j = 0; j < 8; ++j)
+    for (int i = 0; i < 8; ++i)
       EXPECT_EQ(expected[c++], gridAlignedMask3.bitmap()->getPixel(i, j));
 
   mask.replace(gfx::Rect(4, 4, 1, 1));
@@ -120,38 +112,28 @@ TEST(Grid, MakeAlignedMask)
   mask.add(gfx::Rect(8, 4, 1, 1));
   mask.add(gfx::Rect(9, 1, 1, 1));
   auto gridAlignedMask4 = make_aligned_mask(&grid, &mask);
-  bool expected2[12*8] = {
-     X, X, X, X,  X, X, X, X,  X, X, X, X,
-     X, X, X, X,  X, X, X, X,  X, X, X, X,
-     X, X, X, X,  X, X, X, X,  X, X, X, X,
-     X, X, X, X,  X, X, X, X,  X, X, X, X,
+  bool expected2[12 * 8] = {
+    X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X,
+    X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X,
 
-     _, _, _, _,  X, X, X, X,  _, _, _, _,
-     _, _, _, _,  X, X, X, X,  _, _, _, _,
-     _, _, _, _,  X, X, X, X,  _, _, _, _,
-     _, _, _, _,  X, X, X, X,  _, _, _, _,
+    _, _, _, _, X, X, X, X, _, _, _, _, _, _, _, _, X, X, X, X, _, _, _, _,
+    _, _, _, _, X, X, X, X, _, _, _, _, _, _, _, _, X, X, X, X, _, _, _, _,
   };
-  c=0;
-  for (int j=0; j<8; ++j)
-    for (int i=0; i<12; ++i)
+  c = 0;
+  for (int j = 0; j < 8; ++j)
+    for (int i = 0; i < 12; ++i)
       EXPECT_EQ(expected2[c++], gridAlignedMask4.bitmap()->getPixel(i, j));
 
-  grid.origin(gfx::Point(2,1));
+  grid.origin(gfx::Point(2, 1));
   auto gridAlignedMask5 = make_aligned_mask(&grid, &mask);
-  bool expected3[8*8] = {
-     X, X, X, X,  X, X, X, X,
-     X, X, X, X,  X, X, X, X,
-     X, X, X, X,  X, X, X, X,
-     X, X, X, X,  X, X, X, X,
+  bool expected3[8 * 8] = {
+    X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X,
 
-     X, X, X, X,  _, _, _, _,
-     X, X, X, X,  _, _, _, _,
-     X, X, X, X,  _, _, _, _,
-     X, X, X, X,  _, _, _, _,
+    X, X, X, X, _, _, _, _, X, X, X, X, _, _, _, _, X, X, X, X, _, _, _, _, X, X, X, X, _, _, _, _,
   };
-  c=0;
-  for (int j=0; j<8; ++j)
-    for (int i=0; i<8; ++i)
+  c = 0;
+  for (int j = 0; j < 8; ++j)
+    for (int i = 0; i < 8; ++i)
       EXPECT_EQ(expected3[c++], gridAlignedMask5.bitmap()->getPixel(i, j));
 }
 

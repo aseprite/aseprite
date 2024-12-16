@@ -18,10 +18,11 @@
 
 #include <vector>
 
-namespace gfx { class Region; }
+namespace gfx {
+class Region;
+}
 
-namespace app {
-namespace tools {
+namespace app { namespace tools {
 
 class ToolLoop;
 
@@ -104,7 +105,6 @@ private:
   doc::Brush* m_brush0 = nullptr;
 };
 
-} // namespace tools
-} // namespace app
+}} // namespace app::tools
 
 #endif

@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -31,8 +31,7 @@ private:
   std::string m_filename;
 };
 
-OpenBrowserCommand::OpenBrowserCommand()
-  : Command(CommandId::OpenBrowser(), CmdUIOnlyFlag)
+OpenBrowserCommand::OpenBrowserCommand() : Command(CommandId::OpenBrowser(), CmdUIOnlyFlag)
 {
 }
 

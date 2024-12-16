@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -24,25 +24,28 @@ namespace app {
 using namespace ui;
 
 struct MoveTilesParams : public NewParams {
-  Param<int> before { this, 0, "before" };
+  Param<int> before{ this, 0, "before" };
 };
 
 class MoveTilesCommand : public CommandWithNewParams<MoveTilesParams> {
 public:
   MoveTilesCommand(const bool copy)
     : CommandWithNewParams<MoveTilesParams>(
-      (copy ? CommandId::CopyTiles():
-              CommandId::MoveTiles()), CmdRecordableFlag)
-    , m_copy(copy) { }
+        (copy ? CommandId::CopyTiles() : CommandId::MoveTiles()),
+        CmdRecordableFlag)
+    , m_copy(copy)
+  {
+  }
 
 protected:
-  bool onEnabled(Context* ctx) override {
-    return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                           ContextFlags::HasActiveLayer |
+  bool onEnabled(Context* ctx) override
+  {
+    return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasActiveLayer |
                            ContextFlags::ActiveLayerIsTilemap);
   }
 
-  void onExecute(Context* ctx) override {
+  void onExecute(Context* ctx) override
+  {
     ContextWriter writer(ctx);
     doc::Layer* layer = writer.layer();
     if (!layer || !layer->isTilemap())

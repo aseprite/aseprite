@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/message.h"
@@ -73,7 +73,7 @@ KeyMessage::KeyMessage(const MessageType type,
 gfx::Point MouseMessage::positionForDisplay(Display* anotherDisplay) const
 {
   if (display() == anotherDisplay) {
-    return position();          // There is no need for transformation
+    return position(); // There is no need for transformation
   }
   else {
     ASSERT(anotherDisplay);

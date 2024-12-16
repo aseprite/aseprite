@@ -28,174 +28,171 @@
 #include <vector>
 
 namespace doc {
-  class Layer;
-  class PalettePicks;
-}
+class Layer;
+class PalettePicks;
+} // namespace doc
 
 namespace app {
-  class ActiveSiteHandler;
-  class Clipboard;
-  class Command;
-  class Doc;
-  class DocView;
-  class Preferences;
+class ActiveSiteHandler;
+class Clipboard;
+class Command;
+class Doc;
+class DocView;
+class Preferences;
 
-  class CommandResult {
-  public:
-    enum Type {
-      kOk,
-      // Exception throw (e.g. cannot lock sprite)
-      kError,
-      // Canceled by user.
-      kCanceled,
-    };
-
-    CommandResult(Type type = Type::kOk) : m_type(type) { }
-    Type type() const { return m_type; }
-    void reset() { m_type = Type::kOk; }
-
-  private:
-    Type m_type;
+class CommandResult {
+public:
+  enum Type {
+    kOk,
+    // Exception throw (e.g. cannot lock sprite)
+    kError,
+    // Canceled by user.
+    kCanceled,
   };
 
-  class CommandPreconditionException : public base::Exception {
-  public:
-    CommandPreconditionException() throw()
-    : base::Exception("Cannot execute the command because its pre-conditions are false.") { }
-  };
+  CommandResult(Type type = Type::kOk) : m_type(type) {}
+  Type type() const { return m_type; }
+  void reset() { m_type = Type::kOk; }
 
-  class CommandExecutionEvent {
-  public:
-    CommandExecutionEvent(Command* command,
-                          const Params& params)
-      : m_command(command)
-      , m_params(params)
-      , m_canceled(false) {
-    }
+private:
+  Type m_type;
+};
 
-    Command* command() const { return m_command; }
-    const Params& params() const { return m_params; }
-
-    // True if the command was canceled or simulated by an
-    // observer/signal slot.
-    bool isCanceled() const { return m_canceled; }
-    void cancel() {
-      m_canceled = true;
-    }
-
-  private:
-    Command* m_command;
-    const Params& m_params;
-    bool m_canceled;
-  };
-
-  class DraggedData
+class CommandPreconditionException : public base::Exception {
+public:
+  CommandPreconditionException() throw()
+    : base::Exception("Cannot execute the command because its pre-conditions are false.")
   {
-  public:
-    DraggedData(const doc::ImageRef& image) {
-      m_image = image;
-    }
-    DraggedData(const os::SurfaceRef& surface) {
-      if (surface)
-        convert_surface_to_image(surface.get(), 0, 0, surface->width(), surface->height(), m_image);
-    }
+  }
+};
 
-    const doc::ImageRef& getImage() const { return m_image; }
+class CommandExecutionEvent {
+public:
+  CommandExecutionEvent(Command* command, const Params& params)
+    : m_command(command)
+    , m_params(params)
+    , m_canceled(false)
+  {
+  }
 
-  private:
-    doc::ImageRef m_image = nullptr;
-  };
+  Command* command() const { return m_command; }
+  const Params& params() const { return m_params; }
 
-  class Context : public obs::observable<ContextObserver>,
-                  public DocsObserver {
-  public:
-    Context();
-    virtual ~Context();
+  // True if the command was canceled or simulated by an
+  // observer/signal slot.
+  bool isCanceled() const { return m_canceled; }
+  void cancel() { m_canceled = true; }
 
-    const Docs& documents() const { return m_docs; }
-    Docs& documents() { return m_docs; }
+private:
+  Command* m_command;
+  const Params& m_params;
+  bool m_canceled;
+};
 
-    Preferences& preferences() const;
-    Clipboard* clipboard() const;
+class DraggedData {
+public:
+  DraggedData(const doc::ImageRef& image) { m_image = image; }
+  DraggedData(const os::SurfaceRef& surface)
+  {
+    if (surface)
+      convert_surface_to_image(surface.get(), 0, 0, surface->width(), surface->height(), m_image);
+  }
 
-    virtual bool isUIAvailable() const     { return false; }
-    virtual bool isRecordingMacro() const  { return false; }
-    virtual bool isExecutingMacro() const  { return false; }
-    virtual bool isExecutingScript() const { return false; }
+  const doc::ImageRef& getImage() const { return m_image; }
 
-    bool checkFlags(uint32_t flags) const { return m_flags.check(flags); }
-    void updateFlags() { m_flags.update(this); }
+private:
+  doc::ImageRef m_image = nullptr;
+};
 
-    void sendDocumentToTop(Doc* doc);
-    void closeDocument(Doc* doc);
+class Context : public obs::observable<ContextObserver>,
+                public DocsObserver {
+public:
+  Context();
+  virtual ~Context();
 
-    Site activeSite() const;
-    Doc* activeDocument() const;
-    const view::RealRange& range() const;
-    void setActiveDocument(Doc* document);
-    void setActiveLayer(doc::Layer* layer);
-    void setActiveFrame(doc::frame_t frame);
-    void setRange(const view::RealRange& range);
-    void setSelectedColors(const doc::PalettePicks& picks);
-    void setSelectedTiles(const doc::PalettePicks& picks);
-    bool hasModifiedDocuments() const;
-    void notifyActiveSiteChanged();
-    void notifyBeforeActiveSiteChanged();
+  const Docs& documents() const { return m_docs; }
+  Docs& documents() { return m_docs; }
 
-    void setDraggedData(std::unique_ptr<DraggedData> draggedData) {
-      m_draggedData = std::move(draggedData);
-    }
-    const DraggedData* draggedData() const { return m_draggedData.get(); }
+  Preferences& preferences() const;
+  Clipboard* clipboard() const;
 
-    void executeCommandFromMenuOrShortcut(Command* command, const Params& params = Params());
-    virtual void executeCommand(Command* command, const Params& params = Params());
+  virtual bool isUIAvailable() const { return false; }
+  virtual bool isRecordingMacro() const { return false; }
+  virtual bool isExecutingMacro() const { return false; }
+  virtual bool isExecutingScript() const { return false; }
 
-    void setCommandResult(const CommandResult& result);
-    const CommandResult& commandResult() { return m_result; }
+  bool checkFlags(uint32_t flags) const { return m_flags.check(flags); }
+  void updateFlags() { m_flags.update(this); }
 
-    virtual DocView* getFirstDocView(Doc* document) const {
-      return nullptr;
-    }
+  void sendDocumentToTop(Doc* doc);
+  void closeDocument(Doc* doc);
 
-    obs::signal<void (CommandExecutionEvent&)> BeforeCommandExecution;
-    obs::signal<void (CommandExecutionEvent&)> AfterCommandExecution;
+  Site activeSite() const;
+  Doc* activeDocument() const;
+  const view::RealRange& range() const;
+  void setActiveDocument(Doc* document);
+  void setActiveLayer(doc::Layer* layer);
+  void setActiveFrame(doc::frame_t frame);
+  void setRange(const view::RealRange& range);
+  void setSelectedColors(const doc::PalettePicks& picks);
+  void setSelectedTiles(const doc::PalettePicks& picks);
+  bool hasModifiedDocuments() const;
+  void notifyActiveSiteChanged();
+  void notifyBeforeActiveSiteChanged();
 
-  protected:
-    // DocsObserver impl
-    void onBeforeAddDocument(Doc* doc) override;
-    void onAddDocument(Doc* doc) override;
-    void onBeforeRemoveDocument(Doc* doc) override;
-    void onRemoveDocument(Doc* doc) override;
+  void setDraggedData(std::unique_ptr<DraggedData> draggedData)
+  {
+    m_draggedData = std::move(draggedData);
+  }
+  const DraggedData* draggedData() const { return m_draggedData.get(); }
 
-    virtual void onGetActiveSite(Site* site) const;
-    virtual void onSetActiveDocument(Doc* doc, bool notify);
-    virtual void onSetActiveLayer(doc::Layer* layer);
-    virtual void onSetActiveFrame(const doc::frame_t frame);
-    virtual void onSetRange(const view::RealRange& range);
-    virtual void onSetSelectedColors(const doc::PalettePicks& picks);
-    virtual void onSetSelectedTiles(const doc::PalettePicks& picks);
-    virtual void onCloseDocument(Doc* doc);
+  void executeCommandFromMenuOrShortcut(Command* command, const Params& params = Params());
+  virtual void executeCommand(Command* command, const Params& params = Params());
 
-    Doc* lastSelectedDoc() { return m_lastSelectedDoc; }
+  void setCommandResult(const CommandResult& result);
+  const CommandResult& commandResult() { return m_result; }
 
-  private:
-    ActiveSiteHandler* activeSiteHandler() const;
+  virtual DocView* getFirstDocView(Doc* document) const { return nullptr; }
 
-    // This must be defined before m_docs because ActiveSiteHandler
-    // will be an observer of all documents.
-    mutable std::unique_ptr<ActiveSiteHandler> m_activeSiteHandler;
-    mutable Docs m_docs;
-    ContextFlags m_flags;       // Last updated flags.
-    Doc* m_lastSelectedDoc;
-    mutable std::unique_ptr<Preferences> m_preferences;
-    std::unique_ptr<DraggedData> m_draggedData = nullptr;
-    mutable view::RealRange m_range; // Last/current range
+  obs::signal<void(CommandExecutionEvent&)> BeforeCommandExecution;
+  obs::signal<void(CommandExecutionEvent&)> AfterCommandExecution;
 
-    // Result of the execution of a command.
-    CommandResult m_result;
+protected:
+  // DocsObserver impl
+  void onBeforeAddDocument(Doc* doc) override;
+  void onAddDocument(Doc* doc) override;
+  void onBeforeRemoveDocument(Doc* doc) override;
+  void onRemoveDocument(Doc* doc) override;
 
-    DISABLE_COPYING(Context);
-  };
+  virtual void onGetActiveSite(Site* site) const;
+  virtual void onSetActiveDocument(Doc* doc, bool notify);
+  virtual void onSetActiveLayer(doc::Layer* layer);
+  virtual void onSetActiveFrame(const doc::frame_t frame);
+  virtual void onSetRange(const view::RealRange& range);
+  virtual void onSetSelectedColors(const doc::PalettePicks& picks);
+  virtual void onSetSelectedTiles(const doc::PalettePicks& picks);
+  virtual void onCloseDocument(Doc* doc);
+
+  Doc* lastSelectedDoc() { return m_lastSelectedDoc; }
+
+private:
+  ActiveSiteHandler* activeSiteHandler() const;
+
+  // This must be defined before m_docs because ActiveSiteHandler
+  // will be an observer of all documents.
+  mutable std::unique_ptr<ActiveSiteHandler> m_activeSiteHandler;
+  mutable Docs m_docs;
+  ContextFlags m_flags; // Last updated flags.
+  Doc* m_lastSelectedDoc;
+  mutable std::unique_ptr<Preferences> m_preferences;
+  std::unique_ptr<DraggedData> m_draggedData = nullptr;
+  mutable view::RealRange m_range; // Last/current range
+
+  // Result of the execution of a command.
+  CommandResult m_result;
+
+  DISABLE_COPYING(Context);
+};
 
 } // namespace app
 

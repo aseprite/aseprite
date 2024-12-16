@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "filters/brightness_contrast_filter.h"
@@ -54,17 +54,14 @@ void BrightnessContrastFilter::applyToRgba(FilterManager* filterMgr)
 {
   FilterIndexedData* fid = filterMgr->getIndexedData();
   const Palette* pal = fid->getPalette();
-  Palette* newPal = (m_usePaletteOnRGB ? fid->getNewPalette(): nullptr);
+  Palette* newPal = (m_usePaletteOnRGB ? fid->getNewPalette() : nullptr);
 
-  FILTER_LOOP_THROUGH_ROW_BEGIN(uint32_t) {
+  FILTER_LOOP_THROUGH_ROW_BEGIN(uint32_t)
+  {
     color_t c = *src_address;
 
     if (newPal) {
-      int i =
-        pal->findExactMatch(rgba_getr(c),
-                            rgba_getg(c),
-                            rgba_getb(c),
-                            rgba_geta(c), -1);
+      int i = pal->findExactMatch(rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c), -1);
       if (i >= 0)
         c = newPal->getEntry(i);
     }
@@ -79,12 +76,14 @@ void BrightnessContrastFilter::applyToRgba(FilterManager* filterMgr)
 
 void BrightnessContrastFilter::applyToGrayscale(FilterManager* filterMgr)
 {
-  FILTER_LOOP_THROUGH_ROW_BEGIN(uint16_t) {
+  FILTER_LOOP_THROUGH_ROW_BEGIN(uint16_t)
+  {
     color_t c = *src_address;
     int k = graya_getv(c);
     int a = graya_geta(c);
 
-    if (target & TARGET_GRAY_CHANNEL) k = m_cmap[k];
+    if (target & TARGET_GRAY_CHANNEL)
+      k = m_cmap[k];
 
     *dst_address = graya(k, a);
   }
@@ -105,7 +104,8 @@ void BrightnessContrastFilter::applyToIndexed(FilterManager* filterMgr)
   const Palette* pal = fid->getPalette();
   const RgbMap* rgbmap = fid->getRgbMap();
 
-  FILTER_LOOP_THROUGH_ROW_BEGIN(uint8_t) {
+  FILTER_LOOP_THROUGH_ROW_BEGIN(uint8_t)
+  {
     color_t c = pal->getEntry(*src_address);
     applyFilterToRgb(target, c);
     *dst_address = rgbmap->mapColor(c);
@@ -113,8 +113,7 @@ void BrightnessContrastFilter::applyToIndexed(FilterManager* filterMgr)
   FILTER_LOOP_THROUGH_ROW_END()
 }
 
-void BrightnessContrastFilter::onApplyToPalette(FilterManager* filterMgr,
-                                                const PalettePicks& picks)
+void BrightnessContrastFilter::onApplyToPalette(FilterManager* filterMgr, const PalettePicks& picks)
 {
   FilterIndexedData* fid = filterMgr->getIndexedData();
   const Target target = filterMgr->getTarget();
@@ -135,17 +134,19 @@ void BrightnessContrastFilter::onApplyToPalette(FilterManager* filterMgr,
   }
 }
 
-void BrightnessContrastFilter::applyFilterToRgb(
-  const Target target, doc::color_t& c)
+void BrightnessContrastFilter::applyFilterToRgb(const Target target, doc::color_t& c)
 {
   int r = rgba_getr(c);
   int g = rgba_getg(c);
   int b = rgba_getb(c);
   int a = rgba_geta(c);
 
-  if (target & TARGET_RED_CHANNEL  ) r = m_cmap[r];
-  if (target & TARGET_GREEN_CHANNEL) g = m_cmap[g];
-  if (target & TARGET_BLUE_CHANNEL ) b = m_cmap[b];
+  if (target & TARGET_RED_CHANNEL)
+    r = m_cmap[r];
+  if (target & TARGET_GREEN_CHANNEL)
+    g = m_cmap[g];
+  if (target & TARGET_BLUE_CHANNEL)
+    b = m_cmap[b];
 
   c = rgba(r, g, b, a);
 }
@@ -153,10 +154,10 @@ void BrightnessContrastFilter::applyFilterToRgb(
 void BrightnessContrastFilter::updateMap()
 {
   int max = int(m_cmap.size());
-  for (int u=0; u<max; ++u) {
-    double x = double(u) / double(max-1);
-    double y = (m_contrast+1.0) * (x - 0.5) + 0.5;
-    y = y*(1.0+m_brightness);
+  for (int u = 0; u < max; ++u) {
+    double x = double(u) / double(max - 1);
+    double y = (m_contrast + 1.0) * (x - 0.5) + 0.5;
+    y = y * (1.0 + m_brightness);
     y = std::clamp(y, 0.0, 1.0);
     m_cmap[u] = int(255.5 * y);
   }

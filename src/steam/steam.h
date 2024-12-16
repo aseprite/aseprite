@@ -23,9 +23,7 @@ public:
   bool isInitialized() const;
   void runCallbacks();
 
-  bool writeScreenshot(void* rgbBuffer,
-                       uint32_t sizeInBytes,
-                       int width, int height);
+  bool writeScreenshot(void* rgbBuffer, uint32_t sizeInBytes, int width, int height);
 
 private:
   class Impl;

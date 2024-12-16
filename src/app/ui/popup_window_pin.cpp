@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/popup_window_pin.h"
@@ -28,8 +28,7 @@ using namespace ui;
 PopupWindowPin::PopupWindowPin(const std::string& text,
                                const ClickBehavior clickBehavior,
                                const bool canPin)
-  : PopupWindow(text, clickBehavior,
-                EnterBehavior::CloseOnEnter, canPin)
+  : PopupWindow(text, clickBehavior, EnterBehavior::CloseOnEnter, canPin)
   , m_pinned(false)
 {
 }
@@ -50,7 +49,6 @@ void PopupWindowPin::setPinned(const bool pinned)
 bool PopupWindowPin::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
-
     case kOpenMessage: {
       if (!m_pinned)
         setPinned(false);
@@ -64,7 +62,6 @@ bool PopupWindowPin::onProcessMessage(Message* msg)
         m_pinned = false;
       break;
     }
-
   }
 
   return PopupWindow::onProcessMessage(msg);

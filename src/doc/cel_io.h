@@ -12,11 +12,11 @@
 
 namespace doc {
 
-  class Cel;
-  class SubObjectsIO;
+class Cel;
+class SubObjectsIO;
 
-  void write_cel(std::ostream& os, const Cel* cel);
-  Cel* read_cel(std::istream& is, SubObjectsIO* subObjects, bool setId = true);
+void write_cel(std::ostream& os, const Cel* cel);
+Cel* read_cel(std::istream& is, SubObjectsIO* subObjects, bool setId = true);
 
 } // namespace doc
 

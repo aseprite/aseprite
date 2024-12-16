@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/zoom_entry.h"
@@ -32,9 +32,7 @@ namespace app {
 using namespace gfx;
 using namespace ui;
 
-ZoomEntry::ZoomEntry()
-  : IntEntry(0, render::Zoom::linearValues()-1, this)
-  , m_locked(false)
+ZoomEntry::ZoomEntry() : IntEntry(0, render::Zoom::linearValues() - 1, this), m_locked(false)
 {
   setSuffix("%");
   setMaxTextLength(6); // strlen("6400.0") == 6

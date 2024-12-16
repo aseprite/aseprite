@@ -9,15 +9,23 @@
 #pragma once
 
 namespace doc {
-  class Image;
+class Image;
 
-  namespace algorithm {
+namespace algorithm {
 
-    void rotsprite_image(Image* dst, const Image* src, const Image* mask,
-      int x1, int y1, int x2, int y2,
-      int x3, int y3, int x4, int y4);
+void rotsprite_image(Image* dst,
+                     const Image* src,
+                     const Image* mask,
+                     int x1,
+                     int y1,
+                     int x2,
+                     int y2,
+                     int x3,
+                     int y3,
+                     int x4,
+                     int y4);
 
-  } // namespace algorithm
+} // namespace algorithm
 } // namespace doc
 
 #endif

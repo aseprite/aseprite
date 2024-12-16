@@ -13,9 +13,10 @@ using namespace std::literals;
 
 namespace app {
 
-  std::ostream& operator<<(std::ostream& os, const FontInfo& info) {
-    return os << base::convert_to<std::string>(info);
-  }
+std::ostream& operator<<(std::ostream& os, const FontInfo& info)
+{
+  return os << base::convert_to<std::string>(info);
+}
 
 } // namespace app
 
@@ -38,16 +39,22 @@ TEST(FontInfo, ByFile)
   FontInfo a(FontInfo::Type::File, "C:/Windows/fonts/Arial.ttf", 12);
   FontInfo b(FontInfo::Type::File, "/usr/share/fonts/truetype/noto/NotoSansMath-Regular.ttf");
   EXPECT_EQ("file=C:/Windows/fonts/Arial.ttf,size=12", base::convert_to<std::string>(a));
-  EXPECT_EQ("file=/usr/share/fonts/truetype/noto/NotoSansMath-Regular.ttf", base::convert_to<std::string>(b));
+  EXPECT_EQ("file=/usr/share/fonts/truetype/noto/NotoSansMath-Regular.ttf",
+            base::convert_to<std::string>(b));
 
   EXPECT_EQ(a, base::convert_to<FontInfo>("file=C:/Windows/fonts/Arial.ttf,size=12"s));
-  EXPECT_EQ(b, base::convert_to<FontInfo>("file=/usr/share/fonts/truetype/noto/NotoSansMath-Regular.ttf"s));
+  EXPECT_EQ(
+    b,
+    base::convert_to<FontInfo>("file=/usr/share/fonts/truetype/noto/NotoSansMath-Regular.ttf"s));
 }
 
 TEST(FontInfo, BySystem)
 {
   FontInfo a(FontInfo::Type::System, "FreeMono");
-  FontInfo b(FontInfo::Type::System, "DejaVu Serif", 12, text::FontStyle(),
+  FontInfo b(FontInfo::Type::System,
+             "DejaVu Serif",
+             12,
+             text::FontStyle(),
              FontInfo::Flags::Antialias);
   FontInfo c(FontInfo::Type::System, "Arial", 14, text::FontStyle::Bold());
   FontInfo d(FontInfo::Type::System, "Arial", 16, text::FontStyle::BoldItalic());

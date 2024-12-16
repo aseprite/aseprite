@@ -11,29 +11,25 @@
 #include "app/cmd.h"
 #include "app/cmd/with_cel.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class ShiftMaskedCel : public Cmd
-                       , public WithCel {
-  public:
-    ShiftMaskedCel(Cel* cel, int dx, int dy);
+class ShiftMaskedCel : public Cmd,
+                       public WithCel {
+public:
+  ShiftMaskedCel(Cel* cel, int dx, int dy);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this);
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  size_t onMemSize() const override { return sizeof(*this); }
 
-  private:
-    void shift(int dx, int dy);
+private:
+  void shift(int dx, int dy);
 
-    int m_dx, m_dy;
-  };
+  int m_dx, m_dy;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

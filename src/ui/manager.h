@@ -20,199 +20,196 @@
 #include "ui/widget.h"
 
 namespace os {
-  class EventQueue;
-  class Window;
-}
+class EventQueue;
+class Window;
+} // namespace os
 
 namespace ui {
 
-  class LayoutIO;
-  class Timer;
-  class Window;
+class LayoutIO;
+class Timer;
+class Window;
 
-  class Manager : public Widget
-                , public os::DragTarget {
-  public:
-    static Manager* getDefault() { return m_defaultManager; }
-    static bool widgetAssociatedToManager(Widget* widget);
+class Manager : public Widget,
+                public os::DragTarget {
+public:
+  static Manager* getDefault() { return m_defaultManager; }
+  static bool widgetAssociatedToManager(Widget* widget);
 
-    Manager(const os::WindowRef& nativeWindow);
-    ~Manager();
+  Manager(const os::WindowRef& nativeWindow);
+  ~Manager();
 
-    Display* display() const { return &const_cast<Manager*>(this)->m_display; }
+  Display* display() const { return &const_cast<Manager*>(this)->m_display; }
 
-    static Display* getDisplayFromNativeWindow(os::Window* window);
+  static Display* getDisplayFromNativeWindow(os::Window* window);
 
-    // Executes the main message loop.
-    void run();
+  // Executes the main message loop.
+  void run();
 
-    // Refreshes all real displays with the UI content.
-    void flipAllDisplays();
+  // Refreshes all real displays with the UI content.
+  void flipAllDisplays();
 
-    // Updates the scale and GPU acceleration flag of all native
-    // windows.
-    void updateAllDisplays(int scale, bool gpu);
+  // Updates the scale and GPU acceleration flag of all native
+  // windows.
+  void updateAllDisplays(int scale, bool gpu);
 
-    // Adds the given "msg" message to the queue of messages to be
-    // dispached. "msg" cannot be used after this function, it'll be
-    // automatically deleted.
-    void enqueueMessage(Message* msg);
+  // Adds the given "msg" message to the queue of messages to be
+  // dispached. "msg" cannot be used after this function, it'll be
+  // automatically deleted.
+  void enqueueMessage(Message* msg);
 
-    // Returns true if there are messages in the queue to be
-    // dispatched through dispatchMessages().
-    bool generateMessages();
-    void dispatchMessages();
+  // Returns true if there are messages in the queue to be
+  // dispatched through dispatchMessages().
+  bool generateMessages();
+  void dispatchMessages();
 
-    // Makes the generateMessages() function to return immediately if
-    // there is no user events in the OS queue. Useful only for tests
-    // or benchmarks where we don't wait the user (or we don't even
-    // have an user). In this case we want to use 100% of the CPU.
-    void dontWaitEvents() { m_waitEvents = false; }
+  // Makes the generateMessages() function to return immediately if
+  // there is no user events in the OS queue. Useful only for tests
+  // or benchmarks where we don't wait the user (or we don't even
+  // have an user). In this case we want to use 100% of the CPU.
+  void dontWaitEvents() { m_waitEvents = false; }
 
-    void addToGarbage(Widget* widget);
-    void collectGarbage();
+  void addToGarbage(Widget* widget);
+  void collectGarbage();
 
-    Window* getTopWindow();
-    Window* getDesktopWindow();
-    Window* getForegroundWindow();
-    Display* getForegroundDisplay();
+  Window* getTopWindow();
+  Window* getDesktopWindow();
+  Window* getForegroundWindow();
+  Display* getForegroundDisplay();
 
-    Widget* getFocus();
-    Widget* getMouse();
-    Widget* getCapture();
+  Widget* getFocus();
+  Widget* getMouse();
+  Widget* getCapture();
 
-    void setFocus(Widget* widget);
-    void setMouse(Widget* widget);
-    void setCapture(Widget* widget);
-    void attractFocus(Widget* widget);
-    void focusFirstChild(Widget* widget);
-    void freeFocus();
-    void freeMouse();
-    void freeCapture();
-    void freeWidget(Widget* widget);
-    void removeMessagesFor(Widget* widget);
-    void removeMessagesFor(Widget* widget, MessageType type);
-    void removeMessagesForTimer(Timer* timer);
-    void removeMessagesForDisplay(Display* display);
-    void removePaintMessagesForDisplay(Display* display);
+  void setFocus(Widget* widget);
+  void setMouse(Widget* widget);
+  void setCapture(Widget* widget);
+  void attractFocus(Widget* widget);
+  void focusFirstChild(Widget* widget);
+  void freeFocus();
+  void freeMouse();
+  void freeCapture();
+  void freeWidget(Widget* widget);
+  void removeMessagesFor(Widget* widget);
+  void removeMessagesFor(Widget* widget, MessageType type);
+  void removeMessagesForTimer(Timer* timer);
+  void removeMessagesForDisplay(Display* display);
+  void removePaintMessagesForDisplay(Display* display);
 
-    void addMessageFilter(int message, Widget* widget);
-    void removeMessageFilter(int message, Widget* widget);
-    void removeMessageFilterFor(Widget* widget);
+  void addMessageFilter(int message, Widget* widget);
+  void removeMessageFilter(int message, Widget* widget);
+  void removeMessageFilterFor(Widget* widget);
 
-    LayoutIO* getLayoutIO();
+  LayoutIO* getLayoutIO();
 
-    bool isFocusMovementMessage(Message* msg);
-    bool processFocusMovementMessage(Message* msg);
+  bool isFocusMovementMessage(Message* msg);
+  bool processFocusMovementMessage(Message* msg);
 
-    Widget* pickFromScreenPos(const gfx::Point& screenPos) const override;
+  Widget* pickFromScreenPos(const gfx::Point& screenPos) const override;
 
-    void _openWindow(Window* window, bool center);
-    void _closeWindow(Window* window, bool redraw_background);
-    void _runModalWindow(Window* window);
-    void _updateMouseWidgets();
-    void _closingAppWithException();
+  void _openWindow(Window* window, bool center);
+  void _closeWindow(Window* window, bool redraw_background);
+  void _runModalWindow(Window* window);
+  void _updateMouseWidgets();
+  void _closingAppWithException();
 
-  protected:
-    bool onProcessMessage(Message* msg) override;
-    void onInvalidateRegion(const gfx::Region& region) override;
-    void onResize(ResizeEvent& ev) override;
-    void onSizeHint(SizeHintEvent& ev) override;
-    void onBroadcastMouseMessage(const gfx::Point& screenPos,
-                                 WidgetsList& targets) override;
-    void onInitTheme(InitThemeEvent& ev) override;
-    virtual LayoutIO* onGetLayoutIO();
-    virtual void onNewDisplayConfiguration(Display* display);
+protected:
+  bool onProcessMessage(Message* msg) override;
+  void onInvalidateRegion(const gfx::Region& region) override;
+  void onResize(ResizeEvent& ev) override;
+  void onSizeHint(SizeHintEvent& ev) override;
+  void onBroadcastMouseMessage(const gfx::Point& screenPos, WidgetsList& targets) override;
+  void onInitTheme(InitThemeEvent& ev) override;
+  virtual LayoutIO* onGetLayoutIO();
+  virtual void onNewDisplayConfiguration(Display* display);
 
-  private:
-    void generateSetCursorMessage(Display* display,
-                                  const gfx::Point& mousePos,
-                                  KeyModifiers modifiers,
-                                  PointerType pointerType);
-    void generateMessagesFromOSEvents();
+private:
+  void generateSetCursorMessage(Display* display,
+                                const gfx::Point& mousePos,
+                                KeyModifiers modifiers,
+                                PointerType pointerType);
+  void generateMessagesFromOSEvents();
 
-    void handleMouseMove(Display* display,
-                         const gfx::Point& mousePos,
-                         const KeyModifiers modifiers,
-                         const PointerType pointerType,
-                         const float pressure);
-    void handleMouseDown(Display* display,
-                         const gfx::Point& mousePos,
-                         MouseButton mouseButton,
-                         KeyModifiers modifiers,
-                         PointerType pointerType,
-                         const float pressure);
-    void handleMouseUp(Display* display,
+  void handleMouseMove(Display* display,
+                       const gfx::Point& mousePos,
+                       const KeyModifiers modifiers,
+                       const PointerType pointerType,
+                       const float pressure);
+  void handleMouseDown(Display* display,
                        const gfx::Point& mousePos,
                        MouseButton mouseButton,
                        KeyModifiers modifiers,
-                       PointerType pointerType);
-    void handleMouseDoubleClick(Display* display,
-                                const gfx::Point& mousePos,
-                                MouseButton mouseButton,
-                                KeyModifiers modifiers,
-                                PointerType pointerType,
-                                const float pressure);
-    void handleMouseWheel(Display* display,
+                       PointerType pointerType,
+                       const float pressure);
+  void handleMouseUp(Display* display,
+                     const gfx::Point& mousePos,
+                     MouseButton mouseButton,
+                     KeyModifiers modifiers,
+                     PointerType pointerType);
+  void handleMouseDoubleClick(Display* display,
+                              const gfx::Point& mousePos,
+                              MouseButton mouseButton,
+                              KeyModifiers modifiers,
+                              PointerType pointerType,
+                              const float pressure);
+  void handleMouseWheel(Display* display,
+                        const gfx::Point& mousePos,
+                        KeyModifiers modifiers,
+                        PointerType pointerType,
+                        const gfx::Point& wheelDelta,
+                        bool preciseWheel);
+  void handleTouchMagnify(Display* display,
                           const gfx::Point& mousePos,
-                          KeyModifiers modifiers,
-                          PointerType pointerType,
-                          const gfx::Point& wheelDelta,
-                          bool preciseWheel);
-    void handleTouchMagnify(Display* display,
-                            const gfx::Point& mousePos,
-                            const KeyModifiers modifiers,
-                            const double magnification);
-    bool handleWindowZOrder();
-    void updateMouseWidgets(const gfx::Point& mousePos,
-                            Display* display);
+                          const KeyModifiers modifiers,
+                          const double magnification);
+  bool handleWindowZOrder();
+  void updateMouseWidgets(const gfx::Point& mousePos, Display* display);
 
-    int pumpQueue();
-    bool sendMessageToWidget(Message* msg, Widget* widget);
+  int pumpQueue();
+  bool sendMessageToWidget(Message* msg, Widget* widget);
 
-    Widget* findForDragAndDrop(Widget* widget);
-    void dragEnter(os::DragEvent& ev) override;
-    void dragLeave(os::DragEvent& ev) override;
-    void drag(os::DragEvent& ev) override;
-    void drop(os::DragEvent& ev) override;
+  Widget* findForDragAndDrop(Widget* widget);
+  void dragEnter(os::DragEvent& ev) override;
+  void dragLeave(os::DragEvent& ev) override;
+  void drag(os::DragEvent& ev) override;
+  void drop(os::DragEvent& ev) override;
 
-    static Widget* findLowestCommonAncestor(Widget* a, Widget* b);
-    static bool someParentIsFocusStop(Widget* widget);
-    static Widget* findMagneticWidget(Widget* widget);
-    static Message* newMouseMessage(
-      MessageType type,
-      Display* display,
-      Widget* widget,
-      const gfx::Point& mousePos,
-      PointerType pointerType,
-      MouseButton button,
-      KeyModifiers modifiers,
-      const gfx::Point& wheelDelta = gfx::Point(0, 0),
-      bool preciseWheel = false,
-      float pressure = 0.0f);
-    void broadcastKeyMsg(Message* msg);
+  static Widget* findLowestCommonAncestor(Widget* a, Widget* b);
+  static bool someParentIsFocusStop(Widget* widget);
+  static Widget* findMagneticWidget(Widget* widget);
+  static Message* newMouseMessage(MessageType type,
+                                  Display* display,
+                                  Widget* widget,
+                                  const gfx::Point& mousePos,
+                                  PointerType pointerType,
+                                  MouseButton button,
+                                  KeyModifiers modifiers,
+                                  const gfx::Point& wheelDelta = gfx::Point(0, 0),
+                                  bool preciseWheel = false,
+                                  float pressure = 0.0f);
+  void broadcastKeyMsg(Message* msg);
 
-    static Manager* m_defaultManager;
+  static Manager* m_defaultManager;
 
-    WidgetsList m_garbage;
-    Display m_display;
-    os::EventQueue* m_eventQueue;
+  WidgetsList m_garbage;
+  Display m_display;
+  os::EventQueue* m_eventQueue;
 
-    // This member is used to make freeWidget() a no-op when we
-    // restack a window if the user clicks on it.
-    Widget* m_lockedWindow;
+  // This member is used to make freeWidget() a no-op when we
+  // restack a window if the user clicks on it.
+  Widget* m_lockedWindow;
 
-    // Last pressed mouse button.
-    MouseButton m_mouseButton;
+  // Last pressed mouse button.
+  MouseButton m_mouseButton;
 
-    // Widget over which the drag is being hovered in a drag & drop operation.
-    Widget* m_dragOverWidget = nullptr;
+  // Widget over which the drag is being hovered in a drag & drop operation.
+  Widget* m_dragOverWidget = nullptr;
 
-    // False if we want to continue in case that there is no user
-    // event in the OS queue. Useful when there is no need to wait for
-    // user interaction (tests/benchmarks).
-    bool m_waitEvents = true;
-  };
+  // False if we want to continue in case that there is no user
+  // event in the OS queue. Useful when there is no need to wait for
+  // user interaction (tests/benchmarks).
+  bool m_waitEvents = true;
+};
 
 } // namespace ui
 

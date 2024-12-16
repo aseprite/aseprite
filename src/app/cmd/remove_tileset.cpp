@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/remove_tileset.h"
@@ -13,14 +13,11 @@
 #include "doc/cel.h"
 #include "doc/layer.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 using namespace doc;
 
-RemoveTileset::RemoveTileset(Sprite* sprite,
-                             const tileset_index si)
-  : AddTileset(sprite, si)
+RemoveTileset::RemoveTileset(Sprite* sprite, const tileset_index si) : AddTileset(sprite, si)
 {
 }
 
@@ -39,5 +36,4 @@ void RemoveTileset::onRedo()
   AddTileset::onUndo();
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

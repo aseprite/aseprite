@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/commands/filters/convolution_matrix_stock.h"
@@ -42,19 +42,19 @@ std::shared_ptr<ConvolutionMatrix> ConvolutionMatrixStock::getByName(const char*
 
 void ConvolutionMatrixStock::reloadStock()
 {
-#define READ_TOK() {                                    \
-    if (!tok_read(f, buf, leavings, sizeof (leavings))) \
-      break;                                            \
+#define READ_TOK()                                                                                 \
+  {                                                                                                \
+    if (!tok_read(f, buf, leavings, sizeof(leavings)))                                             \
+      break;                                                                                       \
   }
 
-#define READ_INT(var) {                         \
-    READ_TOK();                                 \
-    var = strtol(buf, NULL, 10);                \
+#define READ_INT(var)                                                                              \
+  {                                                                                                \
+    READ_TOK();                                                                                    \
+    var = strtol(buf, NULL, 10);                                                                   \
   }
 
-  const char *names[] = { "convmatr.usr",
-                          "convmatr.gen",
-                          "convmatr.def", NULL };
+  const char* names[] = { "convmatr.usr", "convmatr.gen", "convmatr.def", NULL };
   char *s, buf[256], leavings[4096];
   int i, x, y, w, h, div, bias;
   std::shared_ptr<ConvolutionMatrix> matrix;
@@ -62,7 +62,7 @@ void ConvolutionMatrixStock::reloadStock()
 
   cleanStock();
 
-  for (i=0; names[i]; i++) {
+  for (i = 0; names[i]; i++) {
     ResourceFinder rf;
     rf.includeDataDir(names[i]);
 
@@ -86,8 +86,7 @@ void ConvolutionMatrixStock::reloadStock()
         READ_INT(w);
         READ_INT(h);
 
-        if ((w <= 0) || (w > 32) ||
-            (h <= 0) || (h > 32))
+        if ((w <= 0) || (w > 32) || (h <= 0) || (h > 32))
           break;
 
         // Create the matrix data
@@ -98,21 +97,20 @@ void ConvolutionMatrixStock::reloadStock()
         READ_INT(x);
         READ_INT(y);
 
-        if ((x < 0) || (x >= w) ||
-            (y < 0) || (y >= h))
+        if ((x < 0) || (x >= w) || (y < 0) || (y >= h))
           break;
 
         matrix->setCenterX(x);
         matrix->setCenterY(y);
 
         // Data
-        READ_TOK();                    // Jump the `{' char
+        READ_TOK(); // Jump the `{' char
         if (*buf != '{')
           break;
 
         div = 0;
-        for (y=0; y<h; ++y) {
-          for (x=0; x<w; ++x) {
+        for (y = 0; y < h; ++y) {
+          for (x = 0; x < w; ++x) {
             READ_TOK();
             int value = int(strtod(buf, NULL) * ConvolutionMatrix::Precision);
             div += value;
@@ -121,7 +119,7 @@ void ConvolutionMatrixStock::reloadStock()
           }
         }
 
-        READ_TOK();                    // Jump the `}' char
+        READ_TOK(); // Jump the `}' char
         if (*buf != '}')
           break;
 
@@ -154,7 +152,7 @@ void ConvolutionMatrixStock::reloadStock()
         READ_TOK();
 
         Target target = 0;
-        for (s=buf; *s; s++) {
+        for (s = buf; *s; s++) {
           switch (*s) {
             case 'r': target |= TARGET_RED_CHANNEL; break;
             case 'g': target |= TARGET_GREEN_CHANNEL; break;
@@ -163,9 +161,7 @@ void ConvolutionMatrixStock::reloadStock()
           }
         }
 
-        if ((target & (TARGET_RED_CHANNEL |
-                       TARGET_GREEN_CHANNEL |
-                       TARGET_BLUE_CHANNEL)) != 0) {
+        if ((target & (TARGET_RED_CHANNEL | TARGET_GREEN_CHANNEL | TARGET_BLUE_CHANNEL)) != 0) {
           target |= TARGET_GRAY_CHANNEL;
         }
 

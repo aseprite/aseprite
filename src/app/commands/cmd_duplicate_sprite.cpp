@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -43,8 +43,7 @@ protected:
 };
 
 DuplicateSpriteCommand::DuplicateSpriteCommand()
-  : CommandWithNewParams<DuplicateSpriteParams>(CommandId::DuplicateSprite(),
-                                                CmdRecordableFlag)
+  : CommandWithNewParams<DuplicateSpriteParams>(CommandId::DuplicateSprite(), CmdRecordableFlag)
 {
 }
 
@@ -62,11 +61,13 @@ void DuplicateSpriteCommand::onExecute(Context* context)
 
   const std::string fn = document->filename();
   const std::string ext = base::get_file_extension(fn);
-  
-  std::string duplicateFn = params().filename.isSet() ?
-    params().filename() : base::get_file_title(fn) + " Copy" + (!ext.empty() ? "." + ext : "");
 
-  bool flatten = params().flatten.isSet() ? params().flatten() : get_config_bool("DuplicateSprite", "Flatten", false);
+  std::string duplicateFn = params().filename.isSet() ?
+                              params().filename() :
+                              base::get_file_title(fn) + " Copy" + (!ext.empty() ? "." + ext : "");
+
+  bool flatten = params().flatten.isSet() ? params().flatten() :
+                                            get_config_bool("DuplicateSprite", "Flatten", false);
 
   if (ui) {
     // Load the window widget
@@ -82,7 +83,8 @@ void DuplicateSpriteCommand::onExecute(Context* context)
       flatten = window.flatten()->isSelected();
       duplicateFn = window.dstName()->text();
 
-      // Only set the config when we do it from the UI, to avoid automation messing with user expectations.
+      // Only set the config when we do it from the UI, to avoid automation messing with user
+      // expectations.
       set_config_bool("DuplicateSprite", "Flatten", flatten);
     }
     else // Abort if we close/cancel the window

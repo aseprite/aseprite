@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/select_accelerator.h"
@@ -25,14 +25,16 @@ using namespace ui;
 
 class SelectAccelerator::KeyField : public ui::Entry {
 public:
-  KeyField(const Accelerator& accel) : ui::Entry(256, "") {
+  KeyField(const Accelerator& accel) : ui::Entry(256, "")
+  {
     setTranslateDeadKeys(false);
     setExpansive(true);
     setFocusMagnet(true);
     setAccel(accel);
   }
 
-  void setAccel(const Accelerator& accel) {
+  void setAccel(const Accelerator& accel)
+  {
     m_accel = accel;
     updateText();
   }
@@ -40,9 +42,9 @@ public:
   obs::signal<void(const ui::Accelerator*)> AccelChange;
 
 protected:
-  bool onProcessMessage(Message* msg) override {
+  bool onProcessMessage(Message* msg) override
+  {
     switch (msg->type()) {
-
       case kKeyDownMessage:
         if (hasFocus() && !isReadOnly()) {
           KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
@@ -57,8 +59,7 @@ protected:
           m_accel = Accelerator(
             modifiers,
             keymsg->scancode(),
-            keymsg->unicodeChar() > 32 ?
-              std::tolower(keymsg->unicodeChar()): 0);
+            keymsg->unicodeChar() > 32 ? std::tolower(keymsg->unicodeChar()) : 0);
 
           // Convert the accelerator to a string, and parse it
           // again. Just to obtain the exact accelerator we'll read
@@ -75,12 +76,10 @@ protected:
     return Entry::onProcessMessage(msg);
   }
 
-  void updateText() {
+  void updateText()
+  {
     setText(
-      Accelerator(
-        kKeyNoneModifier,
-        m_accel.scancode(),
-        m_accel.unicodeChar()).toString().c_str());
+      Accelerator(kKeyNoneModifier, m_accel.scancode(), m_accel.unicodeChar()).toString().c_str());
   }
 
   Accelerator m_accel;
@@ -101,17 +100,17 @@ SelectAccelerator::SelectAccelerator(const ui::Accelerator& accel,
 
   keyPlaceholder()->addChild(m_keyField);
 
-  alt()->Click.connect([this]{ onModifierChange(kKeyAltModifier, alt()); });
-  cmd()->Click.connect([this]{ onModifierChange(kKeyCmdModifier, cmd()); });
-  ctrl()->Click.connect([this]{ onModifierChange(kKeyCtrlModifier, ctrl()); });
-  shift()->Click.connect([this]{ onModifierChange(kKeyShiftModifier, shift()); });
-  space()->Click.connect([this]{ onModifierChange(kKeySpaceModifier, space()); });
-  win()->Click.connect([this]{ onModifierChange(kKeyWinModifier, win()); });
+  alt()->Click.connect([this] { onModifierChange(kKeyAltModifier, alt()); });
+  cmd()->Click.connect([this] { onModifierChange(kKeyCmdModifier, cmd()); });
+  ctrl()->Click.connect([this] { onModifierChange(kKeyCtrlModifier, ctrl()); });
+  shift()->Click.connect([this] { onModifierChange(kKeyShiftModifier, shift()); });
+  space()->Click.connect([this] { onModifierChange(kKeySpaceModifier, space()); });
+  win()->Click.connect([this] { onModifierChange(kKeyWinModifier, win()); });
 
   m_keyField->AccelChange.connect(&SelectAccelerator::onAccelChange, this);
-  clearButton()->Click.connect([this]{ onClear(); });
-  okButton()->Click.connect([this]{ onOK(); });
-  cancelButton()->Click.connect([this]{ onCancel(); });
+  clearButton()->Click.connect([this] { onClear(); });
+  okButton()->Click.connect([this] { onOK(); });
+  cancelButton()->Click.connect([this] { onCancel(); });
 
   addChild(&m_tooltipManager);
 }
@@ -166,19 +165,22 @@ void SelectAccelerator::onCancel()
 
 void SelectAccelerator::updateModifiers()
 {
-  alt()->setSelected(m_accel.modifiers() & kKeyAltModifier ? true: false);
-  ctrl()->setSelected(m_accel.modifiers() & kKeyCtrlModifier ? true: false);
-  shift()->setSelected(m_accel.modifiers() & kKeyShiftModifier ? true: false);
-  space()->setSelected(m_accel.modifiers() & kKeySpaceModifier ? true: false);
+  alt()->setSelected(m_accel.modifiers() & kKeyAltModifier ? true : false);
+  ctrl()->setSelected(m_accel.modifiers() & kKeyCtrlModifier ? true : false);
+  shift()->setSelected(m_accel.modifiers() & kKeyShiftModifier ? true : false);
+  space()->setSelected(m_accel.modifiers() & kKeySpaceModifier ? true : false);
 #if __APPLE__
   win()->setVisible(false);
-  cmd()->setSelected(m_accel.modifiers() & kKeyCmdModifier ? true: false);
+  cmd()->setSelected(m_accel.modifiers() & kKeyCmdModifier ? true : false);
 #else
   #if __linux__
-    win()->setText(kWinKeyName);
-    m_tooltipManager.addTooltipFor(win(), "Also known as Windows key, logo key,\ncommand key, or system key.", TOP);
+  win()->setText(kWinKeyName);
+  m_tooltipManager.addTooltipFor(
+    win(),
+    "Also known as Windows key, logo key,\ncommand key, or system key.",
+    TOP);
   #endif
-  win()->setSelected(m_accel.modifiers() & kKeyWinModifier ? true: false);
+  win()->setSelected(m_accel.modifiers() & kKeyWinModifier ? true : false);
   cmd()->setVisible(false);
 #endif
 }
@@ -188,8 +190,7 @@ void SelectAccelerator::updateAssignedTo()
   std::string res = "None";
 
   for (const KeyPtr& key : m_currentKeys) {
-    if (key->keycontext() == m_keyContext &&
-        key->hasAccel(m_accel)) {
+    if (key->keycontext() == m_keyContext && key->hasAccel(m_accel)) {
       res = key->triggerString();
       break;
     }

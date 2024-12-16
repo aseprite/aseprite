@@ -12,16 +12,17 @@ using namespace app;
 
 namespace app {
 
-  inline std::ostream& operator<<(std::ostream& os, const Color& color) {
-    return os << color.toString();
-  }
-
+inline std::ostream& operator<<(std::ostream& os, const Color& color)
+{
+  return os << color.toString();
 }
+
+} // namespace app
 
 TEST(Color, fromRgb)
 {
-  EXPECT_EQ( 32, Color::fromRgb(32, 16, 255).getRed());
-  EXPECT_EQ( 16, Color::fromRgb(32, 16, 255).getGreen());
+  EXPECT_EQ(32, Color::fromRgb(32, 16, 255).getRed());
+  EXPECT_EQ(16, Color::fromRgb(32, 16, 255).getGreen());
   EXPECT_EQ(255, Color::fromRgb(32, 16, 255).getBlue());
 }
 
@@ -51,6 +52,6 @@ TEST(Color, toString)
 {
   EXPECT_EQ("rgb{0,0,0,255}", Color::fromRgb(0, 0, 0).toString());
   EXPECT_EQ("rgb{32,16,255,255}", Color::fromRgb(32, 16, 255).toString());
-  EXPECT_EQ("hsv{32.00,64.00,99.00,255}", Color::fromHsv(32, 64/100.0, 99/100.0).toString());
-  EXPECT_EQ("hsl{32.00,64.00,99.00,255}", Color::fromHsl(32, 64/100.0, 99/100.0).toString());
+  EXPECT_EQ("hsv{32.00,64.00,99.00,255}", Color::fromHsv(32, 64 / 100.0, 99 / 100.0).toString());
+  EXPECT_EQ("hsl{32.00,64.00,99.00,255}", Color::fromHsl(32, 64 / 100.0, 99 / 100.0).toString());
 }

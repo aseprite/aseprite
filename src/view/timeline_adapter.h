@@ -21,7 +21,7 @@ namespace view {
 // frames/columns" <-> "real frames").
 class TimelineAdapter {
 public:
-  virtual ~TimelineAdapter() { }
+  virtual ~TimelineAdapter() {}
 
   // Total number of columns in the timeline.
   virtual col_t totalFrames() const = 0;
@@ -48,12 +48,13 @@ public:
 // visible (all frames/all layers/open groups).
 class FullSpriteTimelineAdapter : public TimelineAdapter {
 public:
-  FullSpriteTimelineAdapter(doc::Sprite* sprite) : m_sprite(sprite) { }
+  FullSpriteTimelineAdapter(doc::Sprite* sprite) : m_sprite(sprite) {}
   col_t totalFrames() const override { return col_t(m_sprite->totalFrames()); }
   int frameDuration(col_t frame) const override { return m_sprite->frameDuration(frame); }
   fr_t toRealFrame(col_t frame) const override { return fr_t(frame); }
   col_t toColFrame(fr_t frame) const override { return col_t(frame); }
   bool isViewingTag(doc::Tag*) const override { return false; }
+
 private:
   doc::Sprite* m_sprite = nullptr;
 };
@@ -61,25 +62,22 @@ private:
 // Represents an alternative timeline to show only the specified tag.
 class ShowTagTimelineAdapter : public TimelineAdapter {
 public:
-  ShowTagTimelineAdapter(doc::Sprite* sprite,
-                         doc::Tag* tag) : m_sprite(sprite)
-                                        , m_tag(tag) { }
+  ShowTagTimelineAdapter(doc::Sprite* sprite, doc::Tag* tag) : m_sprite(sprite), m_tag(tag) {}
   col_t totalFrames() const override { return col_t(m_tag->frames()); }
-  int frameDuration(col_t frame) const override {
+  int frameDuration(col_t frame) const override
+  {
     return m_sprite->frameDuration(doc::frame_t(toRealFrame(frame)));
   }
-  fr_t toRealFrame(col_t frame) const override {
-    return fr_t(frame + m_tag->fromFrame());
-  }
-  col_t toColFrame(fr_t frame) const override {
+  fr_t toRealFrame(col_t frame) const override { return fr_t(frame + m_tag->fromFrame()); }
+  col_t toColFrame(fr_t frame) const override
+  {
     if (m_tag->contains(frame))
       return col_t(frame - m_tag->fromFrame());
     else
       return kNoCol;
   }
-  bool isViewingTag(doc::Tag* tag) const override {
-    return m_tag == tag;
-  }
+  bool isViewingTag(doc::Tag* tag) const override { return m_tag == tag; }
+
 private:
   doc::Sprite* m_sprite = nullptr;
   doc::Tag* m_tag = nullptr;
@@ -87,4 +85,4 @@ private:
 
 } // namespace view
 
-#endif  // VIEW_TIMELINE_ADAPTER_H_INCLUDED
+#endif // VIEW_TIMELINE_ADAPTER_H_INCLUDED

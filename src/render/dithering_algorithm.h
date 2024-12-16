@@ -11,13 +11,13 @@
 
 namespace render {
 
-  // Dithering algorithms
-  enum class DitheringAlgorithm {
-    None,
-    Ordered,
-    Old,
-    ErrorDiffusion,
-  };
+// Dithering algorithms
+enum class DitheringAlgorithm {
+  None,
+  Ordered,
+  Old,
+  ErrorDiffusion,
+};
 
 } // namespace render
 

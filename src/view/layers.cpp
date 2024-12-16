@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "view/layers.h"
@@ -17,15 +17,12 @@ namespace view {
 
 using namespace doc;
 
-Layer* candidate_if_layer_is_deleted(
-  const Layer* selectedLayer,
-  const Layer* layerToDelete)
+Layer* candidate_if_layer_is_deleted(const Layer* selectedLayer, const Layer* layerToDelete)
 {
   const Layer* layerToSelect = selectedLayer;
 
   if ((selectedLayer == layerToDelete) ||
-      (selectedLayer &&
-       selectedLayer->hasAncestor(layerToDelete))) {
+      (selectedLayer && selectedLayer->hasAncestor(layerToDelete))) {
     Sprite* sprite = selectedLayer->sprite();
     LayerGroup* parent = layerToDelete->parent();
 

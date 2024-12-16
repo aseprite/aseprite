@@ -5,45 +5,45 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/drop_on_timeline.h"
 
 #include "app/cmd/add_layer.h"
-#include "app/cmd/set_pixel_format.h"
 #include "app/cmd/move_cel.h"
-#include "app/context_flags.h"
+#include "app/cmd/set_pixel_format.h"
 #include "app/console.h"
+#include "app/context_flags.h"
 #include "app/doc.h"
 #include "app/doc_event.h"
 #include "app/file/file.h"
+#include "app/tx.h"
 #include "app/util/layer_utils.h"
 #include "app/util/open_file_job.h"
-#include "app/tx.h"
 #include "doc/layer_list.h"
 #include "render/dithering.h"
 
 #include <algorithm>
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 DropOnTimeline::DropOnTimeline(app::Doc* doc,
                                doc::frame_t frame,
                                doc::layer_t layerIndex,
                                InsertionPoint insert,
                                DroppedOn droppedOn,
-                               const base::paths& paths) : WithDocument(doc)
-                                                         , m_size(0)
-                                                         , m_paths(paths)
-                                                         , m_frame(frame)
-                                                         , m_layerIndex(layerIndex)
-                                                         , m_insert(insert)
-                                                         , m_droppedOn(droppedOn)
+                               const base::paths& paths)
+  : WithDocument(doc)
+  , m_size(0)
+  , m_paths(paths)
+  , m_frame(frame)
+  , m_layerIndex(layerIndex)
+  , m_insert(insert)
+  , m_droppedOn(droppedOn)
 {
   ASSERT(m_layerIndex >= 0);
-  for(const auto& path : m_paths)
+  for (const auto& path : m_paths)
     m_size += path.size();
 }
 
@@ -52,13 +52,14 @@ DropOnTimeline::DropOnTimeline(app::Doc* doc,
                                doc::layer_t layerIndex,
                                InsertionPoint insert,
                                DroppedOn droppedOn,
-                               const doc::ImageRef& image) : WithDocument(doc)
-                                                         , m_size(0)
-                                                         , m_image(image)
-                                                         , m_frame(frame)
-                                                         , m_layerIndex(layerIndex)
-                                                         , m_insert(insert)
-                                                         , m_droppedOn(droppedOn)
+                               const doc::ImageRef& image)
+  : WithDocument(doc)
+  , m_size(0)
+  , m_image(image)
+  , m_frame(frame)
+  , m_layerIndex(layerIndex)
+  , m_insert(insert)
+  , m_droppedOn(droppedOn)
 {
   ASSERT(m_layerIndex >= 0);
 }
@@ -66,7 +67,7 @@ DropOnTimeline::DropOnTimeline(app::Doc* doc,
 void DropOnTimeline::setupInsertionLayer(Layer** layer, LayerGroup** group)
 {
   const LayerList& allLayers = document()->sprite()->allLayers();
-  *layer  = allLayers[m_layerIndex];
+  *layer = allLayers[m_layerIndex];
   if (m_insert == InsertionPoint::BeforeLayer && (*layer)->isGroup()) {
     *group = static_cast<LayerGroup*>(*layer);
     // The user is trying to drop layers into an empty group, so there is no after
@@ -79,7 +80,7 @@ void DropOnTimeline::setupInsertionLayer(Layer** layer, LayerGroup** group)
     m_insert = InsertionPoint::AfterLayer;
   }
 
-  *group  = (*layer)->parent();
+  *group = (*layer)->parent();
 }
 
 bool DropOnTimeline::hasPendingWork()
@@ -106,11 +107,10 @@ bool DropOnTimeline::getNextDocFromPaths(Doc** srcDoc)
 {
   Console console;
   Context* context = document()->context();
-  int flags = FILE_LOAD_DATA_FILE | FILE_LOAD_AVOID_BACKGROUND_LAYER |
-              FILE_LOAD_CREATE_PALETTE | FILE_LOAD_SEQUENCE_YES;
+  int flags = FILE_LOAD_DATA_FILE | FILE_LOAD_AVOID_BACKGROUND_LAYER | FILE_LOAD_CREATE_PALETTE |
+              FILE_LOAD_SEQUENCE_YES;
 
-  std::unique_ptr<FileOp> fop(
-    FileOp::createLoadDocumentOperation(context, m_paths.front(), flags));
+  std::unique_ptr<FileOp> fop(FileOp::createLoadDocumentOperation(context, m_paths.front(), flags));
   // Remove the path that is currently being processed
   m_paths.erase(m_paths.begin());
 
@@ -161,7 +161,7 @@ void DropOnTimeline::onExecute()
   m_previousTotalFrames = destDoc->sprite()->totalFrames();
 
   int docsProcessed = 0;
-  while(hasPendingWork()) {
+  while (hasPendingWork()) {
     Doc* srcDoc;
     if (!getNextDoc(&srcDoc))
       return;
@@ -174,13 +174,13 @@ void DropOnTimeline::onExecute()
         // Execute in a source doc transaction because we don't need undo/redo
         // this.
         Tx tx(srcDoc);
-        tx(new cmd::SetPixelFormat(
-          srcDoc->sprite(), destDoc->sprite()->pixelFormat(),
-          render::Dithering(),
-          Preferences::instance().quantization.rgbmapAlgorithm(),
-          nullptr,
-          nullptr,
-          FitCriteria::DEFAULT));
+        tx(new cmd::SetPixelFormat(srcDoc->sprite(),
+                                   destDoc->sprite()->pixelFormat(),
+                                   render::Dithering(),
+                                   Preferences::instance().quantization.rgbmapAlgorithm(),
+                                   nullptr,
+                                   nullptr,
+                                   FitCriteria::DEFAULT));
         tx.commit();
       }
 
@@ -197,8 +197,8 @@ void DropOnTimeline::onExecute()
 
       // If there is no room for the source frames, add frames to the
       // destination sprite.
-      if (m_frame+srcDoc->sprite()->totalFrames() > destDoc->sprite()->totalFrames()) {
-        destDoc->sprite()->setTotalFrames(m_frame+srcDoc->sprite()->totalFrames());
+      if (m_frame + srcDoc->sprite()->totalFrames() > destDoc->sprite()->totalFrames()) {
+        destDoc->sprite()->setTotalFrames(m_frame + srcDoc->sprite()->totalFrames());
       }
 
       // Save dropped layers from source document.
@@ -314,11 +314,8 @@ bool DropOnTimeline::canMoveCelFrom(app::Doc* srcDoc)
 {
   auto* srcLayer = srcDoc->sprite()->firstLayer();
   auto* destLayer = document()->sprite()->allLayers()[m_layerIndex];
-  return m_droppedOn == DroppedOn::Cel &&
-         srcDoc->sprite()->allLayersCount() == 1 &&
-         srcDoc->sprite()->totalFrames() == 1 &&
-         srcLayer->isImage() &&
-         destLayer->isImage();
+  return m_droppedOn == DroppedOn::Cel && srcDoc->sprite()->allLayersCount() == 1 &&
+         srcDoc->sprite()->totalFrames() == 1 && srcLayer->isImage() && destLayer->isImage();
 }
 
 void DropOnTimeline::notifyDocObservers(Layer* layer)
@@ -341,5 +338,4 @@ void DropOnTimeline::notifyDocObservers(Layer* layer)
   doc->notify_observers<DocEvent&>(&DocObserver::onAfterRemoveLayer, ev);
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

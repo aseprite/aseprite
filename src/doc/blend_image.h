@@ -13,17 +13,17 @@
 #include "gfx/fwd.h"
 
 namespace doc {
-  class Image;
-  class Palette;
+class Image;
+class Palette;
 
-  void blend_image(Image* dst,
-                   const Image* src,
-                   gfx::Clip area,
-                   // For indexed color mode
-                   const Palette* pal,
-                   // For grayscale/RGB color modes
-                   const int opacity,
-                   const doc::BlendMode blendMode);
+void blend_image(Image* dst,
+                 const Image* src,
+                 gfx::Clip area,
+                 // For indexed color mode
+                 const Palette* pal,
+                 // For grayscale/RGB color modes
+                 const int opacity,
+                 const doc::BlendMode blendMode);
 
 } // namespace doc
 

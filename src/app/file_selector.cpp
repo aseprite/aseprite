@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/file_selector.h"
@@ -26,16 +26,14 @@
 
 namespace app {
 
-bool show_file_selector(
-  const std::string& title,
-  const std::string& initialPath,
-  const base::paths& extensions,
-  FileSelectorType type,
-  base::paths& output)
+bool show_file_selector(const std::string& title,
+                        const std::string& initialPath,
+                        const base::paths& extensions,
+                        FileSelectorType type,
+                        base::paths& output)
 {
   const os::SystemRef system = os::System::instance();
-  const std::string defExtension =
-    Preferences::instance().saveFile.defaultExtension();
+  const std::string defExtension = Preferences::instance().saveFile.defaultExtension();
 
   if (Preferences::instance().experimental.useNativeFileDialog()) {
     dlgs::FileDialog::Spec spec;
@@ -43,9 +41,7 @@ bool show_file_selector(
 #if LAF_MACOS
     // Setup the standard "Edit" item for macOS
     auto* editItem = AppMenuItem::GetStandardEditMenu();
-    if (editItem &&
-        editItem->native() &&
-        editItem->native()->menuItem) {
+    if (editItem && editItem->native() && editItem->native()->menuItem) {
       spec.editNSMenuItem = editItem->native()->menuItem->nativeHandle();
     }
 #elif LAF_LINUX
@@ -70,21 +66,15 @@ bool show_file_selector(
       // navigating, we use our own
       // get_initial_path_to_select_filename()
       dlg->setFileName(get_initial_path_to_select_filename(initialPath));
-#else  // !LAF_LINUX
+#else // !LAF_LINUX
       dlg->setFileName(initialPath);
 #endif
 
       dlgs::FileDialog::Type nativeType = dlgs::FileDialog::Type::OpenFile;
       switch (type) {
-        case FileSelectorType::Open:
-          nativeType = dlgs::FileDialog::Type::OpenFile;
-          break;
-        case FileSelectorType::OpenMultiple:
-          nativeType = dlgs::FileDialog::Type::OpenFiles;
-          break;
-        case FileSelectorType::Save:
-          nativeType = dlgs::FileDialog::Type::SaveFile;
-          break;
+        case FileSelectorType::Open:         nativeType = dlgs::FileDialog::Type::OpenFile; break;
+        case FileSelectorType::OpenMultiple: nativeType = dlgs::FileDialog::Type::OpenFiles; break;
+        case FileSelectorType::Save:         nativeType = dlgs::FileDialog::Type::SaveFile; break;
       }
       dlg->setType(nativeType);
 

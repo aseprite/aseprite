@@ -13,92 +13,92 @@
 
 namespace render {
 
-  class Zoom {
-  public:
-    Zoom(int num, int den);
+class Zoom {
+public:
+  Zoom(int num, int den);
 
-    double scale() const {
-      return static_cast<double>(m_num) / static_cast<double>(m_den);
-    }
+  double scale() const { return static_cast<double>(m_num) / static_cast<double>(m_den); }
 
-    // This value isn't used in operator==() or operator!=()
-    double internalScale() const {
-      return m_internalScale;
-    }
+  // This value isn't used in operator==() or operator!=()
+  double internalScale() const { return m_internalScale; }
 
-    template<typename T>
-    T apply(T x) const { return (x * m_num / m_den); }
+  template<typename T>
+  T apply(T x) const
+  {
+    return (x * m_num / m_den);
+  }
 
-    template<typename T>
-    T remove(T x) const { return (x * m_den / m_num); }
-
-    int removeCeiling(int x) const;
-
-    gfx::Rect apply(const gfx::Rect& r) const;
-    gfx::Rect remove(const gfx::Rect& r) const;
-
-    bool in();
-    bool out();
-
-    // Returns an linear zoom scale. This position can be incremented
-    // or decremented to get a new zoom value.
-    int linearScale() const;
-
-    bool operator==(const Zoom& other) const {
-      return m_num == other.m_num && m_den == other.m_den;
-    }
-
-    bool operator!=(const Zoom& other) const {
-      return !operator==(other);
-    }
-
-    // Returns true if this zoom level can be handled by simpler
-    // rendering techniques.
-    bool isSimpleZoomLevel() const {
-      return (m_num == 1 || m_den == 1);
-    }
-
-    static Zoom fromScale(double scale);
-    static Zoom fromLinearScale(int i);
-    static int linearValues();
-
-  private:
-    static int findClosestLinearScale(double scale);
-
-    int m_num;
-    int m_den;
-
-    // Internal scale value used for precise zooming purposes.
-    double m_internalScale;
-  };
-
-  template<>
-  inline int Zoom::remove(int x) const {
-    if (x < 0)
-      return (x * m_den / m_num) - 1;
+  template<typename T>
+  T remove(T x) const
+  {
     return (x * m_den / m_num);
   }
 
-  inline int Zoom::removeCeiling(int x) const {
-    int v = x * m_den;
-    if (x < 0)
-      return (v / m_num);
-    return (v / m_num) + (v % m_num != 0);
-  }
+  int removeCeiling(int x) const;
 
-  inline gfx::Rect Zoom::apply(const gfx::Rect& r) const {
-    return gfx::Rect(
-      apply(r.x), apply(r.y),
-      apply(r.x+r.w) - apply(r.x),
-      apply(r.y+r.h) - apply(r.y));
-  }
+  gfx::Rect apply(const gfx::Rect& r) const;
+  gfx::Rect remove(const gfx::Rect& r) const;
 
-  inline gfx::Rect Zoom::remove(const gfx::Rect& r) const {
-    return gfx::Rect(
-      remove(r.x), remove(r.y),
-      remove(r.x+r.w) - remove(r.x),
-      remove(r.y+r.h) - remove(r.y));
-  }
+  bool in();
+  bool out();
+
+  // Returns an linear zoom scale. This position can be incremented
+  // or decremented to get a new zoom value.
+  int linearScale() const;
+
+  bool operator==(const Zoom& other) const { return m_num == other.m_num && m_den == other.m_den; }
+
+  bool operator!=(const Zoom& other) const { return !operator==(other); }
+
+  // Returns true if this zoom level can be handled by simpler
+  // rendering techniques.
+  bool isSimpleZoomLevel() const { return (m_num == 1 || m_den == 1); }
+
+  static Zoom fromScale(double scale);
+  static Zoom fromLinearScale(int i);
+  static int linearValues();
+
+private:
+  static int findClosestLinearScale(double scale);
+
+  int m_num;
+  int m_den;
+
+  // Internal scale value used for precise zooming purposes.
+  double m_internalScale;
+};
+
+template<>
+inline int Zoom::remove(int x) const
+{
+  if (x < 0)
+    return (x * m_den / m_num) - 1;
+  return (x * m_den / m_num);
+}
+
+inline int Zoom::removeCeiling(int x) const
+{
+  int v = x * m_den;
+  if (x < 0)
+    return (v / m_num);
+  return (v / m_num) + (v % m_num != 0);
+}
+
+inline gfx::Rect Zoom::apply(const gfx::Rect& r) const
+{
+  return gfx::Rect(apply(r.x),
+                   apply(r.y),
+                   apply(r.x + r.w) - apply(r.x),
+                   apply(r.y + r.h) - apply(r.y));
+}
+
+inline gfx::Rect Zoom::remove(const gfx::Rect& r) const
+{
+  return gfx::Rect(remove(r.x),
+                   remove(r.y),
+                   remove(r.x + r.w) - remove(r.x),
+                   remove(r.y + r.h) - remove(r.y));
+}
 
 } // namespace render
 

@@ -18,60 +18,60 @@
 #include "slice_properties.xml.h"
 
 namespace doc {
-  class Slice;
-  class Sprite;
-}
+class Slice;
+class Sprite;
+} // namespace doc
 
 namespace app {
 
-  class SliceWindow : protected app::gen::SliceProperties {
-  public:
-    enum Mods {
-      kNone          = 0x0000,
-      kName          = 0x0001,
-      kBoundsX       = 0x0002,
-      kBoundsY       = 0x0004,
-      kBoundsW       = 0x0008,
-      kBoundsH       = 0x0010,
-      kCenterX       = 0x0020,
-      kCenterY       = 0x0040,
-      kCenterW       = 0x0080,
-      kCenterH       = 0x0100,
-      kPivotX        = 0x0200,
-      kPivotY        = 0x0400,
-      kUserData      = 0x0800,
-      kAll           = 0xffff,
-    };
-
-    SliceWindow(const doc::Sprite* sprite,
-                const doc::SelectedObjects& slices,
-                const doc::frame_t frame);
-
-    bool show();
-
-    std::string nameValue() const;
-    gfx::Rect boundsValue() const;
-    gfx::Rect centerValue() const;
-    gfx::Point pivotValue() const;
-    const doc::UserData& userDataValue() const { return m_userDataView.userData(); }
-
-    Mods modifiedFields() const { return m_mods; }
-
-  private:
-    void onCenterChange();
-    void onPivotChange();
-    void onToggleUserData();
-    void onModifyField(ui::Entry* entry, const Mods mods);
-    void onPossibleColorChange();
-
-    // Flags used to know what specific entry/checkbox was modified
-    // when we edit multiple-slices in the same property dialog. In
-    // this way we know what field modify of each slice in
-    // SlicePropertiesCommand::onExecute().
-    Mods m_mods;
-    UserDataView m_userDataView;
+class SliceWindow : protected app::gen::SliceProperties {
+public:
+  enum Mods {
+    kNone = 0x0000,
+    kName = 0x0001,
+    kBoundsX = 0x0002,
+    kBoundsY = 0x0004,
+    kBoundsW = 0x0008,
+    kBoundsH = 0x0010,
+    kCenterX = 0x0020,
+    kCenterY = 0x0040,
+    kCenterW = 0x0080,
+    kCenterH = 0x0100,
+    kPivotX = 0x0200,
+    kPivotY = 0x0400,
+    kUserData = 0x0800,
+    kAll = 0xffff,
   };
 
-}
+  SliceWindow(const doc::Sprite* sprite,
+              const doc::SelectedObjects& slices,
+              const doc::frame_t frame);
+
+  bool show();
+
+  std::string nameValue() const;
+  gfx::Rect boundsValue() const;
+  gfx::Rect centerValue() const;
+  gfx::Point pivotValue() const;
+  const doc::UserData& userDataValue() const { return m_userDataView.userData(); }
+
+  Mods modifiedFields() const { return m_mods; }
+
+private:
+  void onCenterChange();
+  void onPivotChange();
+  void onToggleUserData();
+  void onModifyField(ui::Entry* entry, const Mods mods);
+  void onPossibleColorChange();
+
+  // Flags used to know what specific entry/checkbox was modified
+  // when we edit multiple-slices in the same property dialog. In
+  // this way we know what field modify of each slice in
+  // SlicePropertiesCommand::onExecute().
+  Mods m_mods;
+  UserDataView m_userDataView;
+};
+
+} // namespace app
 
 #endif

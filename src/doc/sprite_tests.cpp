@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include <gtest/gtest.h>
@@ -23,8 +23,7 @@ using namespace doc;
 
 TEST(Sprite, Layers)
 {
-  std::shared_ptr<Sprite> sprPtr(std::make_shared<Sprite>(
-                                   ImageSpec(ColorMode::RGB, 32, 32), 256));
+  std::shared_ptr<Sprite> sprPtr(std::make_shared<Sprite>(ImageSpec(ColorMode::RGB, 32, 32), 256));
   Sprite* spr = sprPtr.get();
 
   LayerImage* lay1 = new LayerImage(spr);
@@ -42,14 +41,30 @@ TEST(Sprite, Layers)
   lay5->setVisible(false);
   grp2->setCollapsed(true);
 
-  ;; grp2->addLayer(lay5);
-  ;;;; grp3->addLayer(lay7);
-  ;;;; grp3->addLayer(lay6);
-  ;; grp2->addLayer(grp3);
+  ;
+  ;
+  grp2->addLayer(lay5);
+  ;
+  ;
+  ;
+  ;
+  grp3->addLayer(lay7);
+  ;
+  ;
+  ;
+  ;
+  grp3->addLayer(lay6);
+  ;
+  ;
+  grp2->addLayer(grp3);
   spr->root()->addLayer(grp2);
   spr->root()->addLayer(lay2);
-  ;; grp1->addLayer(lay4);
-  ;; grp1->addLayer(lay3);
+  ;
+  ;
+  grp1->addLayer(lay4);
+  ;
+  ;
+  grp1->addLayer(lay3);
   spr->root()->addLayer(grp1);
   spr->root()->addLayer(lay1);
 
@@ -94,8 +109,7 @@ TEST(Sprite, Layers)
 //   - lay3:  F G~H
 TEST(Sprite, CelsRange)
 {
-  std::shared_ptr<Sprite> sprPtr(std::make_shared<Sprite>(
-                                   ImageSpec(ColorMode::RGB, 32, 32), 256));
+  std::shared_ptr<Sprite> sprPtr(std::make_shared<Sprite>(ImageSpec(ColorMode::RGB, 32, 32), 256));
   Sprite* spr = sprPtr.get();
   spr->setTotalFrames(3);
 

@@ -20,108 +20,108 @@
 #include <string>
 
 namespace app {
-  using namespace doc;
+using namespace doc;
 
-  class Cmd;
-  class CmdTransaction;
-  class Context;
-  class DocUndoObserver;
+class Cmd;
+class CmdTransaction;
+class Context;
+class DocUndoObserver;
 
-  // Exception thrown when we want to modify the sprite (add new
-  // app::Cmd objects) when we are undoing/redoing/moving throw the
-  // undo history.
-  class CannotModifyWhenUndoingException : public base::Exception {
-  public:
-    CannotModifyWhenUndoingException() throw()
-    : base::Exception("Cannot modify the sprite when we are undoing/redoing an action.") { }
-  };
+// Exception thrown when we want to modify the sprite (add new
+// app::Cmd objects) when we are undoing/redoing/moving throw the
+// undo history.
+class CannotModifyWhenUndoingException : public base::Exception {
+public:
+  CannotModifyWhenUndoingException() throw()
+    : base::Exception("Cannot modify the sprite when we are undoing/redoing an action.")
+  {
+  }
+};
 
-  class DocUndo : public obs::observable<DocUndoObserver>,
-                  public undo::UndoHistoryDelegate {
-  public:
-    DocUndo();
+class DocUndo : public obs::observable<DocUndoObserver>,
+                public undo::UndoHistoryDelegate {
+public:
+  DocUndo();
 
-    size_t totalUndoSize() const { return m_totalUndoSize; }
+  size_t totalUndoSize() const { return m_totalUndoSize; }
 
-    void setContext(Context* ctx);
+  void setContext(Context* ctx);
 
-    void add(CmdTransaction* cmd);
+  void add(CmdTransaction* cmd);
 
-    bool canUndo() const;
-    bool canRedo() const;
-    void undo();
-    void redo();
+  bool canUndo() const;
+  bool canRedo() const;
+  void undo();
+  void redo();
 
-    void clearRedo();
+  void clearRedo();
 
-    // Returns true we are in the UndoState that matches the sprite
-    // version on the disk (or we are in a similar state that doesn't
-    // modify that same state, e.g. if the current state modifies the
-    // selection but not the pixels, we are in a similar state)
-    bool isInSavedStateOrSimilar() const;
+  // Returns true we are in the UndoState that matches the sprite
+  // version on the disk (or we are in a similar state that doesn't
+  // modify that same state, e.g. if the current state modifies the
+  // selection but not the pixels, we are in a similar state)
+  bool isInSavedStateOrSimilar() const;
 
-    // Returns true if the saved state was lost, e.g. because we
-    // deleted the redo history and the saved state was there.
-    bool isSavedStateIsLost() const { return m_savedStateIsLost; }
+  // Returns true if the saved state was lost, e.g. because we
+  // deleted the redo history and the saved state was there.
+  bool isSavedStateIsLost() const { return m_savedStateIsLost; }
 
-    // Marks current UndoState as the one that matches the sprite on
-    // the disk (this is used after saving the file).
-    void markSavedState();
+  // Marks current UndoState as the one that matches the sprite on
+  // the disk (this is used after saving the file).
+  void markSavedState();
 
-    // Indicates that now it's impossible to back to the version of
-    // the sprite that matches the saved version. This can be because
-    // the save process fails or because we deleted the redo history
-    // where the saved state was available.
-    void impossibleToBackToSavedState();
+  // Indicates that now it's impossible to back to the version of
+  // the sprite that matches the saved version. This can be because
+  // the save process fails or because we deleted the redo history
+  // where the saved state was available.
+  void impossibleToBackToSavedState();
 
-    // Returns the position in the undo history where this sprite was
-    // saved, if this is nullptr, it means that the initial state is
-    // the saved state (if m_savedStateIsLost is false) or it means
-    // that there is no saved state (ifm_savedStateIsLost is true)
-    const undo::UndoState* savedState() const {
-      return m_savedState;
-    }
+  // Returns the position in the undo history where this sprite was
+  // saved, if this is nullptr, it means that the initial state is
+  // the saved state (if m_savedStateIsLost is false) or it means
+  // that there is no saved state (ifm_savedStateIsLost is true)
+  const undo::UndoState* savedState() const { return m_savedState; }
 
-    std::string nextUndoLabel() const;
-    std::string nextRedoLabel() const;
+  std::string nextUndoLabel() const;
+  std::string nextRedoLabel() const;
 
-    SpritePosition nextUndoSpritePosition() const;
-    SpritePosition nextRedoSpritePosition() const;
-    std::istream* nextUndoDocRange() const;
-    std::istream* nextRedoDocRange() const;
+  SpritePosition nextUndoSpritePosition() const;
+  SpritePosition nextRedoSpritePosition() const;
+  std::istream* nextUndoDocRange() const;
+  std::istream* nextRedoDocRange() const;
 
-    Cmd* lastExecutedCmd() const;
+  Cmd* lastExecutedCmd() const;
 
-    const undo::UndoState* firstState() const   { return m_undoHistory.firstState(); }
-    const undo::UndoState* lastState() const    { return m_undoHistory.lastState(); }
-    const undo::UndoState* currentState() const { return m_undoHistory.currentState(); }
+  const undo::UndoState* firstState() const { return m_undoHistory.firstState(); }
+  const undo::UndoState* lastState() const { return m_undoHistory.lastState(); }
+  const undo::UndoState* currentState() const { return m_undoHistory.currentState(); }
 
-    bool isUndoing() const { return m_undoing; }
+  bool isUndoing() const { return m_undoing; }
 
-    void moveToState(const undo::UndoState* state);
+  void moveToState(const undo::UndoState* state);
 
-  private:
-    const undo::UndoState* nextUndo() const;
-    const undo::UndoState* nextRedo() const;
+private:
+  const undo::UndoState* nextUndo() const;
+  const undo::UndoState* nextRedo() const;
 
-    // undo::UndoHistoryDelegate impl
-    void onDeleteUndoState(undo::UndoState* state) override;
+  // undo::UndoHistoryDelegate impl
+  void onDeleteUndoState(undo::UndoState* state) override;
 
-    undo::UndoHistory m_undoHistory;
-    const undo::UndoState* m_savedState = nullptr;
-    Context* m_ctx = nullptr;
-    size_t m_totalUndoSize = 0;
+  undo::UndoHistory m_undoHistory;
+  const undo::UndoState* m_savedState = nullptr;
+  Context* m_ctx = nullptr;
+  size_t m_totalUndoSize = 0;
 
-    // True when we are undoing/redoing. Used to avoid adding new undo
-    // information when we are moving through the undo history.
-    bool m_undoing = false;
+  // True when we are undoing/redoing. Used to avoid adding new undo
+  // information when we are moving through the undo history.
+  bool m_undoing = false;
 
-    // True if the saved state was invalidated/corrupted/lost in some
-    // way. E.g. If the save process fails.
-    bool m_savedStateIsLost = false;
+  // True if the saved state was invalidated/corrupted/lost in some
+  // way. E.g. If the save process fails.
+  bool m_savedStateIsLost = false;
 
-    DISABLE_COPYING(DocUndo);
-  };
+  DISABLE_COPYING(DocUndo);
+};
 
 } // namespace app
 

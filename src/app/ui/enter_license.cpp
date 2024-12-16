@@ -5,9 +5,8 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
-
 
 #include "app/i18n/strings.h"
 #include "app/resource_finder.h"
@@ -33,10 +32,7 @@ EnterLicense::EnterLicense() : m_timer(500, this), m_activationInProgress(false)
   });
 
   okButton()->setEnabled(false);
-  okButton()->Click.connect([this]() {
-    startActivation();
-  });
-
+  okButton()->Click.connect([this]() { startActivation(); });
 
   m_timer.start();
 }
@@ -50,18 +46,14 @@ void EnterLicense::onBeforeClose(ui::CloseEvent& ev)
 
 void EnterLicense::onActivationFailed(drm::LicenseManager::ActivationException& e)
 {
-  ui::execute_from_ui_thread([this, e]() {
-    showError(e.what());
-  });
+  ui::execute_from_ui_thread([this, e]() { showError(e.what()); });
 }
 
 void EnterLicense::onActivated(std::string token)
 {
   drm::LicenseManager::instance()->saveToken(token);
 
-  ui::execute_from_ui_thread([this]() {
-    showSuccess();
-  });
+  ui::execute_from_ui_thread([this]() { showSuccess(); });
 }
 
 void EnterLicense::startActivation()
@@ -83,7 +75,6 @@ void EnterLicense::startActivation()
     }
   });
 }
-
 
 void EnterLicense::showError(const std::string& msg)
 {
@@ -110,4 +101,4 @@ void EnterLicense::showSuccess()
   m_activationInProgress = false;
 }
 
-}
+} // namespace app

@@ -5,15 +5,15 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/grid_io.h"
 
 #include "base/serialization.h"
+#include "doc/grid.h"
 #include "doc/image.h"
 #include "doc/image_io.h"
-#include "doc/grid.h"
 
 #include <iostream>
 

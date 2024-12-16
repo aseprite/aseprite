@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/tools/point_shape.h"
@@ -20,8 +20,7 @@
 
 #include <algorithm>
 
-namespace app {
-namespace tools {
+namespace app { namespace tools {
 
 using namespace doc;
 using namespace filters;
@@ -45,7 +44,7 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
 
   // Tiled in Y axis
   if (int(tiledMode) & int(TiledMode::Y_AXIS)) {
-    size = dsth;      // size = image height
+    size = dsth; // size = image height
     y = wrap_value(y, size);
   }
   else if (y < 0 || y >= dsth) {
@@ -57,39 +56,38 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
     if (x1 > x2)
       return;
 
-    size = dstw;      // size = image width
-    w = x2-x1+1;
+    size = dstw; // size = image width
+    w = x2 - x1 + 1;
     if (w >= size)
-      ink->inkHline(0, y, size-1, loop);
+      ink->inkHline(0, y, size - 1, loop);
     else {
       x = wrap_value(x1, dstw);
-      if (x+w <= dstw) {
+      if (x + w <= dstw) {
         // Here we asure that tile limit line does not bisect the current
         // scanline, i.e. the scanline is enterely contained inside the tile.
         ink->prepareUForPointShapeWholeScanline(loop, x1);
-        ink->inkHline(x, y, x+w-1, loop);
+        ink->inkHline(x, y, x + w - 1, loop);
       }
       else {
         // Here the tile limit line bisect the current scanline.
         // So we need to execute TWO times the inkHline function, each one with a different m_u.
-        ink->prepareUForPointShapeSlicedScanline(loop, true, x1);// true = left slice
-        ink->inkHline(x, y, size-1, loop);
+        ink->prepareUForPointShapeSlicedScanline(loop, true, x1); // true = left slice
+        ink->inkHline(x, y, size - 1, loop);
 
-        ink->prepareUForPointShapeSlicedScanline(loop, false, x1);// false = right slice
-        ink->inkHline(0, y, w-(size-x)-1, loop);
+        ink->prepareUForPointShapeSlicedScanline(loop, false, x1); // false = right slice
+        ink->inkHline(0, y, w - (size - x) - 1, loop);
       }
     }
   }
   // Clipped in X axis
   else {
-    if (x2 < 0 || x1 >= dstw || x2-x1+1 < 1)
+    if (x2 < 0 || x1 >= dstw || x2 - x1 + 1 < 1)
       return;
 
-    x1 = std::clamp(x1, 0, dstw-1);
-    x2 = std::clamp(x2, 0, dstw-1);
+    x1 = std::clamp(x1, 0, dstw - 1);
+    x2 = std::clamp(x2, 0, dstw - 1);
     ink->inkHline(x1, y, x2, loop);
   }
 }
 
-} // namespace tools
-} // namespace app
+}} // namespace app::tools

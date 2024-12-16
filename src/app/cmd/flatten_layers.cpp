@@ -6,24 +6,24 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/flatten_layers.h"
 
-#include "app/cmd/add_layer.h"
 #include "app/cmd/add_cel.h"
+#include "app/cmd/add_layer.h"
 #include "app/cmd/configure_background.h"
 #include "app/cmd/move_layer.h"
-#include "app/cmd/remove_layer.h"
 #include "app/cmd/remove_cel.h"
+#include "app/cmd/remove_layer.h"
 #include "app/cmd/replace_image.h"
+#include "app/cmd/set_cel_opacity.h"
+#include "app/cmd/set_cel_position.h"
+#include "app/cmd/set_cel_zindex.h"
+#include "app/cmd/set_layer_blend_mode.h"
 #include "app/cmd/set_layer_name.h"
 #include "app/cmd/set_layer_opacity.h"
-#include "app/cmd/set_layer_blend_mode.h"
-#include "app/cmd/set_cel_opacity.h"
-#include "app/cmd/set_cel_zindex.h"
-#include "app/cmd/set_cel_position.h"
 #include "app/cmd/unlink_cel.h"
 #include "app/doc.h"
 #include "app/i18n/strings.h"
@@ -37,8 +37,7 @@
 
 #include <algorithm>
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 FlattenLayers::FlattenLayers(doc::Sprite* sprite,
                              const doc::SelectedLayers& layers0,
@@ -72,14 +71,14 @@ void FlattenLayers::onExecute()
 
   LayerList list = layers.toBrowsableLayerList();
   if (list.empty())
-    return;                     // Do nothing
+    return; // Do nothing
 
   // Set the drawable area to a union of all cel bounds
   // when this option is enabled
   ImageSpec spec = sprite->spec();
   gfx::Rect area;
   if (m_options.dynamicCanvas) {
-    for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
+    for (frame_t frame(0); frame < sprite->totalFrames(); ++frame) {
       for (Layer* layer : layers) {
         Cel* cel = layer->cel(frame);
         if (cel)
@@ -96,8 +95,8 @@ void FlattenLayers::onExecute()
   // Create a temporary image.
   ImageRef image(Image::create(spec));
 
-  LayerImage* flatLayer;  // The layer onto which everything will be flattened.
-  color_t bgcolor;        // The background color to use for flatLayer.
+  LayerImage* flatLayer; // The layer onto which everything will be flattened.
+  color_t bgcolor;       // The background color to use for flatLayer.
   bool newFlatLayer = false;
 
   flatLayer = sprite->backgroundLayer();
@@ -136,15 +135,14 @@ void FlattenLayers::onExecute()
     const gfx::ClipF area_to_image(0, 0, area);
 
     // Copy all frames to the background.
-    for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
+    for (frame_t frame(0); frame < sprite->totalFrames(); ++frame) {
       // If the flatLayer is the only cel in this frame, we can skip
       // this frame to keep existing links in the flatLayer.
-      const bool anotherCelExists =
-        std::any_of(visibleLayers.begin(),
-                    visibleLayers.end(),
-                    [flatLayer, frame](const Layer* other) {
-                      return (flatLayer != other && other->cel(frame));
-                    });
+      const bool anotherCelExists = std::any_of(visibleLayers.begin(),
+                                                visibleLayers.end(),
+                                                [flatLayer, frame](const Layer* other) {
+                                                  return (flatLayer != other && other->cel(frame));
+                                                });
       if (!anotherCelExists)
         continue;
 
@@ -154,9 +152,11 @@ void FlattenLayers::onExecute()
 
       // Get exact bounds for rendered frame
       gfx::Rect bounds = image->bounds();
-      const bool shrink = doc::algorithm::shrink_bounds(
-        image.get(), image->maskColor(), nullptr,
-        image->bounds(), bounds);
+      const bool shrink = doc::algorithm::shrink_bounds(image.get(),
+                                                        image->maskColor(),
+                                                        nullptr,
+                                                        image->bounds(),
+                                                        bounds);
 
       // Skip when fully transparent
       Cel* cel = flatLayer->cel(frame);
@@ -168,12 +168,10 @@ void FlattenLayers::onExecute()
       }
 
       // Apply shrunk bounds to new image
-      const ImageRef new_image(doc::crop_image(
-        image.get(), bounds, image->maskColor()));
+      const ImageRef new_image(doc::crop_image(image.get(), bounds, image->maskColor()));
 
       // Replace image on existing cel
       if (cel) {
-
         // TODO Keep cel links when possible
 
         if (cel->links())
@@ -190,8 +188,7 @@ void FlattenLayers::onExecute()
           if (cel->zIndex() != 0)
             executeAndAdd(new cmd::SetCelZIndex(cel, 0));
 
-          executeAndAdd(new cmd::SetCelPosition(cel,
-            area.x+bounds.x, area.y+bounds.y));
+          executeAndAdd(new cmd::SetCelPosition(cel, area.x + bounds.x, area.y + bounds.y));
         }
 
         // Modify destination cel
@@ -200,7 +197,7 @@ void FlattenLayers::onExecute()
       // Add new cel on null
       else {
         cel = new Cel(frame, new_image);
-        cel->setPosition(area.x+bounds.x, area.y+bounds.y);
+        cel->setPosition(area.x + bounds.x, area.y + bounds.y);
 
         // No need to undo adding this cel when flattening onto
         // a new layer, as the layer itself would be destroyed,
@@ -221,9 +218,7 @@ void FlattenLayers::onExecute()
 
   // Add new flatten layer
   if (newFlatLayer) {
-    executeAndAdd(new cmd::AddLayer(
-      list.front()->parent(), flatLayer, list.front()));
-
+    executeAndAdd(new cmd::AddLayer(list.front()->parent(), flatLayer, list.front()));
   }
   // Reset layer properties when flattening in-place
   else {
@@ -231,8 +226,7 @@ void FlattenLayers::onExecute()
       executeAndAdd(new cmd::SetLayerOpacity(flatLayer, 255));
 
     if (flatLayer->blendMode() != doc::BlendMode::NORMAL)
-      executeAndAdd(new cmd::SetLayerBlendMode(
-        flatLayer, doc::BlendMode::NORMAL));
+      executeAndAdd(new cmd::SetLayerBlendMode(flatLayer, doc::BlendMode::NORMAL));
   }
 
   // Delete flattened layers.
@@ -245,5 +239,4 @@ void FlattenLayers::onExecute()
   }
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

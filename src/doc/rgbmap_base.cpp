@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/rgbmap_base.h"
@@ -52,13 +52,11 @@ void RgbMapBase::rgbToOtherSpace(double& r, double& g, double& b) const
     return;
   }
   // Conversion lineal RGB to CIE XYZ
-  r = 41.24564*Rl + 35.75761 * Gl + 18.04375 * Bl;
-  g = 21.26729*Rl + 71.51522 * Gl + 7.2175   * Bl;
-  b = 1.93339*Rl  + 11.91920 * Gl + 95.03041 * Bl;
+  r = 41.24564 * Rl + 35.75761 * Gl + 18.04375 * Bl;
+  g = 21.26729 * Rl + 71.51522 * Gl + 7.2175 * Bl;
+  b = 1.93339 * Rl + 11.91920 * Gl + 95.03041 * Bl;
   switch (m_fitCriteria) {
-
-    case FitCriteria::CIEXYZ:
-      return;
+    case FitCriteria::CIEXYZ: return;
 
     case FitCriteria::CIELAB: {
       // Converting CIEXYZ to CIELAB:
@@ -83,8 +81,7 @@ void RgbMapBase::rgbToOtherSpace(double& r, double& g, double& b) const
   }
 }
 
-int RgbMapBase::findBestfit(int r, int g, int b, int a,
-                            int mask_index) const
+int RgbMapBase::findBestfit(int r, int g, int b, int a, int mask_index) const
 {
   ASSERT(r >= 0 && r <= 255);
   ASSERT(g >= 0 && g <= 255);
@@ -107,7 +104,7 @@ int RgbMapBase::findBestfit(int r, int g, int b, int a,
 
   rgbToOtherSpace(x, y, z);
 
-  for (int i=0; i<size; ++i) {
+  for (int i = 0; i < size; ++i) {
     color_t rgb = m_palette->getEntry(i);
     double Xpal = double(rgba_getr(rgb));
     double Ypal = double(rgba_getg(rgb));

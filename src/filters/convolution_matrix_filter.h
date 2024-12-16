@@ -16,28 +16,28 @@
 
 namespace filters {
 
-  class ConvolutionMatrix;
+class ConvolutionMatrix;
 
-  class ConvolutionMatrixFilter : public Filter {
-  public:
-    ConvolutionMatrixFilter();
+class ConvolutionMatrixFilter : public Filter {
+public:
+  ConvolutionMatrixFilter();
 
-    void setMatrix(const std::shared_ptr<ConvolutionMatrix>& matrix);
-    void setTiledMode(TiledMode tiledMode);
+  void setMatrix(const std::shared_ptr<ConvolutionMatrix>& matrix);
+  void setTiledMode(TiledMode tiledMode);
 
-    std::shared_ptr<ConvolutionMatrix> getMatrix() { return m_matrix; }
-    TiledMode getTiledMode() const { return m_tiledMode; }
+  std::shared_ptr<ConvolutionMatrix> getMatrix() { return m_matrix; }
+  TiledMode getTiledMode() const { return m_tiledMode; }
 
-    // Filter implementation
-    const char* getName();
-    void applyToRgba(FilterManager* filterMgr);
-    void applyToGrayscale(FilterManager* filterMgr);
-    void applyToIndexed(FilterManager* filterMgr);
+  // Filter implementation
+  const char* getName();
+  void applyToRgba(FilterManager* filterMgr);
+  void applyToGrayscale(FilterManager* filterMgr);
+  void applyToIndexed(FilterManager* filterMgr);
 
-  private:
-    std::shared_ptr<ConvolutionMatrix> m_matrix;
-    TiledMode m_tiledMode;
-  };
+private:
+  std::shared_ptr<ConvolutionMatrix> m_matrix;
+  TiledMode m_tiledMode;
+};
 
 } // namespace filters
 
