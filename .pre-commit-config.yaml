@@ -24,7 +24,7 @@ repos:
     rev: v19.1.5
     hooks:
       - id: clang-format
-        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx)$
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm)$
         types_or: [text]
 
   - repo: https://github.com/pocc/pre-commit-hooks
