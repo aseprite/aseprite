@@ -39,8 +39,7 @@
 // And running script code in a background is not supported.
 // #define ENABLE_REMAP_TILESET_EVENT 1
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 using namespace doc;
 
@@ -242,71 +241,73 @@ private:
   void onBeforeCommand(CommandExecutionEvent& ev)
   {
     s_stopPropagationFlag = false;
-    call(BeforeCommand, { { "name", ev.command()->id() },
-                          { "params", ev.params() },
-                          { "stopPropagation",
-                            (lua_CFunction)
-                            [](lua_State*) -> int {
-                              s_stopPropagationFlag = true;
-                              return 0;
-  }
-}
-} // namespace
-);
-if (s_stopPropagationFlag)
-  ev.cancel();
-} // namespace script
 
-void onAfterCommand(CommandExecutionEvent& ev)
-{
-  call(AfterCommand,
-       {
-         { "name",   ev.command()->id() },
-         { "params", ev.params()        }
-  });
-}
+    auto stopPropagation = (lua_CFunction)[](lua_State*)->int
+    {
+      s_stopPropagationFlag = true;
+      return 0;
+    };
 
-// ContextObserver impl
-void onActiveSiteChange(const Site& site) override
-{
-  if (m_lastActiveSite.has_value() && *m_lastActiveSite == site) {
-    // Avoid multiple events that can happen when closing since
-    // we're changing views at the same time we're removing
-    // documents
-    return;
+    call(BeforeCommand,
+         {
+           { "name",            ev.command()->id() },
+           { "params",          ev.params()        },
+           { "stopPropagation", stopPropagation    }
+    });
+    if (s_stopPropagationFlag)
+      ev.cancel();
   }
 
-  const bool fromUndo = (site.document() && site.document()->isUndoing());
-  call(SiteChange,
-       {
-         { "fromUndo", fromUndo }
-  });
-  m_lastBeforeActiveSite = std::nullopt;
-  m_lastActiveSite = site;
-}
+  void onAfterCommand(CommandExecutionEvent& ev)
+  {
+    call(AfterCommand,
+         {
+           { "name",   ev.command()->id() },
+           { "params", ev.params()        }
+    });
+  }
 
-void onBeforeActiveSiteChange(const Site& fromSite) override
-{
-  if (m_lastBeforeActiveSite.has_value() && *m_lastBeforeActiveSite == fromSite)
-    return;
+  // ContextObserver impl
+  void onActiveSiteChange(const Site& site) override
+  {
+    if (m_lastActiveSite.has_value() && *m_lastActiveSite == site) {
+      // Avoid multiple events that can happen when closing since
+      // we're changing views at the same time we're removing
+      // documents
+      return;
+    }
 
-  const bool fromUndo = (fromSite.document() && fromSite.document()->isUndoing());
-  call(BeforeSiteChange,
-       {
-         { "fromUndo", fromUndo }
-  });
-  m_lastBeforeActiveSite = fromSite;
-}
+    const bool fromUndo = (site.document() && site.document()->isUndoing());
+    call(SiteChange,
+         {
+           { "fromUndo", fromUndo }
+    });
+    m_lastBeforeActiveSite = std::nullopt;
+    m_lastActiveSite = site;
+  }
 
-obs::scoped_connection m_fgConn;
-obs::scoped_connection m_bgConn;
-obs::scoped_connection m_beforeCmdConn;
-obs::scoped_connection m_afterCmdConn;
-obs::scoped_connection m_beforePaintConn;
+  void onBeforeActiveSiteChange(const Site& fromSite) override
+  {
+    if (m_lastBeforeActiveSite.has_value() && *m_lastBeforeActiveSite == fromSite)
+      return;
 
-int m_addedObserver;
-std::optional<Site> m_lastActiveSite;
-std::optional<Site> m_lastBeforeActiveSite;
+    const bool fromUndo = (fromSite.document() && fromSite.document()->isUndoing());
+    call(BeforeSiteChange,
+         {
+           { "fromUndo", fromUndo }
+    });
+    m_lastBeforeActiveSite = fromSite;
+  }
+
+  obs::scoped_connection m_fgConn;
+  obs::scoped_connection m_bgConn;
+  obs::scoped_connection m_beforeCmdConn;
+  obs::scoped_connection m_afterCmdConn;
+  obs::scoped_connection m_beforePaintConn;
+
+  int m_addedObserver;
+  std::optional<Site> m_lastActiveSite;
+  std::optional<Site> m_lastBeforeActiveSite;
 }; // namespace app
 
 class WindowEvents : public Events,
@@ -636,5 +637,4 @@ void push_window_events(lua_State* L, ui::Window* window)
   push_ptr<Events>(L, g_windowEvents.get());
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script
