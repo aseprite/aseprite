@@ -27,6 +27,8 @@ public:
   AppBrushes();
   ~AppBrushes();
 
+  void reset();
+
   // Adds a new brush and returns the slot number where the brush
   // is now available.
   slot_id addBrushSlot(const BrushSlot& brush);
@@ -44,10 +46,12 @@ public:
 
   obs::signal<void()> ItemsChange;
 
+  static std::string userBrushesFilename();
+
 private:
+  void init();
   void load(const std::string& filename);
   void save(const std::string& filename) const;
-  static std::string userBrushesFilename();
 
   doc::Brushes m_standard;
   BrushSlots m_slots;

@@ -459,14 +459,35 @@ public:
     auto validateYesButton = [this] {
       resetSelectedButton()->setEnabled(
         defaultReset()->isSelected() || installedReset()->isSelected() ||
-        recentReset()->isSelected() || perfileReset()->isSelected() || toolsReset()->isSelected());
+        recentReset()->isSelected() || perfileReset()->isSelected() ||
+        windowReset()->isSelected() || toolsReset()->isSelected() || brushesReset()->isSelected());
+
+      resetToggle()->setSelected(defaultReset()->isSelected() && installedReset()->isSelected() &&
+                                 recentReset()->isSelected() && perfileReset()->isSelected() &&
+                                 windowReset()->isSelected() && toolsReset()->isSelected() &&
+                                 brushesReset()->isSelected());
     };
+
     defaultReset()->Click.connect(validateYesButton);
     installedReset()->Click.connect(validateYesButton);
     recentReset()->Click.connect(validateYesButton);
     perfileReset()->Click.connect(validateYesButton);
     toolsReset()->Click.connect(validateYesButton);
+    windowReset()->Click.connect(validateYesButton);
+    brushesReset()->Click.connect(validateYesButton);
     resetSelectedButton()->Click.connect([this] { onResetDefault(); });
+    resetToggle()->Click.connect([this] {
+      bool toggle = resetToggle()->isSelected();
+      defaultReset()->setSelected(toggle);
+      installedReset()->setSelected(toggle);
+      recentReset()->setSelected(toggle);
+      perfileReset()->setSelected(toggle);
+      toolsReset()->setSelected(toggle);
+      windowReset()->setSelected(toggle);
+      brushesReset()->setSelected(toggle);
+      brushesReset()->Click(); // Hacky way to trigger validateYesButton
+      brushesReset()->Click();
+    });
 
     defaultReset()->setSelected(true);
 
@@ -1126,6 +1147,32 @@ private:
       }
     }
 
+    if (windowReset()->isSelected()) {
+      static constexpr auto windowSections = {
+        "GfxMode",           "CanvasSize",        "CelProperties",     "ChangePixelFormat",
+        "ExportSpriteSheet", "ImportSpriteSheet", "KeyboardShortcuts", "LayerProperties",
+        "MaskColor",         "ExportFile",        "SpriteProperties",  "SpriteSize",
+        "UndoHistory",       "FileSelector",      "MiniEditor"
+      };
+      for (const auto* windowSection : windowSections)
+        del_config_section(windowSection);
+    }
+
+    if (brushesReset()->isSelected()) {
+      const auto userBrushPath = AppBrushes::userBrushesFilename();
+      if (base::is_file(userBrushPath)) {
+        try {
+          base::delete_file(userBrushPath);
+          LOG(VERBOSE, "Deleted user brushes file");
+
+          App::instance()->brushes().reset();
+        }
+        catch (const std::exception& ex) {
+          LOG(ERROR, "Error resetting user brushes: %s - %s", userBrushPath.c_str(), ex.what());
+        }
+      }
+    }
+
     if (defaultReset()->isSelected()) {
       onResetAlerts();
       onResetBg();
@@ -1139,6 +1186,8 @@ private:
 
       // Resetting all things.
       for (Section* section : m_pref.sectionList()) {
+        if (strcmp(section->name(), "updater") == 0)
+          continue; // Ignore updater to preserve the UUID and other data.
         for (OptionBase* option : section->optionList()) {
           option->resetToDefault();
         }
