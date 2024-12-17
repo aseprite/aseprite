@@ -308,10 +308,14 @@ void ToolBar::onSizeHint(SizeHintEvent& ev)
   iconsize.h += border().height();
   ev.setSizeHint(iconsize);
 
+#if 0 // The Dock widget will ask for sizeHint() of this widget when
+      // we open the popup, so we cannot close the recently closed
+      // popup.
   if (m_popupWindow) {
     closePopupWindow();
     closeTipWindow();
   }
+#endif
 }
 
 void ToolBar::onResize(ui::ResizeEvent& ev)
