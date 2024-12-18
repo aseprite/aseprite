@@ -123,7 +123,7 @@ void ExportFileWindow::savePref()
 
 std::string ExportFileWindow::outputFilenameValue() const
 {
-  return base::join_path(m_outputPath, m_outputFilename);
+  return base::get_absolute_path(base::join_path(m_outputPath, m_outputFilename));
 }
 
 double ExportFileWindow::resizeValue() const
