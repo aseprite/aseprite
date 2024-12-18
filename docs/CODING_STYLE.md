@@ -2,39 +2,48 @@
 
 Some general rules to write code: Try to follow the same style/format
 of the file that you are editing (naming, indentation, etc.) or the
-style of the module (some [submodules](https://github.com/aseprite/aseprite/blob/main/.gitmodules),
-created by us, or by third-parties, have their own style).
+style of the module. Some [submodules](https://github.com/aseprite/aseprite/blob/main/.gitmodules),
+created by us, or by third-parties, have their own style.
+
+## clang-format
 
 There is a [.clang-format](https://github.com/aseprite/aseprite/blob/main/.clang-format)
-file available but we are not using it at the moment, probably we
-should start using some
-[clang-format-diff.py](https://clang.llvm.org/docs/ClangFormat.html#script-for-patch-reformatting)
-for patches, but this wasn't yet adopted in the development process.
+file available for Aseprite and laf, and we are using it with
+Clang 19. You have to configure a [pre-commit](../CONTRIBUTING.md#pre-commit-hooks)
+hook which will help you to do the formatting automatically before committing.
 
 There is a [.clang-tidy](https://github.com/aseprite/aseprite/blob/main/.clang-tidy)
 file used [in the GitHub actions](https://github.com/aseprite/aseprite/blob/main/.github/workflows/clang_tidy.yml)
 executed on each PR. These rules are adopted progressively on patches
 because are only executed in the diff, and if some rule is violated a
-comment by [aseprite-bot](https://github.com/aseprite-bot) is made.
+comment by [aseprite-bot](https://github.com/aseprite-bot) is
+made. (Sometimes the bot will be wrong, so be careful.)
+
+## Column limit
+
+We use a [column limit](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#columnlimit)
+of 100. clang-format will break lines to avoid excessing more than 100
+lines, but in some extreme cases it might not break this limit, as
+our [PenaltyExcessCharacter](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#penaltyexcesscharacter)
+is not the highest value.
 
 ## Basics
 
 Basic statements:
 
 ```c++
-void global_function(int arg1,
-                     const int arg2, // You can use "const" preferably
-                     const int arg3, ...)
+void function_with_long_args(const int argument1,
+                             const int argument2,
+                             const std::string& argument3,
+                             const double argument4,
+                             ...)
 {
-  int value;
-  const int constValue = 0;
+}
 
-  // We prefer to use "var = (condition ? ...: ...)" instead of
-  // "var = condition ? ...: ...;" to make clear about the
-  // ternary operator limits.
-  int conditionalValue1 = (condition ? 1: 2);
-  int conditionalValue2 = (condition ? longVarName:
-                                       otherLongVarName);
+void function_with_short_args(int arg1, const int arg2, const int arg3, ...)
+{
+  const int constValue = 0;
+  int value;
 
   // If a condition will return, we prefer the "return"
   // statement in its own line to avoid missing the "return"
@@ -44,25 +53,22 @@ void global_function(int arg1,
 
   // You can use braces {} if the condition has multiple lines
   // or the if-body has multiple lines.
-  if (condition1 ||
-      condition2) {
+  if (condition1 || condition2) {
     return;
   }
 
   if (condition) {
-    ...
-    ...
     ...
   }
 
   // We prefer to avoid whitespaces between "var=initial_value"
   // or "var<limit" to see better the "; " separation. Anyway it
   // can depend on the specific condition/case, etc.
-  for (int i=0; i<10; ++i) {
-    ...
+  for (int i = 0; i < 10; ++i) {
     // Same case as in if-return.
     if (condition)
       break;
+
     ...
   }
 
@@ -75,16 +81,13 @@ void global_function(int arg1,
   } while (condition);
 
   switch (condition) {
-    case 1:
-      ...
-      break;
+    case 1: ... break;
     case 2: {
       int varInsideCase;
-      ...
+      // ...
       break;
     }
-    default:
-      break;
+    default: break;
   }
 }
 ```
@@ -96,7 +99,7 @@ Define namespaces with lower case:
 ```c++
 namespace app {
 
-  ...
+...
 
 } // namespace app
 ```
@@ -108,11 +111,15 @@ Define classes with `CapitalCase` and member functions with `camelCase`:
 ```c++
 class ClassName {
 public:
-  ClassName()
-    : m_memberVarA(1),
-      m_memberVarB(2),
-      m_memberVarC(3) {
-    ...
+  ClassName() : m_memberVarA(1), m_memberVarB(2), m_memberVarC(3) {}
+
+  ClassName(int a, int b, int c, int d)
+    : m_memberVarA(a)
+    , m_memberVarB(b)
+    , m_memberVarC(c)
+    , m_memberVarD(d)
+  {
+    // ...
   }
 
   virtual ~ClassName();
@@ -122,7 +129,7 @@ public:
   void setMemberVar();
 
 protected:
-  virtual void onEvent1() { } // Do nothing functions can be defined as "{ }"
+  virtual void onEvent1() {} // Do nothing functions can be defined as "{}"
   virtual void onEvent2() = 0;
 
 private:
@@ -137,7 +144,9 @@ public:
   Special();
 
 protected:
-  void onEvent2() override {  // No need to repeat virtual in overridden methods
+  void onEvent2() override
+  {
+    // No need to repeat virtual in overridden methods
     ...
   }
 };
@@ -150,7 +159,9 @@ We use the const-west notation:
 * [NL.26: Use conventional const notation](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#nl26-use-conventional-const-notation)
 
 There is a problem with `clang-tidy` that will make comments using
-East const notation: [#4361](https://github.com/aseprite/aseprite/issues/4361)
+East const notation:
+[#4361](https://github.com/aseprite/aseprite/issues/4361), but
+clang-format should fix the `const` position anyway.
 
 ## C++17
 
