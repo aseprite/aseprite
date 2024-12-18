@@ -13,9 +13,9 @@
 #include "doc/user_data.h"
 #include "obs/signal.h"
 #include "ui/base.h"
-#include "ui/entry.h"
 #include "ui/grid.h"
 #include "ui/label.h"
+#include "ui/textedit.h"
 
 #include "user_data.xml.h"
 
@@ -31,7 +31,8 @@ public:
 
   const doc::UserData& userData() const { return m_userData; }
   ColorButton* color() { return m_container.color(); }
-  ui::Entry* entry() { return m_container.entry(); }
+  ui::TextEdit* textEdit() { return m_container.textEdit(); }
+  ui::View* textEditView() { return m_container.textEditView(); }
   ui::Label* colorLabel() { return m_container.colorLabel(); }
   ui::Label* entryLabel() { return m_container.entryLabel(); }
 
