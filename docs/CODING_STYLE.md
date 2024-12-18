@@ -54,6 +54,7 @@ void function_with_short_args(int arg1, const int arg2, const int arg3, ...)
   // You can use braces {} if the condition has multiple lines
   // or the if-body has multiple lines.
   if (condition1 || condition2) {
+    ...
     return;
   }
 
@@ -61,9 +62,6 @@ void function_with_short_args(int arg1, const int arg2, const int arg3, ...)
     ...
   }
 
-  // We prefer to avoid whitespaces between "var=initial_value"
-  // or "var<limit" to see better the "; " separation. Anyway it
-  // can depend on the specific condition/case, etc.
   for (int i = 0; i < 10; ++i) {
     // Same case as in if-return.
     if (condition)
