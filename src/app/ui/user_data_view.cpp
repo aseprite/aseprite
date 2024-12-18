@@ -58,14 +58,14 @@ void UserDataView::configureAndSet(const doc::UserData& userData, ui::Grid* pare
     parent->addChildInCell(colorLabel(), hspan1, vspan, ui::LEFT);
     parent->addChildInCell(color(), hspan2, vspan, ui::HORIZONTAL);
     parent->addChildInCell(entryLabel(), hspan1, vspan, ui::LEFT);
-    parent->addChildInCell(entry(), hspan2, vspan, ui::HORIZONTAL);
+    parent->addChildInCell(textEditView(), hspan2, vspan, ui::HORIZONTAL);
     color()->Change.connect([this] { onColorChange(); });
-    entry()->Change.connect([this] { onEntryChange(); });
+    textEdit()->Change.connect([this] { onEntryChange(); });
     m_isConfigured = true;
   }
   m_userData = userData;
   color()->setColor(Color::fromImage(doc::IMAGE_RGB, userData.color()));
-  entry()->setText(m_userData.text());
+  textEdit()->setText(m_userData.text());
   setVisible(isVisible());
 }
 
@@ -79,15 +79,15 @@ void UserDataView::setVisible(bool state, bool saveAsDefault)
   colorLabel()->setVisible(state);
   color()->setVisible(state);
   entryLabel()->setVisible(state);
-  entry()->setVisible(state);
+  textEditView()->setVisible(state);
   if (saveAsDefault)
     m_visibility.setValue(state);
 }
 
 void UserDataView::onEntryChange()
 {
-  if (entry()->text() != m_userData.text()) {
-    m_userData.setText(entry()->text());
+  if (textEdit()->text() != m_userData.text()) {
+    m_userData.setText(textEdit()->text());
     if (!m_selfUpdate)
       UserDataChange();
   }
