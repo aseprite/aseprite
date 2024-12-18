@@ -102,6 +102,8 @@ static Item convert_to_item(XMLElement* elem)
     return item.typeIncl("app::DropDownButton", "app/ui/drop_down_button.h");
   if (name == "entry")
     return item.typeIncl("ui::Entry", "ui/entry.h");
+  if (name == "textedit")
+    return item.typeIncl("ui::TextEdit", "ui/textedit.h");
   if (name == "expr")
     return item.typeIncl("app::ExprEntry", "app/ui/expr_entry.h");
   if (name == "filename")
