@@ -110,8 +110,6 @@ void Workspace::setActiveView(WorkspaceView* view)
 
 void Workspace::setMainPanelAsActive()
 {
-  BeforeViewChanged();
-
   m_activePanel = &m_mainPanel;
 
   removeDropViewPreview();
