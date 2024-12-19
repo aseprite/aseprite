@@ -313,7 +313,6 @@ void UIContext::onAddDocument(Doc* doc)
   // Add a tab with the new view for the document
   App::instance()->workspace()->addView(view);
 
-  setActiveView(view);
   view->editor()->setDefaultScroll();
 }
 

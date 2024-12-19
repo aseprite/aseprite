@@ -115,6 +115,12 @@ public:
   // Same as uniqueCels() with cels from non-locked/editable layers.
   doc::CelList selectedUniqueCelsToEditPixels() const;
 
+  inline bool operator==(const Site& other) const
+  {
+    return (document() == other.document() && sprite() == other.sprite() &&
+            layer() == other.layer() && frame() == other.frame() && cel() == other.cel());
+  }
+
 private:
   Focus m_focus;
   Doc* m_document;
