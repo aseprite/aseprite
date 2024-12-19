@@ -622,7 +622,11 @@
           <check id="installed_reset" text="@.reset_installed" />
           <check id="recent_reset" text="@.reset_recents" />
           <check id="perfile_reset" text="@.reset_perfile" tooltip="@.reset_perfile_tooltip" />
+          <check id="window_reset" text="@.reset_window" />
+          <check id="brushes_reset" text="@.reset_brushes" />
+          <separator horizontal="true" />
           <hbox>
+            <check id="reset_toggle" text="@.reset_toggle" />
             <hbox expansive="true" />
             <button id="reset_selected_button" text="@.reset" minwidth="60" />
           </hbox>
