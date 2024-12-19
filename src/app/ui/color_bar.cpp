@@ -57,7 +57,6 @@
 #include "doc/cel.h"
 #include "doc/cels_range.h"
 #include "doc/image.h"
-#include "doc/image_impl.h"
 #include "doc/layer_tilemap.h"
 #include "doc/palette.h"
 #include "doc/palette_gradient_type.h"

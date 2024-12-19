@@ -9,7 +9,7 @@
   #include "config.h"
 #endif
 
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/mask.h"
 #include "gfx/point.h"
 

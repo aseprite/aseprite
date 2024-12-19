@@ -30,7 +30,7 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
 #include "base/scoped_value.h"
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
 #include "gfx/border.h"

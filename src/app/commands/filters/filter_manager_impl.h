@@ -15,7 +15,7 @@
 #include "app/tx.h"
 #include "base/exception.h"
 #include "base/task.h"
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/image_ref.h"
 #include "doc/pixel_format.h"
 #include "filters/filter_indexed_data.h"

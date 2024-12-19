@@ -115,4 +115,7 @@ private:
 
 } // namespace doc
 
+#include "doc/image_bits.h"
+#include "doc/image_iterator.h"
+
 #endif

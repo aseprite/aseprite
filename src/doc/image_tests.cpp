@@ -11,7 +11,7 @@
 
 #include <gtest/gtest.h>
 
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/primitives.h"
 
 #include <memory>

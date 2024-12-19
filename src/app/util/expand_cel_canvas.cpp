@@ -27,7 +27,6 @@
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
 #include "doc/image.h"
-#include "doc/image_impl.h"
 #include "doc/layer.h"
 #include "doc/layer_tilemap.h"
 #include "doc/primitives.h"

@@ -7,7 +7,6 @@
 #include "doc/util.h"
 
 #include "doc/image.h"
-#include "doc/image_impl.h"
 #include "doc/mask.h"
 #include "doc/tileset.h"
 

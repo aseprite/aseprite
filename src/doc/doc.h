@@ -19,7 +19,6 @@
 #include "doc/document.h"
 #include "doc/frame.h"
 #include "doc/image.h"
-#include "doc/image_impl.h"
 #include "doc/image_ref.h"
 #include "doc/images_map.h"
 #include "doc/layer.h"

@@ -15,7 +15,7 @@
 #include "base/remove_from_container.h"
 #include "doc/cel.h"
 #include "doc/cels_range.h"
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/layer_tilemap.h"
 #include "doc/octree_map.h"

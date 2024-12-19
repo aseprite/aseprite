@@ -14,7 +14,7 @@
 #include "doc/blend_internals.h"
 #include "doc/blend_mode.h"
 #include "doc/doc.h"
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/layer_tilemap.h"
 #include "doc/playback.h"
 #include "doc/render_plan.h"

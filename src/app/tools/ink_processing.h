@@ -11,7 +11,7 @@
 #include "app/util/wrap_value.h"
 #include "doc/blend_funcs.h"
 #include "doc/blend_internals.h"
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/remap.h"

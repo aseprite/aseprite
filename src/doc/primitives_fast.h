@@ -10,10 +10,12 @@
 #pragma once
 
 #include "doc/color.h"
+#include "doc/image.h"
+#include "doc/image_impl.h"
 #include "doc/image_traits.h"
 
 namespace doc {
-class Image;
+
 template<typename ImageTraits>
 class ImageImpl;
 

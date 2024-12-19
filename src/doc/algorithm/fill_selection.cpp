@@ -12,7 +12,7 @@
 #include "doc/algorithm/fill_selection.h"
 
 #include "doc/grid.h"
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/mask.h"
 #include "doc/primitives.h"
 

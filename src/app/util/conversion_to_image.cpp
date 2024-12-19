@@ -10,7 +10,6 @@
 
 #include "app/util/conversion_to_image.h"
 
-#include "doc/image_traits.h"
 #include "doc/pixel_format.h"
 #include "os/surface.h"
 

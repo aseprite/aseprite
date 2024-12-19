@@ -34,6 +34,7 @@
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
+#include "doc/palette.h"
 #include "doc/sprite.h"
 #include "filters/filter.h"
 #include "ui/manager.h"

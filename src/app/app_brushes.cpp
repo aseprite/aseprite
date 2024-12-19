@@ -21,7 +21,6 @@
 #include "doc/brush.h"
 #include "doc/color.h"
 #include "doc/image.h"
-#include "doc/image_impl.h"
 
 #include "tinyxml2.h"
 

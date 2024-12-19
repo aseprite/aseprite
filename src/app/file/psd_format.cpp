@@ -8,7 +8,7 @@
 #include "app/file/file_format.h"
 #include "base/file_handle.h"
 #include "doc/blend_mode.h"
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/slice.h"

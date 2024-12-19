@@ -13,7 +13,7 @@
 #include "doc/primitives.h"
 
 #include "doc/algorithm/random_image.h"
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/image_ref.h"
 #include "doc/primitives_fast.h"
 

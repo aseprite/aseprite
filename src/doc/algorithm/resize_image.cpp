@@ -12,7 +12,7 @@
 #include "doc/algorithm/resize_image.h"
 
 #include "doc/algorithm/rotsprite.h"
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/primitives_fast.h"
 #include "doc/rgbmap.h"

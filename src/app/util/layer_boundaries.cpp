@@ -20,7 +20,6 @@
 #include "doc/cel.h"
 #include "doc/document.h"
 #include "doc/image.h"
-#include "doc/image_impl.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 

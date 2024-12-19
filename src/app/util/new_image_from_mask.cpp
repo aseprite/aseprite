@@ -13,7 +13,7 @@
 
 #include "app/doc.h"
 #include "app/site.h"
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/primitives.h"

@@ -17,7 +17,6 @@
 #include "doc/algorithm/polygon.h"
 #include "doc/blend_internals.h"
 #include "doc/image.h"
-#include "doc/image_impl.h"
 #include "doc/primitives.h"
 
 #include <algorithm>

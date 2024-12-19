@@ -8,10 +8,7 @@
   #include "config.h"
 #endif
 
-#include "doc/image_impl.h"
-
-#include "doc/image_iterator.h"
-#include "doc/image_traits.h"
+#include "doc/image.h"
 
 namespace doc {
 

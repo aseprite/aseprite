@@ -12,7 +12,6 @@
 
 #include "doc/dispatch.h"
 #include "doc/image.h"
-#include "doc/image_impl.h"
 
 #include <random>
 
