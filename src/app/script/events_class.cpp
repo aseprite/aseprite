@@ -34,16 +34,12 @@
 #include <map>
 #include <memory>
 
-// This event was disabled temporarily until we debug some cases.
-// #define ENABLE_BEFORE_SITE_CHANGE_EVENT 1
-
 // This event was disabled because it can be triggered in a background thread
 // when any effect (e.g. like Replace Color or Convolution Matrix) is running.
 // And running script code in a background is not supported.
 // #define ENABLE_REMAP_TILESET_EVENT 1
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 using namespace doc;
 
@@ -178,10 +174,8 @@ public:
   {
     if (std::strcmp(eventName, "sitechange") == 0)
       return SiteChange;
-#if ENABLE_BEFORE_SITE_CHANGE_EVENT
     else if (std::strcmp(eventName, "beforesitechange") == 0)
       return BeforeSiteChange;
-#endif
     else if (std::strcmp(eventName, "fgcolorchange") == 0)
       return FgColorChange;
     else if (std::strcmp(eventName, "bgcolorchange") == 0)
@@ -247,55 +241,73 @@ private:
   void onBeforeCommand(CommandExecutionEvent& ev)
   {
     s_stopPropagationFlag = false;
-    call(BeforeCommand, { { "name", ev.command()->id() },
-                          { "params", ev.params() },
-                          { "stopPropagation",
-                            (lua_CFunction)
-                            [](lua_State*) -> int {
-                              s_stopPropagationFlag = true;
-                              return 0;
+
+    auto stopPropagation = (lua_CFunction)[](lua_State*)->int
+    {
+      s_stopPropagationFlag = true;
+      return 0;
+    };
+
+    call(BeforeCommand,
+         {
+           { "name",            ev.command()->id() },
+           { "params",          ev.params()        },
+           { "stopPropagation", stopPropagation    }
+    });
+    if (s_stopPropagationFlag)
+      ev.cancel();
   }
-}
-} // namespace
-);
-if (s_stopPropagationFlag)
-  ev.cancel();
-} // namespace script
 
-void onAfterCommand(CommandExecutionEvent& ev)
-{
-  call(AfterCommand,
-       {
-         { "name",   ev.command()->id() },
-         { "params", ev.params()        }
-  });
-}
+  void onAfterCommand(CommandExecutionEvent& ev)
+  {
+    call(AfterCommand,
+         {
+           { "name",   ev.command()->id() },
+           { "params", ev.params()        }
+    });
+  }
 
-// ContextObserver impl
-void onActiveSiteChange(const Site& site) override
-{
-  const bool fromUndo = (site.document() && site.document()->isUndoing());
-  call(SiteChange,
-       {
-         { "fromUndo", fromUndo }
-  });
-}
+  // ContextObserver impl
+  void onActiveSiteChange(const Site& site) override
+  {
+    if (m_lastActiveSite.has_value() && *m_lastActiveSite == site) {
+      // Avoid multiple events that can happen when closing since
+      // we're changing views at the same time we're removing
+      // documents
+      return;
+    }
 
-void onBeforeActiveSiteChange(const Site& fromSite) override
-{
-  const bool fromUndo = (fromSite.document() && fromSite.document()->isUndoing());
-  call(BeforeSiteChange,
-       {
-         { "fromUndo", fromUndo }
-  });
-}
+    const bool fromUndo = (site.document() && site.document()->isUndoing());
+    call(SiteChange,
+         {
+           { "fromUndo", fromUndo }
+    });
+    m_lastBeforeActiveSite = std::nullopt;
+    m_lastActiveSite = site;
+  }
 
-obs::scoped_connection m_fgConn;
-obs::scoped_connection m_bgConn;
-obs::scoped_connection m_beforeCmdConn;
-obs::scoped_connection m_afterCmdConn;
-obs::scoped_connection m_beforePaintConn;
-int m_addedObserver;
+  void onBeforeActiveSiteChange(const Site& fromSite) override
+  {
+    if (m_lastBeforeActiveSite.has_value() && *m_lastBeforeActiveSite == fromSite)
+      return;
+
+    const bool fromUndo = (fromSite.document() && fromSite.document()->isUndoing());
+    call(BeforeSiteChange,
+         {
+           { "fromUndo", fromUndo }
+    });
+    m_lastBeforeActiveSite = fromSite;
+  }
+
+  obs::scoped_connection m_fgConn;
+  obs::scoped_connection m_bgConn;
+  obs::scoped_connection m_beforeCmdConn;
+  obs::scoped_connection m_afterCmdConn;
+  obs::scoped_connection m_beforePaintConn;
+
+  int m_addedObserver;
+  std::optional<Site> m_lastActiveSite;
+  std::optional<Site> m_lastBeforeActiveSite;
 }; // namespace app
 
 class WindowEvents : public Events,
@@ -625,5 +637,4 @@ void push_window_events(lua_State* L, ui::Window* window)
   push_ptr<Events>(L, g_windowEvents.get());
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script
