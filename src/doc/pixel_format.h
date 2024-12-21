@@ -9,6 +9,12 @@
 #define DOC_PIXEL_FORMAT_H_INCLUDED
 #pragma once
 
+// Use 1-bit per pixel in IMAGE_BITMAP
+#define DOC_USE_BITMAP_AS_1BPP 1
+
+// Use 8-bit per pixel in IMAGE_BITMAP
+// #define DOC_USE_BITMAP_AS_1BPP 0
+
 namespace doc {
 
 // This enum might be replaced/deprecated/removed in the future, please use

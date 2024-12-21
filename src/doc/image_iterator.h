@@ -170,7 +170,9 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////
-// Iterator for BitmapTraits
+// Iterator for BitmapTraits when it's 1bpp
+
+#if DOC_USE_BITMAP_AS_1BPP
 
 class BitPixelAccess {
 public:
@@ -402,6 +404,8 @@ public:
   {
   }
 };
+
+#endif // DOC_USE_BITMAP_AS_1BPP
 
 } // namespace doc
 
