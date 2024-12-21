@@ -22,6 +22,7 @@
 #include "app/ui/color_button.h"
 #include "app/ui/drop_down_button.h"
 #include "app/ui/expr_entry.h"
+#include "app/ui/filename_field.h"
 #include "app/ui/font_entry.h"
 #include "app/ui/icon_button.h"
 #include "app/ui/mini_help_button.h"
@@ -254,6 +255,15 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
 
     if (elem_name == "expr" && decimals)
       ((ExprEntry*)widget)->setDecimals(strtol(decimals, nullptr, 10));
+  }
+  if (elem_name == "filename") {
+    const char* button_only = elem->Attribute("button_only");
+    const app::FilenameField::Type type = ((button_only != nullptr &&
+                                            strtol(button_only, nullptr, 10) == 1) ?
+                                             app::FilenameField::Type::ButtonOnly :
+                                             app::FilenameField::Type::EntryAndButton);
+
+    widget = new app::FilenameField(type, "");
   }
   else if (elem_name == "grid") {
     const char* columns = elem->Attribute("columns");

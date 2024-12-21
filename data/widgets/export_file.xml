@@ -5,9 +5,7 @@
   <window id="export_file" text="@.title" help="exporting">
     <grid columns="3">
       <label text="@.output_file" />
-      <entry id="output_filename" cell_align="horizontal" maxsize="1024" maxwidth="256" />
-      <button id="output_filename_browse" text="..." style="mini_button" />
-
+      <filename id="output_field" cell_align="horizontal" cell_hspan="2" />
       <label id="resize_label" text="@.resize" />
       <hbox cell_hspan="2" cell_align="horizontal">
         <combobox id="resize" editable="true" suffix="%" expansive="true">
