@@ -29,6 +29,7 @@ FilenameField::FilenameField(const Type type, const std::string& pathAndFilename
   , m_button(type == EntryAndButton ? Strings::select_file_browse() : Strings::select_file_text())
   , m_askOverwrite(true)
 {
+  m_pathBase = std::string();
   m_showFullPath = Preferences::instance().general.showFullPath();
   setFocusStop(true);
   if (m_entry) {
@@ -108,7 +109,8 @@ void FilenameField::onBrowse()
 
 void FilenameField::setFilename(const std::string& pathAndFilename)
 {
-  if (m_showFullPath || base::get_file_path(m_docFilename).empty()) {
+  const std::string spritePath = base::get_file_path(m_docFilename);
+  if (m_showFullPath || spritePath.empty()) {
     m_path = base::get_file_path(pathAndFilename);
     m_file = base::get_file_name(pathAndFilename);
   }
@@ -122,11 +124,11 @@ void FilenameField::setFilename(const std::string& pathAndFilename)
       m_file = base::get_file_name(pathAndFilename);
     }
   }
+
   if (m_showFullPath)
     m_path = base::get_absolute_path(m_path);
-  if (!m_showFullPath || m_pathBase.empty())
-    m_pathBase = m_path;
 
+  m_pathBase = (spritePath.empty() ? m_path: spritePath);
   updateWidgets();
 }
 

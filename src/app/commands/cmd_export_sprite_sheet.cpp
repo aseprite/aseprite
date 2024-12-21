@@ -421,7 +421,9 @@ public:
     updateDataFields();
 
     std::string base = site.document()->filename();
-    base = base::join_path(base::get_file_path(base), base::get_file_title(base));
+    std::string basePath = (base::get_file_path(base).empty() ?
+      base::get_current_path(): base::get_file_path(base));
+    base = base::join_path(basePath, base::get_file_title(base));
 
     imageFilename()->setDocFilename(base);
     dataFilename()->setDocFilename(base);
