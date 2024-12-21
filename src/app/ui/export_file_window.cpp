@@ -40,8 +40,13 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
     outputField()->setFilename(m_docPref.saveCopy.filename());
   }
   else {
-    std::string newFn = base::replace_extension(doc->filename(), defaultExtension());
-    if (newFn == doc->filename()) {
+    std::string base = doc->filename();
+    std::string basePath = (base::get_file_path(base).empty() ?
+      base::get_current_path(): base::get_file_path(base));
+    base = base::join_path(basePath, base::get_file_title(base));
+
+    std::string newFn = base::replace_extension(base, defaultExtension());
+    if (newFn == base) {
       newFn = base::join_path(
         base::get_file_path(newFn),
         base::get_file_title(newFn) + "-export." + base::get_file_extension(newFn));
