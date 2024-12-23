@@ -104,6 +104,7 @@ public:
 
   // Dockable impl
   int dockableAt() const override { return ui::TOP | ui::BOTTOM; }
+  int dockHandleSide() const override { return ui::LEFT; }
 
   // Signals
   obs::signal<void()> BrushChange;

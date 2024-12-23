@@ -450,6 +450,11 @@ void MainWindow::loadUserLayout(const Layout* layout)
   this->layout();
 }
 
+void MainWindow::setCustomizeDock(bool enable)
+{
+  m_customizableDock->setCustomizing(enable);
+}
+
 void MainWindow::dataRecoverySessionsAreReady()
 {
   getHomeView()->dataRecoverySessionsAreReady();

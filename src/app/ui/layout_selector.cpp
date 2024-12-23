@@ -382,6 +382,9 @@ void LayoutSelector::switchSelector()
 
   m_comboBox.setSizeHint(m_startSize);
   startAnimation((expand ? ANI_EXPANDING : ANI_COLLAPSING), ANI_TICKS);
+
+  MainWindow* win = App::instance()->mainWindow();
+  win->setCustomizeDock(expand);
 }
 
 void LayoutSelector::switchSelectorFromCommand()

@@ -76,6 +76,7 @@ public:
 
   // Dockable impl
   int dockableAt() const override { return ui::TOP | ui::BOTTOM; }
+  int dockHandleSide() const override { return ui::LEFT; }
 
 protected:
   void onInitTheme(ui::InitThemeEvent& ev) override;

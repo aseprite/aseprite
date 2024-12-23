@@ -99,6 +99,22 @@ Dock::Dock()
   initTheme();
 }
 
+void Dock::setCustomizing(bool enable, bool doLayout)
+{
+  m_customizing = enable;
+
+  for (int i = 0; i < kSides; ++i) {
+    auto child = m_sides[i];
+    if (!child)
+      continue;
+    else if (auto subdock = dynamic_cast<Dock*>(child))
+      subdock->setCustomizing(enable, false);
+  }
+
+  if (doLayout)
+    layout();
+}
+
 void Dock::resetDocks()
 {
   for (int i = 0; i < kSides; ++i) {
@@ -166,6 +182,7 @@ void Dock::dockRelativeTo(ui::Widget* relative,
 
   Dock* subdock = new Dock;
   subdock->m_autoDelete = true;
+  subdock->m_customizing = m_customizing;
   parent->replaceChild(relative, subdock);
   subdock->dock(CENTER, relative);
   subdock->dock(side, widget, prefSize);
@@ -241,6 +258,7 @@ Dock* Dock::subdock(int side)
   auto oldWidget = m_sides[i];
   auto newSubdock = new Dock;
   newSubdock->m_autoDelete = true;
+  newSubdock->m_customizing = m_customizing;
   setSide(i, newSubdock);
 
   if (oldWidget) {
@@ -280,16 +298,72 @@ void Dock::onResize(ui::ResizeEvent& ev)
   updateDockVisibility();
 
   forEachSide(bounds,
-              [bounds](ui::Widget* widget,
-                       const gfx::Rect& widgetBounds,
-                       const gfx::Rect& separator,
-                       const int index) { widget->setBounds(widgetBounds); });
+              [this](ui::Widget* widget,
+                     const gfx::Rect& widgetBounds,
+                     const gfx::Rect& separator,
+                     const int index) {
+                auto rc = widgetBounds;
+                auto th = textHeight();
+                if (isCustomizing()) {
+                  int handleSide = 0;
+                  if (auto dockable = dynamic_cast<Dockable*>(widget))
+                    handleSide = dockable->dockHandleSide();
+                  switch (handleSide) {
+                    case ui::TOP:
+                      rc.y += th;
+                      rc.h -= th;
+                      break;
+                    case ui::LEFT:
+                      rc.x += th;
+                      rc.w -= th;
+                      break;
+                  }
+                }
+                widget->setBounds(rc);
+              });
 }
 
 void Dock::onPaint(ui::PaintEvent& ev)
 {
   Graphics* g = ev.graphics();
-  g->fillRect(bgColor(), clientBounds());
+  gfx::Rect bounds = clientBounds();
+  g->fillRect(bgColor(), bounds);
+
+  if (isCustomizing()) {
+    forEachSide(bounds,
+                [this, g](ui::Widget* widget,
+                          const gfx::Rect& widgetBounds,
+                          const gfx::Rect& separator,
+                          const int index) {
+                  auto rc = widgetBounds;
+                  auto th = textHeight();
+                  if (isCustomizing()) {
+                    auto theme = SkinTheme::get(this);
+                    auto color = theme->colors.workspaceText();
+                    int handleSide = 0;
+                    if (auto dockable = dynamic_cast<Dockable*>(widget))
+                      handleSide = dockable->dockHandleSide();
+                    switch (handleSide) {
+                      case ui::TOP:
+                        rc.h = th;
+                        for (int y = rc.y; y + 1 < rc.y2(); y += 2)
+                          g->drawHLine(color,
+                                       rc.x + widget->border().left(),
+                                       y,
+                                       rc.w - widget->border().width());
+                        break;
+                      case ui::LEFT:
+                        rc.w = th;
+                        for (int x = rc.x; x + 1 < rc.x2(); x += 2)
+                          g->drawVLine(color,
+                                       x,
+                                       rc.y + widget->border().top(),
+                                       rc.h - widget->border().height());
+                        break;
+                    }
+                  }
+                });
+  }
 }
 
 void Dock::onInitTheme(ui::InitThemeEvent& ev)
@@ -305,22 +379,18 @@ bool Dock::onProcessMessage(ui::Message* msg)
     case kMouseDownMessage: {
       const gfx::Point pos = static_cast<MouseMessage*>(msg)->position();
 
-      m_capturedSide = -1;
-      forEachSide(childrenBounds(),
-                  [this, pos](ui::Widget* widget,
-                              const gfx::Rect& widgetBounds,
-                              const gfx::Rect& separator,
-                              const int index) {
-                    if (separator.contains(pos)) {
-                      m_capturedWidget = widget;
-                      m_capturedSide = index;
-                      m_startSize = m_sizes[index];
-                      m_startPos = pos;
-                    }
-                  });
+      if (m_hit.sideIndex >= 0 || m_hit.dockable) {
+        m_startPos = pos;
 
-      if (m_capturedSide >= 0) {
+        if (m_hit.sideIndex >= 0) {
+          m_startSize = m_sizes[m_hit.sideIndex];
+        }
+
         captureMouse();
+
+        if (m_hit.dockable)
+          invalidate();
+
         return true;
       }
       break;
@@ -328,11 +398,11 @@ bool Dock::onProcessMessage(ui::Message* msg)
 
     case kMouseMoveMessage: {
       if (hasCapture()) {
-        if (m_capturedSide >= 0) {
+        if (m_hit.sideIndex >= 0) {
           const gfx::Point pos = static_cast<MouseMessage*>(msg)->position();
-          gfx::Size& sz = m_sizes[m_capturedSide];
+          gfx::Size& sz = m_sizes[m_hit.sideIndex];
 
-          switch (m_capturedSide) {
+          switch (m_hit.sideIndex) {
             case kTopIndex:    sz.h = (m_startSize.h + pos.y - m_startPos.y); break;
             case kBottomIndex: sz.h = (m_startSize.h - pos.y + m_startPos.y); break;
             case kLeftIndex:   sz.w = (m_startSize.w + pos.x - m_startPos.x); break;
@@ -341,6 +411,9 @@ bool Dock::onProcessMessage(ui::Message* msg)
 
           layout();
           Resize();
+        }
+        else if (m_hit.dockable) {
+          invalidate();
         }
       }
       break;
@@ -357,20 +430,71 @@ bool Dock::onProcessMessage(ui::Message* msg)
     case kSetCursorMessage: {
       const gfx::Point pos = static_cast<MouseMessage*>(msg)->position();
       ui::CursorType cursor = ui::kArrowCursor;
-      forEachSide(childrenBounds(),
-                  [pos, &cursor](ui::Widget* widget,
-                                 const gfx::Rect& widgetBounds,
-                                 const gfx::Rect& separator,
-                                 const int index) {
-                    if (separator.contains(pos)) {
-                      if (index == kTopIndex || index == kBottomIndex) {
-                        cursor = ui::kSizeNSCursor;
-                      }
-                      else if (index == kLeftIndex || index == kRightIndex) {
-                        cursor = ui::kSizeWECursor;
-                      }
-                    }
-                  });
+
+      if (!hasCapture())
+        m_hit = calcHit(pos);
+
+      if (m_hit.sideIndex >= 0) {
+        switch (m_hit.sideIndex) {
+          case kTopIndex:
+          case kBottomIndex: cursor = ui::kSizeNSCursor; break;
+          case kLeftIndex:
+          case kRightIndex:  cursor = ui::kSizeWECursor; break;
+        }
+      }
+      else if (m_hit.dockable) {
+        cursor = ui::kMoveCursor;
+      }
+
+#if 0
+      m_hit = Hit();
+      forEachSide(
+        childrenBounds(),
+        [this, pos, &cursor](ui::Widget* widget,
+                             const gfx::Rect& widgetBounds,
+                             const gfx::Rect& separator,
+                             const int index) {
+          if (separator.contains(pos)) {
+            m_hit.widget = widget;
+            m_hit.sideIndex = index;
+
+            if (index == kTopIndex || index == kBottomIndex) {
+              cursor = ui::kSizeNSCursor;
+            }
+            else if (index == kLeftIndex || index == kRightIndex) {
+              cursor = ui::kSizeWECursor;
+            }
+          }
+          else if (isCustomizing()) {
+            auto th = textHeight();
+            auto rc = widgetBounds;
+            auto theme = SkinTheme::get(this);
+            auto color = theme->colors.workspaceText();
+            if (auto dockable = dynamic_cast<Dockable*>(widget)) {
+              int handleSide = dockable->dockHandleSide();
+              switch (handleSide) {
+                case ui::TOP:
+                  rc.h = th;
+                  if (rc.contains(pos)) {
+                    cursor = ui::kMoveCursor;
+                    m_hit.widget = widget;
+                    m_hit.dockable = dockable;
+                  }
+                  break;
+                case ui::LEFT:
+                  rc.w = th;
+                  if (rc.contains(pos)) {
+                    cursor = ui::kMoveCursor;
+                    m_hit.widget = widget;
+                    m_hit.dockable = dockable;
+                  }
+                  break;
+              }
+            }
+          }
+        });
+#endif
+
       ui::set_mouse_cursor(cursor);
       return true;
     }
@@ -524,6 +648,46 @@ void Dock::forEachSide(gfx::Rect bounds,
 
     f(widget, rc, separator, i);
   }
+}
+
+Dock::Hit Dock::calcHit(const gfx::Point& pos)
+{
+  Hit hit;
+  forEachSide(childrenBounds(),
+              [this, pos, &hit](ui::Widget* widget,
+                                const gfx::Rect& widgetBounds,
+                                const gfx::Rect& separator,
+                                const int index) {
+                if (separator.contains(pos)) {
+                  hit.widget = widget;
+                  hit.sideIndex = index;
+                }
+                else if (isCustomizing()) {
+                  auto th = textHeight();
+                  auto rc = widgetBounds;
+                  auto theme = SkinTheme::get(this);
+                  if (auto dockable = dynamic_cast<Dockable*>(widget)) {
+                    int handleSide = dockable->dockHandleSide();
+                    switch (handleSide) {
+                      case ui::TOP:
+                        rc.h = th;
+                        if (rc.contains(pos)) {
+                          hit.widget = widget;
+                          hit.dockable = dockable;
+                        }
+                        break;
+                      case ui::LEFT:
+                        rc.w = th;
+                        if (rc.contains(pos)) {
+                          hit.widget = widget;
+                          hit.dockable = dockable;
+                        }
+                        break;
+                    }
+                  }
+                }
+              });
+  return hit;
 }
 
 } // namespace app

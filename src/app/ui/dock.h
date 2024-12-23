@@ -19,6 +19,8 @@
 
 namespace app {
 
+class Dockable;
+
 class DockTabs : public ui::Widget {
 public:
 protected:
@@ -32,6 +34,9 @@ public:
   static constexpr const int kSides = 5;
 
   Dock();
+
+  bool isCustomizing() const { return m_customizing; }
+  void setCustomizing(bool enable, bool doLayout = true);
 
   void resetDocks();
 
@@ -80,16 +85,28 @@ private:
 
   bool hasVisibleSide(const int i) const { return (m_sides[i] && m_sides[i]->isVisible()); }
 
+  struct Hit {
+    ui::Widget* widget = nullptr;
+    Dockable* dockable = nullptr;
+    int sideIndex = -1;
+  };
+
+  Hit calcHit(const gfx::Point& pos);
+
   std::array<Widget*, kSides> m_sides;
   std::array<int, kSides> m_aligns;
   std::array<gfx::Size, kSides> m_sizes;
   bool m_autoDelete = false;
 
-  // Used to drag-and-drop sides.
-  ui::Widget* m_capturedWidget = nullptr;
-  int m_capturedSide;
+  // Use to drag-and-drop stuff (splitters and dockable widgets)
+  Hit m_hit;
+
+  // Used to resize sizes splitters.
   gfx::Size m_startSize;
   gfx::Point m_startPos;
+
+  // True when we paint/can drag-and-drop dockable widgets from handles.
+  bool m_customizing = false;
 };
 
 } // namespace app
