@@ -96,6 +96,7 @@ public:
   void setMirroredDefaultLayout();
   void loadUserLayout(const Layout* layout);
   const Dock* customizableDock() const { return m_customizableDock; }
+  void setCustomizeDock(bool enable);
 
   // When crash::DataRecovery finish to search for sessions, this
   // function is called.

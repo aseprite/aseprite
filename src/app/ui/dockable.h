@@ -26,6 +26,10 @@ public:
   {
     return ui::LEFT | ui::TOP | ui::RIGHT | ui::BOTTOM | ui::CENTER | ui::EXPANSIVE;
   }
+
+  // Returns the preferred side where the dock handle to move the
+  // widget should be.
+  virtual int dockHandleSide() const { return ui::TOP; }
 };
 
 } // namespace app
