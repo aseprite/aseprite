@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/job.h"
@@ -32,8 +32,7 @@ int Job::runningJobs()
   return g_runningJobs;
 }
 
-Job::Job(const std::string& jobName,
-         const bool showProgress)
+Job::Job(const std::string& jobName, const bool showProgress)
 {
   m_last_progress = 0.0;
   m_done_flag = false;

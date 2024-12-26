@@ -10,20 +10,18 @@
 
 #include "app/cmd/add_palette.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class RemovePalette : public AddPalette {
-  public:
-    RemovePalette(Sprite* sprite, Palette* pal);
+class RemovePalette : public AddPalette {
+public:
+  RemovePalette(Sprite* sprite, Palette* pal);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-  };
+protected:
+  void onExecute() override;
+  void onUndo() override;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

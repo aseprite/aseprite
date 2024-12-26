@@ -11,18 +11,16 @@
 #include "doc/frame.h"
 
 namespace doc {
-  class Layer;
+class Layer;
 }
 
 namespace app {
 
-  enum SelectLayerBoundariesOp {
-    REPLACE, ADD, SUBTRACT, INTERSECT
-  };
+enum SelectLayerBoundariesOp { REPLACE, ADD, SUBTRACT, INTERSECT };
 
-  void select_layer_boundaries(doc::Layer* layer,
-                               const doc::frame_t frame,
-                               const SelectLayerBoundariesOp op);
+void select_layer_boundaries(doc::Layer* layer,
+                             const doc::frame_t frame,
+                             const SelectLayerBoundariesOp op);
 
 } // namespace app
 

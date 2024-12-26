@@ -13,29 +13,25 @@
 #include "app/cmd/with_tag.h"
 #include "doc/frame.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class SetTagRange : public Cmd
-                    , public WithTag {
-  public:
-    SetTagRange(Tag* tag, frame_t from, frame_t to);
+class SetTagRange : public Cmd,
+                    public WithTag {
+public:
+  SetTagRange(Tag* tag, frame_t from, frame_t to);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onFireNotifications() override;
-    size_t onMemSize() const override {
-      return sizeof(*this);
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onFireNotifications() override;
+  size_t onMemSize() const override { return sizeof(*this); }
 
-  private:
-    frame_t m_oldFrom, m_oldTo;
-    frame_t m_newFrom, m_newTo;
-  };
+private:
+  frame_t m_oldFrom, m_oldTo;
+  frame_t m_newFrom, m_newTo;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

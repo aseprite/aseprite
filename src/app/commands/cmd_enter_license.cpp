@@ -8,10 +8,10 @@
 #include "app/context.h"
 
 #ifdef ENABLE_DRM
-#include "app/ui/enter_license.h"
+  #include "app/ui/enter_license.h"
 #else
-#include "app/i18n/strings.h"
-#include "ui/alert.h"
+  #include "app/i18n/strings.h"
+  #include "ui/alert.h"
 #endif
 
 namespace app {
@@ -19,12 +19,12 @@ namespace app {
 class EnterLicenseCommand : public Command {
 public:
   EnterLicenseCommand();
+
 protected:
   void onExecute(Context* context) override;
 };
 
-EnterLicenseCommand::EnterLicenseCommand()
-  : Command(CommandId::EnterLicense(), CmdUIOnlyFlag)
+EnterLicenseCommand::EnterLicenseCommand() : Command(CommandId::EnterLicense(), CmdUIOnlyFlag)
 {
 }
 

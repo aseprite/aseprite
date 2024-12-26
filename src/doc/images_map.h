@@ -15,27 +15,23 @@
 #include <unordered_map>
 
 namespace doc {
-  namespace details {
+namespace details {
 
-    struct image_hash {
-      size_t operator()(const ImageRef& i) const {
-        return calculate_image_hash(i.get(), i->bounds());
-      }
-    };
+struct image_hash {
+  size_t operator()(const ImageRef& i) const { return calculate_image_hash(i.get(), i->bounds()); }
+};
 
-    struct image_eq {
-      bool operator()(const ImageRef& a, const ImageRef& b) const {
-        return is_same_image(a.get(), b.get());
-      }
-    };
-
+struct image_eq {
+  bool operator()(const ImageRef& a, const ImageRef& b) const
+  {
+    return is_same_image(a.get(), b.get());
   }
+};
 
-  // A hash table used to match Image pixels data <-> an index
-  typedef std::unordered_map<ImageRef,
-                             uint32_t,
-                             details::image_hash,
-                             details::image_eq> ImagesMap;
+} // namespace details
+
+// A hash table used to match Image pixels data <-> an index
+typedef std::unordered_map<ImageRef, uint32_t, details::image_hash, details::image_eq> ImagesMap;
 
 } // namespace doc
 

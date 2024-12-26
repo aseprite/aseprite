@@ -35,62 +35,58 @@
 
 namespace app {
 
-  class FormatOptions;
-  class FileFormat;
-  class FileOp;
+class FormatOptions;
+class FileFormat;
+class FileOp;
 
-  // A file format supported by ASE. It is the base class to extend if
-  // you want to add support to load and/or save a new kind of
-  // image/animation format.
-  class FileFormat {
-  public:
-    FileFormat();
-    virtual ~FileFormat();
+// A file format supported by ASE. It is the base class to extend if
+// you want to add support to load and/or save a new kind of
+// image/animation format.
+class FileFormat {
+public:
+  FileFormat();
+  virtual ~FileFormat();
 
-    const char* name() const;       // File format name
+  const char* name() const; // File format name
 
-    // Fill "exts" variable with the supported extensions (e.g. "jpeg" and "jpg")
-    void getExtensions(base::paths& exts) const;
+  // Fill "exts" variable with the supported extensions (e.g. "jpeg" and "jpg")
+  void getExtensions(base::paths& exts) const;
 
-    dio::FileFormat dioFormat() const;
+  dio::FileFormat dioFormat() const;
 
-    bool load(FileOp* fop);
+  bool load(FileOp* fop);
 #ifdef ENABLE_SAVE
-    bool save(FileOp* fop);
+  bool save(FileOp* fop);
 #endif
 
-    // Does post-load operation which require user intervention.
-    // Returns false cancelled the operation.
-    bool postLoad(FileOp* fop);
+  // Does post-load operation which require user intervention.
+  // Returns false cancelled the operation.
+  bool postLoad(FileOp* fop);
 
-    // Returns extra options for this format. It can return != NULL
-    // only if flags() returns FILE_SUPPORT_GET_FORMAT_OPTIONS.
-    FormatOptionsPtr askUserForFormatOptions(FileOp* fop) {
-      return onAskUserForFormatOptions(fop);
-    }
+  // Returns extra options for this format. It can return != NULL
+  // only if flags() returns FILE_SUPPORT_GET_FORMAT_OPTIONS.
+  FormatOptionsPtr askUserForFormatOptions(FileOp* fop) { return onAskUserForFormatOptions(fop); }
 
-    // Returns true if this file format supports the given flag.
-    bool support(int f) const {
-      return ((onGetFlags() & f) == f);
-    }
+  // Returns true if this file format supports the given flag.
+  bool support(int f) const { return ((onGetFlags() & f) == f); }
 
-  protected:
-    virtual const char* onGetName() const = 0;
-    virtual void onGetExtensions(base::paths& exts) const = 0;
-    virtual dio::FileFormat onGetDioFormat() const = 0;
-    virtual int onGetFlags() const = 0;
+protected:
+  virtual const char* onGetName() const = 0;
+  virtual void onGetExtensions(base::paths& exts) const = 0;
+  virtual dio::FileFormat onGetDioFormat() const = 0;
+  virtual int onGetFlags() const = 0;
 
-    virtual bool onLoad(FileOp* fop) = 0;
-    virtual bool onPostLoad(FileOp* fop) { return true; }
+  virtual bool onLoad(FileOp* fop) = 0;
+  virtual bool onPostLoad(FileOp* fop) { return true; }
 #ifdef ENABLE_SAVE
-    virtual bool onSave(FileOp* fop) = 0;
+  virtual bool onSave(FileOp* fop) = 0;
 #endif
 
-    virtual FormatOptionsPtr onAskUserForFormatOptions(FileOp* fop) {
-      return FormatOptionsPtr(nullptr);
-    }
-
-  };
+  virtual FormatOptionsPtr onAskUserForFormatOptions(FileOp* fop)
+  {
+    return FormatOptionsPtr(nullptr);
+  }
+};
 
 } // namespace app
 

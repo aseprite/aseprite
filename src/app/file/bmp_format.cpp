@@ -13,7 +13,7 @@
 // https://docs.microsoft.com/en-us/windows/win32/gdi/bitmap-header-types
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/file/file.h"
@@ -27,7 +27,7 @@
 namespace app {
 
 // Max supported .bmp size (to filter out invalid image sizes)
-const uint32_t kMaxBmpSize = 1024*1024*128; // 128 MB
+const uint32_t kMaxBmpSize = 1024 * 1024 * 128; // 128 MB
 
 using namespace base;
 
@@ -42,40 +42,28 @@ class BmpFormat : public FileFormat {
   };
 
   // Data for BMP files
-  class BmpOptions : public FormatOptions
-  {
+  class BmpOptions : public FormatOptions {
   public:
-    int format;                 // bmp format.
-    int compression;            // bmp compression.
-    int bits_per_pixel;         // Bits per pixel.
-    uint32_t red_mask;          // Mask for red channel.
-    uint32_t green_mask;        // Mask for green channel.
-    uint32_t blue_mask;         // Mask for blue channel.
-    uint32_t alpha_mask;        // Mask for alpha channel.
+    int format;          // bmp format.
+    int compression;     // bmp compression.
+    int bits_per_pixel;  // Bits per pixel.
+    uint32_t red_mask;   // Mask for red channel.
+    uint32_t green_mask; // Mask for green channel.
+    uint32_t blue_mask;  // Mask for blue channel.
+    uint32_t alpha_mask; // Mask for alpha channel.
   };
 
-  const char* onGetName() const override {
-    return "bmp";
-  }
+  const char* onGetName() const override { return "bmp"; }
 
-  void onGetExtensions(base::paths& exts) const override {
-    exts.push_back("bmp");
-  }
+  void onGetExtensions(base::paths& exts) const override { exts.push_back("bmp"); }
 
-  dio::FileFormat onGetDioFormat() const override {
-    return dio::FileFormat::BMP_IMAGE;
-  }
+  dio::FileFormat onGetDioFormat() const override { return dio::FileFormat::BMP_IMAGE; }
 
-  int onGetFlags() const override {
-    return
-      FILE_SUPPORT_LOAD |
-      FILE_SUPPORT_SAVE |
-      FILE_SUPPORT_RGB |
-      FILE_SUPPORT_RGBA |
-      FILE_SUPPORT_GRAY |
-      FILE_SUPPORT_INDEXED |
-      FILE_SUPPORT_SEQUENCES |
-      FILE_ENCODE_ABSTRACT_IMAGE;
+  int onGetFlags() const override
+  {
+    return FILE_SUPPORT_LOAD | FILE_SUPPORT_SAVE | FILE_SUPPORT_RGB | FILE_SUPPORT_RGBA |
+           FILE_SUPPORT_GRAY | FILE_SUPPORT_INDEXED | FILE_SUPPORT_SEQUENCES |
+           FILE_ENCODE_ABSTRACT_IMAGE;
   }
 
   bool onLoad(FileOp* fop) override;
@@ -89,13 +77,13 @@ FileFormat* CreateBmpFormat()
   return new BmpFormat;
 }
 
-#define BI_RGB            0
-#define BI_RLE8           1
-#define BI_RLE4           2
-#define BI_BITFIELDS      3
-#define BI_ALPHABITFIELDS 6
+#define BI_RGB               0
+#define BI_RLE8              1
+#define BI_RLE4              2
+#define BI_BITFIELDS         3
+#define BI_ALPHABITFIELDS    6
 
-#define OS2FILEHEADERSIZE   14
+#define OS2FILEHEADERSIZE    14
 
 #define OS2INFOHEADERSIZE    12
 #define OS22INFOHEADERSIZE16 16
@@ -105,11 +93,10 @@ FileFormat* CreateBmpFormat()
 #define BV3INFOHEADERSIZE    56
 #define OS22INFOHEADERSIZE60 60
 #define OS22INFOHEADERSIZE64 64
-#define BV4INFOHEADERSIZE   108
-#define BV5INFOHEADERSIZE   124
+#define BV4INFOHEADERSIZE    108
+#define BV5INFOHEADERSIZE    124
 
-struct BITMAPFILEHEADER
-{
+struct BITMAPFILEHEADER {
   uint32_t bfType;
   uint32_t bfSize;
   uint16_t bfReserved1;
@@ -119,8 +106,7 @@ struct BITMAPFILEHEADER
 
 // Used for all Info Header Sizes.
 // Contains only the parameters needed to load the image.
-struct BITMAPINFOHEADER
-{
+struct BITMAPINFOHEADER {
   uint32_t biSize;
   uint32_t biWidth;
   uint32_t biHeight;
@@ -134,18 +120,16 @@ struct BITMAPINFOHEADER
 
   bool isRGBMasks() const
   {
-    return biSize >= BV2INFOHEADERSIZE ||
-      biCompression == BI_BITFIELDS ||
-      biCompression == BI_ALPHABITFIELDS;
+    return biSize >= BV2INFOHEADERSIZE || biCompression == BI_BITFIELDS ||
+           biCompression == BI_ALPHABITFIELDS;
   };
   bool isAlphaMask() const
   {
-    return biSize >= BV3INFOHEADERSIZE ||
-      biCompression == BI_ALPHABITFIELDS;
+    return biSize >= BV3INFOHEADERSIZE || biCompression == BI_ALPHABITFIELDS;
   };
 };
 
-struct WINBMPINFOHEADER  // Size: 16 to 64
+struct WINBMPINFOHEADER // Size: 16 to 64
 {
   uint32_t biWidth;
   uint32_t biHeight;
@@ -164,7 +148,7 @@ struct WINBMPINFOHEADER  // Size: 16 to 64
   uint32_t alphaMask;
 };
 
-struct OS2BMPINFOHEADER  // Size: 12.
+struct OS2BMPINFOHEADER // Size: 12.
 {
   uint16_t biWidth;
   uint16_t biHeight;
@@ -173,21 +157,19 @@ struct OS2BMPINFOHEADER  // Size: 12.
 };
 
 // TO DO: support ICC profiles and colorimetry
-struct CIEXYZ
-{
+struct CIEXYZ {
   uint32_t ciexyzX; // Fix Point: 2 bits integer part, 30 bits to fractional part
   uint32_t ciexyzY;
   uint32_t ciexyzZ;
 };
 
-struct CIEXYZTRIPLE
-{
+struct CIEXYZTRIPLE {
   CIEXYZ ciexyzRed;
   CIEXYZ ciexyzGreen;
   CIEXYZ ciexyzBlue;
 };
 
-struct BMPV4HEADER  // Size: 108.
+struct BMPV4HEADER // Size: 108.
 {
   uint32_t bV4Width;
   uint32_t bV4Height;
@@ -204,7 +186,7 @@ struct BMPV4HEADER  // Size: 108.
   uint32_t bV4GreenMask;
   uint32_t bV4BlueMask;
   uint32_t bV4AlphaMask;
-// TO DO: support ICC profiles and colorimetry
+  // TO DO: support ICC profiles and colorimetry
   uint32_t bV4CSType;
   CIEXYZTRIPLE bV4Endpoints;
   uint32_t bV4GammaRed;
@@ -212,7 +194,7 @@ struct BMPV4HEADER  // Size: 108.
   uint32_t bV4GammaBlue;
 };
 
-struct BMPV5HEADER  // Size: 124.
+struct BMPV5HEADER // Size: 124.
 {
   uint32_t bV5Width;
   uint32_t bV5Height;
@@ -230,7 +212,7 @@ struct BMPV5HEADER  // Size: 124.
   uint32_t bV5GreenMask;
   uint32_t bV5BlueMask;
   uint32_t bV5AlphaMask;
-// TO DO: support ICC profiles and colorimetry
+  // TO DO: support ICC profiles and colorimetry
   uint32_t bV5CSType;
   CIEXYZTRIPLE bV5Endpoints;
 
@@ -247,7 +229,7 @@ struct BMPV5HEADER  // Size: 124.
 /* read_bmfileheader:
  *  Reads a BMP file header and check that it has the BMP magic number.
  */
-static int read_bmfileheader(FILE *f, BITMAPFILEHEADER *fileheader)
+static int read_bmfileheader(FILE* f, BITMAPFILEHEADER* fileheader)
 {
   fileheader->bfType = fgetw(f);
   fileheader->bfSize = fgetl(f);
@@ -264,36 +246,32 @@ static int read_bmfileheader(FILE *f, BITMAPFILEHEADER *fileheader)
 /* read_win_bminfoheader:
  *  Reads information from a BMP file header.
  */
-static int read_win_bminfoheader(FILE *f, BITMAPINFOHEADER *infoheader)
+static int read_win_bminfoheader(FILE* f, BITMAPINFOHEADER* infoheader)
 {
   WINBMPINFOHEADER win_infoheader;
 
   int biSize = infoheader->biSize;
 
-  if (biSize != OS22INFOHEADERSIZE16 &&
-      biSize != OS22INFOHEADERSIZE24 &&
-      biSize != WININFOHEADERSIZE &&
-      biSize != BV2INFOHEADERSIZE &&
-      biSize != BV3INFOHEADERSIZE &&
-      biSize != OS22INFOHEADERSIZE60 &&
-      biSize != OS22INFOHEADERSIZE64)
+  if (biSize != OS22INFOHEADERSIZE16 && biSize != OS22INFOHEADERSIZE24 &&
+      biSize != WININFOHEADERSIZE && biSize != BV2INFOHEADERSIZE && biSize != BV3INFOHEADERSIZE &&
+      biSize != OS22INFOHEADERSIZE60 && biSize != OS22INFOHEADERSIZE64)
     return -1;
 
   win_infoheader.biWidth = fgetl(f);
   win_infoheader.biHeight = fgetl(f);
   win_infoheader.biPlanes = fgetw(f);
-  win_infoheader.biBitCount = fgetw(f);         // = 16 bytes
+  win_infoheader.biBitCount = fgetw(f); // = 16 bytes
 
   win_infoheader.redMask = 0;
   win_infoheader.greenMask = 0;
   win_infoheader.blueMask = 0;
   win_infoheader.alphaMask = 0;
   if (biSize == OS22INFOHEADERSIZE16)
-    win_infoheader.biCompression = BI_RGB;      // = 16 bytes
+    win_infoheader.biCompression = BI_RGB; // = 16 bytes
   else {
     ASSERT(biSize >= OS22INFOHEADERSIZE24);
     win_infoheader.biCompression = fgetl(f);
-    win_infoheader.biSizeImage = fgetl(f);      // = 24 bytes
+    win_infoheader.biSizeImage = fgetl(f); // = 24 bytes
 
     if (biSize >= WININFOHEADERSIZE) {
       win_infoheader.biXPelsPerMeter = fgetl(f);
@@ -308,11 +286,11 @@ static int read_win_bminfoheader(FILE *f, BITMAPINFOHEADER *infoheader)
       if (infoheader->isRGBMasks()) {
         win_infoheader.redMask = fgetl(f);
         win_infoheader.greenMask = fgetl(f);
-        win_infoheader.blueMask = fgetl(f);     // = 52 bytes (BV2INFOHEADERSIZE)
+        win_infoheader.blueMask = fgetl(f); // = 52 bytes (BV2INFOHEADERSIZE)
         if (infoheader->isAlphaMask()) {
-          win_infoheader.alphaMask = fgetl(f);  // = 56 bytes (BV3INFOHEADERSIZE)
+          win_infoheader.alphaMask = fgetl(f); // = 56 bytes (BV3INFOHEADERSIZE)
           if (biSize >= OS22INFOHEADERSIZE60) {
-            fgetl(f);   // <--discarded         // = 60 bytes
+            fgetl(f); // <--discarded         // = 60 bytes
             if (biSize == OS22INFOHEADERSIZE64)
               fgetl(f); // <--discarded         // = 64 bytes
           }
@@ -337,7 +315,7 @@ static int read_win_bminfoheader(FILE *f, BITMAPINFOHEADER *infoheader)
 /* read_os2_bminfoheader:
  *  Reads information from an OS/2 format BMP file header.
  */
-static int read_os2_bminfoheader(FILE *f, BITMAPINFOHEADER *infoheader)
+static int read_os2_bminfoheader(FILE* f, BITMAPINFOHEADER* infoheader)
 {
   OS2BMPINFOHEADER os2_infoheader;
 
@@ -358,7 +336,7 @@ static int read_os2_bminfoheader(FILE *f, BITMAPINFOHEADER *infoheader)
 /* read_v4_bminfoheader:
  *  Reads information from an V4 format BMP file header.
  */
-static int read_v4_bminfoheader(FILE *f, BITMAPINFOHEADER *infoheader)
+static int read_v4_bminfoheader(FILE* f, BITMAPINFOHEADER* infoheader)
 {
   BMPV4HEADER v4_infoheader;
 
@@ -417,7 +395,7 @@ static int read_v4_bminfoheader(FILE *f, BITMAPINFOHEADER *infoheader)
 /* read_v5_bminfoheader:
  *  Reads information from an V5 format BMP file header.
  */
-static int read_v5_bminfoheader(FILE *f, BITMAPINFOHEADER *infoheader)
+static int read_v5_bminfoheader(FILE* f, BITMAPINFOHEADER* infoheader)
 {
   BMPV5HEADER v5_infoheader;
 
@@ -481,11 +459,11 @@ static int read_v5_bminfoheader(FILE *f, BITMAPINFOHEADER *infoheader)
 /* read_bmicolors:
  *  Loads the color palette for 1,4,8 bit formats.
  */
-static void read_bmicolors(FileOp* fop, int bytes, FILE *f, bool win_flag)
+static void read_bmicolors(FileOp* fop, int bytes, FILE* f, bool win_flag)
 {
   int i, j, r, g, b;
 
-  for (i=j=0; i+3 <= bytes && j < 256; ) {
+  for (i = j = 0; i + 3 <= bytes && j < 256;) {
     b = fgetc(f);
     g = fgetc(f);
     r = fgetc(f);
@@ -504,31 +482,28 @@ static void read_bmicolors(FileOp* fop, int bytes, FILE *f, bool win_flag)
   // Set the number of colors in the palette
   fop->sequenceSetNColors(j);
 
-  for (; i<bytes; i++)
+  for (; i < bytes; i++)
     fgetc(f);
 }
 
 /* read_1bit_line:
  *  Support function for reading the 1 bit bitmap file format.
  */
-static void read_1bit_line(int length, FILE *f, Image *image, int line)
+static void read_1bit_line(int length, FILE* f, Image* image, int line)
 {
   unsigned char b[32];
   unsigned long n;
   int i, j, k;
   int pix;
 
-  for (i=0; i<length; i++) {
+  for (i = 0; i < length; i++) {
     j = i % 32;
     if (j == 0) {
       n = fgetl(f);
-      n =
-        ((n&0x000000ff)<<24) |
-        ((n&0x0000ff00)<< 8) |
-        ((n&0x00ff0000)>> 8) |
-        ((n&0xff000000)>>24);
-      for (k=0; k<32; k++) {
-        b[31-k] = (char)(n & 1);
+      n = ((n & 0x000000ff) << 24) | ((n & 0x0000ff00) << 8) | ((n & 0x00ff0000) >> 8) |
+          ((n & 0xff000000) >> 24);
+      for (k = 0; k < 32; k++) {
+        b[31 - k] = (char)(n & 1);
         n = n >> 1;
       }
     }
@@ -540,7 +515,7 @@ static void read_1bit_line(int length, FILE *f, Image *image, int line)
 /* read_2bit_line (not standard):
  *  Support function for reading the 2 bit bitmap file format.
  */
-static void read_2bit_line(int length, FILE *f, Image *image, int line)
+static void read_2bit_line(int length, FILE* f, Image* image, int line)
 {
   unsigned char b[16];
   unsigned long n;
@@ -548,19 +523,19 @@ static void read_2bit_line(int length, FILE *f, Image *image, int line)
   int temp;
   int pix;
 
-  for (i=0; i<length; i++) {
+  for (i = 0; i < length; i++) {
     j = i % 16;
     if (j == 0) {
       n = fgetl(f);
-      for (k=0; k<4; k++) {
+      for (k = 0; k < 4; k++) {
         temp = n & 255;
-        b[k*4+3] = temp & 3;
+        b[k * 4 + 3] = temp & 3;
         temp = temp >> 2;
-        b[k*4+2] = temp & 3;
+        b[k * 4 + 2] = temp & 3;
         temp = temp >> 2;
-        b[k*4+1] = temp & 3;
+        b[k * 4 + 1] = temp & 3;
         temp = temp >> 2;
-        b[k*4] = temp & 3;
+        b[k * 4] = temp & 3;
         n = n >> 8;
       }
     }
@@ -572,7 +547,7 @@ static void read_2bit_line(int length, FILE *f, Image *image, int line)
 /* read_4bit_line:
  *  Support function for reading the 4 bit bitmap file format.
  */
-static void read_4bit_line(int length, FILE *f, Image *image, int line)
+static void read_4bit_line(int length, FILE* f, Image* image, int line)
 {
   unsigned char b[8];
   unsigned long n;
@@ -580,15 +555,15 @@ static void read_4bit_line(int length, FILE *f, Image *image, int line)
   int temp;
   int pix;
 
-  for (i=0; i<length; i++) {
+  for (i = 0; i < length; i++) {
     j = i % 8;
     if (j == 0) {
       n = fgetl(f);
-      for (k=0; k<4; k++) {
+      for (k = 0; k < 4; k++) {
         temp = n & 255;
-        b[k*2+1] = temp & 15;
+        b[k * 2 + 1] = temp & 15;
         temp = temp >> 4;
-        b[k*2] = temp & 15;
+        b[k * 2] = temp & 15;
         n = n >> 8;
       }
     }
@@ -600,18 +575,18 @@ static void read_4bit_line(int length, FILE *f, Image *image, int line)
 /* read_8bit_line:
  *  Support function for reading the 8 bit bitmap file format.
  */
-static void read_8bit_line(int length, FILE *f, Image *image, int line)
+static void read_8bit_line(int length, FILE* f, Image* image, int line)
 {
   unsigned char b[4];
   unsigned long n;
   int i, j, k;
   int pix;
 
-  for (i=0; i<length; i++) {
+  for (i = 0; i < length; i++) {
     j = i % 4;
     if (j == 0) {
       n = fgetl(f);
-      for (k=0; k<4; k++) {
+      for (k = 0; k < 4; k++) {
         b[k] = (char)(n & 255);
         n = n >> 8;
       }
@@ -621,11 +596,11 @@ static void read_8bit_line(int length, FILE *f, Image *image, int line)
   }
 }
 
-static void read_16bit_line(int length, FILE *f, Image *image, int line, bool& withAlpha)
+static void read_16bit_line(int length, FILE* f, Image* image, int line, bool& withAlpha)
 {
   int i, r, g, b, a, word;
 
-  for (i=0; i<length; i++) {
+  for (i = 0; i < length; i++) {
     word = fgetw(f);
 
     r = (word >> 10) & 0x1f;
@@ -634,41 +609,40 @@ static void read_16bit_line(int length, FILE *f, Image *image, int line, bool& w
     a = (word & 0x8000 ? 255 : 0);
     if (a)
       withAlpha = true;
-    put_pixel(image, i, line,
-              rgba(scale_5bits_to_8bits(r),
-                   scale_5bits_to_8bits(g),
-                   scale_5bits_to_8bits(b), a));
+    put_pixel(image,
+              i,
+              line,
+              rgba(scale_5bits_to_8bits(r), scale_5bits_to_8bits(g), scale_5bits_to_8bits(b), a));
   }
 
-  i = (2*i) % 4;
+  i = (2 * i) % 4;
   if (i > 0)
     while (i++ < 4)
       fgetc(f);
 }
 
-static void read_24bit_line(int length, FILE *f, Image *image, int line)
+static void read_24bit_line(int length, FILE* f, Image* image, int line)
 {
   int i, r, g, b;
 
-  for (i=0; i<length; i++) {
+  for (i = 0; i < length; i++) {
     b = fgetc(f);
     g = fgetc(f);
     r = fgetc(f);
     put_pixel(image, i, line, rgba(r, g, b, 255));
   }
 
-  i = (3*i) % 4;
+  i = (3 * i) % 4;
   if (i > 0)
     while (i++ < 4)
       fgetc(f);
 }
 
-static void read_32bit_line(int length, FILE *f, Image *image, int line,
-                            bool& withAlpha)
+static void read_32bit_line(int length, FILE* f, Image* image, int line, bool& withAlpha)
 {
   int i, r, g, b, a;
 
-  for (i=0; i<length; i++) {
+  for (i = 0; i < length; i++) {
     b = fgetc(f);
     g = fgetc(f);
     r = fgetc(f);
@@ -682,33 +656,36 @@ static void read_32bit_line(int length, FILE *f, Image *image, int line,
 /* read_image:
  *  For reading the noncompressed BMP image format.
  */
-static void read_image(FILE *f, Image *image, const BITMAPINFOHEADER *infoheader, FileOp *fop, bool& withAlpha)
+static void read_image(FILE* f,
+                       Image* image,
+                       const BITMAPINFOHEADER* infoheader,
+                       FileOp* fop,
+                       bool& withAlpha)
 {
   int i, line, height, dir;
 
   height = (int)infoheader->biHeight;
-  line   = height < 0 ? 0: height-1;
-  dir    = height < 0 ? 1: -1;
+  line = height < 0 ? 0 : height - 1;
+  dir = height < 0 ? 1 : -1;
   height = ABS(height);
 
-  for (i=0; i<height; i++, line+=dir) {
+  for (i = 0; i < height; i++, line += dir) {
     switch (infoheader->biBitCount) {
-      case 1: read_1bit_line(infoheader->biWidth, f, image, line); break;
-      case 2: read_2bit_line(infoheader->biWidth, f, image, line); break;
-      case 4: read_4bit_line(infoheader->biWidth, f, image, line); break;
-      case 8: read_8bit_line(infoheader->biWidth, f, image, line); break;
+      case 1:  read_1bit_line(infoheader->biWidth, f, image, line); break;
+      case 2:  read_2bit_line(infoheader->biWidth, f, image, line); break;
+      case 4:  read_4bit_line(infoheader->biWidth, f, image, line); break;
+      case 8:  read_8bit_line(infoheader->biWidth, f, image, line); break;
       case 16: read_16bit_line(infoheader->biWidth, f, image, line, withAlpha); break;
       case 24: read_24bit_line(infoheader->biWidth, f, image, line); break;
       case 32: read_32bit_line(infoheader->biWidth, f, image, line, withAlpha); break;
     }
 
-    fop->setProgress((float)(i+1) / (float)(height));
+    fop->setProgress((float)(i + 1) / (float)(height));
     if (fop->isStop())
       break;
   }
 
-  if ((infoheader->biBitCount == 32 ||
-       infoheader->biBitCount == 16 ) && !withAlpha) {
+  if ((infoheader->biBitCount == 32 || infoheader->biBitCount == 16) && !withAlpha) {
     LockImageBits<RgbTraits> imageBits(image, image->bounds());
     auto imgIt = imageBits.begin(), imgEnd = imageBits.end();
     for (; imgIt != imgEnd; ++imgIt)
@@ -722,7 +699,7 @@ static void read_image(FILE *f, Image *image, const BITMAPINFOHEADER *infoheader
  * @note This support compressed top-down bitmaps, the MSDN says that
  *       they can't exist, but Photoshop can create them.
  */
-static void read_rle8_compressed_image(FILE *f, Image *image, const BITMAPINFOHEADER *infoheader)
+static void read_rle8_compressed_image(FILE* f, Image* image, const BITMAPINFOHEADER* infoheader)
 {
   unsigned char count, val, val0;
   int j, pos, line, height, dir;
@@ -731,58 +708,52 @@ static void read_rle8_compressed_image(FILE *f, Image *image, const BITMAPINFOHE
   eopicflag = 0;
 
   height = (int)infoheader->biHeight;
-  line   = height < 0 ? 0: height-1;
-  dir    = height < 0 ? 1: -1;
+  line = height < 0 ? 0 : height - 1;
+  dir = height < 0 ? 1 : -1;
   height = ABS(height);
 
   while (eopicflag == 0) {
-    pos = 0;                               /* x position in bitmap */
-    eolflag = 0;                           /* end of line flag */
+    pos = 0;     /* x position in bitmap */
+    eolflag = 0; /* end of line flag */
 
     while ((eolflag == 0) && (eopicflag == 0)) {
       count = fgetc(f);
       val = fgetc(f);
 
-      if (count > 0) {                    /* repeat pixel count times */
-        for (j=0;j<count;j++) {
+      if (count > 0) { /* repeat pixel count times */
+        for (j = 0; j < count; j++) {
           put_pixel(image, pos, line, val);
           pos++;
         }
       }
       else {
         switch (val) {
+          case 0: /* end of line flag */ eolflag = 1; break;
 
-          case 0:                       /* end of line flag */
-            eolflag=1;
-            break;
+          case 1: /* end of picture flag */ eopicflag = 1; break;
 
-          case 1:                       /* end of picture flag */
-            eopicflag=1;
-            break;
-
-          case 2:                       /* displace picture */
+          case 2: /* displace picture */
             count = fgetc(f);
             val = fgetc(f);
             pos += count;
-            line += val*dir;
+            line += val * dir;
             break;
 
-          default:                      /* read in absolute mode */
-            for (j=0; j<val; j++) {
+          default: /* read in absolute mode */
+            for (j = 0; j < val; j++) {
               val0 = fgetc(f);
               put_pixel(image, pos, line, val0);
               pos++;
             }
 
-            if (j%2 == 1)
-              val0 = fgetc(f);    /* align on word boundary */
+            if (j % 2 == 1)
+              val0 = fgetc(f); /* align on word boundary */
             break;
-
         }
       }
 
-      if (pos-1 > (int)infoheader->biWidth)
-        eolflag=1;
+      if (pos - 1 > (int)infoheader->biWidth)
+        eolflag = 1;
     }
 
     line += dir;
@@ -797,7 +768,7 @@ static void read_rle8_compressed_image(FILE *f, Image *image, const BITMAPINFOHE
  * @note This support compressed top-down bitmaps, the MSDN says that
  *       they can't exist, but Photoshop can create them.
  */
-static void read_rle4_compressed_image(FILE *f, Image *image, const BITMAPINFOHEADER *infoheader)
+static void read_rle4_compressed_image(FILE* f, Image* image, const BITMAPINFOHEADER* infoheader)
 {
   unsigned char b[8];
   unsigned char count;
@@ -805,67 +776,62 @@ static void read_rle4_compressed_image(FILE *f, Image *image, const BITMAPINFOHE
   int j, k, pos, line, height, dir;
   int eolflag, eopicflag;
 
-  eopicflag = 0;                            /* end of picture flag */
+  eopicflag = 0; /* end of picture flag */
 
   height = (int)infoheader->biHeight;
-  line   = height < 0 ? 0: height-1;
-  dir    = height < 0 ? 1: -1;
+  line = height < 0 ? 0 : height - 1;
+  dir = height < 0 ? 1 : -1;
   height = ABS(height);
 
   while (eopicflag == 0) {
     pos = 0;
-    eolflag = 0;                           /* end of line flag */
+    eolflag = 0; /* end of line flag */
 
     while ((eolflag == 0) && (eopicflag == 0)) {
       count = fgetc(f);
       val = fgetc(f);
 
-      if (count > 0) {                    /* repeat pixels count times */
+      if (count > 0) { /* repeat pixels count times */
         b[1] = val & 15;
         b[0] = (val >> 4) & 15;
-        for (j=0; j<count; j++) {
-          put_pixel(image, pos, line, b[j%2]);
+        for (j = 0; j < count; j++) {
+          put_pixel(image, pos, line, b[j % 2]);
           pos++;
         }
       }
       else {
         switch (val) {
+          case 0: /* end of line */ eolflag = 1; break;
 
-          case 0:                       /* end of line */
-            eolflag=1;
-            break;
+          case 1: /* end of picture */ eopicflag = 1; break;
 
-          case 1:                       /* end of picture */
-            eopicflag=1;
-            break;
-
-          case 2:                       /* displace image */
+          case 2: /* displace image */
             count = fgetc(f);
             val = fgetc(f);
             pos += count;
-            line += val*dir;
+            line += val * dir;
             break;
 
-          default:                      /* read in absolute mode */
-            for (j=0; j<val; j++) {
-              if ((j%4) == 0) {
+          default: /* read in absolute mode */
+            for (j = 0; j < val; j++) {
+              if ((j % 4) == 0) {
                 val0 = fgetw(f);
-                for (k=0; k<2; k++) {
-                  b[2*k+1] = val0 & 15;
+                for (k = 0; k < 2; k++) {
+                  b[2 * k + 1] = val0 & 15;
                   val0 = val0 >> 4;
-                  b[2*k] = val0 & 15;
+                  b[2 * k] = val0 & 15;
                   val0 = val0 >> 4;
                 }
               }
-              put_pixel(image, pos, line, b[j%4]);
+              put_pixel(image, pos, line, b[j % 4]);
               pos++;
             }
             break;
         }
       }
 
-      if (pos-1 > (int)infoheader->biWidth)
-        eolflag=1;
+      if (pos - 1 > (int)infoheader->biWidth)
+        eolflag = 1;
     }
 
     line += dir;
@@ -899,9 +865,14 @@ static uint32_t calc_shift(const uint32_t channelMask, int& channelBits)
   return channelShift;
 }
 
-static int read_bitfields_image(FILE *f, Image *image, BITMAPINFOHEADER *infoheader,
-                                uint32_t rmask, uint32_t gmask, uint32_t bmask,
-                                uint32_t amask, bool& withAlpha)
+static int read_bitfields_image(FILE* f,
+                                Image* image,
+                                BITMAPINFOHEADER* infoheader,
+                                uint32_t rmask,
+                                uint32_t gmask,
+                                uint32_t bmask,
+                                uint32_t amask,
+                                bool& withAlpha)
 {
   uint32_t buffer, rshift, gshift, bshift, ashift;
   int rbits = 0, gbits = 0, bbits = 0, abits = 0;
@@ -910,8 +881,8 @@ static int read_bitfields_image(FILE *f, Image *image, BITMAPINFOHEADER *infohea
   int bytes_per_pixel;
 
   height = (int)infoheader->biHeight;
-  line   = height < 0 ? 0: height-1;
-  dir    = height < 0 ? 1: -1;
+  line = height < 0 ? 0 : height - 1;
+  dir = height < 0 ? 1 : -1;
   height = ABS(height);
 
   /* calculate shifts */
@@ -922,32 +893,31 @@ static int read_bitfields_image(FILE *f, Image *image, BITMAPINFOHEADER *infohea
 
   /* calculate bits-per-pixel and bytes-per-pixel */
   bits_per_pixel = infoheader->biBitCount;
-  bytes_per_pixel = ((bits_per_pixel / 8) +
-                     ((bits_per_pixel % 8) > 0 ? 1: 0));
+  bytes_per_pixel = ((bits_per_pixel / 8) + ((bits_per_pixel % 8) > 0 ? 1 : 0));
 
-  for (i=0; i<height; i++, line+=dir) {
-    for (j=0; j<(int)infoheader->biWidth; j++) {
+  for (i = 0; i < height; i++, line += dir) {
+    for (j = 0; j < (int)infoheader->biWidth; j++) {
       /* read the DWORD, WORD or BYTE in little-endian order */
       buffer = 0;
-      for (k=0; k<bytes_per_pixel; k++)
-        buffer |= fgetc(f) << (k<<3);
+      for (k = 0; k < bytes_per_pixel; k++)
+        buffer |= fgetc(f) << (k << 3);
 
       r = (buffer & rmask) >> rshift;
       g = (buffer & gmask) >> gshift;
       b = (buffer & bmask) >> bshift;
       a = (buffer & amask) >> ashift;
 
-      r = (rbits == 8 ? r: scale_xbits_to_8bits(rbits, r));
-      g = (gbits == 8 ? g: scale_xbits_to_8bits(gbits, g));
-      b = (bbits == 8 ? b: scale_xbits_to_8bits(bbits, b));
-      a = (abits == 8 ? a: scale_xbits_to_8bits(abits, a));
+      r = (rbits == 8 ? r : scale_xbits_to_8bits(rbits, r));
+      g = (gbits == 8 ? g : scale_xbits_to_8bits(gbits, g));
+      b = (bbits == 8 ? b : scale_xbits_to_8bits(bbits, b));
+      a = (abits == 8 ? a : scale_xbits_to_8bits(abits, a));
 
       if (a)
         withAlpha = true;
       put_pixel_fast<RgbTraits>(image, j, line, rgba(r, g, b, a));
     }
 
-    j = (bytes_per_pixel*j) % 4;
+    j = (bytes_per_pixel * j) % 4;
     if (j > 0)
       while (j++ < 4)
         fgetc(f);
@@ -963,7 +933,7 @@ static int read_bitfields_image(FILE *f, Image *image, BITMAPINFOHEADER *infohea
   return 0;
 }
 
-bool BmpFormat::onLoad(FileOp *fop)
+bool BmpFormat::onLoad(FileOp* fop)
 {
   uint32_t rmask, gmask, bmask, amask;
   BITMAPFILEHEADER fileheader;
@@ -985,11 +955,8 @@ bool BmpFormat::onLoad(FileOp *fop)
     if (read_win_bminfoheader(f, &infoheader) != 0) {
       return false;
     }
-    if (infoheader.biCompression != BI_BITFIELDS &&
-        infoheader.biCompression != BI_ALPHABITFIELDS)
-      read_bmicolors(fop,
-                     fileheader.bfOffBits - infoheader.biSize - OS2FILEHEADERSIZE,
-                     f, true);
+    if (infoheader.biCompression != BI_BITFIELDS && infoheader.biCompression != BI_ALPHABITFIELDS)
+      read_bmicolors(fop, fileheader.bfOffBits - infoheader.biSize - OS2FILEHEADERSIZE, f, true);
     else if (infoheader.biBitCount <= 8)
       return false;
   }
@@ -1000,11 +967,8 @@ bool BmpFormat::onLoad(FileOp *fop)
       return false;
     }
     /* compute number of colors recorded */
-    if (infoheader.biCompression != BI_BITFIELDS &&
-        infoheader.biCompression != BI_ALPHABITFIELDS)
-      read_bmicolors(fop,
-                     fileheader.bfOffBits - infoheader.biSize - OS2FILEHEADERSIZE,
-                     f, false);
+    if (infoheader.biCompression != BI_BITFIELDS && infoheader.biCompression != BI_ALPHABITFIELDS)
+      read_bmicolors(fop, fileheader.bfOffBits - infoheader.biSize - OS2FILEHEADERSIZE, f, false);
     else if (infoheader.biBitCount <= 8)
       return false;
   }
@@ -1015,11 +979,8 @@ bool BmpFormat::onLoad(FileOp *fop)
       return false;
     }
     /* compute number of colors recorded */
-    if (infoheader.biCompression != BI_BITFIELDS &&
-        infoheader.biCompression != BI_ALPHABITFIELDS)
-      read_bmicolors(fop,
-                     fileheader.bfOffBits - infoheader.biSize - OS2FILEHEADERSIZE,
-                     f, true);
+    if (infoheader.biCompression != BI_BITFIELDS && infoheader.biCompression != BI_ALPHABITFIELDS)
+      read_bmicolors(fop, fileheader.bfOffBits - infoheader.biSize - OS2FILEHEADERSIZE, f, true);
     else if (infoheader.biBitCount <= 8)
       return false;
   }
@@ -1030,11 +991,8 @@ bool BmpFormat::onLoad(FileOp *fop)
       return false;
     }
     /* compute number of colors recorded */
-    if (infoheader.biCompression != BI_BITFIELDS &&
-        infoheader.biCompression != BI_ALPHABITFIELDS)
-      read_bmicolors(fop,
-                     fileheader.bfOffBits - infoheader.biSize - OS2FILEHEADERSIZE,
-                     f, true);
+    if (infoheader.biCompression != BI_BITFIELDS && infoheader.biCompression != BI_ALPHABITFIELDS)
+      read_bmicolors(fop, fileheader.bfOffBits - infoheader.biSize - OS2FILEHEADERSIZE, f, true);
     else if (infoheader.biBitCount <= 8)
       return false;
   }
@@ -1043,8 +1001,7 @@ bool BmpFormat::onLoad(FileOp *fop)
   }
 
   // Check compatible Compression
-  if (infoheader.biCompression == 4 ||
-      infoheader.biCompression == 5 ||
+  if (infoheader.biCompression == 4 || infoheader.biCompression == 5 ||
       infoheader.biCompression > 6) {
     fop->setError("Unsupported BMP compression.\n");
     return false;
@@ -1052,8 +1009,7 @@ bool BmpFormat::onLoad(FileOp *fop)
 
   // Check image size is valid
   {
-    if (int(infoheader.biWidth) < 1 ||
-        ABS(int(infoheader.biHeight)) == 0) {
+    if (int(infoheader.biWidth) < 1 || ABS(int(infoheader.biHeight)) == 0) {
       fop->setError("Invalid BMP size.\n");
       return false;
     }
@@ -1067,13 +1023,13 @@ bool BmpFormat::onLoad(FileOp *fop)
     if (size > kMaxBmpSize) {
       fop->setError(fmt::format("BMP size unsupported ({:.2f} MB > {:.2f} MB).\n",
                                 size / 1024.0 / 1024.0,
-                                kMaxBmpSize / 1024.0 / 1024.0).c_str());
+                                kMaxBmpSize / 1024.0 / 1024.0)
+                      .c_str());
       return false;
     }
   }
 
-  if ((infoheader.biBitCount == 32) ||
-      (infoheader.biBitCount == 24) ||
+  if ((infoheader.biBitCount == 32) || (infoheader.biBitCount == 24) ||
       (infoheader.biBitCount == 16))
     pixelFormat = IMAGE_RGB;
   else
@@ -1089,17 +1045,14 @@ bool BmpFormat::onLoad(FileOp *fop)
   else
     rmask = gmask = bmask = amask = 0;
 
-  ImageRef image = fop->sequenceImageToLoad(
-    pixelFormat,
-    infoheader.biWidth,
-    ABS((int)infoheader.biHeight));
+  ImageRef image =
+    fop->sequenceImageToLoad(pixelFormat, infoheader.biWidth, ABS((int)infoheader.biHeight));
   if (!image) {
     return false;
   }
 
   if (pixelFormat == IMAGE_RGB)
-    clear_image(image.get(),
-                rgba(0, 0, 0, (infoheader.isAlphaMask() ? 0 : 255)));
+    clear_image(image.get(), rgba(0, 0, 0, (infoheader.isAlphaMask() ? 0 : 255)));
   else
     clear_image(image.get(), 0);
 
@@ -1110,31 +1063,22 @@ bool BmpFormat::onLoad(FileOp *fop)
   // The result of this analysis will be stored in the boolean 'withAlpha'.
   bool withAlpha = false;
   switch (infoheader.biCompression) {
+    case BI_RGB:  read_image(f, image.get(), &infoheader, fop, withAlpha); break;
 
-    case BI_RGB:
-      read_image(f, image.get(), &infoheader, fop, withAlpha);
-      break;
+    case BI_RLE8: read_rle8_compressed_image(f, image.get(), &infoheader); break;
 
-    case BI_RLE8:
-      read_rle8_compressed_image(f, image.get(), &infoheader);
-      break;
-
-    case BI_RLE4:
-      read_rle4_compressed_image(f, image.get(), &infoheader);
-      break;
+    case BI_RLE4: read_rle4_compressed_image(f, image.get(), &infoheader); break;
 
     case BI_BITFIELDS:
     case BI_ALPHABITFIELDS:
-      if (read_bitfields_image(f, image.get(), &infoheader,
-                               rmask, gmask, bmask, amask, withAlpha) < 0) {
+      if (read_bitfields_image(f, image.get(), &infoheader, rmask, gmask, bmask, amask, withAlpha) <
+          0) {
         fop->setError("Unsupported bitfields in the BMP file.\n");
         return false;
       }
       break;
 
-    default:
-      fop->setError("Unsupported BMP compression.\n");
-      return false;
+    default: fop->setError("Unsupported BMP compression.\n"); return false;
   }
 
   if (ferror(f)) {
@@ -1165,7 +1109,7 @@ bool BmpFormat::onLoad(FileOp *fop)
 }
 
 #ifdef ENABLE_SAVE
-bool BmpFormat::onSave(FileOp *fop)
+bool BmpFormat::onSave(FileOp* fop)
 {
   const FileAbstractImage* img = fop->abstractImageToSave();
   const ImageSpec spec = img->spec();
@@ -1184,10 +1128,8 @@ bool BmpFormat::onSave(FileOp *fop)
       else
         bpp = 24;
       break;
-    case ColorMode::GRAYSCALE:
-      bpp = 8;
-      break;
-    case ColorMode::INDEXED: {
+    case ColorMode::GRAYSCALE: bpp = 8; break;
+    case ColorMode::INDEXED:   {
       if (ncolors > 16)
         bpp = 8;
       else if (ncolors > 2)
@@ -1204,69 +1146,66 @@ bool BmpFormat::onSave(FileOp *fop)
       return false;
   }
 
-  int filler = int((32 - ((w*bpp-1) & 31)-1) / 8);
+  int filler = int((32 - ((w * bpp - 1) & 31) - 1) / 8);
   int c, i, j, r, g, b;
 
   if (bpp <= 8) {
-    biSizeImage = (w + filler)*bpp/8 * h;
-    bfSize = (WININFOHEADERSIZE + OS2FILEHEADERSIZE  // header
-              + ncolors*4                            // palette
-              + biSizeImage);                        // image data
+    biSizeImage = (w + filler) * bpp / 8 * h;
+    bfSize = (WININFOHEADERSIZE + OS2FILEHEADERSIZE // header
+              + ncolors * 4                         // palette
+              + biSizeImage);                       // image data
   }
   else {
-    biSizeImage = (w*bpp/8 + filler) * h;
+    biSizeImage = (w * bpp / 8 + filler) * h;
     if (withAlpha)
-      bfSize = BV3INFOHEADERSIZE +
-               OS2FILEHEADERSIZE + biSizeImage;  // header + image data
+      bfSize = BV3INFOHEADERSIZE + OS2FILEHEADERSIZE + biSizeImage; // header + image data
     else
-      bfSize = WININFOHEADERSIZE +
-               OS2FILEHEADERSIZE + biSizeImage;  // header + image data
+      bfSize = WININFOHEADERSIZE + OS2FILEHEADERSIZE + biSizeImage; // header + image data
   }
 
   FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* f = handle.get();
 
   /* file_header */
-  fputw(0x4D42, f);              /* bfType ("BM") */
-  fputl(bfSize, f);              /* bfSize */
-  fputw(0, f);                   /* bfReserved1 */
-  fputw(0, f);                   /* bfReserved2 */
+  fputw(0x4D42, f); /* bfType ("BM") */
+  fputl(bfSize, f); /* bfSize */
+  fputw(0, f);      /* bfReserved1 */
+  fputw(0, f);      /* bfReserved2 */
 
   if (bpp <= 8) {
-    fputl(WININFOHEADERSIZE + OS2FILEHEADERSIZE +
-          ncolors * 4, f);                            /* bfOffBits */
+    fputl(WININFOHEADERSIZE + OS2FILEHEADERSIZE + ncolors * 4, f); /* bfOffBits */
     /* info_header */
-    fputl(WININFOHEADERSIZE, f);                      /* biSize */
+    fputl(WININFOHEADERSIZE, f); /* biSize */
   }
   else if (withAlpha) {
-    fputl(BV3INFOHEADERSIZE + OS2FILEHEADERSIZE, f);  /* bfOffBits -taking account RBGA masks- */
+    fputl(BV3INFOHEADERSIZE + OS2FILEHEADERSIZE, f); /* bfOffBits -taking account RBGA masks- */
     /* info_header */
-    fputl(BV3INFOHEADERSIZE, f);                      /* biSize */
+    fputl(BV3INFOHEADERSIZE, f); /* biSize */
   }
   else {
-    fputl(WININFOHEADERSIZE + OS2FILEHEADERSIZE, f);  /* bfOffBits */
+    fputl(WININFOHEADERSIZE + OS2FILEHEADERSIZE, f); /* bfOffBits */
     /* info_header */
-    fputl(WININFOHEADERSIZE, f);                      /* biSize */
+    fputl(WININFOHEADERSIZE, f); /* biSize */
   }
 
-  fputl(w, f);                   /* biWidth */
-  fputl(h, f);                   /* biHeight */
-  fputw(1, f);                   /* biPlanes */
-  fputw(bpp, f);                 /* biBitCount */
-  if (withAlpha)                 /* biCompression */
+  fputl(w, f);   /* biWidth */
+  fputl(h, f);   /* biHeight */
+  fputw(1, f);   /* biPlanes */
+  fputw(bpp, f); /* biBitCount */
+  if (withAlpha) /* biCompression */
     fputl(BI_BITFIELDS, f);
   else
     fputl(BI_RGB, f);
-  fputl(biSizeImage, f);         /* biSizeImage */
-  fputl(0xB12, f);               /* biXPelsPerMeter (0xB12 = 72 dpi) */
-  fputl(0xB12, f);               /* biYPelsPerMeter */
+  fputl(biSizeImage, f); /* biSizeImage */
+  fputl(0xB12, f);       /* biXPelsPerMeter (0xB12 = 72 dpi) */
+  fputl(0xB12, f);       /* biYPelsPerMeter */
 
   if (bpp <= 8) {
-    fputl(ncolors, f);           /* biClrUsed */
-    fputl(ncolors, f);           /* biClrImportant */
+    fputl(ncolors, f); /* biClrUsed */
+    fputl(ncolors, f); /* biClrImportant */
 
     // Save the palette
-    for (i=0; i<ncolors; i++) {
+    for (i = 0; i < ncolors; i++) {
       fop->sequenceGetColor(i, &r, &g, &b);
       fputc(b, f);
       fputc(g, f);
@@ -1275,8 +1214,8 @@ bool BmpFormat::onSave(FileOp *fop)
     }
   }
   else {
-    fputl(0, f);                 /* biClrUsed */
-    fputl(0, f);                 /* biClrImportant */
+    fputl(0, f); /* biClrUsed */
+    fputl(0, f); /* biClrImportant */
     if (withAlpha) {
       fputl(0x00ff0000, f);
       fputl(0x0000ff00, f);
@@ -1286,21 +1225,21 @@ bool BmpFormat::onSave(FileOp *fop)
   }
 
   // Only used in indexed mode
-  int colorsPerByte = std::max(1, 8/bpp);
+  int colorsPerByte = std::max(1, 8 / bpp);
   int colorMask;
   switch (bpp) {
-    case 8: colorMask = 0xFF; break;
-    case 4: colorMask = 0x0F; break;
-    case 1: colorMask = 0x01; break;
+    case 8:  colorMask = 0xFF; break;
+    case 4:  colorMask = 0x0F; break;
+    case 1:  colorMask = 0x01; break;
     default: colorMask = 0; break;
   }
 
   // Save image pixels (from bottom to top)
-  for (i=h-1; i>=0; i--) {
+  for (i = h - 1; i >= 0; i--) {
     switch (spec.colorMode()) {
       case ColorMode::RGB: {
         auto scanline = (const uint32_t*)img->getScanline(i);
-        for (j=0; j<w; ++j) {
+        for (j = 0; j < w; ++j) {
           c = scanline[j];
           fputc(rgba_getb(c), f);
           fputc(rgba_getg(c), f);
@@ -1312,7 +1251,7 @@ bool BmpFormat::onSave(FileOp *fop)
       }
       case ColorMode::GRAYSCALE: {
         auto scanline = (const uint16_t*)img->getScanline(i);
-        for (j=0; j<w; ++j) {
+        for (j = 0; j < w; ++j) {
           c = scanline[j];
           fputc(graya_getv(c), f);
         }
@@ -1320,11 +1259,11 @@ bool BmpFormat::onSave(FileOp *fop)
       }
       case ColorMode::INDEXED: {
         auto scanline = (const uint8_t*)img->getScanline(i);
-        for (j=0; j<w; ) {
+        for (j = 0; j < w;) {
           uint8_t value = 0;
-          for (int k=colorsPerByte-1; k>=0 && j<w; --k, ++j) {
+          for (int k = colorsPerByte - 1; k >= 0 && j < w; --k, ++j) {
             c = scanline[j];
-            value |= (c & colorMask) << (bpp*k);
+            value |= (c & colorMask) << (bpp * k);
           }
           fputc(value, f);
         }
@@ -1332,10 +1271,10 @@ bool BmpFormat::onSave(FileOp *fop)
       }
     }
 
-    for (j=0; j<filler; j++)
+    for (j = 0; j < filler; j++)
       fputc(0, f);
 
-    fop->setProgress((float)(h-i) / (float)h);
+    fop->setProgress((float)(h - i) / (float)h);
   }
 
   if (ferror(f)) {

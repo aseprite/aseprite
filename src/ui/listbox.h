@@ -16,61 +16,60 @@
 
 namespace ui {
 
-  class ListItem;
+class ListItem;
 
-  class ListBox : public Widget {
-  public:
-    ListBox();
+class ListBox : public Widget {
+public:
+  ListBox();
 
-    bool isMultiselect() const { return m_multiselect; }
-    void setMultiselect(const bool multiselect);
+  bool isMultiselect() const { return m_multiselect; }
+  void setMultiselect(const bool multiselect);
 
-    Widget* getSelectedChild();
-    int getSelectedIndex();
+  Widget* getSelectedChild();
+  int getSelectedIndex();
 
-    void selectChild(Widget* item, Message* msg = nullptr);
-    void selectIndex(int index, Message* msg = nullptr);
+  void selectChild(Widget* item, Message* msg = nullptr);
+  void selectIndex(int index, Message* msg = nullptr);
 
-    int getItemsCount() const;
+  int getItemsCount() const;
 
-    void makeChildVisible(Widget* item);
-    void centerScroll();
-    void sortItems();
-    void sortItems(bool (*cmp)(Widget* a, Widget* b));
+  void makeChildVisible(Widget* item);
+  void centerScroll();
+  void sortItems();
+  void sortItems(bool (*cmp)(Widget* a, Widget* b));
 
-    obs::signal<void()> Change;
-    obs::signal<void()> DoubleClickItem;
+  obs::signal<void()> Change;
+  obs::signal<void()> DoubleClickItem;
 
-  protected:
-    virtual bool onProcessMessage(Message* msg) override;
-    virtual void onPaint(PaintEvent& ev) override;
-    virtual void onResize(ResizeEvent& ev) override;
-    virtual void onSizeHint(SizeHintEvent& ev) override;
-    virtual void onChange();
-    virtual void onDoubleClickItem();
+protected:
+  virtual bool onProcessMessage(Message* msg) override;
+  virtual void onPaint(PaintEvent& ev) override;
+  virtual void onResize(ResizeEvent& ev) override;
+  virtual void onSizeHint(SizeHintEvent& ev) override;
+  virtual void onChange();
+  virtual void onDoubleClickItem();
 
-    int advanceIndexThroughVisibleItems(
-      int startIndex, int delta, const bool loop);
+  int advanceIndexThroughVisibleItems(int startIndex, int delta, const bool loop);
 
-    // True if this listbox accepts selecting multiple items at the
-    // same time.
-    bool m_multiselect;
+  // True if this listbox accepts selecting multiple items at the
+  // same time.
+  bool m_multiselect;
 
-    // Range of items selected when we click down/up. Used to specify
-    // the range of selected items in a multiselect operation.
-    int m_firstSelectedIndex;
-    int m_lastSelectedIndex;
+  // Range of items selected when we click down/up. Used to specify
+  // the range of selected items in a multiselect operation.
+  int m_firstSelectedIndex;
+  int m_lastSelectedIndex;
 
-    // Initial state (isSelected()) of each list item when the
-    // selection operation started. It's used to switch the state of
-    // items in case that the user is Ctrl+clicking items several
-    // items at the same time.
-    std::vector<bool> m_states;
+  // Initial state (isSelected()) of each list item when the
+  // selection operation started. It's used to switch the state of
+  // items in case that the user is Ctrl+clicking items several
+  // items at the same time.
+  std::vector<bool> m_states;
 
-  private:
-    // Finds the parent ListItem that contains the specified descendant.
-    ListItem* findParentListItem(Widget* descendant);
-  };
+private:
+  // Finds the parent ListItem that contains the specified descendant.
+  ListItem* findParentListItem(Widget* descendant);
+};
 
 } // namespace ui
 

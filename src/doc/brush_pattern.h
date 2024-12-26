@@ -11,15 +11,15 @@
 
 namespace doc {
 
-  enum class BrushPattern {
-    ALIGNED_TO_SRC = 0,
-    ALIGNED_TO_DST = 1,
-    PAINT_BRUSH = 2,
+enum class BrushPattern {
+  ALIGNED_TO_SRC = 0,
+  ALIGNED_TO_DST = 1,
+  PAINT_BRUSH = 2,
 
-    DEFAULT = ALIGNED_TO_SRC,           // Default for preferences
-    DEFAULT_FOR_UI = ALIGNED_TO_SRC,
-    DEFAULT_FOR_SCRIPTS = PAINT_BRUSH,
-  };
+  DEFAULT = ALIGNED_TO_SRC, // Default for preferences
+  DEFAULT_FOR_UI = ALIGNED_TO_SRC,
+  DEFAULT_FOR_SCRIPTS = PAINT_BRUSH,
+};
 
 } // namespace doc
 

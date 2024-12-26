@@ -16,34 +16,29 @@
 #include <memory>
 
 namespace doc {
-  class Sprite;
+class Sprite;
 }
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class AddFrame : public Cmd
-                 , public WithSprite {
-  public:
-    AddFrame(Sprite* sprite, frame_t frame);
+class AddFrame : public Cmd,
+                 public WithSprite {
+public:
+  AddFrame(Sprite* sprite, frame_t frame);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this) +
-        (m_addCel ? m_addCel->memSize() : 0);
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  size_t onMemSize() const override { return sizeof(*this) + (m_addCel ? m_addCel->memSize() : 0); }
 
-  private:
-    void moveFrames(Layer* layer, frame_t fromThis, frame_t delta);
+private:
+  void moveFrames(Layer* layer, frame_t fromThis, frame_t delta);
 
-    frame_t m_newFrame;
-    std::unique_ptr<AddCel> m_addCel;
-  };
+  frame_t m_newFrame;
+  std::unique_ptr<AddCel> m_addCel;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

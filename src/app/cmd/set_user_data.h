@@ -15,36 +15,31 @@
 #include "doc/user_data.h"
 
 namespace doc {
-  class WithUserData;
+class WithUserData;
 }
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
-  class SetUserData : public Cmd
-                    , public WithDocument {
-  public:
-    SetUserData(doc::WithUserData* obj,
-                const doc::UserData& userData,
-                app::Doc* doc);
+class SetUserData : public Cmd,
+                    public WithDocument {
+public:
+  SetUserData(doc::WithUserData* obj, const doc::UserData& userData, app::Doc* doc);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onFireNotifications() override;
-    size_t onMemSize() const override {
-      return sizeof(*this) +
-        m_oldUserData.size() +
-        m_newUserData.size();
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onFireNotifications() override;
+  size_t onMemSize() const override
+  {
+    return sizeof(*this) + m_oldUserData.size() + m_newUserData.size();
+  }
 
-  private:
-    doc::ObjectId m_objId;
-    doc::UserData m_oldUserData;
-    doc::UserData m_newUserData;
-  };
+private:
+  doc::ObjectId m_objId;
+  doc::UserData m_oldUserData;
+  doc::UserData m_newUserData;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

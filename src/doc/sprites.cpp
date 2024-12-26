@@ -6,24 +6,23 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/sprites.h"
 
-#include "doc/sprite.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
+#include "doc/sprite.h"
 
 #include <algorithm>
 #include <memory>
 
 namespace doc {
 
-Sprites::Sprites(Document* doc)
-  : m_doc(doc)
+Sprites::Sprites(Document* doc) : m_doc(doc)
 {
   ASSERT(doc != NULL);
 }
@@ -58,7 +57,7 @@ void Sprites::move(Sprite* spr, int index)
 {
   remove(spr);
 
-  m_sprites.insert(begin()+index, spr);
+  m_sprites.insert(begin() + index, spr);
 }
 
 void Sprites::deleteAll()

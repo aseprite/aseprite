@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "dio/aseprite_common.h"
@@ -15,8 +15,7 @@
 
 namespace dio {
 
-uint32_t AsepriteExternalFiles::insert(const uint8_t type,
-                                       const std::string& filename)
+uint32_t AsepriteExternalFiles::insert(const uint8_t type, const std::string& filename)
 {
   auto it = m_toID[type].find(filename);
   if (it != m_toID[type].end())
@@ -27,9 +26,7 @@ uint32_t AsepriteExternalFiles::insert(const uint8_t type,
   }
 }
 
-void AsepriteExternalFiles::insert(uint32_t id,
-                                   const uint8_t type,
-                                   const std::string& filename)
+void AsepriteExternalFiles::insert(uint32_t id, const uint8_t type, const std::string& filename)
 {
   ASSERT(type >= 0 && type < ASE_EXTERNAL_FILE_TYPES);
 

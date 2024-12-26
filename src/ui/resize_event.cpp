@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/resize_event.h"
@@ -15,9 +15,7 @@ namespace ui {
 
 using namespace gfx;
 
-ResizeEvent::ResizeEvent(Widget* source, const gfx::Rect& bounds)
-  : Event(source)
-  , m_bounds(bounds)
+ResizeEvent::ResizeEvent(Widget* source, const gfx::Rect& bounds) : Event(source), m_bounds(bounds)
 {
 }
 

@@ -5,13 +5,12 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/keys.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 // Same order that os::KeyScancode
 // Based on code values of the KeyboardEvent on web code:
@@ -116,10 +115,10 @@ static const char* vkcode_to_code_table[] = {
   "KanaMode",
   "Convert",
   "NonConvert",
-  nullptr, // kKeyAt
-  nullptr, // kKeyCircumflex
-  nullptr, // kKeyColon2
-  nullptr, // kKeyKanji
+  nullptr,       // kKeyAt
+  nullptr,       // kKeyCircumflex
+  nullptr,       // kKeyColon2
+  nullptr,       // kKeyKanji
   "NumpadEqual", // kKeyEqualsPad
   "Backquote",
   nullptr, // kKeySemicolon
@@ -146,14 +145,12 @@ static const char* vkcode_to_code_table[] = {
   "CapsLock",
 };
 
-static int vkcode_to_code_table_size =
-  sizeof(vkcode_to_code_table) / sizeof(vkcode_to_code_table[0]);
+static int vkcode_to_code_table_size = sizeof(vkcode_to_code_table) /
+                                       sizeof(vkcode_to_code_table[0]);
 
 const char* vkcode_to_code(const ui::KeyScancode vkcode)
 {
-  if (vkcode >= 0 &&
-      vkcode < vkcode_to_code_table_size &&
-      vkcode_to_code_table[vkcode]) {
+  if (vkcode >= 0 && vkcode < vkcode_to_code_table_size && vkcode_to_code_table[vkcode]) {
     return vkcode_to_code_table[vkcode];
   }
   else {
@@ -161,5 +158,4 @@ const char* vkcode_to_code(const ui::KeyScancode vkcode)
   }
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

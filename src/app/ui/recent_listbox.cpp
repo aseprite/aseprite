@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/recent_listbox.h"
@@ -42,36 +42,40 @@ using namespace skin;
 
 class RecentFileItem : public DraggableWidget<LinkLabel> {
 public:
-  RecentFileItem(const std::string& file,
-                 const bool pinned)
+  RecentFileItem(const std::string& file, const bool pinned)
     : DraggableWidget<LinkLabel>("")
     , m_fullpath(file)
     , m_name(base::get_file_name(file))
     , m_path(base::get_file_path(file))
-    , m_pinned(pinned) {
+    , m_pinned(pinned)
+  {
     initTheme();
   }
 
   const std::string& fullpath() const { return m_fullpath; }
   bool pinned() const { return m_pinned; }
 
-  void pin() {
+  void pin()
+  {
     m_pinned = true;
     invalidate();
   }
 
-  void onScrollRegion(ui::ScrollRegionEvent& ev) {
+  void onScrollRegion(ui::ScrollRegionEvent& ev)
+  {
     ev.region() -= gfx::Region(pinBounds(bounds()));
   }
 
 protected:
-  void onInitTheme(InitThemeEvent& ev) override {
+  void onInitTheme(InitThemeEvent& ev) override
+  {
     LinkLabel::onInitTheme(ev);
     auto theme = SkinTheme::get(this);
     setStyle(theme->styles.recentItem());
   }
 
-  void onSizeHint(SizeHintEvent& ev) override {
+  void onSizeHint(SizeHintEvent& ev) override
+  {
     auto theme = SkinTheme::get(this);
     ui::Style* style = theme->styles.recentFile();
     ui::Style* styleDetail = theme->styles.recentFileDetail();
@@ -82,10 +86,11 @@ protected:
     setTextQuiet(m_path);
     gfx::Size sz2 = theme->calcSizeHint(this, styleDetail);
 
-    ev.setSizeHint(gfx::Size(sz1.w+sz2.w, std::max(sz1.h, sz2.h)));
+    ev.setSizeHint(gfx::Size(sz1.w + sz2.w, std::max(sz1.h, sz2.h)));
   }
 
-  bool onProcessMessage(Message* msg) override {
+  bool onProcessMessage(Message* msg) override
+  {
     switch (msg->type()) {
       case kMouseDownMessage: {
         const gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
@@ -101,7 +106,7 @@ protected:
           auto end = children.end();
           auto moveTo = parent->firstChild();
           if (m_pinned) {
-            for (auto it=children.begin(); it != end; ++it) {
+            for (auto it = children.begin(); it != end; ++it) {
               if (*it == this || !static_cast<RecentFileItem*>(*it)->pinned()) {
                 moveTo = *it;
                 break;
@@ -112,7 +117,7 @@ protected:
             auto it = std::find(children.begin(), end, this);
             if (it != end) {
               auto prevIt = it++;
-              for (; it != end; prevIt=it++) {
+              for (; it != end; prevIt = it++) {
                 if (!static_cast<RecentFileItem*>(*it)->pinned())
                   break;
               }
@@ -132,7 +137,8 @@ protected:
     return DraggableWidget<LinkLabel>::onProcessMessage(msg);
   }
 
-  void onPaint(PaintEvent& ev) override {
+  void onPaint(PaintEvent& ev) override
+  {
     auto theme = SkinTheme::get(this);
     Graphics* g = ev.graphics();
     gfx::Rect bounds = clientBounds();
@@ -144,9 +150,7 @@ protected:
 
     if (Preferences::instance().general.showFullPath()) {
       gfx::Size textSize = theme->calcSizeHint(this, style);
-      gfx::Rect detailsBounds(
-        bounds.x+textSize.w, bounds.y,
-        bounds.w-textSize.w, bounds.h);
+      gfx::Rect detailsBounds(bounds.x + textSize.w, bounds.y, bounds.w - textSize.w, bounds.h);
       setTextQuiet(m_path.c_str());
       theme->paintWidget(g, this, styleDetail, detailsBounds);
     }
@@ -155,20 +159,21 @@ protected:
       ui::Style* pinStyle = theme->styles.recentFilePin();
       const gfx::Rect pinBounds = this->pinBounds(bounds);
       PaintWidgetPartInfo pi;
-      pi.styleFlags =
-        (isSelected() ? ui::Style::Layer::kSelected: 0) |
-        (m_pinned ? ui::Style::Layer::kFocus: 0) |
-        (hasMouse() ? ui::Style::Layer::kMouse: 0);
+      pi.styleFlags = (isSelected() ? ui::Style::Layer::kSelected : 0) |
+                      (m_pinned ? ui::Style::Layer::kFocus : 0) |
+                      (hasMouse() ? ui::Style::Layer::kMouse : 0);
       theme->paintWidgetPart(g, pinStyle, pinBounds, pi);
     }
   }
 
-  void onClick() override {
+  void onClick() override
+  {
     if (!wasDragged())
       static_cast<RecentListBox*>(parent())->onClick(m_fullpath);
   }
 
-  void onReorderWidgets(const gfx::Point& mousePos, bool inside) override {
+  void onReorderWidgets(const gfx::Point& mousePos, bool inside) override
+  {
     auto parent = this->parent();
     auto other = manager()->pick(mousePos);
     if (other && other != this && other->parent() == parent) {
@@ -177,16 +182,17 @@ protected:
     }
   }
 
-  void onFinalDrop(bool inside) override {
+  void onFinalDrop(bool inside) override
+  {
     if (!wasDragged())
       return;
 
     if (inside) {
       // Pin all elements to keep the order
       const auto& children = parent()->children();
-      for (auto it=children.rbegin(), end=children.rend(); it!=end; ++it) {
+      for (auto it = children.rbegin(), end = children.rend(); it != end; ++it) {
         if (this == *it) {
-          for (; it!=end; ++it)
+          for (; it != end; ++it)
             static_cast<RecentFileItem*>(*it)->pin();
           break;
         }
@@ -204,7 +210,8 @@ protected:
   }
 
 private:
-  gfx::Rect pinBounds(const gfx::Rect& bounds) {
+  gfx::Rect pinBounds(const gfx::Rect& bounds)
+  {
     auto theme = SkinTheme::get(this);
     ui::Style* pinStyle = theme->styles.recentFilePin();
 
@@ -223,14 +230,13 @@ private:
     const gfx::Size pinSize = theme->calcSizeHint(this, pinStyle);
     const gfx::Rect vp = view->viewportBounds();
     const gfx::Point scroll = view->viewScroll();
-    return gfx::Rect(scroll.x+bounds.x+vp.w-pinSize.w,
-                     bounds.y+bounds.h/2-pinSize.h/2,
-                     pinSize.w, pinSize.h);
+    return gfx::Rect(scroll.x + bounds.x + vp.w - pinSize.w,
+                     bounds.y + bounds.h / 2 - pinSize.h / 2,
+                     pinSize.w,
+                     pinSize.h);
   }
 
-  void saveConfig() {
-    static_cast<RecentListBox*>(parent())->updateRecentListFromUIItems();
-  }
+  void saveConfig() { static_cast<RecentListBox*>(parent())->updateRecentListFromUIItems(); }
 
   std::string m_fullpath;
   std::string m_name;
@@ -243,13 +249,10 @@ private:
 
 RecentListBox::RecentListBox()
 {
-  m_recentFilesConn =
-    App::instance()->recentFiles()->Changed.connect(
-      [this]{ rebuildList(); });
+  m_recentFilesConn = App::instance()->recentFiles()->Changed.connect([this] { rebuildList(); });
 
-  m_showFullPathConn =
-    Preferences::instance().general.showFullPath.AfterChange.connect(
-      [this]{ invalidate(); });
+  m_showFullPathConn = Preferences::instance().general.showFullPath.AfterChange.connect(
+    [this] { invalidate(); });
 }
 
 void RecentListBox::rebuildList()
@@ -281,8 +284,7 @@ void RecentListBox::updateRecentListFromUIItems()
     else
       recentPaths.push_back(fi->fullpath());
   }
-  onUpdateRecentListFromUIItems(pinnedPaths,
-                                recentPaths);
+  onUpdateRecentListFromUIItems(pinnedPaths, recentPaths);
 }
 
 void RecentListBox::onScrollRegion(ui::ScrollRegionEvent& ev)
@@ -325,8 +327,7 @@ void RecentFilesListBox::onClick(const std::string& path)
 void RecentFilesListBox::onUpdateRecentListFromUIItems(const base::paths& pinnedPaths,
                                                        const base::paths& recentPaths)
 {
-  App::instance()->recentFiles()->setFiles(pinnedPaths,
-                                           recentPaths);
+  App::instance()->recentFiles()->setFiles(pinnedPaths, recentPaths);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -363,8 +364,7 @@ void RecentFoldersListBox::onClick(const std::string& path)
 void RecentFoldersListBox::onUpdateRecentListFromUIItems(const base::paths& pinnedPaths,
                                                          const base::paths& recentPaths)
 {
-  App::instance()->recentFiles()->setFolders(pinnedPaths,
-                                             recentPaths);
+  App::instance()->recentFiles()->setFolders(pinnedPaths, recentPaths);
 }
 
 } // namespace app

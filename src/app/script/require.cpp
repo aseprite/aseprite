@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/script/require.h"
@@ -14,13 +14,11 @@
 
 #include <cstring>
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 static void eval_code(lua_State* L, const char* code)
 {
-  if (luaL_loadbuffer(L, code, std::strlen(code), "internal") ||
-      lua_pcall(L, 0, 0, 0)) {
+  if (luaL_loadbuffer(L, code, std::strlen(code), "internal") || lua_pcall(L, 0, 0, 0)) {
     // Error case
     const char* s = lua_tostring(L, -1);
     if (s)
@@ -101,5 +99,4 @@ _SCRIPT_PATH = nil
 )");
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

@@ -17,7 +17,8 @@ using namespace app;
 
 class CliTestDelegate : public CliDelegate {
 public:
-  CliTestDelegate() {
+  CliTestDelegate()
+  {
     m_helpWasShown = false;
     m_versionWasShown = false;
     m_uiMode = false;
@@ -30,15 +31,12 @@ public:
   void uiMode() override { m_uiMode = true; }
   void shellMode() override { m_shellMode = true; }
   void batchMode() override { m_batchMode = true; }
-  void beforeOpenFile(const CliOpenFile& cof) override { }
-  void afterOpenFile(const CliOpenFile& cof) override { }
-  void saveFile(Context* ctx, const CliOpenFile& cof) override { }
-  void exportFiles(Context* ctx, DocExporter& exporter) override { }
+  void beforeOpenFile(const CliOpenFile& cof) override {}
+  void afterOpenFile(const CliOpenFile& cof) override {}
+  void saveFile(Context* ctx, const CliOpenFile& cof) override {}
+  void exportFiles(Context* ctx, DocExporter& exporter) override {}
 #ifdef ENABLE_SCRIPTING
-  int execScript(const std::string& filename,
-                 const Params& params) override {
-    return 0;
-  }
+  int execScript(const std::string& filename, const Params& params) override { return 0; }
 #endif
 
   bool helpWasShown() const { return m_helpWasShown; }
@@ -52,12 +50,13 @@ private:
   bool m_batchMode;
 };
 
-std::unique_ptr<AppOptions> args(std::initializer_list<const char*> l) {
-  int argc = l.size()+1;
+std::unique_ptr<AppOptions> args(std::initializer_list<const char*> l)
+{
+  int argc = l.size() + 1;
   const char** argv = new const char*[argc];
   argv[0] = "aseprite.exe";
   auto it = l.begin();
-  for (int i=1; i<argc; ++i, ++it) {
+  for (int i = 1; i < argc; ++i, ++it) {
     argv[i] = *it;
     TRACE("argv[%d] = %s\n", i, argv[i]);
   }
@@ -69,7 +68,7 @@ std::unique_ptr<AppOptions> args(std::initializer_list<const char*> l) {
 TEST(Cli, None)
 {
   CliTestDelegate d;
-  auto a = args({ });
+  auto a = args({});
   CliProcessor p(&d, *a);
   p.process(nullptr);
   EXPECT_TRUE(!d.helpWasShown());

@@ -12,37 +12,39 @@
 
 namespace ui {
 
-  enum HitTest {
-    HitTestNowhere,
-    HitTestCaption,
-    HitTestClient,
-    HitTestBorderNW,
-    HitTestBorderN,
-    HitTestBorderNE,
-    HitTestBorderE,
-    HitTestBorderSE,
-    HitTestBorderS,
-    HitTestBorderSW,
-    HitTestBorderW,
-  };
+enum HitTest {
+  HitTestNowhere,
+  HitTestCaption,
+  HitTestClient,
+  HitTestBorderNW,
+  HitTestBorderN,
+  HitTestBorderNE,
+  HitTestBorderE,
+  HitTestBorderSE,
+  HitTestBorderS,
+  HitTestBorderSW,
+  HitTestBorderW,
+};
 
-  class HitTestEvent : public Event {
-  public:
-    HitTestEvent(Component* source, const gfx::Point& point, HitTest hit)
-      : Event(source)
-      , m_point(point)
-      , m_hit(hit) { }
+class HitTestEvent : public Event {
+public:
+  HitTestEvent(Component* source, const gfx::Point& point, HitTest hit)
+    : Event(source)
+    , m_point(point)
+    , m_hit(hit)
+  {
+  }
 
-    gfx::Point point() const { return m_point; }
+  gfx::Point point() const { return m_point; }
 
-    HitTest hit() const { return m_hit; }
-    void setHit(HitTest hit) { m_hit = hit; }
+  HitTest hit() const { return m_hit; }
+  void setHit(HitTest hit) { m_hit = hit; }
 
-  private:
-    gfx::Point m_point;
-    HitTest m_hit;
-  };
+private:
+  gfx::Point m_point;
+  HitTest m_hit;
+};
 
 } // namespace ui
 
-#endif  // UI_HIT_TEST_EVENT_H_INCLUDED
+#endif // UI_HIT_TEST_EVENT_H_INCLUDED

@@ -9,7 +9,7 @@
 #pragma once
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include <gtest/gtest.h>
@@ -22,10 +22,11 @@
 #ifdef LINKED_WITH_OS_LIBRARY
   #undef main
   #ifdef _WIN32
-    int main(int argc, char* argv[]) {
-      extern int app_main(int argc, char* argv[]);
-      return app_main(argc, argv);
-    }
+int main(int argc, char* argv[])
+{
+  extern int app_main(int argc, char* argv[]);
+  return app_main(argc, argv);
+}
   #endif
   #define main app_main
 #endif
@@ -35,18 +36,18 @@ int main(int argc, char* argv[])
   int exitcode;
   ::testing::InitGoogleTest(&argc, argv);
 
-  #ifdef TEST_GUI
-    {
-      os::SystemRef system(os::make_system());
-      ui::UISystem uiSystem;
-      ui::Manager uiManager(nullptr);
-  #endif
+#ifdef TEST_GUI
+  {
+    os::SystemRef system(os::make_system());
+    ui::UISystem uiSystem;
+    ui::Manager uiManager(nullptr);
+#endif
 
-      exitcode = RUN_ALL_TESTS();
+    exitcode = RUN_ALL_TESTS();
 
-  #ifdef TEST_GUI
-    }
-  #endif
+#ifdef TEST_GUI
+  }
+#endif
 
   return exitcode;
 }

@@ -17,41 +17,38 @@
 #include <vector>
 
 namespace doc {
-  class Palette;
-  class Sprite;
-}
+class Palette;
+class Sprite;
+} // namespace doc
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class SetPalette : public Cmd
-                   , public WithSprite {
-  public:
-    SetPalette(Sprite* sprite, frame_t frame, const Palette* newPalette);
+class SetPalette : public Cmd,
+                   public WithSprite {
+public:
+  SetPalette(Sprite* sprite, frame_t frame, const Palette* newPalette);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onFireNotifications() override;
-    size_t onMemSize() const override {
-      return sizeof(*this) +
-        sizeof(doc::color_t) * (m_oldColors.size() +
-                                m_newColors.size());
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onFireNotifications() override;
+  size_t onMemSize() const override
+  {
+    return sizeof(*this) + sizeof(doc::color_t) * (m_oldColors.size() + m_newColors.size());
+  }
 
-  private:
-    frame_t m_frame;
-    int m_from, m_to;
-    int m_oldNColors;
-    int m_newNColors;
-    int m_oldTransparentIndex;
-    int m_newTransparentIndex;
-    std::vector<color_t> m_oldColors;
-    std::vector<color_t> m_newColors;
-  };
+private:
+  frame_t m_frame;
+  int m_from, m_to;
+  int m_oldNColors;
+  int m_newNColors;
+  int m_oldTransparentIndex;
+  int m_newTransparentIndex;
+  std::vector<color_t> m_oldColors;
+  std::vector<color_t> m_newColors;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

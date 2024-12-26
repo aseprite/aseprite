@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/app_menuitem.h"
@@ -38,11 +38,11 @@ Params AppMenuItem::s_contextParams;
 AppMenuItem::AppMenuItem(const std::string& text,
                          const std::string& commandId,
                          const Params& params)
- : MenuItem(text)
- , m_key(nullptr)
- , m_commandId(commandId)
- , m_params(params)
- , m_native(nullptr)
+  : MenuItem(text)
+  , m_key(nullptr)
+  , m_commandId(commandId)
+  , m_params(params)
+  , m_native(nullptr)
 {
 }
 
@@ -80,7 +80,7 @@ void AppMenuItem::syncNativeMenuItemKeyShortcut()
 
     m_native->shortcut = shortcut;
     m_native->menuItem->setShortcut(shortcut);
-    m_native->keyContext = (m_key ? m_key->keycontext(): KeyContext::Any);
+    m_native->keyContext = (m_key ? m_key->keycontext() : KeyContext::Any);
   }
 }
 
@@ -93,7 +93,6 @@ void AppMenuItem::setContextParams(const Params& params)
 bool AppMenuItem::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
-
     case kCloseMessage:
       // Don't disable items with submenus
       if (!hasSubmenu()) {
@@ -112,18 +111,12 @@ void AppMenuItem::onSizeHint(SizeHintEvent& ev)
   gfx::Size size(0, 0);
 
   if (hasText()) {
-    size.w =
-      + textWidth()
-      + (inBar() ? childSpacing()/4: childSpacing())
-      + border().width();
+    size.w = +textWidth() + (inBar() ? childSpacing() / 4 : childSpacing()) + border().width();
 
-    size.h =
-      + textHeight()
-      + border().height();
+    size.h = +textHeight() + border().height();
 
     if (m_key && !m_key->accels().empty()) {
-      size.w += Graphics::measureUITextLength(
-        m_key->accels().front().toString().c_str(), font());
+      size.w += Graphics::measureUITextLength(m_key->accels().front().toString().c_str(), font());
     }
   }
 

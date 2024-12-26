@@ -14,35 +14,34 @@
 
 #include <map>
 
-namespace app {
-namespace skin {
+namespace app { namespace skin {
 
-  class FontData {
-  public:
-    FontData(os::FontType type);
+class FontData {
+public:
+  FontData(os::FontType type);
 
-    void setFilename(const std::string& filename) { m_filename = filename; }
-    void setAntialias(bool antialias) { m_antialias = antialias; }
-    void setFallback(FontData* fallback, int fallbackSize) {
-      m_fallback = fallback;
-      m_fallbackSize = fallbackSize;
-    }
+  void setFilename(const std::string& filename) { m_filename = filename; }
+  void setAntialias(bool antialias) { m_antialias = antialias; }
+  void setFallback(FontData* fallback, int fallbackSize)
+  {
+    m_fallback = fallback;
+    m_fallbackSize = fallbackSize;
+  }
 
-    os::FontRef getFont(int size, int uiscale);
-    os::FontRef getFont(int size);
+  os::FontRef getFont(int size, int uiscale);
+  os::FontRef getFont(int size);
 
-  private:
-    os::FontType m_type;
-    std::string m_filename;
-    bool m_antialias;
-    std::map<int, os::FontRef> m_fonts; // key=font size, value=real font
-    FontData* m_fallback;
-    int m_fallbackSize;
+private:
+  os::FontType m_type;
+  std::string m_filename;
+  bool m_antialias;
+  std::map<int, os::FontRef> m_fonts; // key=font size, value=real font
+  FontData* m_fallback;
+  int m_fallbackSize;
 
-    DISABLE_COPYING(FontData);
-  };
+  DISABLE_COPYING(FontData);
+};
 
-} // namespace skin
-} // namespace app
+}} // namespace app::skin
 
 #endif

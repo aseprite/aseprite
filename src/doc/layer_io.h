@@ -15,20 +15,19 @@
 #include <iosfwd>
 
 namespace doc {
-  class Layer;
-  class SubObjectsFromSprite;
+class Layer;
+class SubObjectsFromSprite;
 
-  // Thrown when a invalid layer type is read from the istream.
-  class InvalidLayerType : public base::Exception {
-  public:
-    InvalidLayerType(const char* msg) throw() : base::Exception(msg) { }
-  };
+// Thrown when a invalid layer type is read from the istream.
+class InvalidLayerType : public base::Exception {
+public:
+  InvalidLayerType(const char* msg) throw() : base::Exception(msg) {}
+};
 
-  void write_layer(std::ostream& os,
-                   const Layer* layer);
-  Layer* read_layer(std::istream& is,
-                    SubObjectsFromSprite* subObjects,
-                    SerialFormat serial = SerialFormat::LastVer);
+void write_layer(std::ostream& os, const Layer* layer);
+Layer* read_layer(std::istream& is,
+                  SubObjectsFromSprite* subObjects,
+                  SerialFormat serial = SerialFormat::LastVer);
 
 } // namespace doc
 

@@ -13,30 +13,30 @@
 #include <vector>
 
 namespace app {
-  class Doc;
-  class DocRange;
+class Doc;
+class DocRange;
 
-  enum DocRangePlace {
-    kDocRangeBefore,
-    kDocRangeAfter,
-    kDocRangeFirstChild,
-  };
+enum DocRangePlace {
+  kDocRangeBefore,
+  kDocRangeAfter,
+  kDocRangeFirstChild,
+};
 
-  // These functions returns the new location of the "from" range or
-  // throws an std::runtime_error() in case that the operation cannot
-  // be done. (E.g. the background layer cannot be moved.)
-  DocRange move_range(Doc* doc,
-                      const DocRange& from,
-                      const DocRange& to,
-                      const DocRangePlace place,
-                      const TagsHandling tagsHandling = kDefaultTagsAdjustment);
-  DocRange copy_range(Doc* doc,
-                      const DocRange& from,
-                      const DocRange& to,
-                      const DocRangePlace place,
-                      const TagsHandling tagsHandling = kDefaultTagsAdjustment);
+// These functions returns the new location of the "from" range or
+// throws an std::runtime_error() in case that the operation cannot
+// be done. (E.g. the background layer cannot be moved.)
+DocRange move_range(Doc* doc,
+                    const DocRange& from,
+                    const DocRange& to,
+                    const DocRangePlace place,
+                    const TagsHandling tagsHandling = kDefaultTagsAdjustment);
+DocRange copy_range(Doc* doc,
+                    const DocRange& from,
+                    const DocRange& to,
+                    const DocRangePlace place,
+                    const TagsHandling tagsHandling = kDefaultTagsAdjustment);
 
-  void reverse_frames(Doc* doc, const DocRange& range);
+void reverse_frames(Doc* doc, const DocRange& range);
 
 } // namespace app
 

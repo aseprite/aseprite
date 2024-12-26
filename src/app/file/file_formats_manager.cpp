@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/file/file_formats_manager.h"
@@ -89,7 +89,7 @@ FileFormatsManager::~FileFormatsManager()
 {
   FileFormatsList::iterator end = this->end();
   for (FileFormatsList::iterator it = begin(); it != end; ++it) {
-    delete (*it);               // delete the FileFormat
+    delete (*it); // delete the FileFormat
   }
 }
 

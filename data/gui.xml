@@ -686,11 +686,11 @@
         <item command="NewFile" text="@.file_new" group="file_new" />
         <item command="OpenFile" text="@.file_open" group="file_open" />
         <menu text="@.file_open_recent" group="file_recent">
-	  <item command="ReopenClosedFile" text="@.file_reopen_closed" group="file_recent_reopen" />
+          <item command="ReopenClosedFile" text="@.file_reopen_closed" group="file_recent_reopen" />
           <separator id="recent_files_placeholder" group="file_recent_list" />
           <separator />
-	  <item command="ClearRecentFiles" text="@.file_clear_recent_files" group="file_recent_clear" />
-	</menu>
+          <item command="ClearRecentFiles" text="@.file_clear_recent_files" group="file_recent_clear" />
+        </menu>
         <separator />
         <item command="SaveFile" text="@.file_save" />
         <item command="SaveFileAs" text="@.file_save_as" group="file_save" />

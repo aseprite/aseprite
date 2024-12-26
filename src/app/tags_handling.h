@@ -10,18 +10,18 @@
 
 namespace app {
 
-  // How to adjust tags when we move a frame in the border of a tag.
-  enum TagsHandling {
-    // Do not move tags.
-    kDontAdjustTags,
-    // Move tags "in the best possible way" when the user doesn't
-    // specify what to do about them.
-    kDefaultTagsAdjustment,
-    // Put frames inside tags.
-    kFitInsideTags,
-    // Put frames outside tags.
-    kFitOutsideTags,
-  };
+// How to adjust tags when we move a frame in the border of a tag.
+enum TagsHandling {
+  // Do not move tags.
+  kDontAdjustTags,
+  // Move tags "in the best possible way" when the user doesn't
+  // specify what to do about them.
+  kDefaultTagsAdjustment,
+  // Put frames inside tags.
+  kFitInsideTags,
+  // Put frames outside tags.
+  kFitOutsideTags,
+};
 
 } // namespace app
 

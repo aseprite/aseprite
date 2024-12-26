@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -44,8 +44,7 @@ protected:
   void onExecute(Context* ctx) override;
 };
 
-PasteTextCommand::PasteTextCommand()
-  : Command(CommandId::PasteText(), CmdUIOnlyFlag)
+PasteTextCommand::PasteTextCommand() : Command(CommandId::PasteText(), CmdUIOnlyFlag)
 {
 }
 
@@ -57,63 +56,60 @@ bool PasteTextCommand::onEnabled(Context* ctx)
 
 class PasteTextWindow : public app::gen::PasteText {
 public:
-  PasteTextWindow(const std::string& face, int size,
-                  bool antialias,
-                  const app::Color& color)
-    : m_face(face) {
+  PasteTextWindow(const std::string& face, int size, bool antialias, const app::Color& color)
+    : m_face(face)
+  {
     ok()->setEnabled(!m_face.empty());
     if (!m_face.empty())
       updateFontFaceButton();
 
     fontSize()->setTextf("%d", size);
-    fontFace()->Click.connect([this]{ onSelectFontFile(); });
-    fontFace()->DropDownClick.connect([this]{ onSelectSystemFont(); });
+    fontFace()->Click.connect([this] { onSelectFontFile(); });
+    fontFace()->DropDownClick.connect([this] { onSelectSystemFont(); });
     fontColor()->setColor(color);
     this->antialias()->setSelected(antialias);
   }
 
-  std::string faceValue() const {
-    return m_face;
-  }
+  std::string faceValue() const { return m_face; }
 
-  int sizeValue() const {
+  int sizeValue() const
+  {
     int size = fontSize()->textInt();
     size = std::clamp(size, 1, 5000);
     return size;
   }
 
 private:
-  void updateFontFaceButton() {
-    fontFace()->mainButton()
-      ->setTextf("Select Font: %s",
-                 base::get_file_title(m_face).c_str());
+  void updateFontFaceButton()
+  {
+    fontFace()->mainButton()->setTextf("Select Font: %s", base::get_file_title(m_face).c_str());
   }
 
-  void onSelectFontFile() {
+  void onSelectFontFile()
+  {
     base::paths exts = { "ttf", "ttc", "otf", "dfont" };
     base::paths face;
-    if (!show_file_selector(
-          "Select a TrueType Font",
-          m_face, exts,
-          FileSelectorType::Open, face))
+    if (!show_file_selector("Select a TrueType Font", m_face, exts, FileSelectorType::Open, face))
       return;
 
     ASSERT(!face.empty());
     setFontFace(face.front());
   }
 
-  void setFontFace(const std::string& face) {
+  void setFontFace(const std::string& face)
+  {
     m_face = face;
     ok()->setEnabled(true);
     updateFontFaceButton();
   }
 
-  void onSelectSystemFont() {
+  void onSelectSystemFont()
+  {
     if (!m_fontPopup) {
       try {
         m_fontPopup.reset(new FontPopup());
         m_fontPopup->Load.connect(&PasteTextWindow::setFontFace, this);
-        m_fontPopup->Close.connect([this]{ onCloseFontPopup(); });
+        m_fontPopup->Close.connect([this] { onCloseFontPopup(); });
       }
       catch (const std::exception& ex) {
         Console::showException(ex);
@@ -129,9 +125,7 @@ private:
     }
   }
 
-  void onCloseFontPopup() {
-    fontFace()->dropDown()->requestFocus();
-  }
+  void onCloseFontPopup() { fontFace()->dropDown()->requestFocus(); }
 
   std::string m_face;
   std::unique_ptr<FontPopup> m_fontPopup;
@@ -168,23 +162,22 @@ void PasteTextCommand::onExecute(Context* ctx)
   try {
     std::string text = window.userText()->text();
     app::Color appColor = window.fontColor()->getColor();
-    doc::color_t color = doc::rgba(appColor.getRed(),
-                                   appColor.getGreen(),
-                                   appColor.getBlue(),
-                                   appColor.getAlpha());
+    doc::color_t color =
+      doc::rgba(appColor.getRed(), appColor.getGreen(), appColor.getBlue(), appColor.getAlpha());
 
     doc::ImageRef image(render_text(faceName, size, text, color, antialias));
     if (image) {
       Sprite* sprite = editor->sprite();
       if (image->pixelFormat() != sprite->pixelFormat()) {
         RgbMap* rgbmap = sprite->rgbMap(editor->frame());
-        image.reset(
-          render::convert_pixel_format(
-            image.get(), NULL, sprite->pixelFormat(),
-            render::Dithering(),
-            rgbmap, sprite->palette(editor->frame()),
-            false,
-            sprite->transparentColor()));
+        image.reset(render::convert_pixel_format(image.get(),
+                                                 NULL,
+                                                 sprite->pixelFormat(),
+                                                 render::Dithering(),
+                                                 rgbmap,
+                                                 sprite->palette(editor->frame()),
+                                                 false,
+                                                 sprite->transparentColor()));
       }
 
       // TODO we don't support pasting text in multiple cels at the

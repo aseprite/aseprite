@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "gfx/size.h"
@@ -59,12 +59,10 @@ void ScrollBar::getScrollBarThemeInfo(int* pos, int* len)
 
 bool ScrollBar::onProcessMessage(Message* msg)
 {
-#define MOUSE_IN(x1, y1, x2, y2) \
-  ((mousePos.x >= (x1)) && (mousePos.x <= (x2)) && \
-   (mousePos.y >= (y1)) && (mousePos.y <= (y2)))
+#define MOUSE_IN(x1, y1, x2, y2)                                                                   \
+  ((mousePos.x >= (x1)) && (mousePos.x <= (x2)) && (mousePos.y >= (y1)) && (mousePos.y <= (y2)))
 
   switch (msg->type()) {
-
     case kMouseDownMessage: {
       gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
       int x1, y1, x2, y2;
@@ -75,14 +73,12 @@ bool ScrollBar::onProcessMessage(Message* msg)
       getScrollBarThemeInfo(&pos, &len);
 
       m_wherepos = pos;
-      m_whereclick = (align() & HORIZONTAL) ?
-        mousePos.x:
-        mousePos.y;
+      m_whereclick = (align() & HORIZONTAL) ? mousePos.x : mousePos.y;
 
       x1 = bounds().x;
       y1 = bounds().y;
-      x2 = bounds().x2()-1;
-      y2 = bounds().y2()-1;
+      x2 = bounds().x2() - 1;
+      y2 = bounds().y2() - 1;
 
       u1 = x1 + border().left();
       v1 = y1 + border().top();
@@ -93,33 +89,33 @@ bool ScrollBar::onProcessMessage(Message* msg)
 
       if (align() & HORIZONTAL) {
         // in the bar
-        if (MOUSE_IN(u1+pos, v1, u1+pos+len-1, v2)) {
+        if (MOUSE_IN(u1 + pos, v1, u1 + pos + len - 1, v2)) {
           // capture mouse
         }
         // left
-        else if (MOUSE_IN(x1, y1, u1+pos-1, y2)) {
-          scroll.x -= m_delegate->visibleSize().w/2;
+        else if (MOUSE_IN(x1, y1, u1 + pos - 1, y2)) {
+          scroll.x -= m_delegate->visibleSize().w / 2;
           ret = true;
         }
         // right
-        else if (MOUSE_IN(u1+pos+len, y1, x2, y2)) {
-          scroll.x += m_delegate->visibleSize().w/2;
+        else if (MOUSE_IN(u1 + pos + len, y1, x2, y2)) {
+          scroll.x += m_delegate->visibleSize().w / 2;
           ret = true;
         }
       }
       else {
         // in the bar
-        if (MOUSE_IN(u1, v1+pos, u2, v1+pos+len-1)) {
+        if (MOUSE_IN(u1, v1 + pos, u2, v1 + pos + len - 1)) {
           // capture mouse
         }
         // left
-        else if (MOUSE_IN(x1, y1, x2, v1+pos-1)) {
-          scroll.y -= m_delegate->visibleSize().h/2;
+        else if (MOUSE_IN(x1, y1, x2, v1 + pos - 1)) {
+          scroll.y -= m_delegate->visibleSize().h / 2;
           ret = true;
         }
         // right
-        else if (MOUSE_IN(x1, v1+pos+len, x2, y2)) {
-          scroll.y += m_delegate->visibleSize().h/2;
+        else if (MOUSE_IN(x1, v1 + pos + len, x2, y2)) {
+          scroll.y += m_delegate->visibleSize().h / 2;
           ret = true;
         }
       }
@@ -194,12 +190,10 @@ void ScrollBar::onPaint(PaintEvent& ev)
   else
     getScrollBarThemeInfo(&thumbBounds.y, &thumbBounds.h);
 
-  theme()->paintScrollBar(
-    ev.graphics(), this, style(), thumbStyle(),
-    clientBounds(), thumbBounds);
+  theme()->paintScrollBar(ev.graphics(), this, style(), thumbStyle(), clientBounds(), thumbBounds);
 }
 
-void ScrollBar::getScrollBarInfo(int *_pos, int *_len, int *_bar_size, int *_viewport_size)
+void ScrollBar::getScrollBarInfo(int* _pos, int* _len, int* _bar_size, int* _viewport_size)
 {
   int bar_size, viewport_size;
   int pos, len;
@@ -222,18 +216,23 @@ void ScrollBar::getScrollBarInfo(int *_pos, int *_len, int *_bar_size, int *_vie
   }
   else if (m_size > 0) {
     len = bar_size * viewport_size / m_size;
-    len = std::clamp(len, std::min(theme()->getScrollbarSize()*2-border_width, bar_size), bar_size);
-    pos = (bar_size-len) * m_pos / (m_size-viewport_size);
-    pos = std::clamp(pos, 0, bar_size-len);
+    len =
+      std::clamp(len, std::min(theme()->getScrollbarSize() * 2 - border_width, bar_size), bar_size);
+    pos = (bar_size - len) * m_pos / (m_size - viewport_size);
+    pos = std::clamp(pos, 0, bar_size - len);
   }
   else {
     len = pos = 0;
   }
 
-  if (_pos) *_pos = pos;
-  if (_len) *_len = len;
-  if (_bar_size) *_bar_size = bar_size;
-  if (_viewport_size) *_viewport_size = viewport_size;
+  if (_pos)
+    *_pos = pos;
+  if (_len)
+    *_len = len;
+  if (_bar_size)
+    *_bar_size = bar_size;
+  if (_viewport_size)
+    *_viewport_size = viewport_size;
 }
 
 } // namespace ui

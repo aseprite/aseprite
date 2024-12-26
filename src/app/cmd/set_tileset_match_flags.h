@@ -12,29 +12,24 @@
 #include "app/cmd/with_tileset.h"
 #include "doc/tile.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class SetTilesetMatchFlags : public Cmd
-                            , public WithTileset {
-  public:
-    SetTilesetMatchFlags(Tileset* tileset,
-                         const tile_flags matchFlags);
+class SetTilesetMatchFlags : public Cmd,
+                             public WithTileset {
+public:
+  SetTilesetMatchFlags(Tileset* tileset, const tile_flags matchFlags);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this);
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  size_t onMemSize() const override { return sizeof(*this); }
 
-  private:
-    tile_flags m_oldMatchFlags;
-    tile_flags m_newMatchFlags;
-  };
+private:
+  tile_flags m_oldMatchFlags;
+  tile_flags m_newMatchFlags;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

@@ -5,16 +5,15 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/flip_image.h"
 
-#include "doc/image.h"
 #include "doc/algorithm/flip_image.h"
+#include "doc/image.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 FlipImage::FlipImage(Image* image, const gfx::Rect& bounds, doc::algorithm::FlipType flipType)
   : WithImage(image)
@@ -43,5 +42,4 @@ void FlipImage::swap()
   image->incrementVersion();
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

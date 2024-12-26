@@ -15,74 +15,74 @@
 
 #include <vector>
 
-namespace app {
-  namespace tools {
+namespace app { namespace tools {
 
-    class Stroke {
-    public:
-      struct Pt {
-        int x = 0;
-        int y = 0;
-        float size = 0.0f;
-        float angle = 0.0f;
-        float gradient = 0.0f;
-        gen::SymmetryMode symmetry = gen::SymmetryMode::NONE;
-        Pt() { }
-        Pt(const gfx::Point& point) : x(point.x), y(point.y) { }
-        Pt(int x, int y) : x(x), y(y) { }
-        gfx::Point toPoint() const { return gfx::Point(x, y); }
-        bool operator==(const Pt& that) const { return x == that.x && y == that.y; }
-        bool operator!=(const Pt& that) const { return x != that.x || y != that.y; }
-      };
-      typedef std::vector<Pt> Pts;
-      typedef Pts::const_iterator const_iterator;
+class Stroke {
+public:
+  struct Pt {
+    int x = 0;
+    int y = 0;
+    float size = 0.0f;
+    float angle = 0.0f;
+    float gradient = 0.0f;
+    gen::SymmetryMode symmetry = gen::SymmetryMode::NONE;
+    Pt() {}
+    Pt(const gfx::Point& point) : x(point.x), y(point.y) {}
+    Pt(int x, int y) : x(x), y(y) {}
+    gfx::Point toPoint() const { return gfx::Point(x, y); }
+    bool operator==(const Pt& that) const { return x == that.x && y == that.y; }
+    bool operator!=(const Pt& that) const { return x != that.x || y != that.y; }
+  };
+  typedef std::vector<Pt> Pts;
+  typedef Pts::const_iterator const_iterator;
 
-      const_iterator begin() const { return m_pts.begin(); }
-      const_iterator end() const { return m_pts.end(); }
+  const_iterator begin() const { return m_pts.begin(); }
+  const_iterator end() const { return m_pts.end(); }
 
-      bool empty() const { return m_pts.empty(); }
-      int size() const { return (int)m_pts.size(); }
+  bool empty() const { return m_pts.empty(); }
+  int size() const { return (int)m_pts.size(); }
 
-      const Pt& operator[](int i) const { return m_pts[i]; }
-      Pt& operator[](int i) { return m_pts[i]; }
+  const Pt& operator[](int i) const { return m_pts[i]; }
+  Pt& operator[](int i) { return m_pts[i]; }
 
-      const Pt& firstPoint() const {
-        ASSERT(!m_pts.empty());
-        return m_pts[0];
-      }
+  const Pt& firstPoint() const
+  {
+    ASSERT(!m_pts.empty());
+    return m_pts[0];
+  }
 
-      const Pt& lastPoint() const {
-        ASSERT(!m_pts.empty());
-        return m_pts[m_pts.size()-1];
-      }
+  const Pt& lastPoint() const
+  {
+    ASSERT(!m_pts.empty());
+    return m_pts[m_pts.size() - 1];
+  }
 
-      // Clears the whole stroke.
-      void reset();
+  // Clears the whole stroke.
+  void reset();
 
-      // Reset the stroke as "n" points in the given point position.
-      void reset(int n, const Pt& pt);
+  // Reset the stroke as "n" points in the given point position.
+  void reset(int n, const Pt& pt);
 
-      // Adds a new point to the stroke.
-      void addPoint(const Pt& pt);
+  // Adds a new point to the stroke.
+  void addPoint(const Pt& pt);
 
-      // Displaces all X,Y coordinates the given delta.
-      void offset(const gfx::Point& delta);
+  // Displaces all X,Y coordinates the given delta.
+  void offset(const gfx::Point& delta);
 
-      // Erase the point "index".
-      void erase(int index);
+  // Erase the point "index".
+  void erase(int index);
 
-      // Returns the bounds of the stroke (minimum/maximum position).
-      gfx::Rect bounds() const;
+  // Returns the bounds of the stroke (minimum/maximum position).
+  gfx::Rect bounds() const;
 
-      std::vector<int> toXYInts() const;
+  std::vector<int> toXYInts() const;
 
-    public:
-      Pts m_pts;
-    };
+public:
+  Pts m_pts;
+};
 
-    typedef std::vector<Stroke> Strokes;
+typedef std::vector<Stroke> Strokes;
 
-  } // namespace tools
-} // namespace app
+}} // namespace app::tools
 
 #endif

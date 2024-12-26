@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/copy_frame.h"
@@ -14,11 +14,10 @@
 #include "app/cmd/add_frame.h"
 #include "app/cmd/copy_cel.h"
 #include "app/cmd/set_frame_duration.h"
-#include "doc/sprite.h"
 #include "doc/layer.h"
+#include "doc/sprite.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 using namespace doc;
 
@@ -41,5 +40,4 @@ void CopyFrame::onExecute()
   // Do not copy cels (cmd::CopyCel must be called from outside)
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

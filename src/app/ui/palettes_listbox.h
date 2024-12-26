@@ -13,29 +13,29 @@
 #include "ui/tooltips.h"
 
 namespace doc {
-  class Palette;
+class Palette;
 }
 
 namespace app {
 
-  class PalettesListBox : public ResourcesListBox {
-  public:
-    PalettesListBox();
+class PalettesListBox : public ResourcesListBox {
+public:
+  PalettesListBox();
 
-    const doc::Palette* selectedPalette();
+  const doc::Palette* selectedPalette();
 
-    obs::signal<void(const doc::Palette*)> PalChange;
+  obs::signal<void(const doc::Palette*)> PalChange;
 
-  protected:
-    virtual ResourceListItem* onCreateResourceItem(Resource* resource) override;
-    virtual void onResourceChange(Resource* resource) override;
-    virtual void onPaintResource(ui::Graphics* g, gfx::Rect& bounds, Resource* resource) override;
-    virtual void onResourceSizeHint(Resource* resource, gfx::Size& size) override;
+protected:
+  virtual ResourceListItem* onCreateResourceItem(Resource* resource) override;
+  virtual void onResourceChange(Resource* resource) override;
+  virtual void onPaintResource(ui::Graphics* g, gfx::Rect& bounds, Resource* resource) override;
+  virtual void onResourceSizeHint(Resource* resource, gfx::Size& size) override;
 
-    ui::TooltipManager m_tooltips;
-    obs::scoped_connection m_extPaletteChanges;
-    obs::scoped_connection m_extPresetsChanges;
-  };
+  ui::TooltipManager m_tooltips;
+  obs::scoped_connection m_extPaletteChanges;
+  obs::scoped_connection m_extPresetsChanges;
+};
 
 } // namespace app
 

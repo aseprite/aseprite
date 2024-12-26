@@ -12,29 +12,29 @@
 #include "ui/base.h"
 
 namespace os {
-  class Font;
+class Font;
 }
 
 namespace ui {
 
-  class Graphics;
-  class Widget;
-  class Window;
+class Graphics;
+class Widget;
+class Window;
 
-  // intern.cpp
+// intern.cpp
 
-  namespace details {
+namespace details {
 
-    void initWidgets();
-    void exitWidgets();
+void initWidgets();
+void exitWidgets();
 
-    void addWidget(Widget* widget);
-    void removeWidget(Widget* widget);
+void addWidget(Widget* widget);
+void removeWidget(Widget* widget);
 
-    void reinitThemeForAllWidgets();
-    int old_guiscale();
+void reinitThemeForAllWidgets();
+int old_guiscale();
 
-  } // namespace details
+} // namespace details
 
 } // namespace ui
 

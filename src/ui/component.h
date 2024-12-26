@@ -16,30 +16,29 @@
 
 namespace ui {
 
-  // A component is a visual object, such as widgets or menus.
-  //
-  // Components are non-copyable.
-  class Component
-  {
-  public:
-    typedef std::map<std::string, PropertyPtr> Properties;
+// A component is a visual object, such as widgets or menus.
+//
+// Components are non-copyable.
+class Component {
+public:
+  typedef std::map<std::string, PropertyPtr> Properties;
 
-    Component();
-    virtual ~Component();
+  Component();
+  virtual ~Component();
 
-    PropertyPtr getProperty(const std::string& name) const;
-    void setProperty(PropertyPtr property);
+  PropertyPtr getProperty(const std::string& name) const;
+  void setProperty(PropertyPtr property);
 
-    bool hasProperty(const std::string& name) const;
-    void removeProperty(const std::string& name);
+  bool hasProperty(const std::string& name) const;
+  void removeProperty(const std::string& name);
 
-    const Properties& getProperties() const;
+  const Properties& getProperties() const;
 
-  private:
-    Properties m_properties;
+private:
+  Properties m_properties;
 
-    DISABLE_COPYING(Component);
-  };
+  DISABLE_COPYING(Component);
+};
 
 } // namespace ui
 

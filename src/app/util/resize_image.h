@@ -14,27 +14,26 @@
 #include "gfx/size.h"
 
 namespace doc {
-  class Cel;
-  class Image;
-  class Palette;
-  class RgbMap;
-}
+class Cel;
+class Image;
+class Palette;
+class RgbMap;
+} // namespace doc
 
 namespace app {
-  class Tx;
+class Tx;
 
-  doc::Image* resize_image(
-    const doc::Image* image,
-    const gfx::SizeF& scale,
-    const doc::algorithm::ResizeMethod method,
-    const doc::Palette* pal,
-    const doc::RgbMap* rgbmap);
+doc::Image* resize_image(const doc::Image* image,
+                         const gfx::SizeF& scale,
+                         const doc::algorithm::ResizeMethod method,
+                         const doc::Palette* pal,
+                         const doc::RgbMap* rgbmap);
 
-  void resize_cel_image(
-    Tx& tx, doc::Cel* cel,
-    const gfx::SizeF& scale,
-    const doc::algorithm::ResizeMethod method,
-    const gfx::PointF& pivot);
+void resize_cel_image(Tx& tx,
+                      doc::Cel* cel,
+                      const gfx::SizeF& scale,
+                      const doc::algorithm::ResizeMethod method,
+                      const gfx::PointF& pivot);
 
 } // namespace app
 

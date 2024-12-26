@@ -11,31 +11,27 @@
 #include "app/cmd.h"
 #include "app/cmd/with_sprite.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class SetSpriteSize : public Cmd
-                      , public WithSprite {
-  public:
-    SetSpriteSize(Sprite* sprite, int newWidth, int newHeight);
+class SetSpriteSize : public Cmd,
+                      public WithSprite {
+public:
+  SetSpriteSize(Sprite* sprite, int newWidth, int newHeight);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onFireNotifications() override;
-    size_t onMemSize() const override {
-      return sizeof(*this);
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onFireNotifications() override;
+  size_t onMemSize() const override { return sizeof(*this); }
 
-  private:
-    uint32_t m_oldWidth;
-    uint32_t m_oldHeight;
-    uint32_t m_newWidth;
-    uint32_t m_newHeight;
-  };
+private:
+  uint32_t m_oldWidth;
+  uint32_t m_oldHeight;
+  uint32_t m_newWidth;
+  uint32_t m_newHeight;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

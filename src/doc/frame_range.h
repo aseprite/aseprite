@@ -12,28 +12,22 @@
 
 namespace doc {
 
-  struct FrameRange {
-    frame_t fromFrame, toFrame;
+struct FrameRange {
+  frame_t fromFrame, toFrame;
 
-    FrameRange() : fromFrame(0), toFrame(0) {
-    }
+  FrameRange() : fromFrame(0), toFrame(0) {}
 
-    explicit FrameRange(frame_t frame)
-      : fromFrame(frame), toFrame(frame) {
-    }
+  explicit FrameRange(frame_t frame) : fromFrame(frame), toFrame(frame) {}
 
-    FrameRange(frame_t fromFrame, frame_t toFrame)
-      : fromFrame(fromFrame), toFrame(toFrame) {
-    }
+  FrameRange(frame_t fromFrame, frame_t toFrame) : fromFrame(fromFrame), toFrame(toFrame) {}
 
-    bool operator==(const FrameRange& o) const {
-      return (fromFrame == o.fromFrame && toFrame == o.toFrame);
-    }
+  bool operator==(const FrameRange& o) const
+  {
+    return (fromFrame == o.fromFrame && toFrame == o.toFrame);
+  }
 
-    bool operator!=(const FrameRange& o) const {
-      return !operator==(o);
-    }
-  };
+  bool operator!=(const FrameRange& o) const { return !operator==(o); }
+};
 
 } // namespace doc
 

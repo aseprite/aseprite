@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/file_list_view.h"
@@ -20,9 +20,7 @@ void FileListView::onScrollRegion(ui::ScrollRegionEvent& ev)
   if (auto fileList = dynamic_cast<FileList*>(attachedWidget())) {
     gfx::Rect tbounds = fileList->mainThumbnailBounds();
     if (!tbounds.isEmpty()) {
-      tbounds
-        .enlarge(1)
-        .offset(fileList->bounds().origin());
+      tbounds.enlarge(1).offset(fileList->bounds().origin());
 
       ev.region().createSubtraction(ev.region(), gfx::Region(tbounds));
     }

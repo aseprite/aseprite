@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/background_from_layer.h"
@@ -25,11 +25,9 @@
 #include "doc/sprite.h"
 #include "render/render.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
-BackgroundFromLayer::BackgroundFromLayer(Layer* layer)
-  : WithLayer(layer)
+BackgroundFromLayer::BackgroundFromLayer(Layer* layer) : WithLayer(layer)
 {
   ASSERT(layer);
   ASSERT(layer->isVisible());
@@ -42,7 +40,7 @@ BackgroundFromLayer::BackgroundFromLayer(Layer* layer)
 void BackgroundFromLayer::onExecute()
 {
   Layer* layer = this->layer();
-  ASSERT(!layer->isTilemap());  // TODO support background tilemaps
+  ASSERT(!layer->isTilemap()); // TODO support background tilemaps
 
   Sprite* sprite = layer->sprite();
   auto doc = static_cast<Doc*>(sprite->document());
@@ -60,12 +58,13 @@ void BackgroundFromLayer::onExecute()
     ASSERT(cel_image->pixelFormat() != IMAGE_TILEMAP);
 
     clear_image(bg_image.get(), bgcolor);
-    render::composite_image(
-      bg_image.get(), cel_image,
-      sprite->palette(cel->frame()),
-      cel->x(), cel->y(),
-      std::clamp(cel->opacity(), 0, 255),
-      static_cast<LayerImage*>(layer)->blendMode());
+    render::composite_image(bg_image.get(),
+                            cel_image,
+                            sprite->palette(cel->frame()),
+                            cel->x(),
+                            cel->y(),
+                            std::clamp(cel->opacity(), 0, 255),
+                            static_cast<LayerImage*>(layer)->blendMode());
 
     // now we have to copy the new image (bg_image) to the cel...
     executeAndAdd(new cmd::SetCelPosition(cel, 0, 0));
@@ -76,10 +75,8 @@ void BackgroundFromLayer::onExecute()
 
     // Same size of cel image and background image, we can just
     // replace pixels.
-    if (bg_image->width() == cel_image->width() &&
-        bg_image->height() == cel_image->height()) {
-      executeAndAdd(new CopyRect(cel_image, bg_image.get(),
-          gfx::Clip(0, 0, cel_image->bounds())));
+    if (bg_image->width() == cel_image->width() && bg_image->height() == cel_image->height()) {
+      executeAndAdd(new CopyRect(cel_image, bg_image.get(), gfx::Clip(0, 0, cel_image->bounds())));
     }
     // In other case we have to replace the whole image (this is the
     // most common case, a smaller transparent cel that is converted
@@ -91,11 +88,10 @@ void BackgroundFromLayer::onExecute()
   }
 
   // Fill all empty cels with a flat image filled with bgcolor
-  for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
+  for (frame_t frame(0); frame < sprite->totalFrames(); ++frame) {
     Cel* cel = layer->cel(frame);
     if (!cel) {
-      ImageRef cel_image(Image::create(sprite->pixelFormat(),
-          sprite->width(), sprite->height()));
+      ImageRef cel_image(Image::create(sprite->pixelFormat(), sprite->width(), sprite->height()));
       clear_image(cel_image.get(), bgcolor);
 
       // Create the new cel and add it to the new background layer
@@ -107,5 +103,4 @@ void BackgroundFromLayer::onExecute()
   executeAndAdd(new cmd::ConfigureBackground(layer));
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

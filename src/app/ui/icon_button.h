@@ -13,18 +13,18 @@
 
 namespace app {
 
-  class IconButton : public ui::Button {
-  public:
-    IconButton(const skin::SkinPartPtr& part);
+class IconButton : public ui::Button {
+public:
+  IconButton(const skin::SkinPartPtr& part);
 
-  protected:
-    void onInitTheme(ui::InitThemeEvent& ev) override;
-    void onSizeHint(ui::SizeHintEvent& ev) override;
-    void onPaint(ui::PaintEvent& ev) override;
+protected:
+  void onInitTheme(ui::InitThemeEvent& ev) override;
+  void onSizeHint(ui::SizeHintEvent& ev) override;
+  void onPaint(ui::PaintEvent& ev) override;
 
-  private:
-    skin::SkinPartPtr m_part;
-  };
+private:
+  skin::SkinPartPtr m_part;
+};
 
 } // namespace app
 

@@ -26,4 +26,4 @@ const char* get_app_update_url();
 }
 #endif
 
-#endif  /* VER_INFO_H_INCLUDED */
+#endif /* VER_INFO_H_INCLUDED */

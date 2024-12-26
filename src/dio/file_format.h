@@ -15,8 +15,8 @@ enum class FileFormat {
   ERROR = -1,
   UNKNOWN = 0,
 
-  ASE_ANIMATION,                // Aseprite File Format
-  ASE_PALETTE,                  // Adobe Swatch Exchange
+  ASE_ANIMATION, // Aseprite File Format
+  ASE_PALETTE,   // Adobe Swatch Exchange
   ACT_PALETTE,
   BMP_IMAGE,
   COL_PALETTE,

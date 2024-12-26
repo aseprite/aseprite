@@ -9,40 +9,36 @@
 #pragma once
 
 namespace doc {
-  class Slice;
+class Slice;
 }
 
 namespace app {
 
-  // TODO Complete this class to calculate if the mouse hit any Editor
-  //      element/decorator
-  class EditorHit {
-  public:
-    enum Type {
-      None,
-      SliceBounds,
-      SliceCenter,
-    };
-
-    EditorHit(Type type)
-      : m_type(type)
-      , m_border(0)
-      , m_slice(nullptr) {
-    }
-
-    Type type() const { return m_type; }
-    int border() const { return m_border; }
-    doc::Slice* slice() const { return m_slice; }
-
-    void setBorder(int border) { m_border = border; }
-    void setSlice(doc::Slice* slice) { m_slice = slice; }
-
-  private:
-    Type m_type;
-    int m_border;
-    doc::Slice* m_slice;
+// TODO Complete this class to calculate if the mouse hit any Editor
+//      element/decorator
+class EditorHit {
+public:
+  enum Type {
+    None,
+    SliceBounds,
+    SliceCenter,
   };
+
+  EditorHit(Type type) : m_type(type), m_border(0), m_slice(nullptr) {}
+
+  Type type() const { return m_type; }
+  int border() const { return m_border; }
+  doc::Slice* slice() const { return m_slice; }
+
+  void setBorder(int border) { m_border = border; }
+  void setSlice(doc::Slice* slice) { m_slice = slice; }
+
+private:
+  Type m_type;
+  int m_border;
+  doc::Slice* m_slice;
+};
 
 } // namespace app
 
-#endif  // APP_UI_EDITOR_HIT_H_INCLUDED
+#endif // APP_UI_EDITOR_HIT_H_INCLUDED

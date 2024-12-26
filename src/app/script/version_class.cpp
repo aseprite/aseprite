@@ -5,14 +5,13 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/script/luacpp.h"
 #include "base/version.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 namespace {
 
@@ -75,7 +74,7 @@ int Version_get_major(lua_State* L)
 {
   const auto ver = get_obj<base::Version>(L, 1);
   const auto& numbers = ver->numbers();
-  lua_pushinteger(L, numbers.size() > 0 ? numbers[0]: 0);
+  lua_pushinteger(L, numbers.size() > 0 ? numbers[0] : 0);
   return 1;
 }
 
@@ -83,7 +82,7 @@ int Version_get_minor(lua_State* L)
 {
   const auto ver = get_obj<base::Version>(L, 1);
   const auto& numbers = ver->numbers();
-  lua_pushinteger(L, numbers.size() > 1 ? numbers[1]: 0);
+  lua_pushinteger(L, numbers.size() > 1 ? numbers[1] : 0);
   return 1;
 }
 
@@ -91,7 +90,7 @@ int Version_get_patch(lua_State* L)
 {
   const auto ver = get_obj<base::Version>(L, 1);
   const auto& numbers = ver->numbers();
-  lua_pushinteger(L, numbers.size() > 2 ? numbers[2]: 0);
+  lua_pushinteger(L, numbers.size() > 2 ? numbers[2] : 0);
   return 1;
 }
 
@@ -110,21 +109,21 @@ int Version_get_prereleaseNumber(lua_State* L)
 }
 
 const luaL_Reg Version_methods[] = {
-  { "__gc", Version_gc },
-  { "__eq", Version_eq },
-  { "__lt", Version_lt },
-  { "__le", Version_le },
+  { "__gc",       Version_gc       },
+  { "__eq",       Version_eq       },
+  { "__lt",       Version_lt       },
+  { "__le",       Version_le       },
   { "__tostring", Version_tostring },
-  { nullptr, nullptr }
+  { nullptr,      nullptr          }
 };
 
 const Property Version_properties[] = {
-  { "major", Version_get_major, nullptr },
-  { "minor", Version_get_minor, nullptr },
-  { "patch", Version_get_patch, nullptr },
-  { "prereleaseLabel", Version_get_prereleaseLabel, nullptr },
+  { "major",            Version_get_major,            nullptr },
+  { "minor",            Version_get_minor,            nullptr },
+  { "patch",            Version_get_patch,            nullptr },
+  { "prereleaseLabel",  Version_get_prereleaseLabel,  nullptr },
   { "prereleaseNumber", Version_get_prereleaseNumber, nullptr },
-  { nullptr, nullptr, nullptr }
+  { nullptr,            nullptr,                      nullptr }
 };
 
 } // anonymous namespace
@@ -144,5 +143,4 @@ void push_version(lua_State* L, const base::Version& ver)
   push_obj(L, ver);
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

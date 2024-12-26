@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/ui.h"
@@ -34,8 +34,7 @@ protected:
   bool m_switch;
 };
 
-TimelineCommand::TimelineCommand()
-  : Command(CommandId::Timeline(), CmdUIOnlyFlag)
+TimelineCommand::TimelineCommand() : Command(CommandId::Timeline(), CmdUIOnlyFlag)
 {
   m_open = true;
   m_close = false;
@@ -65,7 +64,8 @@ void TimelineCommand::onExecute(Context* context)
     App::instance()->mainWindow()->setTimelineVisibility(newVisible);
 }
 
-bool TimelineCommand::onChecked(Context* ctx) {
+bool TimelineCommand::onChecked(Context* ctx)
+{
   MainWindow* mainWin = App::instance()->mainWindow();
   if (!mainWin)
     return false;

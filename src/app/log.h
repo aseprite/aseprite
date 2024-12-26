@@ -10,11 +10,11 @@
 
 namespace app {
 
-  class LoggerModule {
-  public:
-    LoggerModule(bool createLogInDesktop);
-    ~LoggerModule();
-  };
+class LoggerModule {
+public:
+  LoggerModule(bool createLogInDesktop);
+  ~LoggerModule();
+};
 
 } // namespace app
 

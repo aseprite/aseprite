@@ -15,38 +15,36 @@
 
 namespace doc {
 
-  // Tileset serialization format. This field didn't exist in Aseprite
-  // v1.3-alpha3 (so read8() fails = 0)
-  enum class TilesetSerialFormat : uint8_t {
-    // Without version field.
-    Ver0 = 0,
+// Tileset serialization format. This field didn't exist in Aseprite
+// v1.3-alpha3 (so read8() fails = 0)
+enum class TilesetSerialFormat : uint8_t {
+  // Without version field.
+  Ver0 = 0,
 
-    // Extra BYTE with special flags to check the tileset version.
-    Ver1 = 1,
+  // Extra BYTE with special flags to check the tileset version.
+  Ver1 = 1,
 
-    // Tileset has UserData now.
-    Ver2 = 2,
+  // Tileset has UserData now.
+  Ver2 = 2,
 
-    // Tileset name (was missing originally) + each tileset's tile has
-    // UserData now.
-    Ver3 = 3,
+  // Tileset name (was missing originally) + each tileset's tile has
+  // UserData now.
+  Ver3 = 3,
 
-    LastVer = Ver3
-  };
+  LastVer = Ver3
+};
 
-  class CancelIO;
-  class Sprite;
-  class Tileset;
+class CancelIO;
+class Sprite;
+class Tileset;
 
-  bool write_tileset(std::ostream& os,
-                     const Tileset* tileset,
-                     CancelIO* cancel = nullptr);
+bool write_tileset(std::ostream& os, const Tileset* tileset, CancelIO* cancel = nullptr);
 
-  Tileset* read_tileset(std::istream& is,
-                        Sprite* sprite,
-                        bool setId = true,
-                        TilesetSerialFormat* tilesetSerial = nullptr,
-                        SerialFormat serial = SerialFormat::LastVer);
+Tileset* read_tileset(std::istream& is,
+                      Sprite* sprite,
+                      bool setId = true,
+                      TilesetSerialFormat* tilesetSerial = nullptr,
+                      SerialFormat serial = SerialFormat::LastVer);
 
 } // namespace doc
 

@@ -10,11 +10,11 @@
 
 namespace doc {
 
-  enum class RgbMapAlgorithm {
-    DEFAULT = 0,
-    RGB5A3 = 1,
-    OCTREE = 2,
-  };
+enum class RgbMapAlgorithm {
+  DEFAULT = 0,
+  RGB5A3 = 1,
+  OCTREE = 2,
+};
 
 } // namespace doc
 

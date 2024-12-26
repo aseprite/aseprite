@@ -16,44 +16,39 @@
 
 namespace app {
 
-  class RecentFiles {
-    enum { kPinnedFiles,
-           kRecentFiles,
-           kPinnedFolders,
-           kRecentFolders,
-           kCollections };
-  public:
-    const base::paths& pinnedFiles() const { return m_paths[kPinnedFiles]; }
-    const base::paths& recentFiles() const { return m_paths[kRecentFiles]; }
-    const base::paths& pinnedFolders() const { return m_paths[kPinnedFolders]; }
-    const base::paths& recentFolders() const { return m_paths[kRecentFolders]; }
+class RecentFiles {
+  enum { kPinnedFiles, kRecentFiles, kPinnedFolders, kRecentFolders, kCollections };
 
-    RecentFiles(const int limit);
-    ~RecentFiles();
+public:
+  const base::paths& pinnedFiles() const { return m_paths[kPinnedFiles]; }
+  const base::paths& recentFiles() const { return m_paths[kRecentFiles]; }
+  const base::paths& pinnedFolders() const { return m_paths[kPinnedFolders]; }
+  const base::paths& recentFolders() const { return m_paths[kRecentFolders]; }
 
-    void addRecentFile(const std::string& filename);
-    void removeRecentFile(const std::string& filename);
-    void removeRecentFolder(const std::string& dir);
-    void setLimit(const int newLimit);
-    void clear();
+  RecentFiles(const int limit);
+  ~RecentFiles();
 
-    void setFiles(const base::paths& pinnedFiles,
-                  const base::paths& recentFiles);
-    void setFolders(const base::paths& pinnedFolders,
-                    const base::paths& recentFolders);
+  void addRecentFile(const std::string& filename);
+  void removeRecentFile(const std::string& filename);
+  void removeRecentFolder(const std::string& dir);
+  void setLimit(const int newLimit);
+  void clear();
 
-    obs::signal<void()> Changed;
+  void setFiles(const base::paths& pinnedFiles, const base::paths& recentFiles);
+  void setFolders(const base::paths& pinnedFolders, const base::paths& recentFolders);
 
-  private:
-    std::string normalizePath(const std::string& filename);
-    void addItem(base::paths& list, const std::string& filename);
-    void removeItem(base::paths& list, const std::string& filename);
-    void load();
-    void save();
+  obs::signal<void()> Changed;
 
-    base::paths m_paths[kCollections];
-    int m_limit;
-  };
+private:
+  std::string normalizePath(const std::string& filename);
+  void addItem(base::paths& list, const std::string& filename);
+  void removeItem(base::paths& list, const std::string& filename);
+  void load();
+  void save();
+
+  base::paths m_paths[kCollections];
+  int m_limit;
+};
 
 } // namespace app
 

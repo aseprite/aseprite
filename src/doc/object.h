@@ -14,46 +14,45 @@
 
 namespace doc {
 
-  class Object {
-  public:
-    Object(ObjectType type);
-    Object(const Object& other);
-    virtual ~Object();
+class Object {
+public:
+  Object(ObjectType type);
+  Object(const Object& other);
+  virtual ~Object();
 
-    const ObjectType type() const { return m_type; }
-    const ObjectId id() const;
-    const ObjectVersion version() const { return m_version; }
+  const ObjectType type() const { return m_type; }
+  const ObjectId id() const;
+  const ObjectVersion version() const { return m_version; }
 
-    void setId(ObjectId id);
-    void setVersion(ObjectVersion version);
+  void setId(ObjectId id);
+  void setVersion(ObjectVersion version);
 
-    void incrementVersion() {
-      ++m_version;
-    }
+  void incrementVersion() { ++m_version; }
 
-    // Returns the approximate amount of memory (in bytes) which this
-    // object use.
-    virtual int getMemSize() const;
+  // Returns the approximate amount of memory (in bytes) which this
+  // object use.
+  virtual int getMemSize() const;
 
-  private:
-    ObjectType m_type;
+private:
+  ObjectType m_type;
 
-    // Unique identifier for this object (it is assigned by
-    // Objects class).
-    mutable ObjectId m_id;
+  // Unique identifier for this object (it is assigned by
+  // Objects class).
+  mutable ObjectId m_id;
 
-    ObjectVersion m_version;
+  ObjectVersion m_version;
 
-    // Disable copy assignment
-    Object& operator=(const Object&);
-  };
+  // Disable copy assignment
+  Object& operator=(const Object&);
+};
 
-  Object* get_object(ObjectId id);
+Object* get_object(ObjectId id);
 
-  template<typename T>
-  inline T* get(ObjectId id) {
-    return static_cast<T*>(get_object(id));
-  }
+template<typename T>
+inline T* get(ObjectId id)
+{
+  return static_cast<T*>(get_object(id));
+}
 
 } // namespace doc
 

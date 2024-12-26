@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -45,10 +45,9 @@ void RepeatLastExportCommand::onExecute(Context* context)
   {
     const ContextReader reader(context);
     const Doc* document(reader.document());
-    DocumentPreferences& docPref =
-      Preferences::instance().document(document);
+    DocumentPreferences& docPref = Preferences::instance().document(document);
 
-    params.set("ui", (docPref.spriteSheet.defined() ? "0": "1"));
+    params.set("ui", (docPref.spriteSheet.defined() ? "0" : "1"));
   }
 
   context->executeCommand(cmd, params);

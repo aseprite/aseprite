@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_slice_name.h"
@@ -17,8 +17,7 @@
 #include "doc/slice.h"
 #include "doc/sprite.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 SetSliceName::SetSliceName(Slice* slice, const std::string& name)
   : WithSlice(slice)
@@ -52,5 +51,4 @@ void SetSliceName::onFireNotifications()
   doc->notify_observers<DocEvent&>(&DocObserver::onSliceNameChange, ev);
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

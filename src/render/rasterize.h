@@ -9,32 +9,21 @@
 #pragma once
 
 namespace doc {
-  class Cel;
-  class Image;
-}
+class Cel;
+class Image;
+} // namespace doc
 
 namespace render {
 
-  void rasterize(
-    doc::Image* dst,
-    const doc::Cel* cel,
-    const int x,
-    const int y,
-    const bool clear);
+void rasterize(doc::Image* dst, const doc::Cel* cel, const int x, const int y, const bool clear);
 
-  void rasterize_with_cel_bounds(
-    doc::Image* dst,
-    const doc::Cel* cel);
+void rasterize_with_cel_bounds(doc::Image* dst, const doc::Cel* cel);
 
-  void rasterize_with_sprite_bounds(
-    doc::Image* dst,
-    const doc::Cel* cel);
+void rasterize_with_sprite_bounds(doc::Image* dst, const doc::Cel* cel);
 
-  doc::Image* rasterize_with_cel_bounds(
-    const doc::Cel* cel);
+doc::Image* rasterize_with_cel_bounds(const doc::Cel* cel);
 
-  doc::Image* rasterize_with_sprite_bounds(
-    const doc::Cel* cel);
+doc::Image* rasterize_with_sprite_bounds(const doc::Cel* cel);
 
 } // namespace render
 

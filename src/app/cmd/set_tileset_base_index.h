@@ -11,28 +11,24 @@
 #include "app/cmd.h"
 #include "app/cmd/with_tileset.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class SetTilesetBaseIndex : public Cmd
-                            , public WithTileset {
-  public:
-    SetTilesetBaseIndex(Tileset* tileset, int baseIndex);
+class SetTilesetBaseIndex : public Cmd,
+                            public WithTileset {
+public:
+  SetTilesetBaseIndex(Tileset* tileset, int baseIndex);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this);
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  size_t onMemSize() const override { return sizeof(*this); }
 
-  private:
-    int m_oldBaseIndex;
-    int m_newBaseIndex;
-  };
+private:
+  int m_oldBaseIndex;
+  int m_newBaseIndex;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

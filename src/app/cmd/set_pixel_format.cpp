@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_pixel_format.h"
@@ -29,8 +29,7 @@
 #include "render/quantization.h"
 #include "render/task_delegate.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 using namespace doc;
 
@@ -41,25 +40,25 @@ public:
   SuperDelegate(int nimages, render::TaskDelegate* delegate)
     : m_nimages(nimages)
     , m_curImage(0)
-    , m_delegate(delegate) {
+    , m_delegate(delegate)
+  {
   }
 
-  void notifyTaskProgress(double progress) override {
+  void notifyTaskProgress(double progress) override
+  {
     if (m_delegate)
-      m_delegate->notifyTaskProgress(
-        (progress + m_curImage) / m_nimages);
+      m_delegate->notifyTaskProgress((progress + m_curImage) / m_nimages);
   }
 
-  bool continueTask() override {
+  bool continueTask() override
+  {
     if (m_delegate)
       return m_delegate->continueTask();
     else
       return true;
   }
 
-  void nextImage() {
-    ++m_curImage;
-  }
+  void nextImage() { ++m_curImage; }
 
 private:
   int m_nimages;
@@ -104,7 +103,8 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
       continue;
 
     ImageRef oldImage = cel->imageRef();
-    convertImage(sprite, dithering,
+    convertImage(sprite,
+                 dithering,
                  oldImage,
                  cel->frame(),
                  cel->layer()->isBackground(),
@@ -122,13 +122,15 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
       if (!tileset)
         continue;
 
-      for (tile_index i=0; i<tileset->size(); ++i) {
+      for (tile_index i = 0; i < tileset->size(); ++i) {
         ImageRef oldImage = tileset->get(i);
         if (oldImage) {
-          convertImage(sprite, dithering,
+          convertImage(sprite,
+                       dithering,
                        oldImage,
                        0,     // TODO select a frame or generate other tilesets?
-                       false, // TODO is background? it depends of the layer where this tileset is used
+                       false, // TODO is background? it depends of the layer where this tileset is
+                              // used
                        mapAlgorithm,
                        toGray,
                        &superDel,
@@ -244,10 +246,7 @@ void SetPixelFormat::convertImage(doc::Sprite* sprite,
   RgbMap* rgbmap;
   int newMaskIndex = (isBackground ? -1 : 0);
   if (m_newFormat == IMAGE_INDEXED) {
-    rgbmap = sprite->rgbMap(frame,
-                            sprite->rgbMapForSprite(),
-                            mapAlgorithm,
-                            fitCriteria);
+    rgbmap = sprite->rgbMap(frame, sprite->rgbMapForSprite(), mapAlgorithm, fitCriteria);
     if (m_oldFormat == IMAGE_INDEXED)
       newMaskIndex = sprite->transparentColor();
     else
@@ -256,19 +255,18 @@ void SetPixelFormat::convertImage(doc::Sprite* sprite,
   else {
     rgbmap = nullptr;
   }
-  ImageRef newImage(
-    render::convert_pixel_format
-    (oldImage.get(), nullptr, m_newFormat,
-     dithering,
-     rgbmap,
-     sprite->palette(frame),
-     isBackground,
-     newMaskIndex,
-     toGray,
-     delegate));
+  ImageRef newImage(render::convert_pixel_format(oldImage.get(),
+                                                 nullptr,
+                                                 m_newFormat,
+                                                 dithering,
+                                                 rgbmap,
+                                                 sprite->palette(frame),
+                                                 isBackground,
+                                                 newMaskIndex,
+                                                 toGray,
+                                                 delegate));
 
   m_pre.add(new cmd::ReplaceImage(sprite, oldImage, newImage));
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

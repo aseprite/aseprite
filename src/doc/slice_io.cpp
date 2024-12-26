@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/slice_io.h"
@@ -37,9 +37,7 @@ void write_slice(std::ostream& os, const Slice* slice)
   }
 }
 
-Slice* read_slice(std::istream& is,
-                  const bool setId,
-                  const SerialFormat serial)
+Slice* read_slice(std::istream& is, const bool setId, const SerialFormat serial)
 {
   ObjectId id = read32(is);
   std::string name = read_string(is);
@@ -90,4 +88,4 @@ SliceKey read_slicekey(std::istream& is)
   return SliceKey(bounds, center, pivot);
 }
 
-}
+} // namespace doc

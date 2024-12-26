@@ -18,17 +18,14 @@ struct LangInfo {
   std::string displayName;
 
   LangInfo() = default;
-  LangInfo(const std::string& id,
-           const std::string& path,
-           const std::string& displayName)
+  LangInfo(const std::string& id, const std::string& path, const std::string& displayName)
     : id(id)
     , path(path)
-    , displayName(displayName.empty() ? id: displayName) {
+    , displayName(displayName.empty() ? id : displayName)
+  {
   }
 
-  bool operator<(const LangInfo& other) const {
-    return id < other.id;
-  }
+  bool operator<(const LangInfo& other) const { return id < other.id; }
 };
 
 } // namespace app

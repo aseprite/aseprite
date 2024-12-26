@@ -20,28 +20,19 @@ namespace app {
 class Doc;
 namespace crash {
 
-  struct DocumentInfo {
-    doc::ColorMode mode;
-    int width;
-    int height;
-    doc::frame_t frames;
-    std::string filename;
+struct DocumentInfo {
+  doc::ColorMode mode;
+  int width;
+  int height;
+  doc::frame_t frames;
+  std::string filename;
 
-    DocumentInfo() :
-      mode(doc::ColorMode::RGB),
-      width(0),
-      height(0),
-      frames(0) {
-    }
-  };
+  DocumentInfo() : mode(doc::ColorMode::RGB), width(0), height(0), frames(0) {}
+};
 
-  bool read_document_info(const std::string& dir,
-                          DocumentInfo& info);
-  Doc* read_document(const std::string& dir,
-                     base::task_token* t);
-  Doc* read_document_with_raw_images(const std::string& dir,
-                                     RawImagesAs as,
-                                     base::task_token* t);
+bool read_document_info(const std::string& dir, DocumentInfo& info);
+Doc* read_document(const std::string& dir, base::task_token* t);
+Doc* read_document_with_raw_images(const std::string& dir, RawImagesAs as, base::task_token* t);
 
 } // namespace crash
 } // namespace app

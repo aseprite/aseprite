@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/icon_button.h"
@@ -23,9 +23,7 @@ namespace app {
 using namespace ui;
 using namespace app::skin;
 
-IconButton::IconButton(const SkinPartPtr& part)
-  : Button("")
-  , m_part(part)
+IconButton::IconButton(const SkinPartPtr& part) : Button(""), m_part(part)
 {
   initTheme();
 }
@@ -41,9 +39,7 @@ void IconButton::onInitTheme(InitThemeEvent& ev)
 void IconButton::onSizeHint(SizeHintEvent& ev)
 {
   os::Surface* icon = m_part->bitmap(0);
-  ev.setSizeHint(
-    gfx::Size(icon->width(),
-              icon->height()) + 4*guiscale());
+  ev.setSizeHint(gfx::Size(icon->width(), icon->height()) + 4 * guiscale());
 }
 
 void IconButton::onPaint(PaintEvent& ev)
@@ -69,10 +65,10 @@ void IconButton::onPaint(PaintEvent& ev)
 
   gfx::Rect bounds = clientBounds();
   os::Surface* icon = m_part->bitmap(0);
-  g->drawColoredRgbaSurface(
-    icon, fg,
-    bounds.x+bounds.w/2-icon->width()/2,
-    bounds.y+bounds.h/2-icon->height()/2);
+  g->drawColoredRgbaSurface(icon,
+                            fg,
+                            bounds.x + bounds.w / 2 - icon->width() / 2,
+                            bounds.y + bounds.h / 2 - icon->height() / 2);
 }
 
 } // namespace app

@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/drop_down_button.h"
@@ -34,13 +34,12 @@ DropDownButton::DropDownButton(const char* text)
   addChild(m_button);
   addChild(m_dropDown);
 
-  InitTheme.connect(
-    [this]{
-      auto theme = SkinTheme::get(this);
-      m_button->setStyle(theme->styles.dropDownButton());
-      m_dropDown->setStyle(theme->styles.dropDownExpandButton());
-      setChildSpacing(0);
-    });
+  InitTheme.connect([this] {
+    auto theme = SkinTheme::get(this);
+    m_button->setStyle(theme->styles.dropDownButton());
+    m_dropDown->setStyle(theme->styles.dropDownExpandButton());
+    setChildSpacing(0);
+  });
   initTheme();
 }
 

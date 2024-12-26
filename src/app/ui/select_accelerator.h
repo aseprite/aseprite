@@ -15,38 +15,38 @@
 #include "select_accelerator.xml.h"
 
 namespace app {
-  class KeyboardShortcuts;
+class KeyboardShortcuts;
 
-  class SelectAccelerator : public app::gen::SelectAccelerator {
-  public:
-    SelectAccelerator(const ui::Accelerator& accelerator,
-                      const KeyContext keyContext,
-                      const KeyboardShortcuts& currentKeys);
+class SelectAccelerator : public app::gen::SelectAccelerator {
+public:
+  SelectAccelerator(const ui::Accelerator& accelerator,
+                    const KeyContext keyContext,
+                    const KeyboardShortcuts& currentKeys);
 
-    bool isOK() const { return m_ok; }
-    bool isModified() const { return m_modified; }
-    const ui::Accelerator& accel() const { return m_accel; }
+  bool isOK() const { return m_ok; }
+  bool isModified() const { return m_modified; }
+  const ui::Accelerator& accel() const { return m_accel; }
 
-  private:
-    void onModifierChange(ui::KeyModifiers modifier, ui::CheckBox* checkbox);
-    void onAccelChange(const ui::Accelerator* accel);
-    void onClear();
-    void onOK();
-    void onCancel();
-    void updateModifiers();
-    void updateAssignedTo();
+private:
+  void onModifierChange(ui::KeyModifiers modifier, ui::CheckBox* checkbox);
+  void onAccelChange(const ui::Accelerator* accel);
+  void onClear();
+  void onOK();
+  void onCancel();
+  void updateModifiers();
+  void updateAssignedTo();
 
-    class KeyField;
+  class KeyField;
 
-    ui::TooltipManager m_tooltipManager;
-    KeyField* m_keyField;
-    KeyContext m_keyContext;
-    const KeyboardShortcuts& m_currentKeys;
-    ui::Accelerator m_origAccel;
-    ui::Accelerator m_accel;
-    bool m_ok;
-    bool m_modified;
-  };
+  ui::TooltipManager m_tooltipManager;
+  KeyField* m_keyField;
+  KeyContext m_keyContext;
+  const KeyboardShortcuts& m_currentKeys;
+  ui::Accelerator m_origAccel;
+  ui::Accelerator m_accel;
+  bool m_ok;
+  bool m_modified;
+};
 
 } // namespace app
 

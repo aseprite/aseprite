@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_palette.h"
@@ -16,8 +16,7 @@
 #include "doc/palette.h"
 #include "doc/sprite.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 using namespace doc;
 
@@ -37,20 +36,20 @@ SetPalette::SetPalette(Sprite* sprite, frame_t frame, const Palette* newPalette)
   ASSERT(diffs > 0);
 
   if (m_from >= 0 && m_to >= m_from) {
-    int oldColors = std::min(m_to+1, m_oldNColors)-m_from;
+    int oldColors = std::min(m_to + 1, m_oldNColors) - m_from;
     if (oldColors > 0)
       m_oldColors.resize(oldColors);
 
-    int newColors = std::min(m_to+1, m_newNColors)-m_from;
+    int newColors = std::min(m_to + 1, m_newNColors) - m_from;
     if (newColors > 0)
       m_newColors.resize(newColors);
 
-    for (size_t i=0; i<size_t(m_to-m_from+1); ++i) {
+    for (size_t i = 0; i < size_t(m_to - m_from + 1); ++i) {
       if (i < m_oldColors.size())
-        m_oldColors[i] = curPalette->getEntry(m_from+i);
+        m_oldColors[i] = curPalette->getEntry(m_from + i);
 
       if (i < m_newColors.size())
-        m_newColors[i] = newPalette->getEntry(m_from+i);
+        m_newColors[i] = newPalette->getEntry(m_from + i);
     }
   }
 
@@ -74,8 +73,8 @@ void SetPalette::onExecute()
   Palette* palette = sprite->palette(m_frame);
   palette->resize(m_newNColors);
 
-  for (size_t i=0; i<m_newColors.size(); ++i)
-    palette->setEntry(m_from+i, m_newColors[i]);
+  for (size_t i = 0; i < m_newColors.size(); ++i)
+    palette->setEntry(m_from + i, m_newColors[i]);
 
   if (m_newTransparentIndex != m_oldTransparentIndex)
     sprite->setTransparentColor(m_newTransparentIndex);
@@ -89,8 +88,8 @@ void SetPalette::onUndo()
   Palette* palette = sprite->palette(m_frame);
   palette->resize(m_oldNColors);
 
-  for (size_t i=0; i<m_oldColors.size(); ++i)
-    palette->setEntry(m_from+i, m_oldColors[i]);
+  for (size_t i = 0; i < m_oldColors.size(); ++i)
+    palette->setEntry(m_from + i, m_oldColors[i]);
 
   if (m_newTransparentIndex != m_oldTransparentIndex)
     sprite->setTransparentColor(m_oldTransparentIndex);
@@ -105,5 +104,4 @@ void SetPalette::onFireNotifications()
   doc->notifyPaletteChanged();
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

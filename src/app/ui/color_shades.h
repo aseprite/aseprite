@@ -15,60 +15,55 @@
 #include "ui/widget.h"
 
 namespace doc {
-  class Remap;
+class Remap;
 }
 
 namespace app {
 
-  class ColorShades : public ui::Widget {
+class ColorShades : public ui::Widget {
+public:
+  enum ClickType { ClickEntries, DragAndDropEntries, ClickWholeShade };
+
+  ColorShades(const Shade& colors, ClickType click);
+
+  ClickType clickType() const { return m_click; }
+
+  void setMinColors(int minColors);
+  void reverseShadeColors();
+  doc::Remap* createShadeRemap(bool left);
+  int size() const { return int(m_shade.size()); }
+
+  const Shade& getShade() const { return m_shade; }
+  void setShade(const Shade& shade);
+
+  int getHotEntry() const { return m_hotIndex; }
+
+  class ClickEvent {
   public:
-    enum ClickType {
-      ClickEntries,
-      DragAndDropEntries,
-      ClickWholeShade
-    };
-
-    ColorShades(const Shade& colors, ClickType click);
-
-    ClickType clickType() const { return m_click; }
-
-    void setMinColors(int minColors);
-    void reverseShadeColors();
-    doc::Remap* createShadeRemap(bool left);
-    int size() const { return int(m_shade.size()); }
-
-    const Shade& getShade() const { return m_shade; }
-    void setShade(const Shade& shade);
-
-    int getHotEntry() const { return m_hotIndex; }
-
-    class ClickEvent {
-    public:
-      ClickEvent(ui::MouseButton button) : m_button(button) { }
-      ui::MouseButton button() const { return m_button; }
-    private:
-      ui::MouseButton m_button;
-    };
-
-    obs::signal<void(ClickEvent&)> Click;
+    ClickEvent(ui::MouseButton button) : m_button(button) {}
+    ui::MouseButton button() const { return m_button; }
 
   private:
-    void onInitTheme(ui::InitThemeEvent& ev) override;
-    bool onProcessMessage(ui::Message* msg) override;
-    void onSizeHint(ui::SizeHintEvent& ev) override;
-    void onPaint(ui::PaintEvent& ev) override;
-    bool isHotEntryVisible() const {
-      return m_click != ClickWholeShade;
-    }
-
-    ClickType m_click;
-    Shade m_shade;
-    int m_minColors;
-    int m_hotIndex;
-    int m_dragIndex;
-    bool m_dropBefore;
-    int m_boxSize;
+    ui::MouseButton m_button;
   };
+
+  obs::signal<void(ClickEvent&)> Click;
+
+private:
+  void onInitTheme(ui::InitThemeEvent& ev) override;
+  bool onProcessMessage(ui::Message* msg) override;
+  void onSizeHint(ui::SizeHintEvent& ev) override;
+  void onPaint(ui::PaintEvent& ev) override;
+  bool isHotEntryVisible() const { return m_click != ClickWholeShade; }
+
+  ClickType m_click;
+  Shade m_shade;
+  int m_minColors;
+  int m_hotIndex;
+  int m_dragIndex;
+  bool m_dropBefore;
+  int m_boxSize;
+};
 
 } // namespace app
 

@@ -13,25 +13,25 @@
 
 namespace ui {
 
-  class Widget;
+class Widget;
 
-  class SizeHintEvent : public Event {
-  public:
-    SizeHintEvent(Widget* source, const gfx::Size& fitIn);
-    virtual ~SizeHintEvent();
+class SizeHintEvent : public Event {
+public:
+  SizeHintEvent(Widget* source, const gfx::Size& fitIn);
+  virtual ~SizeHintEvent();
 
-    gfx::Size fitInSize() const;
-    int fitInWidth() const;
-    int fitInHeight() const;
+  gfx::Size fitInSize() const;
+  int fitInWidth() const;
+  int fitInHeight() const;
 
-    gfx::Size sizeHint() const;
-    void setSizeHint(const gfx::Size& sz);
-    void setSizeHint(int w, int h);
+  gfx::Size sizeHint() const;
+  void setSizeHint(const gfx::Size& sz);
+  void setSizeHint(int w, int h);
 
-  private:
-    gfx::Size m_fitIn;
-    gfx::Size m_sizeHint;
-  };
+private:
+  gfx::Size m_fitIn;
+  gfx::Size m_sizeHint;
+};
 
 } // namespace ui
 

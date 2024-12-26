@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/script/luacpp.h"
@@ -15,8 +15,7 @@
 
 #include <cmath>
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 namespace {
 
@@ -54,7 +53,7 @@ gfx::Point Point_new(lua_State* L, int index)
   }
   else {
     pt.x = lua_tointeger(L, index);
-    pt.y = lua_tointeger(L, index+1);
+    pt.y = lua_tointeger(L, index + 1);
   }
   return pt;
 }
@@ -82,8 +81,7 @@ int Point_eq(lua_State* L)
 int Point_tostring(lua_State* L)
 {
   const auto pt = get_obj<gfx::Point>(L, 1);
-  lua_pushstring(L, fmt::format("Point{{ x={}, y={} }}",
-                                pt->x, pt->y).c_str());
+  lua_pushstring(L, fmt::format("Point{{ x={}, y={} }}", pt->x, pt->y).c_str());
   return 1;
 }
 
@@ -190,24 +188,24 @@ int Point_set_y(lua_State* L)
 }
 
 const luaL_Reg Point_methods[] = {
-  { "__gc", Point_gc },
-  { "__eq", Point_eq },
+  { "__gc",       Point_gc       },
+  { "__eq",       Point_eq       },
   { "__tostring", Point_tostring },
-  { "__unm", Point_unm },
-  { "__add", Point_add },
-  { "__sub", Point_sub },
-  { "__mul", Point_mul },
-  { "__div", Point_div },
-  { "__mod", Point_mod },
-  { "__pow", Point_pow },
-  { "__idiv", Point_div },
-  { nullptr, nullptr }
+  { "__unm",      Point_unm      },
+  { "__add",      Point_add      },
+  { "__sub",      Point_sub      },
+  { "__mul",      Point_mul      },
+  { "__div",      Point_div      },
+  { "__mod",      Point_mod      },
+  { "__pow",      Point_pow      },
+  { "__idiv",     Point_div      },
+  { nullptr,      nullptr        }
 };
 
 const Property Point_properties[] = {
-  { "x", Point_get_x, Point_set_x },
-  { "y", Point_get_y, Point_set_y },
-  { nullptr, nullptr, nullptr }
+  { "x",     Point_get_x, Point_set_x },
+  { "y",     Point_get_y, Point_set_y },
+  { nullptr, nullptr,     nullptr     }
 };
 
 } // anonymous namespace
@@ -227,5 +225,4 @@ gfx::Point convert_args_into_point(lua_State* L, int index)
   return Point_new(L, index);
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

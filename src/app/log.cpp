@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/log.h"
@@ -24,9 +24,8 @@ LoggerModule::LoggerModule(bool createLogInDesktop)
   app::ResourceFinder rf(false);
 
   if (createLogInDesktop) {
-    rf.includeDesktopDir(fmt::format("{}-v{}-DebugOutput.txt",
-                                     get_app_name(),
-                                     get_app_version()).c_str());
+    rf.includeDesktopDir(
+      fmt::format("{}-v{}-DebugOutput.txt", get_app_name(), get_app_version()).c_str());
   }
   else {
     rf.includeUserDir(fmt::format("{}.log", get_app_name()).c_str());

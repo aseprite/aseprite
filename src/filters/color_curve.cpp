@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "filters/color_curve.h"
@@ -15,8 +15,7 @@
 
 namespace filters {
 
-ColorCurve::ColorCurve(Type type)
-  : m_type(type)
+ColorCurve::ColorCurve(Type type) : m_type(type)
 {
 }
 
@@ -49,16 +48,15 @@ void ColorCurve::getValues(int x1, int x2, std::vector<int>& values)
   int x, num_points = (int)m_points.size();
 
   if (num_points == 0) {
-    for (x=x1; x<=x2; x++)
-      values[x-x1] = 0;
+    for (x = x1; x <= x2; x++)
+      values[x - x1] = 0;
   }
   else if (num_points == 1) {
-    for (x=x1; x<=x2; x++)
-      values[x-x1] = m_points[0].y;
+    for (x = x1; x <= x2; x++)
+      values[x - x1] = m_points[0].y;
   }
   else {
     switch (m_type) {
-
       case Linear: {
         iterator it, begin = this->begin(), end = this->end();
 
@@ -66,28 +64,27 @@ void ColorCurve::getValues(int x1, int x2, std::vector<int>& values)
           if (it->x >= x1)
             break;
 
-        for (x=x1; x<=x2; x++) {
+        for (x = x1; x <= x2; x++) {
           while ((it != end) && (x > it->x))
             ++it;
 
           if (it != end) {
             if (it != begin) {
-              const gfx::Point& p = *(it-1);
+              const gfx::Point& p = *(it - 1);
               const gfx::Point& n = *it;
 
-              values[x-x1] = p.y + (n.y-p.y) * (x-p.x) / (n.x-p.x);
+              values[x - x1] = p.y + (n.y - p.y) * (x - p.x) / (n.x - p.x);
             }
             else {
-              values[x-x1] = it->y;
+              values[x - x1] = it->y;
             }
           }
           else {
-            values[x-x1] = (end-1)->y;
+            values[x - x1] = (end - 1)->y;
           }
         }
         break;
       }
-
     }
   }
 }

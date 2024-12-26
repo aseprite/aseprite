@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/crash/session.h"
@@ -30,19 +30,21 @@
 #include "base/thread.h"
 #include "base/time.h"
 #include "doc/cancel_io.h"
-#include "ui/app_state.h"
 #include "fmt/format.h"
+#include "ui/app_state.h"
 #include "ver/info.h"
 
-namespace app {
-namespace crash {
+namespace app { namespace crash {
 
-static const char* kPidFilename = "pid";   // Process ID running the session (or non-existent if the PID was closed correctly)
-static const char* kVerFilename = "ver";   // File that indicates the Aseprite version used in the session
-static const char* kOpenFilename = "open"; // File that indicates if the document is/was open in the session (or non-existent if the document was closed correctly)
+static const char* kPidFilename = "pid";   // Process ID running the session (or non-existent if the
+                                           // PID was closed correctly)
+static const char* kVerFilename = "ver";   // File that indicates the Aseprite version used in the
+                                           // session
+static const char* kOpenFilename = "open"; // File that indicates if the document is/was open in the
+                                           // session (or non-existent if the document was closed
+                                           // correctly)
 
-Session::Backup::Backup(const std::string& dir)
-  : m_dir(dir)
+Session::Backup::Backup(const std::string& dir) : m_dir(dir)
 {
 }
 
@@ -53,23 +55,21 @@ std::string Session::Backup::description(const bool withFullPath) const
     DocumentInfo info;
     read_document_info(m_dir, info);
     m_fn = info.filename;
-    m_desc =
-      fmt::format("{} Sprite {}x{}, {} {}",
-                  info.mode == ColorMode::RGB ? "RGB":
-                  info.mode == ColorMode::GRAYSCALE ? "Grayscale":
-                  info.mode == ColorMode::INDEXED ? "Indexed":
-                  info.mode == ColorMode::BITMAP ? "Bitmap": "Unknown",
-                  info.width, info.height, info.frames,
-                  info.frames == 1 ? "frame": "frames");
+    m_desc = fmt::format("{} Sprite {}x{}, {} {}",
+                         info.mode == ColorMode::RGB       ? "RGB" :
+                         info.mode == ColorMode::GRAYSCALE ? "Grayscale" :
+                         info.mode == ColorMode::INDEXED   ? "Indexed" :
+                         info.mode == ColorMode::BITMAP    ? "Bitmap" :
+                                                             "Unknown",
+                         info.width,
+                         info.height,
+                         info.frames,
+                         info.frames == 1 ? "frame" : "frames");
   }
-  return fmt::format("{}: {}",
-                     m_desc,
-                     withFullPath ? m_fn:
-                                    base::get_file_name(m_fn));
+  return fmt::format("{}: {}", m_desc, withFullPath ? m_fn : base::get_file_name(m_fn));
 }
 
-Session::Session(RecoveryConfig* config,
-                 const std::string& path)
+Session::Session(RecoveryConfig* config, const std::string& path)
   : m_pid(0)
   , m_path(path)
   , m_config(config)
@@ -87,11 +87,11 @@ std::string Session::name() const
   base::split_string(name, parts, "-");
 
   if (parts.size() == 3) {
-    if (parts[0].size() == 4+2+2) { // YYYYMMDD -> YYYY-MM-DD
+    if (parts[0].size() == 4 + 2 + 2) { // YYYYMMDD -> YYYY-MM-DD
       parts[0].insert(6, 1, '-');
       parts[0].insert(4, 1, '-');
     }
-    if (parts[1].size() == 2+2+2) { // HHMMSS -> HH:MM.SS
+    if (parts[1].size() == 2 + 2 + 2) { // HHMMSS -> HH:MM.SS
       parts[1].insert(4, 1, '.');
       parts[1].insert(2, 1, ':');
     }
@@ -131,8 +131,7 @@ const Session::Backups& Session::backups()
 bool Session::isRunning()
 {
   loadPid();
-  return base::get_process_name(m_pid) ==
-    base::get_process_name(base::get_current_process_id());
+  return base::get_process_name(m_pid) == base::get_process_name(base::get_current_process_id());
 }
 
 bool Session::isCrashedSession()
@@ -167,10 +166,7 @@ bool Session::isOldSession()
                                filenamePartToInt(parts[1].substr(4, 2)));
     }
     catch (const std::exception& ex) {
-      LOG(ERROR,
-          "Failed to parse a date from '%s', error: %s",
-          parts[0].c_str(),
-          ex.what());
+      LOG(ERROR, "Failed to parse a date from '%s', error: %s", parts[0].c_str(), ex.what());
     }
   }
 
@@ -234,22 +230,20 @@ void Session::removeFromDisk()
   }
   catch (const std::exception& ex) {
     (void)ex;
-    LOG(ERROR, "RECO: Session directory cannot be removed, it's not empty.\n"
-               "      Error: %s\n", ex.what());
+    LOG(ERROR,
+        "RECO: Session directory cannot be removed, it's not empty.\n"
+        "      Error: %s\n",
+        ex.what());
   }
 }
 
-class CustomWeakDocReader : public WeakDocReader
-                          , public doc::CancelIO {
+class CustomWeakDocReader : public WeakDocReader,
+                            public doc::CancelIO {
 public:
-  explicit CustomWeakDocReader(Doc* doc)
-    : WeakDocReader(doc) {
-  }
+  explicit CustomWeakDocReader(Doc* doc) : WeakDocReader(doc) {}
 
   // CancelIO impl
-  bool isCanceled() override {
-    return !isLocked();
-  }
+  bool isCanceled() override { return !isLocked(); }
 };
 
 bool Session::saveDocumentChanges(Doc* doc)
@@ -259,8 +253,7 @@ bool Session::saveDocumentChanges(Doc* doc)
     return false;
 
   app::Context ctx;
-  std::string dir = base::join_path(m_path,
-    base::convert_to<std::string>(doc->id()));
+  std::string dir = base::join_path(m_path, base::convert_to<std::string>(doc->id()));
   RECO_TRACE("RECO: Saving document '%s'...\n", dir.c_str());
 
   // Create directory for document
@@ -293,8 +286,7 @@ void Session::removeDocument(Doc* doc)
   }
 }
 
-Doc* Session::restoreBackupDoc(const std::string& backupDir,
-                               base::task_token* t)
+Doc* Session::restoreBackupDoc(const std::string& backupDir, base::task_token* t)
 {
   Console console;
   try {
@@ -310,14 +302,12 @@ Doc* Session::restoreBackupDoc(const std::string& backupDir,
   return nullptr;
 }
 
-Doc* Session::restoreBackupDoc(const BackupPtr& backup,
-                               base::task_token* t)
+Doc* Session::restoreBackupDoc(const BackupPtr& backup, base::task_token* t)
 {
   return restoreBackupDoc(backup->dir(), t);
 }
 
-Doc* Session::restoreBackupById(const doc::ObjectId id,
-                                base::task_token* t)
+Doc* Session::restoreBackupById(const doc::ObjectId id, base::task_token* t)
 {
   std::string docDir = base::join_path(m_path, base::convert_to<std::string>(int(id)));
   if (base::is_directory(docDir))
@@ -326,8 +316,7 @@ Doc* Session::restoreBackupById(const doc::ObjectId id,
     return nullptr;
 }
 
-Doc* Session::restoreBackupDocById(const doc::ObjectId id,
-                                   base::task_token* t)
+Doc* Session::restoreBackupDocById(const doc::ObjectId id, base::task_token* t)
 {
   std::string docDir = base::join_path(m_path, base::convert_to<std::string>(int(id)));
   if (!base::is_directory(docDir))
@@ -391,8 +380,7 @@ std::string Session::verFilename() const
 
 void Session::markDocumentAsCorrectlyClosed(app::Doc* doc)
 {
-  std::string dir = base::join_path(
-    m_path, base::convert_to<std::string>(doc->id()));
+  std::string dir = base::join_path(m_path, base::convert_to<std::string>(doc->id()));
 
   ASSERT(!dir.empty());
   if (dir.empty() || !base::is_directory(dir))
@@ -433,9 +421,7 @@ void Session::fixFilename(Doc* doc)
     ext = "." + ext;
 
   doc->setFilename(
-    base::join_path(
-      base::get_file_path(fn),
-      base::get_file_title(fn) + "-Recovered" + ext));
+    base::join_path(base::get_file_path(fn), base::get_file_title(fn) + "-Recovered" + ext));
 }
 
 int Session::filenamePartToInt(const std::string& part) const
@@ -453,5 +439,4 @@ int Session::filenamePartToInt(const std::string& part) const
   return result;
 }
 
-} // namespace crash
-} // namespace app
+}} // namespace app::crash

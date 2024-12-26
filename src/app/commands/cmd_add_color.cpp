@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -22,7 +22,7 @@
 #include "doc/palette.h"
 
 #ifdef ENABLE_SCRIPTING
-#include "app/script/luacpp.h"
+  #include "app/script/luacpp.h"
 #endif
 
 namespace app {
@@ -32,11 +32,9 @@ enum class AddColorSource { Fg, Bg, Color };
 template<>
 void Param<AddColorSource>::fromString(const std::string& value)
 {
-  if (value == "fg" ||
-      value == "foreground")
+  if (value == "fg" || value == "foreground")
     setValue(AddColorSource::Fg);
-  else if (value == "bg" ||
-           value == "background")
+  else if (value == "bg" || value == "background")
     setValue(AddColorSource::Bg);
   else
     setValue(AddColorSource::Color);
@@ -51,13 +49,14 @@ void Param<AddColorSource>::fromLua(lua_State* L, int index)
 #endif // ENABLE_SCRIPTING
 
 struct AddColorParams : public NewParams {
-  Param<AddColorSource> source { this, AddColorSource::Color, "source" };
-  Param<app::Color> color { this, app::Color::fromMask(), "color" };
+  Param<AddColorSource> source{ this, AddColorSource::Color, "source" };
+  Param<app::Color> color{ this, app::Color::fromMask(), "color" };
 };
 
 class AddColorCommand : public CommandWithNewParams<AddColorParams> {
 public:
   AddColorCommand();
+
 protected:
   bool onEnabled(Context* ctx) override;
   void onExecute(Context* ctx) override;
@@ -79,15 +78,9 @@ void AddColorCommand::onExecute(Context* ctx)
   app::Color appColor;
 
   switch (params().source()) {
-    case AddColorSource::Fg:
-      appColor = Preferences::instance().colorBar.fgColor();
-      break;
-    case AddColorSource::Bg:
-      appColor = Preferences::instance().colorBar.bgColor();
-      break;
-    case AddColorSource::Color:
-      appColor = params().color();
-      break;
+    case AddColorSource::Fg:    appColor = Preferences::instance().colorBar.fgColor(); break;
+    case AddColorSource::Bg:    appColor = Preferences::instance().colorBar.bgColor(); break;
+    case AddColorSource::Color: appColor = params().color(); break;
   }
 
   Palette* pal = ctx->activeSite().palette();
@@ -97,16 +90,13 @@ void AddColorCommand::onExecute(Context* ctx)
 
   try {
     std::unique_ptr<Palette> newPalette(new Palette(*pal));
-    color_t color = doc::rgba(
-      appColor.getRed(),
-      appColor.getGreen(),
-      appColor.getBlue(),
-      appColor.getAlpha());
-    int index = newPalette->findExactMatch(
-      appColor.getRed(),
-      appColor.getGreen(),
-      appColor.getBlue(),
-      appColor.getAlpha(), -1);
+    color_t color =
+      doc::rgba(appColor.getRed(), appColor.getGreen(), appColor.getBlue(), appColor.getAlpha());
+    int index = newPalette->findExactMatch(appColor.getRed(),
+                                           appColor.getGreen(),
+                                           appColor.getBlue(),
+                                           appColor.getAlpha(),
+                                           -1);
 
     // It should be -1, because the user has pressed the warning
     // button that is available only when the color isn't in the
@@ -124,7 +114,7 @@ void AddColorCommand::onExecute(Context* ctx)
     }
 
     newPalette->addEntry(color);
-    index = newPalette->size()-1;
+    index = newPalette->size() - 1;
 
     if (document) {
       frame_t frame = writer.frame();
@@ -143,8 +133,8 @@ std::string AddColorCommand::onGetFriendlyName() const
 {
   std::string source;
   switch (params().source()) {
-    case AddColorSource::Fg: source = Strings::commands_AddColor_Foreground(); break;
-    case AddColorSource::Bg: source = Strings::commands_AddColor_Background(); break;
+    case AddColorSource::Fg:    source = Strings::commands_AddColor_Foreground(); break;
+    case AddColorSource::Bg:    source = Strings::commands_AddColor_Background(); break;
     case AddColorSource::Color: source = Strings::commands_AddColor_Specific(); break;
   }
   return Strings::commands_AddColor(source);

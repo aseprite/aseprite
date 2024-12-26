@@ -11,13 +11,13 @@
 
 namespace doc {
 
-  enum PixelFormat {
-    IMAGE_RGB,           // 32bpp see doc::rgba()
-    IMAGE_GRAYSCALE,     // 16bpp see doc::graya()
-    IMAGE_INDEXED,       // 8bpp
-    IMAGE_BITMAP,        // 1bpp
-    IMAGE_TILEMAP,       // 32bpp see doc::tile()
-  };
+enum PixelFormat {
+  IMAGE_RGB,       // 32bpp see doc::rgba()
+  IMAGE_GRAYSCALE, // 16bpp see doc::graya()
+  IMAGE_INDEXED,   // 8bpp
+  IMAGE_BITMAP,    // 1bpp
+  IMAGE_TILEMAP,   // 32bpp see doc::tile()
+};
 
 } // namespace doc
 

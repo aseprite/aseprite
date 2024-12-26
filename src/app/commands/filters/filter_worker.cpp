@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -40,27 +40,25 @@ class FilterWorkerAlert {
 public:
   FilterWorkerAlert(std::function<void()>&& onTick)
     : m_timer(kMonitoringPeriod)
-    , m_window(ui::Alert::create(Strings::alerts_applying_filter())) {
+    , m_window(ui::Alert::create(Strings::alerts_applying_filter()))
+  {
     m_window->addProgress();
 
     m_timer.Tick.connect(std::move(onTick));
     m_timer.start();
   }
 
-  void openAndWait() {
+  void openAndWait()
+  {
     m_window->openWindowInForeground();
 
     // Stop the monitoring timer.
     m_timer.stop();
   }
 
-  void close() {
-    m_window->closeWindow(nullptr);
-  }
+  void close() { m_window->closeWindow(nullptr); }
 
-  void setProgress(double progress) {
-    m_window->setProgress(progress);
-  }
+  void setProgress(double progress) { m_window->setProgress(progress); }
 
 private:
   ui::Timer m_timer; // Monitoring timer to update the progress-bar
@@ -89,17 +87,17 @@ private:
   void onMonitoringTick();
 
   FilterManagerImpl* m_filterMgr; // Effect to be applied.
-  std::mutex m_mutex;           // Mutex to access to 'pos', 'done' and 'cancelled' fields in different threads.
-  float m_pos;                  // Current progress position
-  bool m_done;                  // Was the effect completely applied?
-  bool m_cancelled;             // Was the effect cancelled by the user?
-  bool m_abort;                 // An exception was thrown
+  std::mutex m_mutex; // Mutex to access to 'pos', 'done' and 'cancelled' fields in different
+                      // threads.
+  float m_pos;        // Current progress position
+  bool m_done;        // Was the effect completely applied?
+  bool m_cancelled;   // Was the effect cancelled by the user?
+  bool m_abort;       // An exception was thrown
   std::string m_error;
   std::unique_ptr<FilterWorkerAlert> m_alert;
 };
 
-FilterWorker::FilterWorker(FilterManagerImpl* filterMgr)
-  : m_filterMgr(filterMgr)
+FilterWorker::FilterWorker(FilterManagerImpl* filterMgr) : m_filterMgr(filterMgr)
 {
   m_filterMgr->setProgressDelegate(this);
 
@@ -109,7 +107,7 @@ FilterWorker::FilterWorker(FilterManagerImpl* filterMgr)
   m_abort = false;
 
   if (Manager::getDefault())
-    m_alert.reset(new FilterWorkerAlert([this]{ onMonitoringTick(); }));
+    m_alert.reset(new FilterWorkerAlert([this] { onMonitoringTick(); }));
 }
 
 FilterWorker::~FilterWorker()
@@ -127,7 +125,7 @@ void FilterWorker::run()
   // Open the alert window in foreground (this is modal, locks the main thread)
   if (m_alert) {
     // Launch the thread to apply the effect in background
-    thread = std::thread([this]{ applyFilterInBackground(); });
+    thread = std::thread([this] { applyFilterInBackground(); });
     m_alert->openAndWait();
   }
   else {
@@ -152,8 +150,7 @@ void FilterWorker::run()
     console.printf("A problem has occurred.\n\nDetails:\n%s", m_error.c_str());
   }
   else if (m_cancelled && !m_filterMgr->isTransaction()) {
-    StatusBar::instance()->showTip(2500,
-      Strings::statusbar_tips_filter_no_unlocked_layer());
+    StatusBar::instance()->showTip(2500, Strings::statusbar_tips_filter_no_unlocked_layer());
   }
 }
 

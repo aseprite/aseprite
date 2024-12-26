@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_tag_range.h"
@@ -17,8 +17,7 @@
 #include "doc/tag.h"
 #include "doc/tags.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 SetTagRange::SetTagRange(Tag* tag, frame_t from, frame_t to)
   : WithTag(tag)
@@ -52,5 +51,4 @@ void SetTagRange::onFireNotifications()
   doc->notify_observers<DocEvent&>(&DocObserver::onTagChange, ev);
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

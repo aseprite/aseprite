@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_tag_name.h"
@@ -17,8 +17,7 @@
 #include "doc/tag.h"
 #include "doc/tags.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 SetTagName::SetTagName(doc::Tag* tag, const std::string& name)
   : WithTag(tag)
@@ -50,5 +49,4 @@ void SetTagName::onFireNotifications()
   doc->notify_observers<DocEvent&>(&DocObserver::onTagRename, ev);
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

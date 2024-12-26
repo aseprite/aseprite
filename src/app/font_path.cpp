@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/font_path.h"
@@ -14,8 +14,7 @@
 
 namespace app {
 
-std::string find_font(const std::string& firstDir,
-                      const std::string& filename)
+std::string find_font(const std::string& firstDir, const std::string& filename)
 {
   std::string fn = base::join_path(firstDir, filename);
   if (base::is_file(fn))

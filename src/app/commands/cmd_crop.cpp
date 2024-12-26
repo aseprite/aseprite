@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/commands/command.h"
@@ -37,26 +37,27 @@ private:
   gfx::Rect m_bounds;
 };
 
-CropSpriteCommand::CropSpriteCommand()
-  : Command(CommandId::CropSprite(), CmdRecordableFlag)
+CropSpriteCommand::CropSpriteCommand() : Command(CommandId::CropSprite(), CmdRecordableFlag)
 {
 }
 
 void CropSpriteCommand::onLoadParams(const Params& params)
 {
   m_bounds = gfx::Rect(0, 0, 0, 0);
-  if (params.has_param("x")) m_bounds.x = params.get_as<int>("x");
-  if (params.has_param("y")) m_bounds.y = params.get_as<int>("y");
-  if (params.has_param("width")) m_bounds.w = params.get_as<int>("width");
-  if (params.has_param("height")) m_bounds.h = params.get_as<int>("height");
+  if (params.has_param("x"))
+    m_bounds.x = params.get_as<int>("x");
+  if (params.has_param("y"))
+    m_bounds.y = params.get_as<int>("y");
+  if (params.has_param("width"))
+    m_bounds.w = params.get_as<int>("width");
+  if (params.has_param("height"))
+    m_bounds.h = params.get_as<int>("height");
 }
 
 bool CropSpriteCommand::onEnabled(Context* context)
 {
-  return
-    context->checkFlags(
-      ContextFlags::ActiveDocumentIsWritable |
-      (m_bounds.isEmpty() ? ContextFlags::HasVisibleMask: 0));
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                             (m_bounds.isEmpty() ? ContextFlags::HasVisibleMask : 0));
 }
 
 void CropSpriteCommand::onExecute(Context* context)
@@ -91,7 +92,7 @@ protected:
   std::string onGetFriendlyName() const override;
 
 private:
-    bool m_byGrid = false;
+  bool m_byGrid = false;
 };
 
 AutocropSpriteCommand::AutocropSpriteCommand()

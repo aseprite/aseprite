@@ -24,147 +24,145 @@
 #include <vector>
 
 namespace doc {
-  class Layer;
-  class PalettePicks;
-}
+class Layer;
+class PalettePicks;
+} // namespace doc
 
 namespace app {
-  class ActiveSiteHandler;
-  class Clipboard;
-  class Command;
-  class Doc;
-  class DocRange;
-  class DocView;
-  class Preferences;
+class ActiveSiteHandler;
+class Clipboard;
+class Command;
+class Doc;
+class DocRange;
+class DocView;
+class Preferences;
 
-  class CommandResult {
-  public:
-    enum Type {
-      kOk,
-      // Exception throw (e.g. cannot lock sprite)
-      kError,
-      // Canceled by user.
-      kCanceled,
-    };
-
-    CommandResult(Type type = Type::kOk) : m_type(type) { }
-    Type type() const { return m_type; }
-    void reset() { m_type = Type::kOk; }
-
-  private:
-    Type m_type;
+class CommandResult {
+public:
+  enum Type {
+    kOk,
+    // Exception throw (e.g. cannot lock sprite)
+    kError,
+    // Canceled by user.
+    kCanceled,
   };
 
-  class CommandPreconditionException : public base::Exception {
-  public:
-    CommandPreconditionException() throw()
-    : base::Exception("Cannot execute the command because its pre-conditions are false.") { }
-  };
+  CommandResult(Type type = Type::kOk) : m_type(type) {}
+  Type type() const { return m_type; }
+  void reset() { m_type = Type::kOk; }
 
-  class CommandExecutionEvent {
-  public:
-    CommandExecutionEvent(Command* command,
-                          const Params& params)
-      : m_command(command)
-      , m_params(params)
-      , m_canceled(false) {
-    }
+private:
+  Type m_type;
+};
 
-    Command* command() const { return m_command; }
-    const Params& params() const { return m_params; }
+class CommandPreconditionException : public base::Exception {
+public:
+  CommandPreconditionException() throw()
+    : base::Exception("Cannot execute the command because its pre-conditions are false.")
+  {
+  }
+};
 
-    // True if the command was canceled or simulated by an
-    // observer/signal slot.
-    bool isCanceled() const { return m_canceled; }
-    void cancel() {
-      m_canceled = true;
-    }
+class CommandExecutionEvent {
+public:
+  CommandExecutionEvent(Command* command, const Params& params)
+    : m_command(command)
+    , m_params(params)
+    , m_canceled(false)
+  {
+  }
 
-  private:
-    Command* m_command;
-    const Params& m_params;
-    bool m_canceled;
-  };
+  Command* command() const { return m_command; }
+  const Params& params() const { return m_params; }
 
-  class Context : public obs::observable<ContextObserver>,
-                  public DocsObserver {
-  public:
-    Context();
-    virtual ~Context();
+  // True if the command was canceled or simulated by an
+  // observer/signal slot.
+  bool isCanceled() const { return m_canceled; }
+  void cancel() { m_canceled = true; }
 
-    const Docs& documents() const { return m_docs; }
-    Docs& documents() { return m_docs; }
+private:
+  Command* m_command;
+  const Params& m_params;
+  bool m_canceled;
+};
 
-    Preferences& preferences() const;
-    Clipboard* clipboard() const;
+class Context : public obs::observable<ContextObserver>,
+                public DocsObserver {
+public:
+  Context();
+  virtual ~Context();
 
-    virtual bool isUIAvailable() const     { return false; }
-    virtual bool isRecordingMacro() const  { return false; }
-    virtual bool isExecutingMacro() const  { return false; }
-    virtual bool isExecutingScript() const { return false; }
+  const Docs& documents() const { return m_docs; }
+  Docs& documents() { return m_docs; }
 
-    bool checkFlags(uint32_t flags) const { return m_flags.check(flags); }
-    void updateFlags() { m_flags.update(this); }
+  Preferences& preferences() const;
+  Clipboard* clipboard() const;
 
-    void sendDocumentToTop(Doc* doc);
-    void closeDocument(Doc* doc);
+  virtual bool isUIAvailable() const { return false; }
+  virtual bool isRecordingMacro() const { return false; }
+  virtual bool isExecutingMacro() const { return false; }
+  virtual bool isExecutingScript() const { return false; }
 
-    Site activeSite() const;
-    Doc* activeDocument() const;
-    void setActiveDocument(Doc* document);
-    void setActiveLayer(doc::Layer* layer);
-    void setActiveFrame(doc::frame_t frame);
-    void setRange(const DocRange& range);
-    void setSelectedColors(const doc::PalettePicks& picks);
-    void setSelectedTiles(const doc::PalettePicks& picks);
-    bool hasModifiedDocuments() const;
-    void notifyActiveSiteChanged();
+  bool checkFlags(uint32_t flags) const { return m_flags.check(flags); }
+  void updateFlags() { m_flags.update(this); }
 
-    void executeCommandFromMenuOrShortcut(Command* command, const Params& params = Params());
-    virtual void executeCommand(Command* command, const Params& params = Params());
+  void sendDocumentToTop(Doc* doc);
+  void closeDocument(Doc* doc);
 
-    void setCommandResult(const CommandResult& result);
-    const CommandResult& commandResult() { return m_result; }
+  Site activeSite() const;
+  Doc* activeDocument() const;
+  void setActiveDocument(Doc* document);
+  void setActiveLayer(doc::Layer* layer);
+  void setActiveFrame(doc::frame_t frame);
+  void setRange(const DocRange& range);
+  void setSelectedColors(const doc::PalettePicks& picks);
+  void setSelectedTiles(const doc::PalettePicks& picks);
+  bool hasModifiedDocuments() const;
+  void notifyActiveSiteChanged();
 
-    virtual DocView* getFirstDocView(Doc* document) const {
-      return nullptr;
-    }
+  void executeCommandFromMenuOrShortcut(Command* command, const Params& params = Params());
+  virtual void executeCommand(Command* command, const Params& params = Params());
 
-    obs::signal<void (CommandExecutionEvent&)> BeforeCommandExecution;
-    obs::signal<void (CommandExecutionEvent&)> AfterCommandExecution;
+  void setCommandResult(const CommandResult& result);
+  const CommandResult& commandResult() { return m_result; }
 
-  protected:
-    // DocsObserver impl
-    void onAddDocument(Doc* doc) override;
-    void onRemoveDocument(Doc* doc) override;
+  virtual DocView* getFirstDocView(Doc* document) const { return nullptr; }
 
-    virtual void onGetActiveSite(Site* site) const;
-    virtual void onSetActiveDocument(Doc* doc, bool notify);
-    virtual void onSetActiveLayer(doc::Layer* layer);
-    virtual void onSetActiveFrame(const doc::frame_t frame);
-    virtual void onSetRange(const DocRange& range);
-    virtual void onSetSelectedColors(const doc::PalettePicks& picks);
-    virtual void onSetSelectedTiles(const doc::PalettePicks& picks);
-    virtual void onCloseDocument(Doc* doc);
+  obs::signal<void(CommandExecutionEvent&)> BeforeCommandExecution;
+  obs::signal<void(CommandExecutionEvent&)> AfterCommandExecution;
 
-    Doc* lastSelectedDoc() { return m_lastSelectedDoc; }
+protected:
+  // DocsObserver impl
+  void onAddDocument(Doc* doc) override;
+  void onRemoveDocument(Doc* doc) override;
 
-  private:
-    ActiveSiteHandler* activeSiteHandler() const;
+  virtual void onGetActiveSite(Site* site) const;
+  virtual void onSetActiveDocument(Doc* doc, bool notify);
+  virtual void onSetActiveLayer(doc::Layer* layer);
+  virtual void onSetActiveFrame(const doc::frame_t frame);
+  virtual void onSetRange(const DocRange& range);
+  virtual void onSetSelectedColors(const doc::PalettePicks& picks);
+  virtual void onSetSelectedTiles(const doc::PalettePicks& picks);
+  virtual void onCloseDocument(Doc* doc);
 
-    // This must be defined before m_docs because ActiveSiteHandler
-    // will be an observer of all documents.
-    mutable std::unique_ptr<ActiveSiteHandler> m_activeSiteHandler;
-    mutable Docs m_docs;
-    ContextFlags m_flags;       // Last updated flags.
-    Doc* m_lastSelectedDoc;
-    mutable std::unique_ptr<Preferences> m_preferences;
+  Doc* lastSelectedDoc() { return m_lastSelectedDoc; }
 
-    // Result of the execution of a command.
-    CommandResult m_result;
+private:
+  ActiveSiteHandler* activeSiteHandler() const;
 
-    DISABLE_COPYING(Context);
-  };
+  // This must be defined before m_docs because ActiveSiteHandler
+  // will be an observer of all documents.
+  mutable std::unique_ptr<ActiveSiteHandler> m_activeSiteHandler;
+  mutable Docs m_docs;
+  ContextFlags m_flags; // Last updated flags.
+  Doc* m_lastSelectedDoc;
+  mutable std::unique_ptr<Preferences> m_preferences;
+
+  // Result of the execution of a command.
+  CommandResult m_result;
+
+  DISABLE_COPYING(Context);
+};
 
 } // namespace app
 

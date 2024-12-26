@@ -13,19 +13,17 @@
 #include "doc/color.h"
 
 namespace doc {
-  class Cel;
+class Cel;
 }
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class FlipMaskedCel : public CmdSequence {
-  public:
-    FlipMaskedCel(Cel* cel, doc::algorithm::FlipType flipType);
-  };
+class FlipMaskedCel : public CmdSequence {
+public:
+  FlipMaskedCel(Cel* cel, doc::algorithm::FlipType flipType);
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

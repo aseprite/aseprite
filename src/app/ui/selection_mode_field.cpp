@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/selection_mode_field.h"
@@ -20,8 +20,7 @@ namespace app {
 using namespace app::skin;
 using namespace ui;
 
-SelectionModeField::SelectionModeField()
-  : ButtonSet(4)
+SelectionModeField::SelectionModeField() : ButtonSet(4)
 {
   auto* theme = SkinTheme::get(this);
 
@@ -36,20 +35,22 @@ SelectionModeField::SelectionModeField()
 
 void SelectionModeField::setupTooltips(TooltipManager* tooltipManager)
 {
-  tooltipManager->addTooltipFor(
-    at(0), Strings::selection_mode_replace(), BOTTOM);
+  tooltipManager->addTooltipFor(at(0), Strings::selection_mode_replace(), BOTTOM);
 
   tooltipManager->addTooltipFor(
-    at(1), key_tooltip(Strings::selection_mode_add().c_str(),
-                       KeyAction::AddSelection), BOTTOM);
+    at(1),
+    key_tooltip(Strings::selection_mode_add().c_str(), KeyAction::AddSelection),
+    BOTTOM);
 
   tooltipManager->addTooltipFor(
-    at(2), key_tooltip(Strings::selection_mode_subtract().c_str(),
-                       KeyAction::SubtractSelection), BOTTOM);
+    at(2),
+    key_tooltip(Strings::selection_mode_subtract().c_str(), KeyAction::SubtractSelection),
+    BOTTOM);
 
   tooltipManager->addTooltipFor(
-    at(3), key_tooltip(Strings::selection_mode_intersect().c_str(),
-                       KeyAction::IntersectSelection), BOTTOM);
+    at(3),
+    key_tooltip(Strings::selection_mode_intersect().c_str(), KeyAction::IntersectSelection),
+    BOTTOM);
 }
 
 gen::SelectionMode SelectionModeField::selectionMode()

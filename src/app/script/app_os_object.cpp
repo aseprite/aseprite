@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/script/engine.h"
@@ -14,12 +14,11 @@
 #include "base/platform.h"
 #include "updater/user_agent.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 namespace {
 
-struct AppOS { };
+struct AppOS {};
 
 int AppOS_get_name(lua_State* L)
 {
@@ -85,16 +84,16 @@ int AppOS_get_arm64(lua_State* L)
 }
 
 const Property AppOS_properties[] = {
-  { "name", AppOS_get_name, nullptr },
-  { "version", AppOS_get_version, nullptr },
+  { "name",     AppOS_get_name,     nullptr },
+  { "version",  AppOS_get_version,  nullptr },
   { "fullName", AppOS_get_fullName, nullptr },
-  { "windows", AppOS_get_windows, nullptr },
-  { "macos", AppOS_get_macos, nullptr },
-  { "linux", AppOS_get_linux, nullptr },
-  { "x64", AppOS_get_x64, nullptr },
-  { "x86", AppOS_get_x86, nullptr },
-  { "arm64", AppOS_get_arm64, nullptr },
-  { nullptr, nullptr, nullptr }
+  { "windows",  AppOS_get_windows,  nullptr },
+  { "macos",    AppOS_get_macos,    nullptr },
+  { "linux",    AppOS_get_linux,    nullptr },
+  { "x64",      AppOS_get_x64,      nullptr },
+  { "x86",      AppOS_get_x86,      nullptr },
+  { "arm64",    AppOS_get_arm64,    nullptr },
+  { nullptr,    nullptr,            nullptr }
 };
 
 const luaL_Reg AppOS_methods[] = {
@@ -117,5 +116,4 @@ void register_app_os_object(lua_State* L)
   lua_pop(L, 1);
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

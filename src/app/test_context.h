@@ -16,42 +16,43 @@
 
 namespace app {
 
-  template<typename Base>
-  class TestContextT : public Base {
-  public:
-    TestContextT() : m_activeDoc(nullptr) {
-    }
+template<typename Base>
+class TestContextT : public Base {
+public:
+  TestContextT() : m_activeDoc(nullptr) {}
 
-  protected:
+protected:
+  void onGetActiveSite(Site* site) const override
+  {
+    Doc* doc = m_activeDoc;
+    if (!doc)
+      return;
 
-    void onGetActiveSite(Site* site) const override {
-      Doc* doc = m_activeDoc;
-      if (!doc)
-        return;
+    site->document(doc);
+    site->sprite(doc->sprite());
+    site->layer(doc->sprite()->root()->firstLayer());
+    site->frame(0);
+  }
 
-      site->document(doc);
-      site->sprite(doc->sprite());
-      site->layer(doc->sprite()->root()->firstLayer());
-      site->frame(0);
-    }
+  void onAddDocument(Doc* doc) override
+  {
+    m_activeDoc = doc;
+    this->notifyActiveSiteChanged();
+  }
 
-    void onAddDocument(Doc* doc) override {
-      m_activeDoc = doc;
+  void onRemoveDocument(Doc* doc) override
+  {
+    if (m_activeDoc == doc) {
+      m_activeDoc = nullptr;
       this->notifyActiveSiteChanged();
     }
+  }
 
-    void onRemoveDocument(Doc* doc) override {
-      if (m_activeDoc == doc) {
-        m_activeDoc = nullptr;
-        this->notifyActiveSiteChanged();
-      }
-    }
+private:
+  Doc* m_activeDoc;
+};
 
-  private:
-    Doc* m_activeDoc;
-  };
-
-  typedef TestContextT<Context> TestContext;
+typedef TestContextT<Context> TestContext;
 
 } // namespace app
 

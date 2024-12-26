@@ -21,45 +21,45 @@
 #include "ui/view.h"
 
 namespace app {
-  class DevConsoleView : public ui::Box
-                       , public TabView
-                       , public WorkspaceView
-                       , public script::EngineDelegate {
-  public:
-    DevConsoleView();
-    ~DevConsoleView();
+class DevConsoleView : public ui::Box,
+                       public TabView,
+                       public WorkspaceView,
+                       public script::EngineDelegate {
+public:
+  DevConsoleView();
+  ~DevConsoleView();
 
-    // TabView implementation
-    std::string getTabText() override;
-    TabIcon getTabIcon() override;
-    gfx::Color getTabColor() override;
+  // TabView implementation
+  std::string getTabText() override;
+  TabIcon getTabIcon() override;
+  gfx::Color getTabColor() override;
 
-    // WorkspaceView implementation
-    ui::Widget* getContentWidget() override { return this; }
-    bool canCloneWorkspaceView() override { return true; }
-    WorkspaceView* cloneWorkspaceView() override;
-    void onWorkspaceViewSelected() override;
-    bool onCloseView(Workspace* workspace, bool quitting) override;
-    void onTabPopup(Workspace* workspace) override;
+  // WorkspaceView implementation
+  ui::Widget* getContentWidget() override { return this; }
+  bool canCloneWorkspaceView() override { return true; }
+  WorkspaceView* cloneWorkspaceView() override;
+  void onWorkspaceViewSelected() override;
+  bool onCloseView(Workspace* workspace, bool quitting) override;
+  void onTabPopup(Workspace* workspace) override;
 
-    // EngineDelegate impl
-    virtual void onConsoleError(const char* text) override;
-    virtual void onConsolePrint(const char* text) override;
+  // EngineDelegate impl
+  virtual void onConsoleError(const char* text) override;
+  virtual void onConsolePrint(const char* text) override;
 
-  protected:
-    bool onProcessMessage(ui::Message* msg) override;
-    void onExecuteCommand(const std::string& cmd);
+protected:
+  bool onProcessMessage(ui::Message* msg) override;
+  void onExecuteCommand(const std::string& cmd);
 
-  private:
-    class CommmandEntry;
+private:
+  class CommmandEntry;
 
-    ui::View m_view;
-    ui::TextBox m_textBox;
-    ui::HBox m_bottomBox;
-    ui::Label m_label;
-    CommmandEntry* m_entry;
-    script::Engine* m_engine;
-  };
+  ui::View m_view;
+  ui::TextBox m_textBox;
+  ui::HBox m_bottomBox;
+  ui::Label m_label;
+  CommmandEntry* m_entry;
+  script::Engine* m_engine;
+};
 
 } // namespace app
 

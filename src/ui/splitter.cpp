@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/splitter.h"
@@ -51,21 +51,18 @@ void Splitter::setPosition(double pos)
 bool Splitter::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
-
     case kMouseDownMessage:
       if (!isEnabled())
         break;
       else {
-        Widget* c1, *c2;
+        Widget *c1, *c2;
         int x1, y1, x2, y2;
         int bar, click_bar;
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
 
         bar = click_bar = 0;
 
-        for (auto it=children().begin(),
-               end=children().end();
-               it != end; ) {
+        for (auto it = children().begin(), end = children().end(); it != end;) {
           auto next = it;
           ++next;
 
@@ -88,8 +85,7 @@ bool Splitter::onProcessMessage(Message* msg)
               y2 = c2->bounds().y;
             }
 
-            if ((mousePos.x >= x1) && (mousePos.x < x2) &&
-                (mousePos.y >= y1) && (mousePos.y < y2))
+            if ((mousePos.x >= x1) && (mousePos.x < x2) && (mousePos.y >= y1) && (mousePos.y < y2))
               click_bar = bar;
           }
 
@@ -111,22 +107,14 @@ bool Splitter::onProcessMessage(Message* msg)
 
         if (align() & HORIZONTAL) {
           switch (m_type) {
-            case ByPercentage:
-              m_userPos = 100.0 * (mousePos.x - bounds().x) / bounds().w;
-              break;
-            case ByPixel:
-              m_userPos = mousePos.x - bounds().x;
-              break;
+            case ByPercentage: m_userPos = 100.0 * (mousePos.x - bounds().x) / bounds().w; break;
+            case ByPixel:      m_userPos = mousePos.x - bounds().x; break;
           }
         }
         else {
           switch (m_type) {
-            case ByPercentage:
-              m_userPos = 100.0 * (mousePos.y - bounds().y) / bounds().h;
-              break;
-            case ByPixel:
-              m_userPos = mousePos.y - bounds().y;
-              break;
+            case ByPercentage: m_userPos = 100.0 * (mousePos.y - bounds().y) / bounds().h; break;
+            case ByPixel:      m_userPos = mousePos.y - bounds().y; break;
           }
         }
 
@@ -146,19 +134,17 @@ bool Splitter::onProcessMessage(Message* msg)
     case kSetCursorMessage:
       if (isEnabled() && (!manager()->getCapture() || hasCapture())) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-        Widget* c1, *c2;
+        Widget *c1, *c2;
         int x1, y1, x2, y2;
         bool change_cursor = false;
 
-        for (auto it=children().begin(),
-               end=children().end();
-               it != end; ) {
+        for (auto it = children().begin(), end = children().end(); it != end;) {
           auto next = it;
           ++next;
 
           if (next != end) {
             c1 = *it;
-            c2 = *(it+1);
+            c2 = *(it + 1);
 
             if (this->align() & HORIZONTAL) {
               x1 = c1->bounds().x2();
@@ -173,8 +159,8 @@ bool Splitter::onProcessMessage(Message* msg)
               y2 = c2->bounds().y;
             }
 
-            if ((mousePos.x >= x1) && (mousePos.x < x2) &&
-                (mousePos.y >= y1) && (mousePos.y < y2)) {
+            if ((mousePos.x >= x1) && (mousePos.x < x2) && (mousePos.y >= y1) &&
+                (mousePos.y < y2)) {
               change_cursor = true;
               break;
             }
@@ -192,7 +178,6 @@ bool Splitter::onProcessMessage(Message* msg)
         }
       }
       break;
-
   }
 
   return Widget::onProcessMessage(msg);
@@ -200,43 +185,41 @@ bool Splitter::onProcessMessage(Message* msg)
 
 void Splitter::onInitTheme(InitThemeEvent& ev)
 {
-  if (m_type == ByPixel) m_pos /= m_guiscale;
+  if (m_type == ByPixel)
+    m_pos /= m_guiscale;
   m_guiscale = ui::guiscale();
-  if (m_type == ByPixel) m_pos *= m_guiscale;
+  if (m_type == ByPixel)
+    m_pos *= m_guiscale;
 
   Widget::onInitTheme(ev);
 }
 
 void Splitter::onResize(ResizeEvent& ev)
 {
-#define LAYOUT_TWO_CHILDREN(x, y, w, h, l, t, r, b)                     \
-  {                                                                     \
-    avail = rc.w - childSpacing();                                      \
-                                                                        \
-    pos.x = rc.x;                                                       \
-    pos.y = rc.y;                                                       \
-    switch (m_type) {                                                   \
-      case ByPercentage:                                                \
-        pos.w = int(avail*m_pos/100);                                   \
-        break;                                                          \
-      case ByPixel:                                                     \
-        pos.w = int(m_pos);                                             \
-        break;                                                          \
-    }                                                                   \
-                                                                        \
-    /* TODO uncomment this to make a restricted splitter */             \
-    /* pos.w = std::clamp(pos.w, reqSize1.w, avail-reqSize2.w); */      \
-    pos.h = rc.h;                                                       \
-                                                                        \
-    child1->setBounds(pos);                                             \
-    gfx::Rect child1Pos = child1->bounds();                             \
-                                                                        \
-    pos.x = child1Pos.x + child1Pos.w + childSpacing();                 \
-    pos.y = rc.y;                                                       \
-    pos.w = avail - child1Pos.w;                                        \
-    pos.h = rc.h;                                                       \
-                                                                        \
-    child2->setBounds(pos);                                             \
+#define LAYOUT_TWO_CHILDREN(x, y, w, h, l, t, r, b)                                                \
+  {                                                                                                \
+    avail = rc.w - childSpacing();                                                                 \
+                                                                                                   \
+    pos.x = rc.x;                                                                                  \
+    pos.y = rc.y;                                                                                  \
+    switch (m_type) {                                                                              \
+      case ByPercentage: pos.w = int(avail * m_pos / 100); break;                                  \
+      case ByPixel:      pos.w = int(m_pos); break;                                                     \
+    }                                                                                              \
+                                                                                                   \
+    /* TODO uncomment this to make a restricted splitter */                                        \
+    /* pos.w = std::clamp(pos.w, reqSize1.w, avail-reqSize2.w); */                                 \
+    pos.h = rc.h;                                                                                  \
+                                                                                                   \
+    child1->setBounds(pos);                                                                        \
+    gfx::Rect child1Pos = child1->bounds();                                                        \
+                                                                                                   \
+    pos.x = child1Pos.x + child1Pos.w + childSpacing();                                            \
+    pos.y = rc.y;                                                                                  \
+    pos.w = avail - child1Pos.w;                                                                   \
+    pos.h = rc.h;                                                                                  \
+                                                                                                   \
+    child2->setBounds(pos);                                                                        \
   }
 
   gfx::Rect rc(ev.bounds());
@@ -265,17 +248,17 @@ void Splitter::onResize(ResizeEvent& ev)
 
 void Splitter::onSizeHint(SizeHintEvent& ev)
 {
-#define GET_CHILD_SIZE(w, h)                         \
-  do {                                               \
-    w = std::max(w, reqSize.w);                      \
-    h = std::max(h, reqSize.h);                      \
-  } while(0)
+#define GET_CHILD_SIZE(w, h)                                                                       \
+  do {                                                                                             \
+    w = std::max(w, reqSize.w);                                                                    \
+    h = std::max(h, reqSize.h);                                                                    \
+  } while (0)
 
-#define FINAL_SIZE(w)                                     \
-  do {                                                    \
-    w *= visibleChildren;                                 \
-    w += childSpacing() * (visibleChildren-1);            \
-  } while(0)
+#define FINAL_SIZE(w)                                                                              \
+  do {                                                                                             \
+    w *= visibleChildren;                                                                          \
+    w += childSpacing() * (visibleChildren - 1);                                                   \
+  } while (0)
 
   int visibleChildren;
   Size reqSize;
@@ -317,7 +300,8 @@ void Splitter::onSizeHint(SizeHintEvent& ev)
 void Splitter::onLoadLayout(LoadLayoutEvent& ev)
 {
   ev.stream() >> m_userPos;
-  if (m_userPos < 0) m_userPos = 0;
+  if (m_userPos < 0)
+    m_userPos = 0;
   if (m_type == ByPixel)
     m_userPos *= m_guiscale;
 
@@ -326,8 +310,7 @@ void Splitter::onLoadLayout(LoadLayoutEvent& ev)
 
 void Splitter::onSaveLayout(SaveLayoutEvent& ev)
 {
-  double pos = (m_type == ByPixel ? m_userPos / m_guiscale:
-                                    m_userPos);
+  double pos = (m_type == ByPixel ? m_userPos / m_guiscale : m_userPos);
   ev.stream() << pos;
 }
 
@@ -358,9 +341,7 @@ void Splitter::calcPos()
 {
   if (align() & HORIZONTAL) {
     switch (m_type) {
-      case ByPercentage:
-        m_pos = std::clamp<double>(m_userPos, 0, 100);
-        break;
+      case ByPercentage: m_pos = std::clamp<double>(m_userPos, 0, 100); break;
       case ByPixel:
         if (isVisible())
           m_pos = std::clamp<double>(m_userPos, 0, bounds().w);
@@ -369,9 +350,7 @@ void Splitter::calcPos()
   }
   else {
     switch (m_type) {
-      case ByPercentage:
-        m_pos = std::clamp<double>(m_userPos, 0, 100);
-        break;
+      case ByPercentage: m_pos = std::clamp<double>(m_userPos, 0, 100); break;
       case ByPixel:
         if (isVisible())
           m_pos = std::clamp<double>(m_userPos, 0, bounds().h);

@@ -15,35 +15,33 @@
 #include <memory>
 
 namespace ui {
-  class Slider;
-  class Graphics;
-}
+class Slider;
+class Graphics;
+} // namespace ui
 
-namespace app {
-  namespace skin {
+namespace app { namespace skin {
 
-    class ISliderBgPainter {
-    public:
-      virtual ~ISliderBgPainter() { }
-      virtual void paint(ui::Slider* slider, ui::Graphics* graphics, const gfx::Rect& rc) = 0;
-    };
+class ISliderBgPainter {
+public:
+  virtual ~ISliderBgPainter() {}
+  virtual void paint(ui::Slider* slider, ui::Graphics* graphics, const gfx::Rect& rc) = 0;
+};
 
-    class SkinSliderProperty : public ui::Property {
-    public:
-      static const char* Name;
+class SkinSliderProperty : public ui::Property {
+public:
+  static const char* Name;
 
-      // The given painter is deleted automatically when this
-      // property the destroyed.
-      SkinSliderProperty(ISliderBgPainter* painter);
-      ~SkinSliderProperty();
+  // The given painter is deleted automatically when this
+  // property the destroyed.
+  SkinSliderProperty(ISliderBgPainter* painter);
+  ~SkinSliderProperty();
 
-      ISliderBgPainter* getBgPainter() const;
+  ISliderBgPainter* getBgPainter() const;
 
-    private:
-      ISliderBgPainter* m_painter;
-    };
+private:
+  ISliderBgPainter* m_painter;
+};
 
-  } // namespace skin
-} // namespace app
+}} // namespace app::skin
 
 #endif

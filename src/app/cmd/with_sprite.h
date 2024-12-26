@@ -12,22 +12,20 @@
 #include "doc/object_id.h"
 
 namespace doc {
-  class Sprite;
+class Sprite;
 }
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
-  class WithSprite {
-  public:
-    WithSprite(doc::Sprite* sprite);
-    doc::Sprite* sprite();
+class WithSprite {
+public:
+  WithSprite(doc::Sprite* sprite);
+  doc::Sprite* sprite();
 
-  private:
-    doc::ObjectId m_spriteId;
-  };
+private:
+  doc::ObjectId m_spriteId;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

@@ -30,7 +30,7 @@
 
       <panel id="panel" expansive="true">
 
-	<!-- General -->
+        <!-- General -->
         <vbox id="section_general">
           <separator text="@.section_general" horizontal="true" />
           <grid columns="3">
@@ -62,7 +62,7 @@
               <listitem text="300%" value="3" />
               <listitem text="400%" value="4" />
             </combobox>
-	    <boxfiller />
+            <boxfiller />
 
             <label text="@.language" />
             <combobox id="language" />
@@ -72,11 +72,11 @@
                  text="@.gpu_acceleration"
                  tooltip="@.gpu_acceleration_tooltip" />
           <check id="show_menu_bar"
-		 text="@.show_menu_bar" />
+                 text="@.show_menu_bar" />
           <check id="show_aseprite_file_dialog"
                  text="@.show_aseprite_file_dialog" />
           <check id="show_home"
-		 text="@.show_home" />
+                 text="@.show_home" />
           <check id="expand_menubar_on_mouseover"
                  text="@.expand_menu_bar_items_on_mouseover"
                  tooltip="@.expand_menu_bar_items_on_mouseover_tooltip" />
@@ -283,27 +283,27 @@
           <check text="@.modifiers_disable_handles" id="modifiers_disable_handles" tooltip="@.modifiers_disable_handles_tooltip" />
           <check text="@.move_on_add_mode" id="move_on_add_mode" tooltip="@.move_on_add_mode_tooltip" />
           <check text="@.select_tile_with_double_click" id="select_tile_with_double_click"
-		 pref="selection.doubleclick_select_tile" />
+                 pref="selection.doubleclick_select_tile" />
           <check text="@.snap_to_grid_selection"
                  pref="selection.snap_to_grid"/>
           <check text="@.force_rotsprite" id="force_rotsprite"
-		 pref="selection.force_rotsprite"/>
+                 pref="selection.force_rotsprite"/>
           <check text="@.multicel_when_layers_or_frames" id="multicel_when_layers_or_frames"
-		 tooltip="@.multicel_when_layers_or_frames_tooltip"
-		 pref="selection.multicel_when_layers_or_frames"/>
+                 tooltip="@.multicel_when_layers_or_frames_tooltip"
+                 pref="selection.multicel_when_layers_or_frames"/>
         </vbox>
 
         <!-- Timeline -->
         <vbox id="section_timeline">
           <separator text="@.section_timeline" horizontal="true" />
           <check text="@.autotimeline" id="autotimeline" tooltip="@.autotimeline_tooltip"
-		 pref="general.autoshow_timeline" />
+                 pref="general.autoshow_timeline" />
           <check text="@.rewind_on_stop" id="rewind_on_stop" tooltip="@.rewind_on_stop_tooltip"
-		 pref="general.rewind_on_stop" />
-	  <hbox>
-	    <label text="@.default_first_frame" />
-	    <expr id="first_frame" />
-	  </hbox>
+                 pref="general.rewind_on_stop" />
+          <hbox>
+            <label text="@.default_first_frame" />
+            <expr id="first_frame" />
+          </hbox>
           <separator text="@.timeline_selection" horizontal="true" />
           <check id="keep_selection"
                  text="@.keep_timeline_selection"
@@ -328,13 +328,13 @@
             <boxfiller />
             <button id="reset_timeline_sel" text="@general.reset" minwidth="60" />
           </hbox>
-	</vbox>
+        </vbox>
 
         <!-- Cursors -->
         <vbox id="section_cursors">
           <separator text="@.ui_mouse_cursor" horizontal="true" />
-          <check id="native_cursor" text="@.native_cursor" />
           <check text="@.global_brush_preview_in_preview" id="global_brush_preview_in_preview" tooltip="@.global_brush_preview_in_preview_tooltip"/>
+          <check id="native_cursor" text="@.native_cursor" />
           <hbox>
             <label id="cursor_scale_label" text="@.cursor_scale_label" />
             <combobox id="cursor_scale">
@@ -350,11 +350,11 @@
           <grid columns="2">
             <label text="@.crosshair_type" />
             <combobox id="painting_cursor_type">
-	      <listitem text="@.simple_crosshair" value="0" />
-	      <listitem text="@.crosshair_on_sprite" value="1" />
+              <listitem text="@.simple_crosshair" value="0" />
+              <listitem text="@.crosshair_on_sprite" value="1" />
             </combobox>
 
-	    <label text="@.brush_preview" />
+            <label text="@.brush_preview" />
             <combobox id="brush_preview">
               <listitem text="@.brush_preview_none" value="0" />
               <listitem text="@.brush_preview_edges" value="1" />
@@ -363,18 +363,18 @@
               <listitem text="@.brush_preview_fullnedges" value="4" />
             </combobox>
 
-	    <label text="@.cursor_color_type" />
-	    <combobox id="cursor_color_type">
-	      <listitem text="@.cursor_neg_bw" value="0" />
-	      <listitem text="@.cursor_specific_color" value="1" />
-	    </combobox>
+            <label text="@.cursor_color_type" />
+            <combobox id="cursor_color_type">
+              <listitem text="@.cursor_neg_bw" value="0" />
+              <listitem text="@.cursor_specific_color" value="1" />
+            </combobox>
 
-	    <boxfiller />
-	    <colorpicker id="cursor_color" rgba="true" />
+            <boxfiller />
+            <colorpicker id="cursor_color" rgba="true" />
 
             <check text="@.snap_cursor_to_grid"
                    pref="cursor.snap_to_grid" cell_hspan="2" />
-	  </grid>
+          </grid>
         </vbox>
 
         <!-- Background -->
@@ -384,74 +384,74 @@
           <separator text="@.bg_checkered" horizontal="true" />
           <grid columns="2">
             <label text="@.bg_size" />
-	    <hbox>
+            <hbox>
               <combobox id="checkered_bg_size" />
               <expr id="checkered_bg_custom_w" />
               <expr id="checkered_bg_custom_h" />
               <check text="@.bg_apply_zoom" id="checkered_bg_zoom" />
-	    </hbox>
+            </hbox>
 
             <label text="@.bg_colors" />
-	    <hbox>
+            <hbox>
               <colorpicker id="checkered_bg_color1" rgba="true" />
               <colorpicker id="checkered_bg_color2" rgba="true" />
-	    </hbox>
+            </hbox>
           </grid>
 
-	  <hbox>
-	    <hbox expansive="true" />
+          <hbox>
+            <hbox expansive="true" />
             <button id="reset_bg" text="@general.reset" minwidth="60" />
-	  </hbox>
+          </hbox>
         </vbox>
 
         <!-- Grid -->
         <vbox id="section_grid">
           <combobox id="grid_scope" />
-	  <hbox>
+          <hbox>
             <check id="grid_visible" text="@.grid_visible" />
             <separator horizontal="true" expansive="true" />
-	  </hbox>
+          </hbox>
 
-	  <grid columns="5">
-	    <label text="@.grid_x" />
-	    <expr id="grid_x" text="" />
-	    <label text="@.grid_y" />
-	    <expr id="grid_y" text="" />
-	    <hbox />
+          <grid columns="5">
+            <label text="@.grid_x" />
+            <expr id="grid_x" text="" />
+            <label text="@.grid_y" />
+            <expr id="grid_y" text="" />
+            <hbox />
 
-	    <label text="@.grid_width" />
-	    <expr id="grid_w" text="" />
-	    <label text="@.grid_height" />
-	    <expr id="grid_h" text="" />
-	    <hbox />
+            <label text="@.grid_width" />
+            <expr id="grid_w" text="" />
+            <label text="@.grid_height" />
+            <expr id="grid_h" text="" />
+            <hbox />
 
             <label text="@.grid_color" />
             <colorpicker id="grid_color" rgba="true" cell_hspan="3" />
-	    <hbox />
+            <hbox />
 
-	    <label text="@.grid_opacity" />
+            <label text="@.grid_opacity" />
             <slider id="grid_opacity" cell_hspan="3" min="1" max="255" width="128" />
             <check id="grid_auto_opacity" text="@.grid_auto" />
-	  </grid>
+          </grid>
 
-	  <hbox>
+          <hbox>
             <check id="pixel_grid_visible" text="@.grid_pixel_grid_visible" />
             <separator horizontal="true" expansive="true" />
-	  </hbox>
+          </hbox>
           <grid columns="3">
             <label text="@.grid_color" />
             <colorpicker id="pixel_grid_color" rgba="true" />
-	    <hbox />
+            <hbox />
 
-	    <label text="@.grid_opacity" />
+            <label text="@.grid_opacity" />
             <slider id="pixel_grid_opacity" min="1" max="255" width="128" />
             <check id="pixel_grid_auto_opacity" text="@.grid_auto" />
           </grid>
 
-	  <hbox>
-	    <hbox expansive="true" />
+          <hbox>
+            <hbox expansive="true" />
             <button id="reset_grid" text="@general.reset" minwidth="60" />
-	  </hbox>
+          </hbox>
         </vbox>
 
         <!-- Guides -->
@@ -518,7 +518,7 @@
                  pref="color_bar.show_invalid_fg_bg_color_alert" />
           <check id="run_script_alert" text="@.run_script_alert"
                  pref="scripts.show_run_script_alert" />
-	  <grid columns="4">
+          <grid columns="4">
             <label text="@.image_format_alerts" />
             <check id="css_options_alert" text="!css" pref="css.show_alert" />
             <check id="gif_options_alert" text="!gif" pref="gif.show_alert" />
@@ -529,10 +529,10 @@
             <check id="webp_options_alert" text="!webp" pref="webp.show_alert" />
           </grid>
           <separator horizontal="true" />
-	  <hbox>
-	    <hbox expansive="true" />
+          <hbox>
+            <hbox expansive="true" />
             <button id="reset_alerts" text="@.reset_alerts" />
-	  </hbox>
+          </hbox>
         </vbox>
 
         <!-- Theme -->
@@ -540,12 +540,12 @@
           <separator text="@.available_themes" horizontal="true" />
           <view expansive="true" maxsize="true">
             <listbox id="theme_list" />
-	  </view>
+          </view>
           <hbox>
-	    <button id="select_theme" text="@.select_theme" minwidth="60" />
+            <button id="select_theme" text="@.select_theme" minwidth="60" />
             <link text="@.download_themes" url="https://www.aseprite.org/themes/" />
-	    <boxfiller />
-	    <button id="open_theme_folder" text="@.open_theme_folder" minwidth="100" />
+            <boxfiller />
+            <button id="open_theme_folder" text="@.open_theme_folder" minwidth="100" />
           </hbox>
         </vbox>
 
@@ -553,13 +553,13 @@
         <vbox id="section_extensions">
           <view expansive="true" maxsize="true">
             <listbox id="extensions_list" />
-	  </view>
+          </view>
           <hbox>
-	    <button id="add_extension" text="@.add_extension" minwidth="60" />
-	    <boxfiller />
-	    <button id="disable_extension" text="@.disable_extension" minwidth="60" />
-	    <button id="uninstall_extension" text="@.uninstall_extension" minwidth="60" />
-	    <button id="open_extension_folder" text="@.open_extension_folder" minwidth="60" />
+            <button id="add_extension" text="@.add_extension" minwidth="60" />
+            <boxfiller />
+            <button id="disable_extension" text="@.disable_extension" minwidth="60" />
+            <button id="uninstall_extension" text="@.uninstall_extension" minwidth="60" />
+            <button id="open_extension_folder" text="@.open_extension_folder" minwidth="60" />
           </hbox>
         </vbox>
 
@@ -618,10 +618,10 @@
           <check id="installed_reset" text="@.reset_installed" />
           <check id="recent_reset" text="@.reset_recents" />
           <check id="perfile_reset" text="@.reset_perfile" tooltip="@.reset_perfile_tooltip" />
-	  <hbox>
-	    <hbox expansive="true" />
+          <hbox>
+            <hbox expansive="true" />
             <button id="reset_selected_button" text="@.reset" minwidth="60" />
-	  </hbox>
+          </hbox>
         </vbox>
       </panel>
     </hbox>

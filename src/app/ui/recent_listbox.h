@@ -16,53 +16,54 @@
 
 namespace app {
 
-  class RecentFileItem;
+class RecentFileItem;
 
-  class RecentListBox : public ui::ListBox,
-                        public ui::ViewableWidget {
-    friend class RecentFileItem;
-  public:
-    RecentListBox();
+class RecentListBox : public ui::ListBox,
+                      public ui::ViewableWidget {
+  friend class RecentFileItem;
 
-    void updateRecentListFromUIItems();
+public:
+  RecentListBox();
 
-  protected:
-    // ui::ViewableWidget impl
-    virtual void onScrollRegion(ui::ScrollRegionEvent& ev);
+  void updateRecentListFromUIItems();
 
-    virtual void onRebuildList() = 0;
-    virtual void onClick(const std::string& path) = 0;
-    virtual void onUpdateRecentListFromUIItems(const base::paths& pinnedPaths,
-                                               const base::paths& recentPaths) = 0;
+protected:
+  // ui::ViewableWidget impl
+  virtual void onScrollRegion(ui::ScrollRegionEvent& ev);
 
-  private:
-    void rebuildList();
+  virtual void onRebuildList() = 0;
+  virtual void onClick(const std::string& path) = 0;
+  virtual void onUpdateRecentListFromUIItems(const base::paths& pinnedPaths,
+                                             const base::paths& recentPaths) = 0;
 
-    obs::scoped_connection m_recentFilesConn;
-    obs::scoped_connection m_showFullPathConn;
-  };
+private:
+  void rebuildList();
 
-  class RecentFilesListBox : public RecentListBox {
-  public:
-    RecentFilesListBox();
+  obs::scoped_connection m_recentFilesConn;
+  obs::scoped_connection m_showFullPathConn;
+};
 
-  private:
-    void onRebuildList() override;
-    void onClick(const std::string& path) override;
-    void onUpdateRecentListFromUIItems(const base::paths& pinnedPaths,
-                                       const base::paths& recentPaths) override;
-  };
+class RecentFilesListBox : public RecentListBox {
+public:
+  RecentFilesListBox();
 
-  class RecentFoldersListBox : public RecentListBox {
-  public:
-    RecentFoldersListBox();
+private:
+  void onRebuildList() override;
+  void onClick(const std::string& path) override;
+  void onUpdateRecentListFromUIItems(const base::paths& pinnedPaths,
+                                     const base::paths& recentPaths) override;
+};
 
-  private:
-    void onRebuildList() override;
-    void onClick(const std::string& path) override;
-    void onUpdateRecentListFromUIItems(const base::paths& pinnedPaths,
-                                       const base::paths& recentPaths) override;
-  };
+class RecentFoldersListBox : public RecentListBox {
+public:
+  RecentFoldersListBox();
+
+private:
+  void onRebuildList() override;
+  void onClick(const std::string& path) override;
+  void onUpdateRecentListFromUIItems(const base::paths& pinnedPaths,
+                                     const base::paths& recentPaths) override;
+};
 
 } // namespace app
 

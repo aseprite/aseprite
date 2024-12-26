@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/window_with_hand.h"
@@ -19,8 +19,7 @@
 
 namespace app {
 
-WindowWithHand::WindowWithHand(Type type, const std::string& text)
-  : Window(type, text)
+WindowWithHand::WindowWithHand(Type type, const std::string& text) : Window(type, text)
 {
 }
 
@@ -59,8 +58,7 @@ void WindowWithHand::enableHandTool(const bool state)
   }
 }
 
-void WindowWithHand::onBroadcastMouseMessage(const gfx::Point& screenPos,
-                                             ui::WidgetsList& targets)
+void WindowWithHand::onBroadcastMouseMessage(const gfx::Point& screenPos, ui::WidgetsList& targets)
 {
   if (m_editor) {
     // Add this window as receptor of mouse events.
@@ -77,4 +75,4 @@ void WindowWithHand::onBroadcastMouseMessage(const gfx::Point& screenPos,
   }
 }
 
-}  // namespace app
+} // namespace app

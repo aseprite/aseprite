@@ -5,21 +5,19 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_user_data_property.h"
 
 #include "doc/with_user_data.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
-SetUserDataProperty::SetUserDataProperty(
-  doc::WithUserData* obj,
-  const std::string& group,
-  const std::string& field,
-  doc::UserData::Variant&& newValue)
+SetUserDataProperty::SetUserDataProperty(doc::WithUserData* obj,
+                                         const std::string& group,
+                                         const std::string& field,
+                                         doc::UserData::Variant&& newValue)
   : m_objId(obj->id())
   , m_group(group)
   , m_field(field)
@@ -62,5 +60,4 @@ void SetUserDataProperty::onUndo()
   obj->incrementVersion();
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

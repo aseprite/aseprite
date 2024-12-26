@@ -10,21 +10,19 @@
 
 #include "app/cmd/add_tile.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class RemoveTile : public AddTile {
-  public:
-    RemoveTile(Tileset* tileset, const tile_index ti);
+class RemoveTile : public AddTile {
+public:
+  RemoveTile(Tileset* tileset, const tile_index ti);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onRedo() override;
-  };
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onRedo() override;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

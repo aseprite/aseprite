@@ -13,35 +13,33 @@
 #include "doc/tile.h"
 #include "doc/user_data.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
-  class SetTileDataProperty : public Cmd,
-                              public WithTileset {
-  public:
-    SetTileDataProperty(
-      doc::Tileset* ts,
-      doc::tile_index ti,
-      const std::string& group,
-      const std::string& field,
-      doc::UserData::Variant&& newValue);
+class SetTileDataProperty : public Cmd,
+                            public WithTileset {
+public:
+  SetTileDataProperty(doc::Tileset* ts,
+                      doc::tile_index ti,
+                      const std::string& group,
+                      const std::string& field,
+                      doc::UserData::Variant&& newValue);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this);     // TODO + variant size
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  size_t onMemSize() const override
+  {
+    return sizeof(*this); // TODO + variant size
+  }
 
-  private:
-    doc::tile_index m_ti;
-    std::string m_group;
-    std::string m_field;
-    doc::UserData::Variant m_oldValue;
-    doc::UserData::Variant m_newValue;
-  };
+private:
+  doc::tile_index m_ti;
+  std::string m_group;
+  std::string m_field;
+  doc::UserData::Variant m_oldValue;
+  doc::UserData::Variant m_newValue;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

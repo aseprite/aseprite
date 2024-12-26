@@ -12,21 +12,19 @@
 #include "gfx/fwd.h"
 
 namespace doc {
-  class Image;
+class Image;
 }
 
 namespace app {
 
-  void save_image_region_in_buffer(
-    const gfx::Region& region,
-    const doc::Image* image,
-    const gfx::Point& imagePos,
-    base::buffer& buffer);
+void save_image_region_in_buffer(const gfx::Region& region,
+                                 const doc::Image* image,
+                                 const gfx::Point& imagePos,
+                                 base::buffer& buffer);
 
-  void swap_image_region_with_buffer(
-    const gfx::Region& region,
-    doc::Image* image,
-    base::buffer& buffer);
+void swap_image_region_with_buffer(const gfx::Region& region,
+                                   doc::Image* image,
+                                   base::buffer& buffer);
 
 } // namespace app
 

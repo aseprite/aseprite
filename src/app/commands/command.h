@@ -17,46 +17,46 @@
 
 namespace app {
 
-  class Context;
-  class Params;
+class Context;
+class Params;
 
-  enum CommandFlags {
-    CmdUIOnlyFlag     = 0x00000001,
-    CmdRecordableFlag = 0x00000002,
-  };
+enum CommandFlags {
+  CmdUIOnlyFlag = 0x00000001,
+  CmdRecordableFlag = 0x00000002,
+};
 
-  class Command {
-  public:
-    Command(const char* id, CommandFlags flags);
-    virtual ~Command();
+class Command {
+public:
+  Command(const char* id, CommandFlags flags);
+  virtual ~Command();
 
-    const std::string& id() const { return m_id; }
-    std::string friendlyName() const { return onGetFriendlyName(); }
+  const std::string& id() const { return m_id; }
+  std::string friendlyName() const { return onGetFriendlyName(); }
 
-    bool needsParams() const;
-    void loadParams(const Params& params);
-    bool isEnabled(Context* context);
-    bool isChecked(Context* context);
+  bool needsParams() const;
+  void loadParams(const Params& params);
+  bool isEnabled(Context* context);
+  bool isChecked(Context* context);
 
-    // Returns true if the command must be displayed in the Keyboard
-    // Shortcuts list.
-    virtual bool isListed(const Params& params) const { return true; }
+  // Returns true if the command must be displayed in the Keyboard
+  // Shortcuts list.
+  virtual bool isListed(const Params& params) const { return true; }
 
-  protected:
-    virtual bool onNeedsParams() const;
-    virtual void onLoadParams(const Params& params);
-    virtual bool onEnabled(Context* context);
-    virtual bool onChecked(Context* context);
-    virtual void onExecute(Context* context);
-    virtual std::string onGetFriendlyName() const;
+protected:
+  virtual bool onNeedsParams() const;
+  virtual void onLoadParams(const Params& params);
+  virtual bool onEnabled(Context* context);
+  virtual bool onChecked(Context* context);
+  virtual void onExecute(Context* context);
+  virtual std::string onGetFriendlyName() const;
 
-  private:
-    friend class Context;
-    void execute(Context* context);
+private:
+  friend class Context;
+  void execute(Context* context);
 
-    std::string m_id;
-    CommandFlags m_flags;
-  };
+  std::string m_id;
+  CommandFlags m_flags;
+};
 
 } // namespace app
 

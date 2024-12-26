@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/frames_sequence.h"
@@ -26,7 +26,7 @@ FramesSequence::FramesSequence(const SelectedFrames& selectedFrames)
 {
   // TODO: This might be optimized by copying each range directly, but
   // for this I would need that SelectedFrames make this class its friend.
-  for(auto frame : selectedFrames) {
+  for (auto frame : selectedFrames) {
     this->insert(frame);
   }
 }
@@ -57,9 +57,7 @@ void FramesSequence::insert(frame_t frame)
   int rangeStep = (lastRange.fromFrame < lastRange.toFrame) -
                   (lastRange.fromFrame > lastRange.toFrame);
   int step = (lastRange.toFrame < frame) - (lastRange.toFrame > frame);
-  if (step &&
-      (rangeStep == step || !rangeStep) &&
-      frame-lastRange.toFrame == step)
+  if (step && (rangeStep == step || !rangeStep) && frame - lastRange.toFrame == step)
     lastRange.toFrame = frame;
   else
     m_ranges.push_back(FrameRange(frame));
@@ -68,7 +66,7 @@ void FramesSequence::insert(frame_t frame)
 void FramesSequence::insert(frame_t fromFrame, frame_t toFrame)
 {
   int step = (fromFrame <= toFrame ? 1 : -1);
-  for (frame_t frame = fromFrame; frame != toFrame; frame+=step) {
+  for (frame_t frame = fromFrame; frame != toFrame; frame += step) {
     insert(frame);
   }
   insert(toFrame);
@@ -86,16 +84,19 @@ FramesSequence FramesSequence::filter(frame_t fromFrame, frame_t toFrame) const
     const bool isForward = (r.fromFrame <= r.toFrame);
 
     if (isForward) {
-      if (r.fromFrame < fromFrame) r.fromFrame = fromFrame;
-      if (r.toFrame > toFrame) r.toFrame = toFrame;
+      if (r.fromFrame < fromFrame)
+        r.fromFrame = fromFrame;
+      if (r.toFrame > toFrame)
+        r.toFrame = toFrame;
     }
     else {
-      if (r.fromFrame > toFrame) r.fromFrame = toFrame;
-      if (r.toFrame < fromFrame) r.toFrame = fromFrame;
+      if (r.fromFrame > toFrame)
+        r.fromFrame = toFrame;
+      if (r.toFrame < fromFrame)
+        r.toFrame = fromFrame;
     }
 
-    if (( isForward && r.fromFrame <= r.toFrame) ||
-        (!isForward && r.fromFrame >= r.toFrame))
+    if ((isForward && r.fromFrame <= r.toFrame) || (!isForward && r.fromFrame >= r.toFrame))
       f.m_ranges.push_back(r);
   }
 
@@ -104,13 +105,10 @@ FramesSequence FramesSequence::filter(frame_t fromFrame, frame_t toFrame) const
 
 bool FramesSequence::contains(frame_t frame) const
 {
-  return std::find_if(
-            m_ranges.begin(),
-            m_ranges.end(),
-            [frame](const FrameRange& r) -> bool {
-              return (r.fromFrame <= frame && frame <= r.toFrame) ||
-                     (r.fromFrame >= frame && frame >= r.toFrame);
-            }) != m_ranges.end();
+  return std::find_if(m_ranges.begin(), m_ranges.end(), [frame](const FrameRange& r) -> bool {
+           return (r.fromFrame <= frame && frame <= r.toFrame) ||
+                  (r.fromFrame >= frame && frame >= r.toFrame);
+         }) != m_ranges.end();
 }
 
 frame_t FramesSequence::lowestFrame() const
@@ -126,7 +124,7 @@ void FramesSequence::displace(frame_t frameDelta)
 {
   // Avoid setting negative numbers in frame ranges
   auto lof = lowestFrame();
-  if (lof+frameDelta < 0)
+  if (lof + frameDelta < 0)
     frameDelta = -lof;
 
   for (auto& range : m_ranges) {
@@ -142,9 +140,8 @@ FramesSequence FramesSequence::makeReverse() const
 {
   FramesSequence newFrames;
   for (const FrameRange& range : m_ranges)
-    newFrames.m_ranges.insert(
-      newFrames.m_ranges.begin(),
-      FrameRange(range.toFrame, range.fromFrame));
+    newFrames.m_ranges.insert(newFrames.m_ranges.begin(),
+                              FrameRange(range.toFrame, range.fromFrame));
   return newFrames;
 }
 
@@ -153,7 +150,7 @@ FramesSequence FramesSequence::makePingPong() const
   FramesSequence newFrames = *this;
   const int n = m_ranges.size();
   int i = 0;
-  int j = m_ranges.size()-1;
+  int j = m_ranges.size() - 1;
 
   for (const FrameRange& range : m_ranges) {
     // Discard first or last range if it contains just one frame.
@@ -163,18 +160,16 @@ FramesSequence FramesSequence::makePingPong() const
       continue;
     }
 
-    FrameRange reversedRange(range.toFrame,
-                             range.fromFrame);
-    int step = (range.fromFrame < range.toFrame) -
-               (range.fromFrame > range.toFrame);
+    FrameRange reversedRange(range.toFrame, range.fromFrame);
+    int step = (range.fromFrame < range.toFrame) - (range.fromFrame > range.toFrame);
 
-    if (i == 0) reversedRange.toFrame+=step;
-    if (j == 0) reversedRange.fromFrame-=step;
+    if (i == 0)
+      reversedRange.toFrame += step;
+    if (j == 0)
+      reversedRange.fromFrame -= step;
 
     if (reversedRange != range)
-      newFrames.m_ranges.insert(
-        newFrames.m_ranges.begin() + n,
-        reversedRange);
+      newFrames.m_ranges.insert(newFrames.m_ranges.begin() + n, reversedRange);
 
     ++i;
     --j;
@@ -197,7 +192,7 @@ bool FramesSequence::read(std::istream& is)
   clear();
 
   int nframes = read32(is);
-  for (int i=0; i<nframes && is; ++i) {
+  for (int i = 0; i < nframes && is; ++i) {
     frame_t frame = read32(is);
     insert(frame);
   }

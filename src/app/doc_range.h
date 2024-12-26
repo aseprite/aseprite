@@ -16,83 +16,77 @@
 #include <iosfwd>
 
 namespace doc {
-  class Cel;
-  class Sprite;
-}
+class Cel;
+class Sprite;
+} // namespace doc
 
 namespace app {
-  using namespace doc;
+using namespace doc;
 
-  class DocRange {
-  public:
-    enum Type { kNone = 0,
-                kCels = 1,
-                kFrames = 2,
-                kLayers = 4 };
+class DocRange {
+public:
+  enum Type { kNone = 0, kCels = 1, kFrames = 2, kLayers = 4 };
 
-    DocRange();
-    DocRange(Cel* cel);
-    DocRange(const DocRange&) = default;
-    DocRange& operator=(const DocRange&) = default;
+  DocRange();
+  DocRange(Cel* cel);
+  DocRange(const DocRange&) = default;
+  DocRange& operator=(const DocRange&) = default;
 
-    Type type() const { return m_type; }
-    bool enabled() const { return m_type != kNone; }
-    layer_t layers() const { return int(m_selectedLayers.size()); }
-    frame_t frames() const { return int(m_selectedFrames.size()); }
-    const SelectedLayers& selectedLayers() const  { return m_selectedLayers; }
-    const SelectedFrames& selectedFrames() const  { return m_selectedFrames; }
+  Type type() const { return m_type; }
+  bool enabled() const { return m_type != kNone; }
+  layer_t layers() const { return int(m_selectedLayers.size()); }
+  frame_t frames() const { return int(m_selectedFrames.size()); }
+  const SelectedLayers& selectedLayers() const { return m_selectedLayers; }
+  const SelectedFrames& selectedFrames() const { return m_selectedFrames; }
 
-    void setType(const Type type);
-    void setSelectedLayers(const SelectedLayers& layers);
-    void setSelectedFrames(const SelectedFrames& frames);
+  void setType(const Type type);
+  void setSelectedLayers(const SelectedLayers& layers);
+  void setSelectedFrames(const SelectedFrames& frames);
 
-    void displace(layer_t layerDelta, frame_t frameDelta);
+  void displace(layer_t layerDelta, frame_t frameDelta);
 
-    bool contains(const Layer* layer) const;
-    bool contains(const frame_t frame) const {
-      return m_selectedFrames.contains(frame);
-    }
-    bool contains(const Layer* layer,
-                  const frame_t frame) const;
+  bool contains(const Layer* layer) const;
+  bool contains(const frame_t frame) const { return m_selectedFrames.contains(frame); }
+  bool contains(const Layer* layer, const frame_t frame) const;
 
-    // If the range includes the given layer, it will be erased from
-    // the selection and other candidates might be selected (e.g. a
-    // sibling, parent, etc.) using the
-    // candidate_if_layer_is_deleted() function.
-    void eraseAndAdjust(const Layer* layer);
+  // If the range includes the given layer, it will be erased from
+  // the selection and other candidates might be selected (e.g. a
+  // sibling, parent, etc.) using the
+  // candidate_if_layer_is_deleted() function.
+  void eraseAndAdjust(const Layer* layer);
 
-    void clearRange();
-    void startRange(Layer* fromLayer, frame_t fromFrame, Type type);
-    void endRange(Layer* toLayer, frame_t toFrame);
+  void clearRange();
+  void startRange(Layer* fromLayer, frame_t fromFrame, Type type);
+  void endRange(Layer* toLayer, frame_t toFrame);
 
-    void selectLayer(Layer* layer);
-    void selectLayers(const SelectedLayers& selLayers);
+  void selectLayer(Layer* layer);
+  void selectLayers(const SelectedLayers& selLayers);
 
-    frame_t firstFrame() const { return m_selectedFrames.firstFrame(); }
-    frame_t lastFrame() const { return m_selectedFrames.lastFrame(); }
+  frame_t firstFrame() const { return m_selectedFrames.firstFrame(); }
+  frame_t lastFrame() const { return m_selectedFrames.lastFrame(); }
 
-    bool operator==(const DocRange& o) const {
-      return (m_type == o.m_type &&
-              m_selectedLayers == o.m_selectedLayers &&
-              m_selectedFrames == o.m_selectedFrames);
-    }
+  bool operator==(const DocRange& o) const
+  {
+    return (m_type == o.m_type && m_selectedLayers == o.m_selectedLayers &&
+            m_selectedFrames == o.m_selectedFrames);
+  }
 
-    bool convertToCels(const Sprite* sprite);
+  bool convertToCels(const Sprite* sprite);
 
-    bool write(std::ostream& os) const;
-    bool read(std::istream& is);
+  bool write(std::ostream& os) const;
+  bool read(std::istream& is);
 
-  private:
-    void selectLayerRange(Layer* fromLayer, Layer* toLayer);
-    void selectFrameRange(frame_t fromFrame, frame_t toFrame);
+private:
+  void selectLayerRange(Layer* fromLayer, Layer* toLayer);
+  void selectFrameRange(frame_t fromFrame, frame_t toFrame);
 
-    Type m_type;                // Last used type of the range
-    int m_flags;                // All used types in startRange()
-    SelectedLayers m_selectedLayers;
-    SelectedFrames m_selectedFrames;
-    Layer* m_selectingFromLayer;
-    frame_t m_selectingFromFrame;
-  };
+  Type m_type; // Last used type of the range
+  int m_flags; // All used types in startRange()
+  SelectedLayers m_selectedLayers;
+  SelectedFrames m_selectedFrames;
+  Layer* m_selectingFromLayer;
+  frame_t m_selectingFromFrame;
+};
 
 } // namespace app
 

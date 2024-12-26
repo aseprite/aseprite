@@ -14,37 +14,33 @@
 #include <sstream>
 
 namespace doc {
-  class Layer;
+class Layer;
 }
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class AddLayer : public Cmd {
-  public:
-    AddLayer(Layer* group, Layer* newLayer, Layer* afterThis);
+class AddLayer : public Cmd {
+public:
+  AddLayer(Layer* group, Layer* newLayer, Layer* afterThis);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onRedo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this) + m_size;
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onRedo() override;
+  size_t onMemSize() const override { return sizeof(*this) + m_size; }
 
-  private:
-    void addLayer(Layer* group, Layer* newLayer, Layer* afterThis);
-    void removeLayer(Layer* group, Layer* layer);
+private:
+  void addLayer(Layer* group, Layer* newLayer, Layer* afterThis);
+  void removeLayer(Layer* group, Layer* layer);
 
-    WithLayer m_group;
-    WithLayer m_newLayer;
-    WithLayer m_afterThis;
-    size_t m_size;
-    std::stringstream m_stream;
-  };
+  WithLayer m_group;
+  WithLayer m_newLayer;
+  WithLayer m_afterThis;
+  size_t m_size;
+  std::stringstream m_stream;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

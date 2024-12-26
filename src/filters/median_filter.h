@@ -16,30 +16,30 @@
 
 namespace filters {
 
-  class MedianFilter : public Filter {
-  public:
-    MedianFilter();
+class MedianFilter : public Filter {
+public:
+  MedianFilter();
 
-    void setTiledMode(TiledMode tiled);
-    void setSize(int width, int height);
+  void setTiledMode(TiledMode tiled);
+  void setSize(int width, int height);
 
-    TiledMode getTiledMode() const { return m_tiledMode; }
-    int getWidth() const { return m_width; }
-    int getHeight() const { return m_height; }
+  TiledMode getTiledMode() const { return m_tiledMode; }
+  int getWidth() const { return m_width; }
+  int getHeight() const { return m_height; }
 
-    // Filter implementation
-    const char* getName();
-    void applyToRgba(FilterManager* filterMgr);
-    void applyToGrayscale(FilterManager* filterMgr);
-    void applyToIndexed(FilterManager* filterMgr);
+  // Filter implementation
+  const char* getName();
+  void applyToRgba(FilterManager* filterMgr);
+  void applyToGrayscale(FilterManager* filterMgr);
+  void applyToIndexed(FilterManager* filterMgr);
 
-  private:
-    TiledMode m_tiledMode;
-    int m_width;
-    int m_height;
-    int m_ncolors;
-    std::vector<std::vector<uint8_t> > m_channel;
-  };
+private:
+  TiledMode m_tiledMode;
+  int m_width;
+  int m_height;
+  int m_ncolors;
+  std::vector<std::vector<uint8_t>> m_channel;
+};
 
 } // namespace filters
 

@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/cel.h"
@@ -25,16 +25,18 @@ using namespace doc;
 
 static bool has_cels(const Layer* layer, frame_t frame);
 
-LayerImage* create_flatten_layer_copy(Sprite* dstSprite, const Layer* srcLayer,
+LayerImage* create_flatten_layer_copy(Sprite* dstSprite,
+                                      const Layer* srcLayer,
                                       const gfx::Rect& bounds,
-                                      frame_t frmin, frame_t frmax,
+                                      frame_t frmin,
+                                      frame_t frmax,
                                       const bool newBlend)
 {
   std::unique_ptr<LayerImage> flatLayer(new LayerImage(dstSprite));
   render::Render render;
   render.setNewBlend(newBlend);
 
-  for (frame_t frame=frmin; frame<=frmax; ++frame) {
+  for (frame_t frame = frmin; frame <= frmax; ++frame) {
     // Does this frame have cels to render?
     if (has_cels(srcLayer, frame)) {
       // Create a new image to render each frame.
@@ -45,8 +47,7 @@ LayerImage* create_flatten_layer_copy(Sprite* dstSprite, const Layer* srcLayer,
       cel->setPosition(bounds.x, bounds.y);
 
       // Render this frame.
-      render.renderLayer(image.get(), srcLayer, frame,
-        gfx::Clip(0, 0, bounds));
+      render.renderLayer(image.get(), srcLayer, frame, gfx::Clip(0, 0, bounds));
 
       // Add the cel (and release the std::unique_ptr).
       flatLayer->addCel(cel.get());
@@ -65,9 +66,7 @@ static bool has_cels(const Layer* layer, frame_t frame)
     return false;
 
   switch (layer->type()) {
-
-    case ObjectType::LayerImage:
-      return (layer->cel(frame) ? true: false);
+    case ObjectType::LayerImage: return (layer->cel(frame) ? true : false);
 
     case ObjectType::LayerGroup: {
       for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers()) {
@@ -76,7 +75,6 @@ static bool has_cels(const Layer* layer, frame_t frame)
       }
       break;
     }
-
   }
 
   return false;

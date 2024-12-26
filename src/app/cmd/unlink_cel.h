@@ -11,26 +11,24 @@
 #include "app/cmd.h"
 #include "app/cmd/with_cel.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class UnlinkCel : public Cmd
-                  , public WithCel {
-  public:
-    UnlinkCel(Cel* cel);
+class UnlinkCel : public Cmd,
+                  public WithCel {
+public:
+  UnlinkCel(Cel* cel);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
+protected:
+  void onExecute() override;
+  void onUndo() override;
 
-  private:
-    ObjectId m_newImageId;
-    ObjectId m_oldCelDataId;
-    ObjectId m_newCelDataId;
-  };
+private:
+  ObjectId m_newImageId;
+  ObjectId m_oldCelDataId;
+  ObjectId m_newCelDataId;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

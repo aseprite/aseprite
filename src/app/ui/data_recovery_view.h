@@ -19,65 +19,65 @@
 #include "ui/view.h"
 
 namespace app {
-  namespace crash {
-    class DataRecovery;
-  }
+namespace crash {
+class DataRecovery;
+}
 
-  class DataRecoveryView : public ui::VBox
-                         , public TabView
-                         , public WorkspaceView {
-  public:
-    DataRecoveryView(crash::DataRecovery* dataRecovery);
-    ~DataRecoveryView();
+class DataRecoveryView : public ui::VBox,
+                         public TabView,
+                         public WorkspaceView {
+public:
+  DataRecoveryView(crash::DataRecovery* dataRecovery);
+  ~DataRecoveryView();
 
-    // Called after the "Refresh" button is pressed (onRefresh) and
-    // the crash::DataRecovery::SessionsListIsReady signal is received.
-    void refreshListNotification();
+  // Called after the "Refresh" button is pressed (onRefresh) and
+  // the crash::DataRecovery::SessionsListIsReady signal is received.
+  void refreshListNotification();
 
-    // TabView implementation
-    std::string getTabText() override;
-    TabIcon getTabIcon() override;
-    gfx::Color getTabColor() override;
+  // TabView implementation
+  std::string getTabText() override;
+  TabIcon getTabIcon() override;
+  gfx::Color getTabColor() override;
 
-    // WorkspaceView implementation
-    ui::Widget* getContentWidget() override { return this; }
-    void onWorkspaceViewSelected() override;
-    bool onCloseView(Workspace* workspace, bool quitting) override;
-    void onTabPopup(Workspace* workspace) override;
+  // WorkspaceView implementation
+  ui::Widget* getContentWidget() override { return this; }
+  void onWorkspaceViewSelected() override;
+  bool onCloseView(Workspace* workspace, bool quitting) override;
+  void onTabPopup(Workspace* workspace) override;
 
-    // Triggered when the list is of crashed sessions is empty (or
-    // because the user deleted all sessions that crashed).
-    obs::signal<void()> Empty;
+  // Triggered when the list is of crashed sessions is empty (or
+  // because the user deleted all sessions that crashed).
+  obs::signal<void()> Empty;
 
-  private:
-    void clearList();
-    void fillList();
-    void fillListWith(const bool crashes);
-    void disableRefresh();
-    bool someItemIsBusy();
+private:
+  void clearList();
+  void fillList();
+  void fillListWith(const bool crashes);
+  void disableRefresh();
+  bool someItemIsBusy();
 
-    void onOpen();
-    void onOpenRaw(crash::RawImagesAs as);
-    void onOpenMenu();
-    void onDelete();
-    void onRefresh();
-    void onChangeSelection();
-    void onCheckIfWeCanEnableRefreshButton();
-    void onShowFullPathPrefChange();
-    bool thereAreCrashSessions() const;
+  void onOpen();
+  void onOpenRaw(crash::RawImagesAs as);
+  void onOpenMenu();
+  void onDelete();
+  void onRefresh();
+  void onChangeSelection();
+  void onCheckIfWeCanEnableRefreshButton();
+  void onShowFullPathPrefChange();
+  bool thereAreCrashSessions() const;
 
-    crash::DataRecovery* m_dataRecovery;
-    ui::View m_view;
-    ui::ListBox m_listBox;
-    DropDownButton m_openButton;
-    ui::Button m_deleteButton;
-    ui::Button m_refreshButton;
-    ui::Timer m_waitToEnableRefreshTimer;
+  crash::DataRecovery* m_dataRecovery;
+  ui::View m_view;
+  ui::ListBox m_listBox;
+  DropDownButton m_openButton;
+  ui::Button m_deleteButton;
+  ui::Button m_refreshButton;
+  ui::Timer m_waitToEnableRefreshTimer;
 
-    // Connection to to showFullPath.AfterChange signal to update the
-    // items text when the setting is changed.
-    obs::connection m_conn;
-  };
+  // Connection to to showFullPath.AfterChange signal to update the
+  // items text when the setting is changed.
+  obs::connection m_conn;
+};
 
 } // namespace app
 

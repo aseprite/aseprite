@@ -5,13 +5,12 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/tools/pick_ink.h"
 
-namespace app {
-namespace tools {
+namespace app { namespace tools {
 
 PickInk::PickInk(Target target) : m_target(target)
 {
@@ -37,5 +36,4 @@ void PickInk::inkHline(int x1, int y, int x2, ToolLoop* loop)
   // Do nothing
 }
 
-} // namespace tools
-} // namespace app
+}} // namespace app::tools

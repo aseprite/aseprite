@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/image_view.h"
@@ -21,9 +21,7 @@
 
 namespace ui {
 
-ImageView::ImageView(const os::SurfaceRef& sur, int align)
- : Widget(kImageViewWidget)
- , m_sur(sur)
+ImageView::ImageView(const os::SurfaceRef& sur, int align) : Widget(kImageViewWidget), m_sur(sur)
 {
   setAlign(align);
 }
@@ -31,13 +29,9 @@ ImageView::ImageView(const os::SurfaceRef& sur, int align)
 void ImageView::onSizeHint(SizeHintEvent& ev)
 {
   gfx::Rect box;
-  getTextIconInfo(&box, nullptr, nullptr,
-    align(), m_sur->width(), m_sur->height());
+  getTextIconInfo(&box, nullptr, nullptr, align(), m_sur->width(), m_sur->height());
 
-  ev.setSizeHint(
-    gfx::Size(
-      box.w + border().width(),
-      box.h + border().height()));
+  ev.setSizeHint(gfx::Size(box.w + border().width(), box.h + border().height()));
 }
 
 void ImageView::onPaint(PaintEvent& ev)
@@ -45,9 +39,7 @@ void ImageView::onPaint(PaintEvent& ev)
   Graphics* g = ev.graphics();
   gfx::Rect bounds = clientBounds();
   gfx::Rect icon;
-  getTextIconInfo(
-    nullptr, nullptr, &icon, align(),
-    m_sur->width(), m_sur->height());
+  getTextIconInfo(nullptr, nullptr, &icon, align(), m_sur->width(), m_sur->height());
 
   g->fillRect(bgColor(), bounds);
   g->drawRgbaSurface(m_sur.get(), icon.x, icon.y);

@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -13,8 +13,7 @@
 #include "base/file_content.h"
 #include "gfx/color_space.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 namespace {
 
@@ -82,14 +81,14 @@ int ColorSpace_set_name(lua_State* L)
 }
 
 const luaL_Reg ColorSpace_methods[] = {
-  { "__gc", ColorSpace_gc },
-  { "__eq", ColorSpace_eq },
-  { nullptr, nullptr }
+  { "__gc",  ColorSpace_gc },
+  { "__eq",  ColorSpace_eq },
+  { nullptr, nullptr       }
 };
 
 const Property ColorSpace_properties[] = {
-  { "name", ColorSpace_get_name, ColorSpace_set_name },
-  { nullptr, nullptr, nullptr }
+  { "name",  ColorSpace_get_name, ColorSpace_set_name },
+  { nullptr, nullptr,             nullptr             }
 };
 
 } // anonymous namespace
@@ -109,5 +108,4 @@ void push_color_space(lua_State* L, const gfx::ColorSpace& cs)
   push_new<gfx::ColorSpace>(L, cs);
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

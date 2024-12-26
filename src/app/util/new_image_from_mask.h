@@ -10,21 +10,19 @@
 #pragma once
 
 namespace doc {
-  class Image;
-  class Mask;
-}
+class Image;
+class Mask;
+} // namespace doc
 
 namespace app {
-  class Site;
+class Site;
 
-  doc::Image* new_image_from_mask(const Site& site,
-                                  const bool newBlend);
-  doc::Image* new_image_from_mask(const Site& site,
-                                  const doc::Mask* mask,
-                                  const bool newBlend,
-                                  bool merged = false);
-  doc::Image* new_tilemap_from_mask(const Site& site,
-                                    const doc::Mask* mask);
+doc::Image* new_image_from_mask(const Site& site, const bool newBlend);
+doc::Image* new_image_from_mask(const Site& site,
+                                const doc::Mask* mask,
+                                const bool newBlend,
+                                bool merged = false);
+doc::Image* new_tilemap_from_mask(const Site& site, const doc::Mask* mask);
 
 } // namespace app
 

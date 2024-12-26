@@ -13,46 +13,46 @@
 #include "gfx/rect.h"
 
 namespace gfx {
-  class Region;
+class Region;
 }
 
 namespace doc {
-  class Image;
+class Image;
 }
 
 namespace ui {
-  class Graphics;
+class Graphics;
 }
 
 namespace app {
-  class Editor;
-  class EditorDecorator;
+class Editor;
+class EditorDecorator;
 
-  using namespace doc;
+using namespace doc;
 
-  // EditorPostRender is an interface used to draw elements in the
-  // editor's area. It's implemented by the editor and used by a
-  // EditorDecorator.
-  class EditorPostRender {
-  public:
-    virtual ~EditorPostRender() { }
-    virtual Editor* getEditor() = 0;
-    virtual ui::Graphics* getGraphics() = 0;
-    virtual void drawLine(gfx::Color color, int x1, int y1, int x2, int y2) = 0;
-    virtual void drawRect(gfx::Color color, const gfx::Rect& rc) = 0;
-    virtual void fillRect(gfx::Color color, const gfx::Rect& rc) = 0;
-  };
+// EditorPostRender is an interface used to draw elements in the
+// editor's area. It's implemented by the editor and used by a
+// EditorDecorator.
+class EditorPostRender {
+public:
+  virtual ~EditorPostRender() {}
+  virtual Editor* getEditor() = 0;
+  virtual ui::Graphics* getGraphics() = 0;
+  virtual void drawLine(gfx::Color color, int x1, int y1, int x2, int y2) = 0;
+  virtual void drawRect(gfx::Color color, const gfx::Rect& rc) = 0;
+  virtual void fillRect(gfx::Color color, const gfx::Rect& rc) = 0;
+};
 
-  // Used by editor's states to pre- and post-render customized
-  // decorations depending of the state (e.g. SelectBoxState draws the
-  // selected bounds/canvas area).
-  class EditorDecorator {
-  public:
-    virtual ~EditorDecorator() { }
-    virtual void postRenderDecorator(EditorPostRender* render) = 0;
-    virtual void getInvalidDecoratoredRegion(Editor* editor, gfx::Region& region) = 0;
-  };
+// Used by editor's states to pre- and post-render customized
+// decorations depending of the state (e.g. SelectBoxState draws the
+// selected bounds/canvas area).
+class EditorDecorator {
+public:
+  virtual ~EditorDecorator() {}
+  virtual void postRenderDecorator(EditorPostRender* render) = 0;
+  virtual void getInvalidDecoratoredRegion(Editor* editor, gfx::Region& region) = 0;
+};
 
 } // namespace app
 
-#endif  // APP_UI_EDITOR_EDITOR_DECORATOR_H_INCLUDED
+#endif // APP_UI_EDITOR_EDITOR_DECORATOR_H_INCLUDED

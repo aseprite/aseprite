@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/script/engine.h"
@@ -16,8 +16,7 @@
 #include "gfx/rect.h"
 #include "gfx/size.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 namespace {
 
@@ -63,9 +62,9 @@ gfx::Rect Rectangle_new(lua_State* L, int index)
     return rc;
   }
   else if (index > 0) {
-    if (lua_gettop(L) >= index+1) {
+    if (lua_gettop(L) >= index + 1) {
       const auto pt = may_get_obj<gfx::Point>(L, index);
-      const auto sz = may_get_obj<gfx::Size>(L, index+1);
+      const auto sz = may_get_obj<gfx::Size>(L, index + 1);
       if (pt && sz)
         return gfx::Rect(*pt, *sz);
     }
@@ -101,8 +100,10 @@ int Rectangle_eq(lua_State* L)
 int Rectangle_tostring(lua_State* L)
 {
   const auto rc = get_obj<gfx::Rect>(L, 1);
-  lua_pushstring(L, fmt::format("Rectangle{{ x={}, y={}, width={}, height={} }}",
-                                rc->x, rc->y, rc->w, rc->h).c_str());
+  lua_pushstring(
+    L,
+    fmt::format("Rectangle{{ x={}, y={}, width={}, height={} }}", rc->x, rc->y, rc->w, rc->h)
+      .c_str());
   return 1;
 }
 
@@ -236,29 +237,29 @@ int Rectangle_get_isEmpty(lua_State* L)
 }
 
 const luaL_Reg Rectangle_methods[] = {
-  { "__gc", Rectangle_gc },
-  { "__eq", Rectangle_eq },
-  { "__tostring", Rectangle_tostring },
-  { "__band", Rectangle_intersect },
-  { "__bor", Rectangle_union },
-  { "contains", Rectangle_contains },
+  { "__gc",       Rectangle_gc         },
+  { "__eq",       Rectangle_eq         },
+  { "__tostring", Rectangle_tostring   },
+  { "__band",     Rectangle_intersect  },
+  { "__bor",      Rectangle_union      },
+  { "contains",   Rectangle_contains   },
   { "intersects", Rectangle_intersects },
-  { "union", Rectangle_union },
-  { "intersect", Rectangle_intersect },
-  { nullptr, nullptr }
+  { "union",      Rectangle_union      },
+  { "intersect",  Rectangle_intersect  },
+  { nullptr,      nullptr              }
 };
 
 const Property Rectangle_properties[] = {
-  { "x", Rectangle_get_x, Rectangle_set_x },
-  { "y", Rectangle_get_y, Rectangle_set_y },
-  { "w", Rectangle_get_width, Rectangle_set_width },
-  { "h", Rectangle_get_height, Rectangle_set_height },
-  { "width", Rectangle_get_width, Rectangle_set_width },
-  { "height", Rectangle_get_height, Rectangle_set_height },
-  { "origin", Rectangle_get_origin, Rectangle_set_origin },
-  { "size", Rectangle_get_size, Rectangle_set_size },
-  { "isEmpty", Rectangle_get_isEmpty, nullptr },
-  { nullptr, nullptr, nullptr }
+  { "x",       Rectangle_get_x,       Rectangle_set_x      },
+  { "y",       Rectangle_get_y,       Rectangle_set_y      },
+  { "w",       Rectangle_get_width,   Rectangle_set_width  },
+  { "h",       Rectangle_get_height,  Rectangle_set_height },
+  { "width",   Rectangle_get_width,   Rectangle_set_width  },
+  { "height",  Rectangle_get_height,  Rectangle_set_height },
+  { "origin",  Rectangle_get_origin,  Rectangle_set_origin },
+  { "size",    Rectangle_get_size,    Rectangle_set_size   },
+  { "isEmpty", Rectangle_get_isEmpty, nullptr              },
+  { nullptr,   nullptr,               nullptr              }
 };
 
 } // anonymous namespace
@@ -278,5 +279,4 @@ gfx::Rect convert_args_into_rect(lua_State* L, int index)
   return Rectangle_new(L, index);
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

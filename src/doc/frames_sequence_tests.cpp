@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include <gtest/gtest.h>
@@ -323,7 +323,7 @@ TEST(FramesSequence, SelectedFramesConversion)
   auto ressf = to_vector(sf);
   auto resf = to_vector(f);
   EXPECT_EQ(ressf.size(), resf.size());
-  for (int i=0; i < resf.size(); ++i) {
+  for (int i = 0; i < resf.size(); ++i) {
     EXPECT_EQ(ressf[i], resf[i]);
   }
 }

@@ -12,28 +12,24 @@
 #include "app/cmd/with_cel.h"
 #include "app/cmd_sequence.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class ClearCel : public Cmd
-                 , public WithCel {
-  public:
-    ClearCel(Cel* cel);
+class ClearCel : public Cmd,
+                 public WithCel {
+public:
+  ClearCel(Cel* cel);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onRedo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this) + m_seq.memSize();
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onRedo() override;
+  size_t onMemSize() const override { return sizeof(*this) + m_seq.memSize(); }
 
-  private:
-    CmdSequence m_seq;
-  };
+private:
+  CmdSequence m_seq;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

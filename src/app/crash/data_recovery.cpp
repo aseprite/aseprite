@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/crash/data_recovery.h"
@@ -26,8 +26,7 @@
 #include <chrono>
 #include <thread>
 
-namespace app {
-namespace crash {
+namespace app { namespace crash {
 
 // Flag used to avoid calling SessionsListIsReady() signal after
 // DataRecovery() instance is deleted.
@@ -56,10 +55,14 @@ DataRecovery::DataRecovery(Context* ctx)
   do {
     base::Time time = base::current_time();
 
-    std::string buf =
-      fmt::format("{:04}{:02}{:02}-{:02}{:02}{:02}-{}",
-                  time.year, time.month, time.day,
-                  time.hour, time.minute, time.second, pid);
+    std::string buf = fmt::format("{:04}{:02}{:02}-{:02}{:02}{:02}-{}",
+                                  time.year,
+                                  time.month,
+                                  time.day,
+                                  time.hour,
+                                  time.minute,
+                                  time.second,
+                                  pid);
 
     newSessionDir = base::join_path(m_sessionsDir, buf);
 
@@ -109,12 +112,11 @@ void DataRecovery::launchSearch()
   ASSERT(!m_searching);
   m_searching = true;
 
-  m_thread = std::thread(
-    [this]{
-      base::this_thread::set_name("search-sessions");
-      searchForSessions();
-      m_searching = false;
-    });
+  m_thread = std::thread([this] {
+    base::this_thread::set_name("search-sessions");
+    searchForSessions();
+    m_searching = false;
+  });
 }
 
 bool DataRecovery::hasRecoverySessions() const
@@ -149,12 +151,10 @@ void DataRecovery::searchForSessions()
 
     SessionPtr session(new Session(&m_config, itempath));
     if (!session->isRunning()) {
-      if ((session->isEmpty()) ||
-          (!session->isCrashedSession() && session->isOldSession())) {
+      if ((session->isEmpty()) || (!session->isCrashedSession() && session->isOldSession())) {
         RECO_TRACE("to be deleted (%s)\n",
-                    session->isEmpty() ? "is empty":
-                    (session->isOldSession() ? "is old":
-                                              "unknown reason"));
+                   session->isEmpty() ? "is empty" :
+                                        (session->isOldSession() ? "is old" : "unknown reason"));
         session->removeFromDisk();
       }
       else {
@@ -167,10 +167,9 @@ void DataRecovery::searchForSessions()
   }
 
   // Sort sessions from the most recent one to the oldest one
-  std::sort(sessions.begin(), sessions.end(),
-            [](const SessionPtr& a, const SessionPtr& b) {
-              return a->name() > b->name();
-            });
+  std::sort(sessions.begin(), sessions.end(), [](const SessionPtr& a, const SessionPtr& b) {
+    return a->name() > b->name();
+  });
 
   // Assign m_sessions=sessions
   {
@@ -178,12 +177,10 @@ void DataRecovery::searchForSessions()
     std::swap(m_sessions, sessions);
   }
 
-  ui::execute_from_ui_thread(
-    [this]{
-      if (g_stillAliveFlag)
-        SessionsListIsReady();
-    });
+  ui::execute_from_ui_thread([this] {
+    if (g_stillAliveFlag)
+      SessionsListIsReady();
+  });
 }
 
-} // namespace crash
-} // namespace app
+}} // namespace app::crash

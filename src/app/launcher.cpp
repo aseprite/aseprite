@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/launcher.h"
@@ -16,8 +16,7 @@
 #include "base/launcher.h"
 #include "ui/alert.h"
 
-namespace app {
-namespace launcher {
+namespace app { namespace launcher {
 
 void open_url(const std::string& url)
 {
@@ -36,5 +35,4 @@ void open_folder(const std::string& file)
     ui::Alert::show(Strings::alerts_cannot_open_folder(file));
 }
 
-} // namespace launcher
-} // namespace app
+}} // namespace app::launcher

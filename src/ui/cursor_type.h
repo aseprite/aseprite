@@ -10,36 +10,36 @@
 
 namespace ui {
 
-  enum CursorType {
-    kOutsideDisplay = -1,
+enum CursorType {
+  kOutsideDisplay = -1,
 
-    kFirstCursorType = 0,
-    kNoCursor = 0,
-    kArrowCursor,
-    kArrowPlusCursor,           // Copy element
-    kCrosshairCursor,
-    kForbiddenCursor,
-    kHandCursor,                // Hand to press a link
-    kScrollCursor,              // Hand to scroll
-    kMoveCursor,                // Drag and drop cursor
+  kFirstCursorType = 0,
+  kNoCursor = 0,
+  kArrowCursor,
+  kArrowPlusCursor, // Copy element
+  kCrosshairCursor,
+  kForbiddenCursor,
+  kHandCursor,   // Hand to press a link
+  kScrollCursor, // Hand to scroll
+  kMoveCursor,   // Drag and drop cursor
 
-    kSizeNSCursor,
-    kSizeWECursor,
+  kSizeNSCursor,
+  kSizeWECursor,
 
-    kSizeNCursor,
-    kSizeNECursor,
-    kSizeECursor,
-    kSizeSECursor,
-    kSizeSCursor,
-    kSizeSWCursor,
-    kSizeWCursor,
-    kSizeNWCursor,
+  kSizeNCursor,
+  kSizeNECursor,
+  kSizeECursor,
+  kSizeSECursor,
+  kSizeSCursor,
+  kSizeSWCursor,
+  kSizeWCursor,
+  kSizeNWCursor,
 
-    kLastCursorType = kSizeNWCursor,
-    kCursorTypes,
+  kLastCursorType = kSizeNWCursor,
+  kCursorTypes,
 
-    kCustomCursor,
-  };
+  kCustomCursor,
+};
 
 } // namespace ui
 

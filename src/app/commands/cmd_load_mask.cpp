@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_mask.h"
@@ -36,8 +36,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-LoadMaskCommand::LoadMaskCommand()
-  : Command(CommandId::LoadMask(), CmdRecordableFlag)
+LoadMaskCommand::LoadMaskCommand() : Command(CommandId::LoadMask(), CmdRecordableFlag)
 {
   m_filename = "";
 }
@@ -59,9 +58,11 @@ void LoadMaskCommand::onExecute(Context* context)
   if (context->isUIAvailable()) {
     base::paths exts = { "msk" };
     base::paths selectedFilename;
-    if (!app::show_file_selector(
-          Strings::load_selection_title(), m_filename, exts,
-          FileSelectorType::Open, selectedFilename))
+    if (!app::show_file_selector(Strings::load_selection_title(),
+                                 m_filename,
+                                 exts,
+                                 FileSelectorType::Open,
+                                 selectedFilename))
       return;
 
     m_filename = selectedFilename.front();
@@ -76,9 +77,7 @@ void LoadMaskCommand::onExecute(Context* context)
   {
     ContextWriter writer(reader);
     Doc* document = writer.document();
-    Tx tx(writer,
-          Strings::load_selection_title(),
-          DoesntModifyDocument);
+    Tx tx(writer, Strings::load_selection_title(), DoesntModifyDocument);
     tx(new cmd::SetMask(document, mask.get()));
     tx.commit();
 

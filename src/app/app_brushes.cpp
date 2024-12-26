@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app_brushes.h"
@@ -41,9 +41,8 @@ ImageRef load_xml_image(const XMLElement* imageElem)
   ImageRef image;
   int w, h;
   if (imageElem->QueryIntAttribute("width", &w) != XML_SUCCESS ||
-      imageElem->QueryIntAttribute("height", &h) != XML_SUCCESS ||
-      w < 0 || w > 9999 ||
-      h < 0 || h > 9999)
+      imageElem->QueryIntAttribute("height", &h) != XML_SUCCESS || w < 0 || w > 9999 || h < 0 ||
+      h > 9999)
     return image;
 
   auto formatValue = imageElem->Attribute("format");
@@ -66,10 +65,14 @@ ImageRef load_xml_image(const XMLElement* imageElem)
       if ((end - it) < 4)
         break;
 
-      int r = *it; ++it;
-      int g = *it; ++it;
-      int b = *it; ++it;
-      int a = *it; ++it;
+      int r = *it;
+      ++it;
+      int g = *it;
+      ++it;
+      int b = *it;
+      ++it;
+      int a = *it;
+      ++it;
 
       pixel = doc::rgba(r, g, b, a);
     }
@@ -81,8 +84,10 @@ ImageRef load_xml_image(const XMLElement* imageElem)
       if ((end - it) < 2)
         break;
 
-      int v = *it; ++it;
-      int a = *it; ++it;
+      int v = *it;
+      ++it;
+      int a = *it;
+      ++it;
 
       pixel = doc::graya(v, a);
     }
@@ -121,10 +126,10 @@ void save_xml_image(XMLElement* imageElem, const Image* image)
 
   std::string format;
   switch (image->pixelFormat()) {
-    case IMAGE_RGB: format = "rgba"; break;
+    case IMAGE_RGB:       format = "rgba"; break;
     case IMAGE_GRAYSCALE: format = "grayscale"; break;
-    case IMAGE_INDEXED: format = "indexed"; break;
-    case IMAGE_BITMAP: format = "bitmap"; break; // TODO add "bitmap" format
+    case IMAGE_INDEXED:   format = "indexed"; break;
+    case IMAGE_BITMAP:    format = "bitmap"; break; // TODO add "bitmap" format
   }
   ASSERT(!format.empty());
   if (!format.empty())
@@ -133,7 +138,7 @@ void save_xml_image(XMLElement* imageElem, const Image* image)
   base::buffer data;
   data.reserve(h * image->widthBytes());
   switch (image->pixelFormat()) {
-    case IMAGE_RGB:{
+    case IMAGE_RGB: {
       const LockImageBits<RgbTraits> pixels(image);
       for (const auto& pixel : pixels) {
         data.push_back(doc::rgba_getr(pixel));
@@ -143,7 +148,7 @@ void save_xml_image(XMLElement* imageElem, const Image* image)
       }
       break;
     }
-    case IMAGE_GRAYSCALE:{
+    case IMAGE_GRAYSCALE: {
       const LockImageBits<GrayscaleTraits> pixels(image);
       for (const auto& pixel : pixels) {
         data.push_back(doc::graya_getv(pixel));
@@ -173,7 +178,7 @@ void save_xml_image(XMLElement* imageElem, const Image* image)
   imageElem->InsertNewText(data_base64.c_str());
 }
 
-}  // anonymous namespace
+} // anonymous namespace
 
 AppBrushes::AppBrushes()
 {
@@ -187,8 +192,7 @@ AppBrushes::AppBrushes()
       load(fn);
     }
     catch (const std::exception& ex) {
-      LOG(ERROR, "BRSH: Error loading user brushes from '%s': %s\n",
-          fn.c_str(), ex.what());
+      LOG(ERROR, "BRSH: Error loading user brushes from '%s': %s\n", fn.c_str(), ex.what());
     }
   }
   m_userBrushesFilename = fn;
@@ -202,8 +206,10 @@ AppBrushes::~AppBrushes()
     }
     // We cannot throw exceptions from a destructor
     catch (const std::exception& ex) {
-      LOG(ERROR, "BRSH: Error saving user brushes to '%s': %s\n",
-          m_userBrushesFilename.c_str(), ex.what());
+      LOG(ERROR,
+          "BRSH: Error saving user brushes to '%s': %s\n",
+          m_userBrushesFilename.c_str(),
+          ex.what());
     }
   }
 }
@@ -211,10 +217,10 @@ AppBrushes::~AppBrushes()
 AppBrushes::slot_id AppBrushes::addBrushSlot(const BrushSlot& brush)
 {
   // Use an empty slot
-  for (size_t i=0; i<m_slots.size(); ++i) {
+  for (size_t i = 0; i < m_slots.size(); ++i) {
     if (!m_slots[i].locked() || m_slots[i].isEmpty()) {
       m_slots[i] = brush;
-      return i+1;
+      return i + 1;
     }
   }
 
@@ -230,8 +236,7 @@ void AppBrushes::removeBrushSlot(slot_id slot)
     m_slots[slot] = BrushSlot();
 
     // Erase empty trailing slots
-    while (!m_slots.empty() &&
-           m_slots[m_slots.size()-1].isEmpty())
+    while (!m_slots.empty() && m_slots[m_slots.size() - 1].isEmpty())
       m_slots.erase(--m_slots.end());
 
     ItemsChange();
@@ -249,8 +254,7 @@ void AppBrushes::removeAllBrushSlots()
 bool AppBrushes::hasBrushSlot(slot_id slot) const
 {
   --slot;
-  return (slot >= 0 && slot < (int)m_slots.size() &&
-          !m_slots[slot].isEmpty());
+  return (slot >= 0 && slot < (int)m_slots.size() && !m_slots[slot].isEmpty());
 }
 
 BrushSlot AppBrushes::getBrushSlot(slot_id slot) const
@@ -274,8 +278,7 @@ void AppBrushes::setBrushSlot(slot_id slot, const BrushSlot& brush)
 void AppBrushes::lockBrushSlot(slot_id slot)
 {
   --slot;
-  if (slot >= 0 && slot < (int)m_slots.size() &&
-      !m_slots[slot].isEmpty()) {
+  if (slot >= 0 && slot < (int)m_slots.size() && !m_slots[slot].isEmpty()) {
     m_slots[slot].setLocked(true);
   }
 }
@@ -283,8 +286,7 @@ void AppBrushes::lockBrushSlot(slot_id slot)
 void AppBrushes::unlockBrushSlot(slot_id slot)
 {
   --slot;
-  if (slot >= 0 && slot < (int)m_slots.size() &&
-      !m_slots[slot].isEmpty()) {
+  if (slot >= 0 && slot < (int)m_slots.size() && !m_slots[slot].isEmpty()) {
     m_slots[slot].setLocked(false);
   }
 }
@@ -292,26 +294,22 @@ void AppBrushes::unlockBrushSlot(slot_id slot)
 bool AppBrushes::isBrushSlotLocked(slot_id slot) const
 {
   --slot;
-  if (slot >= 0 && slot < (int)m_slots.size() &&
-      !m_slots[slot].isEmpty()) {
+  if (slot >= 0 && slot < (int)m_slots.size() && !m_slots[slot].isEmpty()) {
     return m_slots[slot].locked();
   }
   else
     return false;
 }
 
-static const int kBrushFlags =
-  int(BrushSlot::Flags::BrushType) |
-  int(BrushSlot::Flags::BrushSize) |
-  int(BrushSlot::Flags::BrushAngle);
+static const int kBrushFlags = int(BrushSlot::Flags::BrushType) | int(BrushSlot::Flags::BrushSize) |
+                               int(BrushSlot::Flags::BrushAngle);
 
 void AppBrushes::load(const std::string& filename)
 {
   XMLDocumentRef doc = app::open_xml(filename);
   XMLHandle handle(doc.get());
-  XMLElement* brushElem = handle
-    .FirstChildElement("brushes")
-    .FirstChildElement("brush").ToElement();
+  XMLElement* brushElem =
+    handle.FirstChildElement("brushes").FirstChildElement("brush").ToElement();
 
   while (brushElem) {
     // flags
@@ -329,14 +327,15 @@ void AppBrushes::load(const std::string& filename)
     const char* size = brushElem->Attribute("size");
     const char* angle = brushElem->Attribute("angle");
     if (type || size || angle) {
-      if (type) flags |= int(BrushSlot::Flags::BrushType);
-      if (size) flags |= int(BrushSlot::Flags::BrushSize);
-      if (angle) flags |= int(BrushSlot::Flags::BrushAngle);
-      brush.reset(
-        new Brush(
-          (type ? string_id_to_brush_type(type): kFirstBrushType),
-          (size ? base::convert_to<int>(std::string(size)): 1),
-          (angle ? base::convert_to<int>(std::string(angle)): 0)));
+      if (type)
+        flags |= int(BrushSlot::Flags::BrushType);
+      if (size)
+        flags |= int(BrushSlot::Flags::BrushSize);
+      if (angle)
+        flags |= int(BrushSlot::Flags::BrushAngle);
+      brush.reset(new Brush((type ? string_id_to_brush_type(type) : kFirstBrushType),
+                            (size ? base::convert_to<int>(std::string(size)) : 1),
+                            (angle ? base::convert_to<int>(std::string(angle)) : 0)));
     }
 
     // Brush image
@@ -397,16 +396,19 @@ void AppBrushes::load(const std::string& filename)
     }
 
     // Image color (enabled by default for backward compatibility)
-    if (!brushElem->Attribute("imagecolor") ||
-        bool_attr(brushElem, "imagecolor", false))
+    if (!brushElem->Attribute("imagecolor") || bool_attr(brushElem, "imagecolor", false))
       flags |= int(BrushSlot::Flags::ImageColor);
 
     if (flags != 0)
       flags |= int(BrushSlot::Flags::Locked);
 
     BrushSlot brushSlot(BrushSlot::Flags(flags),
-                        brush, fgColor, bgColor,
-                        inkType, inkOpacity, shade,
+                        brush,
+                        fgColor,
+                        bgColor,
+                        inkType,
+                        inkOpacity,
+                        shade,
                         pixelPerfect);
     m_slots.push_back(brushSlot);
 
@@ -437,8 +439,7 @@ void AppBrushes::save(const std::string& filename) const
         ASSERT(slot.brush());
 
         if (flags & int(BrushSlot::Flags::BrushType)) {
-          brushElem->SetAttribute(
-            "type", brush_type_to_string_id(slot.brush()->type()).c_str());
+          brushElem->SetAttribute("type", brush_type_to_string_id(slot.brush()->type()).c_str());
         }
 
         if (flags & int(BrushSlot::Flags::BrushSize)) {
@@ -449,8 +450,7 @@ void AppBrushes::save(const std::string& filename) const
           brushElem->SetAttribute("angle", slot.brush()->angle());
         }
 
-        if (slot.brush()->type() == kImageBrushType &&
-            slot.brush()->originalImage()) {
+        if (slot.brush()->type() == kImageBrushType && slot.brush()->originalImage()) {
           XMLElement* elem = brushElem->InsertNewChildElement("image");
           save_xml_image(elem, slot.brush()->originalImage());
 
@@ -460,9 +460,8 @@ void AppBrushes::save(const std::string& filename) const
           }
 
           // Image color
-          brushElem->SetAttribute(
-            "imagecolor",
-            (flags & int(BrushSlot::Flags::ImageColor)) ? "true": "false");
+          brushElem->SetAttribute("imagecolor",
+                                  (flags & int(BrushSlot::Flags::ImageColor)) ? "true" : "false");
         }
       }
 
@@ -480,8 +479,7 @@ void AppBrushes::save(const std::string& filename) const
       // Ink
       if (flags & int(BrushSlot::Flags::InkType)) {
         XMLElement* elem = brushElem->InsertNewChildElement("inktype");
-        elem->SetAttribute(
-          "value", app::tools::ink_type_to_string_id(slot.inkType()).c_str());
+        elem->SetAttribute("value", app::tools::ink_type_to_string_id(slot.inkType()).c_str());
       }
 
       if (flags & int(BrushSlot::Flags::InkOpacity)) {
@@ -498,7 +496,7 @@ void AppBrushes::save(const std::string& filename) const
       // Pixel-perfect
       if (flags & int(BrushSlot::Flags::PixelPerfect)) {
         XMLElement* elem = brushElem->InsertNewChildElement("pixelperfect");
-        elem->SetAttribute("value", slot.pixelPerfect() ? "true": "false");
+        elem->SetAttribute("value", slot.pixelPerfect() ? "true" : "false");
       }
     }
   }

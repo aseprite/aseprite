@@ -15,8 +15,7 @@
 #include "ui/size_hint_event.h"
 #include "ui/widget.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 class Tab : public app::ButtonSet::Item {
 public:
@@ -38,7 +37,6 @@ protected:
 };
 
 class Tabs : public ui::VBox {
-
 public:
   static ui::WidgetType Type();
 
@@ -71,7 +69,6 @@ private:
   int m_selectorFlags;
 };
 
-} // namespace script
-} // namespace app
+}} // namespace app::script
 
 #endif

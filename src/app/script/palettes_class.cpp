@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/script/docobj.h"
@@ -14,8 +14,7 @@
 #include "app/script/luacpp.h"
 #include "doc/sprite.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 using namespace doc;
 
@@ -23,9 +22,7 @@ namespace {
 
 struct PalettesObj {
   ObjectId spriteId;
-  PalettesObj(Sprite* sprite)
-    : spriteId(sprite->id()) {
-  }
+  PalettesObj(Sprite* sprite) : spriteId(sprite->id()) {}
   PalettesObj(const PalettesObj&) = delete;
   PalettesObj& operator=(const PalettesObj&) = delete;
 
@@ -53,15 +50,15 @@ int Palettes_index(lua_State* L)
   int i = lua_tointeger(L, 2);
   if (i < 1 || i > int(pals.size()))
     return luaL_error(L, "index out of bounds %d", i);
-  push_sprite_palette(L, sprite, pals[i-1]);
+  push_sprite_palette(L, sprite, pals[i - 1]);
   return 1;
 }
 
 const luaL_Reg Palettes_methods[] = {
-  { "__gc", Palettes_gc },
-  { "__len", Palettes_len },
+  { "__gc",    Palettes_gc    },
+  { "__len",   Palettes_len   },
   { "__index", Palettes_index },
-  { nullptr, nullptr }
+  { nullptr,   nullptr        }
 };
 
 } // anonymous namespace
@@ -79,5 +76,4 @@ void push_sprite_palettes(lua_State* L, Sprite* sprite)
   push_new<PalettesObj>(L, sprite);
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

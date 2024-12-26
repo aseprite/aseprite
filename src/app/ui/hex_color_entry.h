@@ -16,30 +16,31 @@
 
 namespace app {
 
-  // Little widget to show a color in hexadecimal format (as HTML).
-  class HexColorEntry : public ui::Box {
+// Little widget to show a color in hexadecimal format (as HTML).
+class HexColorEntry : public ui::Box {
+public:
+  HexColorEntry();
+
+  void setColor(const app::Color& color);
+
+  // Signals
+  obs::signal<void(const app::Color&)> ColorChange;
+
+protected:
+  void onEntryChange();
+
+private:
+  class CustomEntry : public ui::Entry {
   public:
-    HexColorEntry();
-
-    void setColor(const app::Color& color);
-
-    // Signals
-    obs::signal<void(const app::Color&)> ColorChange;
-
-  protected:
-    void onEntryChange();
+    CustomEntry();
 
   private:
-    class CustomEntry : public ui::Entry {
-    public:
-      CustomEntry();
-    private:
-      bool onProcessMessage(ui::Message* msg) override;
-    };
-
-    ui::Label m_label;
-    CustomEntry m_entry;
+    bool onProcessMessage(ui::Message* msg) override;
   };
+
+  ui::Label m_label;
+  CustomEntry m_entry;
+};
 
 } // namespace app
 

@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/palette_popup.h"
@@ -44,38 +44,35 @@ PalettePopup::PalettePopup()
 
   addChild(m_popup);
 
-  m_paletteListBox.DoubleClickItem.connect([this]{ onLoadPal(); });
-  m_paletteListBox.FinishLoading.connect([this]{ onSearchChange(); });
-  m_popup->search()->Change.connect([this]{ onSearchChange(); });
-  m_popup->refresh()->Click.connect([this]{ onRefresh(); });
-  m_popup->loadPal()->Click.connect([this]{ onLoadPal(); });
-  m_popup->openFolder()->Click.connect([this]{ onOpenFolder(); });
+  m_paletteListBox.DoubleClickItem.connect([this] { onLoadPal(); });
+  m_paletteListBox.FinishLoading.connect([this] { onSearchChange(); });
+  m_popup->search()->Change.connect([this] { onSearchChange(); });
+  m_popup->refresh()->Click.connect([this] { onRefresh(); });
+  m_popup->loadPal()->Click.connect([this] { onLoadPal(); });
+  m_popup->openFolder()->Click.connect([this] { onOpenFolder(); });
 
   m_popup->view()->attachToView(&m_paletteListBox);
 
   m_paletteListBox.PalChange.connect(&PalettePopup::onPalChange, this);
 
-  InitTheme.connect(
-    [this]{
-      setBorder(gfx::Border(4*guiscale()));
-    });
+  InitTheme.connect([this] { setBorder(gfx::Border(4 * guiscale())); });
   initTheme();
 }
 
-void PalettePopup::showPopup(ui::Display* display,
-                             const gfx::Rect& buttonPos)
+void PalettePopup::showPopup(ui::Display* display, const gfx::Rect& buttonPos)
 {
   m_popup->loadPal()->setEnabled(false);
   m_popup->openFolder()->setEnabled(false);
   m_paletteListBox.selectChild(NULL);
 
-  fit_bounds(display, this,
+  fit_bounds(display,
+             this,
              gfx::Rect(buttonPos.x, buttonPos.y2(), 32, 32),
              [](const gfx::Rect& workarea,
                 gfx::Rect& bounds,
                 std::function<gfx::Rect(Widget*)> getWidgetBounds) {
-               bounds.w = workarea.w/2;
-               bounds.h = workarea.h*3/4;
+               bounds.w = workarea.w / 2;
+               bounds.h = workarea.h * 3 / 4;
              });
 
   openWindowInForeground();
@@ -87,8 +84,7 @@ bool PalettePopup::onProcessMessage(ui::Message* msg)
     case kKeyDownMessage: {
       KeyMessage* keyMsg = static_cast<KeyMessage*>(msg);
       KeyScancode scancode = keyMsg->scancode();
-      bool refresh = (scancode == kKeyF5 ||
-                      (msg->ctrlPressed() && scancode == kKeyR) ||
+      bool refresh = (scancode == kKeyF5 || (msg->ctrlPressed() && scancode == kKeyR) ||
                       (msg->cmdPressed() && scancode == kKeyR));
       if (refresh) {
         onRefresh();
@@ -102,9 +98,7 @@ bool PalettePopup::onProcessMessage(ui::Message* msg)
 
 void PalettePopup::onPalChange(const doc::Palette* palette)
 {
-  const bool state =
-    (UIContext::instance()->activeDocument() &&
-     palette != nullptr);
+  const bool state = (UIContext::instance()->activeDocument() && palette != nullptr);
 
   m_popup->loadPal()->setEnabled(state);
   m_popup->openFolder()->setEnabled(state);

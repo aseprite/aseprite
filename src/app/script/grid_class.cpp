@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/script/docobj.h"
@@ -13,8 +13,7 @@
 #include "app/script/luacpp.h"
 #include "doc/grid.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 using namespace doc;
 
@@ -63,14 +62,14 @@ int Grid_get_origin(lua_State* L)
 }
 
 const luaL_Reg Grid_methods[] = {
-  { "__gc", Grid_gc },
+  { "__gc",  Grid_gc },
   { nullptr, nullptr }
 };
 
 const Property Grid_properties[] = {
   { "tileSize", Grid_get_tileSize, nullptr },
-  { "origin", Grid_get_origin, nullptr },
-  { nullptr, nullptr, nullptr }
+  { "origin",   Grid_get_origin,   nullptr },
+  { nullptr,    nullptr,           nullptr }
 };
 
 } // anonymous namespace
@@ -90,5 +89,4 @@ doc::Grid convert_args_into_grid(lua_State* L, int index)
   return Grid_new(L, index);
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

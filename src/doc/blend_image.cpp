@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/blend_image.h"
@@ -15,8 +15,7 @@
 
 namespace doc {
 
-template<typename DstTraits,
-         typename SrcTraits>
+template<typename DstTraits, typename SrcTraits>
 void blend_image_templ(Image* dst,
                        const Image* src,
                        const gfx::Clip& area,
@@ -51,33 +50,80 @@ void blend_image(Image* dst,
     return;
 
   switch (dst->pixelFormat()) {
-
     case IMAGE_RGB:
       switch (src->pixelFormat()) {
-        case IMAGE_RGB:       return blend_image_templ<RgbTraits, RgbTraits      >(dst, src, area, pal, opacity, blendMode);
-        case IMAGE_GRAYSCALE: return blend_image_templ<RgbTraits, GrayscaleTraits>(dst, src, area, pal, opacity, blendMode);
-        case IMAGE_INDEXED:   return blend_image_templ<RgbTraits, IndexedTraits  >(dst, src, area, pal, opacity, blendMode);
+        case IMAGE_RGB:
+          return blend_image_templ<RgbTraits, RgbTraits>(dst, src, area, pal, opacity, blendMode);
+        case IMAGE_GRAYSCALE:
+          return blend_image_templ<RgbTraits, GrayscaleTraits>(dst,
+                                                               src,
+                                                               area,
+                                                               pal,
+                                                               opacity,
+                                                               blendMode);
+        case IMAGE_INDEXED:
+          return blend_image_templ<RgbTraits, IndexedTraits>(dst,
+                                                             src,
+                                                             area,
+                                                             pal,
+                                                             opacity,
+                                                             blendMode);
       }
       break;
 
     case IMAGE_GRAYSCALE:
       switch (src->pixelFormat()) {
-        case IMAGE_RGB:       return blend_image_templ<GrayscaleTraits, RgbTraits      >(dst, src, area, pal, opacity, blendMode);
-        case IMAGE_GRAYSCALE: return blend_image_templ<GrayscaleTraits, GrayscaleTraits>(dst, src, area, pal, opacity, blendMode);
-        case IMAGE_INDEXED:   return blend_image_templ<GrayscaleTraits, IndexedTraits  >(dst, src, area, pal, opacity, blendMode);
+        case IMAGE_RGB:
+          return blend_image_templ<GrayscaleTraits, RgbTraits>(dst,
+                                                               src,
+                                                               area,
+                                                               pal,
+                                                               opacity,
+                                                               blendMode);
+        case IMAGE_GRAYSCALE:
+          return blend_image_templ<GrayscaleTraits, GrayscaleTraits>(dst,
+                                                                     src,
+                                                                     area,
+                                                                     pal,
+                                                                     opacity,
+                                                                     blendMode);
+        case IMAGE_INDEXED:
+          return blend_image_templ<GrayscaleTraits, IndexedTraits>(dst,
+                                                                   src,
+                                                                   area,
+                                                                   pal,
+                                                                   opacity,
+                                                                   blendMode);
       }
       break;
 
     case IMAGE_INDEXED:
       switch (src->pixelFormat()) {
-        case IMAGE_RGB:       return blend_image_templ<IndexedTraits, RgbTraits      >(dst, src, area, pal, opacity, blendMode);
-        case IMAGE_GRAYSCALE: return blend_image_templ<IndexedTraits, GrayscaleTraits>(dst, src, area, pal, opacity, blendMode);
-        case IMAGE_INDEXED:   return blend_image_templ<IndexedTraits, IndexedTraits  >(dst, src, area, pal, opacity, blendMode);
+        case IMAGE_RGB:
+          return blend_image_templ<IndexedTraits, RgbTraits>(dst,
+                                                             src,
+                                                             area,
+                                                             pal,
+                                                             opacity,
+                                                             blendMode);
+        case IMAGE_GRAYSCALE:
+          return blend_image_templ<IndexedTraits, GrayscaleTraits>(dst,
+                                                                   src,
+                                                                   area,
+                                                                   pal,
+                                                                   opacity,
+                                                                   blendMode);
+        case IMAGE_INDEXED:
+          return blend_image_templ<IndexedTraits, IndexedTraits>(dst,
+                                                                 src,
+                                                                 area,
+                                                                 pal,
+                                                                 opacity,
+                                                                 blendMode);
       }
       break;
 
-    case IMAGE_TILEMAP:
-      return dst->copy(src, area);
+    case IMAGE_TILEMAP: return dst->copy(src, area);
   }
 }
 

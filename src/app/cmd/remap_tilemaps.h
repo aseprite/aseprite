@@ -12,31 +12,26 @@
 #include "app/cmd/with_tileset.h"
 #include "doc/remap.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class RemapTilemaps : public Cmd
-                      , public WithTileset {
-  public:
-    RemapTilemaps(Tileset* tileset,
-                  const Remap& remap);
+class RemapTilemaps : public Cmd,
+                      public WithTileset {
+public:
+  RemapTilemaps(Tileset* tileset, const Remap& remap);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this) + m_remap.getMemSize();
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  size_t onMemSize() const override { return sizeof(*this) + m_remap.getMemSize(); }
 
-  private:
-    void remapTileset(Tileset* tileset, const Remap& remap);
-    void incrementVersions(Tileset* tileset);
+private:
+  void remapTileset(Tileset* tileset, const Remap& remap);
+  void incrementVersions(Tileset* tileset);
 
-    Remap m_remap;
-  };
+  Remap m_remap;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

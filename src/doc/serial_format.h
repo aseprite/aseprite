@@ -16,9 +16,9 @@ namespace doc {
 // IO operations for undo/redo or in recovery data to allow backward
 // compatibility with old session backups.
 enum class SerialFormat : uint16_t {
-  Ver0 = 0,           // Old version
-  Ver1 = 1,           // New version with tilesets
-  Ver2 = 2,           // Version 2 adds custom properties to user data
+  Ver0 = 0, // Old version
+  Ver1 = 1, // New version with tilesets
+  Ver2 = 2, // Version 2 adds custom properties to user data
   LastVer = Ver2
 };
 

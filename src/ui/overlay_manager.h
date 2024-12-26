@@ -16,37 +16,39 @@
 
 #include <vector>
 
-namespace os { class Surface; }
+namespace os {
+class Surface;
+}
 
 namespace ui {
 
-  class OverlayManager {
-    friend class UISystem;     // So it can call destroyInstance() from ~UISystem
-    static OverlayManager* m_singleton;
+class OverlayManager {
+  friend class UISystem; // So it can call destroyInstance() from ~UISystem
+  static OverlayManager* m_singleton;
 
-    OverlayManager();
-    ~OverlayManager();
+  OverlayManager();
+  ~OverlayManager();
 
-  public:
-    static OverlayManager* instance();
+public:
+  static OverlayManager* instance();
 
-    void addOverlay(const OverlayRef& overlay);
-    void removeOverlay(const OverlayRef& overlay);
+  void addOverlay(const OverlayRef& overlay);
+  void removeOverlay(const OverlayRef& overlay);
 
-    void drawOverlays();
-    void restoreOverlappedAreas(const gfx::Rect& bounds);
+  void drawOverlays();
+  void restoreOverlappedAreas(const gfx::Rect& bounds);
 
-  private:
-    static void destroyInstance();
+private:
+  static void destroyInstance();
 
-    typedef std::vector<OverlayRef> OverlayList;
-    typedef OverlayList::iterator iterator;
+  typedef std::vector<OverlayRef> OverlayList;
+  typedef OverlayList::iterator iterator;
 
-    iterator begin() { return m_overlays.begin(); }
-    iterator end() { return m_overlays.end(); }
+  iterator begin() { return m_overlays.begin(); }
+  iterator end() { return m_overlays.end(); }
 
-    OverlayList m_overlays;
-  };
+  OverlayList m_overlays;
+};
 
 } // namespace ui
 

@@ -10,10 +10,10 @@
 
 namespace app {
 
-  enum class CelsTarget {
-    Selected,                 // Selected cels in the timeline
-    All                       // All cels in the sprite
-  };
+enum class CelsTarget {
+  Selected, // Selected cels in the timeline
+  All       // All cels in the sprite
+};
 
 } // namespace app
 

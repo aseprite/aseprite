@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -42,8 +42,7 @@ private:
 };
 
 UndoCommand::UndoCommand(Type type)
-  : Command((type == Undo ? CommandId::Undo():
-                            CommandId::Redo()), CmdUIOnlyFlag)
+  : Command((type == Undo ? CommandId::Undo() : CommandId::Redo()), CmdUIOnlyFlag)
   , m_type(type)
 {
 }
@@ -52,10 +51,7 @@ bool UndoCommand::onEnabled(Context* context)
 {
   const ContextReader reader(context);
   const Doc* doc(reader.document());
-  return
-    doc &&
-    ((m_type == Undo ? doc->undoHistory()->canUndo():
-                       doc->undoHistory()->canRedo()));
+  return doc && ((m_type == Undo ? doc->undoHistory()->canUndo() : doc->undoHistory()->canRedo()));
 }
 
 void UndoCommand::onExecute(Context* context)
@@ -67,12 +63,10 @@ void UndoCommand::onExecute(Context* context)
   auto editor = Editor::activeEditor();
   Sprite* sprite = document->sprite();
   SpritePosition spritePosition;
-  const bool gotoModified =
-    (Preferences::instance().undo.gotoModified() &&
-     context->isUIAvailable() && editor);
+  const bool gotoModified = (Preferences::instance().undo.gotoModified() &&
+                             context->isUIAvailable() && editor);
   if (gotoModified) {
-    SpritePosition currentPosition(writer.site()->layer(),
-                                   writer.site()->frame());
+    SpritePosition currentPosition(writer.site()->layer(), writer.site()->frame());
 
     if (m_type == Undo)
       spritePosition = undo->nextUndoSpritePosition();
@@ -87,8 +81,7 @@ void UndoCommand::onExecute(Context* context)
 
       // Draw the current layer/frame (which is not undone yet) so the
       // user can see the doUndo/doRedo effect.
-      editor->drawSpriteClipped(
-        gfx::Region(gfx::Rect(0, 0, sprite->width(), sprite->height())));
+      editor->drawSpriteClipped(gfx::Region(gfx::Rect(0, 0, sprite->width(), sprite->height())));
 
       editor->display()->flipDisplay();
       base::this_thread::sleep_for(0.01);
@@ -128,9 +121,7 @@ void UndoCommand::onExecute(Context* context)
   // weren't able to reach before the undo).
   if (gotoModified) {
     Site newSite = context->activeSite();
-    SpritePosition currentPosition(
-      newSite.layer(),
-      newSite.frame());
+    SpritePosition currentPosition(newSite.layer(), newSite.frame());
 
     if (spritePosition != currentPosition) {
       Layer* selectLayer = spritePosition.layer();

@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/manager.h"
@@ -58,34 +58,32 @@ void move_region(Display* display, const Region& region, int dx, int dy)
     std::vector<gfx::Rect> rcs(nrects);
     std::copy(region.begin(), region.end(), rcs.begin());
 
-    std::sort(
-      rcs.begin(), rcs.end(),
-      [dx, dy](const gfx::Rect& a, const gfx::Rect& b){
-        if (dy < 0) {
-          if (a.y < b.y)
-            return true;
-          else if (a.y == b.y) {
-            if (dx < 0)
-              return a.x < b.x;
-            else
-              return a.x > b.x;
-          }
+    std::sort(rcs.begin(), rcs.end(), [dx, dy](const gfx::Rect& a, const gfx::Rect& b) {
+      if (dy < 0) {
+        if (a.y < b.y)
+          return true;
+        else if (a.y == b.y) {
+          if (dx < 0)
+            return a.x < b.x;
           else
-            return false;
+            return a.x > b.x;
         }
-        else {
-          if (a.y > b.y)
-            return true;
-          else if (a.y == b.y) {
-            if (dx < 0)
-              return a.x < b.x;
-            else
-              return a.x > b.x;
-          }
+        else
+          return false;
+      }
+      else {
+        if (a.y > b.y)
+          return true;
+        else if (a.y == b.y) {
+          if (dx < 0)
+            return a.x < b.x;
           else
-            return false;
+            return a.x > b.x;
         }
-      });
+        else
+          return false;
+      }
+    });
 
     for (gfx::Rect& rc : rcs) {
       surface->scrollTo(rc, dx, dy);

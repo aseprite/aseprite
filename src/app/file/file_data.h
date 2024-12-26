@@ -13,7 +13,7 @@
 #include <string>
 
 namespace doc {
-  class Document;
+class Document;
 }
 
 namespace app {

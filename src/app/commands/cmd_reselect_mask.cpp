@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/reselect_mask.h"
@@ -28,24 +28,21 @@ protected:
   void onExecute(Context* context) override;
 };
 
-ReselectMaskCommand::ReselectMaskCommand()
-  : Command(CommandId::ReselectMask(), CmdRecordableFlag)
+ReselectMaskCommand::ReselectMaskCommand() : Command(CommandId::ReselectMask(), CmdRecordableFlag)
 {
 }
 
 bool ReselectMaskCommand::onEnabled(Context* context)
 {
-  if (!context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                           ContextFlags::HasActiveSprite))
+  if (!context->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasActiveSprite))
     return false;
 
   const ContextReader reader(context);
   const Doc* document(reader.document());
-  return
-     document &&                      // The document does exist
-    !document->isMaskVisible() &&     // The mask is hidden
-     document->mask() &&           // The mask does exist
-    !document->mask()->isEmpty();  // But it is not empty
+  return document &&                   // The document does exist
+         !document->isMaskVisible() && // The mask is hidden
+         document->mask() &&           // The mask does exist
+         !document->mask()->isEmpty(); // But it is not empty
 }
 
 void ReselectMaskCommand::onExecute(Context* context)

@@ -11,11 +11,11 @@
 
 namespace render {
 
-  enum class BgType {
-    NONE,
-    TRANSPARENT,
-    CHECKERED,
-  };
+enum class BgType {
+  NONE,
+  TRANSPARENT,
+  CHECKERED,
+};
 
 } // namespace render
 

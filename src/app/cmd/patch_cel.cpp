@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/patch_cel.h"
@@ -17,8 +17,7 @@
 #include "doc/cel.h"
 #include "doc/layer_tilemap.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 using namespace doc;
 
@@ -57,17 +56,10 @@ void PatchCel::onExecute()
 
   if (cel->image()->pixelFormat() == IMAGE_TILEMAP) {
     executeAndAdd(
-      new CopyRegion(cel->image(),
-                     m_patch,
-                     regionInTiles,
-                     -grid.canvasToTile(cel->position())));
+      new CopyRegion(cel->image(), m_patch, regionInTiles, -grid.canvasToTile(cel->position())));
   }
   else {
-    executeAndAdd(
-      new CopyRegion(cel->image(),
-                     m_patch,
-                     m_region,
-                     m_pos - cel->position()));
+    executeAndAdd(new CopyRegion(cel->image(), m_patch, m_region, m_pos - cel->position()));
   }
 
   executeAndAdd(new TrimCel(cel));
@@ -75,5 +67,4 @@ void PatchCel::onExecute()
   m_patch = nullptr;
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

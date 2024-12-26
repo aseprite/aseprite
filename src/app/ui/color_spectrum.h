@@ -13,32 +13,31 @@
 
 namespace app {
 
-  class ColorSpectrum : public ColorSelector {
-  public:
-    ColorSpectrum();
+class ColorSpectrum : public ColorSelector {
+public:
+  ColorSpectrum();
 
-  protected:
+protected:
 #if SK_ENABLE_SKSL
-    const char* getMainAreaShader() override;
-    const char* getBottomBarShader() override;
-    void setShaderParams(SkRuntimeShaderBuilder& builder, bool main) override;
+  const char* getMainAreaShader() override;
+  const char* getBottomBarShader() override;
+  void setShaderParams(SkRuntimeShaderBuilder& builder, bool main) override;
 #endif
-    app::Color getMainAreaColor(const int u, const int umax,
-                                const int v, const int vmax) override;
-    app::Color getBottomBarColor(const int u, const int umax) override;
-    void onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc) override;
-    void onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc) override;
-    void onPaintSurfaceInBgThread(os::Surface* s,
-                                  const gfx::Rect& main,
-                                  const gfx::Rect& bottom,
-                                  const gfx::Rect& alpha,
-                                  bool& stop) override;
-    int onNeedsSurfaceRepaint(const app::Color& newColor) override;
+  app::Color getMainAreaColor(const int u, const int umax, const int v, const int vmax) override;
+  app::Color getBottomBarColor(const int u, const int umax) override;
+  void onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc) override;
+  void onPaintBottomBar(ui::Graphics* g, const gfx::Rect& rc) override;
+  void onPaintSurfaceInBgThread(os::Surface* s,
+                                const gfx::Rect& main,
+                                const gfx::Rect& bottom,
+                                const gfx::Rect& alpha,
+                                bool& stop) override;
+  int onNeedsSurfaceRepaint(const app::Color& newColor) override;
 
-  private:
-    std::string m_mainShader;
-    std::string m_bottomShader;
-  };
+private:
+  std::string m_mainShader;
+  std::string m_bottomShader;
+};
 
 } // namespace app
 

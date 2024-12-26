@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/tileset_selector.h"
@@ -22,17 +22,13 @@ namespace app {
 
 using namespace ui;
 
-TilesetSelector::TilesetSelector(const doc::Sprite* sprite,
-                                 const TilesetSelector::Info& info)
+TilesetSelector::TilesetSelector(const doc::Sprite* sprite, const TilesetSelector::Info& info)
   : m_sprite(sprite)
   , m_info(info)
 {
   initTheme();
 
-  fillControls(m_info.name,
-               m_info.grid.tileSize(),
-               m_info.baseIndex,
-               m_info.matchFlags);
+  fillControls(m_info.name, m_info.grid.tileSize(), m_info.baseIndex, m_info.matchFlags);
 
   if (!m_info.allowNewTileset) {
     tilesets()->deleteAllItems();
@@ -44,12 +40,11 @@ TilesetSelector::TilesetSelector(const doc::Sprite* sprite,
       if (!tileset)
         continue;
 
-      auto item = new ListItem(
-        fmt::format("Tileset #{0} ({1}x{2}): \"{3}\"",
-                    tsi,
-                    tileset->grid().tileSize().w,
-                    tileset->grid().tileSize().h,
-                    tileset->name()));
+      auto item = new ListItem(fmt::format("Tileset #{0} ({1}x{2}): \"{3}\"",
+                                           tsi,
+                                           tileset->grid().tileSize().w,
+                                           tileset->grid().tileSize().h,
+                                           tileset->name()));
       tilesets()->addItem(item);
 
       if (m_info.tsi == tsi)
@@ -60,9 +55,7 @@ TilesetSelector::TilesetSelector(const doc::Sprite* sprite,
   }
 
   if (m_info.enabled) {
-    tilesets()->Change.connect([this]() {
-      updateControlsState();
-    });
+    tilesets()->Change.connect([this]() { updateControlsState(); });
   }
 
   // Advanced controls
@@ -87,9 +80,9 @@ void TilesetSelector::fillControls(const std::string& nameValue,
   gridWidth()->setTextf("%d", gridSize.w);
   gridHeight()->setTextf("%d", gridSize.h);
   baseIndex()->setTextf("%d", baseIndexValue);
-  xflip()->setSelected((matchFlags & doc::tile_f_xflip) ? true: false);
-  yflip()->setSelected((matchFlags & doc::tile_f_yflip) ? true: false);
-  dflip()->setSelected((matchFlags & doc::tile_f_dflip) ? true: false);
+  xflip()->setSelected((matchFlags & doc::tile_f_xflip) ? true : false);
+  yflip()->setSelected((matchFlags & doc::tile_f_yflip) ? true : false);
+  dflip()->setSelected((matchFlags & doc::tile_f_dflip) ? true : false);
 }
 
 void TilesetSelector::updateControlsState()
@@ -104,11 +97,8 @@ void TilesetSelector::updateControlsState()
       baseIndex()->setTextf("%d", 1);
     }
     else {
-      const doc::Tileset* ts = spriteTilesets->get(index-1);
-      fillControls(ts->name(),
-                   ts->grid().tileSize(),
-                   ts->baseIndex(),
-                   ts->matchFlags());
+      const doc::Tileset* ts = spriteTilesets->get(index - 1);
+      fillControls(ts->name(), ts->grid().tileSize(), ts->baseIndex(), ts->matchFlags());
     }
 
     name()->setEnabled(true);
@@ -143,15 +133,14 @@ TilesetSelector::Info TilesetSelector::getInfo()
   int itemIndex = getSelectedItemIndex();
   Info info;
   if (itemIndex == 0) {
-    gfx::Size sz(std::max(1, gridWidth()->textInt()),
-                 std::max(1, gridHeight()->textInt()));
+    gfx::Size sz(std::max(1, gridWidth()->textInt()), std::max(1, gridHeight()->textInt()));
 
     info.newTileset = true;
     info.grid = doc::Grid::MakeRect(sz);
   }
   else {
     info.newTileset = false;
-    info.tsi = itemIndex-1;
+    info.tsi = itemIndex - 1;
   }
   info.name = name()->text();
 
@@ -159,18 +148,15 @@ TilesetSelector::Info TilesetSelector::getInfo()
   // options are hidden, we use the default values (only in that
   // case). In other case we use the edited options (even if the
   // advanced options are hidden).
-  if (m_info.allowNewTileset &&
-      m_info.newTileset &&
-      !advanced()->isSelected()) {
+  if (m_info.allowNewTileset && m_info.newTileset && !advanced()->isSelected()) {
     info.baseIndex = 1;
     info.matchFlags = 0;
   }
   else {
     info.baseIndex = baseIndex()->textInt();
-    info.matchFlags =
-      (xflip()->isSelected() ? doc::tile_f_xflip: 0) |
-      (yflip()->isSelected() ? doc::tile_f_yflip: 0) |
-      (dflip()->isSelected() ? doc::tile_f_dflip: 0);
+    info.matchFlags = (xflip()->isSelected() ? doc::tile_f_xflip : 0) |
+                      (yflip()->isSelected() ? doc::tile_f_yflip : 0) |
+                      (dflip()->isSelected() ? doc::tile_f_dflip : 0);
   }
 
   return info;

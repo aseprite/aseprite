@@ -6,15 +6,14 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_tag_anidir.h"
 
 #include "doc/tag.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 SetTagAniDir::SetTagAniDir(Tag* tag, doc::AniDir anidir)
   : WithTag(tag)
@@ -35,5 +34,4 @@ void SetTagAniDir::onUndo()
   tag()->incrementVersion();
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

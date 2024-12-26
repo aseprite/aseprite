@@ -8,9 +8,7 @@
 
 namespace dio {
 
-StdioFileInterface::StdioFileInterface(FILE* file)
-  : m_file(file)
-  , m_ok(true)
+StdioFileInterface::StdioFileInterface(FILE* file) : m_file(file), m_ok(true)
 {
 }
 

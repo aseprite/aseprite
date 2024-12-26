@@ -15,35 +15,31 @@
 #include <vector>
 
 namespace doc {
-  class Image;
+class Image;
 }
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class CopyRect : public Cmd
-                 , public WithImage {
-  public:
-    CopyRect(Image* dst, const Image* src, const gfx::Clip& clip);
+class CopyRect : public Cmd,
+                 public WithImage {
+public:
+  CopyRect(Image* dst, const Image* src, const gfx::Clip& clip);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onRedo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this) + m_data.size();
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onRedo() override;
+  size_t onMemSize() const override { return sizeof(*this) + m_data.size(); }
 
-  private:
-    void swap();
-    int lineSize();
+private:
+  void swap();
+  int lineSize();
 
-    gfx::Clip m_clip;
-    std::vector<uint8_t> m_data;
-  };
+  gfx::Clip m_clip;
+  std::vector<uint8_t> m_data;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

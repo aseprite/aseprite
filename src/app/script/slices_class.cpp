@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/script/docobj.h"
@@ -15,8 +15,7 @@
 #include "doc/slice.h"
 #include "doc/sprite.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 using namespace doc;
 
@@ -24,9 +23,7 @@ namespace {
 
 struct SlicesObj {
   ObjectId spriteId;
-  SlicesObj(Sprite* sprite)
-    : spriteId(sprite->id()) {
-  }
+  SlicesObj(Sprite* sprite) : spriteId(sprite->id()) {}
   SlicesObj(const SlicesObj&) = delete;
   SlicesObj& operator=(const SlicesObj&) = delete;
 
@@ -52,17 +49,17 @@ int Slices_index(lua_State* L)
   auto& slices = obj->sprite(L)->slices();
   const int i = lua_tonumber(L, 2);
   if (i >= 1 && i <= int(slices.size()))
-    push_docobj(L, *(slices.begin()+i-1));
+    push_docobj(L, *(slices.begin() + i - 1));
   else
     lua_pushnil(L);
   return 1;
 }
 
 const luaL_Reg Slices_methods[] = {
-  { "__gc", Slices_gc },
-  { "__len", Slices_len },
+  { "__gc",    Slices_gc    },
+  { "__len",   Slices_len   },
   { "__index", Slices_index },
-  { nullptr, nullptr }
+  { nullptr,   nullptr      }
 };
 
 } // anonymous namespace
@@ -80,5 +77,4 @@ void push_sprite_slices(lua_State* L, Sprite* sprite)
   push_new<SlicesObj>(L, sprite);
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

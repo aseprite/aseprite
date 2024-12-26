@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/layer_from_background.h"
@@ -35,15 +35,13 @@ LayerFromBackgroundCommand::LayerFromBackgroundCommand()
 
 bool LayerFromBackgroundCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasActiveSprite |
-                             ContextFlags::HasActiveLayer |
-                             ContextFlags::ActiveLayerIsVisible |
-                             ContextFlags::ActiveLayerIsEditable |
-                             ContextFlags::ActiveLayerIsImage |
-                             ContextFlags::ActiveLayerIsBackground) &&
-    // Isn't a reference layer
-    !context->checkFlags(ContextFlags::ActiveLayerIsReference);
+  return context->checkFlags(
+           ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasActiveSprite |
+           ContextFlags::HasActiveLayer | ContextFlags::ActiveLayerIsVisible |
+           ContextFlags::ActiveLayerIsEditable | ContextFlags::ActiveLayerIsImage |
+           ContextFlags::ActiveLayerIsBackground) &&
+         // Isn't a reference layer
+         !context->checkFlags(ContextFlags::ActiveLayerIsReference);
 }
 
 void LayerFromBackgroundCommand::onExecute(Context* context)

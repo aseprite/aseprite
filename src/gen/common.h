@@ -15,7 +15,7 @@ inline std::string convert_xmlid_to_cppid(const std::string& xmlid, bool firstLe
 {
   bool firstLetter = firstLetterUpperCase;
   std::string cppid;
-  for (std::size_t i=0; i<xmlid.size(); ++i) {
+  for (std::size_t i = 0; i < xmlid.size(); ++i) {
     if (xmlid[i] == '_') {
       firstLetter = true;
     }

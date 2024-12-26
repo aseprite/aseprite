@@ -17,32 +17,32 @@
 
 namespace app {
 
-  class FilterManagerImpl;
+class FilterManagerImpl;
 
-  // Invisible widget to control a effect-preview in the current editor.
-  class FilterPreview : public ui::Widget {
-  public:
-    FilterPreview(FilterManagerImpl* filterMgr);
-    ~FilterPreview();
+// Invisible widget to control a effect-preview in the current editor.
+class FilterPreview : public ui::Widget {
+public:
+  FilterPreview(FilterManagerImpl* filterMgr);
+  ~FilterPreview();
 
-    void setEnablePreview(bool state);
+  void setEnablePreview(bool state);
 
-    void stop();
-    void restartPreview();
+  void stop();
+  void restartPreview();
 
-  protected:
-    bool onProcessMessage(ui::Message* msg) override;
+protected:
+  bool onProcessMessage(ui::Message* msg) override;
 
-  private:
-    void onFilterTask(base::task_token& token);
-    void onDelayedStartPreview();
+private:
+  void onFilterTask(base::task_token& token);
+  void onDelayedStartPreview();
 
-    FilterManagerImpl* m_filterMgr;
-    ui::Timer m_timer;
-    ui::Timer m_restartPreviewTimer;
-    std::mutex m_filterMgrMutex;
-    app::Task m_filterTask;
-  };
+  FilterManagerImpl* m_filterMgr;
+  ui::Timer m_timer;
+  ui::Timer m_restartPreviewTimer;
+  std::mutex m_filterMgrMutex;
+  app::Task m_filterTask;
+};
 
 } // namespace app
 

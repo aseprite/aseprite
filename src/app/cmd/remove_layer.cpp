@@ -5,21 +5,18 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/remove_layer.h"
 
 #include "doc/layer.h"
-#include "doc/layer.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 using namespace doc;
 
-RemoveLayer::RemoveLayer(Layer* layer)
-  : AddLayer(layer->parent(), layer, layer->getPrevious())
+RemoveLayer::RemoveLayer(Layer* layer) : AddLayer(layer->parent(), layer, layer->getPrevious())
 {
 }
 
@@ -38,5 +35,4 @@ void RemoveLayer::onRedo()
   AddLayer::onUndo();
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

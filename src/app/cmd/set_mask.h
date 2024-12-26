@@ -16,34 +16,32 @@
 #include <sstream>
 
 namespace doc {
-  class Mask;
+class Mask;
 }
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class SetMask : public Cmd
-                , public WithDocument {
-  public:
-    SetMask(Doc* doc, const Mask* newMask);
+class SetMask : public Cmd,
+                public WithDocument {
+public:
+  SetMask(Doc* doc, const Mask* newMask);
 
-    // Used to change the new mask used in the onRedo()
-    void setNewMask(const Mask* newMask);
+  // Used to change the new mask used in the onRedo()
+  void setNewMask(const Mask* newMask);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    size_t onMemSize() const override;
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  size_t onMemSize() const override;
 
-  private:
-    void setMask(const Mask* mask);
+private:
+  void setMask(const Mask* mask);
 
-    std::unique_ptr<Mask> m_oldMask;
-    std::unique_ptr<Mask> m_newMask;
-  };
+  std::unique_ptr<Mask> m_oldMask;
+  std::unique_ptr<Mask> m_newMask;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

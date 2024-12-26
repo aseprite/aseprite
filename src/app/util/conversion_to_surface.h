@@ -10,23 +10,25 @@
 #pragma once
 
 namespace doc {
-  class Image;
-  class Palette;
-}
+class Image;
+class Palette;
+} // namespace doc
 
 namespace os {
-  class Surface;
+class Surface;
 }
 
 namespace app {
 
-  void convert_image_to_surface(
-    const doc::Image* image,
-    const doc::Palette* palette,
-    os::Surface* surface,
-    int src_x, int src_y,
-    int dst_x, int dst_y,
-    int w, int h);
+void convert_image_to_surface(const doc::Image* image,
+                              const doc::Palette* palette,
+                              os::Surface* surface,
+                              int src_x,
+                              int src_y,
+                              int dst_x,
+                              int dst_y,
+                              int w,
+                              int h);
 
 } // namespace app
 

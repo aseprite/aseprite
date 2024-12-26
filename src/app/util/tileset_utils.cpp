@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/layer_tilemap.h"
@@ -27,7 +27,7 @@ std::string tileset_label(const doc::Tileset* tileset, doc::tileset_index tsi)
     }
   }
   if (!tilemapsNames.empty()) {
-    tilemapsNames = tilemapsNames.substr(0, tilemapsNames.size()-2);
+    tilemapsNames = tilemapsNames.substr(0, tilemapsNames.size() - 2);
   }
 
   std::string name = tileset->name();
@@ -36,10 +36,10 @@ std::string tileset_label(const doc::Tileset* tileset, doc::tileset_index tsi)
   }
 
   return fmt::format("#{0} ({1}x{2}): {3}",
-    tsi,
-    tileset->grid().tileSize().w,
-    tileset->grid().tileSize().h,
-    name);
+                     tsi,
+                     tileset->grid().tileSize().w,
+                     tileset->grid().tileSize().h,
+                     name);
 }
 
 } // namespace app

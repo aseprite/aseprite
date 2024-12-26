@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/copy_region.h"
@@ -17,10 +17,10 @@
 #include "doc/sprite.h"
 #include "doc/tileset.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
-CopyRegion::CopyRegion(Image* dst, const Image* src,
+CopyRegion::CopyRegion(Image* dst,
+                       const Image* src,
                        const gfx::Region& region,
                        const gfx::Point& dstPos,
                        bool alreadyCopied)
@@ -30,12 +30,8 @@ CopyRegion::CopyRegion(Image* dst, const Image* src,
   ASSERT(!region.isEmpty());
 
   gfx::Rect rc = region.bounds();
-  gfx::Clip clip(
-    rc.x+dstPos.x, rc.y+dstPos.y,
-    rc.x, rc.y, rc.w, rc.h);
-  if (clip.clip(
-        dst->width(), dst->height(),
-        src->width(), src->height())) {
+  gfx::Clip clip(rc.x + dstPos.x, rc.y + dstPos.y, rc.x, rc.y, rc.w, rc.h);
+  if (clip.clip(dst->width(), dst->height(), src->width(), src->height())) {
     // Create region to save/swap later
     m_region = region;
     m_region.offset(dstPos);
@@ -45,7 +41,8 @@ CopyRegion::CopyRegion(Image* dst, const Image* src,
   save_image_region_in_buffer(m_region, src, dstPos, m_buffer);
 }
 
-CopyTileRegion::CopyTileRegion(Image* dst, const Image* src,
+CopyTileRegion::CopyTileRegion(Image* dst,
+                               const Image* src,
                                const gfx::Region& region,
                                const gfx::Point& dstPos,
                                bool alreadyCopied,
@@ -53,7 +50,7 @@ CopyTileRegion::CopyTileRegion(Image* dst, const Image* src,
                                const doc::Tileset* tileset)
   : CopyRegion(dst, src, region, dstPos, alreadyCopied)
   , m_tileIndex(tileIndex)
-  , m_tilesetId(tileset ? tileset->id(): NullId)
+  , m_tilesetId(tileset ? tileset->id() : NullId)
 {
 }
 
@@ -96,11 +93,9 @@ void CopyTileRegion::rehash()
       tileset->notifyTileContentChange(m_tileIndex);
 
       // Notify that the tileset changed
-      static_cast<Doc*>(tileset->sprite()->document())
-        ->notifyTilesetChanged(tileset);
+      static_cast<Doc*>(tileset->sprite()->document())->notifyTilesetChanged(tileset);
     }
   }
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

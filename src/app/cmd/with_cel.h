@@ -11,23 +11,21 @@
 #include "doc/object_id.h"
 
 namespace doc {
-  class Cel;
+class Cel;
 }
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class WithCel {
-  public:
-    WithCel(Cel* cel);
-    Cel* cel();
+class WithCel {
+public:
+  WithCel(Cel* cel);
+  Cel* cel();
 
-  private:
-    ObjectId m_celId;
-  };
+private:
+  ObjectId m_celId;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

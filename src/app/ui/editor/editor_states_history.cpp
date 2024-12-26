@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/editor/editor_states_history.h"
@@ -23,7 +23,7 @@ EditorStatesHistory::~EditorStatesHistory()
 
 EditorStatePtr EditorStatesHistory::top()
 {
-  return (!m_states.empty() ? m_states.back(): EditorStatePtr(NULL));
+  return (!m_states.empty() ? m_states.back() : EditorStatePtr(NULL));
 }
 
 void EditorStatesHistory::push(const EditorStatePtr& state)

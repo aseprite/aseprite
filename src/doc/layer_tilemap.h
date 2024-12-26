@@ -14,25 +14,25 @@
 
 namespace doc {
 
-  class LayerTilemap : public LayerImage {
-  public:
-    explicit LayerTilemap(Sprite* sprite, const tileset_index tsi);
-    ~LayerTilemap();
+class LayerTilemap : public LayerImage {
+public:
+  explicit LayerTilemap(Sprite* sprite, const tileset_index tsi);
+  ~LayerTilemap();
 
-    Grid grid() const override;
+  Grid grid() const override;
 
-    // Returns the tileset of this layer. New automatically-created
-    // tiles should be stored into this tileset, and all tiles in the
-    // layer should share the same Grid spec.
-    Tileset* tileset() const { return m_tileset; }
-    tileset_index tilesetIndex() const { return m_tilesetIndex; }
+  // Returns the tileset of this layer. New automatically-created
+  // tiles should be stored into this tileset, and all tiles in the
+  // layer should share the same Grid spec.
+  Tileset* tileset() const { return m_tileset; }
+  tileset_index tilesetIndex() const { return m_tilesetIndex; }
 
-    void setTilesetIndex(tileset_index tsi);
+  void setTilesetIndex(tileset_index tsi);
 
-  private:
-    Tileset* m_tileset;
-    tileset_index m_tilesetIndex;
-  };
+private:
+  Tileset* m_tileset;
+  tileset_index m_tilesetIndex;
+};
 
 } // namespace doc
 

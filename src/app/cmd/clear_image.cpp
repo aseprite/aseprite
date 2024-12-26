@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/clear_image.h"
@@ -14,14 +14,11 @@
 #include "doc/image.h"
 #include "doc/primitives.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 using namespace doc;
 
-ClearImage::ClearImage(Image* image, color_t color)
-  : WithImage(image)
-  , m_color(color)
+ClearImage::ClearImage(Image* image, color_t color) : WithImage(image), m_color(color)
 {
 }
 
@@ -46,5 +43,4 @@ void ClearImage::onUndo()
   image->incrementVersion();
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

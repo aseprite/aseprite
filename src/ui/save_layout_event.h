@@ -13,20 +13,17 @@
 
 namespace ui {
 
-  class Widget;
+class Widget;
 
-  class SaveLayoutEvent : public Event {
-  public:
-    SaveLayoutEvent(Widget* source, std::ostream& stream)
-      : Event(source)
-      , m_stream(stream) {
-    }
+class SaveLayoutEvent : public Event {
+public:
+  SaveLayoutEvent(Widget* source, std::ostream& stream) : Event(source), m_stream(stream) {}
 
-    std::ostream& stream() { return m_stream; }
+  std::ostream& stream() { return m_stream; }
 
-  private:
-    std::ostream& m_stream;
-  };
+private:
+  std::ostream& m_stream;
+};
 
 } // namespace ui
 

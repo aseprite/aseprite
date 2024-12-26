@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/commands/commands.h"
@@ -28,12 +28,11 @@ Commands::Commands()
   ASSERT(m_instance == NULL);
   m_instance = this;
 
-  #undef FOR_EACH_COMMAND
-  #define FOR_EACH_COMMAND(Name) \
-    add(CommandFactory::create##Name##Command());
+#undef FOR_EACH_COMMAND
+#define FOR_EACH_COMMAND(Name) add(CommandFactory::create##Name##Command());
 
-  #include "app/commands/commands_list.h"
-  #undef FOR_EACH_COMMAND
+#include "app/commands/commands_list.h"
+#undef FOR_EACH_COMMAND
 }
 
 Commands::~Commands()
@@ -62,7 +61,7 @@ Command* Commands::byId(const char* id)
 
   auto lid = base::string_to_lower(id);
   auto it = m_commands.find(lid);
-  return (it != m_commands.end() ? it->second: nullptr);
+  return (it != m_commands.end() ? it->second : nullptr);
 }
 
 Commands* Commands::add(Command* command)

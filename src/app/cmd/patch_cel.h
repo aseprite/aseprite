@@ -14,30 +14,28 @@
 #include "gfx/point.h"
 
 namespace doc {
-  class Cel;
-  class Image;
-}
+class Cel;
+class Image;
+} // namespace doc
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
-  class PatchCel : public CmdSequence
-                 , public WithCel {
-  public:
-    PatchCel(doc::Cel* dstCel,
-             const doc::Image* patch,
-             const gfx::Region& patchedRegion,
-             const gfx::Point& patchPos);
+class PatchCel : public CmdSequence,
+                 public WithCel {
+public:
+  PatchCel(doc::Cel* dstCel,
+           const doc::Image* patch,
+           const gfx::Region& patchedRegion,
+           const gfx::Point& patchPos);
 
-  protected:
-    void onExecute() override;
+protected:
+  void onExecute() override;
 
-    const doc::Image* m_patch;
-    const gfx::Region& m_region;
-    gfx::Point m_pos;
-  };
+  const doc::Image* m_patch;
+  const gfx::Region& m_region;
+  gfx::Point m_pos;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

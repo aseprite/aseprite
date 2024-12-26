@@ -10,46 +10,46 @@
 
 namespace ui {
 
-  // Widget types.
-  enum WidgetType : int {
-    // Undefined (or anonymous) widget type.
-    kGenericWidget,
+// Widget types.
+enum WidgetType : int {
+  // Undefined (or anonymous) widget type.
+  kGenericWidget,
 
-    // Known widgets.
-    kBoxWidget,
-    kButtonWidget,
-    kCheckWidget,
-    kComboBoxWidget,
-    kEntryWidget,
-    kGridWidget,
-    kImageViewWidget,
-    kLabelWidget,
-    kLinkLabelWidget,
-    kListBoxWidget,
-    kListItemWidget,
-    kManagerWidget,
-    kMenuBarWidget,
-    kMenuBoxWidget,
-    kMenuItemWidget,
-    kMenuWidget,
-    kPanelWidget,
-    kRadioWidget,
-    kSeparatorWidget,
-    kSliderWidget,
-    kSplitterWidget,
-    kTextBoxWidget,
-    kViewScrollbarWidget,
-    kViewViewportWidget,
-    kViewWidget,
-    kWindowWidget,
-    kWindowTitleLabelWidget,
-    kWindowCloseButtonWidget,
+  // Known widgets.
+  kBoxWidget,
+  kButtonWidget,
+  kCheckWidget,
+  kComboBoxWidget,
+  kEntryWidget,
+  kGridWidget,
+  kImageViewWidget,
+  kLabelWidget,
+  kLinkLabelWidget,
+  kListBoxWidget,
+  kListItemWidget,
+  kManagerWidget,
+  kMenuBarWidget,
+  kMenuBoxWidget,
+  kMenuItemWidget,
+  kMenuWidget,
+  kPanelWidget,
+  kRadioWidget,
+  kSeparatorWidget,
+  kSliderWidget,
+  kSplitterWidget,
+  kTextBoxWidget,
+  kViewScrollbarWidget,
+  kViewViewportWidget,
+  kViewWidget,
+  kWindowWidget,
+  kWindowTitleLabelWidget,
+  kWindowCloseButtonWidget,
 
-    // User widgets.
-    kFirstUserWidget,
-    kLastUserWidget = 0x7fffffff
-  };
+  // User widgets.
+  kFirstUserWidget,
+  kLastUserWidget = 0x7fffffff
+};
 
 } // namespace ui
 
-#endif  // UI_WIDGET_TYPE_H_INCLUDED
+#endif // UI_WIDGET_TYPE_H_INCLUDED

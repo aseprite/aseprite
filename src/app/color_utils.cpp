@@ -6,24 +6,24 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/color.h"
 #include "app/color_utils.h"
 #include "app/modules/palettes.h"
-#include "gfx/hsv.h"
-#include "gfx/rgb.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
+#include "gfx/hsv.h"
+#include "gfx/rgb.h"
 
 namespace app {
 
 gfx::Color color_utils::blackandwhite(gfx::Color color)
 {
-  if ((gfx::getr(color)*30+gfx::getg(color)*59+gfx::getb(color)*11)/100 < 128)
+  if ((gfx::getr(color) * 30 + gfx::getg(color) * 59 + gfx::getb(color) * 11) / 100 < 128)
     return gfx::rgba(0, 0, 0);
   else
     return gfx::rgba(255, 255, 255);
@@ -31,7 +31,7 @@ gfx::Color color_utils::blackandwhite(gfx::Color color)
 
 gfx::Color color_utils::blackandwhite_neg(gfx::Color color)
 {
-  if ((gfx::getr(color)*30+gfx::getg(color)*59+gfx::getb(color)*11)/100 < 128)
+  if ((gfx::getr(color) * 30 + gfx::getg(color) * 59 + gfx::getb(color) * 11) / 100 < 128)
     return gfx::rgba(255, 255, 255);
   else
     return gfx::rgba(0, 0, 0);
@@ -39,10 +39,7 @@ gfx::Color color_utils::blackandwhite_neg(gfx::Color color)
 
 app::Color color_utils::color_from_ui(const gfx::Color color)
 {
-  return app::Color::fromRgb(gfx::getr(color),
-                             gfx::getg(color),
-                             gfx::getb(color),
-                             gfx::geta(color));
+  return app::Color::fromRgb(gfx::getr(color), gfx::getg(color), gfx::getb(color), gfx::geta(color));
 }
 
 gfx::Color color_utils::color_for_ui(const app::Color& color)
@@ -50,27 +47,16 @@ gfx::Color color_utils::color_for_ui(const app::Color& color)
   gfx::Color c = gfx::ColorNone;
 
   switch (color.getType()) {
-
-    case app::Color::MaskType:
-      c = gfx::ColorNone;
-      break;
+    case app::Color::MaskType: c = gfx::ColorNone; break;
 
     case app::Color::RgbType:
     case app::Color::HsvType:
     case app::Color::HslType:
-      c = gfx::rgba(
-        color.getRed(),
-        color.getGreen(),
-        color.getBlue(),
-        color.getAlpha());
+      c = gfx::rgba(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
       break;
 
     case app::Color::GrayType:
-      c = gfx::rgba(
-        color.getGray(),
-        color.getGray(),
-        color.getGray(),
-        color.getAlpha());
+      c = gfx::rgba(color.getGray(), color.getGray(), color.getGray(), color.getAlpha());
       break;
 
     case app::Color::IndexType: {
@@ -78,14 +64,9 @@ gfx::Color color_utils::color_for_ui(const app::Color& color)
       ASSERT(i >= 0 && i < (int)get_current_palette()->size());
 
       uint32_t _c = get_current_palette()->getEntry(i);
-      c = gfx::rgba(
-        rgba_getr(_c),
-        rgba_getg(_c),
-        rgba_getb(_c),
-        color.getAlpha());
+      c = gfx::rgba(rgba_getr(_c), rgba_getg(_c), rgba_getb(_c), color.getAlpha());
       break;
     }
-
   }
 
   return c;
@@ -102,15 +83,9 @@ doc::color_t color_utils::color_for_image(const app::Color& color, PixelFormat f
     case IMAGE_RGB:
       c = doc::rgba(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
       break;
-    case IMAGE_GRAYSCALE:
-      c = doc::graya(color.getGray(), color.getAlpha());
-      break;
-    case IMAGE_INDEXED:
-      c = color.getIndex();
-      break;
-    case IMAGE_TILEMAP:
-      c = color.getTile();
-      break;
+    case IMAGE_GRAYSCALE: c = doc::graya(color.getGray(), color.getAlpha()); break;
+    case IMAGE_INDEXED:   c = color.getIndex(); break;
+    case IMAGE_TILEMAP:   c = color.getTile(); break;
   }
 
   return c;
@@ -124,18 +99,10 @@ doc::color_t color_utils::color_for_image_without_alpha(const app::Color& color,
   doc::color_t c = -1;
 
   switch (format) {
-    case IMAGE_RGB:
-      c = doc::rgba(color.getRed(), color.getGreen(), color.getBlue(), 255);
-      break;
-    case IMAGE_GRAYSCALE:
-      c = doc::graya(color.getGray(), 255);
-      break;
-    case IMAGE_INDEXED:
-      c = color.getIndex();
-      break;
-    case IMAGE_TILEMAP:
-      c = color.getTile();
-      break;
+    case IMAGE_RGB:       c = doc::rgba(color.getRed(), color.getGreen(), color.getBlue(), 255); break;
+    case IMAGE_GRAYSCALE: c = doc::graya(color.getGray(), 255); break;
+    case IMAGE_INDEXED:   c = color.getIndex(); break;
+    case IMAGE_TILEMAP:   c = color.getTile(); break;
   }
 
   return c;
@@ -146,7 +113,8 @@ doc::color_t color_utils::color_for_layer(const app::Color& color, Layer* layer)
   return color_for_target(color, ColorTarget(layer));
 }
 
-doc::color_t color_utils::color_for_target_mask(const app::Color& color, const ColorTarget& colorTarget)
+doc::color_t color_utils::color_for_target_mask(const app::Color& color,
+                                                const ColorTarget& colorTarget)
 {
   int c = -1;
 
@@ -158,9 +126,7 @@ doc::color_t color_utils::color_for_target_mask(const app::Color& color, const C
       case IMAGE_RGB:
         c = doc::rgba(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
         break;
-      case IMAGE_GRAYSCALE:
-        c = doc::graya(color.getGray(), color.getAlpha());
-        break;
+      case IMAGE_GRAYSCALE: c = doc::graya(color.getGray(), color.getAlpha()); break;
       case IMAGE_INDEXED:
         if (color.getType() == app::Color::IndexType) {
           c = color.getIndex();
@@ -170,18 +136,16 @@ doc::color_t color_utils::color_for_target_mask(const app::Color& color, const C
           int g = color.getGreen();
           int b = color.getBlue();
           int a = color.getAlpha();
-          int mask = (colorTarget.isTransparent() ?
-                      colorTarget.maskColor(): // Don't return the mask color
-                      -1);
+          int mask = (colorTarget.isTransparent() ? colorTarget.maskColor() : // Don't return the
+                                                                              // mask color
+                                                                              -1);
 
           c = get_current_palette()->findExactMatch(r, g, b, a, mask);
           if (c < 0)
             c = get_current_palette()->findBestfit(r, g, b, a, mask);
         }
         break;
-      case IMAGE_TILEMAP:
-        c = color.getTile();
-        break;
+      case IMAGE_TILEMAP: c = color.getTile(); break;
     }
   }
 
@@ -195,7 +159,7 @@ doc::color_t color_utils::color_for_target(const app::Color& color, const ColorT
 
   if (colorTarget.isBackground()) {
     switch (colorTarget.pixelFormat()) {
-      case IMAGE_RGB: c |= doc::rgba_a_mask; break;
+      case IMAGE_RGB:       c |= doc::rgba_a_mask; break;
       case IMAGE_GRAYSCALE: c |= doc::graya_a_mask; break;
     }
   }

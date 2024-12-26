@@ -13,34 +13,33 @@
 #include "ui/popup_window.h"
 
 namespace ui {
-  class Button;
-  class View;
-}
+class Button;
+class View;
+} // namespace ui
 
 namespace app {
 
-  namespace gen {
-    class FontPopup;
-  }
+namespace gen {
+class FontPopup;
+}
 
-  class FontPopup : public ui::PopupWindow {
-  public:
-    FontPopup();
+class FontPopup : public ui::PopupWindow {
+public:
+  FontPopup();
 
-    void showPopup(ui::Display* display,
-                   const gfx::Rect& buttonBounds);
+  void showPopup(ui::Display* display, const gfx::Rect& buttonBounds);
 
-    obs::signal<void(const std::string&)> Load;
+  obs::signal<void(const std::string&)> Load;
 
-  protected:
-    void onSearchChange();
-    void onChangeFont();
-    void onLoadFont();
+protected:
+  void onSearchChange();
+  void onChangeFont();
+  void onLoadFont();
 
-  private:
-    gen::FontPopup* m_popup;
-    ui::ListBox m_listBox;
-  };
+private:
+  gen::FontPopup* m_popup;
+  ui::ListBox m_listBox;
+};
 
 } // namespace app
 

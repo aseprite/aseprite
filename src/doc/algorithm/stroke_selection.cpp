@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/algorithm/stroke_selection.h"
@@ -14,8 +14,7 @@
 #include "doc/algorithm/modify_selection.h"
 #include "doc/mask.h"
 
-namespace doc {
-namespace algorithm {
+namespace doc { namespace algorithm {
 
 void stroke_selection(Image* image,
                       const gfx::Rect& imageBounds,
@@ -35,10 +34,7 @@ void stroke_selection(Image* image,
   Mask mask;
   mask.reserve(bounds);
   mask.freeze();
-  modify_selection(
-    SelectionModifier::Border,
-    origMask, &mask, 1,
-    BrushType::kCircleBrushType);
+  modify_selection(SelectionModifier::Border, origMask, &mask, 1, BrushType::kCircleBrushType);
   mask.unfreeze();
 
   // Both mask must have the same bounds.
@@ -48,5 +44,4 @@ void stroke_selection(Image* image,
     fill_selection(image, imageBounds, &mask, color, grid);
 }
 
-} // namespace algorithm
-} // namespace app
+}} // namespace doc::algorithm

@@ -12,7 +12,7 @@
 
 namespace ui {
 
-  typedef os::PointerType PointerType;
+typedef os::PointerType PointerType;
 
 } // namespace ui
 
