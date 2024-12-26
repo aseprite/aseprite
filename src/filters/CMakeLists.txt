@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2019  Igara Studio S.A.
+# Copyright (C) 2019-2024  Igara Studio S.A.
 # Copyright (C) 2001-2017  David Capello
 
 add_library(filters-lib
@@ -16,4 +16,6 @@ add_library(filters-lib
   replace_color_filter.cpp)
 
 target_link_libraries(filters-lib
-  laf-base)
+  laf-base
+  laf-gfx
+  doc-lib)
