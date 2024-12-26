@@ -14,7 +14,6 @@
 #include "app/app.h"
 #include "app/console.h"
 #include "app/extensions.h"
-#include "app/font_path.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/resource_finder.h"
@@ -35,6 +34,7 @@
 #include "gfx/size.h"
 #include "os/draw_text.h"
 #include "os/font.h"
+#include "os/font_path.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "ui/intern.h"
@@ -212,9 +212,9 @@ static FontData* load_font(std::map<std::string, FontData*>& fonts,
 
     std::string fontFilename;
     if (platformFileStr)
-      fontFilename = app::find_font(xmlDir, platformFileStr);
+      fontFilename = os::find_font(xmlDir, platformFileStr);
     if (fileStr && fontFilename.empty())
-      fontFilename = app::find_font(xmlDir, fileStr);
+      fontFilename = os::find_font(xmlDir, fileStr);
 
     // The filename can be empty if the font was not found, anyway we
     // want to keep the font information (e.g. to use the fallback

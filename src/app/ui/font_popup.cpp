@@ -14,7 +14,6 @@
 #include "app/commands/cmd_set_palette.h"
 #include "app/commands/commands.h"
 #include "app/console.h"
-#include "app/font_path.h"
 #include "app/i18n/strings.h"
 #include "app/match_words.h"
 #include "app/ui/search_entry.h"
@@ -26,6 +25,7 @@
 #include "base/string.h"
 #include "doc/image.h"
 #include "doc/image_ref.h"
+#include "os/font_path.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "ui/box.h"
@@ -155,7 +155,7 @@ FontPopup::FontPopup()
   m_popup->view()->attachToView(&m_listBox);
 
   base::paths fontDirs;
-  get_font_dirs(fontDirs);
+  os::get_font_dirs(fontDirs);
 
   // Create a list of fullpaths to every font found in all font
   // directories (fontDirs)

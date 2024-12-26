@@ -95,16 +95,6 @@ add_definitions(-DLIBARCHIVE_STATIC)
 
 add_library(app-lib ${generated_files})
 
-# These specific-platform files should be in an external library
-# (e.g. "base" or "os").
-if(WIN32)
-  target_sources(app-lib PRIVATE font_path_win.cpp)
-elseif(APPLE)
-  target_sources(app-lib PRIVATE font_path_osx.mm)
-else()
-  target_sources(app-lib PRIVATE font_path_unix.cpp)
-endif()
-
 # Trial-version vs Full version (enable save command)
 if(ENABLE_TRIAL_MODE)
   target_compile_definitions(app-lib PUBLIC -DENABLE_TRIAL_MODE)
@@ -535,7 +525,6 @@ target_sources(app-lib PRIVATE
   file_system.cpp
   filename_formatter.cpp
   flatten.cpp
-  font_path.cpp
   gui_xml.cpp
   i18n/strings.cpp
   i18n/xml_translator.cpp
