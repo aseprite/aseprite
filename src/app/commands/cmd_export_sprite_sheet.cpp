@@ -421,8 +421,8 @@ public:
     updateDataFields();
 
     std::string base = site.document()->filename();
-    std::string basePath = (base::get_file_path(base).empty() ?
-      base::get_current_path(): base::get_file_path(base));
+    const std::string basePath = (base::get_file_path(base).empty() ? base::get_current_path() :
+                                                                      base::get_file_path(base));
     base = base::join_path(basePath, base::get_file_title(base));
 
     imageFilename()->setDocFilename(base);
@@ -856,7 +856,7 @@ private:
     generatePreview();
   }
 
-  std::string onFilenameBrowse(FilenameField* field)
+  std::string onFilenameBrowse(FilenameField* const field)
   {
     const std::string& title = (field == dataFilename() ?
                                   Strings::export_sprite_sheet_save_json_title() :
@@ -877,7 +877,7 @@ private:
     return newFilename.front();
   }
 
-  void onOutputFieldEnabledChange(FilenameField* field, bool visible)
+  void onOutputFieldEnabledChange(FilenameField* const field, bool visible)
   {
     field->setAskOverwrite(true);
     field->setVisible(visible);
