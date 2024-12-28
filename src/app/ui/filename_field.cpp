@@ -30,7 +30,7 @@ FilenameField::FilenameField(const Type type, const std::string& pathAndFilename
   , m_askOverwrite(true)
 {
   m_pathBase = std::string();
-  m_showFullPath = Preferences::instance().general.showFullPath();
+  m_editFullPath = Preferences::instance().general.editFullPath();
   setFocusStop(true);
   if (m_entry) {
     m_entry->setExpansive(true);
@@ -48,6 +48,9 @@ FilenameField::FilenameField(const Type type, const std::string& pathAndFilename
 
   m_button.Click.connect([this] { onBrowse(); });
   initTheme();
+
+  m_editFullPathChangeConn = Preferences::instance().general.editFullPath.AfterChange.connect(
+    [this] { onSetEditFullPath(); });
 }
 
 std::string FilenameField::fullFilename() const
@@ -57,32 +60,40 @@ std::string FilenameField::fullFilename() const
 
 std::string FilenameField::displayedFilename() const
 {
-  return (m_showFullPath ? fullFilename() : filename());
+  return (m_editFullPath ? fullFilename() : filename());
 }
 
-const std::string FilenameField::updatedFilename() const
+std::string FilenameField::updatedFilename() const
 {
-  if (!m_entry) {
-    if (m_button.text().empty())
-      return m_path;
-    else
-      return fullFilename();
-  }
-  else {
-    return (m_showFullPath ? m_entry->text() : base::join_path(m_path, m_entry->text()));
-  }
+  std::string result;
+  if (!m_entry)
+    result = (m_button.text().empty() ? m_path : fullFilename());
+  else
+    result = (m_editFullPath ? m_entry->text() : base::join_path(m_path, m_entry->text()));
+
+  return result;
 }
 
-void FilenameField::setShowFullPath(const bool on)
+void FilenameField::setEditFullPath(const bool on)
 {
   const std::string& fn = updatedFilename();
-  m_showFullPath = on;
+  m_editFullPath = on;
   setFilename(fn);
+
+  if (Preferences::instance().general.editFullPath() != m_editFullPath)
+    Preferences::instance().general.editFullPath(m_editFullPath);
+}
+
+void FilenameField::onSetEditFullPath()
+{
+  const bool on = Preferences::instance().general.editFullPath();
+  if (on != m_editFullPath)
+    setEditFullPath(on);
 }
 
 void FilenameField::onBrowse()
 {
-  gfx::Rect bounds = m_button.bounds();
+  const gfx::Rect bounds = m_button.bounds();
   m_button.setSelected(false);
 
   ui::Menu menu;
@@ -101,8 +112,8 @@ void FilenameField::onBrowse()
       m_askOverwrite = false; // Already asked in file selector
     }
   });
-  relative.Click.connect([this] { setShowFullPath(false); });
-  absolute.Click.connect([this] { setShowFullPath(true); });
+  relative.Click.connect([this] { setEditFullPath(false); });
+  absolute.Click.connect([this] { setEditFullPath(true); });
 
   menu.showPopup(gfx::Point(bounds.x, bounds.y2()), display());
 }
@@ -110,7 +121,7 @@ void FilenameField::onBrowse()
 void FilenameField::setFilename(const std::string& pathAndFilename)
 {
   const std::string spritePath = base::get_file_path(m_docFilename);
-  if (m_showFullPath || spritePath.empty()) {
+  if (m_editFullPath || spritePath.empty()) {
     m_path = base::get_file_path(pathAndFilename);
     m_file = base::get_file_name(pathAndFilename);
   }
@@ -125,10 +136,10 @@ void FilenameField::setFilename(const std::string& pathAndFilename)
     }
   }
 
-  if (m_showFullPath)
+  if (m_editFullPath)
     m_path = base::get_absolute_path(m_path);
 
-  m_pathBase = (spritePath.empty() ? m_path: spritePath);
+  m_pathBase = (spritePath.empty() ? m_path : spritePath);
   updateWidgets();
 }
 
@@ -160,7 +171,7 @@ void FilenameField::onInitTheme(ui::InitThemeEvent& ev)
 
 void FilenameField::onUpdateText()
 {
-  setShowFullPath(m_showFullPath);
+  setEditFullPath(m_editFullPath);
 }
 
 void FilenameField::updateWidgets()
