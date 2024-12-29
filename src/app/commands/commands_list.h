@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -174,6 +174,7 @@ FOR_EACH_COMMAND(TogglePreview)
 FOR_EACH_COMMAND(ToggleRewindOnStop)
 FOR_EACH_COMMAND(ToggleTilesMode)
 FOR_EACH_COMMAND(ToggleTimelineThumbnails)
+FOR_EACH_COMMAND(ToggleWorkspaceLayout)
 FOR_EACH_COMMAND(Undo)
 FOR_EACH_COMMAND(UndoHistory)
 FOR_EACH_COMMAND(UnlinkCel)
