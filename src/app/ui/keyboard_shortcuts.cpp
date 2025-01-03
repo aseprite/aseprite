@@ -538,7 +538,7 @@ bool Key::isLooselyPressed() const
 
 bool Key::isListed() const
 {
-  return type() != KeyType::Command || !command()->isListed(params());
+  return type() == KeyType::Action || (type() == KeyType::Command && command()->isListed(params()));
 }
 
 bool Key::hasAccel(const ui::Accelerator& accel) const
