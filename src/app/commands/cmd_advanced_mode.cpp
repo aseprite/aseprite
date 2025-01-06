@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -54,11 +55,11 @@ void AdvancedModeCommand::onExecute(Context* context)
 
   if (oldMode == MainWindow::NormalMode && pref.advancedMode.showAlert()) {
     KeyPtr key = KeyboardShortcuts::instance()->command(this->id().c_str());
-    if (!key->accels().empty()) {
+    if (!key->shortcuts().empty()) {
       app::gen::AdvancedMode window;
 
       window.warningLabel()->setTextf("You can go back pressing \"%s\" key.",
-                                      key->accels().front().toString().c_str());
+                                      key->shortcuts().front().toString().c_str());
 
       window.openWindowInForeground();
 
