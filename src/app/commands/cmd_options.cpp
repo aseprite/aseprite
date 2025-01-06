@@ -476,7 +476,7 @@ public:
     windowReset()->Click.connect(validateYesButton);
     brushesReset()->Click.connect(validateYesButton);
     resetSelectedButton()->Click.connect([this] { onResetDefault(); });
-    resetToggle()->Click.connect([this] {
+    resetToggle()->Click.connect([this, validateYesButton] {
       bool toggle = resetToggle()->isSelected();
       defaultReset()->setSelected(toggle);
       installedReset()->setSelected(toggle);
@@ -485,8 +485,7 @@ public:
       toolsReset()->setSelected(toggle);
       windowReset()->setSelected(toggle);
       brushesReset()->setSelected(toggle);
-      brushesReset()->Click(); // Hacky way to trigger validateYesButton
-      brushesReset()->Click();
+      validateYesButton();
     });
 
     defaultReset()->setSelected(true);
