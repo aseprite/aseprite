@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -110,11 +110,11 @@ std::string AniControls::getTooltipFor(int index) const
     tooltip = cmd->friendlyName();
 
     KeyPtr key = KeyboardShortcuts::instance()->command(cmd->id().c_str());
-    if (!key || key->accels().empty())
+    if (!key || key->shortcuts().empty())
       key = KeyboardShortcuts::instance()->command(cmd->id().c_str(), Params(), KeyContext::Normal);
-    if (key && !key->accels().empty()) {
+    if (key && !key->shortcuts().empty()) {
       tooltip += "\n\n" + Strings::ani_controls_shortcut() + " ";
-      tooltip += key->accels().front().toString();
+      tooltip += key->shortcuts().front().toString();
     }
 
     if (index == ACTION_PLAY) {

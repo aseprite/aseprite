@@ -682,11 +682,11 @@ bool CustomizedGuiManager::processKey(Message* msg)
 {
   App* app = App::instance();
   const KeyboardShortcuts* keys = KeyboardShortcuts::instance();
-  const KeyContext contexts[] = { keys->getCurrentKeyContext(), KeyContext::Normal };
+  const KeyContext contexts[] = { KeyboardShortcuts::getCurrentKeyContext(), KeyContext::Normal };
   int n = (contexts[0] != contexts[1] ? 2 : 1);
   for (int i = 0; i < n; ++i) {
     for (const KeyPtr& key : *keys) {
-      if (key->isPressed(msg, *keys, contexts[i])) {
+      if (key->isPressed(msg, contexts[i])) {
         // Cancel menu-bar loops (to close any popup menu)
         app->mainWindow()->getMenuBar()->cancelMenuLoop();
 
@@ -700,7 +700,7 @@ bool CustomizedGuiManager::processKey(Message* msg)
             // Collect all tools with the pressed keyboard-shortcut
             for (tools::Tool* tool : *toolbox) {
               const KeyPtr key = keys->tool(tool);
-              if (key && key->isPressed(msg, *keys))
+              if (key && key->isPressed(msg))
                 possibles.push_back(tool);
             }
 

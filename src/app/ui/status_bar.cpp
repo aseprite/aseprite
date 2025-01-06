@@ -536,9 +536,9 @@ public:
 
     // Tool shortcut
     KeyPtr key = KeyboardShortcuts::instance()->tool(tool);
-    if (key && !key->accels().empty()) {
+    if (key && !key->shortcuts().empty()) {
       add(theme->parts.iconKey(), true);
-      m_indicators->addTextIndicator(key->accels().front().toString().c_str());
+      m_indicators->addTextIndicator(key->shortcuts().front().toString().c_str());
     }
     return *this;
   }

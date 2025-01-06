@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -464,8 +464,7 @@ bool StandbyState::onKeyDown(Editor* editor, KeyMessage* msg)
       checkStartDrawingStraightLine(editor, nullptr, nullptr))
     return false;
 
-  Keys keys = KeyboardShortcuts::instance()->getDragActionsFromKeyMessage(KeyContext::MouseWheel,
-                                                                          msg);
+  Keys keys = KeyboardShortcuts::instance()->getDragActionsFromKeyMessage(msg);
   if (editor->hasMouse() && !keys.empty()) {
     // Don't enter DraggingValueState to change brush size if we are
     // in a selection-like tool

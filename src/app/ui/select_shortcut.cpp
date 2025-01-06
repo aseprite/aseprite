@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,7 +9,7 @@
   #include "config.h"
 #endif
 
-#include "app/ui/select_accelerator.h"
+#include "app/ui/select_shortcut.h"
 
 #include "app/ui/key.h"
 #include "app/ui/keyboard_shortcuts.h"
@@ -23,23 +23,23 @@ namespace app {
 
 using namespace ui;
 
-class SelectAccelerator::KeyField : public ui::Entry {
+class SelectShortcut::KeyField : public ui::Entry {
 public:
-  KeyField(const Accelerator& accel) : ui::Entry(256, "")
+  KeyField(const Shortcut& shortcut) : ui::Entry(256, "")
   {
     setTranslateDeadKeys(false);
     setExpansive(true);
     setFocusMagnet(true);
-    setAccel(accel);
+    setShortcut(shortcut);
   }
 
-  void setAccel(const Accelerator& accel)
+  void setShortcut(const Shortcut& shortcut)
   {
-    m_accel = accel;
+    m_shortcut = shortcut;
     updateText();
   }
 
-  obs::signal<void(const ui::Accelerator*)> AccelChange;
+  obs::signal<void(const ui::Shortcut*)> ShortcutChange;
 
 protected:
   bool onProcessMessage(Message* msg) override
@@ -56,19 +56,19 @@ protected:
           if (keymsg->scancode() == kKeySpace)
             modifiers = (KeyModifiers)(modifiers & ~kKeySpaceModifier);
 
-          m_accel = Accelerator(
+          m_shortcut = Shortcut(
             modifiers,
             keymsg->scancode(),
             keymsg->unicodeChar() > 32 ? std::tolower(keymsg->unicodeChar()) : 0);
 
-          // Convert the accelerator to a string, and parse it
-          // again. Just to obtain the exact accelerator we'll read
+          // Convert the shortcut to a string, and parse it
+          // again. Just to obtain the exact shortcut we'll read
           // when we import the gui.xml file or an .aseprite-keys file.
-          m_accel = Accelerator(m_accel.toString());
+          m_shortcut = Shortcut(m_shortcut.toString());
 
           updateText();
 
-          AccelChange(&m_accel);
+          ShortcutChange(&m_shortcut);
           return true;
         }
         break;
@@ -78,20 +78,20 @@ protected:
 
   void updateText()
   {
-    setText(
-      Accelerator(kKeyNoneModifier, m_accel.scancode(), m_accel.unicodeChar()).toString().c_str());
+    setText(Shortcut(kKeyNoneModifier, m_shortcut.scancode(), m_shortcut.unicodeChar()).toString());
   }
 
-  Accelerator m_accel;
+private:
+  Shortcut m_shortcut;
 };
 
-SelectAccelerator::SelectAccelerator(const ui::Accelerator& accel,
-                                     const KeyContext keyContext,
-                                     const KeyboardShortcuts& currentKeys)
-  : m_keyField(new KeyField(accel))
+SelectShortcut::SelectShortcut(const ui::Shortcut& shortcut,
+                               const KeyContext keyContext,
+                               const KeyboardShortcuts& currentKeys)
+  : m_keyField(new KeyField(shortcut))
   , m_keyContext(keyContext)
   , m_currentKeys(currentKeys)
-  , m_accel(accel)
+  , m_shortcut(shortcut)
   , m_ok(false)
   , m_modified(false)
 {
@@ -107,7 +107,7 @@ SelectAccelerator::SelectAccelerator(const ui::Accelerator& accel,
   space()->Click.connect([this] { onModifierChange(kKeySpaceModifier, space()); });
   win()->Click.connect([this] { onModifierChange(kKeyWinModifier, win()); });
 
-  m_keyField->AccelChange.connect(&SelectAccelerator::onAccelChange, this);
+  m_keyField->ShortcutChange.connect(&SelectShortcut::onShortcutChange, this);
   clearButton()->Click.connect([this] { onClear(); });
   okButton()->Click.connect([this] { onOK(); });
   cancelButton()->Click.connect([this] { onCancel(); });
@@ -115,63 +115,63 @@ SelectAccelerator::SelectAccelerator(const ui::Accelerator& accel,
   addChild(&m_tooltipManager);
 }
 
-void SelectAccelerator::onModifierChange(KeyModifiers modifier, CheckBox* checkbox)
+void SelectShortcut::onModifierChange(KeyModifiers modifier, CheckBox* checkbox)
 {
   bool state = (checkbox->isSelected());
-  KeyModifiers modifiers = m_accel.modifiers();
-  KeyScancode scancode = m_accel.scancode();
-  int unicodeChar = m_accel.unicodeChar();
+  KeyModifiers modifiers = m_shortcut.modifiers();
+  KeyScancode scancode = m_shortcut.scancode();
+  int unicodeChar = m_shortcut.unicodeChar();
 
   modifiers = (KeyModifiers)((modifiers & ~modifier) | (state ? modifier : 0));
   if (modifiers == kKeySpaceModifier && scancode == kKeySpace)
     modifiers = kKeyNoneModifier;
 
-  m_accel = Accelerator(modifiers, scancode, unicodeChar);
+  m_shortcut = Shortcut(modifiers, scancode, unicodeChar);
 
-  m_keyField->setAccel(m_accel);
+  m_keyField->setShortcut(m_shortcut);
   m_keyField->requestFocus();
   updateAssignedTo();
 }
 
-void SelectAccelerator::onAccelChange(const ui::Accelerator* accel)
+void SelectShortcut::onShortcutChange(const ui::Shortcut* shortcut)
 {
-  m_accel = *accel;
+  m_shortcut = *shortcut;
   updateModifiers();
   updateAssignedTo();
 }
 
-void SelectAccelerator::onClear()
+void SelectShortcut::onClear()
 {
-  m_accel = Accelerator(kKeyNoneModifier, kKeyNil, 0);
+  m_shortcut = Shortcut(kKeyNoneModifier, kKeyNil, 0);
 
-  m_keyField->setAccel(m_accel);
+  m_keyField->setShortcut(m_shortcut);
   updateModifiers();
   updateAssignedTo();
 
   m_keyField->requestFocus();
 }
 
-void SelectAccelerator::onOK()
+void SelectShortcut::onOK()
 {
   m_ok = true;
-  m_modified = (m_origAccel != m_accel);
+  m_modified = (m_origShortcut != m_shortcut);
   closeWindow(NULL);
 }
 
-void SelectAccelerator::onCancel()
+void SelectShortcut::onCancel()
 {
   closeWindow(NULL);
 }
 
-void SelectAccelerator::updateModifiers()
+void SelectShortcut::updateModifiers()
 {
-  alt()->setSelected(m_accel.modifiers() & kKeyAltModifier ? true : false);
-  ctrl()->setSelected(m_accel.modifiers() & kKeyCtrlModifier ? true : false);
-  shift()->setSelected(m_accel.modifiers() & kKeyShiftModifier ? true : false);
-  space()->setSelected(m_accel.modifiers() & kKeySpaceModifier ? true : false);
+  alt()->setSelected((m_shortcut.modifiers() & kKeyAltModifier) == kKeyAltModifier);
+  ctrl()->setSelected((m_shortcut.modifiers() & kKeyCtrlModifier) == kKeyCtrlModifier);
+  shift()->setSelected((m_shortcut.modifiers() & kKeyShiftModifier) == kKeyShiftModifier);
+  space()->setSelected((m_shortcut.modifiers() & kKeySpaceModifier) == kKeySpaceModifier);
 #if __APPLE__
   win()->setVisible(false);
-  cmd()->setSelected(m_accel.modifiers() & kKeyCmdModifier ? true : false);
+  cmd()->setSelected((m_shortcut.modifiers() & kKeyCmdModifier) == kKeyCmdModifier);
 #else
   #if __linux__
   win()->setText(kWinKeyName);
@@ -180,17 +180,17 @@ void SelectAccelerator::updateModifiers()
     "Also known as Windows key, logo key,\ncommand key, or system key.",
     TOP);
   #endif
-  win()->setSelected(m_accel.modifiers() & kKeyWinModifier ? true : false);
+  win()->setSelected((m_shortcut.modifiers() & kKeyWinModifier) == kKeyWinModifier);
   cmd()->setVisible(false);
 #endif
 }
 
-void SelectAccelerator::updateAssignedTo()
+void SelectShortcut::updateAssignedTo()
 {
   std::string res = "None";
 
   for (const KeyPtr& key : m_currentKeys) {
-    if (key->keycontext() == m_keyContext && key->hasAccel(m_accel)) {
+    if (key->keycontext() == m_keyContext && key->hasShortcut(m_shortcut)) {
       res = key->triggerString();
       break;
     }

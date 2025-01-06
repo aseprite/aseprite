@@ -19,10 +19,10 @@
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui_context.h"
 #include "os/menus.h"
-#include "ui/accelerator.h"
 #include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/scale.h"
+#include "ui/shortcut.h"
 #include "ui/size_hint_event.h"
 #include "ui/widget.h"
 
@@ -139,8 +139,8 @@ void AppMenuItem::onSizeHint(SizeHintEvent& ev)
              border().width();
     size.h = textHeight() + border().height();
 
-    if (m_key && !m_key->accels().empty()) {
-      size.w += font()->textLength(m_key->accels().front().toString());
+    if (m_key && !m_key->shortcuts().empty()) {
+      size.w += font()->textLength(m_key->shortcuts().front().toString());
     }
   }
 
