@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,7 +9,7 @@
   #include "config.h"
 #endif
 
-#include "ui/accelerator.h"
+#include "ui/shortcut.h"
 
 #include "base/debug.h"
 #include "base/replace_string.h"
@@ -144,18 +144,18 @@ int scancode_to_string_size = sizeof(scancode_to_string) / sizeof(scancode_to_st
 
 } // anonymous namespace
 
-Accelerator::Accelerator() : m_modifiers(kKeyNoneModifier), m_scancode(kKeyNil), m_unicodeChar(0)
+Shortcut::Shortcut() : m_modifiers(kKeyNoneModifier), m_scancode(kKeyNil), m_unicodeChar(0)
 {
 }
 
-Accelerator::Accelerator(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar)
+Shortcut::Shortcut(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar)
   : m_modifiers(modifiers)
   , m_scancode(scancode)
   , m_unicodeChar(unicodeChar)
 {
 }
 
-Accelerator::Accelerator(const std::string& str)
+Shortcut::Shortcut(const std::string& str)
   : m_modifiers(kKeyNoneModifier)
   , m_scancode(kKeyNil)
   , m_unicodeChar(0)
@@ -275,18 +275,18 @@ Accelerator::Accelerator(const std::string& str)
   }
 }
 
-bool Accelerator::operator==(const Accelerator& other) const
+bool Shortcut::operator==(const Shortcut& other) const
 {
   // TODO improve this, avoid conversion to std::string
   return toString() == other.toString();
 }
 
-bool Accelerator::isEmpty() const
+bool Shortcut::isEmpty() const
 {
   return (m_modifiers == kKeyNoneModifier && m_scancode == kKeyNil && m_unicodeChar == 0);
 }
 
-std::string Accelerator::toString() const
+std::string Shortcut::toString() const
 {
   std::string buf;
 
@@ -321,13 +321,13 @@ std::string Accelerator::toString() const
   return buf;
 }
 
-bool Accelerator::isPressed(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar) const
+bool Shortcut::isPressed(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar) const
 {
-  return ((scancode && *this == Accelerator(modifiers, scancode, 0)) ||
-          (unicodeChar && *this == Accelerator(modifiers, kKeyNil, unicodeChar)));
+  return ((scancode && *this == Shortcut(modifiers, scancode, 0)) ||
+          (unicodeChar && *this == Shortcut(modifiers, kKeyNil, unicodeChar)));
 }
 
-bool Accelerator::isPressed() const
+bool Shortcut::isPressed() const
 {
   os::SystemRef sys = os::System::instance();
   if (!sys)
@@ -349,7 +349,7 @@ bool Accelerator::isPressed() const
   return false;
 }
 
-bool Accelerator::isLooselyPressed() const
+bool Shortcut::isLooselyPressed() const
 {
   os::SystemRef sys = os::System::instance();
   if (!sys)
@@ -378,22 +378,22 @@ bool Accelerator::isLooselyPressed() const
 }
 
 //////////////////////////////////////////////////////////////////////
-// Accelerators
+// Shortcuts
 
-bool Accelerators::has(const Accelerator& accel) const
+bool Shortcuts::has(const Shortcut& shortcut) const
 {
-  return (std::find(begin(), end(), accel) != end());
+  return (std::find(begin(), end(), shortcut) != end());
 }
 
-void Accelerators::add(const Accelerator& accel)
+void Shortcuts::add(const Shortcut& shortcut)
 {
-  if (!has(accel))
-    m_list.push_back(accel);
+  if (!has(shortcut))
+    m_list.push_back(shortcut);
 }
 
-void Accelerators::remove(const Accelerator& accel)
+void Shortcuts::remove(const Shortcut& shortcut)
 {
-  auto it = std::find(begin(), end(), accel);
+  auto it = std::find(begin(), end(), shortcut);
   if (it != end())
     m_list.erase(it);
 }

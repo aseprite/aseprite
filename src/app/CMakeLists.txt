@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2018-2024  Igara Studio S.A.
+# Copyright (C) 2018-2025  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 # Generate a ui::Widget for each widget in a XML file
@@ -667,7 +667,7 @@ target_sources(app-lib PRIVATE
   ui/rgbmap_algorithm_selector.cpp
   ui/sampling_selector.cpp
   ui/search_entry.cpp
-  ui/select_accelerator.cpp
+  ui/select_shortcut.cpp
   ui/selection_mode_field.cpp
   ui/skin/font_data.cpp
   ui/skin/skin_part.cpp

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -116,8 +116,8 @@ bool can_call_global_shortcut(const AppMenuItem::Native* native)
      native->keyContext == KeyboardShortcuts::instance()->getCurrentKeyContext());
 }
 
-// TODO this should be on "she" library (or we should use
-// os::Shortcut instead of ui::Accelerators)
+// TODO this should be on laf-os library (or we should use
+// os::Shortcut instead of ui::Shortcuts)
 int from_scancode_to_unicode(KeyScancode scancode)
 {
   static int map[] = {
@@ -284,19 +284,19 @@ void destroy_menu_item(ui::Widget* item)
 
 os::Shortcut get_os_shortcut_from_key(const Key* key)
 {
-  if (key && !key->accels().empty()) {
-    const ui::Accelerator& accel = key->accels().front();
+  if (key && !key->shortcuts().empty()) {
+    const ui::Shortcut& shortcut = key->shortcuts().front();
 
 #if LAF_MACOS
     // Shortcuts with spacebar as modifier do not work well in macOS
     // (they will be called when the space bar is unpressed too).
-    if ((accel.modifiers() & ui::kKeySpaceModifier) == ui::kKeySpaceModifier)
+    if ((shortcut.modifiers() & ui::kKeySpaceModifier) == ui::kKeySpaceModifier)
       return os::Shortcut();
 #endif
 
-    return os::Shortcut(
-      (accel.unicodeChar() ? accel.unicodeChar() : from_scancode_to_unicode(accel.scancode())),
-      accel.modifiers());
+    return os::Shortcut((shortcut.unicodeChar() ? shortcut.unicodeChar() :
+                                                  from_scancode_to_unicode(shortcut.scancode())),
+                        shortcut.modifiers());
   }
   else
     return os::Shortcut();
