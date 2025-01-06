@@ -584,8 +584,9 @@ private:
 
     // Fill the 'Commands' and 'Action Modifier' lists
     for (const KeyPtr& key : m_keys) {
-      if ((key->type() == KeyType::Command && !key->isCommandListed()) &&
-          (key->type() != KeyType::Action)) {
+      // If it's not a listed Command or Action key, we go to the next key...
+      if (!((key->type() == KeyType::Command && key->isCommandListed()) ||
+            (key->type() == KeyType::Action))) {
         continue;
       }
 
