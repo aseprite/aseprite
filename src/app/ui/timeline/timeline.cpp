@@ -4345,7 +4345,7 @@ int Timeline::topHeight() const
 
 void Timeline::onNewInputPriority(InputChainElement* element, const ui::Message* msg)
 {
-  // It looks like the user wants to execute commands targetting the
+  // It looks like the user wants to execute commands targeting the
   // ColorBar instead of the Timeline. Here we disable the selected
   // range, so commands like Clear, Copy, Cut, etc. don't target the
   // Timeline and they are sent to the active sprite editor.
@@ -4656,7 +4656,7 @@ void Timeline::setLayerEditableFlag(const layer_t l, const bool state)
   bool regenRows = false;
 
   if (layer->isEditable() != state) {
-    layer->setEditable(state);
+    m_document->setLayerEditableWithNotifications(layer, state);
 
     if (layer->isGroup() && layer->isExpanded())
       regenRows = true;
@@ -4666,7 +4666,7 @@ void Timeline::setLayerEditableFlag(const layer_t l, const bool state)
       layer = layer->parent();
       while (layer) {
         if (!layer->isEditable()) {
-          layer->setEditable(true);
+          m_document->setLayerEditableWithNotifications(layer, true);
           regenRows = true;
         }
         layer = layer->parent();

@@ -101,6 +101,9 @@ public:
   virtual void onBeforeLayerVisibilityChange(DocEvent& ev, bool newState) {}
   virtual void onAfterLayerVisibilityChange(DocEvent& ev) {}
 
+  // The editable flag of a specific layer is going to change/changed.
+  virtual void onBeforeLayerEditableChange(DocEvent& ev, bool newState) {}
+
   // The tileset was remapped (e.g. when tiles are re-ordered).
   virtual void onRemapTileset(DocEvent& ev, const doc::Remap& remap) {}
 

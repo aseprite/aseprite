@@ -2262,7 +2262,7 @@ bool Editor::onProcessMessage(Message* msg)
         if (m_brushPreview.onScreen()) {
           m_brushPreview.hide();
 
-          // Destroy the extra cel explicitly (it could happend
+          // Destroy the extra cel explicitly (it could happen
           // automatically by the m_brushPreview.show()) just in case
           // that the brush preview will not use the extra cel
           // (e.g. in the case of the Eraser tool).
@@ -2521,6 +2521,12 @@ void Editor::onBeforeLayerVisibilityChange(DocEvent& ev, bool newState)
 {
   if (m_state)
     m_state->onBeforeLayerVisibilityChange(this, ev.layer(), newState);
+}
+
+void Editor::onBeforeLayerEditableChange(DocEvent& ev, bool newState)
+{
+  if (m_state)
+    m_state->onBeforeLayerEditableChange(this, ev.layer(), newState);
 }
 
 void Editor::setCursor(const gfx::Point& mouseDisplayPos)

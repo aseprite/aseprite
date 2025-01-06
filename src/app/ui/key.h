@@ -131,7 +131,7 @@ public:
                                    const KeyboardShortcuts& globalKeys) const;
   bool isPressed() const;
   bool isLooselyPressed() const;
-  bool isListed() const;
+  bool isCommandListed() const;
 
   bool hasAccel(const ui::Accelerator& accel) const;
   bool hasUserDefinedAccels() const;

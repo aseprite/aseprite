@@ -65,6 +65,7 @@ public:
   bool acceptQuickTool(tools::Tool* tool) override;
   bool requireBrushPreview() override { return false; }
   void onBeforeLayerVisibilityChange(Editor* editor, doc::Layer* layer, bool newState) override;
+  void onBeforeLayerEditableChange(Editor* editor, doc::Layer* layer, bool newState) override;
 
   // EditorObserver
   void onDestroyEditor(Editor* editor) override;
@@ -102,6 +103,9 @@ private:
   void removePixelsMovement();
 
   KeyAction getCurrentKeyAction() const;
+
+  // Used on 'onBeforeLayerVisibilityChange' and 'onBeforeLayerEditableChange' functions.
+  void dropPixelsIfLayerIsSelected(doc::Layer* layer);
 
   // Helper member to move/translate selection and pixels.
   PixelsMovementPtr m_pixelsMovement;
