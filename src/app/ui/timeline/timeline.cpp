@@ -242,7 +242,7 @@ Timeline::Timeline(TooltipManager* tooltipManager)
   , m_tagBands(0)
   , m_tagFocusBand(-1)
   , m_separator_x(Preferences::instance().general.timelineLayerPanelWidth())
-  , m_separator_w(1)
+  , m_separator_w(guiscale())
   , m_confPopup(nullptr)
   , m_clipboard_timer(100, this)
   , m_offset_count(0)
@@ -1624,6 +1624,8 @@ void Timeline::onInitTheme(ui::InitThemeEvent& ev)
 
   if (m_confPopup)
     m_confPopup->initTheme();
+
+  m_separator_w = guiscale();
 }
 
 void Timeline::onInvalidateRegion(const gfx::Region& region)
@@ -3013,7 +3015,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_HEADER_FRAME: {
       col_t frame = std::max(firstFrame(), hit.frame);
       return gfx::Rect(
-        bounds.x + separatorX() + m_separator_w - 1 + getFrameXPos(frame) - viewScroll().x,
+        bounds.x + separatorX() + m_separator_w - guiscale() + getFrameXPos(frame) - viewScroll().x,
         bounds.y + y,
         getFrameWidth(frame),
         headerBoxHeight());
@@ -3072,19 +3074,19 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
 
     case PART_CEL:
       if (validLayer(hit.layer) && hit.frame >= frame_t(0)) {
-        return gfx::Rect(
-          bounds.x + separatorX() + m_separator_w - 1 + getFrameXPos(hit.frame) - viewScroll().x,
-          bounds.y + y + headerBoxHeight() + layerBoxHeight() * (lastLayer() - hit.layer) -
-            viewScroll().y,
-          getFrameWidth(hit.frame),
-          layerBoxHeight());
+        return gfx::Rect(bounds.x + separatorX() + m_separator_w - guiscale() +
+                           getFrameXPos(hit.frame) - viewScroll().x,
+                         bounds.y + y + headerBoxHeight() +
+                           layerBoxHeight() * (lastLayer() - hit.layer) - viewScroll().y,
+                         getFrameWidth(hit.frame),
+                         layerBoxHeight());
       }
       break;
 
     case PART_RANGE_OUTLINE: {
       gfx::Rect rc = getRangeBounds(m_range);
       int s = outlineWidth();
-      rc.enlarge(gfx::Border(s - 1, s - 1, s, s));
+      rc.enlarge(gfx::Border(s - guiscale(), s - guiscale(), s, s));
       if (rc.x < bounds.x)
         rc.offset(s, 0).inflate(-s, 0);
       if (rc.y < bounds.y)
@@ -3123,15 +3125,15 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     }
 
     case PART_TAGS:
-      return gfx::Rect(bounds.x + separatorX() + m_separator_w - 1,
+      return gfx::Rect(bounds.x + separatorX() + m_separator_w - guiscale(),
                        bounds.y,
-                       bounds.w - separatorX() - m_separator_w + 1,
+                       bounds.w - separatorX() - m_separator_w + guiscale(),
                        y);
 
     case PART_TAG_BAND:
-      return gfx::Rect(bounds.x + separatorX() + m_separator_w - 1,
+      return gfx::Rect(bounds.x + separatorX() + m_separator_w - guiscale(),
                        bounds.y + (m_tagFocusBand < 0 ? oneTagHeight() * std::max(0, hit.band) : 0),
-                       bounds.w - separatorX() - m_separator_w + 1,
+                       bounds.w - separatorX() - m_separator_w + guiscale(),
                        oneTagHeight());
 
     case PART_TAG_SWITCH_BUTTONS: {

@@ -117,6 +117,7 @@ protected:
   virtual void onBuildTitleLabel();
 
 private:
+  void limitTitleLabelBounds();
   void windowSetPosition(const gfx::Rect& rect);
   int getAction(int x, int y);
   void limitSize(gfx::Size& size);

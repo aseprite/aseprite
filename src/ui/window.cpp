@@ -720,6 +720,27 @@ void Window::onBuildTitleLabel()
   }
 }
 
+void Window::limitTitleLabelBounds()
+{
+  if (!m_titleLabel)
+    return;
+
+  // TODO Support themes with buttons at the left side
+  int mostLeftMiniButtonX = bounds().x2();
+  for (auto child : children()) {
+    if (child->isDecorative() && child->type() != WidgetType::kWindowTitleLabelWidget &&
+        child->bounds().x < mostLeftMiniButtonX) {
+      mostLeftMiniButtonX = child->bounds().x;
+    }
+  }
+
+  gfx::Rect titleBounds = m_titleLabel->bounds();
+  if (titleBounds.x2() > mostLeftMiniButtonX) {
+    titleBounds.w = mostLeftMiniButtonX - titleBounds.x;
+    m_titleLabel->setBounds(titleBounds);
+  }
+}
+
 void Window::windowSetPosition(const gfx::Rect& rect)
 {
   m_isResizing = (bounds().size() != rect.size());
@@ -735,6 +756,12 @@ void Window::windowSetPosition(const gfx::Rect& rect)
     else
       child->setBounds(cpos);
   }
+
+  // Title label bounds adjustment due to decorative buttons. This
+  // must be done after all decorative widgets have their final
+  // position. It has been seen that it's not convenient to do it
+  // before this point.
+  limitTitleLabelBounds();
 
   onWindowResize();
   m_isResizing = false;

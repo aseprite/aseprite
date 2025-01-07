@@ -24,7 +24,7 @@ BEGIN
             VALUE "FileDescription", "Aseprite"
             VALUE "FileVersion", "1,3,0,0"
             VALUE "InternalName", "aseprite"
-            VALUE "LegalCopyright", "Copyright (C) 2001-2024 Igara Studio S.A."
+            VALUE "LegalCopyright", "Copyright (C) 2001-2025 Igara Studio S.A."
             VALUE "OriginalFilename", "aseprite.exe"
             VALUE "ProductName", "Aseprite"
             VALUE "ProductVersion", "1,3,0,0"
