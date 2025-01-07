@@ -91,8 +91,12 @@ std::string get_script_filename(lua_State* L)
   lua_getfield(L, -1, "source");
   const char* source = lua_tostring(L, -1);
   std::string script;
-  if (source && *source)
+  if (source && *source) {
     script = source;
+
+    if (!script.empty() && script[0] == '@')
+      script = source + 1;
+  }
   lua_pop(L, 2);
   return script;
 }
@@ -230,9 +234,12 @@ bool ask_access(lua_State* L,
 {
   // Ask for permission to open the file
   if (App::instance()->context()->isUIAvailable()) {
-    std::string script = get_script_filename(L);
-    if (script.empty()) // No script
-      return luaL_error(L, "no debug information (script filename) to secure io.open() call");
+    const std::string script = get_script_filename(L);
+    if (script.empty()) {
+      // No script
+      luaL_error(L, "no debug information (script filename) to secure io.open() call");
+      return false;
+    }
 
     const char* section = "script_access";
     std::string key = get_key(script);
@@ -260,7 +267,10 @@ bool ask_access(lua_State* L,
       case FileAccessMode::Read:
         allowButtonText = Strings::script_access_allow_read_access();
         break;
-      default: return luaL_error(L, "invalid access request");
+      default: {
+        luaL_error(L, "invalid access request");
+        return false;
+      }
     }
 
     app::gen::ScriptAccess dlg;
