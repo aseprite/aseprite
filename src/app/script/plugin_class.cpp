@@ -16,6 +16,7 @@
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/ui/app_menuitem.h"
+#include "base/version.h"
 
 namespace app { namespace script {
 
@@ -323,7 +324,8 @@ int Plugin_get_path(lua_State* L)
 int Plugin_get_version(lua_State* L)
 {
   auto* plugin = get_obj<Plugin>(L, 1);
-  lua_pushstring(L, plugin->ext->version().c_str());
+  const base::Version version(plugin->ext->version());
+  push_version(L, version);
   return 1;
 }
 
