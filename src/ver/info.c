@@ -8,7 +8,7 @@
 #include "generated_version.h" /* It defines the VERSION macro */
 
 #define PACKAGE   "Aseprite"
-#define COPYRIGHT "Copyright (C) 2001-2024 Igara Studio S.A."
+#define COPYRIGHT "Copyright (C) 2001-2025 Igara Studio S.A."
 
 #if defined(_WIN32) || defined(__APPLE__)
   #define HTTP "https"
