@@ -434,6 +434,12 @@ void save_window_pos(Window* window, const char* section)
   set_config_rect(section, "WindowPos", rc);
 }
 
+void del_window_pos(const char* section)
+{
+  del_config_value(section, "WindowPos");
+  del_config_value(section, "WindowFrame");
+}
+
 // TODO Replace this with new theme styles
 Widget* setup_mini_font(Widget* widget)
 {

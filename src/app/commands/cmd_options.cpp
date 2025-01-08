@@ -1147,14 +1147,17 @@ private:
     }
 
     if (windowReset()->isSelected()) {
+      // TODO avoid enumerating all config sections here
       static constexpr auto windowSections = {
         "GfxMode",           "CanvasSize",        "CelProperties",     "ChangePixelFormat",
         "ExportSpriteSheet", "ImportSpriteSheet", "KeyboardShortcuts", "LayerProperties",
         "MaskColor",         "ExportFile",        "SpriteProperties",  "SpriteSize",
-        "UndoHistory",       "FileSelector",      "MiniEditor"
+        "UndoHistory",       "FileSelector",      "MiniEditor",        "BrightnessContrast",
+        "ConvolutionMatrix", "Despeckle",         "HueSaturation",     "InvertColor",
+        "Outline",           "Replace Color"
       };
       for (const auto* windowSection : windowSections)
-        del_config_section(windowSection);
+        del_window_pos(windowSection);
     }
 
     if (brushesReset()->isSelected()) {
