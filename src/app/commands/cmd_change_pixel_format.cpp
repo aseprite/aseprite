@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,6 +13,7 @@
 #include "app/cmd/flatten_layers.h"
 #include "app/cmd/set_pixel_format.h"
 #include "app/commands/command.h"
+#include "app/commands/new_params.h"
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/context_access.h"
@@ -460,163 +461,82 @@ private:
 
 } // anonymous namespace
 
-class ChangePixelFormatCommand : public Command {
+struct ChangePixelFormatParams : public NewParams {
+  Param<bool> ui{ this, false, "ui" };
+  Param<PixelFormat> format{ this, IMAGE_RGB, "format" };
+  Param<render::DitheringAlgorithm> dithering{ this,
+                                               render::DitheringAlgorithm::None,
+                                               "dithering" };
+  Param<std::string> matrix{ this, "", "dithering-matrix" };
+  Param<double> factor{ this, 1.0, "dithering-factor" };
+  Param<doc::RgbMapAlgorithm> rgbmap{ this, RgbMapAlgorithm::DEFAULT, "rgbmap" };
+  Param<gen::ToGrayAlgorithm> toGray{ this, gen::ToGrayAlgorithm::DEFAULT, "toGray" };
+  Param<doc::FitCriteria> fitCriteria{ this, doc::FitCriteria::DEFAULT, "fitCriteria" };
+};
+
+class ChangePixelFormatCommand : public CommandWithNewParams<ChangePixelFormatParams> {
 public:
   ChangePixelFormatCommand();
 
 protected:
-  void onLoadParams(const Params& params) override;
-  bool onEnabled(Context* context) override;
-  bool onChecked(Context* context) override;
-  void onExecute(Context* context) override;
+  bool onEnabled(Context* ctx) override;
+  bool onChecked(Context* ctx) override;
+  void onExecute(Context* ctx) override;
   std::string onGetFriendlyName() const override;
 
 private:
-  bool m_showDlg;
-  bool m_showProgress;
-  doc::PixelFormat m_format;
-  render::Dithering m_dithering;
-  doc::RgbMapAlgorithm m_rgbmap;
-  doc::FitCriteria m_fitCriteria = FitCriteria::DEFAULT;
-  gen::ToGrayAlgorithm m_toGray;
+  static render::DitheringMatrix getDitheringMatrix(const std::string& ditheringMatrixId);
 };
 
 ChangePixelFormatCommand::ChangePixelFormatCommand()
-  : Command(CommandId::ChangePixelFormat(), CmdUIOnlyFlag)
+  : CommandWithNewParams(CommandId::ChangePixelFormat(), CmdUIOnlyFlag)
 {
-  m_showDlg = true;
-  m_showProgress = true;
-  m_format = IMAGE_RGB;
-  m_dithering = render::Dithering();
-  m_rgbmap = doc::RgbMapAlgorithm::DEFAULT;
-  m_toGray = gen::ToGrayAlgorithm::DEFAULT;
 }
 
-void ChangePixelFormatCommand::onLoadParams(const Params& params)
+bool ChangePixelFormatCommand::onEnabled(Context* ctx)
 {
-  m_showDlg = false;
-  m_showProgress = true;
-
-  std::string format = params.get("format");
-  if (format == "rgb")
-    m_format = IMAGE_RGB;
-  else if (format == "grayscale" || format == "gray")
-    m_format = IMAGE_GRAYSCALE;
-  else if (format == "indexed")
-    m_format = IMAGE_INDEXED;
-  else {
-    m_showDlg = true;
-  }
-
-  if (params.has_param("ui"))
-    m_showDlg = m_showProgress = params.get_as<bool>("ui");
-
-  std::string dithering = params.get("dithering");
-  if (dithering == "ordered")
-    m_dithering.algorithm(render::DitheringAlgorithm::Ordered);
-  else if (dithering == "old")
-    m_dithering.algorithm(render::DitheringAlgorithm::Old);
-  else if (dithering == "error-diffusion")
-    m_dithering.algorithm(render::DitheringAlgorithm::ErrorDiffusion);
-  else
-    m_dithering.algorithm(render::DitheringAlgorithm::None);
-
-  std::string matrix = params.get("dithering-matrix");
-  if (!matrix.empty()) {
-    // Try to get the matrix from the extensions
-    const render::DitheringMatrix* knownMatrix = App::instance()->extensions().ditheringMatrix(
-      matrix);
-    if (knownMatrix) {
-      m_dithering.matrix(*knownMatrix);
-    }
-    // Then, if the matrix doesn't exist we try to load it from a file
-    else {
-      render::DitheringMatrix ditMatrix;
-      try {
-        load_dithering_matrix_from_sprite(matrix, ditMatrix);
-      }
-      catch (const std::exception& e) {
-        LOG(ERROR, "%s\n", e.what());
-        Console::showException(e);
-      }
-
-      m_dithering.matrix(ditMatrix);
-    }
-  }
-  // Default dithering matrix is BayerMatrix(8)
-  else {
-    // TODO object slicing here (from BayerMatrix -> DitheringMatrix)
-    m_dithering.matrix(render::BayerMatrix(8));
-  }
-
-  // TODO change this with NewParams as in ColorQuantizationParams
-  std::string rgbmap = params.get("rgbmap");
-  if (rgbmap == "octree")
-    m_rgbmap = doc::RgbMapAlgorithm::OCTREE;
-  else if (rgbmap == "rgb5a3")
-    m_rgbmap = doc::RgbMapAlgorithm::RGB5A3;
-  else if (rgbmap == "default")
-    m_rgbmap = doc::RgbMapAlgorithm::DEFAULT;
-  else {
-    // Use the configured algorithm by default.
-    m_rgbmap = Preferences::instance().quantization.rgbmapAlgorithm();
-  }
-
-  std::string toGray = params.get("toGray");
-  if (toGray == "luma")
-    m_toGray = gen::ToGrayAlgorithm::LUMA;
-  else if (dithering == "hsv")
-    m_toGray = gen::ToGrayAlgorithm::HSV;
-  else if (dithering == "hsl")
-    m_toGray = gen::ToGrayAlgorithm::HSL;
-  else
-    m_toGray = gen::ToGrayAlgorithm::DEFAULT;
-}
-
-bool ChangePixelFormatCommand::onEnabled(Context* context)
-{
-  if (!context->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasActiveSprite))
+  if (!ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasActiveSprite))
     return false;
 
-  const ContextReader reader(context);
+  const ContextReader reader(ctx);
   const Sprite* sprite(reader.sprite());
 
   if (!sprite)
     return false;
 
-  if (m_showDlg)
+  if (params().ui())
     return true;
 
-  if (sprite->pixelFormat() == IMAGE_INDEXED && m_format == IMAGE_INDEXED &&
-      m_dithering.algorithm() != render::DitheringAlgorithm::None)
+  if (sprite->pixelFormat() == IMAGE_INDEXED && params().format() == IMAGE_INDEXED &&
+      params().dithering() != render::DitheringAlgorithm::None)
     return false;
 
   return true;
 }
 
-bool ChangePixelFormatCommand::onChecked(Context* context)
+bool ChangePixelFormatCommand::onChecked(Context* ctx)
 {
-  if (m_showDlg)
+  if (params().ui() || (!params().ui.isSet() && !params().format.isSet()))
     return false;
 
-  const ContextReader reader(context);
+  const ContextReader reader(ctx);
   const Sprite* sprite = reader.sprite();
 
-  if (sprite && sprite->pixelFormat() == IMAGE_INDEXED && m_format == IMAGE_INDEXED &&
-      m_dithering.algorithm() != render::DitheringAlgorithm::None)
+  if (sprite && sprite->pixelFormat() == IMAGE_INDEXED && params().format() == IMAGE_INDEXED &&
+      params().dithering() != render::DitheringAlgorithm::None)
     return false;
 
-  return (sprite && sprite->pixelFormat() == m_format);
+  return (sprite && sprite->pixelFormat() == params().format());
 }
 
-void ChangePixelFormatCommand::onExecute(Context* context)
+void ChangePixelFormatCommand::onExecute(Context* ctx)
 {
+  const bool ui = ((params().ui() || (!params().ui.isSet() && !params().format.isSet())) &&
+                   ctx->isUIAvailable());
   bool flatten = false;
+  render::DitheringMatrix matrix = getDitheringMatrix(params().matrix());
 
-  if (!context->isUIAvailable()) {
-    // do nothing
-  }
-  else if (m_showDlg) {
+  if (ui) {
     ColorModeWindow window(Editor::activeEditor());
 
     window.remapWindow();
@@ -629,29 +549,31 @@ void ChangePixelFormatCommand::onExecute(Context* context)
     if (window.closer() != window.ok())
       return;
 
-    m_format = window.pixelFormat();
-    m_dithering = window.dithering();
-    m_rgbmap = window.rgbMapAlgorithm();
-    m_fitCriteria = window.fitCriteria();
-    m_toGray = window.toGray();
+    params().format(window.pixelFormat());
+    params().dithering(window.dithering().algorithm());
+    matrix = window.dithering().matrix();
+    params().factor(window.dithering().factor());
+    params().rgbmap(window.rgbMapAlgorithm());
+    params().fitCriteria(window.fitCriteria());
+    params().toGray(window.toGray());
     flatten = window.flattenEnabled();
 
     window.saveOptions();
   }
-  else {
-    if (m_format == IMAGE_INDEXED) {
-      m_rgbmap = Preferences::instance().quantization.rgbmapAlgorithm();
-      m_fitCriteria = Preferences::instance().quantization.fitCriteria();
-    }
+  else if (params().format() == IMAGE_INDEXED) {
+    if (!params().rgbmap.isSet())
+      params().rgbmap(Preferences::instance().quantization.rgbmapAlgorithm());
+    if (!params().fitCriteria.isSet())
+      params().fitCriteria(Preferences::instance().quantization.fitCriteria());
   }
 
   // No conversion needed
-  Doc* doc = context->activeDocument();
-  if (doc->sprite()->pixelFormat() == m_format)
+  Doc* doc = ctx->activeDocument();
+  if (doc->sprite()->pixelFormat() == params().format())
     return;
 
   {
-    SpriteJob job(context, doc, Strings::color_mode_title(), m_showProgress);
+    SpriteJob job(ctx, doc, Strings::color_mode_title(), ui);
     Sprite* sprite(job.sprite());
 
     // TODO this was moved in the main UI thread because
@@ -662,7 +584,7 @@ void ChangePixelFormatCommand::onExecute(Context* context)
     //      https://github.com/aseprite/aseprite/issues/509
     //      https://github.com/aseprite/aseprite/issues/378
     if (flatten) {
-      Tx tx(Tx::LockDoc, context, doc);
+      Tx tx(Tx::LockDoc, ctx, doc);
       const bool newBlend = Preferences::instance().experimental.newBlend();
       cmd::FlattenLayers::Options options;
       options.newBlendMethod = newBlend;
@@ -673,19 +595,19 @@ void ChangePixelFormatCommand::onExecute(Context* context)
       tx(new cmd::FlattenLayers(sprite, selLayers, options));
     }
 
-    job.startJobWithCallback([this, &job, sprite](Tx& tx) {
+    job.startJobWithCallback([this, &job, sprite, &matrix](Tx& tx) {
       tx(new cmd::SetPixelFormat(sprite,
-                                 m_format,
-                                 m_dithering,
-                                 m_rgbmap,
-                                 get_gray_func(m_toGray),
+                                 params().format(),
+                                 render::Dithering(params().dithering(), matrix, params().factor()),
+                                 params().rgbmap(),
+                                 get_gray_func(params().toGray()),
                                  &job,
-                                 m_fitCriteria)); // SpriteJob is a render::TaskDelegate
+                                 params().fitCriteria())); // SpriteJob is a render::TaskDelegate
     });
     job.waitJob();
   }
 
-  if (context->isUIAvailable())
+  if (ctx->isUIAvailable())
     app_refresh_screen();
 }
 
@@ -693,12 +615,12 @@ std::string ChangePixelFormatCommand::onGetFriendlyName() const
 {
   std::string conversion;
 
-  if (!m_showDlg) {
-    switch (m_format) {
+  if (!params().ui()) {
+    switch (params().format()) {
       case IMAGE_RGB:       conversion = Strings::commands_ChangePixelFormat_RGB(); break;
       case IMAGE_GRAYSCALE: conversion = Strings::commands_ChangePixelFormat_Grayscale(); break;
       case IMAGE_INDEXED:
-        switch (m_dithering.algorithm()) {
+        switch (params().dithering()) {
           case render::DitheringAlgorithm::None:
             conversion = Strings::commands_ChangePixelFormat_Indexed();
             break;
@@ -719,6 +641,34 @@ std::string ChangePixelFormatCommand::onGetFriendlyName() const
     conversion = Strings::commands_ChangePixelFormat_MoreOptions();
 
   return Strings::commands_ChangePixelFormat(conversion);
+}
+
+render::DitheringMatrix ChangePixelFormatCommand::getDitheringMatrix(
+  const std::string& ditheringMatrix)
+{
+  if (!ditheringMatrix.empty()) {
+    // Try to get the matrix from the extensions
+    const render::DitheringMatrix* knownMatrix = App::instance()->extensions().ditheringMatrix(
+      ditheringMatrix);
+    if (knownMatrix) {
+      return *knownMatrix;
+    }
+
+    // If the matrix doesn't exist we try to load it from a file
+    try {
+      render::DitheringMatrix matrix;
+      load_dithering_matrix_from_sprite(ditheringMatrix, matrix);
+      return matrix;
+    }
+    catch (const std::exception& e) {
+      LOG(ERROR, "%s\n", e.what());
+      Console::showException(e);
+    }
+  }
+
+  // Default dithering matrix is BayerMatrix(8)
+  // TODO object slicing here (from BayerMatrix -> DitheringMatrix)
+  return render::BayerMatrix(8);
 }
 
 Command* CommandFactory::createChangePixelFormatCommand()
