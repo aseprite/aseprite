@@ -125,7 +125,7 @@ int AppFS_makeDirectory(lua_State* L)
     return 1;
   }
 
-  if (!ask_access(L, path, FileAccessMode::Full, ResourceType::File))
+  if (!ask_access(L, path, FileAccessMode::Write, ResourceType::File))
     return luaL_error(L, "the script doesn't have access to create the directory '%s'", path);
 
   try {
