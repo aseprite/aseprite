@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -79,13 +79,13 @@ std::string get_key(const std::string& source)
     return g_keys[source] = base::convert_to<std::string>(base::Sha1::calculateFromString(source));
 }
 
-std::string get_script_filename(lua_State* L)
+std::string get_script_filename(lua_State* L, int stackLevel)
 {
   // Get script name
   lua_getglobal(L, "debug");
   lua_getfield(L, -1, "getinfo");
   lua_remove(L, -2);
-  lua_pushinteger(L, 2);
+  lua_pushinteger(L, stackLevel);
   lua_pushstring(L, "S");
   lua_call(L, 2, 1);
   lua_getfield(L, -1, "source");
@@ -230,11 +230,12 @@ void overwrite_unsecure_functions(lua_State* L)
 bool ask_access(lua_State* L,
                 const char* filename,
                 const FileAccessMode mode,
-                const ResourceType resourceType)
+                const ResourceType resourceType,
+                const int stackLevel)
 {
   // Ask for permission to open the file
   if (App::instance()->context()->isUIAvailable()) {
-    const std::string script = get_script_filename(L);
+    const std::string script = get_script_filename(L, stackLevel);
     if (script.empty()) {
       // No script
       luaL_error(L, "no debug information (script filename) to secure io.open() call");
@@ -296,6 +297,10 @@ bool ask_access(lua_State* L,
     dlg.allow()->processMnemonicFromText();
 
     if (script == "internal") {
+      // This should not happen, we should have a proper script
+      // filename here, probably the given "stackLevel" is wrong.
+      ASSERT(false);
+
       // Make it look like a normal label
       dlg.script()->setType(ui::WidgetType::kLabelWidget);
       dlg.script()->initTheme();
