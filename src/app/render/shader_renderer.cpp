@@ -42,7 +42,7 @@ uniform shader iImg;
 uniform shader iPal;
 
 half4 main(vec2 fragcoord) {
- int index = int(255.0 * iImg.eval(fragcoord).a);
+ half index = floor(255.0 * iImg.eval(fragcoord).a + 1.0);
  return iPal.eval(half2(index, 0));
 }
 )";
