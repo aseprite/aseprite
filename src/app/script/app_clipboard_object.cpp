@@ -26,15 +26,20 @@ namespace {
 
 struct Clipboard {};
 
-#define CLIPBOARD_GATE(mode)                                                                       \
-  if (!ask_access(L, nullptr, mode, ResourceType::Clipboard))                                      \
-    return luaL_error(L,                                                                           \
-                      "the script doesn't have %s access to the clipboard",                        \
-                      (mode) == FileAccessMode::Read ? "read" : "write");
+const char* kCannotReadClipboard = "the script doesn't have access to get the clipboard content";
+const char* kCannotWriteClipboard = "the script doesn't have access to modify the clipboard";
+
+#define CLIPBOARD_READ_GATE()                                                                      \
+  if (!ask_access(L, nullptr, FileAccessMode::Read, ResourceType::Clipboard))                      \
+    return luaL_error(L, kCannotReadClipboard);
+
+#define CLIPBOARD_WRITE_GATE()                                                                     \
+  if (!ask_access(L, nullptr, FileAccessMode::Write, ResourceType::Clipboard))                     \
+    return luaL_error(L, kCannotWriteClipboard);
 
 int Clipboard_clear(lua_State* L)
 {
-  CLIPBOARD_GATE(FileAccessMode::Read);
+  CLIPBOARD_WRITE_GATE();
 
   if (!clip::clear())
     return luaL_error(L, "failed to clear the clipboard");
@@ -44,23 +49,19 @@ int Clipboard_clear(lua_State* L)
 
 int Clipboard_hasText(lua_State* L)
 {
-  CLIPBOARD_GATE(FileAccessMode::Read);
-
   lua_pushboolean(L, clip::has(clip::text_format()));
   return 1;
 }
 
 int Clipboard_hasImage(lua_State* L)
 {
-  CLIPBOARD_GATE(FileAccessMode::Read);
-
   lua_pushboolean(L, clip::has(clip::image_format()));
   return 1;
 }
 
 int Clipboard_get_image(lua_State* L)
 {
-  CLIPBOARD_GATE(FileAccessMode::Read);
+  CLIPBOARD_READ_GATE();
 
   doc::Image* image = nullptr;
   doc::Mask* mask = nullptr;
@@ -83,7 +84,7 @@ int Clipboard_get_image(lua_State* L)
 
 int Clipboard_get_text(lua_State* L)
 {
-  CLIPBOARD_GATE(FileAccessMode::Read);
+  CLIPBOARD_READ_GATE();
 
   std::string str;
   if (clip::get_text(str))
@@ -96,7 +97,7 @@ int Clipboard_get_text(lua_State* L)
 
 int Clipboard_set_image(lua_State* L)
 {
-  CLIPBOARD_GATE(FileAccessMode::Read);
+  CLIPBOARD_WRITE_GATE();
 
   auto* image = may_get_image_from_arg(L, 2);
   if (!image)
@@ -116,7 +117,7 @@ int Clipboard_set_image(lua_State* L)
 
 int Clipboard_set_text(lua_State* L)
 {
-  CLIPBOARD_GATE(FileAccessMode::Read);
+  CLIPBOARD_WRITE_GATE();
 
   const char* text = lua_tostring(L, 2);
   if (!clip::set_text(text ? text : ""))
@@ -127,7 +128,7 @@ int Clipboard_set_text(lua_State* L)
 
 int Clipboard_get_content(lua_State* L)
 {
-  CLIPBOARD_GATE(FileAccessMode::Read);
+  CLIPBOARD_READ_GATE();
 
   doc::Image* image = nullptr;
   doc::Mask* mask = nullptr;
@@ -176,7 +177,7 @@ int Clipboard_get_content(lua_State* L)
 
 int Clipboard_set_content(lua_State* L)
 {
-  CLIPBOARD_GATE(FileAccessMode::Read);
+  CLIPBOARD_WRITE_GATE();
 
   doc::Image* image = nullptr;
   doc::Mask* mask = nullptr;
