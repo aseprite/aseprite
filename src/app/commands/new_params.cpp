@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,8 +10,11 @@
 
 #include "app/commands/new_params.h"
 
+#include "app/app.h"
 #include "app/color.h"
+#include "app/console.h"
 #include "app/doc_exporter.h"
+#include "app/load_matrix.h"
 #include "app/pref/preferences.h"
 #include "app/sprite_sheet_type.h"
 #include "app/tools/ink_type.h"
@@ -21,6 +24,7 @@
 #include "doc/algorithm/resize_image.h"
 #include "doc/anidir.h"
 #include "doc/color_mode.h"
+#include "doc/fit_criteria.h"
 #include "doc/rgbmap_algorithm.h"
 #include "filters/color_curve.h"
 #include "filters/hue_saturation_filter.h"
@@ -28,6 +32,7 @@
 #include "filters/tiled_mode.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
+#include "render/dithering_algorithm.h"
 
 #ifdef ENABLE_SCRIPTING
   #include "app/script/engine.h"
@@ -252,6 +257,47 @@ void Param<gen::SelectionMode>::fromString(const std::string& value)
     setValue(gen::SelectionMode::DEFAULT);
 }
 
+template<>
+void Param<doc::FitCriteria>::fromString(const std::string& value)
+{
+  if (base::utf8_icmp(value, "rgb") == 0)
+    setValue(doc::FitCriteria::RGB);
+  else if (base::utf8_icmp(value, "linearizedRGB") == 0)
+    setValue(doc::FitCriteria::linearizedRGB);
+  else if (base::utf8_icmp(value, "ciexyz") == 0)
+    setValue(doc::FitCriteria::CIEXYZ);
+  else if (base::utf8_icmp(value, "cielab") == 0)
+    setValue(doc::FitCriteria::CIELAB);
+  else
+    setValue(doc::FitCriteria::DEFAULT);
+}
+
+template<>
+void Param<render::DitheringAlgorithm>::fromString(const std::string& value)
+{
+  if (base::utf8_icmp(value, "ordered") == 0)
+    setValue(render::DitheringAlgorithm::Ordered);
+  else if (base::utf8_icmp(value, "old") == 0)
+    setValue(render::DitheringAlgorithm::Old);
+  else if (base::utf8_icmp(value, "error-diffusion") == 0)
+    setValue(render::DitheringAlgorithm::ErrorDiffusion);
+  else
+    setValue(render::DitheringAlgorithm::None);
+}
+
+template<>
+void Param<app::gen::ToGrayAlgorithm>::fromString(const std::string& value)
+{
+  if (base::utf8_icmp(value, "luma") == 0)
+    setValue(gen::ToGrayAlgorithm::LUMA);
+  else if (base::utf8_icmp(value, "hsv") == 0)
+    setValue(gen::ToGrayAlgorithm::HSV);
+  else if (base::utf8_icmp(value, "hsl") == 0)
+    setValue(gen::ToGrayAlgorithm::HSL);
+  else
+    setValue(gen::ToGrayAlgorithm::DEFAULT);
+}
+
 //////////////////////////////////////////////////////////////////////
 // Convert values from Lua
 //////////////////////////////////////////////////////////////////////
@@ -423,6 +469,33 @@ void Param<gen::SelectionMode>::fromLua(lua_State* L, int index)
     fromString(lua_tostring(L, index));
   else
     setValue((gen::SelectionMode)lua_tointeger(L, index));
+}
+
+template<>
+void Param<doc::FitCriteria>::fromLua(lua_State* L, int index)
+{
+  if (lua_type(L, index) == LUA_TSTRING)
+    fromString(lua_tostring(L, index));
+  else
+    setValue((doc::FitCriteria)lua_tointeger(L, index));
+}
+
+template<>
+void Param<render::DitheringAlgorithm>::fromLua(lua_State* L, int index)
+{
+  if (lua_type(L, index) == LUA_TSTRING)
+    fromString(lua_tostring(L, index));
+  else
+    setValue((render::DitheringAlgorithm)lua_tointeger(L, index));
+}
+
+template<>
+void Param<app::gen::ToGrayAlgorithm>::fromLua(lua_State* L, int index)
+{
+  if (lua_type(L, index) == LUA_TSTRING)
+    fromString(lua_tostring(L, index));
+  else
+    setValue((app::gen::ToGrayAlgorithm)lua_tointeger(L, index));
 }
 
 void CommandWithNewParamsBase::loadParamsFromLuaTable(lua_State* L, int index)
