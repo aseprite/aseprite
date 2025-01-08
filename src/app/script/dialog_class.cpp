@@ -12,6 +12,8 @@
 #include "app/app.h"
 #include "app/color.h"
 #include "app/color_utils.h"
+#include "app/context.h"
+#include "app/doc.h"
 #include "app/file_selector.h"
 #include "app/script/canvas_widget.h"
 #include "app/script/engine.h"
@@ -27,6 +29,7 @@
 #include "app/ui/filename_field.h"
 #include "app/ui/main_window.h"
 #include "app/ui/window_with_hand.h"
+#include "base/fs.h"
 #include "base/paths.h"
 #include "base/remove_from_container.h"
 #include "ui/box.h"
@@ -1045,6 +1048,7 @@ int Dialog_shades(lua_State* L)
 int Dialog_file(lua_State* L)
 {
   std::string title = "Open File";
+  std::string path = std::string();
   std::string fn;
   base::paths exts;
   auto dlgType = FileSelectorType::Open;
@@ -1084,6 +1088,12 @@ int Dialog_file(lua_State* L)
       }
     }
     lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "basepath");
+    if (type == LUA_TSTRING) {
+      path = lua_tostring(L, -1);
+    }
+    lua_pop(L, 1);
   }
 
   auto widget = new FilenameField(fnFieldType, fn);
@@ -1097,6 +1107,24 @@ int Dialog_file(lua_State* L)
     }
     lua_pop(L, 1);
   }
+
+  // Set file extension from 'exts' if a filename without extension is provided
+  if (!fn.empty() && base::get_file_extension(fn).empty() && !exts.empty())
+    fn = base::replace_extension(fn, exts.front());
+
+  // Set default path if 'basepath' is blank
+  if (path.empty()) {
+    const auto* doc = App::instance()->context()->activeDocument();
+    if (doc)
+      path = base::get_file_path(doc->filename());
+    else
+      path = (base::get_file_path(fn).empty() ? base::get_current_path() : base::get_file_path(fn));
+  }
+
+  // Update the widget with the provided filename
+  fn = base::join_path(path, base::get_file_name(fn));
+  widget->setDocFilename(fn);
+  widget->setFilename(fn);
 
   widget->SelectOutputFile.connect([=]() -> std::string {
     base::paths newfilename;
