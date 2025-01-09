@@ -94,6 +94,7 @@ protected:
   void onInitTheme(InitThemeEvent& ev) override;
   LayoutIO* onGetLayoutIO() override { return this; }
   void onNewDisplayConfiguration(Display* display) override;
+  bool onEnqueueMouseDown(MouseMessage* mouseMsg) override;
 
   // LayoutIO implementation
   std::string loadLayout(Widget* widget) override;
@@ -676,6 +677,23 @@ void CustomizedGuiManager::onNewDisplayConfiguration(Display* display)
     //      detect the os::Window (or UI Screen Scaling) change?
     Console::notifyNewDisplayConfiguration();
   }
+}
+
+bool CustomizedGuiManager::onEnqueueMouseDown(MouseMessage* mouseMsg)
+{
+  ASSERT(mouseMsg->type() == kMouseDownMessage);
+
+  // If there is no modal window running...
+  App* app = App::instance();
+  if (app && getForegroundWindow() == app->mainWindow()) {
+    // Process a mouse button as a shortcut.
+    if (processKey(mouseMsg)) {
+      // Don't enqueue this message
+      return false;
+    }
+  }
+
+  return true;
 }
 
 bool CustomizedGuiManager::processKey(Message* msg)

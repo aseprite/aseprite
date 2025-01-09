@@ -512,8 +512,11 @@ const AppShortcut* Key::isPressed(const Message* msg, const KeyContext keyContex
         // etc.
         m_keycontext == KeyContext::MouseWheel) {
       for (const AppShortcut& shortcut : shortcuts()) {
-        if (shortcut.modifiers() == mouseMsg->modifiers())
-          return &shortcut;
+        if ((shortcut.modifiers() == mouseMsg->modifiers()) &&
+            (shortcut.mouseButton() == mouseMsg->button()) &&
+            (!best || shortcut.fitsBetterThan(keyContext, keycontext(), keycontext(), *best))) {
+          best = &shortcut;
+        }
       }
     }
   }
