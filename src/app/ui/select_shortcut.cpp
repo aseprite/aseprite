@@ -56,19 +56,21 @@ protected:
           if (keymsg->scancode() == kKeySpace)
             modifiers = (KeyModifiers)(modifiers & ~kKeySpaceModifier);
 
-          m_shortcut = Shortcut(
-            modifiers,
-            keymsg->scancode(),
-            keymsg->unicodeChar() > 32 ? std::tolower(keymsg->unicodeChar()) : 0);
+          setAndParseShortcut(
+            Shortcut(modifiers,
+                     keymsg->scancode(),
+                     keymsg->unicodeChar() > 32 ? std::tolower(keymsg->unicodeChar()) : 0));
 
-          // Convert the shortcut to a string, and parse it
-          // again. Just to obtain the exact shortcut we'll read
-          // when we import the gui.xml file or an .aseprite-keys file.
-          m_shortcut = Shortcut(m_shortcut.toString());
+          return true;
+        }
+        break;
 
-          updateText();
+      case kMouseDownMessage:
+        if (!isReadOnly()) {
+          auto* mouseMsg = static_cast<MouseMessage*>(msg);
+          const KeyModifiers modifiers = mouseMsg->modifiers();
 
-          ShortcutChange(&m_shortcut);
+          setAndParseShortcut(Shortcut(modifiers, mouseMsg->button()));
           return true;
         }
         break;
@@ -76,11 +78,23 @@ protected:
     return Entry::onProcessMessage(msg);
   }
 
+  void setAndParseShortcut(const Shortcut& shortcut)
+  {
+    // Convert the shortcut to a string, and parse it
+    // again. Just to obtain the exact shortcut we'll read
+    // when we import the gui.xml file or an .aseprite-keys file.
+    m_shortcut = Shortcut(shortcut.toString());
+
+    updateText();
+
+    ShortcutChange(&m_shortcut);
+  }
+
   void updateText()
   {
-    setText(Shortcut(kKeyNoneModifier, m_shortcut.scancode(), m_shortcut.unicodeChar())
-              .toString()
-              .c_str());
+    Shortcut tmp = m_shortcut;
+    tmp.removeModifiers();
+    setText(tmp.toString());
   }
 
   Shortcut m_shortcut;
