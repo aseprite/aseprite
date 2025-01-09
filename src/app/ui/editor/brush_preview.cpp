@@ -112,6 +112,13 @@ BrushPreview::BrushPreview(Editor* editor) : m_editor(editor)
 
 BrushPreview::~BrushPreview()
 {
+  if (m_onScreen) {
+    // Called mainly to remove the UILayer from the Display. If we
+    // don't explicitly call Display::removeLayer(), the m_uiLayer
+    // instance will be referenced by the Display until it's destroyed
+    // (keeping the UILayer alive and visible for the whole program).
+    hide();
+  }
 }
 
 BrushRef BrushPreview::getCurrentBrush()
