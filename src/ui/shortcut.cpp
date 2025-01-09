@@ -144,7 +144,7 @@ int scancode_to_string_size = sizeof(scancode_to_string) / sizeof(scancode_to_st
 
 } // anonymous namespace
 
-Shortcut::Shortcut() : m_modifiers(kKeyNoneModifier), m_scancode(kKeyNil), m_unicodeChar(0)
+Shortcut::Shortcut()
 {
 }
 
@@ -155,10 +155,13 @@ Shortcut::Shortcut(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar
 {
 }
 
+Shortcut::Shortcut(KeyModifiers modifiers, MouseButton mouseButton)
+  : m_modifiers(modifiers)
+  , m_mouseButton(mouseButton)
+{
+}
+
 Shortcut::Shortcut(const std::string& str)
-  : m_modifiers(kKeyNoneModifier)
-  , m_scancode(kKeyNil)
-  , m_unicodeChar(0)
 {
   // Special case: plus sign
   if (str == "+") {
@@ -272,6 +275,16 @@ Shortcut::Shortcut(const std::string& str)
       m_scancode = kKeyDelPad;
     else if (tok == "enter pad")
       m_scancode = kKeyEnterPad;
+    else if (tok == "left mouse button")
+      m_mouseButton = kButtonLeft;
+    else if (tok == "right mouse button")
+      m_mouseButton = kButtonRight;
+    else if (tok == "middle mouse button")
+      m_mouseButton = kButtonMiddle;
+    else if (tok == "x1 mouse button")
+      m_mouseButton = kButtonX1;
+    else if (tok == "x2 mouse button")
+      m_mouseButton = kButtonX2;
   }
 }
 
@@ -313,10 +326,23 @@ std::string Shortcut::toString() const
     wideUnicodeChar.push_back((wchar_t)std::toupper(m_unicodeChar));
     buf += base::to_utf8(wideUnicodeChar);
   }
-  else if (m_scancode > 0 && m_scancode < scancode_to_string_size && scancode_to_string[m_scancode])
+  else if (m_scancode > 0 && m_scancode < scancode_to_string_size &&
+           scancode_to_string[m_scancode]) {
     buf += scancode_to_string[m_scancode];
-  else if (!buf.empty() && buf[buf.size() - 1] == '+')
+  }
+  // Mouse button
+  else if (m_mouseButton != kButtonNone) {
+    switch (m_mouseButton) {
+      case kButtonLeft:   buf += "Left Mouse Button"; break;
+      case kButtonRight:  buf += "Right Mouse Button"; break;
+      case kButtonMiddle: buf += "Middle Mouse Button"; break;
+      case kButtonX1:     buf += "X1 Mouse Button"; break;
+      case kButtonX2:     buf += "X2 Mouse Button"; break;
+    }
+  }
+  else if (!buf.empty() && buf[buf.size() - 1] == '+') {
     buf.erase(buf.size() - 1);
+  }
 
   return buf;
 }
@@ -336,7 +362,7 @@ bool Shortcut::isPressed() const
   KeyModifiers pressedModifiers = sys->keyModifiers();
 
   // Check if this shortcut is only
-  if (m_scancode == kKeyNil && m_unicodeChar == 0)
+  if (m_scancode == kKeyNil && m_unicodeChar == 0 && m_mouseButton == kButtonNone)
     return (m_modifiers == pressedModifiers);
 
   // Compare with all pressed scancodes
@@ -361,7 +387,7 @@ bool Shortcut::isLooselyPressed() const
     return false;
 
   // Check if this shortcut is only
-  if (m_scancode == kKeyNil && m_unicodeChar == 0)
+  if (m_scancode == kKeyNil && m_unicodeChar == 0 && m_mouseButton == kButtonNone)
     return true;
 
   // Compare with all pressed scancodes
