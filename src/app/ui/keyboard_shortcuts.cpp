@@ -499,6 +499,7 @@ const ui::Shortcut* Key::isPressed(const Message* msg, const KeyContext keyConte
   else if (const auto* mouseMsg = dynamic_cast<const MouseMessage*>(msg)) {
     for (const Shortcut& shortcut : shortcuts()) {
       if ((shortcut.modifiers() == mouseMsg->modifiers()) &&
+          (shortcut.mouseButton() == mouseMsg->button()) &&
           (m_keycontext == KeyContext::Any ||
            // TODO we could have multiple mouse wheel key-context,
            // like "sprite editor" context, or "timeline" context,
