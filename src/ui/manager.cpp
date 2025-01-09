@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -644,16 +644,20 @@ void Manager::handleMouseDown(Display* display,
   if (!handleWindowZOrder())
     return;
 
-  enqueueMessage(newMouseMessage(kMouseDownMessage,
-                                 display,
-                                 (capture_widget ? capture_widget : mouse_widget),
-                                 mousePos,
-                                 pointerType,
-                                 mouseButton,
-                                 modifiers,
-                                 gfx::Point(0, 0),
-                                 false,
-                                 pressure));
+  std::unique_ptr<MouseMessage> mouseMsg(
+    newMouseMessage(kMouseDownMessage,
+                    display,
+                    (capture_widget ? capture_widget : mouse_widget),
+                    mousePos,
+                    pointerType,
+                    mouseButton,
+                    modifiers,
+                    gfx::Point(0, 0),
+                    false,
+                    pressure));
+
+  if (onEnqueueMouseDown(mouseMsg.get()))
+    enqueueMessage(mouseMsg.release());
 }
 
 void Manager::handleMouseUp(Display* display,
@@ -1753,6 +1757,11 @@ void Manager::onNewDisplayConfiguration(Display* display)
   container->flushRedraw();
 }
 
+bool Manager::onEnqueueMouseDown(MouseMessage* mouseMsg)
+{
+  return true;
+}
+
 void Manager::onSizeHint(SizeHintEvent& ev)
 {
   int w = 0, h = 0;
@@ -2199,16 +2208,16 @@ Widget* Manager::findMagneticWidget(Widget* widget)
 }
 
 // static
-Message* Manager::newMouseMessage(MessageType type,
-                                  Display* display,
-                                  Widget* widget,
-                                  const gfx::Point& mousePos,
-                                  PointerType pointerType,
-                                  MouseButton button,
-                                  KeyModifiers modifiers,
-                                  const gfx::Point& wheelDelta,
-                                  bool preciseWheel,
-                                  float pressure)
+MouseMessage* Manager::newMouseMessage(MessageType type,
+                                       Display* display,
+                                       Widget* widget,
+                                       const gfx::Point& mousePos,
+                                       PointerType pointerType,
+                                       MouseButton button,
+                                       KeyModifiers modifiers,
+                                       const gfx::Point& wheelDelta,
+                                       bool preciseWheel,
+                                       float pressure)
 {
 #ifdef __APPLE__
   // Convert Ctrl+left click -> right-click
@@ -2219,14 +2228,14 @@ Message* Manager::newMouseMessage(MessageType type,
   }
 #endif
 
-  Message* msg = new MouseMessage(type,
-                                  pointerType,
-                                  button,
-                                  modifiers,
-                                  mousePos,
-                                  wheelDelta,
-                                  preciseWheel,
-                                  pressure);
+  auto* msg = new MouseMessage(type,
+                               pointerType,
+                               button,
+                               modifiers,
+                               mousePos,
+                               wheelDelta,
+                               preciseWheel,
+                               pressure);
 
   if (display)
     msg->setDisplay(display);
