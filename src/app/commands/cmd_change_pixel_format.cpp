@@ -667,8 +667,7 @@ render::DitheringMatrix ChangePixelFormatCommand::getDitheringMatrix(
   }
 
   // Default dithering matrix is BayerMatrix(8)
-  // TODO object slicing here (from BayerMatrix -> DitheringMatrix)
-  return render::BayerMatrix(8);
+  return render::BayerMatrix::make(8);
 }
 
 Command* CommandFactory::createChangePixelFormatCommand()
