@@ -303,6 +303,14 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     }
   }
 
+  // Check mouse button shortcuts, i.e. commands/tools that are
+  // activated with a mouse button.
+  if (auto* man = editor->manager()) {
+    bool result = man->sendMessage(msg);
+    if (result)
+      return true;
+  }
+
   // Start the Tool-Loop
   if (layer && (layer->isImage() || clickedInk->isSelection())) {
     tools::Pointer pointer = pointer_from_msg(editor, msg);

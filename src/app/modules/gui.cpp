@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -561,6 +561,18 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 
       if (processKey(msg))
         return true;
+
+      break;
+    }
+
+    case kMouseDownMessage: {
+      TRACEARGS("kMouseDownMessage");
+
+      // Process a mouse button as a shortcut.
+      if (processKey(msg)) {
+        TRACEARGS("  processKey returned true");
+        return true;
+      }
 
       break;
     }
