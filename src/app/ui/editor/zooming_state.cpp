@@ -64,7 +64,7 @@ bool ZoomingState::onMouseUp(Editor* editor, MouseMessage* msg)
 bool ZoomingState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   gfx::Point pt = (msg->position() - m_startPos);
-  int threshold = 8 * guiscale() * editor->display()->nativeWindow()->scale();
+  int threshold = 8 * guiscale() * editor->display()->nativeWindow()->baseScale();
 
   if (m_moved || std::sqrt(pt.x * pt.x + pt.y * pt.y) > threshold) {
     m_moved = true;
