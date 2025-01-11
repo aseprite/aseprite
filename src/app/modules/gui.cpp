@@ -159,7 +159,7 @@ static bool create_main_window(bool gpuAccel, bool& maximized, std::string& last
     // Change the default Screen Scale value to the one configured in
     // the main window by default.
     if (scale == 0)
-      Preferences::instance().general.screenScale.setValueAndDefault(main_window->scale());
+      Preferences::instance().general.screenScale.setValueAndDefault(main_window->baseScale());
 
     main_window->setGpuAcceleration(gpuAccel);
 
@@ -592,7 +592,7 @@ bool CustomizedGuiManager::onProcessDevModeKeyDown(KeyMessage* msg)
   if (msg->ctrlPressed() && msg->scancode() == kKeyF1) {
     try {
       os::Window* window = display()->nativeWindow();
-      int screenScale = window->scale();
+      int screenScale = window->baseScale();
       int uiScale = ui::guiscale();
 
       if (msg->shiftPressed()) {
@@ -627,7 +627,7 @@ bool CustomizedGuiManager::onProcessDevModeKeyDown(KeyMessage* msg)
       if (uiScale != ui::guiscale()) {
         ui::set_theme(ui::get_theme(), uiScale);
       }
-      if (screenScale != window->scale()) {
+      if (screenScale != window->baseScale()) {
         updateAllDisplays(screenScale, window->gpuAcceleration());
       }
     }
