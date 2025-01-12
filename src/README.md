@@ -1,6 +1,6 @@
 # Aseprite Source Code
 
-If you are here is because you want to learn about Aseprite source
+If you are here, it is because you want to learn about Aseprite source
 code. We'll try to write in these `README.md` files a summary of each
 module/library.
 
