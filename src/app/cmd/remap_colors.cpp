@@ -15,6 +15,7 @@
 #include "doc/image.h"
 #include "doc/remap.h"
 #include "doc/sprite.h"
+#include "doc/tilesets.h"
 
 namespace app { namespace cmd {
 
@@ -46,6 +47,14 @@ void RemapColors::incrementVersions(Sprite* spr)
 {
   for (const Cel* cel : spr->uniqueCels())
     cel->image()->incrementVersion();
+
+  if (spr->hasTilesets()) {
+    for (Tileset* tileset : *spr->tilesets()) {
+      if (!tileset)
+        continue;
+      tileset->incrementVersion();
+    }
+  }
 }
 
 }} // namespace app::cmd
