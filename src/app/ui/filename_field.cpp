@@ -100,6 +100,8 @@ void FilenameField::onBrowse()
   ui::MenuItem choose(Strings::select_file_choose());
   ui::MenuItem relative(Strings::select_file_relative_path(m_pathBase));
   ui::MenuItem absolute(Strings::select_file_absolute_path());
+  relative.setSelected(!m_editFullPath);
+  absolute.setSelected(m_editFullPath);
   menu.addChild(&choose);
   menu.addChild(new ui::MenuSeparator());
   menu.addChild(&relative);
