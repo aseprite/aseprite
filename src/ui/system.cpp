@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -278,6 +278,14 @@ void execute_from_ui_thread(std::function<void()>&& func)
   ev.setType(os::Event::Callback);
   ev.setCallback(std::move(func));
   os::queue_event(ev);
+}
+
+void execute_now_or_enqueue(std::function<void()>&& func)
+{
+  if (is_ui_thread())
+    func();
+  else
+    execute_from_ui_thread(std::move(func));
 }
 
 bool is_ui_thread()

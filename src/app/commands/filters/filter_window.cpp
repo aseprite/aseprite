@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -166,6 +166,13 @@ void FilterWindow::onApply()
   update_screen_for_document(m_filterMgr->document());
 
   restartPreview();
+
+  // If there is no cel after applying the filter, then close the window because we cannot
+  // continue applying it over an empty cel.
+  if (!m_filterMgr->cel()) {
+    onCancel();
+    return;
+  }
 }
 
 void FilterWindow::onOk()
