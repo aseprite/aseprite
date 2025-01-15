@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -62,6 +62,9 @@ gfx::Point get_mouse_position();
 void set_mouse_position(const gfx::Point& newPos, Display* display);
 
 void execute_from_ui_thread(std::function<void()>&& func);
+// If it is called from the UI thread just executes the function, if it is
+// called from a different thread, then call execute_from_ui_thread.
+void execute_now_or_enqueue(std::function<void()>&& func);
 bool is_ui_thread();
 #ifdef _DEBUG
 void assert_ui_thread();

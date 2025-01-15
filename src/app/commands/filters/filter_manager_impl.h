@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -100,6 +100,7 @@ public:
   doc::Sprite* sprite() { return m_site.sprite(); }
   doc::Layer* layer() { return m_site.layer(); }
   doc::frame_t frame() { return m_site.frame(); }
+  doc::Cel* cel() { return m_site.cel(); }
   doc::Image* destinationImage() const { return m_dst.get(); }
   gfx::Point position() const { return gfx::Point(0, 0); }
 
