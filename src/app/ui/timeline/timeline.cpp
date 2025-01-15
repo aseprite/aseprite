@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1958,7 +1958,7 @@ void Timeline::onAddCel(DocEvent& ev)
 
 void Timeline::onAfterRemoveCel(DocEvent& ev)
 {
-  invalidateLayer(ev.layer());
+  ui::execute_now_or_enqueue([this, ev] { invalidateLayer(ev.layer()); });
 }
 
 void Timeline::onLayerNameChange(DocEvent& ev)
