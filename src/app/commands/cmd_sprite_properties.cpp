@@ -142,6 +142,8 @@ public:
   {
     userData()->Click.connect([this] { onToggleUserData(); });
 
+    useUuidForLayers()->setSelected(sprite->useUuidsForLayers());
+
     m_userDataView.configureAndSet(m_sprite->userData(), propertiesGrid());
 
     if (sprite->tilesets()->size() == 0) {
@@ -396,6 +398,8 @@ void SpritePropertiesCommand::onExecute(Context* context)
     PixelRatio pixelRatio = base::convert_to<PixelRatio>(window.pixelRatio()->getValue());
 
     const UserData newUserData = window.getUserData();
+
+    sprite->setUseUuidsForLayers(window.useUuidForLayers()->isSelected());
 
     if (index != sprite->transparentColor() || pixelRatio != sprite->pixelRatio() ||
         newUserData != sprite->userData()) {
