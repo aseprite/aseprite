@@ -32,6 +32,7 @@
 #include "app/ui/timeline/timeline.h"
 #include "app/ui/user_data_view.h"
 #include "app/ui_context.h"
+#include "base/convert_to.h"
 #include "base/scoped_value.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -462,6 +463,14 @@ private:
       opacity()->setEnabled(false);
       m_userDataView.setVisible(false, false);
     }
+
+    bool uuidVisible = m_document && m_document->sprite() &&
+                       m_document->sprite()->useUuidsForLayers();
+    uuidLabel()->setVisible(uuidVisible);
+    uuid()->setVisible(uuidVisible);
+
+    if (uuidVisible)
+      uuid()->setText(m_layer ? base::convert_to<std::string>(m_layer->uuid()) : "");
 
     if (tileset()->isVisible() != tilemapVisibility) {
       tileset()->setVisible(tilemapVisibility);

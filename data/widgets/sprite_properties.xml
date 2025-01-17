@@ -42,6 +42,8 @@
           <button id="convert_color_profile" text="@.convert" />
         </hbox>
       </hbox>
+
+      <check text="@.use_uuid_for_layers" id="use_uuid_for_layers" tooltip="@.use_uuid_for_layers_tooltip" cell_hspan="2" />
     </grid>
 
     <vbox expansive="true" id="tilesets_placeholder">

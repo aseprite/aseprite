@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,6 +9,7 @@
 #define DOC_LAYER_H_INCLUDED
 #pragma once
 
+#include "base/uuid.h"
 #include "doc/blend_mode.h"
 #include "doc/cel_list.h"
 #include "doc/frame.h"
@@ -128,6 +129,9 @@ public:
   int opacity() const { return m_opacity; }
   void setOpacity(int opacity) { m_opacity = opacity; }
 
+  const base::Uuid& uuid() const { return m_uuid; }
+  void setUuid(const base::Uuid& uuid) { m_uuid = uuid; }
+
   virtual Grid grid() const;
   virtual Cel* cel(frame_t frame) const;
   virtual void getCels(CelList& cels) const = 0;
@@ -138,6 +142,9 @@ private:
   Sprite* m_sprite;     // owner of the layer
   LayerGroup* m_parent; // parent layer
   LayerFlags m_flags;   // stack order cannot be changed
+  base::Uuid m_uuid;    // The UUID is generated the first time the "HasUUID" flag
+                        // is activated when it is a null UUID. If this field had
+                        // a valid UUID already, it won't be replaced by a new one.
 
   BlendMode m_blendmode;
   int m_opacity;

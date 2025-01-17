@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -36,6 +36,9 @@ Layer::Layer(ObjectType type, Sprite* sprite)
          type == ObjectType::LayerTilemap);
 
   setName("Layer");
+  // Always generate a UUID for this layer, but take into account that it could
+  // be replaced. For instance, when loading a layer that already had a UUID.
+  m_uuid = base::Uuid::Generate();
 }
 
 Layer::~Layer()
