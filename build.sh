@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 #
 # This is a script to help users and developers to build Aseprite.
 # Usage:
