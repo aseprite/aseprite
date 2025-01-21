@@ -358,19 +358,20 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
     ExportFileWindow win(doc);
     bool askOverwrite = true;
 
-    win.SelectOutputFile.connect([this, &win, &askOverwrite, context, doc]() -> std::string {
-      std::string result = saveAsDialog(
-        context,
-        Strings::save_file_export(),
-        win.outputFilenameValue(),
-        MarkAsSaved::Off,
-        SaveInBackground::Off,
-        (doc->isAssociatedToFile() ? doc->filename() : std::string()));
-      if (!result.empty())
-        askOverwrite = false; // Already asked in the file selector dialog
+    win.outputField()->SelectOutputFile.connect(
+      [this, &win, &askOverwrite, context, doc]() -> std::string {
+        std::string result = saveAsDialog(
+          context,
+          Strings::save_file_export(),
+          win.outputField()->fullFilename(),
+          MarkAsSaved::Off,
+          SaveInBackground::Off,
+          (doc->isAssociatedToFile() ? doc->filename() : std::string()));
+        if (!result.empty())
+          askOverwrite = false; // Already asked in the file selector dialog
 
-      return result;
-    });
+        return result;
+      });
 
     if (params().filename.isSet()) {
       std::string outputPath = base::get_file_path(outputFilename);
@@ -378,7 +379,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
         outputPath = base::get_file_path(doc->filename());
         outputFilename = base::join_path(outputPath, outputFilename);
       }
-      win.setOutputFilename(outputFilename);
+      win.outputField()->setFilename(outputFilename);
     }
 
     if (params().scale.isSet())
@@ -401,7 +402,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
     if (!result)
       return;
 
-    outputFilename = win.outputFilenameValue();
+    outputFilename = win.outputField()->fullFilename();
 
     if (askOverwrite && base::is_file(outputFilename)) {
       int ret = OptionalAlert::show(Preferences::instance().exportFile.showOverwriteFilesAlert,

@@ -161,6 +161,7 @@
       <option id="keep_closed_sprite_on_memory" type="bool" default="true" />
       <option id="keep_closed_sprite_on_memory_for" type="double" default="15.0" />
       <option id="show_full_path" type="bool" default="true" />
+      <option id="edit_full_path" type="bool" default="false" />
       <option id="timeline_position" type="TimelinePosition" default="TimelinePosition::BOTTOM" />
       <option id="timeline_layer_panel_width" type="int" default="100" />
       <option id="show_menu_bar" type="bool" default="true" />
