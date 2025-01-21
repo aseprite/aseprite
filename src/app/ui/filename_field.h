@@ -24,15 +24,15 @@ public:
 
   FilenameField(const Type type, const std::string& pathAndFilename);
 
-  std::string filepath() const { return m_path; };
-  std::string filename() const { return m_file; };
+  std::string filepath() const { return m_path; }
+  std::string filename() const { return m_file; }
   std::string fullFilename() const;
   std::string displayedFilename() const;
-  bool askOverwrite() const { return m_askOverwrite; };
+  bool askOverwrite() const { return m_askOverwrite; }
   void setFilename(const std::string& pathAndFilename);
-  void setFilenameQuiet(const std::string& fn) { m_file = fn; };
-  void setDocFilename(const std::string& fn) { m_docFilename = fn; };
-  void setAskOverwrite(const bool on) { m_askOverwrite = on; };
+  void setFilenameQuiet(const std::string& fn) { m_file = fn; }
+  void setDocFilename(const std::string& fn) { m_docFilename = fn; }
+  void setAskOverwrite(const bool on) { m_askOverwrite = on; }
   void onUpdateText();
 
   obs::signal<std::string()> SelectOutputFile;
