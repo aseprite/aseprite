@@ -178,15 +178,12 @@ void FilenameField::onUpdateText()
 
 void FilenameField::updateWidgets()
 {
-  if (!m_entry) {
-    if (m_file.empty())
-      m_button.setText(Strings::select_file_text());
-    else
-      m_button.setText(displayedFilename());
-  }
-  else {
+  if (m_entry)
     m_entry->setText(displayedFilename());
-  }
+  else if (m_file.empty())
+    m_button.setText(Strings::select_file_text());
+  else
+    m_button.setText(displayedFilename());
 
   Change();
 }
