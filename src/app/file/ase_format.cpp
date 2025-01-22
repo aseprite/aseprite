@@ -20,6 +20,7 @@
 #include "base/file_handle.h"
 #include "base/fs.h"
 #include "base/mem_utils.h"
+#include "base/uuid.h"
 #include "dio/aseprite_common.h"
 #include "dio/aseprite_decoder.h"
 #include "dio/decode_delegate.h"
@@ -542,7 +543,8 @@ static void ase_file_prepare_header(FILE* f,
                    sprite->pixelFormat() == IMAGE_INDEXED   ? 8 :
                                                               0);
   header->flags = (ASE_FILE_FLAG_LAYER_WITH_OPACITY |
-                   (composeGroups ? ASE_FILE_FLAG_COMPOSITE_GROUPS : 0));
+                   (composeGroups ? ASE_FILE_FLAG_COMPOSITE_GROUPS : 0) |
+                   (sprite->useUuidsForLayers() ? ASE_FILE_FLAG_LAYER_WITH_UUID : 0));
   header->speed = sprite->frameDuration(firstFrame);
   header->next = 0;
   header->frit = 0;
@@ -786,6 +788,13 @@ static void ase_file_write_palette_chunk(FILE* f,
   }
 }
 
+static void ase_file_write_uuid(FILE* f, const base::Uuid& uuid)
+{
+  for (int i = 0; i < 16; ++i) {
+    fputc(uuid[i], f);
+  }
+}
+
 static void ase_file_write_layer_chunk(FILE* f,
                                        const dio::AsepriteHeader* header,
                                        dio::AsepriteFrameHeader* frame_header,
@@ -835,6 +844,9 @@ static void ase_file_write_layer_chunk(FILE* f,
   // Tileset index
   if (layer->isTilemap())
     fputl(static_cast<const LayerTilemap*>(layer)->tilesetIndex(), f);
+
+  if ((header->flags & ASE_FILE_FLAG_LAYER_WITH_UUID) == ASE_FILE_FLAG_LAYER_WITH_UUID)
+    ase_file_write_uuid(f, layer->uuid());
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1676,9 +1688,7 @@ static void ase_file_write_property_value(FILE* f, const UserData::Variant& valu
     }
     case USER_DATA_PROPERTY_TYPE_UUID: {
       auto& uuid = *std::get_if<base::Uuid>(&value);
-      for (int i = 0; i < 16; ++i) {
-        fputc(uuid[i], f);
-      }
+      ase_file_write_uuid(f, uuid);
       break;
     }
   }

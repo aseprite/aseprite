@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2023 Igara Studio S.A.
+// Copyright (c) 2023-2025 Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -14,6 +14,7 @@
 #include "base/serialization.h"
 #include "doc/string_io.h"
 #include "doc/user_data.h"
+#include "doc/uuid_io.h"
 
 #include <iostream>
 
@@ -86,9 +87,7 @@ static void write_property_value(std::ostream& os, const UserData::Variant& vari
     }
     case USER_DATA_PROPERTY_TYPE_UUID: {
       auto uuid = get_value<base::Uuid>(variant);
-      for (int i = 0; i < 16; ++i) {
-        write8(os, uuid[i]);
-      }
+      write_uuid(os, uuid);
       break;
     }
   }
@@ -207,12 +206,7 @@ static UserData::Variant read_property_value(std::istream& is, uint16_t type)
       return value;
     }
     case USER_DATA_PROPERTY_TYPE_UUID: {
-      base::Uuid value;
-      uint8_t* bytes = value.bytes();
-      for (int i = 0; i < 16; ++i) {
-        bytes[i] = read8(is);
-      }
-      return value;
+      return read_uuid(is);
     }
   }
 

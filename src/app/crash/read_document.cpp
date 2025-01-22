@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -44,6 +44,7 @@
 #include "doc/tilesets.h"
 #include "doc/user_data_io.h"
 #include "doc/util.h"
+#include "doc/uuid_io.h"
 #include "fixmath/fixmath.h"
 
 #include <fstream>
@@ -450,6 +451,10 @@ private:
            type == ObjectType::LayerTilemap);
 
     std::string name = read_string(s);
+    base::Uuid uuid;
+    if (m_serial >= SerialFormat::Ver3)
+      uuid = read_uuid(s);
+
     std::unique_ptr<Layer> lay;
 
     switch (type) {
@@ -495,13 +500,15 @@ private:
         break;
     }
 
-    if (lay) {
-      UserData userData = read_user_data(s, m_serial);
-      lay->setUserData(userData);
-      return lay.release();
-    }
-    else
+    if (!lay)
       return nullptr;
+
+    if (m_serial >= SerialFormat::Ver3)
+      lay->setUuid(uuid);
+
+    UserData userData = read_user_data(s, m_serial);
+    lay->setUserData(userData);
+    return lay.release();
   }
 
   Cel* readCel(std::ifstream& s) { return read_cel(s, this, false); }
