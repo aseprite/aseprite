@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018-2024 Igara Studio S.A.
+// Copyright (c) 2018-2025 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -74,6 +74,9 @@ bool AsepriteDecoder::decode()
   // Set grid bounds
   sprite->setGridBounds(
     gfx::Rect(header.grid_x, header.grid_y, header.grid_width, header.grid_height));
+
+  sprite->setUseUuidsForLayers((header.flags & ASE_FILE_FLAG_LAYER_WITH_UUID) ==
+                               ASE_FILE_FLAG_LAYER_WITH_UUID);
 
   // Prepare variables for layer chunks
   doc::Layer* last_layer = sprite->root();
@@ -577,47 +580,52 @@ doc::Layer* AsepriteDecoder::readLayerChunk(AsepriteHeader* header,
       break;
   }
 
-  if (layer) {
-    const bool composeGroups = (header->flags & ASE_FILE_FLAG_COMPOSITE_GROUPS);
+  if (!layer)
+    return nullptr;
 
-    if ((layer->isImage() || (layer->isGroup() && composeGroups)) &&
-        // Only transparent layers can have blend mode and opacity
-        !(flags & int(doc::LayerFlags::Background))) {
-      layer->setBlendMode((doc::BlendMode)blendmode);
-      if (header->flags & ASE_FILE_FLAG_LAYER_WITH_OPACITY)
-        layer->setOpacity(opacity);
-    }
+  // Read UUID if usage is enabled
+  if (sprite->useUuidsForLayers())
+    layer->setUuid(readUuid());
 
-    // flags
-    layer->setFlags(
-      static_cast<doc::LayerFlags>(flags & static_cast<int>(doc::LayerFlags::PersistentFlagsMask)));
+  const bool composeGroups = (header->flags & ASE_FILE_FLAG_COMPOSITE_GROUPS);
 
-    // name
-    layer->setName(name.c_str());
-
-    // Child level
-    if (child_level == *current_level)
-      (*previous_layer)->parent()->addLayer(layer);
-    else if (child_level > *current_level)
-      static_cast<doc::LayerGroup*>(*previous_layer)->addLayer(layer);
-    else if (child_level < *current_level) {
-      doc::LayerGroup* parent = (*previous_layer)->parent();
-      ASSERT(parent);
-      if (parent) {
-        int levels = (*current_level - child_level);
-        while (levels--) {
-          ASSERT(parent->parent());
-          if (!parent->parent())
-            break;
-          parent = parent->parent();
-        }
-        parent->addLayer(layer);
-      }
-    }
-
-    *previous_layer = layer;
-    *current_level = child_level;
+  if ((layer->isImage() || (layer->isGroup() && composeGroups)) &&
+      // Only transparent layers can have blend mode and opacity
+      !(flags & int(doc::LayerFlags::Background))) {
+    layer->setBlendMode((doc::BlendMode)blendmode);
+    if (header->flags & ASE_FILE_FLAG_LAYER_WITH_OPACITY)
+      layer->setOpacity(opacity);
   }
+
+  // flags
+  layer->setFlags(
+    static_cast<doc::LayerFlags>(flags & static_cast<int>(doc::LayerFlags::PersistentFlagsMask)));
+
+  // name
+  layer->setName(name.c_str());
+
+  // Child level
+  if (child_level == *current_level)
+    (*previous_layer)->parent()->addLayer(layer);
+  else if (child_level > *current_level)
+    static_cast<doc::LayerGroup*>(*previous_layer)->addLayer(layer);
+  else if (child_level < *current_level) {
+    doc::LayerGroup* parent = (*previous_layer)->parent();
+    ASSERT(parent);
+    if (parent) {
+      int levels = (*current_level - child_level);
+      while (levels--) {
+        ASSERT(parent->parent());
+        if (!parent->parent())
+          break;
+        parent = parent->parent();
+      }
+      parent->addLayer(layer);
+    }
+  }
+
+  *previous_layer = layer;
+  *current_level = child_level;
 
   return layer;
 }
@@ -1430,12 +1438,7 @@ const doc::UserData::Variant AsepriteDecoder::readPropertyValue(uint16_t type)
       return value;
     }
     case USER_DATA_PROPERTY_TYPE_UUID: {
-      base::Uuid value;
-      uint8_t* bytes = value.bytes();
-      for (int i = 0; i < 16; ++i) {
-        bytes[i] = read8();
-      }
-      return value;
+      return readUuid();
     }
     default: {
       throw base::Exception(
@@ -1469,6 +1472,16 @@ void AsepriteDecoder::readTilesData(doc::Tileset* tileset, const AsepriteExterna
     tileset->setTileData(i, tileData);
     f()->seek(chunk_pos + chunk_size);
   }
+}
+
+base::Uuid AsepriteDecoder::readUuid()
+{
+  base::Uuid value;
+  uint8_t* bytes = value.bytes();
+  for (int i = 0; i < 16; ++i) {
+    bytes[i] = read8();
+  }
+  return value;
 }
 
 } // namespace dio
