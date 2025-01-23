@@ -16,7 +16,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         ref: main
-        # submodules: 'recursive'     ### may be needed in your situation
+        submodules: 'recursive'     ### may be needed in your situation
 
     # Step 2: run this sync action - specify the upstream repo, upstream branch to sync with, and target sync branch
     - name: Pull upstream changes
