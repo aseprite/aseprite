@@ -12,7 +12,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: upstream             # set the branch to merge to
+          ref: main
           fetch-depth: 0 
       - name: Merge Upstream
         uses: exions/merge-upstream@v1.1.0
