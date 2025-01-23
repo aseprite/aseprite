@@ -1,0 +1,22 @@
+name: Scheduled Merge with Upstream
+on: 
+  schedule:
+    - cron: '0 16 * * 4'
+    # scheduled for 00:00 every Monday
+  workflow_dispatch:
+
+jobs:
+  merge-upstream:
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: upstream             # set the branch to merge to
+          fetch-depth: 0 
+      - name: Merge Upstream
+        uses: exions/merge-upstream@v1.1.0
+        with:
+          upstream: aseprite/aseprite
+          upstream-branch: main
+          branch: main      
