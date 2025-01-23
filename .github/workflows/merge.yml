@@ -26,6 +26,7 @@ jobs:
         upstream_repository: aseprite/aseprite
         upstream_branch: main
         target_branch: main
+        git_pull_args: --ff-only
         
     # Step 3: Display a message if 'sync' step had new commits (simple test)
     - name: Check for new commits
