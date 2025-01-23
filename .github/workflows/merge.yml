@@ -6,17 +6,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  merge-upstream:
+  sync-fork:
     runs-on: ubuntu-latest
-    steps: 
-      - name: Checkout
-        uses: actions/checkout@v2
+    # Needs explicit permission to write to the repository
+    permissions:
+      contents: write
+    steps:
+      - uses: thiagokokada/merge-upstream@v1.0.2
         with:
-          ref: main
-          fetch-depth: 0 
-      - name: Merge Upstream
-        uses: exions/merge-upstream@v1.1.0
-        with:
-          upstream: aseprite/aseprite
-          upstream-branch: main
-          branch: main      
+          branch: main
