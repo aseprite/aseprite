@@ -6,12 +6,29 @@ on:
   workflow_dispatch:
 
 jobs:
-  sync-fork:
+  sync_with_upstream:
     runs-on: ubuntu-latest
-    # Needs explicit permission to write to the repository
-    permissions:
-      contents: write
+    name: Sync main with upstream latest
+
     steps:
-      - uses: thiagokokada/merge-upstream@v1.0.2
-        with:
-          branch: main
+    # Step 1: run a standard checkout action, provided by github
+    - name: Checkout main
+      uses: actions/checkout@v2
+      with:
+        ref: main
+        # submodules: 'recursive'     ### may be needed in your situation
+
+    # Step 2: run this sync action - specify the upstream repo, upstream branch to sync with, and target sync branch
+    - name: Pull upstream changes
+      id: sync
+      uses: aormsby/Fork-Sync-With-Upstream-action@v2.1
+      with:
+        upstream_repository: aseprite/aseprite
+        upstream_branch: main
+        target_branch: main
+        
+    # Step 3: Display a message if 'sync' step had new commits (simple test)
+    - name: Check for new commits
+      if: steps.sync.outputs.has_new_commits
+      run: echo "There were new commits."
+      
