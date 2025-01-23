@@ -144,6 +144,26 @@ do
   expect_img(bg, { 0, 1,
                    2, 0 })
 
+  -- Test fitCriteria param
+  s = Sprite(6, 2, ColorMode.RGB)
+  p = Palette(4)
+  p:setColor(0, Color(0, 0, 0))
+  p:setColor(1, Color(255, 0, 0))
+  p:setColor(2, Color(199, 0, 0))
+  p:setColor(3, Color(155, 0, 0))
+  s:setPalette(p)
+
+  local img = s.cels[1].image
+
+  array_to_pixels({
+    rgba(72, 0, 0), rgba(109, 0, 0), rgba(145, 0, 0), rgba(182, 0, 0), rgba(218, 0, 0), rgba(255, 0, 0),
+    rgba(72, 0, 0), rgba(109, 0, 0), rgba(145, 0, 0), rgba(182, 0, 0), rgba(218, 0, 0), rgba(255, 0, 0)}, img)
+
+  app.command.ChangePixelFormat{ format="indexed",  fitCriteria="linearizedRGB" }
+
+  img = s.cels[1].image
+  expect_img(img, { 3, 3, 3, 2, 2, 1,
+                   3, 3, 3, 2, 2, 1 })
 end
 
 ----------------------------------------------------------------------
