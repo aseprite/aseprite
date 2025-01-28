@@ -232,7 +232,7 @@ else()
   set(ZLIB_LIBRARIES ${ZLIB_LIBRARY})
   set(ZLIB_INCLUDE_DIRS
     ${ZLIB_DIR}
-    ${CMAKE_BINARY_DIR}/third_party/zlib) # Zlib generated zconf.h file
+    ${CMAKE_CURRENT_BINARY_DIR}/third_party/zlib) # Zlib generated zconf.h file
   set(ZLIB_INCLUDE_DIR ${ZLIB_INCLUDE_DIRS} CACHE PATH "")
 endif()
 include_directories(${ZLIB_INCLUDE_DIRS})

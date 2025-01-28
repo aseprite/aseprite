@@ -700,7 +700,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
           // 3) we are drawing the brush preview in a preview editor
           // and preferences (brushPreviewInPreview) says that we
           // should do that.
-          || m_docPref.show.brushPreviewInPreview())) {
+          || pref.cursor.brushPreviewInPreview())) {
       m_renderEngine->setExtraImage(extraCel->type(),
                                     extraCel->cel(),
                                     extraCel->image(),

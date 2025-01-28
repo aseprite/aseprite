@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2019-2024 Igara Studio S.A.
+// Copyright (c) 2019-2025 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -8,6 +8,8 @@
 #ifdef HAVE_CONFIG_H
   #include "config.h"
 #endif
+
+#include "render/get_sprite_pixel.h"
 
 #include "doc/doc.h"
 #include "gfx/clip.h"

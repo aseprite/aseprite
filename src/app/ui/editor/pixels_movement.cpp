@@ -616,6 +616,9 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
       gfx::PointF pivot((pivotPoint.x - bounds.x) / ABS(bounds.w),
                         (pivotPoint.y - bounds.y) / ABS(bounds.h));
 
+      // Smallest value possible, used for limit calculations
+      const double eps = 0.00001;
+
       // Vector from AB (or CD), and AC (or BD)
       vec2 u = to_vec2(B - A);
       vec2 v = to_vec2(C - A);
@@ -650,7 +653,7 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
           C.y += delta.y;
 
           vec2 toPivot = to_vec2(pivotPoint - (A * (1.0 - pivot.y) + C * pivot.y));
-          vec2 toOtherSide = toPivot / (std::fabs(pivot.x) > 0.00001 ? pivot.x : 1.0);
+          vec2 toOtherSide = toPivot / (std::fabs(pivot.x) > eps ? pivot.x : 1.0);
           B = A + to_point(toOtherSide);
           D = C + to_point(toOtherSide);
           break;
@@ -663,7 +666,7 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
           D.y += delta.y;
 
           vec2 toPivot = to_vec2(pivotPoint - (B * (1.0 - pivot.y) + D * pivot.y));
-          vec2 toOtherSide = toPivot / (std::fabs(1.0 - pivot.x) > 0.00001 ? (1.0 - pivot.x) : 1.0);
+          vec2 toOtherSide = toPivot / (std::fabs(1.0 - pivot.x) > eps ? (1.0 - pivot.x) : 1.0);
           A = B + to_point(toOtherSide);
           C = D + to_point(toOtherSide);
           break;
@@ -692,11 +695,15 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
         case SkewWHandle:
         case SkewEHandle: {
           vec2 AB = to_vec2(B - A);
-          bounds.w = AB.magnitude();
+          // Clamping bounds width to prevent a segfault with some extreme transforms
+          bounds.w = std::min(AB.magnitude(), m_initialData.bounds().w * 10);
           bounds.x = pivotPoint.x - bounds.w * pivot.x;
 
           // New rotation angle is the angle between AB points
           newTransformation.angle(-AB.angle());
+
+          // Limit for pivot.x to prevent the 'stretch to infinity' bug
+          const double limit = (std::fabs(pivot.x) >= 1.0 ? (1.0 - eps) * SGN(pivot.x) : pivot.x);
 
           // New skew angle is the angle between AC0 (vector from A to
           // B rotated 45 degrees, like an AC vector without skew) and
@@ -712,7 +719,7 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
           //  |   / <- AC0=AB rotated 45 degrees, if pivot is here
           //  | /
           //  C
-          auto ABp = A * (1.0 - pivot.x) + B * pivot.x;
+          auto ABp = A * (1.0 - limit) + B * limit;
           AC0 = vec2(ABp.y - B.y, B.x - ABp.x);
           AC = to_vec2(C - A);
 
