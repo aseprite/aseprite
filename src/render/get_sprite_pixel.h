@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2025 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,6 +9,7 @@
 #define RENDER_GET_SPRITE_PIXEL_H_INCLUDED
 #pragma once
 
+#include "doc/color.h"
 #include "doc/frame.h"
 
 namespace doc {
