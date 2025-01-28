@@ -82,7 +82,8 @@ add_library(doc-lib
   tilesets.cpp
   user_data.cpp
   user_data_io.cpp
-  util.cpp)
+  util.cpp
+  uuid_io.cpp)
 
 target_link_libraries(doc-lib
   laf-gfx

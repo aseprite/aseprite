@@ -15,6 +15,9 @@
 
       <label text="@.opacity" />
       <opacityslider id="opacity" width="128" cell_align="horizontal" cell_hspan="2" />
+
+      <label id="uuid_label" text="@.uuid" visible="false" />
+      <label id="uuid" cell_hspan="2" visible="false"/>
     </grid>
   </vbox>
 </window>

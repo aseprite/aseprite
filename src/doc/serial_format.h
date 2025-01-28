@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2020-2024  Igara Studio S.A.
+// Copyright (c) 2020-2025  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -19,7 +19,8 @@ enum class SerialFormat : uint16_t {
   Ver0 = 0, // Old version
   Ver1 = 1, // New version with tilesets
   Ver2 = 2, // Version 2 adds custom properties to user data
-  LastVer = Ver2
+  Ver3 = 3, // Version 3 adds UUIDs to layers
+  LastVer = Ver3
 };
 
 } // namespace doc

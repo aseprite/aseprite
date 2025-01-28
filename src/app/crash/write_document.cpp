@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -41,6 +41,7 @@
 #include "doc/tileset_io.h"
 #include "doc/tilesets.h"
 #include "doc/user_data_io.h"
+#include "doc/uuid_io.h"
 #include "fixmath/fixmath.h"
 
 #include <fstream>
@@ -250,6 +251,7 @@ private:
     write32(s, static_cast<int>(lay->flags())); // Flags
     write16(s, static_cast<int>(lay->type()));  // Type
     write_string(s, lay->name());
+    write_uuid(s, lay->uuid());
 
     switch (lay->type()) {
       case ObjectType::LayerImage:
