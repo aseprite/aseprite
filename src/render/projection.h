@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2020 Igara Studio S.A.
+// Copyright (c) 2020-2025 Igara Studio S.A.
 // Copyright (c) 2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -30,6 +30,20 @@ public:
 
   void setPixelRatio(const doc::PixelRatio& pixelRatio) { m_pixelRatio = pixelRatio; }
   void setZoom(const Zoom& zoom) { m_zoom = zoom; }
+
+  // To identify simplest composite scale up cases'
+  bool isSimpleScaleUpCase() const
+  {
+    return scaleX() >= 1.0 && scaleY() >= 1.0 && (m_pixelRatio.w == 1 || m_pixelRatio.w % 2 == 0) &&
+           (m_pixelRatio.h == 1 || m_pixelRatio.h % 2 == 0);
+  }
+
+  // To identify simplest composite scale down cases
+  bool isSimpleScaleDownCase() const
+  {
+    return scaleX() <= 1.0 && scaleY() <= 1.0 && std::fmod(1.0 / scaleX(), 1.0) == 0.0 &&
+           std::fmod(1.0 / scaleY(), 1.0) == 0.0;
+  }
 
   double scaleX() const { return m_zoom.scale() * m_pixelRatio.w; }
   double scaleY() const { return m_zoom.scale() * m_pixelRatio.h; }
