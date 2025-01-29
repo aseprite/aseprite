@@ -662,6 +662,9 @@ public:
     onChangeBgScope();
     onChangeGridScope();
     sectionListbox()->selectIndex(m_curSection);
+
+    // Aseprite format preferences
+    celFormat()->setSelectedItemIndex(int(m_pref.asepriteFormat.celFormat()));
   }
 
   bool ok() { return (closer() == buttonOk()); }
@@ -843,6 +846,9 @@ public:
     m_pref.undo.sizeLimit(undo_size_limit_value);
     m_pref.undo.gotoModified(undoGotoModified()->isSelected());
     m_pref.undo.allowNonlinearHistory(undoAllowNonlinearHistory()->isSelected());
+
+    // Aseprite format preferences
+    m_pref.asepriteFormat.celFormat(gen::CelContentFormat(celFormat()->getSelectedItemIndex()));
 
     // Experimental features
     m_pref.experimental.flashLayer(flashLayer()->isSelected());

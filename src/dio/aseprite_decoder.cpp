@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018-2024 Igara Studio S.A.
+// Copyright (c) 2018-2025 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -825,6 +825,9 @@ doc::Cel* AsepriteDecoder::readCelChunk(doc::Sprite* sprite,
   int cel_type = read16();
   int zIndex = ((int16_t)read16());
   readPadding(5);
+
+  if (cel_type == ASE_FILE_RAW_CEL || cel_type == ASE_FILE_COMPRESSED_CEL)
+    m_celType = cel_type;
 
   doc::Layer* layer = nullptr;
   if (layer_index >= 0 && layer_index < doc::layer_t(m_allLayers.size()))
