@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -54,6 +54,7 @@
 #include "app/ui/doc_view.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
+#include "base/gcd.h"
 #include "doc/layer.h"
 #include "doc/layer_tilemap.h"
 #include "doc/mask.h"
@@ -973,7 +974,10 @@ int Sprite_get_pixelRatio(lua_State* L)
 int Sprite_set_pixelRatio(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
-  const gfx::Size pixelRatio = convert_args_into_size(L, 2);
+  gfx::Size pixelRatio = convert_args_into_size(L, 2);
+  double gcd = base::gcd(double(pixelRatio.w), double(pixelRatio.h));
+  pixelRatio.w = int(double(pixelRatio.w) / gcd);
+  pixelRatio.h = int(double(pixelRatio.h) / gcd);
   Tx tx(sprite);
   tx(new cmd::SetPixelRatio(sprite, pixelRatio));
   tx.commit();
