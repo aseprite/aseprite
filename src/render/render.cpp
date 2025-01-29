@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,6 +11,7 @@
 
 #include "render/render.h"
 
+#include "base/gcd.h"
 #include "doc/blend_internals.h"
 #include "doc/blend_mode.h"
 #include "doc/doc.h"
@@ -497,19 +498,18 @@ CompositeImageFunc get_fastest_composition_path(const Projection& proj,
   else if (finegrain || !proj.zoom().isSimpleZoomLevel()) {
     return composite_image_general<DstTraits, SrcTraits>;
   }
-  else if (proj.applyX(1) == 1 && proj.applyY(1) == 1) {
+  else if (proj.scaleX() == 1.0 && proj.scaleY() == 1.0) {
     return composite_image_without_scale<DstTraits, SrcTraits>;
   }
-  else if (proj.scaleX() >= 1.0 && proj.scaleY() >= 1.0) {
+  else if (proj.isSimpleScaleUpCase()) {
     return composite_image_scale_up<DstTraits, SrcTraits>;
   }
-  // Slower composite function for special cases with odd zoom and non-square pixel ratio
-  else if (((proj.removeX(1) > 1) && (proj.removeX(1) & 1)) ||
-           ((proj.removeY(1) > 1) && (proj.removeY(1) & 1))) {
-    return composite_image_general<DstTraits, SrcTraits>;
+  else if (proj.isSimpleScaleDownCase()) {
+    return composite_image_scale_down<DstTraits, SrcTraits>;
   }
   else {
-    return composite_image_scale_down<DstTraits, SrcTraits>;
+    // Slower composite function for remaining cases not considered
+    return composite_image_general<DstTraits, SrcTraits>;
   }
 }
 
