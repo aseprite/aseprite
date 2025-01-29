@@ -22,6 +22,7 @@
           <listitem text="@.section_undo" value="section_undo" />
           <listitem text="@.section_theme" value="section_theme" />
           <listitem text="@.section_extensions" value="section_extensions" />
+          <listitem text="@.section_aseprite_format" value="section_aseprite_format" />
           <listitem text="@.section_experimental" value="section_experimental" />
           <separator horizontal="true" style="separator_in_view" />
           <listitem text="@general.reset" value="section_reset" />
@@ -560,6 +561,19 @@
             <button id="uninstall_extension" text="@.uninstall_extension" minwidth="60" />
             <button id="open_extension_folder" text="@.open_extension_folder" minwidth="60" />
           </hbox>
+        </vbox>
+
+        <!-- Aseprite Format -->
+        <vbox id="section_aseprite_format">
+          <separator text="@.section_aseprite_format" horizontal="true" />
+          <grid columns="2">
+            <label text="@.cel_content_format" />
+            <combobox id="cel_format">
+              <listitem text="@.cel_format_compressed" />
+              <listitem text="@.cel_format_keep" />
+              <listitem text="@.cel_format_raw" />
+            </combobox>
+          </grid>
         </vbox>
 
         <!-- Experimental -->

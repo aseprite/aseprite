@@ -141,6 +141,11 @@
       <value id="EIGHT_BIT" value="0" />
       <value id="PERCENTAGE" value="1" />
     </enum>
+    <enum id="CelContentFormat">
+      <value id="COMPRESSED" value="0" />
+      <value id="KEEP_AS_IS" value="1" />
+      <value id="RAW_IMAGE" value="2" />
+    </enum>
   </types>
 
   <global>
@@ -459,6 +464,9 @@
     </section>
     <section id="tilemap">
       <option id="show_delete_unused_tileset_alert" type="bool" default="true" />
+    </section>
+    <section id="aseprite_format">
+      <option id="cel_format" type="CelContentFormat" default="CelContentFormat::COMPRESSED" />
     </section>
   </global>
 
