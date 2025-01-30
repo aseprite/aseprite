@@ -27,6 +27,10 @@ public:
   // Returns true if the layout is added, or false if it was
   // replaced.
   bool addLayout(const LayoutPtr& layout);
+  void removeLayout(const LayoutPtr& layout);
+
+  void saveUserLayouts();
+  void reload();
 
   // To iterate layouts
   using List = std::vector<LayoutPtr>;

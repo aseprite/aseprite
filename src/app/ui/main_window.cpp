@@ -60,9 +60,9 @@ namespace app {
 
 using namespace ui;
 
-static const char* kLegacyLayoutMainWindowSection = "layout:main_window";
-static const char* kLegacyLayoutTimelineSplitter = "timeline_splitter";
-static const char* kLegacyLayoutColorBarSplitter = "color_bar_splitter";
+static constexpr const char* kLegacyLayoutMainWindowSection = "layout:main_window";
+static constexpr const char* kLegacyLayoutTimelineSplitter = "timeline_splitter";
+static constexpr const char* kLegacyLayoutColorBarSplitter = "color_bar_splitter";
 
 class ScreenScalePanic : public INotificationDelegate {
 public:
@@ -185,8 +185,8 @@ void MainWindow::initialize()
   m_dock->dock(ui::CENTER, m_customizableDockPlaceholder.get());
 
   // After the user resizes the dock we save the updated layout
-  m_saveDockLayoutConn = m_customizableDock->UserResizedDock.connect(
-    [this] { saveActiveLayout(); });
+  m_saveDockLayoutConn = m_customizableDock->UserResizedDock.connect(&MainWindow::saveActiveLayout,
+                                                                     this);
 
   setDefaultLayout();
   if (LayoutPtr layout = m_layoutSelector->activeLayout())
@@ -202,7 +202,7 @@ void MainWindow::initialize()
 
   AppMenus::instance()->rebuildRecentList();
 
-  // When the language is change, we reload the menu bar strings and
+  // When the language is changed, we reload the menu bar strings and
   // relayout the whole main window.
   Strings::instance()->LanguageChange.connect([this] { onLanguageChange(); });
 }
@@ -215,6 +215,10 @@ MainWindow::~MainWindow()
 
   m_dock->resetDocks();
   m_customizableDock->resetDocks();
+
+  // Leaving them in can cause crashes when cleaning up.
+  m_dock = nullptr;
+  m_customizableDock = nullptr;
 
   m_layoutSelector.reset();
   m_scalePanic.reset();
@@ -386,9 +390,7 @@ void MainWindow::setTimelineVisibility(bool visible)
 
 void MainWindow::popTimeline()
 {
-  Preferences& preferences = Preferences::instance();
-
-  if (!preferences.general.autoshowTimeline())
+  if (!Preferences::instance().general.autoshowTimeline())
     return;
 
   if (!getTimelineVisibility())
@@ -400,18 +402,42 @@ void MainWindow::setDefaultLayout()
   m_timelineResizeConn.disconnect();
   m_colorBarResizeConn.disconnect();
 
-  auto colorBarWidth = get_config_double(kLegacyLayoutMainWindowSection,
-                                         kLegacyLayoutColorBarSplitter,
-                                         m_colorBar->sizeHint().w);
+  const auto colorBarWidth = get_config_double(kLegacyLayoutMainWindowSection,
+                                               kLegacyLayoutColorBarSplitter,
+                                               m_colorBar->sizeHint().w);
 
   m_customizableDock->resetDocks();
   m_customizableDock->dock(ui::LEFT, m_colorBar.get(), gfx::Size(colorBarWidth, 0));
   m_customizableDock->dock(ui::BOTTOM, m_statusBar.get());
   m_customizableDock->center()->dock(ui::TOP, m_contextBar.get());
   m_customizableDock->center()->dock(ui::RIGHT, m_toolBar.get());
-  m_customizableDock->center()->center()->dock(ui::BOTTOM,
+
+  const auto timelineSplitterPos =
+    get_config_double(kLegacyLayoutMainWindowSection, kLegacyLayoutTimelineSplitter, 75.0) / 100.0;
+  const auto timelinePos = Preferences::instance().general.timelinePosition();
+  const auto workspaceBounds = m_workspace->bounds();
+
+  int timelineSide;
+  switch (timelinePos) {
+    case gen::TimelinePosition::LEFT:   timelineSide = ui::LEFT; break;
+    case gen::TimelinePosition::RIGHT:  timelineSide = ui::LEFT; break;
+    default:
+    case gen::TimelinePosition::BOTTOM: timelineSide = ui::BOTTOM; break;
+  }
+
+  gfx::Size timelineSize(75, 75);
+  if ((timelineSide & RIGHT) || (timelineSide & LEFT)) {
+    timelineSize.w = (workspaceBounds.w * (1.0 - timelineSplitterPos)) / guiscale();
+  }
+  if ((timelineSide & BOTTOM) || (timelineSide & TOP)) {
+    timelineSize.h = (workspaceBounds.h * (1.0 - timelineSplitterPos)) / guiscale();
+  }
+
+  // Timeline config
+  m_customizableDock->center()->center()->dock(timelineSide,
                                                m_timeline.get(),
-                                               gfx::Size(64 * guiscale(), 64 * guiscale()));
+                                               timelineSize.createUnion(gfx::Size(64, 64)));
+
   m_customizableDock->center()->center()->dock(ui::CENTER, m_workspace.get());
   configureWorkspaceLayout();
 }
@@ -444,8 +470,10 @@ void MainWindow::loadUserLayout(const Layout* layout)
 
   m_customizableDock->resetDocks();
 
-  if (!layout->loadLayout(m_customizableDock))
+  if (!layout->loadLayout(m_customizableDock)) {
+    LOG(WARNING, "Layout %s failed to load, resetting to default.\n", layout->id().c_str());
     setDefaultLayout();
+  }
 
   this->layout();
 }
@@ -510,7 +538,7 @@ void MainWindow::onActiveViewChange()
 {
   // If we are closing the app, we just ignore all view changes (as
   // docs will be destroyed and views closed).
-  if (get_app_state() != AppState::kNormal)
+  if (get_app_state() != AppState::kNormal || !m_dock)
     return;
 
   // First we have to configure the MainWindow layout (e.g. show
@@ -689,68 +717,44 @@ void MainWindow::configureWorkspaceLayout()
 
   if (os::System::instance()->menus() == nullptr || pref.general.showMenuBar()) {
     if (!m_menuBar->parent())
-      m_dock->top()->dock(CENTER, m_menuBar.get());
+      m_dock->top()->dock(ui::CENTER, m_menuBar.get());
   }
   else {
-    if (m_menuBar->parent())
-      m_dock->undock(m_menuBar.get());
+    if (m_menuBar->parent()) {
+      m_dock->undock(m_dock->top());
+      m_dock->top()->resetDocks();
+
+      // TODO: I've tried a dozen different ways but I cannot get this combination to dock well
+      // without running into sizing problems for the notifications & selector buttons.
+
+      if (m_tabsBar)
+        m_dock->top()->dock(ui::CENTER, m_tabsBar.get());
+
+      if (m_notifications)
+        m_dock->top()->right()->dock(ui::CENTER, m_notifications.get());
+
+      if (m_layoutSelector)
+        m_dock->top()->right()->dock(ui::RIGHT, m_layoutSelector.get());
+    }
   }
 
   m_menuBar->setVisible(normal);
   m_notifications->setVisible(normal && m_notifications->hasNotifications());
   m_tabsBar->setVisible(normal);
-
-  // TODO set visibility of color bar widgets
   m_colorBar->setVisible(normal && isDoc);
-  m_colorBarResizeConn = m_customizableDock->Resize.connect(
-    [this] { saveColorBarConfiguration(); });
-
+  m_colorBarResizeConn = m_customizableDock->Resize.connect(&MainWindow::saveColorBarConfiguration,
+                                                            this);
   m_toolBar->setVisible(normal && isDoc);
   m_statusBar->setVisible(normal);
   m_contextBar->setVisible(isDoc && (m_mode == NormalMode || m_mode == ContextBarAndTimelineMode));
 
   // Configure timeline
-  {
-    const gfx::Rect workspaceBounds = m_customizableDock->center()->center()->bounds();
-    // Get legacy timeline position and splitter position
-    auto timelinePosition = pref.general.timelinePosition();
-    auto timelineSplitterPos =
-      get_config_double(kLegacyLayoutMainWindowSection, kLegacyLayoutTimelineSplitter, 75.0) /
-      100.0;
-    int side = ui::BOTTOM;
+  if (m_timeline && m_timeline->parent())
+    m_timelineResizeConn = dynamic_cast<Dock*>(m_timeline->parent())
+                             ->Resize.connect(&MainWindow::saveTimelineConfiguration, this);
 
-    m_customizableDock->undock(m_timeline.get());
-
-    int w, h;
-    w = h = 64;
-
-    switch (timelinePosition) {
-      case gen::TimelinePosition::LEFT:
-        side = ui::LEFT;
-        w = (workspaceBounds.w * (1.0 - timelineSplitterPos)) / guiscale();
-        break;
-      case gen::TimelinePosition::RIGHT:
-        side = ui::RIGHT;
-        w = (workspaceBounds.w * (1.0 - timelineSplitterPos)) / guiscale();
-        break;
-      case gen::TimelinePosition::BOTTOM:
-        side = ui::BOTTOM;
-        h = (workspaceBounds.h * (1.0 - timelineSplitterPos)) / guiscale();
-        break;
-    }
-
-    // Listen to resizing changes in the dock that contains the
-    // timeline (so we save the new splitter position)
-    m_timelineResizeConn = m_customizableDock->center()->center()->Resize.connect(
-      [this] { saveTimelineConfiguration(); });
-
-    m_customizableDock->center()->center()->dock(side,
-                                                 m_timeline.get(),
-                                                 gfx::Size(w * guiscale(), h * guiscale()));
-
-    m_timeline->setVisible(isDoc && (m_mode == NormalMode || m_mode == ContextBarAndTimelineMode) &&
-                           pref.general.visibleTimeline());
-  }
+  m_timeline->setVisible(isDoc && (m_mode == NormalMode || m_mode == ContextBarAndTimelineMode) &&
+                         pref.general.visibleTimeline());
 
   if (m_contextBar->isVisible()) {
     m_contextBar->updateForActiveTool();

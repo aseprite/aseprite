@@ -24,6 +24,9 @@ public:
   static constexpr const char* kDefault = "_default_";
   static constexpr const char* kMirroredDefault = "_mirrored_default_";
 
+  static constexpr const char* kDefaultOriginal = "_default_original_";
+  static constexpr const char* kMirroredDefaultOriginal = "_mirrored_default_original_";
+
   static LayoutPtr MakeFromXmlElement(const tinyxml2::XMLElement* layoutElem);
   static LayoutPtr MakeFromDock(const std::string& id, const std::string& name, const Dock* dock);
 
@@ -31,8 +34,13 @@ public:
   const std::string& name() const { return m_name; }
   const tinyxml2::XMLElement* xmlElement() const { return m_elem; }
 
-  bool matchId(const std::string& id) const;
+  bool matchId(std::string_view id) const;
   bool loadLayout(Dock* dock) const;
+
+  bool isDefault() const { return m_id == kDefault || m_id == kMirroredDefault; }
+
+  // Validates that the given name is short and doesn't begin with a "_" (reserved for _defaults)
+  static bool isValidName(std::string_view name);
 
 private:
   std::string m_id;

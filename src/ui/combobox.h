@@ -38,6 +38,7 @@ public:
 
   Items::iterator begin() { return m_items.begin(); }
   Items::iterator end() { return m_items.end(); }
+  bool empty() const { return m_items.empty(); }
 
   void setEditable(bool state);
   void setClickOpen(bool state);

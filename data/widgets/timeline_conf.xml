@@ -3,38 +3,25 @@
 <!-- Copyright (C) 2014-2018 by David Capello -->
 <gui>
 <vbox id="timeline_conf">
-  <hbox>
-    <vbox>
-      <separator cell_hspan="2" text="@.position" left="true" horizontal="true" />
-      <hbox>
-        <buttonset columns="2" id="position">
-          <item text="@.left" />
-          <item text="@.right" />
-          <item text="@.bottom" hspan="2" />
-        </buttonset>
-      </hbox>
-    </vbox>
-    <vbox>
-      <separator text="@.frame_header" left="true" horizontal="true" />
-      <hbox>
-        <label text="@.first_frame" />
-        <expr id="first_frame" />
-      </hbox>
+  <vbox>
+    <separator text="@.frame_header" left="true" horizontal="true" />
+    <hbox>
+      <label text="@.first_frame" />
+      <expr id="first_frame" />
+    </hbox>
+    <hbox>
+      <check id="thumb_enabled" text="@.thumbnails" horizontal="true" />
+      <separator id="thumb_h_separator" horizontal="true" expansive="true" />
+    </hbox>
+    <grid columns="2" id="thumb_box">
+      <label text="@.thumbnail_size" />
+      <slider min="1" max="10" id="zoom" cell_align="horizontal" width="128" />
 
-      <hbox>
-        <check id="thumb_enabled" text="@.thumbnails" horizontal="true" />
-        <separator id="thumb_h_separator" horizontal="true" expansive="true" />
-      </hbox>
-      <grid columns="2" id="thumb_box">
-        <label text="@.thumbnail_size" />
-        <slider min="1" max="10" id="zoom" cell_align="horizontal" width="128" />
-
-        <check id="thumb_overlay_enabled" text="@.overlay_size"/>
-        <slider min="2" max="10" id="thumb_overlay_size" cell_align="horizontal" width="128" />
-        <check id="thumb_scale_up_to_fit" text="@.scale_up_to_fit" cell_hspan="2" />
-      </grid>
-    </vbox>
-  </hbox>
+      <check id="thumb_overlay_enabled" text="@.overlay_size"/>
+      <slider min="2" max="10" id="thumb_overlay_size" cell_align="horizontal" width="128" />
+      <check id="thumb_scale_up_to_fit" text="@.scale_up_to_fit" cell_hspan="2" />
+    </grid>
+  </vbox>
 
   <separator text="@.onion_skin" left="true" horizontal="true" />
   <grid columns="2">

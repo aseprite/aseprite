@@ -3,15 +3,21 @@
 <gui>
 <window id="new_layout" text="@.title">
   <vbox>
-    <hbox>
+    <grid columns="2">
+      <label text="@.base" />
+      <combobox id="base" expansive="true">
+        <listitem text="@main_window.default_layout" value="_default_original_" />
+        <listitem text="@main_window.mirrored_default_layout" value="_mirrored_default_original_" />
+      </combobox>
+
       <label text="@.name" />
-      <vbox id="name_placeholder" expansive="true" />
-    </hbox>
+      <entry maxsize="128" id="name" magnet="true" expansive="true" />
+    </grid>
 
     <separator horizontal="true" />
 
     <hbox homogeneous="true" cell_align="right">
-      <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
+      <button text="@general.ok" closewindow="true" id="ok" disabled="true" minwidth="60" magnet="true" />
       <button text="@general.cancel" closewindow="true" />
     </hbox>
   </vbox>

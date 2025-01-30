@@ -10,9 +10,19 @@
 
 #include "app/ui/dock.h"
 
+#include "app/app.h"
+#include "app/i18n/strings.h"
+#include "app/ini_file.h"
+#include "app/modules/gfx.h"
+#include "app/pref/preferences.h"
 #include "app/ui/dockable.h"
+#include "app/ui/layout_selector.h"
+#include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
+#include "os/system.h"
 #include "ui/cursor_type.h"
+#include "ui/label.h"
+#include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
 #include "ui/resize_event.h"
@@ -54,34 +64,86 @@ int side_from_index(int index)
 
 } // anonymous namespace
 
-void DockTabs::onSizeHint(ui::SizeHintEvent& ev)
+// TODO: Duplicated from main_window.cpp
+static constexpr auto kLegacyLayoutMainWindowSection = "layout:main_window";
+static constexpr auto kLegacyLayoutTimelineSplitter = "timeline_splitter";
+
+Dock::DropzonePlaceholder::DropzonePlaceholder(Widget* dragWidget, const gfx::Point& mousePosition)
+  : Widget(kGenericWidget)
 {
-  gfx::Size sz;
-  for (auto child : children()) {
-    if (child->isVisible())
-      sz |= child->sizeHint();
+  setExpansive(true);
+  setSizeHint(dragWidget->sizeHint());
+  setMinSize(dragWidget->size());
+
+  m_mouseOffset = mousePosition - dragWidget->bounds().origin();
+
+  const os::SurfaceRef surface = os::System::instance()->makeRgbaSurface(dragWidget->size().w,
+                                                                         dragWidget->size().h);
+  {
+    const os::SurfaceLock lock(surface.get());
+    Paint paint;
+    paint.color(gfx::rgba(0, 0, 0, 0));
+    paint.style(os::Paint::Fill);
+    surface->drawRect(gfx::Rect(0, 0, surface->width(), surface->height()), paint);
   }
-  sz.h += textHeight();
-  ev.setSizeHint(sz);
+
+  {
+    Graphics g(display(), surface, 0, 0);
+    g.setFont(font());
+
+    Paint paint;
+    paint.color(gfx::rgba(0, 0, 0, 200));
+
+    // TODO: This will render any open things, especially the preview editor, need to close or hide
+    // that for a frame or paint the widget itself to a surface instead of croppping the backLayer.
+    auto backLayerSurface = display()->backLayer()->surface();
+    g.drawSurface(backLayerSurface.get(),
+                  dragWidget->bounds(),
+                  gfx::Rect(0, 0, surface->width(), surface->height()),
+                  os::Sampling(),
+                  &paint);
+  }
+
+  m_floatingUILayer = UILayer::Make();
+  m_floatingUILayer->setSurface(surface);
+  m_floatingUILayer->setPosition(dragWidget->bounds().origin());
+  display()->addLayer(m_floatingUILayer);
 }
 
-void DockTabs::onResize(ui::ResizeEvent& ev)
+inline Dock::DropzonePlaceholder::~DropzonePlaceholder()
 {
-  auto bounds = ev.bounds();
-  setBoundsQuietly(bounds);
-  bounds = childrenBounds();
-  bounds.y += textHeight();
-  bounds.h -= textHeight();
-
-  for (auto child : children()) {
-    child->setBounds(bounds);
-  }
+  display()->removeLayer(m_floatingUILayer);
 }
 
-void DockTabs::onPaint(ui::PaintEvent& ev)
+void Dock::DropzonePlaceholder::setGhostPosition(const gfx::Point& position) const
+{
+  ASSERT(m_floatingUILayer);
+
+  display()->dirtyRect(m_floatingUILayer->bounds());
+  m_floatingUILayer->setPosition(position - m_mouseOffset);
+  display()->dirtyRect(m_floatingUILayer->bounds());
+}
+
+void Dock::DropzonePlaceholder::onPaint(PaintEvent& ev)
 {
   Graphics* g = ev.graphics();
-  g->fillRect(gfx::rgba(0, 0, 255), clientBounds());
+  gfx::Rect bounds = clientBounds();
+
+  g->fillRect(bgColor(), bounds);
+
+  bounds.shrink(2 * guiscale());
+
+  const auto* theme = SkinTheme::get(this);
+  const gfx::Color color = theme->colors.workspaceText();
+
+  g->drawRect(color, bounds);
+  g->drawLine(color, bounds.center(), bounds.origin());
+  g->drawLine(color, bounds.center(), bounds.point2());
+  g->drawLine(color, bounds.center(), bounds.point2() - gfx::Point(bounds.w, 0));
+  g->drawLine(color, bounds.center(), bounds.origin() + gfx::Point(bounds.w, 0));
+  g->drawRect(
+    color,
+    gfx::Rect(bounds.center() - gfx::Point(2, 2) * guiscale(), gfx::Size(4, 4) * guiscale()));
 }
 
 Dock::Dock()
@@ -104,10 +166,11 @@ void Dock::setCustomizing(bool enable, bool doLayout)
   m_customizing = enable;
 
   for (int i = 0; i < kSides; ++i) {
-    auto child = m_sides[i];
+    auto* child = m_sides[i];
     if (!child)
       continue;
-    else if (auto subdock = dynamic_cast<Dock*>(child))
+
+    if (auto* subdock = dynamic_cast<Dock*>(child))
       subdock->setCustomizing(enable, false);
   }
 
@@ -118,23 +181,16 @@ void Dock::setCustomizing(bool enable, bool doLayout)
 void Dock::resetDocks()
 {
   for (int i = 0; i < kSides; ++i) {
-    auto child = m_sides[i];
+    auto* child = m_sides[i];
     if (!child)
       continue;
-    else if (auto subdock = dynamic_cast<Dock*>(child)) {
+
+    if (auto* subdock = dynamic_cast<Dock*>(child)) {
       subdock->resetDocks();
       if (subdock->m_autoDelete)
         delete subdock;
     }
-    else if (auto tabs = dynamic_cast<DockTabs*>(child)) {
-      for (auto child2 : tabs->children()) {
-        if (auto subdock2 = dynamic_cast<Dock*>(child2)) {
-          subdock2->resetDocks();
-          if (subdock2->m_autoDelete)
-            delete subdock2;
-        }
-      }
-    }
+
     m_sides[i] = nullptr;
   }
   removeAllChildren();
@@ -155,18 +211,8 @@ void Dock::dock(int side, ui::Widget* widget, const gfx::Size& prefSize)
   else if (auto subdock = dynamic_cast<Dock*>(m_sides[i])) {
     subdock->dock(CENTER, widget, prefSize);
   }
-  else if (auto tabs = dynamic_cast<DockTabs*>(m_sides[i])) {
-    tabs->addChild(widget);
-  }
-  // If this side already contains a widget, we create a DockTabs in
-  // this side.
   else {
-    auto oldWidget = m_sides[i];
-    auto newTabs = new DockTabs;
-    replaceChild(oldWidget, newTabs);
-    newTabs->addChild(oldWidget);
-    newTabs->addChild(widget);
-    setSide(i, newTabs);
+    ASSERT(false); // Docking failure!
   }
 }
 
@@ -180,7 +226,7 @@ void Dock::dockRelativeTo(ui::Widget* relative,
   Widget* parent = relative->parent();
   ASSERT(parent);
 
-  Dock* subdock = new Dock;
+  auto* subdock = new Dock;
   subdock->m_autoDelete = true;
   subdock->m_customizing = m_customizing;
   parent->replaceChild(relative, subdock);
@@ -188,7 +234,7 @@ void Dock::dockRelativeTo(ui::Widget* relative,
   subdock->dock(side, widget, prefSize);
 
   // Fix the m_sides item if the parent is a Dock
-  if (auto relativeDock = dynamic_cast<Dock*>(parent)) {
+  if (auto* relativeDock = dynamic_cast<Dock*>(parent)) {
     for (int i = 0; i < kSides; ++i) {
       if (relativeDock->m_sides[i] == relative) {
         relativeDock->setSide(i, subdock);
@@ -204,25 +250,19 @@ void Dock::undock(Widget* widget)
   if (!parent)
     return; // Already undocked
 
-  if (auto parentDock = dynamic_cast<Dock*>(parent)) {
+  if (auto* parentDock = dynamic_cast<Dock*>(parent)) {
     parentDock->removeChild(widget);
 
     for (int i = 0; i < kSides; ++i) {
       if (parentDock->m_sides[i] == widget) {
         parentDock->setSide(i, nullptr);
+        m_sizes[i] = gfx::Size();
         break;
       }
     }
 
     if (parentDock != this && parentDock->children().empty()) {
       undock(parentDock);
-    }
-  }
-  else if (auto parentTabs = dynamic_cast<DockTabs*>(parent)) {
-    parentTabs->removeChild(widget);
-
-    if (parentTabs->children().empty()) {
-      undock(parentTabs);
     }
   }
   else {
@@ -238,25 +278,25 @@ int Dock::whichSideChildIsDocked(const ui::Widget* widget) const
   return 0;
 }
 
-gfx::Size Dock::getUserDefinedSizeAtSide(int side) const
+const gfx::Size Dock::getUserDefinedSizeAtSide(int side) const
 {
   int i = side_index(side);
   // Only EXPANSIVE sides can be user-defined (has a splitter so the
   // user can expand or shrink it)
   if (m_aligns[i] & EXPANSIVE)
     return m_sizes[i];
-  else
-    return gfx::Size();
+
+  return gfx::Size();
 }
 
 Dock* Dock::subdock(int side)
 {
   int i = side_index(side);
-  if (auto subdock = dynamic_cast<Dock*>(m_sides[i]))
+  if (auto* subdock = dynamic_cast<Dock*>(m_sides[i]))
     return subdock;
 
-  auto oldWidget = m_sides[i];
-  auto newSubdock = new Dock;
+  auto* oldWidget = m_sides[i];
+  auto* newSubdock = new Dock;
   newSubdock->m_autoDelete = true;
   newSubdock->m_customizing = m_customizing;
   setSide(i, newSubdock);
@@ -291,7 +331,7 @@ void Dock::onSizeHint(ui::SizeHintEvent& ev)
 
 void Dock::onResize(ui::ResizeEvent& ev)
 {
-  auto bounds = ev.bounds();
+  gfx::Rect bounds = ev.bounds();
   setBoundsQuietly(bounds);
   bounds = childrenBounds();
 
@@ -302,11 +342,11 @@ void Dock::onResize(ui::ResizeEvent& ev)
                      const gfx::Rect& widgetBounds,
                      const gfx::Rect& separator,
                      const int index) {
-                auto rc = widgetBounds;
+                gfx::Rect rc = widgetBounds;
                 auto th = textHeight();
                 if (isCustomizing()) {
                   int handleSide = 0;
-                  if (auto dockable = dynamic_cast<Dockable*>(widget))
+                  if (auto* dockable = dynamic_cast<Dockable*>(widget))
                     handleSide = dockable->dockHandleSide();
                   switch (handleSide) {
                     case ui::TOP:
@@ -326,7 +366,8 @@ void Dock::onResize(ui::ResizeEvent& ev)
 void Dock::onPaint(ui::PaintEvent& ev)
 {
   Graphics* g = ev.graphics();
-  gfx::Rect bounds = clientBounds();
+
+  const gfx::Rect& bounds = clientBounds();
   g->fillRect(bgColor(), bounds);
 
   if (isCustomizing()) {
@@ -335,13 +376,13 @@ void Dock::onPaint(ui::PaintEvent& ev)
                           const gfx::Rect& widgetBounds,
                           const gfx::Rect& separator,
                           const int index) {
-                  auto rc = widgetBounds;
+                  gfx::Rect rc = widgetBounds;
                   auto th = textHeight();
                   if (isCustomizing()) {
-                    auto theme = SkinTheme::get(this);
-                    auto color = theme->colors.workspaceText();
+                    auto* theme = SkinTheme::get(this);
+                    const auto& color = theme->colors.workspaceText();
                     int handleSide = 0;
-                    if (auto dockable = dynamic_cast<Dockable*>(widget))
+                    if (auto* dockable = dynamic_cast<Dockable*>(widget))
                       handleSide = dockable->dockHandleSide();
                     switch (handleSide) {
                       case ui::TOP:
@@ -377,19 +418,20 @@ bool Dock::onProcessMessage(ui::Message* msg)
 {
   switch (msg->type()) {
     case kMouseDownMessage: {
-      const gfx::Point pos = static_cast<MouseMessage*>(msg)->position();
+      auto* mouseMessage = static_cast<MouseMessage*>(msg);
+      const gfx::Point& pos = mouseMessage->position();
 
       if (m_hit.sideIndex >= 0 || m_hit.dockable) {
         m_startPos = pos;
 
-        if (m_hit.sideIndex >= 0) {
+        if (m_hit.sideIndex >= 0)
           m_startSize = m_sizes[m_hit.sideIndex];
-        }
 
         captureMouse();
 
-        if (m_hit.dockable)
-          invalidate();
+        if (m_hit.dockable && !mouseMessage->right()) {
+          m_dragging = true;
+        }
 
         return true;
       }
@@ -398,22 +440,98 @@ bool Dock::onProcessMessage(ui::Message* msg)
 
     case kMouseMoveMessage: {
       if (hasCapture()) {
+        const gfx::Point& pos = static_cast<MouseMessage*>(msg)->position();
+
+        if (m_dropzonePlaceholder)
+          m_dropzonePlaceholder->setGhostPosition(pos);
+
         if (m_hit.sideIndex >= 0) {
-          const gfx::Point pos = static_cast<MouseMessage*>(msg)->position();
+          if (!display()->bounds().contains(pos) ||
+              (m_hit.widget && m_hit.widget->parent() &&
+               !m_hit.widget->parent()->bounds().contains(pos)))
+            break; // Do not handle anything outside bounds.
+
           gfx::Size& sz = m_sizes[m_hit.sideIndex];
+          gfx::Size minSize(16 * guiscale(), 16 * guiscale());
+
+          if (m_hit.widget) {
+            minSize.w = std::max(m_hit.widget->minSize().w, minSize.w);
+            minSize.h = std::max(m_hit.widget->minSize().h, minSize.h);
+          }
 
           switch (m_hit.sideIndex) {
-            case kTopIndex:    sz.h = (m_startSize.h + pos.y - m_startPos.y); break;
-            case kBottomIndex: sz.h = (m_startSize.h - pos.y + m_startPos.y); break;
-            case kLeftIndex:   sz.w = (m_startSize.w + pos.x - m_startPos.x); break;
-            case kRightIndex:  sz.w = (m_startSize.w - pos.x + m_startPos.x); break;
+            case kTopIndex: sz.h = std::max(m_startSize.h + pos.y - m_startPos.y, minSize.h); break;
+            case kBottomIndex:
+              sz.h = std::max(m_startSize.h - pos.y + m_startPos.y, minSize.h);
+              break;
+            case kLeftIndex:
+              sz.w = std::max(m_startSize.w + pos.x - m_startPos.x, minSize.w);
+              break;
+            case kRightIndex:
+              sz.w = std::max(m_startSize.w - pos.x + m_startPos.x, minSize.w);
+              break;
           }
 
           layout();
           Resize();
         }
-        else if (m_hit.dockable) {
+        else if (m_hit.dockable && m_dragging) {
           invalidate();
+
+          auto* parentDock = dynamic_cast<Dock*>(m_hit.widget->parent());
+          ASSERT(parentDock);
+
+          if (!parentDock)
+            break;
+
+          if (!m_dropzonePlaceholder)
+            m_dropzonePlaceholder.reset(new DropzonePlaceholder(m_hit.widget, pos));
+
+          auto dockedAt = parentDock->whichSideChildIsDocked(m_hit.widget);
+          const auto& bounds = parentDock->bounds();
+
+          if (!bounds.contains(pos))
+            break; // Do not handle anything outside the bounds of the dock.
+
+          const int kBufferZone =
+            std::max(12 * guiscale(), std::min(m_hit.widget->size().w, m_hit.widget->size().h));
+
+          int newTargetSide = -1;
+          if (m_hit.dockable->dockableAt() & LEFT && !(dockedAt & LEFT) &&
+              pos.x < bounds.x + kBufferZone) {
+            newTargetSide = LEFT;
+          }
+          else if (m_hit.dockable->dockableAt() & RIGHT && !(dockedAt & RIGHT) &&
+                   pos.x > (bounds.w - kBufferZone)) {
+            newTargetSide = RIGHT;
+          }
+          else if (m_hit.dockable->dockableAt() & TOP && !(dockedAt & TOP) &&
+                   pos.y < bounds.y + kBufferZone) {
+            newTargetSide = TOP;
+          }
+          else if (m_hit.dockable->dockableAt() & BOTTOM && !(dockedAt & BOTTOM) &&
+                   pos.y > (bounds.h - kBufferZone)) {
+            newTargetSide = BOTTOM;
+          }
+
+          if (m_hit.targetSide == newTargetSide)
+            break;
+
+          m_hit.targetSide = newTargetSide;
+
+          // Always undock the placeholder
+          if (m_dropzonePlaceholder && m_dropzonePlaceholder->parent()) {
+            auto* placeholderCurrentDock = dynamic_cast<Dock*>(m_dropzonePlaceholder->parent());
+            placeholderCurrentDock->undock(m_dropzonePlaceholder.get());
+          }
+
+          if (m_dropzonePlaceholder && m_hit.targetSide != -1) {
+            parentDock->dock(m_hit.targetSide,
+                             m_dropzonePlaceholder.get(),
+                             m_hit.widget->sizeHint());
+          }
+
+          layout();
         }
       }
       break;
@@ -422,13 +540,76 @@ bool Dock::onProcessMessage(ui::Message* msg)
     case kMouseUpMessage: {
       if (hasCapture()) {
         releaseMouse();
-        onUserResizedDock();
+        const auto* mouseMessage = static_cast<MouseMessage*>(msg);
+
+        if (m_dropzonePlaceholder && m_dropzonePlaceholder->parent()) {
+          // Always undock the dropzone placeholder to avoid dangling sizes.
+          auto* placeholderCurrentDock = dynamic_cast<Dock*>(m_dropzonePlaceholder->parent());
+          placeholderCurrentDock->undock(m_dropzonePlaceholder.get());
+        }
+
+        if (m_hit.dockable) {
+          auto* dockableWidget = dynamic_cast<Widget*>(m_hit.dockable);
+          auto* widgetDock = dynamic_cast<Dock*>(dockableWidget->parent());
+
+          int currentSide = widgetDock->whichSideChildIsDocked(dockableWidget);
+
+          assert(dockableWidget && widgetDock);
+
+          if (mouseMessage->right() && !m_dragging) {
+            Menu menu;
+            MenuItem left(Strings::dock_left());
+            MenuItem right(Strings::dock_right());
+            MenuItem top(Strings::dock_top());
+            MenuItem bottom(Strings::dock_bottom());
+
+            if (m_hit.dockable->dockableAt() & ui::LEFT) {
+              menu.addChild(&left);
+            }
+            if (m_hit.dockable->dockableAt() & ui::RIGHT) {
+              menu.addChild(&right);
+            }
+            if (m_hit.dockable->dockableAt() & ui::TOP) {
+              menu.addChild(&top);
+            }
+            if (m_hit.dockable->dockableAt() & ui::BOTTOM) {
+              menu.addChild(&bottom);
+            }
+
+            switch (currentSide) {
+              case ui::LEFT:   left.setEnabled(false); break;
+              case ui::RIGHT:  right.setEnabled(false); break;
+              case ui::TOP:    top.setEnabled(false); break;
+              case ui::BOTTOM: bottom.setEnabled(false); break;
+            }
+
+            left.Click.connect([&] { redockWidget(widgetDock, dockableWidget, ui::LEFT); });
+            right.Click.connect([&] { redockWidget(widgetDock, dockableWidget, ui::RIGHT); });
+            top.Click.connect([&] { redockWidget(widgetDock, dockableWidget, ui::TOP); });
+            bottom.Click.connect([&] { redockWidget(widgetDock, dockableWidget, ui::BOTTOM); });
+
+            menu.showPopup(mouseMessage->position(), display());
+            return false;
+          }
+          else if (m_hit.targetSide > 0 && m_dragging) {
+            ASSERT(m_hit.dockable->dockableAt() & m_hit.targetSide);
+            redockWidget(widgetDock, dockableWidget, m_hit.targetSide);
+            m_dropzonePlaceholder = nullptr;
+            m_dragging = false;
+            m_hit = Hit();
+            return false;
+          }
+        }
+
+        m_dropzonePlaceholder = nullptr;
+        m_dragging = false;
+        m_hit = Hit();
       }
       break;
     }
 
     case kSetCursorMessage: {
-      const gfx::Point pos = static_cast<MouseMessage*>(msg)->position();
+      const gfx::Point& pos = static_cast<MouseMessage*>(msg)->position();
       ui::CursorType cursor = ui::kArrowCursor;
 
       if (!hasCapture())
@@ -442,58 +623,9 @@ bool Dock::onProcessMessage(ui::Message* msg)
           case kRightIndex:  cursor = ui::kSizeWECursor; break;
         }
       }
-      else if (m_hit.dockable) {
+      else if (m_hit.dockable && m_hit.targetSide == -1) {
         cursor = ui::kMoveCursor;
       }
-
-#if 0
-      m_hit = Hit();
-      forEachSide(
-        childrenBounds(),
-        [this, pos, &cursor](ui::Widget* widget,
-                             const gfx::Rect& widgetBounds,
-                             const gfx::Rect& separator,
-                             const int index) {
-          if (separator.contains(pos)) {
-            m_hit.widget = widget;
-            m_hit.sideIndex = index;
-
-            if (index == kTopIndex || index == kBottomIndex) {
-              cursor = ui::kSizeNSCursor;
-            }
-            else if (index == kLeftIndex || index == kRightIndex) {
-              cursor = ui::kSizeWECursor;
-            }
-          }
-          else if (isCustomizing()) {
-            auto th = textHeight();
-            auto rc = widgetBounds;
-            auto theme = SkinTheme::get(this);
-            auto color = theme->colors.workspaceText();
-            if (auto dockable = dynamic_cast<Dockable*>(widget)) {
-              int handleSide = dockable->dockHandleSide();
-              switch (handleSide) {
-                case ui::TOP:
-                  rc.h = th;
-                  if (rc.contains(pos)) {
-                    cursor = ui::kMoveCursor;
-                    m_hit.widget = widget;
-                    m_hit.dockable = dockable;
-                  }
-                  break;
-                case ui::LEFT:
-                  rc.w = th;
-                  if (rc.contains(pos)) {
-                    cursor = ui::kMoveCursor;
-                    m_hit.widget = widget;
-                    m_hit.dockable = dockable;
-                  }
-                  break;
-              }
-            }
-          }
-        });
-#endif
 
       ui::set_mouse_cursor(cursor);
       return true;
@@ -511,7 +643,7 @@ void Dock::onUserResizedDock()
 
   // Send the same notification for the parent (as probably eh
   // MainWindow is listening the signal of just the root dock).
-  if (auto parentDock = dynamic_cast<Dock*>(parent())) {
+  if (auto* parentDock = dynamic_cast<Dock*>(parent())) {
     parentDock->onUserResizedDock();
   }
 }
@@ -533,19 +665,10 @@ int Dock::calcAlign(const int i)
   if (!widget) {
     // Do nothing
   }
-  else if (auto subdock = dynamic_cast<Dock*>(widget)) {
+  else if (auto* subdock = dynamic_cast<Dock*>(widget)) {
     align = subdock->calcAlign(i);
   }
-  else if (auto tabs = dynamic_cast<DockTabs*>(widget)) {
-    for (auto child : tabs->children()) {
-      if (auto subdock2 = dynamic_cast<Dock*>(widget))
-        align |= subdock2->calcAlign(i);
-      else if (auto dockable = dynamic_cast<Dockable*>(child)) {
-        align = dockable->dockableAt();
-      }
-    }
-  }
-  else if (auto dockable2 = dynamic_cast<Dockable*>(widget)) {
+  else if (auto* dockable2 = dynamic_cast<Dockable*>(widget)) {
     align = dockable2->dockableAt();
   }
   return align;
@@ -560,28 +683,15 @@ void Dock::updateDockVisibility()
     if (!widget)
       continue;
 
-    if (auto subdock = dynamic_cast<Dock*>(widget)) {
+    if (auto* subdock = dynamic_cast<Dock*>(widget)) {
       subdock->updateDockVisibility();
-    }
-    else if (auto tabs = dynamic_cast<DockTabs*>(widget)) {
-      bool visible2 = false;
-      for (auto child : tabs->children()) {
-        if (auto subdock2 = dynamic_cast<Dock*>(widget)) {
-          subdock2->updateDockVisibility();
-        }
-        if (child->isVisible()) {
-          visible2 = true;
-        }
-      }
-      tabs->setVisible(visible2);
-      if (visible2)
-        visible = true;
     }
 
     if (widget->isVisible()) {
       visible = true;
     }
   }
+
   setVisible(visible);
 }
 
@@ -592,8 +702,8 @@ void Dock::forEachSide(gfx::Rect bounds,
                                           const int index)> f)
 {
   for (int i = 0; i < kSides; ++i) {
-    auto widget = m_sides[i];
-    if (!widget || !widget->isVisible()) {
+    auto* widget = m_sides[i];
+    if (!widget || !widget->isVisible() || widget->isDecorative()) {
       continue;
     }
 
@@ -650,6 +760,38 @@ void Dock::forEachSide(gfx::Rect bounds,
   }
 }
 
+void Dock::redockWidget(app::Dock* widgetDock, ui::Widget* dockableWidget, const int side)
+{
+  const gfx::Rect workspaceBounds = widgetDock->bounds();
+
+  gfx::Size size;
+  if (dockableWidget->id() == "timeline") {
+    size.w = 64;
+    size.h = 64;
+    auto timelineSplitterPos =
+      get_config_double(kLegacyLayoutMainWindowSection, kLegacyLayoutTimelineSplitter, 75.0) /
+      100.0;
+    auto pos = gen::TimelinePosition::LEFT;
+    size.w = (workspaceBounds.w * (1.0 - timelineSplitterPos)) / guiscale();
+
+    if (side & RIGHT) {
+      pos = gen::TimelinePosition::RIGHT;
+    }
+    if (side & BOTTOM || side & TOP) {
+      pos = gen::TimelinePosition::BOTTOM;
+      size.h = (workspaceBounds.h * (1.0 - timelineSplitterPos)) / guiscale();
+    }
+    Preferences::instance().general.timelinePosition(pos);
+  }
+
+  widgetDock->undock(dockableWidget);
+  widgetDock->dock(side, dockableWidget, size);
+
+  App::instance()->mainWindow()->invalidate();
+  layout();
+  onUserResizedDock();
+}
+
 Dock::Hit Dock::calcHit(const gfx::Point& pos)
 {
   Hit hit;
@@ -664,11 +806,9 @@ Dock::Hit Dock::calcHit(const gfx::Point& pos)
                 }
                 else if (isCustomizing()) {
                   auto th = textHeight();
-                  auto rc = widgetBounds;
-                  auto theme = SkinTheme::get(this);
-                  if (auto dockable = dynamic_cast<Dockable*>(widget)) {
-                    int handleSide = dockable->dockHandleSide();
-                    switch (handleSide) {
+                  gfx::Rect rc = widgetBounds;
+                  if (auto* dockable = dynamic_cast<Dockable*>(widget)) {
+                    switch (dockable->dockHandleSide()) {
                       case ui::TOP:
                         rc.h = th;
                         if (rc.contains(pos)) {
