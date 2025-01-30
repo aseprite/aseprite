@@ -8,6 +8,7 @@
 #define APP_UI_DOCK_H_INCLUDED
 #pragma once
 
+#include "app/ui/dockable.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "ui/widget.h"
@@ -21,17 +22,25 @@ namespace app {
 
 class Dockable;
 
-class DockTabs : public ui::Widget {
-public:
-protected:
-  void onSizeHint(ui::SizeHintEvent& ev) override;
-  void onResize(ui::ResizeEvent& ev) override;
-  void onPaint(ui::PaintEvent& ev) override;
-};
-
 class Dock : public ui::Widget {
 public:
   static constexpr const int kSides = 5;
+
+  class DropzonePlaceholder final : public Widget,
+                                    public Dockable {
+  public:
+    explicit DropzonePlaceholder(Widget* dragWidget, const gfx::Point& mousePosition);
+    ~DropzonePlaceholder() override;
+    void setGhostPosition(const gfx::Point& position) const;
+
+  private:
+    void onPaint(ui::PaintEvent& ev) override;
+    int dockHandleSide() const override { return 0; }
+
+    gfx::Point m_mouseOffset;
+    ui::UILayerRef m_floatingUILayer;
+    bool m_hidePreview;
+  };
 
   Dock();
 
@@ -60,7 +69,7 @@ public:
 
   // Functions useful to query/save the dock layout.
   int whichSideChildIsDocked(const ui::Widget* widget) const;
-  gfx::Size getUserDefinedSizeAtSide(int side) const;
+  const gfx::Size getUserDefinedSizeAtSide(int side) const;
 
   obs::signal<void()> Resize;
   obs::signal<void()> UserResizedDock;
@@ -74,8 +83,8 @@ protected:
   void onUserResizedDock();
 
 private:
-  void setSide(const int i, ui::Widget* newWidget);
-  int calcAlign(const int i);
+  void setSide(int i, ui::Widget* newWidget);
+  int calcAlign(int i);
   void updateDockVisibility();
   void forEachSide(gfx::Rect bounds,
                    std::function<void(ui::Widget* widget,
@@ -84,11 +93,13 @@ private:
                                       const int index)> f);
 
   bool hasVisibleSide(const int i) const { return (m_sides[i] && m_sides[i]->isVisible()); }
+  void redockWidget(app::Dock* widgetDock, ui::Widget* dockableWidget, const int side);
 
   struct Hit {
     ui::Widget* widget = nullptr;
     Dockable* dockable = nullptr;
     int sideIndex = -1;
+    int targetSide = -1;
   };
 
   Hit calcHit(const gfx::Point& pos);
@@ -107,6 +118,10 @@ private:
 
   // True when we paint/can drag-and-drop dockable widgets from handles.
   bool m_customizing = false;
+
+  // True when we're dragging a widget to attempt to dock it somewhere else.
+  bool m_dragging = false;
+  std::unique_ptr<DropzonePlaceholder> m_dropzonePlaceholder;
 };
 
 } // namespace app

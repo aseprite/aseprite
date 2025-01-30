@@ -31,8 +31,6 @@ class ConfigureTimelinePopup : public ui::PopupWindow {
 public:
   ConfigureTimelinePopup();
 
-  static void onChangeTimelinePosition(int option);
-
 protected:
   bool onProcessMessage(ui::Message* msg) override;
   void onChangeFirstFrame();

@@ -36,8 +36,12 @@ Layouts::Layouts()
 
 Layouts::~Layouts()
 {
-  if (!m_userLayoutsFilename.empty())
-    save(m_userLayoutsFilename);
+  try {
+    saveUserLayouts();
+  }
+  catch (const std::exception& ex) {
+    LOG(ERROR, "LAY: Error saving user layouts on exit: %s\n", ex.what());
+  }
 }
 
 LayoutPtr Layouts::getById(const std::string& id) const
@@ -50,28 +54,69 @@ LayoutPtr Layouts::getById(const std::string& id) const
 
 bool Layouts::addLayout(const LayoutPtr& layout)
 {
-  auto it = std::find_if(m_layouts.begin(), m_layouts.end(), [layout](const LayoutPtr& l) {
+  ASSERT(layout);
+
+  const auto it = std::find_if(m_layouts.begin(), m_layouts.end(), [layout](const LayoutPtr& l) {
     return l->matchId(layout->id());
   });
+
   if (it != m_layouts.end()) {
     *it = layout; // Replace existent layout
     return false;
   }
-  else {
-    m_layouts.push_back(layout);
-    return true;
+
+  m_layouts.push_back(layout);
+  return true;
+}
+
+void Layouts::removeLayout(const LayoutPtr& layout)
+{
+  if (m_layouts.size() <= 1) {
+    m_layouts.clear();
+    return;
   }
+
+  ASSERT(layout);
+
+  const auto it = std::find_if(m_layouts.begin(), m_layouts.end(), [layout](const LayoutPtr& l) {
+    return l->matchId(layout->id());
+  });
+
+  m_layouts.erase(it);
+}
+
+void Layouts::saveUserLayouts()
+{
+  if (m_userLayoutsFilename.empty())
+    return;
+
+  save(m_userLayoutsFilename);
+
+  // TODO: We probably have too much I/O here, but it's the easiest way to keep the XML and
+  // internal representations synced up.
+  reload();
+}
+
+void Layouts::reload()
+{
+  if (m_userLayoutsFilename.empty())
+    return;
+
+  m_layouts.clear();
+  load(m_userLayoutsFilename);
 }
 
 void Layouts::load(const std::string& fn)
 {
-  XMLDocumentRef doc = app::open_xml(fn);
+  const XMLDocumentRef doc = app::open_xml(fn);
   XMLHandle handle(doc.get());
   XMLElement* layoutElem =
     handle.FirstChildElement("layouts").FirstChildElement("layout").ToElement();
 
   while (layoutElem) {
-    m_layouts.push_back(Layout::MakeFromXmlElement(layoutElem));
+    if (auto layout = Layout::MakeFromXmlElement(layoutElem)) {
+      m_layouts.push_back(layout);
+    }
     layoutElem = layoutElem->NextSiblingElement();
   }
 }
@@ -85,7 +130,7 @@ void Layouts::save(const std::string& fn) const
     layoutsElem->InsertEndChild(layout->xmlElement()->DeepClone(doc.get()));
   }
 
-  doc->InsertEndChild(doc->NewDeclaration("xml version=\"1.0\" encoding=\"utf-8\""));
+  doc->InsertEndChild(doc->NewDeclaration(R"(xml version="1.0" encoding="utf-8")"));
   doc->InsertEndChild(layoutsElem);
   save_xml(doc.get(), fn);
 }

@@ -73,8 +73,9 @@ Tabs::~Tabs()
   m_addedTab.reset();
   m_removedTab.reset();
 
-  // Stop animation
-  stopAnimation();
+  // Stop animation, can cause issues with docks when stopping during close.
+  if (!is_app_state_closing())
+    stopAnimation();
 
   // Remove all tabs
   m_list.clear();

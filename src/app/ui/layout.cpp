@@ -33,9 +33,9 @@ using namespace tinyxml2;
 
 static void save_dock_layout(XMLElement* elem, const Dock* dock)
 {
-  for (const auto child : dock->children()) {
+  for (const auto* child : dock->children()) {
     const int side = dock->whichSideChildIsDocked(child);
-    const gfx::Size size = dock->getUserDefinedSizeAtSide(side);
+    const gfx::Size& size = dock->getUserDefinedSizeAtSide(side);
 
     std::string sideStr;
     switch (side) {
@@ -44,13 +44,14 @@ static void save_dock_layout(XMLElement* elem, const Dock* dock)
       case ui::TOP:    sideStr = "top"; break;
       case ui::BOTTOM: sideStr = "bottom"; break;
       case ui::CENTER:
+      default:
         // Empty side attribute
         break;
     }
 
     XMLElement* childElem = elem->InsertNewChildElement("");
 
-    if (auto subdock = dynamic_cast<const Dock*>(child)) {
+    if (const auto* subdock = dynamic_cast<const Dock*>(child)) {
       childElem->SetValue("dock");
       if (!sideStr.empty())
         childElem->SetAttribute("side", sideStr.c_str());
@@ -87,7 +88,7 @@ static void load_dock_layout(const XMLElement* elem, Dock* dock)
   Dock* subdock = nullptr;
 
   int side = ui::CENTER;
-  if (auto sideStr = elem->Attribute("side")) {
+  if (const auto* sideStr = elem->Attribute("side")) {
     if (std::strcmp(sideStr, "left") == 0)
       side = ui::LEFT;
     if (std::strcmp(sideStr, "right") == 0)
@@ -129,7 +130,7 @@ static void load_dock_layout(const XMLElement* elem, Dock* dock)
   }
 
   if (subdock) {
-    auto childElem = elem->FirstChildElement();
+    const auto* childElem = elem->FirstChildElement();
     while (childElem) {
       load_dock_layout(childElem, subdock);
       childElem = childElem->NextSiblingElement();
@@ -143,12 +144,27 @@ static void load_dock_layout(const XMLElement* elem, Dock* dock)
 // static
 LayoutPtr Layout::MakeFromXmlElement(const XMLElement* layoutElem)
 {
-  auto layout = std::make_shared<Layout>();
-  if (auto name = layoutElem->Attribute("name")) {
-    layout->m_id = name;
-    layout->m_name = name;
+  const char* name = layoutElem->Attribute("name");
+  const char* id = layoutElem->Attribute("id");
+
+  if (id == nullptr || name == nullptr) {
+    LOG(WARNING, "Invalid XML layout provided\n");
+    return nullptr;
   }
+
+  auto layout = std::make_shared<Layout>();
+  layout->m_id = id;
+  layout->m_name = name;
   layout->m_elem = layoutElem->DeepClone(&layout->m_dummyDoc)->ToElement();
+
+  ASSERT(!layout->m_name.empty() && !layout->m_id.empty());
+
+  if (layout->m_elem->ChildElementCount() == 0) // TODO: More error checking here.
+    return nullptr;
+
+  if (layout->m_name.empty() || layout->m_id.empty())
+    return nullptr;
+
   return layout;
 }
 
@@ -160,20 +176,22 @@ LayoutPtr Layout::MakeFromDock(const std::string& id, const std::string& name, c
   layout->m_name = name;
 
   layout->m_elem = layout->m_dummyDoc.NewElement("layout");
+  layout->m_elem->SetAttribute("id", id.c_str());
   layout->m_elem->SetAttribute("name", name.c_str());
   save_dock_layout(layout->m_elem, dock);
 
   return layout;
 }
 
-bool Layout::matchId(const std::string& id) const
+bool Layout::matchId(const std::string_view id) const
 {
   if (m_id == id)
     return true;
-  else if ((m_id.empty() && id == kDefault) || (m_id == kDefault && id.empty()))
+
+  if ((m_id.empty() && id == kDefault) || (m_id == kDefault && id.empty()))
     return true;
-  else
-    return false;
+
+  return false;
 }
 
 bool Layout::loadLayout(Dock* dock) const
@@ -187,6 +205,17 @@ bool Layout::loadLayout(Dock* dock) const
     elem = elem->NextSiblingElement();
   }
 
+  return true;
+}
+
+bool Layout::isValidName(const std::string_view name)
+{
+  if (name.empty())
+    return false;
+  if (name[0] == '_')
+    return false;
+  if (name.length() > 128)
+    return false;
   return true;
 }
 
