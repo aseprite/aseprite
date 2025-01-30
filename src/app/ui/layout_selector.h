@@ -47,10 +47,12 @@ public:
   LayoutSelector(ui::TooltipManager* tooltipManager);
   ~LayoutSelector();
 
-  LayoutPtr activeLayout();
-  std::string activeLayoutId() const { return m_activeLayoutId; }
+  LayoutPtr activeLayout() const;
+  const std::string& activeLayoutId() const { return m_activeLayoutId; }
 
   void addLayout(const LayoutPtr& layout);
+  void removeLayout(const LayoutPtr& layout);
+  void removeLayout(const std::string& layoutId);
   void updateActiveLayout(const LayoutPtr& layout);
   void switchSelector();
   void switchSelectorFromCommand();
@@ -61,6 +63,20 @@ public:
 
 private:
   void setupTooltips(ui::TooltipManager* tooltipManager);
+  void setActiveLayoutId(const std::string& layoutId)
+  {
+    if (layoutId.empty()) {
+      m_activeLayoutId = Layout::kDefault;
+      return;
+    }
+
+    if (layoutId == m_activeLayoutId)
+      return;
+
+    m_activeLayoutId = layoutId;
+  }
+
+  void populateComboBox();
   LayoutItem* getItemByLayoutId(const std::string& id);
   void onAnimationFrame() override;
   void onAnimationStop(int animation) override;

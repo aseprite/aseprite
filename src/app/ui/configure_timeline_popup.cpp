@@ -53,8 +53,6 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_box = new app::gen::TimelineConf();
   addChild(m_box);
 
-  m_box->position()->ItemChange.connect(
-    [this] { onChangeTimelinePosition(m_box->position()->selectedItem()); });
   m_box->firstFrame()->Change.connect([this] { onChangeFirstFrame(); });
   m_box->merge()->Click.connect([this] { onChangeType(); });
   m_box->tint()->Click.connect([this] { onChangeType(); });
@@ -93,15 +91,6 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
 {
   DocumentPreferences& docPref = this->docPref();
   base::ScopedValue lockUpdates(m_lockUpdates, true);
-
-  auto position = Preferences::instance().general.timelinePosition();
-  int selItem = 2;
-  switch (position) {
-    case gen::TimelinePosition::LEFT:   selItem = 0; break;
-    case gen::TimelinePosition::RIGHT:  selItem = 1; break;
-    case gen::TimelinePosition::BOTTOM: selItem = 2; break;
-  }
-  m_box->position()->setSelectedItem(selItem, false);
 
   m_box->firstFrame()->setTextf("%d", docPref.timeline.firstFrame());
 
@@ -146,19 +135,6 @@ bool ConfigureTimelinePopup::onProcessMessage(ui::Message* msg)
     }
   }
   return PopupWindow::onProcessMessage(msg);
-}
-
-void ConfigureTimelinePopup::onChangeTimelinePosition(int option)
-{
-  gen::TimelinePosition newTimelinePos = gen::TimelinePosition::BOTTOM;
-
-  int selItem = option;
-  switch (selItem) {
-    case 0: newTimelinePos = gen::TimelinePosition::LEFT; break;
-    case 1: newTimelinePos = gen::TimelinePosition::RIGHT; break;
-    case 2: newTimelinePos = gen::TimelinePosition::BOTTOM; break;
-  }
-  Preferences::instance().general.timelinePosition(newTimelinePos);
 }
 
 void ConfigureTimelinePopup::onChangeFirstFrame()
