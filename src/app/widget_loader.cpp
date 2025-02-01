@@ -28,6 +28,7 @@
 #include "app/ui/mini_help_button.h"
 #include "app/ui/search_entry.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui/textedit.h"
 #include "app/widget_not_found.h"
 #include "app/xml_document.h"
 #include "app/xml_exception.h"
@@ -256,7 +257,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
     if (elem_name == "expr" && decimals)
       ((ExprEntry*)widget)->setDecimals(strtol(decimals, nullptr, 10));
   }
-  if (elem_name == "filename") {
+  else if (elem_name == "filename") {
     const char* button_only = elem->Attribute("button_only");
     const app::FilenameField::Type type = ((button_only != nullptr &&
                                             strtol(button_only, nullptr, 10) == 1) ?
@@ -264,6 +265,9 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
                                              app::FilenameField::Type::EntryAndButton);
 
     widget = new app::FilenameField(type, "");
+  }
+  else if (elem_name == "textedit") {
+    widget = new TextEdit();
   }
   else if (elem_name == "grid") {
     const char* columns = elem->Attribute("columns");

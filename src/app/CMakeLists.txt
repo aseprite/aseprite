@@ -400,6 +400,7 @@ target_sources(app-lib PRIVATE
   commands/cmd_exit.cpp
   commands/cmd_export_sprite_sheet.cpp
   commands/cmd_eyedropper.cpp
+  commands/cmd_feedback.cpp
   commands/cmd_fill_and_stroke.cpp
   commands/cmd_fit_screen.cpp
   commands/cmd_flatten_layers.cpp
@@ -680,6 +681,7 @@ target_sources(app-lib PRIVATE
   ui/tabs.cpp
   ui/tag_window.cpp
   ui/task_widget.cpp
+  ui/textedit.cpp
   ui/tile_button.cpp
   ui/tileset_selector.cpp
   ui/timeline/ani_controls.cpp
