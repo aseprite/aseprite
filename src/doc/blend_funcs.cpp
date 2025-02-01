@@ -397,6 +397,43 @@ static void set_lum(double& r, double& g, double& b, double l)
   clip_color(r, g, b);
 }
 
+static inline uint8_t get_imin_channel(const double r, const double g, const double b)
+{
+  // We use '<=' to get min so as to catch two channels being equal
+  if (r <= g && r <= b)
+    return 0b001;
+  if (g <= r && g <= b)
+    return 0b010;
+
+  return 0b100;
+}
+
+static inline uint8_t get_imax_channel(const double r, const double g, const double b)
+{
+  if (r > g && r > b)
+    return 0b001;
+  if (g > r && g > b)
+    return 0b010;
+
+  return 0b100;
+}
+
+static inline uint8_t get_imid_channel(uint8_t imin, uint8_t imax)
+{
+  // Getting the remaining channel through exclusion guarantees that it is neither min nor max
+  return (~(imax | imin)) & 0b111;
+}
+
+static inline double& index_to_ref(double& r, double& g, double& b, uint8_t i)
+{
+  if (i == 0b001)
+    return r;
+  if (i == 0b010)
+    return g;
+
+  return b;
+}
+
 // TODO replace this with a better impl (and test this, not sure if it's correct)
 static void set_sat(double& r, double& g, double& b, double s)
 {
@@ -409,9 +446,15 @@ static void set_sat(double& r, double& g, double& b, double s)
   ((x) > (y) ? ((y) > (z) ? (y) : ((x) > (z) ? (z) : (x))) :                                       \
                ((y) > (z) ? ((z) > (x) ? (z) : (x)) : (y)))
 
-  double& min = MIN(r, MIN(g, b));
-  double& mid = MID(r, g, b);
-  double& max = MAX(r, MAX(g, b));
+  // Fetch channel indices
+  const uint8_t imin = get_imin_channel(r, g, b);
+  const uint8_t imax = get_imax_channel(r, g, b);
+  const uint8_t imid = get_imid_channel(imin, imax);
+
+  // Map the indices for each channel to references
+  double& min = index_to_ref(r, g, b, imin);
+  double& max = index_to_ref(r, g, b, imax);
+  double& mid = index_to_ref(r, g, b, imid);
 
   if (max > min) {
     mid = ((mid - min) * s) / (max - min);
