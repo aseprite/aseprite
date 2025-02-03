@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -52,8 +52,13 @@ WidgetType ButtonBase::behaviorType() const
 
 void ButtonBase::onClick()
 {
+  if (m_clicking)
+    return;
+
+  m_clicking = true;
   // Fire Click() signal
   Click();
+  m_clicking = false;
 }
 
 void ButtonBase::onRightClick()
