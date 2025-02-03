@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2021-2023  Igara Studio S.A.
+// Copyright (C) 2021-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -49,8 +49,16 @@ protected:
 private:
   void generateButtonSelectSignal();
 
-  bool m_pressedStatus;
   WidgetType m_behaviorType;
+  bool m_pressedStatus;
+  // Flag used to prevent nested calls of the onClik handler.
+  // This situation can happen, for example, when a button in a window
+  // opens a modal window. If the user presses the button as fast as possible
+  // it may happen that the button's onClick handler is called in the window's
+  // event loop, then the handler opens the modal and, finally a second onClick handler
+  // is called due to queued system events that now are processed by the modal's event
+  // loop that was started by the previously in course onClick handler.
+  bool m_clicking = false;
 
 protected:
   bool m_handleSelect;
