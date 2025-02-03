@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -74,6 +74,7 @@ void FilterPreview::stop()
       m_filterMgr->end();
     }
     m_timer.stop();
+    m_restartPreviewTimer.stop();
   }
 
   // Wait the filter task to end.
