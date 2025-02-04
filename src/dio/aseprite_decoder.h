@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018-2023 Igara Studio S.A.
+// Copyright (c) 2018-2025 Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,6 +9,7 @@
 #define DIO_ASEPRITE_DECODER_H_INCLUDED
 #pragma once
 
+#include "dio/aseprite_common.h"
 #include "dio/decoder.h"
 #include "doc/frame.h"
 #include "doc/layer_list.h"
@@ -40,6 +41,7 @@ class AsepriteExternalFiles;
 class AsepriteDecoder : public Decoder {
 public:
   bool decode() override;
+  int celType() const { return m_celType; }
 
 private:
   bool readHeader(AsepriteHeader* header);
@@ -78,6 +80,7 @@ private:
 
   doc::LayerList m_allLayers;
   std::vector<uint32_t> m_tilesetFlags;
+  int m_celType = ASE_FILE_COMPRESSED_CEL;
 };
 
 } // namespace dio

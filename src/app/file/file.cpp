@@ -895,10 +895,6 @@ void FileOp::operate(IFileOpProgress* progress)
 
         // Set the frames range
         m_document->sprite()->setTotalFrames(frame);
-
-        // Sets special options from the specific format (e.g. BMP
-        // file can contain the number of bits per pixel).
-        m_document->setFormatOptions(m_formatOptions);
       }
     }
     // Direct load from one file.
@@ -907,6 +903,12 @@ void FileOp::operate(IFileOpProgress* progress)
       if (!m_format->load(this)) {
         setError("Error loading sprite from file \"%s\"\n", m_filename.c_str());
       }
+    }
+
+    if (m_document) {
+      // Sets special options from the specific format (e.g. BMP
+      // file can contain the number of bits per pixel).
+      m_document->setFormatOptions(m_formatOptions);
     }
 
     // Load special data from .aseprite-data file
