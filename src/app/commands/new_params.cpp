@@ -25,7 +25,6 @@
 #include "doc/anidir.h"
 #include "doc/color_mode.h"
 #include "doc/fit_criteria.h"
-#include "doc/pixel_format.h"
 #include "doc/rgbmap_algorithm.h"
 #include "filters/color_curve.h"
 #include "filters/hue_saturation_filter.h"
@@ -274,19 +273,6 @@ void Param<doc::FitCriteria>::fromString(const std::string& value)
 }
 
 template<>
-void Param<doc::PixelFormat>::fromString(const std::string& value)
-{
-  if (base::utf8_icmp(value, "rgb") == 0)
-    setValue(doc::PixelFormat::IMAGE_RGB);
-  else if (base::utf8_icmp(value, "grayscale") == 0 || base::utf8_icmp(value, "gray") == 0)
-    setValue(doc::PixelFormat::IMAGE_GRAYSCALE);
-  else if (base::utf8_icmp(value, "indexed") == 0)
-    setValue(doc::PixelFormat::IMAGE_INDEXED);
-  else
-    setValue(doc::PixelFormat::IMAGE_RGB);
-}
-
-template<>
 void Param<render::DitheringAlgorithm>::fromString(const std::string& value)
 {
   if (base::utf8_icmp(value, "ordered") == 0)
@@ -492,15 +478,6 @@ void Param<doc::FitCriteria>::fromLua(lua_State* L, int index)
     fromString(lua_tostring(L, index));
   else
     setValue((doc::FitCriteria)lua_tointeger(L, index));
-}
-
-template<>
-void Param<doc::PixelFormat>::fromLua(lua_State* L, int index)
-{
-  if (lua_type(L, index) == LUA_TSTRING)
-    fromString(lua_tostring(L, index));
-  else
-    setValue((doc::PixelFormat)lua_tointeger(L, index));
 }
 
 template<>
