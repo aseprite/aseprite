@@ -25,8 +25,10 @@
 
 #include <stdexcept>
 
-#if defined(__x86_64__) || defined(_WIN64)
-  #include <emmintrin.h>
+#if ( defined(__x86_64__) || defined(_WIN64) )
+  #if ( ! ( !defined(__x86_64__) && defined(_WIN64) ) ) 
+    #include <emmintrin.h>
+  #endif
 #endif
 
 namespace doc {
