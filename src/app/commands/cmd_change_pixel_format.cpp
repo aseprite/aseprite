@@ -601,8 +601,8 @@ void ChangePixelFormatCommand::onExecute(Context* ctx)
                                  render::Dithering(params().dithering(), matrix, params().factor()),
                                  params().rgbmap(),
                                  get_gray_func(params().toGray()),
-                                 &job,
-                                 params().fitCriteria())); // SpriteJob is a render::TaskDelegate
+                                 &job, // SpriteJob is a render::TaskDelegate
+                                 params().fitCriteria()));
     });
     job.waitJob();
   }
