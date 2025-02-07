@@ -30,6 +30,7 @@
 #include "app/ui/editor/editor_render.h"
 #include "app/ui/rgbmap_algorithm_selector.h"
 #include "app/ui/skin/skin_theme.h"
+#include "doc/color_mode.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -70,7 +71,7 @@ public:
   ConvertThread(const doc::ImageRef& dstImage,
                 const doc::Sprite* sprite,
                 const doc::frame_t frame,
-                const doc::PixelFormat pixelFormat,
+                const doc::ColorMode colorMode,
                 const render::Dithering& dithering,
                 const gen::ToGrayAlgorithm toGray,
                 const gfx::Point& pos,
@@ -83,11 +84,11 @@ public:
     , m_thread([this,
                 sprite,
                 frame,
-                pixelFormat,
+                colorMode,
                 dithering,
                 toGray,
                 newBlend]() { // Copy the matrix
-      run(sprite, frame, pixelFormat, dithering, toGray, newBlend);
+      run(sprite, frame, colorMode, dithering, toGray, newBlend);
     })
   {
   }
@@ -105,7 +106,7 @@ public:
 private:
   void run(const Sprite* sprite,
            const doc::frame_t frame,
-           const doc::PixelFormat pixelFormat,
+           const doc::ColorMode colorMode,
            const render::Dithering& dithering,
            const gen::ToGrayAlgorithm toGray,
            const bool newBlend)
@@ -121,7 +122,7 @@ private:
 
     render::convert_pixel_format(tmp.get(),
                                  m_image.get(),
-                                 pixelFormat,
+                                 (PixelFormat)colorMode,
                                  dithering,
                                  sprite->rgbMap(frame),
                                  sprite->palette(frame),
@@ -149,20 +150,22 @@ private:
 
 class ConversionItem : public ListItem {
 public:
-  ConversionItem(const doc::PixelFormat pixelFormat) : m_pixelFormat(pixelFormat)
+  ConversionItem(const doc::ColorMode colorMode) : m_colorMode(colorMode)
   {
     std::string toMode;
-    switch (pixelFormat) {
-      case IMAGE_RGB:       toMode = Strings::commands_ChangePixelFormat_RGB(); break;
-      case IMAGE_GRAYSCALE: toMode = Strings::commands_ChangePixelFormat_Grayscale(); break;
-      case IMAGE_INDEXED:   toMode = Strings::commands_ChangePixelFormat_Indexed(); break;
+    switch (colorMode) {
+      case doc::ColorMode::RGB: toMode = Strings::commands_ChangePixelFormat_RGB(); break;
+      case doc::ColorMode::GRAYSCALE:
+        toMode = Strings::commands_ChangePixelFormat_Grayscale();
+        break;
+      case doc::ColorMode::INDEXED: toMode = Strings::commands_ChangePixelFormat_Indexed(); break;
     }
     setText(fmt::format("-> {}", toMode));
   }
-  doc::PixelFormat pixelFormat() const { return m_pixelFormat; }
+  doc::ColorMode colorMode() const { return m_colorMode; }
 
 private:
-  doc::PixelFormat m_pixelFormat;
+  doc::ColorMode m_colorMode;
 };
 
 class ColorModeWindow : public app::gen::ColorMode {
@@ -179,22 +182,24 @@ public:
     , m_imageJustCreated(true)
   {
     const auto& pref = Preferences::instance();
-    const doc::PixelFormat from = m_editor->sprite()->pixelFormat();
+    const doc::ColorMode from = m_editor->sprite()->colorMode();
 
     // Add the color mode in the window title
     std::string fromMode;
     switch (from) {
-      case IMAGE_RGB:       fromMode = Strings::commands_ChangePixelFormat_RGB(); break;
-      case IMAGE_GRAYSCALE: fromMode = Strings::commands_ChangePixelFormat_Grayscale(); break;
-      case IMAGE_INDEXED:   fromMode = Strings::commands_ChangePixelFormat_Indexed(); break;
+      case doc::ColorMode::RGB: fromMode = Strings::commands_ChangePixelFormat_RGB(); break;
+      case doc::ColorMode::GRAYSCALE:
+        fromMode = Strings::commands_ChangePixelFormat_Grayscale();
+        break;
+      case doc::ColorMode::INDEXED: fromMode = Strings::commands_ChangePixelFormat_Indexed(); break;
     }
     setText(fmt::format("{}: {}", text(), fromMode));
 
     // Add conversion items
-    if (from != IMAGE_RGB)
-      colorMode()->addChild(new ConversionItem(IMAGE_RGB));
-    if (from != IMAGE_INDEXED) {
-      colorMode()->addChild(new ConversionItem(IMAGE_INDEXED));
+    if (from != doc::ColorMode::RGB)
+      colorMode()->addChild(new ConversionItem(doc::ColorMode::RGB));
+    if (from != doc::ColorMode::INDEXED) {
+      colorMode()->addChild(new ConversionItem(doc::ColorMode::INDEXED));
 
       m_ditheringSelector = new DitheringSelector(DitheringSelector::SelectBoth);
       m_ditheringSelector->setExpansive(true);
@@ -242,8 +247,8 @@ public:
       advancedCheck()->setVisible(false);
       advanced()->setVisible(false);
     }
-    if (from != IMAGE_GRAYSCALE) {
-      colorMode()->addChild(new ConversionItem(IMAGE_GRAYSCALE));
+    if (from != doc::ColorMode::GRAYSCALE) {
+      colorMode()->addChild(new ConversionItem(doc::ColorMode::GRAYSCALE));
 
       toGrayCombobox()->Change.connect([this] { onToGrayChange(); });
     }
@@ -264,10 +269,10 @@ public:
 
   ~ColorModeWindow() { stop(); }
 
-  doc::PixelFormat pixelFormat() const
+  doc::ColorMode selectedColorMode() const
   {
     ASSERT(m_selectedItem);
-    return m_selectedItem->pixelFormat();
+    return m_selectedItem->colorMode();
   }
 
   render::Dithering dithering() const
@@ -354,10 +359,10 @@ private:
     if (visibleBounds.isEmpty())
       return;
 
-    doc::PixelFormat dstPixelFormat = item->pixelFormat();
+    doc::ColorMode dstColorMode = item->colorMode();
 
     if (m_ditheringSelector) {
-      const bool toIndexed = (dstPixelFormat == doc::IMAGE_INDEXED);
+      const bool toIndexed = (dstColorMode == doc::ColorMode::INDEXED);
       m_ditheringSelector->setVisible(toIndexed);
 
       const bool errorDiff = (m_ditheringSelector->ditheringAlgorithm() ==
@@ -366,11 +371,12 @@ private:
     }
 
     {
-      const bool toGray = (dstPixelFormat == doc::IMAGE_GRAYSCALE);
+      const bool toGray = (dstColorMode == doc::ColorMode::GRAYSCALE);
       toGrayCombobox()->setVisible(toGray);
     }
 
-    m_image.reset(Image::create(dstPixelFormat, visibleBounds.w, visibleBounds.h, m_imageBuffer));
+    m_image.reset(
+      Image::create(ImageSpec(dstColorMode, visibleBounds.w, visibleBounds.h, 0), m_imageBuffer));
     if (m_imageJustCreated) {
       m_imageJustCreated = false;
       m_image->clear(0);
@@ -396,7 +402,7 @@ private:
     m_bgThread.reset(new ConvertThread(m_image,
                                        m_editor->sprite(),
                                        m_editor->frame(),
-                                       dstPixelFormat,
+                                       dstColorMode,
                                        dithering(),
                                        toGray(),
                                        visibleBounds.origin(),
@@ -463,12 +469,24 @@ private:
 
 struct ChangePixelFormatParams : public NewParams {
   Param<bool> ui{ this, false, "ui" };
-  Param<PixelFormat> format{ this, IMAGE_RGB, "format" };
+  Param<ColorMode> colorMode{
+    this,
+    ColorMode::RGB,
+    { "colorMode", "format" }
+  };
   Param<render::DitheringAlgorithm> dithering{ this,
                                                render::DitheringAlgorithm::None,
                                                "dithering" };
-  Param<std::string> matrix{ this, "", "dithering-matrix" };
-  Param<double> factor{ this, 1.0, "dithering-factor" };
+  Param<std::string> matrix{
+    this,
+    "",
+    { "ditheringMatrix", "dithering-matrix" }
+  };
+  Param<double> factor{
+    this,
+    1.0,
+    { "ditheringFactor", "dithering-factor" }
+  };
   Param<doc::RgbMapAlgorithm> rgbmap{ this, RgbMapAlgorithm::DEFAULT, "rgbmap" };
   Param<gen::ToGrayAlgorithm> toGray{ this, gen::ToGrayAlgorithm::DEFAULT, "toGray" };
   Param<doc::FitCriteria> fitCriteria{ this, doc::FitCriteria::DEFAULT, "fitCriteria" };
@@ -507,7 +525,7 @@ bool ChangePixelFormatCommand::onEnabled(Context* ctx)
   if (params().ui())
     return true;
 
-  if (sprite->pixelFormat() == IMAGE_INDEXED && params().format() == IMAGE_INDEXED &&
+  if (sprite->pixelFormat() == IMAGE_INDEXED && params().colorMode() == ColorMode::INDEXED &&
       params().dithering() != render::DitheringAlgorithm::None)
     return false;
 
@@ -516,22 +534,23 @@ bool ChangePixelFormatCommand::onEnabled(Context* ctx)
 
 bool ChangePixelFormatCommand::onChecked(Context* ctx)
 {
-  if (params().ui() || (!params().ui.isSet() && !params().format.isSet()))
+  if (params().ui() || (!params().ui.isSet() && !params().colorMode.isSet()))
     return false;
 
   const ContextReader reader(ctx);
   const Sprite* sprite = reader.sprite();
 
-  if (sprite && sprite->pixelFormat() == IMAGE_INDEXED && params().format() == IMAGE_INDEXED &&
+  if (sprite && sprite->pixelFormat() == IMAGE_INDEXED &&
+      params().colorMode() == ColorMode::INDEXED &&
       params().dithering() != render::DitheringAlgorithm::None)
     return false;
 
-  return (sprite && sprite->pixelFormat() == params().format());
+  return (sprite && sprite->colorMode() == params().colorMode());
 }
 
 void ChangePixelFormatCommand::onExecute(Context* ctx)
 {
-  const bool ui = ((params().ui() || (!params().ui.isSet() && !params().format.isSet())) &&
+  const bool ui = ((params().ui() || (!params().ui.isSet() && !params().colorMode.isSet())) &&
                    ctx->isUIAvailable());
   bool flatten = false;
   render::DitheringMatrix matrix = getDitheringMatrix(params().matrix());
@@ -549,7 +568,7 @@ void ChangePixelFormatCommand::onExecute(Context* ctx)
     if (window.closer() != window.ok())
       return;
 
-    params().format(window.pixelFormat());
+    params().colorMode(window.selectedColorMode());
     params().dithering(window.dithering().algorithm());
     matrix = window.dithering().matrix();
     params().factor(window.dithering().factor());
@@ -560,7 +579,7 @@ void ChangePixelFormatCommand::onExecute(Context* ctx)
 
     window.saveOptions();
   }
-  else if (params().format() == IMAGE_INDEXED) {
+  else if (params().colorMode() == ColorMode::INDEXED) {
     if (!params().rgbmap.isSet())
       params().rgbmap(Preferences::instance().quantization.rgbmapAlgorithm());
     if (!params().fitCriteria.isSet())
@@ -569,7 +588,7 @@ void ChangePixelFormatCommand::onExecute(Context* ctx)
 
   // No conversion needed
   Doc* doc = ctx->activeDocument();
-  if (doc->sprite()->pixelFormat() == params().format())
+  if (doc->sprite()->pixelFormat() == (PixelFormat)params().colorMode())
     return;
 
   {
@@ -597,7 +616,7 @@ void ChangePixelFormatCommand::onExecute(Context* ctx)
 
     job.startJobWithCallback([this, &job, sprite, &matrix](Tx& tx) {
       tx(new cmd::SetPixelFormat(sprite,
-                                 params().format(),
+                                 (PixelFormat)params().colorMode(),
                                  render::Dithering(params().dithering(), matrix, params().factor()),
                                  params().rgbmap(),
                                  get_gray_func(params().toGray()),
@@ -616,10 +635,12 @@ std::string ChangePixelFormatCommand::onGetFriendlyName() const
   std::string conversion;
 
   if (!params().ui()) {
-    switch (params().format()) {
-      case IMAGE_RGB:       conversion = Strings::commands_ChangePixelFormat_RGB(); break;
-      case IMAGE_GRAYSCALE: conversion = Strings::commands_ChangePixelFormat_Grayscale(); break;
-      case IMAGE_INDEXED:
+    switch (params().colorMode()) {
+      case ColorMode::RGB: conversion = Strings::commands_ChangePixelFormat_RGB(); break;
+      case ColorMode::GRAYSCALE:
+        conversion = Strings::commands_ChangePixelFormat_Grayscale();
+        break;
+      case ColorMode::INDEXED:
         switch (params().dithering()) {
           case render::DitheringAlgorithm::None:
             conversion = Strings::commands_ChangePixelFormat_Indexed();
