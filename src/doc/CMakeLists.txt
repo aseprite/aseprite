@@ -1,5 +1,5 @@
 # Aseprite Document Library
-# Copyright (C) 2019-2023 Igara Studio S.A.
+# Copyright (C) 2019-2024 Igara Studio S.A.
 # Copyright (C) 2001-2018 David Capello
 
 if(WIN32)
@@ -22,6 +22,7 @@ add_library(doc-lib
   algorithm/stroke_selection.cpp
   anidir.cpp
   blend_funcs.cpp
+  blend_image.cpp
   blend_mode.cpp
   brush.cpp
   brush_type.cpp
@@ -60,6 +61,7 @@ add_library(doc-lib
   primitives.cpp
   remap.cpp
   render_plan.cpp
+  rgbmap_base.cpp
   rgbmap_rgb5a3.cpp
   selected_frames.cpp
   selected_layers.cpp

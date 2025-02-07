@@ -15,15 +15,11 @@
 
 namespace net {
 
-class HttpResponse
-{
+class HttpResponse {
 public:
   // Creates a response. The body of the response will be written in
   // the given "stream".
-  HttpResponse(std::ostream* stream)
-    : m_status(0)
-    , m_stream(stream)
-  { }
+  HttpResponse(std::ostream* stream) : m_status(0), m_stream(stream) {}
 
   // Returns the HTTP status code.
   int status() const { return m_status; }
@@ -41,4 +37,4 @@ private:
 
 } // namespace net
 
-#endif  // NET_HTTP_RESPONSE_H_INCLUDED
+#endif // NET_HTTP_RESPONSE_H_INCLUDED

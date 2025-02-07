@@ -23,8 +23,35 @@ set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/laf/cmake/cxx
 project(aseprite C CXX)
 
 # Check repository status
-if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/laf/CMakeLists.txt)
-  message(FATAL_ERROR "Your Aseprite repository is incomplete, initialize submodules using:\n  git submodule update --init --recursive")
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/laf/CMakeLists.txt" OR
+   NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/laf/clip/CMakeLists.txt")
+  message(FATAL_ERROR
+    "Your Aseprite repository looks incomplete. Please read the following "
+    "instructions carefully:"
+    "\n"
+    "1) If you have downloaded Aseprite source using the "
+    "\"Code > Download ZIP\" button from GitHub, you will not be able to "
+    "compile Aseprite. You need to get the code with other methods (continue "
+    "reading)."
+    "\n"
+    "2) You can correctly clone the GitHub repository with the "
+    "\"--recursive\" argument:"
+    "\n"
+    "  git clone --recursive https://github.com/aseprite/aseprite.git"
+    "\n"
+    "3) If you have already cloned the repository and see this message, "
+    "you still need to initialize submodules running the following command:"
+    "\n"
+    "  git submodule update --init --recursive"
+    "\n"
+    "4) Or if you want to download the full source code in a .zip file, "
+    "go to the releases page and get the latest \"Aseprite-v1.x-Source.zip\":"
+    "\n"
+    "  https://github.com/aseprite/aseprite/releases"
+    "\n"
+    "More information in the building instructions:"
+    "\n"
+    "  https://github.com/aseprite/aseprite/blob/main/INSTALL.md#get-the-source-code")
 endif()
 
 # This is required for KDE/Qt destop integration, which sets
@@ -43,6 +70,7 @@ option(USE_SHARED_GIFLIB  "Use your installed copy of giflib" off)
 option(USE_SHARED_JPEGLIB "Use your installed copy of jpeglib" off)
 option(USE_SHARED_ZLIB    "Use your installed copy of zlib" off)
 option(USE_SHARED_LIBPNG  "Use your installed copy of libpng" off)
+option(USE_SHARED_TINYEXIF "Use your installed copy of TinyEXIF" off)
 option(USE_SHARED_TINYXML "Use your installed copy of tinyxml" off)
 option(USE_SHARED_PIXMAN  "Use your installed copy of pixman" off)
 option(USE_SHARED_FREETYPE "Use shared FreeType library" off)
@@ -59,7 +87,7 @@ option(ENABLE_TRIAL_MODE   "Compile the trial version" off)
 option(ENABLE_DRM          "Compile the DRM-enabled version (e.g. for automatic updates)" off)
 option(ENABLE_STEAM        "Compile with Steam library" off)
 option(ENABLE_DEVMODE      "Compile vesion for developers" off)
-option(ENABLE_UI           "Compile UI (turn off to compile CLI-only version)" on)
+option(ENABLE_I18N_STRINGS "Clone i18n strings repo (https://github.com/aseprite/strings) to bin/data/strings.git" off)
 option(FULLSCREEN_PLATFORM "Enable fullscreen by default" off)
 option(ENABLE_CLANG_TIDY   "Enable static analysis" off)
 option(ENABLE_CCACHE       "Use CCache to improve recompilation speed (optional)" on)
@@ -82,22 +110,24 @@ else()
   set(REQUIRE_CURL OFF)
 endif()
 
-# Select libcurl's TLS backend according to target platform
-if(REQUIRE_CURL AND ENABLE_DRM)
-  if(APPLE)
-    option(CMAKE_USE_SECTRANSP "enable Apple OS native SSL/TLS" ON)
-  endif()
+# SSL/TLS support
+if(REQUIRE_CURL AND NOT USE_SHARED_CURL)
+  # Disable OpenSSL (use native libraries only)
+  set(CMAKE_USE_OPENSSL OFF CACHE BOOL "Use OpenSSL code. Experimental")
+  set(CMAKE_USE_LIBSSH2 OFF CACHE BOOL "Use libSSH2")
+
   if(WIN32)
-    set(CMAKE_USE_SCHANNEL "enable Windows native SSL/TLS" ON)
+    set(CMAKE_USE_SCHANNEL ON CACHE BOOL "enable Windows native SSL/TLS")
+  elseif(APPLE)
+    set(CMAKE_USE_SECTRANSP ON CACHE BOOL "enable Apple OS native SSL/TLS")
+  else()
+    # TODO Linux?
   endif()
 endif()
 
-if(NOT LAF_OS_BACKEND)
-  if(NOT ENABLE_UI)
-    set(LAF_OS_BACKEND "none") # Without UI, we use the none backend
-  else()
-    set(LAF_OS_BACKEND "skia")
-  endif()
+# By default we'll try to use Skia back-end
+if(NOT LAF_BACKEND)
+  set(LAF_BACKEND "skia")
 endif()
 
 if(ENABLE_DRM AND NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/drm/CMakeLists.txt)
@@ -163,6 +193,7 @@ set(PIXMAN_DIR          ${CMAKE_CURRENT_SOURCE_DIR}/third_party/pixman)
 set(FREETYPE_DIR        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/freetype2)
 set(HARFBUZZ_DIR        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/harfbuzz)
 set(SIMPLEINI_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/third_party/simpleini)
+set(TINYEXIF_DIR        ${CMAKE_CURRENT_SOURCE_DIR}/third_party/TinyEXIF)
 set(TINYXML_DIR         ${CMAKE_CURRENT_SOURCE_DIR}/third_party/tinyxml2)
 set(ZLIB_DIR            ${CMAKE_CURRENT_SOURCE_DIR}/third_party/zlib)
 
@@ -198,12 +229,12 @@ endif()
 if(USE_SHARED_ZLIB)
   find_package(ZLIB REQUIRED)
 else()
-  set(ZLIB_FOUND)
+  set(ZLIB_FOUND ON)
   set(ZLIB_LIBRARY zlibstatic)
   set(ZLIB_LIBRARIES ${ZLIB_LIBRARY})
   set(ZLIB_INCLUDE_DIRS
     ${ZLIB_DIR}
-    ${CMAKE_BINARY_DIR}/third_party/zlib) # Zlib generated zconf.h file
+    ${CMAKE_CURRENT_BINARY_DIR}/third_party/zlib) # Zlib generated zconf.h file
   set(ZLIB_INCLUDE_DIR ${ZLIB_INCLUDE_DIRS} CACHE PATH "")
 endif()
 include_directories(${ZLIB_INCLUDE_DIRS})
@@ -235,6 +266,16 @@ else()
 endif()
 include_directories(${TINYXML_INCLUDE_DIR})
 
+# TinyEXIF
+if(USE_SHARED_TINYEXIF)
+  find_library(TINYEXIF_LIBRARY NAMES TinyEXIF)
+  find_path(TINYEXIF_INCLUDE_DIR NAMES TinyEXIF.h)
+else()
+  set(TINYEXIF_LIBRARY TinyEXIFstatic)
+  set(TINYEXIF_INCLUDE_DIR ${TINYEXIF_DIR})
+endif()
+include_directories(${TINYEXIF_INCLUDE_DIR})
+
 # pixman
 if(USE_SHARED_PIXMAN)
   find_library(PIXMAN_LIBRARY NAMES pixman pixman-1)
@@ -256,16 +297,15 @@ elseif(NOT LAF_BACKEND STREQUAL "skia")
   set(FREETYPE_LIBRARIES ${FREETYPE_LIBRARY})
   set(FREETYPE_INCLUDE_DIRS ${FREETYPE_DIR}/include)
 endif()
-include_directories(${FREETYPE_INCLUDE_DIRS})
 
 # harfbuzz
 if(USE_SHARED_HARFBUZZ)
   find_package(HarfBuzz)
 elseif(NOT LAF_BACKEND STREQUAL "skia")
+  set(HARFBUZZ_FOUND ON)
   set(HARFBUZZ_LIBRARIES harfbuzz)
   set(HARFBUZZ_INCLUDE_DIRS ${HARFBUZZ_DIR}/src)
 endif()
-include_directories(${HARFBUZZ_INCLUDE_DIRS})
 
 if(USE_SHARED_GIFLIB)
   find_package(GIF REQUIRED)
@@ -334,11 +374,16 @@ if(ENABLE_WEBP)
       NAMES libwebp # required for Windows
       PATHS "${SKIA_LIBRARY_DIR}" NO_DEFAULT_PATH)
     set(WEBP_INCLUDE_DIR "${SKIA_DIR}/third_party/externals/libwebp/src")
+    if(WEBP_LIBRARIES)
+      set(WEBP_FOUND ON)
+    else()
+      set(WEBP_FOUND OFF)
+    endif()
   else()
+    set(WEBP_FOUND ON)
     set(WEBP_LIBRARIES webp webpdemux libwebpmux)
     set(WEBP_INCLUDE_DIR ${LIBWEBP_DIR}/src)
   endif()
-  include_directories(${WEBP_INCLUDE_DIR})
 endif()
 message(STATUS "aseprite libwebp: ${WEBP_LIBRARIES}")
 

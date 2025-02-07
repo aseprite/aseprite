@@ -1,11 +1,12 @@
 // Aseprite
+// Copyright (C)      2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -27,19 +28,20 @@ using namespace ui;
 
 class CloseFileCommand : public Command {
 public:
-  CloseFileCommand()
-    : Command(CommandId::CloseFile(), CmdUIOnlyFlag) {
-  }
+  CloseFileCommand() : Command(CommandId::CloseFile(), CmdUIOnlyFlag) {}
 
 protected:
-
-  bool onEnabled(Context* context) override {
+  bool onEnabled(Context* context) override
+  {
     Workspace* workspace = App::instance()->workspace();
+    if (!workspace) // Workspace (main window) can be null if we are in --batch mode
+      return false;
     WorkspaceView* view = workspace->activeView();
     return (view != nullptr);
   }
 
-  void onExecute(Context* context) override {
+  void onExecute(Context* context) override
+  {
     Workspace* workspace = App::instance()->workspace();
     WorkspaceView* view = workspace->activeView();
     if (view)
@@ -49,19 +51,19 @@ protected:
 
 class CloseAllFilesCommand : public Command {
 public:
-  CloseAllFilesCommand()
-    : Command(CommandId::CloseAllFiles(), CmdRecordableFlag) {
+  CloseAllFilesCommand() : Command(CommandId::CloseAllFiles(), CmdRecordableFlag)
+  {
     m_quitting = false;
   }
 
 protected:
+  void onLoadParams(const Params& params) override { m_quitting = params.get_as<bool>("quitting"); }
 
-  void onLoadParams(const Params& params) override {
-    m_quitting = params.get_as<bool>("quitting");
-  }
-
-  void onExecute(Context* context) override {
+  void onExecute(Context* context) override
+  {
     Workspace* workspace = App::instance()->workspace();
+    if (!workspace) // Workspace (main window) can be null if we are in --batch mode
+      return;
 
     // Collect all document views
     DocViews docViews;

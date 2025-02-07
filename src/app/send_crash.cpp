@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/send_crash.h"
@@ -31,9 +31,7 @@ namespace app {
 std::string SendCrash::DefaultMemoryDumpFilename()
 {
 #ifdef _WIN32
-  std::string kDefaultCrashName = fmt::format("{}-crash-{}.dmp",
-                                              get_app_name(),
-                                              get_app_version());
+  std::string kDefaultCrashName = fmt::format("{}-crash-{}.dmp", get_app_name(), get_app_version());
   ResourceFinder rf;
   rf.includeUserDir(kDefaultCrashName.c_str());
   return rf.getFirstOrCreateDefault();
@@ -58,13 +56,10 @@ void SendCrash::search()
   // stack trace and detect the cause of the bug.
 
   m_dumpFilename = SendCrash::DefaultMemoryDumpFilename();
-  if (!m_dumpFilename.empty() &&
-      base::is_file(m_dumpFilename)) {
+  if (!m_dumpFilename.empty() && base::is_file(m_dumpFilename)) {
     auto app = App::instance();
     app->memoryDumpFilename(m_dumpFilename);
-#ifdef ENABLE_UI
     app->showNotification(this);
-#endif
   }
 
 #elif defined(__APPLE__)
@@ -72,46 +67,40 @@ void SendCrash::search()
   // report from ~/Library/Logs/DiagnosticReports which is the
   // location where crash reports (.crash files) are located.
 
-  m_task.run(
-    [this](base::task_token&){
-      ResourceFinder rf;
-      rf.includeHomeDir("Library/Logs/DiagnosticReports");
-      std::string dir = rf.defaultFilename();
-      if (base::is_directory(dir)) {
-        std::vector<std::string> candidates;
-        int n = std::strlen(get_app_name());
-        for (const auto& fn : base::list_files(dir)) {
-          // Cancel everything
-          if (m_task.canceled())
-            return;
+  m_task.run([this](base::task_token&) {
+    ResourceFinder rf;
+    rf.includeHomeDir("Library/Logs/DiagnosticReports");
+    std::string dir = rf.defaultFilename();
+    if (base::is_directory(dir)) {
+      std::vector<std::string> candidates;
+      int n = std::strlen(get_app_name());
+      for (const auto& fn : base::list_files(dir)) {
+        // Cancel everything
+        if (m_task.canceled())
+          return;
 
-          if (base::utf8_icmp(get_app_name(), fn, n) == 0) {
-            candidates.push_back(fn);
-          }
-        }
-        std::sort(candidates.begin(), candidates.end());
-        if (!candidates.empty()) {
-          std::string fn = base::join_path(dir, candidates.back());
-          if (base::is_file(fn)) {
-            ui::execute_from_ui_thread(
-              [this, fn]{
-                m_dumpFilename = fn;
-                if (auto app = App::instance()) {
-                  app->memoryDumpFilename(fn);
-#ifdef ENABLE_UI
-                  app->showNotification(this);
-#endif
-                }
-              });
-          }
+        if (base::utf8_icmp(get_app_name(), fn, n) == 0) {
+          candidates.push_back(fn);
         }
       }
-    });
+      std::sort(candidates.begin(), candidates.end());
+      if (!candidates.empty()) {
+        std::string fn = base::join_path(dir, candidates.back());
+        if (base::is_file(fn)) {
+          ui::execute_from_ui_thread([this, fn] {
+            m_dumpFilename = fn;
+            if (auto app = App::instance()) {
+              app->memoryDumpFilename(fn);
+              app->showNotification(this);
+            }
+          });
+        }
+      }
+    }
+  });
 
 #endif
 }
-
-#ifdef ENABLE_UI
 
 std::string SendCrash::notificationText()
 {
@@ -138,16 +127,16 @@ void SendCrash::notificationClick()
   if (isDev) {
     dlg.official()->setVisible(false);
     dlg.devFilename()->setText(m_dumpFilename);
-    dlg.devFilename()->Click.connect([this]{ onClickDevFilename(); });
+    dlg.devFilename()->Click.connect([this] { onClickDevFilename(); });
   }
   else
-#endif  // On other platforms the crash file might be useful even in
-        // the "-dev" version (e.g. on macOS it's a text file with
-        // stack traces).
+#endif // On other platforms the crash file might be useful even in
+       // the "-dev" version (e.g. on macOS it's a text file with
+       // stack traces).
   {
     dlg.dev()->setVisible(false);
     dlg.filename()->setText(m_dumpFilename);
-    dlg.filename()->Click.connect([this]{ onClickFilename(); });
+    dlg.filename()->Click.connect([this] { onClickFilename(); });
   }
 
   dlg.openWindowInForeground();
@@ -171,7 +160,5 @@ void SendCrash::onClickDevFilename()
 {
   base::launcher::open_file(m_dumpFilename);
 }
-
-#endif // ENABLE_UI
 
 } // namespace app

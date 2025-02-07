@@ -5,15 +5,14 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_last_point.h"
 
 #include "app/doc.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 SetLastPoint::SetLastPoint(Doc* doc, const gfx::Point& pos)
   : WithDocument(doc)
@@ -38,5 +37,4 @@ void SetLastPoint::setLastPoint(const gfx::Point& pos)
   doc->setLastDrawingPoint(pos);
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

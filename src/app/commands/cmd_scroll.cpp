@@ -1,12 +1,12 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -17,7 +17,6 @@
 #include "app/i18n/strings.h"
 #include "app/ui/editor/editor.h"
 #include "base/convert_to.h"
-#include "fmt/format.h"
 #include "ui/view.h"
 
 namespace app {
@@ -37,8 +36,7 @@ private:
   MoveThing m_moveThing;
 };
 
-ScrollCommand::ScrollCommand()
-  : Command(CommandId::Scroll(), CmdUIOnlyFlag)
+ScrollCommand::ScrollCommand() : Command(CommandId::Scroll(), CmdUIOnlyFlag)
 {
 }
 
@@ -59,13 +57,12 @@ void ScrollCommand::onExecute(Context* context)
   gfx::Point scroll = view->viewScroll();
   gfx::Point delta = m_moveThing.getDelta(context);
 
-  editor->setEditorScroll(scroll+delta);
+  editor->setEditorScroll(scroll + delta);
 }
 
 std::string ScrollCommand::onGetFriendlyName() const
 {
-  return fmt::format(getBaseFriendlyName(),
-                     m_moveThing.getFriendlyString());
+  return Strings::commands_Scroll(m_moveThing.getFriendlyString());
 }
 
 Command* CommandFactory::createScrollCommand()

@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -27,7 +27,6 @@
 #include "app/tools/tool_box.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/keyboard_shortcuts.h"
-#include "app/ui/main_menu_bar.h"
 #include "app/ui/main_menu_bar.h"
 #include "app/ui/main_window.h"
 #include "app/ui/skin/skin_property.h"
@@ -71,21 +70,21 @@ static struct {
   int width;
   int height;
   int scale;
-} try_resolutions[] = { { 1024, 768, 2 },
-                        {  800, 600, 2 },
-                        {  640, 480, 2 },
-                        {  320, 240, 1 },
-                        {  320, 200, 1 },
-                        {    0,   0, 0 } };
+} try_resolutions[] = {
+  { 1024, 768, 2 },
+  { 800,  600, 2 },
+  { 640,  480, 2 },
+  { 320,  240, 1 },
+  { 320,  200, 1 },
+  { 0,    0,   0 }
+};
 
 //////////////////////////////////////////////////////////////////////
 
-class CustomizedGuiManager : public ui::Manager
-                           , public ui::LayoutIO {
+class CustomizedGuiManager : public ui::Manager,
+                             public ui::LayoutIO {
 public:
-  CustomizedGuiManager(const os::WindowRef& nativeWindow)
-    : ui::Manager(nativeWindow) {
-  }
+  CustomizedGuiManager(const os::WindowRef& nativeWindow) : ui::Manager(nativeWindow) {}
 
 protected:
   bool onProcessMessage(Message* msg) override;
@@ -115,9 +114,7 @@ static gfx::Region defered_invalid_region;
 static bool load_gui_config(os::WindowSpec& spec, bool& maximized);
 static void save_gui_config();
 
-static bool create_main_window(bool gpuAccel,
-                               bool& maximized,
-                               std::string& lastError)
+static bool create_main_window(bool gpuAccel, bool& maximized, std::string& lastError)
 {
   os::WindowSpec spec;
   if (!load_gui_config(spec, maximized))
@@ -127,12 +124,9 @@ static bool create_main_window(bool gpuAccel,
   // executed.
   int scale = Preferences::instance().general.screenScale();
 
-  os::instance()->setGpuAcceleration(gpuAccel);
-
   try {
-    if (!spec.frame().isEmpty() ||
-        !spec.contentRect().isEmpty()) {
-      spec.scale(scale == 0 ? 2: std::clamp(scale, 1, 4));
+    if (!spec.frame().isEmpty() || !spec.contentRect().isEmpty()) {
+      spec.scale(scale == 0 ? 2 : std::clamp(scale, 1, 4));
       main_window = os::instance()->makeWindow(spec);
     }
   }
@@ -141,12 +135,13 @@ static bool create_main_window(bool gpuAccel,
   }
 
   if (!main_window) {
-    for (int c=0; try_resolutions[c].width; ++c) {
+    for (int c = 0; try_resolutions[c].width; ++c) {
       try {
         spec.frame();
         spec.position(os::WindowSpec::Position::Default);
-        spec.scale(scale == 0 ? try_resolutions[c].scale: scale);
-        spec.contentRect(gfx::Rect(0, 0,
+        spec.scale(scale == 0 ? try_resolutions[c].scale : scale);
+        spec.contentRect(gfx::Rect(0,
+                                   0,
                                    try_resolutions[c].width * spec.scale(),
                                    try_resolutions[c].height * spec.scale()));
         main_window = os::instance()->makeWindow(spec);
@@ -163,6 +158,8 @@ static bool create_main_window(bool gpuAccel,
     // saved when the program is closed).
     if (scale == 0)
       Preferences::instance().general.screenScale(main_window->scale());
+
+    main_window->setGpuAcceleration(gpuAccel);
 
     if (main_window->isMinimized())
       main_window->maximize();
@@ -182,8 +179,7 @@ int init_module_gui()
   if (!create_main_window(gpuAccel, maximized, lastError)) {
     // If we've created the native window with hardware acceleration,
     // now we try to do it without hardware acceleration.
-    if (gpuAccel &&
-        os::instance()->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
+    if (gpuAccel && os::instance()->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
       if (create_main_window(false, maximized, lastError)) {
         // Disable hardware acceleration
         pref.general.gpuAcceleration(false);
@@ -193,7 +189,7 @@ int init_module_gui()
 
   if (!main_window) {
     os::error_message(
-      ("Unable to create a user-interface window.\nDetails: "+lastError+"\n").c_str());
+      ("Unable to create a user-interface window.\nDetails: " + lastError + "\n").c_str());
     return -1;
   }
 
@@ -209,21 +205,20 @@ int init_module_gui()
 
   // Handle live resize too redraw the entire manager, dispatch the UI
   // messages, and flip the window.
-  os::instance()->handleWindowResize =
-    [](os::Window* window) {
-      Display* display = Manager::getDisplayFromNativeWindow(window);
-      if (!display)
-        display = manager->display();
-      ASSERT(display);
+  os::instance()->handleWindowResize = [](os::Window* window) {
+    Display* display = Manager::getDisplayFromNativeWindow(window);
+    if (!display)
+      display = manager->display();
+    ASSERT(display);
 
-      Message* msg = new Message(kResizeDisplayMessage);
-      msg->setDisplay(display);
-      msg->setRecipient(manager);
-      msg->setPropagateToChildren(false);
+    Message* msg = new Message(kResizeDisplayMessage);
+    msg->setDisplay(display);
+    msg->setRecipient(manager);
+    msg->setPropagateToChildren(false);
 
-      manager->enqueueMessage(msg);
-      manager->dispatchMessages();
-    };
+    manager->enqueueMessage(msg);
+    manager->dispatchMessages();
+  };
 
   // Set graphics options for next time
   save_gui_config();
@@ -261,23 +256,19 @@ void update_windows_color_profile_from_preferences()
   os::ColorSpaceRef osCS = nullptr;
 
   switch (windowProfile) {
-    case gen::WindowColorProfile::MONITOR:
-      osCS = nullptr;
-      break;
+    case gen::WindowColorProfile::MONITOR: osCS = nullptr; break;
     case gen::WindowColorProfile::SRGB:
       osCS = system->makeColorSpace(gfx::ColorSpace::MakeSRGB());
       break;
     case gen::WindowColorProfile::SPECIFIC: {
-      std::string name =
-        Preferences::instance().color.windowProfileName();
+      std::string name = Preferences::instance().color.windowProfileName();
 
       std::vector<os::ColorSpaceRef> colorSpaces;
       system->listColorSpaces(colorSpaces);
 
       for (auto& cs : colorSpaces) {
         auto gfxCs = cs->gfxColorSpace();
-        if (gfxCs->type() == gfx::ColorSpace::ICC &&
-            gfxCs->name() == name) {
+        if (gfxCs->type() == gfx::ColorSpace::ICC && gfxCs->name() == name) {
           osCS = cs;
           break;
         }
@@ -309,14 +300,13 @@ static bool load_gui_config(os::WindowSpec& spec, bool& maximized)
 #else
   // Compiled without Skia (none backend), without screen.
   if (!screen) {
-    std::printf(
-      "\n"
-      "  Aseprite cannot initialize GUI because it was compiled with LAF_BACKEND=none\n"
-      "\n"
-      "  Check the documentation in:\n"
-      "  https://github.com/aseprite/laf/blob/main/README.md\n"
-      "  https://github.com/aseprite/aseprite/blob/main/INSTALL.md\n"
-      "\n");
+    std::printf("\n"
+                "  Aseprite cannot initialize GUI because it was compiled with LAF_BACKEND=none\n"
+                "\n"
+                "  Check the documentation in:\n"
+                "  https://github.com/aseprite/laf/blob/main/README.md\n"
+                "  https://github.com/aseprite/aseprite/blob/main/INSTALL.md\n"
+                "\n");
     return false;
   }
 #endif
@@ -337,8 +327,7 @@ static bool load_gui_config(os::WindowSpec& spec, bool& maximized)
     for (const auto& screen : screens) {
       gfx::Rect wa = screen->workarea();
       gfx::Rect intersection = (frame & wa);
-      if (intersection.w >= 32 &&
-          intersection.h >= 32) {
+      if (intersection.w >= 32 && intersection.h >= 32) {
         ok = true;
         break;
       }
@@ -370,10 +359,8 @@ static void save_gui_config()
 {
   os::Window* window = manager->display()->nativeWindow();
   if (window) {
-    const bool maximized = (window->isMaximized() ||
-                            window->isFullscreen());
-    const gfx::Rect frame = (maximized ? window->restoredFrame():
-                                         window->frame());
+    const bool maximized = (window->isMaximized() || window->isFullscreen());
+    const gfx::Rect frame = (maximized ? window->restoredFrame() : window->frame());
 
     set_config_bool("GfxMode", "Maximized", maximized);
     set_config_rect("GfxMode", "Frame", frame);
@@ -382,6 +369,10 @@ static void save_gui_config()
 
 void update_screen_for_document(const Doc* document)
 {
+  auto* ctx = UIContext::instance();
+  if (!ctx || !ctx->isUIAvailable())
+    return;
+
   // Without document.
   if (!document) {
     // Well, change to the default palette.
@@ -400,16 +391,11 @@ void update_screen_for_document(const Doc* document)
   }
 }
 
-void load_window_pos(Window* window, const char* section,
-                     const bool limitMinSize)
+void load_window_pos(Window* window, const char* section, const bool limitMinSize)
 {
-  Display* parentDisplay =
-    (window->display() ? window->display():
-                         window->manager()->display());
-  Rect workarea =
-    (get_multiple_displays() ?
-     parentDisplay->nativeWindow()->screen()->workarea():
-     parentDisplay->bounds());
+  Display* parentDisplay = (window->display() ? window->display() : window->manager()->display());
+  Rect workarea = (get_multiple_displays() ? parentDisplay->nativeWindow()->screen()->workarea() :
+                                             parentDisplay->bounds());
 
   // Default position
   Rect origPos = window->bounds();
@@ -426,8 +412,8 @@ void load_window_pos(Window* window, const char* section,
     pos.h = std::min(pos.h, workarea.h);
   }
 
-  pos.setOrigin(Point(std::clamp(pos.x, workarea.x, workarea.x2()-pos.w),
-                      std::clamp(pos.y, workarea.y, workarea.y2()-pos.h)));
+  pos.setOrigin(Point(std::clamp(pos.x, workarea.x, workarea.x2() - pos.w),
+                      std::clamp(pos.y, workarea.y, workarea.y2() - pos.h)));
 
   window->setBounds(pos);
 
@@ -503,7 +489,6 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 #endif
 
   switch (msg->type()) {
-
     case kCloseDisplayMessage:
       // Only call the exit command/close the app when the the main
       // display is the closed window in this kCloseDisplayMessage
@@ -538,14 +523,13 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
             if (docView)
               ctx->setActiveView(docView);
             else {
-              ASSERT(false);    // Must be some DocView available
+              ASSERT(false); // Must be some DocView available
             }
           }
           // Load the file
           else {
             // Depending on the file type we will want to do different things:
-            std::string extension = base::string_to_lower(
-              base::get_file_extension(fn));
+            std::string extension = base::string_to_lower(base::get_file_extension(fn));
 
             // Install the extension
             if (extension == "aseprite-extension") {
@@ -575,7 +559,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 #if ENABLE_DEVMODE
       if (onProcessDevModeKeyDown(static_cast<KeyMessage*>(msg)))
         return true;
-#endif  // ENABLE_DEVMODE
+#endif // ENABLE_DEVMODE
 
       // Call base impl to check if there is a foreground window as
       // top level that needs keys. (In this way we just do not
@@ -596,7 +580,6 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
         defered_invalid_timer->stop();
       }
       break;
-
   }
 
   return Manager::onProcessMessage(msg);
@@ -606,17 +589,14 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 bool CustomizedGuiManager::onProcessDevModeKeyDown(KeyMessage* msg)
 {
   // Ctrl+Shift+Q generates a crash (useful to test the anticrash feature)
-  if (msg->ctrlPressed() &&
-      msg->shiftPressed() &&
-      msg->scancode() == kKeyQ) {
+  if (msg->ctrlPressed() && msg->shiftPressed() && msg->scancode() == kKeyQ) {
     int* p = nullptr;
     *p = 0;      // *Crash*
     return true; // This line should not be executed anyway
   }
 
   // Ctrl+F1 switches screen/UI scaling
-  if (msg->ctrlPressed() &&
-      msg->scancode() == kKeyF1) {
+  if (msg->ctrlPressed() && msg->scancode() == kKeyF1) {
     try {
       os::Window* window = display()->nativeWindow();
       int screenScale = window->scale();
@@ -655,7 +635,7 @@ bool CustomizedGuiManager::onProcessDevModeKeyDown(KeyMessage* msg)
         ui::set_theme(ui::get_theme(), uiScale);
       }
       if (screenScale != window->scale()) {
-        updateAllDisplaysWithNewScale(screenScale);
+        updateAllDisplays(screenScale, window->gpuAcceleration());
       }
     }
     catch (const std::exception& ex) {
@@ -664,29 +644,24 @@ bool CustomizedGuiManager::onProcessDevModeKeyDown(KeyMessage* msg)
     return true;
   }
 
-#ifdef ENABLE_DATA_RECOVERY
+  #ifdef ENABLE_DATA_RECOVERY
   // Ctrl+Shift+R recover active sprite from the backup store
   auto editor = Editor::activeEditor();
-  if (msg->ctrlPressed() &&
-      msg->shiftPressed() &&
-      msg->scancode() == kKeyR &&
-      App::instance()->dataRecovery() &&
-      App::instance()->dataRecovery()->activeSession() &&
-      editor &&
-      editor->document()) {
-    Doc* doc = App::instance()
-      ->dataRecovery()
-      ->activeSession()
-      ->restoreBackupById(editor->document()->id(), nullptr);
+  if (msg->ctrlPressed() && msg->shiftPressed() && msg->scancode() == kKeyR &&
+      App::instance()->dataRecovery() && App::instance()->dataRecovery()->activeSession() &&
+      editor && editor->document()) {
+    Doc* doc = App::instance()->dataRecovery()->activeSession()->restoreBackupById(
+      editor->document()->id(),
+      nullptr);
     if (doc)
       UIContext::instance()->documents().add(doc);
     return true;
   }
-#endif  // ENABLE_DATA_RECOVERY
+  #endif // ENABLE_DATA_RECOVERY
 
   return false;
 }
-#endif  // ENABLE_DEVMODE
+#endif // ENABLE_DEVMODE
 
 void CustomizedGuiManager::onInitTheme(InitThemeEvent& ev)
 {
@@ -714,11 +689,8 @@ bool CustomizedGuiManager::processKey(Message* msg)
 {
   App* app = App::instance();
   const KeyboardShortcuts* keys = KeyboardShortcuts::instance();
-  const KeyContext contexts[] = {
-    keys->getCurrentKeyContext(),
-    KeyContext::Normal
-  };
-  int n = (contexts[0] != contexts[1] ? 2: 1);
+  const KeyContext contexts[] = { keys->getCurrentKeyContext(), KeyContext::Normal };
+  int n = (contexts[0] != contexts[1] ? 2 : 1);
   for (int i = 0; i < n; ++i) {
     for (const KeyPtr& key : *keys) {
       if (key->isPressed(msg, *keys, contexts[i])) {
@@ -726,7 +698,6 @@ bool CustomizedGuiManager::processKey(Message* msg)
         app->mainWindow()->getMenuBar()->cancelMenuLoop();
 
         switch (key->type()) {
-
           case KeyType::Tool: {
             tools::Tool* current_tool = app->activeTool();
             tools::Tool* select_this_tool = key->tool();
@@ -743,7 +714,7 @@ bool CustomizedGuiManager::processKey(Message* msg)
             if (possibles.size() >= 2) {
               bool done = false;
 
-              for (size_t i=0; i<possibles.size(); ++i) {
+              for (size_t i = 0; i < possibles.size(); ++i) {
                 if (possibles[i] != current_tool &&
                     ToolBar::instance()->isToolVisible(possibles[i])) {
                   select_this_tool = possibles[i];
@@ -753,11 +724,11 @@ bool CustomizedGuiManager::processKey(Message* msg)
               }
 
               if (!done) {
-                for (size_t i=0; i<possibles.size(); ++i) {
+                for (size_t i = 0; i < possibles.size(); ++i) {
                   // If one of the possibilities is the current tool
                   if (possibles[i] == current_tool) {
                     // We select the next tool in the possibilities
-                    select_this_tool = possibles[(i+1) % possibles.size()];
+                    select_this_tool = possibles[(i + 1) % possibles.size()];
                     break;
                   }
                 }
@@ -776,8 +747,7 @@ bool CustomizedGuiManager::processKey(Message* msg)
             if (getForegroundWindow() == app->mainWindow()) {
               // OK, so we can execute the command represented
               // by the pressed-key in the message...
-              UIContext::instance()->executeCommandFromMenuOrShortcut(
-                command, key->params());
+              UIContext::instance()->executeCommandFromMenuOrShortcut(command, key->params());
               return true;
             }
             break;
@@ -788,7 +758,6 @@ bool CustomizedGuiManager::processKey(Message* msg)
             // KeyboardShortcuts::getCurrentQuicktool() function.
             break;
           }
-
         }
         break;
       }
@@ -805,7 +774,7 @@ std::string CustomizedGuiManager::loadLayout(Widget* widget)
   std::string windowId = widget->window()->id();
   std::string widgetId = widget->id();
 
-  return get_config_string(("layout:"+windowId).c_str(), widgetId.c_str(), "");
+  return get_config_string(("layout:" + windowId).c_str(), widgetId.c_str(), "");
 }
 
 void CustomizedGuiManager::saveLayout(Widget* widget, const std::string& str)
@@ -816,9 +785,7 @@ void CustomizedGuiManager::saveLayout(Widget* widget, const std::string& str)
   std::string windowId = widget->window()->id();
   std::string widgetId = widget->id();
 
-  set_config_string(("layout:"+windowId).c_str(),
-                    widgetId.c_str(),
-                    str.c_str());
+  set_config_string(("layout:" + windowId).c_str(), widgetId.c_str(), str.c_str());
 }
 
 } // namespace app

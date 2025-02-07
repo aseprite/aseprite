@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_layer_name.h"
@@ -15,8 +15,7 @@
 #include "doc/layer.h"
 #include "doc/sprite.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 SetLayerName::SetLayerName(Layer* layer, const std::string& name)
   : WithLayer(layer)
@@ -47,5 +46,4 @@ void SetLayerName::onFireNotifications()
   doc->notify_observers<DocEvent&>(&DocObserver::onLayerNameChange, ev);
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

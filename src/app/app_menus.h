@@ -21,110 +21,110 @@
 #include <memory>
 
 namespace tinyxml2 {
-  class XMLElement;
-  class XMLHandle;
-}
+class XMLElement;
+class XMLHandle;
+} // namespace tinyxml2
 
 namespace app {
-  class Command;
-  class Params;
+class Command;
+class Params;
 
-  using namespace ui;
+using namespace ui;
 
-  // Class to handle/get/reload available menus in gui.xml file.
-  class AppMenus {
-    AppMenus();
-    DISABLE_COPYING(AppMenus);
+// Class to handle/get/reload available menus in gui.xml file.
+class AppMenus {
+  AppMenus();
+  DISABLE_COPYING(AppMenus);
 
-  public:
-    static AppMenus* instance();
+public:
+  static AppMenus* instance();
 
-    void reload();
-    void initTheme();
+  void reload();
+  void initTheme();
 
-    // Updates the menu of recent files.
-    bool rebuildRecentList();
+  // Updates the menu of recent files.
+  bool rebuildRecentList();
 
-    Menu* getRootMenu() { return m_rootMenu.get(); }
-    Menu* getTabPopupMenu() { return m_tabPopupMenu.get(); }
-    Menu* getDocumentTabPopupMenu() { return m_documentTabPopupMenu.get(); }
-    Menu* getLayerPopupMenu() { return m_layerPopupMenu.get(); }
-    Menu* getFramePopupMenu() { return m_framePopupMenu.get(); }
-    Menu* getCelPopupMenu() { return m_celPopupMenu.get(); }
-    Menu* getCelMovementPopupMenu() { return m_celMovementPopupMenu.get(); }
-    Menu* getTagPopupMenu() { return m_tagPopupMenu.get(); }
-    Menu* getSlicePopupMenu() { return m_slicePopupMenu.get(); }
-    Menu* getPalettePopupMenu() { return m_palettePopupMenu.get(); }
-    Menu* getInkPopupMenu() { return m_inkPopupMenu.get(); }
-    Menu* getAnimationMenu();
+  Menu* getRootMenu() { return m_rootMenu.get(); }
+  Menu* getTabPopupMenu() { return m_tabPopupMenu.get(); }
+  Menu* getDocumentTabPopupMenu() { return m_documentTabPopupMenu.get(); }
+  Menu* getLayerPopupMenu() { return m_layerPopupMenu.get(); }
+  Menu* getFramePopupMenu() { return m_framePopupMenu.get(); }
+  Menu* getCelPopupMenu() { return m_celPopupMenu.get(); }
+  Menu* getCelMovementPopupMenu() { return m_celMovementPopupMenu.get(); }
+  Menu* getTagPopupMenu() { return m_tagPopupMenu.get(); }
+  Menu* getSlicePopupMenu() { return m_slicePopupMenu.get(); }
+  Menu* getPalettePopupMenu() { return m_palettePopupMenu.get(); }
+  Menu* getInkPopupMenu() { return m_inkPopupMenu.get(); }
+  Menu* getAnimationMenu();
+  Menu* getNewFrameMenu() { return m_newFramePopupMenu.get(); }
 
-    void applyShortcutToMenuitemsWithCommand(Command* command, const Params& params,
-                                             const KeyPtr& key);
-    void syncNativeMenuItemKeyShortcuts();
+  void applyShortcutToMenuitemsWithCommand(Command* command,
+                                           const Params& params,
+                                           const KeyPtr& key);
+  void syncNativeMenuItemKeyShortcuts();
 
-    // Menu item handling in groups
-    void addMenuGroup(const std::string& groupId,
-                      MenuItem* menuItem);
-    void removeMenuGroup(const std::string& groupId);
-    void addMenuItemIntoGroup(const std::string& groupId,
-                              std::unique_ptr<Widget>&& menuItem);
-    void removeMenuItemFromGroup(Command* cmd);
-    void removeMenuItemFromGroup(Widget* menuItem);
+  // Menu item handling in groups
+  void addMenuGroup(const std::string& groupId, MenuItem* menuItem);
+  void removeMenuGroup(const std::string& groupId);
+  void addMenuItemIntoGroup(const std::string& groupId, std::unique_ptr<Widget>&& menuItem);
+  void removeMenuItemFromGroup(Command* cmd);
+  void removeMenuItemFromGroup(Widget* menuItem);
 
-  private:
-    template<typename Pred>
-    void removeMenuItemFromGroup(Pred pred);
+private:
+  template<typename Pred>
+  void removeMenuItemFromGroup(Pred pred);
 
-    Menu* loadMenuById(tinyxml2::XMLHandle& handle, const char *id);
-    Menu* convertXmlelemToMenu(tinyxml2::XMLElement* elem);
-    Widget* convertXmlelemToMenuitem(tinyxml2::XMLElement* elem, Menu* menu);
-    void applyShortcutToMenuitemsWithCommand(Menu* menu, Command* command, const Params& params,
-                                             const KeyPtr& key);
-    void syncNativeMenuItemKeyShortcuts(Menu* menu);
-    void updateMenusList();
-    void createNativeMenus();
-    void createNativeSubmenus(os::Menu* osMenu,
-                              const ui::Menu* uiMenu);
+  Menu* loadMenuById(tinyxml2::XMLHandle& handle, const char* id);
+  Menu* convertXmlelemToMenu(tinyxml2::XMLElement* elem);
+  Widget* convertXmlelemToMenuitem(tinyxml2::XMLElement* elem, Menu* menu);
+  void applyShortcutToMenuitemsWithCommand(Menu* menu,
+                                           Command* command,
+                                           const Params& params,
+                                           const KeyPtr& key);
+  void syncNativeMenuItemKeyShortcuts(Menu* menu);
+  void updateMenusList();
+  void createNativeMenus();
+  void createNativeSubmenus(os::Menu* osMenu, const ui::Menu* uiMenu);
 
 #ifdef ENABLE_SCRIPTING
-    void loadScriptsSubmenu(ui::Menu* menu,
-                            const std::string& dir,
-                            const bool rootLevel);
+  void loadScriptsSubmenu(ui::Menu* menu, const std::string& dir, const bool rootLevel);
 #endif
 
-    struct GroupInfo {
-      Menu* menu = nullptr;
-      Widget* end = nullptr;
-      WidgetsList items;
-    };
-
-    std::unique_ptr<Menu> m_rootMenu;
-    Widget* m_recentFilesPlaceholder;
-    MenuItem* m_helpMenuitem;
-    std::unique_ptr<Menu> m_tabPopupMenu;
-    std::unique_ptr<Menu> m_documentTabPopupMenu;
-    std::unique_ptr<Menu> m_layerPopupMenu;
-    std::unique_ptr<Menu> m_framePopupMenu;
-    std::unique_ptr<Menu> m_celPopupMenu;
-    std::unique_ptr<Menu> m_celMovementPopupMenu;
-    std::unique_ptr<Menu> m_tagPopupMenu;
-    std::unique_ptr<Menu> m_slicePopupMenu;
-    std::unique_ptr<Menu> m_palettePopupMenu;
-    std::unique_ptr<Menu> m_inkPopupMenu;
-    obs::scoped_connection m_recentFilesConn;
-    std::vector<Menu*> m_menus;
-    // List of recent menu items pointing to recent files.
-    WidgetsList m_recentMenuItems;
-    // Extension points for plugins (each group is a place where new
-    // menu items can be added).
-    std::map<std::string, GroupInfo> m_groups;
-    // Native main menu bar (== nullptr if the platform doesn't
-    // support native menus)
-    os::MenuRef m_osMenu;
-    XmlTranslator m_xmlTranslator;
+  struct GroupInfo {
+    Menu* menu = nullptr;
+    Widget* end = nullptr;
+    WidgetsList items;
   };
 
-  os::Shortcut get_os_shortcut_from_key(const Key* key);
+  std::unique_ptr<Menu> m_rootMenu;
+  Widget* m_recentFilesPlaceholder;
+  MenuItem* m_helpMenuitem;
+  std::unique_ptr<Menu> m_tabPopupMenu;
+  std::unique_ptr<Menu> m_documentTabPopupMenu;
+  std::unique_ptr<Menu> m_layerPopupMenu;
+  std::unique_ptr<Menu> m_framePopupMenu;
+  std::unique_ptr<Menu> m_celPopupMenu;
+  std::unique_ptr<Menu> m_celMovementPopupMenu;
+  std::unique_ptr<Menu> m_tagPopupMenu;
+  std::unique_ptr<Menu> m_slicePopupMenu;
+  std::unique_ptr<Menu> m_palettePopupMenu;
+  std::unique_ptr<Menu> m_inkPopupMenu;
+  std::unique_ptr<Menu> m_newFramePopupMenu;
+  obs::scoped_connection m_recentFilesConn;
+  std::vector<Menu*> m_menus;
+  // List of recent menu items pointing to recent files.
+  WidgetsList m_recentMenuItems;
+  // Extension points for plugins (each group is a place where new
+  // menu items can be added).
+  std::map<std::string, GroupInfo> m_groups;
+  // Native main menu bar (== nullptr if the platform doesn't
+  // support native menus)
+  os::MenuRef m_osMenu;
+  XmlTranslator m_xmlTranslator;
+};
+
+os::Shortcut get_os_shortcut_from_key(const Key* key);
 
 } // namespace app
 

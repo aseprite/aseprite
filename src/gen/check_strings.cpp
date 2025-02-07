@@ -93,31 +93,29 @@ static bool is_email(const char* p)
 
 class CheckStrings {
 public:
-
-  void loadStrings(const std::string& dir) {
+  void loadStrings(const std::string& dir)
+  {
 #if ENGLISH_ONLY
     std::string fn = "en.ini";
 #else
     for (const auto& fn : base::list_files(dir))
 #endif
     {
-
       std::unique_ptr<cfg::CfgFile> f(new cfg::CfgFile);
       f->load(base::join_path(dir, fn));
       m_stringFiles.push_back(std::move(f));
     }
   }
 
-  void checkStringsOnWidgets(const std::string& dir) {
+  void checkStringsOnWidgets(const std::string& dir)
+  {
     for (const auto& fn : base::list_files(dir)) {
       std::string fullFn = base::join_path(dir, fn);
       base::FileHandle inputFile(base::open_file(fullFn, "rb"));
       auto doc = std::make_unique<XMLDocument>();
       if (doc->LoadFile(inputFile.get()) != XML_SUCCESS) {
-        std::cerr << fullFn << ":"
-                  << doc->ErrorLineNum() << ": "
-                  << "error " << int(doc->ErrorID()) << ": "
-                  << doc->ErrorStr() << "\n";
+        std::cerr << fullFn << ":" << doc->ErrorLineNum() << ": "
+                  << "error " << int(doc->ErrorID()) << ": " << doc->ErrorStr() << "\n";
 
         throw std::runtime_error("invalid input file");
       }
@@ -139,14 +137,13 @@ public:
     }
   }
 
-  void checkStringsOnGuiFile(const std::string& fullFn) {
+  void checkStringsOnGuiFile(const std::string& fullFn)
+  {
     base::FileHandle inputFile(base::open_file(fullFn, "rb"));
     auto doc = std::make_unique<XMLDocument>();
     if (doc->LoadFile(inputFile.get()) != XML_SUCCESS) {
-      std::cerr << fullFn << ":"
-                << doc->ErrorLineNum() << ": "
-                << "error " << int(doc->ErrorID()) << ": "
-                << doc->ErrorStr() << "\n";
+      std::cerr << fullFn << ":" << doc->ErrorLineNum() << ": "
+                << "error " << int(doc->ErrorID()) << ": " << doc->ErrorStr() << "\n";
 
       throw std::runtime_error("invalid input file");
     }
@@ -154,10 +151,10 @@ public:
     XMLHandle handle(doc.get());
 
     // For each menu
-    XMLElement* xmlMenu = handle
-      .FirstChildElement("gui")
-      .FirstChildElement("menus")
-      .FirstChildElement("menu").ToElement();
+    XMLElement* xmlMenu = handle.FirstChildElement("gui")
+                            .FirstChildElement("menus")
+                            .FirstChildElement("menu")
+                            .ToElement();
     while (xmlMenu) {
       const char* menuId = xmlMenu->Attribute("id");
       if (menuId) {
@@ -172,10 +169,10 @@ public:
 
     // For each tool
     m_prefixId = "tools";
-    XMLElement* xmlGroup = handle
-      .FirstChildElement("gui")
-      .FirstChildElement("tools")
-      .FirstChildElement("group").ToElement();
+    XMLElement* xmlGroup = handle.FirstChildElement("gui")
+                             .FirstChildElement("tools")
+                             .FirstChildElement("group")
+                             .ToElement();
     while (xmlGroup) {
       XmlElements tools;
       collect_elements_with_strings(xmlGroup, tools);
@@ -187,10 +184,10 @@ public:
     }
   }
 
-  void checkString(const std::string& filename,
-                   XMLElement* elem, const char* text) {
+  void checkString(const std::string& filename, XMLElement* elem, const char* text)
+  {
     if (!text)
-      return;                   // Do nothing
+      return; // Do nothing
     else if (text[0] == '@') {
       for (auto& cfg : m_stringFiles) {
         std::string lang = base::get_file_title(cfg->filename());
@@ -198,33 +195,28 @@ public:
 
         if (text[1] == '.') {
           section = m_prefixId.c_str();
-          var = text+2;
+          var = text + 2;
         }
         else {
           std::vector<std::string> parts;
           base::split_string(text, parts, ".");
-          if (parts.size() >= 1) section = parts[0].c_str()+1;
-          if (parts.size() >= 2) var = parts[1];
+          if (parts.size() >= 1)
+            section = parts[0].c_str() + 1;
+          if (parts.size() >= 2)
+            var = parts[1];
         }
 
-        const char* translated =
-          cfg->getValue(section.c_str(), var.c_str(), nullptr);
+        const char* translated = cfg->getValue(section.c_str(), var.c_str(), nullptr);
         if (!translated || translated[0] == 0) {
-          std::cerr << filename << ":"
-                    << elem->GetLineNum() << ": "
-                    << "warning: <" << lang
-                    << "> translation for a string ID wasn't found '"
+          std::cerr << filename << ":" << elem->GetLineNum() << ": "
+                    << "warning: <" << lang << "> translation for a string ID wasn't found '"
                     << text << "' (" << section << "." << var << ")\n";
         }
       }
     }
-    else if (text[0] != '!' &&
-             has_alpha_char(text) &&
-             !is_email(text)) {
-      std::cerr << filename << ":"
-                << elem->GetLineNum() << ": "
-                << "warning: raw string found '"
-                << text << "'\n";
+    else if (text[0] != '!' && has_alpha_char(text) && !is_email(text)) {
+      std::cerr << filename << ":" << elem->GetLineNum() << ": "
+                << "warning: raw string found '" << text << "'\n";
     }
   }
 

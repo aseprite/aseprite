@@ -14,33 +14,31 @@
 
 namespace app {
 
-  class Context;
-  class Params;
+class Context;
+class Params;
 
-  struct MoveThing {
-    enum Direction {
-      Left, Up, Right, Down
-    };
+struct MoveThing {
+  enum Direction { Left, Up, Right, Down };
 
-    enum Units {
-      Pixel,
-      TileWidth,
-      TileHeight,
-      ZoomedPixel,
-      ZoomedTileWidth,
-      ZoomedTileHeight,
-      ViewportWidth,
-      ViewportHeight
-    };
-
-    Direction direction;
-    Units units;
-    int quantity;
-
-    void onLoadParams(const Params& params);
-    std::string getFriendlyString() const;
-    gfx::Point getDelta(Context* context) const;
+  enum Units {
+    Pixel,
+    TileWidth,
+    TileHeight,
+    ZoomedPixel,
+    ZoomedTileWidth,
+    ZoomedTileHeight,
+    ViewportWidth,
+    ViewportHeight
   };
+
+  Direction direction;
+  Units units;
+  int quantity;
+
+  void onLoadParams(const Params& params);
+  std::string getFriendlyString() const;
+  gfx::Point getDelta(Context* context) const;
+};
 
 } // namespace app
 

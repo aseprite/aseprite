@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -39,21 +39,21 @@ namespace app {
 using namespace filters;
 
 struct DespeckleParams : public NewParams {
-  Param<bool> ui { this, true, "ui" };
-  Param<filters::Target> channels { this, 0, "channels" };
-  Param<int> width { this, 3, "width" };
-  Param<int> height { this, 3, "height" };
-  Param<filters::TiledMode> tiledMode { this, filters::TiledMode::NONE, "tiledMode" };
+  Param<bool> ui{ this, true, "ui" };
+  Param<filters::Target> channels{ this, 0, "channels" };
+  Param<int> width{ this, 3, "width" };
+  Param<int> height{ this, 3, "height" };
+  Param<filters::TiledMode> tiledMode{ this, filters::TiledMode::NONE, "tiledMode" };
 };
-
-#ifdef ENABLE_UI
 
 static const char* ConfigSection = "Despeckle";
 
 class DespeckleWindow : public FilterWindow {
 public:
   DespeckleWindow(MedianFilter& filter, FilterManagerImpl& filterMgr)
-    : FilterWindow("Median Blur", ConfigSection, &filterMgr,
+    : FilterWindow("Median Blur",
+                   ConfigSection,
+                   &filterMgr,
                    WithChannelsSelector,
                    WithTiledCheckBox,
                    filter.getTiledMode())
@@ -72,9 +72,9 @@ public:
   }
 
 private:
-  void onSizeChange() {
-    gfx::Size newSize(m_widthEntry->textInt(),
-                      m_heightEntry->textInt());
+  void onSizeChange()
+  {
+    gfx::Size newSize(m_widthEntry->textInt(), m_heightEntry->textInt());
 
     // Avoid negative numbers
     newSize.w = std::clamp(newSize.w, 1, 100);
@@ -90,17 +90,13 @@ private:
     restartPreview();
   }
 
-  void setupTiledMode(TiledMode tiledMode) override {
-    m_filter.setTiledMode(tiledMode);
-  }
+  void setupTiledMode(TiledMode tiledMode) override { m_filter.setTiledMode(tiledMode); }
 
   MedianFilter& m_filter;
   std::unique_ptr<gen::Despeckle> m_controlsWidget;
   ExprEntry* m_widthEntry;
   ExprEntry* m_heightEntry;
 };
-
-#endif  // ENABLE_UI
 
 class DespeckleCommand : public CommandWithNewParams<DespeckleParams> {
 public:
@@ -124,35 +120,31 @@ bool DespeckleCommand::onEnabled(Context* context)
 
 void DespeckleCommand::onExecute(Context* context)
 {
-#ifdef ENABLE_UI
   const bool ui = (params().ui() && context->isUIAvailable());
-#endif
 
   MedianFilter filter;
-  filter.setSize(3, 3);         // Default size
+  filter.setSize(3, 3); // Default size
 
   FilterManagerImpl filterMgr(context, &filter);
-  filterMgr.setTarget(TARGET_RED_CHANNEL |
-                      TARGET_GREEN_CHANNEL |
-                      TARGET_BLUE_CHANNEL |
+  filterMgr.setTarget(TARGET_RED_CHANNEL | TARGET_GREEN_CHANNEL | TARGET_BLUE_CHANNEL |
                       TARGET_GRAY_CHANNEL);
 
-#ifdef ENABLE_UI
   if (ui) {
-    DocumentPreferences& docPref = Preferences::instance()
-      .document(context->activeDocument());
+    DocumentPreferences& docPref = Preferences::instance().document(context->activeDocument());
     filter.setTiledMode((filters::TiledMode)docPref.tiled.mode());
     filter.setSize(get_config_int(ConfigSection, "Width", 3),
                    get_config_int(ConfigSection, "Height", 3));
   }
-#endif
 
-  if (params().width.isSet()) filter.setSize(params().width(), filter.getHeight());
-  if (params().height.isSet()) filter.setSize(filter.getWidth(), params().height());
-  if (params().channels.isSet()) filterMgr.setTarget(params().channels());
-  if (params().tiledMode.isSet()) filter.setTiledMode(params().tiledMode());
+  if (params().width.isSet())
+    filter.setSize(params().width(), filter.getHeight());
+  if (params().height.isSet())
+    filter.setSize(filter.getWidth(), params().height());
+  if (params().channels.isSet())
+    filterMgr.setTarget(params().channels());
+  if (params().tiledMode.isSet())
+    filter.setTiledMode(params().tiledMode());
 
-#ifdef ENABLE_UI
   if (ui) {
     DespeckleWindow window(filter, filterMgr);
     if (window.doModal()) {
@@ -160,9 +152,7 @@ void DespeckleCommand::onExecute(Context* context)
       set_config_int(ConfigSection, "Height", filter.getHeight());
     }
   }
-  else
-#endif // ENABLE_UI
-  {
+  else {
     start_filter_worker(&filterMgr);
   }
 }

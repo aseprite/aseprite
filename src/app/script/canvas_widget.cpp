@@ -15,10 +15,7 @@
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
 
-#ifdef ENABLE_UI
-
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 // static
 ui::WidgetType Canvas::Type()
@@ -75,10 +72,11 @@ void Canvas::onInitTheme(ui::InitThemeEvent& ev)
   setBgColor(bg);
 }
 
-template <typename T>
+template<typename T>
 static T makeScaled(T* msg, const gfx::Point& offset)
 {
-  static_assert(std::is_base_of<ui::Message, T>::value, "type parameter must derive from ui::Message");
+  static_assert(std::is_base_of<ui::Message, T>::value,
+                "type parameter must derive from ui::Message");
   auto result = T(msg->type(), *msg, ((msg->position() - offset) / ui::guiscale()) + offset);
   result.setRecipient(static_cast<ui::Message*>(msg)->recipient());
   result.setDisplay(static_cast<ui::Message*>(msg)->display());
@@ -88,7 +86,6 @@ static T makeScaled(T* msg, const gfx::Point& offset)
 bool Canvas::onProcessMessage(ui::Message* msg)
 {
   switch (msg->type()) {
-
     case ui::kKeyDownMessage:
       if (hasFocus()) {
         s_stopKeyEventPropagation = false;
@@ -109,9 +106,7 @@ bool Canvas::onProcessMessage(ui::Message* msg)
       }
       break;
 
-    case ui::kSetCursorMessage:
-      ui::set_mouse_cursor(m_cursorType);
-      return true;
+    case ui::kSetCursorMessage: ui::set_mouse_cursor(m_cursorType); return true;
 
     case ui::kMouseMoveMessage: {
       auto mouseMsg = *static_cast<ui::MouseMessage*>(msg);
@@ -175,7 +170,6 @@ bool Canvas::onProcessMessage(ui::Message* msg)
       TouchMagnify(&touchMsg);
       break;
     }
-
   }
   return ui::Widget::onProcessMessage(msg);
 }
@@ -188,13 +182,11 @@ void Canvas::onResize(ui::ResizeEvent& ev)
     int h = ev.bounds().h;
 
     if (m_autoScaling) {
-      w = w/ui::guiscale() + (w % ui::guiscale());
-      h = h/ui::guiscale() + (h % ui::guiscale());
+      w = w / ui::guiscale() + (w % ui::guiscale());
+      h = h / ui::guiscale() + (h % ui::guiscale());
     }
 
-    if (!m_surface ||
-        m_surface->width() != w ||
-        m_surface->height() != h) {
+    if (!m_surface || m_surface->width() != w || m_surface->height() != h) {
       m_surface = os::instance()->makeSurface(w, h);
       callPaint();
     }
@@ -216,7 +208,4 @@ void Canvas::onPaint(ui::PaintEvent& ev)
   }
 }
 
-} // namespace script
-} // namespace app
-
-#endif // ENABLE_UI
+}} // namespace app::script

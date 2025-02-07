@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/i18n/xml_translator.h"
@@ -18,20 +18,19 @@ namespace app {
 
 using namespace tinyxml2;
 
-std::string XmlTranslator::operator()(const XMLElement* elem,
-                                      const char* attrName)
+std::string XmlTranslator::operator()(const XMLElement* elem, const char* attrName)
 {
   const char* value = elem->Attribute(attrName);
   if (!value)
     return std::string();
-  else if (value[0] == '@') {   // Translate string
+  else if (value[0] == '@') { // Translate string
     if (value[1] == '.')
-      return Strings::instance()->translate((m_stringIdPrefix + (value+1)).c_str());
+      return Strings::Translate((m_stringIdPrefix + (value + 1)).c_str());
     else
-      return Strings::instance()->translate(value+1);
+      return Strings::Translate(value + 1);
   }
-  else if (value[0] == '!')     // Raw string
-    return std::string(value+1);
+  else if (value[0] == '!') // Raw string
+    return std::string(value + 1);
   else
     return std::string(value);
 }

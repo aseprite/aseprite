@@ -14,25 +14,30 @@
 #include "doc/object_ids.h"
 #include "doc/selected_layers.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
-  class FlattenLayers : public CmdSequence
-                      , public WithSprite {
-  public:
-    FlattenLayers(doc::Sprite* sprite,
-                  const doc::SelectedLayers& layers,
-                  const bool newBlendMethod);
+class FlattenLayers : public CmdSequence,
+                      public WithSprite {
+public:
+  struct Options {
+    bool newBlendMethod : 1;
+    bool inplace : 1;
+    bool mergeDown : 1;
+    bool dynamicCanvas : 1;
 
-  protected:
-    void onExecute() override;
-
-  private:
-    doc::ObjectIds m_layerIds;
-    bool m_newBlendMethod;
+    Options() : newBlendMethod(false), inplace(false), mergeDown(false), dynamicCanvas(false) {}
   };
 
-} // namespace cmd
-} // namespace app
+  FlattenLayers(doc::Sprite* sprite, const doc::SelectedLayers& layers, const Options options);
+
+protected:
+  void onExecute() override;
+
+private:
+  doc::ObjectIds m_layerIds;
+  Options m_options;
+};
+
+}} // namespace app::cmd
 
 #endif

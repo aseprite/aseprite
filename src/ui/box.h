@@ -12,32 +12,30 @@
 
 namespace ui {
 
-  class Box : public Widget {
-  public:
-    Box(int align);
+class Box : public Widget {
+public:
+  Box(int align);
 
-  protected:
-    // Events
-    void onSizeHint(SizeHintEvent& ev) override;
-    void onResize(ResizeEvent& ev) override;
-  };
+protected:
+  // Events
+  void onSizeHint(SizeHintEvent& ev) override;
+  void onResize(ResizeEvent& ev) override;
+};
 
-  class VBox : public Box {
-  public:
-    VBox() : Box(VERTICAL) { }
-  };
+class VBox : public Box {
+public:
+  VBox() : Box(VERTICAL) {}
+};
 
-  class HBox : public Box {
-  public:
-    HBox() : Box(HORIZONTAL) { }
-  };
+class HBox : public Box {
+public:
+  HBox() : Box(HORIZONTAL) {}
+};
 
-  class BoxFiller : public Box {
-  public:
-    BoxFiller() : Box(HORIZONTAL) {
-      this->setExpansive(true);
-    }
-  };
+class BoxFiller : public Box {
+public:
+  BoxFiller() : Box(HORIZONTAL) { this->setExpansive(true); }
+};
 
 } // namespace ui
 

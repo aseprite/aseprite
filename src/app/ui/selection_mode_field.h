@@ -14,7 +14,7 @@
 #include <vector>
 
 namespace ui {
-  class TooltipManager;
+class TooltipManager;
 }
 
 namespace app {
@@ -31,7 +31,7 @@ public:
 protected:
   void onItemChange(Item* item) override;
 
-  virtual void onSelectionModeChange(gen::SelectionMode mode) { }
+  virtual void onSelectionModeChange(gen::SelectionMode mode) {}
 };
 
 } // namespace app

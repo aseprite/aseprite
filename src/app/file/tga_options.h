@@ -12,18 +12,18 @@
 
 namespace app {
 
-  class TgaOptions : public FormatOptions {
-  public:
-    int bitsPerPixel() const { return m_bitsPerPixel; }
-    bool compress() const { return m_compress; }
+class TgaOptions : public FormatOptions {
+public:
+  int bitsPerPixel() const { return m_bitsPerPixel; }
+  bool compress() const { return m_compress; }
 
-    void bitsPerPixel(int bpp) { m_bitsPerPixel = bpp; }
-    void compress(bool state) { m_compress = state; }
+  void bitsPerPixel(int bpp) { m_bitsPerPixel = bpp; }
+  void compress(bool state) { m_compress = state; }
 
-  private:
-    int m_bitsPerPixel = 0;
-    bool m_compress = true;
-  };
+private:
+  int m_bitsPerPixel = 0;
+  bool m_compress = true;
+};
 
 } // namespace app
 

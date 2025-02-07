@@ -5,18 +5,18 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #if SK_ENABLE_SKSL
 
-#include "app/util/shader_helpers.h"
+  #include "app/util/shader_helpers.h"
 
-#include "base/exception.h"
-#include "doc/image.h"
-#include "fmt/format.h"
+  #include "base/exception.h"
+  #include "doc/image.h"
+  #include "fmt/format.h"
 
-#include "include/effects/SkRuntimeEffect.h"
+  #include "include/effects/SkRuntimeEffect.h"
 
 namespace app {
 
@@ -36,7 +36,6 @@ sk_sp<SkRuntimeEffect> make_shader(const char* code)
 SkImageInfo get_skimageinfo_for_docimage(const doc::Image* img)
 {
   switch (img->colorMode()) {
-
     case doc::ColorMode::RGB:
       return SkImageInfo::Make(img->width(),
                                img->height(),
@@ -56,7 +55,6 @@ SkImageInfo get_skimageinfo_for_docimage(const doc::Image* img)
                                img->height(),
                                kAlpha_8_SkColorType,
                                kUnpremul_SkAlphaType);
-
     }
   }
   return SkImageInfo();
@@ -67,15 +65,11 @@ sk_sp<SkImage> make_skimage_for_docimage(const doc::Image* img)
   switch (img->colorMode()) {
     case doc::ColorMode::RGB:
     case doc::ColorMode::GRAYSCALE:
-    case doc::ColorMode::INDEXED: {
-      auto skData = SkData::MakeWithoutCopy(
-        (const void*)img->getPixelAddress(0, 0),
-        img->rowBytes() * img->height());
+    case doc::ColorMode::INDEXED:   {
+      auto skData = SkData::MakeWithoutCopy((const void*)img->getPixelAddress(0, 0),
+                                            img->rowBytes() * img->height());
 
-      return SkImage::MakeRasterData(
-        get_skimageinfo_for_docimage(img),
-        skData,
-        img->rowBytes());
+      return SkImage::MakeRasterData(get_skimageinfo_for_docimage(img), skData, img->rowBytes());
     }
   }
   return nullptr;
@@ -83,10 +77,9 @@ sk_sp<SkImage> make_skimage_for_docimage(const doc::Image* img)
 
 std::unique_ptr<SkCanvas> make_skcanvas_for_docimage(const doc::Image* img)
 {
-  return SkCanvas::MakeRasterDirect(
-    get_skimageinfo_for_docimage(img),
-    (void*)img->getPixelAddress(0, 0),
-    img->rowBytes());
+  return SkCanvas::MakeRasterDirect(get_skimageinfo_for_docimage(img),
+                                    (void*)img->getPixelAddress(0, 0),
+                                    img->rowBytes());
 }
 
 } // namespace app

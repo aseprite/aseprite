@@ -23,72 +23,70 @@
 namespace app {
 class Doc;
 namespace crash {
-  struct RecoveryConfig;
+struct RecoveryConfig;
 
-  // A class to record/restore session information.
-  class Session {
+// A class to record/restore session information.
+class Session {
+public:
+  class Backup {
   public:
-    class Backup {
-    public:
-      Backup(const std::string& dir);
-      const std::string& dir() const { return m_dir; }
-      std::string description(const bool withFullPath) const;
-    private:
-      std::string m_dir;
-      std::string m_desc;
-      std::string m_fn;
-    };
-    using BackupPtr = std::shared_ptr<Backup>;
-    using Backups = std::vector<BackupPtr>;
-
-    Session(RecoveryConfig* config,
-            const std::string& path);
-    ~Session();
-
-    std::string name() const;
-    std::string version();
-    const Backups& backups();
-
-    bool isRunning();
-    bool isCrashedSession();
-    bool isOldSession();
-    bool isEmpty();
-
-    void create(base::pid pid);
-    void close();
-    void removeFromDisk();
-
-    bool saveDocumentChanges(Doc* doc);
-    void removeDocument(Doc* doc);
-
-    Doc* restoreBackupDoc(const BackupPtr& backup,
-                          base::task_token* t);
-    Doc* restoreBackupById(const doc::ObjectId id, base::task_token* t);
-    Doc* restoreBackupDocById(const doc::ObjectId id, base::task_token* t);
-    Doc* restoreBackupRawImages(const BackupPtr& backup,
-                                const RawImagesAs as, base::task_token* t);
-    void deleteBackup(const BackupPtr& backup);
+    Backup(const std::string& dir);
+    const std::string& dir() const { return m_dir; }
+    std::string description(const bool withFullPath) const;
 
   private:
-    Doc* restoreBackupDoc(const std::string& backupDir,
-                          base::task_token* t);
-    void loadPid();
-    std::string pidFilename() const;
-    std::string verFilename() const;
-    void markDocumentAsCorrectlyClosed(Doc* doc);
-    void deleteDirectory(const std::string& dir);
-    void fixFilename(Doc* doc);
-
-    base::pid m_pid;
-    std::string m_path;
-    std::string m_version;
-    Backups m_backups;
-    RecoveryConfig* m_config;
-
-    DISABLE_COPYING(Session);
+    std::string m_dir;
+    mutable std::string m_desc;
+    mutable std::string m_fn;
   };
+  using BackupPtr = std::shared_ptr<Backup>;
+  using Backups = std::vector<BackupPtr>;
 
-  typedef std::shared_ptr<Session> SessionPtr;
+  Session(RecoveryConfig* config, const std::string& path);
+  ~Session();
+
+  std::string name() const;
+  std::string version();
+  const Backups& backups();
+
+  bool isRunning();
+  bool isCrashedSession();
+  bool isOldSession();
+  bool isEmpty();
+
+  void create(base::pid pid);
+  void close();
+  void removeFromDisk();
+
+  bool saveDocumentChanges(Doc* doc);
+  void removeDocument(Doc* doc);
+
+  Doc* restoreBackupDoc(const BackupPtr& backup, base::task_token* t);
+  Doc* restoreBackupById(const doc::ObjectId id, base::task_token* t);
+  Doc* restoreBackupDocById(const doc::ObjectId id, base::task_token* t);
+  Doc* restoreBackupRawImages(const BackupPtr& backup, const RawImagesAs as, base::task_token* t);
+  void deleteBackup(const BackupPtr& backup);
+
+private:
+  Doc* restoreBackupDoc(const std::string& backupDir, base::task_token* t);
+  void loadPid();
+  std::string pidFilename() const;
+  std::string verFilename() const;
+  void markDocumentAsCorrectlyClosed(Doc* doc);
+  void deleteDirectory(const std::string& dir);
+  void fixFilename(Doc* doc);
+  int filenamePartToInt(const std::string& part) const;
+
+  base::pid m_pid;
+  std::string m_path;
+  std::string m_version;
+  Backups m_backups;
+  RecoveryConfig* m_config;
+
+  DISABLE_COPYING(Session);
+};
+
+typedef std::shared_ptr<Session> SessionPtr;
 
 } // namespace crash
 } // namespace app

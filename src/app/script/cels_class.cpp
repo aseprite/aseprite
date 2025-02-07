@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/script/docobj.h"
@@ -20,8 +20,7 @@
 #include <algorithm>
 #include <iterator>
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 using namespace doc;
 
@@ -29,17 +28,17 @@ namespace {
 
 struct CelsObj {
   ObjectIds cels;
-  CelsObj(CelsRange& range) {
+  CelsObj(CelsRange& range)
+  {
     for (const Cel* cel : range)
       cels.push_back(cel->id());
   }
-  CelsObj(CelList& list) {
+  CelsObj(CelList& list)
+  {
     for (Cel* cel : list)
       cels.push_back(cel->id());
   }
-  CelsObj(const ObjectIds& cels)
-    : cels(cels) {
-  }
+  CelsObj(const ObjectIds& cels) : cels(cels) {}
   CelsObj(const CelsObj&) = delete;
   CelsObj& operator=(const CelsObj&) = delete;
 };
@@ -62,17 +61,17 @@ int Cels_index(lua_State* L)
   auto obj = get_obj<CelsObj>(L, 1);
   const int i = lua_tointeger(L, 2);
   if (i >= 1 && i <= obj->cels.size())
-    push_docobj<Cel>(L, obj->cels[i-1]);
+    push_docobj<Cel>(L, obj->cels[i - 1]);
   else
     lua_pushnil(L);
   return 1;
 }
 
 const luaL_Reg Cels_methods[] = {
-  { "__gc", Cels_gc },
-  { "__len", Cels_len },
+  { "__gc",    Cels_gc    },
+  { "__len",   Cels_len   },
   { "__index", Cels_index },
-  { nullptr, nullptr }
+  { nullptr,   nullptr    }
 };
 
 } // anonymous namespace
@@ -104,5 +103,4 @@ void push_cels(lua_State* L, const ObjectIds& cels)
   push_new<CelsObj>(L, cels);
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

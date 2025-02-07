@@ -13,33 +13,29 @@
 #include "gfx/rect.h"
 
 namespace doc {
-  class Sprite;
+class Sprite;
 }
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
-  class SetGridBounds : public Cmd
-                      , public WithSprite {
-  public:
-    SetGridBounds(doc::Sprite* sprite, const gfx::Rect& bounds);
+class SetGridBounds : public Cmd,
+                      public WithSprite {
+public:
+  SetGridBounds(doc::Sprite* sprite, const gfx::Rect& bounds);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onFireNotifications() override;
-    size_t onMemSize() const override {
-      return sizeof(*this);
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onFireNotifications() override;
+  size_t onMemSize() const override { return sizeof(*this); }
 
-  private:
-    void setGrid(const gfx::Rect& grid);
+private:
+  void setGrid(const gfx::Rect& grid);
 
-    gfx::Rect m_oldBounds;
-    gfx::Rect m_newBounds;
-  };
+  gfx::Rect m_oldBounds;
+  gfx::Rect m_newBounds;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

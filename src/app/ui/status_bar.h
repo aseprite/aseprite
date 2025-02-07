@@ -22,104 +22,104 @@
 #include <vector>
 
 namespace ui {
-  class Box;
-  class Button;
-  class Entry;
-  class Label;
-  class TooltipManager;
-  class Window;
-}
+class Box;
+class Button;
+class Entry;
+class Label;
+class TooltipManager;
+class Window;
+} // namespace ui
 
 namespace render {
-  class Zoom;
+class Zoom;
 }
 
 namespace app {
-  class ButtonSet;
-  class Editor;
-  class ZoomEntry;
+class ButtonSet;
+class Editor;
+class ZoomEntry;
 
-  namespace tools {
-    class Tool;
-  }
+namespace tools {
+class Tool;
+}
 
-  class StatusBar : public DocObserverWidget<ui::HBox>
-                  , public tools::ActiveToolObserver {
-    static StatusBar* m_instance;
-  public:
-    static StatusBar* instance() { return m_instance; }
+class StatusBar : public DocObserverWidget<ui::HBox>,
+                  public tools::ActiveToolObserver {
+  static StatusBar* m_instance;
 
-    enum BackupIcon { None, Normal, Small };
+public:
+  static StatusBar* instance() { return m_instance; }
 
-    StatusBar(ui::TooltipManager* tooltipManager);
-    ~StatusBar();
+  enum BackupIcon { None, Normal, Small };
 
-    void clearText();
-    void showDefaultText();
-    void showDefaultText(Doc* doc);
-    void showAbout();
+  StatusBar(ui::TooltipManager* tooltipManager);
+  ~StatusBar();
 
-    bool setStatusText(int msecs, const std::string& text);
-    void showTip(int msecs, const std::string& msg);
-    void showColor(int msecs, const Color& color,
-                   const std::string& text = std::string());
-    void showTile(int msecs, doc::tile_t tile,
-                  const std::string& text = std::string());
-    void showTool(int msecs, tools::Tool* tool);
-    void showSnapToGridWarning(bool state);
+  void clearText();
+  void showDefaultText();
+  void showDefaultText(Doc* doc);
+  void showAbout();
 
-    // Used by AppEditor to update the zoom level in the status bar.
-    void updateFromEditor(Editor* editor);
+  bool setStatusText(int msecs, const std::string& text);
+  void showTip(int msecs, const std::string& msg);
+  void showColor(int msecs, const Color& color, const std::string& text = std::string());
+  void showTile(int msecs, doc::tile_t tile, const std::string& text = std::string());
+  void showTool(int msecs, tools::Tool* tool);
+  void showSnapToGridWarning(bool state);
 
-    void showBackupIcon(BackupIcon icon);
+  // Used by AppEditor to update the zoom level in the status bar.
+  void updateFromEditor(Editor* editor);
 
-  protected:
-    void onInitTheme(ui::InitThemeEvent& ev) override;
-    void onResize(ui::ResizeEvent& ev) override;
+  void showBackupIcon(BackupIcon icon);
 
-    // ContextObserver impl
-    void onActiveSiteChange(const Site& site) override;
+protected:
+  void onInitTheme(ui::InitThemeEvent& ev) override;
+  void onResize(ui::ResizeEvent& ev) override;
 
-    // DocObserver impl
-    void onPixelFormatChanged(DocEvent& ev) override;
+  // ContextObserver impl
+  void onActiveSiteChange(const Site& site) override;
 
-    // ActiveToolObserver impl
-    void onSelectedToolChange(tools::Tool* tool) override;
+  // DocObserver impl
+  void onPixelFormatChanged(DocEvent& ev) override;
 
-  private:
-    void onCelOpacitySliderChange();
-    void newFrame();
-    void onChangeZoom(const render::Zoom& zoom);
-    void updateSnapToGridWindowPosition();
-    void showIndicators();
+  // ActiveToolObserver impl
+  void onSelectedToolChange(tools::Tool* tool) override;
 
-    base::tick_t m_timeout;
+private:
+  void onCelOpacitySliderChange();
+  void newFrame();
+  void showNewFramePopupMenu();
+  void onChangeZoom(const render::Zoom& zoom);
+  void updateSnapToGridWindowPosition();
+  void showIndicators();
 
-    // About text
-    class AboutStatusBar;
-    AboutStatusBar* m_about;
+  base::tick_t m_timeout;
 
-    // Indicators
-    class Indicators;
-    class IndicatorsGeneration;
-    Indicators* m_indicators;
+  // About text
+  class AboutStatusBar;
+  AboutStatusBar* m_about;
 
-    // Box of main commands
-    ui::Widget* m_docControls;
-    ui::Box* m_commandsBox;
-    ui::Label* m_frameLabel;
-    ui::Entry* m_currentFrame;        // Current frame and go to frame entry
-    ui::Button* m_newFrame;           // Button to create a new frame
-    ZoomEntry* m_zoomEntry;
+  // Indicators
+  class Indicators;
+  class IndicatorsGeneration;
+  Indicators* m_indicators;
 
-    // Tip window
-    class CustomizedTipWindow;
-    CustomizedTipWindow* m_tipwindow;
+  // Box of main commands
+  ui::Widget* m_docControls;
+  ui::Box* m_commandsBox;
+  ui::Label* m_frameLabel;
+  ui::Entry* m_currentFrame; // Current frame and go to frame entry
+  ui::Button* m_newFrame;    // Button to create a new frame
+  ZoomEntry* m_zoomEntry;
 
-    // Snap to grid window
-    class SnapToGridWindow;
-    SnapToGridWindow* m_snapToGridWindow;
-  };
+  // Tip window
+  class CustomizedTipWindow;
+  CustomizedTipWindow* m_tipwindow;
+
+  // Snap to grid window
+  class SnapToGridWindow;
+  SnapToGridWindow* m_snapToGridWindow;
+};
 
 } // namespace app
 

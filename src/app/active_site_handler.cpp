@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/active_site_handler.h"
@@ -29,7 +29,7 @@ void ActiveSiteHandler::addDoc(Doc* doc)
 {
   Data data;
   data.layer = doc::NullId;
-  if (doc->sprite()) {      // The sprite can be nullptr in some tests
+  if (doc->sprite()) { // The sprite can be nullptr in some tests
     if (doc::Layer* layer = doc->sprite()->root()->firstLayer())
       data.layer = layer->id();
   }
@@ -74,7 +74,7 @@ void ActiveSiteHandler::getActiveSiteForDoc(Doc* doc, Site* site)
 void ActiveSiteHandler::setActiveLayerInDoc(Doc* doc, doc::Layer* layer)
 {
   Data& data = getData(doc);
-  data.layer = (layer ? layer->id(): 0);
+  data.layer = (layer ? layer->id() : 0);
 }
 
 void ActiveSiteHandler::setActiveFrameInDoc(Doc* doc, doc::frame_t frame)
@@ -133,9 +133,8 @@ void ActiveSiteHandler::onAddFrame(DocEvent& ev)
 void ActiveSiteHandler::onBeforeRemoveLayer(DocEvent& ev)
 {
   Data& data = getData(ev.document());
-  doc::Layer* selectedLayer = (data.layer != doc::NullId ?
-                               doc::get<doc::Layer>(data.layer):
-                               nullptr);
+  doc::Layer* selectedLayer = (data.layer != doc::NullId ? doc::get<doc::Layer>(data.layer) :
+                                                           nullptr);
   if (!selectedLayer)
     return;
 
@@ -145,8 +144,7 @@ void ActiveSiteHandler::onBeforeRemoveLayer(DocEvent& ev)
   // Select other layer as active
   doc::Layer* layerToSelect = candidate_if_layer_is_deleted(selectedLayer, ev.layer());
   if (selectedLayer != layerToSelect) {
-    data.layer = (layerToSelect ? layerToSelect->id():
-                                  doc::NullId);
+    data.layer = (layerToSelect ? layerToSelect->id() : doc::NullId);
   }
 }
 

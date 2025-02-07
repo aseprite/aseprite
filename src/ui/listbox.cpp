@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/listbox.h"
@@ -26,7 +26,8 @@
 
 namespace ui {
 
-static inline bool sort_by_text(Widget* a, Widget* b) {
+static inline bool sort_by_text(Widget* a, Widget* b)
+{
   return (base::compare_filenames(a->text(), b->text()) < 0);
 }
 
@@ -79,8 +80,7 @@ void ListBox::selectChild(Widget* item, Message* msg)
 
   if (m_multiselect) {
     // Save current state of all children when we start selecting
-    if (msg == nullptr ||
-        msg->type() == kMouseDownMessage ||
+    if (msg == nullptr || msg->type() == kMouseDownMessage ||
         (msg->type() == kMouseMoveMessage && m_firstSelectedIndex < 0) ||
         msg->type() == kKeyDownMessage) {
       m_firstSelectedIndex = itemIndex;
@@ -106,7 +106,7 @@ void ListBox::selectChild(Widget* item, Message* msg)
 
     if (m_multiselect) {
       ASSERT(i >= 0 && i < int(m_states.size()));
-      newState = (i >= 0 && i < int(m_states.size()) ? m_states[i]: false);
+      newState = (i >= 0 && i < int(m_states.size()) ? m_states[i] : false);
 
       if (i >= std::min(itemIndex, m_firstSelectedIndex) &&
           i <= std::max(itemIndex, m_firstSelectedIndex)) {
@@ -159,8 +159,7 @@ void ListBox::makeChildVisible(Widget* child)
   if (child->bounds().y < vp.y)
     scroll.y = child->bounds().y - bounds().y;
   else if (child->bounds().y > vp.y + vp.h - child->bounds().h)
-    scroll.y = (child->bounds().y - bounds().y
-                - vp.h + child->bounds().h);
+    scroll.y = (child->bounds().y - bounds().y - vp.h + child->bounds().h);
 
   view->setViewScroll(scroll);
 }
@@ -175,8 +174,7 @@ void ListBox::centerScroll()
     gfx::Rect vp = view->viewportBounds();
     gfx::Point scroll = view->viewScroll();
 
-    scroll.y = ((item->bounds().y - bounds().y)
-                - vp.h/2 + item->bounds().h/2);
+    scroll.y = ((item->bounds().y - bounds().y) - vp.h / 2 + item->bounds().h / 2);
 
     view->setViewScroll(scroll);
   }
@@ -201,18 +199,14 @@ void ListBox::sortItems(bool (*cmp)(Widget* a, Widget* b))
 bool ListBox::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
+    case kOpenMessage:      centerScroll(); break;
 
-    case kOpenMessage:
-      centerScroll();
-      break;
-
-    case kMouseDownMessage:
-      captureMouse();
-      [[fallthrough]];
+    case kMouseDownMessage: captureMouse(); [[fallthrough]];
 
     case kMouseMoveMessage:
       if (hasCapture()) {
-        gfx::Point screenPos = msg->display()->nativeWindow()->pointToScreen(static_cast<MouseMessage*>(msg)->position());
+        gfx::Point screenPos = msg->display()->nativeWindow()->pointToScreen(
+          static_cast<MouseMessage*>(msg)->position());
         gfx::Point mousePos = display()->nativeWindow()->pointFromScreen(screenPos);
         View* view = View::getView(this);
         bool pick_item = true;
@@ -222,15 +216,13 @@ bool ListBox::onProcessMessage(Message* msg)
 
           if (mousePos.y < vp.y) {
             const int num = std::max(1, (vp.y - mousePos.y) / 8);
-            const int select =
-              advanceIndexThroughVisibleItems(m_lastSelectedIndex, -num, false);
+            const int select = advanceIndexThroughVisibleItems(m_lastSelectedIndex, -num, false);
             selectIndex(select, msg);
             pick_item = false;
           }
           else if (mousePos.y >= vp.y + vp.h) {
-            const int num = std::max(1, (mousePos.y - (vp.y+vp.h-1)) / 8);
-            const int select =
-              advanceIndexThroughVisibleItems(m_lastSelectedIndex, +num, false);
+            const int num = std::max(1, (mousePos.y - (vp.y + vp.h - 1)) / 8);
+            const int select = advanceIndexThroughVisibleItems(m_lastSelectedIndex, +num, false);
             selectIndex(select, msg);
             pick_item = false;
           }
@@ -251,7 +243,7 @@ bool ListBox::onProcessMessage(Message* msg)
 
           // If the picked widget has this list as an ancestor, select the item containing it.
           if (picked && picked->hasAncestor(this)) {
-            ListItem *it = findParentListItem(picked);
+            ListItem* it = findParentListItem(picked);
             selectChild(it, msg);
           }
         }
@@ -275,7 +267,7 @@ bool ListBox::onProcessMessage(Message* msg)
         if (mouseMsg->preciseWheel())
           scroll += mouseMsg->wheelDelta();
         else
-          scroll += mouseMsg->wheelDelta() * textHeight()*3;
+          scroll += mouseMsg->wheelDelta() * textHeight() * 3;
 
         view->setViewScroll(scroll);
       }
@@ -285,14 +277,16 @@ bool ListBox::onProcessMessage(Message* msg)
     case kKeyDownMessage:
       if (hasFocus() && !children().empty()) {
         int select = getSelectedIndex();
-        int bottom = std::max(0, int(children().size()-1));
+        int bottom = std::max(0, int(children().size() - 1));
         View* view = View::getView(this);
         KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
         KeyScancode scancode = keymsg->scancode();
 
         if (keymsg->onlyCmdPressed()) {
-          if (scancode == kKeyUp) scancode = kKeyHome;
-          if (scancode == kKeyDown) scancode = kKeyEnd;
+          if (scancode == kKeyUp)
+            scancode = kKeyHome;
+          if (scancode == kKeyDown)
+            scancode = kKeyEnd;
         }
 
         switch (scancode) {
@@ -304,23 +298,16 @@ bool ListBox::onProcessMessage(Message* msg)
             // Or select the bottom of the list if there is no
             // selected item.
             else {
-              select = advanceIndexThroughVisibleItems(bottom+1, -1, true);
+              select = advanceIndexThroughVisibleItems(bottom + 1, -1, true);
             }
             break;
-          case kKeyDown:
-            select = advanceIndexThroughVisibleItems(select, +1, true);
-            break;
-          case kKeyHome:
-            select = advanceIndexThroughVisibleItems(-1, +1, false);
-            break;
-          case kKeyEnd:
-            select = advanceIndexThroughVisibleItems(bottom+1, -1, false);
-            break;
+          case kKeyDown: select = advanceIndexThroughVisibleItems(select, +1, true); break;
+          case kKeyHome: select = advanceIndexThroughVisibleItems(-1, +1, false); break;
+          case kKeyEnd:  select = advanceIndexThroughVisibleItems(bottom + 1, -1, false); break;
           case kKeyPageUp:
             if (view) {
               gfx::Rect vp = view->viewportBounds();
-              select = advanceIndexThroughVisibleItems(
-                select, -vp.h / textHeight(), false);
+              select = advanceIndexThroughVisibleItems(select, -vp.h / textHeight(), false);
             }
             else
               select = 0;
@@ -328,8 +315,7 @@ bool ListBox::onProcessMessage(Message* msg)
           case kKeyPageDown:
             if (view) {
               gfx::Rect vp = view->viewportBounds();
-              select = advanceIndexThroughVisibleItems(
-                select, +vp.h / textHeight(), false);
+              select = advanceIndexThroughVisibleItems(select, +vp.h / textHeight(), false);
             }
             else {
               select = bottom;
@@ -340,15 +326,14 @@ bool ListBox::onProcessMessage(Message* msg)
             if (view) {
               gfx::Rect vp = view->viewportBounds();
               gfx::Point scroll = view->viewScroll();
-              int sgn = (keymsg->scancode() == kKeyLeft) ? -1: 1;
+              int sgn = (keymsg->scancode() == kKeyLeft) ? -1 : 1;
 
-              scroll.x += vp.w/2*sgn;
+              scroll.x += vp.w / 2 * sgn;
 
               view->setViewScroll(scroll);
             }
             break;
-          default:
-            return Widget::onProcessMessage(msg);
+          default: return Widget::onProcessMessage(msg);
         }
 
         selectIndex(std::clamp(select, 0, bottom), msg);
@@ -356,9 +341,7 @@ bool ListBox::onProcessMessage(Message* msg)
       }
       break;
 
-    case kDoubleClickMessage:
-      onDoubleClickItem();
-      return true;
+    case kDoubleClickMessage: onDoubleClickItem(); return true;
   }
 
   return Widget::onProcessMessage(msg);
@@ -402,7 +385,7 @@ void ListBox::onSizeHint(SizeHintEvent& ev)
     ++visibles;
   }
   if (visibles > 1)
-    h += childSpacing() * (visibles-1);
+    h += childSpacing() * (visibles - 1);
 
   w += border().width();
   h += border().height();
@@ -420,10 +403,9 @@ void ListBox::onDoubleClickItem()
   DoubleClickItem();
 }
 
-int ListBox::advanceIndexThroughVisibleItems(
-  int startIndex, int delta, const bool loop)
+int ListBox::advanceIndexThroughVisibleItems(int startIndex, int delta, const bool loop)
 {
-  const int bottom = std::max(0, int(children().size()-1));
+  const int bottom = std::max(0, int(children().size() - 1));
   const int sgn = SGN(delta);
   int index = startIndex;
 
@@ -441,19 +423,18 @@ int ListBox::advanceIndexThroughVisibleItems(
     else if (index < 0) {
       if (!loop)
         break;
-      index = bottom-sgn;
+      index = bottom - sgn;
       cycle = true;
     }
     else if (index > bottom) {
       if (!loop)
         break;
-      index = 0-sgn;
+      index = 0 - sgn;
       cycle = true;
     }
     else if (index >= 0 && index < children().size()) {
       Widget* item = at(index);
-      if (item &&
-          !item->hasFlags(HIDDEN) &&
+      if (item && !item->hasFlags(HIDDEN) &&
           // We can completely ignore separators from navigation
           // keys.
           !dynamic_cast<Separator*>(item)) {
@@ -470,11 +451,11 @@ ListItem* ListBox::findParentListItem(Widget* descendant)
   if (descendant->parent() == this)
     return static_cast<ListItem*>(descendant);
 
-  for (Widget* widget=descendant->parent(); widget; widget=widget->parent()) {
+  for (Widget* widget = descendant->parent(); widget; widget = widget->parent()) {
     return findParentListItem(widget);
   }
 
- return nullptr;
+  return nullptr;
 }
 
 } // namespace ui

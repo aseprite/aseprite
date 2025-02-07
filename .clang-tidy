@@ -48,6 +48,8 @@ Checks: >
   portability-*,
   readability-*,
   -bugprone-easily-swappable-parameters,
+  -bugprone-narrowing-conversions,
+  -misc-include-cleaner,
   -misc-use-anonymous-namespace,
   -readability-braces-around-statements,
   -readability-function-cognitive-complexity,

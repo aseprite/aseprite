@@ -18,66 +18,64 @@
 
 namespace ui {
 
-  class ClipboardDelegate;
-  class Cursor;
-  class Display;
-  class Widget;
+class ClipboardDelegate;
+class Cursor;
+class Display;
+class Widget;
 
-  class UISystem {
-  public:
-    static UISystem* instance();
+class UISystem {
+public:
+  static UISystem* instance();
 
-    UISystem();
-    ~UISystem();
+  UISystem();
+  ~UISystem();
 
-    void setClipboardDelegate(ClipboardDelegate* delegate) {
-      m_clipboardDelegate = delegate;
-    }
-    ClipboardDelegate* clipboardDelegate() {
-      return m_clipboardDelegate;
-    }
-  private:
-    ClipboardDelegate* m_clipboardDelegate;
-  };
+  void setClipboardDelegate(ClipboardDelegate* delegate) { m_clipboardDelegate = delegate; }
+  ClipboardDelegate* clipboardDelegate() { return m_clipboardDelegate; }
 
-  void set_multiple_displays(bool multi);
-  bool get_multiple_displays();
+private:
+  ClipboardDelegate* m_clipboardDelegate;
+};
 
-  void set_clipboard_text(const std::string& text);
-  bool get_clipboard_text(std::string& text);
+void set_multiple_displays(bool multi);
+bool get_multiple_displays();
 
-  // Mouse related
+void set_clipboard_text(const std::string& text);
+bool get_clipboard_text(std::string& text);
 
-  // Updates the position of the mouse cursor overlay depending on the
-  // current mouse position.
-  void update_cursor_overlay();
+// Mouse related
 
-  void set_use_native_cursors(bool state);
-  CursorType get_mouse_cursor();
-  void set_mouse_cursor(CursorType type, const Cursor* cursor = nullptr);
-  void set_mouse_cursor_scale(const int newScale);
-  void set_mouse_cursor_reset_info();
+// Updates the position of the mouse cursor overlay depending on the
+// current mouse position.
+void update_cursor_overlay();
 
-  void hide_mouse_cursor();
-  void show_mouse_cursor();
+void set_use_native_cursors(bool state);
+CursorType get_mouse_cursor();
+void set_mouse_cursor(CursorType type, const Cursor* cursor = nullptr);
+void set_mouse_cursor_scale(const int newScale);
+void set_mouse_cursor_reset_info();
 
-  void _internal_set_mouse_display(Display* display);
-  void _internal_no_mouse_position();
+void hide_mouse_cursor();
+void show_mouse_cursor();
 
-  // Returns desktop/screen mouse position (relative to no-display)
-  gfx::Point get_mouse_position();
+void _internal_set_mouse_display(Display* display);
+void _internal_no_mouse_position();
 
-  // Sets the mouse position relative to a specific display (or
-  // relative to the desktop if it's nullptr)
-  void set_mouse_position(const gfx::Point& newPos,
-                          Display* display);
+// Returns desktop/screen mouse position (relative to no-display)
+gfx::Point get_mouse_position();
 
-  void execute_from_ui_thread(std::function<void()>&& func);
-  bool is_ui_thread();
+// Sets the mouse position relative to a specific display (or
+// relative to the desktop if it's nullptr)
+void set_mouse_position(const gfx::Point& newPos, Display* display);
+
+void execute_from_ui_thread(std::function<void()>&& func);
+bool is_ui_thread();
 #ifdef _DEBUG
-  void assert_ui_thread();
+void assert_ui_thread();
 #else
-  static inline void assert_ui_thread() { }
+static inline void assert_ui_thread()
+{
+}
 #endif
 
 } // namespace ui

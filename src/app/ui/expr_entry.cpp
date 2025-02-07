@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/expr_entry.h"
@@ -21,9 +21,7 @@
 
 namespace app {
 
-ExprEntry::ExprEntry()
-  : ui::Entry(1024, "")
-  , m_decimals(0)
+ExprEntry::ExprEntry() : ui::Entry(1024, ""), m_decimals(0)
 {
 }
 
@@ -35,6 +33,8 @@ bool ExprEntry::onProcessMessage(ui::Message* msg)
       onFormatExprFocusLeave(buf);
       if (text() != buf)
         setText(buf);
+
+      Leave();
       break;
     }
   }

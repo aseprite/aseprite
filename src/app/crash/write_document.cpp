@@ -1,17 +1,16 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/crash/write_document.h"
 
-#include "app/crash/doc_format.h"
 #include "app/crash/internals.h"
 #include "app/crash/log.h"
 #include "app/doc.h"
@@ -31,6 +30,7 @@
 #include "doc/layer_tilemap.h"
 #include "doc/palette.h"
 #include "doc/palette_io.h"
+#include "doc/serial_format.h"
 #include "doc/slice.h"
 #include "doc/slice_io.h"
 #include "doc/sprite.h"
@@ -46,8 +46,7 @@
 #include <fstream>
 #include <map>
 
-namespace app {
-namespace crash {
+namespace app { namespace crash {
 
 using namespace base::serialization;
 using namespace base::serialization::little_endian;
@@ -65,10 +64,12 @@ public:
     , m_doc(doc)
     , m_objVersions(g_docVersions[doc->id()])
     , m_deleteFiles(g_deleteFiles[doc->id()])
-    , m_cancel(cancel) {
+    , m_cancel(cancel)
+  {
   }
 
-  bool saveDocument() {
+  bool saveDocument()
+  {
     Sprite* spr = m_doc->sprite();
 
     // Save from objects without children (e.g. images), to aggregated
@@ -106,7 +107,7 @@ public:
       lay->getCels(cels);
 
       for (Cel* cel : cels) {
-        if (cel->link())        // Skip link
+        if (cel->link()) // Skip link
           continue;
 
         if (!saveObject("img", cel->image(), &Writer::writeImage))
@@ -144,19 +145,18 @@ public:
   }
 
 private:
+  bool isCanceled() const { return (m_cancel && m_cancel->isCanceled()); }
 
-  bool isCanceled() const {
-    return (m_cancel && m_cancel->isCanceled());
-  }
-
-  bool writeDocumentFile(std::ofstream& s, Doc* doc) {
+  bool writeDocumentFile(std::ofstream& s, Doc* doc)
+  {
     write32(s, doc->sprite()->id());
     write_string(s, doc->filename());
-    write16(s, DOC_FORMAT_VERSION_LAST);
+    write16(s, uint16_t(doc::SerialFormat::LastVer));
     return true;
   }
 
-  bool writeSprite(std::ofstream& s, Sprite* spr) {
+  bool writeSprite(std::ofstream& s, Sprite* spr)
+  {
     // Header
     write8(s, int(spr->colorMode()));
     write16(s, spr->width());
@@ -169,7 +169,7 @@ private:
       write32(s, spr->frameDuration(fr));
 
     // IDs of all tilesets
-    write32(s, spr->hasTilesets() ? spr->tilesets()->size(): 0);
+    write32(s, spr->hasTilesets() ? spr->tilesets()->size() : 0);
     if (spr->hasTilesets()) {
       for (Tileset* tileset : *spr->tilesets()) {
         if (tileset)
@@ -210,7 +210,8 @@ private:
     return true;
   }
 
-  bool writeGridBounds(std::ofstream& s, const gfx::Rect& grid) {
+  bool writeGridBounds(std::ofstream& s, const gfx::Rect& grid)
+  {
     write16(s, (int16_t)grid.x);
     write16(s, (int16_t)grid.y);
     write16(s, grid.w);
@@ -218,7 +219,8 @@ private:
     return true;
   }
 
-  bool writeColorSpace(std::ofstream& s, const gfx::ColorSpaceRef& colorSpace) {
+  bool writeColorSpace(std::ofstream& s, const gfx::ColorSpaceRef& colorSpace)
+  {
     write16(s, colorSpace->type());
     write16(s, colorSpace->flags());
     write32(s, fixmath::ftofix(colorSpace->gamma()));
@@ -232,7 +234,8 @@ private:
     return true;
   }
 
-  void writeAllLayersID(std::ofstream& s, ObjectId parentId, const LayerGroup* group) {
+  void writeAllLayersID(std::ofstream& s, ObjectId parentId, const LayerGroup* group)
+  {
     for (const Layer* lay : group->layers()) {
       write32(s, lay->id());
       write32(s, parentId);
@@ -242,13 +245,13 @@ private:
     }
   }
 
-  bool writeLayerStructure(std::ofstream& s, Layer* lay) {
+  bool writeLayerStructure(std::ofstream& s, Layer* lay)
+  {
     write32(s, static_cast<int>(lay->flags())); // Flags
     write16(s, static_cast<int>(lay->type()));  // Type
     write_string(s, lay->name());
 
     switch (lay->type()) {
-
       case ObjectType::LayerImage:
       case ObjectType::LayerTilemap: {
         // Tileset index
@@ -264,7 +267,7 @@ private:
 
         // Cels
         write32(s, static_cast<const LayerImage*>(lay)->getCelsCount());
-        for (it=begin; it != end; ++it) {
+        for (it = begin; it != end; ++it) {
           const Cel* cel = *it;
           write32(s, cel->id());
         }
@@ -282,42 +285,47 @@ private:
     return true;
   }
 
-  bool writeCel(std::ofstream& s, Cel* cel) {
+  bool writeCel(std::ofstream& s, Cel* cel)
+  {
     write_cel(s, cel);
     return true;
   }
 
-  bool writeCelData(std::ofstream& s, CelData* celdata) {
+  bool writeCelData(std::ofstream& s, CelData* celdata)
+  {
     write_celdata(s, celdata);
     return true;
   }
 
-  bool writeImage(std::ofstream& s, Image* img) {
-    return write_image(s, img, m_cancel);
-  }
+  bool writeImage(std::ofstream& s, Image* img) { return write_image(s, img, m_cancel); }
 
-  bool writePalette(std::ofstream& s, Palette* pal) {
+  bool writePalette(std::ofstream& s, Palette* pal)
+  {
     write_palette(s, pal);
     return true;
   }
 
-  bool writeTileset(std::ofstream& s, Tileset* tileset) {
+  bool writeTileset(std::ofstream& s, Tileset* tileset)
+  {
     write_tileset(s, tileset);
     return true;
   }
 
-  bool writeFrameTag(std::ofstream& s, Tag* frameTag) {
+  bool writeFrameTag(std::ofstream& s, Tag* frameTag)
+  {
     write_tag(s, frameTag);
     return true;
   }
 
-  bool writeSlice(std::ofstream& s, Slice* slice) {
+  bool writeSlice(std::ofstream& s, Slice* slice)
+  {
     write_slice(s, slice);
     return true;
   }
 
   template<typename T>
-  bool saveObject(const char* prefix, T* obj, bool (Writer::*writeMember)(std::ofstream&, T*)) {
+  bool saveObject(const char* prefix, T* obj, bool (Writer::*writeMember)(std::ofstream&, T*))
+  {
     if (isCanceled())
       return false;
 
@@ -337,7 +345,7 @@ private:
     fullfn += "." + base::convert_to<std::string>(obj->version());
 
     std::ofstream s(FSTREAM_PATH(fullfn), std::ofstream::binary);
-    write32(s, 0);                // Leave a room for the magic number
+    write32(s, 0);                     // Leave a room for the magic number
     if (!(this->*writeMember)(s, obj)) // Write the object
       return false;
 
@@ -360,10 +368,11 @@ private:
     return true;
   }
 
-  void deleteOldVersions() {
+  void deleteOldVersions()
+  {
     while (!m_deleteFiles.empty() && !isCanceled()) {
       std::string file = m_deleteFiles.back();
-      m_deleteFiles.erase(m_deleteFiles.end()-1);
+      m_deleteFiles.erase(m_deleteFiles.end() - 1);
 
       try {
         RECO_TRACE(" - Deleting <%s>\n", file.c_str());
@@ -387,9 +396,7 @@ private:
 //////////////////////////////////////////////////////////////////////
 // Public API
 
-bool write_document(const std::string& dir,
-                    Doc* doc,
-                    doc::CancelIO* cancel)
+bool write_document(const std::string& dir, Doc* doc, doc::CancelIO* cancel)
 {
   Writer writer(dir, doc, cancel);
   return writer.saveDocument();
@@ -413,5 +420,4 @@ void delete_document_internals(Doc* doc)
   }
 }
 
-} // namespace crash
-} // namespace app
+}} // namespace app::crash

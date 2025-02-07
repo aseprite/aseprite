@@ -19,72 +19,74 @@
 
 namespace render {
 
-  class Dithering;
-  class DitheringMatrix;
+class Dithering;
+class DitheringMatrix;
 
-  class DitheringAlgorithmBase {
-  public:
-    virtual ~DitheringAlgorithmBase() { }
+class DitheringAlgorithmBase {
+public:
+  virtual ~DitheringAlgorithmBase() {}
 
-    virtual int dimensions() const { return 1; }
-    virtual bool zigZag() const { return false; }
+  virtual int dimensions() const { return 1; }
+  virtual bool zigZag() const { return false; }
 
-    virtual void start(
-      const doc::Image* srcImage,
-      doc::Image* dstImage,
-      const double factor) { }
+  virtual void start(const doc::Image* srcImage, doc::Image* dstImage, const double factor) {}
 
-    virtual void finish() { }
+  virtual void finish() {}
 
-    virtual doc::color_t ditherRgbPixelToIndex(
-      const DitheringMatrix& matrix,
-      const doc::color_t color,
-      const int x, const int y,
-      const doc::RgbMap* rgbmap,
-      const doc::Palette* palette) { return 0; }
+  virtual doc::color_t ditherRgbPixelToIndex(const DitheringMatrix& matrix,
+                                             const doc::color_t color,
+                                             const int x,
+                                             const int y,
+                                             const doc::RgbMap* rgbmap,
+                                             const doc::Palette* palette)
+  {
+    return 0;
+  }
 
-    virtual doc::color_t ditherRgbToIndex2D(
-      const int x, const int y,
-      const doc::RgbMap* rgbmap,
-      const doc::Palette* palette) { return 0; }
-  };
+  virtual doc::color_t ditherRgbToIndex2D(const int x,
+                                          const int y,
+                                          const doc::RgbMap* rgbmap,
+                                          const doc::Palette* palette)
+  {
+    return 0;
+  }
+};
 
-  class OrderedDither : public DitheringAlgorithmBase {
-  public:
-    OrderedDither(int transparentIndex = -1);
-    doc::color_t ditherRgbPixelToIndex(
-      const DitheringMatrix& matrix,
-      const doc::color_t color,
-      const int x,
-      const int y,
-      const doc::RgbMap* rgbmap,
-      const doc::Palette* palette) override;
-  private:
-    int m_transparentIndex;
-  };
+class OrderedDither : public DitheringAlgorithmBase {
+public:
+  OrderedDither(int transparentIndex = -1);
+  doc::color_t ditherRgbPixelToIndex(const DitheringMatrix& matrix,
+                                     const doc::color_t color,
+                                     const int x,
+                                     const int y,
+                                     const doc::RgbMap* rgbmap,
+                                     const doc::Palette* palette) override;
 
-  class OrderedDither2 : public DitheringAlgorithmBase {
-  public:
-    OrderedDither2(int transparentIndex = -1);
-    doc::color_t ditherRgbPixelToIndex(
-      const DitheringMatrix& matrix,
-      const doc::color_t color,
-      const int x,
-      const int y,
-      const doc::RgbMap* rgbmap,
-      const doc::Palette* palette) override;
-  private:
-    int m_transparentIndex;
-  };
+private:
+  int m_transparentIndex;
+};
 
-  void dither_rgb_image_to_indexed(
-    DitheringAlgorithmBase& algorithm,
-    const Dithering& dithering,
-    const doc::Image* srcImage,
-    doc::Image* dstImage,
-    const doc::RgbMap* rgbmap,
-    const doc::Palette* palette,
-    TaskDelegate* delegate = nullptr);
+class OrderedDither2 : public DitheringAlgorithmBase {
+public:
+  OrderedDither2(int transparentIndex = -1);
+  doc::color_t ditherRgbPixelToIndex(const DitheringMatrix& matrix,
+                                     const doc::color_t color,
+                                     const int x,
+                                     const int y,
+                                     const doc::RgbMap* rgbmap,
+                                     const doc::Palette* palette) override;
+
+private:
+  int m_transparentIndex;
+};
+
+void dither_rgb_image_to_indexed(DitheringAlgorithmBase& algorithm,
+                                 const Dithering& dithering,
+                                 const doc::Image* srcImage,
+                                 doc::Image* dstImage,
+                                 const doc::RgbMap* rgbmap,
+                                 const doc::Palette* palette,
+                                 TaskDelegate* delegate = nullptr);
 
 } // namespace render
 

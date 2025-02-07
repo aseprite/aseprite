@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_transparent_color.h"
@@ -14,8 +14,7 @@
 #include "app/doc_event.h"
 #include "doc/sprite.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 SetTransparentColor::SetTransparentColor(Sprite* sprite, color_t newMask)
   : WithSprite(sprite)
@@ -47,5 +46,4 @@ void SetTransparentColor::onFireNotifications()
   doc->notify_observers<DocEvent&>(&DocObserver::onSpriteTransparentColorChanged, ev);
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

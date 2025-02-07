@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #ifndef ENABLE_SCRIPTING
@@ -28,6 +28,7 @@ using namespace ui;
 class OpenScriptFolderCommand : public Command {
 public:
   OpenScriptFolderCommand();
+
 protected:
   void onExecute(Context* context);
 };

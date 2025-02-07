@@ -13,27 +13,25 @@
 
 namespace ui {
 
-  class ListItem : public Widget {
-  public:
-    ListItem(const std::string& text = std::string());
+class ListItem : public Widget {
+public:
+  ListItem(const std::string& text = std::string());
 
-    const std::string& getValue() const { return m_value; }
+  const std::string& getValue() const { return m_value; }
 
-    void setValue(const std::string& value) {
-      m_value = value;
-    }
+  void setValue(const std::string& value) { m_value = value; }
 
-  protected:
-    bool onProcessMessage(Message* msg) override;
-    void onResize(ResizeEvent& ev) override;
-    void onSizeHint(SizeHintEvent& ev) override;
-    void onInitTheme(InitThemeEvent& ev) override;
-    void onSetText() override;
+protected:
+  bool onProcessMessage(Message* msg) override;
+  void onResize(ResizeEvent& ev) override;
+  void onSizeHint(SizeHintEvent& ev) override;
+  void onInitTheme(InitThemeEvent& ev) override;
+  void onSetText() override;
 
-  private:
-    std::string m_value;
-    int m_textLength = -1;
-  };
+private:
+  std::string m_value;
+  int m_textLength = -1;
+};
 
 } // namespace ui
 

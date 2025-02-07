@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/console.h"
@@ -31,30 +31,18 @@ namespace app {
 using namespace base;
 
 class TgaFormat : public FileFormat {
-  const char* onGetName() const override {
-    return "tga";
-  }
+  const char* onGetName() const override { return "tga"; }
 
-  void onGetExtensions(base::paths& exts) const override {
-    exts.push_back("tga");
-  }
+  void onGetExtensions(base::paths& exts) const override { exts.push_back("tga"); }
 
-  dio::FileFormat onGetDioFormat() const override {
-    return dio::FileFormat::TARGA_IMAGE;
-  }
+  dio::FileFormat onGetDioFormat() const override { return dio::FileFormat::TARGA_IMAGE; }
 
-  int onGetFlags() const override {
-    return
-      FILE_SUPPORT_LOAD |
-      FILE_SUPPORT_SAVE |
-      FILE_SUPPORT_RGB |
-      FILE_SUPPORT_RGBA |
-      FILE_SUPPORT_GRAY |
-      FILE_SUPPORT_INDEXED |
-      FILE_SUPPORT_SEQUENCES |
-      FILE_SUPPORT_GET_FORMAT_OPTIONS |
-      FILE_SUPPORT_PALETTE_WITH_ALPHA |
-      FILE_ENCODE_ABSTRACT_IMAGE;
+  int onGetFlags() const override
+  {
+    return FILE_SUPPORT_LOAD | FILE_SUPPORT_SAVE | FILE_SUPPORT_RGB | FILE_SUPPORT_RGBA |
+           FILE_SUPPORT_GRAY | FILE_SUPPORT_INDEXED | FILE_SUPPORT_SEQUENCES |
+           FILE_SUPPORT_GET_FORMAT_OPTIONS | FILE_SUPPORT_PALETTE_WITH_ALPHA |
+           FILE_ENCODE_ABSTRACT_IMAGE;
   }
 
   bool onLoad(FileOp* fop) override;
@@ -74,11 +62,13 @@ namespace {
 
 class TgaDelegate : public tga::Delegate {
 public:
-  TgaDelegate(FileOp* fop) : m_fop(fop) { }
-  bool notifyProgress(double progress) override {
+  TgaDelegate(FileOp* fop) : m_fop(fop) {}
+  bool notifyProgress(double progress) override
+  {
     m_fop->setProgress(progress);
     return !m_fop->isStop();
   }
+
 private:
   FileOp* m_fop;
 };
@@ -86,35 +76,26 @@ private:
 bool get_image_spec(const tga::Header& header, ImageSpec& spec)
 {
   switch (header.imageType) {
-
     case tga::UncompressedIndexed:
     case tga::RleIndexed:
       if (header.bitsPerPixel != 8)
         return false;
-      spec = ImageSpec(ColorMode::INDEXED,
-                       header.width,
-                       header.height);
+      spec = ImageSpec(ColorMode::INDEXED, header.width, header.height);
       return true;
 
     case tga::UncompressedRgb:
     case tga::RleRgb:
-      if (header.bitsPerPixel != 15 &&
-          header.bitsPerPixel != 16 &&
-          header.bitsPerPixel != 24 &&
+      if (header.bitsPerPixel != 15 && header.bitsPerPixel != 16 && header.bitsPerPixel != 24 &&
           header.bitsPerPixel != 32)
         return false;
-      spec = ImageSpec(ColorMode::RGB,
-                       header.width,
-                       header.height);
+      spec = ImageSpec(ColorMode::RGB, header.width, header.height);
       return true;
 
     case tga::UncompressedGray:
     case tga::RleGray:
       if (header.bitsPerPixel != 8)
         return false;
-      spec = ImageSpec(ColorMode::GRAYSCALE,
-                       header.width,
-                       header.height);
+      spec = ImageSpec(ColorMode::GRAYSCALE, header.width, header.height);
       return true;
   }
   return false;
@@ -144,12 +125,9 @@ bool TgaFormat::onLoad(FileOp* fop)
   // Palette from TGA file
   if (header.hasColormap()) {
     const tga::Colormap& pal = header.colormap;
-    for (int i=0; i<pal.size(); ++i) {
+    for (int i = 0; i < pal.size(); ++i) {
       tga::color_t c = pal[i];
-      fop->sequenceSetColor(i,
-                            tga::getr(c),
-                            tga::getg(c),
-                            tga::getb(c));
+      fop->sequenceSetColor(i, tga::getr(c), tga::getg(c), tga::getb(c));
       if (tga::geta(c) < 255) {
         fop->sequenceSetAlpha(i, tga::geta(c));
         fop->sequenceSetHasAlpha(true); // Is a transparent sprite
@@ -158,17 +136,15 @@ bool TgaFormat::onLoad(FileOp* fop)
   }
   // Generate grayscale palette
   else if (header.isGray()) {
-    for (int i=0; i<256; ++i)
+    for (int i = 0; i < 256; ++i)
       fop->sequenceSetColor(i, i, i, i);
   }
 
   if (decoder.hasAlpha())
     fop->sequenceSetHasAlpha(true);
 
-  ImageRef image = fop->sequenceImageToLoad(
-    (doc::PixelFormat)spec.colorMode(),
-    spec.width(),
-    spec.height());
+  ImageRef image =
+    fop->sequenceImageToLoad((doc::PixelFormat)spec.colorMode(), spec.width(), spec.height());
   if (!image)
     return false;
 
@@ -191,7 +167,7 @@ bool TgaFormat::onLoad(FileOp* fop)
   // with alpha).
   if (header.isGray()) {
     doc::LockImageBits<GrayscaleTraits> bits(image.get());
-    for (auto it=bits.begin(), end=bits.end(); it != end; ++it) {
+    for (auto it = bits.begin(), end = bits.end(); it != end; ++it) {
       *it = doc::graya(*it, 255);
     }
   }
@@ -241,10 +217,8 @@ void prepare_header(tga::Header& header,
 
   switch (spec.colorMode()) {
     case ColorMode::RGB:
-      header.imageType = (compressed ? tga::RleRgb: tga::UncompressedRgb);
-      header.bitsPerPixel = (bitsPerPixel > 8 ?
-                               bitsPerPixel:
-                               (isOpaque ? 24: 32));
+      header.imageType = (compressed ? tga::RleRgb : tga::UncompressedRgb);
+      header.bitsPerPixel = (bitsPerPixel > 8 ? bitsPerPixel : (isOpaque ? 24 : 32));
       if (!isOpaque) {
         switch (header.bitsPerPixel) {
           case 16: header.imageDescriptor |= 1; break;
@@ -257,13 +231,13 @@ void prepare_header(tga::Header& header,
       //      this could be done automatically in FileOp in a
       //      generic way for all formats when FILE_SUPPORT_RGBA is
       //      available and FILE_SUPPORT_GRAYA isn't.
-      header.imageType = (compressed ? tga::RleGray: tga::UncompressedGray);
+      header.imageType = (compressed ? tga::RleGray : tga::UncompressedGray);
       header.bitsPerPixel = 8;
       break;
     case ColorMode::INDEXED:
       ASSERT(palette);
 
-      header.imageType = (compressed ? tga::RleIndexed: tga::UncompressedIndexed);
+      header.imageType = (compressed ? tga::RleIndexed : tga::UncompressedIndexed);
       header.bitsPerPixel = 8;
       header.colormapType = 1;
       header.colormapLength = palette->size();
@@ -273,13 +247,10 @@ void prepare_header(tga::Header& header,
         header.colormapDepth = 24;
 
       header.colormap = tga::Colormap(palette->size());
-      for (int i=0; i<palette->size(); ++i) {
+      for (int i = 0; i < palette->size(); ++i) {
         doc::color_t c = palette->getEntry(i);
         header.colormap[i] =
-          tga::rgba(doc::rgba_getr(c),
-                    doc::rgba_getg(c),
-                    doc::rgba_getb(c),
-                    doc::rgba_geta(c));
+          tga::rgba(doc::rgba_getr(c), doc::rgba_getg(c), doc::rgba_getb(c), doc::rgba_geta(c));
       }
       break;
   }
@@ -298,14 +269,15 @@ bool TgaFormat::onSave(FileOp* fop)
   tga::Header header;
 
   const auto tgaOptions = std::static_pointer_cast<TgaOptions>(fop->formatOptions());
-  prepare_header(
-    header, img->spec(), palette,
-    // Is alpha channel required?
-    fop->document()->sprite()->isOpaque(),
-    // Compressed by default
-    (tgaOptions ? tgaOptions->compress(): true),
-    // Bits per pixel (0 means "calculate what is best")
-    (tgaOptions ? tgaOptions->bitsPerPixel(): 0));
+  prepare_header(header,
+                 img->spec(),
+                 palette,
+                 // Is alpha channel required?
+                 fop->document()->sprite()->isOpaque(),
+                 // Compressed by default
+                 (tgaOptions ? tgaOptions->compress() : true),
+                 // Bits per pixel (0 means "calculate what is best")
+                 (tgaOptions ? tgaOptions->bitsPerPixel() : 0));
 
   encoder.writeHeader(header);
 
@@ -328,13 +300,12 @@ bool TgaFormat::onSave(FileOp* fop)
   }
 }
 
-#endif  // ENABLE_SAVE
+#endif // ENABLE_SAVE
 
 FormatOptionsPtr TgaFormat::onAskUserForFormatOptions(FileOp* fop)
 {
   const bool origOpts = fop->hasFormatOptionsOfDocument();
   auto opts = fop->formatOptionsOfDocument<TgaOptions>();
-#ifdef ENABLE_UI
   if (fop->context() && fop->context()->isUIAvailable()) {
     try {
       auto& pref = Preferences::instance();
@@ -350,16 +321,16 @@ FormatOptionsPtr TgaFormat::onAskUserForFormatOptions(FileOp* fop)
 
       if (pref.tga.showAlert()) {
         const bool isOpaque = fop->document()->sprite()->isOpaque();
-        const std::string defBitsPerPixel = (isOpaque ? "24": "32");
+        const std::string defBitsPerPixel = (isOpaque ? "24" : "32");
         app::gen::TgaOptions win;
 
         if (fop->document()->colorMode() == doc::ColorMode::RGB) {
           // TODO implement a better way to create ListItems with values
           auto newItem = [](const char* s) -> ui::ListItem* {
-                           auto item = new ui::ListItem(s);
-                           item->setValue(s);
-                           return item;
-                         };
+            auto item = new ui::ListItem(s);
+            item->setValue(s);
+            return item;
+          };
 
           win.bitsPerPixel()->addItem(newItem("16"));
           win.bitsPerPixel()->addItem(newItem("24"));
@@ -398,7 +369,6 @@ FormatOptionsPtr TgaFormat::onAskUserForFormatOptions(FileOp* fop)
       return std::shared_ptr<TgaOptions>(nullptr);
     }
   }
-#endif // ENABLE_UI
   return opts;
 }
 

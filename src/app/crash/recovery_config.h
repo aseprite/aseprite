@@ -8,17 +8,15 @@
 #define APP_CRASH_RECOVERY_CONFIG_H_INCLUDED
 #pragma once
 
-namespace app {
-namespace crash {
+namespace app { namespace crash {
 
-  // Structure to store the configuration from Preferences instance to
-  // avoid accessing to Preferences from a non-UI thread.
-  struct RecoveryConfig {
-    double dataRecoveryPeriod;
-    int keepEditedSpriteDataFor;
-  };
+// Structure to store the configuration from Preferences instance to
+// avoid accessing to Preferences from a non-UI thread.
+struct RecoveryConfig {
+  double dataRecoveryPeriod;
+  int keepEditedSpriteDataFor;
+};
 
-} // namespace crash
-} // namespace app
+}} // namespace app::crash
 
 #endif

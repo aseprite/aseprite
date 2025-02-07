@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/app_state.h"
@@ -33,8 +33,7 @@ AppState get_app_state()
 
 bool is_app_state_closing()
 {
-  return (g_state == AppState::kClosing ||
-          g_state == AppState::kClosingWithException);
+  return (g_state == AppState::kClosing || g_state == AppState::kClosingWithException);
 }
 
 } // namespace ui

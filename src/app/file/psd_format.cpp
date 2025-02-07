@@ -20,55 +20,34 @@ namespace app {
 doc::PixelFormat psd_cmode_to_ase_format(const psd::ColorMode mode)
 {
   switch (mode) {
-    case psd::ColorMode::Grayscale:
-      return doc::PixelFormat::IMAGE_GRAYSCALE;
-    case psd::ColorMode::RGB:
-      return doc::PixelFormat::IMAGE_RGB;
-    default:
-      return doc::PixelFormat::IMAGE_INDEXED;
+    case psd::ColorMode::Grayscale: return doc::PixelFormat::IMAGE_GRAYSCALE;
+    case psd::ColorMode::RGB:       return doc::PixelFormat::IMAGE_RGB;
+    default:                        return doc::PixelFormat::IMAGE_INDEXED;
   }
 }
 
 doc::BlendMode psd_blendmode_to_ase(const psd::LayerBlendMode mode)
 {
   switch (mode) {
-    case psd::LayerBlendMode::Multiply:
-      return doc::BlendMode::MULTIPLY;
-    case psd::LayerBlendMode::Darken:
-      return doc::BlendMode::DARKEN;
-    case psd::LayerBlendMode::ColorBurn:
-      return doc::BlendMode::COLOR_BURN;
-    case psd::LayerBlendMode::Lighten:
-      return doc::BlendMode::LIGHTEN;
-    case psd::LayerBlendMode::Screen:
-      return doc::BlendMode::SCREEN;
-    case psd::LayerBlendMode::ColorDodge:
-      return doc::BlendMode::COLOR_DODGE;
-    case psd::LayerBlendMode::Overlay:
-      return doc::BlendMode::OVERLAY;
-    case psd::LayerBlendMode::SoftLight:
-      return doc::BlendMode::SOFT_LIGHT;
-    case psd::LayerBlendMode::HardLight:
-      return doc::BlendMode::HARD_LIGHT;
-    case psd::LayerBlendMode::Difference:
-      return doc::BlendMode::DIFFERENCE;
-    case psd::LayerBlendMode::Exclusion:
-      return doc::BlendMode::EXCLUSION;
-    case psd::LayerBlendMode::Subtract:
-      return doc::BlendMode::SUBTRACT;
-    case psd::LayerBlendMode::Divide:
-      return doc::BlendMode::DIVIDE;
-    case psd::LayerBlendMode::Hue:
-      return doc::BlendMode::HSL_HUE;
-    case psd::LayerBlendMode::Saturation:
-      return doc::BlendMode::HSL_SATURATION;
-    case psd::LayerBlendMode::Color:
-      return doc::BlendMode::HSL_COLOR;
-    case psd::LayerBlendMode::Luminosity:
-      return doc::BlendMode::HSL_LUMINOSITY;
+    case psd::LayerBlendMode::Multiply:   return doc::BlendMode::MULTIPLY;
+    case psd::LayerBlendMode::Darken:     return doc::BlendMode::DARKEN;
+    case psd::LayerBlendMode::ColorBurn:  return doc::BlendMode::COLOR_BURN;
+    case psd::LayerBlendMode::Lighten:    return doc::BlendMode::LIGHTEN;
+    case psd::LayerBlendMode::Screen:     return doc::BlendMode::SCREEN;
+    case psd::LayerBlendMode::ColorDodge: return doc::BlendMode::COLOR_DODGE;
+    case psd::LayerBlendMode::Overlay:    return doc::BlendMode::OVERLAY;
+    case psd::LayerBlendMode::SoftLight:  return doc::BlendMode::SOFT_LIGHT;
+    case psd::LayerBlendMode::HardLight:  return doc::BlendMode::HARD_LIGHT;
+    case psd::LayerBlendMode::Difference: return doc::BlendMode::DIFFERENCE;
+    case psd::LayerBlendMode::Exclusion:  return doc::BlendMode::EXCLUSION;
+    case psd::LayerBlendMode::Subtract:   return doc::BlendMode::SUBTRACT;
+    case psd::LayerBlendMode::Divide:     return doc::BlendMode::DIVIDE;
+    case psd::LayerBlendMode::Hue:        return doc::BlendMode::HSL_HUE;
+    case psd::LayerBlendMode::Saturation: return doc::BlendMode::HSL_SATURATION;
+    case psd::LayerBlendMode::Color:      return doc::BlendMode::HSL_COLOR;
+    case psd::LayerBlendMode::Luminosity: return doc::BlendMode::HSL_LUMINOSITY;
     case psd::LayerBlendMode::Normal:
-    default:
-      return doc::BlendMode::NORMAL;
+    default:                              return doc::BlendMode::NORMAL;
   }
 }
 
@@ -81,10 +60,7 @@ class PsdFormat : public FileFormat {
     exts.push_back("psd");
   }
 
-  dio::FileFormat onGetDioFormat() const override
-  {
-    return dio::FileFormat::PSD_IMAGE;
-  }
+  dio::FileFormat onGetDioFormat() const override { return dio::FileFormat::PSD_IMAGE; }
 
   int onGetFlags() const override { return FILE_SUPPORT_LOAD; }
 
@@ -107,15 +83,15 @@ public:
     , m_activeFrameIndex(0)
     , m_pixelFormat(PixelFormat::IMAGE_INDEXED)
     , m_layerHasTransparentChannel(false)
-  { }
+  {
+  }
 
   Sprite* getSprite() { return assembleDocument(); }
 
   void onFileHeader(const psd::FileHeader& header) override
   {
     m_pixelFormat = psd_cmode_to_ase_format(header.colorMode);
-    m_sprite = new Sprite(
-      ImageSpec(ColorMode(m_pixelFormat), header.width, header.width));
+    m_sprite = new Sprite(ImageSpec(ColorMode(m_pixelFormat), header.width, header.width));
     m_layerHasTransparentChannel = hasTransparency(header.nchannels);
   }
 
@@ -184,17 +160,16 @@ public:
     }
     else {
       auto findIter = std::find_if(
-        m_layers.begin(), m_layers.end(), [&layerRecord](doc::Layer* layer) {
-          return layer->name() == layerRecord.name;
-        });
+        m_layers.begin(),
+        m_layers.end(),
+        [&layerRecord](doc::Layer* layer) { return layer->name() == layerRecord.name; });
       if (findIter == m_layers.end()) {
-        if (!m_layerGroup)  // In this case, there are no layer groups
+        if (!m_layerGroup) // In this case, there are no layer groups
           m_layerGroup = m_sprite->root();
 
         createNewLayer(layerRecord.name);
-        //m_currentLayer->setVisible(layerRecord.isVisible());
-        m_layerHasTransparentChannel =
-          hasTransparency(layerRecord.channels.size());
+        // m_currentLayer->setVisible(layerRecord.isVisible());
+        m_layerHasTransparentChannel = hasTransparency(layerRecord.channels.size());
       }
       else {
         m_currentLayer = *findIter;
@@ -205,8 +180,7 @@ public:
 
   void onEndLayer(const psd::LayerRecord& layerRecord) override
   {
-    if (!m_framesInfo.empty() &&
-        (layerRecord.inFrames.size() == m_framesInfo.size()) &&
+    if (!m_framesInfo.empty() && (layerRecord.inFrames.size() == m_framesInfo.size()) &&
         m_currentImage) {
       std::unique_ptr<Cel> layerCel(m_currentLayer->cel(frame_t(0)));
       LayerImage* imageLayer = static_cast<LayerImage*>(m_currentLayer);
@@ -253,8 +227,7 @@ public:
       if (m_layers.empty()) {
         m_layerGroup = m_sprite->root();
         createNewLayer("Layer 1");
-        m_layerHasTransparentChannel =
-          hasTransparency(imageData.channels.size());
+        m_layerHasTransparentChannel = hasTransparency(imageData.channels.size());
       }
       if (m_currentLayer) {
         createNewImage(imageData.width, imageData.height);
@@ -297,15 +270,13 @@ public:
     uint8_t* dstGenericAddress = m_currentImage->getPixelAddress(0, y);
 
     if (m_pixelFormat == doc::PixelFormat::IMAGE_INDEXED) {
-      IndexedTraits::address_t dstAddress =
-        (IndexedTraits::address_t)dstGenericAddress;
+      IndexedTraits::address_t dstAddress = (IndexedTraits::address_t)dstGenericAddress;
       for (int x = 0; x < dataCount && x < m_currentImage->width(); ++x) {
         *(dstAddress)++ = getNormalizedPixelValue(data, img.depth);
       }
     }
     else if (m_pixelFormat == doc::PixelFormat::IMAGE_GRAYSCALE) {
-      GrayscaleTraits::address_t dstAddress =
-        (GrayscaleTraits::address_t)dstGenericAddress;
+      GrayscaleTraits::address_t dstAddress = (GrayscaleTraits::address_t)dstGenericAddress;
       uint8_t v = 0, a = 0;
       for (int x = 0; x < dataCount && x < m_currentImage->width(); ++x) {
         const GrayscaleTraits::pixel_t pixel = *dstAddress;
@@ -314,8 +285,7 @@ public:
           v = newPixelValue;
           a = m_layerHasTransparentChannel ? graya_geta(pixel) : 255;
         }
-        else if (chanID == psd::ChannelID::Alpha ||
-                 chanID == psd::ChannelID::TransparencyMask) {
+        else if (chanID == psd::ChannelID::Alpha || chanID == psd::ChannelID::TransparencyMask) {
           a = newPixelValue;
           v = graya_getv(pixel);
         }
@@ -341,8 +311,7 @@ public:
         else if (chanID == psd::ChannelID::Blue) {
           b = newPixelValue;
         }
-        else if (chanID == psd::ChannelID::Alpha ||
-                 chanID == psd::ChannelID::TransparencyMask) {
+        else if (chanID == psd::ChannelID::Alpha || chanID == psd::ChannelID::TransparencyMask) {
           a = newPixelValue;
         }
         *(dstAddress++) = rgba(r, g, b, a);
@@ -388,8 +357,7 @@ private:
     return m_sprite;
   }
 
-  std::uint8_t getNormalizedPixelValue(const std::uint8_t*& data,
-                                       const int depth)
+  std::uint8_t getNormalizedPixelValue(const std::uint8_t*& data, const int depth)
   {
     if (depth == 1 || depth == 8) {
       return *(data++);
@@ -400,8 +368,8 @@ private:
       return value >> 8;
     }
     else if (depth == 32) {
-      const uint32_t value = int(data[0] << 24) | int(data[1] << 16) |
-                             int(data[2] << 8) | int(data[3]);
+      const uint32_t value = int(data[0] << 24) | int(data[1] << 16) | int(data[2] << 8) |
+                             int(data[3]);
       data += 4;
       return value >> 24;
     }
@@ -412,7 +380,7 @@ private:
   void createNewImage(const int width, const int height)
   {
     if (width <= 0 || height <= 0)
-      return;  //throw std::runtime_error("invalid image width/height");
+      return; // throw std::runtime_error("invalid image width/height");
 
     m_currentImage.reset(Image::create(m_pixelFormat, width, height));
     clear_image(m_currentImage.get(), 0);
@@ -433,8 +401,7 @@ private:
 
 bool PsdFormat::onLoad(FileOp* fop)
 {
-  base::FileHandle fileHandle =
-    base::open_file_with_exception(fop->filename(), "rb");
+  base::FileHandle fileHandle = base::open_file_with_exception(fop->filename(), "rb");
   FILE* f = fileHandle.get();
   psd::StdioFileInterface fileInterface(f);
   PsdDecoderDelegate pDelegate;
@@ -447,8 +414,7 @@ bool PsdFormat::onLoad(FileOp* fop)
 
   const psd::FileHeader header = decoder.fileHeader();
 
-  if (header.colorMode != psd::ColorMode::RGB &&
-      header.colorMode != psd::ColorMode::Indexed &&
+  if (header.colorMode != psd::ColorMode::RGB && header.colorMode != psd::ColorMode::Indexed &&
       header.colorMode != psd::ColorMode::Grayscale) {
     fop->setError("This preliminary work only supports "
                   "RGB, Grayscale & Indexed images\n");
@@ -475,4 +441,4 @@ bool PsdFormat::onSave(FileOp* fop)
   return false;
 }
 
-}  // namespace app
+} // namespace app

@@ -15,76 +15,77 @@
 #include <vector>
 
 namespace os {
-  class Surface;
+class Surface;
 }
 
 namespace ui {
 
-  class Event;
+class Event;
 
-  // Generic button
-  class ButtonBase : public Widget {
-  public:
-    ButtonBase(const std::string& text,
-               const WidgetType type,
-               const WidgetType behaviorType,
-               const WidgetType drawType);
-    virtual ~ButtonBase();
+// Generic button
+class ButtonBase : public Widget {
+public:
+  ButtonBase(const std::string& text,
+             const WidgetType type,
+             const WidgetType behaviorType,
+             const WidgetType drawType);
+  virtual ~ButtonBase();
 
-    WidgetType behaviorType() const;
-    // Signals
-    obs::signal<void()> Click;
+  WidgetType behaviorType() const;
+  // Signals
+  obs::signal<void()> Click;
+  obs::signal<void()> RightClick;
 
-  protected:
-    // Events
-    bool onProcessMessage(Message* msg) override;
+protected:
+  // Events
+  bool onProcessMessage(Message* msg) override;
 
-    // New events
-    virtual void onClick();
-    virtual void onStartDrag();
-    virtual void onSelectWhenDragging();
+  // New events
+  virtual void onClick();
+  virtual void onRightClick();
+  virtual void onStartDrag();
+  virtual void onSelectWhenDragging();
 
-  private:
-    void generateButtonSelectSignal();
+private:
+  void generateButtonSelectSignal();
 
-    bool m_pressedStatus;
-    WidgetType m_behaviorType;
+  bool m_pressedStatus;
+  WidgetType m_behaviorType;
 
-  protected:
-    bool m_handleSelect;
-  };
+protected:
+  bool m_handleSelect;
+};
 
-  // Pushable button to execute commands
-  class Button : public ButtonBase {
-  public:
-    Button(const std::string& text);
-  };
+// Pushable button to execute commands
+class Button : public ButtonBase {
+public:
+  Button(const std::string& text);
+};
 
-  // Check boxes
-  class CheckBox : public ButtonBase {
-  public:
-    CheckBox(const std::string& text,
-             const WidgetType drawType = kCheckWidget);
-  };
+// Check boxes
+class CheckBox : public ButtonBase {
+public:
+  CheckBox(const std::string& text, const WidgetType drawType = kCheckWidget);
+};
 
-  // Radio buttons
-  class RadioButton : public ButtonBase {
-  public:
-    RadioButton(const std::string& text,
-                const int radioGroup = 0,
-                const WidgetType drawType = kRadioWidget);
+// Radio buttons
+class RadioButton : public ButtonBase {
+public:
+  RadioButton(const std::string& text,
+              const int radioGroup = 0,
+              const WidgetType drawType = kRadioWidget);
 
-    int getRadioGroup() const;
-    void setRadioGroup(int radioGroup);
+  int getRadioGroup() const;
+  void setRadioGroup(int radioGroup);
 
-    void deselectRadioGroup();
+  void deselectRadioGroup();
 
-  protected:
-    void onSelect(bool selected) override;
+protected:
+  void onSelect(bool selected) override;
 
-  private:
-    int m_radioGroup;
-  };
+private:
+  int m_radioGroup;
+};
 
 } // namespace ui
 

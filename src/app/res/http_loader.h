@@ -14,29 +14,29 @@
 #include <thread>
 
 namespace net {
-  class HttpRequest;
+class HttpRequest;
 }
 
 namespace app {
 
-  class HttpLoader {
-  public:
-    HttpLoader(const std::string& url);
-    ~HttpLoader();
+class HttpLoader {
+public:
+  HttpLoader(const std::string& url);
+  ~HttpLoader();
 
-    void abort();
-    bool isDone() const { return m_done; }
-    std::string filename() const { return m_filename; }
+  void abort();
+  bool isDone() const { return m_done; }
+  std::string filename() const { return m_filename; }
 
-  private:
-    void threadHttpRequest();
+private:
+  void threadHttpRequest();
 
-    std::string m_url;
-    std::atomic<bool> m_done;
-    net::HttpRequest* m_request;
-    std::thread m_thread;
-    std::string m_filename;
-  };
+  std::string m_url;
+  std::atomic<bool> m_done;
+  net::HttpRequest* m_request;
+  std::thread m_thread;
+  std::string m_filename;
+};
 
 } // namespace app
 

@@ -1,12 +1,12 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/data_recovery_view.h"
@@ -27,10 +27,8 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/task_widget.h"
 #include "app/ui/workspace.h"
-#include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "base/fs.h"
-#include "fmt/format.h"
 #include "ui/alert.h"
 #include "ui/button.h"
 #include "ui/entry.h"
@@ -58,8 +56,8 @@ public:
   Item(crash::Session* session, const crash::Session::BackupPtr& backup)
     : m_session(session)
     , m_backup(backup)
-    , m_task(nullptr) {
-    updateText();
+    , m_task(nullptr)
+  {
   }
 
   crash::Session* session() const { return m_session; }
@@ -67,98 +65,103 @@ public:
 
   bool isTaskRunning() const { return m_task != nullptr; }
 
-  void restoreBackup() {
+  void restoreBackup()
+  {
     if (m_task)
       return;
-    m_task = new TaskWidget(
-      [this](base::task_token& t) {
-        // Warning: This is executed from a worker thread
-        Doc* doc = m_session->restoreBackupDoc(m_backup, &t);
-        ui::execute_from_ui_thread(
-          [this, doc]{
-            onOpenDoc(doc);
-            onDeleteTaskWidget();
-          });
+    m_task = new TaskWidget([this](base::task_token& t) {
+      // Warning: This is executed from a worker thread
+      Doc* doc = m_session->restoreBackupDoc(m_backup, &t);
+      ui::execute_from_ui_thread([this, doc] {
+        onOpenDoc(doc);
+        onDeleteTaskWidget();
       });
+    });
     addChild(m_task);
     parent()->layout();
   }
 
-  void restoreRawImages(crash::RawImagesAs as) {
+  void restoreRawImages(crash::RawImagesAs as)
+  {
     if (m_task)
       return;
-    m_task = new TaskWidget(
-      [this, as](base::task_token& t){
+    m_task = new TaskWidget([this, as](base::task_token& t) {
+      // Warning: This is executed from a worker thread
+      Doc* doc = m_session->restoreBackupRawImages(m_backup, as, &t);
+      ui::execute_from_ui_thread([this, doc] {
+        onOpenDoc(doc);
+        onDeleteTaskWidget();
+      });
+    });
+    addChild(m_task);
+    updateView();
+  }
+
+  void deleteBackup()
+  {
+    if (m_task)
+      return;
+
+    m_task = new TaskWidget(TaskWidget::kCannotCancel, [this](base::task_token& t) {
+      try {
         // Warning: This is executed from a worker thread
-        Doc* doc = m_session->restoreBackupRawImages(m_backup, as, &t);
-        ui::execute_from_ui_thread(
-          [this, doc]{
-            onOpenDoc(doc);
-            onDeleteTaskWidget();
-          });
-      });
-    addChild(m_task);
-    updateView();
-  }
+        m_session->deleteBackup(m_backup);
+        m_backup.reset(); // Delete the Backup instance
 
-  void deleteBackup() {
-    if (m_task)
-      return;
+        ui::execute_from_ui_thread([this] {
+          onDeleteTaskWidget();
 
-    m_task = new TaskWidget(
-      TaskWidget::kCannotCancel,
-      [this](base::task_token& t) {
-        try {
-          // Warning: This is executed from a worker thread
-          m_session->deleteBackup(m_backup);
-          m_backup.reset();     // Delete the Backup instance
+          // We cannot use this->deferDelete() here because it looks
+          // like the m_task field can be still in use.
+          setVisible(false);
 
+          updateView();
+        });
+      }
+      catch (const std::exception& ex) {
+        std::string err = ex.what();
+        if (!err.empty()) {
           ui::execute_from_ui_thread(
-            [this]{
-              onDeleteTaskWidget();
-
-              // We cannot use this->deferDelete() here because it looks
-              // like the m_task field can be still in use.
-              setVisible(false);
-
-              updateView();
-            });
+            [err] { Console().printf("Error deleting file: %s", err.c_str()); });
         }
-        catch (const std::exception& ex) {
-          std::string err = ex.what();
-          if (!err.empty()) {
-            ui::execute_from_ui_thread(
-              [err]{
-                Console().printf("Error deleting file: %s", err.c_str());
-              });
-          }
-        }
-      });
+      }
+    });
     addChild(m_task);
     updateView();
   }
 
-  void updateText() {
+  void updateText()
+  {
     if (!m_task) {
       ASSERT(m_backup);
       if (!m_backup)
         return;
 
-      setText(
-        m_backup->description(
-          Preferences::instance().general.showFullPath()));
+      setText(m_backup->description(Preferences::instance().general.showFullPath()));
     }
   }
 
 private:
-  void onSizeHint(SizeHintEvent& ev) override {
+  void onPaint(PaintEvent& ev) override
+  {
+    // The text is lazily initialized. So we read the backup data only
+    // when we have to show its information.
+    if (text().empty()) {
+      updateText();
+    }
+    ListItem::onPaint(ev);
+  }
+
+  void onSizeHint(SizeHintEvent& ev) override
+  {
     ListItem::onSizeHint(ev);
     gfx::Size sz = ev.sizeHint();
-    sz.h += 4*guiscale();
+    sz.h += 4 * guiscale();
     ev.setSizeHint(sz);
   }
 
-  void onResize(ResizeEvent& ev) override {
+  void onResize(ResizeEvent& ev) override
+  {
     setBoundsQuietly(ev.bounds());
 
     if (m_task) {
@@ -177,7 +180,8 @@ private:
     }
   }
 
-  void onOpenDoc(Doc* doc) {
+  void onOpenDoc(Doc* doc)
+  {
     if (!doc)
       return;
 
@@ -189,8 +193,7 @@ private:
     // recovered document. In other case, opening the recovered
     // document is confusing (because the user already selected other
     // item, or other tab from the workspace).
-    if (dynamic_cast<DataRecoveryView*>(restoreView) &&
-        isSelected()) {
+    if (dynamic_cast<DataRecoveryView*>(restoreView) && isSelected()) {
       restoreView = nullptr;
     }
 
@@ -209,7 +212,8 @@ private:
       workspace->setActiveView(restoreView);
   }
 
-  void onDeleteTaskWidget() {
+  void onDeleteTaskWidget()
+  {
     if (m_task) {
       removeChild(m_task);
       m_task->deferDelete();
@@ -218,7 +222,8 @@ private:
     }
   }
 
-  void updateView() {
+  void updateView()
+  {
     if (auto view = View::getView(this->parent()))
       view->updateView();
     else
@@ -251,35 +256,32 @@ DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
   addChild(hbox);
   addChild(&m_view);
 
-  InitTheme.connect(
-    [this, hbox]{
-      auto theme = SkinTheme::get(this);
+  InitTheme.connect([this, hbox] {
+    auto theme = SkinTheme::get(this);
 
-      m_openButton.mainButton()->resetSizeHint();
-      gfx::Size hint = m_openButton.mainButton()->sizeHint();
-      m_openButton.mainButton()->setSizeHint(
-        gfx::Size(std::max(hint.w, 100*guiscale()), hint.h));
+    m_openButton.mainButton()->resetSizeHint();
+    gfx::Size hint = m_openButton.mainButton()->sizeHint();
+    m_openButton.mainButton()->setSizeHint(gfx::Size(std::max(hint.w, 100 * guiscale()), hint.h));
 
-      setBgColor(theme->colors.workspace());
-      m_view.setStyle(theme->styles.workspaceView());
-      hbox->setBorder(gfx::Border(2, 0, 2, 0)*guiscale());
-    });
+    setBgColor(theme->colors.workspace());
+    m_view.setStyle(theme->styles.workspaceView());
+    hbox->setBorder(gfx::Border(2, 0, 2, 0) * guiscale());
+  });
   initTheme();
 
   fillList();
   onChangeSelection();
 
-  m_openButton.Click.connect([this]{ onOpen(); });
-  m_openButton.DropDownClick.connect([this]{ onOpenMenu(); });
-  m_deleteButton.Click.connect([this]{ onDelete(); });
-  m_refreshButton.Click.connect([this]{ onRefresh(); });
-  m_listBox.Change.connect([this]{ onChangeSelection(); });
-  m_listBox.DoubleClickItem.connect([this]{ onOpen(); });
-  m_waitToEnableRefreshTimer.Tick.connect([this]{ onCheckIfWeCanEnableRefreshButton(); });
+  m_openButton.Click.connect([this] { onOpen(); });
+  m_openButton.DropDownClick.connect([this] { onOpenMenu(); });
+  m_deleteButton.Click.connect([this] { onDelete(); });
+  m_refreshButton.Click.connect([this] { onRefresh(); });
+  m_listBox.Change.connect([this] { onChangeSelection(); });
+  m_listBox.DoubleClickItem.connect([this] { onOpen(); });
+  m_waitToEnableRefreshTimer.Tick.connect([this] { onCheckIfWeCanEnableRefreshButton(); });
 
-  m_conn = Preferences::instance()
-    .general.showFullPath.AfterChange.connect(
-      [this](const bool&){ onShowFullPathPrefChange(); });
+  m_conn = Preferences::instance().general.showFullPath.AfterChange.connect(
+    [this](const bool&) { onShowFullPathPrefChange(); });
 }
 
 DataRecoveryView::~DataRecoveryView()
@@ -322,8 +324,7 @@ void DataRecoveryView::fillListWith(const bool crashes)
   bool first = true;
 
   for (auto& session : m_dataRecovery->sessions()) {
-    if ((session->isEmpty()) ||
-        (crashes && !session->isCrashedSession()) ||
+    if ((session->isEmpty()) || (crashes && !session->isCrashedSession()) ||
         (!crashes && session->isCrashedSession()))
       continue;
 
@@ -332,29 +333,24 @@ void DataRecoveryView::fillListWith(const bool crashes)
 
       // Separator for "crash sessions" vs "old sessions"
       auto sep = new Separator(
-        (crashes ? Strings::recover_files_crash_sessions():
-                   Strings::recover_files_old_sessions()), HORIZONTAL);
-      sep->InitTheme.connect(
-        [sep]{
-          auto theme = skin::SkinTheme::get(sep);
-          sep->setStyle(theme->styles.separatorInViewReverse());
-          sep->setBorder(sep->border() + gfx::Border(0, 8, 0, 8)*guiscale());
-        });
+        (crashes ? Strings::recover_files_crash_sessions() : Strings::recover_files_old_sessions()),
+        HORIZONTAL);
+      sep->InitTheme.connect([sep] {
+        auto theme = skin::SkinTheme::get(sep);
+        sep->setStyle(theme->styles.separatorInViewReverse());
+        sep->setBorder(sep->border() + gfx::Border(0, 8, 0, 8) * guiscale());
+      });
       sep->initTheme();
       m_listBox.addChild(sep);
     }
 
     std::string title = session->name();
     if (session->version() != get_app_version())
-      title =
-        fmt::format(Strings::recover_files_incompatible(),
-                    title, session->version());
+      title = Strings::recover_files_incompatible(title, session->version());
 
     auto sep = new SeparatorInView(title, HORIZONTAL);
     sep->InitTheme.connect(
-      [sep]{
-        sep->setBorder(sep->border() + gfx::Border(0, 8, 0, 8)*guiscale());
-      });
+      [sep] { sep->setBorder(sep->border() + gfx::Border(0, 8, 0, 8) * guiscale()); });
     sep->initTheme();
     m_listBox.addChild(sep);
 
@@ -428,8 +424,7 @@ void DataRecoveryView::onOpen()
   disableRefresh();
 
   for (auto widget : m_listBox.children()) {
-    if (!widget->isVisible() ||
-        !widget->isSelected())
+    if (!widget->isVisible() || !widget->isSelected())
       continue;
 
     if (auto item = dynamic_cast<Item*>(widget)) {
@@ -444,8 +439,7 @@ void DataRecoveryView::onOpenRaw(crash::RawImagesAs as)
   disableRefresh();
 
   for (auto widget : m_listBox.children()) {
-    if (!widget->isVisible() ||
-        !widget->isSelected())
+    if (!widget->isVisible() || !widget->isSelected())
       continue;
 
     if (auto item = dynamic_cast<Item*>(widget)) {
@@ -465,10 +459,10 @@ void DataRecoveryView::onOpenMenu()
   menu.addChild(&rawFrames);
   menu.addChild(&rawLayers);
 
-  rawFrames.Click.connect([this]{ onOpenRaw(crash::RawImagesAs::kFrames); });
-  rawLayers.Click.connect([this]{ onOpenRaw(crash::RawImagesAs::kLayers); });
+  rawFrames.Click.connect([this] { onOpenRaw(crash::RawImagesAs::kFrames); });
+  rawLayers.Click.connect([this] { onOpenRaw(crash::RawImagesAs::kLayers); });
 
-  menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h), display());
+  menu.showPopup(gfx::Point(bounds.x, bounds.y + bounds.h), display());
 }
 
 void DataRecoveryView::onDelete()
@@ -477,13 +471,11 @@ void DataRecoveryView::onDelete()
 
   std::vector<Item*> items; // Items to delete.
   for (auto widget : m_listBox.children()) {
-    if (!widget->isVisible() ||
-        !widget->isSelected())
+    if (!widget->isVisible() || !widget->isSelected())
       continue;
 
     if (auto item = dynamic_cast<Item*>(widget)) {
-      if (item->backup() &&
-          !item->isTaskRunning())
+      if (item->backup() && !item->isTaskRunning())
         items.push_back(item);
     }
   }
@@ -492,10 +484,8 @@ void DataRecoveryView::onDelete()
     return;
 
   // Delete one backup
-  if (Alert::show(
-        fmt::format(Strings::alerts_delete_selected_backups(),
-                    int(items.size()))) != 1)
-    return;                     // Cancel
+  if (Alert::show(Strings::alerts_delete_selected_backups(int(items.size()))) != 1)
+    return; // Cancel
 
   Console console;
   for (auto item : items)
@@ -518,8 +508,7 @@ void DataRecoveryView::onChangeSelection()
 {
   int count = 0;
   for (auto widget : m_listBox.children()) {
-    if (!widget->isVisible() ||
-        !widget->isSelected())
+    if (!widget->isVisible() || !widget->isSelected())
       continue;
 
     if (dynamic_cast<Item*>(widget)) {
@@ -530,12 +519,10 @@ void DataRecoveryView::onChangeSelection()
   m_deleteButton.setEnabled(count > 0);
   m_openButton.setEnabled(count > 0);
   if (count < 2) {
-    m_openButton.mainButton()->setText(
-      fmt::format(Strings::recover_files_recover_sprite(), count));
+    m_openButton.mainButton()->setText(Strings::recover_files_recover_sprite());
   }
   else {
-    m_openButton.mainButton()->setText(
-      fmt::format(Strings::recover_files_recover_n_sprites(), count));
+    m_openButton.mainButton()->setText(Strings::recover_files_recover_n_sprites(count));
   }
 }
 
@@ -571,10 +558,7 @@ bool DataRecoveryView::thereAreCrashSessions() const
 {
   for (auto widget : m_listBox.children()) {
     if (auto item = dynamic_cast<const Item*>(widget)) {
-      if (item &&
-          item->isVisible() &&
-          item->session() &&
-          item->session()->isCrashedSession())
+      if (item && item->isVisible() && item->session() && item->session()->isCrashedSession())
         return true;
     }
   }

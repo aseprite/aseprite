@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/file/split_filename.h"
@@ -19,10 +19,7 @@ namespace app {
 // Splits a file-name like "my_ani0000.pcx" to "my_ani" and ".pcx",
 // returning the number of the center; returns "-1" if the function
 // can't split anything
-int split_filename(const std::string& filename,
-                   std::string& left,
-                   std::string& right,
-                   int& width)
+int split_filename(const std::string& filename, std::string& left, std::string& right, int& width)
 {
   left = base::get_file_title_with_path(filename);
   right = base::get_file_extension(filename);
@@ -44,7 +41,7 @@ int split_filename(const std::string& filename,
       if (num < 0)
         num = 0;
 
-      num += order*(chr-'0');
+      num += order * (chr - '0');
       order *= 10;
       ++width;
       ++it;
@@ -54,7 +51,7 @@ int split_filename(const std::string& filename,
   }
 
   if (width > 0)
-    left.erase(left.end()-width, left.end());
+    left.erase(left.end() - width, left.end());
 
   return num;
 }

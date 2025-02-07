@@ -1,13 +1,15 @@
 // Aseprite Render Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2025 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
+
+#include "render/get_sprite_pixel.h"
 
 #include "doc/doc.h"
 #include "gfx/clip.h"
@@ -26,17 +28,17 @@ color_t get_sprite_pixel(const Sprite* sprite,
 {
   color_t color = 0;
 
-  if ((x >= 0.0) && (x < sprite->width()) &&
-      (y >= 0.0) && (y < sprite->height())) {
+  if ((x >= 0.0) && (x < sprite->width()) && (y >= 0.0) && (y < sprite->height())) {
     std::unique_ptr<Image> image(Image::create(sprite->pixelFormat(), 1, 1));
 
     render::Render render;
     render.setNewBlend(newBlend);
     render.setRefLayersVisiblity(true);
     render.setProjection(proj);
-    render.renderSprite(
-      image.get(), sprite, frame,
-      gfx::ClipF(0, 0, proj.applyX(x), proj.applyY(y), 1, 1));
+    render.renderSprite(image.get(),
+                        sprite,
+                        frame,
+                        gfx::ClipF(0, 0, proj.applyX(x), proj.applyY(y), 1, 1));
 
     color = get_pixel(image.get(), 0, 0);
   }

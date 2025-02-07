@@ -5,15 +5,14 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/tools/velocity.h"
 
 #include <algorithm>
 
-namespace app {
-namespace tools {
+namespace app { namespace tools {
 
 VelocitySensor::VelocitySensor()
 {
@@ -40,13 +39,12 @@ void VelocitySensor::updateWithDisplayPoint(const gfx::Point& screenPoint)
     gfx::PointF newVelocity(screenPoint - m_lastPoint);
 
     const float a = std::clamp(float(dt) / kFullUpdateMSecs, 0.0f, 1.0f);
-    m_velocity.x = (1.0f-a)*m_velocity.x + a*newVelocity.x;
-    m_velocity.y = (1.0f-a)*m_velocity.y + a*newVelocity.y;
+    m_velocity.x = (1.0f - a) * m_velocity.x + a * newVelocity.x;
+    m_velocity.y = (1.0f - a) * m_velocity.y + a * newVelocity.y;
   }
 
   m_lastPoint.x = screenPoint.x;
   m_lastPoint.y = screenPoint.y;
 }
 
-} // namespace tools
-} // namespace app
+}} // namespace app::tools

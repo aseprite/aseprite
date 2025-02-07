@@ -12,30 +12,26 @@
 #include "app/cmd/with_document.h"
 #include "gfx/point.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class SetLastPoint : public Cmd
-                        , public WithDocument {
-  public:
-    SetLastPoint(Doc* doc, const gfx::Point& pos);
+class SetLastPoint : public Cmd,
+                     public WithDocument {
+public:
+  SetLastPoint(Doc* doc, const gfx::Point& pos);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this);
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  size_t onMemSize() const override { return sizeof(*this); }
 
-  private:
-    void setLastPoint(const gfx::Point& pos);
+private:
+  void setLastPoint(const gfx::Point& pos);
 
-    gfx::Point m_oldPoint;
-    gfx::Point m_newPoint;
-  };
+  gfx::Point m_oldPoint;
+  gfx::Point m_newPoint;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

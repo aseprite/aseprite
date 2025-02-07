@@ -1,14 +1,15 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
+#include "app/cmd/remove_cel.h"
 #include "app/cmd/replace_image.h"
 #include "app/cmd/set_cel_opacity.h"
 #include "app/cmd/set_cel_position.h"
@@ -21,8 +22,7 @@
 #include "doc/cel.h"
 #include "doc/sprite.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 using namespace doc;
 
@@ -63,7 +63,7 @@ int Cel_get_frame(lua_State* L)
 int Cel_get_frameNumber(lua_State* L)
 {
   const auto cel = get_docobj<Cel>(L, 1);
-  lua_pushinteger(L, cel->frame()+1);
+  lua_pushinteger(L, cel->frame() + 1);
   return 1;
 }
 
@@ -113,8 +113,7 @@ int Cel_set_frame(lua_State* L)
   Doc* doc = static_cast<Doc*>(cel->document());
   Tx tx(doc);
   DocApi api = doc->getApi(tx);
-  api.moveCel(cel->layer(), cel->frame(),
-              cel->layer(), frame);
+  api.moveCel(cel->layer(), cel->frame(), cel->layer(), frame);
   tx.commit();
   return 0;
 }
@@ -122,13 +121,14 @@ int Cel_set_frame(lua_State* L)
 int Cel_set_image(lua_State* L)
 {
   auto cel = get_docobj<Cel>(L, 1);
-  auto srcImage = get_image_from_arg(L, 2);
-  ImageRef newImage(Image::createCopy(srcImage));
-
   Tx tx(cel->sprite());
-  tx(new cmd::ReplaceImage(cel->sprite(),
-                           cel->imageRef(),
-                           newImage));
+  if (may_get_obj<Image>(L, 2)) {
+    const auto* srcImage = get_image_from_arg(L, 2);
+    const ImageRef newImage(Image::createCopy(srcImage));
+    tx(new cmd::ReplaceImage(cel->sprite(), cel->imageRef(), newImage));
+  }
+  else if (lua_isnil(L, 2))
+    tx(new cmd::RemoveCel(cel));
   tx.commit();
   return 0;
 }
@@ -162,24 +162,24 @@ int Cel_set_zIndex(lua_State* L)
 }
 
 const luaL_Reg Cel_methods[] = {
-  { "__eq", Cel_eq },
+  { "__eq",  Cel_eq  },
   { nullptr, nullptr }
 };
 
 const Property Cel_properties[] = {
-  { "sprite", Cel_get_sprite, nullptr },
-  { "layer", Cel_get_layer, nullptr },
-  { "frame", Cel_get_frame, Cel_set_frame },
-  { "frameNumber", Cel_get_frameNumber, Cel_set_frame },
-  { "image", Cel_get_image, Cel_set_image },
-  { "bounds", Cel_get_bounds, nullptr },
-  { "position", Cel_get_position, Cel_set_position },
-  { "opacity", Cel_get_opacity, Cel_set_opacity },
-  { "zIndex", Cel_get_zIndex, Cel_set_zIndex },
-  { "color", UserData_get_color<Cel>, UserData_set_color<Cel> },
-  { "data", UserData_get_text<Cel>, UserData_set_text<Cel> },
-  { "properties", UserData_get_properties<Cel>, UserData_set_properties<Cel> },
-  { nullptr, nullptr, nullptr }
+  { "sprite",      Cel_get_sprite,               nullptr                      },
+  { "layer",       Cel_get_layer,                nullptr                      },
+  { "frame",       Cel_get_frame,                Cel_set_frame                },
+  { "frameNumber", Cel_get_frameNumber,          Cel_set_frame                },
+  { "image",       Cel_get_image,                Cel_set_image                },
+  { "bounds",      Cel_get_bounds,               nullptr                      },
+  { "position",    Cel_get_position,             Cel_set_position             },
+  { "opacity",     Cel_get_opacity,              Cel_set_opacity              },
+  { "zIndex",      Cel_get_zIndex,               Cel_set_zIndex               },
+  { "color",       UserData_get_color<Cel>,      UserData_set_color<Cel>      },
+  { "data",        UserData_get_text<Cel>,       UserData_set_text<Cel>       },
+  { "properties",  UserData_get_properties<Cel>, UserData_set_properties<Cel> },
+  { nullptr,       nullptr,                      nullptr                      }
 };
 
 } // anonymous namespace
@@ -198,5 +198,4 @@ void push_sprite_cel(lua_State* L, Cel* cel)
   push_docobj(L, cel);
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

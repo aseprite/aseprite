@@ -13,38 +13,38 @@
 #include "gfx/fwd.h"
 
 namespace doc {
-  class Image;
-  class Palette;
-  class RgbMap;
+class Image;
+class Palette;
+class RgbMap;
 
-  namespace algorithm {
+namespace algorithm {
 
-    enum ResizeMethod {
-      RESIZE_METHOD_NEAREST_NEIGHBOR,
-      RESIZE_METHOD_BILINEAR,
-      RESIZE_METHOD_ROTSPRITE,
-    };
+enum ResizeMethod {
+  RESIZE_METHOD_NEAREST_NEIGHBOR,
+  RESIZE_METHOD_BILINEAR,
+  RESIZE_METHOD_ROTSPRITE,
+};
 
-    // Resizes the source image 'src' to the destination image 'dst'.
-    //
-    // Warning: If you are using the RESIZE_METHOD_BILINEAR, it is
-    // recommended to use 'fixup_image_transparent_colors' function
-    // over the source image 'src' BEFORE using this routine.
-    void resize_image(const Image* src,
-                      Image* dst,
-                      const ResizeMethod method,
-                      const Palette* palette,
-                      const RgbMap* rgbmap,
-                      const color_t maskColor);
+// Resizes the source image 'src' to the destination image 'dst'.
+//
+// Warning: If you are using the RESIZE_METHOD_BILINEAR, it is
+// recommended to use 'fixup_image_transparent_colors' function
+// over the source image 'src' BEFORE using this routine.
+void resize_image(const Image* src,
+                  Image* dst,
+                  const ResizeMethod method,
+                  const Palette* palette,
+                  const RgbMap* rgbmap,
+                  const color_t maskColor);
 
-    // It does not modify the image to the human eye, but internally
-    // tries to fixup all colors that are completely transparent
-    // (alpha = 0) with the average of its 4-neighbors.  Useful if you
-    // want to use resize_image() with images that contains
-    // transparent pixels.
-    void fixup_image_transparent_colors(Image* image);
+// It does not modify the image to the human eye, but internally
+// tries to fixup all colors that are completely transparent
+// (alpha = 0) with the average of its 4-neighbors.  Useful if you
+// want to use resize_image() with images that contains
+// transparent pixels.
+void fixup_image_transparent_colors(Image* image);
 
-  }
-}
+} // namespace algorithm
+} // namespace doc
 
 #endif

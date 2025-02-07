@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/message_loop.h"
@@ -15,8 +15,7 @@
 
 namespace ui {
 
-MessageLoop::MessageLoop(Manager* manager)
-  : m_manager(manager)
+MessageLoop::MessageLoop(Manager* manager) : m_manager(manager)
 {
 }
 

@@ -216,6 +216,7 @@
       <option id="cursor_color" type="app::Color" default="app::Color::fromMask()" />
       <option id="painting_cursor_type" type="PaintingCursorType" default="PaintingCursorType::CROSSHAIR_ON_SPRITE" />
       <option id="brush_preview" type="BrushPreview" default="BrushPreview::FULL" />
+      <option id="brush_preview_in_preview" type="bool" default="false" />
       <option id="snap_to_grid" type="bool" default="false" />
     </section>
     <section id="preview" text="Preview">
@@ -230,6 +231,7 @@
     </section>
     <section id="tablet" text="Tablet">
       <option id="api" type="std::string" />
+      <option id="set_cursor_fix" type="bool" default="true" />
     </section>
     <section id="experimental" text="Experimental">
       <option id="multiple_windows" type="bool" default="false" />
@@ -320,6 +322,7 @@
       <option id="to_gray" type="ToGrayAlgorithm" default="ToGrayAlgorithm::DEFAULT" />
       <option id="advanced" type="bool" default="false" />
       <option id="rgbmap_algorithm" type="doc::RgbMapAlgorithm" default="doc::RgbMapAlgorithm::DEFAULT" />
+      <option id="fit_criteria" type="doc::FitCriteria" default="doc::FitCriteria::DEFAULT" />
     </section>
     <section id="eyedropper" text="Editor">
       <option id="channel" type="EyedropperChannel" default="EyedropperChannel::COLOR_ALPHA" />

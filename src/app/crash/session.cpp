@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/crash/session.h"
@@ -31,42 +31,45 @@
 #include "base/time.h"
 #include "doc/cancel_io.h"
 #include "fmt/format.h"
+#include "ui/app_state.h"
 #include "ver/info.h"
 
-namespace app {
-namespace crash {
+namespace app { namespace crash {
 
-static const char* kPidFilename = "pid";   // Process ID running the session (or non-existent if the PID was closed correctly)
-static const char* kVerFilename = "ver";   // File that indicates the Aseprite version used in the session
-static const char* kOpenFilename = "open"; // File that indicates if the document is/was open in the session (or non-existent if the document was closed correctly)
+static const char* kPidFilename = "pid";   // Process ID running the session (or non-existent if the
+                                           // PID was closed correctly)
+static const char* kVerFilename = "ver";   // File that indicates the Aseprite version used in the
+                                           // session
+static const char* kOpenFilename = "open"; // File that indicates if the document is/was open in the
+                                           // session (or non-existent if the document was closed
+                                           // correctly)
 
-Session::Backup::Backup(const std::string& dir)
-  : m_dir(dir)
+Session::Backup::Backup(const std::string& dir) : m_dir(dir)
 {
-  DocumentInfo info;
-  read_document_info(dir, info);
-
-  m_fn = info.filename;
-  m_desc =
-    fmt::format("{} Sprite {}x{}, {} {}",
-                info.mode == ColorMode::RGB ? "RGB":
-                info.mode == ColorMode::GRAYSCALE ? "Grayscale":
-                info.mode == ColorMode::INDEXED ? "Indexed":
-                info.mode == ColorMode::BITMAP ? "Bitmap": "Unknown",
-                info.width, info.height, info.frames,
-                info.frames == 1 ? "frame": "frames");
 }
 
 std::string Session::Backup::description(const bool withFullPath) const
 {
-  return fmt::format("{}: {}",
-                     m_desc,
-                     withFullPath ? m_fn:
-                                    base::get_file_name(m_fn));
+  // Lazy initialize description and filename.
+  if (m_desc.empty()) {
+    DocumentInfo info;
+    read_document_info(m_dir, info);
+    m_fn = info.filename;
+    m_desc = fmt::format("{} Sprite {}x{}, {} {}",
+                         info.mode == ColorMode::RGB       ? "RGB" :
+                         info.mode == ColorMode::GRAYSCALE ? "Grayscale" :
+                         info.mode == ColorMode::INDEXED   ? "Indexed" :
+                         info.mode == ColorMode::BITMAP    ? "Bitmap" :
+                                                             "Unknown",
+                         info.width,
+                         info.height,
+                         info.frames,
+                         info.frames == 1 ? "frame" : "frames");
+  }
+  return fmt::format("{}: {}", m_desc, withFullPath ? m_fn : base::get_file_name(m_fn));
 }
 
-Session::Session(RecoveryConfig* config,
-                 const std::string& path)
+Session::Session(RecoveryConfig* config, const std::string& path)
   : m_pid(0)
   , m_path(path)
   , m_config(config)
@@ -84,11 +87,11 @@ std::string Session::name() const
   base::split_string(name, parts, "-");
 
   if (parts.size() == 3) {
-    if (parts[0].size() == 4+2+2) { // YYYYMMDD -> YYYY-MM-DD
+    if (parts[0].size() == 4 + 2 + 2) { // YYYYMMDD -> YYYY-MM-DD
       parts[0].insert(6, 1, '-');
       parts[0].insert(4, 1, '-');
     }
-    if (parts[1].size() == 2+2+2) { // HHMMSS -> HH:MM.SS
+    if (parts[1].size() == 2 + 2 + 2) { // HHMMSS -> HH:MM.SS
       parts[1].insert(4, 1, '.');
       parts[1].insert(2, 1, ':');
     }
@@ -114,11 +117,12 @@ std::string Session::version()
 const Session::Backups& Session::backups()
 {
   if (m_backups.empty()) {
-    for (auto& item : base::list_files(m_path)) {
+    for (const auto& item : base::list_files(m_path, base::ItemType::Directories)) {
+      if (ui::is_app_state_closing())
+        continue;
+
       std::string docDir = base::join_path(m_path, item);
-      if (base::is_directory(docDir)) {
-        m_backups.push_back(std::make_shared<Backup>(docDir));
-      }
+      m_backups.push_back(std::make_shared<Backup>(docDir));
     }
   }
   return m_backups;
@@ -127,8 +131,7 @@ const Session::Backups& Session::backups()
 bool Session::isRunning()
 {
   loadPid();
-  return base::get_process_name(m_pid) ==
-    base::get_process_name(base::get_current_process_id());
+  return base::get_process_name(m_pid) == base::get_process_name(base::get_current_process_id());
 }
 
 bool Session::isCrashedSession()
@@ -147,18 +150,37 @@ bool Session::isOldSession()
     return true;
 
   int lifespanDays = m_config->keepEditedSpriteDataFor;
-  base::Time sessionTime = base::get_modification_time(verfile);
+  base::Time sessionTime;
+
+  // Get the session time from the name if possible, to avoid re-scanning when transferring files
+  std::vector<std::string> parts;
+  base::split_string(base::get_file_title(m_path), parts, "-");
+
+  if (parts.size() == 3 && parts[0].size() == 8 && parts[1].size() == 6) {
+    try {
+      sessionTime = base::Time(filenamePartToInt(parts[0].substr(0, 4)),
+                               filenamePartToInt(parts[0].substr(4, 2)),
+                               filenamePartToInt(parts[0].substr(6, 2)),
+                               filenamePartToInt(parts[1].substr(0, 2)),
+                               filenamePartToInt(parts[1].substr(2, 2)),
+                               filenamePartToInt(parts[1].substr(4, 2)));
+    }
+    catch (const std::exception& ex) {
+      LOG(ERROR, "Failed to parse a date from '%s', error: %s", parts[0].c_str(), ex.what());
+    }
+  }
+
+  if (!sessionTime.valid()) {
+    // Get modification time as a fallback
+    sessionTime = base::get_modification_time(verfile);
+  }
 
   return (sessionTime.addDays(lifespanDays) < base::current_time());
 }
 
 bool Session::isEmpty()
 {
-  for (auto& item : base::list_files(m_path)) {
-    if (base::is_directory(base::join_path(m_path, item)))
-      return false;
-  }
-  return true;
+  return base::list_files(m_path, base::ItemType::Directories).empty();
 }
 
 void Session::create(base::pid pid)
@@ -208,22 +230,20 @@ void Session::removeFromDisk()
   }
   catch (const std::exception& ex) {
     (void)ex;
-    LOG(ERROR, "RECO: Session directory cannot be removed, it's not empty.\n"
-               "      Error: %s\n", ex.what());
+    LOG(ERROR,
+        "RECO: Session directory cannot be removed, it's not empty.\n"
+        "      Error: %s\n",
+        ex.what());
   }
 }
 
-class CustomWeakDocReader : public WeakDocReader
-                          , public doc::CancelIO {
+class CustomWeakDocReader : public WeakDocReader,
+                            public doc::CancelIO {
 public:
-  explicit CustomWeakDocReader(Doc* doc)
-    : WeakDocReader(doc) {
-  }
+  explicit CustomWeakDocReader(Doc* doc) : WeakDocReader(doc) {}
 
   // CancelIO impl
-  bool isCanceled() override {
-    return !isLocked();
-  }
+  bool isCanceled() override { return !isLocked(); }
 };
 
 bool Session::saveDocumentChanges(Doc* doc)
@@ -233,8 +253,7 @@ bool Session::saveDocumentChanges(Doc* doc)
     return false;
 
   app::Context ctx;
-  std::string dir = base::join_path(m_path,
-    base::convert_to<std::string>(doc->id()));
+  std::string dir = base::join_path(m_path, base::convert_to<std::string>(doc->id()));
   RECO_TRACE("RECO: Saving document '%s'...\n", dir.c_str());
 
   // Create directory for document
@@ -267,8 +286,7 @@ void Session::removeDocument(Doc* doc)
   }
 }
 
-Doc* Session::restoreBackupDoc(const std::string& backupDir,
-                               base::task_token* t)
+Doc* Session::restoreBackupDoc(const std::string& backupDir, base::task_token* t)
 {
   Console console;
   try {
@@ -284,14 +302,12 @@ Doc* Session::restoreBackupDoc(const std::string& backupDir,
   return nullptr;
 }
 
-Doc* Session::restoreBackupDoc(const BackupPtr& backup,
-                               base::task_token* t)
+Doc* Session::restoreBackupDoc(const BackupPtr& backup, base::task_token* t)
 {
   return restoreBackupDoc(backup->dir(), t);
 }
 
-Doc* Session::restoreBackupById(const doc::ObjectId id,
-                                base::task_token* t)
+Doc* Session::restoreBackupById(const doc::ObjectId id, base::task_token* t)
 {
   std::string docDir = base::join_path(m_path, base::convert_to<std::string>(int(id)));
   if (base::is_directory(docDir))
@@ -300,8 +316,7 @@ Doc* Session::restoreBackupById(const doc::ObjectId id,
     return nullptr;
 }
 
-Doc* Session::restoreBackupDocById(const doc::ObjectId id,
-                                   base::task_token* t)
+Doc* Session::restoreBackupDocById(const doc::ObjectId id, base::task_token* t)
 {
   std::string docDir = base::join_path(m_path, base::convert_to<std::string>(int(id)));
   if (!base::is_directory(docDir))
@@ -365,8 +380,7 @@ std::string Session::verFilename() const
 
 void Session::markDocumentAsCorrectlyClosed(app::Doc* doc)
 {
-  std::string dir = base::join_path(
-    m_path, base::convert_to<std::string>(doc->id()));
+  std::string dir = base::join_path(m_path, base::convert_to<std::string>(doc->id()));
 
   ASSERT(!dir.empty());
   if (dir.empty() || !base::is_directory(dir))
@@ -385,12 +399,13 @@ void Session::deleteDirectory(const std::string& dir)
   if (dir.empty())
     return;
 
-  for (auto& item : base::list_files(dir)) {
+  for (const auto& item : base::list_files(dir, base::ItemType::Files)) {
+    if (ui::is_app_state_closing())
+      return;
+
     std::string objfn = base::join_path(dir, item);
-    if (base::is_file(objfn)) {
-      RECO_TRACE("RECO: Deleting file '%s'\n", objfn.c_str());
-      base::delete_file(objfn);
-    }
+    RECO_TRACE("RECO: Deleting file '%s'\n", objfn.c_str());
+    base::delete_file(objfn);
   }
   base::remove_directory(dir);
 }
@@ -406,10 +421,22 @@ void Session::fixFilename(Doc* doc)
     ext = "." + ext;
 
   doc->setFilename(
-    base::join_path(
-      base::get_file_path(fn),
-      base::get_file_title(fn) + "-Recovered" + ext));
+    base::join_path(base::get_file_path(fn), base::get_file_title(fn) + "-Recovered" + ext));
 }
 
-} // namespace crash
-} // namespace app
+int Session::filenamePartToInt(const std::string& part) const
+{
+  if (part.empty())
+    throw base::Exception("Invalid part");
+
+  int result = std::strtol(part.c_str(), NULL, 10);
+  if (errno == ERANGE)
+    throw base::Exception("Number out of range");
+
+  if (result < 0)
+    throw base::Exception("Negative value");
+
+  return result;
+}
+
+}} // namespace app::crash

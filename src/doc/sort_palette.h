@@ -10,25 +10,23 @@
 
 namespace doc {
 
-  class Remap;
-  class Palette;
+class Remap;
+class Palette;
 
-  enum class SortPaletteBy {
-    RED,
-    GREEN,
-    BLUE,
-    ALPHA,
-    HUE,
-    SATURATION,
-    VALUE,
-    LIGHTNESS,
-    LUMA,
-  };
+enum class SortPaletteBy {
+  RED,
+  GREEN,
+  BLUE,
+  ALPHA,
+  HUE,
+  SATURATION,
+  VALUE,
+  LIGHTNESS,
+  LUMA,
+};
 
-  // Creates a Remap to sort the palette. It doesn't apply the remap.
-  Remap sort_palette(const Palette* palette,
-                     const SortPaletteBy channel,
-                     const bool ascending);
+// Creates a Remap to sort the palette. It doesn't apply the remap.
+Remap sort_palette(const Palette* palette, const SortPaletteBy channel, const bool ascending);
 
 } // namespace doc
 

@@ -167,6 +167,7 @@
         <part id="window_play_icon" x="21" y="11" w="5" h="6" />
         <part id="window_stop_icon" x="26" y="11" w="5" h="6" />
         <part id="window_center_icon" x="31" y="11" w="5" h="6" />
+        <part id="window_help_icon" x="36" y="11" w="5" h="6" />
         <part id="slider_full" x="0" y="144" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
         <part id="slider_empty" x="16" y="144" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
         <part id="slider_full_focused" x="0" y="160" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
@@ -385,6 +386,7 @@
         <part id="icon_slice" x="248" y="264" w="8" h="8" />
         <part id="icon_aspect_ratio" x="256" y="264" w="10" h="8" />
         <part id="icon_delta" x="266" y="264" w="6" h="8" />
+        <part id="icon_add" x="184" y="200" w="5" h="5" />
         <part id="tool_rectangular_marquee" x="144" y="0" w="16" h="16" />
         <part id="tool_elliptical_marquee" x="160" y="0" w="16" h="16" />
         <part id="tool_lasso" x="176" y="0" w="16" h="16" />
@@ -493,6 +495,12 @@
             <icon part="window_stop_icon" color="button_normal_text" />
             <icon part="window_stop_icon" color="button_hot_text" state="mouse" />
             <icon part="window_stop_icon" color="button_selected_text" state="selected" />
+        </style>
+        <style id="window_help_button" extends="window_button" margin-top="3" margin-right="2">
+            <newlayer />
+            <icon part="window_help_icon" color="button_normal_text" />
+            <icon part="window_help_icon" color="button_hot_text" state="mouse" />
+            <icon part="window_help_icon" color="button_selected_text" state="selected" />
         </style>
         <style id="popup_window">
             <background color="window_face" />
@@ -680,7 +688,7 @@
             <background color="check_hot_face" state="selected" />
             <icon part="pal_options" />
         </style>
-        <style id="new_frame_button" extends="mini_button" />
+        <style id="new_frame_button" extends="mini_button" padding-left="2" width="11" />
         <style id="color_button" extends="mini_button" font="mini" padding-bottom="1" />
         <style id="splitter">
             <background color="face" />

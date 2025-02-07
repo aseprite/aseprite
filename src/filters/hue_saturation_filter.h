@@ -15,40 +15,39 @@
 
 namespace filters {
 
-  class HueSaturationFilter : public FilterWithPalette {
-  public:
-    enum class Mode {
-      HSV_MUL, HSL_MUL,
-      HSV_ADD, HSL_ADD,
-    };
-
-    HueSaturationFilter();
-
-    void setMode(Mode mode);
-    void setHue(double h);
-    void setSaturation(double s);
-    void setLightness(double v);
-    void setAlpha(double a);
-
-    // Filter implementation
-    const char* getName() override;
-    void applyToRgba(FilterManager* filterMgr) override;
-    void applyToGrayscale(FilterManager* filterMgr) override;
-    void applyToIndexed(FilterManager* filterMgr) override;
-
-  private:
-    void onApplyToPalette(FilterManager* filterMgr,
-                          const doc::PalettePicks& picks) override;
-
-    template<class T,
-             double (T::*get_lightness)() const,
-             void (T::*set_lightness)(double)>
-    void applyFilterToRgbT(const Target target, doc::color_t& color, bool multiply);
-    void applyFilterToRgb(const Target target, doc::color_t& color);
-
-    Mode m_mode;
-    double m_h, m_s, m_l, m_a;
+class HueSaturationFilter : public FilterWithPalette {
+public:
+  enum class Mode {
+    HSV_MUL,
+    HSL_MUL,
+    HSV_ADD,
+    HSL_ADD,
   };
+
+  HueSaturationFilter();
+
+  void setMode(Mode mode);
+  void setHue(double h);
+  void setSaturation(double s);
+  void setLightness(double v);
+  void setAlpha(double a);
+
+  // Filter implementation
+  const char* getName() override;
+  void applyToRgba(FilterManager* filterMgr) override;
+  void applyToGrayscale(FilterManager* filterMgr) override;
+  void applyToIndexed(FilterManager* filterMgr) override;
+
+private:
+  void onApplyToPalette(FilterManager* filterMgr, const doc::PalettePicks& picks) override;
+
+  template<class T, double (T::*get_lightness)() const, void (T::*set_lightness)(double)>
+  void applyFilterToRgbT(const Target target, doc::color_t& color, bool multiply);
+  void applyFilterToRgb(const Target target, doc::color_t& color);
+
+  Mode m_mode;
+  double m_h, m_s, m_l, m_a;
+};
 
 } // namespace filters
 

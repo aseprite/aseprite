@@ -9,23 +9,44 @@
 #pragma once
 
 namespace doc {
-  class Image;
+class Image;
 
-  namespace algorithm {
+namespace algorithm {
 
-    void scale_image(Image* dst, const Image* src,
-                     int dst_x, int dst_y, int dst_w, int dst_h,
-                     int src_x, int src_y, int src_w, int src_h);
+void scale_image(Image* dst,
+                 const Image* src,
+                 int dst_x,
+                 int dst_y,
+                 int dst_w,
+                 int dst_h,
+                 int src_x,
+                 int src_y,
+                 int src_w,
+                 int src_h);
 
-    void rotate_image(Image* dst, const Image* src,
-      int x, int y, int w, int h,
-      int cx, int cy, double angle);
+void rotate_image(Image* dst,
+                  const Image* src,
+                  int x,
+                  int y,
+                  int w,
+                  int h,
+                  int cx,
+                  int cy,
+                  double angle);
 
-    void parallelogram(Image* dst, const Image* src, const Image* mask,
-      int x1, int y1, int x2, int y2,
-      int x3, int y3, int x4, int y4);
+void parallelogram(Image* dst,
+                   const Image* src,
+                   const Image* mask,
+                   int x1,
+                   int y1,
+                   int x2,
+                   int y2,
+                   int x3,
+                   int y3,
+                   int x4,
+                   int y4);
 
-  } // namespace algorithm
+} // namespace algorithm
 } // namespace doc
 
 #endif

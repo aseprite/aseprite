@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/editor/pixels_movement.h"
@@ -43,21 +43,21 @@
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
+#include "doc/util.h"
 #include "gfx/region.h"
 #include "render/render.h"
 
 #include <algorithm>
 
 #if _DEBUG
-#define DUMP_INNER_CMDS() dumpInnerCmds()
+  #define DUMP_INNER_CMDS() dumpInnerCmds()
 #else
-#define DUMP_INNER_CMDS()
+  #define DUMP_INNER_CMDS()
 #endif
 
 namespace app {
 
-PixelsMovement::InnerCmd::InnerCmd(InnerCmd&& c)
-  : type(None)
+PixelsMovement::InnerCmd::InnerCmd(InnerCmd&& c) : type(None)
 {
   std::swap(type, c.type);
   std::swap(data, c.data);
@@ -70,8 +70,7 @@ PixelsMovement::InnerCmd::~InnerCmd()
 }
 
 // static
-PixelsMovement::InnerCmd
-PixelsMovement::InnerCmd::MakeClear()
+PixelsMovement::InnerCmd PixelsMovement::InnerCmd::MakeClear()
 {
   InnerCmd c;
   c.type = InnerCmd::Clear;
@@ -79,8 +78,7 @@ PixelsMovement::InnerCmd::MakeClear()
 }
 
 // static
-PixelsMovement::InnerCmd
-PixelsMovement::InnerCmd::MakeFlip(const doc::algorithm::FlipType flipType)
+PixelsMovement::InnerCmd PixelsMovement::InnerCmd::MakeFlip(const doc::algorithm::FlipType flipType)
 {
   InnerCmd c;
   c.type = InnerCmd::Flip;
@@ -89,8 +87,9 @@ PixelsMovement::InnerCmd::MakeFlip(const doc::algorithm::FlipType flipType)
 }
 
 // static
-PixelsMovement::InnerCmd
-PixelsMovement::InnerCmd::MakeShift(const int dx, const int dy, const double angle)
+PixelsMovement::InnerCmd PixelsMovement::InnerCmd::MakeShift(const int dx,
+                                                             const int dy,
+                                                             const double angle)
 {
   InnerCmd c;
   c.type = InnerCmd::Shift;
@@ -101,8 +100,7 @@ PixelsMovement::InnerCmd::MakeShift(const int dx, const int dy, const double ang
 }
 
 // static
-PixelsMovement::InnerCmd
-PixelsMovement::InnerCmd::MakeStamp(const Transformation& t)
+PixelsMovement::InnerCmd PixelsMovement::InnerCmd::MakeStamp(const Transformation& t)
 {
   InnerCmd c;
   c.type = InnerCmd::Stamp;
@@ -110,17 +108,15 @@ PixelsMovement::InnerCmd::MakeStamp(const Transformation& t)
   return c;
 }
 
-PixelsMovement::PixelsMovement(
-  Context* context,
-  Site site,
-  const Image* moveThis,
-  const Mask* mask,
-  const char* operationName)
+PixelsMovement::PixelsMovement(Context* context,
+                               Site site,
+                               const Image* moveThis,
+                               const Mask* mask,
+                               const char* operationName)
   : m_reader(context)
   , m_site(site)
   , m_document(site.document())
-  , m_tx(Tx::DontLockDoc, context,
-         context->activeDocument(), operationName)
+  , m_tx(Tx::DontLockDoc, context, context->activeDocument(), operationName)
   , m_isDragging(false)
   , m_adjustPivot(false)
   , m_handle(NoHandle)
@@ -131,9 +127,13 @@ PixelsMovement::PixelsMovement(
   , m_fastMode(false)
   , m_needsRotSpriteRedraw(false)
 {
+  // Save and Lock the TilemapMode.
+  // TODO: enable TilemapMode exchanges during PixelMovement.
+  if (m_site.layer()->isTilemap() && ColorBar::instance())
+    ColorBar::instance()->lockTilemapMode();
   double cornerThick = (m_site.tilemapMode() == TilemapMode::Tiles) ?
-                          CORNER_THICK_FOR_TILEMAP_MODE :
-                          CORNER_THICK_FOR_PIXELS_MODE;
+                         CORNER_THICK_FOR_TILEMAP_MODE :
+                         CORNER_THICK_FOR_PIXELS_MODE;
   Transformation transform(mask->bounds(), cornerThick);
   set_pivot_from_preferences(transform);
 
@@ -144,15 +144,12 @@ PixelsMovement::PixelsMovement(
   m_initialMask0.reset(new Mask(*mask));
   m_currentMask.reset(new Mask(*mask));
 
-  m_pivotVisConn =
-    Preferences::instance().selection.pivotVisibility.AfterChange.connect(
-      [this]{ onPivotChange(); });
-  m_pivotPosConn =
-    Preferences::instance().selection.pivotPosition.AfterChange.connect(
-      [this]{ onPivotChange(); });
-  m_rotAlgoConn =
-    Preferences::instance().selection.rotationAlgorithm.AfterChange.connect(
-      [this]{ onRotationAlgorithmChange(); });
+  m_pivotVisConn = Preferences::instance().selection.pivotVisibility.AfterChange.connect(
+    [this] { onPivotChange(); });
+  m_pivotPosConn = Preferences::instance().selection.pivotPosition.AfterChange.connect(
+    [this] { onPivotChange(); });
+  m_rotAlgoConn = Preferences::instance().selection.rotationAlgorithm.AfterChange.connect(
+    [this] { onRotationAlgorithmChange(); });
 
   // The extra cel must be null, because if it's not null, it means
   // that someone else is using it (e.g. the editor brush preview),
@@ -172,12 +169,17 @@ PixelsMovement::PixelsMovement(
   }
 }
 
+PixelsMovement::~PixelsMovement()
+{
+  if (ColorBar::instance())
+    ColorBar::instance()->unlockTilemapMode();
+}
+
 bool PixelsMovement::editMultipleCels() const
 {
-  return
-    (m_site.range().enabled() &&
-     (Preferences::instance().selection.multicelWhenLayersOrFrames() ||
-      m_site.range().type() == DocRange::kCels));
+  return (m_site.range().enabled() &&
+          (Preferences::instance().selection.multicelWhenLayersOrFrames() ||
+           m_site.range().type() == DocRange::kCels));
 }
 
 void PixelsMovement::setDelegate(PixelsMovementDelegate* delegate)
@@ -218,9 +220,7 @@ void PixelsMovement::flipImage(doc::algorithm::FlipType flipType)
 void PixelsMovement::rotate(double angle)
 {
   ContextWriter writer(m_reader, 1000);
-  m_currentData.angle(
-    base::fmod_radians(
-      m_currentData.angle() + PI * -angle / 180.0));
+  m_currentData.angle(base::fmod_radians(m_currentData.angle() + PI * -angle / 180.0));
 
   m_document->setTransformation(m_currentData);
 
@@ -276,18 +276,22 @@ void PixelsMovement::setTransformationBase(const Transformation& t)
   // Create a union of all corners, and that will be the bounds to
   // redraw of the sprite.
   gfx::Rect fullBounds;
-  for (int i=0; i<Transformation::Corners::NUM_OF_CORNERS; ++i) {
+  for (int i = 0; i < Transformation::Corners::NUM_OF_CORNERS; ++i) {
     fullBounds |= gfx::Rect((int)oldCorners[i].x, (int)oldCorners[i].y, 1, 1);
     fullBounds |= gfx::Rect((int)newCorners[i].x, (int)newCorners[i].y, 1, 1);
   }
 
+  // This align is done to properly invalidate regions on the editor when
+  // partial tiles are selected in the transform bounds
+  if (m_site.tilemapMode() == TilemapMode::Tiles)
+    fullBounds = m_site.grid().alignBounds(fullBounds);
+
   // If "fullBounds" is empty is because the cel was not moved
   if (!fullBounds.isEmpty()) {
     // Notify the modified region.
-    m_document->notifySpritePixelsModified(
-      m_site.sprite(),
-      gfx::Region(fullBounds),
-      m_site.frame());
+    m_document->notifySpritePixelsModified(m_site.sprite(),
+                                           gfx::Region(fullBounds),
+                                           m_site.frame());
   }
 }
 
@@ -309,8 +313,7 @@ void PixelsMovement::trim()
     }
     // Current cel (m_site.cel()) can be nullptr when we paste in an
     // empty cel (Ctrl+V) and cut (Ctrl+X) the floating pixels.
-    if (cel &&
-        cel->layer()->isTransparent()) {
+    if (cel && cel->layer()->isTransparent()) {
       m_tx(new cmd::TrimCel(cel));
     }
   }
@@ -326,10 +329,7 @@ void PixelsMovement::cutMask()
   {
     ContextWriter writer(m_reader, 1000);
     if (writer.cel()) {
-      clear_mask_from_cel(m_tx,
-                          writer.cel(),
-                          m_site.tilemapMode(),
-                          m_site.tilesetMode());
+      clear_mask_from_cel(m_tx, writer.cel(), m_site.tilemapMode(), m_site.tilesetMode());
 
       // Do not trim here so we don't lost the information about all
       // linked cels related to "writer.cel()"
@@ -370,14 +370,31 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
   gfx::RectF bounds = m_initialData.bounds();
   gfx::PointF abs_initial_pivot = m_initialData.pivot();
   gfx::PointF abs_pivot = m_currentData.pivot();
+  const bool tilesModeOn = (m_site.tilemapMode() == TilemapMode::Tiles);
 
   auto newTransformation = m_currentData;
 
   switch (m_handle) {
-
     case MovePixelsHandle: {
       double dx, dy;
-      if ((moveModifier & FineControl) == 0) {
+      if (tilesModeOn) {
+        if (m_catchPos.x == 0 && m_catchPos.y == 0) {
+          // Movement through keyboard:
+          dx = (pos.x - m_catchPos.x) * m_site.gridBounds().w;
+          dy = (pos.y - m_catchPos.y) * m_site.gridBounds().h;
+        }
+        else {
+          // Movement through mouse/trackpad:
+          const int gridW = m_site.gridBounds().w;
+          const int gridH = m_site.gridBounds().h;
+          gfx::PointF point(snap_to_grid(gfx::Rect(0, 0, gridW, gridH),
+                                         (gfx::Point)(pos - m_catchPos),
+                                         PreferSnapTo::ClosestGridVertex));
+          dx = point.x;
+          dy = point.y;
+        }
+      }
+      else if ((moveModifier & FineControl) == 0) {
         dx = (std::floor(pos.x) - std::floor(m_catchPos.x));
         dy = (std::floor(pos.y) - std::floor(m_catchPos.y));
       }
@@ -395,15 +412,11 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
 
       bounds.offset(dx, dy);
 
-      if ((m_site.tilemapMode() == TilemapMode::Tiles) ||
-          (moveModifier & SnapToGridMovement) == SnapToGridMovement) {
+      if (!tilesModeOn && (moveModifier & SnapToGridMovement) == SnapToGridMovement) {
         // Snap the x1,y1 point to the grid.
-        gfx::Rect gridBounds = m_site.gridBounds();
-        gfx::PointF gridOffset(
-          snap_to_grid(
-            gridBounds,
-            gfx::Point(bounds.origin()),
-            PreferSnapTo::ClosestGridVertex));
+        gfx::PointF gridOffset(snap_to_grid(m_site.gridBounds(),
+                                            gfx::Point(bounds.origin()),
+                                            PreferSnapTo::ClosestGridVertex));
 
         // Now we calculate the difference from x1,y1 point and we can
         // use it to adjust all coordinates (x1, y1, x2, y2).
@@ -411,9 +424,7 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
       }
 
       newTransformation.bounds(bounds);
-      newTransformation.pivot(abs_initial_pivot +
-                              bounds.origin() -
-                              m_initialData.bounds().origin());
+      newTransformation.pivot(abs_initial_pivot + gfx::PointF(dx, dy));
       break;
     }
 
@@ -426,14 +437,18 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
     case ScaleSHandle:
     case ScaleSEHandle: {
       static double handles[][2] = {
-        { 0.0, 0.0 }, { 0.5, 0.0 }, { 1.0, 0.0 },
-        { 0.0, 0.5 },               { 1.0, 0.5 },
-        { 0.0, 1.0 }, { 0.5, 1.0 }, { 1.0, 1.0 }
+        { 0.0, 0.0 },
+        { 0.5, 0.0 },
+        { 1.0, 0.0 },
+        { 0.0, 0.5 },
+        { 1.0, 0.5 },
+        { 0.0, 1.0 },
+        { 0.5, 1.0 },
+        { 1.0, 1.0 }
       };
       gfx::PointF pivot;
-      gfx::PointF handle(
-        handles[m_handle-ScaleNWHandle][0],
-        handles[m_handle-ScaleNWHandle][1]);
+      gfx::PointF handle(handles[m_handle - ScaleNWHandle][0],
+                         handles[m_handle - ScaleNWHandle][1]);
 
       if ((moveModifier & ScaleFromPivot) == ScaleFromPivot) {
         pivot = m_currentData.pivot();
@@ -441,8 +456,8 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
       else {
         pivot.x = 1.0 - handle.x;
         pivot.y = 1.0 - handle.y;
-        pivot.x = bounds.x + bounds.w*pivot.x;
-        pivot.y = bounds.y + bounds.h*pivot.y;
+        pivot.x = bounds.x + bounds.w * pivot.x;
+        pivot.y = bounds.y + bounds.h * pivot.y;
       }
 
       gfx::PointF a = bounds.origin();
@@ -454,52 +469,69 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
         vec2 w = v.projectOn(u);
         double scale = u.magnitude();
         if (scale != 0.0) {
-          scale = (std::fabs(w.angle()-u.angle()) < PI/2.0 ? 1.0: -1.0) * w.magnitude() / scale;
+          scale = (std::fabs(w.angle() - u.angle()) < PI / 2.0 ? 1.0 : -1.0) * w.magnitude() /
+                  scale;
         }
         else
           scale = 1.0;
 
-        a.x = ((a.x-pivot.x)*scale + pivot.x);
-        a.y = ((a.y-pivot.y)*scale + pivot.y);
-        b.x = ((b.x-pivot.x)*scale + pivot.x);
-        b.y = ((b.y-pivot.y)*scale + pivot.y);
+        a.x = ((a.x - pivot.x) * scale + pivot.x);
+        a.y = ((a.y - pivot.y) * scale + pivot.y);
+        b.x = ((b.x - pivot.x) * scale + pivot.x);
+        b.y = ((b.y - pivot.y) * scale + pivot.y);
       }
       else {
-        handle.x = bounds.x + bounds.w*handle.x;
-        handle.y = bounds.y + bounds.h*handle.y;
+        handle.x = bounds.x + bounds.w * handle.x;
+        handle.y = bounds.y + bounds.h * handle.y;
 
         double z = m_currentData.angle();
-        double w = (handle.x-pivot.x);
-        double h = (handle.y-pivot.y);
-        double dx = ((pos.x - m_catchPos.x) *  std::cos(z) +
-                     (pos.y - m_catchPos.y) * -std::sin(z));
-        double dy = ((pos.x - m_catchPos.x) *  std::sin(z) +
-                     (pos.y - m_catchPos.y) *  std::cos(z));
+        double w = (handle.x - pivot.x);
+        double h = (handle.y - pivot.y);
+        double dx = ((pos.x - m_catchPos.x) * std::cos(z) + (pos.y - m_catchPos.y) * -std::sin(z));
+        double dy = ((pos.x - m_catchPos.x) * std::sin(z) + (pos.y - m_catchPos.y) * std::cos(z));
         if ((moveModifier & FineControl) == 0) {
-          if (dx >= 0.0) { dx = std::floor(dx); } else { dx = std::ceil(dx); }
-          if (dy >= 0.0) { dy = std::floor(dy); } else { dy = std::ceil(dy); }
+          if (dx >= 0.0) {
+            dx = std::floor(dx);
+          }
+          else {
+            dx = std::ceil(dx);
+          }
+          if (dy >= 0.0) {
+            dy = std::floor(dy);
+          }
+          else {
+            dy = std::ceil(dy);
+          }
         }
 
         if (m_handle == ScaleNHandle || m_handle == ScaleSHandle) {
           dx = 0.0;
-          w = 1.0;              // Any value != 0.0 to avoid div by zero
+          w = 1.0; // Any value != 0.0 to avoid div by zero
         }
         else if (m_handle == ScaleWHandle || m_handle == ScaleEHandle) {
           dy = 0.0;
           h = 1.0;
         }
 
-        a.x = ((a.x-pivot.x)*(1.0+dx/w) + pivot.x);
-        a.y = ((a.y-pivot.y)*(1.0+dy/h) + pivot.y);
-        b.x = ((b.x-pivot.x)*(1.0+dx/w) + pivot.x);
-        b.y = ((b.y-pivot.y)*(1.0+dy/h) + pivot.y);
+        a.x = ((a.x - pivot.x) * (1.0 + dx / w) + pivot.x);
+        a.y = ((a.y - pivot.y) * (1.0 + dy / h) + pivot.y);
+        b.x = ((b.x - pivot.x) * (1.0 + dx / w) + pivot.x);
+        b.y = ((b.y - pivot.y) * (1.0 + dy / h) + pivot.y);
       }
 
       // Snap to grid when resizing tilemaps
-      if (m_site.tilemapMode() == TilemapMode::Tiles) {
+      if (tilesModeOn) {
+        // 'a' is a point in the top-left corner that is inside bounds
+        // unless the corners are inverted (a > b)
+        a.x = a.x - (a.x > b.x ? 1 : 0);
+        a.y = a.y - (a.y > b.y ? 1 : 0);
+        // 'b' is a point in the lower-right corner that is out of bounds by 1 unit
+        // unless the corners are inverted (a > b)
+        b.x = b.x - (a.x <= b.x ? 1 : 0);
+        b.y = b.y - (a.y <= b.y ? 1 : 0);
         gfx::Rect gridBounds = m_site.gridBounds();
         a = gfx::PointF(snap_to_grid(gridBounds, gfx::Point(a), PreferSnapTo::BoxOrigin));
-        b = gfx::PointF(snap_to_grid(gridBounds, gfx::Point(b), PreferSnapTo::BoxOrigin));
+        b = gfx::PointF(snap_to_grid(gridBounds, gfx::Point(b), PreferSnapTo::BoxEnd));
       }
 
       // Do not use "gfx::Rect(a, b)" here because if a > b we want to
@@ -521,11 +553,10 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
     case RotateSEHandle: {
       // Cannot rotate tiles
       // TODO add support to rotate tiles in straight angles (changing tile flags)
-      if (m_site.tilemapMode() == TilemapMode::Tiles)
+      if (tilesModeOn)
         break;
 
-      double da = (std::atan2((double)(-pos.y + abs_pivot.y),
-                              (double)(+pos.x - abs_pivot.x)) -
+      double da = (std::atan2((double)(-pos.y + abs_pivot.y), (double)(+pos.x - abs_pivot.x)) -
                    std::atan2((double)(-m_catchPos.y + abs_initial_pivot.y),
                               (double)(+m_catchPos.x - abs_initial_pivot.x)));
       double newAngle = m_initialData.angle() + da;
@@ -535,18 +566,17 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
       // to common (pixel art) angles.
       if ((moveModifier & AngleSnapMovement) == AngleSnapMovement) {
         // TODO make this configurable
-        static const double keyAngles[] = {
-          0.0, 26.565, 45.0, 63.435, 90.0, 116.565, 135.0, 153.435, 180.0,
-          180.0, -153.435, -135.0, -116, -90.0, -63.435, -45.0, -26.565
-        };
+        static const double keyAngles[] = { 0.0,   26.565,  45.0,    63.435, 90.0,     116.565,
+                                            135.0, 153.435, 180.0,   180.0,  -153.435, -135.0,
+                                            -116,  -90.0,   -63.435, -45.0,  -26.565 };
 
         double newAngleDegrees = 180.0 * newAngle / PI;
 
         int closest = 0;
         int last = sizeof(keyAngles) / sizeof(keyAngles[0]) - 1;
-        for (int i=0; i<=last; ++i) {
-          if (std::fabs(newAngleDegrees-keyAngles[closest]) >
-              std::fabs(newAngleDegrees-keyAngles[i]))
+        for (int i = 0; i <= last; ++i) {
+          if (std::fabs(newAngleDegrees - keyAngles[closest]) >
+              std::fabs(newAngleDegrees - keyAngles[i]))
             closest = i;
         }
 
@@ -564,7 +594,7 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
       // Cannot skew tiles
       // TODO could we support to skew tiles if we have the set of tiles (e.g. diagonals)?
       //      maybe too complex to implement in UI terms
-      if (m_site.tilemapMode() == TilemapMode::Tiles)
+      if (tilesModeOn)
         break;
 
       //    u
@@ -586,6 +616,9 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
       // Pivot in [0.0, 1.0] range
       gfx::PointF pivot((pivotPoint.x - bounds.x) / ABS(bounds.w),
                         (pivotPoint.y - bounds.y) / ABS(bounds.h));
+
+      // Smallest value possible, used for limit calculations
+      const double eps = 0.00001;
 
       // Vector from AB (or CD), and AC (or BD)
       vec2 u = to_vec2(B - A);
@@ -620,8 +653,8 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
           C.x += delta.x;
           C.y += delta.y;
 
-          vec2 toPivot = to_vec2(pivotPoint - (A*(1.0-pivot.y) + C*pivot.y));
-          vec2 toOtherSide = toPivot / (std::fabs(pivot.x) > 0.00001 ? pivot.x: 1.0);
+          vec2 toPivot = to_vec2(pivotPoint - (A * (1.0 - pivot.y) + C * pivot.y));
+          vec2 toOtherSide = toPivot / (std::fabs(pivot.x) > eps ? pivot.x : 1.0);
           B = A + to_point(toOtherSide);
           D = C + to_point(toOtherSide);
           break;
@@ -633,8 +666,8 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
           D.x += delta.x;
           D.y += delta.y;
 
-          vec2 toPivot = to_vec2(pivotPoint - (B*(1.0-pivot.y) + D*pivot.y));
-          vec2 toOtherSide = toPivot / (std::fabs(1.0-pivot.x) > 0.00001 ? (1.0-pivot.x): 1.0);
+          vec2 toPivot = to_vec2(pivotPoint - (B * (1.0 - pivot.y) + D * pivot.y));
+          vec2 toOtherSide = toPivot / (std::fabs(1.0 - pivot.x) > eps ? (1.0 - pivot.x) : 1.0);
           A = B + to_point(toOtherSide);
           C = D + to_point(toOtherSide);
           break;
@@ -655,7 +688,7 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
       //   /  |       /
       //  C -C0----- D
       vec2 AC0 = to_vec2(C0 - A0);
-      auto ACp = A0*(1.0-pivot.y) + C0*pivot.y;
+      auto ACp = A0 * (1.0 - pivot.y) + C0 * pivot.y;
       vec2 AC;
       switch (m_handle) {
         case SkewNHandle: AC = to_vec2(ACp - A); break;
@@ -663,11 +696,15 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
         case SkewWHandle:
         case SkewEHandle: {
           vec2 AB = to_vec2(B - A);
-          bounds.w = AB.magnitude();
-          bounds.x = pivotPoint.x - bounds.w*pivot.x;
+          // Clamping bounds width to prevent a segfault with some extreme transforms
+          bounds.w = std::min(AB.magnitude(), m_initialData.bounds().w * 10);
+          bounds.x = pivotPoint.x - bounds.w * pivot.x;
 
           // New rotation angle is the angle between AB points
           newTransformation.angle(-AB.angle());
+
+          // Limit for pivot.x to prevent the 'stretch to infinity' bug
+          const double limit = (std::fabs(pivot.x) >= 1.0 ? (1.0 - eps) * SGN(pivot.x) : pivot.x);
 
           // New skew angle is the angle between AC0 (vector from A to
           // B rotated 45 degrees, like an AC vector without skew) and
@@ -683,27 +720,27 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
           //  |   / <- AC0=AB rotated 45 degrees, if pivot is here
           //  | /
           //  C
-          auto ABp = A*(1.0-pivot.x) + B*pivot.x;
+          auto ABp = A * (1.0 - limit) + B * limit;
           AC0 = vec2(ABp.y - B.y, B.x - ABp.x);
           AC = to_vec2(C - A);
 
           bounds.h = AC.projectOn(AC0).magnitude();
-          bounds.y = pivotPoint.y - bounds.h*pivot.y;
+          bounds.y = pivotPoint.y - bounds.h * pivot.y;
           newTransformation.bounds(bounds);
           break;
         }
       }
 
       // Calculate angle between AC and AC0
-      double newSkew = std::atan2(AC.x*AC0.y - AC.y*AC0.x, AC * AC0);
-      newSkew = std::clamp(newSkew, -PI*85.0/180.0, PI*85.0/180.0);
+      double newSkew = std::atan2(AC.x * AC0.y - AC.y * AC0.x, AC * AC0);
+      newSkew = std::clamp(newSkew, -PI * 85.0 / 180.0, PI * 85.0 / 180.0);
       newTransformation.skew(newSkew);
       break;
     }
 
     case PivotHandle: {
       // Calculate the new position of the pivot
-      gfx::PointF newPivot = m_initialData.pivot() + gfx::Point(pos) - m_catchPos;
+      gfx::PointF newPivot = m_initialData.pivot() + pos - m_catchPos;
       newTransformation = m_initialData;
       newTransformation.displacePivotTo(newPivot);
       break;
@@ -716,6 +753,8 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
 void PixelsMovement::getDraggedImageCopy(std::unique_ptr<Image>& outputImage,
                                          std::unique_ptr<Mask>& outputMask)
 {
+  // Absurd situation: tilemapMode == Tiles and current layer isn't a tilemap
+  ASSERT(m_site.tilemapMode() == TilemapMode::Pixels || m_site.layer()->isTilemap());
   gfx::Rect bounds = m_currentData.transformedBounds();
   if (bounds.isEmpty())
     return;
@@ -731,14 +770,9 @@ void PixelsMovement::getDraggedImageCopy(std::unique_ptr<Image>& outputImage,
     pixelFormat = m_site.sprite()->pixelFormat();
   }
 
-  std::unique_ptr<Image> image(
-    Image::create(
-      pixelFormat,
-      imgSize.w,
-      imgSize.h));
+  std::unique_ptr<Image> image(Image::create(pixelFormat, imgSize.w, imgSize.h));
 
-  drawImage(m_currentData, image.get(),
-            gfx::PointF(bounds.origin()), false);
+  drawImage(m_currentData, image.get(), gfx::PointF(bounds.origin()), false);
 
   // Draw mask without shrinking it, so the mask size is equal to the
   // "image" render.
@@ -756,11 +790,44 @@ void PixelsMovement::getDraggedImageCopy(std::unique_ptr<Image>& outputImage,
                            newMaskBounds.x,
                            newMaskBounds.y,
                            newMaskBounds.w,
-                           newMaskBounds.h, 0));
+                           newMaskBounds.h,
+                           0));
   }
 
   outputImage.reset(image.release());
   outputMask.reset(mask.release());
+}
+
+void PixelsMovement::alignMasksAndTransformData(const Mask* initialMask0,
+                                                const Mask* initialMask,
+                                                const Mask* currentMask,
+                                                const Transformation* initialData,
+                                                const Transformation* currentData,
+                                                const doc::Grid& grid,
+                                                const gfx::Size& deltaA,
+                                                const gfx::Size& deltaB)
+{
+  m_initialMask0->replace(make_aligned_mask(&grid, initialMask0));
+  m_initialMask->replace(make_aligned_mask(&grid, initialMask));
+  m_currentMask->replace(make_aligned_mask(&grid, currentMask));
+  m_initialData = *initialData;
+  m_initialData.bounds(m_initialMask0->bounds());
+  m_currentData = *currentData;
+  // Raw grid alignment of currentData can result in unintentional scaling.
+  // That's why we need to know if the artist's intention was just to move
+  // the selection and/or scaling via 'initialDeltaA' and 'initialDeltaB'.
+  const gfx::Point currentDataAlignedOrigin =
+    grid
+      .alignBounds(
+        gfx::Rect(m_initialData.bounds().x + deltaA.w, m_initialData.bounds().y + deltaA.h, 1, 1))
+      .origin();
+  int deltaH = deltaB.w - deltaA.w;
+  int deltaV = deltaB.h - deltaA.h;
+  const gfx::RectF currentDataBounds(currentDataAlignedOrigin.x,
+                                     currentDataAlignedOrigin.y,
+                                     m_initialData.bounds().w + deltaH,
+                                     m_initialData.bounds().h + deltaV);
+  m_currentData.bounds(currentDataBounds);
 }
 
 void PixelsMovement::stampImage()
@@ -787,14 +854,43 @@ void PixelsMovement::stampImage(bool finalStamp)
     cels.push_back(currentCel);
   }
 
-  if (currentCel &&
-      currentCel->layer() &&
-      currentCel->layer()->isImage() &&
+  if (currentCel && currentCel->layer() && currentCel->layer()->isImage() &&
       !currentCel->layer()->canEditPixels()) {
     Transformation initialCelPos(gfx::Rect(m_initialMask0->bounds()), m_currentData.cornerThick());
     redrawExtraImage(&initialCelPos);
     stampExtraCelImage();
   }
+
+  // Saving original values before the 'for' loop and the
+  // 'reproduceAllTransformationsWithInnerCmds' function for restoring later.
+  // All values of m_initialXX, m_currentXX will be recalculated
+  // to align their original selection bounds with each cel's grid.
+  const TilemapMode originalSiteTilemapMode = (m_site.tilemapMode() == TilemapMode::Tiles &&
+                                                   m_site.layer()->isTilemap() ?
+                                                 TilemapMode::Tiles :
+                                                 TilemapMode::Pixels);
+  const TilesetMode originalSiteTilesetMode = m_site.tilesetMode();
+  const Mask initialMask0(*m_initialMask0);
+  const Mask initialMask(*m_initialMask);
+  const Mask currentMask(*m_currentMask);
+  auto initialData = m_initialData;
+  auto currentData = m_currentData;
+
+  // We need a way to know if 'a' or 'b' corners has changed
+  // as result of a scaling or moving command to replicate the intention on
+  // the other layers according the original mask (which can be aligned or
+  // not to the tilemap grid)
+  //
+  //   a ----
+  //   |     |
+  //   |     |
+  //    ---- b
+  const gfx::Rect currentAlignedBounds(m_site.grid().alignBounds(currentData.bounds()));
+  const gfx::Rect initialAlignedBounds(m_site.grid().alignBounds(initialMask.bounds()));
+  const gfx::Size deltaA(currentAlignedBounds.origin().x - initialAlignedBounds.origin().x,
+                         currentAlignedBounds.origin().y - initialAlignedBounds.origin().y);
+  const gfx::Size deltaB(currentAlignedBounds.x2() - initialAlignedBounds.x2(),
+                         currentAlignedBounds.y2() - initialAlignedBounds.y2());
 
   for (Cel* target : cels) {
     // We'll re-create the transformation for the other cels
@@ -803,7 +899,36 @@ void PixelsMovement::stampImage(bool finalStamp)
       m_site.layer(target->layer());
       m_site.frame(target->frame());
       ASSERT(m_site.cel() == target);
-
+      Grid targetGrid(m_site.grid());
+      // Align masks and transformData before to 'reproduceAllTransformationsWithInnerCmds'
+      // Note: this alignement is needed only when the editor is on 'TilemapMode::Tiles',
+      // on the other hand 'TilemapMode::Pixels' do not require any additional
+      // mask/transformData adjustments.
+      if (originalSiteTilemapMode == TilemapMode::Tiles) {
+        if (target->layer()->isTilemap()) {
+          alignMasksAndTransformData(&initialMask0,
+                                     &initialMask,
+                                     &currentMask,
+                                     &initialData,
+                                     &currentData,
+                                     targetGrid,
+                                     deltaA,
+                                     deltaB);
+          m_site.tilemapMode(TilemapMode::Tiles);
+        }
+        else {
+          m_initialMask0->replace(initialMask0);
+          m_initialMask->replace(initialMask);
+          m_currentMask->replace(currentMask);
+          m_initialData.bounds(initialData.bounds());
+          m_currentData.bounds(currentData.bounds());
+          m_site.tilemapMode(TilemapMode::Pixels);
+        }
+      }
+      else {
+        m_site.tilemapMode(TilemapMode::Pixels);
+        m_site.tilesetMode(TilesetMode::Auto);
+      }
       reproduceAllTransformationsWithInnerCmds();
     }
 
@@ -811,12 +936,19 @@ void PixelsMovement::stampImage(bool finalStamp)
     stampExtraCelImage();
   }
 
+  m_initialMask0->replace(initialMask0);
+  m_initialMask->replace(initialMask);
+  m_currentMask->replace(currentMask);
+  m_initialData.bounds(initialData.bounds());
+  m_currentData.bounds(currentData.bounds());
+  m_site.tilesetMode(originalSiteTilesetMode);
   currentCel = m_site.cel();
   if (currentCel &&
-      (m_site.layer() != currentCel->layer() ||
-       m_site.frame() != currentCel->frame())) {
+      (m_site.layer() != currentCel->layer() || m_site.frame() != currentCel->frame())) {
     m_site.layer(currentCel->layer());
     m_site.frame(currentCel->frame());
+    m_site.tilemapMode(originalSiteTilemapMode);
+    m_site.tilesetMode(originalSiteTilesetMode);
     redrawExtraImage();
   }
 }
@@ -831,10 +963,7 @@ void PixelsMovement::stampExtraCelImage()
 
   // Expand the canvas to paste the image in the fully visible
   // portion of sprite.
-  ExpandCelCanvas expand(
-    m_site, m_site.layer(),
-    TiledMode::NONE, m_tx,
-    ExpandCelCanvas::None);
+  ExpandCelCanvas expand(m_site, m_site.layer(), TiledMode::NONE, m_tx, ExpandCelCanvas::None);
 
   gfx::Point dstPt;
   gfx::Size canvasImageSize = image->size();
@@ -848,8 +977,7 @@ void PixelsMovement::stampExtraCelImage()
   }
 
   // We cannot use cel->bounds() because cel->image() is nullptr
-  expand.validateDestCanvas(
-    gfx::Region(gfx::Rect(cel->position(), canvasImageSize)));
+  expand.validateDestCanvas(gfx::Region(gfx::Rect(cel->position(), canvasImageSize)));
 
   expand.getDestCanvas()->copy(image, gfx::Clip(dstPt, image->bounds()));
 
@@ -896,8 +1024,7 @@ void PixelsMovement::adjustPivot()
   // corner a distance equal to the transformed bounds's
   // width/height multiplied with the previously calculated X/Y
   // factor.
-  vec2 newPivot(corners.leftTop().x,
-                corners.leftTop().y);
+  vec2 newPivot(corners.leftTop().x, corners.leftTop().y);
   newPivot += pivotPosFactor.x * to_vec2(corners.rightTop() - corners.leftTop());
   newPivot += pivotPosFactor.y * to_vec2(corners.leftBottom() - corners.leftTop());
 
@@ -924,8 +1051,7 @@ void PixelsMovement::dropImage()
   m_document->setExtraCel(ExtraCelRef(nullptr));
 }
 
-void PixelsMovement::discardImage(const CommitChangesOption commit,
-                                  const KeepMaskOption keepMask)
+void PixelsMovement::discardImage(const CommitChangesOption commit, const KeepMaskOption keepMask)
 {
   m_isDragging = false;
 
@@ -966,8 +1092,7 @@ gfx::Rect PixelsMovement::getImageBounds()
 
 gfx::Size PixelsMovement::getInitialImageSize() const
 {
-  return gfx::Size(m_originalImage->width(),
-                   m_originalImage->height());
+  return gfx::Size(m_originalImage->width(), m_originalImage->height());
 }
 
 void PixelsMovement::setMaskColor(bool opaque, color_t mask_color)
@@ -985,10 +1110,11 @@ void PixelsMovement::redrawExtraImage(Transformation* transformation)
   if (!transformation)
     transformation = &m_currentData;
 
-  int t, opacity = (m_site.layer()->isImage() ?
-                    static_cast<LayerImage*>(m_site.layer())->opacity(): 255);
+  int t, opacity =
+           (m_site.layer()->isImage() ? static_cast<LayerImage*>(m_site.layer())->opacity() : 255);
   Cel* cel = m_site.cel();
-  if (cel) opacity = MUL_UN8(opacity, cel->opacity(), t);
+  if (cel)
+    opacity = MUL_UN8(opacity, cel->opacity(), t);
 
   if (!m_extraCel)
     m_extraCel.reset(new ExtraCel);
@@ -1000,23 +1126,24 @@ void PixelsMovement::redrawExtraImage(Transformation* transformation)
     if (m_site.tilemapMode() == TilemapMode::Tiles) {
       // Transforming tiles
       extraCelSize = m_site.grid().canvasToTile(bounds).size();
+      bounds = m_site.grid().alignBounds(bounds);
     }
     else {
       // Transforming pixels
       extraCelSize = bounds.size();
     }
 
-    m_extraCel->create(
-      m_site.tilemapMode(),
-      m_document->sprite(),
-      bounds,
-      extraCelSize,
-      m_site.frame(),
-      opacity);
+    m_extraCel->create(ExtraCel::Purpose::TransformationPreview,
+                       m_site.tilemapMode(),
+                       m_document->sprite(),
+                       bounds,
+                       extraCelSize,
+                       m_site.frame(),
+                       opacity);
     m_extraCel->setType(render::ExtraType::PATCH);
     m_extraCel->setBlendMode(m_site.layer()->isImage() ?
-                             static_cast<LayerImage*>(m_site.layer())->blendMode():
-                             BlendMode::NORMAL);
+                               static_cast<LayerImage*>(m_site.layer())->blendMode() :
+                               BlendMode::NORMAL);
   }
   else
     m_extraCel->reset();
@@ -1026,8 +1153,7 @@ void PixelsMovement::redrawExtraImage(Transformation* transformation)
   if (m_extraCel->image()) {
     // Draw the transformed pixels in the extra-cel which is the chunk
     // of pixels that the user is moving.
-    drawImage(*transformation, m_extraCel->image(),
-              gfx::PointF(bounds.origin()), true);
+    drawImage(*transformation, m_extraCel->image(), gfx::PointF(bounds.origin()), true);
   }
 }
 
@@ -1036,30 +1162,26 @@ void PixelsMovement::redrawCurrentMask()
   drawMask(m_currentMask.get(), true);
 }
 
-void PixelsMovement::drawImage(
-  const Transformation& transformation,
-  doc::Image* dst, const gfx::PointF& pt,
-  const bool renderOriginalLayer)
+void PixelsMovement::drawImage(const Transformation& transformation,
+                               doc::Image* dst,
+                               const gfx::PointF& pt,
+                               const bool renderOriginalLayer)
 {
   ASSERT(dst);
 
   auto corners = transformation.transformedCorners();
   gfx::Rect bounds = corners.bounds(transformation.cornerThick());
 
-  if (m_site.tilemapMode() == TilemapMode::Tiles) {
+  if (m_site.tilemapMode() == TilemapMode::Tiles && m_site.layer()->isTilemap()) {
     dst->setMaskColor(doc::notile);
     dst->clear(dst->maskColor());
 
     if (renderOriginalLayer && m_site.cel()) {
       doc::Grid grid = m_site.grid();
-      dst->copy(m_site.cel()->image(),
-                gfx::Clip(0, 0, grid.canvasToTile(bounds)));
+      dst->copy(m_site.cel()->image(), gfx::Clip(0, 0, grid.canvasToTile(bounds)));
     }
 
-    drawTransformedTilemap(
-      transformation,
-      dst, m_originalImage.get(),
-      m_initialMask.get());
+    drawTransformedTilemap(transformation, dst, m_originalImage.get(), m_initialMask.get());
   }
   else {
     dst->setMaskColor(m_site.sprite()->transparentColor());
@@ -1067,10 +1189,11 @@ void PixelsMovement::drawImage(
 
     if (renderOriginalLayer) {
       render::Render render;
-      render.renderLayer(
-        dst, m_site.layer(), m_site.frame(),
-        gfx::Clip(bounds.x-pt.x, bounds.y-pt.y, bounds),
-        BlendMode::SRC);
+      render.renderLayer(dst,
+                         m_site.layer(),
+                         m_site.frame(),
+                         gfx::Clip(bounds.x - pt.x, bounds.y - pt.y, bounds),
+                         BlendMode::SRC);
     }
 
     color_t maskColor = m_maskColor;
@@ -1079,8 +1202,7 @@ void PixelsMovement::drawImage(
     // image for the clipboard (renderOriginalLayer is false), we use a
     // dummy mask color to call drawParallelogram(). In this way all
     // pixels will be opaqued (all colors are copied)
-    if (m_opaque ||
-        !renderOriginalLayer) {
+    if (m_opaque || !renderOriginalLayer) {
       if (m_originalImage->pixelFormat() == IMAGE_INDEXED)
         maskColor = -1;
       else
@@ -1088,10 +1210,7 @@ void PixelsMovement::drawImage(
     }
     m_originalImage->setMaskColor(maskColor);
 
-    drawParallelogram(
-      transformation,
-      dst, m_originalImage.get(),
-      m_initialMask.get(), corners, pt);
+    drawParallelogram(transformation, dst, m_originalImage.get(), m_initialMask.get(), corners, pt);
   }
 }
 
@@ -1119,11 +1238,12 @@ void PixelsMovement::drawMask(doc::Mask* mask, bool shrink)
     mask->unfreeze();
 }
 
-void PixelsMovement::drawParallelogram(
-  const Transformation& transformation,
-  doc::Image* dst, const doc::Image* src, const doc::Mask* mask,
-  const Transformation::Corners& corners,
-  const gfx::PointF& leftTop)
+void PixelsMovement::drawParallelogram(const Transformation& transformation,
+                                       doc::Image* dst,
+                                       const doc::Image* src,
+                                       const doc::Mask* mask,
+                                       const Transformation::Corners& corners,
+                                       const gfx::PointF& leftTop)
 {
   tools::RotationAlgorithm rotAlgo = Preferences::instance().selection.rotationAlgorithm();
 
@@ -1131,10 +1251,10 @@ void PixelsMovement::drawParallelogram(
   // right/straight-angle, we should use the fast rotation algorithm,
   // as it's pixel-perfect match with the original selection when just
   // a translation is applied.
-  double angle = 180.0*transformation.angle()/PI;
+  double angle = 180.0 * transformation.angle() / PI;
   if (!Preferences::instance().selection.forceRotsprite() &&
       (std::fabs(std::fmod(std::fabs(angle), 90.0)) < 0.01 ||
-       std::fabs(std::fmod(std::fabs(angle), 90.0)-90.0) < 0.01)) {
+       std::fabs(std::fmod(std::fabs(angle), 90.0) - 90.0) < 0.01)) {
     rotAlgo = tools::RotationAlgorithm::FAST;
   }
 
@@ -1144,47 +1264,45 @@ void PixelsMovement::drawParallelogram(
     rotAlgo = tools::RotationAlgorithm::FAST;
   }
 
-retry:;      // In case that we don't have enough memory for RotSprite
-             // we can try with the fast algorithm anyway.
+retry:; // In case that we don't have enough memory for RotSprite
+        // we can try with the fast algorithm anyway.
 
   switch (rotAlgo) {
-
     case tools::RotationAlgorithm::FAST:
-      doc::algorithm::parallelogram(
-        dst, src, (mask ? mask->bitmap(): nullptr),
-        int(corners.leftTop().x-leftTop.x),
-        int(corners.leftTop().y-leftTop.y),
-        int(corners.rightTop().x-leftTop.x),
-        int(corners.rightTop().y-leftTop.y),
-        int(corners.rightBottom().x-leftTop.x),
-        int(corners.rightBottom().y-leftTop.y),
-        int(corners.leftBottom().x-leftTop.x),
-        int(corners.leftBottom().y-leftTop.y));
+      doc::algorithm::parallelogram(dst,
+                                    src,
+                                    (mask ? mask->bitmap() : nullptr),
+                                    int(corners.leftTop().x - leftTop.x),
+                                    int(corners.leftTop().y - leftTop.y),
+                                    int(corners.rightTop().x - leftTop.x),
+                                    int(corners.rightTop().y - leftTop.y),
+                                    int(corners.rightBottom().x - leftTop.x),
+                                    int(corners.rightBottom().y - leftTop.y),
+                                    int(corners.leftBottom().x - leftTop.x),
+                                    int(corners.leftBottom().y - leftTop.y));
       break;
 
     case tools::RotationAlgorithm::ROTSPRITE:
       try {
-        doc::algorithm::rotsprite_image(
-          dst, src, (mask ? mask->bitmap(): nullptr),
-          int(corners.leftTop().x-leftTop.x),
-          int(corners.leftTop().y-leftTop.y),
-          int(corners.rightTop().x-leftTop.x),
-          int(corners.rightTop().y-leftTop.y),
-          int(corners.rightBottom().x-leftTop.x),
-          int(corners.rightBottom().y-leftTop.y),
-          int(corners.leftBottom().x-leftTop.x),
-          int(corners.leftBottom().y-leftTop.y));
+        doc::algorithm::rotsprite_image(dst,
+                                        src,
+                                        (mask ? mask->bitmap() : nullptr),
+                                        int(corners.leftTop().x - leftTop.x),
+                                        int(corners.leftTop().y - leftTop.y),
+                                        int(corners.rightTop().x - leftTop.x),
+                                        int(corners.rightTop().y - leftTop.y),
+                                        int(corners.rightBottom().x - leftTop.x),
+                                        int(corners.rightBottom().y - leftTop.y),
+                                        int(corners.leftBottom().x - leftTop.x),
+                                        int(corners.leftBottom().y - leftTop.y));
       }
       catch (const std::bad_alloc&) {
-        StatusBar::instance()->showTip(
-          1000,
-          Strings::statusbar_tips_not_enough_rotsprite_memory());
+        StatusBar::instance()->showTip(1000, Strings::statusbar_tips_not_enough_rotsprite_memory());
 
         rotAlgo = tools::RotationAlgorithm::FAST;
         goto retry;
       }
       break;
-
   }
 }
 
@@ -1196,8 +1314,8 @@ static void merge_tilemaps(Image* dst, const Image* src, gfx::Clip area)
   ImageConstIterator<TilemapTraits> src_it(src, area.srcBounds(), area.src.x, area.src.y);
   ImageIterator<TilemapTraits> dst_it(dst, area.dstBounds(), area.dst.x, area.dst.y);
 
-  for (int y=0; y<area.size.h; ++y) {
-    for (int x=0; x<area.size.w; ++x) {
+  for (int y = 0; y < area.size.h; ++y) {
+    for (int x = 0; x < area.size.w; ++x) {
       if (*src_it != doc::notile)
         *dst_it = *src_it;
       ++src_it;
@@ -1206,35 +1324,35 @@ static void merge_tilemaps(Image* dst, const Image* src, gfx::Clip area)
   }
 }
 
-void PixelsMovement::drawTransformedTilemap(
-  const Transformation& transformation,
-  doc::Image* dst, const doc::Image* src, const doc::Mask* mask)
+void PixelsMovement::drawTransformedTilemap(const Transformation& transformation,
+                                            doc::Image* dst,
+                                            const doc::Image* src,
+                                            const doc::Mask* mask)
 {
   ASSERT(dst->pixelFormat() == IMAGE_TILEMAP);
   ASSERT(src->pixelFormat() == IMAGE_TILEMAP);
 
-  const int boxw = std::max(1, src->width()-2);
-  const int boxh = std::max(1, src->height()-2);
+  const int boxw = std::max(1, src->width() - 2);
+  const int boxh = std::max(1, src->height() - 2);
 
   // Function to copy a whole row of tiles (h=number of tiles in Y axis)
-  auto draw_row =
-    [dst, src, boxw](int y, int v, int h) {
-      merge_tilemaps(dst, src, gfx::Clip(0, y, 0, v, 1, h));
-      if (boxw) {
-        const int u = std::min(1, src->width()-1);
-        for (int x=1; x<dst->width()-1; x+=boxw)
-          merge_tilemaps(dst, src, gfx::Clip(x, y, u, v, boxw, h));
-      }
-      merge_tilemaps(dst, src, gfx::Clip(dst->width()-1, y, src->width()-1, v, 1, h));
-    };
+  auto draw_row = [dst, src, boxw](int y, int v, int h) {
+    merge_tilemaps(dst, src, gfx::Clip(0, y, 0, v, 1, h));
+    if (boxw) {
+      const int u = std::min(1, src->width() - 1);
+      for (int x = 1; x < dst->width() - 1; x += boxw)
+        merge_tilemaps(dst, src, gfx::Clip(x, y, u, v, boxw, h));
+    }
+    merge_tilemaps(dst, src, gfx::Clip(dst->width() - 1, y, src->width() - 1, v, 1, h));
+  };
 
   draw_row(0, 0, 1);
   if (boxh) {
-    const int v = std::min(1, src->height()-1);
-    for (int y=1; y<dst->height()-1; y+=boxh)
+    const int v = std::min(1, src->height() - 1);
+    for (int y = 1; y < dst->height() - 1; y += boxh)
       draw_row(y, v, boxh);
   }
-  draw_row(dst->height()-1, src->height()-1, 1);
+  draw_row(dst->height() - 1, src->height() - 1, 1);
 }
 
 void PixelsMovement::onPivotChange()
@@ -1277,23 +1395,18 @@ void PixelsMovement::flipOriginalImage(const doc::algorithm::FlipType flipType)
   // Flip the image.
   doc::algorithm::flip_image(
     m_originalImage.get(),
-    gfx::Rect(gfx::Point(0, 0),
-              gfx::Size(m_originalImage->width(),
-                        m_originalImage->height())),
+    gfx::Rect(gfx::Point(0, 0), gfx::Size(m_originalImage->width(), m_originalImage->height())),
     flipType);
 
   // Flip the mask.
-  doc::algorithm::flip_image(
-    m_initialMask->bitmap(),
-    gfx::Rect(gfx::Point(0, 0), m_initialMask->bounds().size()),
-    flipType);
+  doc::algorithm::flip_image(m_initialMask->bitmap(),
+                             gfx::Rect(gfx::Point(0, 0), m_initialMask->bounds().size()),
+                             flipType);
 }
 
-void PixelsMovement::shiftOriginalImage(const int dx, const int dy,
-                                        const double angle)
+void PixelsMovement::shiftOriginalImage(const int dx, const int dy, const double angle)
 {
-  doc::algorithm::shift_image(
-    m_originalImage.get(), dx, dy, angle);
+  doc::algorithm::shift_image(m_originalImage.get(), dx, dy, angle);
 }
 
 // Returns the list of cels that will be transformed (the first item
@@ -1304,15 +1417,13 @@ CelList PixelsMovement::getEditableCels()
   CelList cels;
 
   if (editMultipleCels()) {
-    cels = get_unique_cels_to_edit_pixels(m_site.sprite(),
-                                          m_site.range());
+    cels = get_unique_cels_to_edit_pixels(m_site.sprite(), m_site.range());
   }
   else {
     // TODO This case is used in paste too, where the cel() can be
     //      nullptr (e.g. we paste the clipboard image into an empty
     //      cel).
-    if (m_site.layer() &&
-        m_site.layer()->canEditPixels()) {
+    if (m_site.layer() && m_site.layer()->canEditPixels()) {
       cels.push_back(m_site.cel());
     }
     return cels;
@@ -1320,19 +1431,16 @@ CelList PixelsMovement::getEditableCels()
 
   // Current cel (m_site.cel()) can be nullptr when we paste in an
   // empty cel (Ctrl+V) and cut (Ctrl+X) the floating pixels.
-  if (m_site.cel() &&
-      m_site.cel()->layer()->canEditPixels()) {
+  if (m_site.cel() && m_site.cel()->layer()->canEditPixels()) {
     CelList::iterator it;
 
     // If we are in a linked cel, remove the cel that matches the
     // linked cel. In this way we avoid having two Cel in cels
     // pointing to the same CelData.
     if (Cel* link = m_site.cel()->link()) {
-      it = std::find_if(cels.begin(), cels.end(),
-                        [link](const Cel* cel){
-                          return (cel == link ||
-                                  cel->link() == link);
-                        });
+      it = std::find_if(cels.begin(), cels.end(), [link](const Cel* cel) {
+        return (cel == link || cel->link() == link);
+      });
     }
     else {
       it = std::find(cels.begin(), cels.end(), m_site.cel());
@@ -1356,8 +1464,7 @@ bool PixelsMovement::gotoFrame(const doc::frame_t deltaFrame)
     doc::frame_t frame = initialFrame + deltaFrame;
 
     if (frames.size() >= 2) {
-      for (; !frames.contains(frame) &&
-             !layer->cel(frame); frame+=deltaFrame) {
+      for (; !frames.contains(frame) && !layer->cel(frame); frame += deltaFrame) {
         if (deltaFrame > 0 && frame > frames.lastFrame()) {
           frame = frames.firstFrame();
           break;
@@ -1368,8 +1475,7 @@ bool PixelsMovement::gotoFrame(const doc::frame_t deltaFrame)
         }
       }
 
-      if (frame == initialFrame ||
-          !frames.contains(frame) ||
+      if (frame == initialFrame || !frames.contains(frame) ||
           // TODO At the moment we don't support going to an empty cel,
           //      so we don't handle these cases
           !layer->cel(frame)) {
@@ -1402,32 +1508,30 @@ bool PixelsMovement::gotoFrame(const doc::frame_t deltaFrame)
 void PixelsMovement::reproduceAllTransformationsWithInnerCmds()
 {
   TRACEARGS("MOVPIXS: reproduceAllTransformationsWithInnerCmds",
-            "layer", m_site.layer()->name(),
-            "frame", m_site.frame());
+            "layer",
+            m_site.layer()->name(),
+            "frame",
+            m_site.frame());
   DUMP_INNER_CMDS();
 
   m_document->setMask(m_initialMask0.get());
   m_initialMask->copyFrom(m_initialMask0.get());
-  m_originalImage.reset(
-    new_image_from_mask(
-      m_site, m_initialMask.get(),
-      Preferences::instance().experimental.newBlend()));
+  if (m_site.layer()->isTilemap() && m_site.tilemapMode() == TilemapMode::Tiles) {
+    m_originalImage.reset(new_tilemap_from_mask(m_site, m_initialMask.get()));
+  }
+  else
+    m_originalImage.reset(new_image_from_mask(m_site,
+                                              m_initialMask.get(),
+                                              Preferences::instance().experimental.newBlend()));
 
   for (const InnerCmd& c : m_innerCmds) {
     switch (c.type) {
       case InnerCmd::Clear:
-        clear_mask_from_cel(m_tx,
-                            m_site.cel(),
-                            m_site.tilemapMode(),
-                            m_site.tilesetMode());
+        clear_mask_from_cel(m_tx, m_site.cel(), m_site.tilemapMode(), m_site.tilesetMode());
         break;
-      case InnerCmd::Flip:
-        flipOriginalImage(c.data.flip.type);
-        break;
+      case InnerCmd::Flip: flipOriginalImage(c.data.flip.type); break;
       case InnerCmd::Shift:
-        shiftOriginalImage(c.data.shift.dx,
-                           c.data.shift.dy,
-                           c.data.shift.angle);
+        shiftOriginalImage(c.data.shift.dx, c.data.shift.dy, c.data.shift.angle);
         break;
       case InnerCmd::Stamp:
         redrawExtraImage(c.data.stamp.transformation);
@@ -1447,29 +1551,30 @@ void PixelsMovement::dumpInnerCmds()
   TRACEARGS("MOVPIXS: InnerCmds size=", m_innerCmds.size());
   for (auto& c : m_innerCmds) {
     switch (c.type) {
-      case InnerCmd::None:
-        TRACEARGS("MOVPIXS: - None");
-        break;
-      case InnerCmd::Clear:
-        TRACEARGS("MOVPIXS: - Clear");
-        break;
+      case InnerCmd::None:  TRACEARGS("MOVPIXS: - None"); break;
+      case InnerCmd::Clear: TRACEARGS("MOVPIXS: - Clear"); break;
       case InnerCmd::Flip:
         TRACEARGS("MOVPIXS: - Flip",
-                  (c.data.flip.type == doc::algorithm::FlipHorizontal ? "Horizontal":
-                                                                        "Vertical"));
+                  (c.data.flip.type == doc::algorithm::FlipHorizontal ? "Horizontal" : "Vertical"));
         break;
       case InnerCmd::Shift:
         TRACEARGS("MOVPIXS: - Shift",
-                  "dx=", c.data.shift.dx,
-                  "dy=", c.data.shift.dy,
-                  "angle=", c.data.shift.angle);
+                  "dx=",
+                  c.data.shift.dx,
+                  "dy=",
+                  c.data.shift.dy,
+                  "angle=",
+                  c.data.shift.angle);
         break;
       case InnerCmd::Stamp:
         TRACEARGS("MOVPIXS: - Stamp",
-                  "angle=", c.data.stamp.transformation->angle(),
-                  "pivot=", c.data.stamp.transformation->pivot().x,
+                  "angle=",
+                  c.data.stamp.transformation->angle(),
+                  "pivot=",
+                  c.data.stamp.transformation->pivot().x,
                   c.data.stamp.transformation->pivot().y,
-                  "bounds=", c.data.stamp.transformation->bounds().x,
+                  "bounds=",
+                  c.data.stamp.transformation->bounds().x,
                   c.data.stamp.transformation->bounds().y,
                   c.data.stamp.transformation->bounds().w,
                   c.data.stamp.transformation->bounds().h);

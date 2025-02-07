@@ -1,11 +1,12 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/commands/command.h"
@@ -16,7 +17,6 @@
 #include "base/fs.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
-#include "fmt/format.h"
 #include "ui/alert.h"
 
 namespace app {
@@ -30,8 +30,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-SaveMaskCommand::SaveMaskCommand()
-  : Command(CommandId::SaveMask(), CmdUIOnlyFlag)
+SaveMaskCommand::SaveMaskCommand() : Command(CommandId::SaveMask(), CmdUIOnlyFlag)
 {
 }
 
@@ -47,15 +46,17 @@ void SaveMaskCommand::onExecute(Context* context)
 
   base::paths exts = { "msk" };
   base::paths selFilename;
-  if (!app::show_file_selector(
-        Strings::save_selection_title(), "default.msk", exts,
-        FileSelectorType::Save, selFilename))
+  if (!app::show_file_selector(Strings::save_selection_title(),
+                               "default.msk",
+                               exts,
+                               FileSelectorType::Save,
+                               selFilename))
     return;
 
   std::string filename = selFilename.front();
 
   if (save_msk_file(document->mask(), filename.c_str()) != 0)
-    ui::Alert::show(fmt::format(Strings::alerts_error_saving_file(), filename));
+    ui::Alert::show(Strings::alerts_error_saving_file(filename));
 }
 
 Command* CommandFactory::createSaveMaskCommand()

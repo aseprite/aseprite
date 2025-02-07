@@ -41,8 +41,10 @@ TEST(IniFile, PushPop)
 {
   ConfigModule cm;
 
-  if (base::is_file("_a.ini")) base::delete_file("_a.ini");
-  if (base::is_file("_b.ini")) base::delete_file("_b.ini");
+  if (base::is_file("_a.ini"))
+    base::delete_file("_a.ini");
+  if (base::is_file("_b.ini"))
+    base::delete_file("_b.ini");
 
   set_config_file("_a.ini");
   set_config_int("A", "a", 32);

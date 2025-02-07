@@ -13,36 +13,35 @@
 #include "ui/popup_window.h"
 
 namespace ui {
-  class Button;
-  class View;
-}
+class Button;
+class View;
+} // namespace ui
 
 namespace app {
 
-  namespace gen {
-    class PalettePopup;
-  }
+namespace gen {
+class PalettePopup;
+}
 
-  class PalettePopup : public ui::PopupWindow {
-  public:
-    PalettePopup();
+class PalettePopup : public ui::PopupWindow {
+public:
+  PalettePopup();
 
-    void showPopup(ui::Display* display,
-                   const gfx::Rect& buttonPos);
+  void showPopup(ui::Display* display, const gfx::Rect& buttonPos);
 
-  protected:
-    bool onProcessMessage(ui::Message* msg) override;
+protected:
+  bool onProcessMessage(ui::Message* msg) override;
 
-    void onPalChange(const doc::Palette* palette);
-    void onSearchChange();
-    void onRefresh();
-    void onLoadPal();
-    void onOpenFolder();
+  void onPalChange(const doc::Palette* palette);
+  void onSearchChange();
+  void onRefresh();
+  void onLoadPal();
+  void onOpenFolder();
 
-  private:
-    gen::PalettePopup* m_popup;
-    PalettesListBox m_paletteListBox;
-  };
+private:
+  gen::PalettePopup* m_popup;
+  PalettesListBox m_paletteListBox;
+};
 
 } // namespace app
 

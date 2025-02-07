@@ -1,12 +1,12 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/commands/command.h"
@@ -16,20 +16,12 @@
 
 namespace app {
 
-Command::Command(const char* id, CommandFlags flags)
-  : m_id(id)
-  , m_flags(flags)
+Command::Command(const char* id, CommandFlags flags) : m_id(id), m_flags(flags)
 {
-  generateFriendlyName();
 }
 
 Command::~Command()
 {
-}
-
-std::string Command::friendlyName() const
-{
-  return onGetFriendlyName();
 }
 
 bool Command::needsParams() const
@@ -62,15 +54,6 @@ bool Command::isChecked(Context* context)
     // TODO add a status-bar item...
     return false;
   }
-}
-
-void Command::generateFriendlyName()
-{
-  std::string strId = "commands." + this->id();
-  if (auto s = Strings::instance())
-    m_friendlyName = s->translate(strId.c_str());
-  else
-    m_friendlyName = strId;
 }
 
 void Command::execute(Context* context)
@@ -110,7 +93,9 @@ void Command::onExecute(Context* context)
 
 std::string Command::onGetFriendlyName() const
 {
-  return m_friendlyName;
+  if (auto* strings = Strings::instance())
+    return strings->translate(("commands." + id()).c_str());
+  return id();
 }
 
 } // namespace app

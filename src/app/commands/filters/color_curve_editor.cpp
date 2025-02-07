@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/commands/filters/color_curve_editor.h"
@@ -65,10 +65,8 @@ ColorCurveEditor::ColorCurveEditor(const ColorCurve& curve, const gfx::Rect& vie
 bool ColorCurveEditor::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
-
     case kKeyDownMessage: {
       switch (static_cast<KeyMessage*>(msg)->scancode()) {
-
         case kKeyInsert: {
           addPoint(screenToView(mousePosInDisplay()));
           break;
@@ -80,8 +78,7 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
           break;
         }
 
-        default:
-          return false;
+        default: return false;
       }
       return true;
     }
@@ -130,7 +127,6 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
       m_hotPoint = getClosestPoint(screenToView(mousePos));
 
       switch (m_status) {
-
         case STATUS_STANDBY:
           if (!m_hotPoint || m_hotPoint != oldHotPoint)
             invalidate();
@@ -140,8 +136,8 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
           if (m_editPoint) {
             gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
             *m_editPoint = screenToView(mousePos);
-            m_editPoint->x = std::clamp(m_editPoint->x, m_viewBounds.x, m_viewBounds.x2()-1);
-            m_editPoint->y = std::clamp(m_editPoint->y, m_viewBounds.y, m_viewBounds.y2()-1);
+            m_editPoint->x = std::clamp(m_editPoint->x, m_viewBounds.x, m_viewBounds.x2() - 1);
+            m_editPoint->y = std::clamp(m_editPoint->y, m_viewBounds.y, m_viewBounds.y2() - 1);
 
             // TODO this should be optional
             CurveEditorChange();
@@ -159,7 +155,6 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
         releaseMouse();
 
         switch (m_status) {
-
           case STATUS_MOVING_POINT:
             ui::set_mouse_cursor(kArrowCursor);
             CurveEditorChange();
@@ -180,8 +175,7 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
 
 void ColorCurveEditor::onSizeHint(SizeHintEvent& ev)
 {
-  ev.setSizeHint(gfx::Size(1 + border().width(),
-                           1 + border().height()));
+  ev.setSizeHint(gfx::Size(1 + border().width(), 1 + border().height()));
 }
 
 void ColorCurveEditor::onPaint(ui::PaintEvent& ev)
@@ -196,22 +190,22 @@ void ColorCurveEditor::onPaint(ui::PaintEvent& ev)
   g->drawRect(gfx::rgba(255, 255, 0), rc);
 
   // Draw guides
-  for (c=1; c<=3; c++)
-    g->drawVLine(gfx::rgba(128, 128, 0), c*client.w/4, client.y, client.h);
+  for (c = 1; c <= 3; c++)
+    g->drawVLine(gfx::rgba(128, 128, 0), c * client.w / 4, client.y, client.h);
 
-  for (c=1; c<=3; c++)
-    g->drawHLine(gfx::rgba(128, 128, 0), client.x, c*client.h/4, client.w);
+  for (c = 1; c <= 3; c++)
+    g->drawHLine(gfx::rgba(128, 128, 0), client.x, c * client.h / 4, client.w);
 
   // Get curve values
   std::vector<int> values(m_viewBounds.w);
-  m_curve.getValues(m_viewBounds.x, m_viewBounds.x+m_viewBounds.w-1, values);
+  m_curve.getValues(m_viewBounds.x, m_viewBounds.x + m_viewBounds.w - 1, values);
 
   // Draw curve
-  for (c = client.x; c < client.x+client.w; ++c) {
+  for (c = client.x; c < client.x + client.w; ++c) {
     pt = clientToView(gfx::Point(c, 0));
-    pt.x = std::clamp(pt.x, m_viewBounds.x, m_viewBounds.x2()-1);
+    pt.x = std::clamp(pt.x, m_viewBounds.x, m_viewBounds.x2() - 1);
     pt.y = values[pt.x - m_viewBounds.x];
-    pt.y = std::clamp(pt.y, m_viewBounds.y, m_viewBounds.y2()-1);
+    pt.y = std::clamp(pt.y, m_viewBounds.y, m_viewBounds.y2() - 1);
     pt = viewToClient(pt);
 
     g->putPixel(gfx::rgba(255, 255, 255), c, pt.y);
@@ -221,17 +215,17 @@ void ColorCurveEditor::onPaint(ui::PaintEvent& ev)
   for (const gfx::Point& point : m_curve) {
     pt = viewToClient(point);
 
-    gfx::Rect box(0, 0, 5*guiscale(), 5*guiscale());
-    box.offset(pt.x-box.w/2, pt.y-box.h/2);
+    gfx::Rect box(0, 0, 5 * guiscale(), 5 * guiscale());
+    box.offset(pt.x - box.w / 2, pt.y - box.h / 2);
 
     g->drawRect(gfx::rgba(0, 0, 255), box);
 
     if (m_editPoint == &point) {
-      box.enlarge(4*guiscale());
+      box.enlarge(4 * guiscale());
       g->drawRect(gfx::rgba(255, 255, 0), box);
     }
     else if (m_hotPoint == &point) {
-      box.enlarge(2*guiscale());
+      box.enlarge(2 * guiscale());
       g->drawRect(gfx::rgba(255, 255, 0), box);
     }
   }
@@ -245,10 +239,9 @@ gfx::Point* ColorCurveEditor::getClosestPoint(const gfx::Point& viewPt)
   for (gfx::Point& point : m_curve) {
     int dx = point.x - viewPt.x;
     int dy = point.y - viewPt.y;
-    double dist = std::sqrt(static_cast<double>(dx*dx + dy*dy));
+    double dist = std::sqrt(static_cast<double>(dx * dx + dy * dy));
 
-    if (dist < 16*guiscale() &&
-        (!point_found || dist <= dist_min)) {
+    if (dist < 16 * guiscale() && (!point_found || dist <= dist_min)) {
       point_found = &point;
       dist_min = dist;
     }
@@ -289,7 +282,7 @@ gfx::Point ColorCurveEditor::viewToClient(const gfx::Point& viewPt)
   gfx::Rect client = clientChildrenBounds();
   return gfx::Point(
     client.x + client.w * (viewPt.x - m_viewBounds.x) / m_viewBounds.w,
-    client.y + client.h-1 - (client.h-1) * (viewPt.y - m_viewBounds.y) / m_viewBounds.h);
+    client.y + client.h - 1 - (client.h - 1) * (viewPt.y - m_viewBounds.y) / m_viewBounds.h);
 }
 
 gfx::Point ColorCurveEditor::screenToView(const gfx::Point& screenPt)
@@ -300,9 +293,9 @@ gfx::Point ColorCurveEditor::screenToView(const gfx::Point& screenPt)
 gfx::Point ColorCurveEditor::clientToView(const gfx::Point& clientPt)
 {
   gfx::Rect client = clientChildrenBounds();
-  return gfx::Point(
-    m_viewBounds.x + m_viewBounds.w * (clientPt.x - client.x) / client.w,
-    m_viewBounds.y + m_viewBounds.h-1 - (m_viewBounds.h-1) * (clientPt.y - client.y) / client.h);
+  return gfx::Point(m_viewBounds.x + m_viewBounds.w * (clientPt.x - client.x) / client.w,
+                    m_viewBounds.y + m_viewBounds.h - 1 -
+                      (m_viewBounds.h - 1) * (clientPt.y - client.y) / client.h);
 }
 
 void ColorCurveEditor::addPoint(const gfx::Point& viewPoint)

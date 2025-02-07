@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/sampling_selector.h"
@@ -28,15 +28,13 @@ SamplingSelector::SamplingSelector(Behavior behavior)
   m_downsampling.addItem(new ListItem(Strings::downsampling_bilinear()));
   m_downsampling.addItem(new ListItem(Strings::downsampling_bilinear_mipmap()));
   m_downsampling.addItem(new ListItem(Strings::downsampling_trilinear_mipmap()));
-  m_downsampling.setSelectedItemIndex(
-    (int)Preferences::instance().editor.downsampling());
+  m_downsampling.setSelectedItemIndex((int)Preferences::instance().editor.downsampling());
 
   if (m_behavior == Behavior::ChangeOnRealTime)
-    m_downsampling.Change.connect([this]{ save(); });
+    m_downsampling.Change.connect([this] { save(); });
 
-  m_samplingChangeConn =
-    Preferences::instance().editor.downsampling.AfterChange.connect(
-      [this]{ onPreferenceChange(); });
+  m_samplingChangeConn = Preferences::instance().editor.downsampling.AfterChange.connect(
+    [this] { onPreferenceChange(); });
 }
 
 void SamplingSelector::save()

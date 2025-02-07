@@ -13,29 +13,25 @@
 
 #include <string>
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class SetLayerName : public Cmd
-                     , public WithLayer {
-  public:
-    SetLayerName(Layer* layer, const std::string& name);
+class SetLayerName : public Cmd,
+                     public WithLayer {
+public:
+  SetLayerName(Layer* layer, const std::string& name);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onFireNotifications() override;
-    size_t onMemSize() const override {
-      return sizeof(*this);
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onFireNotifications() override;
+  size_t onMemSize() const override { return sizeof(*this); }
 
-  private:
-    std::string m_oldName;
-    std::string m_newName;
-  };
+private:
+  std::string m_oldName;
+  std::string m_newName;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

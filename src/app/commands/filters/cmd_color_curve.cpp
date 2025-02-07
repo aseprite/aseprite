@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/color.h"
@@ -28,21 +28,22 @@ namespace app {
 using namespace filters;
 
 struct ColorCurveParams : public NewParams {
-  Param<bool> ui { this, true, "ui" };
-  Param<filters::Target> channels { this, 0, "channels" };
-  Param<filters::ColorCurve> curve { this, filters::ColorCurve(), "curve" };
+  Param<bool> ui{ this, true, "ui" };
+  Param<filters::Target> channels{ this, 0, "channels" };
+  Param<filters::ColorCurve> curve{ this, filters::ColorCurve(), "curve" };
 };
-
-#ifdef ENABLE_UI
 
 class ColorCurveWindow : public FilterWindow {
 public:
   ColorCurveWindow(ColorCurveFilter& filter, FilterManagerImpl& filterMgr)
-    : FilterWindow("Color Curve", "ColorCurve", &filterMgr,
+    : FilterWindow("Color Curve",
+                   "ColorCurve",
+                   &filterMgr,
                    WithChannelsSelector,
                    WithoutTiledCheckBox)
     , m_filter(filter)
-    , m_editor(filter.getCurve(), gfx::Rect(0, 0, 256, 256)) {
+    , m_editor(filter.getCurve(), gfx::Rect(0, 0, 256, 256))
+  {
     m_view.attachToView(&m_editor);
     m_view.setExpansive(true);
     m_view.setMinSize(gfx::Size(128, 64));
@@ -53,8 +54,8 @@ public:
   }
 
 protected:
-
-  void onCurveChange() {
+  void onCurveChange()
+  {
     stopPreview();
 
     // The color curve in the filter is the same refereced by the
@@ -71,8 +72,6 @@ private:
   ui::View m_view;
   ColorCurveEditor m_editor;
 };
-
-#endif  // ENABLE_UI
 
 class ColorCurveCommand : public CommandWithNewParams<ColorCurveParams> {
 public:
@@ -99,7 +98,6 @@ void ColorCurveCommand::onExecute(Context* context)
   const bool ui = (params().ui() && context->isUIAvailable());
   ColorCurveFilter filter;
 
-#ifdef ENABLE_UI
   // Default curve
   if (ui) {
     static std::unique_ptr<ColorCurve> the_curve;
@@ -110,35 +108,30 @@ void ColorCurveCommand::onExecute(Context* context)
     }
     filter.setCurve(*the_curve.get());
   }
-#endif
 
   FilterManagerImpl filterMgr(context, &filter);
 
-  filters::Target channels =
-    TARGET_RED_CHANNEL |
-    TARGET_GREEN_CHANNEL |
-    TARGET_BLUE_CHANNEL |
-    TARGET_GRAY_CHANNEL;
-  if (params().channels.isSet()) channels = params().channels();
+  filters::Target channels = TARGET_RED_CHANNEL | TARGET_GREEN_CHANNEL | TARGET_BLUE_CHANNEL |
+                             TARGET_GRAY_CHANNEL;
+  if (params().channels.isSet())
+    channels = params().channels();
   filterMgr.setTarget(channels);
 
-  if (params().curve.isSet()) filter.setCurve(params().curve());
+  if (params().curve.isSet())
+    filter.setCurve(params().curve());
   else if (!ui) {
     ColorCurve curve;
     curve.addDefaultPoints();
     filter.setCurve(curve);
   }
 
-#ifdef ENABLE_UI
   if (ui) {
     ColorCurveWindow window(filter, filterMgr);
     if (window.doModal()) {
       // TODO save the curve?
     }
   }
-  else
-#endif // ENABLE_UI
-  {
+  else {
     start_filter_worker(&filterMgr);
   }
 }

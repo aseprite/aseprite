@@ -6,14 +6,14 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include <gtest/gtest.h>
 
-#include "doc/remap.h"
 #include "doc/palette.h"
 #include "doc/palette_picks.h"
+#include "doc/remap.h"
 
 using namespace doc;
 
@@ -21,7 +21,7 @@ static PalettePicks make(int n, const std::vector<int>& v)
 {
   PalettePicks picks(n);
   std::fill(picks.begin(), picks.end(), false);
-  for (int i=0; i<int(v.size()); ++i)
+  for (int i = 0; i < int(v.size()); ++i)
     picks[v[i]] = true;
   return picks;
 }
@@ -29,7 +29,7 @@ static PalettePicks make(int n, const std::vector<int>& v)
 static void expect_map(const Remap& map, const std::vector<int>& expected)
 {
   EXPECT_EQ(map.size(), expected.size());
-  for (int i=0; i<int(map.size()); ++i) {
+  for (int i = 0; i < int(map.size()); ++i) {
     EXPECT_EQ(expected[i], map[i]) << " When i=" << i;
   }
 }

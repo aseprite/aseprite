@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_frame_duration.h"
@@ -14,8 +14,7 @@
 #include "app/doc_event.h"
 #include "doc/sprite.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 SetFrameDuration::SetFrameDuration(Sprite* sprite, frame_t frame, int duration)
   : WithSprite(sprite)
@@ -47,5 +46,4 @@ void SetFrameDuration::onFireNotifications()
   doc->notify_observers<DocEvent&>(&DocObserver::onFrameDurationChanged, ev);
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

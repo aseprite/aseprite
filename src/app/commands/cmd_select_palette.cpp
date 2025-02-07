@@ -1,11 +1,11 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio SA
+// Copyright (C) 2021-2024  Igara Studio SA
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -31,12 +31,7 @@ using namespace ui;
 
 class SelectPaletteColorsCommand : public Command {
 public:
-  enum Modifier {
-    UsedColors,
-    UnusedColors,
-    UsedTiles,
-    UnusedTiles
-  };
+  enum Modifier { UsedColors, UnusedColors, UsedTiles, UnusedTiles };
 
   SelectPaletteColorsCommand();
 
@@ -45,6 +40,7 @@ protected:
   void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
   std::string onGetFriendlyName() const override;
+  bool isListed(const Params& params) const override { return !params.empty(); }
 
 private:
   void selectTiles(const Layer* layer,
@@ -62,12 +58,10 @@ SelectPaletteColorsCommand::SelectPaletteColorsCommand()
 
 bool SelectPaletteColorsCommand::onEnabled(Context* context)
 {
-  if (!context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                           ContextFlags::HasActiveSprite))
+  if (!context->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasActiveSprite))
     return false;
 
-  if (m_modifier == Modifier::UsedTiles ||
-      m_modifier == Modifier::UnusedTiles) {
+  if (m_modifier == Modifier::UsedTiles || m_modifier == Modifier::UnusedTiles) {
     Layer* layer = context->activeSite().layer();
     return (layer && layer->isTilemap());
   }
@@ -88,10 +82,9 @@ void SelectPaletteColorsCommand::onLoadParams(const Params& params)
     m_modifier = Modifier::UsedColors;
 }
 
-void SelectPaletteColorsCommand::selectTiles(
-  const Layer* layer,
-  const SelectedFrames& selectedFrames,
-  PalettePicks& usedTiles)
+void SelectPaletteColorsCommand::selectTiles(const Layer* layer,
+                                             const SelectedFrames& selectedFrames,
+                                             PalettePicks& usedTiles)
 {
   ASSERT(layer);
   ASSERT(layer->isTilemap());
@@ -127,26 +120,20 @@ void SelectPaletteColorsCommand::onExecute(Context* context)
     selectedLayers = range.selectedLayers();
   }
 
-  if (m_modifier == Modifier::UsedColors ||
-      m_modifier == Modifier::UnusedColors) {
+  if (m_modifier == Modifier::UsedColors || m_modifier == Modifier::UnusedColors) {
     doc::OctreeMap octreemap;
     const doc::Palette* currentPalette = get_current_palette();
     PalettePicks usedEntries(currentPalette->size());
 
-    auto countImage = [&octreemap, &usedEntries](const Image* image){
+    auto countImage = [&octreemap, &usedEntries](const Image* image) {
       switch (image->pixelFormat()) {
-
         case IMAGE_RGB:
-        case IMAGE_GRAYSCALE:
-          octreemap.feedWithImage(image, true, image->maskColor(), 8);
-          break;
+        case IMAGE_GRAYSCALE: octreemap.feedWithImage(image, true, image->maskColor(), 8); break;
 
         case IMAGE_INDEXED:
-          doc::for_each_pixel<IndexedTraits>(
-            image,
-            [&usedEntries](const color_t p) {
-              usedEntries[p] = true;
-            });
+          doc::for_each_pixel<IndexedTraits>(image, [&usedEntries](const color_t p) {
+            usedEntries[p] = true;
+          });
           break;
       }
     };
@@ -165,16 +152,14 @@ void SelectPaletteColorsCommand::onExecute(Context* context)
             PalettePicks usedTiles(tileset->size());
 
             // Looking for tiles (available in tileset) used in the tilemap image:
-            doc::for_each_pixel<TilemapTraits>(
-              image,
-              [&usedTiles, &tileset, &ti](const tile_t t) {
-                if (tileset->findTileIndex(tileset->get(t), ti))
-                  usedTiles[ti] = true;
-              });
+            doc::for_each_pixel<TilemapTraits>(image, [&usedTiles, &tileset, &ti](const tile_t t) {
+              if (tileset->findTileIndex(tileset->get(t), ti))
+                usedTiles[ti] = true;
+            });
 
             // Looking for tile matches in usedTiles. If a tile matches, then
             // search into the tilemap (pixel by pixel) looking for color matches.
-            for (int i=0; i<usedTiles.size(); ++i) {
+            for (int i = 0; i < usedTiles.size(); ++i) {
               if (usedTiles[i])
                 countImage(tileset->get(i).get());
             }
@@ -190,7 +175,7 @@ void SelectPaletteColorsCommand::onExecute(Context* context)
     doc::Palette tempPalette;
     octreemap.makePalette(&tempPalette, std::numeric_limits<int>::max(), 8);
 
-    for (int i=0; i < currentPalette->size(); ++i) {
+    for (int i = 0; i < currentPalette->size(); ++i) {
       if (tempPalette.findExactMatch(currentPalette->getEntry(i))) {
         usedEntries[i] = true;
         continue;
@@ -201,16 +186,14 @@ void SelectPaletteColorsCommand::onExecute(Context* context)
       usedEntries.invert();
     context->setSelectedColors(usedEntries);
   }
-  else if (m_modifier == Modifier::UsedTiles ||
-           m_modifier == Modifier::UnusedTiles) {
+  else if (m_modifier == Modifier::UsedTiles || m_modifier == Modifier::UnusedTiles) {
     Tileset* tileset = site.tileset();
     if (!tileset)
       return;
 
     PalettePicks usedTiles(tileset->size());
     for (const Layer* layer : selectedLayers) {
-      if (layer->isTilemap() &&
-          static_cast<const LayerTilemap*>(layer)->tileset() == tileset) {
+      if (layer->isTilemap() && static_cast<const LayerTilemap*>(layer)->tileset() == tileset) {
         selectTiles(layer, selectedFrames, usedTiles);
       }
     }
@@ -229,7 +212,7 @@ std::string SelectPaletteColorsCommand::onGetFriendlyName() const
     case UsedTiles:    return Strings::commands_SelectPaletteColors_UsedTiles();
     case UnusedTiles:  return Strings::commands_SelectPaletteColors_UnusedTiles();
   }
-  return getBaseFriendlyName();
+  return Strings::commands_SelectPaletteColors();
 }
 
 Command* CommandFactory::createSelectPaletteColorsCommand()

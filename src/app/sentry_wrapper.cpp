@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/sentry_wrapper.h"
@@ -109,18 +109,16 @@ bool Sentry::areThereCrashesToReport()
 
   // At least one .dmp file in the completed/ directory means that
   // there was at least one crash in the past (this is for macOS).
-  for (auto f : base::list_files(base::join_path(m_dbdir, "completed"))) {
-    if (base::get_file_extension(f) == "dmp")
-      return true;
-  }
+  if (!base::list_files(base::join_path(m_dbdir, "completed"), base::ItemType::Files, "*.dmp")
+         .empty())
+    return true;
 
   // In case that "last_crash" doesn't exist we can check for some
   // .dmp file in the reports/ directory (it looks like the completed/
   // directory is not generated on Windows).
-  for (auto f : base::list_files(base::join_path(m_dbdir, "reports"))) {
-    if (base::get_file_extension(f) == "dmp")
-      return true;
-  }
+  if (!base::list_files(base::join_path(m_dbdir, "reports"), base::ItemType::Files, "*.dmp").empty())
+    return true;
+
   return false;
 }
 
@@ -149,9 +147,7 @@ void Sentry::addBreadcrumb(const std::string& message,
   sentry_value_t d = sentry_value_new_object();
   for (const auto& kv : data) {
     LOG(VERBOSE, " - [%s]=%s\n", kv.first.c_str(), kv.second.c_str());
-    sentry_value_set_by_key(d,
-                            kv.first.c_str(),
-                            sentry_value_new_string(kv.second.c_str()));
+    sentry_value_set_by_key(d, kv.first.c_str(), sentry_value_new_string(kv.second.c_str()));
   }
   sentry_value_set_by_key(c, "data", d);
   sentry_add_breadcrumb(c);
@@ -160,13 +156,12 @@ void Sentry::addBreadcrumb(const std::string& message,
 void Sentry::setupDirs(sentry_options_t* options)
 {
   // The expected handler executable name is aseprite_crashpad_handler (.exe)
-  const std::string handler =
-    base::join_path(base::get_file_path(base::get_app_path()),
-                    "aseprite_crashpad_handler"
+  const std::string handler = base::join_path(base::get_file_path(base::get_app_path()),
+                                              "aseprite_crashpad_handler"
 #if LAF_WINDOWS
-                    ".exe"
+                                              ".exe"
 #endif
-                    );
+  );
 
   // The crash database will be located in the user directory as the
   // "crashdb" directory (along with "sessions", "extensions", etc.)

@@ -48,4 +48,4 @@ private:
 
 } // namespace app
 
-#endif  // APP_SENTRY_WRAPPER_H
+#endif // APP_SENTRY_WRAPPER_H

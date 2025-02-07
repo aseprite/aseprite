@@ -8,14 +8,14 @@
     <label text="Animated sprite editor &amp;&amp; pixel art tool" />
     <hbox homogeneous="true">
       <hbox>
-	<vbox expansive="true">
+        <vbox expansive="true">
           <separator text="Developer Team" horizontal="true" />
           <link text="David Capello" url="https://twitter.com/davidcapello" />
           <link text="Gaspar Capello" url="https://twitter.com/Gasparoken" />
           <link text="Martín Capello" url="https://twitter.com/martincapell0" />
-	  <vbox minheight="8" />
-	</vbox>
-	<separator vertical="true" />
+          <vbox minheight="8" />
+        </vbox>
+        <separator vertical="true" />
       </hbox>
       <vbox>
         <separator text="Credits" horizontal="true" cell_hspan="2" />
@@ -26,7 +26,7 @@
     </hbox>
     <separator horizontal="true" />
     <hbox>
-      <label text="Copyright (C) 2001-2024" />
+      <label text="Copyright (C) 2001-2025" />
       <link text="Igara Studio S.A." url="https://igara.com/" />
     </hbox>
     <link text="https://www.aseprite.org/" url="https://www.aseprite.org/" />

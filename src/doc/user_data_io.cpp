@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/user_data_io.h"
@@ -36,66 +36,38 @@ static void write_size(std::ostream& os, const gfx::Size& size)
 
 static void write_property_value(std::ostream& os, const UserData::Variant& variant)
 {
-  switch (variant.type())
-  {
-    case USER_DATA_PROPERTY_TYPE_BOOL:
-      write8(os, get_value<bool>(variant));
-      break;
-    case USER_DATA_PROPERTY_TYPE_INT8:
-      write8(os, get_value<int8_t>(variant));
-      break;
-    case USER_DATA_PROPERTY_TYPE_UINT8:
-      write8(os, get_value<uint8_t>(variant));
-      break;
-    case USER_DATA_PROPERTY_TYPE_INT16:
-      write16(os, get_value<int16_t>(variant));
-      break;
-    case USER_DATA_PROPERTY_TYPE_UINT16:
-      write16(os, get_value<uint16_t>(variant));
-      break;
-    case USER_DATA_PROPERTY_TYPE_INT32:
-      write32(os, get_value<int32_t>(variant));
-      break;
-    case USER_DATA_PROPERTY_TYPE_UINT32:
-      write32(os, get_value<uint32_t>(variant));
-      break;
-    case USER_DATA_PROPERTY_TYPE_INT64:
-      write64(os, get_value<int64_t>(variant));
-      break;
-    case USER_DATA_PROPERTY_TYPE_UINT64:
-      write64(os, get_value<uint64_t>(variant));
-      break;
+  switch (variant.type()) {
+    case USER_DATA_PROPERTY_TYPE_BOOL:   write8(os, get_value<bool>(variant)); break;
+    case USER_DATA_PROPERTY_TYPE_INT8:   write8(os, get_value<int8_t>(variant)); break;
+    case USER_DATA_PROPERTY_TYPE_UINT8:  write8(os, get_value<uint8_t>(variant)); break;
+    case USER_DATA_PROPERTY_TYPE_INT16:  write16(os, get_value<int16_t>(variant)); break;
+    case USER_DATA_PROPERTY_TYPE_UINT16: write16(os, get_value<uint16_t>(variant)); break;
+    case USER_DATA_PROPERTY_TYPE_INT32:  write32(os, get_value<int32_t>(variant)); break;
+    case USER_DATA_PROPERTY_TYPE_UINT32: write32(os, get_value<uint32_t>(variant)); break;
+    case USER_DATA_PROPERTY_TYPE_INT64:  write64(os, get_value<int64_t>(variant)); break;
+    case USER_DATA_PROPERTY_TYPE_UINT64: write64(os, get_value<uint64_t>(variant)); break;
     case USER_DATA_PROPERTY_TYPE_FIXED:
       write32(os, get_value<UserData::Fixed>(variant).value);
       break;
-    case USER_DATA_PROPERTY_TYPE_FLOAT:
-      write_float(os, get_value<float>(variant));
-      break;
-    case USER_DATA_PROPERTY_TYPE_DOUBLE:
-      write_double(os, get_value<double>(variant));
-      break;
-    case USER_DATA_PROPERTY_TYPE_STRING:
-      write_string(os, get_value<std::string>(variant));
-      break;
-    case USER_DATA_PROPERTY_TYPE_POINT:
-      write_point(os, get_value<gfx::Point>(variant));
-      break;
-    case USER_DATA_PROPERTY_TYPE_SIZE:
-      write_size(os, get_value<gfx::Size>(variant));
-      break;
-    case USER_DATA_PROPERTY_TYPE_RECT: {
+    case USER_DATA_PROPERTY_TYPE_FLOAT:  write_float(os, get_value<float>(variant)); break;
+    case USER_DATA_PROPERTY_TYPE_DOUBLE: write_double(os, get_value<double>(variant)); break;
+    case USER_DATA_PROPERTY_TYPE_STRING: write_string(os, get_value<std::string>(variant)); break;
+    case USER_DATA_PROPERTY_TYPE_POINT:  write_point(os, get_value<gfx::Point>(variant)); break;
+    case USER_DATA_PROPERTY_TYPE_SIZE:   write_size(os, get_value<gfx::Size>(variant)); break;
+    case USER_DATA_PROPERTY_TYPE_RECT:   {
       const gfx::Rect& rect = get_value<gfx::Rect>(variant);
       write_point(os, rect.origin());
       write_size(os, rect.size());
       break;
     }
     case USER_DATA_PROPERTY_TYPE_VECTOR: {
-        const std::vector<UserData::Variant>& vector = get_value<std::vector<UserData::Variant>>(variant);
-        write32(os, vector.size());
-        for (auto elem : vector) {
-          write16(os, elem.type());
-          write_property_value(os, elem);
-        }
+      const std::vector<UserData::Variant>& vector = get_value<std::vector<UserData::Variant>>(
+        variant);
+      write32(os, vector.size());
+      for (auto elem : vector) {
+        write16(os, elem.type());
+        write_property_value(os, elem);
+      }
       break;
     }
     case USER_DATA_PROPERTY_TYPE_PROPERTIES: {
@@ -114,7 +86,7 @@ static void write_property_value(std::ostream& os, const UserData::Variant& vari
     }
     case USER_DATA_PROPERTY_TYPE_UUID: {
       auto uuid = get_value<base::Uuid>(variant);
-      for (int i=0; i<16; ++i) {
+      for (int i = 0; i < 16; ++i) {
         write8(os, uuid[i]);
       }
       break;
@@ -184,7 +156,7 @@ static UserData::Variant read_property_value(std::istream& is, uint16_t type)
     }
     case USER_DATA_PROPERTY_TYPE_FIXED: {
       int32_t value = read32(is);
-      return doc::UserData::Fixed{value};
+      return doc::UserData::Fixed{ value };
     }
     case USER_DATA_PROPERTY_TYPE_FLOAT: {
       float value = read_float(is);
@@ -218,7 +190,7 @@ static UserData::Variant read_property_value(std::istream& is, uint16_t type)
     case USER_DATA_PROPERTY_TYPE_VECTOR: {
       auto numElems = read32(is);
       std::vector<doc::UserData::Variant> value;
-      for (int k=0; k<numElems;++k) {
+      for (int k = 0; k < numElems; ++k) {
         auto elemType = read16(is);
         value.push_back(read_property_value(is, elemType));
       }
@@ -227,7 +199,7 @@ static UserData::Variant read_property_value(std::istream& is, uint16_t type)
     case USER_DATA_PROPERTY_TYPE_PROPERTIES: {
       auto numProps = read32(is);
       doc::UserData::Properties value;
-      for (int j=0; j<numProps;++j) {
+      for (int j = 0; j < numProps; ++j) {
         auto name = read_string(is);
         auto type = read16(is);
         value[name] = read_property_value(is, type);
@@ -237,7 +209,7 @@ static UserData::Variant read_property_value(std::istream& is, uint16_t type)
     case USER_DATA_PROPERTY_TYPE_UUID: {
       base::Uuid value;
       uint8_t* bytes = value.bytes();
-      for (int i=0; i<16; ++i) {
+      for (int i = 0; i < 16; ++i) {
         bytes[i] = read8(is);
       }
       return value;
@@ -251,7 +223,7 @@ static UserData::PropertiesMaps read_properties_maps(std::istream& is)
 {
   doc::UserData::PropertiesMaps propertiesMaps;
   size_t nmaps = read32(is);
-  for (int i=0; i<nmaps; ++i) {
+  for (int i = 0; i < nmaps; ++i) {
     std::string extensionId = read_string(is);
     auto properties = read_property_value(is, USER_DATA_PROPERTY_TYPE_PROPERTIES);
     propertiesMaps[extensionId] = doc::get_value<doc::UserData::Properties>(properties);
@@ -259,7 +231,7 @@ static UserData::PropertiesMaps read_properties_maps(std::istream& is)
   return propertiesMaps;
 }
 
-UserData read_user_data(std::istream& is, const int docFormatVer)
+UserData read_user_data(std::istream& is, const SerialFormat serial)
 {
   UserData userData;
   userData.setText(read_string(is));
@@ -273,11 +245,11 @@ UserData read_user_data(std::istream& is, const int docFormatVer)
     // When recovering a session from an old Aseprite version, we need
     // to skip reading the parts that it doesn't contains. Otherwise
     // it is very likely to fail.
-    if (docFormatVer >= DOC_FORMAT_VERSION_2) {
+    if (serial >= SerialFormat::Ver2) {
       userData.propertiesMaps() = read_properties_maps(is);
     }
   }
   return userData;
 }
 
-}
+} // namespace doc

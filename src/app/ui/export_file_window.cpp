@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/export_file_window.h"
@@ -39,9 +39,7 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
     setOutputFilename(m_docPref.saveCopy.filename());
   }
   else {
-    std::string newFn = base::replace_extension(
-      doc->filename(),
-      defaultExtension());
+    std::string newFn = base::replace_extension(doc->filename(), defaultExtension());
     if (newFn == doc->filename()) {
       newFn = base::join_path(
         base::get_file_path(newFn),
@@ -53,7 +51,10 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
   // Default export configuration
   setResizeScale(m_docPref.saveCopy.resizeScale());
   fill_area_combobox(m_doc->sprite(), area(), m_docPref.saveCopy.area());
-  fill_layers_combobox(m_doc->sprite(), layers(), m_docPref.saveCopy.layer(), m_docPref.saveCopy.layerIndex());
+  fill_layers_combobox(m_doc->sprite(),
+                       layers(),
+                       m_docPref.saveCopy.layer(),
+                       m_docPref.saveCopy.layerIndex());
   fill_frames_combobox(m_doc->sprite(), frames(), m_docPref.saveCopy.frameTag());
   fill_anidir_combobox(anidir(), m_docPref.saveCopy.aniDir());
 
@@ -74,32 +75,30 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
   // set by the function fill_anidir_combobox(). So if the user
   // exported a tag with a specific AniDir, we want to keep the option
   // in the preference (instead of the tag's AniDir).
-  //updateAniDir();
+  // updateAniDir();
   updatePlaySubtags();
 
   updateAdjustResizeButton();
 
-  outputFilename()->Change.connect(
-    [this]{
-      m_outputFilename = outputFilename()->text();
-      onOutputFilenameEntryChange();
-    });
-  outputFilenameBrowse()->Click.connect(
-    [this]{
-      std::string fn = SelectOutputFile();
-      if (!fn.empty()) {
-        setOutputFilename(fn);
-      }
-    });
+  outputFilename()->Change.connect([this] {
+    m_outputFilename = outputFilename()->text();
+    onOutputFilenameEntryChange();
+  });
+  outputFilenameBrowse()->Click.connect([this] {
+    std::string fn = SelectOutputFile();
+    if (!fn.empty()) {
+      setOutputFilename(fn);
+    }
+  });
 
-  resize()->Change.connect([this]{ updateAdjustResizeButton(); });
-  frames()->Change.connect([this]{
+  resize()->Change.connect([this] { updateAdjustResizeButton(); });
+  frames()->Change.connect([this] {
     updateAniDir();
     updatePlaySubtags();
   });
-  forTwitter()->Click.connect([this]{ updateAdjustResizeButton(); });
-  adjustResize()->Click.connect([this]{ onAdjustResize(); });
-  ok()->Click.connect([this]{ onOK(); });
+  forTwitter()->Click.connect([this] { updateAdjustResizeButton(); });
+  adjustResize()->Click.connect([this] { onAdjustResize(); });
+  ok()->Click.connect([this] { onOK(); });
 }
 
 bool ExportFileWindow::show()
@@ -124,8 +123,7 @@ void ExportFileWindow::savePref()
 
 std::string ExportFileWindow::outputFilenameValue() const
 {
-  return base::join_path(m_outputPath,
-                         m_outputFilename);
+  return base::get_absolute_path(base::join_path(m_outputPath, m_outputFilename));
 }
 
 double ExportFileWindow::resizeValue() const
@@ -192,8 +190,21 @@ void ExportFileWindow::setAniDir(const doc::AniDir aniDir)
 
 void ExportFileWindow::setOutputFilename(const std::string& pathAndFilename)
 {
-  m_outputPath = base::get_file_path(pathAndFilename);
-  m_outputFilename = base::get_file_name(pathAndFilename);
+  if (base::get_file_path(m_doc->filename()).empty()) {
+    m_outputPath = base::get_file_path(pathAndFilename);
+    m_outputFilename = base::get_file_name(pathAndFilename);
+  }
+  else {
+    m_outputPath = base::get_file_path(m_doc->filename());
+    m_outputFilename = base::get_relative_path(pathAndFilename,
+                                               base::get_file_path(m_doc->filename()));
+
+    // Cannot find a relative path (e.g. we selected other drive)
+    if (m_outputFilename == pathAndFilename) {
+      m_outputPath = base::get_file_path(pathAndFilename);
+      m_outputFilename = base::get_file_name(pathAndFilename);
+    }
+  }
 
   updateOutputFilenameEntry();
 }
@@ -212,12 +223,10 @@ void ExportFileWindow::onOutputFilenameEntryChange()
 void ExportFileWindow::updateAniDir()
 {
   std::string framesValue = this->framesValue();
-  if (!framesValue.empty() &&
-      framesValue != kAllFrames &&
-      framesValue != kSelectedFrames) {
+  if (!framesValue.empty() && framesValue != kAllFrames && framesValue != kSelectedFrames) {
     SelectedFrames selFrames;
-    Tag* tag = calculate_selected_frames(
-      UIContext::instance()->activeSite(), framesValue, selFrames);
+    Tag* tag =
+      calculate_selected_frames(UIContext::instance()->activeSite(), framesValue, selFrames);
     if (tag)
       anidir()->setSelectedItemIndex(int(tag->aniDir()));
   }
@@ -239,20 +248,17 @@ void ExportFileWindow::updateAdjustResizeButton()
   // Calculate a better size for Twitter
   m_preferredResize = 1;
   while (m_preferredResize < 10 &&
-         (m_doc->width()*m_preferredResize < 240 ||
-          m_doc->height()*m_preferredResize < 240)) {
+         (m_doc->width() * m_preferredResize < 240 || m_doc->height() * m_preferredResize < 240)) {
     ++m_preferredResize;
   }
 
-  const bool newState =
-    forTwitter()->isSelected() &&
-    ((int)resizeValue() < m_preferredResize);
+  const bool newState = forTwitter()->isSelected() && ((int)resizeValue() < m_preferredResize);
 
   if (adjustResize()->isVisible() != newState) {
     adjustResize()->setVisible(newState);
-    if (newState)
-      adjustResize()->setText(fmt::format(Strings::export_file_adjust_resize(),
-                                          100 * m_preferredResize));
+    if (newState) {
+      adjustResize()->setText(Strings::export_file_adjust_resize(100 * m_preferredResize));
+    }
     adjustResize()->parent()->layout();
   }
 }
@@ -268,19 +274,15 @@ void ExportFileWindow::onAdjustResize()
 void ExportFileWindow::onOK()
 {
   base::paths exts = get_writable_extensions();
-  std::string ext = base::string_to_lower(
-    base::get_file_extension(m_outputFilename));
+  std::string ext = base::string_to_lower(base::get_file_extension(m_outputFilename));
 
   // Add default extension to output filename
   if (std::find(exts.begin(), exts.end(), ext) == exts.end()) {
     if (ext.empty()) {
-      m_outputFilename =
-        base::replace_extension(m_outputFilename,
-                                defaultExtension());
+      m_outputFilename = base::replace_extension(m_outputFilename, defaultExtension());
     }
     else {
-      ui::Alert::show(
-        fmt::format(Strings::alerts_unknown_output_file_format_error(), ext));
+      ui::Alert::show(Strings::alerts_unknown_output_file_format_error(ext));
       return;
     }
   }

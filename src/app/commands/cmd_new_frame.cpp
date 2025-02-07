@@ -1,12 +1,12 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -29,7 +29,6 @@
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
-#include "fmt/format.h"
 #include "ui/ui.h"
 
 #include <stdexcept>
@@ -44,7 +43,7 @@ public:
     DUPLICATE_CELS,
     DUPLICATE_CELS_COPIES,
     DUPLICATE_CELS_LINKED,
-   };
+  };
 
   NewFrameCommand();
 
@@ -58,8 +57,7 @@ private:
   Content m_content;
 };
 
-NewFrameCommand::NewFrameCommand()
-  : Command(CommandId::NewFrame(), CmdRecordableFlag)
+NewFrameCommand::NewFrameCommand() : Command(CommandId::NewFrame(), CmdRecordableFlag)
 {
 }
 
@@ -68,15 +66,13 @@ void NewFrameCommand::onLoadParams(const Params& params)
   m_content = Content::DUPLICATE_FRAME;
 
   std::string content = params.get("content");
-  if (content == "current" ||
-      content == "frame")
+  if (content == "current" || content == "frame")
     m_content = Content::DUPLICATE_FRAME;
   else if (content == "empty")
     m_content = Content::NEW_EMPTY_FRAME;
   else if (content == "cel")
     m_content = Content::DUPLICATE_CELS;
-  else if (content == "celblock" ||
-           content == "celcopies")
+  else if (content == "celblock" || content == "celcopies")
     m_content = Content::DUPLICATE_CELS_COPIES;
   else if (content == "cellinked")
     m_content = Content::DUPLICATE_CELS_LINKED;
@@ -94,26 +90,19 @@ void NewFrameCommand::onExecute(Context* context)
   Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
 
-#if ENABLE_UI
   // Show the tooltip feedback only if we are not inside a transaction
   // (e.g. we can be already in a transaction if we are running in a
   // Lua script app.transaction()).
   const bool showTooltip = (document->transaction() == nullptr);
-#endif
 
   {
     Tx tx(writer, friendlyName());
     DocApi api = document->getApi(tx);
 
     switch (m_content) {
+      case Content::DUPLICATE_FRAME:       api.addFrame(sprite, writer.frame() + 1); break;
 
-      case Content::DUPLICATE_FRAME:
-        api.addFrame(sprite, writer.frame()+1);
-        break;
-
-      case Content::NEW_EMPTY_FRAME:
-        api.addEmptyFrame(sprite, writer.frame()+1);
-        break;
+      case Content::NEW_EMPTY_FRAME:       api.addEmptyFrame(sprite, writer.frame() + 1); break;
 
       case Content::DUPLICATE_CELS:
       case Content::DUPLICATE_CELS_LINKED:
@@ -125,14 +114,11 @@ void NewFrameCommand::onExecute(Context* context)
         }
 
         const Site* site = writer.site();
-        if (site->inTimeline() &&
-            !site->selectedLayers().empty() &&
+        if (site->inTimeline() && !site->selectedLayers().empty() &&
             !site->selectedFrames().empty()) {
-#if ENABLE_UI
           auto timeline = App::instance()->timeline();
           timeline->prepareToMoveRange();
           DocRange range = timeline->range();
-#endif
 
           SelectedLayers selLayers;
           if (site->inFrames())
@@ -142,32 +128,29 @@ void NewFrameCommand::onExecute(Context* context)
             selLayers.expandCollapsedGroups();
           }
 
-          frame_t frameRange =
-            (site->selectedFrames().lastFrame() -
-             site->selectedFrames().firstFrame() + 1);
+          frame_t frameRange = (site->selectedFrames().lastFrame() -
+                                site->selectedFrames().firstFrame() + 1);
 
           for (Layer* layer : selLayers) {
             if (layer->isImage()) {
               for (frame_t srcFrame : site->selectedFrames().reversed()) {
-                frame_t dstFrame = srcFrame+frameRange;
-                api.copyCel(
-                  static_cast<LayerImage*>(layer), srcFrame,
-                  static_cast<LayerImage*>(layer), dstFrame, continuous.get());
+                frame_t dstFrame = srcFrame + frameRange;
+                api.copyCel(static_cast<LayerImage*>(layer),
+                            srcFrame,
+                            static_cast<LayerImage*>(layer),
+                            dstFrame,
+                            continuous.get());
               }
             }
           }
 
-#ifdef ENABLE_UI                // TODO the range should be part of the Site
           range.displace(0, frameRange);
           timeline->moveRange(range);
-#endif
         }
         else if (auto layer = static_cast<LayerImage*>(writer.layer())) {
-          api.copyCel(
-            layer, writer.frame(),
-            layer, writer.frame()+1, continuous.get());
+          api.copyCel(layer, writer.frame(), layer, writer.frame() + 1, continuous.get());
 
-          context->setActiveFrame(writer.frame()+1);
+          context->setActiveFrame(writer.frame() + 1);
         }
         break;
       }
@@ -176,19 +159,16 @@ void NewFrameCommand::onExecute(Context* context)
     tx.commit();
   }
 
-#ifdef ENABLE_UI
   if (context->isUIAvailable() && showTooltip) {
     update_screen_for_document(document);
 
     StatusBar::instance()->showTip(
-      1000, fmt::format(
-        Strings::commands_NewFrame_tooltip(),
-        (int)context->activeSite().frame()+1,
-        (int)sprite->totalFrames()));
+      1000,
+      Strings::commands_NewFrame_tooltip((int)context->activeSite().frame() + 1,
+                                         (int)sprite->totalFrames()));
 
     App::instance()->mainWindow()->popTimeline();
   }
-#endif
 }
 
 std::string NewFrameCommand::onGetFriendlyName() const
@@ -196,15 +176,9 @@ std::string NewFrameCommand::onGetFriendlyName() const
   std::string text;
 
   switch (m_content) {
-    case Content::DUPLICATE_FRAME:
-      text = Strings::commands_NewFrame();
-      break;
-    case Content::NEW_EMPTY_FRAME:
-      text = Strings::commands_NewFrame_NewEmptyFrame();
-      break;
-    case Content::DUPLICATE_CELS:
-      text = Strings::commands_NewFrame_DuplicateCels();
-      break;
+    case Content::DUPLICATE_FRAME: text = Strings::commands_NewFrame(); break;
+    case Content::NEW_EMPTY_FRAME: text = Strings::commands_NewFrame_NewEmptyFrame(); break;
+    case Content::DUPLICATE_CELS:  text = Strings::commands_NewFrame_DuplicateCels(); break;
     case Content::DUPLICATE_CELS_COPIES:
       text = Strings::commands_NewFrame_DuplicateCelsCopies();
       break;

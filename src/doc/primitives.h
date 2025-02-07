@@ -10,56 +10,74 @@
 #pragma once
 
 #include "base/ints.h"
-#include "doc/blend_mode.h"
 #include "doc/color.h"
 #include "doc/image_buffer.h"
 #include "gfx/fwd.h"
 
 namespace doc {
-  class Brush;
-  class Image;
-  class Palette;
-  class Remap;
+class Brush;
+class Image;
+class Remap;
 
-  color_t get_pixel(const Image* image, int x, int y);
-  void put_pixel(Image* image, int x, int y, color_t c);
+color_t get_pixel(const Image* image, int x, int y);
+void put_pixel(Image* image, int x, int y, color_t c);
 
-  void clear_image(Image* image, color_t bg);
+void clear_image(Image* image, color_t bg);
 
-  void copy_image(Image* dst, const Image* src);
-  void copy_image(Image* dst, const Image* src, int x, int y);
-  void blend_image(Image* dst, const Image* src, int x, int y,
-                   const int opacity, const doc::BlendMode blendMode);
-  void copy_image(Image* dst, const Image* src, const gfx::Region& rgn);
-  Image* crop_image(const Image* image, int x, int y, int w, int h, color_t bg, const ImageBufferPtr& buffer = ImageBufferPtr());
-  Image* crop_image(const Image* image, const gfx::Rect& bounds, color_t bg, const ImageBufferPtr& buffer = ImageBufferPtr());
-  void rotate_image(const Image* src, Image* dst, int angle);
+void copy_image(Image* dst, const Image* src);
+void copy_image(Image* dst, const Image* src, int x, int y);
+void copy_image(Image* dst, const Image* src, const gfx::Region& rgn);
+Image* crop_image(const Image* image,
+                  int x,
+                  int y,
+                  int w,
+                  int h,
+                  color_t bg,
+                  const ImageBufferPtr& buffer = ImageBufferPtr());
+Image* crop_image(const Image* image,
+                  const gfx::Rect& bounds,
+                  color_t bg,
+                  const ImageBufferPtr& buffer = ImageBufferPtr());
+void rotate_image(const Image* src, Image* dst, int angle);
 
-  void draw_hline(Image* image, int x1, int y, int x2, color_t c);
-  void draw_vline(Image* image, int x, int y1, int y2, color_t c);
-  void draw_rect(Image* image, int x1, int y1, int x2, int y2, color_t c);
-  void fill_rect(Image* image, int x1, int y1, int x2, int y2, color_t c);
-  void fill_rect(Image* image, const gfx::Rect& rc, color_t c);
-  void blend_rect(Image* image, int x1, int y1, int x2, int y2, color_t c, int opacity);
-  void draw_line(Image* image, int x1, int y1, int x2, int y2, color_t c);
-  void draw_ellipse(Image* image, int x1, int y1, int x2, int y2, int extraXPxs, int extraYPxs, color_t color);
-  void fill_ellipse(Image* image, int x1, int y1, int x2, int y2, int extraXPxs, int extraYPxs, color_t color);
+void draw_hline(Image* image, int x1, int y, int x2, color_t c);
+void draw_vline(Image* image, int x, int y1, int y2, color_t c);
+void draw_rect(Image* image, int x1, int y1, int x2, int y2, color_t c);
+void fill_rect(Image* image, int x1, int y1, int x2, int y2, color_t c);
+void fill_rect(Image* image, const gfx::Rect& rc, color_t c);
+void blend_rect(Image* image, int x1, int y1, int x2, int y2, color_t c, int opacity);
+void draw_line(Image* image, int x1, int y1, int x2, int y2, color_t c);
+void draw_ellipse(Image* image,
+                  int x1,
+                  int y1,
+                  int x2,
+                  int y2,
+                  int extraXPxs,
+                  int extraYPxs,
+                  color_t color);
+void fill_ellipse(Image* image,
+                  int x1,
+                  int y1,
+                  int x2,
+                  int y2,
+                  int extraXPxs,
+                  int extraYPxs,
+                  color_t color);
 
-  bool is_plain_image(const Image* img, color_t c);
-  bool is_empty_image(const Image* img);
+bool is_plain_image(const Image* img, color_t c);
+bool is_empty_image(const Image* img);
 
-  int count_diff_between_images(const Image* i1, const Image* i2);
-  bool is_same_image(const Image* i1, const Image* i2);
-  bool is_same_image_slow(const Image* i1, const Image* i2);
+int count_diff_between_images(const Image* i1, const Image* i2);
+bool is_same_image(const Image* i1, const Image* i2);
+bool is_same_image_slow(const Image* i1, const Image* i2);
 
-  void remap_image(Image* image, const Remap& remap);
+void remap_image(Image* image, const Remap& remap);
 
-  uint32_t calculate_image_hash(const Image* image,
-                                const gfx::Rect& bounds);
+uint32_t calculate_image_hash(const Image* image, const gfx::Rect& bounds);
 
-  // Sets RGB values to 0 when alpha=0 (to match images with alpha=0
-  // in tilesets/calculate_image_hash)
-  void preprocess_transparent_pixels(Image* image);
+// Sets RGB values to 0 when alpha=0 (to match images with alpha=0
+// in tilesets/calculate_image_hash)
+void preprocess_transparent_pixels(Image* image);
 
 } // namespace doc
 

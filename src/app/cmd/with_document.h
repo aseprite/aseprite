@@ -14,14 +14,14 @@ namespace app {
 class Doc;
 namespace cmd {
 
-  class WithDocument {
-  public:
-    WithDocument(Doc* doc);
-    Doc* document();
+class WithDocument {
+public:
+  WithDocument(Doc* doc);
+  Doc* document();
 
-  private:
-    doc::ObjectId m_docId;
-  };
+private:
+  doc::ObjectId m_docId;
+};
 
 } // namespace cmd
 } // namespace app

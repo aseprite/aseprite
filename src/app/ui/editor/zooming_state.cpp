@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/editor/zooming_state.h"
@@ -30,9 +30,7 @@ namespace app {
 
 using namespace ui;
 
-ZoomingState::ZoomingState()
-  : m_startZoom(1, 1)
-  , m_moved(false)
+ZoomingState::ZoomingState() : m_startZoom(1, 1), m_moved(false)
 {
 }
 
@@ -55,8 +53,7 @@ bool ZoomingState::onMouseUp(Editor* editor, MouseMessage* msg)
     else if (msg->right())
       zoom.out();
 
-    editor->setZoomAndCenterInMouse(
-      zoom, msg->position(), Editor::ZoomBehavior::MOUSE);
+    editor->setZoomAndCenterInMouse(zoom, msg->position(), Editor::ZoomBehavior::MOUSE);
   }
 
   editor->backToPreviousState();
@@ -69,14 +66,13 @@ bool ZoomingState::onMouseMove(Editor* editor, MouseMessage* msg)
   gfx::Point pt = (msg->position() - m_startPos);
   int threshold = 8 * guiscale() * editor->display()->nativeWindow()->scale();
 
-  if (m_moved || std::sqrt(pt.x*pt.x + pt.y*pt.y) > threshold) {
+  if (m_moved || std::sqrt(pt.x * pt.x + pt.y * pt.y) > threshold) {
     m_moved = true;
 
     int newScale = m_startZoom.linearScale() + pt.x / threshold;
     render::Zoom newZoom = render::Zoom::fromLinearScale(newScale);
 
-    editor->setZoomAndCenterInMouse(
-      newZoom, m_startPos, Editor::ZoomBehavior::MOUSE);
+    editor->setZoomAndCenterInMouse(newZoom, m_startPos, Editor::ZoomBehavior::MOUSE);
   }
   return true;
 }
@@ -84,8 +80,7 @@ bool ZoomingState::onMouseMove(Editor* editor, MouseMessage* msg)
 bool ZoomingState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 {
   auto theme = skin::SkinTheme::get(editor);
-  editor->showMouseCursor(
-    kCustomCursor, theme->cursors.magnifier());
+  editor->showMouseCursor(kCustomCursor, theme->cursors.magnifier());
   return true;
 }
 

@@ -1,12 +1,12 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cli/default_cli_delegate.h"
@@ -31,6 +31,8 @@
 #ifdef ENABLE_SCRIPTING
   #include "app/app.h"
   #include "app/script/engine.h"
+  #include "app/script/script_input_chain.h"
+  #include "app/ui/input_chain.h"
 #endif
 
 #include <iostream>
@@ -40,16 +42,12 @@ namespace app {
 
 void DefaultCliDelegate::showHelp(const AppOptions& options)
 {
-  std::cout
-    << get_app_name() << " v" << get_app_version()
-    << " | A pixel art program\n"
-    << get_app_copyright()
-    << "\n\nUsage:\n"
-    << "  " << options.exeName() << " [OPTIONS] [FILES]...\n\n"
-    << "Options:\n"
-    << options.programOptions()
-    << "\nFind more information in " << get_app_name()
-    << " web site: " << get_app_url() << "\n\n";
+  std::cout << get_app_name() << " v" << get_app_version() << " | A pixel art program\n"
+            << get_app_copyright() << "\n\nUsage:\n"
+            << "  " << options.exeName() << " [OPTIONS] [FILES]...\n\n"
+            << "Options:\n"
+            << options.programOptions() << "\nFind more information in " << get_app_name()
+            << " web site: " << get_app_url() << "\n\n";
 }
 
 void DefaultCliDelegate::showVersion()
@@ -59,12 +57,16 @@ void DefaultCliDelegate::showVersion()
 
 void DefaultCliDelegate::afterOpenFile(const CliOpenFile& cof)
 {
-  if (!cof.document)            // Do nothing
+  if (!cof.document) // Do nothing
     return;
 
   if (cof.listLayers) {
     for (doc::Layer* layer : cof.document->sprite()->allVisibleLayers())
       std::cout << layer->name() << "\n";
+  }
+
+  if (cof.listLayerHierarchy) {
+    std::cout << cof.document->sprite()->visibleLayerHierarchyAsString() << "\n";
   }
 
   if (cof.listTags) {
@@ -88,6 +90,9 @@ void DefaultCliDelegate::saveFile(Context* ctx, const CliOpenFile& cof)
   if (cof.hasTag()) {
     params.set("frame-tag", cof.tag.c_str());
   }
+  if (cof.playSubtags) {
+    params.set("playSubtags", "true");
+  }
   if (cof.hasFrameRange()) {
     params.set("from-frame", base::convert_to<std::string>(cof.fromFrame).c_str());
     params.set("to-frame", base::convert_to<std::string>(cof.toFrame).c_str());
@@ -102,8 +107,7 @@ void DefaultCliDelegate::saveFile(Context* ctx, const CliOpenFile& cof)
   ctx->executeCommand(saveAsCommand, params);
 }
 
-void DefaultCliDelegate::loadPalette(Context* ctx,
-                                     const std::string& filename)
+void DefaultCliDelegate::loadPalette(Context* ctx, const std::string& filename)
 {
   std::unique_ptr<doc::Palette> palette(load_palette(filename.c_str()));
   if (palette) {
@@ -114,8 +118,7 @@ void DefaultCliDelegate::loadPalette(Context* ctx,
     ctx->executeCommand(loadPalCommand, params);
   }
   else {
-    Console().printf("Error loading palette in --palette '%s'\n",
-                     filename.c_str());
+    Console().printf("Error loading palette in --palette '%s'\n", filename.c_str());
   }
 }
 
@@ -124,8 +127,7 @@ void DefaultCliDelegate::exportFiles(Context* ctx, DocExporter& exporter)
   LOG("APP: Exporting sheet...\n");
 
   base::task_token token;
-  std::unique_ptr<Doc> spriteSheet(
-    exporter.exportSheet(ctx, token));
+  std::unique_ptr<Doc> spriteSheet(exporter.exportSheet(ctx, token));
 
   // Sprite sheet isn't used, we just delete it.
 
@@ -133,9 +135,12 @@ void DefaultCliDelegate::exportFiles(Context* ctx, DocExporter& exporter)
 }
 
 #ifdef ENABLE_SCRIPTING
-int DefaultCliDelegate::execScript(const std::string& filename,
-                                   const Params& params)
+int DefaultCliDelegate::execScript(const std::string& filename, const Params& params)
 {
+  ScriptInputChain scriptInputChain;
+  if (!App::instance()->isGui()) {
+    App::instance()->inputChain().prioritize(&scriptInputChain, nullptr);
+  }
   auto engine = App::instance()->scriptEngine();
   if (!engine->evalUserFile(filename, params))
     throw base::Exception("Error executing script %s", filename.c_str());

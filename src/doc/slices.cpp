@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/slices.h"
@@ -17,8 +17,7 @@
 
 namespace doc {
 
-Slices::Slices(Sprite* sprite)
-  : m_sprite(sprite)
+Slices::Slices(Sprite* sprite) : m_sprite(sprite)
 {
 }
 

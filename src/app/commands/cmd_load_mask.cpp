@@ -1,12 +1,12 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_mask.h"
@@ -20,7 +20,6 @@
 #include "app/util/msk_file.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
-#include "fmt/format.h"
 #include "ui/alert.h"
 
 namespace app {
@@ -37,8 +36,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-LoadMaskCommand::LoadMaskCommand()
-  : Command(CommandId::LoadMask(), CmdRecordableFlag)
+LoadMaskCommand::LoadMaskCommand() : Command(CommandId::LoadMask(), CmdRecordableFlag)
 {
   m_filename = "";
 }
@@ -60,9 +58,11 @@ void LoadMaskCommand::onExecute(Context* context)
   if (context->isUIAvailable()) {
     base::paths exts = { "msk" };
     base::paths selectedFilename;
-    if (!app::show_file_selector(
-          Strings::load_selection_title(), m_filename, exts,
-          FileSelectorType::Open, selectedFilename))
+    if (!app::show_file_selector(Strings::load_selection_title(),
+                                 m_filename,
+                                 exts,
+                                 FileSelectorType::Open,
+                                 selectedFilename))
       return;
 
     m_filename = selectedFilename.front();
@@ -70,16 +70,14 @@ void LoadMaskCommand::onExecute(Context* context)
 
   std::unique_ptr<Mask> mask(load_msk_file(m_filename.c_str()));
   if (!mask) {
-    ui::Alert::show(fmt::format(Strings::alerts_error_loading_file(), m_filename));
+    ui::Alert::show(Strings::alerts_error_loading_file(m_filename));
     return;
   }
 
   {
     ContextWriter writer(reader);
     Doc* document = writer.document();
-    Tx tx(writer,
-          Strings::load_selection_title(),
-          DoesntModifyDocument);
+    Tx tx(writer, Strings::load_selection_title(), DoesntModifyDocument);
     tx(new cmd::SetMask(document, mask.get()));
     tx.commit();
 

@@ -1,18 +1,17 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/crash/read_document.h"
 
 #include "app/console.h"
-#include "app/crash/doc_format.h"
 #include "app/crash/internals.h"
 #include "app/crash/log.h"
 #include "app/doc.h"
@@ -32,6 +31,7 @@
 #include "doc/layer_tilemap.h"
 #include "doc/palette.h"
 #include "doc/palette_io.h"
+#include "doc/serial_format.h"
 #include "doc/slice.h"
 #include "doc/slice_io.h"
 #include "doc/sprite.h"
@@ -49,8 +49,7 @@
 #include <fstream>
 #include <map>
 
-namespace app {
-namespace crash {
+namespace app { namespace crash {
 
 using namespace base::serialization;
 using namespace base::serialization::little_endian;
@@ -58,30 +57,47 @@ using namespace doc;
 
 namespace {
 
+// Returns true if the file was saved correctly (has the "FINE" magic
+// number), so we can ignore broken versions of objects directly.
+bool check_magic_number(const std::string& fn)
+{
+  std::ifstream s(FSTREAM_PATH(fn), std::ifstream::binary);
+  return (read32(s) == MAGIC_NUMBER);
+}
+
 class Reader : public SubObjectsIO {
 public:
-  Reader(const std::string& dir,
-         base::task_token* t)
-    : m_docFormatVer(DOC_FORMAT_VERSION_0)
+  Reader(const std::string& dir, base::task_token* t)
+    : m_serial(SerialFormat::Ver0)
     , m_sprite(nullptr)
     , m_dir(dir)
     , m_docId(0)
     , m_docVersions(nullptr)
     , m_loadInfo(nullptr)
-    , m_taskToken(t) {
-    for (const auto& fn : base::list_files(dir)) {
+    , m_taskToken(t)
+  {
+    for (const auto& fn : base::list_files(dir, base::ItemType::Files)) {
       auto i = fn.find('-');
       if (i == std::string::npos)
-        continue;               // Has no ID
+        continue; // Has no ID
 
       auto j = fn.find('.', ++i);
       if (j == std::string::npos)
-        continue;               // Has no version
+        continue; // Has no version
 
       ObjectId id = base::convert_to<int>(fn.substr(i, j - i));
-      ObjectVersion ver = base::convert_to<int>(fn.substr(j+1));
+      ObjectVersion ver = base::convert_to<int>(fn.substr(j + 1));
       if (!id || !ver)
-        continue;               // Error converting strings to ID/ver
+        continue; // Error converting strings to ID/ver
+
+      // Checking for the magic number of each file takes a long time,
+      // we can guess that all files are valid when there is no
+      // m_taskToken, i.e. when we have to just show the description
+      // of the doc in the list of backups.
+      if (m_taskToken && !check_magic_number(base::join_path(m_dir, fn))) {
+        RECO_TRACE("RECO: Ignoring invalid file %s (no magic number)\n", fn.c_str());
+        continue;
+      }
 
       ObjVersions& versions = m_objVersions[id];
       versions.add(ver);
@@ -98,7 +114,8 @@ public:
     }
   }
 
-  Doc* loadDocument() {
+  Doc* loadDocument()
+  {
     Doc* doc = loadObject<Doc*>("doc", m_docId, &Reader::readDocument);
     if (doc)
       fixUndetectedDocumentIssues(doc);
@@ -107,28 +124,24 @@ public:
     return doc;
   }
 
-  bool loadDocumentInfo(DocumentInfo& info) {
+  bool loadDocumentInfo(DocumentInfo& info)
+  {
     m_loadInfo = &info;
-    return
-      loadObject<Doc*>("doc", m_docId, &Reader::readDocument)
-        == (Doc*)1;
+    return loadObject<Doc*>("doc", m_docId, &Reader::readDocument) == (Doc*)1;
   }
 
 private:
+  const ObjectVersion docId() const { return m_docId; }
 
-  const ObjectVersion docId() const {
-    return m_docId;
-  }
+  const ObjVersions* docVersions() const { return m_docVersions; }
 
-  const ObjVersions* docVersions() const {
-    return m_docVersions;
-  }
-
-  Sprite* loadSprite(ObjectId sprId) {
+  Sprite* loadSprite(ObjectId sprId)
+  {
     return loadObject<Sprite*>("spr", sprId, &Reader::readSprite);
   }
 
-  ImageRef getImageRef(ObjectId imageId) {
+  ImageRef getImageRef(ObjectId imageId)
+  {
     if (m_images.find(imageId) != m_images.end())
       return m_images[imageId];
 
@@ -136,7 +149,8 @@ private:
     return m_images[imageId] = image;
   }
 
-  CelDataRef getCelDataRef(ObjectId celdataId) {
+  CelDataRef getCelDataRef(ObjectId celdataId)
+  {
     if (m_celdatas.find(celdataId) != m_celdatas.end())
       return m_celdatas[celdataId];
 
@@ -145,10 +159,11 @@ private:
   }
 
   template<typename T>
-  T loadObject(const char* prefix, ObjectId id, T (Reader::*readMember)(std::ifstream&)) {
+  T loadObject(const char* prefix, ObjectId id, T (Reader::*readMember)(std::ifstream&))
+  {
     const ObjVersions& versions = m_objVersions[id];
 
-    for (size_t i=0; i<versions.size(); ++i) {
+    for (size_t i = 0; i < versions.size(); ++i) {
       ObjectVersion ver = versions[i];
       if (!ver)
         continue;
@@ -182,13 +197,15 @@ private:
     return nullptr;
   }
 
-  Doc* readDocument(std::ifstream& s) {
+  Doc* readDocument(std::ifstream& s)
+  {
     ObjectId sprId = read32(s);
     std::string filename = read_string(s);
-    m_docFormatVer = read16(s);
-    if (s.eof()) m_docFormatVer = DOC_FORMAT_VERSION_0;
+    m_serial = SerialFormat(read16(s));
+    if (s.eof())
+      m_serial = SerialFormat::Ver0;
 
-    RECO_TRACE("RECO: internal format version=%d\n", m_docFormatVer);
+    RECO_TRACE("RECO: internal format version=%d\n", int(m_serial));
 
     // Load DocumentInfo only
     if (m_loadInfo) {
@@ -209,7 +226,8 @@ private:
     }
   }
 
-  Sprite* readSprite(std::ifstream& s) {
+  Sprite* readSprite(std::ifstream& s)
+  {
     // Header
     ColorMode mode = (ColorMode)read8(s);
     int w = read16(s);
@@ -217,9 +235,7 @@ private:
     color_t transparentColor = read32(s);
     frame_t nframes = read32(s);
 
-    if (mode != ColorMode::RGB &&
-        mode != ColorMode::INDEXED &&
-        mode != ColorMode::GRAYSCALE) {
+    if (mode != ColorMode::RGB && mode != ColorMode::INDEXED && mode != ColorMode::GRAYSCALE) {
       if (!m_loadInfo)
         Console().printf("Invalid sprite color mode #%d\n", (int)mode);
       return nullptr;
@@ -236,7 +252,7 @@ private:
       m_loadInfo->width = w;
       m_loadInfo->height = h;
       m_loadInfo->frames = nframes;
-      return (Sprite*)1;        // TODO improve this
+      return (Sprite*)1; // TODO improve this
     }
 
     std::unique_ptr<Sprite> spr(new Sprite(ImageSpec(mode, w, h), 256));
@@ -245,7 +261,7 @@ private:
 
     if (nframes >= 1) {
       spr->setTotalFrames(nframes);
-      for (frame_t fr=0; fr<nframes; ++fr) {
+      for (frame_t fr = 0; fr < nframes; ++fr) {
         int msecs = read32(s);
         spr->setFrameDuration(fr, msecs);
       }
@@ -255,10 +271,10 @@ private:
     }
 
     // IDs of all tilesets
-    if (m_docFormatVer >= DOC_FORMAT_VERSION_1) {
+    if (m_serial >= SerialFormat::Ver1) {
       int ntilesets = read32(s);
       if (ntilesets > 0 && ntilesets < 0xffffff) {
-        for (int i=0; i<ntilesets; ++i) {
+        for (int i = 0; i < ntilesets; ++i) {
           ObjectId tilesetId = read32(s);
           Tileset* tileset = loadObject<Tileset*>("tset", tilesetId, &Reader::readTileset);
           if (tileset)
@@ -275,7 +291,7 @@ private:
       std::map<ObjectId, LayerGroup*> layersMap;
       layersMap[0] = spr->root(); // parentId = 0 is the root level
 
-      for (int i=0; i<nlayers; ++i) {
+      for (int i = 0; i < nlayers; ++i) {
         if (canceled())
           return nullptr;
 
@@ -302,7 +318,7 @@ private:
     }
 
     // Read all cels
-    for (size_t i=0; i<m_celsToLoad.size(); ++i) {
+    for (size_t i = 0; i < m_celsToLoad.size(); ++i) {
       if (canceled())
         return nullptr;
 
@@ -317,7 +333,7 @@ private:
       if (cel) {
         // Expand sprite size
         if (cel->frame() > m_sprite->lastFrame())
-          m_sprite->setTotalFrames(cel->frame()+1);
+          m_sprite->setTotalFrames(cel->frame() + 1);
 
         lay->addCel(cel);
       }
@@ -335,8 +351,7 @@ private:
           return nullptr;
 
         ObjectId palId = read32(s);
-        std::unique_ptr<Palette> pal(
-          loadObject<Palette*>("pal", palId, &Reader::readPalette));
+        std::unique_ptr<Palette> pal(loadObject<Palette*>("pal", palId, &Reader::readPalette));
         if (pal)
           spr->setPalette(pal.get(), true);
       }
@@ -386,7 +401,7 @@ private:
 
     // Read Sprite User Data
     if (!s.eof()) {
-      UserData userData = read_user_data(s, m_docFormatVer);
+      UserData userData = read_user_data(s, m_serial);
       if (!userData.isEmpty())
         spr->setUserData(userData);
     }
@@ -394,7 +409,8 @@ private:
     return spr.release();
   }
 
-  gfx::ColorSpaceRef readColorSpace(std::ifstream& s) {
+  gfx::ColorSpaceRef readColorSpace(std::ifstream& s)
+  {
     const gfx::ColorSpace::Type type = (gfx::ColorSpace::Type)read16(s);
     const gfx::ColorSpace::Flag flags = (gfx::ColorSpace::Flag)read16(s);
     const double gamma = fixmath::fixtof(read32(s));
@@ -402,7 +418,7 @@ private:
 
     // If the color space file is to big, it's because the sprite file
     // is invalid or or from an old session without color spcae.
-    if (n > 1024*1024*64) // 64 MB is too much for an ICC file
+    if (n > 1024 * 1024 * 64) // 64 MB is too much for an ICC file
       return nullptr;
 
     std::vector<uint8_t> buf(n);
@@ -410,13 +426,13 @@ private:
       s.read((char*)&buf[0], n);
     std::string name = read_string(s);
 
-    auto colorSpace = base::make_ref<gfx::ColorSpace>(
-      type, flags, gamma, std::move(buf));
+    auto colorSpace = base::make_ref<gfx::ColorSpace>(type, flags, gamma, std::move(buf));
     colorSpace->setName(name);
     return colorSpace;
   }
 
-  gfx::Rect readGridBounds(std::ifstream& s) {
+  gfx::Rect readGridBounds(std::ifstream& s)
+  {
     gfx::Rect grid;
     grid.x = (int16_t)read16(s);
     grid.y = (int16_t)read16(s);
@@ -426,24 +442,21 @@ private:
   }
 
   // TODO could we use doc::read_layer() here?
-  Layer* readLayer(std::ifstream& s) {
+  Layer* readLayer(std::ifstream& s)
+  {
     LayerFlags flags = (LayerFlags)read32(s);
     ObjectType type = (ObjectType)read16(s);
-    ASSERT(type == ObjectType::LayerImage ||
-           type == ObjectType::LayerGroup ||
+    ASSERT(type == ObjectType::LayerImage || type == ObjectType::LayerGroup ||
            type == ObjectType::LayerTilemap);
 
     std::string name = read_string(s);
     std::unique_ptr<Layer> lay;
 
     switch (type) {
-
       case ObjectType::LayerImage:
       case ObjectType::LayerTilemap: {
         switch (type) {
-          case ObjectType::LayerImage:
-            lay.reset(new LayerImage(m_sprite));
-            break;
+          case ObjectType::LayerImage:   lay.reset(new LayerImage(m_sprite)); break;
           case ObjectType::LayerTilemap: {
             tileset_index tilesetIndex = read32(s);
             lay.reset(new LayerTilemap(m_sprite, tilesetIndex));
@@ -460,7 +473,7 @@ private:
 
         // Cels
         int ncels = read32(s);
-        for (int i=0; i<ncels; ++i) {
+        for (int i = 0; i < ncels; ++i) {
           if (canceled())
             return nullptr;
 
@@ -478,13 +491,12 @@ private:
         break;
 
       default:
-        Console().printf("Unable to load layer named '%s', type #%d\n",
-                         name.c_str(), (int)type);
+        Console().printf("Unable to load layer named '%s', type #%d\n", name.c_str(), (int)type);
         break;
     }
 
     if (lay) {
-      UserData userData = read_user_data(s, m_docFormatVer);
+      UserData userData = read_user_data(s, m_serial);
       lay->setUserData(userData);
       return lay.release();
     }
@@ -492,53 +504,41 @@ private:
       return nullptr;
   }
 
-  Cel* readCel(std::ifstream& s) {
-    return read_cel(s, this, false);
-  }
+  Cel* readCel(std::ifstream& s) { return read_cel(s, this, false); }
 
-  CelData* readCelData(std::ifstream& s) {
-    return read_celdata(s, this, false, m_docFormatVer);
-  }
+  CelData* readCelData(std::ifstream& s) { return read_celdata(s, this, false, m_serial); }
 
-  Image* readImage(std::ifstream& s) {
-    return read_image(s, false);
-  }
+  Image* readImage(std::ifstream& s) { return read_image(s, false); }
 
-  Palette* readPalette(std::ifstream& s) {
-    return read_palette(s);
-  }
+  Palette* readPalette(std::ifstream& s) { return read_palette(s); }
 
-  Tileset* readTileset(std::ifstream& s) {
-    uint32_t tilesetVer;
-    Tileset* tileset = read_tileset(s, m_sprite, false, &tilesetVer, m_docFormatVer);
-    if (tileset && tilesetVer < TILESET_VER1)
+  Tileset* readTileset(std::ifstream& s)
+  {
+    TilesetSerialFormat tilesetVer = TilesetSerialFormat::Ver0;
+    Tileset* tileset = read_tileset(s, m_sprite, false, &tilesetVer, m_serial);
+    if (tileset && tilesetVer < TilesetSerialFormat::Ver1)
       m_updateOldTilemapWithTileset.insert(tileset->id());
     return tileset;
   }
 
-  Tag* readTag(std::ifstream& s) {
-    return read_tag(s, false, m_docFormatVer);
-  }
+  Tag* readTag(std::ifstream& s) { return read_tag(s, false, m_serial); }
 
-  Slice* readSlice(std::ifstream& s) {
-    return read_slice(s, false, m_docFormatVer);
-  }
+  Slice* readSlice(std::ifstream& s) { return read_slice(s, false, m_serial); }
 
   // Fix issues that the restoration process could produce.
-  void fixUndetectedDocumentIssues(Doc* doc) {
+  void fixUndetectedDocumentIssues(Doc* doc)
+  {
     Sprite* spr = doc->sprite();
     ASSERT(spr);
     if (!spr)
-      return;                   // TODO create an empty sprite
+      return; // TODO create an empty sprite
 
     // Fill the background layer with empty cels if they are missing
     if (LayerImage* bg = spr->backgroundLayer()) {
-      for (frame_t fr=0; fr<spr->totalFrames(); ++fr) {
+      for (frame_t fr = 0; fr < spr->totalFrames(); ++fr) {
         Cel* cel = bg->cel(fr);
         if (!cel) {
-          ImageRef image(Image::create(spr->pixelFormat(),
-                                       spr->width(),
-                                       spr->height()));
+          ImageRef image(Image::create(spr->pixelFormat(), spr->width(), spr->height()));
           image->clear(spr->transparentColor());
           cel = new Cel(fr, image);
           bg->addCel(cel);
@@ -552,35 +552,36 @@ private:
         if (!tileset)
           continue;
 
-        if (m_updateOldTilemapWithTileset.find(tileset->id()) == m_updateOldTilemapWithTileset.end())
+        if (m_updateOldTilemapWithTileset.find(tileset->id()) ==
+            m_updateOldTilemapWithTileset.end())
           continue;
 
         for (Cel* cel : spr->uniqueCels()) {
           if (cel->image()->pixelFormat() == IMAGE_TILEMAP &&
               static_cast<LayerTilemap*>(cel->layer())->tileset() == tileset) {
-            doc::fix_old_tilemap(cel->image(), tileset,
-                                 tile_i_mask, tile_f_mask);
+            doc::fix_old_tilemap(cel->image(), tileset, tile_i_mask, tile_f_mask);
           }
         }
       }
     }
   }
 
-  bool canceled() const {
+  bool canceled() const
+  {
     if (m_taskToken)
       return m_taskToken->canceled();
     else
       return false;
   }
 
-  int m_docFormatVer;
-  Sprite* m_sprite;    // Used to pass the sprite in LayerImage() ctor
+  SerialFormat m_serial;
+  Sprite* m_sprite; // Used to pass the sprite in LayerImage() ctor
   std::string m_dir;
   ObjectVersion m_docId;
   ObjVersionsMap m_objVersions;
   ObjVersions* m_docVersions;
   DocumentInfo* m_loadInfo;
-  std::vector<std::pair<ObjectId, ObjectId> > m_celsToLoad;
+  std::vector<std::pair<ObjectId, ObjectId>> m_celsToLoad;
   std::map<ObjectId, ImageRef> m_images;
   std::map<ObjectId, CelDataRef> m_celdatas;
   // Each ObjectId is a tileset ID that didn't contain the empty tile
@@ -599,15 +600,12 @@ bool read_document_info(const std::string& dir, DocumentInfo& info)
   return Reader(dir, nullptr).loadDocumentInfo(info);
 }
 
-Doc* read_document(const std::string& dir,
-                   base::task_token* t)
+Doc* read_document(const std::string& dir, base::task_token* t)
 {
   return Reader(dir, t).loadDocument();
 }
 
-Doc* read_document_with_raw_images(const std::string& dir,
-                                   RawImagesAs as,
-                                   base::task_token* t)
+Doc* read_document_with_raw_images(const std::string& dir, RawImagesAs as, base::task_token* t)
 {
   Reader reader(dir, t);
 
@@ -649,9 +647,7 @@ Doc* read_document_with_raw_images(const std::string& dir,
     }
 
     switch (as) {
-      case RawImagesAs::kFrames:
-        ++frame;
-        break;
+      case RawImagesAs::kFrames: ++frame; break;
       case RawImagesAs::kLayers:
         lay = new LayerImage(spr);
         spr->root()->addLayer(lay);
@@ -669,5 +665,4 @@ Doc* read_document_with_raw_images(const std::string& dir,
   return doc;
 }
 
-} // namespace crash
-} // namespace app
+}} // namespace app::crash

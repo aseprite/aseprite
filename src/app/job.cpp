@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/job.h"
@@ -15,7 +15,6 @@
 #include "app/console.h"
 #include "app/context.h"
 #include "app/i18n/strings.h"
-#include "fmt/format.h"
 #include "ui/alert.h"
 #include "ui/widget.h"
 #include "ui/window.h"
@@ -33,16 +32,14 @@ int Job::runningJobs()
   return g_runningJobs;
 }
 
-Job::Job(const std::string& jobName,
-         const bool showProgress)
+Job::Job(const std::string& jobName, const bool showProgress)
 {
   m_last_progress = 0.0;
   m_done_flag = false;
   m_canceled_flag = false;
 
   if (showProgress && App::instance()->isGui()) {
-    m_alert_window = ui::Alert::create(
-      fmt::format(Strings::alerts_job_working(), jobName));
+    m_alert_window = ui::Alert::create(Strings::alerts_job_working(jobName));
     m_alert_window->addProgress();
 
     m_timer = std::make_unique<ui::Timer>(kMonitoringPeriod, m_alert_window.get());

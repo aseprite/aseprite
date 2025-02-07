@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/console.h"
@@ -37,30 +37,30 @@ Console::ConsoleWindow* Console::m_console = nullptr;
 
 class Console::ConsoleWindow final : public Window {
 public:
-  ConsoleWindow() : Window(Window::WithTitleBar, Strings::debugger_console()),
-                    m_textbox("", WORDWRAP),
-                    m_button(Strings::debugger_cancel()) {
+  ConsoleWindow()
+    : Window(Window::WithTitleBar, Strings::debugger_console())
+    , m_textbox("", WORDWRAP)
+    , m_button(Strings::debugger_cancel())
+  {
     TRACE_CON("CON: ConsoleWindow this=", this);
 
-    m_button.Click.connect([this]{ closeWindow(&m_button); });
+    m_button.Click.connect([this] { closeWindow(&m_button); });
 
     // When the main window is closed, we should close the console (in
     // other case the main message loop will continue running for the
     // console too).
-    m_mainWindowClosedConn =
-      App::instance()->mainWindow()->Close.connect(
-        [this]{ closeWindow(nullptr); });
+    m_mainWindowClosedConn = App::instance()->mainWindow()->Close.connect(
+      [this] { closeWindow(nullptr); });
 
     // When the window is closed, we clear the text
-    Close.connect(
-      [this]{
-        m_mainWindowClosedConn.disconnect();
-        m_textbox.setText(std::string());
+    Close.connect([this] {
+      m_mainWindowClosedConn.disconnect();
+      m_textbox.setText(std::string());
 
-        Console::m_console->deferDelete();
-        Console::m_console = nullptr;
-        TRACE_CON("CON: Close signal");
-      });
+      Console::m_console->deferDelete();
+      Console::m_console = nullptr;
+      TRACE_CON("CON: Close signal");
+    });
 
     m_view.attachToView(&m_textbox);
 
@@ -76,11 +76,10 @@ public:
     initTheme();
   }
 
-  ~ConsoleWindow() {
-    TRACE_CON("CON: ~ConsoleWindow this=", this);
-  }
+  ~ConsoleWindow() { TRACE_CON("CON: ~ConsoleWindow this=", this); }
 
-  void addMessage(const std::string& msg) {
+  void addMessage(const std::string& msg)
+  {
     if (!m_hasText) {
       m_hasText = true;
       centerConsole();
@@ -101,20 +100,19 @@ public:
     }
   }
 
-  bool hasConsoleText() const {
-    return m_hasText;
-  }
+  bool hasConsoleText() const { return m_hasText; }
 
-  void centerConsole() {
+  void centerConsole()
+  {
     initTheme();
 
     Display* display = ui::Manager::getDefault()->display();
     const gfx::Rect displayRc = display->bounds();
     gfx::Rect rc;
-    rc.w = displayRc.w*9/10;
-    rc.h = displayRc.h*6/10;
-    rc.x = displayRc.x + displayRc.w/2 - rc.w/2;
-    rc.y = displayRc.y + displayRc.h/2 - rc.h/2;
+    rc.w = displayRc.w * 9 / 10;
+    rc.h = displayRc.h * 6 / 10;
+    rc.x = displayRc.x + displayRc.w / 2 - rc.w / 2;
+    rc.y = displayRc.y + displayRc.h / 2 - rc.h / 2;
 
     ui::fit_bounds(display, this, rc);
   }
@@ -124,13 +122,11 @@ private:
   // we have to override this method to allow pressing the window
   // close button using Esc key even in this window (which runs in the
   // background).
-  bool shouldProcessEscKeyToCloseWindow() const override {
-    return true;
-  }
+  bool shouldProcessEscKeyToCloseWindow() const override { return true; }
 
-  bool onProcessMessage(ui::Message* msg) override {
+  bool onProcessMessage(ui::Message* msg) override
+  {
     switch (msg->type()) {
-
       case ui::kKeyDownMessage: {
         auto scancode = static_cast<KeyMessage*>(msg)->scancode();
 
@@ -156,8 +152,7 @@ private:
         }
 
         // Send Enter key to the Close button, Tab to change focus
-        if ((scancode == kKeyEnter) ||
-            (scancode == kKeyEnterPad))
+        if ((scancode == kKeyEnter) || (scancode == kKeyEnterPad))
           return m_button.sendMessage(msg);
 
         if (scancode == kKeyTab) {
@@ -185,10 +180,11 @@ private:
     return Window::onProcessMessage(msg);
   }
 
-  void onInitTheme(InitThemeEvent& ev) override {
+  void onInitTheme(InitThemeEvent& ev) override
+  {
     Window::onInitTheme(ev);
 
-    m_button.setMinSize(gfx::Size(60*ui::guiscale(), 0));
+    m_button.setMinSize(gfx::Size(60 * ui::guiscale(), 0));
   }
 
   obs::scoped_connection m_mainWindowClosedConn;
@@ -198,8 +194,7 @@ private:
   bool m_hasText = false;
 };
 
-Console::Console(Context* ctx)
-  : m_withUI(false)
+Console::Console(Context* ctx) : m_withUI(false)
 {
   TRACE_CON("CON: Console this=", this, "ctx=", ctx, "is_ui_thread=", ui::is_ui_thread(), "{");
 
@@ -227,9 +222,7 @@ Console::~Console()
   if (!m_withUI)
     return;
 
-  if (m_console &&
-      m_console->hasConsoleText() &&
-      !m_console->isVisible()) {
+  if (m_console && m_console->hasConsoleText() && !m_console->isVisible()) {
     m_console->manager()->attractFocus(m_console);
     m_console->openWindow();
     TRACE_CON("CON: openWindow");
@@ -278,11 +271,10 @@ void Console::showException(const std::exception& e)
 
     // Show the error in the UI thread (if the UI is available)
     if (Console::isUIAvailable()) {
-      ui::execute_from_ui_thread(
-        [text]{
-          Console console;
-          console.printf(text.c_str());
-        });
+      ui::execute_from_ui_thread([text] {
+        Console console;
+        console.printf(text.c_str());
+      });
     }
     return;
   }
@@ -303,8 +295,7 @@ bool Console::isUIAvailable()
 {
   auto app = App::instance();
   auto man = Manager::getDefault();
-  return (app && app->isGui() &&
-          man && man->display() && man->display()->nativeWindow());
+  return (app && app->isGui() && man && man->display() && man->display()->nativeWindow());
 }
 
 } // namespace app

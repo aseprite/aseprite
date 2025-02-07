@@ -1,12 +1,12 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -16,12 +16,11 @@
 #include "app/i18n/strings.h"
 #include "app/tools/ink_type.h"
 #include "app/ui/context_bar.h"
-#include "fmt/format.h"
 
 namespace app {
 
 struct SetInkTypeParams : public NewParams {
-  Param<app::tools::InkType> type { this, app::tools::InkType::DEFAULT, "type" };
+  Param<app::tools::InkType> type{ this, app::tools::InkType::DEFAULT, "type" };
 };
 
 class SetInkTypeCommand : public CommandWithNewParams<SetInkTypeParams> {
@@ -56,23 +55,13 @@ std::string SetInkTypeCommand::onGetFriendlyName() const
 {
   std::string ink;
   switch (params().type()) {
-    case tools::InkType::SIMPLE:
-      ink = Strings::inks_simple_ink();
-      break;
-    case tools::InkType::ALPHA_COMPOSITING:
-      ink = Strings::inks_alpha_compositing();
-      break;
-    case tools::InkType::COPY_COLOR:
-      ink = Strings::inks_copy_color();
-      break;
-    case tools::InkType::LOCK_ALPHA:
-      ink = Strings::inks_lock_alpha();
-      break;
-    case tools::InkType::SHADING:
-      ink = Strings::inks_shading();
-      break;
+    case tools::InkType::SIMPLE:            ink = Strings::inks_simple_ink(); break;
+    case tools::InkType::ALPHA_COMPOSITING: ink = Strings::inks_alpha_compositing(); break;
+    case tools::InkType::COPY_COLOR:        ink = Strings::inks_copy_color(); break;
+    case tools::InkType::LOCK_ALPHA:        ink = Strings::inks_lock_alpha(); break;
+    case tools::InkType::SHADING:           ink = Strings::inks_shading(); break;
   }
-  return fmt::format(getBaseFriendlyName(), ink);
+  return Strings::commands_SetInkType(ink);
 }
 
 Command* CommandFactory::createSetInkTypeCommand()

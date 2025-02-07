@@ -16,71 +16,62 @@
 
 namespace doc {
 
-  class Cel;
-  class Layer;
-  class SelectedFrames;
-  class Sprite;
+class Cel;
+class Layer;
+class SelectedFrames;
+class Sprite;
 
-  class CelsRange {
+class CelsRange {
+public:
+  enum Flags {
+    ALL,
+    UNIQUE,
+  };
+
+  CelsRange(const Sprite* sprite, const SelectedFrames& selFrames, const Flags flags = ALL);
+
+  class iterator {
   public:
-    enum Flags {
-      ALL,
-      UNIQUE,
-    };
+    typedef Cel* value_type;
+    typedef std::ptrdiff_t difference_type;
+    typedef Cel** pointer;
+    typedef Cel*& reference;
+    typedef std::forward_iterator_tag iterator_category;
 
-    CelsRange(const Sprite* sprite,
-              const SelectedFrames& selFrames,
-              const Flags flags = ALL);
+    iterator(const SelectedFrames& selFrames);
+    iterator(const Sprite* sprite, const SelectedFrames& selFrames, const Flags flags);
 
-    class iterator {
-    public:
-      typedef Cel* value_type;
-      typedef std::ptrdiff_t difference_type;
-      typedef Cel** pointer;
-      typedef Cel*& reference;
-      typedef std::forward_iterator_tag iterator_category;
+    bool operator==(const iterator& other) const { return m_cel == other.m_cel; }
 
-      iterator(const SelectedFrames& selFrames);
-      iterator(const Sprite* sprite,
-               const SelectedFrames& selFrames,
-               const Flags flags);
+    bool operator!=(const iterator& other) const { return !operator==(other); }
 
-      bool operator==(const iterator& other) const {
-        return m_cel == other.m_cel;
-      }
+    Cel* operator*() const { return m_cel; }
 
-      bool operator!=(const iterator& other) const {
-        return !operator==(other);
-      }
-
-      Cel* operator*() const {
-        return m_cel;
-      }
-
-      iterator& operator++();
-
-    private:
-      Cel* m_cel;
-      const SelectedFrames& m_selFrames;
-      frames::const_iterator m_frameIterator;
-      Flags m_flags;
-      std::set<ObjectId> m_visited;
-    };
-
-    iterator begin() { return m_begin; }
-    iterator end() { return m_end; }
-
-    int size() {
-      int count = 0;
-      for (auto it=begin(), e=end(); it!=e; ++it)
-        ++count;
-      return count;
-    }
+    iterator& operator++();
 
   private:
-    SelectedFrames m_selFrames;
-    iterator m_begin, m_end;
+    Cel* m_cel;
+    const SelectedFrames& m_selFrames;
+    frames::const_iterator m_frameIterator;
+    Flags m_flags;
+    std::set<ObjectId> m_visited;
   };
+
+  iterator begin() { return m_begin; }
+  iterator end() { return m_end; }
+
+  int size()
+  {
+    int count = 0;
+    for (auto it = begin(), e = end(); it != e; ++it)
+      ++count;
+    return count;
+  }
+
+private:
+  SelectedFrames m_selFrames;
+  iterator m_begin, m_end;
+};
 
 } // namespace doc
 

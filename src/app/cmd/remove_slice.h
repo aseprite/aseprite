@@ -10,21 +10,19 @@
 
 #include "app/cmd/add_slice.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class RemoveSlice : public AddSlice {
-  public:
-    RemoveSlice(Sprite* sprite, Slice* slice);
+class RemoveSlice : public AddSlice {
+public:
+  RemoveSlice(Sprite* sprite, Slice* slice);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onRedo() override;
-  };
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onRedo() override;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

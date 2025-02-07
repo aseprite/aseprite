@@ -15,42 +15,40 @@
 
 namespace ui {
 
-  class Widget;
+class Widget;
 
-  class Timer {
-  public:
-    Timer(int interval, Widget* owner = nullptr);
-    virtual ~Timer();
+class Timer {
+public:
+  Timer(int interval, Widget* owner = nullptr);
+  virtual ~Timer();
 
-    int interval() const { return m_interval; }
-    void setInterval(int interval);
+  int interval() const { return m_interval; }
+  void setInterval(int interval);
 
-    bool isRunning() const {
-      return m_running;
-    }
+  bool isRunning() const { return m_running; }
 
-    void start();
-    void stop();
+  void start();
+  void stop();
 
-    void tick();
+  void tick();
 
-    obs::signal<void()> Tick;
+  obs::signal<void()> Tick;
 
-    static void pollTimers();
-    static bool haveTimers();
-    static bool getNextTimeout(double& timeout);
+  static void pollTimers();
+  static bool haveTimers();
+  static bool getNextTimeout(double& timeout);
 
-  protected:
-    virtual void onTick();
+protected:
+  virtual void onTick();
 
-  private:
-    Widget* m_owner;
-    int m_interval;
-    bool m_running;
-    base::tick_t m_lastTick;
+private:
+  Widget* m_owner;
+  int m_interval;
+  bool m_running;
+  base::tick_t m_lastTick;
 
-    DISABLE_COPYING(Timer);
-  };
+  DISABLE_COPYING(Timer);
+};
 
 } // namespace ui
 

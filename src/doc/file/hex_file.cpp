@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/file/hex_file.h"
@@ -24,10 +24,9 @@
 #include <sstream>
 #include <string>
 
-namespace doc {
-namespace file {
+namespace doc { namespace file {
 
-std::unique_ptr<Palette> load_hex_file(const char *filename)
+std::unique_ptr<Palette> load_hex_file(const char* filename)
 {
   std::ifstream f(FSTREAM_PATH(filename));
   if (f.bad())
@@ -47,13 +46,13 @@ std::unique_ptr<Palette> load_hex_file(const char *filename)
       continue;
 
     // Find 6 consecutive hex digits
-    for (std::string::size_type i=0; i != line.size(); ++i) {
+    for (std::string::size_type i = 0; i != line.size(); ++i) {
       std::string::size_type j = i;
-      for (; j<i+6; ++j) {
+      for (; j < i + 6; ++j) {
         if (!base::is_hex_digit(line[j]))
           break;
       }
-      if (j-i != 6)
+      if (j - i != 6)
         continue;
 
       // Convert text (Base 16) to integer
@@ -71,15 +70,16 @@ std::unique_ptr<Palette> load_hex_file(const char *filename)
   return pal;
 }
 
-bool save_hex_file(const Palette *pal, const char *filename)
+bool save_hex_file(const Palette* pal, const char* filename)
 {
   std::ofstream f(FSTREAM_PATH(filename));
   if (f.bad())
     return false;
 
-  save_hex_file(pal, nullptr,
-                false,          // don't include '#' per line
-                true,           // include a EOL char at the end
+  save_hex_file(pal,
+                nullptr,
+                false, // don't include '#' per line
+                true,  // include a EOL char at the end
                 f);
   return true;
 }
@@ -93,7 +93,7 @@ void save_hex_file(const Palette* pal,
   bool first = true;
 
   f << std::hex << std::setfill('0');
-  for (int i=0; i<pal->size(); ++i) {
+  for (int i = 0; i < pal->size(); ++i) {
     if (picks && !(*picks)[i])
       continue;
 
@@ -107,15 +107,12 @@ void save_hex_file(const Palette* pal,
     uint32_t col = pal->getEntry(i);
     if (include_hash_char)
       f << '#';
-    f << std::setw(2) << ((int)rgba_getr(col))
-      << std::setw(2) << ((int)rgba_getg(col))
+    f << std::setw(2) << ((int)rgba_getr(col)) << std::setw(2) << ((int)rgba_getg(col))
       << std::setw(2) << ((int)rgba_getb(col));
-
 
     if (final_eol)
       f << "\n";
   }
 }
 
-} // namespace file
-} // namespace doc
+}} // namespace doc::file

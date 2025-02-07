@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/message.h"
@@ -58,7 +58,8 @@ void Message::removeRecipient(Widget* widget)
 KeyMessage::KeyMessage(MessageType type,
                        KeyScancode scancode,
                        KeyModifiers modifiers,
-                       int unicodeChar, int repeat)
+                       int unicodeChar,
+                       int repeat)
   : Message(type, modifiers)
   , m_scancode(scancode)
   , m_unicodeChar(unicodeChar)
@@ -71,7 +72,7 @@ KeyMessage::KeyMessage(MessageType type,
 gfx::Point MouseMessage::positionForDisplay(Display* anotherDisplay) const
 {
   if (display() == anotherDisplay) {
-    return position();          // There is no need for transformation
+    return position(); // There is no need for transformation
   }
   else {
     ASSERT(anotherDisplay);

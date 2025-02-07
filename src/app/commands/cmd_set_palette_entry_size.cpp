@@ -1,11 +1,12 @@
 // Aseprite
+// Copyright (c) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -23,6 +24,8 @@ protected:
   void onLoadParams(const Params& params) override;
   bool onChecked(Context* context) override;
   void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
+  bool isListed(const Params& params) const override { return !params.empty(); }
 
 private:
   int m_size;
@@ -48,6 +51,11 @@ bool SetPaletteEntrySizeCommand::onChecked(Context* context)
 void SetPaletteEntrySizeCommand::onExecute(Context* context)
 {
   ColorBar::instance()->getPaletteView()->setBoxSize(m_size);
+}
+
+std::string SetPaletteEntrySizeCommand::onGetFriendlyName() const
+{
+  return Command::onGetFriendlyName() + " " + std::to_string(m_size);
 }
 
 Command* CommandFactory::createSetPaletteEntrySizeCommand()

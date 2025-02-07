@@ -13,8 +13,7 @@
 #include "gfx/point.h"
 #include "ui/pointer_type.h"
 
-namespace app {
-namespace tools {
+namespace app { namespace tools {
 
 using Vec2 = base::Vector2d<float>;
 
@@ -29,7 +28,9 @@ public:
     , m_velocity(0.0, 0.0)
     , m_button(None)
     , m_type(Type::Unknown)
-    , m_pressure(0.0f) { }
+    , m_pressure(0.0f)
+  {
+  }
 
   Pointer(const gfx::Point& point,
           const Vec2& velocity,
@@ -40,7 +41,9 @@ public:
     , m_velocity(velocity)
     , m_button(button)
     , m_type(type)
-    , m_pressure(pressure) { }
+    , m_pressure(pressure)
+  {
+  }
 
   const gfx::Point& point() const { return m_point; }
   const Vec2& velocity() const { return m_velocity; }
@@ -56,7 +59,6 @@ private:
   float m_pressure;
 };
 
-} // namespace tools
-} // namespace app
+}} // namespace app::tools
 
 #endif

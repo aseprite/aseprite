@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/layer_from_background.h"
@@ -15,8 +15,7 @@
 #include "doc/layer.h"
 #include "doc/sprite.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 LayerFromBackground::LayerFromBackground(Layer* layer)
 {
@@ -29,12 +28,10 @@ LayerFromBackground::LayerFromBackground(Layer* layer)
   ASSERT(layer->sprite()->backgroundLayer() != NULL);
 
   // Remove "Background" and "LockMove" flags
-  LayerFlags newFlags = LayerFlags(int(layer->flags())
-    & ~int(LayerFlags::BackgroundLayerFlags));
+  LayerFlags newFlags = LayerFlags(int(layer->flags()) & ~int(LayerFlags::BackgroundLayerFlags));
 
   add(new cmd::SetLayerFlags(layer, newFlags));
   add(new cmd::SetLayerName(layer, "Layer 0"));
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

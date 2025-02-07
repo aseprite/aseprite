@@ -12,12 +12,12 @@
 
 namespace ui {
 
-  class ClipboardDelegate {
-  public:
-    virtual ~ClipboardDelegate() { }
-    virtual void setClipboardText(const std::string& text) = 0;
-    virtual bool getClipboardText(std::string& text) = 0;
-  };
+class ClipboardDelegate {
+public:
+  virtual ~ClipboardDelegate() {}
+  virtual void setClipboardText(const std::string& text) = 0;
+  virtual bool getClipboardText(std::string& text) = 0;
+};
 
 } // namespace ui
 

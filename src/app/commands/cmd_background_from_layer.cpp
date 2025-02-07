@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/background_from_layer.h"
@@ -35,18 +35,16 @@ BackgroundFromLayerCommand::BackgroundFromLayerCommand()
 
 bool BackgroundFromLayerCommand::onEnabled(Context* context)
 {
-  return
-    context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                        ContextFlags::ActiveLayerIsVisible |
-                        ContextFlags::ActiveLayerIsEditable |
-                        ContextFlags::ActiveLayerIsImage) &&
-    // Doesn't have a background layer
-    !context->checkFlags(ContextFlags::HasBackgroundLayer) &&
-    // Isn't a reference layer
-    !context->checkFlags(ContextFlags::ActiveLayerIsReference) &&
-    // Isn't a tilemap layer
-    // TODO support background tilemaps
-    !context->checkFlags(ContextFlags::ActiveLayerIsTilemap);
+  return context->checkFlags(
+           ContextFlags::ActiveDocumentIsWritable | ContextFlags::ActiveLayerIsVisible |
+           ContextFlags::ActiveLayerIsEditable | ContextFlags::ActiveLayerIsImage) &&
+         // Doesn't have a background layer
+         !context->checkFlags(ContextFlags::HasBackgroundLayer) &&
+         // Isn't a reference layer
+         !context->checkFlags(ContextFlags::ActiveLayerIsReference) &&
+         // Isn't a tilemap layer
+         // TODO support background tilemaps
+         !context->checkFlags(ContextFlags::ActiveLayerIsTilemap);
 }
 
 void BackgroundFromLayerCommand::onExecute(Context* context)
@@ -60,10 +58,7 @@ void BackgroundFromLayerCommand::onExecute(Context* context)
     tx.commit();
   }
 
-#ifdef ENABLE_UI
-  if (context->isUIAvailable())
-    update_screen_for_document(document);
-#endif
+  update_screen_for_document(document);
 }
 
 Command* CommandFactory::createBackgroundFromLayerCommand()

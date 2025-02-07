@@ -1,8 +1,8 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2019  Igara Studio S.A. -->
+<!-- Copyright (C) 2019-2024  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
- <window id="canvas_size" text="@.title">
+ <window id="canvas_size" text="@.title" help="canvas">
   <vbox>
     <separator text="@.size" left="true" horizontal="true" />
     <hbox>

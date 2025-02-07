@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -54,8 +54,7 @@ void DuplicateSpriteCommand::onExecute(Context* context)
   std::string fn = document->filename();
   std::string ext = base::get_file_extension(fn);
   window.srcName()->setText(base::get_file_name(fn));
-  window.dstName()->setText(base::get_file_title(fn) +
-    " Copy" + (!ext.empty() ? "." + ext: ""));
+  window.dstName()->setText(base::get_file_title(fn) + " Copy" + (!ext.empty() ? "." + ext : ""));
 
   if (get_config_bool("DuplicateSprite", "Flatten", false))
     window.flatten()->setSelected(true);

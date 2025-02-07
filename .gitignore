@@ -14,3 +14,5 @@
 .vs
 tests/_test*
 build
+.build
+CMakeSettings.json

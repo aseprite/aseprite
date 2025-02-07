@@ -16,31 +16,27 @@
 
 namespace app {
 
-  // Singleton class to load and access "gui.xml" file.
-  class GuiXml {
-  public:
-    // Returns the GuiXml singleton. If it was not created yet, the
-    // gui.xml file will be loaded by the first time, which could
-    // generated an exception if there are errors in the XML file.
-    static GuiXml* instance();
-    static void destroyInstance();
+// Singleton class to load and access "gui.xml" file.
+class GuiXml {
+public:
+  // Returns the GuiXml singleton. If it was not created yet, the
+  // gui.xml file will be loaded by the first time, which could
+  // generated an exception if there are errors in the XML file.
+  static GuiXml* instance();
+  static void destroyInstance();
 
-    GuiXml();
+  GuiXml();
 
-    // Returns the tinyxml document instance.
-    tinyxml2::XMLDocument* doc() {
-      return m_doc.get();
-    }
+  // Returns the tinyxml document instance.
+  tinyxml2::XMLDocument* doc() { return m_doc.get(); }
 
-    // Returns the name of the gui.xml file.
-    const char* filename() {
-      return m_doc->Value();
-    }
+  // Returns the name of the gui.xml file.
+  const char* filename() { return m_doc->Value(); }
 
-  private:
-    XMLDocumentRef m_doc;
-    friend class std::unique_ptr<GuiXml>;
-  };
+private:
+  XMLDocumentRef m_doc;
+  friend class std::unique_ptr<GuiXml>;
+};
 
 } // namespace app
 

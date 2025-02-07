@@ -14,18 +14,18 @@
 #include <vector>
 
 namespace doc {
-  class Sprite;
+class Sprite;
 }
 
 namespace app {
-  using namespace doc;
+using namespace doc;
 
-  class DocRange;
+class DocRange;
 
-  doc::CelList get_cels(const doc::Sprite* sprite, const DocRange& range);
-  doc::CelList get_unique_cels(const doc::Sprite* sprite, const DocRange& range);
-  doc::CelList get_unique_cels_to_edit_pixels(const doc::Sprite* sprite, const DocRange& range);
-  doc::CelList get_unique_cels_to_move_cel(const doc::Sprite* sprite, const DocRange& range);
+doc::CelList get_cels(const doc::Sprite* sprite, const DocRange& range);
+doc::CelList get_unique_cels(const doc::Sprite* sprite, const DocRange& range);
+doc::CelList get_unique_cels_to_edit_pixels(const doc::Sprite* sprite, const DocRange& range);
+doc::CelList get_unique_cels_to_move_cel(const doc::Sprite* sprite, const DocRange& range);
 
 } // namespace app
 

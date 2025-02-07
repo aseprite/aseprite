@@ -13,15 +13,14 @@
 
 namespace app {
 
-  class Resource;
+class Resource;
 
-  class ResourcesLoaderDelegate {
-  public:
-    virtual ~ResourcesLoaderDelegate() { }
-    virtual void getResourcesPaths(std::map<std::string, std::string>& idAndPath) const = 0;
-    virtual Resource* loadResource(const std::string& id,
-                                   const std::string& path) = 0;
-  };
+class ResourcesLoaderDelegate {
+public:
+  virtual ~ResourcesLoaderDelegate() {}
+  virtual void getResourcesPaths(std::map<std::string, std::string>& idAndPath) const = 0;
+  virtual Resource* loadResource(const std::string& id, const std::string& path) = 0;
+};
 
 } // namespace app
 

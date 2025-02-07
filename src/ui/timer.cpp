@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/timer.h"
@@ -29,7 +29,7 @@ static Timers timers; // Registered timers
 static int running_timers = 0;
 
 Timer::Timer(int interval, Widget* owner)
-  : m_owner(owner ? owner: Manager::getDefault())
+  : m_owner(owner ? owner : Manager::getDefault())
   , m_interval(interval)
   , m_running(false)
   , m_lastTick(0)
@@ -147,7 +147,7 @@ bool Timer::getNextTimeout(double& timeout)
     if (timer && timer->isRunning()) {
       int64_t diff = (timer->m_lastTick + timer->m_interval) - t;
       if (diff < 0) {
-        timeout = 0.0;         // Right-now
+        timeout = 0.0; // Right-now
         return true;
       }
       else {

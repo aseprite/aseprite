@@ -14,20 +14,20 @@
 
 namespace doc {
 
-  class Palette;
-  class PalettePicks;
+class Palette;
+class PalettePicks;
 
-  namespace file {
+namespace file {
 
-    std::unique_ptr<Palette> load_hex_file(const char* filename);
-    bool save_hex_file(const Palette* pal, const char* filename);
-    void save_hex_file(const Palette* palette,
-                       const PalettePicks* picks,
-                       const bool include_hash_char,
-                       const bool final_eol,
-                       std::ostream& f);
+std::unique_ptr<Palette> load_hex_file(const char* filename);
+bool save_hex_file(const Palette* pal, const char* filename);
+void save_hex_file(const Palette* palette,
+                   const PalettePicks* picks,
+                   const bool include_hash_char,
+                   const bool final_eol,
+                   std::ostream& f);
 
-  } // namespace file
+} // namespace file
 } // namespace doc
 
 #endif

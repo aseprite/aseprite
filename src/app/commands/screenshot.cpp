@@ -1,11 +1,11 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -40,10 +40,10 @@ namespace app {
 using namespace ui;
 
 struct ScreenshotParams : public NewParams {
-  Param<bool> save { this, false, "save" };
-  Param<bool> srgb { this, true, "srgb" };
+  Param<bool> save{ this, false, "save" };
+  Param<bool> srgb{ this, true, "srgb" };
 #ifdef ENABLE_STEAM
-  Param<bool> steam { this, false, "steam" };
+  Param<bool> steam{ this, false, "steam" };
 #endif
 };
 
@@ -54,6 +54,7 @@ public:
 protected:
   void onExecute(Context* ctx) override;
   std::string onGetFriendlyName() const override;
+  bool isListed(const Params& params) const override { return !params.empty(); }
 };
 
 ScreenshotCommand::ScreenshotCommand()
@@ -74,9 +75,8 @@ void ScreenshotCommand::onExecute(Context* ctx)
   std::string fn;
 
   if (params().save()) {
-    for (int i=0; i<10000; ++i) {
-      fn = base::join_path(rf.defaultFilename(),
-                           fmt::format("screenshot-{}.png", i));
+    for (int i = 0; i < 10000; ++i) {
+      fn = base::join_path(rf.defaultFilename(), fmt::format("screenshot-{}.png", i));
       if (!base::is_file(fn))
         break;
     }
@@ -88,7 +88,7 @@ void ScreenshotCommand::onExecute(Context* ctx)
   doc::ImageSpec spec(doc::ColorMode::RGB,
                       surface->width(),
                       surface->height(),
-                      0,    // Mask color
+                      0, // Mask color
                       window->colorSpace()->gfxColorSpace());
 
   doc::Sprite* spr = doc::Sprite::MakeStdSprite(spec);
@@ -99,13 +99,11 @@ void ScreenshotCommand::onExecute(Context* ctx)
   const int w = img->width();
   const int h = img->height();
 
-  for (int y=0; y<h; ++y) {
-    for (int x=0; x<w; ++x) {
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x) {
       gfx::Color c = surface->getPixel(x, y);
 
-      img->putPixel(x, y, doc::rgba(gfx::getr(c),
-                                    gfx::getg(c),
-                                    gfx::getb(c), 255));
+      img->putPixel(x, y, doc::rgba(gfx::getr(c), gfx::getg(c), gfx::getb(c), 255));
     }
   }
 
@@ -123,14 +121,14 @@ void ScreenshotCommand::onExecute(Context* ctx)
       img = cel->image();
 
       const int scale = window->scale();
-      base::buffer rgbBuffer(3*w*h*scale*scale);
+      base::buffer rgbBuffer(3 * w * h * scale * scale);
       int c = 0;
       doc::LockImageBits<RgbTraits> bits(img);
-      for (int y=0; y<h; ++y) {
-        for (int i=0; i<scale; ++i) {
-          for (int x=0; x<w; ++x) {
+      for (int y = 0; y < h; ++y) {
+        for (int i = 0; i < scale; ++i) {
+          for (int x = 0; x < w; ++x) {
             color_t color = get_pixel_fast<RgbTraits>(img, x, y);
-            for (int j=0; j<scale; ++j) {
+            for (int j = 0; j < scale; ++j) {
               rgbBuffer[c++] = doc::rgba_getr(color);
               rgbBuffer[c++] = doc::rgba_getg(color);
               rgbBuffer[c++] = doc::rgba_getb(color);
@@ -138,7 +136,7 @@ void ScreenshotCommand::onExecute(Context* ctx)
           }
         }
       }
-      if (steamAPI->writeScreenshot(&rgbBuffer[0], rgbBuffer.size(), w*scale, h*scale))
+      if (steamAPI->writeScreenshot(&rgbBuffer[0], rgbBuffer.size(), w * scale, h * scale))
         return;
     }
   }
@@ -161,7 +159,7 @@ std::string ScreenshotCommand::onGetFriendlyName() const
     name = Strings::commands_Screenshot_Steam();
   else
 #endif
-  if (params().save())
+    if (params().save())
     name = Strings::commands_Screenshot_Save();
   else
     name = Strings::commands_Screenshot_Open();

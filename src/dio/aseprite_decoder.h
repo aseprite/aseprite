@@ -22,14 +22,14 @@
 #include <vector>
 
 namespace doc {
-  class Cel;
-  class Layer;
-  class Layer;
-  class Mask;
-  class Palette;
-  class Sprite;
-  class UserData;
-}
+class Cel;
+class Layer;
+class Layer;
+class Mask;
+class Palette;
+class Sprite;
+class UserData;
+} // namespace doc
 
 namespace dio {
 
@@ -51,7 +51,10 @@ private:
   doc::Palette* readColorChunk(doc::Palette* prevPal, doc::frame_t frame);
   doc::Palette* readColor2Chunk(doc::Palette* prevPal, doc::frame_t frame);
   doc::Palette* readPaletteChunk(doc::Palette* prevPal, doc::frame_t frame);
-  doc::Layer* readLayerChunk(AsepriteHeader* header, doc::Sprite* sprite, doc::Layer** previous_layer, int* current_level);
+  doc::Layer* readLayerChunk(AsepriteHeader* header,
+                             doc::Sprite* sprite,
+                             doc::Layer** previous_layer,
+                             int* current_level);
   doc::Cel* readCelChunk(doc::Sprite* sprite,
                          doc::frame_t frame,
                          doc::PixelFormat pixelFormat,
@@ -64,8 +67,7 @@ private:
   void readTagsChunk(doc::Tags* tags);
   void readSlicesChunk(doc::Slices& slices);
   doc::Slice* readSliceChunk(doc::Slices& slices);
-  void readUserDataChunk(doc::UserData* userData,
-                         const AsepriteExternalFiles& extFiles);
+  void readUserDataChunk(doc::UserData* userData, const AsepriteExternalFiles& extFiles);
   doc::Tileset* readTilesetChunk(doc::Sprite* sprite,
                                  const AsepriteHeader* header,
                                  const AsepriteExternalFiles& extFiles);

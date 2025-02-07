@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -30,12 +30,13 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/alert.h"
 
 #include "base/string.h"
+#include "fmt/format.h"
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/grid.h"
@@ -46,14 +47,11 @@
 #include "ui/theme.h"
 
 #include <algorithm>
-#include <cstdio>
+#include <string>
 
 namespace ui {
 
-Alert::Alert()
-  : Window(WithTitleBar)
-  , m_progress(nullptr)
-  , m_progressPlaceholder(nullptr)
+Alert::Alert() : Window(WithTitleBar), m_progress(nullptr), m_progressPlaceholder(nullptr)
 {
   auto box1 = new Box(VERTICAL);
   auto box2 = new Box(VERTICAL);
@@ -117,13 +115,11 @@ void Alert::addButton(const std::string& text)
   // modifiers.
   button->processMnemonicFromText('&', false);
 
-  button->setMinSize(gfx::Size(60*guiscale(), 0));
+  button->setMinSize(gfx::Size(60 * guiscale(), 0));
   m_buttons.push_back(button);
 
-  char id[256];
-  std::snprintf(id, sizeof(id), "button-%lu", m_buttons.size());
-  button->setId(id);
-  button->Click.connect([this, button]{ closeWindow(button); });
+  button->setId(fmt::format("button-{}", m_buttons.size()).c_str());
+  button->Click.connect([this, button] { closeWindow(button); });
 
   m_buttonsPlaceholder->addChild(button);
 }
@@ -186,9 +182,9 @@ int Alert::show()
   // Check the closer
   int ret = 0;
   if (Widget* closer = this->closer()) {
-    for (int i=0; i<(int)m_buttons.size(); ++i) {
+    for (int i = 0; i < (int)m_buttons.size(); ++i) {
       if (closer == m_buttons[i]) {
-        ret = i+1;
+        ret = i + 1;
         break;
       }
     }
@@ -211,21 +207,16 @@ void Alert::processString(std::string& buf)
   int beg = 0;
   for (;;) {
     // Ignore characters
-    if (buf[c] == '\n' ||
-        buf[c] == '\r') {
+    if (buf[c] == '\n' || buf[c] == '\r') {
       buf.erase(c, 1);
       continue;
     }
 
     if ((!buf[c]) ||
-        ((buf[c] == buf[c+1]) &&
-         ((buf[c] == '<') ||
-          (buf[c] == '=') ||
-          (buf[c] == '>') ||
-          (buf[c] == '-') ||
-          (buf[c] == '|')))) {
+        ((buf[c] == buf[c + 1]) && ((buf[c] == '<') || (buf[c] == '=') || (buf[c] == '>') ||
+                                    (buf[c] == '-') || (buf[c] == '|')))) {
       if (title || label || separator || button) {
-        std::string item = buf.substr(beg, c-beg);
+        std::string item = buf.substr(beg, c - beg);
 
         if (title)
           setTitle(item);
@@ -243,15 +234,24 @@ void Alert::processString(std::string& buf)
       // Next widget
       else {
         title = label = separator = button = false;
-        beg = c+2;
+        beg = c + 2;
         align = 0;
 
         switch (buf[c]) {
-          case '<': label=true; align=LEFT; break;
-          case '=': label=true; align=CENTER; break;
-          case '>': label=true; align=RIGHT; break;
-          case '-': separator=true; break;
-          case '|': button=true; break;
+          case '<':
+            label = true;
+            align = LEFT;
+            break;
+          case '=':
+            label = true;
+            align = CENTER;
+            break;
+          case '>':
+            label = true;
+            align = RIGHT;
+            break;
+          case '-': separator = true; break;
+          case '|': button = true; break;
         }
         ++c;
       }

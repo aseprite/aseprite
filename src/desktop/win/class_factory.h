@@ -16,39 +16,36 @@ namespace desktop {
 
 class ClassFactoryDelegate {
 public:
-  virtual ~ClassFactoryDelegate() { }
+  virtual ~ClassFactoryDelegate() {}
   virtual HRESULT lockServer(const bool lock) = 0;
   virtual HRESULT createInstance(REFIID riid, void** ppvObject) = 0;
 };
 
 class ClassFactory : public IClassFactory {
 public:
-  ClassFactory(ClassFactoryDelegate* delegate)
-    : m_ref(1)
-    , m_delegate(delegate) {
+  ClassFactory(ClassFactoryDelegate* delegate) : m_ref(1), m_delegate(delegate)
+  {
     assert(m_delegate);
     m_delegate->lockServer(true);
   }
 
-  ~ClassFactory() {
+  ~ClassFactory()
+  {
     m_delegate->lockServer(false);
     delete m_delegate;
   }
 
   // IUnknown
-  IFACEMETHODIMP QueryInterface(REFIID riid, void** ppv) {
-    static const QITAB qit[] = {
-      QITABENT(ClassFactory, IClassFactory),
-      { 0 }
-    };
+  IFACEMETHODIMP QueryInterface(REFIID riid, void** ppv)
+  {
+    static const QITAB qit[] = { QITABENT(ClassFactory, IClassFactory), { 0 } };
     return QISearch(this, qit, riid, ppv);
   }
 
-  IFACEMETHODIMP_(ULONG) AddRef() {
-    return InterlockedIncrement(&m_ref);
-  }
+  IFACEMETHODIMP_(ULONG) AddRef() { return InterlockedIncrement(&m_ref); }
 
-  IFACEMETHODIMP_(ULONG) Release() {
+  IFACEMETHODIMP_(ULONG) Release()
+  {
     long ref = InterlockedDecrement(&m_ref);
     if (ref == 0)
       delete this;
@@ -56,16 +53,15 @@ public:
   }
 
   // IClassFactory
-  IFACEMETHODIMP CreateInstance(IUnknown* punkOuter, REFIID riid, void** ppv) {
+  IFACEMETHODIMP CreateInstance(IUnknown* punkOuter, REFIID riid, void** ppv)
+  {
     if (punkOuter)
       return CLASS_E_NOAGGREGATION;
     else
       return m_delegate->createInstance(riid, ppv);
   }
 
-  IFACEMETHODIMP LockServer(BOOL lock) {
-    return m_delegate->lockServer(lock ? true: false);
-  }
+  IFACEMETHODIMP LockServer(BOOL lock) { return m_delegate->lockServer(lock ? true : false); }
 
 private:
   long m_ref;

@@ -1,11 +1,12 @@
 // Aseprite
+// Copyright (C)      2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -23,14 +24,16 @@ protected:
   void onExecute(Context* context) override;
 };
 
-GotoNextTabCommand::GotoNextTabCommand()
-  : Command(CommandId::GotoNextTab(), CmdUIOnlyFlag)
+GotoNextTabCommand::GotoNextTabCommand() : Command(CommandId::GotoNextTab(), CmdUIOnlyFlag)
 {
 }
 
 bool GotoNextTabCommand::onEnabled(Context* context)
 {
-  return App::instance()->workspace()->canSelectOtherTab();
+  Workspace* workspace = App::instance()->workspace();
+  if (!workspace) // Workspace (main window) can be null if we are in --batch mode
+    return false;
+  return workspace->canSelectOtherTab();
 }
 
 void GotoNextTabCommand::onExecute(Context* context)
@@ -54,7 +57,10 @@ GotoPreviousTabCommand::GotoPreviousTabCommand()
 
 bool GotoPreviousTabCommand::onEnabled(Context* context)
 {
-  return App::instance()->workspace()->canSelectOtherTab();
+  Workspace* workspace = App::instance()->workspace();
+  if (!workspace) // Workspace (main window) can be null if we are in --batch mode
+    return false;
+  return workspace->canSelectOtherTab();
 }
 
 void GotoPreviousTabCommand::onExecute(Context* context)

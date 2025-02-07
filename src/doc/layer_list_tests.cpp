@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include <gtest/gtest.h>
@@ -46,7 +46,7 @@ TEST(LayerList, AreLayersAdjacent)
   EXPECT_EQ(3, layers.size());
   EXPECT_TRUE(are_layers_adjacent(layers));
 
-  layers.erase(layers.begin()+1);
+  layers.erase(layers.begin() + 1);
   EXPECT_EQ(2, layers.size());
   EXPECT_FALSE(are_layers_adjacent(layers));
 

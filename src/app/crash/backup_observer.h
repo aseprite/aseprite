@@ -23,42 +23,40 @@ namespace app {
 class Context;
 class Doc;
 namespace crash {
-  struct RecoveryConfig;
-  class Session;
+struct RecoveryConfig;
+class Session;
 
-  class BackupObserver : public ContextObserver
-                       , public DocsObserver
-                       , public DocObserver {
-  public:
-    BackupObserver(RecoveryConfig* config,
-                   Session* session,
-                   Context* ctx);
-    ~BackupObserver();
+class BackupObserver : public ContextObserver,
+                       public DocsObserver,
+                       public DocObserver {
+public:
+  BackupObserver(RecoveryConfig* config, Session* session, Context* ctx);
+  ~BackupObserver();
 
-    void stop();
+  void stop();
 
-    void onAddDocument(Doc* document) override;
-    void onRemoveDocument(Doc* document) override;
+  void onAddDocument(Doc* document) override;
+  void onRemoveDocument(Doc* document) override;
 
-  private:
-    void backgroundThread();
-    bool saveDocData(Doc* doc);
+private:
+  void backgroundThread();
+  bool saveDocData(Doc* doc);
 
-    RecoveryConfig* m_config;
-    Session* m_session;
-    Context* m_ctx;
-    std::vector<Doc*> m_documents;
-    std::vector<Doc*> m_closedDocs;
-    std::atomic<bool> m_done;
+  RecoveryConfig* m_config;
+  Session* m_session;
+  Context* m_ctx;
+  std::vector<Doc*> m_documents;
+  std::vector<Doc*> m_closedDocs;
+  std::atomic<bool> m_done;
 
-    std::mutex m_mutex;
+  std::mutex m_mutex;
 
-    // Used to wakeup the backgroundThread() when we have to stop the
-    // thread that saves backups (i.e. when we are closing the application).
-    std::condition_variable m_wakeup;
+  // Used to wakeup the backgroundThread() when we have to stop the
+  // thread that saves backups (i.e. when we are closing the application).
+  std::condition_variable m_wakeup;
 
-    std::thread m_thread;
-  };
+  std::thread m_thread;
+};
 
 } // namespace crash
 } // namespace app

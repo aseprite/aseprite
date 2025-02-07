@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/replace_image.h"
@@ -17,8 +17,7 @@
 #include "app/script/userdata.h"
 #include "doc/tileset.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 using namespace doc;
 
@@ -27,11 +26,7 @@ namespace {
 struct Tile {
   ObjectId id;
   tile_index ti;
-  Tile(const Tileset* ts,
-       const tile_index ti)
-    : id(ts->id())
-    , ti(ti) {
-  }
+  Tile(const Tileset* ts, const tile_index ti) : id(ts->id()), ti(ti) {}
 };
 
 int Tile_get_index(lua_State* L)
@@ -61,9 +56,7 @@ int Tile_set_image(lua_State* L)
 
   if (ts && ts->sprite()) {
     Tx tx(ts->sprite());
-    tx(new cmd::ReplaceImage(ts->sprite(),
-                             ts->get(tile->ti),
-                             newImage));
+    tx(new cmd::ReplaceImage(ts->sprite(), ts->get(tile->ti), newImage));
     tx.commit();
   }
   return 0;
@@ -169,9 +162,7 @@ int Tile_set_properties(lua_State* L)
   auto newProperties = get_value_from_lua<doc::UserData::Properties>(L, 2);
   if (ts->sprite()) {
     Tx tx(ts->sprite());
-    tx(new cmd::SetTileDataProperties(ts, tile->ti,
-                                      std::string(),
-                                      std::move(newProperties)));
+    tx(new cmd::SetTileDataProperties(ts, tile->ti, std::string(), std::move(newProperties)));
     tx.commit();
   }
   else {
@@ -186,12 +177,12 @@ const luaL_Reg Tile_methods[] = {
 };
 
 const Property Tile_properties[] = {
-  { "index", Tile_get_index, nullptr },
-  { "image", Tile_get_image, Tile_set_image },
-  { "data", Tile_get_data, Tile_set_data },
-  { "color", Tile_get_color, Tile_set_color },
+  { "index",      Tile_get_index,      nullptr             },
+  { "image",      Tile_get_image,      Tile_set_image      },
+  { "data",       Tile_get_data,       Tile_set_data       },
+  { "color",      Tile_get_color,      Tile_set_color      },
   { "properties", Tile_get_properties, Tile_set_properties },
-  { nullptr, nullptr, nullptr }
+  { nullptr,      nullptr,             nullptr             }
 };
 
 } // anonymous namespace
@@ -216,5 +207,4 @@ Tileset* get_tile_index_from_arg(lua_State* L, int index, tile_index& ti)
   return doc::get<Tileset>(tile->id);
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

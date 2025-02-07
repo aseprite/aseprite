@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/font_path.h"
@@ -36,10 +36,9 @@ void get_font_dirs(base::paths& fontDirs)
 
     fontDirs.push_back(fontDir);
 
-    for (const auto& file : base::list_files(fontDir)) {
+    for (const auto& file : base::list_files(fontDir, base::ItemType::Directories)) {
       std::string fullpath = base::join_path(fontDir, file);
-      if (base::is_directory(fullpath))
-        q.push(fullpath); // Add subdirectory in the queue
+      q.push(fullpath); // Add subdirectory in the queue
     }
   }
 

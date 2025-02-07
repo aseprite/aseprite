@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -27,7 +27,6 @@
 #include "doc/image_ref.h"
 #include "doc/primitives.h"
 #include "doc/tile.h"
-#include "fmt/format.h"
 
 #include <algorithm>
 #include <string>
@@ -65,8 +64,7 @@ private:
   int m_slot;
 };
 
-ChangeBrushCommand::ChangeBrushCommand()
-  : Command(CommandId::ChangeBrush(), CmdUIOnlyFlag)
+ChangeBrushCommand::ChangeBrushCommand() : Command(CommandId::ChangeBrush(), CmdUIOnlyFlag)
 {
   m_change = None;
   m_slot = 0;
@@ -75,15 +73,24 @@ ChangeBrushCommand::ChangeBrushCommand()
 void ChangeBrushCommand::onLoadParams(const Params& params)
 {
   std::string change = params.get("change");
-  if (change == "increment-size") m_change = IncrementSize;
-  else if (change == "decrement-size") m_change = DecrementSize;
-  else if (change == "increment-angle") m_change = IncrementAngle;
-  else if (change == "decrement-angle") m_change = DecrementAngle;
-  else if (change == "flip-x") m_change = FlipX;
-  else if (change == "flip-y") m_change = FlipY;
-  else if (change == "flip-d") m_change = FlipD;
-  else if (change == "rotate-90cw") m_change = Rotate90CW;
-  else if (change == "custom") m_change = CustomBrush;
+  if (change == "increment-size")
+    m_change = IncrementSize;
+  else if (change == "decrement-size")
+    m_change = DecrementSize;
+  else if (change == "increment-angle")
+    m_change = IncrementAngle;
+  else if (change == "decrement-angle")
+    m_change = DecrementAngle;
+  else if (change == "flip-x")
+    m_change = FlipX;
+  else if (change == "flip-y")
+    m_change = FlipY;
+  else if (change == "flip-d")
+    m_change = FlipD;
+  else if (change == "rotate-90cw")
+    m_change = Rotate90CW;
+  else if (change == "custom")
+    m_change = CustomBrush;
 
   if (m_change == CustomBrush)
     m_slot = params.get_as<int>("slot");
@@ -97,10 +104,8 @@ void ChangeBrushCommand::onExecute(Context* context)
   auto atm = app->activeToolManager();
   auto& pref = Preferences::instance();
   auto colorBar = ColorBar::instance();
-  auto contextBar = (app->mainWindow() ? app->mainWindow()->getContextBar():
-                                         nullptr);
-  const BrushRef brush = (contextBar ? contextBar->activeBrush():
-                                       nullptr);
+  auto contextBar = (app->mainWindow() ? app->mainWindow()->getContextBar() : nullptr);
+  const BrushRef brush = (contextBar ? contextBar->activeBrush() : nullptr);
   const bool isImageBrush = (brush && brush->type() == kImageBrushType);
 
   // Change the brush of the active tool (i.e. quick tool) only if the
@@ -109,9 +114,7 @@ void ChangeBrushCommand::onExecute(Context* context)
   // the user pressed the Space bar modifier), we'll change the brush
   // of the selected tool in the toolbar (ignoring the quick tool).
   tools::Tool* tool = atm->activeTool();
-  if (!tool->getInk(0)->isPaint() &&
-      !tool->getInk(0)->isEffect() &&
-      !tool->getInk(0)->isEraser() &&
+  if (!tool->getInk(0)->isPaint() && !tool->getInk(0)->isEffect() && !tool->getInk(0)->isEraser() &&
       !tool->getInk(0)->isShading()) {
     tool = atm->selectedTool();
   }
@@ -119,7 +122,6 @@ void ChangeBrushCommand::onExecute(Context* context)
   ToolPreferences::Brush& brushPref = pref.tool(tool).brush;
 
   switch (m_change) {
-
     case None:
       // Do nothing
       break;
@@ -135,8 +137,7 @@ void ChangeBrushCommand::onExecute(Context* context)
         }
 
         gfx::Size size = brush->bounds().size();
-        size = gfx::Size(std::max<int>(1, size.w * scale),
-                         std::max<int>(1, size.h * scale));
+        size = gfx::Size(std::max<int>(1, size.w * scale), std::max<int>(1, size.h * scale));
 
         ImageRef newImg(Image::create(brush->image()->pixelFormat(), size.w, size.h));
         ImageRef newMsk(Image::create(IMAGE_BITMAP, size.w, size.h));
@@ -146,13 +147,19 @@ void ChangeBrushCommand::onExecute(Context* context)
         newImg->clear(bg);
         newMsk->clear(0);
 
-        resize_image(brush->image(), newImg.get(),
+        resize_image(brush->image(),
+                     newImg.get(),
                      RESIZE_METHOD_NEAREST_NEIGHBOR,
-                     nullptr, nullptr, bg);
+                     nullptr,
+                     nullptr,
+                     bg);
 
-        resize_image(brush->maskBitmap(), newMsk.get(),
+        resize_image(brush->maskBitmap(),
+                     newMsk.get(),
                      RESIZE_METHOD_NEAREST_NEIGHBOR,
-                     nullptr, nullptr, 0);
+                     nullptr,
+                     nullptr,
+                     0);
 
         // Create a copy of the brush (to avoid modifying the original
         // brush from the AppBrushes stock)
@@ -163,11 +170,11 @@ void ChangeBrushCommand::onExecute(Context* context)
         switch (m_change) {
           case IncrementSize:
             if (brushPref.size() < Brush::kMaxBrushSize)
-              brushPref.size(brushPref.size()+1);
+              brushPref.size(brushPref.size() + 1);
             break;
           case DecrementSize:
             if (brushPref.size() > Brush::kMinBrushSize)
-              brushPref.size(brushPref.size()-1);
+              brushPref.size(brushPref.size() - 1);
             break;
         }
       }
@@ -175,12 +182,12 @@ void ChangeBrushCommand::onExecute(Context* context)
 
     case IncrementAngle:
       if (brushPref.angle() < 180)
-        brushPref.angle(brushPref.angle()+1);
+        brushPref.angle(brushPref.angle() + 1);
       break;
 
     case DecrementAngle:
       if (brushPref.angle() > 0)
-        brushPref.angle(brushPref.angle()-1);
+        brushPref.angle(brushPref.angle() - 1);
       break;
 
     case FlipX:
@@ -214,12 +221,10 @@ void ChangeBrushCommand::onExecute(Context* context)
       else {
         switch (m_change) {
           case FlipX:
-            brushPref.angle(brushPref.angle() < 0 ? 180 + brushPref.angle():
+            brushPref.angle(brushPref.angle() < 0 ? 180 + brushPref.angle() :
                                                     180 - brushPref.angle());
             break;
-          case FlipY:
-            brushPref.angle(-brushPref.angle());
-            break;
+          case FlipY: brushPref.angle(-brushPref.angle()); break;
         }
       }
       break;
@@ -229,16 +234,13 @@ void ChangeBrushCommand::onExecute(Context* context)
       if (colorBar && colorBar->tilemapMode() == TilemapMode::Tiles) {
         doc::tile_t t = pref.colorBar.fgTile();
         switch (m_change) {
-          case FlipD:
-            pref.colorBar.fgTile(t ^ tile_f_dflip);
-            break;
+          case FlipD:      pref.colorBar.fgTile(t ^ tile_f_dflip); break;
           case Rotate90CW: {
             doc::tile_flags ti = doc::tile_geti(t);
             doc::tile_flags tf = doc::tile_getf(t);
-            tf =
-              (tf & doc::tile_f_xflip ? doc::tile_f_yflip: 0) |
-              (tf & doc::tile_f_yflip ? 0: doc::tile_f_xflip) |
-              (tf & doc::tile_f_dflip ? 0: doc::tile_f_dflip);
+            tf = (tf & doc::tile_f_xflip ? doc::tile_f_yflip : 0) |
+                 (tf & doc::tile_f_yflip ? 0 : doc::tile_f_xflip) |
+                 (tf & doc::tile_f_dflip ? 0 : doc::tile_f_dflip);
             pref.colorBar.fgTile(doc::tile(ti, tf));
             break;
           }
@@ -263,7 +265,6 @@ void ChangeBrushCommand::onExecute(Context* context)
         gfx::Rect cropBounds;
 
         switch (m_change) {
-
           case FlipD:
             flip_image(newImg.get(), maxBounds, FlipType::FlipDiagonal);
             flip_image(newMsk.get(), maxBounds, FlipType::FlipDiagonal);
@@ -286,8 +287,7 @@ void ChangeBrushCommand::onExecute(Context* context)
             flip_image(newMsk.get(), maxBounds, FlipType::FlipVertical);
             flip_image(newMsk.get(), maxBounds, FlipType::FlipDiagonal);
 
-            cropBounds = gfx::Rect(m - origBounds.h, 0,
-                                   origBounds.h, origBounds.w);
+            cropBounds = gfx::Rect(m - origBounds.h, 0, origBounds.h, origBounds.w);
             break;
         }
 
@@ -318,20 +318,18 @@ std::string ChangeBrushCommand::onGetFriendlyName() const
 {
   std::string change;
   switch (m_change) {
-    case None: break;
-    case IncrementSize: change = Strings::commands_ChangeBrush_IncrementSize(); break;
-    case DecrementSize: change = Strings::commands_ChangeBrush_DecrementSize(); break;
+    case None:           break;
+    case IncrementSize:  change = Strings::commands_ChangeBrush_IncrementSize(); break;
+    case DecrementSize:  change = Strings::commands_ChangeBrush_DecrementSize(); break;
     case IncrementAngle: change = Strings::commands_ChangeBrush_IncrementAngle(); break;
     case DecrementAngle: change = Strings::commands_ChangeBrush_DecrementAngle(); break;
-    case FlipX: change = Strings::commands_ChangeBrush_FlipX(); break;
-    case FlipY: change = Strings::commands_ChangeBrush_FlipY(); break;
-    case FlipD: change = Strings::commands_ChangeBrush_FlipD(); break;
-    case Rotate90CW: change = Strings::commands_ChangeBrush_Rotate90CW(); break;
-    case CustomBrush:
-      change = fmt::format(Strings::commands_ChangeBrush_CustomBrush(), m_slot);
-      break;
+    case FlipX:          change = Strings::commands_ChangeBrush_FlipX(); break;
+    case FlipY:          change = Strings::commands_ChangeBrush_FlipY(); break;
+    case FlipD:          change = Strings::commands_ChangeBrush_FlipD(); break;
+    case Rotate90CW:     change = Strings::commands_ChangeBrush_Rotate90CW(); break;
+    case CustomBrush:    change = Strings::commands_ChangeBrush_CustomBrush(m_slot); break;
   }
-  return fmt::format(getBaseFriendlyName(), change);
+  return Strings::commands_ChangeBrush(change);
 }
 
 Command* CommandFactory::createChangeBrushCommand()

@@ -8,16 +8,14 @@
 #define APP_TOOLS_FILL_H_INCLUDED
 #pragma once
 
-namespace app {
-  namespace tools {
+namespace app { namespace tools {
 
-    enum Fill {
-      FillNone,
-      FillAlways,
-      FillOptional,
-    };
+enum Fill {
+  FillNone,
+  FillAlways,
+  FillOptional,
+};
 
-  } // namespace tools
-} // namespace app
+}} // namespace app::tools
 
-#endif  // TOOLS_FILL_H_INCLUDED
+#endif // TOOLS_FILL_H_INCLUDED

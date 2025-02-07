@@ -19,67 +19,60 @@
 #include "gfx/fwd.h"
 
 namespace doc {
-  class Image;
+class Image;
 }
 
 namespace app {
-  class Color;
-  class Context;
-  class Editor;
-  class Site;
+class Color;
+class Context;
+class Editor;
+class Site;
 
-  struct ToolLoopParams {
-    tools::Tool* tool = nullptr;
-    tools::Ink* ink = nullptr;
-    tools::Controller* controller = nullptr;
+struct ToolLoopParams {
+  tools::Tool* tool = nullptr;
+  tools::Ink* ink = nullptr;
+  tools::Controller* controller = nullptr;
 
-    tools::ToolLoop::Button button = tools::ToolLoop::Left;
-    tools::InkType inkType = tools::InkType::DEFAULT;
-    app::Color fg;
-    app::Color bg;
-    doc::BrushRef brush;
+  tools::ToolLoop::Button button = tools::ToolLoop::Left;
+  tools::InkType inkType = tools::InkType::DEFAULT;
+  app::Color fg;
+  app::Color bg;
+  doc::BrushRef brush;
 
-    // Options equal to (and with the same default as in)
-    // <preferences><tool>...</tool></preferences> from
-    // "data/pref.xml" file.
-    int opacity = 255;
-    int tolerance = 0;
-    bool contiguous = true;
-    tools::FreehandAlgorithm freehandAlgorithm = tools::FreehandAlgorithm::DEFAULT;
+  // Options equal to (and with the same default as in)
+  // <preferences><tool>...</tool></preferences> from
+  // "data/pref.xml" file.
+  int opacity = 255;
+  int tolerance = 0;
+  bool contiguous = true;
+  tools::FreehandAlgorithm freehandAlgorithm = tools::FreehandAlgorithm::DEFAULT;
 
-    // For selection tools executed from scripts
-    tools::ToolLoopModifiers modifiers = tools::ToolLoopModifiers::kNone;
-  };
+  // For selection tools executed from scripts
+  tools::ToolLoopModifiers modifiers = tools::ToolLoopModifiers::kNone;
+};
 
-  //////////////////////////////////////////////////////////////////////
-  // For UI
+//////////////////////////////////////////////////////////////////////
+// For UI
 
-#ifdef ENABLE_UI
+tools::ToolLoop* create_tool_loop(Editor* editor,
+                                  Context* context,
+                                  const tools::Pointer::Button button,
+                                  const bool convertLineToFreehand,
+                                  const bool selectTiles);
 
-  tools::ToolLoop* create_tool_loop(
-    Editor* editor,
-    Context* context,
-    const tools::Pointer::Button button,
-    const bool convertLineToFreehand,
-    const bool selectTiles);
+tools::ToolLoop* create_tool_loop_preview(Editor* editor,
+                                          const doc::BrushRef& brush,
+                                          doc::Image* image,
+                                          const gfx::Point& celOrigin);
 
-  tools::ToolLoop* create_tool_loop_preview(
-    Editor* editor,
-    const doc::BrushRef& brush,
-    doc::Image* image,
-    const gfx::Point& celOrigin);
-
-#endif // ENABLE_UI
-
-  //////////////////////////////////////////////////////////////////////
-  // For scripting
+//////////////////////////////////////////////////////////////////////
+// For scripting
 
 #ifdef ENABLE_SCRIPTING
 
-  tools::ToolLoop* create_tool_loop_for_script(
-    Context* context,
-    const Site& site,
-    ToolLoopParams& params);
+tools::ToolLoop* create_tool_loop_for_script(Context* context,
+                                             const Site& site,
+                                             ToolLoopParams& params);
 
 #endif // ENABLE_SCRIPTING
 

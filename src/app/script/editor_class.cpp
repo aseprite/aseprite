@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/console.h"
@@ -17,10 +17,7 @@
 #include "app/ui/editor/select_box_state.h"
 #include "ui/display.h"
 
-#ifdef ENABLE_UI
-
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 using namespace doc;
 
@@ -32,17 +29,14 @@ class LuaValueProperty : public ui::Property {
 public:
   static constexpr const char* Name = "LuaValue";
 
-  LuaValueProperty(lua_State* L)
-    : Property(Name)
-    , L(L) {
+  LuaValueProperty(lua_State* L) : Property(Name), L(L)
+  {
     // The LuaValueProperty() ctor pop a value from the Lua stack and
     // store that reference in the registry for the future.
     m_ref.ref(L);
   }
 
-  ~LuaValueProperty() {
-    m_ref.unref(L);
-  }
+  ~LuaValueProperty() { m_ref.unref(L); }
 
   RegistryRef& ref() { return m_ref; }
 
@@ -59,8 +53,9 @@ struct AskPoint {
   RegistryRef onchange;
   RegistryRef oncancel;
 
-  AskPoint(lua_State* L) : L(L) { }
-  ~AskPoint() {
+  AskPoint(lua_State* L) : L(L) {}
+  ~AskPoint()
+  {
     onclick.unref(L);
     onchange.unref(L);
     oncancel.unref(L);
@@ -70,7 +65,8 @@ struct AskPoint {
 class EditorObj : public EditorObserver,
                   public SelectBoxDelegate {
 public:
-  EditorObj(Editor* editor) : m_editor(editor) {
+  EditorObj(Editor* editor) : m_editor(editor)
+  {
     if (m_editor)
       m_editor->add_observer(this);
   }
@@ -78,11 +74,10 @@ public:
   EditorObj(const EditorObj&) = delete;
   EditorObj& operator=(const EditorObj&) = delete;
 
-  ~EditorObj() {
-    ASSERT(!m_editor);
-  }
+  ~EditorObj() { ASSERT(!m_editor); }
 
-  void gc(lua_State*) {
+  void gc(lua_State*)
+  {
     m_askPoint.reset();
     removeEditor();
   }
@@ -96,7 +91,8 @@ public:
                 const bool dimmed,
                 RegistryRef&& onclick,
                 RegistryRef&& onchange,
-                RegistryRef&& oncancel) {
+                RegistryRef&& oncancel)
+  {
     if (m_askPoint) {
       // Don't call onQuickboxCancel() to avoid calling oncancel, the
       // script should know that it called askPoint() previously.
@@ -110,9 +106,10 @@ public:
     m_askPoint->oncancel = std::move(oncancel);
 
     auto state = std::make_shared<SelectBoxState>(
-      this, m_editor->sprite()->bounds(),
-      SelectBoxState::Flags((rulers ? int(SelectBoxState::Flags::Rulers): 0) |
-                            (dimmed ? int(SelectBoxState::Flags::DarkOutside): 0) |
+      this,
+      m_editor->sprite()->bounds(),
+      SelectBoxState::Flags((rulers ? int(SelectBoxState::Flags::Rulers) : 0) |
+                            (dimmed ? int(SelectBoxState::Flags::DarkOutside) : 0) |
                             int(SelectBoxState::Flags::QuickBox) |
                             int(SelectBoxState::Flags::QuickPoint)));
 
@@ -122,7 +119,8 @@ public:
     m_editor->setState(state);
   }
 
-  void cancel() {
+  void cancel()
+  {
     if (m_askPoint) {
       m_askPoint.reset();
       m_editor->backToPreviousState();
@@ -130,17 +128,19 @@ public:
   }
 
   // EditorObserver impl
-  void onDestroyEditor(Editor* editor) override {
+  void onDestroyEditor(Editor* editor) override
+  {
     ASSERT(editor == m_editor);
     removeEditor();
   }
 
   // SelectBoxDelegate impl
-  void onChangeRectangle(const gfx::Rect& rect) override {
+  void onChangeRectangle(const gfx::Rect& rect) override
+  {
     lua_State* L = m_askPoint->L;
 
     if (m_askPoint && m_askPoint->onchange.get(L)) {
-      lua_newtable(L);       // Create "ev" argument with ev.point
+      lua_newtable(L); // Create "ev" argument with ev.point
       push_obj(L, rect.origin());
       lua_setfield(L, -2, "point");
       if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
@@ -150,11 +150,12 @@ public:
     }
   }
 
-  void onQuickboxEnd(Editor* editor, const gfx::Rect& rect, ui::MouseButton button) override {
+  void onQuickboxEnd(Editor* editor, const gfx::Rect& rect, ui::MouseButton button) override
+  {
     lua_State* L = m_askPoint->L;
 
     if (m_askPoint && m_askPoint->onclick.get(L)) {
-      lua_newtable(L);       // Create "ev" argument with ev.point
+      lua_newtable(L); // Create "ev" argument with ev.point
       push_obj(L, rect.origin());
       lua_setfield(L, -2, "point");
       if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
@@ -165,11 +166,12 @@ public:
     cancel();
   }
 
-  void onQuickboxCancel(Editor* editor) override {
+  void onQuickboxCancel(Editor* editor) override
+  {
     lua_State* L = m_askPoint->L;
 
     if (m_askPoint && m_askPoint->oncancel.get(L)) {
-      lua_newtable(L);       // Create empty "ev" table as argument
+      lua_newtable(L); // Create empty "ev" table as argument
       if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
         if (const char* s = lua_tostring(L, -1))
           Console().printf("%s\n", s);
@@ -178,12 +180,14 @@ public:
     cancel();
   }
 
-  std::string onGetContextBarHelp() override {
-    return (m_askPoint ? m_askPoint->title: std::string());
+  std::string onGetContextBarHelp() override
+  {
+    return (m_askPoint ? m_askPoint->title : std::string());
   }
 
 private:
-  void removeEditor() {
+  void removeEditor()
+  {
     if (m_editor) {
       m_editor->removeProperty(LuaValueProperty::Name);
       m_editor->remove_observer(this);
@@ -267,8 +271,11 @@ int Editor_askPoint(lua_State* L)
   else
     lua_pop(L, 1);
 
-  obj->askPoint(L, title, initialPoint.get(),
-                rulers, dimmed,
+  obj->askPoint(L,
+                title,
+                initialPoint.get(),
+                rulers,
+                dimmed,
                 std::move(onclick),
                 std::move(onchange),
                 std::move(oncancel));
@@ -292,8 +299,7 @@ int Editor_get_sprite(lua_State* L)
 int Editor_get_spritePos(lua_State* L)
 {
   auto obj = get_obj<EditorObj>(L, 1);
-  push_obj(L, obj->editor()->screenToEditor(
-                obj->editor()->display()->lastMousePos()));
+  push_obj(L, obj->editor()->screenToEditor(obj->editor()->display()->lastMousePos()));
   return 1;
 }
 
@@ -304,19 +310,85 @@ int Editor_get_mousePos(lua_State* L)
   return 1;
 }
 
+int Editor_get_zoom(lua_State* L)
+{
+  auto obj = get_obj<EditorObj>(L, 1);
+  lua_pushnumber(L, obj->editor()->zoom().scale());
+  return 1;
+}
+
+int Editor_get_scroll(lua_State* L)
+{
+  auto obj = get_obj<EditorObj>(L, 1);
+  gfx::PointF scroll = obj->editor()->spritePointInCenter();
+  // TODO add PointF wrapper or Vec2/Vec3/Vec4 classes/metatables.
+  lua_newtable(L);
+  lua_pushnumber(L, scroll.x);
+  lua_setfield(L, -2, "x");
+  lua_pushnumber(L, scroll.y);
+  lua_setfield(L, -2, "y");
+  return 1;
+}
+
+int Editor_set_zoom(lua_State* L)
+{
+  auto obj = get_obj<EditorObj>(L, 1);
+  auto scale = lua_tonumber(L, 2);
+  obj->editor()->setZoomAndCenterInMouse(render::Zoom::fromScale(scale),
+                                         gfx::Point(),
+                                         Editor::ZoomBehavior::CENTER);
+  return 0;
+}
+
+int Editor_set_scroll(lua_State* L)
+{
+  auto obj = get_obj<EditorObj>(L, 1);
+  gfx::PointF pt;
+  // TODO add PointF wrapper or Vec2/Vec3/Vec4 classes/metatables.
+  const int index = 2;
+  if (lua_istable(L, index)) {
+    const int type = lua_getfield(L, index, "x");
+    if (VALID_LUATYPE(type)) {
+      lua_getfield(L, index, "y");
+      pt.x = lua_tonumber(L, -2);
+      pt.y = lua_tonumber(L, -1);
+      lua_pop(L, 2);
+    }
+    else {
+      lua_pop(L, 1);
+
+      lua_geti(L, index, 1);
+      pt.x = lua_tonumber(L, -1);
+      lua_pop(L, 1);
+
+      lua_geti(L, index, 2);
+      pt.y = lua_tonumber(L, -1);
+      lua_pop(L, 1);
+    }
+  }
+  else {
+    pt = convert_args_into_point(L, index);
+  }
+
+  obj->editor()->centerInSpritePoint(pt);
+  return 0;
+}
+
 const luaL_Reg Editor_methods[] = {
-  { "__gc", Editor_gc },
-  { "__eq", Editor_eq },
+  { "__gc",     Editor_gc       },
+  { "__eq",     Editor_eq       },
   { "askPoint", Editor_askPoint },
-  { "cancel", Editor_cancel },
-  { nullptr, nullptr }
+  { "cancel",   Editor_cancel   },
+  { nullptr,    nullptr         }
 };
 
 const Property Editor_properties[] = {
-  { "sprite", Editor_get_sprite, nullptr },
-  { "spritePos", Editor_get_spritePos, nullptr },
-  { "mousePos", Editor_get_mousePos, nullptr },
-  { nullptr, nullptr, nullptr }
+  { "sprite",    Editor_get_sprite,    nullptr           },
+  { "spritePos", Editor_get_spritePos, nullptr           },
+  { "mousePos",  Editor_get_mousePos,  nullptr           },
+  { "zoom",      Editor_get_zoom,      Editor_set_zoom   },
+  { "scroll",    Editor_get_scroll,    Editor_set_scroll },
+  { nullptr,     nullptr,              nullptr           }
 };
 
 } // anonymous namespace
@@ -333,9 +405,8 @@ void register_editor_class(lua_State* L)
 void push_editor(lua_State* L, Editor* editor)
 {
   if (editor->hasProperty(LuaValueProperty::Name)) {
-    std::shared_ptr<LuaValueProperty> prop =
-      std::static_pointer_cast<LuaValueProperty>(
-        editor->getProperty(LuaValueProperty::Name));
+    std::shared_ptr<LuaValueProperty> prop = std::static_pointer_cast<LuaValueProperty>(
+      editor->getProperty(LuaValueProperty::Name));
     prop->ref().get(L);
   }
   else {
@@ -346,7 +417,4 @@ void push_editor(lua_State* L, Editor* editor)
   }
 }
 
-} // namespace script
-} // namespace app
-
-#endif  // ENABLE_UI
+}} // namespace app::script

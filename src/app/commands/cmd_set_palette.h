@@ -11,25 +11,25 @@
 #include "app/commands/command.h"
 
 namespace doc {
-  class Palette;
+class Palette;
 }
 
 namespace app {
 
-  class SetPaletteCommand : public Command {
-  public:
-    enum class Target { Document, App };
+class SetPaletteCommand : public Command {
+public:
+  enum class Target { Document, App };
 
-    SetPaletteCommand();
+  SetPaletteCommand();
 
-    void setPalette(const doc::Palette* palette) { m_palette = palette; }
+  void setPalette(const doc::Palette* palette) { m_palette = palette; }
 
-  protected:
-    virtual void onExecute(Context* context) override;
+protected:
+  virtual void onExecute(Context* context) override;
 
-  private:
-    const doc::Palette* m_palette;
-  };
+private:
+  const doc::Palette* m_palette;
+};
 
 } // namespace app
 

@@ -11,21 +11,21 @@
 
 namespace render {
 
-  enum class ExtraType {
-    NONE,
+enum class ExtraType {
+  NONE,
 
-    // The extra cel indicates a "patch" for the current layer/frame
-    // given in Render::setExtraImage()
-    PATCH,
+  // The extra cel indicates a "patch" for the current layer/frame
+  // given in Render::setExtraImage()
+  PATCH,
 
-    // The extra cel indicates an extra composition for the current
-    // layer/frame.
-    COMPOSITE,
+  // The extra cel indicates an extra composition for the current
+  // layer/frame.
+  COMPOSITE,
 
-    // Composite the current cel two times (don't use the extral cel),
-    // but the second time using the extral blend mode.
-    OVER_COMPOSITE,
-  };
+  // Composite the current cel two times (don't use the extral cel),
+  // but the second time using the extral blend mode.
+  OVER_COMPOSITE,
+};
 
 } // namespace render
 

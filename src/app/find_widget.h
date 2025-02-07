@@ -13,40 +13,43 @@
 
 namespace app {
 
-  template<class T>
-  inline T* find_widget(ui::Widget* parent, const char* childId) {
-    T* child = parent->findChildT<T>(childId);
-    if (!child)
-      throw WidgetNotFound(childId);
+template<class T>
+inline T* find_widget(ui::Widget* parent, const char* childId)
+{
+  T* child = parent->findChildT<T>(childId);
+  if (!child)
+    throw WidgetNotFound(childId);
 
-    return child;
+  return child;
+}
+
+class finder {
+public:
+  finder(ui::Widget* parent) : m_parent(parent) {}
+
+  finder& operator>>(const char* id)
+  {
+    m_lastId = id;
+    return *this;
   }
 
-  class finder {
-  public:
-    finder(ui::Widget* parent) : m_parent(parent) {
-    }
+  finder& operator>>(const std::string& id)
+  {
+    m_lastId = id;
+    return *this;
+  }
 
-    finder& operator>>(const char* id) {
-      m_lastId = id;
-      return *this;
-    }
+  template<typename T>
+  finder& operator>>(T*& child)
+  {
+    child = app::find_widget<T>(m_parent, m_lastId.c_str());
+    return *this;
+  }
 
-    finder& operator>>(const std::string& id) {
-      m_lastId = id;
-      return *this;
-    }
-
-    template<typename T>
-    finder& operator>>(T*& child) {
-      child = app::find_widget<T>(m_parent, m_lastId.c_str());
-      return *this;
-    }
-
-  private:
-    ui::Widget* m_parent;
-    std::string m_lastId;
-  };
+private:
+  ui::Widget* m_parent;
+  std::string m_lastId;
+};
 
 } // namespace app
 

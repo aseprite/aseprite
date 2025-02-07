@@ -12,31 +12,27 @@
 #include "app/cmd/with_sprite.h"
 #include "gfx/color_space.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
-  class AssignColorProfile : public Cmd,
-                             public WithSprite {
-  public:
-    AssignColorProfile(doc::Sprite* sprite, const gfx::ColorSpaceRef& cs);
+class AssignColorProfile : public Cmd,
+                           public WithSprite {
+public:
+  AssignColorProfile(doc::Sprite* sprite, const gfx::ColorSpaceRef& cs);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onFireNotifications() override;
-    size_t onMemSize() const override {
-      return sizeof(*this) +
-        2*sizeof(gfx::ColorSpace) +
-        m_oldCS->iccSize() +
-        m_newCS->iccSize();
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onFireNotifications() override;
+  size_t onMemSize() const override
+  {
+    return sizeof(*this) + 2 * sizeof(gfx::ColorSpace) + m_oldCS->iccSize() + m_newCS->iccSize();
+  }
 
-  private:
-    gfx::ColorSpaceRef m_oldCS;
-    gfx::ColorSpaceRef m_newCS;
-  };
+private:
+  gfx::ColorSpaceRef m_oldCS;
+  gfx::ColorSpaceRef m_newCS;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

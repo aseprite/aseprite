@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/ui.h"
@@ -39,8 +39,8 @@
 #include <cmath>
 #include <cstring>
 
-#define PREVIEW_TILED           1
-#define PREVIEW_FIT_ON_SCREEN   2
+#define PREVIEW_TILED         1
+#define PREVIEW_FIT_ON_SCREEN 2
 
 namespace app {
 
@@ -58,7 +58,8 @@ public:
     , m_sprite(editor->sprite())
     , m_pal(m_sprite->palette(editor->frame()))
     , m_proj(editor->projection())
-    , m_index_bg_color(-1) {
+    , m_index_bg_color(-1)
+  {
     // Do not use DocWriter (do not lock the document) because we
     // will call other sub-commands (e.g. previous frame, next frame,
     // etc.).
@@ -84,12 +85,10 @@ public:
   }
 
 protected:
-  virtual bool onProcessMessage(Message* msg) override {
+  virtual bool onProcessMessage(Message* msg) override
+  {
     switch (msg->type()) {
-
-      case kCloseMessage:
-        releaseMouse();
-        break;
+      case kCloseMessage:     releaseMouse(); break;
 
       case kMouseMoveMessage: {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
@@ -97,13 +96,13 @@ protected:
 
         gfx::Rect bounds = this->bounds();
         gfx::Border border;
-        if (bounds.w > 64*guiscale()) {
-          border.left(32*guiscale());
-          border.right(32*guiscale());
+        if (bounds.w > 64 * guiscale()) {
+          border.left(32 * guiscale());
+          border.right(32 * guiscale());
         }
-        if (bounds.h > 64*guiscale()) {
-          border.top(32*guiscale());
-          border.bottom(32*guiscale());
+        if (bounds.h > 64 * guiscale()) {
+          border.top(32 * guiscale());
+          border.bottom(32 * guiscale());
         }
 
         m_delta += mousePos - m_oldMousePos;
@@ -122,15 +121,13 @@ protected:
         KeyMessage* keyMsg = static_cast<KeyMessage*>(msg);
         Command* command = NULL;
         Params params;
-        KeyboardShortcuts::instance()
-          ->getCommandFromKeyMessage(msg, &command, &params);
+        KeyboardShortcuts::instance()->getCommandFromKeyMessage(msg, &command, &params);
 
         // Change frame
-        if (command != NULL &&
-            (command->id() == CommandId::GotoFirstFrame() ||
-             command->id() == CommandId::GotoPreviousFrame() ||
-             command->id() == CommandId::GotoNextFrame() ||
-             command->id() == CommandId::GotoLastFrame())) {
+        if (command != NULL && (command->id() == CommandId::GotoFirstFrame() ||
+                                command->id() == CommandId::GotoPreviousFrame() ||
+                                command->id() == CommandId::GotoNextFrame() ||
+                                command->id() == CommandId::GotoLastFrame())) {
           m_context->executeCommand(command, params);
           m_repaint = true; // Re-render
           invalidate();
@@ -143,19 +140,16 @@ protected:
         }
 #endif
         // Change background color
-        else if (keyMsg->scancode() == kKeyPlusPad ||
-                 keyMsg->unicodeChar() == '+') {
-          if (m_index_bg_color == -1 ||
-            m_index_bg_color < m_pal->size()-1) {
+        else if (keyMsg->scancode() == kKeyPlusPad || keyMsg->unicodeChar() == '+') {
+          if (m_index_bg_color == -1 || m_index_bg_color < m_pal->size() - 1) {
             ++m_index_bg_color;
 
             invalidate();
           }
         }
-        else if (keyMsg->scancode() == kKeyMinusPad ||
-                 keyMsg->unicodeChar() == '-') {
+        else if (keyMsg->scancode() == kKeyMinusPad || keyMsg->unicodeChar() == '-') {
           if (m_index_bg_color >= 0) {
-            --m_index_bg_color;     // can be -1 which is the checkered background
+            --m_index_bg_color; // can be -1 which is the checkered background
 
             invalidate();
           }
@@ -167,15 +161,14 @@ protected:
         return true;
       }
 
-      case kSetCursorMessage:
-        ui::set_mouse_cursor(kNoCursor);
-        return true;
+      case kSetCursorMessage: ui::set_mouse_cursor(kNoCursor); return true;
     }
 
     return Window::onProcessMessage(msg);
   }
 
-  virtual void onPaint(PaintEvent& ev) override {
+  virtual void onPaint(PaintEvent& ev) override
+  {
     Graphics* g = ev.graphics();
     EditorRender& render = m_editor->renderEngine();
     render.setRefLayersVisiblity(false);
@@ -184,8 +177,7 @@ protected:
 
     // Render sprite and leave the result in 'm_render' variable
     if (m_render == nullptr) {
-      m_render = os::instance()->makeRgbaSurface(m_sprite->width(),
-                                                 m_sprite->height());
+      m_render = os::instance()->makeRgbaSurface(m_sprite->width(), m_sprite->height());
 
 #if LAF_SKIA
       // The SimpleRenderer renders unpremultiplied surfaces when
@@ -194,8 +186,7 @@ protected:
       if (render.properties().outputsUnpremultiplied) {
         // We use a little tricky with Skia indicating that the alpha
         // is unpremultiplied
-        ((os::SkiaSurface*)m_render.get())
-          ->bitmap().setAlphaType(kUnpremul_SkAlphaType);
+        ((os::SkiaSurface*)m_render.get())->bitmap().setAlphaType(kUnpremul_SkAlphaType);
       }
 #endif
 
@@ -207,9 +198,10 @@ protected:
 
       m_render->clear();
       render.setProjection(render::Projection());
-      render.renderSprite(
-        m_render.get(), m_sprite, m_editor->frame(),
-        gfx::ClipF(0, 0, 0, 0, m_sprite->width(), m_sprite->height()));
+      render.renderSprite(m_render.get(),
+                          m_sprite,
+                          m_editor->frame(),
+                          gfx::ClipF(0, 0, 0, 0, m_sprite->width(), m_sprite->height()));
     }
 
     float x, y, w, h, u, v;
@@ -218,19 +210,22 @@ protected:
     w = m_proj.applyX(m_sprite->width());
     h = m_proj.applyY(m_sprite->height());
 
-    if (int(m_tiled) & int(TiledMode::X_AXIS)) x = SGN(x) * std::fmod(ABS(x), w);
-    if (int(m_tiled) & int(TiledMode::Y_AXIS)) y = SGN(y) * std::fmod(ABS(y), h);
+    if (int(m_tiled) & int(TiledMode::X_AXIS))
+      x = SGN(x) * std::fmod(ABS(x), w);
+    if (int(m_tiled) & int(TiledMode::Y_AXIS))
+      y = SGN(y) * std::fmod(ABS(y), h);
 
     if (m_index_bg_color == -1) {
       render.setProjection(m_proj);
       render.setupBackground(m_doc, IMAGE_RGB);
-      render.renderCheckeredBackground(
-        g->getInternalSurface(), m_sprite,
-        gfx::Clip(g->getInternalDeltaX(),
-                  g->getInternalDeltaY(),
-                  -m_pos.x, -m_pos.y,
-                  2*g->getInternalSurface()->width(),
-                  2*g->getInternalSurface()->height()));
+      render.renderCheckeredBackground(g->getInternalSurface(),
+                                       m_sprite,
+                                       gfx::Clip(g->getInternalDeltaX(),
+                                                 g->getInternalDeltaY(),
+                                                 -m_pos.x,
+                                                 -m_pos.y,
+                                                 2 * g->getInternalSurface()->width(),
+                                                 2 * g->getInternalSurface()->height()));
 
       // Invalidate the whole Graphics (as we've just modified its
       // internal os::Surface directly).
@@ -249,10 +244,10 @@ protected:
     const double sy = m_proj.scaleY();
 
     gfx::RectF tiledBounds;
-    tiledBounds.w = (2+std::ceil(float(clientBounds().w)/w))*w;
-    tiledBounds.h = (2+std::ceil(float(clientBounds().h)/h))*h;
-    tiledBounds.x = x-w;
-    tiledBounds.y = y-h;
+    tiledBounds.w = (2 + std::ceil(float(clientBounds().w) / w)) * w;
+    tiledBounds.h = (2 + std::ceil(float(clientBounds().h) / h)) * h;
+    tiledBounds.x = x - w;
+    tiledBounds.y = y - h;
     g->save();
 
     switch (m_tiled) {
@@ -262,22 +257,22 @@ protected:
         g->drawRgbaSurface(m_render.get(), 0, 0);
         break;
       case TiledMode::X_AXIS:
-        for (u=tiledBounds.x; u<tiledBounds.x2(); u+=w) {
+        for (u = tiledBounds.x; u < tiledBounds.x2(); u += w) {
           g->setMatrix(gfx::Matrix::MakeTrans(u, y));
           g->concat(gfx::Matrix::MakeScale(sx, sy));
           g->drawRgbaSurface(m_render.get(), 0, 0);
         }
         break;
       case TiledMode::Y_AXIS:
-        for (v=tiledBounds.y; v<tiledBounds.y2(); v+=h) {
+        for (v = tiledBounds.y; v < tiledBounds.y2(); v += h) {
           g->setMatrix(gfx::Matrix::MakeTrans(x, v));
           g->concat(gfx::Matrix::MakeScale(sx, sy));
           g->drawRgbaSurface(m_render.get(), 0, 0);
         }
         break;
       case TiledMode::BOTH:
-        for (v=tiledBounds.y; v<tiledBounds.y2(); v+=h) {
-          for (u=tiledBounds.x; u<tiledBounds.x2(); u+=w) {
+        for (v = tiledBounds.y; v < tiledBounds.y2(); v += h) {
+          for (u = tiledBounds.x; u < tiledBounds.x2(); u += w) {
             g->setMatrix(gfx::Matrix::MakeTrans(u, v));
             g->concat(gfx::Matrix::MakeScale(sx, sy));
             g->drawRgbaSurface(m_render.get(), 0, 0);

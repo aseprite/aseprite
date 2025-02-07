@@ -11,23 +11,21 @@
 #include "doc/object_id.h"
 
 namespace doc {
-  class Slice;
+class Slice;
 }
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class WithSlice {
-  public:
-    WithSlice(Slice* slice);
-    Slice* slice();
+class WithSlice {
+public:
+  WithSlice(Slice* slice);
+  Slice* slice();
 
-  private:
-    ObjectId m_sliceId;
-  };
+private:
+  ObjectId m_sliceId;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

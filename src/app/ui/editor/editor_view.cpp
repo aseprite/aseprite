@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/editor/editor_view.h"
@@ -35,28 +35,23 @@ void EditorView::SetScrollUpdateMethod(Method method)
   g_scrollUpdateMethod = method;
 }
 
-EditorView::EditorView(EditorView::Type type)
-  : View()
-  , m_type(type)
+EditorView::EditorView(EditorView::Type type) : View(), m_type(type)
 {
-  m_scrollSettingsConn =
-    Preferences::instance().editor.showScrollbars.AfterChange.connect(
-      [this]{ setupScrollbars(); });
+  m_scrollSettingsConn = Preferences::instance().editor.showScrollbars.AfterChange.connect(
+    [this] { setupScrollbars(); });
 
-  InitTheme.connect(
-    [this]{
-      auto theme = SkinTheme::get(this);
-      setBgColor(gfx::rgba(0, 0, 0)); // TODO Move this color to theme.xml
-      setStyle(theme->styles.editorView());
-      setupScrollbars();
-    });
+  InitTheme.connect([this] {
+    auto theme = SkinTheme::get(this);
+    setBgColor(gfx::rgba(0, 0, 0)); // TODO Move this color to theme.xml
+    setStyle(theme->styles.editorView());
+    setupScrollbars();
+  });
   initTheme();
 }
 
 void EditorView::onPaint(PaintEvent& ev)
 {
   switch (m_type) {
-
     // Only show the view selected if it is the current editor
     case CurrentEditorMode:
       if (editor()->isActive())
@@ -66,10 +61,7 @@ void EditorView::onPaint(PaintEvent& ev)
       break;
 
       // Always show selected
-    case AlwaysSelected:
-      enableFlags(SELECTED);
-      break;
-
+    case AlwaysSelected: enableFlags(SELECTED); break;
   }
 
   View::onPaint(ev);
@@ -81,12 +73,8 @@ void EditorView::onResize(ResizeEvent& ev)
   gfx::Point oldPos;
   if (editor) {
     switch (g_scrollUpdateMethod) {
-      case KeepOrigin:
-        oldPos = editor->editorToScreen(gfx::Point(0, 0));
-        break;
-      case KeepCenter:
-        oldPos = editor->screenToEditor(viewportBounds().center());
-        break;
+      case KeepOrigin: oldPos = editor->editorToScreen(gfx::Point(0, 0)); break;
+      case KeepCenter: oldPos = editor->screenToEditor(viewportBounds().center()); break;
     }
   }
 
@@ -101,9 +89,7 @@ void EditorView::onResize(ResizeEvent& ev)
         editor->setEditorScroll(oldScroll + newPos - oldPos);
         break;
       }
-      case KeepCenter:
-        editor->centerInSpritePoint(oldPos);
-        break;
+      case KeepCenter: editor->centerInSpritePoint(oldPos); break;
     }
   }
 }
@@ -142,8 +128,7 @@ void EditorView::onScrollChange()
 
 void EditorView::setupScrollbars()
 {
-  if (m_type == AlwaysSelected ||
-      !Preferences::instance().editor.showScrollbars()) {
+  if (m_type == AlwaysSelected || !Preferences::instance().editor.showScrollbars()) {
     hideScrollBars();
   }
   else {

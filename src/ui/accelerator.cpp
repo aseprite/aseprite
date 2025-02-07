@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/accelerator.h"
@@ -27,14 +27,15 @@
 namespace ui {
 
 #ifdef _WIN32
-  const char* kWinKeyName = "Win";
+const char* kWinKeyName = "Win";
 #else
-  const char* kWinKeyName = "Super";
+const char* kWinKeyName = "Super";
 #endif
 
 namespace {
 
-const char* scancode_to_string[] = { // Same order that os::KeyScancode
+const char* scancode_to_string[] = {
+  // Same order that os::KeyScancode
   nullptr,
   "A",
   "B",
@@ -139,15 +140,11 @@ const char* scancode_to_string[] = { // Same order that os::KeyScancode
   "KEY_COLON2",
   "Kanji",
 };
-int scancode_to_string_size =
-  sizeof(scancode_to_string) / sizeof(scancode_to_string[0]);
+int scancode_to_string_size = sizeof(scancode_to_string) / sizeof(scancode_to_string[0]);
 
 } // anonymous namespace
 
-Accelerator::Accelerator()
-  : m_modifiers(kKeyNoneModifier)
-  , m_scancode(kKeyNil)
-  , m_unicodeChar(0)
+Accelerator::Accelerator() : m_modifiers(kKeyNoneModifier), m_scancode(kKeyNil), m_unicodeChar(0)
 {
 }
 
@@ -170,9 +167,9 @@ Accelerator::Accelerator(const std::string& str)
   }
 
   std::size_t i, j;
-  for (i=0; i<str.size(); i=j+1) {
+  for (i = 0; i < str.size(); i = j + 1) {
     // i+1 because the first character can be '+' sign
-    for (j=i+1; j<str.size() && str[j] != '+'; ++j)
+    for (j = i + 1; j < str.size() && str[j] != '+'; ++j)
       ;
     std::string tok = base::string_to_lower(str.substr(i, j - i));
 
@@ -209,7 +206,7 @@ Accelerator::Accelerator(const std::string& str)
     }
     // F1, F2, ..., F11, F12
     else if (tok[0] == 'f' && (tok.size() <= 3)) {
-      int num = std::strtol(tok.c_str()+1, nullptr, 10);
+      int num = std::strtol(tok.c_str() + 1, nullptr, 10);
       if ((num >= 1) && (num <= 12))
         m_scancode = (KeyScancode)((int)kKeyF1 + num - 1);
     }
@@ -286,10 +283,7 @@ bool Accelerator::operator==(const Accelerator& other) const
 
 bool Accelerator::isEmpty() const
 {
-  return
-    (m_modifiers == kKeyNoneModifier &&
-     m_scancode == kKeyNil &&
-     m_unicodeChar == 0);
+  return (m_modifiers == kKeyNoneModifier && m_scancode == kKeyNil && m_unicodeChar == 0);
 }
 
 std::string Accelerator::toString() const
@@ -297,13 +291,15 @@ std::string Accelerator::toString() const
   std::string buf;
 
   // Shifts
-  if (m_modifiers & kKeyCtrlModifier) buf += "Ctrl+";
-  if (m_modifiers & kKeyCmdModifier) buf += "Cmd+";
-  if (m_modifiers & kKeyAltModifier) buf += "Alt+";
-  if (m_modifiers & kKeyShiftModifier) buf += "Shift+";
-  if ((m_modifiers & kKeySpaceModifier) &&
-      (m_scancode != kKeySpace) &&
-      (m_unicodeChar != ' ')) {
+  if (m_modifiers & kKeyCtrlModifier)
+    buf += "Ctrl+";
+  if (m_modifiers & kKeyCmdModifier)
+    buf += "Cmd+";
+  if (m_modifiers & kKeyAltModifier)
+    buf += "Alt+";
+  if (m_modifiers & kKeyShiftModifier)
+    buf += "Shift+";
+  if ((m_modifiers & kKeySpaceModifier) && (m_scancode != kKeySpace) && (m_unicodeChar != ' ')) {
     buf += "Space+";
   }
   if (m_modifiers & kKeyWinModifier) {
@@ -317,12 +313,10 @@ std::string Accelerator::toString() const
     wideUnicodeChar.push_back((wchar_t)std::toupper(m_unicodeChar));
     buf += base::to_utf8(wideUnicodeChar);
   }
-  else if (m_scancode > 0 &&
-           m_scancode < scancode_to_string_size &&
-           scancode_to_string[m_scancode])
+  else if (m_scancode > 0 && m_scancode < scancode_to_string_size && scancode_to_string[m_scancode])
     buf += scancode_to_string[m_scancode];
-  else if (!buf.empty() && buf[buf.size()-1] == '+')
-    buf.erase(buf.size()-1);
+  else if (!buf.empty() && buf[buf.size() - 1] == '+')
+    buf.erase(buf.size() - 1);
 
   return buf;
 }
@@ -346,11 +340,9 @@ bool Accelerator::isPressed() const
     return (m_modifiers == pressedModifiers);
 
   // Compare with all pressed scancodes
-  for (int s=int(kKeyNil); s<int(kKeyFirstModifierScancode); ++s) {
+  for (int s = int(kKeyNil); s < int(kKeyFirstModifierScancode); ++s) {
     if (sys->isKeyPressed(KeyScancode(s)) &&
-        isPressed(pressedModifiers,
-                  KeyScancode(s),
-                  sys->getUnicodeFromScancode(KeyScancode(s))))
+        isPressed(pressedModifiers, KeyScancode(s), sys->getUnicodeFromScancode(KeyScancode(s))))
       return true;
   }
 
@@ -373,11 +365,12 @@ bool Accelerator::isLooselyPressed() const
     return true;
 
   // Compare with all pressed scancodes
-  for (int s=int(kKeyNil); s<int(kKeyFirstModifierScancode); ++s) {
-    if (sys->isKeyPressed(KeyScancode(s)) &&
-        isPressed(m_modifiers,  // Use same modifiers (we've already compared the modifiers)
-                  KeyScancode(s),
-                  sys->getUnicodeFromScancode(KeyScancode(s))))
+  for (int s = int(kKeyNil); s < int(kKeyFirstModifierScancode); ++s) {
+    if (sys->isKeyPressed(KeyScancode(s)) && isPressed(m_modifiers, // Use same modifiers (we've
+                                                                    // already compared the
+                                                                    // modifiers)
+                                                       KeyScancode(s),
+                                                       sys->getUnicodeFromScancode(KeyScancode(s))))
       return true;
   }
 

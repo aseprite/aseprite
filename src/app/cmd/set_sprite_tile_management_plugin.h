@@ -13,30 +13,28 @@
 
 #include <string>
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class SetSpriteTileManagementPlugin : public Cmd
-                                      , public WithSprite {
-  public:
-    SetSpriteTileManagementPlugin(Sprite* sprite,
-                                  const std::string& value);
+class SetSpriteTileManagementPlugin : public Cmd,
+                                      public WithSprite {
+public:
+  SetSpriteTileManagementPlugin(Sprite* sprite, const std::string& value);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onFireNotifications() override;
-    size_t onMemSize() const override {
-      return sizeof(*this) + m_oldValue.size() + m_newValue.size();
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onFireNotifications() override;
+  size_t onMemSize() const override
+  {
+    return sizeof(*this) + m_oldValue.size() + m_newValue.size();
+  }
 
-  private:
-    std::string m_oldValue;
-    std::string m_newValue;
-  };
+private:
+  std::string m_oldValue;
+  std::string m_newValue;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

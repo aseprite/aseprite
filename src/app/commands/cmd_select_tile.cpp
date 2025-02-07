@@ -1,12 +1,12 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_mask.h"
@@ -19,7 +19,6 @@
 #include "app/tx.h"
 #include "app/ui/editor/editor.h"
 #include "doc/mask.h"
-#include "fmt/format.h"
 #include "ui/system.h"
 
 namespace app {
@@ -67,8 +66,7 @@ bool SelectTileCommand::onEnabled(Context* ctx)
 void SelectTileCommand::onExecute(Context* ctx)
 {
   auto editor = Editor::activeEditor();
-  if (!editor ||
-      !editor->hasMouse())
+  if (!editor || !editor->hasMouse())
     return;
 
   // Lock sprite
@@ -88,22 +86,14 @@ void SelectTileCommand::onExecute(Context* ctx)
 
     switch (m_mode) {
       case gen::SelectionMode::DEFAULT:
-      case gen::SelectionMode::ADD:
-        mask->add(gridBounds);
-        break;
-      case gen::SelectionMode::SUBTRACT:
-        mask->subtract(gridBounds);
-        break;
-      case gen::SelectionMode::INTERSECT:
-        mask->intersect(gridBounds);
-        break;
+      case gen::SelectionMode::ADD:       mask->add(gridBounds); break;
+      case gen::SelectionMode::SUBTRACT:  mask->subtract(gridBounds); break;
+      case gen::SelectionMode::INTERSECT: mask->intersect(gridBounds); break;
     }
   }
 
   // Set the new mask
-  Tx tx(writer,
-        friendlyName(),
-        DoesntModifyDocument);
+  Tx tx(writer, friendlyName(), DoesntModifyDocument);
   tx(new cmd::SetMask(doc, mask.get()));
   tx.commit();
 
@@ -114,18 +104,10 @@ std::string SelectTileCommand::onGetFriendlyName() const
 {
   std::string text;
   switch (m_mode) {
-    case gen::SelectionMode::ADD:
-      text = Strings::commands_SelectTile_Add();
-      break;
-    case gen::SelectionMode::SUBTRACT:
-      text = Strings::commands_SelectTile_Subtract();
-      break;
-    case gen::SelectionMode::INTERSECT:
-      text = Strings::commands_SelectTile_Intersect();
-      break;
-    default:
-      text = getBaseFriendlyName();
-      break;
+    case gen::SelectionMode::ADD:       text = Strings::commands_SelectTile_Add(); break;
+    case gen::SelectionMode::SUBTRACT:  text = Strings::commands_SelectTile_Subtract(); break;
+    case gen::SelectionMode::INTERSECT: text = Strings::commands_SelectTile_Intersect(); break;
+    default:                            text = Strings::commands_SelectTile(); break;
   }
   return text;
 }

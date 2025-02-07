@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/manager.h"
@@ -18,8 +18,7 @@
 #include <memory>
 #include <set>
 
-namespace ui {
-namespace details {
+namespace ui { namespace details {
 
 static std::unique_ptr<std::set<Widget*>> widgets;
 
@@ -76,5 +75,4 @@ void reinitThemeForAllWidgets()
   }
 }
 
-} // namespace details
-} // namespace ui
+}} // namespace ui::details

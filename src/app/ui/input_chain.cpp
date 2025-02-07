@@ -1,11 +1,12 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/input_chain.h"
@@ -16,11 +17,9 @@
 
 namespace app {
 
-void InputChain::prioritize(InputChainElement* element,
-                            const ui::Message* msg)
+void InputChain::prioritize(InputChainElement* element, const ui::Message* msg)
 {
-  const bool alreadyInFront =
-    (!m_elements.empty() && m_elements.front() == element);
+  const bool alreadyInFront = (!m_elements.empty() && m_elements.front() == element);
 
   if (!alreadyInFront) {
     auto it = std::find(m_elements.begin(), m_elements.end(), element);
@@ -87,10 +86,10 @@ void InputChain::copy(Context* ctx)
   }
 }
 
-void InputChain::paste(Context* ctx)
+void InputChain::paste(Context* ctx, const gfx::Point* position)
 {
   for (auto e : m_elements) {
-    if (e->onCanPaste(ctx) && e->onPaste(ctx))
+    if (e->onCanPaste(ctx) && e->onPaste(ctx, position))
       break;
   }
 }

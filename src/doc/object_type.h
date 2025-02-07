@@ -11,32 +11,32 @@
 
 namespace doc {
 
-  enum class ObjectType {
-    Unknown = 0,
-    Image = 1,
-    Palette = 2,
+enum class ObjectType {
+  Unknown = 0,
+  Image = 1,
+  Palette = 2,
 
-    // Deprecated values, we cannot re-use these indexes because
-    // backup sessions use them (check readLayer() function in
-    // src/app/crash/read_document.cpp).
-    //RgbMap = 3,
-    //Path = 4,
+  // Deprecated values, we cannot re-use these indexes because
+  // backup sessions use them (check readLayer() function in
+  // src/app/crash/read_document.cpp).
+  // RgbMap = 3,
+  // Path = 4,
 
-    Mask = 5,
-    Cel = 6,
-    CelData = 7,
-    LayerImage = 8,
-    LayerGroup = 9,
-    Sprite = 10,
-    Document = 11,
-    Tag = 12,
-    Slice = 13,
+  Mask = 5,
+  Cel = 6,
+  CelData = 7,
+  LayerImage = 8,
+  LayerGroup = 9,
+  Sprite = 10,
+  Document = 11,
+  Tag = 12,
+  Slice = 13,
 
-    LayerTilemap = 14,
-    Tileset = 15,
-    Tilesets = 16,
-  };
+  LayerTilemap = 14,
+  Tileset = 15,
+  Tilesets = 16,
+};
 
 } // namespace doc
 
-#endif  // DOC_OBJECT_TYPE_H_INCLUDED
+#endif // DOC_OBJECT_TYPE_H_INCLUDED

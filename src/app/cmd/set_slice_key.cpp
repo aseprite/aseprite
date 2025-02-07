@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_slice_key.h"
@@ -14,12 +14,9 @@
 #include "doc/slices.h"
 #include "doc/sprite.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
-SetSliceKey::SetSliceKey(Slice* slice,
-                         const doc::frame_t frame,
-                         const doc::SliceKey& sliceKey)
+SetSliceKey::SetSliceKey(Slice* slice, const doc::frame_t frame, const doc::SliceKey& sliceKey)
   : WithSlice(slice)
   , m_frame(frame)
   , m_newSliceKey(sliceKey)
@@ -51,5 +48,4 @@ void SetSliceKey::onUndo()
   slice()->owner()->sprite()->incrementVersion();
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

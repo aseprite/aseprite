@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/layer_io.h"
@@ -45,7 +45,6 @@ void write_layer(std::ostream& os, const Layer* layer)
   write16(os, static_cast<int>(layer->type()));  // Type
 
   switch (layer->type()) {
-
     case ObjectType::LayerImage:
     case ObjectType::LayerTilemap: {
       const LayerImage* imgLayer = static_cast<const LayerImage*>(layer);
@@ -59,7 +58,7 @@ void write_layer(std::ostream& os, const Layer* layer)
       // Images
       int images = 0;
       int celdatas = 0;
-      for (it=begin; it != end; ++it) {
+      for (it = begin; it != end; ++it) {
         const Cel* cel = *it;
         if (!cel->link()) {
           ++images;
@@ -68,14 +67,14 @@ void write_layer(std::ostream& os, const Layer* layer)
       }
 
       write16(os, images);
-      for (it=begin; it != end; ++it) {
+      for (it = begin; it != end; ++it) {
         const Cel* cel = *it;
         if (!cel->link())
           write_image(os, cel->image());
       }
 
       write16(os, celdatas);
-      for (it=begin; it != end; ++it) {
+      for (it = begin; it != end; ++it) {
         const Cel* cel = *it;
         if (!cel->link())
           write_celdata(os, cel->dataRef().get());
@@ -83,7 +82,7 @@ void write_layer(std::ostream& os, const Layer* layer)
 
       // Cels
       write16(os, imgLayer->getCelsCount());
-      for (it=begin; it != end; ++it) {
+      for (it = begin; it != end; ++it) {
         const Cel* cel = *it;
         write_cel(os, cel);
       }
@@ -104,22 +103,20 @@ void write_layer(std::ostream& os, const Layer* layer)
         write_layer(os, child);
       break;
     }
-
   }
 
   write_user_data(os, layer->userData());
 }
 
-Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const int docFormatVer)
+Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const SerialFormat serial)
 {
   ObjectId id = read32(is);
   std::string name = read_string(is);
-  uint32_t flags = read32(is);                     // Flags
-  uint16_t layer_type = read16(is);                // Type
+  uint32_t flags = read32(is);      // Flags
+  uint16_t layer_type = read16(is); // Type
   std::unique_ptr<Layer> layer;
 
   switch (static_cast<ObjectType>(layer_type)) {
-
     case ObjectType::LayerImage:
     case ObjectType::LayerTilemap: {
       LayerImage* imgLayer;
@@ -138,22 +135,22 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const int 
       imgLayer->setOpacity(read8(is));
 
       // Read images
-      int images = read16(is);  // Number of images
-      for (int c=0; c<images; ++c) {
+      int images = read16(is); // Number of images
+      for (int c = 0; c < images; ++c) {
         ImageRef image(read_image(is));
         subObjects->addImageRef(image);
       }
 
       // Read celdatas
       int celdatas = read16(is);
-      for (int c=0; c<celdatas; ++c) {
-        CelDataRef celdata(read_celdata(is, subObjects, true, docFormatVer));
+      for (int c = 0; c < celdatas; ++c) {
+        CelDataRef celdata(read_celdata(is, subObjects, true, serial));
         subObjects->addCelDataRef(celdata);
       }
 
       // Read cels
-      int cels = read16(is);                      // Number of cels
-      for (int c=0; c<cels; ++c) {
+      int cels = read16(is); // Number of cels
+      for (int c = 0; c < cels; ++c) {
         // Read the cel
         Cel* cel = read_cel(is, subObjects);
 
@@ -175,8 +172,8 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const int 
 
       // Number of sub-layers
       int layers = read16(is);
-      for (int c=0; c<layers; c++) {
-        Layer* child = read_layer(is, subObjects);
+      for (int c = 0; c < layers; c++) {
+        Layer* child = read_layer(is, subObjects, serial);
         if (child)
           static_cast<LayerGroup*>(layer.get())->addLayer(child);
         else
@@ -185,12 +182,10 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const int 
       break;
     }
 
-    default:
-      throw InvalidLayerType("Invalid layer type found in stream");
-
+    default: throw InvalidLayerType("Invalid layer type found in stream");
   }
 
-  UserData userData = read_user_data(is, docFormatVer);
+  const UserData userData = read_user_data(is, serial);
 
   if (layer) {
     layer->setName(name);
@@ -202,4 +197,4 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const int 
   return layer.release();
 }
 
-}
+} // namespace doc

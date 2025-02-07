@@ -14,18 +14,17 @@
 
 namespace app {
 
-  class PalettesLoaderDelegate : public ResourcesLoaderDelegate {
-  public:
-    PalettesLoaderDelegate();
+class PalettesLoaderDelegate : public ResourcesLoaderDelegate {
+public:
+  PalettesLoaderDelegate();
 
-    // ResourcesLoaderDelegate impl
-    virtual void getResourcesPaths(std::map<std::string, std::string>& idAndPath) const override;
-    virtual Resource* loadResource(const std::string& id,
-                                   const std::string& path) override;
+  // ResourcesLoaderDelegate impl
+  virtual void getResourcesPaths(std::map<std::string, std::string>& idAndPath) const override;
+  virtual Resource* loadResource(const std::string& id, const std::string& path) override;
 
-  private:
-    FileOpConfig m_config;
-  };
+private:
+  FileOpConfig m_config;
+};
 
 } // namespace app
 

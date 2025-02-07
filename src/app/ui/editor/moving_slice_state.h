@@ -16,36 +16,36 @@
 #include "doc/slice.h"
 
 namespace app {
-  class Editor;
+class Editor;
 
-  class MovingSliceState : public StandbyState {
-  public:
-    MovingSliceState(Editor* editor,
-                     ui::MouseMessage* msg,
-                     const EditorHit& hit,
-                     const doc::SelectedObjects& selectedSlices);
+class MovingSliceState : public StandbyState {
+public:
+  MovingSliceState(Editor* editor,
+                   ui::MouseMessage* msg,
+                   const EditorHit& hit,
+                   const doc::SelectedObjects& selectedSlices);
 
-    bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
-    bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
-    bool onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos) override;
+  bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
+  bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
+  bool onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos) override;
 
-    bool requireBrushPreview() override { return false; }
+  bool requireBrushPreview() override { return false; }
 
-  private:
-    struct Item {
-      doc::Slice* slice;
-      doc::SliceKey oldKey;
-      doc::SliceKey newKey;
-    };
-
-    Item getItemForSlice(doc::Slice* slice);
-    gfx::Rect selectedSlicesBounds() const;
-
-    doc::frame_t m_frame;
-    EditorHit m_hit;
-    gfx::Point m_mouseStart;
-    std::vector<Item> m_items;
+private:
+  struct Item {
+    doc::Slice* slice;
+    doc::SliceKey oldKey;
+    doc::SliceKey newKey;
   };
+
+  Item getItemForSlice(doc::Slice* slice);
+  gfx::Rect selectedSlicesBounds() const;
+
+  doc::frame_t m_frame;
+  EditorHit m_hit;
+  gfx::Point m_mouseStart;
+  std::vector<Item> m_items;
+};
 
 } // namespace app
 

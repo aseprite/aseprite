@@ -14,24 +14,24 @@
 
 namespace app {
 
-  class ZoomEntry : public ui::IntEntry
-                  , public ui::SliderDelegate {
-  public:
-    ZoomEntry();
+class ZoomEntry : public ui::IntEntry,
+                  public ui::SliderDelegate {
+public:
+  ZoomEntry();
 
-    void setZoom(const render::Zoom& zoom);
+  void setZoom(const render::Zoom& zoom);
 
-    obs::signal<void(const render::Zoom&)> ZoomChange;
+  obs::signal<void(const render::Zoom&)> ZoomChange;
 
-  private:
-    // SliderDelegate impl
-    std::string onGetTextFromValue(int value) override;
-    int onGetValueFromText(const std::string& text) override;
+private:
+  // SliderDelegate impl
+  std::string onGetTextFromValue(int value) override;
+  int onGetValueFromText(const std::string& text) override;
 
-    void onValueChange() override;
+  void onValueChange() override;
 
-    bool m_locked;
-  };
+  bool m_locked;
+};
 
 } // namespace app
 

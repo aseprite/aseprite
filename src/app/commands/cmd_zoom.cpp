@@ -1,12 +1,12 @@
 // Aseprite
-// Copyright (C) 2021-2022  Igara Studio S.A.
+// Copyright (C) 2021-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -16,7 +16,6 @@
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
 #include "base/convert_to.h"
-#include "fmt/format.h"
 #include "render/zoom.h"
 #include "ui/manager.h"
 #include "ui/system.h"
@@ -54,21 +53,25 @@ ZoomCommand::ZoomCommand()
 void ZoomCommand::onLoadParams(const Params& params)
 {
   std::string action = params.get("action");
-  if (action == "in") m_action = Action::In;
-  else if (action == "out") m_action = Action::Out;
-  else if (action == "set") m_action = Action::Set;
+  if (action == "in")
+    m_action = Action::In;
+  else if (action == "out")
+    m_action = Action::Out;
+  else if (action == "set")
+    m_action = Action::Set;
 
   std::string percentage = params.get("percentage");
   if (!percentage.empty()) {
-    m_zoom = render::Zoom::fromScale(
-      std::strtod(percentage.c_str(), NULL) / 100.0);
+    m_zoom = render::Zoom::fromScale(std::strtod(percentage.c_str(), NULL) / 100.0);
     m_action = Action::Set;
   }
 
   m_focus = Focus::Default;
   std::string focus = params.get("focus");
-  if (focus == "center") m_focus = Focus::Center;
-  else if (focus == "mouse") m_focus = Focus::Mouse;
+  if (focus == "center")
+    m_focus = Focus::Center;
+  else if (focus == "mouse")
+    m_focus = Focus::Mouse;
 }
 
 bool ZoomCommand::onEnabled(Context* context)
@@ -90,15 +93,9 @@ void ZoomCommand::onExecute(Context* context)
   render::Zoom zoom = editor->zoom();
 
   switch (m_action) {
-    case Action::In:
-      zoom.in();
-      break;
-    case Action::Out:
-      zoom.out();
-      break;
-    case Action::Set:
-      zoom = m_zoom;
-      break;
+    case Action::In:  zoom.in(); break;
+    case Action::Out: zoom.out(); break;
+    case Action::Set: zoom = m_zoom; break;
   }
 
   Focus focus = m_focus;
@@ -114,8 +111,7 @@ void ZoomCommand::onExecute(Context* context)
   editor->setZoomAndCenterInMouse(
     zoom,
     editor->display()->nativeWindow()->pointFromScreen(mousePos),
-    (focus == Focus::Center ? Editor::ZoomBehavior::CENTER:
-                              Editor::ZoomBehavior::MOUSE));
+    (focus == Focus::Center ? Editor::ZoomBehavior::CENTER : Editor::ZoomBehavior::MOUSE));
 }
 
 std::string ZoomCommand::onGetFriendlyName() const
@@ -123,16 +119,9 @@ std::string ZoomCommand::onGetFriendlyName() const
   std::string text;
 
   switch (m_action) {
-    case Action::In:
-      text = Strings::commands_Zoom_In();
-      break;
-    case Action::Out:
-      text = Strings::commands_Zoom_Out();
-      break;
-    case Action::Set:
-      text = fmt::format(Strings::commands_Zoom_Set(),
-                         int(100.0*m_zoom.scale()));
-      break;
+    case Action::In:  text = Strings::commands_Zoom_In(); break;
+    case Action::Out: text = Strings::commands_Zoom_Out(); break;
+    case Action::Set: text = Strings::commands_Zoom_Set(int(100.0 * m_zoom.scale())); break;
   }
 
   return text;

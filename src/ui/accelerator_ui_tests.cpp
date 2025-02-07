@@ -34,17 +34,25 @@ TEST(Accelerator, ToString)
   EXPECT_EQ(Accelerator(kKeyAltModifier, kKeyQ, 'q').toString(), Accelerator("Alt+Q").toString());
   EXPECT_EQ(Accelerator(kKeyCtrlModifier, kKeyQ, 'q').toString(), Accelerator("Ctrl+Q").toString());
   EXPECT_EQ(Accelerator(kKeyNoneModifier, kKeyMinus, '-').toString(), Accelerator("-").toString());
-  EXPECT_EQ(Accelerator(kKeyShiftModifier, kKeyMinus, '-').toString(), Accelerator("Shift+-").toString());
+  EXPECT_EQ(Accelerator(kKeyShiftModifier, kKeyMinus, '-').toString(),
+            Accelerator("Shift+-").toString());
   EXPECT_EQ(Accelerator(kKeyNoneModifier, kKeyEquals, '=').toString(), Accelerator("=").toString());
   EXPECT_EQ(Accelerator(kKeyNoneModifier, kKeyNil, '+').toString(), Accelerator("+").toString());
-  EXPECT_EQ(Accelerator(kKeyShiftModifier, kKeyNil, '+').toString(), Accelerator("Shift++").toString());
-  EXPECT_EQ(Accelerator(kKeyCtrlModifier, kKeyNil, '+').toString(), Accelerator("Ctrl++").toString());
+  EXPECT_EQ(Accelerator(kKeyShiftModifier, kKeyNil, '+').toString(),
+            Accelerator("Shift++").toString());
+  EXPECT_EQ(Accelerator(kKeyCtrlModifier, kKeyNil, '+').toString(),
+            Accelerator("Ctrl++").toString());
 
-  EXPECT_EQ(Accelerator(kKeyNoneModifier, kKeyMinusPad, 0).toString(), Accelerator("Minus Pad").toString());
-  EXPECT_EQ(Accelerator(kKeyNoneModifier, kKeyMinusPad, 0).toString(), Accelerator("- Pad").toString());
-  EXPECT_EQ(Accelerator(kKeyNoneModifier, kKeyPlusPad, 0).toString(), Accelerator("Plus Pad").toString());
-  EXPECT_EQ(Accelerator(kKeyNoneModifier, kKeyPlusPad, 0).toString(), Accelerator("+ Pad").toString());
-  EXPECT_EQ(Accelerator(kKeyCtrlModifier, kKeyPlusPad, 0).toString(), Accelerator("Ctrl++ Pad").toString());
+  EXPECT_EQ(Accelerator(kKeyNoneModifier, kKeyMinusPad, 0).toString(),
+            Accelerator("Minus Pad").toString());
+  EXPECT_EQ(Accelerator(kKeyNoneModifier, kKeyMinusPad, 0).toString(),
+            Accelerator("- Pad").toString());
+  EXPECT_EQ(Accelerator(kKeyNoneModifier, kKeyPlusPad, 0).toString(),
+            Accelerator("Plus Pad").toString());
+  EXPECT_EQ(Accelerator(kKeyNoneModifier, kKeyPlusPad, 0).toString(),
+            Accelerator("+ Pad").toString());
+  EXPECT_EQ(Accelerator(kKeyCtrlModifier, kKeyPlusPad, 0).toString(),
+            Accelerator("Ctrl++ Pad").toString());
 
   EXPECT_EQ("- Pad", Accelerator(kKeyNoneModifier, kKeyMinusPad, 0).toString());
   EXPECT_EQ("- Pad", Accelerator("Minus Pad").toString());

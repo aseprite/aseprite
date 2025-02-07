@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_layer_blend_mode.h"
@@ -15,8 +15,7 @@
 #include "doc/layer.h"
 #include "doc/sprite.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 SetLayerBlendMode::SetLayerBlendMode(LayerImage* layer, BlendMode blendMode)
   : WithLayer(layer)
@@ -47,5 +46,4 @@ void SetLayerBlendMode::onFireNotifications()
   doc->notify_observers<DocEvent&>(&DocObserver::onLayerBlendModeChange, ev);
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

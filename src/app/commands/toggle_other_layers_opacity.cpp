@@ -1,11 +1,11 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -20,16 +20,18 @@
 namespace app {
 
 struct ToggleOtherLayersOpacityParams : public NewParams {
-  Param<bool> preview { this, false, "preview" };
-  Param<int> opacity { this, 255, "opacity" };
+  Param<bool> preview{ this, false, "preview" };
+  Param<int> opacity{ this, 255, "opacity" };
   // Can be used if the option is presend as "Hide Others", so it's
   // checked when the configured opacity == 0
-  Param<bool> checkedIfZero { this, false, "checkedIfZero" };
+  Param<bool> checkedIfZero{ this, false, "checkedIfZero" };
 };
 
-class ToggleOtherLayersOpacityCommand : public CommandWithNewParams<ToggleOtherLayersOpacityParams> {
+class ToggleOtherLayersOpacityCommand
+  : public CommandWithNewParams<ToggleOtherLayersOpacityParams> {
 public:
   ToggleOtherLayersOpacityCommand();
+
 private:
   bool onChecked(Context* ctx) override;
   void onExecute(Context* ctx) override;
@@ -37,8 +39,8 @@ private:
 };
 
 ToggleOtherLayersOpacityCommand::ToggleOtherLayersOpacityCommand()
-  : CommandWithNewParams<ToggleOtherLayersOpacityParams>(
-    CommandId::ToggleOtherLayersOpacity(), CmdUIOnlyFlag)
+  : CommandWithNewParams<ToggleOtherLayersOpacityParams>(CommandId::ToggleOtherLayersOpacity(),
+                                                         CmdUIOnlyFlag)
 {
 }
 
@@ -46,10 +48,8 @@ bool ToggleOtherLayersOpacityCommand::onChecked(Context* ctx)
 {
   if (params().checkedIfZero.isSet()) {
     auto& pref = Preferences::instance();
-    auto& option =
-      (params().preview() ?
-       pref.experimental.nonactiveLayersOpacityPreview:
-       pref.experimental.nonactiveLayersOpacity);
+    auto& option = (params().preview() ? pref.experimental.nonactiveLayersOpacityPreview :
+                                         pref.experimental.nonactiveLayersOpacity);
     return (option() == 0);
   }
   return false;
@@ -58,17 +58,14 @@ bool ToggleOtherLayersOpacityCommand::onChecked(Context* ctx)
 void ToggleOtherLayersOpacityCommand::onExecute(Context* ctx)
 {
   auto& pref = Preferences::instance();
-  auto& option =
-    (params().preview() ?
-     pref.experimental.nonactiveLayersOpacityPreview:
-     pref.experimental.nonactiveLayersOpacity);
+  auto& option = (params().preview() ? pref.experimental.nonactiveLayersOpacityPreview :
+                                       pref.experimental.nonactiveLayersOpacity);
 
   // If we want to toggle the other layers in the preview window, and
   // the preview window is hidden, we just show it with the "other
   // layers" hidden.
   if (params().preview()) {
-    PreviewEditorWindow* previewWin =
-      App::instance()->mainWindow()->getPreviewEditor();
+    PreviewEditorWindow* previewWin = App::instance()->mainWindow()->getPreviewEditor();
     if (!previewWin->isPreviewEnabled()) {
       option(0);
       previewWin->setPreviewEnabled(true);
@@ -80,14 +77,15 @@ void ToggleOtherLayersOpacityCommand::onExecute(Context* ctx)
     option(params().opacity());
   }
   else {
-    option(option() == 0 ? 255: 0);
+    option(option() == 0 ? 255 : 0);
   }
 
   // TODO make the editors listen the opacity change
   if (params().preview()) {
-    PreviewEditorWindow* previewWin =
-      App::instance()->mainWindow()->getPreviewEditor();
-    previewWin->previewEditor()->invalidate();
+    PreviewEditorWindow* previewWin = App::instance()->mainWindow()->getPreviewEditor();
+    if (previewWin && previewWin->previewEditor()) {
+      previewWin->previewEditor()->invalidate();
+    }
   }
   else {
     app_refresh_screen();

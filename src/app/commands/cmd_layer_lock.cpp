@@ -1,11 +1,12 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -30,22 +31,19 @@ protected:
   void onExecute(Context* context) override;
 };
 
-LayerLockCommand::LayerLockCommand()
-  : Command(CommandId::LayerLock(), CmdRecordableFlag)
+LayerLockCommand::LayerLockCommand() : Command(CommandId::LayerLock(), CmdRecordableFlag)
 {
 }
 
 bool LayerLockCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasActiveLayer);
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasActiveLayer);
 }
 
 bool LayerLockCommand::onChecked(Context* context)
 {
   const ContextReader reader(context);
-  if (!reader.document() ||
-      !reader.layer())
+  if (!reader.document() || !reader.layer())
     return false;
 
   SelectedLayers selLayers;
@@ -67,6 +65,7 @@ bool LayerLockCommand::onChecked(Context* context)
 void LayerLockCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
+  Doc* doc = writer.document();
   SelectedLayers selLayers;
   auto range = App::instance()->timeline()->range();
   if (range.enabled()) {
@@ -80,9 +79,8 @@ void LayerLockCommand::onExecute(Context* context)
     if (!layer->isEditable())
       anyLock = true;
   }
-  for (auto layer : selLayers) {
-    layer->setEditable(anyLock);
-  }
+  for (auto* layer : selLayers)
+    doc->setLayerEditableWithNotifications(layer, anyLock);
 
   update_screen_for_document(writer.document());
 }

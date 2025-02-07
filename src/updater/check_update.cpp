@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "updater/check_update.h"
@@ -28,9 +28,7 @@ namespace updater {
 
 using namespace tinyxml2;
 
-CheckUpdateResponse::CheckUpdateResponse()
-  : m_type(Unknown)
-  , m_waitDays(0.0)
+CheckUpdateResponse::CheckUpdateResponse() : m_type(Unknown), m_waitDays(0.0)
 {
 }
 
@@ -86,11 +84,10 @@ CheckUpdateResponse::CheckUpdateResponse(const std::string& responseBody)
     m_waitDays = base::convert_to<double>(std::string(waitdays_attr));
 }
 
-class CheckUpdate::CheckUpdateImpl
-{
+class CheckUpdate::CheckUpdateImpl {
 public:
-  CheckUpdateImpl() { }
-  ~CheckUpdateImpl() { }
+  CheckUpdateImpl() {}
+  ~CheckUpdateImpl() {}
 
   void abort()
   {
@@ -98,7 +95,9 @@ public:
       m_request->abort();
   }
 
-  bool checkNewVersion(const Uuid& uuid, const std::string& extraParams, CheckUpdateDelegate* delegate)
+  bool checkNewVersion(const Uuid& uuid,
+                       const std::string& extraParams,
+                       CheckUpdateDelegate* delegate)
   {
     std::string url = get_app_update_url();
     if (!uuid.empty()) {
@@ -133,8 +132,7 @@ private:
   std::unique_ptr<net::HttpRequest> m_request;
 };
 
-CheckUpdate::CheckUpdate()
-  : m_impl(new CheckUpdateImpl)
+CheckUpdate::CheckUpdate() : m_impl(new CheckUpdateImpl)
 {
 }
 
@@ -148,7 +146,9 @@ void CheckUpdate::abort()
   m_impl->abort();
 }
 
-bool CheckUpdate::checkNewVersion(const Uuid& uuid, const std::string& extraParams, CheckUpdateDelegate* delegate)
+bool CheckUpdate::checkNewVersion(const Uuid& uuid,
+                                  const std::string& extraParams,
+                                  CheckUpdateDelegate* delegate)
 {
   return m_impl->checkNewVersion(uuid, extraParams, delegate);
 }

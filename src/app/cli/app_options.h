@@ -21,8 +21,8 @@ class AppOptions {
 public:
   enum VerboseLevel {
     kNoVerbose,
-    kVerbose,                   // --verbose
-    kHighlyVerbose,             // --debug
+    kVerbose,       // --verbose
+    kHighlyVerbose, // --debug
   };
 
   typedef base::ProgramOptions PO;
@@ -41,9 +41,7 @@ public:
   bool showVersion() const { return m_showVersion; }
   VerboseLevel verboseLevel() const { return m_verboseLevel; }
 
-  const ValueList& values() const {
-    return m_po.values();
-  }
+  const ValueList& values() const { return m_po.values(); }
 
   // Export options
   const Option& saveAs() const { return m_saveAs; }
@@ -70,6 +68,7 @@ public:
   const Option& allLayers() const { return m_allLayers; }
   const Option& ignoreLayer() const { return m_ignoreLayer; }
   const Option& tag() const { return m_tag; }
+  const Option& playSubtags() const { return m_playSubtags; }
   const Option& frameRange() const { return m_frameRange; }
   const Option& ignoreEmpty() const { return m_ignoreEmpty; }
   const Option& mergeDuplicates() const { return m_mergeDuplicates; }
@@ -89,6 +88,7 @@ public:
   const Option& scriptParam() const { return m_scriptParam; }
 #endif
   const Option& listLayers() const { return m_listLayers; }
+  const Option& listLayerHierarchy() const { return m_listLayerHierarchy; }
   const Option& listTags() const { return m_listTags; }
   const Option& listSlices() const { return m_listSlices; }
   const Option& oneFrame() const { return m_oneFrame; }
@@ -143,6 +143,7 @@ private:
   Option& m_allLayers;
   Option& m_ignoreLayer;
   Option& m_tag;
+  Option& m_playSubtags;
   Option& m_frameRange;
   Option& m_ignoreEmpty;
   Option& m_mergeDuplicates;
@@ -162,6 +163,7 @@ private:
   Option& m_scriptParam;
 #endif
   Option& m_listLayers;
+  Option& m_listLayerHierarchy;
   Option& m_listTags;
   Option& m_listSlices;
   Option& m_oneFrame;
@@ -177,7 +179,6 @@ private:
 #endif
   Option& m_help;
   Option& m_version;
-
 };
 
 } // namespace app

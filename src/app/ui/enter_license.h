@@ -33,6 +33,6 @@ private:
   void showSuccess();
 };
 
-}
+} // namespace app
 
 #endif

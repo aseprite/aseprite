@@ -8,8 +8,6 @@
 #define APP_SCRIPT_GRAPHICS_CONTEXT_H_INCLUDED
 #pragma once
 
-#ifdef ENABLE_UI
-
 #include "doc/palette.h"
 #include "gfx/path.h"
 #include "os/font.h"
@@ -19,11 +17,10 @@
 #include <stack>
 
 namespace doc {
-  class Image;
+class Image;
 }
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 class GraphicsContext {
 private:
@@ -33,8 +30,13 @@ private:
   };
 
 public:
-  GraphicsContext(const os::SurfaceRef& surface, int uiscale) : m_surface(surface), m_uiscale(uiscale) { }
-  GraphicsContext(GraphicsContext&& gc) {
+  GraphicsContext(const os::SurfaceRef& surface, int uiscale)
+    : m_surface(surface)
+    , m_uiscale(uiscale)
+  {
+  }
+  GraphicsContext(GraphicsContext&& gc)
+  {
     std::swap(m_surface, gc.m_surface);
     std::swap(m_paint, gc.m_paint);
     std::swap(m_font, gc.m_font);
@@ -51,12 +53,14 @@ public:
   int width() const { return m_surface->width(); }
   int height() const { return m_surface->height(); }
 
-  void save() {
-    m_saved.push(State{m_paint, m_palette});
+  void save()
+  {
+    m_saved.push(State{ m_paint, m_palette });
     m_surface->save();
   }
 
-  void restore() {
+  void restore()
+  {
     if (!m_saved.empty()) {
       auto state = m_saved.top();
       m_paint = state.paint;
@@ -80,18 +84,20 @@ public:
   void opacity(int value) { m_paint.skPaint().setAlpha(value); }
 #else
   int opacity() const { return 255; }
-  void opacity(int) { }
+  void opacity(int) {}
 #endif
 
   os::BlendMode blendMode() const { return m_paint.blendMode(); }
   void blendMode(const os::BlendMode bm) { m_paint.blendMode(bm); }
 
-  void strokeRect(const gfx::Rect& rc) {
+  void strokeRect(const gfx::Rect& rc)
+  {
     m_paint.style(os::Paint::Stroke);
     m_surface->drawRect(rc, m_paint);
   }
 
-  void fillRect(const gfx::Rect& rc) {
+  void fillRect(const gfx::Rect& rc)
+  {
     m_paint.style(os::Paint::Fill);
     m_surface->drawRect(rc, m_paint);
   }
@@ -100,9 +106,7 @@ public:
   gfx::Size measureText(const std::string& text) const;
 
   void drawImage(const doc::Image* img, int x, int y);
-  void drawImage(const doc::Image* img,
-                 const gfx::Rect& srcRc,
-                 const gfx::Rect& dstRc);
+  void drawImage(const doc::Image* img, const gfx::Rect& srcRc, const gfx::Rect& dstRc);
 
   void drawThemeImage(const std::string& partId, const gfx::Point& pt);
   void drawThemeRect(const std::string& partId, const gfx::Rect& rc);
@@ -112,28 +116,19 @@ public:
   void closePath() { m_path.close(); }
   void moveTo(float x, float y) { m_path.moveTo(x, y); }
   void lineTo(float x, float y) { m_path.lineTo(x, y); }
-  void cubicTo(float cp1x, float cp1y, float cp2x, float cp2y, float x, float y) {
+  void cubicTo(float cp1x, float cp1y, float cp2x, float cp2y, float x, float y)
+  {
     m_path.cubicTo(cp1x, cp1y, cp2x, cp2y, x, y);
   }
-  void oval(const gfx::Rect& rc) {
-    m_path.oval(rc);
-  }
-  void rect(const gfx::Rect& rc) {
-    m_path.rect(rc);
-  }
-  void roundedRect(const gfx::Rect& rc, float rx, float ry) {
-    m_path.roundedRect(rc, rx, ry);
-  }
+  void oval(const gfx::Rect& rc) { m_path.oval(rc); }
+  void rect(const gfx::Rect& rc) { m_path.rect(rc); }
+  void roundedRect(const gfx::Rect& rc, float rx, float ry) { m_path.roundedRect(rc, rx, ry); }
   void stroke();
   void fill();
 
-  void clip() {
-    m_surface->clipPath(m_path);
-  }
+  void clip() { m_surface->clipPath(m_path); }
 
-  int uiscale() const {
-    return m_uiscale;
-  }
+  int uiscale() const { return m_uiscale; }
 
 private:
   os::SurfaceRef m_surface = nullptr;
@@ -146,9 +141,6 @@ private:
   doc::Palette* m_palette = nullptr;
 };
 
-} // namespace script
-} // namespace app
-
-#endif
+}} // namespace app::script
 
 #endif

@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/tags.h"
@@ -18,8 +18,7 @@
 
 namespace doc {
 
-Tags::Tags(Sprite* sprite)
-  : m_sprite(sprite)
+Tags::Tags(Sprite* sprite) : m_sprite(sprite)
 {
 }
 
@@ -36,8 +35,7 @@ void Tags::add(Tag* tag)
   auto it = begin(), end = this->end();
   for (; it != end; ++it) {
     if ((*it)->fromFrame() > tag->fromFrame() ||
-        ((*it)->fromFrame() == tag->fromFrame() &&
-         (*it)->toFrame() < tag->toFrame()))
+        ((*it)->fromFrame() == tag->fromFrame() && (*it)->toFrame() < tag->toFrame()))
       break;
   }
   m_tags.insert(it, tag);
@@ -76,10 +74,8 @@ Tag* Tags::innerTag(const frame_t frame) const
 {
   const Tag* found = nullptr;
   for (const Tag* tag : *this) {
-    if (frame >= tag->fromFrame() &&
-        frame <= tag->toFrame()) {
-      if (!found ||
-          (tag->toFrame() - tag->fromFrame()) < (found->toFrame() - found->fromFrame())) {
+    if (frame >= tag->fromFrame() && frame <= tag->toFrame()) {
+      if (!found || (tag->toFrame() - tag->fromFrame()) < (found->toFrame() - found->fromFrame())) {
         found = tag;
       }
     }
@@ -91,10 +87,8 @@ Tag* Tags::outerTag(const frame_t frame) const
 {
   const Tag* found = nullptr;
   for (const Tag* tag : *this) {
-    if (frame >= tag->fromFrame() &&
-        frame <= tag->toFrame()) {
-      if (!found ||
-          (tag->toFrame() - tag->fromFrame()) > (found->toFrame() - found->fromFrame())) {
+    if (frame >= tag->fromFrame() && frame <= tag->toFrame()) {
+      if (!found || (tag->toFrame() - tag->fromFrame()) > (found->toFrame() - found->fromFrame())) {
         found = tag;
       }
     }

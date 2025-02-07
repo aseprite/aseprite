@@ -15,24 +15,24 @@
 
 namespace app {
 
-  class HttpLoader;
+class HttpLoader;
 
-  class NewsListBox : public ui::ListBox {
-  public:
-    NewsListBox();
-    ~NewsListBox();
+class NewsListBox : public ui::ListBox {
+public:
+  NewsListBox();
+  ~NewsListBox();
 
-    void reload();
+  void reload();
 
-  private:
-    bool onProcessMessage(ui::Message* msg) override;
-    void onTick();
-    void parseFile(const std::string& filename);
-    bool validCache(const std::string& filename);
+private:
+  bool onProcessMessage(ui::Message* msg) override;
+  void onTick();
+  void parseFile(const std::string& filename);
+  bool validCache(const std::string& filename);
 
-    ui::Timer m_timer;
-    HttpLoader* m_loader;
-  };
+  ui::Timer m_timer;
+  HttpLoader* m_loader;
+};
 
 } // namespace app
 

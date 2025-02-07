@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -19,7 +19,7 @@
 #include "ui/alert.h"
 
 #ifdef ENABLE_SCRIPTING
-#include "app/commands/debugger.h"
+  #include "app/commands/debugger.h"
 #endif
 
 namespace app {
@@ -32,8 +32,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-ExitCommand::ExitCommand()
-  : Command(CommandId::Exit(), CmdUIOnlyFlag)
+ExitCommand::ExitCommand() : Command(CommandId::Exit(), CmdUIOnlyFlag)
 {
 }
 

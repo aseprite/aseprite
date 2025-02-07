@@ -18,10 +18,11 @@
 
 #include <vector>
 
-namespace gfx { class Region; }
+namespace gfx {
+class Region;
+}
 
-namespace app {
-namespace tools {
+namespace app { namespace tools {
 
 class ToolLoop;
 
@@ -78,6 +79,10 @@ public:
   // Should be called each time the user moves the mouse inside the editor.
   void movement(Pointer pointer);
 
+  // Should be called when Shift+brush tool is used to disable stabilizer
+  // on the line preview
+  void disableMouseStabilizer();
+
   const Pointer& lastPointer() const { return m_lastPointer; }
 
 private:
@@ -101,7 +106,6 @@ private:
   gfx::PointF m_stabilizerCenter;
 };
 
-} // namespace tools
-} // namespace app
+}} // namespace app::tools
 
 #endif

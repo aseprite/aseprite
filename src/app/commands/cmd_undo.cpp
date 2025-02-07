@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -19,14 +19,11 @@
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"
+#include "app/ui/timeline/timeline.h"
 #include "base/thread.h"
 #include "doc/sprite.h"
 #include "ui/manager.h"
 #include "ui/system.h"
-
-#ifdef ENABLE_UI
-#include "app/ui/timeline/timeline.h"
-#endif
 
 namespace app {
 
@@ -45,8 +42,7 @@ private:
 };
 
 UndoCommand::UndoCommand(Type type)
-  : Command((type == Undo ? CommandId::Undo():
-                            CommandId::Redo()), CmdUIOnlyFlag)
+  : Command((type == Undo ? CommandId::Undo() : CommandId::Redo()), CmdUIOnlyFlag)
   , m_type(type)
 {
 }
@@ -55,10 +51,7 @@ bool UndoCommand::onEnabled(Context* context)
 {
   const ContextReader reader(context);
   const Doc* doc(reader.document());
-  return
-    doc &&
-    ((m_type == Undo ? doc->undoHistory()->canUndo():
-                       doc->undoHistory()->canRedo()));
+  return doc && ((m_type == Undo ? doc->undoHistory()->canUndo() : doc->undoHistory()->canRedo()));
 }
 
 void UndoCommand::onExecute(Context* context)
@@ -67,16 +60,13 @@ void UndoCommand::onExecute(Context* context)
   Doc* document(writer.document());
   DocUndo* undo = document->undoHistory();
 
-#ifdef ENABLE_UI
   auto editor = Editor::activeEditor();
   Sprite* sprite = document->sprite();
   SpritePosition spritePosition;
-  const bool gotoModified =
-    (Preferences::instance().undo.gotoModified() &&
-     context->isUIAvailable() && editor);
+  const bool gotoModified = (Preferences::instance().undo.gotoModified() &&
+                             context->isUIAvailable() && editor);
   if (gotoModified) {
-    SpritePosition currentPosition(writer.site()->layer(),
-                                   writer.site()->frame());
+    SpritePosition currentPosition(writer.site()->layer(), writer.site()->frame());
 
     if (m_type == Undo)
       spritePosition = undo->nextUndoSpritePosition();
@@ -91,8 +81,7 @@ void UndoCommand::onExecute(Context* context)
 
       // Draw the current layer/frame (which is not undone yet) so the
       // user can see the doUndo/doRedo effect.
-      editor->drawSpriteClipped(
-        gfx::Region(gfx::Rect(0, 0, sprite->width(), sprite->height())));
+      editor->drawSpriteClipped(gfx::Region(gfx::Rect(0, 0, sprite->width(), sprite->height())));
 
       editor->display()->flipDisplay();
       base::this_thread::sleep_for(0.01);
@@ -120,7 +109,6 @@ void UndoCommand::onExecute(Context* context)
     else
       statusbar->setStatusText(0, msg);
   }
-#endif // ENABLE_UI
 
   // Effectively undo/redo.
   if (m_type == Undo)
@@ -128,15 +116,12 @@ void UndoCommand::onExecute(Context* context)
   else
     undo->redo();
 
-#ifdef ENABLE_UI
   // After redo/undo, we retry to change the current SpritePosition
   // (because new frames/layers could be added, positions that we
   // weren't able to reach before the undo).
   if (gotoModified) {
     Site newSite = context->activeSite();
-    SpritePosition currentPosition(
-      newSite.layer(),
-      newSite.frame());
+    SpritePosition currentPosition(newSite.layer(), newSite.frame());
 
     if (spritePosition != currentPosition) {
       Layer* selectLayer = spritePosition.layer();
@@ -157,14 +142,11 @@ void UndoCommand::onExecute(Context* context)
         timeline->setRange(docRange);
     }
   }
-#endif  // ENABLE_UI
 
   document->generateMaskBoundaries();
   document->setExtraCel(ExtraCelRef(nullptr));
 
-#ifdef ENABLE_UI
   update_screen_for_document(document);
-#endif
   set_current_palette(writer.palette(), false);
 }
 

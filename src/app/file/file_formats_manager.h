@@ -14,34 +14,34 @@
 
 namespace app {
 
-  class FileFormat;
+class FileFormat;
 
-  // A list of file formats. Used by the FileFormatsManager to keep
-  // track of all known file extensions supported by ASE.
-  typedef std::vector<FileFormat*> FileFormatsList;
+// A list of file formats. Used by the FileFormatsManager to keep
+// track of all known file extensions supported by ASE.
+typedef std::vector<FileFormat*> FileFormatsList;
 
-  // Manages the list of known formats by ASEPRITE (image file format that can
-  // be loaded and/or saved).
-  class FileFormatsManager {
-  public:
-    // Returns a singleton of this class.
-    static FileFormatsManager* instance();
-    static void destroyInstance();
+// Manages the list of known formats by ASEPRITE (image file format that can
+// be loaded and/or saved).
+class FileFormatsManager {
+public:
+  // Returns a singleton of this class.
+  static FileFormatsManager* instance();
+  static void destroyInstance();
 
-    virtual ~FileFormatsManager();
+  virtual ~FileFormatsManager();
 
-    // Iterators to access to the list of formats.
-    FileFormatsList::iterator begin();
-    FileFormatsList::iterator end();
+  // Iterators to access to the list of formats.
+  FileFormatsList::iterator begin();
+  FileFormatsList::iterator end();
 
-    FileFormat* getFileFormat(const dio::FileFormat dioFormat) const;
+  FileFormat* getFileFormat(const dio::FileFormat dioFormat) const;
 
-  private:
-    FileFormatsManager();
-    void registerFormat(FileFormat* fileFormat);
+private:
+  FileFormatsManager();
+  void registerFormat(FileFormat* fileFormat);
 
-    FileFormatsList m_formats;
-  };
+  FileFormatsList m_formats;
+};
 
 } // namespace app
 

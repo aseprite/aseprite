@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "render/gradient.h"
@@ -18,15 +18,14 @@
 
 namespace render {
 
-void render_rgba_gradient(
-  doc::Image* img,
-  const gfx::Point imgPos,
-  const gfx::Point p0,
-  const gfx::Point p1,
-  doc::color_t c0,
-  doc::color_t c1,
-  const render::DitheringMatrix& matrix,
-  const GradientType type)
+void render_rgba_gradient(doc::Image* img,
+                          const gfx::Point imgPos,
+                          const gfx::Point p0,
+                          const gfx::Point p1,
+                          doc::color_t c0,
+                          doc::color_t c1,
+                          const render::DitheringMatrix& matrix,
+                          const GradientType type)
 {
   switch (type) {
     case GradientType::Linear:
@@ -38,14 +37,13 @@ void render_rgba_gradient(
   }
 }
 
-void render_rgba_linear_gradient(
-  doc::Image* img,
-  const gfx::Point imgPos,
-  const gfx::Point p0,
-  const gfx::Point p1,
-  doc::color_t c0,
-  doc::color_t c1,
-  const render::DitheringMatrix& matrix)
+void render_rgba_linear_gradient(doc::Image* img,
+                                 const gfx::Point imgPos,
+                                 const gfx::Point p0,
+                                 const gfx::Point p1,
+                                 doc::color_t c0,
+                                 doc::color_t c1,
+                                 const render::DitheringMatrix& matrix)
 {
   ASSERT(img->pixelFormat() == doc::IMAGE_RGB);
   if (img->pixelFormat() != doc::IMAGE_RGB) {
@@ -59,9 +57,7 @@ void render_rgba_linear_gradient(
     return;
   }
 
-  base::Vector2d<double>
-    u(p0.x, p0.y),
-    v(p1.x, p1.y), w;
+  base::Vector2d<double> u(p0.x, p0.y), v(p1.x, p1.y), w;
   w = v - u;
   const double wmag = w.magnitude();
   w = w.normalize();
@@ -70,12 +66,10 @@ void render_rgba_linear_gradient(
   // values on each stop. So in case that one color has alpha=0
   // (complete transparent), use the RGB values of the
   // non-transparent color in the other stop point.
-  if (doc::rgba_geta(c0) == 0 &&
-      doc::rgba_geta(c1) != 0) {
+  if (doc::rgba_geta(c0) == 0 && doc::rgba_geta(c1) != 0) {
     c0 = (c1 & doc::rgba_rgb_mask);
   }
-  else if (doc::rgba_geta(c0) != 0 &&
-           doc::rgba_geta(c1) == 0) {
+  else if (doc::rgba_geta(c0) != 0 && doc::rgba_geta(c1) == 0) {
     c1 = (c0 & doc::rgba_rgb_mask);
   }
 
@@ -95,21 +89,22 @@ void render_rgba_linear_gradient(
   const int height = img->height();
 
   if (matrix.rows() == 1 && matrix.cols() == 1) {
-    for (int y=0; y<height; ++y) {
-      for (int x=0; x<width; ++x, ++it) {
-        base::Vector2d<double> q(imgPos.x+x,
-                                 imgPos.y+y);
+    for (int y = 0; y < height; ++y) {
+      for (int x = 0; x < width; ++x, ++it) {
+        base::Vector2d<double> q(imgPos.x + x, imgPos.y + y);
         q -= u;
         double f = (q * w) / wmag;
 
         doc::color_t c;
-        if (f < 0.0) c = c0;
-        else if (f > 1.0) c = c1;
+        if (f < 0.0)
+          c = c0;
+        else if (f > 1.0)
+          c = c1;
         else {
-          c = doc::rgba(int(r0 + f*(r1-r0) + 1e-7),
-                        int(g0 + f*(g1-g0) + 1e-7),
-                        int(b0 + f*(b1-b0) + 1e-7),
-                        int(a0 + f*(a1-a0) + 1e-7));
+          c = doc::rgba(int(r0 + f * (r1 - r0) + 1e-7),
+                        int(g0 + f * (g1 - g0) + 1e-7),
+                        int(b0 + f * (b1 - b0) + 1e-7),
+                        int(a0 + f * (a1 - a0) + 1e-7));
         }
 
         *it = c;
@@ -117,42 +112,37 @@ void render_rgba_linear_gradient(
     }
   }
   else {
-    for (int y=0; y<height; ++y) {
-      for (int x=0; x<width; ++x, ++it) {
-        base::Vector2d<double> q(imgPos.x+x,
-                                 imgPos.y+y);
+    for (int y = 0; y < height; ++y) {
+      for (int x = 0; x < width; ++x, ++it) {
+        base::Vector2d<double> q(imgPos.x + x, imgPos.y + y);
         q -= u;
         double f = (q * w) / wmag;
 
-        *it = (f*(matrix.maxValue()+2) < matrix(y, x)+1 ? c0: c1);
+        *it = (f * (matrix.maxValue() + 2) < matrix(y, x) + 1 ? c0 : c1);
       }
     }
   }
 }
 
-void render_rgba_radial_gradient(
-  doc::Image* img,
-  const gfx::Point imgPos,
-  const gfx::Point p0,
-  const gfx::Point p1,
-  doc::color_t c0,
-  doc::color_t c1,
-  const render::DitheringMatrix& matrix)
+void render_rgba_radial_gradient(doc::Image* img,
+                                 const gfx::Point imgPos,
+                                 const gfx::Point p0,
+                                 const gfx::Point p1,
+                                 doc::color_t c0,
+                                 doc::color_t c1,
+                                 const render::DitheringMatrix& matrix)
 {
   ASSERT(img->pixelFormat() == doc::IMAGE_RGB);
   if (img->pixelFormat() != doc::IMAGE_RGB) {
     return;
   }
 
-  base::Vector2d<double>
-    u(p0.x, p0.y),
-    v(p1.x, p1.y), w;
+  base::Vector2d<double> u(p0.x, p0.y), v(p1.x, p1.y), w;
   w = (v - u) / 2;
 
   // If there is no vector defining the gradient (just one point),
   // the "gradient" will be just a solid color ("c1")
-  if (std::fabs(w.x) <= 0.000001 ||
-      std::fabs(w.y) <= 0.000001) {
+  if (std::fabs(w.x) <= 0.000001 || std::fabs(w.y) <= 0.000001) {
     img->clear(c1);
     return;
   }
@@ -161,12 +151,10 @@ void render_rgba_radial_gradient(
   // values on each stop. So in case that one color has alpha=0
   // (complete transparent), use the RGB values of the
   // non-transparent color in the other stop point.
-  if (doc::rgba_geta(c0) == 0 &&
-      doc::rgba_geta(c1) != 0) {
+  if (doc::rgba_geta(c0) == 0 && doc::rgba_geta(c1) != 0) {
     c0 = (c1 & doc::rgba_rgb_mask);
   }
-  else if (doc::rgba_geta(c0) != 0 &&
-           doc::rgba_geta(c1) == 0) {
+  else if (doc::rgba_geta(c0) != 0 && doc::rgba_geta(c1) == 0) {
     c1 = (c0 & doc::rgba_rgb_mask);
   }
 
@@ -186,23 +174,24 @@ void render_rgba_radial_gradient(
   const int height = img->height();
 
   if (matrix.rows() == 1 && matrix.cols() == 1) {
-    for (int y=0; y<height; ++y) {
-      for (int x=0; x<width; ++x, ++it) {
-        base::Vector2d<double> q(imgPos.x+x,
-                                 imgPos.y+y);
-        q -= (u+v)/2;
+    for (int y = 0; y < height; ++y) {
+      for (int x = 0; x < width; ++x, ++it) {
+        base::Vector2d<double> q(imgPos.x + x, imgPos.y + y);
+        q -= (u + v) / 2;
         q.x /= std::fabs(w.x);
         q.y /= std::fabs(w.y);
-        double f = std::sqrt(q.x*q.x + q.y*q.y);
+        double f = std::sqrt(q.x * q.x + q.y * q.y);
 
         doc::color_t c;
-        if (f < 0.0) c = c0;
-        else if (f > 1.0) c = c1;
+        if (f < 0.0)
+          c = c0;
+        else if (f > 1.0)
+          c = c1;
         else {
-          c = doc::rgba(int(r0 + f*(r1-r0) + 1e-7),
-                        int(g0 + f*(g1-g0) + 1e-7),
-                        int(b0 + f*(b1-b0) + 1e-7),
-                        int(a0 + f*(a1-a0) + 1e-7));
+          c = doc::rgba(int(r0 + f * (r1 - r0) + 1e-7),
+                        int(g0 + f * (g1 - g0) + 1e-7),
+                        int(b0 + f * (b1 - b0) + 1e-7),
+                        int(a0 + f * (a1 - a0) + 1e-7));
         }
 
         *it = c;
@@ -210,65 +199,57 @@ void render_rgba_radial_gradient(
     }
   }
   else {
-    for (int y=0; y<height; ++y) {
-      for (int x=0; x<width; ++x, ++it) {
-        base::Vector2d<double> q(imgPos.x+x,
-                                 imgPos.y+y);
-        q -= (u+v)/2;
+    for (int y = 0; y < height; ++y) {
+      for (int x = 0; x < width; ++x, ++it) {
+        base::Vector2d<double> q(imgPos.x + x, imgPos.y + y);
+        q -= (u + v) / 2;
         q.x /= std::fabs(w.x);
         q.y /= std::fabs(w.y);
-        double f = std::sqrt(q.x*q.x + q.y*q.y);
+        double f = std::sqrt(q.x * q.x + q.y * q.y);
 
-        *it = (f*(matrix.maxValue()+2) < matrix(y, x)+1 ? c0: c1);
+        *it = (f * (matrix.maxValue() + 2) < matrix(y, x) + 1 ? c0 : c1);
       }
     }
   }
 }
 
 template<typename ImageTraits>
-static void create_dithering_pattern_templ(
-  doc::Image* pattern,
-  const render::DitheringMatrix& matrix,
-  const float f,
-  const doc::color_t c0,
-  const doc::color_t c1)
+static void create_dithering_pattern_templ(doc::Image* pattern,
+                                           const render::DitheringMatrix& matrix,
+                                           const float f,
+                                           const doc::color_t c0,
+                                           const doc::color_t c1)
 {
   const int w = pattern->width();
   const int h = pattern->height();
 
   doc::LockImageBits<ImageTraits> dstBits(pattern);
   auto dst = dstBits.begin();
-  for (int y=0; y<h; ++y) {
-    for (int x=0; x<w; ++x, ++dst)
-      *dst = (f*(matrix.maxValue()+2) < matrix(y, x)+1 ? c0: c1);
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x, ++dst)
+      *dst = (f * (matrix.maxValue() + 2) < matrix(y, x) + 1 ? c0 : c1);
   }
 }
 
-void convert_bitmap_brush_to_dithering_brush(
-  doc::Brush* brush,
-  const doc::PixelFormat pixelFormat,
-  const render::DitheringMatrix& matrix,
-  const float f,
-  const doc::color_t c0,
-  const doc::color_t c1)
+void convert_bitmap_brush_to_dithering_brush(doc::Brush* brush,
+                                             const doc::PixelFormat pixelFormat,
+                                             const render::DitheringMatrix& matrix,
+                                             const float f,
+                                             const doc::color_t c0,
+                                             const doc::color_t c1)
 {
   // Create a pattern
-  doc::ImageRef pattern(
-    doc::Image::create(pixelFormat,
-                       matrix.cols(), matrix.rows()));
+  doc::ImageRef pattern(doc::Image::create(pixelFormat, matrix.cols(), matrix.rows()));
 
   switch (pixelFormat) {
     case doc::IMAGE_RGB:
-      create_dithering_pattern_templ<doc::RgbTraits>(
-        pattern.get(), matrix, f, c0, c1);
+      create_dithering_pattern_templ<doc::RgbTraits>(pattern.get(), matrix, f, c0, c1);
       break;
     case doc::IMAGE_GRAYSCALE:
-      create_dithering_pattern_templ<doc::GrayscaleTraits>(
-        pattern.get(), matrix, f, c0, c1);
+      create_dithering_pattern_templ<doc::GrayscaleTraits>(pattern.get(), matrix, f, c0, c1);
       break;
     case doc::IMAGE_INDEXED:
-      create_dithering_pattern_templ<doc::IndexedTraits>(
-        pattern.get(), matrix, f, c0, c1);
+      create_dithering_pattern_templ<doc::IndexedTraits>(pattern.get(), matrix, f, c0, c1);
       break;
   }
 

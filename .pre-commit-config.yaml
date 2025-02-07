@@ -1,0 +1,39 @@
+exclude: 'third_party/.*|laf/.*'
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+        args: [ --fix=lf ]
+        exclude: '.*\.cmd$|.*\.ps1$'
+      - id: mixed-line-ending
+        args: [ --fix=crlf ]
+        files: '.*\.cmd$|.*\.ps1$'
+
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.5
+    hooks:
+      - id: remove-tabs
+        args: [--whitespaces-count, '8']
+        exclude: '.*\.gpl$|\.gitmodules'
+
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v19.1.5
+    hooks:
+      - id: clang-format
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm)$
+        types_or: [text]
+
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: v1.3.5
+    hooks:
+      - id: clang-tidy
+        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx)$
+        args: [--fix, --quiet, --use-color]
+        types_or: [text]
+        additional_dependencies: [clang-tidy==19.1.0]
+        require_serial: true
+        stages: [manual]

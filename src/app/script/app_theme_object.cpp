@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/color.h"
@@ -13,21 +13,23 @@
 #include "app/script/luacpp.h"
 #include "app/ui/skin/skin_theme.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 namespace {
 
 class Theme {
 public:
-  Theme(int uiscale) : m_uiscale(uiscale) { }
+  Theme(int uiscale) : m_uiscale(uiscale) {}
 
-  gfx::Border styleMetrics(const std::string& id) const {
+  gfx::Border styleMetrics(const std::string& id) const
+  {
     auto theme = skin::SkinTheme::instance();
-    if (!theme) return gfx::Border(0);
+    if (!theme)
+      return gfx::Border(0);
 
     ui::Style* style = theme->getStyleById(id);
-    if (!style) return gfx::Border(0);
+    if (!style)
+      return gfx::Border(0);
 
     ui::Widget widget(ui::kGenericWidget);
     auto border = theme->calcBorder(&widget, style);
@@ -37,7 +39,8 @@ public:
     return border;
   }
 
-  int getDimensionById(const std::string& id) const {
+  int getDimensionById(const std::string& id) const
+  {
     int value = skin::SkinTheme::instance()->getDimensionById(id);
     if (m_uiscale > 1)
       value /= m_uiscale;
@@ -51,16 +54,13 @@ private:
 struct ThemeDimension {
   const Theme theme;
 
-  ThemeDimension(const Theme& theme) : theme(theme) { }
+  ThemeDimension(const Theme& theme) : theme(theme) {}
 
-  int getById(const std::string& id) const {
-    return theme.getDimensionById(id);
-  }
+  int getById(const std::string& id) const { return theme.getDimensionById(id); }
 };
 
-struct ThemeColor { };
+struct ThemeColor {};
 
-#ifdef ENABLE_UI
 void push_border_as_table(lua_State* L, const gfx::Border& border)
 {
   lua_newtable(L);
@@ -73,23 +73,17 @@ void push_border_as_table(lua_State* L, const gfx::Border& border)
   }
   lua_setfield(L, -2, "border");
 }
-#endif
 
 int ThemeDimension_index(lua_State* L)
 {
-  [[maybe_unused]]
   auto themeDimension = get_obj<ThemeDimension>(L, 1);
 
   const char* id = lua_tostring(L, 2);
   if (!id)
     return luaL_error(L, "id in app.theme.dimension.id must be a string");
 
-#ifdef ENABLE_UI
   const int value = themeDimension->getById(id);
   lua_pushinteger(L, value);
-#else
-  lua_pushinteger(L, 0);
-#endif
   return 1;
 }
 
@@ -99,31 +93,27 @@ int ThemeColor_index(lua_State* L)
   if (!id)
     return luaL_error(L, "id in app.theme.color.id must be a string");
 
-#ifdef ENABLE_UI
-  const gfx::Color uiColor = skin::SkinTheme::instance()->getColorById(id);
-  push_obj<app::Color>(L, color_utils::color_from_ui(uiColor));
-#else
-  push_obj<app::Color>(L, app::Color::fromMask());
-#endif
+  if (auto* theme = skin::SkinTheme::instance()) {
+    const gfx::Color uiColor = theme->getColorById(id);
+    push_obj<app::Color>(L, color_utils::color_from_ui(uiColor));
+  }
+  else {
+    push_obj<app::Color>(L, app::Color::fromMask());
+  }
   return 1;
 }
 
 int Theme_styleMetrics(lua_State* L)
 {
-  [[maybe_unused]]
   auto theme = get_obj<Theme>(L, 1);
 
   const char* id = lua_tostring(L, 2);
   if (!id)
     return 0;
 
-#ifdef ENABLE_UI
   gfx::Border border = theme->styleMetrics(id);
   push_border_as_table(L, border);
   return 1;
-#else  // ENABLE_UI
-  return 0;
-#endif
 }
 
 int Theme_get_dimension(lua_State* L)
@@ -141,23 +131,23 @@ int Theme_get_color(lua_State* L)
 
 const luaL_Reg Theme_methods[] = {
   { "styleMetrics", Theme_styleMetrics },
-  { nullptr, nullptr }
+  { nullptr,        nullptr            }
 };
 
 const Property Theme_properties[] = {
   { "dimension", Theme_get_dimension, nullptr },
-  { "color", Theme_get_color, nullptr },
-  { nullptr, nullptr, nullptr }
+  { "color",     Theme_get_color,     nullptr },
+  { nullptr,     nullptr,             nullptr }
 };
 
 const luaL_Reg ThemeDimension_methods[] = {
   { "__index", ThemeDimension_index },
-  { nullptr, nullptr }
+  { nullptr,   nullptr              }
 };
 
 const luaL_Reg ThemeColor_methods[] = {
   { "__index", ThemeColor_index },
-  { nullptr, nullptr }
+  { nullptr,   nullptr          }
 };
 
 } // anonymous namespace
@@ -179,5 +169,4 @@ void push_app_theme(lua_State* L, int uiscale)
   push_new<Theme>(L, uiscale);
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

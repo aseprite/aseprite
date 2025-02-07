@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #ifndef ENABLE_SCRIPTING
@@ -34,7 +34,8 @@ using namespace app::skin;
 
 class DevConsoleView::CommmandEntry : public Entry {
 public:
-  CommmandEntry() : Entry(256, "") {
+  CommmandEntry() : Entry(256, "")
+  {
     setFocusStop(true);
     setFocusMagnet(true);
   }
@@ -42,7 +43,8 @@ public:
   obs::signal<void(const std::string&)> ExecuteCommand;
 
 protected:
-  bool onProcessMessage(Message* msg) override {
+  bool onProcessMessage(Message* msg) override
+  {
     switch (msg->type()) {
       case kKeyDownMessage:
         if (hasFocus()) {
@@ -67,8 +69,9 @@ protected:
 
 DevConsoleView::DevConsoleView()
   : Box(VERTICAL)
-  , m_textBox(fmt::format("Welcome to {} v{} Console\n(Experimental)",
-                          get_app_name(), get_app_version()), LEFT)
+  , m_textBox(
+      fmt::format("Welcome to {} v{} Console\n(Experimental)", get_app_name(), get_app_version()),
+      LEFT)
   , m_label(">")
   , m_entry(new CommmandEntry)
   , m_engine(App::instance()->scriptEngine())
@@ -87,11 +90,10 @@ DevConsoleView::DevConsoleView()
   m_entry->setExpansive(true);
   m_entry->ExecuteCommand.connect(&DevConsoleView::onExecuteCommand, this);
 
-  InitTheme.connect(
-    [this]{
-      auto theme = SkinTheme::get(this);
-      m_view.setStyle(theme->styles.workspaceView());
-    });
+  InitTheme.connect([this] {
+    auto theme = SkinTheme::get(this);
+    m_view.setStyle(theme->styles.workspaceView());
+  });
   initTheme();
 }
 

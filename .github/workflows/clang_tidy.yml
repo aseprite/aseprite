@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
-    - uses: ZedThree/clang-tidy-review@v0.14.0
+    - uses: ZedThree/clang-tidy-review@v0.20.1
       id: review
       with:
         build_dir: build
@@ -28,5 +28,5 @@ jobs:
           libxcursor-dev, libxi-dev, libgl1-mesa-dev
         cmake_command: |
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DLAF_BACKEND=none -DCMAKE_EXPORT_COMPILE_COMMANDS=on
-    - uses: ZedThree/clang-tidy-review/upload@v0.14.0
+    - uses: ZedThree/clang-tidy-review/upload@v0.20.1
       id: upload-review

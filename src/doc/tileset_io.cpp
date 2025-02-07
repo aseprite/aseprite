@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/tileset_io.h"
@@ -27,26 +27,24 @@ namespace doc {
 using namespace base::serialization;
 using namespace base::serialization::little_endian;
 
-bool write_tileset(std::ostream& os,
-                   const Tileset* tileset,
-                   CancelIO* cancel)
+bool write_tileset(std::ostream& os, const Tileset* tileset, CancelIO* cancel)
 {
   write32(os, tileset->id());
   write32(os, tileset->size());
   write_grid(os, tileset->grid());
 
-  for (tile_index ti=0; ti<tileset->size(); ++ti) {
+  for (tile_index ti = 0; ti < tileset->size(); ++ti) {
     if (cancel && cancel->isCanceled())
       return false;
 
     write_image(os, tileset->get(ti).get(), cancel);
   }
 
-  write8(os, TILESET_VER3);
+  write8(os, uint8_t(TilesetSerialFormat::LastVer));
   write_user_data(os, tileset->userData());
   write_string(os, tileset->name());
 
-  for (tile_index ti=0; ti<tileset->size(); ++ti) {
+  for (tile_index ti = 0; ti < tileset->size(); ++ti) {
     if (cancel && cancel->isCanceled())
       return false;
 
@@ -57,38 +55,38 @@ bool write_tileset(std::ostream& os,
 
 Tileset* read_tileset(std::istream& is,
                       Sprite* sprite,
-                      bool setId,
-                      uint32_t* tilesetVer,
-                      const int docFormatVer)
+                      const bool setId,
+                      TilesetSerialFormat* tilesetVer,
+                      const SerialFormat serial)
 {
-  ObjectId id = read32(is);
-  tileset_index ntiles = read32(is);
-  Grid grid = read_grid(is, setId);
+  const ObjectId id = read32(is);
+  const tileset_index ntiles = read32(is);
+  const Grid grid = read_grid(is);
   auto tileset = new Tileset(sprite, grid, ntiles);
   if (setId)
     tileset->setId(id);
 
-  for (tileset_index ti=0; ti<ntiles; ++ti) {
+  for (tileset_index ti = 0; ti < ntiles; ++ti) {
     ImageRef image(read_image(is, setId));
     tileset->set(ti, image);
   }
 
   // Read extra version byte after tiles
-  uint32_t ver = read8(is);
+  const auto ver = TilesetSerialFormat(read8(is));
   if (tilesetVer)
     *tilesetVer = ver;
-  if (ver >= TILESET_VER1) {
+  if (ver >= TilesetSerialFormat::Ver1) {
     tileset->setBaseIndex(1);
 
-    if (ver >= TILESET_VER2) {
-      UserData userData = read_user_data(is, docFormatVer);
+    if (ver >= TilesetSerialFormat::Ver2) {
+      const UserData userData = read_user_data(is, serial);
       tileset->setUserData(userData);
 
-      if (ver >= TILESET_VER3) {
+      if (ver >= TilesetSerialFormat::Ver3) {
         tileset->setName(read_string(is));
 
-        for (tileset_index ti=0; ti<ntiles; ++ti) {
-          tileset->setTileData(ti, read_user_data(is, docFormatVer));
+        for (tileset_index ti = 0; ti < ntiles; ++ti) {
+          tileset->setTileData(ti, read_user_data(is, serial));
         }
       }
     }
@@ -102,4 +100,4 @@ Tileset* read_tileset(std::istream& is,
   return tileset;
 }
 
-}
+} // namespace doc

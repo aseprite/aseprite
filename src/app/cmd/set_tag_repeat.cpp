@@ -5,15 +5,14 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_tag_repeat.h"
 
 #include "doc/tag.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 SetTagRepeat::SetTagRepeat(Tag* tag, int repeat)
   : WithTag(tag)
@@ -34,5 +33,4 @@ void SetTagRepeat::onUndo()
   tag()->incrementVersion();
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

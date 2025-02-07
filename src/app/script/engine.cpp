@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/script/engine.h"
@@ -44,14 +44,17 @@
 
 // We use our own fopen() that supports Unicode filename on Windows
 // extern "C"
-FILE* lua_user_fopen(const char* fname,
-                     const char* mode)
+FILE* lua_user_fopen(const char* fname, const char* mode)
 {
   return base::open_file_raw(fname, mode);
 }
 
-namespace app {
-namespace script {
+FILE* lua_user_freopen(const char* fname, const char* mode, FILE* stream)
+{
+  return base::reopen_file_raw(fname, mode, stream);
+}
+
+namespace app { namespace script {
 
 namespace {
 
@@ -66,32 +69,28 @@ DebuggerDelegate* g_debuggerDelegate = nullptr;
 
 class AddScriptFilename {
 public:
-  AddScriptFilename(const std::string& fn) {
-    current_script_dirs.push(fn);
-  }
-  ~AddScriptFilename() {
-    current_script_dirs.pop();
-  }
+  AddScriptFilename(const std::string& fn) { current_script_dirs.push(fn); }
+  ~AddScriptFilename() { current_script_dirs.pop(); }
 };
 
 int print(lua_State* L)
 {
   std::string output;
-  int n = lua_gettop(L);  /* number of arguments */
+  int n = lua_gettop(L); /* number of arguments */
   int i;
   lua_getglobal(L, "tostring");
-  for (i=1; i<=n; i++) {
-    lua_pushvalue(L, -1);  // function to be called
-    lua_pushvalue(L, i);   // value to print
+  for (i = 1; i <= n; i++) {
+    lua_pushvalue(L, -1); // function to be called
+    lua_pushvalue(L, i);  // value to print
     lua_call(L, 1, 1);
     size_t l;
-    const char* s = lua_tolstring(L, -1, &l);  // get result
+    const char* s = lua_tolstring(L, -1, &l); // get result
     if (s == nullptr)
       return luaL_error(L, "'tostring' must return a string to 'print'");
     if (i > 1)
       output.push_back('\t');
     output.insert(output.size(), s, l);
-    lua_pop(L, 1);  // pop result
+    lua_pop(L, 1); // pop result
   }
   if (!output.empty()) {
     auto app = App::instance();
@@ -105,24 +104,21 @@ int print(lua_State* L)
   return 0;
 }
 
-static int dofilecont(lua_State *L, int d1, lua_KContext d2)
+static int dofilecont(lua_State* L, int d1, lua_KContext d2)
 {
   (void)d1;
   (void)d2;
   return lua_gettop(L) - 1;
 }
 
-int dofile(lua_State *L)
+int dofile(lua_State* L)
 {
   const char* argFname = luaL_optstring(L, 1, NULL);
   std::string fname = argFname;
 
-  if (!base::is_file(fname) &&
-      !current_script_dirs.empty()) {
+  if (!base::is_file(fname) && !current_script_dirs.empty()) {
     // Try to complete a relative filename
-    std::string altFname =
-      base::join_path(base::get_file_path(current_script_dirs.top()),
-                      fname);
+    std::string altFname = base::join_path(base::get_file_path(current_script_dirs.top()), fname);
     if (base::is_file(altFname))
       fname = altFname;
   }
@@ -138,7 +134,7 @@ int dofile(lua_State *L)
 }
 
 lua_CFunction orig_loadfile = nullptr;
-int loadfile(lua_State *L)
+int loadfile(lua_State* L)
 {
   ASSERT(orig_loadfile);
   if (!orig_loadfile)
@@ -146,8 +142,7 @@ int loadfile(lua_State *L)
 
   // fname is not optional if we are running in GUI mode as it blocks
   // the program.
-  if (auto app = App::instance();
-      app && app->isGui() && !lua_isstring(L, 1)) {
+  if (auto app = App::instance(); app && app->isGui() && !lua_isstring(L, 1)) {
     return luaL_error(L, "loadfile() for stdin cannot be used running in GUI mode");
   }
 
@@ -175,12 +170,10 @@ void register_cel_class(lua_State* L);
 void register_cels_class(lua_State* L);
 void register_color_class(lua_State* L);
 void register_color_space_class(lua_State* L);
-#ifdef ENABLE_UI
 void register_dialog_class(lua_State* L);
 void register_editor_class(lua_State* L);
 void register_graphics_context_class(lua_State* L);
 void register_window_class(lua_State* L);
-#endif
 void register_events_class(lua_State* L);
 void register_frame_class(lua_State* L);
 void register_frames_class(lua_State* L);
@@ -219,10 +212,7 @@ void register_websocket_class(lua_State* L);
 
 void set_app_params(lua_State* L, const Params& params);
 
-Engine::Engine()
-  : L(luaL_newstate())
-  , m_delegate(nullptr)
-  , m_printLastResult(false)
+Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(false)
 {
 #if _DEBUG
   int top = lua_gettop(L);
@@ -288,43 +278,43 @@ Engine::Engine()
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "BlendMode");
-  setfield_integer(L, "CLEAR",          app::script::BlendMode::CLEAR);
-  setfield_integer(L, "SRC",            app::script::BlendMode::SRC);
-  setfield_integer(L, "DST",            app::script::BlendMode::DST);
-  setfield_integer(L, "SRC_OVER",       app::script::BlendMode::SRC_OVER);
-  setfield_integer(L, "DST_OVER",       app::script::BlendMode::DST_OVER);
-  setfield_integer(L, "SRC_IN",         app::script::BlendMode::SRC_IN);
-  setfield_integer(L, "DST_IN",         app::script::BlendMode::DST_IN);
-  setfield_integer(L, "SRC_OUT",        app::script::BlendMode::SRC_OUT);
-  setfield_integer(L, "DST_OUT",        app::script::BlendMode::DST_OUT);
-  setfield_integer(L, "SRC_ATOP",       app::script::BlendMode::SRC_ATOP);
-  setfield_integer(L, "DST_ATOP",       app::script::BlendMode::DST_ATOP);
-  setfield_integer(L, "XOR",            app::script::BlendMode::XOR);
-  setfield_integer(L, "PLUS",           app::script::BlendMode::PLUS);
-  setfield_integer(L, "MODULATE",       app::script::BlendMode::MODULATE);
-  setfield_integer(L, "MULTIPLY",       app::script::BlendMode::MULTIPLY);
-  setfield_integer(L, "SCREEN",         app::script::BlendMode::SCREEN);
-  setfield_integer(L, "OVERLAY",        app::script::BlendMode::OVERLAY);
-  setfield_integer(L, "DARKEN",         app::script::BlendMode::DARKEN);
-  setfield_integer(L, "LIGHTEN",        app::script::BlendMode::LIGHTEN);
-  setfield_integer(L, "COLOR_DODGE",    app::script::BlendMode::COLOR_DODGE);
-  setfield_integer(L, "COLOR_BURN",     app::script::BlendMode::COLOR_BURN);
-  setfield_integer(L, "HARD_LIGHT",     app::script::BlendMode::HARD_LIGHT);
-  setfield_integer(L, "SOFT_LIGHT",     app::script::BlendMode::SOFT_LIGHT);
-  setfield_integer(L, "DIFFERENCE",     app::script::BlendMode::DIFFERENCE);
-  setfield_integer(L, "EXCLUSION",      app::script::BlendMode::EXCLUSION);
-  setfield_integer(L, "HUE",            app::script::BlendMode::HUE);
-  setfield_integer(L, "SATURATION",     app::script::BlendMode::SATURATION);
-  setfield_integer(L, "COLOR",          app::script::BlendMode::COLOR);
-  setfield_integer(L, "LUMINOSITY",     app::script::BlendMode::LUMINOSITY);
-  setfield_integer(L, "ADDITION",       app::script::BlendMode::ADDITION);
-  setfield_integer(L, "SUBTRACT",       app::script::BlendMode::SUBTRACT);
-  setfield_integer(L, "DIVIDE",         app::script::BlendMode::DIVIDE);
+  setfield_integer(L, "CLEAR", app::script::BlendMode::CLEAR);
+  setfield_integer(L, "SRC", app::script::BlendMode::SRC);
+  setfield_integer(L, "DST", app::script::BlendMode::DST);
+  setfield_integer(L, "SRC_OVER", app::script::BlendMode::SRC_OVER);
+  setfield_integer(L, "DST_OVER", app::script::BlendMode::DST_OVER);
+  setfield_integer(L, "SRC_IN", app::script::BlendMode::SRC_IN);
+  setfield_integer(L, "DST_IN", app::script::BlendMode::DST_IN);
+  setfield_integer(L, "SRC_OUT", app::script::BlendMode::SRC_OUT);
+  setfield_integer(L, "DST_OUT", app::script::BlendMode::DST_OUT);
+  setfield_integer(L, "SRC_ATOP", app::script::BlendMode::SRC_ATOP);
+  setfield_integer(L, "DST_ATOP", app::script::BlendMode::DST_ATOP);
+  setfield_integer(L, "XOR", app::script::BlendMode::XOR);
+  setfield_integer(L, "PLUS", app::script::BlendMode::PLUS);
+  setfield_integer(L, "MODULATE", app::script::BlendMode::MODULATE);
+  setfield_integer(L, "MULTIPLY", app::script::BlendMode::MULTIPLY);
+  setfield_integer(L, "SCREEN", app::script::BlendMode::SCREEN);
+  setfield_integer(L, "OVERLAY", app::script::BlendMode::OVERLAY);
+  setfield_integer(L, "DARKEN", app::script::BlendMode::DARKEN);
+  setfield_integer(L, "LIGHTEN", app::script::BlendMode::LIGHTEN);
+  setfield_integer(L, "COLOR_DODGE", app::script::BlendMode::COLOR_DODGE);
+  setfield_integer(L, "COLOR_BURN", app::script::BlendMode::COLOR_BURN);
+  setfield_integer(L, "HARD_LIGHT", app::script::BlendMode::HARD_LIGHT);
+  setfield_integer(L, "SOFT_LIGHT", app::script::BlendMode::SOFT_LIGHT);
+  setfield_integer(L, "DIFFERENCE", app::script::BlendMode::DIFFERENCE);
+  setfield_integer(L, "EXCLUSION", app::script::BlendMode::EXCLUSION);
+  setfield_integer(L, "HUE", app::script::BlendMode::HUE);
+  setfield_integer(L, "SATURATION", app::script::BlendMode::SATURATION);
+  setfield_integer(L, "COLOR", app::script::BlendMode::COLOR);
+  setfield_integer(L, "LUMINOSITY", app::script::BlendMode::LUMINOSITY);
+  setfield_integer(L, "ADDITION", app::script::BlendMode::ADDITION);
+  setfield_integer(L, "SUBTRACT", app::script::BlendMode::SUBTRACT);
+  setfield_integer(L, "DIVIDE", app::script::BlendMode::DIVIDE);
   // Backward compatibility
-  setfield_integer(L, "NORMAL",         app::script::BlendMode::SRC_OVER);
-  setfield_integer(L, "HSL_HUE",        app::script::BlendMode::HUE);
+  setfield_integer(L, "NORMAL", app::script::BlendMode::SRC_OVER);
+  setfield_integer(L, "HSL_HUE", app::script::BlendMode::HUE);
   setfield_integer(L, "HSL_SATURATION", app::script::BlendMode::SATURATION);
-  setfield_integer(L, "HSL_COLOR",      app::script::BlendMode::COLOR);
+  setfield_integer(L, "HSL_COLOR", app::script::BlendMode::COLOR);
   setfield_integer(L, "HSL_LUMINOSITY", app::script::BlendMode::LUMINOSITY);
   lua_pop(L, 1);
 
@@ -384,21 +374,24 @@ Engine::Engine()
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "FilterChannels");
-  setfield_integer(L, "RED",   TARGET_RED_CHANNEL);
+  setfield_integer(L, "RED", TARGET_RED_CHANNEL);
   setfield_integer(L, "GREEN", TARGET_GREEN_CHANNEL);
-  setfield_integer(L, "BLUE",  TARGET_BLUE_CHANNEL);
+  setfield_integer(L, "BLUE", TARGET_BLUE_CHANNEL);
   setfield_integer(L, "ALPHA", TARGET_ALPHA_CHANNEL);
-  setfield_integer(L, "GRAY",  TARGET_GRAY_CHANNEL);
+  setfield_integer(L, "GRAY", TARGET_GRAY_CHANNEL);
   setfield_integer(L, "INDEX", TARGET_INDEX_CHANNEL);
-  setfield_integer(L, "RGB",   TARGET_RED_CHANNEL | TARGET_GREEN_CHANNEL | TARGET_BLUE_CHANNEL);
-  setfield_integer(L, "RGBA",   TARGET_RED_CHANNEL | TARGET_GREEN_CHANNEL | TARGET_BLUE_CHANNEL | TARGET_ALPHA_CHANNEL);
-  setfield_integer(L, "GRAYA",   TARGET_GRAY_CHANNEL | TARGET_ALPHA_CHANNEL);
+  setfield_integer(L, "RGB", TARGET_RED_CHANNEL | TARGET_GREEN_CHANNEL | TARGET_BLUE_CHANNEL);
+  setfield_integer(
+    L,
+    "RGBA",
+    TARGET_RED_CHANNEL | TARGET_GREEN_CHANNEL | TARGET_BLUE_CHANNEL | TARGET_ALPHA_CHANNEL);
+  setfield_integer(L, "GRAYA", TARGET_GRAY_CHANNEL | TARGET_ALPHA_CHANNEL);
   lua_pop(L, 1);
 
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "MouseCursor");
-  setfield_integer(L, "NONE",   (int)ui::kNoCursor);
+  setfield_integer(L, "NONE", (int)ui::kNoCursor);
   setfield_integer(L, "ARROW", (int)ui::kArrowCursor);
   setfield_integer(L, "CROSSHAIR", (int)ui::kCrosshairCursor);
   setfield_integer(L, "POINTER", (int)ui::kHandCursor);
@@ -421,12 +414,12 @@ Engine::Engine()
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "MouseButton");
-  setfield_integer(L, "NONE",   (int)ui::kButtonNone);
-  setfield_integer(L, "LEFT",   (int)ui::kButtonLeft);
-  setfield_integer(L, "RIGHT",  (int)ui::kButtonRight);
+  setfield_integer(L, "NONE", (int)ui::kButtonNone);
+  setfield_integer(L, "LEFT", (int)ui::kButtonLeft);
+  setfield_integer(L, "RIGHT", (int)ui::kButtonRight);
   setfield_integer(L, "MIDDLE", (int)ui::kButtonMiddle);
-  setfield_integer(L, "X1",     (int)ui::kButtonX1);
-  setfield_integer(L, "X2",     (int)ui::kButtonX2);
+  setfield_integer(L, "X1", (int)ui::kButtonX1);
+  setfield_integer(L, "X2", (int)ui::kButtonX2);
   lua_pop(L, 1);
 
   lua_newtable(L);
@@ -447,9 +440,9 @@ Engine::Engine()
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "SelectionMode");
-  setfield_integer(L, "REPLACE",   (int)gen::SelectionMode::REPLACE);
-  setfield_integer(L, "ADD",       (int)gen::SelectionMode::ADD);
-  setfield_integer(L, "SUBTRACT",  (int)gen::SelectionMode::SUBTRACT);
+  setfield_integer(L, "REPLACE", (int)gen::SelectionMode::REPLACE);
+  setfield_integer(L, "ADD", (int)gen::SelectionMode::ADD);
+  setfield_integer(L, "SUBTRACT", (int)gen::SelectionMode::SUBTRACT);
   setfield_integer(L, "INTERSECT", (int)gen::SelectionMode::INTERSECT);
   lua_pop(L, 1);
 
@@ -457,16 +450,16 @@ Engine::Engine()
   lua_pushvalue(L, -1);
   lua_setglobal(L, "FlipType");
   setfield_integer(L, "HORIZONTAL", doc::algorithm::FlipType::FlipHorizontal);
-  setfield_integer(L, "VERTICAL",   doc::algorithm::FlipType::FlipVertical);
+  setfield_integer(L, "VERTICAL", doc::algorithm::FlipType::FlipVertical);
   lua_pop(L, 1);
 
   lua_newtable(L);
   lua_pushvalue(L, -1);
   lua_setglobal(L, "Align");
-  setfield_integer(L, "LEFT",   ui::LEFT);
+  setfield_integer(L, "LEFT", ui::LEFT);
   setfield_integer(L, "CENTER", ui::CENTER);
-  setfield_integer(L, "RIGHT",  ui::RIGHT);
-  setfield_integer(L, "TOP",    ui::TOP);
+  setfield_integer(L, "RIGHT", ui::RIGHT);
+  setfield_integer(L, "TOP", ui::TOP);
   setfield_integer(L, "BOTTOM", ui::BOTTOM);
 
   lua_pop(L, 1);
@@ -477,12 +470,10 @@ Engine::Engine()
   register_cels_class(L);
   register_color_class(L);
   register_color_space_class(L);
-#ifdef ENABLE_UI
   register_dialog_class(L);
   register_editor_class(L);
   register_graphics_context_class(L);
   register_window_class(L);
-#endif
   register_events_class(L);
   register_frame_class(L);
   register_frames_class(L);
@@ -532,9 +523,7 @@ Engine::~Engine()
 
 void Engine::destroy()
 {
-#ifdef ENABLE_UI
   close_all_dialogs();
-#endif
   lua_close(L);
   L = nullptr;
 }
@@ -562,13 +551,11 @@ void Engine::printLastResult()
   m_printLastResult = true;
 }
 
-bool Engine::evalCode(const std::string& code,
-                      const std::string& filename)
+bool Engine::evalCode(const std::string& code, const std::string& filename)
 {
   bool ok = true;
   try {
-    if (luaL_loadbuffer(L, code.c_str(), code.size(), filename.c_str()) ||
-        lua_pcall(L, 0, 1, 0)) {
+    if (luaL_loadbuffer(L, code.c_str(), code.size(), filename.c_str()) || lua_pcall(L, 0, 1, 0)) {
       const char* s = lua_tostring(L, -1);
       if (s)
         onConsoleError(s);
@@ -616,8 +603,7 @@ void Engine::handleException(const std::exception& ex)
   onConsoleError(msg.c_str());
 }
 
-bool Engine::evalFile(const std::string& filename,
-                      const Params& params)
+bool Engine::evalFile(const std::string& filename, const Params& params)
 {
   std::stringstream buf;
   {
@@ -643,14 +629,11 @@ bool Engine::evalFile(const std::string& filename,
   return result;
 }
 
-bool Engine::evalUserFile(const std::string& filename,
-                          const Params& params)
+bool Engine::evalUserFile(const std::string& filename, const Params& params)
 {
   // Set the _SCRIPT_PATH global so require() can find .lua files from
   // the script path.
-  std::string path =
-    base::get_file_path(
-      base::get_absolute_path(filename));
+  std::string path = base::get_file_path(base::get_absolute_path(filename));
   SetScriptForRequire setScript(L, path.c_str());
   return evalFile(filename, params);
 }
@@ -696,5 +679,4 @@ void Engine::onConsolePrint(const char* text)
   }
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

@@ -6,14 +6,13 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/button_set.h"
 
 #include "app/modules/gui.h"
 #include "app/ui/skin/skin_theme.h"
-#include "fmt/format.h"
 #include "gfx/color.h"
 #include "os/surface.h"
 #include "ui/box.h"
@@ -46,9 +45,7 @@ WidgetType buttonset_item_type()
   return type;
 }
 
-ButtonSet::Item::Item()
-  : Widget(buttonset_item_type())
-  , m_icon(NULL)
+ButtonSet::Item::Item() : Widget(buttonset_item_type()), m_icon(NULL)
 {
   setup_mini_font(this);
   setAlign(CENTER | MIDDLE);
@@ -75,8 +72,10 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
     bool isLastRow = (info.row + info.vspan >= info.grid_rows);
     // When gaps are negative we need to compensate client bounds size so the painting is based on a
     // complete button, and not just the part not overlapped.
-    if (buttonSet()->m_colgap < 0 && !isLastCol) rc.w -= buttonSet()->m_colgap;
-    if (buttonSet()->m_rowgap < 0 && !isLastRow) rc.h -= buttonSet()->m_rowgap;
+    if (buttonSet()->m_colgap < 0 && !isLastCol)
+      rc.w -= buttonSet()->m_colgap;
+    if (buttonSet()->m_rowgap < 0 && !isLastRow)
+      rc.h -= buttonSet()->m_rowgap;
 
     theme()->paintWidget(ev.graphics(), this, style(), rc);
   }
@@ -85,7 +84,6 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
 bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
 {
   switch (msg->type()) {
-
     case kFocusEnterMessage:
     case kFocusLeaveMessage:
       if (isEnabled()) {
@@ -97,11 +95,9 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
     case ui::kKeyDownMessage:
       if (isEnabled() && hasText()) {
         KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
-        bool mnemonicPressed = (msg->altPressed() &&
-                                isMnemonicPressed(keymsg));
+        bool mnemonicPressed = (msg->altPressed() && isMnemonicPressed(keymsg));
 
-        if (mnemonicPressed ||
-            (hasFocus() && keymsg->scancode() == kKeySpace)) {
+        if (mnemonicPressed || (hasFocus() && keymsg->scancode() == kKeySpace)) {
           buttonSet()->onSelectItem(this, true, msg);
           onClick();
         }
@@ -109,7 +105,8 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
       break;
 
     case ui::kMouseDownMessage:
-      if (!isEnabled()) return true;
+      if (!isEnabled())
+        return true;
       // Only for single-item and trigerred on mouse up ButtonSets: We
       // save the current selected item to restore it just in case the
       // user leaves the ButtonSet without releasing the mouse button
@@ -117,7 +114,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
       if (buttonSet()->m_triggerOnMouseUp) {
         // g_itemBeforeCapture can be >= 0 if we clicked other button
         // without releasing the first button.
-        //ASSERT(g_itemBeforeCapture < 0);
+        // ASSERT(g_itemBeforeCapture < 0);
         g_itemBeforeCapture = buttonSet()->selectedItem();
       }
 
@@ -125,8 +122,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
       buttonSet()->onSelectItem(this, true, msg);
       invalidate();
 
-      if (static_cast<MouseMessage*>(msg)->left() &&
-          !buttonSet()->m_triggerOnMouseUp) {
+      if (static_cast<MouseMessage*>(msg)->left() && !buttonSet()->m_triggerOnMouseUp) {
         onClick();
       }
       break;
@@ -154,8 +150,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
         if (buttonSet()->m_offerCapture) {
           if (offerCapture(static_cast<ui::MouseMessage*>(msg), buttonset_item_type())) {
             // Only for ButtonSets trigerred on mouse up.
-            if (buttonSet()->m_triggerOnMouseUp &&
-                g_itemBeforeCapture >= 0) {
+            if (buttonSet()->m_triggerOnMouseUp && g_itemBeforeCapture >= 0) {
               if (g_itemBeforeCapture < (int)children().size()) {
                 Item* item = dynamic_cast<Item*>(at(g_itemBeforeCapture));
                 ASSERT(item);
@@ -174,7 +169,8 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
 
     case ui::kMouseLeaveMessage:
     case ui::kMouseEnterMessage:
-      if (!isEnabled()) return true;
+      if (!isEnabled())
+        return true;
       invalidate();
       break;
   }
@@ -197,73 +193,63 @@ ButtonSet::ButtonSet(int columns)
   , m_triggerOnMouseUp(false)
   , m_multiMode(MultiMode::One)
 {
-  InitTheme.connect(
-    [this]{
-      noBorderNoChildSpacing();
-      // Set default buttonset style if it wasn't already set.
-      if (style() == SkinTheme::instance()->styles.grid()) {
-        setStyle(SkinTheme::instance()->styles.buttonset());
-      }
-    });
+  InitTheme.connect([this] {
+    noBorderNoChildSpacing();
+    // Set default buttonset style if it wasn't already set.
+    if (style() == SkinTheme::instance()->styles.grid()) {
+      setStyle(SkinTheme::instance()->styles.buttonset());
+    }
+  });
   initTheme();
 }
 
-ButtonSet::Item* ButtonSet::addItem(const std::string& text, const char* styleId)
+ButtonSet::Item* ButtonSet::addItem(const std::string& text, ui::Style* style)
 {
-  return addItem(text, 1, 1, styleId);
+  return addItem(text, 1, 1, style);
 }
 
-ButtonSet::Item* ButtonSet::addItem(const std::string& text, int hspan, int vspan, const char* styleId)
+ButtonSet::Item* ButtonSet::addItem(const std::string& text, int hspan, int vspan, ui::Style* style)
 {
   Item* item = new Item();
   item->setText(text);
-  addItem(item, hspan, vspan, styleId);
+  addItem(item, hspan, vspan, style);
   return item;
 }
 
-ButtonSet::Item* ButtonSet::addItem(const skin::SkinPartPtr& icon, const char* styleId)
+ButtonSet::Item* ButtonSet::addItem(const skin::SkinPartPtr& icon, ui::Style* style)
 {
-  return addItem(icon, 1, 1, styleId);
+  return addItem(icon, 1, 1, style);
 }
 
-ButtonSet::Item* ButtonSet::addItem(const skin::SkinPartPtr& icon, int hspan, int vspan, const char* styleId)
+ButtonSet::Item* ButtonSet::addItem(const skin::SkinPartPtr& icon,
+                                    int hspan,
+                                    int vspan,
+                                    ui::Style* style)
 {
   Item* item = new Item();
   item->setIcon(icon);
-  addItem(item, hspan, vspan, styleId);
+  addItem(item, hspan, vspan, style);
   return item;
 }
-ButtonSet::Item* ButtonSet::addItem(Item* item, const char* styleId)
+ButtonSet::Item* ButtonSet::addItem(Item* item, ui::Style* style)
 {
-  return addItem(item, 1, 1, styleId);
+  return addItem(item, 1, 1, style);
 }
 
-ButtonSet::Item* ButtonSet::addItem(Item* item, int hspan, int vspan, const char* styleIdStr)
+ButtonSet::Item* ButtonSet::addItem(Item* item, int hspan, int vspan, ui::Style* style)
 {
-  std::string styleId;
-  if (styleIdStr)
-    styleId = styleIdStr;
-
-  item->InitTheme.connect(
-    [item, styleId] {
-      auto theme = SkinTheme::get(item);
-      ui::Style* style;
-      if (!styleId.empty()) {
-        style = theme->getStyleById(styleId);
-        if (!style)
-          throw base::Exception(fmt::format("Style {} not found", styleId));
+  item->InitTheme.connect([item, style] {
+    ui::Style* s = style;
+    if (!s) {
+      auto* theme = SkinTheme::get(item);
+      s = theme->styles.buttonsetItemIcon();
+      if (!item->text().empty()) {
+        s = (item->icon() ? theme->styles.buttonsetItemTextTopIconBottom() :
+                            theme->styles.buttonsetItemText());
       }
-      else {
-        style = theme->styles.buttonsetItemIcon();
-        if (!item->text().empty()) {
-          style = (item->icon() ? theme->styles.buttonsetItemTextTopIconBottom() :
-                                  theme->styles.buttonsetItemText());
-        }
-      }
-
-      item->setStyle(style);
     }
-  );
+    item->setStyle(s);
+  });
   addChildInCell(item, hspan, vspan, HORIZONTAL | VERTICAL);
   return item;
 }
@@ -322,15 +308,10 @@ void ButtonSet::onSelectItem(Item* item, bool focusItem, ui::Message* msg)
   const int count = countSelectedItems();
 
   if ((m_multiMode == MultiMode::One) ||
-      (m_multiMode == MultiMode::OneOrMore &&
-       msg &&
-       !msg->shiftPressed() &&
-       !msg->altPressed() &&
-       !msg->ctrlPressed() &&
-       !msg->cmdPressed())) {
+      (m_multiMode == MultiMode::OneOrMore && msg && !msg->shiftPressed() && !msg->altPressed() &&
+       !msg->ctrlPressed() && !msg->cmdPressed())) {
     if (item && item->isSelected() &&
-        ((m_multiMode == MultiMode::One) ||
-         (m_multiMode == MultiMode::OneOrMore && count == 1)))
+        ((m_multiMode == MultiMode::One) || (m_multiMode == MultiMode::OneOrMore && count == 1)))
       return;
 
     if (m_multiMode == MultiMode::One) {

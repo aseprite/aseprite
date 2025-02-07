@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/color.h"
@@ -41,27 +41,29 @@ using namespace app::skin;
 enum { CIRCLE, SQUARE, HORZ, VERT };
 
 struct OutlineParams : public NewParams {
-  Param<bool> ui { this, true, "ui" };
-  Param<filters::Target> channels { this, 0, "channels" };
-  Param<filters::OutlineFilter::Place> place { this, OutlineFilter::Place::Outside, "place" };
-  Param<filters::OutlineFilter::Matrix> matrix { this, OutlineFilter::Matrix::Circle, "matrix" };
-  Param<app::Color> color { this, app::Color(), "color" };
-  Param<app::Color> bgColor { this, app::Color(), "bgColor" };
-  Param<filters::TiledMode> tiledMode { this, filters::TiledMode::NONE, "tiledMode" };
+  Param<bool> ui{ this, true, "ui" };
+  Param<filters::Target> channels{ this, 0, "channels" };
+  Param<filters::OutlineFilter::Place> place{ this, OutlineFilter::Place::Outside, "place" };
+  Param<filters::OutlineFilter::Matrix> matrix{ this, OutlineFilter::Matrix::Circle, "matrix" };
+  Param<app::Color> color{ this, app::Color(), "color" };
+  Param<app::Color> bgColor{ this, app::Color(), "bgColor" };
+  Param<filters::TiledMode> tiledMode{ this, filters::TiledMode::NONE, "tiledMode" };
 };
 
 // Wrapper for ReplaceColorFilter to handle colors in an easy way
 class OutlineFilterWrapper : public OutlineFilter {
 public:
-  OutlineFilterWrapper(Layer* layer) : m_layer(layer) { }
+  OutlineFilterWrapper(Layer* layer) : m_layer(layer) {}
 
-  void color(const app::Color& color) {
+  void color(const app::Color& color)
+  {
     m_color = color;
     if (m_layer)
       OutlineFilter::color(color_utils::color_for_layer(color, m_layer));
   }
 
-  void bgColor(const app::Color& color) {
+  void bgColor(const app::Color& color)
+  {
     m_bgColor = color;
     if (m_layer)
       OutlineFilter::bgColor(color_utils::color_for_layer(color, m_layer));
@@ -76,19 +78,19 @@ private:
   app::Color m_bgColor;
 };
 
-#ifdef ENABLE_UI
-
 static const char* ConfigSection = "Outline";
 
 class OutlineWindow : public FilterWindow {
 public:
-  OutlineWindow(OutlineFilterWrapper& filter,
-                FilterManagerImpl& filterMgr)
-    : FilterWindow("Outline", ConfigSection, &filterMgr,
+  OutlineWindow(OutlineFilterWrapper& filter, FilterManagerImpl& filterMgr)
+    : FilterWindow("Outline",
+                   ConfigSection,
+                   &filterMgr,
                    WithChannelsSelector,
                    WithTiledCheckBox,
                    filter.tiledMode())
-    , m_filter(filter) {
+    , m_filter(filter)
+  {
     getContainer()->addChild(&m_panel);
 
     m_panel.color()->setColor(m_filter.color());
@@ -98,22 +100,18 @@ public:
 
     m_panel.color()->Change.connect(&OutlineWindow::onColorChange, this);
     m_panel.bgColor()->Change.connect(&OutlineWindow::onBgColorChange, this);
-    m_panel.outlineType()->ItemChange.connect(
-      [this](ButtonSet::Item*){
-        onMatrixTypeChange();
-      });
-    m_panel.outlineMatrix()->ItemChange.connect(
-      [this](ButtonSet::Item* item){
-        onMatrixPixelChange(m_panel.outlineMatrix()->getItemIndex(item));
-      });
-    m_panel.place()->ItemChange.connect(
-      [this](ButtonSet::Item*){
-        onPlaceChange((OutlineFilter::Place)m_panel.place()->selectedItem());
-      });
+    m_panel.outlineType()->ItemChange.connect([this](ButtonSet::Item*) { onMatrixTypeChange(); });
+    m_panel.outlineMatrix()->ItemChange.connect([this](ButtonSet::Item* item) {
+      onMatrixPixelChange(m_panel.outlineMatrix()->getItemIndex(item));
+    });
+    m_panel.place()->ItemChange.connect([this](ButtonSet::Item*) {
+      onPlaceChange((OutlineFilter::Place)m_panel.place()->selectedItem());
+    });
   }
 
 private:
-  void updateButtonsFromMatrix() {
+  void updateButtonsFromMatrix()
+  {
     const OutlineFilter::Matrix matrix = m_filter.matrix();
 
     int commonMatrix = -1;
@@ -129,65 +127,65 @@ private:
     auto emptyIcon = theme->parts.outlineEmptyPixel();
     auto pixelIcon = theme->parts.outlineFullPixel();
 
-    for (int i=0; i<9; ++i) {
-      m_panel.outlineMatrix()
-        ->getItem(i)->setIcon(
-          (((int)matrix) & (1 << (8-i))) ? pixelIcon: emptyIcon);
+    for (int i = 0; i < 9; ++i) {
+      m_panel.outlineMatrix()->getItem(i)->setIcon((((int)matrix) & (1 << (8 - i))) ? pixelIcon :
+                                                                                      emptyIcon);
     }
   }
 
-  void onColorChange(const app::Color& color) {
+  void onColorChange(const app::Color& color)
+  {
     stopPreview();
     m_filter.color(color);
     restartPreview();
   }
 
-  void onBgColorChange(const app::Color& color) {
+  void onBgColorChange(const app::Color& color)
+  {
     stopPreview();
     m_filter.bgColor(color);
     restartPreview();
   }
 
-  void onPlaceChange(OutlineFilter::Place place) {
+  void onPlaceChange(OutlineFilter::Place place)
+  {
     stopPreview();
     m_filter.place(place);
     restartPreview();
   }
 
-  void onMatrixTypeChange() {
+  void onMatrixTypeChange()
+  {
     stopPreview();
 
     OutlineFilter::Matrix matrix = OutlineFilter::Matrix::None;
     switch (m_panel.outlineType()->selectedItem()) {
       case CIRCLE: matrix = OutlineFilter::Matrix::Circle; break;
       case SQUARE: matrix = OutlineFilter::Matrix::Square; break;
-      case HORZ: matrix = OutlineFilter::Matrix::Horizontal; break;
-      case VERT: matrix = OutlineFilter::Matrix::Vertical; break;
+      case HORZ:   matrix = OutlineFilter::Matrix::Horizontal; break;
+      case VERT:   matrix = OutlineFilter::Matrix::Vertical; break;
     }
     m_filter.matrix(matrix);
     updateButtonsFromMatrix();
     restartPreview();
   }
 
-  void onMatrixPixelChange(const int index) {
+  void onMatrixPixelChange(const int index)
+  {
     stopPreview();
 
     int matrix = (int)m_filter.matrix();
-    matrix ^= (1 << (8-index));
+    matrix ^= (1 << (8 - index));
     m_filter.matrix((OutlineFilter::Matrix)matrix);
     updateButtonsFromMatrix();
     restartPreview();
   }
 
-  void setupTiledMode(TiledMode tiledMode) override {
-    m_filter.tiledMode(tiledMode);
-  }
+  void setupTiledMode(TiledMode tiledMode) override { m_filter.tiledMode(tiledMode); }
 
   OutlineFilterWrapper& m_filter;
   gen::Outline m_panel;
 };
-
-#endif  // ENABLE_UI
 
 class OutlineCommand : public CommandWithNewParams<OutlineParams> {
 public:
@@ -211,53 +209,53 @@ bool OutlineCommand::onEnabled(Context* context)
 
 void OutlineCommand::onExecute(Context* context)
 {
-#ifdef ENABLE_UI
   const bool ui = (params().ui() && context->isUIAvailable());
-#endif
 
   Site site = context->activeSite();
 
   OutlineFilterWrapper filter(site.layer());
   if (site.layer() && site.layer()->isBackground() && site.image()) {
     // TODO configure default pixel (same as Autocrop/Trim refpixel)
-    filter.bgColor(app::Color::fromImage(site.image()->pixelFormat(),
-                                         site.image()->getPixel(0, 0)));
+    filter.bgColor(
+      app::Color::fromImage(site.image()->pixelFormat(), site.image()->getPixel(0, 0)));
   }
   else {
     filter.bgColor(app::Color::fromMask());
   }
 
-#ifdef ENABLE_UI
   if (ui) {
-    filter.place((OutlineFilter::Place)get_config_int(ConfigSection, "Place", int(OutlineFilter::Place::Outside)));
-    filter.matrix((OutlineFilter::Matrix)get_config_int(ConfigSection, "Matrix", int(OutlineFilter::Matrix::Circle)));
+    filter.place((OutlineFilter::Place)get_config_int(ConfigSection,
+                                                      "Place",
+                                                      int(OutlineFilter::Place::Outside)));
+    filter.matrix((OutlineFilter::Matrix)get_config_int(ConfigSection,
+                                                        "Matrix",
+                                                        int(OutlineFilter::Matrix::Circle)));
     filter.color(ColorBar::instance()->getFgColor());
 
-    DocumentPreferences& docPref = Preferences::instance()
-      .document(site.document());
+    DocumentPreferences& docPref = Preferences::instance().document(site.document());
     filter.tiledMode(docPref.tiled.mode());
   }
-#endif // ENABLE_UI
 
-  if (params().place.isSet()) filter.place(params().place());
-  if (params().matrix.isSet()) filter.matrix(params().matrix());
-  if (params().color.isSet()) filter.color(params().color());
-  if (params().bgColor.isSet()) filter.bgColor(params().bgColor());
-  if (params().tiledMode.isSet()) filter.tiledMode(params().tiledMode());
+  if (params().place.isSet())
+    filter.place(params().place());
+  if (params().matrix.isSet())
+    filter.matrix(params().matrix());
+  if (params().color.isSet())
+    filter.color(params().color());
+  if (params().bgColor.isSet())
+    filter.bgColor(params().bgColor());
+  if (params().tiledMode.isSet())
+    filter.tiledMode(params().tiledMode());
 
   FilterManagerImpl filterMgr(context, &filter);
-  filterMgr.setTarget(
-    site.sprite()->pixelFormat() == IMAGE_INDEXED ?
-    TARGET_INDEX_CHANNEL:
-    TARGET_RED_CHANNEL |
-    TARGET_GREEN_CHANNEL |
-    TARGET_BLUE_CHANNEL |
-    TARGET_GRAY_CHANNEL |
-    TARGET_ALPHA_CHANNEL);
+  filterMgr.setTarget(site.sprite()->pixelFormat() == IMAGE_INDEXED ?
+                        TARGET_INDEX_CHANNEL :
+                        TARGET_RED_CHANNEL | TARGET_GREEN_CHANNEL | TARGET_BLUE_CHANNEL |
+                          TARGET_GRAY_CHANNEL | TARGET_ALPHA_CHANNEL);
 
-  if (params().channels.isSet()) filterMgr.setTarget(params().channels());
+  if (params().channels.isSet())
+    filterMgr.setTarget(params().channels());
 
-#ifdef ENABLE_UI
   if (ui) {
     OutlineWindow window(filter, filterMgr);
     if (window.doModal()) {
@@ -265,9 +263,7 @@ void OutlineCommand::onExecute(Context* context)
       set_config_int(ConfigSection, "Matrix", int(filter.matrix()));
     }
   }
-  else
-#endif // ENABLE_UI
-  {
+  else {
     start_filter_worker(&filterMgr);
   }
 }

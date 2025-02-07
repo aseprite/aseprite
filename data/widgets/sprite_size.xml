@@ -1,7 +1,8 @@
 <!-- Aseprite -->
+<!-- Copyright (C) 2024 by Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018 by David Capello -->
 <gui>
-<window id="sprite_size" text="@.title">
+<window id="sprite_size" text="@.title" help="resize">
   <box vertical="true">
     <box vertical="true">
       <separator text="@.pixels" left="true" horizontal="true" />
@@ -27,9 +28,9 @@
           </box>
           <box vertical="true" homogeneous="true" expansive="true">
             <expr expansive="true" text="100" suffix="%" id="width_perc" magnet="true" tooltip="@.width_perc_tooltip"
-		  decimals="4" />
+                  decimals="4" />
             <expr expansive="true" text="100" suffix="%" id="height_perc" tooltip="@.height_perc_tooltip"
-		  decimals="4" />
+                  decimals="4" />
           </box>
           <box horizontal="true" width="64" />
         </box>

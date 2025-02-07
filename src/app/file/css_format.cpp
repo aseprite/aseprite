@@ -6,7 +6,7 @@
 //
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/console.h"
@@ -16,15 +16,14 @@
 #include "app/file/file_format.h"
 #include "app/file/format_options.h"
 #include "app/pref/preferences.h"
-#include "base/convert_to.h"
 #include "base/cfile.h"
+#include "base/convert_to.h"
 #include "base/file_handle.h"
 #include "base/string.h"
 #include "doc/doc.h"
 #include "ui/window.h"
 
 #include "css_options.xml.h"
-
 
 namespace app {
 
@@ -33,38 +32,24 @@ using namespace base;
 class CssFormat : public FileFormat {
   class CssOptions : public FormatOptions {
   public:
-    CssOptions() : pixelScale(1), gutterSize(0),
-                   generateHtml(false),
-                   withVars(false) { }
+    CssOptions() : pixelScale(1), gutterSize(0), generateHtml(false), withVars(false) {}
     int pixelScale;
     int gutterSize;
     bool generateHtml;
     bool withVars;
   };
 
-  const char* onGetName() const override {
-    return "css";
-  }
+  const char* onGetName() const override { return "css"; }
 
-  void onGetExtensions(base::paths& exts) const override {
-    exts.push_back("css");
-  }
+  void onGetExtensions(base::paths& exts) const override { exts.push_back("css"); }
 
-  dio::FileFormat onGetDioFormat() const override {
-    return dio::FileFormat::CSS_STYLE;
-  }
+  dio::FileFormat onGetDioFormat() const override { return dio::FileFormat::CSS_STYLE; }
 
-  int onGetFlags() const override {
-    return
-      FILE_SUPPORT_SAVE |
-      FILE_SUPPORT_RGB |
-      FILE_SUPPORT_RGBA |
-      FILE_SUPPORT_GRAY |
-      FILE_SUPPORT_GRAYA |
-      FILE_SUPPORT_INDEXED |
-      FILE_SUPPORT_SEQUENCES |
-      FILE_SUPPORT_GET_FORMAT_OPTIONS |
-      FILE_SUPPORT_PALETTE_WITH_ALPHA;
+  int onGetFlags() const override
+  {
+    return FILE_SUPPORT_SAVE | FILE_SUPPORT_RGB | FILE_SUPPORT_RGBA | FILE_SUPPORT_GRAY |
+           FILE_SUPPORT_GRAYA | FILE_SUPPORT_INDEXED | FILE_SUPPORT_SEQUENCES |
+           FILE_SUPPORT_GET_FORMAT_OPTIONS | FILE_SUPPORT_PALETTE_WITH_ALPHA;
   }
 
   bool onLoad(FileOp* fop) override;
@@ -74,7 +59,7 @@ class CssFormat : public FileFormat {
   FormatOptionsPtr onAskUserForFormatOptions(FileOp* fop) override;
 };
 
-FileFormat *CreateCssFormat()
+FileFormat* CreateCssFormat()
 {
   return new CssFormat;
 }
@@ -101,32 +86,39 @@ bool CssFormat::onSave(FileOp* fop)
       fprintf(f, "rgba(%d, %d, %d, %d)", r, g, b, a);
     }
   };
-  auto print_shadow_color = [f, css_options, print_color](int x, int y, int r,
-                                                          int g, int b, int a,
-                                                          bool comma = true) {
-    fprintf(f, comma?",\n":"\n");
-    if (css_options->withVars) {
-      fprintf(f, "\tcalc(%d*var(--shadow-mult)) calc(%d*var(--shadow-mult)) var(--blur) var(--spread) ",
-              x, y);
-    }
-    else {
-      int x_loc = x * (css_options->pixelScale + css_options->gutterSize);
-      int y_loc = y * (css_options->pixelScale + css_options->gutterSize);
-      fprintf(f, "%dpx %dpx ", x_loc, y_loc);
-    }
-    print_color(r, g, b, a);
-  };
-  auto print_shadow_index = [f, css_options](int x, int y, int i, bool comma=true) {
-    fprintf(f, comma?",\n":"\n");
-    fprintf(f, "\tcalc(%d*var(--shadow-mult)) calc(%d*var(--shadow-mult)) var(--blur) var(--spread) var(--color-%d)",
-            x, y, i);
+  auto print_shadow_color =
+    [f, css_options, print_color](int x, int y, int r, int g, int b, int a, bool comma = true) {
+      fprintf(f, comma ? ",\n" : "\n");
+      if (css_options->withVars) {
+        fprintf(
+          f,
+          "\tcalc(%d*var(--shadow-mult)) calc(%d*var(--shadow-mult)) var(--blur) var(--spread) ",
+          x,
+          y);
+      }
+      else {
+        int x_loc = x * (css_options->pixelScale + css_options->gutterSize);
+        int y_loc = y * (css_options->pixelScale + css_options->gutterSize);
+        fprintf(f, "%dpx %dpx ", x_loc, y_loc);
+      }
+      print_color(r, g, b, a);
+    };
+  auto print_shadow_index = [f, css_options](int x, int y, int i, bool comma = true) {
+    fprintf(f, comma ? ",\n" : "\n");
+    fprintf(
+      f,
+      "\tcalc(%d*var(--shadow-mult)) calc(%d*var(--shadow-mult)) var(--blur) var(--spread) var(--color-%d)",
+      x,
+      y,
+      i);
   };
   if (css_options->withVars) {
-    fprintf(f, ":root {\n"
-               "\t--blur: 0px;\n"
-               "\t--spread: 0px;\n"
-               "\t--pixel-size: %dpx;\n"
-               "\t--gutter-size: %dpx;\n",
+    fprintf(f,
+            ":root {\n"
+            "\t--blur: 0px;\n"
+            "\t--spread: 0px;\n"
+            "\t--pixel-size: %dpx;\n"
+            "\t--gutter-size: %dpx;\n",
             css_options->pixelScale,
             css_options->gutterSize);
     fprintf(f, "\t--shadow-mult: calc(var(--gutter-size) + var(--pixel-size));\n");
@@ -158,14 +150,19 @@ bool CssFormat::onSave(FileOp* fop)
   int num_printed_pixels = 0;
   switch (image->pixelFormat()) {
     case IMAGE_RGB: {
-      for (y=0; y<image->height(); y++) {
-        for (x=0; x<image->width(); x++) {
+      for (y = 0; y < image->height(); y++) {
+        for (x = 0; x < image->width(); x++) {
           c = get_pixel_fast<RgbTraits>(image.get(), x, y);
           alpha = rgba_geta(c);
           if (alpha != 0x00) {
-            print_shadow_color(x, y, rgba_getr(c), rgba_getg(c), rgba_getb(c),
-                               alpha, num_printed_pixels>0);
-            num_printed_pixels ++;
+            print_shadow_color(x,
+                               y,
+                               rgba_getr(c),
+                               rgba_getg(c),
+                               rgba_getb(c),
+                               alpha,
+                               num_printed_pixels > 0);
+            num_printed_pixels++;
           }
         }
         fop->setProgress((float)y / (float)(image->height()));
@@ -173,14 +170,14 @@ bool CssFormat::onSave(FileOp* fop)
       break;
     }
     case IMAGE_GRAYSCALE: {
-      for (y=0; y<image->height(); y++) {
-        for (x=0; x<image->width(); x++) {
+      for (y = 0; y < image->height(); y++) {
+        for (x = 0; x < image->width(); x++) {
           c = get_pixel_fast<GrayscaleTraits>(image.get(), x, y);
           auto v = graya_getv(c);
           alpha = graya_geta(c);
           if (alpha != 0x00) {
-            print_shadow_color(x, y, v, v, v, alpha, num_printed_pixels>0);
-            num_printed_pixels ++;
+            print_shadow_color(x, y, v, v, v, alpha, num_printed_pixels > 0);
+            num_printed_pixels++;
           }
         }
         fop->setProgress((float)y / (float)(image->height()));
@@ -189,7 +186,7 @@ bool CssFormat::onSave(FileOp* fop)
     }
     case IMAGE_INDEXED: {
       unsigned char image_palette[256][4];
-      for (y=0; !css_options->withVars && y<256; y++) {
+      for (y = 0; !css_options->withVars && y < 256; y++) {
         fop->sequenceGetColor(y, &r, &g, &b);
         image_palette[y][0] = r;
         image_palette[y][1] = g;
@@ -202,22 +199,23 @@ bool CssFormat::onSave(FileOp* fop)
           !fop->document()->sprite()->backgroundLayer()->isVisible()) {
         mask_color = fop->document()->sprite()->transparentColor();
       }
-      for (y=0; y<image->height(); y++) {
-        for (x=0; x<image->width(); x++) {
+      for (y = 0; y < image->height(); y++) {
+        for (x = 0; x < image->width(); x++) {
           c = get_pixel_fast<IndexedTraits>(image.get(), x, y);
           if (c != mask_color) {
             if (css_options->withVars) {
-              print_shadow_index(x, y, c, num_printed_pixels>0);
+              print_shadow_index(x, y, c, num_printed_pixels > 0);
             }
             else {
-              print_shadow_color(x, y,
-                     image_palette[c][0] & 0xff,
-                     image_palette[c][1] & 0xff,
-                     image_palette[c][2] & 0xff,
-                     image_palette[c][3] & 0xff,
-                     num_printed_pixels>0);
+              print_shadow_color(x,
+                                 y,
+                                 image_palette[c][0] & 0xff,
+                                 image_palette[c][1] & 0xff,
+                                 image_palette[c][2] & 0xff,
+                                 image_palette[c][3] & 0xff,
+                                 num_printed_pixels > 0);
             }
-            num_printed_pixels ++;
+            num_printed_pixels++;
           }
         }
         fop->setProgress((float)y / (float)(image->height()));
@@ -254,10 +252,9 @@ FormatOptionsPtr CssFormat::onAskUserForFormatOptions(FileOp* fop)
 {
   auto opts = fop->formatOptionsOfDocument<CssOptions>();
 
-#ifdef ENABLE_UI
   if (fop->context() && fop->context()->isUIAvailable()) {
     try {
-      auto &pref = Preferences::instance();
+      auto& pref = Preferences::instance();
 
       if (pref.isSet(pref.css.pixelScale))
         opts->pixelScale = pref.css.pixelScale();
@@ -290,13 +287,12 @@ FormatOptionsPtr CssFormat::onAskUserForFormatOptions(FileOp* fop)
         }
       }
     }
-    catch (std::exception &e) {
+    catch (std::exception& e) {
       Console::showException(e);
       return std::shared_ptr<CssOptions>(nullptr);
     }
   }
 
-#endif
   return opts;
 }
 

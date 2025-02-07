@@ -4,9 +4,6 @@
 [submodule "third_party/simpleini"]
 	path = third_party/simpleini
 	url = https://github.com/aseprite/simpleini.git
-[submodule "third_party/gtest"]
-	path = third_party/gtest
-	url = https://github.com/aseprite/gtest.git
 [submodule "third_party/libwebp"]
 	path = third_party/libwebp
 	url = https://github.com/aseprite/libwebp.git
@@ -81,3 +78,6 @@
 [submodule "third_party/tinyxml2"]
 	path = third_party/tinyxml2
 	url = https://github.com/aseprite/tinyxml2.git
+[submodule "third_party/TinyEXIF"]
+	path = third_party/TinyEXIF
+	url = https://github.com/aseprite/TinyEXIF.git

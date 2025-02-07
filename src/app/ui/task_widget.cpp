@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/task_widget.h"
@@ -22,8 +22,7 @@ namespace app {
 using namespace ui;
 using namespace app::skin;
 
-TaskWidget::TaskWidget(const Type type,
-                       base::task::func_t&& func)
+TaskWidget::TaskWidget(const Type type, base::task::func_t&& func)
   : Box(HORIZONTAL | HOMOGENEOUS)
   , m_monitorTimer(25)
   , m_cancelButton("Cancel")
@@ -32,12 +31,11 @@ TaskWidget::TaskWidget(const Type type,
   if (int(type) & int(kCanCancel)) {
     addChild(&m_cancelButton);
 
-    m_cancelButton.Click.connect(
-      [this](){
-        m_task.cancel();
-        m_cancelButton.setEnabled(false);
-        m_progressBar.setEnabled(false);
-      });
+    m_cancelButton.Click.connect([this]() {
+      m_task.cancel();
+      m_cancelButton.setEnabled(false);
+      m_progressBar.setEnabled(false);
+    });
   }
 
   if (int(type) & int(kWithProgress)) {
@@ -45,38 +43,34 @@ TaskWidget::TaskWidget(const Type type,
     addChild(&m_progressBar);
   }
 
-  m_monitorTimer.Tick.connect(
-    [this]{
-      if (m_task.completed()) {
-        m_monitorTimer.stop();
-        onComplete();
+  m_monitorTimer.Tick.connect([this] {
+    if (m_task.completed()) {
+      m_monitorTimer.stop();
+      onComplete();
+    }
+    else if (m_progressBar.parent()) {
+      float v = m_task.progress();
+      if (v > 0.0f) {
+        TRACEARGS("progressBar setValue", int(std::clamp(v * 100.0f, 0.0f, 100.0f)));
+        m_progressBar.setValue(int(std::clamp(v * 100.0f, 0.0f, 100.0f)));
       }
-      else if (m_progressBar.parent()) {
-        float v = m_task.progress();
-        if (v > 0.0f) {
-          TRACEARGS("progressBar setValue",
-                    int(std::clamp(v*100.0f, 0.0f, 100.0f)));
-          m_progressBar.setValue(
-            int(std::clamp(v*100.0f, 0.0f, 100.0f)));
-        }
-      }
-    });
+    }
+  });
   m_monitorTimer.start();
 
-  InitTheme.connect(
-    [this]{
-      auto theme = SkinTheme::get(this);
-      setTransparent(true);
-      setBgColor(gfx::ColorNone);
-      m_cancelButton.setTransparent(true);
-      m_cancelButton.setStyle(theme->styles.miniButton());
-      m_cancelButton.setBgColor(gfx::ColorNone);
-      m_progressBar.setTransparent(true);
-      m_progressBar.setBgColor(gfx::ColorNone);
-      setup_mini_font(&m_cancelButton);
-      setup_mini_look(&m_progressBar);
-      setMaxSize(gfx::Size(std::numeric_limits<int>::max(), textHeight()));
-    });
+  InitTheme.connect([this] {
+    auto theme = SkinTheme::get(this);
+    setTransparent(true);
+    setBgColor(gfx::ColorNone);
+    m_cancelButton.setTransparent(true);
+    m_cancelButton.setStyle(theme->styles.miniButton());
+    m_cancelButton.setBgColor(gfx::ColorNone);
+    m_progressBar.setTransparent(true);
+    m_progressBar.setBgColor(gfx::ColorNone);
+    setup_mini_font(&m_cancelButton);
+    setup_mini_look(&m_progressBar);
+    setMaxSize(gfx::Size(std::numeric_limits<int>::max(), textHeight()));
+  });
   initTheme();
 
   m_task.run(std::move(func));

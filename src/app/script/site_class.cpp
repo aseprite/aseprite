@@ -1,12 +1,12 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -21,8 +21,7 @@
 #include "doc/layer.h"
 #include "doc/sprite.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 namespace {
 
@@ -69,7 +68,7 @@ int Site_get_frame(lua_State* L)
 int Site_get_frameNumber(lua_State* L)
 {
   auto site = get_obj<Site>(L, 1);
-  lua_pushinteger(L, site->frame()+1);
+  lua_pushinteger(L, site->frame() + 1);
   return 1;
 }
 
@@ -83,18 +82,40 @@ int Site_get_image(lua_State* L)
   return 1;
 }
 
+int Site_get_tilemapMode(lua_State* L)
+{
+  auto site = get_obj<Site>(L, 1);
+  if (site)
+    lua_pushinteger(L, (int)site->tilemapMode());
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
+int Site_get_tilesetMode(lua_State* L)
+{
+  auto site = get_obj<Site>(L, 1);
+  if (site)
+    lua_pushinteger(L, (int)site->tilesetMode());
+  else
+    lua_pushnil(L);
+  return 1;
+}
+
 const luaL_Reg Site_methods[] = {
   { nullptr, nullptr }
 };
 
 const Property Site_properties[] = {
-  { "sprite", Site_get_sprite, nullptr },
-  { "layer", Site_get_layer, nullptr },
-  { "cel", Site_get_cel, nullptr },
-  { "frame", Site_get_frame, nullptr },
+  { "sprite",      Site_get_sprite,      nullptr },
+  { "layer",       Site_get_layer,       nullptr },
+  { "cel",         Site_get_cel,         nullptr },
+  { "frame",       Site_get_frame,       nullptr },
   { "frameNumber", Site_get_frameNumber, nullptr },
-  { "image", Site_get_image, nullptr },
-  { nullptr, nullptr, nullptr }
+  { "image",       Site_get_image,       nullptr },
+  { "tilemapMode", Site_get_tilemapMode, nullptr },
+  { "tilesetMode", Site_get_tilesetMode, nullptr },
+  { nullptr,       nullptr,              nullptr }
 };
 
 } // anonymous namespace
@@ -107,5 +128,4 @@ void register_site_class(lua_State* L)
   REG_CLASS_PROPERTIES(L, Site);
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

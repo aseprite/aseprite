@@ -12,10 +12,10 @@
 
 namespace doc {
 
-  class Mask;
+class Mask;
 
-  void write_mask(std::ostream& os, const Mask* mask);
-  Mask* read_mask(std::istream& is);
+void write_mask(std::ostream& os, const Mask* mask);
+Mask* read_mask(std::istream& is);
 
 } // namespace doc
 

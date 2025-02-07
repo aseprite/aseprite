@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_total_frames.h"
@@ -14,8 +14,7 @@
 #include "app/doc_event.h"
 #include "doc/sprite.h"
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
 SetTotalFrames::SetTotalFrames(Sprite* sprite, frame_t frames)
   : WithSprite(sprite)
@@ -48,5 +47,4 @@ void SetTotalFrames::onFireNotifications()
   doc->notify_observers<DocEvent&>(&DocObserver::onTotalFramesChanged, ev);
 }
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd

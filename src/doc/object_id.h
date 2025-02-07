@@ -12,10 +12,10 @@
 
 namespace doc {
 
-  typedef uint32_t ObjectId;
+typedef uint32_t ObjectId;
 
-  const ObjectId NullId = 0;
+const ObjectId NullId = 0;
 
 } // namespace doc
 
-#endif  // DOC_OBJECT_ID_H_INCLUDED
+#endif // DOC_OBJECT_ID_H_INCLUDED

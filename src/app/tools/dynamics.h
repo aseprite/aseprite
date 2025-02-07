@@ -10,41 +10,39 @@
 
 #include "render/dithering_matrix.h"
 
-namespace app {
-namespace tools {
+namespace app { namespace tools {
 
-  enum class DynamicSensor {
-    Static,
-    Pressure,
-    Velocity,
-  };
+enum class DynamicSensor {
+  Static,
+  Pressure,
+  Velocity,
+};
 
-  enum class ColorFromTo {
-    BgToFg,
-    FgToBg,
-  };
+enum class ColorFromTo {
+  BgToFg,
+  FgToBg,
+};
 
-  struct DynamicsOptions {
-    bool stabilizer = false;
-    int stabilizerFactor = 0;
-    DynamicSensor size = DynamicSensor::Static;
-    DynamicSensor angle = DynamicSensor::Static;
-    DynamicSensor gradient = DynamicSensor::Static;
-    int minSize = 0;
-    int minAngle = 0;
-    render::DitheringMatrix ditheringMatrix;
-    ColorFromTo colorFromTo = ColorFromTo::BgToFg;
-    float minPressureThreshold = 0.0f, maxPressureThreshold = 1.0f;
-    float minVelocityThreshold = 0.0f, maxVelocityThreshold = 1.0f;
+struct DynamicsOptions {
+  bool stabilizer = false;
+  int stabilizerFactor = 0;
+  DynamicSensor size = DynamicSensor::Static;
+  DynamicSensor angle = DynamicSensor::Static;
+  DynamicSensor gradient = DynamicSensor::Static;
+  int minSize = 0;
+  int minAngle = 0;
+  render::DitheringMatrix ditheringMatrix;
+  ColorFromTo colorFromTo = ColorFromTo::BgToFg;
+  float minPressureThreshold = 0.0f, maxPressureThreshold = 1.0f;
+  float minVelocityThreshold = 0.0f, maxVelocityThreshold = 1.0f;
 
-    bool isDynamic() const {
-      return (size != DynamicSensor::Static ||
-              angle != DynamicSensor::Static ||
-              gradient != DynamicSensor::Static);
-    }
-  };
+  bool isDynamic() const
+  {
+    return (size != DynamicSensor::Static || angle != DynamicSensor::Static ||
+            gradient != DynamicSensor::Static);
+  }
+};
 
-} // namespace tools
-} // namespace app
+}} // namespace app::tools
 
 #endif

@@ -16,55 +16,50 @@
 #include "ui/base.h"
 
 namespace os {
-  class Surface;
+class Surface;
 }
 
 namespace ui {
-  class Display;
+class Display;
 
-  class Overlay;
-  using OverlayRef = base::Ref<Overlay>;
+class Overlay;
+using OverlayRef = base::Ref<Overlay>;
 
-  class Overlay : public base::RefCountT<Overlay> {
-  public:
-    enum ZOrder {
-      NormalZOrder = 0,
-      MouseZOrder = 5000
-    };
+class Overlay : public base::RefCountT<Overlay> {
+public:
+  enum ZOrder { NormalZOrder = 0, MouseZOrder = 5000 };
 
-    Overlay(Display* display,
-            const os::SurfaceRef& overlaySurface,
-            const gfx::Point& pos,
-            ZOrder zorder = NormalZOrder);
-    ~Overlay();
+  Overlay(Display* display,
+          const os::SurfaceRef& overlaySurface,
+          const gfx::Point& pos,
+          ZOrder zorder = NormalZOrder);
+  ~Overlay();
 
-    os::SurfaceRef setSurface(const os::SurfaceRef& newSurface);
+  os::SurfaceRef setSurface(const os::SurfaceRef& newSurface);
 
-    const gfx::Point& position() const { return m_pos; }
-    gfx::Rect bounds() const;
+  const gfx::Point& position() const { return m_pos; }
+  gfx::Rect bounds() const;
 
-    void captureOverlappedArea();
-    void restoreOverlappedArea(const gfx::Rect& restoreBounds);
+  void captureOverlappedArea();
+  void restoreOverlappedArea(const gfx::Rect& restoreBounds);
 
-    void drawOverlay();
-    void moveOverlay(const gfx::Point& newPos);
+  void drawOverlay();
+  void moveOverlay(const gfx::Point& newPos);
 
-    bool operator<(const Overlay& other) const {
-      return m_zorder < other.m_zorder;
-    }
+  bool operator<(const Overlay& other) const { return m_zorder < other.m_zorder; }
 
-  private:
-    Display* m_display;
-    os::SurfaceRef m_surface;
-    os::SurfaceRef m_overlap;
+private:
+  Display* m_display;
+  os::SurfaceRef m_surface;
+  os::SurfaceRef m_overlap;
 
-    // Surface where we captured the overlapped (m_overlap)
-    // region. It's nullptr if the overlay wasn't drawn yet.
-    os::SurfaceRef m_captured;
+  // Surface where we captured the overlapped (m_overlap)
+  // region. It's nullptr if the overlay wasn't drawn yet.
+  os::SurfaceRef m_captured;
 
-    gfx::Point m_pos;
-    ZOrder m_zorder;
-  };
+  gfx::Point m_pos;
+  ZOrder m_zorder;
+};
 
 } // namespace ui
 

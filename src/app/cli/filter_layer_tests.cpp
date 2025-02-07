@@ -15,8 +15,7 @@ using namespace doc;
 
 class FilterLayers : public ::testing::Test {
 public:
-  FilterLayers()
-    : sprite(ImageSpec(ColorMode::RGB, 32, 32))
+  FilterLayers() : sprite(ImageSpec(ColorMode::RGB, 32, 32))
   {
     a->setName("a");
     b->setName("b");
@@ -33,12 +32,9 @@ public:
     b->addLayer(bb);
   }
 
-  void filter(
-    std::vector<std::string> includes,
-    std::vector<std::string> excludes)
+  void filter(std::vector<std::string> includes, std::vector<std::string> excludes)
   {
-    CliProcessor::FilterLayers(
-      &sprite, std::move(includes), std::move(excludes), sel);
+    CliProcessor::FilterLayers(&sprite, std::move(includes), std::move(excludes), sel);
   }
 
   Sprite sprite;

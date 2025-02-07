@@ -12,29 +12,25 @@
 #include "app/cmd/with_document.h"
 #include "doc/algorithm/flip_type.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class FlipMask : public Cmd
-                 , public WithDocument {
-  public:
-    FlipMask(Doc* doc, doc::algorithm::FlipType flipType);
+class FlipMask : public Cmd,
+                 public WithDocument {
+public:
+  FlipMask(Doc* doc, doc::algorithm::FlipType flipType);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this);
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  size_t onMemSize() const override { return sizeof(*this); }
 
-  private:
-    void swap();
+private:
+  void swap();
 
-    doc::algorithm::FlipType m_flipType;
-  };
+  doc::algorithm::FlipType m_flipType;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

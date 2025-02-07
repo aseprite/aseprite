@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -32,8 +32,8 @@
 
 namespace app {
 
-class NewBrushCommand : public Command
-                      , public SelectBoxDelegate {
+class NewBrushCommand : public Command,
+                        public SelectBoxDelegate {
 public:
   NewBrushCommand();
 
@@ -45,17 +45,14 @@ protected:
   void onQuickboxEnd(Editor* editor, const gfx::Rect& rect, ui::MouseButton button) override;
   void onQuickboxCancel(Editor* editor) override;
 
-  std::string onGetContextBarHelp() override {
-    return Strings::new_brush_context_bar_help();
-  }
+  std::string onGetContextBarHelp() override { return Strings::new_brush_context_bar_help(); }
 
 private:
   void createBrush(const Site& site, const Mask* mask);
   void selectPencilTool();
 };
 
-NewBrushCommand::NewBrushCommand()
-  : Command(CommandId::NewBrush(), CmdUIOnlyFlag)
+NewBrushCommand::NewBrushCommand() : Command(CommandId::NewBrush(), CmdUIOnlyFlag)
 {
 }
 
@@ -82,23 +79,19 @@ void NewBrushCommand::onExecute(Context* context)
     }
 
     auto editor = Editor::activeEditor();
-    editor->setState(
-      EditorStatePtr(
-        new SelectBoxState(
-          this, editor->sprite()->bounds(),
-          SelectBoxState::Flags(
-            int(SelectBoxState::Flags::DarkOutside) |
-            int(SelectBoxState::Flags::QuickBox)))));
+    editor->setState(EditorStatePtr(
+      new SelectBoxState(this,
+                         editor->sprite()->bounds(),
+                         SelectBoxState::Flags(int(SelectBoxState::Flags::DarkOutside) |
+                                               int(SelectBoxState::Flags::QuickBox)))));
   }
   // Create a brush from the active selection
   else {
-    createBrush(context->activeSite(),
-                context->activeDocument()->mask());
+    createBrush(context->activeSite(), context->activeDocument()->mask());
     selectPencilTool();
 
     // Deselect mask
-    Command* cmd =
-      Commands::instance()->byId(CommandId::DeselectMask());
+    Command* cmd = Commands::instance()->byId(CommandId::DeselectMask());
     UIContext::instance()->executeCommand(cmd);
   }
 }
@@ -143,8 +136,8 @@ void NewBrushCommand::onQuickboxCancel(Editor* editor)
 
 void NewBrushCommand::createBrush(const Site& site, const Mask* mask)
 {
-  doc::ImageRef image(new_image_from_mask(site, mask,
-                                          Preferences::instance().experimental.newBlend()));
+  doc::ImageRef image(
+    new_image_from_mask(site, mask, Preferences::instance().experimental.newBlend()));
   if (!image)
     return;
 
@@ -163,16 +156,14 @@ void NewBrushCommand::createBrush(const Site& site, const Mask* mask)
       flags |= int(BrushSlot::Flags::ImageColor);
   }
 
-  int slot = App::instance()->brushes().addBrushSlot(
-    BrushSlot(BrushSlot::Flags(flags), brush));
+  int slot = App::instance()->brushes().addBrushSlot(BrushSlot(BrushSlot::Flags(flags), brush));
   ctxBar->setActiveBrush(brush);
 
   // Get the shortcut for this brush and show it to the user
   Params params;
   params.set("change", "custom");
   params.set("slot", base::convert_to<std::string>(slot).c_str());
-  KeyPtr key = KeyboardShortcuts::instance()->command(
-    CommandId::ChangeBrush(), params);
+  KeyPtr key = KeyboardShortcuts::instance()->command(CommandId::ChangeBrush(), params);
   if (key && !key->accels().empty()) {
     std::string tooltip;
     tooltip += Strings::new_brush_shortcut() + " ";

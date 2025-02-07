@@ -13,11 +13,11 @@
 
 namespace app {
 
-  class ITileSource {
-  public:
-    virtual ~ITileSource() { }
-    virtual doc::tile_t getTileByPosition(const gfx::Point& pos) = 0;
-  };
+class ITileSource {
+public:
+  virtual ~ITileSource() {}
+  virtual doc::tile_t getTileByPosition(const gfx::Point& pos) = 0;
+};
 
 } // namespace app
 

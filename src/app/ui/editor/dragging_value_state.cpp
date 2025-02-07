@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/editor/dragging_value_state.h"
@@ -57,9 +57,9 @@ DraggingValueState::DraggingValueState(Editor* editor, const Keys& keys)
       break;
     }
   }
-  m_beforeCmdConn =
-    UIContext::instance()->BeforeCommandExecution.connect(
-      &DraggingValueState::onBeforeCommandExecution, this);
+  m_beforeCmdConn = UIContext::instance()->BeforeCommandExecution.connect(
+    &DraggingValueState::onBeforeCommandExecution,
+    this);
 }
 
 void DraggingValueState::onBeforePopState(Editor* editor)
@@ -93,8 +93,7 @@ bool DraggingValueState::onMouseMove(Editor* editor, MouseMessage* msg)
 
     const gfx::Point delta = (msg->position() - initialPos);
     const DragVector deltaV(delta.x, delta.y);
-    const DragVector invDragVector(key->dragVector().x,
-                                   -key->dragVector().y);
+    const DragVector invDragVector(key->dragVector().x, -key->dragVector().y);
     const double threshold = invDragVector.magnitude();
 
     DragVector v = deltaV.projectOn(invDragVector);
@@ -106,8 +105,7 @@ bool DraggingValueState::onMouseMove(Editor* editor, MouseMessage* msg)
       dz *= SGN(dot);
 
       PreciseWheel preciseWheel = PreciseWheel::On;
-      if (key->wheelAction() == WheelAction::Zoom ||
-          key->wheelAction() == WheelAction::Frame ||
+      if (key->wheelAction() == WheelAction::Zoom || key->wheelAction() == WheelAction::Frame ||
           key->wheelAction() == WheelAction::Layer) {
         preciseWheel = PreciseWheel::Off;
         dz = -dz; // Invert value for zoom only so the vector is
@@ -162,6 +160,8 @@ bool DraggingValueState::onUpdateStatusBar(Editor* editor)
 
 void DraggingValueState::onBeforeCommandExecution(CommandExecutionEvent& ev)
 {
+  if (m_editor->hasCapture())
+    m_editor->releaseMouse();
   m_editor->backToPreviousState();
 }
 
@@ -180,8 +180,7 @@ void DraggingValueState::onToolChange(tools::Tool* tool)
   ToolBar::instance()->selectTool(tool);
 }
 
-void DraggingValueState::onToolGroupChange(Editor* editor,
-                                           tools::ToolGroup* group)
+void DraggingValueState::onToolGroupChange(Editor* editor, tools::ToolGroup* group)
 {
   if (getActiveTool()->getGroup() != group) {
     StateWithWheelBehavior::onToolGroupChange(editor, group);
@@ -192,8 +191,8 @@ void DraggingValueState::onToolGroupChange(Editor* editor,
     // the same time. This special position is needed to avoid jumping
     // "randomly" to other tools when we change to another group (as
     // the delta from the m_initialPos is accumulated).
-    m_initialPosSameGroup = editor->display()->nativeWindow()
-      ->pointFromScreen(ui::get_mouse_position());
+    m_initialPosSameGroup = editor->display()->nativeWindow()->pointFromScreen(
+      ui::get_mouse_position());
   }
 }
 

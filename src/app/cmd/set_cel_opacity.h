@@ -11,29 +11,25 @@
 #include "app/cmd.h"
 #include "app/cmd/with_cel.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class SetCelOpacity : public Cmd
-                      , public WithCel {
-  public:
-    SetCelOpacity(Cel* cel, int opacity);
+class SetCelOpacity : public Cmd,
+                      public WithCel {
+public:
+  SetCelOpacity(Cel* cel, int opacity);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onFireNotifications() override;
-    size_t onMemSize() const override {
-      return sizeof(*this);
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onFireNotifications() override;
+  size_t onMemSize() const override { return sizeof(*this); }
 
-  private:
-    int m_oldOpacity;
-    int m_newOpacity;
-  };
+private:
+  int m_oldOpacity;
+  int m_newOpacity;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

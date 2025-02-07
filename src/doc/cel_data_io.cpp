@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/cel_data_io.h"
@@ -38,7 +38,7 @@ void write_celdata(std::ostream& os, const CelData* celdata)
   write32(os, celdata->image()->id());
   write_user_data(os, celdata->userData());
 
-  if (celdata->hasBoundsF()) {  // Reference layer
+  if (celdata->hasBoundsF()) { // Reference layer
     write32(os, HAS_BOUNDS_F);
     write32(os, fixmath::ftofix(celdata->boundsF().x));
     write32(os, fixmath::ftofix(celdata->boundsF().y));
@@ -50,7 +50,10 @@ void write_celdata(std::ostream& os, const CelData* celdata)
   }
 }
 
-CelData* read_celdata(std::istream& is, SubObjectsIO* subObjects, const bool setId, const int docFormatVer)
+CelData* read_celdata(std::istream& is,
+                      SubObjectsIO* subObjects,
+                      const bool setId,
+                      const SerialFormat serial)
 {
   ObjectId id = read32(is);
   int x = read32(is);
@@ -59,7 +62,7 @@ CelData* read_celdata(std::istream& is, SubObjectsIO* subObjects, const bool set
   int h = read32(is);
   int opacity = read8(is);
   ObjectId imageId = read32(is);
-  UserData userData = read_user_data(is, docFormatVer);
+  const UserData userData = read_user_data(is, serial);
   gfx::RectF boundsF;
 
   // Extra fields
@@ -70,10 +73,8 @@ CelData* read_celdata(std::istream& is, SubObjectsIO* subObjects, const bool set
     fixmath::fixed w = read32(is);
     fixmath::fixed h = read32(is);
     if (w && h) {
-      boundsF = gfx::RectF(fixmath::fixtof(x),
-                           fixmath::fixtof(y),
-                           fixmath::fixtof(w),
-                           fixmath::fixtof(h));
+      boundsF =
+        gfx::RectF(fixmath::fixtof(x), fixmath::fixtof(y), fixmath::fixtof(w), fixmath::fixtof(h));
     }
   }
 
@@ -92,4 +93,4 @@ CelData* read_celdata(std::istream& is, SubObjectsIO* subObjects, const bool set
   return celdata.release();
 }
 
-}
+} // namespace doc

@@ -5,7 +5,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "doc/selected_frames.h"
@@ -49,13 +49,12 @@ void SelectedFrames::insert(frame_t frame)
   auto end = m_ranges.end();
   auto next = it;
 
-  for (; it!=end; it=next) {
-    if (frame >= it->fromFrame &&
-        frame <= it->toFrame)
+  for (; it != end; it = next) {
+    if (frame >= it->fromFrame && frame <= it->toFrame)
       break;
 
     if (frame < it->fromFrame) {
-      if (frame == it->fromFrame-1)
+      if (frame == it->fromFrame - 1)
         --it->fromFrame;
       else
         m_ranges.insert(it, FrameRange(frame));
@@ -64,8 +63,8 @@ void SelectedFrames::insert(frame_t frame)
 
     ++next;
 
-    if (frame > it->toFrame && (next == end || frame < next->fromFrame-1)) {
-      if (frame == it->toFrame+1)
+    if (frame > it->toFrame && (next == end || frame < next->fromFrame - 1)) {
+      if (frame == it->toFrame + 1)
         ++it->toFrame;
       else
         m_ranges.insert(next, FrameRange(frame));
@@ -97,16 +96,19 @@ SelectedFrames SelectedFrames::filter(frame_t fromFrame, frame_t toFrame) const
     const bool isForward = (r.fromFrame <= r.toFrame);
 
     if (isForward) {
-      if (r.fromFrame < fromFrame) r.fromFrame = fromFrame;
-      if (r.toFrame > toFrame) r.toFrame = toFrame;
+      if (r.fromFrame < fromFrame)
+        r.fromFrame = fromFrame;
+      if (r.toFrame > toFrame)
+        r.toFrame = toFrame;
     }
     else {
-      if (r.fromFrame > toFrame) r.fromFrame = toFrame;
-      if (r.toFrame < fromFrame) r.toFrame = fromFrame;
+      if (r.fromFrame > toFrame)
+        r.fromFrame = toFrame;
+      if (r.toFrame < fromFrame)
+        r.toFrame = fromFrame;
     }
 
-    if (( isForward && r.fromFrame <= r.toFrame) ||
-        (!isForward && r.fromFrame >= r.toFrame))
+    if ((isForward && r.fromFrame <= r.toFrame) || (!isForward && r.fromFrame >= r.toFrame))
       f.m_ranges.push_back(r);
   }
 
@@ -120,16 +122,13 @@ bool SelectedFrames::contains(frame_t frame) const
     m_ranges.begin(),
     m_ranges.end(),
     FrameRange(frame),
-    [](const FrameRange& a,
-       const FrameRange& b) -> bool {
-      return (a.toFrame < b.fromFrame);
-    });
+    [](const FrameRange& a, const FrameRange& b) -> bool { return (a.toFrame < b.fromFrame); });
 }
 
 void SelectedFrames::displace(frame_t frameDelta)
 {
   // Avoid setting negative numbers in frame ranges
-  if (firstFrame()+frameDelta < 0)
+  if (firstFrame() + frameDelta < 0)
     frameDelta = -firstFrame();
 
   for (auto& range : m_ranges) {
@@ -145,9 +144,8 @@ SelectedFrames SelectedFrames::makeReverse() const
 {
   SelectedFrames newFrames;
   for (const FrameRange& range : m_ranges)
-    newFrames.m_ranges.insert(
-      newFrames.m_ranges.begin(),
-      FrameRange(range.toFrame, range.fromFrame));
+    newFrames.m_ranges.insert(newFrames.m_ranges.begin(),
+                              FrameRange(range.toFrame, range.fromFrame));
   return newFrames;
 }
 
@@ -156,19 +154,18 @@ SelectedFrames SelectedFrames::makePingPong() const
   SelectedFrames newFrames = *this;
   const int n = m_ranges.size();
   int i = 0;
-  int j = m_ranges.size()-1;
+  int j = m_ranges.size() - 1;
 
   for (const FrameRange& range : m_ranges) {
-    FrameRange reversedRange(range.toFrame,
-                             range.fromFrame);
+    FrameRange reversedRange(range.toFrame, range.fromFrame);
 
-    if (i == 0) reversedRange.toFrame++;
-    if (j == 0) reversedRange.fromFrame--;
+    if (i == 0)
+      reversedRange.toFrame++;
+    if (j == 0)
+      reversedRange.fromFrame--;
 
     if (reversedRange.fromFrame >= reversedRange.toFrame)
-      newFrames.m_ranges.insert(
-        newFrames.m_ranges.begin() + n,
-        reversedRange);
+      newFrames.m_ranges.insert(newFrames.m_ranges.begin() + n, reversedRange);
 
     ++i;
     --j;
@@ -191,7 +188,7 @@ bool SelectedFrames::read(std::istream& is)
   clear();
 
   int nframes = read32(is);
-  for (int i=0; i<nframes && is; ++i) {
+  for (int i = 0; i < nframes && is; ++i) {
     frame_t frame = read32(is);
     insert(frame);
   }

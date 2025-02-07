@@ -1,11 +1,11 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app_menus.h"
@@ -13,12 +13,11 @@
 #include "app/commands/new_params.h"
 #include "app/context.h"
 #include "app/i18n/strings.h"
-#include "fmt/format.h"
 
 namespace app {
 
 struct ShowMenuParams : public NewParams {
-  Param<std::string> menu { this, "", "menu" };
+  Param<std::string> menu{ this, "", "menu" };
 };
 
 class ShowMenuCommand : public CommandWithNewParams<ShowMenuParams> {
@@ -55,7 +54,7 @@ std::string ShowMenuCommand::onGetFriendlyName() const
     name = menuitem->text();
   else
     name = params().menu();
-  return fmt::format(Strings::commands_ShowMenu(), name);
+  return Strings::commands_ShowMenu(name);
 }
 
 MenuItem* ShowMenuCommand::findMenuItem() const

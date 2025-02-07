@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/deselect_mask.h"
@@ -28,15 +28,13 @@ protected:
   void onExecute(Context* context) override;
 };
 
-DeselectMaskCommand::DeselectMaskCommand()
-  : Command(CommandId::DeselectMask(), CmdRecordableFlag)
+DeselectMaskCommand::DeselectMaskCommand() : Command(CommandId::DeselectMask(), CmdRecordableFlag)
 {
 }
 
 bool DeselectMaskCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasVisibleMask);
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasVisibleMask);
 }
 
 void DeselectMaskCommand::onExecute(Context* context)
@@ -49,10 +47,7 @@ void DeselectMaskCommand::onExecute(Context* context)
     tx.commit();
   }
 
-#ifdef ENABLE_UI
-  if (context->isUIAvailable())
-    update_screen_for_document(document);
-#endif
+  update_screen_for_document(document);
 }
 
 Command* CommandFactory::createDeselectMaskCommand()

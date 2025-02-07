@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/doc.h"
@@ -14,7 +14,6 @@
 #include "app/app.h"
 #include "app/color_target.h"
 #include "app/color_utils.h"
-#include "app/context.h"
 #include "app/context.h"
 #include "app/doc_api.h"
 #include "app/doc_event.h"
@@ -176,19 +175,16 @@ bool Doc::isUndoing() const
 
 color_t Doc::bgColor() const
 {
-  return color_utils::color_for_target(
-    Preferences::instance().colorBar.bgColor(),
-    ColorTarget(ColorTarget::BackgroundLayer,
-                sprite()->pixelFormat(),
-                sprite()->transparentColor()));
+  return color_utils::color_for_target(Preferences::instance().colorBar.bgColor(),
+                                       ColorTarget(ColorTarget::BackgroundLayer,
+                                                   sprite()->pixelFormat(),
+                                                   sprite()->transparentColor()));
 }
 
 color_t Doc::bgColor(Layer* layer) const
 {
   if (layer->isBackground())
-    return color_utils::color_for_layer(
-      Preferences::instance().colorBar.bgColor(),
-      layer);
+    return color_utils::color_for_layer(Preferences::instance().colorBar.bgColor(), layer);
   else
     return layer->sprite()->transparentColor();
 }
@@ -201,6 +197,12 @@ void Doc::setLayerVisibilityWithNotifications(Layer* layer, const bool visible)
   notifyBeforeLayerVisibilityChange(layer, visible);
   layer->setVisible(visible);
   notifyAfterLayerVisibilityChange(layer);
+}
+
+void Doc::setLayerEditableWithNotifications(Layer* layer, const bool editable)
+{
+  notifyBeforeLayerEditableChange(layer, editable);
+  layer->setEditable(editable);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -268,6 +270,13 @@ void Doc::notifyAfterLayerVisibilityChange(Layer* layer)
   notify_observers<DocEvent&>(&DocObserver::onAfterLayerVisibilityChange, ev);
 }
 
+void Doc::notifyBeforeLayerEditableChange(Layer* layer, bool newState)
+{
+  DocEvent ev(this);
+  ev.layer(layer);
+  notify_observers<DocEvent&, bool>(&DocObserver::onBeforeLayerEditableChange, ev, newState);
+}
+
 void Doc::notifyCelMoved(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame)
 {
   DocEvent ev(this);
@@ -283,7 +292,7 @@ void Doc::notifyCelCopied(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, f
 {
   DocEvent ev(this);
   ev.sprite(toLayer->sprite());
-  ev.layer(fromLayer);          // From layer can be nullptr
+  ev.layer(fromLayer); // From layer can be nullptr
   ev.frame(fromFrame);
   ev.targetLayer(toLayer);
   ev.targetFrame(toFrame);
@@ -377,7 +386,7 @@ void Doc::markAsBackedUp()
 
 bool Doc::isFullyBackedUp() const
 {
-  return (m_flags & kFullyBackedUp ? true: false);
+  return (m_flags & kFullyBackedUp ? true : false);
 }
 
 void Doc::markAsReadOnly()
@@ -389,7 +398,7 @@ void Doc::markAsReadOnly()
 
 bool Doc::isReadOnly() const
 {
-  return (m_flags & kReadOnly ? true: false);
+  return (m_flags & kReadOnly ? true : false);
 }
 
 void Doc::removeReadOnlyMark()
@@ -422,18 +431,17 @@ void Doc::generateMaskBoundaries(const Mask* mask)
 
   // No mask specified? Use the current one in the document
   if (!mask) {
-    if (!isMaskVisible())       // The mask is hidden
-      return;                   // Done, without boundaries
+    if (!isMaskVisible()) // The mask is hidden
+      return;             // Done, without boundaries
     else
-      mask = this->mask();      // Use the document mask
+      mask = this->mask(); // Use the document mask
   }
 
   ASSERT(mask);
 
   if (!mask->isEmpty()) {
     m_maskBoundaries.regen(mask->bitmap());
-    m_maskBoundaries.offset(mask->bounds().x,
-                            mask->bounds().y);
+    m_maskBoundaries.offset(mask->bounds().x, mask->bounds().y);
   }
 
   notifySelectionBoundariesChanged();
@@ -454,9 +462,8 @@ void Doc::setMask(const Mask* mask)
 
 bool Doc::isMaskVisible() const
 {
-  return
-    (m_flags & kMaskVisible) && // The mask was not hidden by the user explicitly
-    !m_mask->isEmpty();         // The mask is not empty
+  return (m_flags & kMaskVisible) && // The mask was not hidden by the user explicitly
+         !m_mask->isEmpty();         // The mask is not empty
 }
 
 void Doc::setMaskVisible(bool visible)
@@ -526,8 +533,8 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
 
       auto it = linked.find(sourceCel->data()->id());
       if (it != linked.end()) {
-        newCel.reset(Cel::MakeLink(sourceCel->frame(),
-                                   it->second));
+        newCel.reset(Cel::MakeLink(sourceCel->frame(), it->second));
+        newCel->copyNonsharedPropertiesFrom(sourceCel);
       }
       else {
         newCel.reset(create_cel_copy(nullptr, // TODO add undo information?
@@ -574,7 +581,7 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
       destLayer->stackLayer(newLayer, afterThis);
     }
   }
-  else  {
+  else {
     ASSERT(false && "Trying to copy two incompatible layers");
   }
 }
@@ -582,9 +589,8 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
 Doc* Doc::duplicate(DuplicateType type) const
 {
   const Sprite* sourceSprite = sprite();
-  std::unique_ptr<Sprite> spriteCopyPtr(new Sprite(
-      sourceSprite->spec(),
-      sourceSprite->palette(frame_t(0))->size()));
+  std::unique_ptr<Sprite> spriteCopyPtr(
+    new Sprite(sourceSprite->spec(), sourceSprite->palette(frame_t(0))->size()));
 
   std::unique_ptr<Doc> documentCopy(new Doc(spriteCopyPtr.get()));
   Sprite* spriteCopy = spriteCopyPtr.release();
@@ -600,7 +606,7 @@ Doc* Doc::duplicate(DuplicateType type) const
     spriteCopy->tags().add(new Tag(*tag));
 
   // Copy slices
-  for (const Slice *slice : sourceSprite->slices()) {
+  for (const Slice* slice : sourceSprite->slices()) {
     auto sliceCopy = new Slice(*slice);
     spriteCopy->slices().add(sliceCopy);
 
@@ -618,38 +624,34 @@ Doc* Doc::duplicate(DuplicateType type) const
   }
 
   switch (type) {
-
     case DuplicateExactCopy:
       // Copy the layer group
-      copyLayerContent(sourceSprite->root(),
-                       documentCopy.get(),
-                       spriteCopy->root());
+      copyLayerContent(sourceSprite->root(), documentCopy.get(), spriteCopy->root());
 
       ASSERT((spriteCopy->backgroundLayer() && sourceSprite->backgroundLayer()) ||
              (!spriteCopy->backgroundLayer() && !sourceSprite->backgroundLayer()));
       break;
 
-    case DuplicateWithFlattenLayers:
-      {
-        // Flatten layers
-        ASSERT(sourceSprite->root() != NULL);
+    case DuplicateWithFlattenLayers: {
+      // Flatten layers
+      ASSERT(sourceSprite->root() != NULL);
 
-        LayerImage* flatLayer = create_flatten_layer_copy
-            (spriteCopy,
-             sourceSprite->root(),
-             gfx::Rect(0, 0, sourceSprite->width(), sourceSprite->height()),
-             frame_t(0), sourceSprite->lastFrame(),
-             Preferences::instance().experimental.newBlend());
+      LayerImage* flatLayer = create_flatten_layer_copy(
+        spriteCopy,
+        sourceSprite->root(),
+        gfx::Rect(0, 0, sourceSprite->width(), sourceSprite->height()),
+        frame_t(0),
+        sourceSprite->lastFrame(),
+        Preferences::instance().experimental.newBlend());
 
-        // Add and select the new flat layer
-        spriteCopy->root()->addLayer(flatLayer);
+      // Add and select the new flat layer
+      spriteCopy->root()->addLayer(flatLayer);
 
-        // Configure the layer as background only if the original
-        // sprite has a background layer.
-        if (sourceSprite->backgroundLayer() != NULL)
-          flatLayer->configureAsBackground();
-      }
-      break;
+      // Configure the layer as background only if the original
+      // sprite has a background layer.
+      if (sourceSprite->backgroundLayer() != NULL)
+        flatLayer->configureAsBackground();
+    } break;
   }
 
   // Copy only some flags
@@ -702,9 +704,7 @@ void Doc::updateOSColorSpace(bool appWideSignal)
       m_osColorSpace = system->defaultWindow()->colorSpace();
   }
 
-  if (appWideSignal &&
-      context() &&
-      context()->activeDocument() == this) {
+  if (appWideSignal && context() && context()->activeDocument() == this) {
     App::instance()->ColorSpaceChange();
   }
 }
@@ -712,8 +712,7 @@ void Doc::updateOSColorSpace(bool appWideSignal)
 // static
 gfx::Point Doc::NoLastDrawingPoint()
 {
-  return gfx::Point(std::numeric_limits<int>::min(),
-                    std::numeric_limits<int>::min());
+  return gfx::Point(std::numeric_limits<int>::min(), std::numeric_limits<int>::min());
 }
 
 } // namespace app

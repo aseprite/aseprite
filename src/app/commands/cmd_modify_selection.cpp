@@ -1,12 +1,12 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_mask.h"
@@ -23,7 +23,6 @@
 #include "doc/brush_type.h"
 #include "doc/mask.h"
 #include "filters/neighboring_pixels.h"
-#include "fmt/format.h"
 
 #include "modify_selection.xml.h"
 
@@ -34,8 +33,7 @@ namespace app {
 using namespace doc;
 typedef doc::algorithm::SelectionModifier Modifier;
 
-class ModifySelectionWindow : public app::gen::ModifySelection {
-};
+class ModifySelectionWindow : public app::gen::ModifySelection {};
 
 class ModifySelectionCommand : public Command {
 public:
@@ -46,6 +44,7 @@ protected:
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
   std::string onGetFriendlyName() const override;
+  bool isListed(const Params& params) const override { return !params.empty(); }
 
 private:
   std::string getActionName() const;
@@ -66,22 +65,26 @@ ModifySelectionCommand::ModifySelectionCommand()
 void ModifySelectionCommand::onLoadParams(const Params& params)
 {
   const std::string modifier = params.get("modifier");
-  if (modifier == "border") m_modifier = Modifier::Border;
-  else if (modifier == "expand") m_modifier = Modifier::Expand;
-  else if (modifier == "contract") m_modifier = Modifier::Contract;
+  if (modifier == "border")
+    m_modifier = Modifier::Border;
+  else if (modifier == "expand")
+    m_modifier = Modifier::Expand;
+  else if (modifier == "contract")
+    m_modifier = Modifier::Contract;
 
   const int quantity = params.get_as<int>("quantity");
   m_quantity = std::max<int>(0, quantity);
 
   const std::string brush = params.get("brush");
-  if (brush == "circle") m_brushType = doc::kCircleBrushType;
-  else if (brush == "square") m_brushType = doc::kSquareBrushType;
+  if (brush == "circle")
+    m_brushType = doc::kCircleBrushType;
+  else if (brush == "square")
+    m_brushType = doc::kSquareBrushType;
 }
 
 bool ModifySelectionCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasVisibleMask);
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasVisibleMask);
 }
 
 void ModifySelectionCommand::onExecute(Context* context)
@@ -101,8 +104,8 @@ void ModifySelectionCommand::onExecute(Context* context)
 
     window.quantity()->setTextf("%d", pref.selection.modifySelectionQuantity());
 
-    brush = (pref.selection.modifySelectionBrush() == app::gen::BrushType::CIRCLE
-             ? doc::kCircleBrushType:
+    brush = (pref.selection.modifySelectionBrush() == app::gen::BrushType::CIRCLE ?
+               doc::kCircleBrushType :
                doc::kSquareBrushType);
     window.circle()->setSelected(brush == doc::kCircleBrushType);
     window.square()->setSelected(brush == doc::kSquareBrushType);
@@ -114,13 +117,11 @@ void ModifySelectionCommand::onExecute(Context* context)
     quantity = window.quantity()->textInt();
     quantity = std::clamp(quantity, 1, 100);
 
-    brush = (window.circle()->isSelected() ? doc::kCircleBrushType:
-                                             doc::kSquareBrushType);
+    brush = (window.circle()->isSelected() ? doc::kCircleBrushType : doc::kSquareBrushType);
 
     pref.selection.modifySelectionQuantity(quantity);
     pref.selection.modifySelectionBrush(
-      (brush == doc::kCircleBrushType ? app::gen::BrushType::CIRCLE:
-                                        app::gen::BrushType::SQUARE));
+      (brush == doc::kCircleBrushType ? app::gen::BrushType::CIRCLE : app::gen::BrushType::SQUARE));
   }
 
   // Lock sprite
@@ -132,15 +133,12 @@ void ModifySelectionCommand::onExecute(Context* context)
   {
     mask->reserve(sprite->bounds());
     mask->freeze();
-    doc::algorithm::modify_selection(
-       m_modifier, document->mask(), mask.get(), quantity, brush);
+    doc::algorithm::modify_selection(m_modifier, document->mask(), mask.get(), quantity, brush);
     mask->unfreeze();
   }
 
   // Set the new mask
-  Tx tx(writer,
-        friendlyName(),
-        DoesntModifyDocument);
+  Tx tx(writer, friendlyName(), DoesntModifyDocument);
   tx(new cmd::SetMask(document, mask.get()));
   tx.commit();
 
@@ -151,20 +149,18 @@ std::string ModifySelectionCommand::onGetFriendlyName() const
 {
   std::string quantity;
   if (m_quantity > 0)
-    quantity = fmt::format(Strings::commands_ModifySelection_Quantity(), m_quantity);
+    quantity = Strings::commands_ModifySelection_Quantity(m_quantity);
 
-  return fmt::format(getBaseFriendlyName(),
-                     getActionName(),
-                     quantity);
+  return Strings::commands_ModifySelection(getActionName(), quantity);
 }
 
 std::string ModifySelectionCommand::getActionName() const
 {
   switch (m_modifier) {
-    case Modifier::Border: return Strings::commands_ModifySelection_Border();
-    case Modifier::Expand: return Strings::commands_ModifySelection_Expand();
+    case Modifier::Border:   return Strings::commands_ModifySelection_Border();
+    case Modifier::Expand:   return Strings::commands_ModifySelection_Expand();
     case Modifier::Contract: return Strings::commands_ModifySelection_Contract();
-    default: return Strings::commands_ModifySelection_Modify();
+    default:                 return Strings::commands_ModifySelection_Modify();
   }
 }
 

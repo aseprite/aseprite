@@ -14,34 +14,28 @@
 
 #include <sstream>
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
-  class ReplaceTileset : public Cmd
-                       , public WithSprite {
-  public:
-    ReplaceTileset(doc::Sprite* sprite,
-                   const doc::tileset_index tsi,
-                   doc::Tileset* newTileset);
+class ReplaceTileset : public Cmd,
+                       public WithSprite {
+public:
+  ReplaceTileset(doc::Sprite* sprite, const doc::tileset_index tsi, doc::Tileset* newTileset);
 
-  protected:
-    void onExecute() override;
-    void onUndo() override { onExecute(); }
-    void onRedo() override { onExecute(); }
-    size_t onMemSize() const override {
-      return sizeof(*this) + m_size;
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override { onExecute(); }
+  void onRedo() override { onExecute(); }
+  size_t onMemSize() const override { return sizeof(*this) + m_size; }
 
-  private:
-    void replaceTileset(doc::Tileset* newTileset);
+private:
+  void replaceTileset(doc::Tileset* newTileset);
 
-    doc::tileset_index m_tsi;
-    doc::Tileset* m_newTileset;
-    std::stringstream m_stream;
-    size_t m_size = 0;
-  };
+  doc::tileset_index m_tsi;
+  doc::Tileset* m_newTileset;
+  std::stringstream m_stream;
+  size_t m_size = 0;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

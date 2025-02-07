@@ -9,11 +9,10 @@
 #define APP_TOOLS_SYMMETRY_H_INCLUDED
 #pragma once
 
-#include "app/tools/stroke.h"
 #include "app/pref/preferences.h"
+#include "app/tools/stroke.h"
 
-namespace app {
-namespace tools {
+namespace app { namespace tools {
 
 class ToolLoop;
 
@@ -22,7 +21,8 @@ public:
   Symmetry(gen::SymmetryMode symmetryMode, double x, double y)
     : m_symmetryMode(symmetryMode)
     , m_x(x)
-    , m_y(y) {
+    , m_y(y)
+  {
   }
 
   void generateStrokes(const Stroke& stroke, Strokes& strokes, ToolLoop* loop);
@@ -30,14 +30,15 @@ public:
   gen::SymmetryMode mode() const { return m_symmetryMode; }
 
 private:
-  void calculateSymmetricalStroke(const Stroke& refStroke, Stroke& stroke,
-                                  ToolLoop* loop, gen::SymmetryMode symmetryMode);
+  void calculateSymmetricalStroke(const Stroke& refStroke,
+                                  Stroke& stroke,
+                                  ToolLoop* loop,
+                                  gen::SymmetryMode symmetryMode);
 
   gen::SymmetryMode m_symmetryMode;
   double m_x, m_y;
 };
 
-} // namespace tools
-} // namespace app
+}} // namespace app::tools
 
 #endif

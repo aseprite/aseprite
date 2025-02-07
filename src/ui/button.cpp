@@ -6,7 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/button.h"
@@ -17,8 +17,8 @@
 #include "ui/widget.h"
 #include "ui/window.h"
 
-#include <queue>
 #include <cstring>
+#include <queue>
 
 namespace ui {
 
@@ -36,7 +36,7 @@ ButtonBase::ButtonBase(const std::string& text,
   setFocusStop(true);
 
   // Initialize theme
-  setType(drawType);            // TODO Fix this nasty trick
+  setType(drawType); // TODO Fix this nasty trick
   initTheme();
   setType(type);
 }
@@ -56,10 +56,14 @@ void ButtonBase::onClick()
   Click();
 }
 
+void ButtonBase::onRightClick()
+{
+  RightClick();
+}
+
 bool ButtonBase::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
-
     case kFocusEnterMessage:
     case kFocusLeaveMessage:
       if (isEnabled()) {
@@ -80,31 +84,22 @@ bool ButtonBase::onProcessMessage(Message* msg)
       KeyScancode scancode = keymsg->scancode();
 
       if (isEnabled() && isVisible()) {
-        const bool mnemonicPressed =
-          (mnemonic() &&
-           (!mnemonicRequiresModifiers() ||
-            msg->altPressed() ||
-            msg->cmdPressed()) &&
-           isMnemonicPressed(keymsg));
+        const bool mnemonicPressed = isMnemonicPressedWithModifiers(keymsg);
 
         // For kButtonWidget
         if (m_behaviorType == kButtonWidget) {
           // Has focus and press enter/space
           if (hasFocus()) {
-            if ((scancode == kKeyEnter) ||
-                (scancode == kKeyEnterPad) ||
-                (scancode == kKeySpace)) {
+            if ((scancode == kKeyEnter) || (scancode == kKeyEnterPad) || (scancode == kKeySpace)) {
               setSelected(true);
               return true;
             }
           }
 
-          if (// Check if the user pressed mnemonic
-              mnemonicPressed ||
-              // Magnetic widget catches ENTERs
-              (isFocusMagnet() &&
-               ((scancode == kKeyEnter) ||
-                (scancode == kKeyEnterPad)))) {
+          if ( // Check if the user pressed mnemonic
+            mnemonicPressed ||
+            // Magnetic widget catches ENTERs
+            (isFocusMagnet() && ((scancode == kKeyEnter) || (scancode == kKeyEnterPad)))) {
             manager()->setFocus(this);
 
             // Dispatch focus movement messages (because the buttons
@@ -140,7 +135,6 @@ bool ButtonBase::onProcessMessage(Message* msg)
     case kKeyUpMessage:
       if (isEnabled() && hasFocus()) {
         switch (m_behaviorType) {
-
           case kButtonWidget:
             if (isSelected()) {
               generateButtonSelectSignal();
@@ -149,18 +143,24 @@ bool ButtonBase::onProcessMessage(Message* msg)
             break;
 
           case kCheckWidget: {
-            // Fire onClick() event
-            onClick();
-            return true;
-          }
+            KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
+            KeyScancode scancode = keymsg->scancode();
+            const bool mnemonicPressed = isMnemonicPressedWithModifiers(keymsg);
 
+            // Fire the onClick() event only if the user pressed space or
+            // Alt+the underscored letter of the checkbox label.
+            if (scancode == kKeySpace || mnemonicPressed) {
+              onClick();
+              return true;
+            }
+            break;
+          }
         }
       }
       break;
 
     case kMouseDownMessage:
       switch (m_behaviorType) {
-
         case kButtonWidget:
           if (isEnabled()) {
             setSelected(true);
@@ -205,30 +205,30 @@ bool ButtonBase::onProcessMessage(Message* msg)
         releaseMouse();
 
         if (hasMouse()) {
+          MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+
           switch (m_behaviorType) {
+            case kButtonWidget: {
+              if (mouseMsg->right())
+                onRightClick();
+              else
+                generateButtonSelectSignal();
+            } break;
 
-            case kButtonWidget:
-              generateButtonSelectSignal();
-              break;
+            case kCheckWidget: {
+              // Fire onClick() event
+              onClick();
 
-            case kCheckWidget:
-              {
-                // Fire onClick() event
-                onClick();
+              invalidate();
+            } break;
 
-                invalidate();
-              }
-              break;
+            case kRadioWidget: {
+              setSelected(false);
+              setSelected(true);
 
-            case kRadioWidget:
-              {
-                setSelected(false);
-                setSelected(true);
-
-                // Fire onClick() event
-                onClick();
-              }
-              break;
+              // Fire onClick() event
+              onClick();
+            } break;
           }
         }
         return true;
@@ -296,8 +296,7 @@ Button::Button(const std::string& text)
 // CheckBox class
 // ======================================================================
 
-CheckBox::CheckBox(const std::string& text,
-                   const WidgetType drawType)
+CheckBox::CheckBox(const std::string& text, const WidgetType drawType)
   : ButtonBase(text, kCheckWidget, kCheckWidget, drawType)
 {
   setAlign(LEFT | MIDDLE);
@@ -307,9 +306,7 @@ CheckBox::CheckBox(const std::string& text,
 // RadioButton class
 // ======================================================================
 
-RadioButton::RadioButton(const std::string& text,
-                         const int radioGroup,
-                         const WidgetType drawType)
+RadioButton::RadioButton(const std::string& text, const int radioGroup, const WidgetType drawType)
   : ButtonBase(text, kRadioWidget, kRadioWidget, drawType)
 {
   setAlign(LEFT | MIDDLE);

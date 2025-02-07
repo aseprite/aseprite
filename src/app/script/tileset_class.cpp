@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_tileset_base_index.h"
@@ -16,8 +16,7 @@
 #include "app/script/userdata.h"
 #include "doc/tileset.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 using namespace doc;
 
@@ -100,21 +99,21 @@ int Tileset_set_baseIndex(lua_State* L)
 }
 
 const luaL_Reg Tileset_methods[] = {
-  { "__eq", Tileset_eq },
-  { "__len", Tileset_len },
+  { "__eq",    Tileset_eq      },
+  { "__len",   Tileset_len     },
   { "getTile", Tileset_getTile },
-  { "tile", Tileset_tile },
-  { nullptr, nullptr }
+  { "tile",    Tileset_tile    },
+  { nullptr,   nullptr         }
 };
 
 const Property Tileset_properties[] = {
-  { "name", Tileset_get_name, Tileset_set_name },
-  { "grid", Tileset_get_grid, nullptr },
-  { "baseIndex", Tileset_get_baseIndex, Tileset_set_baseIndex },
-  { "color", UserData_get_color<Tileset>, UserData_set_color<Tileset> },
-  { "data", UserData_get_text<Tileset>, UserData_set_text<Tileset> },
+  { "name",       Tileset_get_name,                 Tileset_set_name                 },
+  { "grid",       Tileset_get_grid,                 nullptr                          },
+  { "baseIndex",  Tileset_get_baseIndex,            Tileset_set_baseIndex            },
+  { "color",      UserData_get_color<Tileset>,      UserData_set_color<Tileset>      },
+  { "data",       UserData_get_text<Tileset>,       UserData_set_text<Tileset>       },
   { "properties", UserData_get_properties<Tileset>, UserData_set_properties<Tileset> },
-  { nullptr, nullptr, nullptr }
+  { nullptr,      nullptr,                          nullptr                          }
 };
 
 } // anonymous namespace
@@ -133,5 +132,4 @@ void push_tileset(lua_State* L, const Tileset* tileset)
   push_docobj(L, tileset);
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

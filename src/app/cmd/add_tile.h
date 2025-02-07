@@ -18,47 +18,43 @@
 #include <sstream>
 
 namespace doc {
-  class Tileset;
+class Tileset;
 }
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
-  class AddTile : public Cmd
-                , public WithTileset
-                , public WithImage {
-  public:
-    AddTile(doc::Tileset* tileset,
-            const doc::ImageRef& image,
-            const doc::UserData& userData = UserData());
-    AddTile(doc::Tileset* tileset,
-            const doc::tile_index ti);
+class AddTile : public Cmd,
+                public WithTileset,
+                public WithImage {
+public:
+  AddTile(doc::Tileset* tileset,
+          const doc::ImageRef& image,
+          const doc::UserData& userData = UserData());
+  AddTile(doc::Tileset* tileset, const doc::tile_index ti);
 
-    doc::tile_index tileIndex() const { return m_tileIndex; }
+  doc::tile_index tileIndex() const { return m_tileIndex; }
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onRedo() override;
-    void onFireNotifications() override;
-    size_t onMemSize() const override {
-      // TODO add m_userData size
-      return sizeof(*this) + m_size;
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onRedo() override;
+  void onFireNotifications() override;
+  size_t onMemSize() const override
+  {
+    // TODO add m_userData size
+    return sizeof(*this) + m_size;
+  }
 
-  private:
-    void addTile(doc::Tileset* tileset,
-                 const doc::ImageRef& image,
-                 const doc::UserData& userData);
+private:
+  void addTile(doc::Tileset* tileset, const doc::ImageRef& image, const doc::UserData& userData);
 
-    size_t m_size;
-    std::stringstream m_stream;
-    doc::tile_index m_tileIndex;
-    doc::ImageRef m_imageRef;
-    doc::UserData m_userData;
-  };
+  size_t m_size;
+  std::stringstream m_stream;
+  doc::tile_index m_tileIndex;
+  doc::ImageRef m_imageRef;
+  doc::UserData m_userData;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

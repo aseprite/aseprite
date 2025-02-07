@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2023  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <!-- Keyboard shortcuts -->
@@ -290,11 +290,9 @@
       <key command="Zoom" shortcut="3"><param name="percentage" value="400" /></key>
       <key command="Zoom"><param name="percentage" value="500" /></key>
       <key command="Zoom"><param name="percentage" value="600" /></key>
-      <key command="Zoom"><param name="percentage" value="700" /></key>
       <key command="Zoom" shortcut="4"><param name="percentage" value="800" /></key>
-      <key command="Zoom"><param name="percentage" value="1000" /></key>
       <key command="Zoom" shortcut="5"><param name="percentage" value="1600" /></key>
-      <key command="Zoom"><param name="percentage" value="2000" /></key>
+      <key command="Zoom"><param name="percentage" value="2400" /></key>
       <key command="Zoom" shortcut="6"><param name="percentage" value="3200" /></key>
       <key command="Zoom" shortcut="Ctrl++" mac="Cmd++">
         <param name="action" value="in" />
@@ -480,9 +478,6 @@
       <key command="NewSpriteFromSelection" shortcut="Ctrl+Alt+N" mac="Cmd+Alt+N" />
 
       <!-- Commands not associated to menu items and without shortcuts by default -->
-      <key command="ExportSpriteSheet">
-        <param name="source" value="tileset" />
-      </key>
       <key command="NewLayer">
         <param name="tilemap" value="true" />
       </key>
@@ -540,7 +535,7 @@
       </key>
       <key command="ChangePixelFormat">
         <param name="format" value="indexed" />
-        <param name="dithering" value="old-ordered" />
+        <param name="dithering" value="old" />
       </key>
       <key command="ChangeBrush">
         <param name="change" value="increment-angle" />
@@ -690,11 +685,11 @@
         <item command="NewFile" text="@.file_new" group="file_new" />
         <item command="OpenFile" text="@.file_open" group="file_open" />
         <menu text="@.file_open_recent" group="file_recent">
-	  <item command="ReopenClosedFile" text="@.file_reopen_closed" group="file_recent_reopen" />
+          <item command="ReopenClosedFile" text="@.file_reopen_closed" group="file_recent_reopen" />
           <separator id="recent_files_placeholder" group="file_recent_list" />
           <separator />
-	  <item command="ClearRecentFiles" text="@.file_clear_recent_files" group="file_recent_clear" />
-	</menu>
+          <item command="ClearRecentFiles" text="@.file_clear_recent_files" group="file_recent_clear" />
+        </menu>
         <separator />
         <item command="SaveFile" text="@.file_save" />
         <item command="SaveFileAs" text="@.file_save_as" group="file_save" />
@@ -1048,6 +1043,7 @@
             <param name="preview" value="true" />
             <param name="checkedIfZero" value="true" />
           </item>
+          <item command="ShowBrushPreviewInPreview" text="@.view_preview_brush_preview"/>
         </menu>
         <item command="AdvancedMode" text="@.view_advanced_mode" />
         <item command="FullscreenMode" text="@.view_full_screen_mode" />
@@ -1087,6 +1083,19 @@
         <separator />
         <item command="About" text="@.help_about" group="help_about" />
       </menu>
+    </menu>
+
+    <menu id="new_frame_popup_menu">
+      <item command="NewFrame" text="@main_menu.frame_duplicate_linked_cels">
+        <param name="content" value="cellinked" />
+      </item>
+      <item command="NewFrame" text="@main_menu.frame_duplicate_cels">
+        <param name="content" value="celcopies" />
+      </item>
+      <item command="NewFrame" text="@main_menu.frame_new_empty_frame">
+        <param name="content" value="empty" />
+      </item>
+      <item command="NewFrame" text="@main_menu.frame_new_frame" />
     </menu>
 
     <menu id="tab_popup_menu">

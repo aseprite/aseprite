@@ -12,14 +12,14 @@
 
 namespace doc {
 
-  class Palette;
+class Palette;
 
-  namespace file {
+namespace file {
 
-    std::unique_ptr<Palette> load_gpl_file(const char* filename);
-    bool save_gpl_file(const Palette* pal, const char* filename);
+std::unique_ptr<Palette> load_gpl_file(const char* filename);
+bool save_gpl_file(const Palette* pal, const char* filename);
 
-  } // namespace file
+} // namespace file
 } // namespace doc
 
 #endif

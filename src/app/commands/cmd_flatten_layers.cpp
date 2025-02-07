@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/flatten_layers.h"
@@ -36,8 +36,7 @@ protected:
   bool m_visibleOnly;
 };
 
-FlattenLayersCommand::FlattenLayersCommand()
-  : Command(CommandId::FlattenLayers(), CmdUIOnlyFlag)
+FlattenLayersCommand::FlattenLayersCommand() : Command(CommandId::FlattenLayers(), CmdUIOnlyFlag)
 {
   m_visibleOnly = false;
 }
@@ -68,30 +67,25 @@ void FlattenLayersCommand::onExecute(Context* context)
           range.selectLayer(layer);
     }
     else {
-#ifdef ENABLE_UI
       if (context->isUIAvailable())
         range = App::instance()->timeline()->range();
-#endif
 
       // If the range is not selected or we have only one image layer
       // selected, we'll flatten all layers.
       if (!range.enabled() ||
-          (range.selectedLayers().size() == 1 &&
-           (*range.selectedLayers().begin())->isImage())) {
+          (range.selectedLayers().size() == 1 && (*range.selectedLayers().begin())->isImage())) {
         for (auto layer : sprite->root()->layers())
           range.selectLayer(layer);
       }
     }
     const bool newBlend = Preferences::instance().experimental.newBlend();
-    tx(new cmd::FlattenLayers(sprite,
-                              range.selectedLayers(),
-                              newBlend));
+    cmd::FlattenLayers::Options options;
+    options.newBlendMethod = newBlend;
+    tx(new cmd::FlattenLayers(sprite, range.selectedLayers(), options));
     tx.commit();
   }
 
-#ifdef ENABLE_UI
   update_screen_for_document(writer.document());
-#endif
 }
 
 std::string FlattenLayersCommand::onGetFriendlyName() const

@@ -1,12 +1,12 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/copy_rect.h"
@@ -16,6 +16,7 @@
 #include "app/context.h"
 #include "app/doc.h"
 #include "app/file/file.h"
+#include "app/modules/palettes.h"
 #include "app/script/blend_mode.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
@@ -29,6 +30,7 @@
 #include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/flip_type.h"
 #include "doc/algorithm/shrink_bounds.h"
+#include "doc/blend_image.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/image_ref.h"
@@ -40,8 +42,7 @@
 #include <cstring>
 #include <memory>
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 namespace {
 
@@ -52,45 +53,38 @@ struct ImageObj {
   doc::ObjectId celId = 0;
   doc::ObjectId tilesetId = 0;
   doc::tile_index ti = 0;
-  ImageObj(doc::Image* image)
-    : imageId(image->id()) {
-  }
-  ImageObj(doc::Cel* cel)
-    : imageId(cel->image()->id())
-    , celId(cel->id()) {
-  }
-  ImageObj(doc::Tileset* tileset,
-           doc::tile_index ti,
-           doc::Image* image)
+  ImageObj(doc::Image* image) : imageId(image->id()) {}
+  ImageObj(doc::Cel* cel) : imageId(cel->image()->id()), celId(cel->id()) {}
+  ImageObj(doc::Tileset* tileset, doc::tile_index ti, doc::Image* image)
     : imageId(image->id())
     , tilesetId(tileset->id())
-    , ti(ti) {
+    , ti(ti)
+  {
   }
   ImageObj(const ImageObj&) = delete;
   ImageObj& operator=(const ImageObj&) = delete;
 
-  ~ImageObj() {
-    ASSERT(!imageId);
-  }
+  ~ImageObj() { ASSERT(!imageId); }
 
-  void gc(lua_State* L) {
+  void gc(lua_State* L)
+  {
     if (!celId && !tilesetId)
       delete this->image(L);
     imageId = 0;
   }
 
-  doc::Image* image(lua_State* L) {
-    return check_docobj(L, doc::get<doc::Image>(imageId));
-  }
+  doc::Image* image(lua_State* L) { return check_docobj(L, doc::get<doc::Image>(imageId)); }
 
-  doc::Cel* cel(lua_State* L) {
+  doc::Cel* cel(lua_State* L)
+  {
     if (celId)
       return check_docobj(L, doc::get<doc::Cel>(celId));
     else
       return nullptr;
   }
 
-  doc::Tileset* tileset(lua_State* L) {
+  doc::Tileset* tileset(lua_State* L)
+  {
     if (tilesetId)
       return check_docobj(L, doc::get<doc::Tileset>(tilesetId));
     else
@@ -98,19 +92,11 @@ struct ImageObj {
   }
 };
 
-void render_sprite(Image* dst,
-                   const Sprite* sprite,
-                   const frame_t frame,
-                   const int x, const int y)
+void render_sprite(Image* dst, const Sprite* sprite, const frame_t frame, const int x, const int y)
 {
   render::Render render;
   render.setNewBlend(true);
-  render.renderSprite(
-    dst, sprite, frame,
-    gfx::Clip(x, y,
-              0, 0,
-              sprite->width(),
-              sprite->height()));
+  render.renderSprite(dst, sprite, frame, gfx::Clip(x, y, 0, 0, sprite->width(), sprite->height()));
 }
 
 int Image_clone(lua_State* L);
@@ -160,9 +146,7 @@ int Image_new(lua_State* L)
       if (const char* fromFile = lua_tostring(L, -1)) {
         std::string fn = fromFile;
         lua_pop(L, 1);
-        return load_sprite_from_file(
-          L, fn.c_str(),
-          LoadSpriteFromFileParam::OneFrameAsImage);
+        return load_sprite_from_file(L, fn.c_str(), LoadSpriteFromFileParam::OneFrameAsImage);
       }
     }
     lua_pop(L, 1);
@@ -185,15 +169,16 @@ int Image_new(lua_State* L)
   else {
     const int w = lua_tointeger(L, 1);
     const int h = lua_tointeger(L, 2);
-    const int colorMode = (lua_isnone(L, 3) ? doc::IMAGE_RGB:
-                                              lua_tointeger(L, 3));
+    const int colorMode = (lua_isnone(L, 3) ? doc::IMAGE_RGB : lua_tointeger(L, 3));
     spec.setWidth(w);
     spec.setHeight(h);
     spec.setColorMode((doc::ColorMode)colorMode);
   }
   if (!image) {
-    if (spec.width() < 1) spec.setWidth(1);
-    if (spec.height() < 1) spec.setHeight(1);
+    if (spec.width() < 1)
+      spec.setWidth(1);
+    if (spec.height() < 1)
+      spec.setHeight(1);
     image = doc::Image::create(spec);
     if (!image) {
       // Invalid spec (e.g. width=0, height=0, etc.)
@@ -242,7 +227,7 @@ int Image_clear(lua_State* L)
     ++i;
   }
   else {
-    rc = img->bounds();         // Clear the whole image
+    rc = img->bounds(); // Clear the whole image
   }
 
   if (lua_isnone(L, i))
@@ -305,35 +290,46 @@ int Image_drawImage(lua_State* L)
   doc::BlendMode blendMode = doc::BlendMode::NORMAL;
   if (lua_isinteger(L, 5 + argsFix)) {
     blendMode = base::convert_to<doc::BlendMode>(
-                  app::script::BlendMode(lua_tointeger(L, 5 + argsFix)));
+      app::script::BlendMode(lua_tointeger(L, 5 + argsFix)));
   }
 
   Image* dst = obj->image(L);
   const Image* src = sprite->image(L);
 
   if (auto cel = obj->cel(L)) {
-    gfx::Rect bounds(0, 0, src->size().w, src->size().h);
-    buf.reset(new doc::ImageBuffer);
-    ImageRef tmp_src(
-      doc::crop_image(dst,
-                      gfx::Rect(pos.x, pos.y, src->size().w, src->size().h),
-                      0, buf));
-    doc::blend_image(tmp_src.get(), src, 0, 0, opacity, blendMode);
+    gfx::Rect bounds(src->size());
+
+    // Create the ImageBuffer only when it doesn't exist so we can
+    // cache the allocated buffer.
+    if (!buf)
+      buf = std::make_shared<doc::ImageBuffer>();
+
+    ImageRef tmp_src(doc::crop_image(dst, gfx::Rect(pos, src->size()), 0, buf));
+    doc::blend_image(tmp_src.get(),
+                     src,
+                     gfx::Clip(src->size()),
+                     cel->sprite()->palette(0),
+                     opacity,
+                     blendMode);
     // TODO Use something similar to doc::algorithm::shrink_bounds2()
     //      but we need something that does the render and compares
     //      the minimal modified area.
     Tx tx(cel->sprite());
-    tx(new cmd::CopyRegion(
-         dst, tmp_src.get(), gfx::Region(bounds),
-         gfx::Point(pos.x + bounds.x, pos.y + bounds.y)));
+    tx(new cmd::CopyRegion(dst,
+                           tmp_src.get(),
+                           gfx::Region(bounds),
+                           gfx::Point(pos.x + bounds.x, pos.y + bounds.y)));
     tx.commit();
   }
   // If the destination image is not related to a sprite, we just draw
   // the source image without undo information.
   else {
-    doc::blend_image(dst, src,
-                     pos.x, pos.y,
-                     opacity, blendMode);
+    doc::blend_image(dst,
+                     src,
+                     gfx::Clip(pos, src->bounds()),
+                     get_current_palette(),
+                     opacity,
+                     blendMode);
   }
   return 0;
 }
@@ -357,9 +353,7 @@ int Image_drawSprite(lua_State* L)
 
     int x1, y1, x2, y2;
     if (get_shrink_rect2(&x1, &y1, &x2, &y2, dst, tmp.get())) {
-      tx(new cmd::CopyRect(
-           dst, tmp.get(),
-           gfx::Clip(x1, y1, x1, y1, x2-x1+1, y2-y1+1)));
+      tx(new cmd::CopyRect(dst, tmp.get(), gfx::Clip(x1, y1, x1, y1, x2 - x1 + 1, y2 - y1 + 1)));
     }
 
     tx.commit();
@@ -393,8 +387,7 @@ int Image_isEqual(lua_State* L)
 {
   auto objA = get_obj<ImageObj>(L, 1);
   auto objB = get_obj<ImageObj>(L, 2);
-  bool res = doc::is_same_image(objA->image(L),
-                                objB->image(L));
+  bool res = doc::is_same_image(objA->image(L), objB->image(L));
   lua_pushboolean(L, res);
   return 1;
 }
@@ -430,7 +423,7 @@ int Image_saveAs(lua_State* L)
   auto obj = get_obj<ImageObj>(L, 1);
   Image* img = obj->image(L);
   Cel* cel = obj->cel(L);
-  Palette* pal = (cel ? cel->sprite()->palette(cel->frame()): nullptr);
+  Palette* pal = (cel ? cel->sprite()->palette(cel->frame()) : nullptr);
   std::string fn;
   bool result = false;
 
@@ -463,8 +456,7 @@ int Image_saveAs(lua_State* L)
 
   std::string absFn = base::get_absolute_path(fn);
   if (!ask_access(L, absFn.c_str(), FileAccessMode::Write, ResourceType::File))
-    return luaL_error(L, "script doesn't have access to write file %s",
-                      absFn.c_str());
+    return luaL_error(L, "script doesn't have access to write file %s", absFn.c_str());
 
   std::unique_ptr<Sprite> sprite;
   std::vector<ImageRef> oneImage;
@@ -477,10 +469,7 @@ int Image_saveAs(lua_State* L)
     auto spec = cel->sprite()->spec();
     // Use the correct final image size, not the sprite size.
     spec.setSize(tileset->grid().tilemapSizeToCanvas(img->spec().size()));
-    sprite.reset(Sprite::MakeStdTilemapSpriteWithTileset(spec,
-                                                         img->spec(),
-                                                         *tileset,
-                                                         256));
+    sprite.reset(Sprite::MakeStdTilemapSpriteWithTileset(spec, img->spec(), *tileset, 256));
     sprite->getTilemapsByTileset(sprite->tilesets()->get(0), oneImage);
   }
   // Create a standard sprite otherwise
@@ -541,7 +530,7 @@ int Image_resize(lua_State* L)
     }
 
     type = lua_getfield(L, 2, "method");
-    if (VALID_LUATYPE(type))  {
+    if (VALID_LUATYPE(type)) {
       // TODO improve these lua <-> enum conversions, a lot of useless
       //      work is done to create this dummy NewParams, etc.
       NewParams dummyParams;
@@ -564,16 +553,14 @@ int Image_resize(lua_State* L)
   newSize.w = std::max(1, newSize.w);
   newSize.h = std::max(1, newSize.h);
 
-  const gfx::SizeF scale(
-    double(newSize.w) / double(img->width()),
-    double(newSize.h) / double(img->height()));
+  const gfx::SizeF scale(double(newSize.w) / double(img->width()),
+                         double(newSize.h) / double(img->height()));
 
   // If the destination image is not related to a sprite, we just draw
   // the source image without undo information.
   if (cel) {
     Tx tx(cel->sprite());
-    resize_cel_image(tx, cel, scale, method,
-                     gfx::PointF(pivot));
+    resize_cel_image(tx, cel, scale, method, gfx::PointF(pivot));
     tx.commit();
     obj->imageId = cel->image()->id();
   }
@@ -584,9 +571,7 @@ int Image_resize(lua_State* L)
     const doc::Palette* pal = site.palette();
     const doc::RgbMap* rgbmap = site.rgbMap();
 
-    std::unique_ptr<doc::Image> newImg(
-      resize_image(img, scale, method,
-                   pal, rgbmap));
+    std::unique_ptr<doc::Image> newImg(resize_image(img, scale, method, pal, rgbmap));
     // Delete old image, and we put the same ID of the old image into
     // the new image so this userdata references the resized image.
     delete img;
@@ -669,8 +654,7 @@ int Image_get_bytesPerPixel(lua_State* L)
 int Image_get_bytes(lua_State* L)
 {
   const auto img = get_obj<ImageObj>(L, 1)->image(L);
-  lua_pushlstring(L, (const char*)img->getPixelAddress(0, 0),
-                  img->rowBytes() * img->height());
+  lua_pushlstring(L, (const char*)img->getPixelAddress(0, 0), img->rowBytes() * img->height());
   return 1;
 }
 
@@ -734,38 +718,41 @@ int Image_get_cel(lua_State* L)
 }
 
 const luaL_Reg Image_methods[] = {
-  { "clone", Image_clone },
-  { "clear", Image_clear },
-  { "getPixel", Image_getPixel },
-  { "drawPixel", Image_drawPixel }, { "putPixel", Image_drawPixel },
-  { "drawImage", Image_drawImage }, { "putImage", Image_drawImage }, // TODO putImage is deprecated
-  { "drawSprite", Image_drawSprite }, { "putSprite", Image_drawSprite }, // TODO putSprite is deprecated
-  { "pixels", Image_pixels },
-  { "isEqual", Image_isEqual },
-  { "isEmpty", Image_isEmpty },
-  { "isPlain", Image_isPlain },
-  { "saveAs", Image_saveAs },
-  { "resize", Image_resize },
+  { "clone",        Image_clone        },
+  { "clear",        Image_clear        },
+  { "getPixel",     Image_getPixel     },
+  { "drawPixel",    Image_drawPixel    },
+  { "putPixel",     Image_drawPixel    },
+  { "drawImage",    Image_drawImage    },
+  { "putImage",     Image_drawImage    }, // TODO putImage is deprecated
+  { "drawSprite",   Image_drawSprite   },
+  { "putSprite",    Image_drawSprite   }, // TODO putSprite is deprecated
+  { "pixels",       Image_pixels       },
+  { "isEqual",      Image_isEqual      },
+  { "isEmpty",      Image_isEmpty      },
+  { "isPlain",      Image_isPlain      },
+  { "saveAs",       Image_saveAs       },
+  { "resize",       Image_resize       },
   { "shrinkBounds", Image_shrinkBounds },
-  { "flip", Image_flip },
-  { "__gc", Image_gc },
-  { "__eq", Image_eq },
-  { nullptr, nullptr }
+  { "flip",         Image_flip         },
+  { "__gc",         Image_gc           },
+  { "__eq",         Image_eq           },
+  { nullptr,        nullptr            }
 };
 
 const Property Image_properties[] = {
-  { "id", Image_get_id, nullptr },
-  { "version", Image_get_version, nullptr },
-  { "rowStride", Image_get_rowStride, nullptr },
-  { "bytesPerPixel", Image_get_bytesPerPixel, nullptr },
-  { "bytes", Image_get_bytes, Image_set_bytes },
-  { "width", Image_get_width, nullptr },
-  { "height", Image_get_height, nullptr },
-  { "bounds", Image_get_bounds, nullptr },
-  { "colorMode", Image_get_colorMode, nullptr },
-  { "spec", Image_get_spec, nullptr },
-  { "cel", Image_get_cel, nullptr },
-  { nullptr, nullptr, nullptr }
+  { "id",            Image_get_id,            nullptr         },
+  { "version",       Image_get_version,       nullptr         },
+  { "rowStride",     Image_get_rowStride,     nullptr         },
+  { "bytesPerPixel", Image_get_bytesPerPixel, nullptr         },
+  { "bytes",         Image_get_bytes,         Image_set_bytes },
+  { "width",         Image_get_width,         nullptr         },
+  { "height",        Image_get_height,        nullptr         },
+  { "bounds",        Image_get_bounds,        nullptr         },
+  { "colorMode",     Image_get_colorMode,     nullptr         },
+  { "spec",          Image_get_spec,          nullptr         },
+  { "cel",           Image_get_cel,           nullptr         },
+  { nullptr,         nullptr,                 nullptr         }
 };
 
 } // anonymous namespace
@@ -824,5 +811,4 @@ doc::Tileset* get_image_tileset_from_arg(lua_State* L, int index)
   return get_obj<ImageObj>(L, index)->tileset(L);
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

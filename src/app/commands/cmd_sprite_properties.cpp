@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/add_tileset.h"
@@ -35,7 +35,6 @@
 #include "doc/sprite.h"
 #include "doc/tilesets.h"
 #include "doc/user_data.h"
-#include "fmt/format.h"
 #include "os/color_space.h"
 #include "os/system.h"
 #include "ui/ui.h"
@@ -63,13 +62,13 @@ public:
     auto duplicateBtn = new Button(Strings::sprite_properties_duplicate_tileset());
     duplicateBtn->setStyle(theme->styles.miniButton());
     duplicateBtn->setTransparent(true);
-    duplicateBtn->Click.connect([this, tileset]{ onDuplicate(tileset); });
+    duplicateBtn->Click.connect([this, tileset] { onDuplicate(tileset); });
     m_buttons.addChild(duplicateBtn);
 
     auto deleteBtn = new Button(Strings::sprite_properties_delete_tileset());
     deleteBtn->setStyle(theme->styles.miniButton());
     deleteBtn->setTransparent(true);
-    deleteBtn->Click.connect([this, tileset]{ onDelete(tileset); });
+    deleteBtn->Click.connect([this, tileset] { onDelete(tileset); });
     m_buttons.addChild(deleteBtn);
 
     addChild(&m_buttons);
@@ -91,24 +90,24 @@ public:
     return ui::ListItem::onProcessMessage(msg);
   }
 
-  obs::signal<void(TilesetListItem *)> TilesetDeleted;
+  obs::signal<void(TilesetListItem*)> TilesetDeleted;
   obs::signal<void(const Tileset*)> TilesetDuplicated;
 
 private:
-   void onDuplicate(const doc::Tileset* tileset)
-   {
-     auto sprite = tileset->sprite();
-     auto tilesetClone = Tileset::MakeCopyCopyingImages(tileset);
+  void onDuplicate(const doc::Tileset* tileset)
+  {
+    auto sprite = tileset->sprite();
+    auto tilesetClone = Tileset::MakeCopyCopyingImages(tileset);
 
-     Tx tx(sprite, fmt::format(Strings::commands_TilesetDuplicate()));
-     tx(new cmd::AddTileset(sprite, tilesetClone));
-     tx.commit();
+    Tx tx(sprite, Strings::commands_TilesetDuplicate());
+    tx(new cmd::AddTileset(sprite, tilesetClone));
+    tx.commit();
 
-     TilesetDuplicated(tilesetClone);
-   }
+    TilesetDuplicated(tilesetClone);
+  }
 
-   void onDelete(const doc::Tileset* tileset)
-   {
+  void onDelete(const doc::Tileset* tileset)
+  {
     doc::tileset_index tsi = tileset->sprite()->tilesets()->getIndex(tileset);
     std::string tilemapsNames;
     for (auto layer : tileset->sprite()->allTilemaps()) {
@@ -118,18 +117,18 @@ private:
       }
     }
     if (!tilemapsNames.empty()) {
-      tilemapsNames = tilemapsNames.substr(0, tilemapsNames.size()-2);
-      ui::Alert::show(fmt::format(Strings::alerts_cannot_delete_used_tileset(), tilemapsNames));
+      tilemapsNames = tilemapsNames.substr(0, tilemapsNames.size() - 2);
+      ui::Alert::show(Strings::alerts_cannot_delete_used_tileset(tilemapsNames));
       return;
     }
 
     auto sprite = tileset->sprite();
-    Tx tx(sprite, fmt::format(Strings::commands_TilesetDelete()));
+    Tx tx(sprite, Strings::commands_TilesetDelete());
     tx(new cmd::RemoveTileset(sprite, tsi));
     tx.commit();
 
     TilesetDeleted(this);
-   }
+  }
 
   ui::HBox m_buttons;
 };
@@ -141,10 +140,9 @@ public:
     , m_sprite(sprite)
     , m_userDataView(Preferences::instance().sprite.userDataVisibility)
   {
-    userData()->Click.connect([this]{ onToggleUserData(); });
+    userData()->Click.connect([this] { onToggleUserData(); });
 
-    m_userDataView.configureAndSet(m_sprite->userData(),
-                                   propertiesGrid());
+    m_userDataView.configureAndSet(m_sprite->userData(), propertiesGrid());
 
     if (sprite->tilesets()->size() == 0) {
       tilesetsPlaceholder()->parent()->removeChild(tilesetsPlaceholder());
@@ -155,14 +153,15 @@ public:
         addTilesetListItem(tileset, i);
       }
 
-      Open.connect([this]{ adjustSize(); });
+      Open.connect([this] { adjustSize(); });
     }
   }
 
   const UserData& getUserData() const { return m_userDataView.userData(); }
 
 protected:
-  virtual void onSizeHint(SizeHintEvent& ev) override {
+  virtual void onSizeHint(SizeHintEvent& ev) override
+  {
     app::gen::SpriteProperties::onSizeHint(ev);
     auto sz = ev.sizeHint();
     sz.h += getTilesetsViewHeight();
@@ -170,42 +169,48 @@ protected:
   }
 
 private:
-  int getTilesetsViewHeight() {
+  int getTilesetsViewHeight()
+  {
     auto sz = tilesetsView()->viewport()->calculateNeededSize();
     return std::min(72, sz.h);
   }
 
-  void addTilesetListItem(const doc::Tileset* tileset, doc::tileset_index tsi) {
+  void addTilesetListItem(const doc::Tileset* tileset, doc::tileset_index tsi)
+  {
     auto item = new TilesetListItem(tileset, tsi);
     item->TilesetDeleted.connect(&SpritePropertiesWindow::onTilesetDeleted, this);
     item->TilesetDuplicated.connect(&SpritePropertiesWindow::onTilesedDuplicated, this);
     tilesets()->addChild(item);
   }
 
-  void onToggleUserData() {
+  void onToggleUserData()
+  {
     m_userDataView.toggleVisibility();
     remapWindow();
     manager()->invalidate();
   }
 
-  void onTilesedDuplicated(const Tileset* tilesetClone) {
+  void onTilesedDuplicated(const Tileset* tilesetClone)
+  {
     addTilesetListItem(tilesetClone, tilesets()->children().size());
     layout();
   }
 
-  void onTilesetDeleted(TilesetListItem *item) {
+  void onTilesetDeleted(TilesetListItem* item)
+  {
     int i = tilesets()->getChildIndex(item);
     tilesets()->removeChild(item);
     // Update text for items below the removed one, because tileset indexes
     // have changed.
-    for (;i < tilesets()->children().size(); ++i) {
+    for (; i < tilesets()->children().size(); ++i) {
       auto it = tilesets()->children()[i];
       it->setText(app::tileset_label(m_sprite->tilesets()->get(i), i));
     }
     layout();
   }
 
-  void adjustSize() {
+  void adjustSize()
+  {
     // If the tilesets view is too small, lets inflate the windows height a bit.
     if (tilesetsView()->childrenBounds().h < 36) {
       auto bounds = this->bounds();
@@ -253,13 +258,12 @@ void SpritePropertiesCommand::onExecute(Context* context)
 
   int selectedColorProfile = -1;
 
-  auto updateButtons =
-    [&] {
-      bool enabled = (selectedColorProfile != window.colorProfile()->getSelectedItemIndex());
-      window.assignColorProfile()->setEnabled(enabled);
-      window.convertColorProfile()->setEnabled(enabled);
-      window.ok()->setEnabled(!enabled);
-    };
+  auto updateButtons = [&] {
+    bool enabled = (selectedColorProfile != window.colorProfile()->getSelectedItemIndex());
+    window.assignColorProfile()->setEnabled(enabled);
+    window.convertColorProfile()->setEnabled(enabled);
+    window.ok()->setEnabled(!enabled);
+  };
 
   // Get sprite properties and fill frame fields
   {
@@ -269,15 +273,10 @@ void SpritePropertiesCommand::onExecute(Context* context)
 
     // Update widgets values
     switch (sprite->pixelFormat()) {
-      case IMAGE_RGB:
-        imgtype_text = Strings::sprite_properties_rgb();
-        break;
-      case IMAGE_GRAYSCALE:
-        imgtype_text = Strings::sprite_properties_grayscale();
-        break;
+      case IMAGE_RGB:       imgtype_text = Strings::sprite_properties_rgb(); break;
+      case IMAGE_GRAYSCALE: imgtype_text = Strings::sprite_properties_grayscale(); break;
       case IMAGE_INDEXED:
-        imgtype_text = fmt::format(Strings::sprite_properties_indexed_color(),
-                                   sprite->palette(0)->size());
+        imgtype_text = Strings::sprite_properties_indexed_color(sprite->palette(0)->size());
         break;
       default:
         ASSERT(false);
@@ -292,11 +291,10 @@ void SpritePropertiesCommand::onExecute(Context* context)
     window.type()->setText(imgtype_text.c_str());
 
     // Sprite size (width and height)
-    window.size()->setTextf(
-      "%dx%d (%s)",
-      sprite->width(),
-      sprite->height(),
-      base::get_pretty_memory_size(sprite->getMemSize()).c_str());
+    window.size()->setTextf("%dx%d (%s)",
+                            sprite->width(),
+                            sprite->height(),
+                            base::get_pretty_memory_size(sprite->getMemSize()).c_str());
 
     // How many frames
     window.frames()->setTextf("%d", (int)sprite->totalFrames());
@@ -311,10 +309,9 @@ void SpritePropertiesCommand::onExecute(Context* context)
       // TODO add a way to get or create an existent TooltipManager
       TooltipManager* tooltipManager = new TooltipManager;
       window.addChild(tooltipManager);
-      tooltipManager->addTooltipFor(
-        color_button,
-        Strings::sprite_properties_transparent_color_tooltip(),
-        LEFT);
+      tooltipManager->addTooltipFor(color_button,
+                                    Strings::sprite_properties_transparent_color_tooltip(),
+                                    LEFT);
     }
     else {
       window.transparentColorPlaceholder()->addChild(
@@ -322,8 +319,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
     }
 
     // Pixel ratio
-    window.pixelRatio()->setValue(
-      base::convert_to<std::string>(sprite->pixelRatio()));
+    window.pixelRatio()->setValue(base::convert_to<std::string>(sprite->pixelRatio()));
 
     // Color profile
     selectedColorProfile = -1;
@@ -337,7 +333,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
     }
     if (selectedColorProfile < 0) {
       colorSpaces.push_back(os::instance()->makeColorSpace(sprite->colorSpace()));
-      selectedColorProfile = colorSpaces.size()-1;
+      selectedColorProfile = colorSpaces.size() - 1;
     }
 
     for (auto& cs : colorSpaces)
@@ -348,42 +344,39 @@ void SpritePropertiesCommand::onExecute(Context* context)
     window.convertColorProfile()->setEnabled(false);
     window.colorProfile()->Change.connect(updateButtons);
 
-    window.assignColorProfile()->Click.connect(
-      [&](){
-        selectedColorProfile = window.colorProfile()->getSelectedItemIndex();
+    window.assignColorProfile()->Click.connect([&]() {
+      selectedColorProfile = window.colorProfile()->getSelectedItemIndex();
 
-        try {
-          ContextWriter writer(context);
-          Sprite* sprite(writer.sprite());
-          Tx tx(writer, Strings::sprite_properties_assign_color_profile());
-          tx(new cmd::AssignColorProfile(
-               sprite, colorSpaces[selectedColorProfile]->gfxColorSpace()));
-          tx.commit();
-        }
-        catch (const base::Exception& e) {
-          Console::showException(e);
-        }
+      try {
+        ContextWriter writer(context);
+        Sprite* sprite(writer.sprite());
+        Tx tx(writer, Strings::sprite_properties_assign_color_profile());
+        tx(new cmd::AssignColorProfile(sprite, colorSpaces[selectedColorProfile]->gfxColorSpace()));
+        tx.commit();
+      }
+      catch (const base::Exception& e) {
+        Console::showException(e);
+      }
 
-        updateButtons();
-      });
-    window.convertColorProfile()->Click.connect(
-      [&](){
-        selectedColorProfile = window.colorProfile()->getSelectedItemIndex();
+      updateButtons();
+    });
+    window.convertColorProfile()->Click.connect([&]() {
+      selectedColorProfile = window.colorProfile()->getSelectedItemIndex();
 
-        try {
-          ContextWriter writer(context);
-          Sprite* sprite(writer.sprite());
-          Tx tx(writer, Strings::sprite_properties_convert_color_profile());
-          tx(new cmd::ConvertColorProfile(
-               sprite, colorSpaces[selectedColorProfile]->gfxColorSpace()));
-          tx.commit();
-        }
-        catch (const base::Exception& e) {
-          Console::showException(e);
-        }
+      try {
+        ContextWriter writer(context);
+        Sprite* sprite(writer.sprite());
+        Tx tx(writer, Strings::sprite_properties_convert_color_profile());
+        tx(
+          new cmd::ConvertColorProfile(sprite, colorSpaces[selectedColorProfile]->gfxColorSpace()));
+        tx.commit();
+      }
+      catch (const base::Exception& e) {
+        Console::showException(e);
+      }
 
-        updateButtons();
-      });
+      updateButtons();
+    });
   }
 
   window.remapWindow();
@@ -397,15 +390,13 @@ void SpritePropertiesCommand::onExecute(Context* context)
     ContextWriter writer(context);
     Sprite* sprite(writer.sprite());
 
-    color_t index = (color_button ? color_button->getColor().getIndex():
+    color_t index = (color_button ? color_button->getColor().getIndex() :
                                     sprite->transparentColor());
-    PixelRatio pixelRatio =
-      base::convert_to<PixelRatio>(window.pixelRatio()->getValue());
+    PixelRatio pixelRatio = base::convert_to<PixelRatio>(window.pixelRatio()->getValue());
 
     const UserData newUserData = window.getUserData();
 
-    if (index != sprite->transparentColor() ||
-        pixelRatio != sprite->pixelRatio() ||
+    if (index != sprite->transparentColor() || pixelRatio != sprite->pixelRatio() ||
         newUserData != sprite->userData()) {
       Tx tx(writer, Strings::sprite_properties_change_sprite_props());
       DocApi api = writer.document()->getApi(tx);

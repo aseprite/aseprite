@@ -18,126 +18,123 @@
 
 namespace ui {
 
-  class ButtonBase;
-  class Label;
+class ButtonBase;
+class Label;
 
-  class Window : public Widget {
-  public:
-    enum Type { DesktopWindow, WithTitleBar, WithoutTitleBar };
+class Window : public Widget {
+public:
+  enum Type { DesktopWindow, WithTitleBar, WithoutTitleBar };
 
-    explicit Window(Type type, const std::string& text = "");
-    ~Window();
+  explicit Window(Type type, const std::string& text = "");
+  ~Window();
 
-    // Preset parent display (instead of using the foreground/main
-    // window). Useful to display an alert/subdialog inside a specific
-    // window.
-    void setParentDisplay(Display* display) { m_parentDisplay = display; }
-    Display* parentDisplay() const { return m_parentDisplay; }
+  // Preset parent display (instead of using the foreground/main
+  // window). Useful to display an alert/subdialog inside a specific
+  // window.
+  void setParentDisplay(Display* display) { m_parentDisplay = display; }
+  Display* parentDisplay() const { return m_parentDisplay; }
 
-    bool ownDisplay() const { return m_ownDisplay; }
-    Display* display() const;
-    void setDisplay(Display* display, const bool own);
-    bool hasDisplaySet() const { return m_display != nullptr; }
+  bool ownDisplay() const { return m_ownDisplay; }
+  Display* display() const;
+  void setDisplay(Display* display, const bool own);
+  bool hasDisplaySet() const { return m_display != nullptr; }
 
-    Widget* closer() const { return m_closer; }
+  Widget* closer() const { return m_closer; }
 
-    void setAutoRemap(bool state);
-    void setMoveable(bool state);
-    void setSizeable(bool state);
-    void setOnTop(bool state);
-    void setWantFocus(bool state);
+  void setAutoRemap(bool state);
+  void setMoveable(bool state);
+  void setSizeable(bool state);
+  void setOnTop(bool state);
+  void setWantFocus(bool state);
 
-    void remapWindow();
-    void centerWindow(Display* parentDisplay = nullptr);
-    void moveWindow(const gfx::Rect& rect);
+  void remapWindow();
+  void centerWindow(Display* parentDisplay = nullptr);
+  void moveWindow(const gfx::Rect& rect);
 
-    // Expands or shrink the window to the given side (generally sizeHint())
-    void expandWindow(const gfx::Size& size);
+  // Expands or shrink the window to the given side (generally sizeHint())
+  void expandWindow(const gfx::Size& size);
 
-    void openWindow();
-    void openWindowInForeground();
-    void closeWindow(Widget* closer);
+  void openWindow();
+  void openWindowInForeground();
+  void closeWindow(Widget* closer);
 
-    bool isTopLevel();
-    bool isForeground() const { return m_isForeground; }
-    bool isDesktop() const { return m_isDesktop; }
-    bool isOnTop() const { return m_isOnTop; }
-    bool isWantFocus() const { return m_isWantFocus; }
-    bool isSizeable() const { return m_isSizeable; }
-    bool isMoveable() const { return m_isMoveable; }
+  bool isTopLevel();
+  bool isForeground() const { return m_isForeground; }
+  bool isDesktop() const { return m_isDesktop; }
+  bool isOnTop() const { return m_isOnTop; }
+  bool isWantFocus() const { return m_isWantFocus; }
+  bool isSizeable() const { return m_isSizeable; }
+  bool isMoveable() const { return m_isMoveable; }
 
-    // Returns true only inside onWindowResize() when the window size
-    // changed.
-    bool isResizing() const { return m_isResizing; }
+  // Returns true only inside onWindowResize() when the window size
+  // changed.
+  bool isResizing() const { return m_isResizing; }
 
-    bool shouldCreateNativeWindow() const {
-      return !isDesktop();
-    }
+  bool shouldCreateNativeWindow() const { return !isDesktop(); }
 
-    HitTest hitTest(const gfx::Point& point);
+  HitTest hitTest(const gfx::Point& point);
 
-    // Last native window frame bounds. Saved just before we close the
-    // native window so we can save this information in the
-    // configuration file.
-    gfx::Rect lastNativeFrame() const { return m_lastFrame; }
-    void loadNativeFrame(const gfx::Rect& frame);
+  // Last native window frame bounds. Saved just before we close the
+  // native window so we can save this information in the
+  // configuration file.
+  gfx::Rect lastNativeFrame() const { return m_lastFrame; }
+  void loadNativeFrame(const gfx::Rect& frame);
 
-    // Esc key closes the current window (presses the little close
-    // button decorator) only on foreground windows, but you can
-    // override this to allow this behavior in other kind of windows.
-    virtual bool shouldProcessEscKeyToCloseWindow() const {
-      return isForeground();
-    }
+  // Esc key closes the current window (presses the little close
+  // button decorator) only on foreground windows, but you can
+  // override this to allow this behavior in other kind of windows.
+  virtual bool shouldProcessEscKeyToCloseWindow() const { return isForeground(); }
 
-    // Signals
-    obs::signal<void (Event&)> Open;
-    obs::signal<void (CloseEvent&)> Close;
-    obs::signal<void (ResizeEvent&)> Resize;
+  // Signals
+  obs::signal<void(Event&)> Open;
+  obs::signal<void(CloseEvent&)> Close;
+  obs::signal<void(ResizeEvent&)> Resize;
 
-  protected:
-    ButtonBase* closeButton() { return m_closeButton; }
+protected:
+  ButtonBase* closeButton() { return m_closeButton; }
 
-    virtual bool onProcessMessage(Message* msg) override;
-    virtual void onInvalidateRegion(const gfx::Region& region) override;
-    virtual void onResize(ResizeEvent& ev) override;
-    virtual void onSizeHint(SizeHintEvent& ev) override;
-    virtual void onBroadcastMouseMessage(const gfx::Point& screenPos,
-                                         WidgetsList& targets) override;
-    virtual void onSetText() override;
+  virtual bool onProcessMessage(Message* msg) override;
+  virtual void onInvalidateRegion(const gfx::Region& region) override;
+  virtual void onResize(ResizeEvent& ev) override;
+  virtual void onSizeHint(SizeHintEvent& ev) override;
+  virtual void onBroadcastMouseMessage(const gfx::Point& screenPos, WidgetsList& targets) override;
+  virtual void onSetText() override;
+  virtual void onVisible(bool visible) override;
 
-    // New events
-    virtual void onOpen(Event& ev);
-    virtual void onBeforeClose(CloseEvent& ev) {}
-    virtual void onClose(CloseEvent& ev);
-    virtual void onHitTest(HitTestEvent& ev);
-    virtual void onWindowResize();
-    virtual void onWindowMovement();
-    virtual void onBuildTitleLabel();
+  // New events
+  virtual void onOpen(Event& ev);
+  virtual void onBeforeClose(CloseEvent& ev) {}
+  virtual void onClose(CloseEvent& ev);
+  virtual void onHitTest(HitTestEvent& ev);
+  virtual void onWindowResize();
+  virtual void onWindowMovement();
+  virtual void onBuildTitleLabel();
 
-  private:
-    void windowSetPosition(const gfx::Rect& rect);
-    int getAction(int x, int y);
-    void limitSize(gfx::Size& size);
-    void limitPosition(gfx::Rect& rect);
-    void moveWindow(const gfx::Rect& rect, bool use_blit);
+private:
+  void limitTitleLabelBounds();
+  void windowSetPosition(const gfx::Rect& rect);
+  int getAction(int x, int y);
+  void limitSize(gfx::Size& size);
+  void limitPosition(gfx::Rect& rect);
+  void moveWindow(const gfx::Rect& rect, bool use_blit);
 
-    Display* m_parentDisplay = nullptr;
-    Display* m_display;
-    Widget* m_closer;
-    Label* m_titleLabel;
-    ButtonBase* m_closeButton;
-    bool m_ownDisplay : 1;
-    bool m_isDesktop : 1;
-    bool m_isMoveable : 1;
-    bool m_isSizeable : 1;
-    bool m_isOnTop : 1;
-    bool m_isWantFocus : 1;
-    bool m_isForeground : 1;
-    bool m_isAutoRemap : 1;
-    bool m_isResizing : 1;
-    int m_hitTest;
-    gfx::Rect m_lastFrame;
-  };
+  Display* m_parentDisplay = nullptr;
+  Display* m_display;
+  Widget* m_closer;
+  Label* m_titleLabel;
+  ButtonBase* m_closeButton;
+  bool m_ownDisplay : 1;
+  bool m_isDesktop : 1;
+  bool m_isMoveable : 1;
+  bool m_isSizeable : 1;
+  bool m_isOnTop : 1;
+  bool m_isWantFocus : 1;
+  bool m_isForeground : 1;
+  bool m_isAutoRemap : 1;
+  bool m_isResizing : 1;
+  int m_hitTest;
+  gfx::Rect m_lastFrame;
+};
 
 } // namespace ui
 

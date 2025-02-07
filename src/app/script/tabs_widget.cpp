@@ -7,14 +7,11 @@
 #include "app/script/tabs_widget.h"
 #include "tabs_widget.h"
 
-#define TAB_CONTENT_ID(tabid)  (tabid + "_content")
-
-#ifdef ENABLE_UI
+#define TAB_CONTENT_ID(tabid) (tabid + "_content")
 
 using namespace ui;
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 // static
 ui::WidgetType Tabs::Type()
@@ -46,7 +43,7 @@ Tab* Tabs::addTab(const std::string& id, const std::string& text)
     m_buttonsBox.addChild(&m_buttons);
     m_buttons.ItemChange.connect([this](ButtonSet::Item* tab) {
       int oldSelectedTabIndex = m_selectedTab;
-      for (int i=0; i<m_pages.children().size(); ++i) {
+      for (int i = 0; i < m_pages.children().size(); ++i) {
         auto tabContent = m_pages.children()[i];
         bool isSelectedTab = (TAB_CONTENT_ID(tab->id()) == tabContent->id());
         tabContent->setVisible(isSelectedTab);
@@ -79,7 +76,7 @@ Tab* Tabs::addTab(const std::string& id, const std::string& text)
 void Tabs::selectTab(int index)
 {
   if (index >= 0 && index < m_pages.children().size()) {
-    for (int i=0; i<m_pages.children().size(); ++i) {
+    for (int i = 0; i < m_pages.children().size(); ++i) {
       m_buttons.getItem(i)->setSelected(i == index);
       m_pages.children()[i]->setVisible(i == index);
     }
@@ -97,7 +94,7 @@ void Tabs::setSelectorFlags(int selectorFlags)
 
 int Tabs::tabIndexById(const std::string& id) const
 {
-  for (int i=0; i<m_buttons.children().size(); ++i) {
+  for (int i = 0; i < m_buttons.children().size(); ++i) {
     if (m_buttons.children()[i]->id() == id)
       return i;
   }
@@ -106,7 +103,7 @@ int Tabs::tabIndexById(const std::string& id) const
 
 int Tabs::tabIndexByText(const std::string& text) const
 {
-  for (int i=0; i<m_buttons.children().size(); ++i) {
+  for (int i = 0; i < m_buttons.children().size(); ++i) {
     if (m_buttons.children()[i]->text() == text)
       return i;
   }
@@ -115,16 +112,14 @@ int Tabs::tabIndexByText(const std::string& text) const
 
 std::string Tabs::tabId(int index) const
 {
-  return index >= 0 && index < m_buttons.children().size() ?
-         m_buttons.children()[index]->id() :
-         std::string();
+  return index >= 0 && index < m_buttons.children().size() ? m_buttons.children()[index]->id() :
+                                                             std::string();
 }
 
 std::string Tabs::tabText(int index) const
 {
-  return index >= 0 && index < m_buttons.children().size() ?
-         m_buttons.children()[index]->text() :
-         std::string();
+  return index >= 0 && index < m_buttons.children().size() ? m_buttons.children()[index]->text() :
+                                                             std::string();
 }
 
 int Tabs::selectedTab() const
@@ -168,7 +163,6 @@ void Pages::onSizeHint(ui::SizeHintEvent& ev)
 {
   gfx::Size prefSize(0, 0);
   for (auto child : children()) {
-
     gfx::Size childSize = child->sizeHint();
     prefSize.w = std::max(childSize.w, prefSize.w);
     prefSize.h = std::max(childSize.h, prefSize.h);
@@ -189,7 +183,4 @@ void Tab::onClick()
   ButtonSet::Item::onClick();
 }
 
-} // namespace script
-} // namespace app
-
-#endif // ENABLE_UI
+}} // namespace app::script

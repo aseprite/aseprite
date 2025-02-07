@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/editor/moving_cel_state.h"
@@ -17,6 +17,7 @@
 #include "app/context_access.h"
 #include "app/doc_api.h"
 #include "app/doc_range.h"
+#include "app/snap_to_grid.h"
 #include "app/tx.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
@@ -39,8 +40,7 @@ namespace app {
 
 using namespace ui;
 
-MovingCelCollect::MovingCelCollect(Editor* editor, Layer* layer)
-  : m_mainCel(nullptr)
+MovingCelCollect::MovingCelCollect(Editor* editor, Layer* layer) : m_mainCel(nullptr)
 {
   ASSERT(editor);
 
@@ -49,8 +49,7 @@ MovingCelCollect::MovingCelCollect(Editor* editor, Layer* layer)
 
   Timeline* timeline = App::instance()->timeline();
   DocRange range = timeline->range();
-  if (!range.enabled() ||
-      !timeline->isVisible()) {
+  if (!range.enabled() || !timeline->isVisible()) {
     range.startRange(editor->layer(), editor->frame(), DocRange::kCels);
     range.endRange(editor->layer(), editor->frame());
   }
@@ -122,9 +121,11 @@ MovingCelState::MovingCelState(Editor* editor,
   // Hook BeforeCommandExecution signal so we know if the user wants
   // to execute other command, so we can drop pixels.
   m_ctxConn = UIContext::instance()->BeforeCommandExecution.connect(
-    &MovingCelState::onBeforeCommandExecution, this);
+    &MovingCelState::onBeforeCommandExecution,
+    this);
 
   m_cursorStart = editor->screenToEditorF(msg->position());
+  calcPivot();
   editor->captureMouse();
 
   // Hide the mask (temporarily, until mouse-up event)
@@ -156,6 +157,10 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
       Tx tx(writer, "Cel Movement", ModifyDocument);
       DocApi api = document->getApi(tx);
       gfx::Point intOffset = intCelOffset();
+      bool snapToGrid = (Preferences::instance().selection.snapToGrid() &&
+                         m_editor->docPref().grid.snap());
+      if (snapToGrid)
+        snapOffsetToGrid(intOffset);
 
       // And now we move the cel (or all selected range) to the new position.
       for (Cel* cel : m_celList) {
@@ -168,12 +173,13 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
             celBounds.w *= m_celScale.w;
             celBounds.h *= m_celScale.h;
           }
+          if (snapToGrid)
+            snapBoundsToGrid(celBounds);
+
           tx(new cmd::SetCelBoundsF(cel, celBounds));
         }
         else {
-          api.setCelPosition(writer.sprite(), cel,
-                             cel->x() + intOffset.x,
-                             cel->y() + intOffset.y);
+          api.setCelPosition(writer.sprite(), cel, cel->x() + intOffset.x, cel->y() + intOffset.y);
         }
       }
 
@@ -224,15 +230,24 @@ bool MovingCelState::onMouseMove(Editor* editor, MouseMessage* msg)
   return StandbyState::onMouseMove(editor, msg);
 }
 
-void MovingCelState::onCommitMouseMove(Editor* editor,
-                                       const gfx::PointF& newCursorPos)
+void MovingCelState::calcPivot()
+{
+  // Get grid displacement from pivot point, for now hardcoded
+  // to be relative to initial position
+  m_fullBounds = calcFullBounds();
+  m_pivot = gfx::PointF(0, 0);
+  const gfx::RectF& gridBounds = m_editor->getSite().gridBounds();
+  m_pivotOffset = gfx::PointF(gridBounds.size()) - (m_pivot - m_fullBounds.origin());
+}
+
+void MovingCelState::onCommitMouseMove(Editor* editor, const gfx::PointF& newCursorPos)
 {
   switch (m_handle) {
-
     case MovePixelsHandle:
       m_celOffset = newCursorPos - m_cursorStart;
-      if (int(editor->getCustomizationDelegate()
-              ->getPressedKeyAction(KeyContext::TranslatingSelection) & KeyAction::LockAxis)) {
+      if (int(editor->getCustomizationDelegate()->getPressedKeyAction(
+                KeyContext::TranslatingSelection) &
+              KeyAction::LockAxis)) {
         if (ABS(m_celOffset.x) < ABS(m_celOffset.y)) {
           m_celOffset.x = 0;
         }
@@ -248,11 +263,14 @@ void MovingCelState::onCommitMouseMove(Editor* editor,
       gfx::PointF delta(newCursorPos - m_cursorStart);
       m_celScale.w = 1.0 + (delta.x / m_celMainSize.w);
       m_celScale.h = 1.0 + (delta.y / m_celMainSize.h);
-      if (m_celScale.w < 1.0/m_celMainSize.w) m_celScale.w = 1.0/m_celMainSize.w;
-      if (m_celScale.h < 1.0/m_celMainSize.h) m_celScale.h = 1.0/m_celMainSize.h;
+      if (m_celScale.w < 1.0 / m_celMainSize.w)
+        m_celScale.w = 1.0 / m_celMainSize.w;
+      if (m_celScale.h < 1.0 / m_celMainSize.h)
+        m_celScale.h = 1.0 / m_celMainSize.h;
 
-      if (int(editor->getCustomizationDelegate()
-              ->getPressedKeyAction(KeyContext::ScalingSelection) & KeyAction::MaintainAspectRatio)) {
+      if (int(
+            editor->getCustomizationDelegate()->getPressedKeyAction(KeyContext::ScalingSelection) &
+            KeyAction::MaintainAspectRatio)) {
         m_celScale.w = m_celScale.h = std::max(m_celScale.w, m_celScale.h);
       }
 
@@ -262,8 +280,12 @@ void MovingCelState::onCommitMouseMove(Editor* editor,
   }
 
   gfx::Point intOffset = intCelOffset();
+  bool snapToGrid = (Preferences::instance().selection.snapToGrid() &&
+                     m_editor->docPref().grid.snap());
+  if (snapToGrid)
+    snapOffsetToGrid(intOffset);
 
-  for (size_t i=0; i<m_celList.size(); ++i) {
+  for (size_t i = 0; i < m_celList.size(); ++i) {
     Cel* cel = m_celList[i];
     gfx::RectF celBounds = m_celStarts[i];
 
@@ -275,6 +297,9 @@ void MovingCelState::onCommitMouseMove(Editor* editor,
         celBounds.w *= m_celScale.w;
         celBounds.h *= m_celScale.h;
       }
+      if (snapToGrid)
+        snapBoundsToGrid(celBounds);
+
       cel->setBoundsF(celBounds);
     }
     else {
@@ -313,36 +338,40 @@ bool MovingCelState::onUpdateStatusBar(Editor* editor)
   if (m_hasReference) {
     buf = fmt::format(":pos: {:.2f} {:.2f}", pos.x, pos.y);
     if (m_scaled && m_cel) {
-      buf += fmt::format(
-        " :start: {:.2f} {:.2f}"
-        " :size: {:.2f} {:.2f} [{:.2f}% {:.2f}%]",
-        m_cel->boundsF().x,
-        m_cel->boundsF().y,
-        m_celScale.w*m_celMainSize.w,
-        m_celScale.h*m_celMainSize.h,
-        100.0*m_celScale.w*m_celMainSize.w/m_cel->image()->width(),
-        100.0*m_celScale.h*m_celMainSize.h/m_cel->image()->height());
+      buf += fmt::format(" :start: {:.2f} {:.2f}"
+                         " :size: {:.2f} {:.2f} [{:.2f}% {:.2f}%]",
+                         m_cel->boundsF().x,
+                         m_cel->boundsF().y,
+                         m_celScale.w * m_celMainSize.w,
+                         m_celScale.h * m_celMainSize.h,
+                         100.0 * m_celScale.w * m_celMainSize.w / m_cel->image()->width(),
+                         100.0 * m_celScale.h * m_celMainSize.h / m_cel->image()->height());
     }
     else {
-      buf += fmt::format(
-        " :start: {:.2f} {:.2f} :size: {:.2f} {:.2f}"
-        " :delta: {:.2f} {:.2f}",
-        fullBounds.x, fullBounds.y,
-        fullBounds.w, fullBounds.h,
-        m_celOffset.x, m_celOffset.y);
+      buf += fmt::format(" :start: {:.2f} {:.2f} :size: {:.2f} {:.2f}"
+                         " :delta: {:.2f} {:.2f}",
+                         fullBounds.x,
+                         fullBounds.y,
+                         fullBounds.w,
+                         fullBounds.h,
+                         m_celOffset.x,
+                         m_celOffset.y);
     }
   }
   else {
     gfx::Point intOffset = intCelOffset();
     fullBounds.floor();
-    buf = fmt::format(
-      ":pos: {} {}"
-      " :start: {} {} :size: {} {}"
-      " :delta: {} {}",
-      int(pos.x), int(pos.y),
-      int(fullBounds.x), int(fullBounds.y),
-      int(fullBounds.w), int(fullBounds.h),
-      intOffset.x, intOffset.y);
+    buf = fmt::format(":pos: {} {}"
+                      " :start: {} {} :size: {} {}"
+                      " :delta: {} {}",
+                      int(pos.x),
+                      int(pos.y),
+                      int(fullBounds.x),
+                      int(fullBounds.y),
+                      int(fullBounds.w),
+                      int(fullBounds.h),
+                      intOffset.x,
+                      intOffset.y);
   }
 
   StatusBar::instance()->setStatusText(0, buf);
@@ -351,8 +380,7 @@ bool MovingCelState::onUpdateStatusBar(Editor* editor)
 
 gfx::Point MovingCelState::intCelOffset() const
 {
-  return gfx::Point(int(std::round(m_celOffset.x)),
-                    int(std::round(m_celOffset.y)));
+  return gfx::Point(int(std::round(m_celOffset.x)), int(std::round(m_celOffset.y)));
 }
 
 gfx::RectF MovingCelState::calcFullBounds() const
@@ -367,13 +395,45 @@ gfx::RectF MovingCelState::calcFullBounds() const
   return bounds;
 }
 
+void MovingCelState::snapOffsetToGrid(gfx::Point& offset) const
+{
+  const gfx::RectF& gridBounds = m_editor->getSite().gridBounds();
+  const gfx::RectF displaceGrid(gridBounds.origin() + m_pivotOffset, gridBounds.size());
+  offset = snap_to_grid(displaceGrid,
+                        gfx::Point(m_fullBounds.origin() + offset),
+                        PreferSnapTo::ClosestGridVertex) -
+           m_fullBounds.origin();
+}
+
+void MovingCelState::snapBoundsToGrid(gfx::RectF& celBounds) const
+{
+  const gfx::RectF& gridBounds = m_editor->getSite().gridBounds();
+  const gfx::RectF displaceGrid(gridBounds.origin() + m_pivotOffset, gridBounds.size());
+  const gfx::PointF& origin = celBounds.origin();
+  if (m_scaled) {
+    gfx::PointF gridOffset(snap_to_grid(displaceGrid,
+                                        gfx::Point(origin.x + celBounds.w, origin.y + celBounds.h),
+                                        PreferSnapTo::ClosestGridVertex) -
+                           origin);
+
+    celBounds.w = std::max(gridBounds.w, gridOffset.x);
+    celBounds.h = std::max(gridBounds.h, gridOffset.y);
+  }
+  else if (m_moved) {
+    gfx::PointF gridOffset(
+      snap_to_grid(displaceGrid, gfx::Point(origin), PreferSnapTo::ClosestGridVertex));
+
+    celBounds.setOrigin(gridOffset);
+  }
+}
+
 bool MovingCelState::restoreCelStartPosition() const
 {
   bool modified = false;
 
   // Here we put back all cels into their original coordinates (so we
   // can add the undo information from the start position).
-  for (size_t i=0; i<m_celList.size(); ++i) {
+  for (size_t i = 0; i < m_celList.size(); ++i) {
     Cel* cel = m_celList[i];
     const gfx::RectF& celStart = m_celStarts[i];
 
@@ -395,8 +455,7 @@ bool MovingCelState::restoreCelStartPosition() const
 
 void MovingCelState::onBeforeCommandExecution(CommandExecutionEvent& ev)
 {
-  if (ev.command()->id() == CommandId::Undo() ||
-      ev.command()->id() == CommandId::Redo() ||
+  if (ev.command()->id() == CommandId::Undo() || ev.command()->id() == CommandId::Redo() ||
       ev.command()->id() == CommandId::Cancel()) {
     restoreCelStartPosition();
     Doc* document = m_editor->document();

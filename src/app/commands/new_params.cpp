@@ -5,13 +5,14 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/commands/new_params.h"
 
 #include "app/color.h"
 #include "app/doc_exporter.h"
+#include "app/pref/preferences.h"
 #include "app/sprite_sheet_type.h"
 #include "app/tools/ink_type.h"
 #include "base/convert_to.h"
@@ -29,9 +30,9 @@
 #include "gfx/size.h"
 
 #ifdef ENABLE_SCRIPTING
-#include "app/script/engine.h"
-#include "app/script/luacpp.h"
-#include "app/script/values.h"
+  #include "app/script/engine.h"
+  #include "app/script/luacpp.h"
+  #include "app/script/values.h"
 #endif
 
 namespace app {
@@ -124,8 +125,7 @@ template<>
 void Param<app::SpriteSheetDataFormat>::fromString(const std::string& value)
 {
   // JsonArray, json-array, json_array, etc.
-  if (base::utf8_icmp(value, "JsonArray") == 0 ||
-      base::utf8_icmp(value, "json-array") == 0 ||
+  if (base::utf8_icmp(value, "JsonArray") == 0 || base::utf8_icmp(value, "json-array") == 0 ||
       base::utf8_icmp(value, "json_array") == 0)
     setValue(app::SpriteSheetDataFormat::JsonArray);
   else
@@ -137,8 +137,7 @@ void Param<doc::ColorMode>::fromString(const std::string& value)
 {
   if (base::utf8_icmp(value, "rgb") == 0)
     setValue(doc::ColorMode::RGB);
-  else if (base::utf8_icmp(value, "gray") == 0 ||
-           base::utf8_icmp(value, "grayscale") == 0)
+  else if (base::utf8_icmp(value, "gray") == 0 || base::utf8_icmp(value, "grayscale") == 0)
     setValue(doc::ColorMode::GRAYSCALE);
   else if (base::utf8_icmp(value, "indexed") == 0)
     setValue(doc::ColorMode::INDEXED);
@@ -198,8 +197,7 @@ void Param<filters::OutlineFilter::Matrix>::fromString(const std::string& value)
 template<>
 void Param<filters::HueSaturationFilter::Mode>::fromString(const std::string& value)
 {
-  if (base::utf8_icmp(value, "hsv") == 0 ||
-      base::utf8_icmp(value, "hsv_mul") == 0)
+  if (base::utf8_icmp(value, "hsv") == 0 || base::utf8_icmp(value, "hsv_mul") == 0)
     setValue(filters::HueSaturationFilter::Mode::HSV_MUL);
   else if (base::utf8_icmp(value, "hsv_add") == 0)
     setValue(filters::HueSaturationFilter::Mode::HSV_ADD);
@@ -215,11 +213,9 @@ void Param<filters::ColorCurve>::fromString(const std::string& value)
   filters::ColorCurve curve;
   std::vector<std::string> parts;
   base::split_string(value, parts, ",");
-  for (int i=0; i+1<int(parts.size()); i+=2) {
+  for (int i = 0; i + 1 < int(parts.size()); i += 2) {
     curve.addPoint(
-      gfx::Point(
-        base::convert_to<int>(parts[i]),
-        base::convert_to<int>(parts[i+1])));
+      gfx::Point(base::convert_to<int>(parts[i]), base::convert_to<int>(parts[i + 1])));
   }
   setValue(curve);
 }
@@ -239,6 +235,21 @@ void Param<doc::RgbMapAlgorithm>::fromString(const std::string& value)
     setValue(doc::RgbMapAlgorithm::RGB5A3);
   else
     setValue(doc::RgbMapAlgorithm::DEFAULT);
+}
+
+template<>
+void Param<gen::SelectionMode>::fromString(const std::string& value)
+{
+  if (base::utf8_icmp(value, "replace") == 0)
+    setValue(gen::SelectionMode::REPLACE);
+  else if (base::utf8_icmp(value, "add") == 0)
+    setValue(gen::SelectionMode::ADD);
+  else if (base::utf8_icmp(value, "subtract") == 0)
+    setValue(gen::SelectionMode::SUBTRACT);
+  else if (base::utf8_icmp(value, "intersect") == 0)
+    setValue(gen::SelectionMode::INTERSECT);
+  else
+    setValue(gen::SelectionMode::DEFAULT);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -405,6 +416,15 @@ void Param<doc::RgbMapAlgorithm>::fromLua(lua_State* L, int index)
     setValue((doc::RgbMapAlgorithm)lua_tointeger(L, index));
 }
 
+template<>
+void Param<gen::SelectionMode>::fromLua(lua_State* L, int index)
+{
+  if (lua_type(L, index) == LUA_TSTRING)
+    fromString(lua_tostring(L, index));
+  else
+    setValue((gen::SelectionMode)lua_tointeger(L, index));
+}
+
 void CommandWithNewParamsBase::loadParamsFromLuaTable(lua_State* L, int index)
 {
   onResetValues();
@@ -415,13 +435,13 @@ void CommandWithNewParamsBase::loadParamsFromLuaTable(lua_State* L, int index)
         if (ParamBase* p = onGetParam(k))
           p->fromLua(L, -1);
       }
-      lua_pop(L, 1);            // Pop the value, leave the key
+      lua_pop(L, 1); // Pop the value, leave the key
     }
   }
   m_skipLoadParams = true;
 }
 
-#endif  // ENABLE_SCRIPTING
+#endif // ENABLE_SCRIPTING
 
 void CommandWithNewParamsBase::onLoadParams(const Params& params)
 {
@@ -430,7 +450,7 @@ void CommandWithNewParamsBase::onLoadParams(const Params& params)
     m_skipLoadParams = false;
     return;
   }
-#endif  // ENABLE_SCRIPTING
+#endif // ENABLE_SCRIPTING
   onResetValues();
   for (const auto& pair : params) {
     if (ParamBase* p = onGetParam(pair.first))

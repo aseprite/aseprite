@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/commands/filters/filter_preview.h"
@@ -34,7 +34,7 @@ FilterPreview::FilterPreview(FilterManagerImpl* filterMgr)
 {
   setVisible(false);
 
-  m_restartPreviewTimer.Tick.connect([this]{
+  m_restartPreviewTimer.Tick.connect([this] {
     onDelayedStartPreview();
     m_restartPreviewTimer.stop();
   });
@@ -121,10 +121,7 @@ void FilterPreview::onDelayedStartPreview()
 bool FilterPreview::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
-
-    case kOpenMessage:
-      setEnablePreview(true);
-      break;
+    case kOpenMessage: setEnablePreview(true); break;
 
     case kCloseMessage:
       setEnablePreview(false);

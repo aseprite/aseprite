@@ -1,11 +1,11 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "ui/display.h"
@@ -19,9 +19,7 @@
 
 namespace ui {
 
-Display::Display(Display* parentDisplay,
-                 const os::WindowRef& nativeWindow,
-                 Widget* containedWidget)
+Display::Display(Display* parentDisplay, const os::WindowRef& nativeWindow, Widget* containedWidget)
   : m_parentDisplay(parentDisplay)
   , m_nativeWindow(nativeWindow)
   , m_containedWidget(containedWidget)
@@ -48,8 +46,7 @@ gfx::Size Display::size() const
 
   const int scale = m_nativeWindow->scale();
   ASSERT(scale > 0);
-  return gfx::Size(m_nativeWindow->width() / scale,
-                   m_nativeWindow->height() / scale);
+  return gfx::Size(m_nativeWindow->width() / scale, m_nativeWindow->height() / scale);
 }
 
 void Display::dirtyRect(const gfx::Rect& bounds)
@@ -59,22 +56,28 @@ void Display::dirtyRect(const gfx::Rect& bounds)
 
 void Display::flipDisplay()
 {
-  if (!m_dirtyRegion.isEmpty()) {
-    // Limit the region to the bounds of the window
-    m_dirtyRegion &= gfx::Region(bounds());
+  if (m_dirtyRegion.isEmpty())
+    return;
 
-    if (!m_dirtyRegion.isEmpty()) {
-      // Invalidate the dirty region in the os::Window
-      if (m_nativeWindow->isVisible())
-        m_nativeWindow->invalidateRegion(m_dirtyRegion);
-      else
-        m_nativeWindow->setVisible(true);
+  // Limit the region to the bounds of the window
+  m_dirtyRegion &= gfx::Region(bounds());
+  if (m_dirtyRegion.isEmpty())
+    return;
 
-      m_nativeWindow->swapBuffers();
-
-      m_dirtyRegion.clear();
-    }
+  // Invalidate the dirty region in the os::Window only if the window
+  // is visible (e.g. if the window is hidden or minimized, we don't
+  // need to do this).
+  if (m_nativeWindow->isVisible()) {
+    m_nativeWindow->invalidateRegion(m_dirtyRegion);
+    m_nativeWindow->swapBuffers();
   }
+  // If the native window is not minimized/hidden by the user, make it
+  // visible (e.g. when we flipDisplay() for the first time).
+  else if (!m_nativeWindow->isMinimized()) {
+    m_nativeWindow->setVisible(true);
+  }
+
+  m_dirtyRegion.clear();
 }
 
 void Display::invalidateRect(const gfx::Rect& rect)
@@ -112,25 +115,21 @@ void Display::handleWindowZOrder(Window* window)
   else {
     int pos = (int)m_windows.size();
 
-    for (auto it=m_windows.rbegin(),
-           end=m_windows.rend();
-         it != end; ++it) {
+    for (auto it = m_windows.rbegin(), end = m_windows.rend(); it != end; ++it) {
       if (static_cast<Window*>(*it)->isOnTop())
         break;
 
       --pos;
     }
 
-    m_windows.insert(m_windows.begin()+pos, window);
+    m_windows.insert(m_windows.begin() + pos, window);
   }
 }
 
 gfx::Size Display::workareaSizeUIScale()
 {
   if (get_multiple_displays()) {
-    return
-      nativeWindow()->screen()->workarea().size() /
-      nativeWindow()->scale();
+    return nativeWindow()->screen()->workarea().size() / nativeWindow()->scale();
   }
   else {
     return size();

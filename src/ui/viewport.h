@@ -12,18 +12,18 @@
 
 namespace ui {
 
-  class Viewport : public Widget {
-  public:
-    Viewport();
+class Viewport : public Widget {
+public:
+  Viewport();
 
-    gfx::Size calculateNeededSize();
+  gfx::Size calculateNeededSize();
 
-  protected:
-    // Events
-    void onResize(ResizeEvent& ev) override;
-    void onSizeHint(SizeHintEvent& ev) override;
-    void onPaint(PaintEvent& ev) override;
-  };
+protected:
+  // Events
+  void onResize(ResizeEvent& ev) override;
+  void onSizeHint(SizeHintEvent& ev) override;
+  void onPaint(PaintEvent& ev) override;
+};
 
 } // namespace ui
 

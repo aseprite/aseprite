@@ -16,38 +16,34 @@
 #include <sstream>
 
 namespace doc {
-  class Tileset;
+class Tileset;
 }
 
-namespace app {
-namespace cmd {
+namespace app { namespace cmd {
 
-  class AddTileset : public Cmd
-                   , public WithSprite
-                   , public WithTileset {
-  public:
-    AddTileset(doc::Sprite* sprite, doc::Tileset* tileset);
-    AddTileset(doc::Sprite* sprite, const doc::tileset_index tsi);
+class AddTileset : public Cmd,
+                   public WithSprite,
+                   public WithTileset {
+public:
+  AddTileset(doc::Sprite* sprite, doc::Tileset* tileset);
+  AddTileset(doc::Sprite* sprite, const doc::tileset_index tsi);
 
-    doc::tileset_index tilesetIndex() const { return m_tilesetIndex; }
+  doc::tileset_index tilesetIndex() const { return m_tilesetIndex; }
 
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    void onRedo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this) + m_size;
-    }
+protected:
+  void onExecute() override;
+  void onUndo() override;
+  void onRedo() override;
+  size_t onMemSize() const override { return sizeof(*this) + m_size; }
 
-  private:
-    void addTileset(doc::Tileset* tileset);
+private:
+  void addTileset(doc::Tileset* tileset);
 
-    size_t m_size;
-    std::stringstream m_stream;
-    doc::tileset_index m_tilesetIndex;
-  };
+  size_t m_size;
+  std::stringstream m_stream;
+  doc::tileset_index m_tilesetIndex;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

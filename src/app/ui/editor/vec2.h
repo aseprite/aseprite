@@ -16,11 +16,13 @@ namespace app {
 using vec2 = base::Vector2d<double>;
 
 template<typename T>
-inline const vec2 to_vec2(const gfx::PointT<T>& pt) {
+inline const vec2 to_vec2(const gfx::PointT<T>& pt)
+{
   return vec2(pt.x, pt.y);
 }
 
-inline const gfx::PointF to_point(const vec2& v) {
+inline const gfx::PointF to_point(const vec2& v)
+{
   return gfx::PointF(v.x, v.y);
 }
 

@@ -11,18 +11,18 @@
 #include <string>
 
 namespace doc {
-  class CancelIO;
+class CancelIO;
 }
 
 namespace app {
-  class Doc;
+class Doc;
 
-  namespace crash {
+namespace crash {
 
-    bool write_document(const std::string& dir, Doc* doc, doc::CancelIO* cancel);
-    void delete_document_internals(Doc* doc);
+bool write_document(const std::string& dir, Doc* doc, doc::CancelIO* cancel);
+void delete_document_internals(Doc* doc);
 
-  } // namespace crash
+} // namespace crash
 } // namespace app
 
 #endif

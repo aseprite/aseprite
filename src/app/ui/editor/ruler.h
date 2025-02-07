@@ -13,32 +13,23 @@
 
 namespace app {
 
-  // A ruler inside the editor. It is used by SelectBoxState to show
-  // rulers that can be dragged by the user.
-  class Ruler {
-  public:
-    Ruler()
-      : m_align(0)
-      , m_position(0) {
-    }
+// A ruler inside the editor. It is used by SelectBoxState to show
+// rulers that can be dragged by the user.
+class Ruler {
+public:
+  Ruler() : m_align(0), m_position(0) {}
 
-    Ruler(const int align,
-          const int position)
-      : m_align(align)
-      , m_position(position) {
-    }
+  Ruler(const int align, const int position) : m_align(align), m_position(position) {}
 
-    int align() const { return m_align; }
-    int position() const { return m_position; }
+  int align() const { return m_align; }
+  int position() const { return m_position; }
 
-    void setPosition(const int position) {
-      m_position = position;
-    }
+  void setPosition(const int position) { m_position = position; }
 
-  private:
-    int m_align;
-    int m_position;
-  };
+private:
+  int m_align;
+  int m_position;
+};
 
 } // namespace app
 

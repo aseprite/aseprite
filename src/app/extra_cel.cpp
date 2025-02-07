@@ -1,12 +1,12 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/extra_cel.h"
@@ -16,12 +16,14 @@
 namespace app {
 
 ExtraCel::ExtraCel()
-  : m_type(render::ExtraType::NONE)
+  : m_purpose(Purpose::Unknown)
+  , m_type(render::ExtraType::NONE)
   , m_blendMode(doc::BlendMode::NORMAL)
 {
 }
 
-void ExtraCel::create(const TilemapMode tilemapMode,
+void ExtraCel::create(Purpose purpose,
+                      const TilemapMode tilemapMode,
                       doc::Sprite* sprite,
                       const gfx::Rect& bounds,
                       const gfx::Size& imageSize,
@@ -30,21 +32,19 @@ void ExtraCel::create(const TilemapMode tilemapMode,
 {
   ASSERT(sprite);
 
+  m_purpose = purpose;
+
   doc::PixelFormat pixelFormat;
   if (tilemapMode == TilemapMode::Tiles)
     pixelFormat = doc::IMAGE_TILEMAP;
   else
     pixelFormat = sprite->pixelFormat();
 
-  if (!m_image ||
-      m_image->pixelFormat() != pixelFormat ||
-      m_image->width() != imageSize.w ||
+  if (!m_image || m_image->pixelFormat() != pixelFormat || m_image->width() != imageSize.w ||
       m_image->height() != imageSize.h) {
     if (!m_imageBuffer)
       m_imageBuffer.reset(new doc::ImageBuffer(1));
-    doc::Image* newImage = doc::Image::create(pixelFormat,
-                                              imageSize.w, imageSize.h,
-                                              m_imageBuffer);
+    doc::Image* newImage = doc::Image::create(pixelFormat, imageSize.w, imageSize.h, m_imageBuffer);
     m_image.reset(newImage);
   }
 
@@ -60,6 +60,7 @@ void ExtraCel::create(const TilemapMode tilemapMode,
 
 void ExtraCel::reset()
 {
+  m_purpose = Purpose::Unknown;
   m_type = render::ExtraType::NONE;
   m_image.reset();
   m_cel.reset();

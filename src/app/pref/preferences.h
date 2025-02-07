@@ -41,55 +41,55 @@
 #include <vector>
 
 namespace app {
-  namespace tools {
-    class Tool;
-  }
+namespace tools {
+class Tool;
+}
 
-  class Doc;
+class Doc;
 
-  typedef app::gen::ToolPref ToolPreferences;
-  typedef app::gen::DocPref DocumentPreferences;
+typedef app::gen::ToolPref ToolPreferences;
+typedef app::gen::DocPref DocumentPreferences;
 
-  class Preferences : public app::gen::GlobalPref,
-                      public app::DocsObserver {
-  public:
-    static Preferences& instance();
+class Preferences : public app::gen::GlobalPref,
+                    public app::DocsObserver {
+public:
+  static Preferences& instance();
 
-    Preferences();
-    ~Preferences();
+  Preferences();
+  ~Preferences();
 
-    void save();
+  void save() override;
 
-    // Returns true if the given option was set by the user or false
-    // if it contains the default value.
-    bool isSet(OptionBase& opt) const;
+  // Returns true if the given option was set by the user or false
+  // if it contains the default value.
+  bool isSet(OptionBase& opt) const;
 
-    ToolPreferences& tool(tools::Tool* tool);
-    DocumentPreferences& document(const Doc* doc);
+  ToolPreferences& tool(tools::Tool* tool);
+  DocumentPreferences& document(const Doc* doc);
 
-    // Used to reset the tool preferences in scripting mode when the
-    // UI is not available (so scripts have a common default
-    // preferences and a reproducible behavior for automation).
-    void resetToolPreferences(tools::Tool* tool);
+  // Used to reset the tool preferences in scripting mode when the
+  // UI is not available (so scripts have a common default
+  // preferences and a reproducible behavior for automation).
+  void resetToolPreferences(tools::Tool* tool);
 
-    // Remove one document explicitly (this can be used if the
-    // document used in Preferences::document() function wasn't member
-    // of UIContext.
-    void removeDocument(Doc* doc);
+  // Remove one document explicitly (this can be used if the
+  // document used in Preferences::document() function wasn't member
+  // of UIContext.
+  void removeDocument(Doc* doc);
 
-  protected:
-    // DocsObserver impl
-    void onRemoveDocument(Doc* doc) override;
+protected:
+  // DocsObserver impl
+  void onRemoveDocument(Doc* doc) override;
 
-  private:
-    void load();
-    std::string docConfigFileName(const Doc* doc);
+private:
+  void load();
+  std::string docConfigFileName(const Doc* doc);
 
-    void serializeDocPref(const Doc* doc, app::DocumentPreferences* docPref, bool save);
+  void serializeDocPref(const Doc* doc, app::DocumentPreferences* docPref, bool save);
 
-    std::map<std::string, app::ToolPreferences*> m_tools;
-    std::map<const Doc*, DocumentPreferences*> m_docs;
-  };
+  std::map<std::string, app::ToolPreferences*> m_tools;
+  std::map<const Doc*, DocumentPreferences*> m_docs;
+};
 
 } // namespace app
 

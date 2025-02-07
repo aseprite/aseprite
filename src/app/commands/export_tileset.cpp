@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/commands/cmd_export_sprite_sheet.h"
@@ -20,14 +20,14 @@ namespace app {
 class ExportTilesetCommand : public ExportSpriteSheetCommand {
 public:
   ExportTilesetCommand();
+
 protected:
   void onResetValues() override;
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
 };
 
-ExportTilesetCommand::ExportTilesetCommand()
-  : ExportSpriteSheetCommand(CommandId::ExportTileset())
+ExportTilesetCommand::ExportTilesetCommand() : ExportSpriteSheetCommand(CommandId::ExportTileset())
 {
 }
 
@@ -43,8 +43,7 @@ void ExportTilesetCommand::onResetValues()
 
 bool ExportTilesetCommand::onEnabled(Context* ctx)
 {
-  if (ExportSpriteSheetCommand::onEnabled(ctx) &&
-      ctx->checkFlags(ContextFlags::HasActiveLayer)) {
+  if (ExportSpriteSheetCommand::onEnabled(ctx) && ctx->checkFlags(ContextFlags::HasActiveLayer)) {
     Site site = ctx->activeSite();
     if (site.layer() && site.layer()->isTilemap())
       return true;

@@ -6,15 +6,14 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "doc/image_spec.h"
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 namespace {
 
@@ -141,18 +140,18 @@ int ImageSpec_set_transparentColor(lua_State* L)
 }
 
 const luaL_Reg ImageSpec_methods[] = {
-  { "__gc", ImageSpec_gc },
-  { "__eq", ImageSpec_eq },
-  { nullptr, nullptr }
+  { "__gc",  ImageSpec_gc },
+  { "__eq",  ImageSpec_eq },
+  { nullptr, nullptr      }
 };
 
 const Property ImageSpec_properties[] = {
-  { "colorMode", ImageSpec_get_colorMode, ImageSpec_set_colorMode },
-  { "colorSpace", ImageSpec_get_colorSpace, ImageSpec_set_colorSpace },
-  { "width", ImageSpec_get_width, ImageSpec_set_width },
-  { "height", ImageSpec_get_height, ImageSpec_set_height },
+  { "colorMode",        ImageSpec_get_colorMode,        ImageSpec_set_colorMode        },
+  { "colorSpace",       ImageSpec_get_colorSpace,       ImageSpec_set_colorSpace       },
+  { "width",            ImageSpec_get_width,            ImageSpec_set_width            },
+  { "height",           ImageSpec_get_height,           ImageSpec_set_height           },
   { "transparentColor", ImageSpec_get_transparentColor, ImageSpec_set_transparentColor },
-  { nullptr, nullptr, nullptr }
+  { nullptr,            nullptr,                        nullptr                        }
 };
 
 } // anonymous namespace
@@ -172,5 +171,4 @@ doc::ImageSpec convert_args_into_image_spec(lua_State* L, int index)
   return ImageSpec_new(L, index);
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

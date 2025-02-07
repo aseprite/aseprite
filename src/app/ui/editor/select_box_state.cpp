@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/editor/select_box_state.h"
@@ -31,7 +31,7 @@ using namespace ui;
 
 SelectBoxState::SelectBoxState(SelectBoxDelegate* delegate, const gfx::Rect& rc, Flags flags)
   : m_delegate(delegate)
-  , m_rulers((int(flags) & int(Flags::PaddingRulers))? 6: 4)
+  , m_rulers((int(flags) & int(Flags::PaddingRulers)) ? 6 : 4)
   , m_rulersDragAlign(0)
   , m_selectingBox(false)
   , m_flags(flags)
@@ -75,19 +75,18 @@ gfx::Rect SelectBoxState::getBoxBounds() const
   int y1 = std::min(m_rulers[H1].position(), m_rulers[H2].position());
   int x2 = std::max(m_rulers[V1].position(), m_rulers[V2].position());
   int y2 = std::max(m_rulers[H1].position(), m_rulers[H2].position());
-  return gfx::Rect(x1, y1, x2-x1, y2-y1);
+  return gfx::Rect(x1, y1, x2 - x1, y2 - y1);
 }
 
 void SelectBoxState::setBoxBounds(const gfx::Rect& box)
 {
   m_rulers[H1] = Ruler(HORIZONTAL | TOP, box.y);
-  m_rulers[H2] = Ruler(HORIZONTAL | BOTTOM, box.y+box.h);
+  m_rulers[H2] = Ruler(HORIZONTAL | BOTTOM, box.y + box.h);
   m_rulers[V1] = Ruler(VERTICAL | LEFT, box.x);
-  m_rulers[V2] = Ruler(VERTICAL | RIGHT, box.x+box.w);
+  m_rulers[V2] = Ruler(VERTICAL | RIGHT, box.x + box.w);
   if (hasFlag(Flags::PaddingRulers)) {
-    const gfx::Size padding(
-      m_rulers[PV].position() - m_rulers[V2].position(),
-      m_rulers[PH].position() - m_rulers[H2].position());
+    const gfx::Size padding(m_rulers[PV].position() - m_rulers[V2].position(),
+                            m_rulers[PH].position() - m_rulers[H2].position());
     setPaddingBounds(padding);
   }
 }
@@ -131,9 +130,7 @@ void SelectBoxState::onBeforePopState(Editor* editor)
 bool SelectBoxState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
   if (msg->left() || msg->right()) {
-    m_startingPos =
-      editor->screenToEditor(msg->position())
-      - editor->mainTilePosition();
+    m_startingPos = editor->screenToEditor(msg->position()) - editor->mainTilePosition();
 
     if (hasFlag(Flags::Rulers) && !hasFlag(Flags::QuickPoint)) {
       m_rulersDragAlign = hitTestRulers(editor, msg->position(), true);
@@ -183,9 +180,7 @@ bool SelectBoxState::onMouseMove(Editor* editor, MouseMessage* msg)
   updateContextBar();
 
   if (hasFlag(Flags::Rulers) && !m_movingRulers.empty()) {
-    gfx::Point newPos =
-      editor->screenToEditor(msg->position())
-      - editor->mainTilePosition();
+    gfx::Point newPos = editor->screenToEditor(msg->position()) - editor->mainTilePosition();
 
     gfx::Point delta = newPos - m_startingPos;
 
@@ -195,7 +190,6 @@ bool SelectBoxState::onMouseMove(Editor* editor, MouseMessage* msg)
       Ruler& oppRuler = oppositeRuler(i);
 
       switch (ruler.align() & (HORIZONTAL | VERTICAL)) {
-
         case HORIZONTAL:
           if (hasFlag(Flags::PaddingRulers) && (i == H2)) {
             int pad = m_rulers[PH].position() - m_rulers[H2].position();
@@ -224,15 +218,15 @@ bool SelectBoxState::onMouseMove(Editor* editor, MouseMessage* msg)
 
   if (hasFlag(Flags::QuickBox) && m_selectingBox) {
     gfx::Point p1 = m_startingPos;
-    gfx::Point p2 =
-      editor->screenToEditor(msg->position())
-      - editor->mainTilePosition();
+    gfx::Point p2 = editor->screenToEditor(msg->position()) - editor->mainTilePosition();
 
     if (hasFlag(Flags::QuickPoint))
       p1 = p2;
 
-    if (p2.x < p1.x) std::swap(p1.x, p2.x);
-    if (p2.y < p1.y) std::swap(p1.y, p2.y);
+    if (p2.x < p1.x)
+      std::swap(p1.x, p2.x);
+    if (p2.y < p1.y)
+      std::swap(p1.y, p2.y);
     ++p2.x;
     ++p2.y;
 
@@ -313,8 +307,7 @@ bool SelectBoxState::requireBrushPreview()
 tools::Ink* SelectBoxState::getStateInk() const
 {
   if (hasFlag(Flags::QuickBox))
-    return App::instance()->toolBox()->getInkById(
-      tools::WellKnownInks::Selection);
+    return App::instance()->toolBox()->getInkById(tools::WellKnownInks::Selection);
   else
     return nullptr;
 }
@@ -347,24 +340,24 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
       const gfx::Color dark = doc::rgba(0, 0, 0, 128);
       // Top band
       if (rc.y > vp.y)
-        render->fillRect(dark, gfx::Rect(vp.x, vp.y, vp.w, rc.y-vp.y));
+        render->fillRect(dark, gfx::Rect(vp.x, vp.y, vp.w, rc.y - vp.y));
       // Left band
       if (rc.x > vp.x)
-        render->fillRect(dark, gfx::Rect(vp.x, rc.y, rc.x-vp.x, vp.y2()-rc.y));
+        render->fillRect(dark, gfx::Rect(vp.x, rc.y, rc.x - vp.x, vp.y2() - rc.y));
       if (hasFlag(Flags::VGrid)) {
         // Bottom band
         if (sp.y2() < vp.y2())
-          render->fillRect(dark, gfx::Rect(rc.x, sp.y2(), vp.x2()-rc.x, vp.y2()-sp.y2()));
+          render->fillRect(dark, gfx::Rect(rc.x, sp.y2(), vp.x2() - rc.x, vp.y2() - sp.y2()));
         // Right band
         if (hasFlag(Flags::HGrid)) {
           // VGrid Active, HGrid Active:
           if (sp.x2() < vp.x2())
-            render->fillRect(dark, gfx::Rect(sp.x2(), rc.y, vp.x2()-sp.x2(), sp.y2()-rc.y));
+            render->fillRect(dark, gfx::Rect(sp.x2(), rc.y, vp.x2() - sp.x2(), sp.y2() - rc.y));
         }
         else {
           // Just VGrid Active, HGrid disabled:
           if (rc.x2() < vp.x2())
-            render->fillRect(dark, gfx::Rect(rc.x2(), rc.y, vp.x2()-rc.x2(), sp.y2()-rc.y));
+            render->fillRect(dark, gfx::Rect(rc.x2(), rc.y, vp.x2() - rc.x2(), sp.y2() - rc.y));
         }
       }
       else {
@@ -372,10 +365,10 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
           // Just HGrid Active, VGrid disabled
           // Bottom band
           if (rc.y2() < vp.y2())
-            render->fillRect(dark, gfx::Rect(rc.x, rc.y2(), vp.x2()-rc.x, vp.y2()-rc.y2()));
+            render->fillRect(dark, gfx::Rect(rc.x, rc.y2(), vp.x2() - rc.x, vp.y2() - rc.y2()));
           // Right band
           if (sp.x2() < vp.x2())
-            render->fillRect(dark, gfx::Rect(sp.x2(), rc.y, vp.x2()-sp.x2(), rc.h));
+            render->fillRect(dark, gfx::Rect(sp.x2(), rc.y, vp.x2() - sp.x2(), rc.h));
         }
       }
 
@@ -384,33 +377,37 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
         std::vector<int> padXTips;
         std::vector<int> padYTips;
         if (rc.w > 0) {
-          for (int x=rc.x+rc.w; x<=sp.x+sp.w; x+=(rc.w+padding.w)) {
+          for (int x = rc.x + rc.w; x <= sp.x + sp.w; x += (rc.w + padding.w)) {
             if (x + padding.w > sp.x2())
-              render->fillRect(dark, gfx::Rect(x, rc.y, sp.x2()-x, sp.h-rc.y));
+              render->fillRect(dark, gfx::Rect(x, rc.y, sp.x2() - x, sp.h - rc.y));
             else
-              render->fillRect(dark, gfx::Rect(x, rc.y, padding.w, sp.h-rc.y));
+              render->fillRect(dark, gfx::Rect(x, rc.y, padding.w, sp.h - rc.y));
             padXTips.push_back(x);
           }
         }
         if (rc.h > 0) {
           // Draw horizontal dark chopped padding bands (to complete the dark grid)
-          for (int y=rc.y+rc.h; y<=sp.y+sp.h; y+=(rc.h+padding.h)) {
+          for (int y = rc.y + rc.h; y <= sp.y + sp.h; y += (rc.h + padding.h)) {
             for (const int& padXTip : padXTips) {
-              if (y+padding.h > sp.y2())
-                render->fillRect(dark, gfx::Rect(padXTip-rc.w, y, rc.w, sp.y2()-y));
+              if (y + padding.h > sp.y2())
+                render->fillRect(dark, gfx::Rect(padXTip - rc.w, y, rc.w, sp.y2() - y));
               else
-                render->fillRect(dark, gfx::Rect(padXTip-rc.w, y, rc.w, padding.h));
+                render->fillRect(dark, gfx::Rect(padXTip - rc.w, y, rc.w, padding.h));
             }
             if (!padXTips.empty()) {
               if (padXTips.back() + padding.w < sp.x2()) {
                 if (y + padding.h > sp.y2())
-                  render->fillRect(dark, gfx::Rect(padXTips.back() + padding.w, y,
-                                                   sp.x2() - padXTips.back() - padding.w,
-                                                   sp.y2() - y));
+                  render->fillRect(dark,
+                                   gfx::Rect(padXTips.back() + padding.w,
+                                             y,
+                                             sp.x2() - padXTips.back() - padding.w,
+                                             sp.y2() - y));
                 else
-                  render->fillRect(dark, gfx::Rect(padXTips.back() + padding.w, y,
-                                                  sp.x2() - padXTips.back() - padding.w,
-                                                  padding.h));
+                  render->fillRect(dark,
+                                   gfx::Rect(padXTips.back() + padding.w,
+                                             y,
+                                             sp.x2() - padXTips.back() - padding.w,
+                                             padding.h));
               }
             }
             padYTips.push_back(y);
@@ -421,19 +418,26 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
           if (!padXTips.empty() && !padYTips.empty()) {
             if (padXTips.back() + padding.w < sp.x2()) {
               for (const int& padYTip : padYTips)
-                render->fillRect(dark, gfx::Rect(padXTips.back() + padding.w, padYTip - rc.h,
-                                                 sp.x2() - padXTips.back() - padding.w, rc.h));
+                render->fillRect(dark,
+                                 gfx::Rect(padXTips.back() + padding.w,
+                                           padYTip - rc.h,
+                                           sp.x2() - padXTips.back() - padding.w,
+                                           rc.h));
               if (padYTips.back() + padding.h < sp.y2()) {
-                render->fillRect(dark, gfx::Rect(padXTips.back() + padding.w,
-                                                 padYTips.back() + padding.h,
-                                                 sp.x2() - padXTips.back() - padding.w,
-                                                 sp.y2() - padYTips.back() - padding.h));
+                render->fillRect(dark,
+                                 gfx::Rect(padXTips.back() + padding.w,
+                                           padYTips.back() + padding.h,
+                                           sp.x2() - padXTips.back() - padding.w,
+                                           sp.y2() - padYTips.back() - padding.h));
               }
             }
             if (padYTips.back() + padding.h < sp.y2()) {
               for (const int& padXTip : padXTips)
-                render->fillRect(dark, gfx::Rect(padXTip - rc.w, padYTips.back() + padding.h,
-                                                 rc.w, sp.y2() - padYTips.back() - padding.h));
+                render->fillRect(dark,
+                                 gfx::Rect(padXTip - rc.w,
+                                           padYTips.back() + padding.h,
+                                           rc.w,
+                                           sp.y2() - padYTips.back() - padding.h));
             }
           }
         }
@@ -441,34 +445,36 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
       else if (hasFlag(Flags::HGrid)) {
         if (rc.w > 0) {
           int lastX = 0;
-          for (int x=rc.x+rc.w; x<=sp.x+sp.w; x+=rc.w+padding.w) {
+          for (int x = rc.x + rc.w; x <= sp.x + sp.w; x += rc.w + padding.w) {
             if (x + padding.w > sp.x2())
-              render->fillRect(dark, gfx::Rect(x, rc.y, sp.x2()-x, rc.h));
+              render->fillRect(dark, gfx::Rect(x, rc.y, sp.x2() - x, rc.h));
             else
               render->fillRect(dark, gfx::Rect(x, rc.y, padding.w, rc.h));
             lastX = x;
           }
           if (!hasFlag(Flags::IncludePartialTiles) && (lastX > 0)) {
             if (lastX + padding.w < sp.x2())
-              render->fillRect(dark, gfx::Rect(lastX + padding.w, rc.y,
-                                               sp.x2() - lastX - padding.w, rc.h));
+              render->fillRect(
+                dark,
+                gfx::Rect(lastX + padding.w, rc.y, sp.x2() - lastX - padding.w, rc.h));
           }
         }
       }
       else if (hasFlag(Flags::VGrid)) {
         if (rc.h > 0) {
-        int lastY = 0;
-          for (int y=rc.y+rc.h; y<=sp.y+sp.h; y+=rc.h+padding.h) {
+          int lastY = 0;
+          for (int y = rc.y + rc.h; y <= sp.y + sp.h; y += rc.h + padding.h) {
             if (y + padding.h > sp.y2())
-              render->fillRect(dark, gfx::Rect(rc.x, y, rc.w, sp.y2()-y));
+              render->fillRect(dark, gfx::Rect(rc.x, y, rc.w, sp.y2() - y));
             else
               render->fillRect(dark, gfx::Rect(rc.x, y, rc.w, padding.h));
             lastY = y;
           }
           if (!hasFlag(Flags::IncludePartialTiles) && (lastY > 0)) {
             if (lastY + padding.h < sp.y2())
-              render->fillRect(dark, gfx::Rect(rc.x, lastY + padding.h,
-                                               rc.w, sp.y2() - lastY - padding.h));
+              render->fillRect(
+                dark,
+                gfx::Rect(rc.x, lastY + padding.h, rc.w, sp.y2() - lastY - padding.h));
           }
         }
       }
@@ -478,16 +484,16 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
       const gfx::Color dark = doc::rgba(0, 0, 0, 128);
       // Top band
       if (rc.y > vp.y)
-        render->fillRect(dark, gfx::Rect(vp.x, vp.y, vp.w, rc.y-vp.y));
+        render->fillRect(dark, gfx::Rect(vp.x, vp.y, vp.w, rc.y - vp.y));
       // Bottom band
       if (rc.y2() < vp.y2())
-        render->fillRect(dark, gfx::Rect(vp.x, rc.y2(), vp.w, vp.y2()-rc.y2()));
+        render->fillRect(dark, gfx::Rect(vp.x, rc.y2(), vp.w, vp.y2() - rc.y2()));
       // Left band
       if (rc.x > vp.x)
-        render->fillRect(dark, gfx::Rect(vp.x, rc.y, rc.x-vp.x, rc.h));
+        render->fillRect(dark, gfx::Rect(vp.x, rc.y, rc.x - vp.x, rc.h));
       // Right band
       if (rc.x2() < vp.x2())
-        render->fillRect(dark, gfx::Rect(rc.x2(), rc.y, vp.x2()-rc.x2(), rc.h));
+        render->fillRect(dark, gfx::Rect(rc.x2(), rc.y, vp.x2() - rc.x2(), rc.h));
     }
   }
 
@@ -495,32 +501,32 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
   if (hasFlag(Flags::PaddingRulers)) {
     if (hasFlag(Flags::HGrid) && hasFlag(Flags::VGrid)) {
       if (rc.w > 0 && padding.w == 0) {
-        for (int x=rc.x+rc.w*2+padding.w; x<=sp.x+sp.w; x+=rc.w+padding.w)
+        for (int x = rc.x + rc.w * 2 + padding.w; x <= sp.x + sp.w; x += rc.w + padding.w)
           render->drawLine(gridColor, x, rc.y, x, sp.y2());
-        for (int x=rc.x+rc.w+padding.w; x<=sp.x+sp.w; x+=rc.w+padding.w)
+        for (int x = rc.x + rc.w + padding.w; x <= sp.x + sp.w; x += rc.w + padding.w)
           render->drawLine(gridColor, x, rc.y, x, sp.y2());
       }
 
       if (rc.h > 0 && padding.h == 0) {
-        for (int y=rc.y+rc.h*2+padding.h; y<=sp.y+sp.h; y+=rc.h+padding.h)
+        for (int y = rc.y + rc.h * 2 + padding.h; y <= sp.y + sp.h; y += rc.h + padding.h)
           render->drawLine(gridColor, rc.x, y, sp.x2(), y);
-        for (int y=rc.y+rc.h+padding.h; y<=sp.y+sp.h; y+=rc.h+padding.h)
+        for (int y = rc.y + rc.h + padding.h; y <= sp.y + sp.h; y += rc.h + padding.h)
           render->drawLine(gridColor, rc.x, y, sp.x2(), y);
       }
     }
     else if (hasFlag(Flags::HGrid)) {
       if (rc.w > 0 && padding.w == 0) {
-        for (int x=rc.x+rc.w*2+padding.w; x<=sp.x+sp.w; x+=rc.w+padding.w)
+        for (int x = rc.x + rc.w * 2 + padding.w; x <= sp.x + sp.w; x += rc.w + padding.w)
           render->drawLine(gridColor, x, rc.y, x, rc.y2());
-        for (int x=rc.x+rc.w+padding.w; x<=sp.x+sp.w; x+=rc.w+padding.w)
+        for (int x = rc.x + rc.w + padding.w; x <= sp.x + sp.w; x += rc.w + padding.w)
           render->drawLine(gridColor, x, rc.y, x, rc.y2());
       }
     }
     else if (hasFlag(Flags::VGrid)) {
       if (rc.h > 0 && padding.h == 0) {
-        for (int y=rc.y+rc.h*2+padding.h; y<=sp.y+sp.h; y+=rc.h+padding.h)
+        for (int y = rc.y + rc.h * 2 + padding.h; y <= sp.y + sp.h; y += rc.h + padding.h)
           render->drawLine(gridColor, rc.x, y, rc.x2(), y);
-        for (int y=rc.y+rc.h+padding.h; y<=sp.y+sp.h; y+=rc.h+padding.h)
+        for (int y = rc.y + rc.h + padding.h; y <= sp.y + sp.h; y += rc.h + padding.h)
           render->drawLine(gridColor, rc.x, y, rc.x2(), y);
       }
     }
@@ -529,25 +535,25 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
     // Draw the grid rulers when padding is not posible (i.e. Flag::PaddingRulers=false)
     if (hasFlag(Flags::Grid)) {
       if (rc.w > 0) {
-        for (int x=rc.x+rc.w*2; x<=sp.x+sp.w; x+=rc.w)
-          render->drawLine(gridColor, x, rc.y, x, sp.y+sp.h);
+        for (int x = rc.x + rc.w * 2; x <= sp.x + sp.w; x += rc.w)
+          render->drawLine(gridColor, x, rc.y, x, sp.y + sp.h);
       }
 
       if (rc.h > 0) {
-        for (int y=rc.y+rc.h*2; y<=sp.y+sp.h; y+=rc.h)
-          render->drawLine(gridColor, rc.x, y, sp.x+sp.w, y);
+        for (int y = rc.y + rc.h * 2; y <= sp.y + sp.h; y += rc.h)
+          render->drawLine(gridColor, rc.x, y, sp.x + sp.w, y);
       }
     }
     else if (hasFlag(Flags::HGrid)) {
       if (rc.w > 0) {
-        for (int x=rc.x+rc.w*2; x<=sp.x+sp.w; x+=rc.w)
-          render->drawLine(gridColor, x, rc.y, x, rc.y+rc.h);
+        for (int x = rc.x + rc.w * 2; x <= sp.x + sp.w; x += rc.w)
+          render->drawLine(gridColor, x, rc.y, x, rc.y + rc.h);
       }
     }
     else if (hasFlag(Flags::VGrid)) {
       if (rc.h > 0) {
-        for (int y=rc.y+rc.h*2; y<=sp.y+sp.h; y+=rc.h)
-          render->drawLine(gridColor, rc.x, y, rc.x+rc.w, y);
+        for (int y = rc.y + rc.h * 2; y <= sp.y + sp.h; y += rc.h)
+          render->drawLine(gridColor, rc.x, y, rc.x + rc.w, y);
       }
     }
   }
@@ -556,16 +562,15 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
   if (hasFlag(Flags::Rulers)) {
     for (const Ruler& ruler : m_rulers) {
       switch (ruler.align() & (HORIZONTAL | VERTICAL)) {
-
         case HORIZONTAL: {
-          const int y = ruler.position()+mainOffset.y;
-          render->drawLine(rulerColor, vp.x, y, vp.x+vp.w-1, y);
+          const int y = ruler.position() + mainOffset.y;
+          render->drawLine(rulerColor, vp.x, y, vp.x + vp.w - 1, y);
           break;
         }
 
         case VERTICAL: {
-          const int x = ruler.position()+mainOffset.x;
-          render->drawLine(rulerColor, x, vp.y, x, vp.y+vp.h-1);
+          const int x = ruler.position() + mainOffset.x;
+          render->drawLine(rulerColor, x, vp.y, x, vp.y + vp.h - 1);
           break;
         }
       }
@@ -607,7 +612,7 @@ int SelectBoxState::hitTestRulers(Editor* editor,
   if (updateMovingRulers)
     m_movingRulers.clear();
 
-  for (int i=0; i<int(m_rulers.size()); ++i) {
+  for (int i = 0; i < int(m_rulers.size()); ++i) {
     const Ruler& ruler = m_rulers[i];
     const Ruler& oppRuler = oppositeRuler(i);
 
@@ -625,13 +630,12 @@ int SelectBoxState::hitTestRulers(Editor* editor,
 
   // Check moving all rulers at the same time
   if (align == 0 && !hasFlag(Flags::QuickBox)) {
-    if (editor->editorToScreen(
-          getBoxBounds().offset(editor->mainTilePosition()))
-        .contains(mousePos)) {
+    if (editor->editorToScreen(getBoxBounds().offset(editor->mainTilePosition()))
+          .contains(mousePos)) {
       align = LEFT | TOP | RIGHT | BOTTOM;
       if (updateMovingRulers) {
         // Add all rulers
-        for (int i=0; i<m_rulers.size(); ++i)
+        for (int i = 0; i < m_rulers.size(); ++i)
           m_movingRulers.push_back(i);
       }
     }
@@ -646,24 +650,21 @@ int SelectBoxState::hitTestRuler(Editor* editor,
                                  const gfx::Point& mousePos)
 {
   gfx::Point pt = editor->mainTilePosition();
-  pt = editor->editorToScreen(
-    pt + gfx::Point(ruler.position(), ruler.position()));
+  pt = editor->editorToScreen(pt + gfx::Point(ruler.position(), ruler.position()));
 
   switch (ruler.align() & (HORIZONTAL | VERTICAL)) {
-
     case HORIZONTAL:
       if (!hasFlag(Flags::PaddingRulers)) {
         if (ruler.position() <= oppRuler.position()) {
-          if (mousePos.y <= pt.y+2*guiscale())
+          if (mousePos.y <= pt.y + 2 * guiscale())
             return ruler.align();
         }
         else if (ruler.position() > oppRuler.position()) {
-          if (mousePos.y >= pt.y-2*guiscale())
+          if (mousePos.y >= pt.y - 2 * guiscale())
             return ruler.align();
         }
       }
-      if (mousePos.y >= pt.y-2*guiscale() &&
-          mousePos.y <= pt.y+2*guiscale()) {
+      if (mousePos.y >= pt.y - 2 * guiscale() && mousePos.y <= pt.y + 2 * guiscale()) {
         return ruler.align();
       }
       break;
@@ -671,16 +672,15 @@ int SelectBoxState::hitTestRuler(Editor* editor,
     case VERTICAL:
       if (!hasFlag(Flags::PaddingRulers)) {
         if (ruler.position() <= oppRuler.position()) {
-          if (mousePos.x <= pt.x+2*guiscale())
+          if (mousePos.x <= pt.x + 2 * guiscale())
             return ruler.align();
         }
         else if (ruler.position() > oppRuler.position()) {
-          if (mousePos.x >= pt.x-2*guiscale())
+          if (mousePos.x >= pt.x - 2 * guiscale())
             return ruler.align();
         }
       }
-      if (mousePos.x >= pt.x-2*guiscale() &&
-          mousePos.x <= pt.x+2*guiscale())
+      if (mousePos.x >= pt.x - 2 * guiscale() && mousePos.x <= pt.x + 2 * guiscale())
         return ruler.align();
       break;
   }
@@ -696,14 +696,14 @@ bool SelectBoxState::hasFlag(Flags flag) const
 CursorType SelectBoxState::cursorFromAlign(const int align) const
 {
   switch (align & (LEFT | TOP | RIGHT | BOTTOM)) {
-    case LEFT: return kSizeWCursor;
-    case RIGHT: return kSizeECursor;
-    case TOP: return kSizeNCursor;
-    case TOP | LEFT: return kSizeNWCursor;
-    case TOP | RIGHT: return kSizeNECursor;
-    case BOTTOM: return kSizeSCursor;
-    case BOTTOM | LEFT: return kSizeSWCursor;
-    case BOTTOM | RIGHT: return kSizeSECursor;
+    case LEFT:                        return kSizeWCursor;
+    case RIGHT:                       return kSizeECursor;
+    case TOP:                         return kSizeNCursor;
+    case TOP | LEFT:                  return kSizeNWCursor;
+    case TOP | RIGHT:                 return kSizeNECursor;
+    case BOTTOM:                      return kSizeSCursor;
+    case BOTTOM | LEFT:               return kSizeSWCursor;
+    case BOTTOM | RIGHT:              return kSizeSECursor;
     case TOP | BOTTOM | LEFT | RIGHT: return kMoveCursor;
   }
   return kArrowCursor;

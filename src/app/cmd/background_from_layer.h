@@ -11,20 +11,18 @@
 #include "app/cmd/with_layer.h"
 #include "app/cmd_sequence.h"
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class BackgroundFromLayer : public CmdSequence
-                            , public WithLayer {
-  public:
-    BackgroundFromLayer(Layer* layer);
+class BackgroundFromLayer : public CmdSequence,
+                            public WithLayer {
+public:
+  BackgroundFromLayer(Layer* layer);
 
-  protected:
-    void onExecute() override;
-  };
+protected:
+  void onExecute() override;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

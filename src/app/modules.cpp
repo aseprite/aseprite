@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/modules.h"
@@ -16,32 +16,28 @@
 namespace app {
 
 struct Module {
-  const char *name;
+  const char* name;
   int (*init)();
   void (*exit)();
   int reqs;
   bool installed;
 };
 
-static Module module[] =
-{
-#define DEF_MODULE(name, reqs) \
-  { #name, init_module_##name, exit_module_##name, (reqs), false }
+static Module module[] = {
+#define DEF_MODULE(name, reqs) { #name, init_module_##name, exit_module_##name, (reqs), false }
 
   // This sorting is very important because last modules depend of
   // first ones.
 
-  DEF_MODULE(palette,           0),
-#ifdef ENABLE_UI
-  DEF_MODULE(gui,               REQUIRE_INTERFACE),
-#endif
+  DEF_MODULE(palette, 0),
+  DEF_MODULE(gui, REQUIRE_INTERFACE),
 };
 
 static int modules = sizeof(module) / sizeof(Module);
 
 LegacyModules::LegacyModules(int requirements)
 {
-  for (int c=0; c<modules; c++)
+  for (int c = 0; c < modules; c++)
     if ((module[c].reqs & requirements) == module[c].reqs) {
       LOG("MODS: Installing module: %s\n", module[c].name);
 
@@ -55,7 +51,7 @@ LegacyModules::LegacyModules(int requirements)
 
 LegacyModules::~LegacyModules()
 {
-  for (int c=modules-1; c>=0; c--)
+  for (int c = modules - 1; c >= 0; c--)
     if (module[c].installed) {
       LOG("MODS: Unstalling module: %s\n", module[c].name);
       (*module[c].exit)();

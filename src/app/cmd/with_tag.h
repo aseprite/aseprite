@@ -12,23 +12,21 @@
 #include "doc/object_id.h"
 
 namespace doc {
-  class Tag;
+class Tag;
 }
 
-namespace app {
-namespace cmd {
-  using namespace doc;
+namespace app { namespace cmd {
+using namespace doc;
 
-  class WithTag {
-  public:
-    WithTag(Tag* tag);
-    Tag* tag();
+class WithTag {
+public:
+  WithTag(Tag* tag);
+  Tag* tag();
 
-  private:
-    ObjectId m_tagId;
-  };
+private:
+  ObjectId m_tagId;
+};
 
-} // namespace cmd
-} // namespace app
+}} // namespace app::cmd
 
 #endif

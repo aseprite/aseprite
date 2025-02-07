@@ -1,11 +1,12 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -49,9 +50,12 @@ SetLoopSectionCommand::SetLoopSectionCommand()
 void SetLoopSectionCommand::onLoadParams(const Params& params)
 {
   std::string action = params.get("action");
-  if (action == "on") m_action = Action::On;
-  else if (action == "off") m_action = Action::Off;
-  else m_action = Action::Auto;
+  if (action == "on")
+    m_action = Action::On;
+  else if (action == "off")
+    m_action = Action::Off;
+  else
+    m_action = Action::Auto;
 
   std::string begin = params.get("begin");
   std::string end = params.get("end");
@@ -77,7 +81,6 @@ void SetLoopSectionCommand::onExecute(Context* ctx)
   bool on = false;
 
   switch (m_action) {
-
     case Action::Auto: {
       auto range = App::instance()->timeline()->range();
       if (range.enabled() && (range.frames() > 1)) {
@@ -91,14 +94,9 @@ void SetLoopSectionCommand::onExecute(Context* ctx)
       break;
     }
 
-    case Action::On:
-      on = true;
-      break;
+    case Action::On:  on = true; break;
 
-    case Action::Off:
-      on = false;
-      break;
-
+    case Action::Off: on = false; break;
   }
 
   doc::Tag* loopTag = get_loop_tag(sprite);
@@ -111,8 +109,7 @@ void SetLoopSectionCommand::onExecute(Context* ctx)
       tx(new cmd::AddTag(sprite, loopTag));
       tx.commit();
     }
-    else if (loopTag->fromFrame() != begin ||
-             loopTag->toFrame() != end) {
+    else if (loopTag->fromFrame() != begin || loopTag->toFrame() != end) {
       ContextWriter writer(ctx);
       Tx tx(writer, "Set Loop Range");
       tx(new cmd::SetTagRange(loopTag, begin, end));

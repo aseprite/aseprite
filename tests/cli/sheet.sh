@@ -88,9 +88,9 @@ $ASEPRITE -b -script "$d/compare.lua" || exit 1
 
 d=$t/split-layers-sheet-data
 $ASEPRITE -b --split-layers sprites/1empty3.aseprite \
-	  --filename-format "{layer}-{frame}" \
-	  --sheet "$d/sheet.png" \
-	  --data "$d/sheet.json" || exit 1
+          --filename-format "{layer}-{frame}" \
+          --sheet "$d/sheet.png" \
+          --data "$d/sheet.json" || exit 1
 cat >$d/compare.lua <<EOF
 local data = json.decode(io.open('$d/sheet.json'):read('a'))
 assert(data.meta.size.w == 96)
@@ -138,23 +138,23 @@ $ASEPRITE -b -script "$d/compare.lua" || exit 1
 
 d=$t/sheet-trim-without-ignore-empty
 $ASEPRITE -b \
-	  -list-tags \
-	  -layer "c" \
-	  "sprites/tags3.aseprite" \
-	  -trim \
-	  -sheet-pack \
-	  -sheet "$d/sheet1.png" \
-	  -format json-array \
-	  -data "$d/sheet1.json" || exit 1
+          -list-tags \
+          -layer "c" \
+          "sprites/tags3.aseprite" \
+          -trim \
+          -sheet-pack \
+          -sheet "$d/sheet1.png" \
+          -format json-array \
+          -data "$d/sheet1.json" || exit 1
 $ASEPRITE -b \
-	  -list-tags \
-	  -layer "c" \
-	  "sprites/tags3.aseprite" \
-	  -trim -ignore-empty \
-	  -sheet-pack \
-	  -sheet "$d/sheet2.png" \
-	  -format json-array \
-	  -data "$d/sheet2.json" || exit 1
+          -list-tags \
+          -layer "c" \
+          "sprites/tags3.aseprite" \
+          -trim -ignore-empty \
+          -sheet-pack \
+          -sheet "$d/sheet2.png" \
+          -format json-array \
+          -data "$d/sheet2.json" || exit 1
 
 cat >$d/check.lua <<EOF
 local sheet1 = json.decode(io.open('$d/sheet1.json'):read('a'))
@@ -168,76 +168,76 @@ $ASEPRITE -b -script "$d/check.lua" || exit 1
 
 d=$t/sheet-columns-and-rows
 $ASEPRITE -b -split-layers sprites/1empty3.aseprite \
-	  -filename-format "{layer}{frame}" \
-	  -sheet "$d/sheet1.png" \
-	  -sheet-type rows \
-	  -sheet-columns 3 \
-	  -data "$d/sheet1.json" || exit $?
+          -filename-format "{layer}{frame}" \
+          -sheet "$d/sheet1.png" \
+          -sheet-type rows \
+          -sheet-columns 3 \
+          -data "$d/sheet1.json" || exit $?
 $ASEPRITE -b -split-layers sprites/1empty3.aseprite \
-	  -filename-format "{layer}{frame}" \
-	  -sheet "$d/sheet2.png" \
-	  -sheet-type columns \
-	  -sheet-rows 3 \
-	  -data "$d/sheet2.json" || exit $?
+          -filename-format "{layer}{frame}" \
+          -sheet "$d/sheet2.png" \
+          -sheet-type columns \
+          -sheet-rows 3 \
+          -data "$d/sheet2.json" || exit $?
 $ASEPRITE -b \
-	  -script-param file1=$d/sheet1.json \
-	  -script-param file2=$d/sheet2.json \
-	  -script scripts/compare_sprite_sheets.lua || exit $?
+          -script-param file1=$d/sheet1.json \
+          -script-param file2=$d/sheet2.json \
+          -script scripts/compare_sprite_sheets.lua || exit $?
 
 # -sheet -trim vs -trim-sprite
 
 d=$t/sheet-columns-and-rows
 $ASEPRITE -b -split-layers sprites/1empty3.aseprite \
-	  -trim \
-	  -filename-format "{layer}{frame}" \
-	  -sheet "$d/sheet1.png" \
-	  -data "$d/sheet1.json" || exit $?
+          -trim \
+          -filename-format "{layer}{frame}" \
+          -sheet "$d/sheet1.png" \
+          -data "$d/sheet1.json" || exit $?
 
 $ASEPRITE -b -split-layers sprites/1empty3.aseprite \
-	  -trim-sprite \
-	  -filename-format "{layer}{frame}" \
-	  -sheet "$d/sheet2.png" \
-	  -data "$d/sheet2.json" || exit $?
+          -trim-sprite \
+          -filename-format "{layer}{frame}" \
+          -sheet "$d/sheet2.png" \
+          -data "$d/sheet2.json" || exit $?
 $ASEPRITE -b \
-	  -script-param file1=$d/sheet1.json \
-	  -script-param file2=$d/sheet2.json \
-	  -script scripts/compare_sprite_sheets.lua || exit $?
+          -script-param file1=$d/sheet1.json \
+          -script-param file2=$d/sheet2.json \
+          -script scripts/compare_sprite_sheets.lua || exit $?
 
 # Test all sprite sheet types
 # -sheet horizontal/vertical/rows/columns/packed
 d=$t/sheet-all-types
 for type in horizontal vertical rows columns packed ; do
     $ASEPRITE -b "sprites/tags3.aseprite" \
-	      -sheet-type $type -sheet "$d/$type.png" \
-	      -format json-array -data "$d/$type.json" || exit $?
+              -sheet-type $type -sheet "$d/$type.png" \
+              -format json-array -data "$d/$type.json" || exit $?
 
     $ASEPRITE -b -split-layers "sprites/tags3.aseprite" \
-	      -sheet-type $type -sheet "$d/$type-layers.png" \
-	      -format json-array -data "$d/$type-layers.json" || exit $?
+              -sheet-type $type -sheet "$d/$type-layers.png" \
+              -format json-array -data "$d/$type-layers.json" || exit $?
 
     $ASEPRITE -b -split-layers -merge-duplicates "sprites/tags3.aseprite" \
-	      -sheet-type $type -sheet "$d/$type-layers-merge-duplicates.png" \
-	      -format json-array -data "$d/$type-layers-merge-duplicates.json" || exit $?
+              -sheet-type $type -sheet "$d/$type-layers-merge-duplicates.png" \
+              -format json-array -data "$d/$type-layers-merge-duplicates.json" || exit $?
 
     $ASEPRITE -b -split-tags "sprites/tags3.aseprite" \
-	      -sheet-type $type -sheet "$d/$type-tags.png" \
-	      -format json-array -data "$d/$type-tags.json" || exit $?
+              -sheet-type $type -sheet "$d/$type-tags.png" \
+              -format json-array -data "$d/$type-tags.json" || exit $?
 
     $ASEPRITE -b -split-tags -trim "sprites/tags3.aseprite" \
-	      -sheet-type $type -sheet "$d/$type-tags-trim.png" \
-	      -format json-array -data "$d/$type-tags-trim.json" || exit $?
+              -sheet-type $type -sheet "$d/$type-tags-trim.png" \
+              -format json-array -data "$d/$type-tags-trim.json" || exit $?
 
     $ASEPRITE -b -split-layers -split-tags "sprites/tags3.aseprite" \
-	      -sheet-type $type -sheet "$d/$type-layer-tags.png" \
-	      -format json-array -data "$d/$type-layer-tags.json" || exit $?
+              -sheet-type $type -sheet "$d/$type-layer-tags.png" \
+              -format json-array -data "$d/$type-layer-tags.json" || exit $?
 done
 
 for type in horizontal vertical rows columns ; do
     for subtype in "" "-layers" "-layers-merge-duplicates" "-tags" "-tags-trim" "-layer-tags" ; do
-	$ASEPRITE -b \
-		  -script-param file1=$d/packed$subtype.json \
-		  -script-param file2=$d/$type$subtype.json \
-		  -script scripts/compare_sprite_sheets.lua || exit $?
+        $ASEPRITE -b \
+                  -script-param file1=$d/packed$subtype.json \
+                  -script-param file2=$d/$type$subtype.json \
+                  -script scripts/compare_sprite_sheets.lua || exit $?
     done
 done
 
@@ -247,13 +247,13 @@ done
 d=$t/ticket-407
 for layer in a b ; do
     $ASEPRITE -b -layer "$layer" "sprites/point4frames.aseprite" \
-	      -trim \
-	      -data "$d/data1-$layer.json" \
-	      -format json-array -sheet "$d/sheet1-$layer.png" || exit 1
+              -trim \
+              -data "$d/data1-$layer.json" \
+              -format json-array -sheet "$d/sheet1-$layer.png" || exit 1
     $ASEPRITE -b -layer "$layer" "sprites/point4frames.aseprite" \
-	      -trim -merge-duplicates \
-	      -data "$d/data2-$layer.json" \
-	      -format json-array -sheet "$d/sheet2-$layer.png" || exit 1
+              -trim -merge-duplicates \
+              -data "$d/data2-$layer.json" \
+              -format json-array -sheet "$d/sheet2-$layer.png" || exit 1
     cat >$d/compare.lua <<EOF
 local data1 = json.decode(io.open('$d/data1-$layer.json'):read('a'))
 local data2 = json.decode(io.open('$d/data2-$layer.json'):read('a'))
@@ -274,16 +274,16 @@ done
 # different sprites in the same texture atlas.
 d=$t/ticket-407-w-atlas
 $ASEPRITE -b \
-	  -layer a "sprites/point4frames.aseprite" \
-	  "sprites/point2frames.aseprite" \
-	  -data "$d/data1.json" \
-	  -format json-array -sheet "$d/sheet1.png" || exit 1
+          -layer a "sprites/point4frames.aseprite" \
+          "sprites/point2frames.aseprite" \
+          -data "$d/data1.json" \
+          -format json-array -sheet "$d/sheet1.png" || exit 1
 $ASEPRITE -b \
-	  -layer a "sprites/point4frames.aseprite" \
-	  "sprites/point2frames.aseprite" \
-	  -trim \
-	  -data "$d/data2.json" \
-	  -format json-array -sheet-pack -sheet "$d/sheet2.png" || exit 1
+          -layer a "sprites/point4frames.aseprite" \
+          "sprites/point2frames.aseprite" \
+          -trim \
+          -data "$d/data2.json" \
+          -format json-array -sheet-pack -sheet "$d/sheet2.png" || exit 1
 cat >$d/compare.lua <<EOF
 local data1 = json.decode(io.open('$d/data1.json'):read('a'))
 local data2 = json.decode(io.open('$d/data2.json'):read('a'))
@@ -396,10 +396,10 @@ $ASEPRITE -b -script "$d/check.lua" || exit 1
 # Test solution to #1514 using new --tagname-format
 d=$t/issue-1514
 $ASEPRITE -b "sprites/1empty3.aseprite" "sprites/tags3.aseprite" \
-	  -data "$d/atlas.json" \
-	  -format json-array \
-	  -sheet "$d/atlas.png" \
-	  -list-tags -tagname-format="{title}-{tag}" || exit 1
+          -data "$d/atlas.json" \
+          -format json-array \
+          -sheet "$d/atlas.png" \
+          -list-tags -tagname-format="{title}-{tag}" || exit 1
 cat >$d/compare.lua <<EOF
 local data = json.decode(io.open('$d/atlas.json'):read('a'))
 assert(#data.meta.frameTags == 5)

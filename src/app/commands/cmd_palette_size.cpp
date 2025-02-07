@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/cmd/set_palette.h"
@@ -36,8 +36,7 @@ private:
   int m_size;
 };
 
-PaletteSizeCommand::PaletteSizeCommand()
-  : Command(CommandId::PaletteSize(), CmdRecordableFlag)
+PaletteSizeCommand::PaletteSizeCommand() : Command(CommandId::PaletteSize(), CmdRecordableFlag)
 {
   m_size = 0;
 }
@@ -58,9 +57,8 @@ void PaletteSizeCommand::onExecute(Context* context)
   const frame_t frame = reader.frame();
   ASSERT(reader.palette());
   Palette palette(*reader.palette());
-  int ncolors = (m_size != 0 ? m_size: palette.size());
+  int ncolors = (m_size != 0 ? m_size : palette.size());
 
-#ifdef ENABLE_UI
   if (m_size == 0 && context->isUIAvailable()) {
     app::gen::PaletteSize window;
     window.colors()->setTextf("%d", ncolors);
@@ -70,7 +68,6 @@ void PaletteSizeCommand::onExecute(Context* context)
 
     ncolors = window.colors()->textInt();
   }
-#endif
 
   if (ncolors == palette.size())
     return;

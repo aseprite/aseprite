@@ -12,21 +12,23 @@
 
 namespace app {
 
-  template<typename T>
-  inline T wrap_value(const T x, const T size) {
-    if (x < T(0))
-      return size - (-(x+1) % size) - 1;
-    else
-      return x % size;
-  }
+template<typename T>
+inline T wrap_value(const T x, const T size)
+{
+  if (x < T(0))
+    return size - (-(x + 1) % size) - 1;
+  else
+    return x % size;
+}
 
-  template<>
-  inline double wrap_value(const double x, const double size) {
-    if (x < 0.0)
-      return size - std::fmod(-(x+1.0), size) - 1.0;
-    else
-      return std::fmod(x, size);
-  }
+template<>
+inline double wrap_value(const double x, const double size)
+{
+  if (x < 0.0)
+    return size - std::fmod(-(x + 1.0), size) - 1.0;
+  else
+    return std::fmod(x, size);
+}
 
 } // namespace app
 

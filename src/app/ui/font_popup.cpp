@@ -6,7 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/font_popup.h"
@@ -60,41 +60,46 @@ public:
   FontItem(const std::string& fn)
     : ListItem(base::get_file_title(fn))
     , m_image(g_thumbnails[fn])
-    , m_filename(fn) {
+    , m_filename(fn)
+  {
   }
 
-  const std::string& filename() const {
-    return m_filename;
-  }
+  const std::string& filename() const { return m_filename; }
 
 private:
-  void onPaint(PaintEvent& ev) override {
+  void onPaint(PaintEvent& ev) override
+  {
     ListItem::onPaint(ev);
 
     if (m_image) {
       Graphics* g = ev.graphics();
-      os::SurfaceRef sur = os::instance()->makeRgbaSurface(m_image->width(),
-                                                           m_image->height());
+      os::SurfaceRef sur = os::instance()->makeRgbaSurface(m_image->width(), m_image->height());
 
-      convert_image_to_surface(
-        m_image.get(), nullptr, sur.get(),
-        0, 0, 0, 0, m_image->width(), m_image->height());
+      convert_image_to_surface(m_image.get(),
+                               nullptr,
+                               sur.get(),
+                               0,
+                               0,
+                               0,
+                               0,
+                               m_image->width(),
+                               m_image->height());
 
-      g->drawRgbaSurface(sur.get(), textWidth()+4, 0);
+      g->drawRgbaSurface(sur.get(), textWidth() + 4, 0);
     }
   }
 
-  void onSizeHint(SizeHintEvent& ev) override {
+  void onSizeHint(SizeHintEvent& ev) override
+  {
     ListItem::onSizeHint(ev);
     if (m_image) {
       gfx::Size sz = ev.sizeHint();
-      ev.setSizeHint(
-        sz.w + 4 + m_image->width(),
-        std::max(sz.h, m_image->height()));
+      ev.setSizeHint(sz.w + 4 + m_image->width(), std::max(sz.h, m_image->height()));
     }
   }
 
-  void onSelect(bool selected) override {
+  void onSelect(bool selected) override
+  {
     if (!selected || m_image)
       return;
 
@@ -106,15 +111,12 @@ private:
     gfx::Color color = theme->colors.text();
 
     try {
-      m_image.reset(
-        render_text(
-          m_filename, 16,
-          "ABCDEabcde",             // TODO custom text
-          doc::rgba(gfx::getr(color),
-                    gfx::getg(color),
-                    gfx::getb(color),
-                    gfx::geta(color)),
-          true));                   // antialias
+      m_image.reset(render_text(
+        m_filename,
+        16,
+        "ABCDEabcde", // TODO custom text
+        doc::rgba(gfx::getr(color), gfx::getg(color), gfx::getb(color), gfx::geta(color)),
+        true)); // antialias
 
       View* view = View::getView(listbox);
       view->updateView();
@@ -140,15 +142,15 @@ FontPopup::FontPopup()
   , m_popup(new gen::FontPopup())
 {
   setAutoRemap(false);
-  setBorder(gfx::Border(4*guiscale()));
+  setBorder(gfx::Border(4 * guiscale()));
 
   addChild(m_popup);
 
-  m_popup->search()->Change.connect([this]{ onSearchChange(); });
-  m_popup->loadFont()->Click.connect([this]{ onLoadFont(); });
+  m_popup->search()->Change.connect([this] { onSearchChange(); });
+  m_popup->loadFont()->Click.connect([this] { onLoadFont(); });
   m_listBox.setFocusMagnet(true);
-  m_listBox.Change.connect([this]{ onChangeFont(); });
-  m_listBox.DoubleClickItem.connect([this]{ onLoadFont(); });
+  m_listBox.Change.connect([this] { onChangeFont(); });
+  m_listBox.DoubleClickItem.connect([this] { onLoadFont(); });
 
   m_popup->view()->attachToView(&m_listBox);
 
@@ -159,25 +161,20 @@ FontPopup::FontPopup()
   // directories (fontDirs)
   base::paths files;
   for (const auto& fontDir : fontDirs) {
-    for (const auto& file : base::list_files(fontDir)) {
-      std::string fullpath = base::join_path(fontDir, file);
-      if (base::is_file(fullpath))
-        files.push_back(fullpath);
+    for (const auto& file : base::list_files(fontDir, base::ItemType::Files)) {
+      files.push_back(base::join_path(fontDir, file));
     }
   }
 
   // Sort all files by "file title"
-  std::sort(
-    files.begin(), files.end(),
-    [](const std::string& a, const std::string& b){
-      return base::utf8_icmp(base::get_file_title(a), base::get_file_title(b)) < 0;
-    });
+  std::sort(files.begin(), files.end(), [](const std::string& a, const std::string& b) {
+    return base::utf8_icmp(base::get_file_title(a), base::get_file_title(b)) < 0;
+  });
 
   // Create one FontItem for each font
   for (auto& file : files) {
     std::string ext = base::string_to_lower(base::get_file_extension(file));
-    if (ext == "ttf" || ext == "ttc" ||
-        ext == "otf" || ext == "dfont")
+    if (ext == "ttf" || ext == "ttc" || ext == "otf" || ext == "dfont")
       m_listBox.addChild(new FontItem(file));
   }
 
@@ -185,13 +182,13 @@ FontPopup::FontPopup()
     m_listBox.addChild(new ListItem(Strings::font_popup_empty_fonts()));
 }
 
-void FontPopup::showPopup(Display* display,
-                          const gfx::Rect& buttonBounds)
+void FontPopup::showPopup(Display* display, const gfx::Rect& buttonBounds)
 {
   m_popup->loadFont()->setEnabled(false);
   m_listBox.selectChild(NULL);
 
-  ui::fit_bounds(display, this,
+  ui::fit_bounds(display,
+                 this,
                  gfx::Rect(buttonBounds.x, buttonBounds.y2(), 32, 32),
                  [](const gfx::Rect& workarea,
                     gfx::Rect& bounds,
@@ -201,7 +198,8 @@ void FontPopup::showPopup(Display* display,
                  });
 
   // Setup the hot-region
-  setHotRegion(gfx::Region(gfx::Rect(boundsOnScreen()).enlarge(32*guiscale()*display->scale())));
+  setHotRegion(
+    gfx::Region(gfx::Rect(boundsOnScreen()).enlarge(32 * guiscale() * display->scale())));
 
   openWindow();
 }
@@ -236,7 +234,7 @@ void FontPopup::onLoadFont()
 
   std::string filename = child->filename();
   if (base::is_file(filename))
-    Load(filename);             // Fire Load signal
+    Load(filename); // Fire Load signal
 
   closeWindow(nullptr);
 }

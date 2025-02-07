@@ -1,11 +1,12 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/app.h"
@@ -14,6 +15,7 @@
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/doc_api.h"
+#include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
 #include "app/tx.h"
 #include "base/convert_to.h"
@@ -35,13 +37,10 @@ protected:
   void onLoadParams(const Params& params) override;
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
 
 private:
-  enum Target {
-    ALL_FRAMES = -1,
-    CURRENT_RANGE = 0,
-    SPECIFIC_FRAME = 1
-  };
+  enum Target { ALL_FRAMES = -1, CURRENT_RANGE = 0, SPECIFIC_FRAME = 1 };
 
   // Frame to be shown. It can be ALL_FRAMES, CURRENT_RANGE, or a
   // number indicating a specific frame (1 is the first frame).
@@ -84,10 +83,7 @@ void FramePropertiesCommand::onExecute(Context* context)
   SelectedFrames selFrames;
 
   switch (m_target) {
-
-    case ALL_FRAMES:
-      selFrames.insert(0, sprite->lastFrame());
-      break;
+    case ALL_FRAMES:    selFrames.insert(0, sprite->lastFrame()); break;
 
     case CURRENT_RANGE: {
       Site site = context->activeSite();
@@ -100,9 +96,7 @@ void FramePropertiesCommand::onExecute(Context* context)
       break;
     }
 
-    case SPECIFIC_FRAME:
-      selFrames.insert(m_frame-base);
-      break;
+    case SPECIFIC_FRAME: selFrames.insert(m_frame - base); break;
   }
 
   ASSERT(!selFrames.empty());
@@ -110,17 +104,16 @@ void FramePropertiesCommand::onExecute(Context* context)
     return;
 
   if (selFrames.size() == 1)
-    window.frame()->setTextf("%d", selFrames.firstFrame()+base);
+    window.frame()->setTextf("%d", selFrames.firstFrame() + base);
   else if (selFrames.ranges() == 1) {
     window.frame()->setTextf("[%d...%d]",
-                             selFrames.firstFrame()+base,
-                             selFrames.lastFrame()+base);
+                             selFrames.firstFrame() + base,
+                             selFrames.lastFrame() + base);
   }
   else
     window.frame()->setTextf("Multiple Frames");
 
-  window.frlen()->setTextf(
-    "%d", sprite->frameDuration(selFrames.firstFrame()));
+  window.frlen()->setTextf("%d", sprite->frameDuration(selFrames.firstFrame()));
 
   window.openWindowInForeground();
   if (window.closer() == window.ok()) {
@@ -135,6 +128,15 @@ void FramePropertiesCommand::onExecute(Context* context)
 
     tx.commit();
   }
+}
+
+std::string FramePropertiesCommand::onGetFriendlyName() const
+{
+  switch (m_target) {
+    case CURRENT_RANGE: return Strings::commands_FrameProperties_Current();
+    case ALL_FRAMES:    return Strings::commands_FrameProperties_All();
+  }
+  return Command::onGetFriendlyName();
 }
 
 Command* CommandFactory::createFramePropertiesCommand()

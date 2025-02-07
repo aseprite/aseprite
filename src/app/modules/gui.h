@@ -15,40 +15,39 @@
 #include "ui/base.h"
 
 namespace ui {
-  class ButtonBase;
-  class CheckBox;
-  class Message;
-  class RadioButton;
-  class Widget;
-  class Window;
-}
+class ButtonBase;
+class CheckBox;
+class Message;
+class RadioButton;
+class Widget;
+class Window;
+} // namespace ui
 
 namespace app {
-  class Command;
-  class Doc;
-  class Params;
+class Command;
+class Doc;
+class Params;
 
-  namespace tools {
-    class Tool;
-  }
+namespace tools {
+class Tool;
+}
 
-  int init_module_gui();
-  void exit_module_gui();
+int init_module_gui();
+void exit_module_gui();
 
-  void update_windows_color_profile_from_preferences();
-  void update_screen_for_document(const Doc* document);
+void update_windows_color_profile_from_preferences();
+void update_screen_for_document(const Doc* document);
 
-  void load_window_pos(ui::Window* window, const char* section,
-                       const bool limitMinSize = true);
-  void save_window_pos(ui::Window* window, const char* section);
+void load_window_pos(ui::Window* window, const char* section, const bool limitMinSize = true);
+void save_window_pos(ui::Window* window, const char* section);
 
-  ui::Widget* setup_mini_font(ui::Widget* widget);
-  ui::Widget* setup_mini_look(ui::Widget* widget);
+ui::Widget* setup_mini_font(ui::Widget* widget);
+ui::Widget* setup_mini_look(ui::Widget* widget);
 
-  // This function can be used to reinvalidate a specific rectangle if
-  // we weren't able to validate it on a onPaint() event. E.g. Because
-  // the current document was locked.
-  void defer_invalid_rect(const gfx::Rect& rc);
+// This function can be used to reinvalidate a specific rectangle if
+// we weren't able to validate it on a onPaint() event. E.g. Because
+// the current document was locked.
+void defer_invalid_rect(const gfx::Rect& rc);
 
 } // namespace app
 

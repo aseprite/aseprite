@@ -10,24 +10,23 @@
 #pragma once
 
 namespace undo {
-  class UndoState;
+class UndoState;
 }
 
 namespace app {
 
-  class DocUndo;
+class DocUndo;
 
-  class DocUndoObserver {
-  public:
-    virtual ~DocUndoObserver() { }
-    virtual void onAddUndoState(DocUndo* history) { }
-    virtual void onDeleteUndoState(DocUndo* history,
-                                   undo::UndoState* state) { }
-    virtual void onCurrentUndoStateChange(DocUndo* history) { }
-    virtual void onClearRedo(DocUndo* history) { }
-    virtual void onTotalUndoSizeChange(DocUndo* history) { }
-    virtual void onNewSavedState(DocUndo* history) { }
-  };
+class DocUndoObserver {
+public:
+  virtual ~DocUndoObserver() {}
+  virtual void onAddUndoState(DocUndo* history) {}
+  virtual void onDeleteUndoState(DocUndo* history, undo::UndoState* state) {}
+  virtual void onCurrentUndoStateChange(DocUndo* history) {}
+  virtual void onClearRedo(DocUndo* history) {}
+  virtual void onTotalUndoSizeChange(DocUndo* history) {}
+  virtual void onNewSavedState(DocUndo* history) {}
+};
 
 } // namespace app
 

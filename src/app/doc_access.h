@@ -18,247 +18,240 @@
 
 namespace app {
 
-  // TODO remove exceptions and use "DocAccess::operator bool()"
-  class LockedDocException : public base::Exception {
-  public:
-    LockedDocException(const char* msg) throw()
-    : base::Exception(msg) { }
-  };
+// TODO remove exceptions and use "DocAccess::operator bool()"
+class LockedDocException : public base::Exception {
+public:
+  LockedDocException(const char* msg) throw() : base::Exception(msg) {}
+};
 
-  class CannotReadDocException : public LockedDocException {
-  public:
-    CannotReadDocException() throw()
+class CannotReadDocException : public LockedDocException {
+public:
+  CannotReadDocException() throw()
     : LockedDocException("Cannot read the sprite.\n"
                          "It is being modified by another command.\n"
-                         "Try again.") { }
-  };
+                         "Try again.")
+  {
+  }
+};
 
-  class CannotWriteDocException : public LockedDocException {
-  public:
-    CannotWriteDocException() throw()
+class CannotWriteDocException : public LockedDocException {
+public:
+  CannotWriteDocException() throw()
     : LockedDocException("Cannot modify the sprite.\n"
                          "It is being used by another command.\n"
-                         "Try again.") { }
-  };
+                         "Try again.")
+  {
+  }
+};
 
-  // This class acts like a wrapper for the given document.  It's
-  // specialized by DocReader/Writer to handle document read/write
-  // locks.
-  class DocAccess {
-  public:
-    using LockResult = Doc::LockResult;
+// This class acts like a wrapper for the given document.  It's
+// specialized by DocReader/Writer to handle document read/write
+// locks.
+class DocAccess {
+public:
+  using LockResult = Doc::LockResult;
 
-    DocAccess() : m_doc(NULL) { }
-    DocAccess(const DocAccess& copy) : m_doc(copy.m_doc) { }
-    explicit DocAccess(Doc* doc) : m_doc(doc) { }
-    ~DocAccess() { }
+  DocAccess() : m_doc(NULL) {}
+  DocAccess(const DocAccess& copy) : m_doc(copy.m_doc) {}
+  explicit DocAccess(Doc* doc) : m_doc(doc) {}
+  ~DocAccess() {}
 
-    DocAccess& operator=(const DocAccess& copy) {
-      m_doc = copy.m_doc;
-      return *this;
+  DocAccess& operator=(const DocAccess& copy)
+  {
+    m_doc = copy.m_doc;
+    return *this;
+  }
+
+  operator Doc*() { return m_doc; }
+  operator const Doc*() const { return m_doc; }
+
+  Doc* operator->()
+  {
+    ASSERT(m_doc);
+    return m_doc;
+  }
+
+  const Doc* operator->() const
+  {
+    ASSERT(m_doc);
+    return m_doc;
+  }
+
+protected:
+  Doc* m_doc;
+  LockResult m_lockResult = LockResult::Fail;
+};
+
+// Class to view the document's state. Its constructor request a
+// reader-lock of the document, or throws an exception in case that
+// the lock cannot be obtained.
+class DocReader : public DocAccess {
+public:
+  DocReader() {}
+
+  explicit DocReader(Doc* doc, int timeout) : DocAccess(doc)
+  {
+    if (m_doc) {
+      m_lockResult = m_doc->readLock(timeout);
+      if (m_lockResult == LockResult::Fail)
+        throw CannotReadDocException();
     }
+  }
 
-    operator Doc*() { return m_doc; }
-    operator const Doc*() const { return m_doc; }
-
-    Doc* operator->() {
-      ASSERT(m_doc);
-      return m_doc;
+  explicit DocReader(const DocReader& copy, int timeout) : DocAccess(copy)
+  {
+    if (m_doc) {
+      m_lockResult = m_doc->readLock(timeout);
+      if (m_lockResult == LockResult::Fail)
+        throw CannotReadDocException();
     }
+  }
 
-    const Doc* operator->() const {
-      ASSERT(m_doc);
-      return m_doc;
+  ~DocReader() { unlock(); }
+
+protected:
+  void unlock()
+  {
+    if (m_doc) {
+      m_doc->unlock(m_lockResult);
+      m_doc = nullptr;
     }
+  }
 
-  protected:
-    Doc* m_doc;
-    LockResult m_lockResult = LockResult::Fail;
-  };
+private:
+  // Disable operator=
+  DocReader& operator=(const DocReader&);
+};
 
-  // Class to view the document's state. Its constructor request a
-  // reader-lock of the document, or throws an exception in case that
-  // the lock cannot be obtained.
-  class DocReader : public DocAccess {
-  public:
-    DocReader() {
+// Class to modify the document's state. Its constructor request a
+// writer-lock of the document, or throws an exception in case that
+// the lock cannot be obtained. Also, it contains a special
+// constructor that receives a DocReader, to elevate the
+// reader-lock to writer-lock.
+class DocWriter : public DocAccess {
+public:
+  DocWriter() : m_from_reader(false), m_locked(false) {}
+
+  explicit DocWriter(Doc* doc, int timeout) : DocAccess(doc), m_from_reader(false), m_locked(false)
+  {
+    if (m_doc) {
+      m_lockResult = m_doc->writeLock(timeout);
+      if (m_lockResult == LockResult::Fail)
+        throw CannotWriteDocException();
+
+      m_locked = true;
     }
+  }
 
-    explicit DocReader(Doc* doc, int timeout)
-      : DocAccess(doc) {
-      if (m_doc) {
-        m_lockResult = m_doc->readLock(timeout);
-        if (m_lockResult == LockResult::Fail)
-          throw CannotReadDocException();
-      }
+  // Constructor that can be used to elevate the given reader-lock to
+  // writer permission.
+  explicit DocWriter(const DocReader& doc, int timeout)
+    : DocAccess(doc)
+    , m_from_reader(true)
+    , m_locked(false)
+  {
+    if (m_doc) {
+      m_lockResult = m_doc->upgradeToWrite(timeout);
+      if (m_lockResult == LockResult::Fail)
+        throw CannotWriteDocException();
+
+      m_locked = true;
     }
+  }
 
-    explicit DocReader(const DocReader& copy, int timeout)
-      : DocAccess(copy) {
-      if (m_doc) {
-        m_lockResult = m_doc->readLock(timeout);
-        if (m_lockResult == LockResult::Fail)
-          throw CannotReadDocException();
-      }
-    }
+  ~DocWriter() { unlock(); }
 
-    ~DocReader() {
-      unlock();
-    }
-
-  protected:
-    void unlock() {
-      if (m_doc) {
+protected:
+  void unlock()
+  {
+    if (m_doc && m_locked) {
+      if (m_from_reader)
+        m_doc->downgradeToRead(m_lockResult);
+      else
         m_doc->unlock(m_lockResult);
-        m_doc = nullptr;
-      }
+
+      m_doc = nullptr;
+      m_locked = false;
     }
+  }
 
-  private:
-    // Disable operator=
-    DocReader& operator=(const DocReader&);
-  };
+private:
+  bool m_from_reader;
+  bool m_locked;
 
-  // Class to modify the document's state. Its constructor request a
-  // writer-lock of the document, or throws an exception in case that
-  // the lock cannot be obtained. Also, it contains a special
-  // constructor that receives a DocReader, to elevate the
-  // reader-lock to writer-lock.
-  class DocWriter : public DocAccess {
-  public:
-    DocWriter()
-      : m_from_reader(false)
-      , m_locked(false) {
-    }
+  // Non-copyable
+  DocWriter(const DocWriter&);
+  DocWriter& operator=(const DocWriter&);
+  DocWriter& operator=(const DocReader&);
+};
 
-    explicit DocWriter(Doc* doc, int timeout)
-      : DocAccess(doc)
-      , m_from_reader(false)
-      , m_locked(false) {
-      if (m_doc) {
-        m_lockResult = m_doc->writeLock(timeout);
-        if (m_lockResult == LockResult::Fail)
-          throw CannotWriteDocException();
+// Used to destroy the active document in the context.
+class DocDestroyer : public DocWriter {
+public:
+  explicit DocDestroyer(Context* context, Doc* doc, int timeout) : DocWriter(doc, timeout) {}
 
-        m_locked = true;
-      }
-    }
+  void destroyDocument()
+  {
+    ASSERT(m_doc != nullptr);
 
-    // Constructor that can be used to elevate the given reader-lock to
-    // writer permission.
-    explicit DocWriter(const DocReader& doc, int timeout)
-      : DocAccess(doc)
-      , m_from_reader(true)
-      , m_locked(false) {
-      if (m_doc) {
-        m_lockResult = m_doc->upgradeToWrite(timeout);
-        if (m_lockResult == LockResult::Fail)
-          throw CannotWriteDocException();
+    // Don't create a backup for destroyed documents (e.g. documents
+    // are destroyed when they are used internally by Aseprite or by
+    // a script and then closed with Sprite:close())
+    if (m_doc->needsBackup())
+      m_doc->setInhibitBackup(true);
 
-        m_locked = true;
-      }
-    }
+    m_doc->close();
+    Doc* doc = m_doc;
+    unlock();
 
-    ~DocWriter() {
-      unlock();
-    }
+    delete doc;
+    m_doc = nullptr;
+  }
 
-  protected:
-    void unlock() {
-      if (m_doc && m_locked) {
-        if (m_from_reader)
-          m_doc->downgradeToRead(m_lockResult);
-        else
-          m_doc->unlock(m_lockResult);
+  void closeDocument()
+  {
+    ASSERT(m_doc != nullptr);
 
-        m_doc = nullptr;
-        m_locked = false;
-      }
-    }
+    Context* ctx = (Context*)m_doc->context();
+    m_doc->close();
+    Doc* doc = m_doc;
+    unlock();
 
-  private:
-    bool m_from_reader;
-    bool m_locked;
+    ctx->closeDocument(doc);
+    m_doc = nullptr;
+  }
+};
 
-    // Non-copyable
-    DocWriter(const DocWriter&);
-    DocWriter& operator=(const DocWriter&);
-    DocWriter& operator=(const DocReader&);
-  };
+class WeakDocReader : public DocAccess {
+public:
+  WeakDocReader() {}
 
-  // Used to destroy the active document in the context.
-  class DocDestroyer : public DocWriter {
-  public:
-    explicit DocDestroyer(Context* context, Doc* doc, int timeout)
-      : DocWriter(doc, timeout) {
-    }
+  explicit WeakDocReader(Doc* doc) : DocAccess(doc), m_weak_lock(base::RWLock::WeakUnlocked)
+  {
+    if (m_doc)
+      m_doc->weakLock(&m_weak_lock);
+  }
 
-    void destroyDocument() {
-      ASSERT(m_doc != nullptr);
+  ~WeakDocReader() { weakUnlock(); }
 
-      // Don't create a backup for destroyed documents (e.g. documents
-      // are destroyed when they are used internally by Aseprite or by
-      // a script and then closed with Sprite:close())
-      if (m_doc->needsBackup())
-        m_doc->setInhibitBackup(true);
+  bool isLocked() const { return (m_weak_lock == base::RWLock::WeakLocked); }
 
-      m_doc->close();
-      Doc* doc = m_doc;
-      unlock();
-
-      delete doc;
+protected:
+  void weakUnlock()
+  {
+    if (m_doc && m_weak_lock != base::RWLock::WeakUnlocked) {
+      m_doc->weakUnlock();
       m_doc = nullptr;
     }
+  }
 
-    void closeDocument() {
-      ASSERT(m_doc != nullptr);
+private:
+  // Disable operator=
+  WeakDocReader(const WeakDocReader&);
+  WeakDocReader& operator=(const WeakDocReader&);
 
-      Context* ctx = (Context*)m_doc->context();
-      m_doc->close();
-      Doc* doc = m_doc;
-      unlock();
-
-      ctx->closeDocument(doc);
-      m_doc = nullptr;
-    }
-
-  };
-
-  class WeakDocReader : public DocAccess {
-  public:
-    WeakDocReader() {
-    }
-
-    explicit WeakDocReader(Doc* doc)
-      : DocAccess(doc)
-      , m_weak_lock(base::RWLock::WeakUnlocked) {
-      if (m_doc)
-        m_doc->weakLock(&m_weak_lock);
-    }
-
-    ~WeakDocReader() {
-      weakUnlock();
-    }
-
-    bool isLocked() const {
-      return (m_weak_lock == base::RWLock::WeakLocked);
-    }
-
-  protected:
-    void weakUnlock() {
-      if (m_doc && m_weak_lock != base::RWLock::WeakUnlocked) {
-        m_doc->weakUnlock();
-        m_doc = nullptr;
-      }
-    }
-
-  private:
-    // Disable operator=
-    WeakDocReader(const WeakDocReader&);
-    WeakDocReader& operator=(const WeakDocReader&);
-
-    std::atomic<base::RWLock::WeakLock> m_weak_lock;
-  };
+  std::atomic<base::RWLock::WeakLock> m_weak_lock;
+};
 
 } // namespace app
 

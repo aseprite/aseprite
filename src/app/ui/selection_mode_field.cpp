@@ -5,7 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+  #include "config.h"
 #endif
 
 #include "app/ui/selection_mode_field.h"
@@ -20,15 +20,14 @@ namespace app {
 using namespace app::skin;
 using namespace ui;
 
-SelectionModeField::SelectionModeField()
-  : ButtonSet(4)
+SelectionModeField::SelectionModeField() : ButtonSet(4)
 {
-  auto theme = SkinTheme::get(this);
+  auto* theme = SkinTheme::get(this);
 
-  addItem(theme->parts.selectionReplace(), "selection_mode");
-  addItem(theme->parts.selectionAdd(), "selection_mode");
-  addItem(theme->parts.selectionSubtract(), "selection_mode");
-  addItem(theme->parts.selectionIntersect(), "selection_mode");
+  addItem(theme->parts.selectionReplace(), theme->styles.selectionMode());
+  addItem(theme->parts.selectionAdd(), theme->styles.selectionMode());
+  addItem(theme->parts.selectionSubtract(), theme->styles.selectionMode());
+  addItem(theme->parts.selectionIntersect(), theme->styles.selectionMode());
 
   setSelectedItem((int)Preferences::instance().selection.mode());
   initTheme();
@@ -36,20 +35,22 @@ SelectionModeField::SelectionModeField()
 
 void SelectionModeField::setupTooltips(TooltipManager* tooltipManager)
 {
-  tooltipManager->addTooltipFor(
-    at(0), Strings::selection_mode_replace(), BOTTOM);
+  tooltipManager->addTooltipFor(at(0), Strings::selection_mode_replace(), BOTTOM);
 
   tooltipManager->addTooltipFor(
-    at(1), key_tooltip(Strings::selection_mode_add().c_str(),
-                       KeyAction::AddSelection), BOTTOM);
+    at(1),
+    key_tooltip(Strings::selection_mode_add().c_str(), KeyAction::AddSelection),
+    BOTTOM);
 
   tooltipManager->addTooltipFor(
-    at(2), key_tooltip(Strings::selection_mode_subtract().c_str(),
-                       KeyAction::SubtractSelection), BOTTOM);
+    at(2),
+    key_tooltip(Strings::selection_mode_subtract().c_str(), KeyAction::SubtractSelection),
+    BOTTOM);
 
   tooltipManager->addTooltipFor(
-    at(3), key_tooltip(Strings::selection_mode_intersect().c_str(),
-                       KeyAction::IntersectSelection), BOTTOM);
+    at(3),
+    key_tooltip(Strings::selection_mode_intersect().c_str(), KeyAction::IntersectSelection),
+    BOTTOM);
 }
 
 gen::SelectionMode SelectionModeField::selectionMode()

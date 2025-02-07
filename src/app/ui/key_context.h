@@ -11,19 +11,19 @@
 
 namespace app {
 
-  enum class KeyContext {
-    Any,
-    Normal,
-    SelectionTool,
-    TranslatingSelection,
-    ScalingSelection,
-    RotatingSelection,
-    MoveTool,
-    FreehandTool,
-    ShapeTool,
-    MouseWheel,
-    FramesSelection,
-  };
+enum class KeyContext {
+  Any,
+  Normal,
+  SelectionTool,
+  TranslatingSelection,
+  ScalingSelection,
+  RotatingSelection,
+  MoveTool,
+  FreehandTool,
+  ShapeTool,
+  MouseWheel,
+  FramesSelection,
+};
 
 } // namespace app
 
