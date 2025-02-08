@@ -545,7 +545,7 @@ TextEdit::Caret TextEdit::caretFromPosition(const gfx::Point& position)
       }
 
       for (int i = 0; i < run.glyphCount; ++i) {
-        const gfx::RectF& glyphBounds = run.getGlyphBounds(i).offset(gfx::PointF(0, lineStartY));
+        gfx::RectF glyphBounds = run.getGlyphBounds(i).offset(gfx::PointF(0, lineStartY));
 
         if (glyphBounds.contains(offsetPosition)) {
           found = true;
