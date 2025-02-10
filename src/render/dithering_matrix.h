@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2020 Igara Studio S.A.
+// Copyright (c) 2020-2025 Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -14,7 +14,7 @@
 
 namespace render {
 
-class DitheringMatrix {
+class DitheringMatrix final {
 public:
   DitheringMatrix() : m_rows(1), m_cols(1), m_matrix(1, 1), m_maxValue(1) {}
 
