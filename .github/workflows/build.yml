@@ -45,7 +45,7 @@ jobs:
           unzip Skia-Linux-Release-x64.zip -d skia
         fi
     - name: ccache
-      uses: hendrikmuhs/ccache-action@v1
+      uses: hendrikmuhs/ccache-action@v1.2.17
       if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
       with:
         key: ${{ matrix.os }}-${{ matrix.ui }}-${{ matrix.scripting }}-${{ matrix.build_type }}
