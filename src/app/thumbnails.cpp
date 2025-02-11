@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 // Copyright (C) 2016  Carlo Caputo
 //
@@ -23,13 +23,7 @@ namespace app { namespace thumb {
 
 os::SurfaceRef get_cel_thumbnail(const doc::Cel* cel, const gfx::Size& fitInSize)
 {
-  gfx::Size newSize;
-
-  if (cel->bounds().w > fitInSize.w || cel->bounds().h > fitInSize.h)
-    newSize = gfx::Rect(cel->bounds()).fitIn(gfx::Rect(fitInSize)).size();
-  else
-    newSize = cel->bounds().size();
-
+  gfx::Size newSize(gfx::Rect(cel->bounds()).fitIn(gfx::Rect(fitInSize)).size());
   if (newSize.w < 1 || newSize.h < 1)
     return nullptr;
 
