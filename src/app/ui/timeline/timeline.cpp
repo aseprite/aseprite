@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1953,6 +1953,8 @@ void Timeline::onAfterLayerVisibilityChange(DocEvent& ev)
   layer_t layerIdx = getLayerIndex(ev.layer());
   if (layerIdx >= 0)
     invalidateRect(getPartBounds(Hit(PART_ROW_EYE_ICON, layerIdx)).offset(origin()));
+  if (docPref().onionskin.active())
+    m_document->notifyGeneralUpdate();
 }
 
 void Timeline::onStateChanged(Editor* editor)
