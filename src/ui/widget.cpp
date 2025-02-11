@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -1507,22 +1507,15 @@ void Widget::releaseMouse()
   }
 }
 
-bool Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
+bool Widget::offerCapture(ui::MouseMessage* mouseMsg, const WidgetType widgetType)
 {
   if (hasCapture()) {
     const gfx::Point screenPos = mouseMsg->display()->nativeWindow()->pointToScreen(
       mouseMsg->position());
-    auto man = manager();
-    Widget* pick = (man ? man->pickFromScreenPos(screenPos) : nullptr);
-    if (pick && pick != this && pick->type() == widget_type) {
-      releaseMouse();
-
-      MouseMessage* mouseMsg2 = new MouseMessage(kMouseDownMessage,
-                                                 *mouseMsg,
-                                                 mouseMsg->positionForDisplay(pick->display()));
-      mouseMsg2->setDisplay(pick->display());
-      mouseMsg2->setRecipient(pick);
-      man->enqueueMessage(mouseMsg2);
+    Manager* mgr = manager();
+    Widget* pick = (mgr ? mgr->pickFromScreenPos(screenPos) : nullptr);
+    if (pick && pick != this && pick->type() == widgetType) {
+      mgr->transferAsMouseDownMessage(this, pick, mouseMsg);
       return true;
     }
   }

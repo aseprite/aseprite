@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -266,17 +266,10 @@ bool ToolBar::onProcessMessage(Message* msg)
       // mouse over the ToolBar.
       if (hasCapture()) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-        Widget* pick = manager()->pickFromScreenPos(mouseMsg->screenPosition());
+        Manager* mgr = manager();
+        Widget* pick = mgr->pickFromScreenPos(mouseMsg->screenPosition());
         if (ToolStrip* strip = dynamic_cast<ToolStrip*>(pick)) {
-          releaseMouse();
-
-          MouseMessage* mouseMsg2 = new MouseMessage(
-            kMouseDownMessage,
-            *mouseMsg,
-            mouseMsg->positionForDisplay(strip->display()));
-          mouseMsg2->setRecipient(strip);
-          mouseMsg2->setDisplay(strip->display());
-          manager()->enqueueMessage(mouseMsg2);
+          mgr->transferAsMouseDownMessage(this, strip, mouseMsg);
         }
       }
       break;
@@ -755,16 +748,10 @@ bool ToolBar::ToolStrip::onProcessMessage(Message* msg)
         if (m_hotTool)
           m_toolbar->selectTool(m_hotTool);
 
-        Widget* pick = manager()->pickFromScreenPos(mouseMsg->screenPosition());
+        Manager* mgr = manager();
+        Widget* pick = mgr->pickFromScreenPos(mouseMsg->screenPosition());
         if (ToolBar* bar = dynamic_cast<ToolBar*>(pick)) {
-          releaseMouse();
-
-          MouseMessage* mouseMsg2 = new MouseMessage(kMouseDownMessage,
-                                                     *mouseMsg,
-                                                     mouseMsg->positionForDisplay(pick->display()));
-          mouseMsg2->setRecipient(bar);
-          mouseMsg2->setDisplay(pick->display());
-          manager()->enqueueMessage(mouseMsg2);
+          mgr->transferAsMouseDownMessage(this, bar, mouseMsg);
         }
       }
       break;

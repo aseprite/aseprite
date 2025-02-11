@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -336,6 +336,11 @@ public:
 
   void requestFocus();
   void releaseFocus();
+
+  // Captures the mouse to continue receiving its messages until we
+  // release the capture. Useful for widgets with painting-like
+  // capabilities, where we want to keep track of the mouse until the
+  // user releases the mouse button, or drag-and-drop behaviors.
   void captureMouse();
   void releaseMouse();
 
@@ -371,9 +376,9 @@ public:
   // the widget bounds.
   gfx::Point mousePosInClientBounds() const { return toClient(mousePosInDisplay()); }
 
-  // Offer the capture to widgets of the given type. Returns true if
+  // Offers the capture to widgets of the given type. Returns true if
   // the capture was passed to other widget.
-  bool offerCapture(MouseMessage* mouseMsg, int widget_type);
+  bool offerCapture(MouseMessage* mouseMsg, WidgetType widgetType);
 
   // Returns lower-case letter that represet the mnemonic of the widget
   // (the underscored character, i.e. the letter after & symbol).

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -13,6 +13,7 @@
 // #define DEBUG_PAINT_MESSAGES      1
 // #define LIMIT_DISPATCH_TIME       1
 #define GARBAGE_TRACE(...) // TRACE(__VA_ARGS__)
+#define CAPTURE_TRACE(...) // TRACE(__VA_ARGS__)
 
 #ifdef HAVE_CONFIG_H
   #include "config.h"
@@ -21,6 +22,8 @@
 #include "ui/manager.h"
 
 #include "base/concurrent_queue.h"
+#include "base/contains.h"
+#include "base/remove_from_container.h"
 #include "base/scoped_value.h"
 #include "base/thread.h"
 #include "base/time.h"
@@ -183,8 +186,7 @@ os::Hit handle_native_hittest(os::Window* osWindow, const gfx::Point& pos)
 bool Manager::widgetAssociatedToManager(Widget* widget)
 {
   return (focus_widget == widget || mouse_widget == widget || capture_widget == widget ||
-          std::find(mouse_widgets_list.begin(), mouse_widgets_list.end(), widget) !=
-            mouse_widgets_list.end());
+          base::contains(mouse_widgets_list, widget));
 }
 
 Manager::Manager(const os::WindowRef& nativeWindow)
@@ -889,12 +891,12 @@ void Manager::enqueueMessage(Message* msg)
     concurrent_msg_queue.push(msg);
 }
 
-Window* Manager::getTopWindow()
+Window* Manager::getTopWindow() const
 {
   return static_cast<Window*>(UI_FIRST_WIDGET(children()));
 }
 
-Window* Manager::getDesktopWindow()
+Window* Manager::getDesktopWindow() const
 {
   for (auto child : children()) {
     Window* window = static_cast<Window*>(child);
@@ -904,7 +906,7 @@ Window* Manager::getDesktopWindow()
   return nullptr;
 }
 
-Window* Manager::getForegroundWindow()
+Window* Manager::getForegroundWindow() const
 {
   for (auto child : children()) {
     Window* window = static_cast<Window*>(child);
@@ -1033,8 +1035,33 @@ void Manager::setMouse(Widget* widget)
   }
 }
 
-void Manager::setCapture(Widget* widget)
+void Manager::setCapture(Widget* widget, bool force)
 {
+  ASSERT(widget);
+  if (!widget)
+    return;
+
+  CAPTURE_TRACE("Manager::setCapture %s\n", typeid(*widget).name());
+  if (!force &&
+      // The given "widget" cannot capture the mouse if it's not
+      // "clickable".  The definition of "clickable" generally means
+      // that the widget is in the current foreground/modal window, or
+      // in the desktop window (or in any floating non-modal window).
+      // But it can also be in a top window, e.g. a combobox popup.
+      !isWidgetClickable(widget) &&
+      // In some special cases, a widget transfers a mouse message to
+      // another widget which doesn't belong to the current foreground
+      // modal window, this is done using onBroadcastMouseMessage()
+      // and/or transferAsMouseDownMessage(), so here we allow capturing
+      // the mouse from widgets inside the "mouse_widgets_list"
+      // (widgets that are allowed to capture the mouse / added with
+      // allowCapture() function).
+      (widget != mouse_widget && !base::contains(mouse_widgets_list, widget))) {
+    CAPTURE_TRACE("-> FILTERED!\n");
+    return;
+  }
+  CAPTURE_TRACE("-> OK\n");
+
   // To set the capture, we set first the mouse_widget (because
   // mouse_widget shouldn't be != capture_widget)
   setMouse(widget);
@@ -1046,6 +1073,13 @@ void Manager::setCapture(Widget* widget)
   ASSERT(display && display->nativeWindow());
   if (display && display->nativeWindow())
     display->nativeWindow()->captureMouse();
+}
+
+void Manager::allowCapture(Widget* widget)
+{
+  ASSERT(widget);
+  if (!base::contains(mouse_widgets_list, widget))
+    mouse_widgets_list.push_back(widget);
 }
 
 // Sets the focus to the "magnetic" widget inside the window
@@ -1082,6 +1116,8 @@ void Manager::freeMouse()
 void Manager::freeCapture()
 {
   if (capture_widget) {
+    CAPTURE_TRACE("Manager::freeCapture() %s\n", typeid(*capture_widget).name());
+
     Display* display = capture_widget->display();
 
     capture_widget->disableFlags(HAS_CAPTURE);
@@ -1113,9 +1149,7 @@ void Manager::freeWidget(Widget* widget)
   if (widget->hasMouse() || (widget == mouse_widget))
     freeMouse();
 
-  auto it = std::find(mouse_widgets_list.begin(), mouse_widgets_list.end(), widget);
-  if (it != mouse_widgets_list.end())
-    mouse_widgets_list.erase(it);
+  base::remove_from_container(mouse_widgets_list, widget);
 
   ASSERT(!Manager::widgetAssociatedToManager(widget));
 }
@@ -1277,6 +1311,53 @@ Widget* Manager::pickFromScreenPos(const gfx::Point& screenPos) const
     }
   }
   return Widget::pickFromScreenPos(screenPos);
+}
+
+void Manager::transferAsMouseDownMessage(Widget* from,
+                                         Widget* to,
+                                         const MouseMessage* mouseMsg,
+                                         const bool sendNow)
+{
+  ASSERT(to);
+  ASSERT(from);
+
+  // Remove the capture from the "from" widget.
+  if (from->hasCapture())
+    from->releaseMouse();
+
+  // Allow the "to" widget to re-capture the mouse.
+  allowCapture(to);
+
+  // We enqueue a copy of the mouse message but as a kMouseDownMessage.
+  auto mouseMsg2 = std::make_unique<MouseMessage>(kMouseDownMessage,
+                                                  *mouseMsg,
+                                                  mouseMsg->positionForDisplay(to->display()));
+  mouseMsg2->setRecipient(to);
+  mouseMsg2->setDisplay(to->display());
+
+  if (sendNow)
+    to->sendMessage(mouseMsg2.get());
+  else
+    enqueueMessage(mouseMsg2.release());
+}
+
+bool Manager::isWidgetClickable(const Widget* widget) const
+{
+  Window* widgetWindow = widget->window();
+  if (!widgetWindow)
+    return false;
+
+  for (auto* child : children()) {
+    Window* window = static_cast<Window*>(child);
+
+    if (widgetWindow == window)
+      return true;
+
+    if (window->isForeground() || window->isDesktop())
+      break;
+  }
+
+  return false;
 }
 
 void Manager::_closingAppWithException()

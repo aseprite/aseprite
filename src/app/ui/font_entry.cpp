@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2024  Igara Studio S.A.
+// Copyright (c) 2024-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -51,18 +51,12 @@ bool FontEntry::FontFace::onProcessMessage(Message* msg)
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
         const gfx::Point screenPos = mouseMsg->display()->nativeWindow()->pointToScreen(
           mouseMsg->position());
-        Widget* pick = manager()->pickFromScreenPos(screenPos);
+        Manager* mgr = manager();
+        Widget* pick = mgr->pickFromScreenPos(screenPos);
         Widget* target = m_popup->getListBox();
 
         if (pick && (pick == target || pick->hasAncestor(target))) {
-          releaseMouse();
-
-          MouseMessage mouseMsg2(kMouseDownMessage,
-                                 *mouseMsg,
-                                 mouseMsg->positionForDisplay(pick->display()));
-          mouseMsg2.setRecipient(pick);
-          mouseMsg2.setDisplay(pick->display());
-          pick->sendMessage(&mouseMsg2);
+          mgr->transferAsMouseDownMessage(this, pick, mouseMsg);
           return true;
         }
       }
