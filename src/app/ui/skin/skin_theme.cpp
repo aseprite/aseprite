@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,6 +14,7 @@
 #include "app/app.h"
 #include "app/console.h"
 #include "app/extensions.h"
+#include "app/font_info.h"
 #include "app/font_path.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
@@ -23,6 +24,7 @@
 #include "app/ui/skin/font_data.h"
 #include "app/ui/skin/skin_property.h"
 #include "app/ui/skin/skin_slider_property.h"
+#include "app/util/render_text.h"
 #include "app/xml_document.h"
 #include "app/xml_exception.h"
 #include "base/fs.h"
@@ -482,6 +484,19 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
   if (!m_miniFont)
     m_miniFont = m_defaultFont;
 
+  // Overwrite theme fonts by user defined fonts.
+  Preferences& pref = Preferences::instance();
+  if (!pref.theme.font().empty()) {
+    auto fi = base::convert_to<FontInfo>(pref.theme.font());
+    if (auto f = get_font_from_info(fi, this))
+      m_defaultFont = f;
+  }
+  if (!pref.theme.miniFont().empty()) {
+    auto fi = base::convert_to<FontInfo>(pref.theme.miniFont());
+    if (auto f = get_font_from_info(fi, this))
+      m_miniFont = f;
+  }
+
   // Load dimension
   {
     XMLElement* xmlDim = handle.FirstChildElement("theme")
@@ -781,9 +796,21 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
       {
         const char* fontId = xmlStyle->Attribute("font");
         if (fontId) {
-          auto themeFont = m_themeFonts[fontId];
-          style->setFont(themeFont.font());
-          style->setMnemonics(themeFont.mnemonics());
+          // Use m_defaultFont/m_miniFont just in case the user
+          // customized these fonts.
+          if (std::strcmp(fontId, "default") == 0) {
+            style->setFont(m_defaultFont);
+            style->setMnemonics(true);
+          }
+          else if (std::strcmp(fontId, "mini") == 0) {
+            style->setFont(m_miniFont);
+            style->setMnemonics(false);
+          }
+          else {
+            auto themeFont = m_themeFonts[fontId];
+            style->setFont(themeFont.font());
+            style->setMnemonics(themeFont.mnemonics());
+          }
         }
 
         // Override mnemonics value if it is defined for this style.

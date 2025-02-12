@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2024  Igara Studio S.A.
+// Copyright (c) 2024-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -159,7 +159,7 @@ app::FontInfo convert_to(const std::string& from)
       type = app::FontInfo::Type::System;
       name = parts[0].substr(7);
     }
-    else {
+    else if (!parts[0].empty()) {
       type = app::FontInfo::Type::Name;
       name = parts[0];
     }

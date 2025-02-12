@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2024  Igara Studio S.A.
+// Copyright (C) 2022-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -63,12 +63,14 @@ private:
 
 } // anonymous namespace
 
-text::FontRef get_font_from_info(const FontInfo& fontInfo)
+text::FontRef get_font_from_info(const FontInfo& fontInfo, skin::SkinTheme* theme)
 {
-  auto* theme = skin::SkinTheme::instance();
-  ASSERT(theme);
-  if (!theme)
-    return nullptr;
+  if (!theme) {
+    theme = skin::SkinTheme::instance();
+    ASSERT(theme);
+    if (!theme)
+      return nullptr;
+  }
 
   const text::FontMgrRef fontMgr = theme->fontMgr();
   if (!fontMgr)

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -35,6 +35,7 @@
 #include "app/ui/sampling_selector.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/util/render_text.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/string.h"
@@ -267,8 +268,10 @@ public:
   {
     sectionListbox()->Change.connect([this] { onChangeSection(); });
 
-    // Theme variants
+    // Theme variants/fonts.
     fillThemeVariants();
+    fillThemeFonts();
+    updateFontPreviews();
 
     // Recent files
     clearRecentFiles()->Click.connect([this] { onClearRecentFiles(); });
@@ -439,6 +442,22 @@ public:
 
     // Undo preferences
     limitUndo()->Click.connect([this] { onLimitUndoCheck(); });
+
+    // Theme Custom Font
+    customThemeFont()->Click.connect([this] {
+      const bool state = customThemeFont()->isSelected();
+      themeFont()->setEnabled(state);
+      if (!state)
+        themeFont()->setInfo(FontInfo(), FontEntry::From::Init);
+    });
+    customMiniFont()->Click.connect([this] {
+      const bool state = customMiniFont()->isSelected();
+      themeMiniFont()->setEnabled(state);
+      if (!state)
+        themeMiniFont()->setInfo(FontInfo(), FontEntry::From::Init);
+    });
+    themeFont()->FontChange.connect([this] { updateFontPreviews(); });
+    themeMiniFont()->FontChange.connect([this] { updateFontPreviews(); });
 
     // Theme buttons
     themeList()->Change.connect([this] { onThemeChange(); });
@@ -893,6 +912,23 @@ public:
     ui::set_use_native_cursors(m_pref.cursor.useNativeCursor());
     ui::set_mouse_cursor_scale(m_pref.cursor.cursorScale());
 
+    // Change theme font
+    bool reset_theme = false;
+    {
+      const FontInfo fontInfo = themeFont()->info();
+      const FontInfo miniFontInfo = themeMiniFont()->info();
+
+      auto fontStr = base::convert_to<std::string>(fontInfo);
+      auto miniFontStr = base::convert_to<std::string>(miniFontInfo);
+
+      if (m_pref.theme.font() != fontStr || m_pref.theme.miniFont() != miniFontStr) {
+        m_pref.theme.font(fontStr);
+        m_pref.theme.miniFont(miniFontStr);
+
+        reset_theme = true;
+      }
+    }
+
     bool reset_screen = false;
     const int newScreenScale = base::convert_to<int>(screenScale()->getValue());
     if (newScreenScale != m_pref.general.screenScale()) {
@@ -903,9 +939,12 @@ public:
     const int newUIScale = base::convert_to<int>(uiScale()->getValue());
     if (newUIScale != m_pref.general.uiScale()) {
       m_pref.general.uiScale(newUIScale);
-      ui::set_theme(ui::get_theme(), newUIScale);
+      reset_theme = true;
       reset_screen = true;
     }
+
+    if (reset_theme)
+      ui::set_theme(ui::get_theme(), newUIScale);
 
 #ifdef ENABLE_DEVMODE
     const bool newGpuAccel = gpuAcceleration()->isSelected();
@@ -989,6 +1028,14 @@ public:
   }
 
 private:
+  void onInitTheme(InitThemeEvent& ev) override
+  {
+    app::gen::Options::onInitTheme(ev);
+
+    fontPreview()->setFont(m_font);
+    miniFontPreview()->setFont(m_miniFont);
+  }
+
   void fillThemeVariants()
   {
     ButtonSet* list = nullptr;
@@ -1025,6 +1072,34 @@ private:
     m_themeVars = list;
     themeVariants()->setVisible(list ? true : false);
     themeVariants()->initTheme();
+  }
+
+  void fillThemeFonts()
+  {
+    auto& pref = Preferences::instance();
+    const FontInfo fontInfo = base::convert_to<FontInfo>(pref.theme.font());
+    const FontInfo miniInfo = base::convert_to<FontInfo>(pref.theme.miniFont());
+
+    customThemeFont()->setSelected(fontInfo.isValid());
+    customMiniFont()->setSelected(miniInfo.isValid());
+
+    themeFont()->setEnabled(fontInfo.isValid());
+    themeMiniFont()->setEnabled(miniInfo.isValid());
+
+    themeFont()->setInfo(fontInfo, FontEntry::From::Init);
+    themeMiniFont()->setInfo(miniInfo, FontEntry::From::Init);
+  }
+
+  void updateFontPreviews()
+  {
+    m_font = get_font_from_info(themeFont()->info());
+    m_miniFont = get_font_from_info(themeMiniFont()->info());
+    if (!m_miniFont)
+      m_miniFont = skin::SkinTheme::get(this)->getMiniFont();
+
+    fontPreview()->setFont(m_font);
+    miniFontPreview()->setFont(m_miniFont);
+    layout();
   }
 
   void fillExtensionsCombobox(ui::ComboBox* combobox, const std::string& defExt)
@@ -2034,6 +2109,8 @@ private:
   BestFitCriteriaSelector m_bestFitCriteriaSelector;
   ButtonSet* m_themeVars = nullptr;
   SamplingSelector* m_samplingSelector = nullptr;
+  text::FontRef m_font;
+  text::FontRef m_miniFont;
 };
 
 class OptionsCommand : public Command {

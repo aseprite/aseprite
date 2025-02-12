@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2025  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <window id="options" text="@.title" help="preferences">
@@ -537,6 +537,20 @@
 
         <!-- Theme -->
         <vbox id="section_theme">
+          <separator text="@.customize_theme" horizontal="true" />
+          <grid columns="2">
+            <label text="@.preview" />
+            <vbox cell_align="horizontal" >
+              <label id="font_preview" text="@.font_preview" />
+              <label id="mini_font_preview" text="@.mini_font_preview" />
+            </vbox>
+
+            <check id="custom_theme_font" text="@.font" />
+            <font id="theme_font" cell_align="horizontal" />
+
+            <check id="custom_mini_font" text="@.mini_font" />
+            <font id="theme_mini_font" cell_align="horizontal" />
+          </grid>
           <separator text="@.available_themes" horizontal="true" />
           <view expansive="true" maxsize="true">
             <listbox id="theme_list" />
