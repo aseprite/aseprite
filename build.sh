@@ -369,19 +369,29 @@ if [ ! -f "$pwd/.build/$file_skia_dir" ] ; then
         skia_dir="$HOME/deps/$possible_skia_dir_name"
     fi
 
+    # Set default location if not found
     if [ ! -d "$skia_dir" ] ; then
-        echo ""
-        echo "Skia directory wasn't found."
-        echo ""
-
-        echo "Select Skia directory to create [$skia_dir]? "
-        if [ ! $auto ] ; then
-            read skia_dir_read
-            if [ "$skia_dir_read" != "" ] ; then
-                skia_dir="$skia_dir_read"
-            fi
+        # Use .deps directory to download Skia for users (which is a
+        # simple setup). In case of developers we'd prefer the shared
+        # directory by default.
+        if [ "$userkind" == "user" ] ; then
+            skia_dir="$pwd/.deps/$possible_skia_dir_name"
         fi
-        mkdir -p $skia_dir || exit 1
+
+        if [ ! -d "$skia_dir" ] ; then
+            echo ""
+            echo "Skia directory wasn't found."
+            echo ""
+
+            echo "Select Skia directory to create [$skia_dir]? "
+            if [ ! $auto ] ; then
+                read skia_dir_read
+                if [ "$skia_dir_read" != "" ] ; then
+                    skia_dir="$skia_dir_read"
+                fi
+            fi
+            mkdir -p $skia_dir || exit 1
+        fi
     fi
     echo $skia_dir > "$pwd/.build/$file_skia_dir"
 fi
