@@ -35,6 +35,8 @@
 #include "fmt/format.h"
 #include "ui/base.h"
 #include "ui/cursor_type.h"
+#include "ui/manager.h"
+#include "ui/message_loop.h"
 #include "ui/mouse_button.h"
 
 #include <fstream>
@@ -213,7 +215,80 @@ void register_websocket_class(lua_State* L);
 
 void set_app_params(lua_State* L, const Params& params);
 
-Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(false)
+#define RUNNING_TASKS "RunningTasks"
+
+RunScriptTask::RunScriptTask(lua_State* L, int nelems, Func&& func)
+{
+  m_mainL = L;
+  m_L = lua_newthread(m_mainL);
+  // Save a reference to the lua thread in the registry to avoid garbage collection
+  // before it gets executed.
+  m_LRef = luaL_ref(m_mainL, LUA_REGISTRYINDEX);
+
+  // Move nelems stack elements from main thread to the child lua thread.
+  lua_xmove(m_mainL, m_L, nelems);
+
+  // We use a global table to have access to the state of all the currently
+  // running scripts
+  int type = lua_getglobal(m_L, RUNNING_TASKS);
+  if (type == LUA_TNIL) {
+    lua_newtable(m_L);
+    lua_pushvalue(m_L, -1);
+    lua_setglobal(m_L, RUNNING_TASKS);
+  }
+
+  lua_pushlightuserdata(m_L, m_L);
+  lua_pushlightuserdata(m_L, this);
+  lua_settable(m_L, -3);
+  lua_pop(m_L, 1);
+
+  lua_sethook(
+    m_L,
+    [](lua_State* L, lua_Debug* ar) {
+      if (ar->event == LUA_HOOKCOUNT) {
+        int type = lua_getglobal(L, RUNNING_TASKS);
+        if (type == LUA_TTABLE) {
+          lua_pushlightuserdata(L, L);
+          lua_gettable(L, -2);
+          RunScriptTask* task = (RunScriptTask*)lua_topointer(L, -1);
+          lua_pop(L, 2);
+          if (task->wantsToStop()) {
+            lua_pushliteral(L, "Script stopped");
+            lua_error(L);
+          }
+        }
+      }
+    },
+    LUA_MASKCOUNT,
+    10);
+
+  // TODO: use the token for allowing the script to report progress somehow.
+  m_task.on_execute([this, func](base::task_token& token) { func(m_L); });
+}
+
+RunScriptTask::~RunScriptTask()
+{
+  luaL_unref(m_mainL, LUA_REGISTRYINDEX, m_LRef);
+
+  //  Collect script garbage.
+  lua_gc(m_L, LUA_GCCOLLECT);
+}
+
+void RunScriptTask::execute(base::thread_pool& pool)
+{
+  m_task.start(pool);
+}
+
+void RunScriptTask::stop()
+{
+  m_wantsToStop = true;
+}
+
+Engine::Engine()
+  : L(luaL_newstate())
+  , m_delegate(nullptr)
+  , m_threadPool(3)
+  , m_printLastResult(false)
 {
 #if _DEBUG
   int top = lua_gettop(L);
@@ -525,6 +600,12 @@ Engine::~Engine()
 
 void Engine::destroy()
 {
+  // Stop all running tasks.
+  for (auto& task : m_tasks) {
+    task->stop();
+  }
+  m_threadPool.wait_all();
+
   close_all_dialogs();
   lua_close(L);
   L = nullptr;
@@ -595,6 +676,11 @@ bool Engine::evalCode(const std::string& code, const std::string& filename)
 
 void Engine::handleException(const std::exception& ex)
 {
+  handleException(L, ex);
+}
+
+void Engine::handleException(lua_State* L, const std::exception& ex)
+{
   luaL_where(L, 1);
   const char* where = lua_tostring(L, -1);
   luaL_traceback(L, L, ex.what(), 1);
@@ -631,6 +717,110 @@ bool Engine::evalFile(const std::string& filename, const Params& params)
   return result;
 }
 
+void Engine::callInTask(lua_State* parentL, int nargs)
+{
+  executeTask(parentL, nargs + 1, [this, nargs](lua_State* L) {
+    try {
+      if (lua_pcall(L, nargs, 0, 0)) {
+        if (const char* s = lua_tostring(L, -1))
+          consolePrint(s);
+      }
+    }
+    catch (const std::exception& ex) {
+      // This is used to catch unhandled exception or for
+      // example, std::runtime_error exceptions when a Tx() is
+      // created without an active sprite.
+      handleException(L, ex);
+    }
+  });
+}
+
+void Engine::executeTask(lua_State* parentL, int nelems, RunScriptTask::Func&& func)
+{
+  auto task = std::make_unique<RunScriptTask>(parentL, nelems, std::move(func));
+  auto* taskPtr = task.get();
+  task->onDone([this, taskPtr](base::task_token&) { onTaskDone(taskPtr); });
+  m_tasks.push_back(std::move(task));
+  taskPtr->execute(m_threadPool);
+}
+
+void Engine::onTaskDone(const RunScriptTask* task)
+{
+  for (auto it = m_tasks.begin(); it != m_tasks.end(); ++it) {
+    if ((*it).get() == task) {
+      m_tasks.erase(it);
+      break;
+    }
+  }
+}
+
+bool Engine::evalUserFileInTask(const std::string& filename, const Params& params)
+{
+  executeTask(L, 0, [filename, params, this](lua_State* L) {
+    std::string absFilename = base::get_absolute_path(filename);
+    // Set the _SCRIPT_PATH global so require() can find .lua files from
+    // the script path.
+    std::string path = base::get_file_path(absFilename);
+    SetScriptForRequire setScript(L, path.c_str());
+
+    bool ok = true;
+    std::stringstream buf;
+    {
+      std::ifstream s(FSTREAM_PATH(filename));
+      // Returns false if we cannot open the file
+      if (!s) {
+        ok = false;
+        return;
+      }
+      buf << s.rdbuf();
+    }
+
+    AddScriptFilename addScript(absFilename);
+    set_app_params(L, params);
+
+    const std::string& code = buf.str();
+    const std::string& atFilename = "@" + absFilename;
+
+    int returnCode;
+    try {
+      if (luaL_loadbuffer(L, code.c_str(), code.size(), atFilename.c_str()) ||
+          lua_pcall(L, 0, 1, 0)) {
+        const char* s = lua_tostring(L, -1);
+        if (s)
+          TRACE("Error: %s\n", s);
+        // onConsoleError(s);
+        ok = false;
+        returnCode = -1;
+      }
+      else {
+        // Return code
+        if (lua_isinteger(L, -1))
+          returnCode = lua_tointeger(L, -1);
+        else
+          returnCode = 0;
+
+        // Code was executed correctly
+        if (m_printLastResult) {
+          if (!lua_isnone(L, -1)) {
+            const char* result = lua_tostring(L, -1);
+            if (result)
+              TRACE("Result: %s\n", result);
+            // onConsolePrint(result);
+          }
+        }
+      }
+      lua_pop(L, 1);
+    }
+    catch (const std::exception& ex) {
+      // handleException(ex);
+      TRACE("Exception: %s\n", ex.what());
+      ok = false;
+      returnCode = -1;
+    }
+  });
+  return true;
+}
+
 bool Engine::evalUserFile(const std::string& filename, const Params& params)
 {
   // Set the _SCRIPT_PATH global so require() can find .lua files from
@@ -658,6 +848,12 @@ void Engine::startDebugger(DebuggerDelegate* debuggerDelegate)
 void Engine::stopDebugger()
 {
   lua_sethook(L, nullptr, 0, 0);
+}
+
+void Engine::stopScript()
+{
+  lua_pushliteral(L, "Script stopped");
+  lua_error(L);
 }
 
 void Engine::onConsoleError(const char* text)
