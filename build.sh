@@ -74,7 +74,7 @@ elif [[ "$(uname)" == "Linux" ]] ; then
     cpu=x64
 elif [[ "$(uname)" =~ "Darwin" ]] ; then
     is_macos=1
-    if [[ $(uname -m) == "arm64" ]]; then
+    if [[ $(uname -m) == "arm64" ]] ; then
         cpu=arm64
     else
         cpu=x64
