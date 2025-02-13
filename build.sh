@@ -378,7 +378,13 @@ fi
 
 # Check Skia dependency.
 if [ ! -f "$pwd/.build/$file_skia_dir" ] ; then
-    skia_dir="$pwd/.deps/$possible_skia_dir_name"
+    # Try "C:/deps/skia" or "$HOME/deps/skia"
+    if [[ $is_win ]] ; then
+        skia_dir="C:/deps/$possible_skia_dir_name"
+        if [ ! -d "$skia_dir" ] ;
+    else
+        skia_dir="$HOME/deps/$possible_skia_dir_name"
+    fi
 
     if [ ! -d "$skia_dir" ] ; then
         echo ""
