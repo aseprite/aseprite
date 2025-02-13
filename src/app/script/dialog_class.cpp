@@ -32,6 +32,7 @@
 #include "base/fs.h"
 #include "base/paths.h"
 #include "base/remove_from_container.h"
+#include "ui/await.h"
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/combobox.h"
@@ -125,6 +126,7 @@ struct Dialog {
   // Reference used to keep the dialog alive (so it's not garbage
   // collected) when it's visible.
   int showRef = LUA_REFNIL;
+  int dlgStateRef = LUA_REFNIL;
   lua_State* L = nullptr;
 
   Dialog(const ui::Window::Type windowType, const std::string& title)
@@ -152,6 +154,11 @@ struct Dialog {
       this->L = L;
       lua_pushvalue(L, 1);
       showRef = luaL_ref(L, LUA_REGISTRYINDEX);
+      // Keep a reference of this thread state while the dialog is still alive
+      // because it will be reused when calling the event handlers to create
+      // new lua threads.
+      lua_pushthread(L);
+      dlgStateRef = luaL_ref(L, LUA_REGISTRYINDEX);
     }
   }
 
@@ -163,8 +170,14 @@ struct Dialog {
   void unrefShow()
   {
     if (showRef != LUA_REFNIL) {
+      int status = lua_status(this->L);
+      TRACE("status: %d %d\n", showRef, status);
+
+      // this->L
       luaL_unref(this->L, LUA_REGISTRYINDEX, showRef);
+      luaL_unref(this->L, LUA_REGISTRYINDEX, dlgStateRef);
       showRef = LUA_REFNIL;
+      dlgStateRef = LUA_REFNIL;
       L = nullptr;
     }
   }
@@ -336,18 +349,7 @@ void Dialog_connect_signal(lua_State* L,
     callback(L, std::forward<Args>(args)...);
 
     if (lua_isfunction(L, -2)) {
-      try {
-        if (lua_pcall(L, 1, 0, 0)) {
-          if (const char* s = lua_tostring(L, -1))
-            App::instance()->scriptEngine()->consolePrint(s);
-        }
-      }
-      catch (const std::exception& ex) {
-        // This is used to catch unhandled exception or for
-        // example, std::runtime_error exceptions when a Tx() is
-        // created without an active sprite.
-        App::instance()->scriptEngine()->handleException(ex);
-      }
+      App::instance()->scriptEngine()->callInTask(L, 1);
     }
     else {
       lua_pop(L, 1); // Pop the value which should have been a function
@@ -358,63 +360,65 @@ void Dialog_connect_signal(lua_State* L,
 
 int Dialog_new(lua_State* L)
 {
-  // If we don't have UI, just return nil
-  if (!App::instance()->isGui())
-    return 0;
+  return ui::await<int>([L]() -> int {
+    // If we don't have UI, just return nil
+    if (!App::instance()->isGui())
+      return 0;
 
-  // Get the title and the type of window (with or without title bar)
-  ui::Window::Type windowType = ui::Window::WithTitleBar;
-  std::string title = "Script";
-  if (lua_isstring(L, 1)) {
-    title = lua_tostring(L, 1);
-  }
-  else if (lua_istable(L, 1)) {
-    int type = lua_getfield(L, 1, "title");
-    if (type != LUA_TNIL)
-      title = lua_tostring(L, -1);
-    lua_pop(L, 1);
-
-    type = lua_getfield(L, 1, "notitlebar");
-    if (type != LUA_TNIL && lua_toboolean(L, -1))
-      windowType = ui::Window::WithoutTitleBar;
-    lua_pop(L, 1);
-  }
-
-  auto dlg = push_new<Dialog>(L, windowType, title);
-
-  // The uservalue of the dialog userdata will contain a table that
-  // stores all the callbacks to handle events. As these callbacks can
-  // reference the dialog itself, it's important to store callbacks in
-  // this table that depends on the dialog lifetime itself
-  // (i.e. uservalue) and in the global registry, because in that case
-  // we could create a cyclic reference that would be not GC'd.
-  lua_newtable(L);
-  lua_setuservalue(L, -2);
-
-  if (lua_istable(L, 1)) {
-    int type = lua_getfield(L, 1, "parent");
-    if (type != LUA_TNIL) {
-      if (auto parentDlg = may_get_obj<Dialog>(L, -1))
-        dlg->window.setParentDisplay(parentDlg->window.display());
+    // Get the title and the type of window (with or without title bar)
+    ui::Window::Type windowType = ui::Window::WithTitleBar;
+    std::string title = "Script";
+    if (lua_isstring(L, 1)) {
+      title = lua_tostring(L, 1);
     }
-    lua_pop(L, 1);
+    else if (lua_istable(L, 1)) {
+      int type = lua_getfield(L, 1, "title");
+      if (type != LUA_TNIL)
+        title = lua_tostring(L, -1);
+      lua_pop(L, 1);
 
-    type = lua_getfield(L, 1, "onclose");
-    if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(L, -2, dlg->window.Close, [](lua_State*, CloseEvent&) {
-        // Do nothing
-      });
+      type = lua_getfield(L, 1, "notitlebar");
+      if (type != LUA_TNIL && lua_toboolean(L, -1))
+        windowType = ui::Window::WithoutTitleBar;
+      lua_pop(L, 1);
     }
-    lua_pop(L, 1);
-  }
 
-  // The showRef must be the last reference to the dialog to be
-  // unreferenced after the window is closed (that's why this is the
-  // last connection to ui::Window::Close)
-  dlg->unrefShowOnClose();
+    auto dlg = push_new<Dialog>(L, windowType, title);
 
-  TRACE_DIALOG("Dialog_new", dlg);
-  return 1;
+    // The uservalue of the dialog userdata will contain a table that
+    // stores all the callbacks to handle events. As these callbacks can
+    // reference the dialog itself, it's important to store callbacks in
+    // this table that depends on the dialog lifetime itself
+    // (i.e. uservalue) and in the global registry, because in that case
+    // we could create a cyclic reference that would be not GC'd.
+    lua_newtable(L);
+    lua_setuservalue(L, -2);
+
+    if (lua_istable(L, 1)) {
+      int type = lua_getfield(L, 1, "parent");
+      if (type != LUA_TNIL) {
+        if (auto parentDlg = may_get_obj<Dialog>(L, -1))
+          dlg->window.setParentDisplay(parentDlg->window.display());
+      }
+      lua_pop(L, 1);
+
+      type = lua_getfield(L, 1, "onclose");
+      if (type == LUA_TFUNCTION) {
+        Dialog_connect_signal(L, -2, dlg->window.Close, [](lua_State*, CloseEvent&) {
+          // Do nothing
+        });
+      }
+      lua_pop(L, 1);
+    }
+
+    // The showRef must be the last reference to the dialog to be
+    // unreferenced after the window is closed (that's why this is the
+    // last connection to ui::Window::Close)
+    dlg->unrefShowOnClose();
+
+    TRACE_DIALOG("Dialog_new", dlg);
+    return 1;
+  });
 }
 
 int Dialog_gc(lua_State* L)
@@ -1879,31 +1883,34 @@ int Dialog_set_bounds(lua_State* L)
   return 0;
 }
 
+#define wrap(func)                                                                                 \
+  [](lua_State* L) -> int { return ui::await<int>([L]() -> int { return func(L); }); }
+
 const luaL_Reg Dialog_methods[] = {
-  { "__gc",      Dialog_gc        },
-  { "show",      Dialog_show      },
-  { "showMenu",  Dialog_showMenu  },
-  { "close",     Dialog_close     },
-  { "newrow",    Dialog_newrow    },
-  { "separator", Dialog_separator },
-  { "label",     Dialog_label     },
-  { "button",    Dialog_button    },
-  { "check",     Dialog_check     },
-  { "radio",     Dialog_radio     },
-  { "menuItem",  Dialog_menuItem  },
-  { "entry",     Dialog_entry     },
-  { "number",    Dialog_number    },
-  { "slider",    Dialog_slider    },
-  { "combobox",  Dialog_combobox  },
-  { "color",     Dialog_color     },
-  { "shades",    Dialog_shades    },
-  { "file",      Dialog_file      },
-  { "canvas",    Dialog_canvas    },
-  { "tab",       Dialog_tab       },
-  { "endtabs",   Dialog_endtabs   },
-  { "modify",    Dialog_modify    },
-  { "repaint",   Dialog_repaint   },
-  { nullptr,     nullptr          }
+  { "__gc",      wrap(Dialog_gc)     },
+  { "show",      wrap(Dialog_show)   },
+  { "showMenu",  Dialog_showMenu     },
+  { "close",     Dialog_close        },
+  { "newrow",    Dialog_newrow       },
+  { "separator", Dialog_separator    },
+  { "label",     Dialog_label        },
+  { "button",    wrap(Dialog_button) },
+  { "check",     Dialog_check        },
+  { "radio",     Dialog_radio        },
+  { "menuItem",  Dialog_menuItem     },
+  { "entry",     Dialog_entry        },
+  { "number",    Dialog_number       },
+  { "slider",    Dialog_slider       },
+  { "combobox",  Dialog_combobox     },
+  { "color",     Dialog_color        },
+  { "shades",    Dialog_shades       },
+  { "file",      Dialog_file         },
+  { "canvas",    Dialog_canvas       },
+  { "tab",       Dialog_tab          },
+  { "endtabs",   Dialog_endtabs      },
+  { "modify",    Dialog_modify       },
+  { "repaint",   Dialog_repaint      },
+  { nullptr,     nullptr             }
 };
 
 const Property Dialog_properties[] = {

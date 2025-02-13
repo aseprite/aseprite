@@ -16,6 +16,8 @@
 #include "app/color.h"
 #include "app/commands/params.h"
 #include "app/extensions.h"
+#include "base/task.h"
+#include "base/thread_pool.h"
 #include "base/uuid.h"
 #include "doc/brush.h"
 #include "doc/frame.h"
@@ -84,8 +86,32 @@ public:
   virtual void endFile(const std::string& file) = 0;
 };
 
+class RunScriptTask {
+public:
+  typedef std::function<void(lua_State* L)> Func;
+
+  RunScriptTask(lua_State* L, int nelems, Func&& func);
+  ~RunScriptTask();
+
+  void onDone(base::task::func_t&& funcDone) { m_task.on_done(std::move(funcDone)); }
+  void execute(base::thread_pool& pool);
+  void stop();
+  bool wantsToStop() const { return m_wantsToStop; }
+
+private:
+  // Lua's main thread state.
+  lua_State* m_mainL;
+  // Lua's thread state based on m_mainL.
+  lua_State* m_L;
+  int m_LRef = LUA_REFNIL;
+  base::task m_task;
+  bool m_wantsToStop = false;
+};
+
 class Engine {
 public:
+  typedef std::vector<std::unique_ptr<RunScriptTask>> Tasks;
+
   Engine();
   ~Engine();
 
@@ -101,8 +127,13 @@ public:
   bool evalCode(const std::string& code, const std::string& filename = std::string());
   bool evalFile(const std::string& filename, const Params& params = Params());
   bool evalUserFile(const std::string& filename, const Params& params = Params());
+  bool evalUserFileInTask(const std::string& filename, const Params& params = Params());
+  // Calls the function in the stack with the number of arguments specified by nargs in
+  // a new RunScriptTask.
+  void callInTask(lua_State* L, int nargs);
 
   void handleException(const std::exception& ex);
+  void handleException(lua_State* L, const std::exception& ex);
 
   void consolePrint(const char* text) { onConsolePrint(text); }
 
@@ -112,13 +143,22 @@ public:
 
   void startDebugger(DebuggerDelegate* debuggerDelegate);
   void stopDebugger();
+  // Stops the currently running lua chunk
+  void stopScript();
 
 private:
   void onConsoleError(const char* text);
   void onConsolePrint(const char* text);
+  // Creates a new RunScriptTask based on parentL and moving nelems from parentL's stack
+  // to the child lua thread stack
+  void executeTask(lua_State* parentL, int nelems, RunScriptTask::Func&& func);
+  void onTaskDone(const RunScriptTask* task);
+  static void checkProgress(lua_State* L, lua_Debug* ar);
 
   lua_State* L;
   EngineDelegate* m_delegate;
+  base::thread_pool m_threadPool;
+  Tasks m_tasks;
   bool m_printLastResult;
   int m_returnCode;
 };
