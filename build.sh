@@ -381,7 +381,6 @@ if [ ! -f "$pwd/.build/$file_skia_dir" ] ; then
     # Try "C:/deps/skia" or "$HOME/deps/skia"
     if [[ $is_win ]] ; then
         skia_dir="C:/deps/$possible_skia_dir_name"
-        if [ ! -d "$skia_dir" ] ;
     else
         skia_dir="$HOME/deps/$possible_skia_dir_name"
     fi
@@ -391,6 +390,7 @@ if [ ! -f "$pwd/.build/$file_skia_dir" ] ; then
         echo "Skia directory wasn't found."
         echo ""
 
+        skia_dir="$pwd/.deps/$possible_skia_dir_name"
         echo "Select Skia directory to create [$skia_dir]? "
         if [ ! $auto ] ; then
             read skia_dir_read
