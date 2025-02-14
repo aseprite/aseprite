@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2024 Igara Studio S.A.
+// Copyright (c) 2024-2025 Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -26,6 +26,7 @@ namespace doc {
 
 template<class DstTraits, class SrcTraits>
 class BlenderHelper {
+  BlendMode m_blendMode;
   BlendFunc m_blendFunc;
   color_t m_maskColor;
 
@@ -36,6 +37,7 @@ public:
                 const BlendMode blendMode,
                 const bool newBlend)
   {
+    m_blendMode = blendMode;
     m_blendFunc = SrcTraits::get_blender(blendMode, newBlend);
     m_maskColor = src->maskColor();
   }
@@ -44,6 +46,8 @@ public:
                                                 typename SrcTraits::pixel_t src,
                                                 int opacity)
   {
+    if (m_blendMode == BlendMode::SRC)
+      return src;
     if (src != m_maskColor)
       return (*m_blendFunc)(dst, src, opacity);
     else
@@ -56,6 +60,7 @@ public:
 
 template<>
 class BlenderHelper<RgbTraits, GrayscaleTraits> {
+  BlendMode m_blendMode;
   BlendFunc m_blendFunc;
   color_t m_maskColor;
 
@@ -66,6 +71,7 @@ public:
                 const BlendMode blendMode,
                 const bool newBlend)
   {
+    m_blendMode = blendMode;
     m_blendFunc = RgbTraits::get_blender(blendMode, newBlend);
     m_maskColor = src->maskColor();
   }
@@ -74,6 +80,8 @@ public:
                                        GrayscaleTraits::pixel_t src,
                                        int opacity)
   {
+    if (m_blendMode == BlendMode::SRC)
+      return src;
     if (src != m_maskColor) {
       int v = graya_getv(src);
       return (*m_blendFunc)(dst, rgba(v, v, v, graya_geta(src)), opacity);

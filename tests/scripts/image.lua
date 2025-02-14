@@ -1,4 +1,4 @@
--- Copyright (C) 2019-2024  Igara Studio S.A.
+-- Copyright (C) 2019-2025  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -350,6 +350,33 @@ do
   local s = Sprite(5, 4, ColorMode.INDEXED)
   test(app.activeCel.image)
 
+end
+
+-- Tests using Image:drawImage() with BlendMode::SRC + ColorMode.RGBA
+do
+  local __ = Color(0, 0, 0, 0).rgbaPixel
+  local oo = Color(255, 255, 255, 0).rgbaPixel
+  local xx = Color(127, 127, 127, 127).rgbaPixel
+  local rr = Color(255, 0, 0).rgbaPixel
+  local BG = Color(127, 127, 127).rgbaPixel
+
+  local a_rgb = Image(3, 2, ColorMode.RGBA)
+  array_to_pixels({ __, rr, xx,
+                    oo, rr, __ }, a_rgb)
+  local b_rgb = Image(4, 4, ColorMode.RGBA)
+  b_rgb:clear(BG)
+  b_rgb:drawImage(a_rgb, Point(0, 1), 255, BlendMode.SRC)
+  expect_img(b_rgb, { BG, BG, BG, BG,
+                      __, rr, xx, BG,
+                      oo, rr, __, BG,
+                      BG, BG, BG, BG })
+
+  b_rgb:clear(BG)
+  b_rgb:drawImage(a_rgb, Point(-1, 2), 255, BlendMode.SRC)
+  expect_img(b_rgb, { BG, BG, BG, BG,
+                      BG, BG, BG, BG,
+                      rr, xx, BG, BG,
+                      rr, __, BG, BG })
 end
 
 -- Tests using Image:drawImage() with opacity and blend modes
