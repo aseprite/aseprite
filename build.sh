@@ -384,21 +384,24 @@ if [ ! -f "$pwd/.build/$file_skia_dir" ] ; then
     else
         skia_dir="$HOME/deps/$possible_skia_dir_name"
     fi
-
+    # Set default location if not found
     if [ ! -d "$skia_dir" ] ; then
-        echo ""
-        echo "Skia directory wasn't found."
-        echo ""
-
         skia_dir="$pwd/.deps/$possible_skia_dir_name"
-        echo "Select Skia directory to create [$skia_dir]? "
-        if [ ! $auto ] ; then
-            read skia_dir_read
-            if [ "$skia_dir_read" != "" ] ; then
-                skia_dir="$skia_dir_read"
+
+        if [ ! -d "$skia_dir" ] ; then
+            echo ""
+            echo "Skia directory wasn't found."
+            echo ""
+
+            echo "Select Skia directory to create [$skia_dir]? "
+            if [ ! $auto ] ; then
+                read skia_dir_read
+                if [ "$skia_dir_read" != "" ] ; then
+                    skia_dir="$skia_dir_read"
+                fi
             fi
+            mkdir -p $skia_dir || exit 1
         fi
-        mkdir -p $skia_dir || exit 1
     fi
     echo $skia_dir > "$pwd/.build/$file_skia_dir"
 fi
