@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -15,6 +15,7 @@
 #include "os/system.h"
 #include "text/draw_text.h"
 #include "text/font.h"
+#include "ui/clipboard_delegate.h"
 #include "ui/display.h"
 #include "ui/menu.h"
 #include "ui/message.h"
@@ -23,6 +24,7 @@
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/timer.h"
+#include "ui/translation_delegate.h"
 #include "ui/widget.h"
 
 #include <algorithm>
@@ -872,20 +874,37 @@ bool Entry::isPosInSelection(int pos)
 void Entry::showEditPopupMenu(const gfx::Point& pt)
 {
   Menu menu;
-  MenuItem cut("Cut");
-  MenuItem copy("Copy");
-  MenuItem paste("Paste");
+
+  auto* clipboard = UISystem::instance()->clipboardDelegate();
+  if (!clipboard)
+    return;
+
+  auto* translate = UISystem::instance()->translationDelegate();
+  ASSERT(translate); // We provide UISystem as default translation delegate
+  if (!translate)
+    return;
+
+  MenuItem cut(translate->cut());
+  MenuItem copy(translate->copy());
+  MenuItem paste(translate->paste());
+  MenuItem selectAll(translate->selectAll());
   menu.addChild(&cut);
   menu.addChild(&copy);
   menu.addChild(&paste);
+  menu.addChild(new MenuSeparator);
+  menu.addChild(&selectAll);
+
+  for (auto* item : menu.children())
+    item->processMnemonicFromText();
+
   cut.Click.connect([this] { executeCmd(EntryCmd::Cut, 0, false); });
   copy.Click.connect([this] { executeCmd(EntryCmd::Copy, 0, false); });
   paste.Click.connect([this] { executeCmd(EntryCmd::Paste, 0, false); });
+  selectAll.Click.connect([this] { executeCmd(EntryCmd::SelectAll, 0, false); });
 
-  if (isReadOnly()) {
-    cut.setEnabled(false);
-    paste.setEnabled(false);
-  }
+  copy.setEnabled(m_select >= 0);
+  cut.setEnabled(m_select >= 0 && !isReadOnly());
+  paste.setEnabled(clipboard->hasClipboardText() && !isReadOnly());
 
   menu.showPopup(pt, display());
 }
