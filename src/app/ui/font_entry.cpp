@@ -64,6 +64,9 @@ bool FontEntry::FontFace::onProcessMessage(Message* msg)
 
     case kMouseDownMessage:
     case kFocusEnterMessage:
+      if (!isEnabled())
+        break;
+
       if (!m_popup) {
         try {
           const FontInfo info = fontEntry()->info();

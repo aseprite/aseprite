@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2020-2022  Igara Studio S.A.
+// Copyright (c) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -52,10 +52,12 @@ void SearchEntry::onPaint(ui::PaintEvent& ev)
   auto theme = SkinTheme::get(this);
   theme->paintEntry(ev);
 
+  const auto color = (isEnabled() ? theme->colors.text() : theme->colors.disabled());
+
   os::Surface* icon = theme->parts.iconSearch()->bitmap(0);
   Rect bounds = clientBounds();
   ev.graphics()->drawColoredRgbaSurface(icon,
-                                        theme->colors.text(),
+                                        color,
                                         bounds.x + border().left(),
                                         bounds.y + bounds.h / 2 - icon->height() / 2);
 
@@ -63,7 +65,7 @@ void SearchEntry::onPaint(ui::PaintEvent& ev)
     icon = onGetCloseIcon();
     ev.graphics()->drawColoredRgbaSurface(
       icon,
-      theme->colors.text(),
+      color,
       bounds.x + bounds.w - border().right() - childSpacing() - icon->width(),
       bounds.y + bounds.h / 2 - icon->height() / 2);
   }
