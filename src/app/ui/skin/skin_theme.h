@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -62,6 +62,9 @@ public:
   const std::string& path() { return m_path; }
   int preferredScreenScaling() const { return m_preferredScreenScaling; }
   int preferredUIScaling() const { return m_preferredUIScaling; }
+
+  text::FontRef getOriginalDefaultFont() const { return m_originalDefaultFont; }
+  text::FontRef getOriginalMiniFont() { return m_originalMiniFont; }
 
   text::FontRef getDefaultFont() const override { return m_defaultFont; }
   text::FontRef getWidgetFont(const ui::Widget* widget) const override;
@@ -218,8 +221,8 @@ private:
   std::map<std::string, ThemeFont> m_themeFonts;
   // Stores the unscaled font version of the Font pointer used as a key.
   std::map<text::Font*, text::FontRef> m_unscaledFonts;
-  text::FontRef m_defaultFont;
-  text::FontRef m_miniFont;
+  text::FontRef m_originalDefaultFont, m_defaultFont;
+  text::FontRef m_originalMiniFont, m_miniFont;
   int m_preferredScreenScaling;
   int m_preferredUIScaling;
 };

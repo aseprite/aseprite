@@ -34,6 +34,7 @@
 #include "app/ui/rgbmap_algorithm_selector.h"
 #include "app/ui/sampling_selector.h"
 #include "app/ui/separator_in_view.h"
+#include "app/ui/skin/font_data.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/util/render_text.h"
 #include "base/convert_to.h"
@@ -445,16 +446,12 @@ public:
 
     // Theme Custom Font
     customThemeFont()->Click.connect([this] {
-      const bool state = customThemeFont()->isSelected();
-      themeFont()->setEnabled(state);
-      if (!state)
-        themeFont()->setInfo(FontInfo(), FontEntry::From::Init);
+      auto* theme = skin::SkinTheme::get(this);
+      onSwitchCustomFontCheckBox(customThemeFont(), themeFont(), theme->getOriginalDefaultFont());
     });
     customMiniFont()->Click.connect([this] {
-      const bool state = customMiniFont()->isSelected();
-      themeMiniFont()->setEnabled(state);
-      if (!state)
-        themeMiniFont()->setInfo(FontInfo(), FontEntry::From::Init);
+      auto* theme = skin::SkinTheme::get(this);
+      onSwitchCustomFontCheckBox(customMiniFont(), themeMiniFont(), theme->getOriginalMiniFont());
     });
     themeFont()->FontChange.connect([this] { updateFontPreviews(); });
     themeMiniFont()->FontChange.connect([this] { updateFontPreviews(); });
@@ -1088,6 +1085,29 @@ private:
 
     themeFont()->setInfo(fontInfo, FontEntry::From::Init);
     themeMiniFont()->setInfo(miniInfo, FontEntry::From::Init);
+  }
+
+  void onSwitchCustomFontCheckBox(CheckBox* fontCheckBox,
+                                  FontEntry* fontEntry,
+                                  const text::FontRef& themeFont)
+  {
+    const bool state = fontCheckBox->isSelected();
+    fontEntry->setEnabled(state);
+
+    FontInfo fi;
+    auto* theme = skin::SkinTheme::get(this);
+    text::FontMgrRef fontMgr = theme->fontMgr();
+    for (auto kv : theme->getWellKnownFonts()) {
+      if (kv.second->getFont(fontMgr, themeFont->height(), guiscale()) == themeFont) {
+        fi = FontInfo(FontInfo::Type::Name,
+                      kv.first,
+                      themeFont->height(),
+                      text::FontStyle(),
+                      themeFont->antialias() ? FontInfo::Flags::Antialias : FontInfo::Flags::None);
+        break;
+      }
+    }
+    fontEntry->setInfo(fi, FontEntry::From::Init);
   }
 
   void updateFontPreviews()

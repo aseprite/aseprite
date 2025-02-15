@@ -275,12 +275,7 @@ SkinTheme* SkinTheme::get(const ui::Widget* widget)
   return static_cast<SkinTheme*>(widget->theme());
 }
 
-SkinTheme::SkinTheme()
-  : m_sheet(nullptr)
-  , m_defaultFont(nullptr)
-  , m_miniFont(nullptr)
-  , m_preferredScreenScaling(-1)
-  , m_preferredUIScaling(-1)
+SkinTheme::SkinTheme() : m_sheet(nullptr), m_preferredScreenScaling(-1), m_preferredUIScaling(-1)
 {
   m_standardCursors.fill(nullptr);
 }
@@ -483,6 +478,9 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
     throw base::Exception("There is no default font");
   if (!m_miniFont)
     m_miniFont = m_defaultFont;
+
+  m_originalDefaultFont = m_defaultFont;
+  m_originalMiniFont = m_miniFont;
 
   // Overwrite theme fonts by user defined fonts.
   Preferences& pref = Preferences::instance();
