@@ -41,12 +41,12 @@ public:
   gfx::Point mainTilePosition() const
   {
     gfx::Point pt(0, 0);
-    if (int(m_mode) & int(filters::TiledMode::X_AXIS)) {
-      pt.x += m_canvas->width();
-    }
-    if (int(m_mode) & int(filters::TiledMode::Y_AXIS)) {
-      pt.y += m_canvas->height();
-    }
+    //if (int(m_mode) & int(filters::TiledMode::X_AXIS)) {
+      //pt.x += m_canvas->width();
+    //}
+    //if (int(m_mode) & int(filters::TiledMode::Y_AXIS)) {
+      //pt.y += m_canvas->height();
+    //}
     return pt;
   }
 
