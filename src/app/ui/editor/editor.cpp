@@ -801,7 +801,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
           alpha = std::clamp(alpha, 0, 255);
         }
 
-        drawGrid(g, enclosingRect, Rect(0, 0, 1, 1), m_docPref.pixelGrid.color(), alpha);
+        drawGrid(g, enclosingRect, Rect(0, 0, 1, 1), m_docPref.pixelGrid.color(), alpha, true);
 
         // Save all pixel grid settings that are unset
         m_docPref.pixelGrid.forceSection();
@@ -824,7 +824,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
           }
 
           if (alpha > 8) {
-            drawGrid(g, enclosingRect, gridrc, m_docPref.grid.color(), alpha);
+            drawGrid(g, enclosingRect, gridrc, m_docPref.grid.color(), alpha, false);
           }
         }
 
@@ -1099,51 +1099,12 @@ void Editor::drawMaskSafe()
   }
 }
 
-static gfx::PointF project(gfx::PointF& p, const gfx::PointF& degrees)
-{
-  const double to_radians = 1.0 / (180.0 / PI);
-  const double cy = cos(degrees.y * to_radians);
-  const double sy = sin(degrees.y * to_radians);
-  const double cx = (degrees.x != 0 ? cos(degrees.x * to_radians) : 1);
-  // Apply Y as rotation and X as scaling
-  gfx::PointF dp(p);
-  if (degrees.y != 0.0) {
-    dp.x = p.x * cy - p.y * sy;
-    dp.y = (p.x * sy + p.y * cy) * cx;
-  }
-  return dp;
-}
-
-static gfx::PointF project_isometric(gfx::PointF& p)
-{
-  const gfx::PointF projection(60, 45);
-  return project(p, projection);
-}
-
-static void project_isometric(PointF& p0, PointF& p1, const PointF& offset)
-{
-  // Get original distance/length of line
-  gfx::PointF vto(p0 - p1);
-  const double oldDist = sqrt(vto.x * vto.x + vto.y * vto.y);
-  // Transform points
-  p0 = project_isometric(p0);
-  p1 = project_isometric(p1);
-  // Get new distance
-  vto = p0 - p1;
-  const double newDist = sqrt(vto.x * vto.x + vto.y * vto.y);
-  const double adjustLength = oldDist / newDist;
-  // Apply adjustments
-  p0 *= adjustLength;
-  p1 *= adjustLength;
-  p0 += offset;
-  p1 += offset;
-}
-
 void Editor::drawGrid(Graphics* g,
                       const gfx::Rect& spriteBounds,
                       const Rect& gridBounds,
                       const app::Color& color,
-                      int alpha)
+                      int alpha,
+                      bool isPixelGrid)
 {
   if ((m_flags & kShowGrid) == 0)
     return;
@@ -1187,7 +1148,7 @@ void Editor::drawGrid(Graphics* g,
     gfx::rgba(gfx::getr(grid_color), gfx::getg(grid_color), gfx::getb(grid_color), alpha);
 
   // Grid without rotation
-  if (getSite().sprite()->gridType() == doc::Grid::Type::Orthogonal) {
+  if (isPixelGrid || getSite().sprite()->gridType() == doc::Grid::Type::Orthogonal) {
     // Draw horizontal lines
     int x1 = spriteBounds.x;
     int y1 = gridF.y;
@@ -1206,44 +1167,91 @@ void Editor::drawGrid(Graphics* g,
   }
   // Isometric grid
   else {
-    // Calculate offset due to rotation
-    int x1 = 0;
-    int y1 = 0;
-    int x2 = spriteBounds.w;
-    int y2 = spriteBounds.h;
+    Rect pix(editorToScreen(RectF(0, 0, 1, 1)));
+    int x1 = spriteBounds.x;
+    int y1 = spriteBounds.y;
+    int x2 = spriteBounds.x + spriteBounds.w;
+    int y2 = spriteBounds.y + spriteBounds.h;
+    int dx = int(std::round(grid.w * pix.w));
+    int dy = int(std::round(grid.h * pix.h));
 
-    const gfx::PointF proj_offset(spriteBounds.center().x - (spriteBounds.x - gridF.x),
-                                  spriteBounds.y - (spriteBounds.y - gridF.y));
-
+    // Make tile bitmap
+    doc::MaskBoundaries immask;
     {
-      const gfx::PointF offset(0, 0);
-      gfx::PointF p0(x1, y1);
-      gfx::PointF p1(x2, y1);
-      project_isometric(p0, p1, offset);
-      x1 -= p1.x;
-      y1 -= p1.y;
-      x2 += p1.x;
-      y2 += p1.y;
-    }
+      int x = 0;
+      int y = grid.h / 2;
+      int lx = grid.w;
 
-    // Rotate and draw horizontal lines
-    for (double c = y1; c <= y2; c += gridF.h) {
-      gfx::PointF p0(x1, c);
-      gfx::PointF p1(x2, c);
-      project_isometric(p0, p1, proj_offset);
-      g->drawLine(grid_color,
-                  gfx::Point(int(std::round(p0.x)), int(std::round(p0.y))),
-                  gfx::Point(int(std::round(p1.x)), int(std::round(p1.y))));
-    }
+      // Draw pixel-precise isometric grid when zoomed in
+      // TODO: add support for different line angles
+      if (grid.w == grid.h * 2 && m_proj.zoom().scale() > 8.00) {
+        doc::ImageRef imref(
+          doc::Image::create(doc::PixelFormat::IMAGE_BITMAP, grid.w * pix.w, (grid.h + 1) * pix.h));
 
-    // Rotate and draw vertical lines
-    for (double c = x1; c <= x2; c += gridF.w) {
-      gfx::PointF p0(c, y1);
-      gfx::PointF p1(c, y2);
-      project_isometric(p0, p1, proj_offset);
-      g->drawLine(grid_color,
-                  gfx::Point(int(std::round(p0.x)), int(std::round(p0.y))),
-                  gfx::Point(int(std::round(p1.x)), int(std::round(p1.y))));
+        doc::Image* im = imref.get();
+        if (!im)
+          return;
+
+        // Prepare bitmap
+        im->clear(0x00);
+        im->fillRect(0, y * pix.h, lx * pix.w, y * pix.h, 0x01);
+        y++;
+        x++;
+        for (; y < grid.h; y++, x += 2)
+          im->fillRect(x * pix.w, (y - (x + 1)) * pix.h, (lx - x) * pix.w, y * pix.h, 0x01);
+
+        im->fillRect(x * pix.w, 0, (x + 2) * pix.w, y * pix.h, 0x01);
+        immask.regen(im);
+        immask.createPathIfNeeeded();
+
+        // Draw entire grid from single cell
+        ui::Paint paint;
+        paint.style(ui::Paint::Stroke);
+        paint.antialias(false);
+        paint.color(grid_color);
+
+        for (y = y1; y < y2; y += dy) {
+          for (x = x1; x < x2; x += dx) {
+            gfx::Path cell = immask.path();
+            cell.offset(x, y);
+            g->drawPath(cell, paint);
+          }
+        }
+      }
+      // Draw straight isometric line grid
+      else {
+        // Single side of diamond is line (a, b)
+        Point a(x1 + x * pix.w, y1 + (y - x) * pix.h);
+        Point b(x1 + (grid.w / 2) * pix.w, y1 + grid.h * pix.h);
+
+        // Calculate number of diamonds required to
+        // fill canvas horizontally
+        Point left(0, 0);
+        while (left.x < spriteBounds.w)
+          left.x += gridF.w;
+
+        // Get length and direction of line (a, b)
+        // then calculate how much we need to stretch said
+        // line to cover the whole canvas
+        const Point vto = b - a;
+        const Point ivto = Point(-vto.x, vto.y);
+        double lenF = sqrt(vto.x * vto.x + vto.y * vto.y);
+        int len = int(std::round(left.x / lenF)) + 1;
+
+        // Now displace point (b) to upper edge of canvas
+        b = a + Point(gridF.w / 2, -gridF.h / 2);
+
+        // Move these two points across the screen in
+        // cell-sized steps to draw the entire grid
+        for (y = y1; y < y2; y += dy) {
+          g->drawLine(grid_color, a, a + vto * len);
+          g->drawLine(grid_color, a + left, (a + left) + ivto * len);
+          g->drawLine(grid_color, b, b + vto * len);
+          g->drawLine(grid_color, b, b + ivto * len);
+          a.y += gridF.h;
+          b.x += gridF.w;
+        }
+      }
     }
   }
 }
