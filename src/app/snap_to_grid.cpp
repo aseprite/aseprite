@@ -28,39 +28,77 @@ gfx::Point snap_to_isometric_grid(const gfx::Rect& grid,
                                   const PreferSnapTo prefer)
 {
   // Convert point to grid space
-  gfx::PointF newPoint(int((point.x - grid.x) / double(grid.w)) * grid.w,
-                       int((point.y - grid.y) / double(grid.h)) * grid.h);
+  const gfx::PointF newPoint(int((point.x - grid.x) / double(grid.w)) * grid.w,
+                             int((point.y - grid.y) / double(grid.h)) * grid.h);
+  // And then make it relative to the center of a cell
+  const gfx::PointF vto((newPoint + grid.center()) - point);
 
-  // Substract this from original point (also in grid space)
-  // to obtain newPoint as an offset within the first grid cell
-  const gfx::PointF diff((point - grid.origin()) - newPoint);
-
-  // We now find the closest corner to that offset
-  const gfx::PointF candidates[] = { gfx::PointF(grid.w * 0.5, 0),
-                                     gfx::PointF(grid.w * 0.5, grid.h),
-                                     gfx::PointF(0, grid.h * 0.5),
-                                     gfx::PointF(grid.w, grid.h * 0.5) };
-  gfx::PointF near(grid.origin());
-  double dist = (grid.w + grid.h) * 2;
-  for (const auto& c : candidates) {
-    gfx::PointF vto = diff - c;
-    if (vto.x < 0)
-      vto.x = -vto.x;
-    if (vto.y < 0)
-      vto.y = -vto.y;
-    const double newDist = vto.x + vto.y;
-    if (newDist < dist) {
-      near = c;
-      dist = newDist;
-    }
+  // The following happens here:
+  //
+  //  /\  /\
+  // /A \/B \
+  // \  /\  /
+  //  \/  \/
+  //  /\  /\
+  // /C \/D \
+  //
+  // Only the origin for diamonds (A,B,C,D) can be found by dividing
+  // the original point by grid size.
+  //
+  // In order to snap to a position relative to the "in-between" diamonds,
+  // we need to determine whether the cell coords are outside the
+  // bounds of the current grid cell.
+  bool outside;
+  {
+    // We use the pixel-precise grid for this bounds-check
+    const auto& line = doc::Grid(grid).getIsometricLinePoints();
+    const int index = int(ABS(vto.y) - int(vto.y > 0)) + 1;
+    const gfx::Point co(-vto.x + int(grid.w / 2), -vto.y + int(grid.h / 2));
+    const gfx::Point& p = line[index];
+    outside = !(p.x <= co.x) || !(co.x < grid.w - p.x) || !(grid.h - p.y <= co.y) || !(co.y < p.y);
   }
 
-  // TODO: translate the use of the 'prefer' argument from
-  //       the orthogonal logic to this function
+  // Find which of the four corners of the current diamond
+  // should be picked
+  gfx::Point near(0, 0);
+  const gfx::Point candidates[] = { gfx::Point(grid.w / 2, 0),
+                                    gfx::Point(grid.w / 2, grid.h),
+                                    gfx::Point(0, grid.h / 2),
+                                    gfx::Point(grid.w, grid.h / 2) };
+  switch (prefer) {
+    case PreferSnapTo::ClosestGridVertex:
+      if (ABS(vto.x) > ABS(vto.y))
+        near = (vto.x < 0 ? candidates[3] : candidates[2]);
+      else
+        near = (vto.y < 0 ? candidates[1] : candidates[0]);
+      break;
 
-  // Convert cell offset to pixel space
-  newPoint += near + grid.origin();
-  return gfx::Point(std::round(newPoint.x), std::round(newPoint.y));
+    // Pick topmost corner
+    case PreferSnapTo::FloorGrid:
+    case PreferSnapTo::BoxOrigin:
+      if (outside) {
+        near = (vto.x < 0 ? candidates[3] : candidates[2]);
+        near.y -= (vto.y > 0 ? grid.h : 0);
+      }
+      else {
+        near = candidates[0];
+      }
+      break;
+
+    // Pick bottom-most corner
+    case PreferSnapTo::CeilGrid:
+    case PreferSnapTo::BoxEnd:
+      if (outside) {
+        near = (vto.x < 0 ? candidates[3] : candidates[2]);
+        near.y += (vto.y < 0 ? grid.h : 0);
+      }
+      else {
+        near = candidates[1];
+      }
+      break;
+  }
+  // Convert offset back to pixel space
+  return gfx::Point(newPoint + near + grid.origin());
 }
 
 gfx::Point snap_to_grid(const gfx::Rect& grid, const gfx::Point& point, const PreferSnapTo prefer)
