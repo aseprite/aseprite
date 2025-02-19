@@ -84,10 +84,31 @@ public:
   // Returns an array of tile positions that are touching the given region in the canvas
   std::vector<gfx::Point> tilesInCanvasRegion(const gfx::Region& rgn) const;
 
+  // Helper structure for calculating both isometric grid cells
+  // as well as point snapping
+  struct IsometricGuide {
+    gfx::Point start;
+    gfx::Point end;
+
+    union {
+      struct {
+        bool evenWidth : 1;
+        bool evenHeight : 1;
+        bool evenHalfWidth : 1;
+        bool evenHalfHeight : 1;
+        bool squareRatio : 1;
+        bool oddSize : 1;
+        bool shareEdges : 1;
+      };
+      int flags;
+    };
+
+    IsometricGuide(const gfx::Size& sz);
+  };
+
   // Returns an array of coordinates used for calculating the
   // pixel-precise bounds of an isometric grid cell
-  std::array<gfx::Point, 3> getIsometricLinePoints() const;
-  std::vector<gfx::Point> getIsometricLine() const;
+  static std::vector<gfx::Point> getIsometricLine(const gfx::Size& sz);
 
 private:
   gfx::Size m_tileSize;

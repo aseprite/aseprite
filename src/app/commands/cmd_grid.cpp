@@ -140,9 +140,8 @@ void GridSettingsCommand::onExecute(Context* context)
     bounds.h = std::max(bounds.h, 1);
 
     typestr = window.gridType()->getEntryWidget()->text();
-    type = (typestr == app::Strings::grid_settings_type_isometric() ?
-              doc::Grid::Type::Isometric :
-              doc::Grid::Type::Orthogonal);
+    type = (typestr == app::Strings::grid_settings_type_isometric() ? doc::Grid::Type::Isometric :
+                                                                      doc::Grid::Type::Orthogonal);
 
     ContextWriter writer(context);
     Tx tx(writer, friendlyName(), ModifyDocument);
