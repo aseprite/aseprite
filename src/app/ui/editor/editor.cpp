@@ -1147,7 +1147,7 @@ void Editor::drawGrid(Graphics* g,
   grid_color =
     gfx::rgba(gfx::getr(grid_color), gfx::getg(grid_color), gfx::getb(grid_color), alpha);
 
-  // Grid without rotation
+  // Orthogonal grid
   if (isPixelGrid || getSite().sprite()->gridType() == doc::Grid::Type::Orthogonal) {
     // Draw horizontal lines
     int x1 = spriteBounds.x;
@@ -1167,93 +1167,178 @@ void Editor::drawGrid(Graphics* g,
   }
   // Isometric grid
   else {
-    Rect pix(editorToScreen(RectF(0, 0, 1, 1)));
-    int x1 = spriteBounds.x;
-    int y1 = spriteBounds.y;
-    int x2 = spriteBounds.x + spriteBounds.w;
-    int y2 = spriteBounds.y + spriteBounds.h;
-    int dx = int(std::round(grid.w * pix.w));
-    int dy = int(std::round(grid.h * pix.h));
+    const RectF pix(editorToScreenF(RectF(0, 0, 1, 1)));
+    int x1 = gridF.x;
+    int y1 = gridF.y;
+    const int x2 = spriteBounds.x + spriteBounds.w;
+    const int y2 = spriteBounds.y + spriteBounds.h;
+    int dx = std::round(grid.w * pix.w);
+    int dy = std::round(grid.h * pix.h);
 
-    // Make tile bitmap
-    doc::MaskBoundaries immask;
-    {
-      int x = 0;
-      int y = grid.h / 2;
-      int lx = grid.w;
+    if (dx < 2)
+      dx = 2;
+    if (dy < 2)
+      dy = 2;
 
-      // Draw pixel-precise isometric grid when zoomed in
-      // TODO: add support for different line angles
-      if (grid.w == grid.h * 2 && m_proj.zoom().scale() > 8.00) {
-        doc::ImageRef imref(
-          doc::Image::create(doc::PixelFormat::IMAGE_BITMAP, grid.w * pix.w, (grid.h + 1) * pix.h));
+    while (x1 > spriteBounds.x)
+      x1 -= dx;
+    while (y1 > spriteBounds.y)
+      y1 -= dy;
 
-        doc::Image* im = imref.get();
-        if (!im)
-          return;
+    // Draw pixel-precise isometric grid when zoomed in
+    if (m_proj.zoom().scale() > 8.00) {
+      ui::Paint paint;
+      paint.style(ui::Paint::Stroke);
+      paint.antialias(false);
+      paint.color(grid_color);
 
-        // Prepare bitmap
-        im->clear(0x00);
-        im->fillRect(0, y * pix.h, lx * pix.w, y * pix.h, 0x01);
-        y++;
-        x++;
-        for (; y < grid.h; y++, x += 2)
-          im->fillRect(x * pix.w, (y - (x + 1)) * pix.h, (lx - x) * pix.w, y * pix.h, 0x01);
+      // Move single cell across the screen
+      // to draw entire grid
+      Path& cell = getIsometricGridPath(grid);
 
-        im->fillRect(x * pix.w, 0, (x + 2) * pix.w, y * pix.h, 0x01);
-        immask.regen(im);
-        immask.createPathIfNeeeded();
-
-        // Draw entire grid from single cell
-        ui::Paint paint;
-        paint.style(ui::Paint::Stroke);
-        paint.antialias(false);
-        paint.color(grid_color);
-
-        for (y = y1; y < y2; y += dy) {
-          for (x = x1; x < x2; x += dx) {
-            gfx::Path cell = immask.path();
-            cell.offset(x, y);
-            g->drawPath(cell, paint);
-          }
-        }
-      }
-      // Draw straight isometric line grid
-      else {
-        // Single side of diamond is line (a, b)
-        Point a(x1 + x * pix.w, y1 + (y - x) * pix.h);
-        Point b(x1 + (grid.w / 2) * pix.w, y1 + grid.h * pix.h);
-
-        // Calculate number of diamonds required to
-        // fill canvas horizontally
-        Point left(0, 0);
-        while (left.x < spriteBounds.w)
-          left.x += gridF.w;
-
-        // Get length and direction of line (a, b)
-        // then calculate how much we need to stretch said
-        // line to cover the whole canvas
-        const Point vto = b - a;
-        const Point ivto = Point(-vto.x, vto.y);
-        double lenF = sqrt(vto.x * vto.x + vto.y * vto.y);
-        int len = int(std::round(left.x / lenF)) + 1;
-
-        // Now displace point (b) to upper edge of canvas
-        b = a + Point(gridF.w / 2, -gridF.h / 2);
-
-        // Move these two points across the screen in
-        // cell-sized steps to draw the entire grid
-        for (y = y1; y < y2; y += dy) {
-          g->drawLine(grid_color, a, a + vto * len);
-          g->drawLine(grid_color, a + left, (a + left) + ivto * len);
-          g->drawLine(grid_color, b, b + vto * len);
-          g->drawLine(grid_color, b, b + ivto * len);
-          a.y += gridF.h;
-          b.x += gridF.w;
+      for (int y = y1; y < y2; y += dy) {
+        for (int x = x1; x < x2; x += dx) {
+          cell.offset(x, y);
+          g->drawPath(cell, paint);
+          // Restore original position for later use
+          cell.offset(-x, -y);
         }
       }
     }
+    // Draw straight isometric line grid
+    else {
+      // Single side of diamond is line (a, b)
+      Point a(0, std::round(grid.h * 0.5 * pix.h));
+      Point b(std::round(grid.w * 0.5 * pix.w), dy);
+
+      // Get length and direction of line (a, b)
+      const Point vto = b - a;
+      const Point ivto = Point(-vto.x, vto.y);
+      const double lenF = sqrt(vto.x * vto.x + vto.y * vto.y);
+
+      // Now displace point (b) to upper edge of canvas
+      b = a + Point(std::round(dx * 0.5), std::round(-dy * 0.5));
+
+      // Offset line (a, b) by screen coords
+      a += Point(x1, y1);
+      b += Point(x1, y1);
+
+      // Calculate number of diamonds required to
+      // fill canvas horizontally
+      Point left(std::round(((x2 - x1) / dx) * dx), 0);
+      while (left.x < (x2 - x1))
+        left.x += dx;
+
+      // Calculate how much we need to stretch
+      // line (a, b) to cover the whole canvas
+      const int len = int(std::round(left.x / lenF)) + 1 + int(grid.x > 0) + int(grid.y > 0);
+
+      // Move these two points across the screen in
+      // cell-sized steps to draw the entire grid
+      for (int y = y1; y < y2; y += dy) {
+        g->drawLine(grid_color, a, a + vto * len);
+        g->drawLine(grid_color, a + left, (a + left) + ivto * len);
+        a.y += dy;
+      }
+      for (int x = x1; x < x2; x += dx) {
+        g->drawLine(grid_color, b, b + vto * len);
+        g->drawLine(grid_color, b, b + ivto * len);
+        b.x += dx;
+      }
+    }
   }
+}
+
+gfx::Path& Editor::getIsometricGridPath(Rect& grid)
+{
+  static Path path;
+  static Size prevSize(0, 0);
+  static double prevScale = 0.00;
+
+  // Regenerate bitmap on zoom or grid size change
+  if (prevScale != m_proj.zoom().scale() || prevSize != grid.size()) {
+    const RectF pix(editorToScreenF(RectF(0, 0, 1, 1)));
+    doc::ImageRef imref(doc::Image::create(doc::PixelFormat::IMAGE_BITMAP,
+                                           std::round(grid.w * pix.w),
+                                           std::round((grid.h + 1) * pix.h)));
+
+    // Return previous path if image generation fails
+    doc::Image* im = imref.get();
+    if (!im)
+      return path;
+
+    // Prepare bitmap
+    im->clear(0x00);
+    int x = 0;
+    int y = int(std::round(grid.h * 0.5));
+    const int lx = grid.w;
+    int ly = y - 1;
+
+    im->fillRect(0, std::round(y * pix.h), std::round(lx * pix.w), std::round(y * pix.h), 0x01);
+
+    y++;
+    x++;
+
+    // 2:1
+    if (grid.w == grid.h * 2) {
+      for (; y < grid.h; y++, x += 2)
+        im->fillRect(std::round(x * pix.w),
+                     std::round((y - (x + 1)) * pix.h),
+                     std::round((lx - x) * pix.w),
+                     std::round(y * pix.h),
+                     0x01);
+
+      im->fillRect(std::round(x * pix.w),
+                   0,
+                   std::round((x + 2) * pix.w),
+                   std::round(y * pix.h),
+                   0x01);
+    }
+    // 1:1
+    else if (grid.w == grid.h) {
+      for (; y < grid.h; y++, x++, ly--)
+        im->fillRect(std::round(x * pix.w),
+                     std::round(ly * pix.h),
+                     std::round((lx - x) * pix.w),
+                     std::round(y * pix.h),
+                     0x01);
+
+      im->fillRect(std::round(x * pix.w), 0, std::round(x * pix.w), std::round(y * pix.h), 0x01);
+    }
+    // Quick test for other ratios
+    else if (grid.w > grid.h * 2) {
+      float step = 0.00;
+      float rem = 0.00;
+      const float len = float(grid.w) / (grid.h + 1);
+
+      for (; y < grid.h; y++, x += step, ly--) {
+        step = len + rem;
+        rem = (step - int(step)) * int(std::round(step) > std::floor(step));
+        step = std::round(step);
+        im->fillRect(std::round(x * pix.w),
+                     std::round(ly * pix.h),
+                     std::round((lx - x) * pix.w),
+                     std::round(y * pix.h),
+                     0x01);
+      }
+
+      im->fillRect(std::round((grid.w * 0.5 - 1) * pix.w),
+                   0,
+                   std::round((grid.w * 0.5 + 1) * pix.w),
+                   std::round(y * pix.h),
+                   0x01);
+    }
+
+    doc::MaskBoundaries immask;
+    immask.regen(im);
+    immask.createPathIfNeeeded();
+    path = immask.path();
+  }
+  // Remember scale used to generate the current path
+  prevScale = m_proj.zoom().scale();
+  prevSize.w = grid.w;
+  prevSize.h = grid.h;
+  return path;
 }
 
 void Editor::drawSlices(ui::Graphics* g)
