@@ -20,6 +20,7 @@ public:
   enum class Type {
     Orthogonal = 0x00,
     Isometric = 0x01,
+
   };
   explicit Grid(const gfx::Size& sz = gfx::Size(16, 16))
     : m_tileSize(sz)
@@ -82,6 +83,10 @@ public:
 
   // Returns an array of tile positions that are touching the given region in the canvas
   std::vector<gfx::Point> tilesInCanvasRegion(const gfx::Region& rgn) const;
+
+  // Returns an array of coordinates used for calculating the
+  // pixel-precise bounds of an isometric grid cell
+  std::vector<gfx::Point> getIsometricLinePoints(void) const;
 
 private:
   gfx::Size m_tileSize;

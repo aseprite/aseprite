@@ -17,6 +17,46 @@ namespace app { namespace tools {
 
 using namespace gfx;
 
+// Adjustment for snap to isometric grid
+static void snap_isometric_line(ToolLoop* loop, Stroke& stroke)
+{
+  // Get line angle
+  PointF vto(stroke[1].x - stroke[0].x, stroke[1].y - stroke[0].y);
+  double len = ABS(vto.x) + ABS(vto.y);
+  vto /= len;
+
+  // Skip on single point
+  if (std::isnan(vto.x) && std::isnan(vto.y))
+    return;
+
+  // Offset vertical lines one pixel left for line tool.
+  // Because pressing the angle snap key will bypass this function,
+  // this makes it so one can selectively apply the offset.
+  const gfx::Rect& grid = loop->getGridBounds();
+  if (int(vto.x) == 0 && int(vto.y) != 0) {
+    bool lineTool = (string_id_to_brush_type(loop->getTool()->getId()) == kLineBrushType);
+    stroke[0].x -= lineTool;
+    stroke[1].x -= lineTool;
+  }
+  // Diagonal lines for width-to-height ratios greater than 1:1
+  else if (grid.w / float(grid.h)) {
+    // Skip horizontal or cross-cell diagonal lines
+    PointF normal(grid.w * 0.5, grid.h * 0.5);
+    normal /= normal.x + normal.y;
+    const double eps = 0.15;
+    if (ABS(vto.x) < normal.x - eps || ABS(vto.x) > normal.x + eps || ABS(vto.y) < normal.y - eps ||
+        ABS(vto.y) > normal.y + eps)
+      return;
+
+    // Adjust line start/end point based on direction
+    stroke[0].y += (!(grid.h & 1) ? vto.y < 0 : 0);
+    Point delta(std::round(SGN(vto.x) * normal.x * len), std::round(SGN(vto.y) * normal.y * len));
+    stroke[1].x = stroke[0].x + delta.x;
+    stroke[1].y = stroke[0].y + delta.y;
+    stroke[1].y += (!(grid.h & 1) ? SGN(vto.y) : 0);
+  }
+}
+
 // Shared logic between controllers that can move/displace all points
 // using the space bar.
 class MoveOriginCapability : public Controller {
@@ -196,6 +236,9 @@ public:
         stroke[1].x = m_first.x + SGN(dx) * minsize;
         stroke[1].y = m_first.y + SGN(dy) * minsize;
       }
+    }
+    else if (loop->getSnapToGrid() && loop->sprite()->gridType() == doc::Grid::Type::Isometric) {
+      snap_isometric_line(loop, stroke);
     }
 
     if (hasAngle()) {
