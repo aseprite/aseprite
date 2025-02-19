@@ -86,7 +86,8 @@ public:
 
   // Returns an array of coordinates used for calculating the
   // pixel-precise bounds of an isometric grid cell
-  std::vector<gfx::Point> getIsometricLinePoints(void) const;
+  std::array<gfx::Point, 3> getIsometricLinePoints() const;
+  std::vector<gfx::Point> getIsometricLine() const;
 
 private:
   gfx::Size m_tileSize;

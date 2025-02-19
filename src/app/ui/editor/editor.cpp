@@ -1176,6 +1176,10 @@ void Editor::drawGrid(Graphics* g,
     int dx = std::round(grid.w * pix.w);
     int dy = std::round(grid.h * pix.h);
 
+    // Diamonds share a side when their size is uneven
+    dx -= pix.w * (grid.w & 1);
+    dy -= pix.h * (grid.h & 1);
+
     if (dx < 2)
       dx = 2;
     if (dy < 2)
@@ -1209,11 +1213,11 @@ void Editor::drawGrid(Graphics* g,
     // Draw straight isometric line grid
     else {
       // Single side of diamond is line (a, b)
-      Point a(0, std::round(grid.h * 0.5 * pix.h));
-      Point b(std::round(grid.w * 0.5 * pix.w), dy);
+      PointF a(0, dy * 0.5);
+      PointF b(dx * 0.5, dy);
 
       // Get length and direction of line (a, b)
-      Point vto = b - a;
+      Point vto = Point(b - a);
       Point ivto = Point(-vto.x, vto.y);
       const double lenF = sqrt(vto.x * vto.x + vto.y * vto.y);
 
@@ -1277,7 +1281,7 @@ gfx::Path& Editor::getIsometricGridPath(Rect& grid)
     // Prepare bitmap from points of pixel precise line.
     // A single grid cell is calculated from these
     im->clear(0x00);
-    for (const auto& p : getSite().grid().getIsometricLinePoints())
+    for (const auto& p : getSite().grid().getIsometricLine())
       im->fillRect(std::round(p.x * pix.w),
                    std::round((grid.h - p.y) * pix.h),
                    std::floor((grid.w - p.x) * pix.w),
