@@ -975,6 +975,9 @@ int Sprite_set_pixelRatio(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   gfx::Size pixelRatio = convert_args_into_size(L, 2);
+  if (pixelRatio.w < 1 || pixelRatio.h < 1)
+    return luaL_error(L, "invalid pixel ratio = %d:%d", pixelRatio.w, pixelRatio.h);
+
   double gcd = base::gcd(double(pixelRatio.w), double(pixelRatio.h));
   pixelRatio.w = int(double(pixelRatio.w) / gcd);
   pixelRatio.h = int(double(pixelRatio.h) / gcd);
