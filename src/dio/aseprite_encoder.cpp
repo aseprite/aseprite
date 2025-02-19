@@ -184,6 +184,7 @@ void AsepriteEncoder::prepareHeader(AsepriteHeader* header)
   header->grid_y = sprite->gridBounds().y;
   header->grid_width = sprite->gridBounds().w;
   header->grid_height = sprite->gridBounds().h;
+  header->grid_type = uint16_t(sprite->gridType());
 }
 
 void AsepriteEncoder::writeHeader(const AsepriteHeader* header)
@@ -211,6 +212,7 @@ void AsepriteEncoder::writeHeader(const AsepriteHeader* header)
   write16(header->grid_y);
   write16(header->grid_width);
   write16(header->grid_height);
+  write16(header->grid_type);
 
   seek(header->pos + 128);
 }
