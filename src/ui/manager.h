@@ -146,6 +146,7 @@ protected:
   void onInitTheme(InitThemeEvent& ev) override;
   virtual LayoutIO* onGetLayoutIO();
   virtual void onNewDisplayConfiguration(Display* display);
+  virtual bool onEnqueueMouseDown(MouseMessage* mouseMsg);
 
 private:
   void generateSetCursorMessage(Display* display,
@@ -202,16 +203,16 @@ private:
   static Widget* findLowestCommonAncestor(Widget* a, Widget* b);
   static bool someParentIsFocusStop(Widget* widget);
   static Widget* findMagneticWidget(Widget* widget);
-  static Message* newMouseMessage(MessageType type,
-                                  Display* display,
-                                  Widget* widget,
-                                  const gfx::Point& mousePos,
-                                  PointerType pointerType,
-                                  MouseButton button,
-                                  KeyModifiers modifiers,
-                                  const gfx::Point& wheelDelta = gfx::Point(0, 0),
-                                  bool preciseWheel = false,
-                                  float pressure = 0.0f);
+  static MouseMessage* newMouseMessage(MessageType type,
+                                       Display* display,
+                                       Widget* widget,
+                                       const gfx::Point& mousePos,
+                                       PointerType pointerType,
+                                       MouseButton button,
+                                       KeyModifiers modifiers,
+                                       const gfx::Point& wheelDelta = gfx::Point(0, 0),
+                                       bool preciseWheel = false,
+                                       float pressure = 0.0f);
   void broadcastKeyMsg(Message* msg);
 
   static Manager* m_defaultManager;

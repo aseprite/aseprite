@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -19,9 +19,9 @@
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui_context.h"
 #include "os/menus.h"
-#include "ui/accelerator.h"
 #include "ui/menu.h"
 #include "ui/message.h"
+#include "ui/shortcut.h"
 #include "ui/size_hint_event.h"
 #include "ui/widget.h"
 
@@ -138,8 +138,8 @@ void AppMenuItem::onSizeHint(SizeHintEvent& ev)
 
     size.h = +textHeight() + border().height();
 
-    if (m_key && !m_key->accels().empty()) {
-      size.w += font()->textLength(m_key->accels().front().toString());
+    if (m_key && !m_key->shortcuts().empty()) {
+      size.w += font()->textLength(m_key->shortcuts().front().toString());
     }
   }
 
