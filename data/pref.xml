@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2025  Igara Studio S.A. -->
 <!-- Copyright (C) 2014-2018  David Capello -->
 <preferences>
 
@@ -522,6 +522,7 @@
       <option id="mode" type="SymmetryMode" default="SymmetryMode::NONE" />
       <option id="x_axis" type="double" default="0" />
       <option id="y_axis" type="double" default="0" />
+      <option id="button_flags" type="int" default="0" />
     </section>
     <section id="grid" canforce="true">
       <option id="snap" type="bool" default="false" />
