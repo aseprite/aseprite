@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +9,7 @@
   #include "config.h"
 #endif
 
+#include "app/cmd/clear_rect.h"
 #include "app/cmd/copy_rect.h"
 #include "app/cmd/copy_region.h"
 #include "app/cmd/flip_image.h"
@@ -237,7 +238,15 @@ int Image_clear(lua_State* L)
   else
     color = convert_args_into_pixel_color(L, i, img->pixelFormat());
 
-  doc::fill_rect(img, rc, color); // Clips the rectangle to the image bounds
+  if (auto cel = obj->cel(L)) {
+    Tx tx(cel->sprite());
+    tx(new cmd::ClearRect(cel, rc.offset(cel->position()), color));
+    tx.commit();
+  }
+  // If the destination image is not related to a sprite, we just draw
+  // the source image without undo information.
+  else
+    doc::fill_rect(img, rc, color); // Clips the rectangle to the image bounds
   return 0;
 }
 
