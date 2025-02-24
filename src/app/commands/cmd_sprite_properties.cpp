@@ -142,7 +142,7 @@ public:
   {
     userData()->Click.connect([this] { onToggleUserData(); });
 
-    useUuidForLayers()->setSelected(sprite->useUuidsForLayers());
+    useUuidForLayers()->setSelected(sprite->uuidsForLayers());
 
     m_userDataView.configureAndSet(m_sprite->userData(), propertiesGrid());
 
@@ -399,7 +399,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
 
     const UserData newUserData = window.getUserData();
 
-    sprite->setUseUuidsForLayers(window.useUuidForLayers()->isSelected());
+    sprite->setUuidsForLayers(window.useUuidForLayers()->isSelected());
 
     if (index != sprite->transparentColor() || pixelRatio != sprite->pixelRatio() ||
         newUserData != sprite->userData()) {

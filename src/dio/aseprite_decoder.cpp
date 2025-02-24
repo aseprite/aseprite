@@ -75,8 +75,8 @@ bool AsepriteDecoder::decode()
   sprite->setGridBounds(
     gfx::Rect(header.grid_x, header.grid_y, header.grid_width, header.grid_height));
 
-  sprite->setUseUuidsForLayers((header.flags & ASE_FILE_FLAG_LAYER_WITH_UUID) ==
-                               ASE_FILE_FLAG_LAYER_WITH_UUID);
+  sprite->setUuidsForLayers((header.flags & ASE_FILE_FLAG_LAYER_WITH_UUID) ==
+                            ASE_FILE_FLAG_LAYER_WITH_UUID);
 
   // Prepare variables for layer chunks
   doc::Layer* last_layer = sprite->root();
@@ -584,7 +584,7 @@ doc::Layer* AsepriteDecoder::readLayerChunk(AsepriteHeader* header,
     return nullptr;
 
   // Read UUID if usage is enabled
-  if (sprite->useUuidsForLayers())
+  if (sprite->uuidsForLayers())
     layer->setUuid(readUuid());
 
   const bool composeGroups = (header->flags & ASE_FILE_FLAG_COMPOSITE_GROUPS);

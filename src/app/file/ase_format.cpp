@@ -544,7 +544,7 @@ static void ase_file_prepare_header(FILE* f,
                                                               0);
   header->flags = (ASE_FILE_FLAG_LAYER_WITH_OPACITY |
                    (composeGroups ? ASE_FILE_FLAG_COMPOSITE_GROUPS : 0) |
-                   (sprite->useUuidsForLayers() ? ASE_FILE_FLAG_LAYER_WITH_UUID : 0));
+                   (sprite->uuidsForLayers() ? ASE_FILE_FLAG_LAYER_WITH_UUID : 0));
   header->speed = sprite->frameDuration(firstFrame);
   header->next = 0;
   header->frit = 0;
