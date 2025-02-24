@@ -363,7 +363,8 @@ start_input_tga (j_compress_ptr cinfo, cjpeg_source_ptr sinfo)
   if (cmaptype > 1 ||           /* cmaptype must be 0 or 1 */
       source->pixel_size < 1 || source->pixel_size > 4 ||
       (UCH(targaheader[16]) & 7) != 0 || /* bits/pixel must be multiple of 8 */
-      interlace_type != 0)      /* currently don't allow interlaced image */
+      interlace_type != 0 ||      /* currently don't allow interlaced image */
+      width == 0 || height == 0)  /* image width/height must be non-zero */
     ERREXIT(cinfo, JERR_TGA_BADPARMS);
 
   if (subtype > 8) {
