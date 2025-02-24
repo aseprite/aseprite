@@ -9,6 +9,7 @@
 #define DIO_ASEPRITE_DECODER_H_INCLUDED
 #pragma once
 
+#include "base/uuid.h"
 #include "dio/aseprite_common.h"
 #include "dio/decoder.h"
 #include "doc/frame.h"
@@ -77,6 +78,7 @@ private:
                           const AsepriteExternalFiles& extFiles);
   const doc::UserData::Variant readPropertyValue(uint16_t type);
   void readTilesData(doc::Tileset* tileset, const AsepriteExternalFiles& extFiles);
+  base::Uuid readUuid();
 
   doc::LayerList m_allLayers;
   std::vector<uint32_t> m_tilesetFlags;

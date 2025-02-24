@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -41,6 +41,7 @@
 #include "doc/tileset_io.h"
 #include "doc/tilesets.h"
 #include "doc/user_data_io.h"
+#include "doc/uuid_io.h"
 #include "fixmath/fixmath.h"
 
 #include <fstream>
@@ -282,6 +283,8 @@ private:
 
     // Save user data
     write_user_data(s, lay->userData());
+
+    write_uuid(s, lay->uuid());
     return true;
   }
 
