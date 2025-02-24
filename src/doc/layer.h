@@ -147,9 +147,7 @@ private:
   Sprite* m_sprite;          // owner of the layer
   LayerGroup* m_parent;      // parent layer
   LayerFlags m_flags;        // stack order cannot be changed
-  mutable base::Uuid m_uuid; // The UUID is generated the first time the "HasUUID" flag
-                             // is activated when it is a null UUID. If this field had
-                             // a valid UUID already, it won't be replaced by a new one.
+  mutable base::Uuid m_uuid; // lazily generated layer's UUID
 
   BlendMode m_blendmode;
   int m_opacity;
