@@ -10,7 +10,7 @@
 
 #include "base/uuid.h"
 
-#include <iostream>
+#include <iosfwd>
 
 namespace doc {
 
