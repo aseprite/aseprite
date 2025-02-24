@@ -41,8 +41,6 @@ void write_layer(std::ostream& os, const Layer* layer)
 {
   write32(os, layer->id());
   write_string(os, layer->name());
-  write_uuid(os, layer->uuid());
-
   write32(os, static_cast<int>(layer->flags())); // Flags
   write16(os, static_cast<int>(layer->type()));  // Type
 
@@ -108,16 +106,13 @@ void write_layer(std::ostream& os, const Layer* layer)
   }
 
   write_user_data(os, layer->userData());
+  write_uuid(os, layer->uuid());
 }
 
 Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const SerialFormat serial)
 {
   ObjectId id = read32(is);
   std::string name = read_string(is);
-  base::Uuid uuid;
-  if (serial >= SerialFormat::Ver3)
-    uuid = read_uuid(is);
-
   uint32_t flags = read32(is);      // Flags
   uint16_t layer_type = read16(is); // Type
   std::unique_ptr<Layer> layer;
@@ -193,16 +188,19 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const Seri
 
   const UserData userData = read_user_data(is, serial);
 
+  base::Uuid uuid;
+  if (serial >= SerialFormat::Ver3)
+    uuid = read_uuid(is);
+
   if (!layer)
     return nullptr;
-
-  if (serial >= SerialFormat::Ver3)
-    layer->setUuid(uuid);
 
   layer->setName(name);
   layer->setFlags(static_cast<LayerFlags>(flags));
   layer->setId(id);
   layer->setUserData(userData);
+  if (serial >= SerialFormat::Ver3)
+    layer->setUuid(uuid);
 
   return layer.release();
 }

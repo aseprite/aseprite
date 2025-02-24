@@ -451,9 +451,6 @@ private:
            type == ObjectType::LayerTilemap);
 
     std::string name = read_string(s);
-    base::Uuid uuid;
-    if (m_serial >= SerialFormat::Ver3)
-      uuid = read_uuid(s);
 
     std::unique_ptr<Layer> lay;
 
@@ -503,11 +500,15 @@ private:
     if (!lay)
       return nullptr;
 
-    if (m_serial >= SerialFormat::Ver3)
-      lay->setUuid(uuid);
-
     UserData userData = read_user_data(s, m_serial);
     lay->setUserData(userData);
+
+    base::Uuid uuid;
+    if (m_serial >= SerialFormat::Ver3) {
+      uuid = read_uuid(s);
+      lay->setUuid(uuid);
+    }
+
     return lay.release();
   }
 

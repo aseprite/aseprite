@@ -251,7 +251,6 @@ private:
     write32(s, static_cast<int>(lay->flags())); // Flags
     write16(s, static_cast<int>(lay->type()));  // Type
     write_string(s, lay->name());
-    write_uuid(s, lay->uuid());
 
     switch (lay->type()) {
       case ObjectType::LayerImage:
@@ -284,6 +283,8 @@ private:
 
     // Save user data
     write_user_data(s, lay->userData());
+
+    write_uuid(s, lay->uuid());
     return true;
   }
 
