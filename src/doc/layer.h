@@ -9,6 +9,7 @@
 #define DOC_LAYER_H_INCLUDED
 #pragma once
 
+#include "base/debug.h"
 #include "base/uuid.h"
 #include "doc/blend_mode.h"
 #include "doc/cel_list.h"
@@ -135,7 +136,11 @@ public:
       m_uuid = base::Uuid::Generate();
     return m_uuid;
   }
-  void setUuid(const base::Uuid& uuid) { m_uuid = uuid; }
+  void setUuid(const base::Uuid& uuid)
+  {
+    ASSERT(m_uuid == base::Uuid());
+    m_uuid = uuid;
+  }
 
   virtual Grid grid() const;
   virtual Cel* cel(frame_t frame) const;
