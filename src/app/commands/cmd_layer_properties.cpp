@@ -470,7 +470,7 @@ private:
     uuid()->setVisible(uuidVisible);
 
     if (uuidVisible)
-      uuid()->setText(m_layer ? base::convert_to<std::string>(m_layer->uuid()) : "");
+      uuid()->setText(m_layer ? base::convert_to<std::string>(m_layer->uuid()) : std::string());
 
     if (tileset()->isVisible() != tilemapVisibility) {
       tileset()->setVisible(tilemapVisibility);
