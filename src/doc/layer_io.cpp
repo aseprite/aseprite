@@ -5,7 +5,6 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#include "doc/uuid_io.h"
 #ifdef HAVE_CONFIG_H
   #include "config.h"
 #endif
@@ -25,6 +24,7 @@
 #include "doc/string_io.h"
 #include "doc/subobjects_io.h"
 #include "doc/user_data_io.h"
+#include "doc/uuid_io.h"
 
 #include <iostream>
 #include <memory>
