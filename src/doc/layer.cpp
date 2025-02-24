@@ -36,9 +36,6 @@ Layer::Layer(ObjectType type, Sprite* sprite)
          type == ObjectType::LayerTilemap);
 
   setName("Layer");
-  // Always generate a UUID for this layer, but take into account that it could
-  // be replaced. For instance, when loading a layer that already had a UUID.
-  m_uuid = base::Uuid::Generate();
 }
 
 Layer::~Layer()

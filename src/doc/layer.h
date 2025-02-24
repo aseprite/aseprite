@@ -129,7 +129,12 @@ public:
   int opacity() const { return m_opacity; }
   void setOpacity(int opacity) { m_opacity = opacity; }
 
-  const base::Uuid& uuid() const { return m_uuid; }
+  const base::Uuid& uuid() const
+  {
+    if (m_uuid == base::Uuid())
+      m_uuid = base::Uuid::Generate();
+    return m_uuid;
+  }
   void setUuid(const base::Uuid& uuid) { m_uuid = uuid; }
 
   virtual Grid grid() const;
@@ -138,13 +143,13 @@ public:
   virtual void displaceFrames(frame_t fromThis, frame_t delta) = 0;
 
 private:
-  std::string m_name;   // layer name
-  Sprite* m_sprite;     // owner of the layer
-  LayerGroup* m_parent; // parent layer
-  LayerFlags m_flags;   // stack order cannot be changed
-  base::Uuid m_uuid;    // The UUID is generated the first time the "HasUUID" flag
-                        // is activated when it is a null UUID. If this field had
-                        // a valid UUID already, it won't be replaced by a new one.
+  std::string m_name;        // layer name
+  Sprite* m_sprite;          // owner of the layer
+  LayerGroup* m_parent;      // parent layer
+  LayerFlags m_flags;        // stack order cannot be changed
+  mutable base::Uuid m_uuid; // The UUID is generated the first time the "HasUUID" flag
+                             // is activated when it is a null UUID. If this field had
+                             // a valid UUID already, it won't be replaced by a new one.
 
   BlendMode m_blendmode;
   int m_opacity;
