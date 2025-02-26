@@ -90,7 +90,7 @@ class RunScriptTask {
 public:
   typedef std::function<void(lua_State* L)> Func;
 
-  RunScriptTask(lua_State* L, int nelems, Func&& func);
+  RunScriptTask(lua_State* L, int nelems, const std::string& description, Func&& func);
   ~RunScriptTask();
 
   void onDone(base::task::func_t&& funcDone) { m_task.on_done(std::move(funcDone)); }
@@ -98,14 +98,16 @@ public:
   void stop();
   bool wantsToStop() const { return m_wantsToStop; }
 
+  int ref() const { return m_LRef; }
+  const std::string& description() const { return m_description; }
+
 private:
-  // Lua's main thread state.
-  lua_State* m_mainL;
-  // Lua's thread state based on m_mainL.
+  // Lua's thread state.
   lua_State* m_L;
-  int m_LRef = LUA_REFNIL;
+  int m_LRef;
   base::task m_task;
   bool m_wantsToStop = false;
+  std::string m_description;
 };
 
 class Engine {
@@ -130,7 +132,15 @@ public:
   bool evalUserFileInTask(const std::string& filename, const Params& params = Params());
   // Calls the function in the stack with the number of arguments specified by nargs in
   // a new RunScriptTask.
-  void callInTask(lua_State* L, int nargs);
+  void callInTask(lua_State* L, int nargs, const std::string& description);
+  std::vector<const RunScriptTask*> tasks() const
+  {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    std::vector<const RunScriptTask*> tasks(m_tasks.size());
+    for (const auto& task : m_tasks)
+      tasks.push_back(task.get());
+    return tasks;
+  }
 
   void handleException(const std::exception& ex);
   void handleException(lua_State* L, const std::exception& ex);
@@ -151,13 +161,17 @@ private:
   void onConsolePrint(const char* text);
   // Creates a new RunScriptTask based on parentL and moving nelems from parentL's stack
   // to the child lua thread stack
-  void executeTask(lua_State* parentL, int nelems, RunScriptTask::Func&& func);
+  void executeTask(lua_State* parentL,
+                   int nelems,
+                   const std::string& description,
+                   RunScriptTask::Func&& func);
   void onTaskDone(const RunScriptTask* task);
   static void checkProgress(lua_State* L, lua_Debug* ar);
 
   lua_State* L;
   EngineDelegate* m_delegate;
   base::thread_pool m_threadPool;
+  mutable std::mutex m_mutex;
   Tasks m_tasks;
   bool m_printLastResult;
   int m_returnCode;
