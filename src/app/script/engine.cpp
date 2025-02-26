@@ -217,39 +217,45 @@ void set_app_params(lua_State* L, const Params& params);
 
 #define RUNNING_TASKS "RunningTasks"
 
-RunScriptTask::RunScriptTask(lua_State* L, int nelems, Func&& func)
+std::mutex runningTasksMutex;
+
+RunScriptTask::RunScriptTask(lua_State* L, int nelems, const std::string& description, Func&& func)
+  : m_LRef(LUA_REFNIL)
+  , m_description(description)
 {
-  m_mainL = L;
-  m_L = lua_newthread(m_mainL);
+  m_L = lua_newthread(L);
+  // Move the thread object in the parent thread stack to the new thread stack.
+  lua_xmove(L, m_L, 1);
   // Save a reference to the lua thread in the registry to avoid garbage collection
   // before it gets executed.
-  m_LRef = luaL_ref(m_mainL, LUA_REGISTRYINDEX);
+  m_LRef = luaL_ref(m_L, LUA_REGISTRYINDEX);
 
   // Move nelems stack elements from main thread to the child lua thread.
-  lua_xmove(m_mainL, m_L, nelems);
+  lua_xmove(L, m_L, nelems);
 
   // We use a global table to have access to the state of all the currently
   // running scripts
-  int type = lua_getglobal(m_L, RUNNING_TASKS);
-  if (type == LUA_TNIL) {
-    lua_newtable(m_L);
-    lua_pushvalue(m_L, -1);
-    lua_setglobal(m_L, RUNNING_TASKS);
+  {
+    std::lock_guard<std::mutex> lock(runningTasksMutex);
+    int type = lua_getglobal(m_L, RUNNING_TASKS);
+    if (type == LUA_TNIL) {
+      lua_newtable(m_L);
+      lua_pushvalue(m_L, -1);
+      lua_setglobal(m_L, RUNNING_TASKS);
+    }
+
+    lua_pushlightuserdata(m_L, this);
+    lua_rawsetp(m_L, -2, m_L);
+    lua_pop(m_L, 1);
   }
-
-  lua_pushlightuserdata(m_L, m_L);
-  lua_pushlightuserdata(m_L, this);
-  lua_settable(m_L, -3);
-  lua_pop(m_L, 1);
-
   lua_sethook(
     m_L,
     [](lua_State* L, lua_Debug* ar) {
       if (ar->event == LUA_HOOKCOUNT) {
+        std::lock_guard<std::mutex> lock(runningTasksMutex);
         int type = lua_getglobal(L, RUNNING_TASKS);
         if (type == LUA_TTABLE) {
-          lua_pushlightuserdata(L, L);
-          lua_gettable(L, -2);
+          lua_rawgetp(L, -1, L);
           RunScriptTask* task = (RunScriptTask*)lua_topointer(L, -1);
           lua_pop(L, 2);
           if (task->wantsToStop()) {
@@ -268,7 +274,15 @@ RunScriptTask::RunScriptTask(lua_State* L, int nelems, Func&& func)
 
 RunScriptTask::~RunScriptTask()
 {
-  luaL_unref(m_mainL, LUA_REGISTRYINDEX, m_LRef);
+  std::lock_guard<std::mutex> lock(runningTasksMutex);
+  int type = lua_getglobal(m_L, RUNNING_TASKS);
+  if (type == LUA_TTABLE) {
+    lua_pushlightuserdata(m_L, nullptr);
+    lua_rawsetp(m_L, -2, m_L);
+  }
+  lua_pop(m_L, 1);
+
+  luaL_unref(m_L, LUA_REGISTRYINDEX, m_LRef);
 
   //  Collect script garbage.
   lua_gc(m_L, LUA_GCCOLLECT);
@@ -601,8 +615,11 @@ Engine::~Engine()
 void Engine::destroy()
 {
   // Stop all running tasks.
-  for (auto& task : m_tasks) {
-    task->stop();
+  {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for (auto& task : m_tasks) {
+      task->stop();
+    }
   }
   m_threadPool.wait_all();
 
@@ -717,9 +734,9 @@ bool Engine::evalFile(const std::string& filename, const Params& params)
   return result;
 }
 
-void Engine::callInTask(lua_State* parentL, int nargs)
+void Engine::callInTask(lua_State* parentL, int nargs, const std::string& description)
 {
-  executeTask(parentL, nargs + 1, [this, nargs](lua_State* L) {
+  executeTask(parentL, nargs + 1, description, [this, nargs](lua_State* L) {
     try {
       if (lua_pcall(L, nargs, 0, 0)) {
         if (const char* s = lua_tostring(L, -1))
@@ -735,17 +752,24 @@ void Engine::callInTask(lua_State* parentL, int nargs)
   });
 }
 
-void Engine::executeTask(lua_State* parentL, int nelems, RunScriptTask::Func&& func)
+void Engine::executeTask(lua_State* parentL,
+                         int nelems,
+                         const std::string& description,
+                         RunScriptTask::Func&& func)
 {
-  auto task = std::make_unique<RunScriptTask>(parentL, nelems, std::move(func));
+  auto task = std::make_unique<RunScriptTask>(parentL, nelems, description, std::move(func));
   auto* taskPtr = task.get();
   task->onDone([this, taskPtr](base::task_token&) { onTaskDone(taskPtr); });
-  m_tasks.push_back(std::move(task));
+  {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_tasks.push_back(std::move(task));
+  }
   taskPtr->execute(m_threadPool);
 }
 
 void Engine::onTaskDone(const RunScriptTask* task)
 {
+  std::lock_guard<std::mutex> lock(m_mutex);
   for (auto it = m_tasks.begin(); it != m_tasks.end(); ++it) {
     if ((*it).get() == task) {
       m_tasks.erase(it);
@@ -756,7 +780,7 @@ void Engine::onTaskDone(const RunScriptTask* task)
 
 bool Engine::evalUserFileInTask(const std::string& filename, const Params& params)
 {
-  executeTask(L, 0, [filename, params, this](lua_State* L) {
+  executeTask(L, 0, filename, [filename, params, this](lua_State* L) {
     std::string absFilename = base::get_absolute_path(filename);
     // Set the _SCRIPT_PATH global so require() can find .lua files from
     // the script path.
@@ -787,8 +811,7 @@ bool Engine::evalUserFileInTask(const std::string& filename, const Params& param
           lua_pcall(L, 0, 1, 0)) {
         const char* s = lua_tostring(L, -1);
         if (s)
-          TRACE("Error: %s\n", s);
-        // onConsoleError(s);
+          onConsoleError(s);
         ok = false;
         returnCode = -1;
       }
