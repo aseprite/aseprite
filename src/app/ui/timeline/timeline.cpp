@@ -2008,6 +2008,8 @@ void Timeline::onAfterLayerVisibilityChange(DocEvent& ev)
   layer_t layerIdx = getLayerIndex(ev.layer());
   if (layerIdx >= 0)
     invalidateRect(getPartBounds(Hit(PART_ROW_EYE_ICON, layerIdx)).offset(origin()));
+  if (docPref().onionskin.active())
+    m_document->notifyGeneralUpdate();
 }
 
 void Timeline::onStateChanged(Editor* editor)

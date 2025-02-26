@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -782,7 +782,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
     }
   }
 
-  // Draw grids
+  // Draw  Slices and Grids
   {
     gfx::Rect enclosingRect(m_padding.x + dx,
                             m_padding.y + dy,
@@ -791,6 +791,11 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
 
     IntersectClip clip(g, dest);
     if (clip) {
+      // Draw slices
+      if (m_docPref.show.slices() && dx == m_proj.applyX(mainTilePosition().x) &&
+          dy == m_proj.applyY(mainTilePosition().y))
+        drawSlices(g);
+
       // Draw the pixel grid
       if ((m_proj.zoom().scale() > 2.0) && m_docPref.show.pixelGrid()) {
         int alpha = m_docPref.pixelGrid.opacity();
@@ -902,10 +907,6 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
 
     enclosingRect = gfx::Rect(spriteRect.x, spriteRect.y, spriteRect.w * 3, spriteRect.h * 3);
   }
-
-  // Draw slices
-  if (m_docPref.show.slices())
-    drawSlices(g);
 
   // Symmetry mode
   if (isActive() && (m_flags & Editor::kShowSymmetryLine) &&
@@ -2449,6 +2450,10 @@ void Editor::onTiledModeChange()
 
   spritePos += mainTilePosition();
   screenPos = editorToScreen(spritePos);
+
+  auto lastPoint = document()->lastDrawingPoint();
+  lastPoint += mainTilePosition() - m_oldMainTilePos;
+  document()->setLastDrawingPoint(lastPoint);
 
   centerInSpritePoint(spritePos);
 }
