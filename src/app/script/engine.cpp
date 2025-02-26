@@ -38,6 +38,7 @@
 #include "ui/manager.h"
 #include "ui/message_loop.h"
 #include "ui/mouse_button.h"
+#include "ui/system.h"
 
 #include <fstream>
 #include <sstream>
@@ -259,7 +260,13 @@ RunScriptTask::RunScriptTask(lua_State* L, int nelems, const std::string& descri
           RunScriptTask* task = (RunScriptTask*)lua_topointer(L, -1);
           lua_pop(L, 2);
           if (task->wantsToStop()) {
-            lua_pushliteral(L, "Script stopped");
+            luaL_where(L, 0);
+            const char* where = lua_tostring(L, -1);
+            luaL_traceback(L, L, "Script stopped", 0);
+            const char* traceback = lua_tostring(L, -1);
+            std::string msg(fmt::format("{}{}", where, traceback));
+            lua_pop(L, 2);
+            lua_pushstring(L, msg.c_str());
             lua_error(L);
           }
         }
@@ -739,8 +746,10 @@ void Engine::callInTask(lua_State* parentL, int nargs, const std::string& descri
   executeTask(parentL, nargs + 1, description, [this, nargs](lua_State* L) {
     try {
       if (lua_pcall(L, nargs, 0, 0)) {
-        if (const char* s = lua_tostring(L, -1))
-          consolePrint(s);
+        if (const char* s = lua_tostring(L, -1)) {
+          std::string error = std::string(s);
+          ui::execute_from_ui_thread([this, error]() { consolePrint(error.c_str()); });
+        }
       }
     }
     catch (const std::exception& ex) {
@@ -764,12 +773,14 @@ void Engine::executeTask(lua_State* parentL,
     std::lock_guard<std::mutex> lock(m_mutex);
     m_tasks.push_back(std::move(task));
   }
+  TaskStart(taskPtr);
   taskPtr->execute(m_threadPool);
 }
 
 void Engine::onTaskDone(const RunScriptTask* task)
 {
   std::lock_guard<std::mutex> lock(m_mutex);
+  TaskDone(task);
   for (auto it = m_tasks.begin(); it != m_tasks.end(); ++it) {
     if ((*it).get() == task) {
       m_tasks.erase(it);
@@ -810,8 +821,10 @@ bool Engine::evalUserFileInTask(const std::string& filename, const Params& param
       if (luaL_loadbuffer(L, code.c_str(), code.size(), atFilename.c_str()) ||
           lua_pcall(L, 0, 1, 0)) {
         const char* s = lua_tostring(L, -1);
-        if (s)
-          onConsoleError(s);
+        if (s) {
+          std::string error = std::string(s);
+          ui::execute_from_ui_thread([this, error]() { onConsoleError(error.c_str()); });
+        }
         ok = false;
         returnCode = -1;
       }
@@ -873,10 +886,14 @@ void Engine::stopDebugger()
   lua_sethook(L, nullptr, 0, 0);
 }
 
-void Engine::stopScript()
+void Engine::stopTask(const RunScriptTask* task)
 {
-  lua_pushliteral(L, "Script stopped");
-  lua_error(L);
+  std::lock_guard<std::mutex> lock(m_mutex);
+  for (const auto& t : m_tasks) {
+    if (t.get() == task) {
+      t->stop();
+    }
+  }
 }
 
 void Engine::onConsoleError(const char* text)
