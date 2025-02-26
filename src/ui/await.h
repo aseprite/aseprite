@@ -7,7 +7,6 @@
 
 #ifndef UI_AWAIT_H_INCLUDED
 #define UI_AWAIT_H_INCLUDED
-#include <type_traits>
 #pragma once
 
 #include "os/event.h"
@@ -19,13 +18,18 @@
 
 namespace ui {
 
+class AwaitTimeoutException : std::runtime_error {
+public:
+  AwaitTimeoutException() : std::runtime_error("Await timed out") {}
+};
+
 // Awaits for the future result of the function passed.
 // It is meant to be used from background threads to ask something to the main
 // thread and wait for its result.
 // If await is called from the main thread it just executes the function
 // and returns the result.
 template<typename T>
-T await(std::function<T()>&& func)
+T await(std::function<T()>&& func, int timeout = 0)
 {
   if (ui::is_ui_thread())
     return func();
@@ -48,7 +52,14 @@ T await(std::function<T()>&& func)
     }
   });
   os::queue_event(ev);
+
   // Wait for the future
+  if (timeout > 0) {
+    auto status = future.wait_for(std::chrono::milliseconds(timeout));
+    if (status != std::future_status::ready) {
+      throw AwaitTimeoutException();
+    }
+  }
   return future.get();
 }
 
