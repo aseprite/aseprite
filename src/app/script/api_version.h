@@ -10,6 +10,6 @@
 
 // Increment this value if the scripting API is modified between two
 // released Aseprite versions.
-#define API_VERSION 31
+#define API_VERSION 32
 
 #endif
