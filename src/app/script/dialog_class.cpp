@@ -314,6 +314,7 @@ struct Dialog {
 template<typename... Args, typename Callback>
 void Dialog_connect_signal(lua_State* L,
                            int dlgIdx,
+                           std::string signalName,
                            obs::signal<void(Args...)>& signal,
                            Callback callback)
 {
@@ -349,7 +350,7 @@ void Dialog_connect_signal(lua_State* L,
     callback(L, std::forward<Args>(args)...);
 
     if (lua_isfunction(L, -2)) {
-      App::instance()->scriptEngine()->callInTask(L, 1);
+      App::instance()->scriptEngine()->callInTask(L, 1, signalName);
     }
     else {
       lua_pop(L, 1); // Pop the value which should have been a function
@@ -776,7 +777,7 @@ int Dialog_button_base(lua_State* L, T** outputWidget = nullptr)
 
     type = lua_getfield(L, 2, "onclick");
     if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(L, 1, widget->Click, [](lua_State*) {
+      Dialog_connect_signal(L, 1, "onclick", widget->Click, [](lua_State*) {
         // Do nothing
       });
       closeWindowByDefault = false;
@@ -850,7 +851,7 @@ int Dialog_entry(lua_State* L)
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "onchange");
     if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(L, 1, widget->Change, [](lua_State* L) {
+      Dialog_connect_signal(L, 1, "onchange", widget->Change, [](lua_State* L) {
         // Do nothing
       });
     }
@@ -880,7 +881,7 @@ int Dialog_number(lua_State* L)
 
     type = lua_getfield(L, 2, "onchange");
     if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(L, 1, widget->Change, [](lua_State* L) {
+      Dialog_connect_signal(L, 1, "onchange", widget->Change, [](lua_State* L) {
         // Do nothing
       });
     }
@@ -921,7 +922,7 @@ int Dialog_slider(lua_State* L)
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "onchange");
     if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(L, 1, widget->Change, [](lua_State* L) {
+      Dialog_connect_signal(L, 1, "onchange", widget->Change, [](lua_State* L) {
         // Do nothing
       });
     }
@@ -929,7 +930,7 @@ int Dialog_slider(lua_State* L)
 
     type = lua_getfield(L, 2, "onrelease");
     if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(L, 1, widget->SliderReleased, [](lua_State* L) {
+      Dialog_connect_signal(L, 1, "onrelease", widget->SliderReleased, [](lua_State* L) {
         // Do nothing
       });
     }
@@ -967,7 +968,7 @@ int Dialog_combobox(lua_State* L)
 
     type = lua_getfield(L, 2, "onchange");
     if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(L, 1, widget->Change, [](lua_State* L) {
+      Dialog_connect_signal(L, 1, "onchange", widget->Change, [](lua_State* L) {
         // Do nothing
       });
     }
@@ -991,10 +992,14 @@ int Dialog_color(lua_State* L)
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "onchange");
     if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(L, 1, widget->Change, [](lua_State* L, const app::Color& color) {
-        push_obj<app::Color>(L, color);
-        lua_setfield(L, -2, "color");
-      });
+      Dialog_connect_signal(L,
+                            1,
+                            "onchange",
+                            widget->Change,
+                            [](lua_State* L, const app::Color& color) {
+                              push_obj<app::Color>(L, color);
+                              lua_setfield(L, -2, "color");
+                            });
     }
   }
 
@@ -1038,6 +1043,7 @@ int Dialog_shades(lua_State* L)
     if (type == LUA_TFUNCTION) {
       Dialog_connect_signal(L,
                             1,
+                            "onclick",
                             widget->Click,
                             [widget](lua_State* L, ColorShades::ClickEvent& ev) {
                               lua_pushinteger(L, (int)ev.button());
@@ -1113,7 +1119,7 @@ int Dialog_file(lua_State* L)
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "onchange");
     if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(L, 1, widget->Change, [](lua_State* L) {
+      Dialog_connect_signal(L, 1, "onchange", widget->Change, [](lua_State* L) {
         // Do nothing
       });
     }
@@ -1288,7 +1294,7 @@ int Dialog_canvas(lua_State* L)
     if (lua_istable(L, 2)) {
       int type = lua_getfield(L, 2, "onpaint");
       if (type == LUA_TFUNCTION) {
-        Dialog_connect_signal(L, 1, widget->Paint, [](lua_State* L, GraphicsContext& gc) {
+        Dialog_connect_signal(L, 1, "onpaint", widget->Paint, [](lua_State* L, GraphicsContext& gc) {
           push_new<GraphicsContext>(L, std::move(gc));
           lua_setfield(L, -2, "context");
         });
@@ -1297,51 +1303,55 @@ int Dialog_canvas(lua_State* L)
 
       type = lua_getfield(L, 2, "onkeydown");
       if (type == LUA_TFUNCTION) {
-        Dialog_connect_signal(L, 1, widget->KeyDown, fill_keymessage_values);
+        Dialog_connect_signal(L, 1, "onkeydown", widget->KeyDown, fill_keymessage_values);
         handleKeyEvents = true;
       }
       lua_pop(L, 1);
 
       type = lua_getfield(L, 2, "onkeyup");
       if (type == LUA_TFUNCTION) {
-        Dialog_connect_signal(L, 1, widget->KeyUp, fill_keymessage_values);
+        Dialog_connect_signal(L, 1, "onkeyup", widget->KeyUp, fill_keymessage_values);
         handleKeyEvents = true;
       }
       lua_pop(L, 1);
 
       type = lua_getfield(L, 2, "onmousemove");
       if (type == LUA_TFUNCTION) {
-        Dialog_connect_signal(L, 1, widget->MouseMove, fill_mousemessage_values);
+        Dialog_connect_signal(L, 1, "onmousemove", widget->MouseMove, fill_mousemessage_values);
       }
       lua_pop(L, 1);
 
       type = lua_getfield(L, 2, "onmousedown");
       if (type == LUA_TFUNCTION) {
-        Dialog_connect_signal(L, 1, widget->MouseDown, fill_mousemessage_values);
+        Dialog_connect_signal(L, 1, "onmousedown", widget->MouseDown, fill_mousemessage_values);
       }
       lua_pop(L, 1);
 
       type = lua_getfield(L, 2, "onmouseup");
       if (type == LUA_TFUNCTION) {
-        Dialog_connect_signal(L, 1, widget->MouseUp, fill_mousemessage_values);
+        Dialog_connect_signal(L, 1, "onmouseup", widget->MouseUp, fill_mousemessage_values);
       }
       lua_pop(L, 1);
 
       type = lua_getfield(L, 2, "ondblclick");
       if (type == LUA_TFUNCTION) {
-        Dialog_connect_signal(L, 1, widget->DoubleClick, fill_mousemessage_values);
+        Dialog_connect_signal(L, 1, "ondblclick", widget->DoubleClick, fill_mousemessage_values);
       }
       lua_pop(L, 1);
 
       type = lua_getfield(L, 2, "onwheel");
       if (type == LUA_TFUNCTION) {
-        Dialog_connect_signal(L, 1, widget->Wheel, fill_mousemessage_values);
+        Dialog_connect_signal(L, 1, "onwheel", widget->Wheel, fill_mousemessage_values);
       }
       lua_pop(L, 1);
 
       type = lua_getfield(L, 2, "ontouchmagnify");
       if (type == LUA_TFUNCTION) {
-        Dialog_connect_signal(L, 1, widget->TouchMagnify, fill_touchmessage_values);
+        Dialog_connect_signal(L,
+                              1,
+                              "ontouchmagnify",
+                              widget->TouchMagnify,
+                              fill_touchmessage_values);
       }
       lua_pop(L, 1);
     }
@@ -1394,7 +1404,7 @@ int Dialog_tab(lua_State* L)
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "onclick");
     if (type == LUA_TFUNCTION) {
-      Dialog_connect_signal(L, 1, tab->Click, [id](lua_State* L) {
+      Dialog_connect_signal(L, 1, "onclick", tab->Click, [id](lua_State* L) {
         lua_pushstring(L, id.c_str());
         lua_setfield(L, -2, "tab");
       });
@@ -1448,7 +1458,7 @@ int Dialog_endtabs(lua_State* L)
     type = lua_getfield(L, 2, "onchange");
     if (type == LUA_TFUNCTION) {
       auto tab = dlg->wipTab;
-      Dialog_connect_signal(L, 1, dlg->wipTab->TabChanged, [tab](lua_State* L) {
+      Dialog_connect_signal(L, 1, "onchange", dlg->wipTab->TabChanged, [tab](lua_State* L) {
         lua_pushstring(L, tab->tabId(tab->selectedTab()).c_str());
         lua_setfield(L, -2, "tab");
       });
