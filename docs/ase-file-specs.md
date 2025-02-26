@@ -204,7 +204,7 @@ entire layers layout:
     + If layer type = 2
       DWORD     Tileset index
     + If file header flags have bit 4:
-    UUID        Layer's universally unique identifier
+      UUID      Layer's universally unique identifier
 
 ### Cel Chunk (0x2005)
 
