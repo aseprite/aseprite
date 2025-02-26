@@ -469,6 +469,9 @@ public:
     uninstallExtension()->Click.connect([this] { onUninstallExtension(); });
     openExtensionFolder()->Click.connect([this] { onOpenExtensionFolder(); });
 
+    // Aseprite Format preferences
+    celFormat()->Change.connect([this] { onCelFormatChange(); });
+
     // Reset checkboxes
 
     // Prevent the user from clicking "Reset" if they don't have anything selected.
@@ -681,6 +684,7 @@ public:
 
     // Aseprite format preferences
     celFormat()->setSelectedItemIndex(int(m_pref.asepriteFormat.celFormat()));
+    onCelFormatChange();
   }
 
   bool ok() { return (closer() == buttonOk()); }
@@ -2000,6 +2004,13 @@ private:
     ExtensionItem* item = dynamic_cast<ExtensionItem*>(extensionsList()->getSelectedChild());
     if (item)
       item->openFolder();
+  }
+
+  void onCelFormatChange()
+  {
+    auto format = gen::CelContentFormat(celFormat()->getSelectedItemIndex());
+    celFormatWarning()->setVisible(format == gen::CelContentFormat::RAW_IMAGE);
+    layout();
   }
 
   void onCursorColorType()

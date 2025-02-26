@@ -543,6 +543,9 @@
             <text color="disabled" align="left" state="disabled" />
         </style>
         <style id="mini_label" extends="label" font="mini" />
+        <style id="warning_label" extends="label">
+            <icon part="warning_box" align="right" />
+        </style>
         <style id="list_header_label" padding="2">
             <text color="text" align="left" x="2" />
         </style>

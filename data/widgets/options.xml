@@ -587,6 +587,10 @@
               <listitem text="@.cel_format_keep" />
               <listitem text="@.cel_format_raw" />
             </combobox>
+
+            <boxfiller />
+            <label id="cel_format_warning"
+                   text="@.cel_format_raw_warning" style="warning_label" />
           </grid>
         </vbox>
 
