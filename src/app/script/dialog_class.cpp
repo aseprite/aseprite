@@ -360,65 +360,73 @@ void Dialog_connect_signal(lua_State* L,
 
 int Dialog_new(lua_State* L)
 {
-  return ui::await<int>([L]() -> int {
-    // If we don't have UI, just return nil
-    if (!App::instance()->isGui())
-      return 0;
+  try {
+    return ui::await<int>(
+      [L]() -> int {
+        // If we don't have UI, just return nil
+        if (!App::instance()->isGui())
+          return 0;
 
-    // Get the title and the type of window (with or without title bar)
-    ui::Window::Type windowType = ui::Window::WithTitleBar;
-    std::string title = "Script";
-    if (lua_isstring(L, 1)) {
-      title = lua_tostring(L, 1);
-    }
-    else if (lua_istable(L, 1)) {
-      int type = lua_getfield(L, 1, "title");
-      if (type != LUA_TNIL)
-        title = lua_tostring(L, -1);
-      lua_pop(L, 1);
+        // Get the title and the type of window (with or without title bar)
+        ui::Window::Type windowType = ui::Window::WithTitleBar;
+        std::string title = "Script";
+        if (lua_isstring(L, 1)) {
+          title = lua_tostring(L, 1);
+        }
+        else if (lua_istable(L, 1)) {
+          int type = lua_getfield(L, 1, "title");
+          if (type != LUA_TNIL)
+            title = lua_tostring(L, -1);
+          lua_pop(L, 1);
 
-      type = lua_getfield(L, 1, "notitlebar");
-      if (type != LUA_TNIL && lua_toboolean(L, -1))
-        windowType = ui::Window::WithoutTitleBar;
-      lua_pop(L, 1);
-    }
+          type = lua_getfield(L, 1, "notitlebar");
+          if (type != LUA_TNIL && lua_toboolean(L, -1))
+            windowType = ui::Window::WithoutTitleBar;
+          lua_pop(L, 1);
+        }
 
-    auto dlg = push_new<Dialog>(L, windowType, title);
+        auto dlg = push_new<Dialog>(L, windowType, title);
 
-    // The uservalue of the dialog userdata will contain a table that
-    // stores all the callbacks to handle events. As these callbacks can
-    // reference the dialog itself, it's important to store callbacks in
-    // this table that depends on the dialog lifetime itself
-    // (i.e. uservalue) and in the global registry, because in that case
-    // we could create a cyclic reference that would be not GC'd.
-    lua_newtable(L);
-    lua_setuservalue(L, -2);
+        // The uservalue of the dialog userdata will contain a table that
+        // stores all the callbacks to handle events. As these callbacks can
+        // reference the dialog itself, it's important to store callbacks in
+        // this table that depends on the dialog lifetime itself
+        // (i.e. uservalue) and in the global registry, because in that case
+        // we could create a cyclic reference that would be not GC'd.
+        lua_newtable(L);
+        lua_setuservalue(L, -2);
 
-    if (lua_istable(L, 1)) {
-      int type = lua_getfield(L, 1, "parent");
-      if (type != LUA_TNIL) {
-        if (auto parentDlg = may_get_obj<Dialog>(L, -1))
-          dlg->window.setParentDisplay(parentDlg->window.display());
-      }
-      lua_pop(L, 1);
+        if (lua_istable(L, 1)) {
+          int type = lua_getfield(L, 1, "parent");
+          if (type != LUA_TNIL) {
+            if (auto parentDlg = may_get_obj<Dialog>(L, -1))
+              dlg->window.setParentDisplay(parentDlg->window.display());
+          }
+          lua_pop(L, 1);
 
-      type = lua_getfield(L, 1, "onclose");
-      if (type == LUA_TFUNCTION) {
-        Dialog_connect_signal(L, -2, dlg->window.Close, [](lua_State*, CloseEvent&) {
-          // Do nothing
-        });
-      }
-      lua_pop(L, 1);
-    }
+          type = lua_getfield(L, 1, "onclose");
+          if (type == LUA_TFUNCTION) {
+            Dialog_connect_signal(L, -2, "onclose", dlg->window.Close, [](lua_State*, CloseEvent&) {
+              // Do nothing
+            });
+          }
+          lua_pop(L, 1);
+        }
 
-    // The showRef must be the last reference to the dialog to be
-    // unreferenced after the window is closed (that's why this is the
-    // last connection to ui::Window::Close)
-    dlg->unrefShowOnClose();
+        // The showRef must be the last reference to the dialog to be
+        // unreferenced after the window is closed (that's why this is the
+        // last connection to ui::Window::Close)
+        dlg->unrefShowOnClose();
 
-    TRACE_DIALOG("Dialog_new", dlg);
-    return 1;
-  });
+        TRACE_DIALOG("Dialog_new", dlg);
+        return 1;
+      },
+      500);
+  }
+  catch (AwaitTimeoutException& ex) {
+    luaL_error(L, "Could not create Dialog");
+    return 0;
+  }
 }
 
 int Dialog_gc(lua_State* L)
@@ -1884,7 +1892,15 @@ int Dialog_set_bounds(lua_State* L)
 }
 
 #define wrap(func)                                                                                 \
-  [](lua_State* L) -> int { return ui::await<int>([L]() -> int { return func(L); }); }
+  [](lua_State* L) -> int {                                                                        \
+    try {                                                                                          \
+      return ui::await<int>([L]() -> int { return func(L); }, 500);                                \
+    }                                                                                              \
+    catch (AwaitTimeoutException & ex) {                                                           \
+      luaL_error(L, "Could not execute %s", #func);                                                \
+      return 0;                                                                                    \
+    }                                                                                              \
+  }
 
 const luaL_Reg Dialog_methods[] = {
   { "__gc",      wrap(Dialog_gc)     },
