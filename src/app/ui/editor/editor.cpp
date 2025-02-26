@@ -31,6 +31,7 @@
 #include "app/tools/active_tool.h"
 #include "app/tools/controller.h"
 #include "app/tools/ink.h"
+#include "app/tools/symmetry.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
@@ -836,6 +837,86 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
         m_docPref.grid.forceSection();
       }
       m_docPref.show.grid.forceDirtyFlag();
+
+      // Symmetry mode
+      if (isActive() && (m_flags & Editor::kShowSymmetryLine) &&
+          Preferences::instance().symmetryMode.enabled()) {
+        const int symmetryButtons = int(m_docPref.symmetry.mode());
+        // Symmetry::resolveMode is to calculate the right symmetry
+        // mode. This is necessary because some symmetry settings
+        // do not make sense and should be forced to 'ALL'
+        const int mode = int(tools::Symmetry::resolveMode(m_docPref.symmetry.mode()));
+        const gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
+        const gfx::Color semiTransparentColor =
+          gfx::rgba(rgba_getr(color), rgba_getg(color), rgba_getb(color), rgba_geta(color) / 4);
+        const double x = int(m_proj.applyX<double>(m_docPref.symmetry.xAxis()));
+        const double y = int(m_proj.applyY<double>(m_docPref.symmetry.yAxis()));
+
+        if (mode & int(app::gen::SymmetryMode::HORIZONTAL) && x > 0) {
+          g->drawVLine(symmetryButtons & int(app::gen::SymmetryMode::HORIZONTAL) ?
+                         color :
+                         semiTransparentColor,
+                       enclosingRect.x + x,
+                       enclosingRect.y,
+                       enclosingRect.h);
+        }
+        if (mode & int(app::gen::SymmetryMode::VERTICAL) && y > 0) {
+          g->drawHLine(
+            symmetryButtons & int(app::gen::SymmetryMode::VERTICAL) ? color : semiTransparentColor,
+            enclosingRect.x,
+            enclosingRect.y + y,
+            enclosingRect.w);
+        }
+        if (mode & int(app::gen::SymmetryMode::RIGHT_DIAG)) {
+          // Bottom point intersection:
+          gfx::Point bottomLeft(
+            enclosingRect.x + x + m_proj.turnYinTermsOfX<int>(y - enclosingRect.h),
+            enclosingRect.y2());
+          if (bottomLeft.x < enclosingRect.x) {
+            // Left intersection
+            bottomLeft.y = enclosingRect.y2() +
+                           m_proj.turnXinTermsOfY<int>(bottomLeft.x - enclosingRect.x);
+            bottomLeft.x = enclosingRect.x;
+          }
+          // Top intersection
+          gfx::Point topRight(enclosingRect.x + x + m_proj.turnYinTermsOfX<int>(y),
+                              enclosingRect.y);
+          if (enclosingRect.x2() < topRight.x) {
+            // Right intersection
+            topRight.y = enclosingRect.y +
+                         m_proj.applyY<int>(m_proj.removeX<int>(topRight.x - enclosingRect.x2()));
+            topRight.x = enclosingRect.x2();
+          }
+          g->drawLine(symmetryButtons & int(app::gen::SymmetryMode::RIGHT_DIAG) ?
+                        color :
+                        semiTransparentColor,
+                      bottomLeft,
+                      topRight);
+        }
+        if (mode & int(app::gen::SymmetryMode::LEFT_DIAG)) {
+          // Bottom point intersection:
+          gfx::Point bottomRight(
+            enclosingRect.x + x + m_proj.turnYinTermsOfX<int>(enclosingRect.h - y),
+            enclosingRect.y2());
+          if (enclosingRect.x2() < bottomRight.x) {
+            // Left intersection
+            bottomRight.y = enclosingRect.y2() +
+                            m_proj.turnXinTermsOfY<int>(enclosingRect.x2() - bottomRight.x);
+            bottomRight.x = enclosingRect.x2();
+          }
+          // Top intersection
+          gfx::Point topLeft(enclosingRect.x + x - m_proj.turnYinTermsOfX<int>(y), enclosingRect.y);
+          if (topLeft.x < enclosingRect.x) {
+            // Right intersection
+            topLeft.y = enclosingRect.y + m_proj.turnXinTermsOfY<int>(enclosingRect.x - topLeft.x);
+            topLeft.x = enclosingRect.x;
+          }
+          g->drawLine(
+            symmetryButtons & int(app::gen::SymmetryMode::LEFT_DIAG) ? color : semiTransparentColor,
+            topLeft,
+            bottomRight);
+        }
+      }
     }
   }
 }
@@ -906,86 +987,6 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
     drawOneSpriteUnclippedRect(g, rc, spriteRect.w * 2, spriteRect.h * 2);
 
     enclosingRect = gfx::Rect(spriteRect.x, spriteRect.y, spriteRect.w * 3, spriteRect.h * 3);
-  }
-
-  // Symmetry mode
-  if (isActive() && (m_flags & Editor::kShowSymmetryLine) &&
-      Preferences::instance().symmetryMode.enabled()) {
-    int mode = int(m_docPref.symmetry.mode());
-    if (mode & int(app::gen::SymmetryMode::HORIZONTAL)) {
-      double x = m_docPref.symmetry.xAxis();
-      if (x > 0) {
-        gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
-        g->drawVLine(
-          color,
-          spriteRect.x + m_proj.applyX(mainTilePosition().x) + int(m_proj.applyX<double>(x)),
-          enclosingRect.y,
-          enclosingRect.h);
-      }
-    }
-    if (mode & int(app::gen::SymmetryMode::VERTICAL)) {
-      double y = m_docPref.symmetry.yAxis();
-      if (y > 0) {
-        gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
-        g->drawHLine(
-          color,
-          enclosingRect.x,
-          spriteRect.y + m_proj.applyY(mainTilePosition().y) + int(m_proj.applyY<double>(y)),
-          enclosingRect.w);
-      }
-    }
-    if (mode & int(app::gen::SymmetryMode::RIGHT_DIAG)) {
-      double y = m_docPref.symmetry.yAxis();
-      double x = m_docPref.symmetry.xAxis();
-      gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
-      // Bottom point intersection:
-      gfx::Point bottomLeft(
-        enclosingRect.x + m_proj.applyY(mainTilePosition().x) + int(m_proj.applyX<double>(x)) -
-          (enclosingRect.h - m_proj.applyY(mainTilePosition().y) - int(m_proj.applyY<double>(y))),
-        enclosingRect.y2());
-      if (bottomLeft.x < enclosingRect.x) {
-        // Left intersection
-        bottomLeft.y = enclosingRect.y2() - enclosingRect.x + bottomLeft.x;
-        bottomLeft.x = enclosingRect.x;
-      }
-      // Top intersection
-      gfx::Point topRight(enclosingRect.x + m_proj.applyY(mainTilePosition().x) +
-                            int(m_proj.applyX<double>(x)) + m_proj.applyY(mainTilePosition().y) +
-                            int(m_proj.applyY<double>(y)),
-                          enclosingRect.y);
-      if (enclosingRect.x2() < topRight.x) {
-        // Right intersection
-        topRight.y = enclosingRect.y + topRight.x - enclosingRect.x2();
-        topRight.x = enclosingRect.x2();
-      }
-      g->drawLine(color, bottomLeft, topRight);
-    }
-    if (mode & int(app::gen::SymmetryMode::LEFT_DIAG)) {
-      double y = m_docPref.symmetry.yAxis();
-      double x = m_docPref.symmetry.xAxis();
-      gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
-      // Bottom point intersection:
-      gfx::Point bottomRight(
-        enclosingRect.x + m_proj.applyY(mainTilePosition().x) + int(m_proj.applyX<double>(x)) +
-          (enclosingRect.h - m_proj.applyY(mainTilePosition().y) - int(m_proj.applyX<double>(y))),
-        enclosingRect.y2());
-      if (enclosingRect.x2() < bottomRight.x) {
-        // Left intersection
-        bottomRight.y = enclosingRect.y2() - bottomRight.x + enclosingRect.x2();
-        bottomRight.x = enclosingRect.x2();
-      }
-      // Top intersection
-      gfx::Point topLeft(enclosingRect.x + m_proj.applyY(mainTilePosition().x) +
-                           int(m_proj.applyX<double>(x)) - m_proj.applyY(mainTilePosition().y) -
-                           int(m_proj.applyY<double>(y)),
-                         enclosingRect.y);
-      if (topLeft.x < enclosingRect.x) {
-        // Right intersection
-        topLeft.y = enclosingRect.y + enclosingRect.x - topLeft.x;
-        topLeft.x = enclosingRect.x;
-      }
-      g->drawLine(color, topLeft, bottomRight);
-    }
   }
 
   // Draw active layer/cel edges

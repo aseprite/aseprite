@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2024  Igara Studio S.A.
+// Copyright (C) 2021-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,7 +20,7 @@ void Symmetry::generateStrokes(const Stroke& stroke, Strokes& strokes, ToolLoop*
 {
   Stroke stroke2;
   strokes.push_back(stroke);
-  gen::SymmetryMode symmetryMode = loop->getSymmetry()->mode();
+  const gen::SymmetryMode symmetryMode = tools::Symmetry::resolveMode(loop->getSymmetry()->mode());
   switch (symmetryMode) {
     case gen::SymmetryMode::NONE: ASSERT(false); break;
 
@@ -169,6 +169,16 @@ void Symmetry::calculateSymmetricalStroke(const Stroke& refStroke,
     }
     stroke.addPoint(pt2);
   }
+}
+
+gen::SymmetryMode Symmetry::resolveMode(gen::SymmetryMode mode)
+{
+  return (((int(mode) & int(gen::SymmetryMode::HORIZONTAL)) ||
+           (int(mode) & int(gen::SymmetryMode::VERTICAL))) &&
+          ((int(mode) & int(gen::SymmetryMode::RIGHT_DIAG)) ||
+           (int(mode) & int(gen::SymmetryMode::LEFT_DIAG)))) ?
+           gen::SymmetryMode::ALL :
+           mode;
 }
 
 }} // namespace app::tools

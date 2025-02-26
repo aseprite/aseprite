@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2024  Igara Studio S.A.
+// Copyright (C) 2021-2025  Igara Studio S.A.
 // Copyright (C) 2015  David Capello
 //
 // This program is distributed under the terms of
@@ -37,6 +37,8 @@ public:
   void generateStrokes(const Stroke& stroke, Strokes& strokes, ToolLoop* loop);
 
   gen::SymmetryMode mode() const { return m_symmetryMode; }
+
+  static gen::SymmetryMode resolveMode(gen::SymmetryMode mode);
 
 private:
   void calculateSymmetricalStroke(const Stroke& refStroke,

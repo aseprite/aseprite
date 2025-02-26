@@ -84,6 +84,20 @@ public:
     return T(m_zoom.removeCeiling(y)) / T(m_pixelRatio.h);
   }
 
+  // Used in 'editor.cpp' to do some math between x,y values.
+  // Useful for calculating diagonal symmetry axis positions when pixel ratio is other than 1:1
+  template<typename T>
+  T turnXinTermsOfY(T x) const
+  {
+    return x * T(m_pixelRatio.h) / T(m_pixelRatio.w);
+  }
+
+  template<typename T>
+  T turnYinTermsOfX(T y) const
+  {
+    return y * T(m_pixelRatio.w) / T(m_pixelRatio.h);
+  }
+
   gfx::Rect apply(const gfx::Rect& r) const
   {
     int u = applyX(r.x);
