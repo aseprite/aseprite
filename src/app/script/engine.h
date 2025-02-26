@@ -100,6 +100,8 @@ public:
 
   int ref() const { return m_LRef; }
   const std::string& description() const { return m_description; }
+  bool isRunning() const { return m_task.running(); }
+  bool isEnqueued() const { return m_task.enqueued(); }
 
 private:
   // Lua's thread state.
@@ -136,7 +138,8 @@ public:
   std::vector<const RunScriptTask*> tasks() const
   {
     std::lock_guard<std::mutex> lock(m_mutex);
-    std::vector<const RunScriptTask*> tasks(m_tasks.size());
+    std::vector<const RunScriptTask*> tasks;
+    tasks.reserve(m_tasks.size());
     for (const auto& task : m_tasks)
       tasks.push_back(task.get());
     return tasks;
@@ -153,8 +156,11 @@ public:
 
   void startDebugger(DebuggerDelegate* debuggerDelegate);
   void stopDebugger();
-  // Stops the currently running lua chunk
-  void stopScript();
+  // Stops the specified task
+  void stopTask(const RunScriptTask* task);
+
+  obs::signal<void(const RunScriptTask*)> TaskStart;
+  obs::signal<void(const RunScriptTask*)> TaskDone;
 
 private:
   void onConsoleError(const char* text);
