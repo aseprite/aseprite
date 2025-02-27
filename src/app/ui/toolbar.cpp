@@ -571,9 +571,9 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
 
     // Tool shortcut
     KeyPtr key = KeyboardShortcuts::instance()->tool(tool);
-    if (key && !key->accels().empty()) {
+    if (key && !key->shortcuts().empty()) {
       tooltip += "\n\n";
-      tooltip += Strings::tools_shortcut(key->accels().front().toString());
+      tooltip += Strings::tools_shortcut(key->shortcuts().front().toString());
     }
   }
   else if (group_index == PreviewVisibilityIndex) {
