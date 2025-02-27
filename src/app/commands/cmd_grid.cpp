@@ -52,6 +52,7 @@ protected:
     docPref.grid.snap(newValue);
 
     StatusBar::instance()->showSnapToGridWarning(newValue);
+    StatusBar::instance()->showRunningScriptsWindow(newValue);
   }
 };
 

@@ -66,6 +66,7 @@ public:
   void showTile(int msecs, doc::tile_t tile, const std::string& text = std::string());
   void showTool(int msecs, tools::Tool* tool);
   void showSnapToGridWarning(bool state);
+  void showRunningScriptsWindow(bool state);
 
   // Used by AppEditor to update the zoom level in the status bar.
   void updateFromEditor(Editor* editor);
@@ -119,6 +120,9 @@ private:
   // Snap to grid window
   class SnapToGridWindow;
   SnapToGridWindow* m_snapToGridWindow;
+
+  class RunningScriptsWindow;
+  RunningScriptsWindow* m_runningScriptsWindow;
 };
 
 } // namespace app
