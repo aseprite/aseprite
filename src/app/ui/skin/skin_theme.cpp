@@ -385,18 +385,10 @@ void SkinTheme::loadSheet()
   if (!newSheet)
     throw base::Exception("Error loading %s file", sheet_filename.c_str());
 
-  // TODO Change os::Surface::applyScale() to return a new surface,
-  //      avoid loading two times the same file (even more, if there
-  //      is no scale to apply, m_unscaledSheet must reference the
-  //      same m_sheet).
-  m_unscaledSheet = system->loadRgbaSurface(sheet_filename.c_str());
-
-  // Replace the sprite sheet
-  if (m_sheet)
-    m_sheet.reset();
-  m_sheet = newSheet;
-  if (m_sheet)
-    m_sheet->applyScale(guiscale());
+  // Set the unscaled and scaled version of the sprite sheet.
+  m_unscaledSheet = newSheet;
+  m_unscaledSheet->setImmutable();
+  m_sheet = newSheet->applyScale(guiscale());
   m_sheet->setImmutable();
 
   // Reset sprite sheet and font of all layer styles (to avoid

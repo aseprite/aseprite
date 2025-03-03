@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -514,7 +514,7 @@ os::SurfaceRef BrushPopup::createSurfaceForBrush(const BrushRef& origBrush,
     if (image->pixelFormat() == IMAGE_BITMAP)
       delete palette;
 
-    surface->applyScale(guiscale());
+    surface = surface->applyScale(guiscale());
   }
   else {
     surface->clear();
