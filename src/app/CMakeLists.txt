@@ -547,6 +547,7 @@ target_sources(app-lib PRIVATE
   fonts/font_data.cpp
   fonts/font_info.cpp
   fonts/font_path.cpp
+  fonts/fonts.cpp
   gui_xml.cpp
   i18n/strings.cpp
   i18n/xml_translator.cpp

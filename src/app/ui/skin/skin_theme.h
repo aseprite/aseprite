@@ -9,6 +9,7 @@
 #define APP_UI_SKIN_SKIN_THEME_H_INCLUDED
 #pragma once
 
+#include "app/fonts/fonts.h"
 #include "app/ui/skin/skin_part.h"
 #include "gfx/color.h"
 #include "gfx/fwd.h"
@@ -29,12 +30,7 @@ class Entry;
 class Graphics;
 } // namespace ui
 
-namespace app {
-
-class FontData;
-using FontDataMap = std::map<std::string, FontData*>;
-
-namespace skin {
+namespace app { namespace skin {
 
 class ThemeFont {
 public:
@@ -178,9 +174,6 @@ public:
 
   void drawEntryCaret(ui::Graphics* g, ui::Entry* widget, int x, int y);
 
-  const FontDataMap& getWellKnownFonts() const { return m_fonts; }
-  text::FontRef getFontByName(const std::string& name, int size);
-
 protected:
   void onRegenerateTheme() override;
 
@@ -207,6 +200,7 @@ private:
 
   std::string findThemePath(const std::string& themeId) const;
 
+  Fonts m_fonts;
   std::string m_path;
   os::SurfaceRef m_sheet;
   // Contains the sheet surface as is, without any scale.
@@ -219,7 +213,6 @@ private:
   std::map<std::string, ui::Cursor*> m_cursors;
   std::array<ui::Cursor*, ui::kCursorTypes> m_standardCursors;
   std::map<std::string, ui::Style*> m_styles;
-  FontDataMap m_fonts;
   std::map<std::string, ThemeFont> m_themeFonts;
   // Stores the unscaled font version of the Font pointer used as a key.
   std::map<text::Font*, text::FontRef> m_unscaledFonts;
@@ -229,7 +222,6 @@ private:
   int m_preferredUIScaling;
 };
 
-} // namespace skin
-} // namespace app
+}} // namespace app::skin
 
 #endif

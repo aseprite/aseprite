@@ -155,16 +155,16 @@ static const char* g_cursor_names[kCursorTypes] = {
   "size_nw",    // kSizeNWCursor
 };
 
-static FontData* load_font(std::map<std::string, FontData*>& fonts,
-                           const XMLElement* xmlFont,
-                           const std::string& xmlFilename)
+static FontData* load_font(const XMLElement* xmlFont, const std::string& xmlFilename)
 {
-  const char* fontRef = xmlFont->Attribute("font");
-  if (fontRef) {
-    auto it = fonts.find(fontRef);
-    if (it == fonts.end())
-      throw base::Exception("Font named '%s' not found\n", fontRef);
-    return it->second;
+  Fonts* fonts = Fonts::instance();
+  ASSERT(fonts);
+
+  if (const char* fontId = xmlFont->Attribute("font")) {
+    if (FontData* fontData = fonts->fontDataByName(fontId))
+      return fontData;
+    else
+      throw base::Exception("Font named '%s' not found\n", fontId);
   }
 
   const char* nameStr = xmlFont->Attribute("name");
@@ -174,9 +174,8 @@ static FontData* load_font(std::map<std::string, FontData*>& fonts,
   std::string name(nameStr);
 
   // Use cached font data
-  auto it = fonts.find(name);
-  if (it != fonts.end())
-    return it->second;
+  if (FontData* fontData = fonts->fontDataByName(name))
+    return fontData;
 
   LOG(VERBOSE, "THEME: Loading font '%s'\n", name.c_str());
 
@@ -191,7 +190,7 @@ static FontData* load_font(std::map<std::string, FontData*>& fonts,
   if (type == "spritesheet") {
     const char* fileStr = xmlFont->Attribute("file");
     if (fileStr) {
-      font.reset(new FontData(text::FontType::SpriteSheet));
+      font = std::make_unique<FontData>(text::FontType::SpriteSheet);
       font->setFilename(base::join_path(xmlDir, fileStr));
     }
   }
@@ -221,7 +220,7 @@ static FontData* load_font(std::map<std::string, FontData*>& fonts,
     // The filename can be empty if the font was not found, anyway we
     // want to keep the font information (e.g. to use the fallback
     // information of this font).
-    font.reset(new FontData(text::FontType::FreeType));
+    font = std::make_unique<FontData>(text::FontType::FreeType);
     font->setFilename(fontFilename);
     font->setAntialias(antialias);
 
@@ -235,23 +234,23 @@ static FontData* load_font(std::map<std::string, FontData*>& fonts,
                           name.c_str());
   }
 
-  FontData* result = nullptr;
-  if (font) {
-    fonts[name] = result = font.get();
-    font.release();
+  if (!font)
+    return nullptr;
 
-    // Fallback font
-    const XMLElement* xmlFallback = (const XMLElement*)xmlFont->FirstChildElement("fallback");
-    if (xmlFallback) {
-      FontData* fallback = load_font(fonts, xmlFallback, xmlFilename);
-      if (fallback) {
-        int size = 10;
-        const char* sizeStr = xmlFont->Attribute("size");
-        if (sizeStr)
-          size = std::strtol(sizeStr, nullptr, 10);
+  FontData* result = font.get();
+  fonts->addFontData(name, std::move(font)); // "font" variable is invalid from now on
 
-        result->setFallback(fallback, size);
-      }
+  // Fallback font
+  const XMLElement* xmlFallback = (const XMLElement*)xmlFont->FirstChildElement("fallback");
+  if (xmlFallback) {
+    FontData* fallback = load_font(xmlFallback, xmlFilename);
+    if (fallback) {
+      int size = 10;
+      const char* sizeStr = xmlFont->Attribute("size");
+      if (sizeStr)
+        size = std::strtol(sizeStr, nullptr, 10);
+
+      result->setFallback(fallback, size);
     }
   }
   return result;
@@ -275,7 +274,11 @@ SkinTheme* SkinTheme::get(const ui::Widget* widget)
   return static_cast<SkinTheme*>(widget->theme());
 }
 
-SkinTheme::SkinTheme() : m_sheet(nullptr), m_preferredScreenScaling(-1), m_preferredUIScaling(-1)
+SkinTheme::SkinTheme()
+  : m_fonts(m_fontMgr)
+  , m_sheet(nullptr)
+  , m_preferredScreenScaling(-1)
+  , m_preferredUIScaling(-1)
 {
   m_standardCursors.fill(nullptr);
 }
@@ -294,11 +297,6 @@ SkinTheme::~SkinTheme()
   for (auto style : m_styles)
     delete style.second;
   m_styles.clear();
-
-  // Destroy fonts
-  for (auto& kv : m_fonts)
-    delete kv.second; // Delete all FontDatas
-  m_fonts.clear();
 }
 
 void SkinTheme::onRegenerateTheme()
@@ -348,7 +346,7 @@ void SkinTheme::loadFontData()
 
   XMLElement* xmlFont = handle.FirstChildElement("fonts").FirstChildElement("font").ToElement();
   while (xmlFont) {
-    load_font(m_fonts, xmlFont, rf.filename());
+    load_font(xmlFont, rf.filename());
     xmlFont = xmlFont->NextSiblingElement();
   }
 }
@@ -357,7 +355,7 @@ void SkinTheme::loadAll(const std::string& themeId, BackwardCompatibility* backw
 {
   LOG("THEME: Loading theme %s\n", themeId.c_str());
 
-  if (m_fonts.empty())
+  if (Fonts::instance()->isEmpty())
     loadFontData();
 
   m_path = findThemePath(themeId);
@@ -404,6 +402,7 @@ void SkinTheme::loadSheet()
 
 void SkinTheme::loadXml(BackwardCompatibility* backward)
 {
+  Fonts* fonts = Fonts::instance();
   const int scale = guiscale();
 
   // Load the skin XML
@@ -435,7 +434,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
                             .ToElement();
     while (xmlFont) {
       const char* idStr = xmlFont->Attribute("id");
-      FontData* fontData = load_font(m_fonts, xmlFont, xml_filename);
+      FontData* fontData = load_font(xmlFont, xml_filename);
       if (idStr && fontData) {
         std::string id(idStr);
         LOG(VERBOSE, "THEME: Loading theme font %s\n", idStr);
@@ -478,12 +477,12 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
   Preferences& pref = Preferences::instance();
   if (!pref.theme.font().empty()) {
     auto fi = base::convert_to<FontInfo>(pref.theme.font());
-    if (auto f = get_font_from_info(fi, this))
+    if (auto f = fonts->fontFromInfo(fi))
       m_defaultFont = f;
   }
   if (!pref.theme.miniFont().empty()) {
     auto fi = base::convert_to<FontInfo>(pref.theme.miniFont());
-    if (auto f = get_font_from_info(fi, this))
+    if (auto f = fonts->fontFromInfo(fi))
       m_miniFont = f;
   }
 
@@ -1731,14 +1730,6 @@ void SkinTheme::drawEntryCaret(ui::Graphics* g, Entry* widget, int x, int y)
 
   for (int u = x; u < x + caretSize.w; ++u)
     g->drawVLine(color, u, y + textHeight / 2 - caretSize.h / 2, caretSize.h);
-}
-
-text::FontRef SkinTheme::getFontByName(const std::string& name, const int size)
-{
-  auto it = m_fonts.find(name);
-  if (it == m_fonts.end())
-    return nullptr;
-  return it->second->getFont(m_fontMgr, size);
 }
 
 SkinPartPtr SkinTheme::getToolPart(const char* toolId) const

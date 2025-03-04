@@ -17,7 +17,8 @@
 
 namespace app {
 
-// TODO should we merge this with FontInfo?
+// Represents a defined font in a <font> element from "data/fonts/fonts.xml" file
+// and theme fonts (<font> elements from "data/extensions/aseprite-theme/theme.xml").
 class FontData {
 public:
   FontData(text::FontType type);

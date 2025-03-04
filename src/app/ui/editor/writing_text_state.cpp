@@ -63,7 +63,7 @@ public:
     renderExtraCelBase();
 
     FontInfo fontInfo = App::instance()->contextBar()->fontInfo();
-    if (auto font = get_font_from_info(fontInfo))
+    if (auto font = Fonts::instance()->fontFromInfo(fontInfo))
       setFont(font);
   }
 
@@ -497,7 +497,7 @@ void WritingTextState::onBeforeCommandExecution(CommandExecutionEvent& ev)
 
 void WritingTextState::onFontChange(const FontInfo& fontInfo, FontEntry::From fromField)
 {
-  if (auto font = get_font_from_info(fontInfo)) {
+  if (auto font = Fonts::instance()->fontFromInfo(fontInfo)) {
     m_entry->setFont(font);
     m_entry->invalidate();
     m_editor->invalidate();

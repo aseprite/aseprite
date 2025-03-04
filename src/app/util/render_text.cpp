@@ -12,13 +12,14 @@
 #include "app/util/render_text.h"
 
 #include "app/fonts/font_info.h"
-#include "app/ui/skin/skin_theme.h"
+#include "app/fonts/fonts.h"
 #include "base/fs.h"
 #include "doc/blend_funcs.h"
 #include "doc/blend_internals.h"
 #include "doc/color.h"
 #include "doc/image.h"
 #include "doc/primitives.h"
+#include "os/paint.h"
 #include "text/draw_text.h"
 #include "text/font_metrics.h"
 #include "text/text_blob.h"
@@ -63,53 +64,18 @@ private:
 
 } // anonymous namespace
 
-text::FontRef get_font_from_info(const FontInfo& fontInfo, skin::SkinTheme* theme)
-{
-  if (!theme) {
-    theme = skin::SkinTheme::instance();
-    ASSERT(theme);
-    if (!theme)
-      return nullptr;
-  }
-
-  const text::FontMgrRef fontMgr = theme->fontMgr();
-  if (!fontMgr)
-    return nullptr;
-
-  text::FontRef font;
-  if (fontInfo.type() == FontInfo::Type::System) {
-    // Just in case the typeface is not present in the FontInfo
-    auto typeface = fontInfo.findTypeface(fontMgr);
-
-    font = fontMgr->makeFont(typeface);
-    if (!fontInfo.useDefaultSize())
-      font->setSize(fontInfo.size());
-  }
-  else {
-    const int size = (fontInfo.useDefaultSize() ? 18 : fontInfo.size());
-    font = theme->getFontByName(fontInfo.name(), size);
-
-    if (!font && fontInfo.type() == FontInfo::Type::File) {
-      font = fontMgr->loadTrueTypeFont(fontInfo.name().c_str(), size);
-    }
-  }
-
-  if (font)
-    font->setAntialias(fontInfo.antialias());
-
-  return font;
-}
-
 text::TextBlobRef create_text_blob(const FontInfo& fontInfo, const std::string& text)
 {
-  const text::FontRef font = get_font_from_info(fontInfo);
+  Fonts* fonts = Fonts::instance();
+  ASSERT(fonts);
+  if (!fonts)
+    return nullptr;
+
+  const text::FontRef font = fonts->fontFromInfo(fontInfo);
   if (!font)
     return nullptr;
 
-  auto* theme = skin::SkinTheme::instance();
-  const text::FontMgrRef fontMgr = theme->fontMgr();
-
-  return text::TextBlob::MakeWithShaper(fontMgr, font, text);
+  return text::TextBlob::MakeWithShaper(fonts->fontMgr(), font, text);
 }
 
 gfx::Size get_text_blob_required_size(const text::TextBlobRef& blob)
@@ -154,12 +120,17 @@ doc::ImageRef render_text_blob(const text::TextBlobRef& blob, gfx::Color color)
 
 doc::ImageRef render_text(const FontInfo& fontInfo, const std::string& text, gfx::Color color)
 {
-  const text::FontRef font = get_font_from_info(fontInfo);
+  Fonts* fonts = Fonts::instance();
+  ASSERT(fonts);
+  if (!fonts)
+    return nullptr;
+
+  const text::FontRef font = fonts->fontFromInfo(fontInfo);
   if (!font)
     return nullptr;
 
-  auto* theme = skin::SkinTheme::instance();
-  const text::FontMgrRef fontMgr = theme->fontMgr();
+  const text::FontMgrRef fontMgr = fonts->fontMgr();
+  ASSERT(fontMgr);
 
   os::Paint paint;
   paint.style(os::Paint::StrokeAndFill);

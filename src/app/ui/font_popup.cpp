@@ -16,6 +16,7 @@
 #include "app/fonts/font_data.h"
 #include "app/fonts/font_info.h"
 #include "app/fonts/font_path.h"
+#include "app/fonts/fonts.h"
 #include "app/i18n/strings.h"
 #include "app/match_words.h"
 #include "app/recent_files.h"
@@ -242,8 +243,9 @@ FontPopup::FontPopup(const FontInfo& fontInfo)
   m_listBox.addChild(m_pinnedSeparator);
 
   // Default fonts
+  Fonts* fonts = Fonts::instance();
   bool first = true;
-  for (auto kv : skin::SkinTheme::get(this)->getWellKnownFonts()) {
+  for (const auto& kv : fonts->definedFonts()) {
     if (!kv.second->filename().empty()) {
       if (first) {
         m_listBox.addChild(new SeparatorInView(Strings::font_popup_theme_fonts()));
@@ -258,7 +260,7 @@ FontPopup::FontPopup(const FontInfo& fontInfo)
   bool empty = true;
 
   // Get system fonts from laf-text module
-  const text::FontMgrRef fontMgr = theme()->fontMgr();
+  const text::FontMgrRef fontMgr = fonts->fontMgr();
   const int n = fontMgr->countFamilies();
   if (n > 0) {
     for (int i = 0; i < n; ++i) {

@@ -12,6 +12,7 @@
 
 #include "app/app.h"
 #include "app/fonts/font_info.h"
+#include "app/fonts/fonts.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/writing_text_state.h"
@@ -62,7 +63,7 @@ void SelectTextBoxState::onQuickboxEnd(Editor* editor, const gfx::Rect& rect0, u
   gfx::Rect rect = rect0;
   if (rect.w <= 3 || rect.h <= 3) {
     FontInfo fontInfo = App::instance()->contextBar()->fontInfo();
-    if (auto font = get_font_from_info(fontInfo)) {
+    if (auto font = Fonts::instance()->fontFromInfo(fontInfo)) {
       rect.w = std::min(4 * font->height(), editor->sprite()->width());
       rect.h = font->height();
     }

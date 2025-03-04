@@ -19,6 +19,7 @@
 #include "app/file/file.h"
 #include "app/file_selector.h"
 #include "app/fonts/font_data.h"
+#include "app/fonts/fonts.h"
 #include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/launcher.h"
@@ -1103,7 +1104,7 @@ private:
     FontInfo fi;
     auto* theme = skin::SkinTheme::get(this);
     text::FontMgrRef fontMgr = theme->fontMgr();
-    for (auto kv : theme->getWellKnownFonts()) {
+    for (const auto& kv : Fonts::instance()->definedFonts()) {
       if (kv.second->getFont(fontMgr, themeFont->height(), guiscale()) == themeFont) {
         fi = FontInfo(FontInfo::Type::Name,
                       kv.first,
@@ -1118,8 +1119,8 @@ private:
 
   void updateFontPreviews()
   {
-    m_font = get_font_from_info(themeFont()->info());
-    m_miniFont = get_font_from_info(themeMiniFont()->info());
+    m_font = Fonts::instance()->fontFromInfo(themeFont()->info());
+    m_miniFont = Fonts::instance()->fontFromInfo(themeMiniFont()->info());
     if (!m_miniFont)
       m_miniFont = skin::SkinTheme::get(this)->getMiniFont();
 

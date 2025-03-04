@@ -19,7 +19,14 @@
 
 namespace app {
 
-// TODO should we merge this with skin::FontData?
+// Represents a font reference from any place:
+// - Name: a font referenced by name, a font that came from fonts.xml files (Fonts/FontData)
+// - File: an external font loaded from a .ttf file
+// - System: native laf-os fonts (i.e. Skia fonts loaded from the operating system)
+//
+// This font reference can be serialize to a string to be saved in the
+// aseprite.ini configuration (e.g. latest font used in text tool, or
+// custom theme fonts, etc.).
 class FontInfo {
 public:
   enum class Type {

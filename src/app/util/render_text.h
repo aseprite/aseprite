@@ -24,8 +24,6 @@ namespace skin {
 class SkinTheme;
 }
 
-text::FontRef get_font_from_info(const FontInfo& fontInfo, skin::SkinTheme* theme = nullptr);
-
 text::TextBlobRef create_text_blob(const FontInfo& fontInfo, const std::string& text);
 
 // Returns the exact bounds that are required to draw this TextBlob,
