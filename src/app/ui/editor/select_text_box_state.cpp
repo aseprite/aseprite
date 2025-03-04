@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2022-2024  Igara Studio S.A.
+// Copyright (c) 2022-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,7 +11,7 @@
 #include "app/ui/editor/select_text_box_state.h"
 
 #include "app/app.h"
-#include "app/font_info.h"
+#include "app/fonts/font_info.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/writing_text_state.h"

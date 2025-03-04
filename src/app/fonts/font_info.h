@@ -4,8 +4,8 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifndef APP_UI_FONT_INFO_H_INCLUDED
-#define APP_UI_FONT_INFO_H_INCLUDED
+#ifndef APP_FONTS_FONT_INFO_H_INCLUDED
+#define APP_FONTS_FONT_INFO_H_INCLUDED
 #pragma once
 
 #include "base/convert_to.h"

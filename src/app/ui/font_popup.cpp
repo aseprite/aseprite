@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,13 +13,13 @@
 
 #include "app/app.h"
 #include "app/file_selector.h"
-#include "app/font_info.h"
-#include "app/font_path.h"
+#include "app/fonts/font_data.h"
+#include "app/fonts/font_info.h"
+#include "app/fonts/font_path.h"
 #include "app/i18n/strings.h"
 #include "app/match_words.h"
 #include "app/recent_files.h"
 #include "app/ui/separator_in_view.h"
-#include "app/ui/skin/font_data.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/util/conversion_to_surface.h"
 #include "app/util/render_text.h"

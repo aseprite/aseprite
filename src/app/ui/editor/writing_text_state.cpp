@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2024  Igara Studio S.A.
+// Copyright (C) 2022-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -14,7 +14,7 @@
 #include "app/color_utils.h"
 #include "app/commands/command.h"
 #include "app/extra_cel.h"
-#include "app/font_info.h"
+#include "app/fonts/font_info.h"
 #include "app/pref/preferences.h"
 #include "app/site.h"
 #include "app/tx.h"

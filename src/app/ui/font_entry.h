@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2024  Igara Studio S.A.
+// Copyright (c) 2024-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,7 +8,7 @@
 #define APP_UI_FONT_ENTRY_H_INCLUDED
 #pragma once
 
-#include "app/font_info.h"
+#include "app/fonts/font_info.h"
 #include "app/ui/button_set.h"
 #include "app/ui/search_entry.h"
 #include "ui/box.h"

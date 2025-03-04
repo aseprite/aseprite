@@ -8,7 +8,8 @@
   #include "config.h"
 #endif
 
-#include "app/font_info.h"
+#include "app/fonts/font_info.h"
+
 #include "app/pref/preferences.h"
 #include "base/fs.h"
 #include "base/split_string.h"

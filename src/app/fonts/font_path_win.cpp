@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,7 +9,7 @@
   #include "config.h"
 #endif
 
-#include "app/font_path.h"
+#include "app/fonts/font_path.h"
 
 #include "base/fs.h"
 #include "base/string.h"

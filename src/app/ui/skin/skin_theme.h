@@ -29,10 +29,12 @@ class Entry;
 class Graphics;
 } // namespace ui
 
-namespace app { namespace skin {
+namespace app {
 
 class FontData;
 using FontDataMap = std::map<std::string, FontData*>;
+
+namespace skin {
 
 class ThemeFont {
 public:
@@ -227,6 +229,7 @@ private:
   int m_preferredUIScaling;
 };
 
-}} // namespace app::skin
+} // namespace skin
+} // namespace app
 
 #endif

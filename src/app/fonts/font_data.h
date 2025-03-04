@@ -1,12 +1,12 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifndef APP_UI_SKIN_FONT_DATA_H_INCLUDED
-#define APP_UI_SKIN_FONT_DATA_H_INCLUDED
+#ifndef APP_FONTS_FONT_DATA_H_INCLUDED
+#define APP_FONTS_FONT_DATA_H_INCLUDED
 #pragma once
 
 #include "base/disable_copying.h"
@@ -15,7 +15,7 @@
 
 #include <map>
 
-namespace app { namespace skin {
+namespace app {
 
 // TODO should we merge this with FontInfo?
 class FontData {
@@ -46,6 +46,6 @@ private:
   DISABLE_COPYING(FontData);
 };
 
-}} // namespace app::skin
+} // namespace app
 
 #endif

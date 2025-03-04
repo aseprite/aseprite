@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -9,7 +9,7 @@
   #include "config.h"
 #endif
 
-#include "app/ui/skin/font_data.h"
+#include "app/fonts/font_data.h"
 
 #include "text/font.h"
 #include "text/font_mgr.h"
@@ -18,7 +18,7 @@
 
 #include <set>
 
-namespace app { namespace skin {
+namespace app {
 
 FontData::FontData(text::FontType type)
   : m_type(type)
@@ -73,4 +73,4 @@ text::FontRef FontData::getFont(text::FontMgrRef& fontMgr, int size)
   return getFont(fontMgr, size, ui::guiscale());
 }
 
-}} // namespace app::skin
+} // namespace app

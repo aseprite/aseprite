@@ -11,7 +11,7 @@
 
 #include "app/util/render_text.h"
 
-#include "app/font_info.h"
+#include "app/fonts/font_info.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/fs.h"
 #include "doc/blend_funcs.h"
