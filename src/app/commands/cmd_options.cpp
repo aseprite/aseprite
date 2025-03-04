@@ -916,8 +916,10 @@ public:
     // Change theme font
     bool reset_theme = false;
     {
-      const FontInfo fontInfo = themeFont()->info();
-      const FontInfo miniFontInfo = themeMiniFont()->info();
+      const FontInfo fontInfo = (customThemeFont()->isSelected() ? themeFont()->info() :
+                                                                   FontInfo());
+      const FontInfo miniFontInfo = (customMiniFont()->isSelected() ? themeMiniFont()->info() :
+                                                                      FontInfo());
 
       auto fontStr = base::convert_to<std::string>(fontInfo);
       auto miniFontStr = base::convert_to<std::string>(miniFontInfo);
