@@ -768,7 +768,7 @@ void Engine::executeTask(lua_State* parentL,
 {
   auto task = std::make_unique<RunScriptTask>(parentL, nelems, description, std::move(func));
   auto* taskPtr = task.get();
-  task->onDone([this, taskPtr](base::task_token&) { onTaskDone(taskPtr); });
+  task->onFinished([this, taskPtr](base::task_token&) { onTaskFinished(taskPtr); });
   {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_tasks.push_back(std::move(task));
@@ -777,7 +777,7 @@ void Engine::executeTask(lua_State* parentL,
   taskPtr->execute(m_threadPool);
 }
 
-void Engine::onTaskDone(const RunScriptTask* task)
+void Engine::onTaskFinished(const RunScriptTask* task)
 {
   std::lock_guard<std::mutex> lock(m_mutex);
   TaskDone(task);
