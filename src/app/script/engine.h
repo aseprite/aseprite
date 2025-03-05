@@ -93,7 +93,10 @@ public:
   RunScriptTask(lua_State* L, int nelems, const std::string& description, Func&& func);
   ~RunScriptTask();
 
-  void onDone(base::task::func_t&& funcDone) { m_task.on_done(std::move(funcDone)); }
+  void onFinished(base::task::func_t&& onFinishedFunc)
+  {
+    m_task.on_finished(std::move(onFinishedFunc));
+  }
   void execute(base::thread_pool& pool);
   void stop();
   bool wantsToStop() const { return m_wantsToStop; }
@@ -171,7 +174,7 @@ private:
                    int nelems,
                    const std::string& description,
                    RunScriptTask::Func&& func);
-  void onTaskDone(const RunScriptTask* task);
+  void onTaskFinished(const RunScriptTask* task);
   static void checkProgress(lua_State* L, lua_Debug* ar);
 
   lua_State* L;
