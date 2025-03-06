@@ -297,12 +297,13 @@ RunScriptTask::~RunScriptTask()
 
 void RunScriptTask::execute(base::thread_pool& pool)
 {
-  m_task.start(pool);
+  m_token = &m_task.start(pool);
 }
 
-void RunScriptTask::stop()
+void RunScriptTask::stop(base::thread_pool& pool)
 {
   m_wantsToStop = true;
+  m_task.try_skip(pool);
 }
 
 Engine::Engine()
@@ -625,7 +626,7 @@ void Engine::destroy()
   {
     std::lock_guard<std::mutex> lock(m_mutex);
     for (auto& task : m_tasks) {
-      task->stop();
+      task->stop(m_threadPool);
     }
   }
   m_threadPool.wait_all();
@@ -888,12 +889,18 @@ void Engine::stopDebugger()
 
 void Engine::stopTask(const RunScriptTask* task)
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
-  for (const auto& t : m_tasks) {
-    if (t.get() == task) {
-      t->stop();
+  RunScriptTask* taskPtr = nullptr;
+  {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for (const auto& t : m_tasks) {
+      if (t.get() == task) {
+        taskPtr = t.get();
+        break;
+      }
     }
   }
+  if (taskPtr)
+    taskPtr->stop(m_threadPool);
 }
 
 void Engine::onConsoleError(const char* text)

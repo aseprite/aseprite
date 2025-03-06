@@ -87,6 +87,8 @@ public:
 };
 
 class RunScriptTask {
+  friend class Engine;
+
 public:
   typedef std::function<void(lua_State* L)> Func;
 
@@ -98,7 +100,7 @@ public:
     m_task.on_finished(std::move(onFinishedFunc));
   }
   void execute(base::thread_pool& pool);
-  void stop();
+  void stop(base::thread_pool& pool);
   bool wantsToStop() const { return m_wantsToStop; }
 
   int ref() const { return m_LRef; }
@@ -113,6 +115,7 @@ private:
   base::task m_task;
   bool m_wantsToStop = false;
   std::string m_description;
+  base::task_token* m_token;
 };
 
 class Engine {

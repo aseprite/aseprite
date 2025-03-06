@@ -664,8 +664,7 @@ private:
       m_label.setExpansive(true);
       m_row.setExpansive(true);
       m_row.addChild(&m_label);
-      if (!task->isEnqueued())
-        m_row.addChild(&m_stop);
+      m_row.addChild(&m_stop);
       addChild(&m_row);
 
       m_stop.Click.connect([this]() { App::instance()->scriptEngine()->stopTask(m_task); });
