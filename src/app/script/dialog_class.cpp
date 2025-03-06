@@ -170,10 +170,6 @@ struct Dialog {
   void unrefShow()
   {
     if (showRef != LUA_REFNIL) {
-      int status = lua_status(this->L);
-      TRACE("status: %d %d\n", showRef, status);
-
-      // this->L
       luaL_unref(this->L, LUA_REGISTRYINDEX, showRef);
       luaL_unref(this->L, LUA_REGISTRYINDEX, dlgStateRef);
       showRef = LUA_REFNIL;
