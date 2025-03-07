@@ -1209,6 +1209,7 @@
 
     <menu id="slice_popup_menu">
       <item command="SliceProperties" text="@.properties" group="slice_popup_properties" />
+      <item command="DuplicateSlice" text="@.duplicate" group="slice_popup_duplicate" />
       <item command="RemoveSlice" text="@.delete" group="slice_popup_delete" />
     </menu>
 

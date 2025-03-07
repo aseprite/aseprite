@@ -36,9 +36,11 @@
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
+#include "app/util/slice_utils.h"
 #include "base/fs.h"
 #include "doc/color.h"
 #include "doc/layer.h"
+#include "doc/slice.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"
 #include "ui/alert.h"
@@ -516,6 +518,8 @@ bool DocView::onCanCopy(Context* ctx)
     return true;
   else if (m_editor->isMovingPixels())
     return true;
+  else if (m_editor->hasSelectedSlices())
+    return true;
   else
     return false;
 }
@@ -533,6 +537,11 @@ bool DocView::onCanPaste(Context* ctx)
              ctx->checkFlags(ContextFlags::ActiveLayerIsTilemap)) {
       return true;
     }
+  }
+
+  if (ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable) &&
+      ctx->clipboard()->format() == ClipboardFormat::Slices) {
+    return true;
   }
   return false;
 }
@@ -566,15 +575,22 @@ bool DocView::onCopy(Context* ctx)
     ctx->clipboard()->copy(reader);
     return true;
   }
-  else
-    return false;
+
+  std::vector<Slice*> selectedSlices = get_selected_slices(reader.site());
+  if (!selectedSlices.empty()) {
+    ctx->clipboard()->copySlices(selectedSlices);
+    return true;
+  }
+
+  return false;
 }
 
 bool DocView::onPaste(Context* ctx, const gfx::Point* position)
 {
   auto clipboard = ctx->clipboard();
   if (clipboard->format() == ClipboardFormat::Image ||
-      clipboard->format() == ClipboardFormat::Tilemap) {
+      clipboard->format() == ClipboardFormat::Tilemap ||
+      clipboard->format() == ClipboardFormat::Slices) {
     clipboard->paste(ctx, true, position);
     return true;
   }
