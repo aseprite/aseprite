@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -336,6 +336,19 @@ void Doc::notifyAfterAddTile(LayerTilemap* layer, frame_t frame, tile_index ti)
   ev.tileset(layer->tileset());
   ev.tileIndex(ti);
   notify_observers<DocEvent&>(&DocObserver::onAfterAddTile, ev);
+}
+
+void Doc::notifyBeforeSlicesDuplication()
+{
+  DocEvent ev(this);
+  notify_observers<DocEvent&>(&DocObserver::onBeforeSlicesDuplication, ev);
+}
+
+void Doc::notifySliceDuplicated(Slice* slice)
+{
+  DocEvent ev(this);
+  ev.slice(slice);
+  notify_observers<DocEvent&>(&DocObserver::onSliceDuplicated, ev);
 }
 
 bool Doc::isModified() const
