@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -45,6 +45,7 @@
 #include "app/ui_context.h"
 #include "app/util/expand_cel_canvas.h"
 #include "app/util/layer_utils.h"
+#include "app/util/slice_utils.h"
 #include "doc/brush.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -693,7 +694,7 @@ public:
       // popup menu to create a new one.
       if (!m_editor->selectSliceBox(bounds) && (bounds.w > 1 || bounds.h > 1)) {
         Slice* slice = new Slice;
-        slice->setName(getUniqueSliceName());
+        slice->setName(get_unique_slice_name(m_sprite));
 
         SliceKey key(bounds);
         slice->insert(getFrame(), key);
@@ -716,18 +717,6 @@ private:
   // EditorObserver impl
   void onScrollChanged(Editor* editor) override { updateAllVisibleRegion(); }
   void onZoomChanged(Editor* editor) override { updateAllVisibleRegion(); }
-
-  std::string getUniqueSliceName() const
-  {
-    std::string prefix = "Slice";
-    int max = 0;
-
-    for (Slice* slice : m_sprite->slices())
-      if (std::strncmp(slice->name().c_str(), prefix.c_str(), prefix.size()) == 0)
-        max = std::max(max, (int)std::strtol(slice->name().c_str() + prefix.size(), nullptr, 10));
-
-    return fmt::format("{} {}", prefix, max + 1);
-  }
 };
 
 //////////////////////////////////////////////////////////////////////

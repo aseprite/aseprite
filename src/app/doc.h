@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -141,6 +141,8 @@ public:
   void notifyTilesetChanged(Tileset* tileset);
   void notifyLayerGroupCollapseChange(Layer* layer);
   void notifyAfterAddTile(LayerTilemap* layer, frame_t frame, tile_index ti);
+  void notifyBeforeSlicesDuplication();
+  void notifySliceDuplicated(Slice* slice);
 
   //////////////////////////////////////////////////////////////////////
   // File related properties

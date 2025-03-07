@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -90,6 +90,8 @@ public:
 
   // Slices
   virtual void onSliceNameChange(DocEvent& ev) {}
+  virtual void onBeforeSlicesDuplication(DocEvent& ev) {}
+  virtual void onSliceDuplicated(DocEvent& ev) {}
 
   // The tileset has changed.
   virtual void onTilesetChanged(DocEvent& ev) {}

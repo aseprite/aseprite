@@ -393,6 +393,7 @@ target_sources(app-lib PRIVATE
   commands/cmd_deselect_mask.cpp
   commands/cmd_discard_brush.cpp
   commands/cmd_duplicate_layer.cpp
+  commands/cmd_duplicate_slice.cpp
   commands/cmd_duplicate_sprite.cpp
   commands/cmd_duplicate_view.cpp
   commands/cmd_enter_license.cpp
@@ -715,6 +716,7 @@ target_sources(app-lib PRIVATE
   util/render_text.cpp
   util/resize_image.cpp
   util/shader_helpers.cpp
+  util/slice_utils.cpp
   util/tile_flags_utils.cpp
   util/tileset_utils.cpp
   util/wrap_point.cpp
