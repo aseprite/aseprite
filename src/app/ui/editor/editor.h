@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -343,6 +343,8 @@ protected:
   void onRemoveSlice(DocEvent& ev) override;
   void onBeforeLayerVisibilityChange(DocEvent& ev, bool newState) override;
   void onBeforeLayerEditableChange(DocEvent& ev, bool newState) override;
+  void onBeforeSlicesDuplication(DocEvent& ev) override;
+  void onSliceDuplicated(DocEvent& ev) override;
 
   // ActiveToolObserver impl
   void onActiveToolChange(tools::Tool* tool) override;

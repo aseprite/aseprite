@@ -14,7 +14,7 @@ do
   assert(b.bounds == Rectangle(0, 2, 8, 10))
   assert(c.bounds == Rectangle(0, 0, 32, 32))
 
-  local bounds = { nil, Rectangle(0, 2, 8, 10), Rectangle(0, 0, 32, 32) }
+  local bounds = { Rectangle(0, 0, 32, 32), Rectangle(0, 2, 8, 10), nil }
 
   local i = 1
   for k,v in ipairs(s.slices) do
@@ -25,8 +25,8 @@ do
   end
 
   s:deleteSlice(b)
-  assert(a == s.slices[1])
-  assert(c == s.slices[2])
+  assert(c == s.slices[1])
+  assert(a == s.slices[2])
 
   assert(2 == #s.slices)
   app.undo()
