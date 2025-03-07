@@ -38,7 +38,9 @@ doc::Image* resize_image(const doc::Image* image,
   std::unique_ptr<doc::Image> newImage(doc::Image::create(spec));
   newImage->setMaskColor(image->maskColor());
 
-  doc::algorithm::fixup_image_transparent_colors(newImage.get());
+  doc::algorithm::fixup_image_transparent_colors(
+    newImage.get(),
+    method == doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR);
   doc::algorithm::resize_image(image, newImage.get(), method, pal, rgbmap, newImage->maskColor());
 
   return newImage.release();
@@ -77,7 +79,9 @@ void resize_cel_image(Tx& tx,
         doc::Image::create(image->pixelFormat(), std::max(1, w), std::max(1, h)));
       newImage->setMaskColor(image->maskColor());
 
-      doc::algorithm::fixup_image_transparent_colors(image);
+      doc::algorithm::fixup_image_transparent_colors(
+        image,
+        method == doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR);
       doc::algorithm::resize_image(
         image,
         newImage.get(),

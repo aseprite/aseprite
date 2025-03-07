@@ -42,7 +42,7 @@ void resize_image(const Image* src,
 // (alpha = 0) with the average of its 4-neighbors.  Useful if you
 // want to use resize_image() with images that contains
 // transparent pixels.
-void fixup_image_transparent_colors(Image* image);
+void fixup_image_transparent_colors(Image* image, bool skip_for_nearest_neighbor);
 
 } // namespace algorithm
 } // namespace doc
