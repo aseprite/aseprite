@@ -184,8 +184,10 @@ void resize_image(const Image* src,
   }
 }
 
-void fixup_image_transparent_colors(Image* image)
+void fixup_image_transparent_colors(Image* image, bool skip_for_nearest_neighbor)
 {
+  if (skip_for_nearest_neighbor)
+    return;
   int x, y;
 
   switch (image->pixelFormat()) {
