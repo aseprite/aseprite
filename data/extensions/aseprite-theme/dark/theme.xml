@@ -485,25 +485,25 @@
             <icon part="window_close_icon" color="button_hot_text" state="mouse" />
             <icon part="window_close_icon" color="button_selected_text" state="selected" />
         </style>
-        <style id="window_center_button" extends="window_button" margin-top="3" margin-right="2">
+        <style id="window_center_button" extends="window_button" margin-top="3" margin-right="1">
             <newlayer />
             <icon part="window_center_icon" color="button_normal_text" />
             <icon part="window_center_icon" color="button_hot_text" state="mouse" />
             <icon part="window_center_icon" color="button_selected_text" state="selected" />
         </style>
-        <style id="window_play_button" extends="window_button" margin-top="3" margin-right="2">
+        <style id="window_play_button" extends="window_button" margin-top="3" margin-right="1">
             <newlayer />
             <icon part="window_play_icon" color="button_normal_text" />
             <icon part="window_play_icon" color="button_hot_text" state="mouse" />
             <icon part="window_play_icon" color="button_selected_text" state="selected" />
         </style>
-        <style id="window_stop_button" extends="window_button" margin-top="3" margin-right="2">
+        <style id="window_stop_button" extends="window_button" margin-top="3" margin-right="1">
             <newlayer />
             <icon part="window_stop_icon" color="button_normal_text" />
             <icon part="window_stop_icon" color="button_hot_text" state="mouse" />
             <icon part="window_stop_icon" color="button_selected_text" state="selected" />
         </style>
-        <style id="window_help_button" extends="window_button" margin-top="3" margin-right="2">
+        <style id="window_help_button" extends="window_button" margin-top="3" margin-right="1">
             <newlayer />
             <icon part="window_help_icon" color="button_normal_text" />
             <icon part="window_help_icon" color="button_hot_text" state="mouse" />

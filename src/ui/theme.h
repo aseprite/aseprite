@@ -17,7 +17,6 @@
 #include "text/fwd.h"
 #include "ui/base.h"
 #include "ui/cursor_type.h"
-#include "ui/scale.h"
 #include "ui/style.h"
 
 namespace gfx {
@@ -40,11 +39,6 @@ class Theme;
 
 void set_theme(Theme* theme, const int uiscale);
 Theme* get_theme();
-
-inline int CALC_FOR_CENTER(int p, int s1, int s2)
-{
-  return (p / guiscale() + (s1 / guiscale()) / 2 - (s2 / guiscale()) / 2) * guiscale();
-}
 
 struct PaintWidgetPartInfo {
   gfx::Color bgColor;

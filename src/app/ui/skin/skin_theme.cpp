@@ -684,7 +684,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         const char* t = xmlStyle->Attribute("margin-top");
         const char* r = xmlStyle->Attribute("margin-right");
         const char* b = xmlStyle->Attribute("margin-bottom");
-        gfx::Border margin = style->margin();
+        gfx::Border margin = style->rawMargin();
         if (m || l)
           margin.left(scale * std::strtol(l ? l : m, nullptr, 10));
         if (m || t)
@@ -703,7 +703,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         const char* t = xmlStyle->Attribute("border-top");
         const char* r = xmlStyle->Attribute("border-right");
         const char* b = xmlStyle->Attribute("border-bottom");
-        gfx::Border border = style->border();
+        gfx::Border border = style->rawBorder();
         if (m || l)
           border.left(scale * std::strtol(l ? l : m, nullptr, 10));
         if (m || t)
@@ -722,7 +722,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         const char* t = xmlStyle->Attribute("padding-top");
         const char* r = xmlStyle->Attribute("padding-right");
         const char* b = xmlStyle->Attribute("padding-bottom");
-        gfx::Border padding = style->padding();
+        gfx::Border padding = style->rawPadding();
         if (m || l)
           padding.left(scale * std::strtol(l ? l : m, nullptr, 10));
         if (m || t)
@@ -1335,7 +1335,7 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
   if (!widget->getSuffix().empty()) {
     Rect sufBounds(bounds.x,
                    bounds.y,
-                   bounds.x2() - widget->childSpacing() * guiscale() - bounds.x,
+                   bounds.x2() - widget->childSpacing() - bounds.x,
                    widget->textHeight());
     IntersectClip clip(g, sufBounds & widget->clientChildrenBounds());
     if (clip) {

@@ -666,8 +666,8 @@ void ToolBar::drawToolIcon(Graphics* g, int group_index, SkinPartPtr skin, os::S
 
   if (icon) {
     g->drawRgbaSurface(icon,
-                       CALC_FOR_CENTER(toolrc.x, toolrc.w, icon->width()),
-                       CALC_FOR_CENTER(toolrc.y, toolrc.h, icon->height()));
+                       guiscaled_center(toolrc.x, toolrc.w, icon->width()),
+                       guiscaled_center(toolrc.y, toolrc.h, icon->height()));
   }
 }
 
@@ -799,8 +799,8 @@ void ToolBar::ToolStrip::onPaint(PaintEvent& ev)
     os::Surface* icon = theme->getToolIcon(tool->getId().c_str());
     if (icon) {
       g->drawRgbaSurface(icon,
-                         CALC_FOR_CENTER(toolrc.x, toolrc.w, icon->width()),
-                         CALC_FOR_CENTER(toolrc.y, toolrc.h, icon->height()));
+                         guiscaled_center(toolrc.x, toolrc.w, icon->width()),
+                         guiscaled_center(toolrc.y, toolrc.h, icon->height()));
     }
   }
 }

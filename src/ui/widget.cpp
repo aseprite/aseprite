@@ -33,6 +33,7 @@
 #include "ui/paint_event.h"
 #include "ui/resize_event.h"
 #include "ui/save_layout_event.h"
+#include "ui/scale.h"
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -1013,7 +1014,7 @@ void Widget::getTextIconInfo(gfx::Rect* box,
   if (align() & RIGHT)
     box_x = bounds.x2() - box_w - border().right();
   else if (align() & CENTER) {
-    box_x = CALC_FOR_CENTER(bounds.x + border().top(), bounds.w - border().width(), box_w);
+    box_x = guiscaled_center(bounds.x + border().top(), bounds.w - border().width(), box_w);
   }
   else
     box_x = bounds.x + border().left();
@@ -1021,7 +1022,7 @@ void Widget::getTextIconInfo(gfx::Rect* box,
   if (align() & BOTTOM)
     box_y = bounds.y2() - box_h - border().bottom();
   else if (align() & MIDDLE) {
-    box_y = CALC_FOR_CENTER(bounds.y + border().left(), bounds.h - border().height(), box_h);
+    box_y = guiscaled_center(bounds.y + border().left(), bounds.h - border().height(), box_h);
   }
   else
     box_y = bounds.y + border().top();
@@ -1034,8 +1035,8 @@ void Widget::getTextIconInfo(gfx::Rect* box,
       icon_x = box_x + box_w - icon_w;
     }
     else if (icon_align & CENTER) {
-      text_x = CALC_FOR_CENTER(box_x, box_w, text_w);
-      icon_x = CALC_FOR_CENTER(box_x, box_w, icon_w);
+      text_x = guiscaled_center(box_x, box_w, text_w);
+      icon_x = guiscaled_center(box_x, box_w, icon_w);
     }
     else {
       text_x = box_x + box_w - text_w;
@@ -1048,8 +1049,8 @@ void Widget::getTextIconInfo(gfx::Rect* box,
       icon_y = box_y + box_h - icon_h;
     }
     else if (icon_align & MIDDLE) {
-      text_y = CALC_FOR_CENTER(box_y, box_h, text_h);
-      icon_y = CALC_FOR_CENTER(box_y, box_h, icon_h);
+      text_y = guiscaled_center(box_y, box_h, text_h);
+      icon_y = guiscaled_center(box_y, box_h, icon_h);
     }
     else {
       text_y = box_y + box_h - text_h;

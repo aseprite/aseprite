@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -214,7 +214,7 @@ void Theme::setDecorativeWidgetBounds(Widget* widget)
       Window* window = widget->window();
       gfx::Rect buttonBounds(widget->sizeHint());
       gfx::Rect windowBounds(window->bounds());
-      gfx::Border margin(0, 0, 0, 0);
+      gfx::Border margin;
       if (widget->style())
         margin = widget->style()->margin();
 
@@ -506,25 +506,16 @@ void Theme::paintLayer(Graphics* g,
           g->drawAlignedUIText(text, layer.color(), bgColor, textBounds, layer.align());
         }
         else {
-          gfx::Size textSize = g->measureText(text);
+          const gfx::Size textSize = g->measureText(text);
+          const gfx::Border padding = style->padding();
           gfx::Point pt;
-          gfx::Border undef = Style::UndefinedBorder();
-          gfx::Border padding = style->padding();
-          if (padding.left() == undef.left())
-            padding.left(0);
-          if (padding.right() == undef.right())
-            padding.right(0);
-          if (padding.top() == undef.top())
-            padding.top(0);
-          if (padding.bottom() == undef.bottom())
-            padding.bottom(0);
 
           if (layer.align() & LEFT)
             pt.x = rc.x + padding.left();
           else if (layer.align() & RIGHT)
             pt.x = rc.x + rc.w - textSize.w - padding.right();
           else {
-            pt.x = CALC_FOR_CENTER(rc.x + padding.left(), rc.w - padding.width(), textSize.w);
+            pt.x = guiscaled_center(rc.x + padding.left(), rc.w - padding.width(), textSize.w);
           }
 
           if (layer.align() & TOP)
@@ -532,7 +523,7 @@ void Theme::paintLayer(Graphics* g,
           else if (layer.align() & BOTTOM)
             pt.y = rc.y + rc.h - textSize.h - padding.bottom();
           else {
-            pt.y = CALC_FOR_CENTER(rc.y + padding.top(), rc.h - padding.height(), textSize.h);
+            pt.y = guiscaled_center(rc.y + padding.top(), rc.h - padding.height(), textSize.h);
           }
 
           pt += layer.offset();
@@ -561,25 +552,16 @@ void Theme::paintLayer(Graphics* g,
     case Style::Layer::Type::kIcon: {
       os::Surface* icon = providedIcon ? providedIcon : layer.icon();
       if (icon) {
-        gfx::Size iconSize(icon->width(), icon->height());
+        const gfx::Size iconSize(icon->width(), icon->height());
+        const gfx::Border padding = style->padding();
         gfx::Point pt;
-        gfx::Border undef = Style::UndefinedBorder();
-        gfx::Border padding = style->padding();
-        if (padding.left() == undef.left())
-          padding.left(0);
-        if (padding.right() == undef.right())
-          padding.right(0);
-        if (padding.top() == undef.top())
-          padding.top(0);
-        if (padding.bottom() == undef.bottom())
-          padding.bottom(0);
 
         if (layer.align() & LEFT)
           pt.x = rc.x + padding.left();
         else if (layer.align() & RIGHT)
           pt.x = rc.x + rc.w - iconSize.w - padding.right();
         else {
-          pt.x = CALC_FOR_CENTER(rc.x + padding.left(), rc.w - padding.width(), iconSize.w);
+          pt.x = guiscaled_center(rc.x + padding.left(), rc.w - padding.width(), iconSize.w);
         }
 
         if (layer.align() & TOP)
@@ -587,7 +569,7 @@ void Theme::paintLayer(Graphics* g,
         else if (layer.align() & BOTTOM)
           pt.y = rc.y + rc.h - iconSize.h - padding.bottom();
         else {
-          pt.y = CALC_FOR_CENTER(rc.y + padding.top(), rc.h - padding.height(), iconSize.h);
+          pt.y = guiscaled_center(rc.y + padding.top(), rc.h - padding.height(), iconSize.h);
         }
 
         pt += layer.offset();
@@ -807,25 +789,8 @@ void Theme::calcWidgetMetrics(const Widget* widget,
       measureLayer(widget, style, layer, borderHint, textHint, textAlign, iconHint, iconAlign);
     });
 
-  gfx::Border undef = Style::UndefinedBorder();
-
-  if (style->border().left() != undef.left())
-    borderHint.left(style->border().left());
-  if (style->border().top() != undef.top())
-    borderHint.top(style->border().top());
-  if (style->border().right() != undef.right())
-    borderHint.right(style->border().right());
-  if (style->border().bottom() != undef.bottom())
-    borderHint.bottom(style->border().bottom());
-
-  if (style->padding().left() != undef.left())
-    paddingHint.left(style->padding().left());
-  if (style->padding().top() != undef.top())
-    paddingHint.top(style->padding().top());
-  if (style->padding().right() != undef.right())
-    paddingHint.right(style->padding().right());
-  if (style->padding().bottom() != undef.bottom())
-    paddingHint.bottom(style->padding().bottom());
+  Style::applyOnlyDefinedBorders(borderHint, style->rawBorder());
+  Style::applyOnlyDefinedBorders(paddingHint, style->rawPadding());
 
   sizeHint = gfx::Size(borderHint.width() + paddingHint.width(),
                        borderHint.height() + paddingHint.height());

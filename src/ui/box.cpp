@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -13,6 +13,7 @@
 #include "ui/box.h"
 #include "ui/message.h"
 #include "ui/resize_event.h"
+#include "ui/scale.h"
 #include "ui/size_hint_event.h"
 #include "ui/theme.h"
 
@@ -109,7 +110,7 @@ void Box::onResize(ResizeEvent& ev)
         size = child->sizeHint().w;                                                                \
                                                                                                    \
         if (child->isExpansive()) {                                                                \
-          int extraSize = (availExtraSize / (expansiveChildren - j));                              \
+          const int extraSize = guiscaled_div(availExtraSize, (expansiveChildren - j));            \
           size += extraSize;                                                                       \
           availExtraSize -= extraSize;                                                             \
           if (++j == expansiveChildren)                                                            \

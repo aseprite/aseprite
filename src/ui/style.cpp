@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -16,7 +16,7 @@ namespace ui {
 // static
 gfx::Border Style::UndefinedBorder()
 {
-  return gfx::Border(-1, -1, -1, -1);
+  return gfx::Border(kUndefinedSide, kUndefinedSide, kUndefinedSide, kUndefinedSide);
 }
 
 // static
@@ -33,9 +33,9 @@ gfx::Size Style::MaxSize()
 
 Style::Style(const Style* base)
   : m_insertionPoint(0)
-  , m_margin(base ? base->margin() : Style::UndefinedBorder())
-  , m_border(base ? base->border() : Style::UndefinedBorder())
-  , m_padding(base ? base->padding() : Style::UndefinedBorder())
+  , m_margin(base ? base->rawMargin() : Style::UndefinedBorder())
+  , m_border(base ? base->rawBorder() : Style::UndefinedBorder())
+  , m_padding(base ? base->rawPadding() : Style::UndefinedBorder())
   , m_minSize(base ? base->minSize() : Style::MinSize())
   , m_maxSize(base ? base->maxSize() : Style::MaxSize())
   , m_gap(base ? base->gap() : gfx::Size(0, 0))
