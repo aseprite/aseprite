@@ -1,16 +1,15 @@
-name: Build and Release Aseprite
+name: Aseprite Optimized Build
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
-  contents: write  # 必须的发布权限
+  contents: write
 
 jobs:
   create-release:
-    name: Create Release
     runs-on: ubuntu-latest
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -23,7 +22,7 @@ jobs:
         with:
           tag: ${{ github.ref_name }}
           name: "Aseprite ${{ github.ref_name }}"
-          body: "Automated build for ${{ github.ref_name }}"
+          body: "Optimized build with LZMA2 compression"
           prerelease: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -33,16 +32,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        os: [windows-latest]
+        # 可根据需要添加 macOS 和 Linux 配置
         include:
           - os: windows-latest
-            skia_url: https://github.com/aseprite/skia/releases/download/m102-861e4743af/Skia-Windows-Release-x64.zip
-            skia_dir: skia/out/Release-x64
-          - os: macos-latest
-            skia_url: https://github.com/aseprite/skia/releases/download/m102-861e4743af/Skia-macOS-Release-arm64.zip
-            skia_dir: skia/out/Release-arm64
-          - os: ubuntu-latest
-            skia_url: https://github.com/aseprite/skia/releases/download/m102-861e4743af/Skia-Linux-Release-x64-libstdc++.zip
+            skia_url: https://github.com/aseprite/skia/releases/download/m124-08a5439a6b/Skia-Windows-Release-x64.zip
             skia_dir: skia/out/Release-x64
 
     steps:
@@ -50,80 +44,68 @@ jobs:
       with:
         submodules: recursive
 
-    # 安装系统依赖
-    - name: Install Dependencies
-      if: runner.os == 'Linux'
-      shell: bash
-      run: |
-        sudo apt-get update -qq
-        sudo apt-get install -y \
-          libpixman-1-dev libfreetype6-dev libharfbuzz-dev zlib1g-dev \
-          libx11-dev libxcursor-dev libxi-dev libgl1-mesa-dev libfontconfig1-dev \
-          p7zip-full
-
-    - name: Install Chocolatey (Windows)
-      if: runner.os == 'Windows'
+    - name: Install Build Tools
       shell: pwsh
       run: |
-        Set-ExecutionPolicy Bypass -Scope Process -Force
-        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-        iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-        choco install -y wget 7zip
+        choco install -y ninja upx 7zip
+        refreshenv
 
-    # 安装 Skia
     - name: Download Skia
       shell: bash
       run: |
-        wget "${{ matrix.skia_url }}" -O skia.zip
-        unzip skia.zip -d skia
+        curl -L -o skia.zip "${{ matrix.skia_url }}"
+        7z x skia.zip -o skia
 
-    # 编译配置
-    - uses: aseprite/get-ninja@main
-    - uses: ilammy/msvc-dev-cmd@v1
-      if: runner.os == 'Windows'
-
-    - name: Configure CMake
+    - name: Configure CMake (Release)
       shell: bash
       run: |
-        cmake -S . -B build -G Ninja \
-          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-          -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
-          -DENABLE_TESTS=OFF \
-          -DENABLE_SCRIPTING=ON \
-          -DLAF_BACKEND=skia \
-          -DSKIA_DIR=$(pwd)/skia \
-          -DSKIA_LIBRARY_DIR=$(pwd)/${{ matrix.skia_dir }}
+        cmake -S . -B build -G Ninja ^
+          -DCMAKE_BUILD_TYPE=Release ^
+          -DENABLE_SCRIPTING=ON ^
+          -DLAF_BACKEND=skia ^
+          -DSKIA_DIR=$(pwd)/skia ^
+          -DSKIA_LIBRARY_DIR=$(pwd)/${{ matrix.skia_dir }} ^
+          -DENABLE_UI=OFF ^
+          -DENABLE_DOCS=OFF
 
-    # 编译
     - name: Build with Ninja
       shell: bash
       run: |
-        cd build && ninja
+        cd build && ninja -j 3
 
-    # 清理构建目录
-    - name: Clean build artifacts
-      shell: bash
+    - name: Strip Binary (Windows)
+      shell: cmd
       working-directory: build/bin
       run: |
-        find . -mindepth 1 \
-          ! \( -name 'aseprite*' -o -name 'data' -prune \) \
-          -exec rm -rf {} +
+        :: 使用 MSVC 工具链剥离符号
+        where strip
+        strip.exe aseprite.exe /SUPPRESS:4020,4037,4039,4049,4065,4070,4078,4087,4089,4221
 
-    # 创建便携包
-    - name: Create portable package
+    - name: Compress with UPX
+      shell: pwsh
+      working-directory: build/bin
+      run: |
+        upx --best --lzma aseprite.exe
+
+    - name: Clean Build Artifacts
+      working-directory: build/bin
+      shell: pwsh
+      run: |
+        Remove-Item * -Exclude aseprite.exe, data -Force
+        Get-ChildItem -Recurse data | Where-Object { $_.Name -match '\.(md|txt)$' } | Remove-Item -Force
+
+    - name: Create Optimized Package
       shell: bash
       working-directory: build/bin
       run: |
         echo "portable_mode=1" > aseprite.ini
-        7z a -tzip ../aseprite-${{ needs.create-release.outputs.release_tag }}-${{ runner.os }}.zip *
+        7z a -mx=9 -mfb=64 -mmt=on -xr!*.pdb -xr!*.ilk ../aseprite-${{ needs.create-release.outputs.release_tag }}-windows.7z *
 
-    # 上传到 Release
-    - name: Upload Release Asset
+    - name: Upload Asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: build/aseprite-${{ needs.create-release.outputs.release_tag }}-${{ runner.os }}.zip
-        asset_name: Aseprite-${{ needs.create-release.outputs.release_tag }}-${{ runner.os }}.zip
-        asset_content_type: application/zip
+        asset_path: build/aseprite-${{ needs.create-release.outputs.release_tag }}-windows.7z
+        asset_name: Aseprite-${{ needs.create-release.outputs.release_tag }}-Windows.7z
