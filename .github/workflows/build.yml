@@ -1,26 +1,56 @@
-name: build
-on: [push, pull_request]
+name: Build and Release Aseprite
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write  # 必须的发布权限
+
 jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      release_tag: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ github.ref_name }}
+          name: "Aseprite ${{ github.ref_name }}"
+          body: "Automated build for ${{ github.ref_name }}"
+          prerelease: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
   build:
+    needs: create-release
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
-        build_type: [RelWithDebInfo, Debug]
-        ui: [gui, cli]
-        scripting: [lua, noscripts]
-        exclude:
-          - build_type: Debug
-            ui: gui
-          - build_type: RelWithDebInfo
-            ui: cli
-          - build_type: RelWithDebInfo
-            scripting: noscripts
+        include:
+          - os: windows-latest
+            skia_url: https://github.com/aseprite/skia/releases/download/m102-861e4743af/Skia-Windows-Release-x64.zip
+            skia_dir: skia/out/Release-x64
+          - os: macos-latest
+            skia_url: https://github.com/aseprite/skia/releases/download/m102-861e4743af/Skia-macOS-Release-arm64.zip
+            skia_dir: skia/out/Release-arm64
+          - os: ubuntu-latest
+            skia_url: https://github.com/aseprite/skia/releases/download/m102-861e4743af/Skia-Linux-Release-x64-libstdc++.zip
+            skia_dir: skia/out/Release-x64
+
     steps:
     - uses: actions/checkout@v4
       with:
-        submodules: 'recursive'
+        submodules: recursive
+
+    # 安装系统依赖
     - name: Install Dependencies
       if: runner.os == 'Linux'
       shell: bash
@@ -28,89 +58,72 @@ jobs:
         sudo apt-get update -qq
         sudo apt-get install -y \
           libpixman-1-dev libfreetype6-dev libharfbuzz-dev zlib1g-dev \
-          libx11-dev libxcursor-dev libxi-dev libgl1-mesa-dev libfontconfig1-dev
-    - name: Install Skia
-      if: ${{ matrix.ui == 'gui' }}
+          libx11-dev libxcursor-dev libxi-dev libgl1-mesa-dev libfontconfig1-dev \
+          p7zip-full
+
+    - name: Install Chocolatey (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+        choco install -y wget 7zip
+
+    # 安装 Skia
+    - name: Download Skia
       shell: bash
       run: |
-        if [[ "${{ runner.os }}" == "Windows" ]] ; then
-          choco install wget -y --no-progress
-          wget https://github.com/aseprite/skia/releases/download/m102-861e4743af/Skia-Windows-Release-x64.zip
-          unzip Skia-Windows-Release-x64.zip -d skia
-        elif [[ "${{ runner.os }}" == "macOS" ]] ; then
-          wget https://github.com/aseprite/skia/releases/download/m102-861e4743af/Skia-macOS-Release-arm64.zip
-          unzip Skia-macOS-Release-arm64.zip -d skia
-        else
-          wget https://github.com/aseprite/skia/releases/download/m102-861e4743af/Skia-Linux-Release-x64-libstdc++.zip
-          unzip Skia-Linux-Release-x64-libstdc++.zip -d skia
-        fi
-    - name: ccache
-      uses: hendrikmuhs/ccache-action@v1
-      if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
-      with:
-        key: ${{ matrix.os }}-${{ matrix.ui }}-${{ matrix.scripting }}-${{ matrix.build_type }}
+        wget "${{ matrix.skia_url }}" -O skia.zip
+        unzip skia.zip -d skia
+
+    # 编译配置
     - uses: aseprite/get-ninja@main
     - uses: ilammy/msvc-dev-cmd@v1
       if: runner.os == 'Windows'
-    - name: Generating Makefiles
+
+    - name: Configure CMake
       shell: bash
       run: |
-        if [[ "${{ runner.os }}" == "Windows" ]] ; then
-          export enable_ccache=off
-        else
-          export enable_ccache=on
-        fi
-
-        if [[ "${{ matrix.ui }}" == "gui" ]] ; then
-          export laf_backend=skia
-        else
-          export laf_backend=none
-        fi
-
-        if [[ "${{ matrix.scripting }}" == "lua" ]] ; then
-          export enable_scripting=on
-        else
-          export enable_scripting=off
-        fi
-
-        if [[ "${{ runner.os }}" == "macOS" ]] ; then
-          export skia_arch=arm64
-        else
-          export skia_arch=x64
-        fi
-
         cmake -S . -B build -G Ninja \
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
           -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
-          -DENABLE_TESTS=ON \
-          -DENABLE_SCRIPTING=$enable_scripting \
-          -DENABLE_CCACHE=$enable_ccache \
-          -DLAF_BACKEND=$laf_backend \
-          -DSKIA_DIR=skia \
-          -DSKIA_LIBRARY_DIR=skia/out/Release-$skia_arch
-    - name: Compiling
+          -DENABLE_TESTS=OFF \
+          -DENABLE_SCRIPTING=ON \
+          -DLAF_BACKEND=skia \
+          -DSKIA_DIR=$(pwd)/skia \
+          -DSKIA_LIBRARY_DIR=$(pwd)/${{ matrix.skia_dir }}
+
+    # 编译
+    - name: Build with Ninja
       shell: bash
       run: |
         cd build && ninja
-    - name: Compiling
+
+    # 清理构建目录
+    - name: Clean build artifacts
       shell: bash
-      working-directory: aseprite
+      working-directory: build/bin
       run: |
-        cd build && ninja
-    - name: Clean Up Build folder
-       working-directory: aseprite/build/bin
-       shell: bash
-       run: find . -mindepth 1 ! \( -name 'aseprite' -o -name 'aseprite.exe' -o -name 'data' -prune \) -exec rm -rf {} +
-     - name: Make portable zip
-       working-directory: aseprite/build/bin
-       run: echo '# This file is here so Aseprite behaves as a portable program' > aseprite.ini
-     - name: Create release
-       working-directory: aseprite/build/bin
-       run: 7z -tzip a Aseprite-${{ needs.create-release.outputs.release-tag }}-${{ runner.os }}.zip *
-     - name: Upload release
-       uses: svenstaro/upload-release-action@v2
-       with:
-         repo_token: ${{ secrets.GITHUB_TOKEN }}
-         file: aseprite/build/bin/Aseprite-${{ needs.create-release.outputs.release-tag }}-${{ runner.os }}.zip
-         asset_name: Aseprite-${{ needs.create-release.outputs.release-tag }}-${{ runner.os }}.zip
-         tag: ${{ needs.create-release.outputs.release-tag }}
+        find . -mindepth 1 \
+          ! \( -name 'aseprite*' -o -name 'data' -prune \) \
+          -exec rm -rf {} +
+
+    # 创建便携包
+    - name: Create portable package
+      shell: bash
+      working-directory: build/bin
+      run: |
+        echo "portable_mode=1" > aseprite.ini
+        7z a -tzip ../aseprite-${{ needs.create-release.outputs.release_tag }}-${{ runner.os }}.zip *
+
+    # 上传到 Release
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: build/aseprite-${{ needs.create-release.outputs.release_tag }}-${{ runner.os }}.zip
+        asset_name: Aseprite-${{ needs.create-release.outputs.release_tag }}-${{ runner.os }}.zip
+        asset_content_type: application/zip
