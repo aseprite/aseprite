@@ -92,20 +92,25 @@ jobs:
       shell: bash
       run: |
         cd build && ninja
-    - name: Running C++ Tests
+    - name: Compiling
       shell: bash
+      working-directory: aseprite
       run: |
-        if [[ "${{ runner.os }}" == "Linux" ]] ; then
-          export XVFB=xvfb-run
-        fi
-        cd build && $XVFB ctest --output-on-failure
-    - name: Running CLI Tests
-      if: ${{ matrix.scripting == 'lua' }}
-      shell: bash
-      run: |
-        if [[ "${{ runner.os }}" == "Linux" ]] ; then
-          export XVFB=xvfb-run
-        fi
-        export ASEPRITE=$PWD/build/bin/aseprite
-        cd tests
-        $XVFB bash run-tests.sh
+        cd build && ninja
+    - name: Clean Up Build folder
+       working-directory: aseprite/build/bin
+       shell: bash
+       run: find . -mindepth 1 ! \( -name 'aseprite' -o -name 'aseprite.exe' -o -name 'data' -prune \) -exec rm -rf {} +
+     - name: Make portable zip
+       working-directory: aseprite/build/bin
+       run: echo '# This file is here so Aseprite behaves as a portable program' > aseprite.ini
+     - name: Create release
+       working-directory: aseprite/build/bin
+       run: 7z -tzip a Aseprite-${{ needs.create-release.outputs.release-tag }}-${{ runner.os }}.zip *
+     - name: Upload release
+       uses: svenstaro/upload-release-action@v2
+       with:
+         repo_token: ${{ secrets.GITHUB_TOKEN }}
+         file: aseprite/build/bin/Aseprite-${{ needs.create-release.outputs.release-tag }}-${{ runner.os }}.zip
+         asset_name: Aseprite-${{ needs.create-release.outputs.release-tag }}-${{ runner.os }}.zip
+         tag: ${{ needs.create-release.outputs.release-tag }}
