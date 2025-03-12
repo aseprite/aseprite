@@ -2366,8 +2366,10 @@ void Editor::onTiledModeChange()
   screenPos = editorToScreen(spritePos);
 
   auto lastPoint = document()->lastDrawingPoint();
-  lastPoint += mainTilePosition() - m_oldMainTilePos;
-  document()->setLastDrawingPoint(lastPoint);
+  if (lastPoint != Doc::NoLastDrawingPoint()) {
+    lastPoint += mainTilePosition() - m_oldMainTilePos;
+    document()->setLastDrawingPoint(lastPoint);
+  }
 
   centerInSpritePoint(spritePos);
 }
