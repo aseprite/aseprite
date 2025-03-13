@@ -1662,10 +1662,13 @@ void SkinTheme::drawText(Graphics* g,
 
     g->setFont(widget->font());
 
-    if (!t)
+    if (!t) {
       t = widget->text().c_str();
-
-    textrc.setSize(g->measureText(t));
+      textrc.setSize(widget->textSize());
+    }
+    else {
+      textrc.setSize(g->measureText(t));
+    }
 
     // Horizontally text alignment
 

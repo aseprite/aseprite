@@ -952,14 +952,14 @@ text::TextBlobRef Widget::textBlob() const
 int Widget::textWidth() const
 {
   if (auto blob = textBlob())
-    return blob->bounds().w;
+    return std::ceil(blob->bounds().w);
   return 0;
 }
 
 int Widget::textHeight() const
 {
   auto blob = textBlob();
-  return std::max<int>(font()->height(), (blob ? blob->bounds().h : 0));
+  return std::max<int>(font()->height(), (blob ? std::ceil(blob->bounds().h) : 0));
 }
 
 void Widget::getTextIconInfo(gfx::Rect* box,

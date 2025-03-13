@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -504,10 +504,13 @@ void Graphics::drawAlignedUIText(const std::string& str,
   doUIStringAlgorithm(str, fg, bg, rc, align, true);
 }
 
+// TODO We should try to cache TextBlobs as much as possible instead
+//      of measuring text directly (which is a slow operation).
 gfx::Size Graphics::measureText(const std::string& str)
 {
   ASSERT(m_font);
-  return gfx::Size(m_font->textLength(str), m_font->height());
+  return text::draw_text(nullptr, get_theme()->fontMgr(), m_font, str.c_str(), 0, 0, 0, 0, nullptr)
+    .size();
 }
 
 gfx::Size Graphics::fitString(const std::string& str, int maxWidth, int align)
