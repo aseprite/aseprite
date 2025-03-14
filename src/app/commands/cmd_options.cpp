@@ -164,7 +164,11 @@ class OptionsWindow : public app::gen::Options {
 
   class LangItem : public ListItem {
   public:
-    LangItem(const LangInfo& langInfo) : ListItem(langInfo.displayName), m_langInfo(langInfo) {}
+    LangItem(const LangInfo& langInfo)
+      : ListItem(fmt::format("{} ({})", langInfo.displayName, langInfo.id))
+      , m_langInfo(langInfo)
+    {
+    }
     const std::string& langId() const { return m_langInfo.id; }
 
   private:
@@ -274,6 +278,17 @@ public:
     fillThemeVariants();
     fillThemeFonts();
     updateFontPreviews();
+
+    // Language change
+    language()->Change.connect([this] { onLanguageChange(); });
+    fontWarning()->Click.connect([this] {
+      for (auto item : sectionListbox()->children()) {
+        if (static_cast<ListItem*>(item)->getValue() == kSectionThemeId) {
+          sectionListbox()->selectChild(item);
+          break;
+        }
+      }
+    });
 
     // Recent files
     clearRecentFiles()->Click.connect([this] { onClearRecentFiles(); });
@@ -1359,6 +1374,19 @@ private:
       loadExtensions();
 
     panel()->showChild(findChild(item->getValue().c_str()));
+  }
+
+  void onLanguageChange()
+  {
+    auto* item = dynamic_cast<const LangItem*>(language()->getSelectedItem());
+    if (!item)
+      return;
+    const std::string lang = item->langId();
+    const bool state = (lang == "ar" || lang == "ja" || lang == "ko" || lang == "yue_Hant" ||
+                        lang == "zh_Hans" || lang == "zh_Hant");
+    fontWarningFiller()->setVisible(state);
+    fontWarning()->setVisible(state);
+    layout();
   }
 
   void onClearRecentFiles() { App::instance()->recentFiles()->clear(); }

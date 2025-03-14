@@ -1,3 +1,4 @@
+
 <!-- Aseprite -->
 <!-- Copyright (C) 2018-2025  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
@@ -34,7 +35,7 @@
         <!-- General -->
         <vbox id="section_general">
           <separator text="@.section_general" horizontal="true" />
-          <grid columns="3">
+          <grid columns="2">
             <label text="@.ui_windows" />
             <hbox>
               <buttonset columns="2" id="ui_windows">
@@ -45,7 +46,6 @@
                 <label text="@.theme_mode" />
               </hbox>
             </hbox>
-            <boxfiller />
 
             <label text="@.screen_scaling" />
             <combobox id="screen_scale">
@@ -54,7 +54,6 @@
               <listitem text="300%" value="3" />
               <listitem text="400%" value="4" />
             </combobox>
-            <boxfiller />
 
             <label text="@.ui_scaling" />
             <combobox id="ui_scale">
@@ -63,12 +62,14 @@
               <listitem text="300%" value="3" />
               <listitem text="400%" value="4" />
             </combobox>
-            <boxfiller />
 
-            <label text="@.language" />
+            <link text="@.language" url="https://www.aseprite.org/languages/" />
             <combobox id="language" />
-            <link text="@.download_translations" url="https://www.aseprite.org/languages/" />
+
+            <boxfiller id="font_warning_filler" visible="false" />
+            <link text="@.font_warning" id="font_warning" visible="false" />
           </grid>
+          <separator horizontal="true" />
           <check id="gpu_acceleration"
                  text="@.gpu_acceleration"
                  tooltip="@.gpu_acceleration_tooltip" />
