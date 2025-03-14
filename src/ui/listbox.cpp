@@ -26,11 +26,6 @@
 
 namespace ui {
 
-static inline bool sort_by_text(Widget* a, Widget* b)
-{
-  return (base::compare_filenames(a->text(), b->text()) < 0);
-}
-
 using namespace gfx;
 
 ListBox::ListBox()
@@ -182,10 +177,12 @@ void ListBox::centerScroll()
 
 void ListBox::sortItems()
 {
-  sortItems(&sort_by_text);
+  sortItems([](const Widget* a, const Widget* b) {
+    return (base::compare_filenames(a->text(), b->text()) < 0);
+  });
 }
 
-void ListBox::sortItems(bool (*cmp)(Widget* a, Widget* b))
+void ListBox::sortItems(const std::function<bool(Widget*, Widget*)>& cmp)
 {
   WidgetsList widgets = children();
   std::sort(widgets.begin(), widgets.end(), cmp);
