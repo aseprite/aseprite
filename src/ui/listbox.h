@@ -35,8 +35,8 @@ public:
 
   void makeChildVisible(Widget* item);
   void centerScroll();
-  void sortItems();
-  void sortItems(bool (*cmp)(Widget* a, Widget* b));
+  virtual void sortItems();
+  void sortItems(const std::function<bool(Widget*, Widget*)>& cmp);
 
   obs::signal<void()> Change;
   obs::signal<void()> DoubleClickItem;
