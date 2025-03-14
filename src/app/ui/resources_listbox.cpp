@@ -11,6 +11,7 @@
 
 #include "app/ui/resources_listbox.h"
 
+#include "app/i18n/strings.h"
 #include "app/res/resource.h"
 #include "app/res/resources_loader.h"
 #include "app/ui/skin/skin_theme.h"
@@ -45,7 +46,7 @@ bool ResourceListItem::onProcessMessage(ui::Message* msg)
 
 void ResourceListItem::onPaint(PaintEvent& ev)
 {
-  auto theme = SkinTheme::get(this);
+  const auto* theme = SkinTheme::get(this);
   Graphics* g = ev.graphics();
   gfx::Rect bounds = clientBounds();
   gfx::Color bgcolor, fgcolor;
@@ -67,7 +68,7 @@ void ResourceListItem::onPaint(PaintEvent& ev)
     text(),
     fgcolor,
     gfx::ColorNone,
-    gfx::Point(bounds.x + 2 * guiscale(), bounds.y + bounds.h / 2 - g->font()->height() / 2));
+    gfx::Point(bounds.x + (2 * guiscale()), bounds.y + (bounds.h / 2) - (g->font()->height() / 2)));
 }
 
 void ResourceListItem::onSizeHint(SizeHintEvent& ev)
@@ -80,20 +81,19 @@ void ResourceListItem::onSizeHint(SizeHintEvent& ev)
 
 class ResourcesListBox::LoadingItem : public ListItem {
 public:
-  LoadingItem() : ListItem("Loading"), m_state(0) {}
+  LoadingItem() : ListItem(Strings::resource_listbox_loading()), m_state(0) {}
 
   void makeProgress()
   {
-    std::string text = "Loading ";
-
+    std::string progress;
     switch ((++m_state) % 4) {
-      case 0: text += "/"; break;
-      case 1: text += "-"; break;
-      case 2: text += "\\"; break;
-      case 3: text += "|"; break;
+      case 0: progress = " /"; break;
+      case 1: progress = " -"; break;
+      case 2: progress = " \\"; break;
+      case 3: progress = " |"; break;
     }
 
-    setText(text);
+    setText(Strings::resource_listbox_loading() + progress);
   }
 
 private:
@@ -201,26 +201,26 @@ void ResourcesListBox::onTick()
   if (!m_loadingItem) {
     m_loadingItem = new LoadingItem;
     addChild(m_loadingItem);
+    layout();
   }
   m_loadingItem->makeProgress();
 
   std::unique_ptr<Resource> resource;
-  std::string name;
 
   while (m_resourcesLoader->next(resource)) {
     std::unique_ptr<ResourceListItem> listItem(onCreateResourceItem(resource.get()));
     insertChild(getItemsCount() - 1, listItem.get());
-    sortItems();
-    layout();
-
-    if (View* view = View::getView(this))
-      view->updateView();
-
     resource.release();
     listItem.release();
   }
 
   if (m_resourcesLoader->isDone()) {
+    // Delay sorting and layout until we're fully loaded, for perfomance with big lists.
+    if (View* view = View::getView(this))
+      view->updateView();
+    sortItems();
+    layout();
+
     FinishLoading();
     stop();
   }
