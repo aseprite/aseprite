@@ -163,7 +163,7 @@ public:
       return 0;
   }
 
-  gfx::Color getColorById(const std::string& id) const
+  gfx::Color getColorById(const std::string& id) const override
   {
     auto it = m_colors_by_id.find(id);
     if (it != m_colors_by_id.end())
