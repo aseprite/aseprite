@@ -366,7 +366,9 @@ private:
                 const gfx::Rect& spriteBounds,
                 const gfx::Rect& gridBounds,
                 const app::Color& color,
-                int alpha);
+                int alpha,
+                bool isPixelGrid);
+  gfx::Path& getIsometricGridPath(gfx::Rect& grid);
   void drawSlices(ui::Graphics* g);
   void drawTileNumbers(ui::Graphics* g, const Cel* cel);
   void drawCelBounds(ui::Graphics* g, const Cel* cel, const gfx::Color color);
