@@ -19,7 +19,8 @@ namespace app {
 class WorkspaceTabs;
 
 class Workspace : public ui::Widget,
-                  public app::InputChainElement {
+                  public app::InputChainElement,
+                  public Dockable {
 public:
   typedef WorkspaceViews::iterator iterator;
 
@@ -75,6 +76,11 @@ public:
 
   WorkspacePanel* mainPanel() { return &m_mainPanel; }
 
+  // Dockable impl
+  int dockableAt() const override { return 0; }
+  int dockHandleSide() const override { return 0; } // No handles
+
+  // Signals
   obs::signal<void()> BeforeViewChanged;
   obs::signal<void()> ActiveViewChanged;
 
