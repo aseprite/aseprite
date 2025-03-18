@@ -12,36 +12,19 @@ env:
     BUILD_TYPE: Release
 
 jobs:
-    fetch-aseprite-info:
-        name: Fetch deps info
-        runs-on: ubuntu-latest
-        outputs:
-            download-link: ${{ steps.aseprite-link.outputs.download-link }}
-            release-tag: ${{ steps.aseprite-link.outputs.release-tag }}
-        steps:
-            - name: Fetch Aseprite release link
-              id: aseprite-link
-              uses: a1393323447/fetch-release@main
-              with:
-                  group: aseprite
-                  repo: aseprite
-                  match: Aseprite-.*?-Source.zip
-
     create-release:
         name: Create Release
         runs-on: ubuntu-latest
-        needs: fetch-aseprite-info
         permissions:
             contents: write
         outputs:
-            download-link: ${{ needs.fetch-aseprite-info.outputs.download-link }}
-            release-tag: ${{ needs.fetch-aseprite-info.outputs.release-tag }}
+            release-tag: v1.3.13
         steps:
             - uses: actions/checkout@v2
             - uses: ncipollo/release-action@v1
               with:
-                  tag: ${{ needs.fetch-aseprite-info.outputs.release-tag }}
-                  body: Aseprite-${{ needs.fetch-aseprite-info.outputs.release-tag }}
+                  tag: v1.3.13
+                  body: Aseprite-v1.3.13
                   skipIfReleaseExists: true
                   token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -54,15 +37,15 @@ jobs:
         steps:
             - uses: actions/checkout@v4
               with:
-                  submodules: recursive # 初始化子模块
+                  submodules: recursive  # 初始化子模块
 
-            - name: Install Aseprite
+            - name: Install Aseprite v1.3.13
               run: |
-                  git clone --recurse-submodules -j8 https://github.com/aseprite/aseprite --branch ${{ needs.create-release.outputs.release-tag }}
+                  git clone --recurse-submodules -j8 https://github.com/aseprite/aseprite --branch v1.3.13
                   mkdir -p aseprite/skia  # 确保 skia 目录存在
 
             - name: Install Skia (macOS x64)
-              working-directory: aseprite # 设置工作目录
+              working-directory: aseprite  # 设置工作目录
               run: |
                   wget https://github.com/aseprite/skia/releases/download/m124-08a5439a6b/Skia-macOS-Release-x64.zip
                   unzip Skia-macOS-Release-x64.zip -d skia
@@ -74,8 +57,8 @@ jobs:
               run: |
                   cmake -S . -B build -G Ninja \
                     -DCMAKE_BUILD_TYPE=Release \
-                    -DCMAKE_OSX_ARCHITECTURES=x86_64
-                    -DENABLE_TESTS=OFF \ = 
+                    -DCMAKE_OSX_ARCHITECTURES=x86_64 \
+                    -DENABLE_TESTS=OFF \
                     -DENABLE_SCRIPTING=ON \
                     -DENABLE_CCACHE=OFF \
                     -DLAF_BACKEND=skia \
@@ -87,10 +70,10 @@ jobs:
               working-directory: aseprite/build/bin
               run: |
                   echo '# This file is here so Aseprite behaves as a portable program' > aseprite.ini
-                  zip -r Aseprite-${{ needs.create-release.outputs.release-tag }}-macOS-x64.zip *
+                  zip -r Aseprite-v1.3.13-macOS-x64.zip *
 
             - name: Upload Release (macOS x64)
               uses: actions/upload-artifact@v4
               with:
                   name: Aseprite-macOS-x64
-                  path: aseprite/build/bin/Aseprite-${{ needs.create-release.outputs.release-tag }}-macOS-x64.zip
+                  path: aseprite/build/bin/Aseprite-v1.3.13-macOS-x64.zip
