@@ -28,18 +28,21 @@ FontData::FontData(text::FontType type)
 {
 }
 
-text::FontRef FontData::getFont(text::FontMgrRef& fontMgr, int size, int uiscale)
+text::FontRef FontData::getFont(text::FontMgrRef& fontMgr, float size)
 {
   ASSERT(fontMgr);
 
-  if (m_type == text::FontType::SpriteSheet)
-    size = 1; // Same size always
-
   // Use cache
-  size *= uiscale;
-  auto it = m_fonts.find(size);
-  if (it != m_fonts.end())
-    return it->second;
+  if (m_antialias) {
+    auto it = m_antialiasFonts.find(size);
+    if (it != m_antialiasFonts.end())
+      return it->second;
+  }
+  else {
+    auto it = m_fonts.find(size);
+    if (it != m_fonts.end())
+      return it->second;
+  }
 
   text::FontRef font = nullptr;
 
@@ -64,13 +67,11 @@ text::FontRef FontData::getFont(text::FontMgrRef& fontMgr, int size, int uiscale
   }
 
   // Cache this font
-  m_fonts[size] = font;
+  if (m_antialias)
+    m_antialiasFonts[size] = font;
+  else
+    m_fonts[size] = font;
   return font;
-}
-
-text::FontRef FontData::getFont(text::FontMgrRef& fontMgr, int size)
-{
-  return getFont(fontMgr, size, ui::guiscale());
 }
 
 } // namespace app

@@ -25,14 +25,13 @@ public:
 
   void setFilename(const std::string& filename) { m_filename = filename; }
   void setAntialias(bool antialias) { m_antialias = antialias; }
-  void setFallback(FontData* fallback, int fallbackSize)
+  void setFallback(FontData* fallback, float fallbackSize)
   {
     m_fallback = fallback;
     m_fallbackSize = fallbackSize;
   }
 
-  text::FontRef getFont(text::FontMgrRef& fontMgr, int size, int uiscale);
-  text::FontRef getFont(text::FontMgrRef& fontMgr, int size);
+  text::FontRef getFont(text::FontMgrRef& fontMgr, float size);
 
   const std::string& filename() const { return m_filename; }
 
@@ -40,9 +39,10 @@ private:
   text::FontType m_type;
   std::string m_filename;
   bool m_antialias;
-  std::map<int, text::FontRef> m_fonts; // key=font size, value=real font
+  std::map<float, text::FontRef> m_fonts; // key=font size, value=real font
+  std::map<float, text::FontRef> m_antialiasFonts;
   FontData* m_fallback;
-  int m_fallbackSize;
+  float m_fallbackSize;
 
   DISABLE_COPYING(FontData);
 };

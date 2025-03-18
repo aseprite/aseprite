@@ -38,6 +38,7 @@ public:
   FontData* fontDataByName(const std::string& name);
   text::FontRef fontByName(const std::string& name, int size);
   text::FontRef fontFromInfo(const FontInfo& fontInfo);
+  FontInfo infoFromFont(const text::FontRef& font);
 
 private:
   text::FontMgrRef m_fontMgr;

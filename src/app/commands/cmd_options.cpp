@@ -1116,19 +1116,7 @@ private:
     const bool state = fontCheckBox->isSelected();
     fontEntry->setEnabled(state);
 
-    FontInfo fi;
-    auto* theme = skin::SkinTheme::get(this);
-    text::FontMgrRef fontMgr = theme->fontMgr();
-    for (const auto& kv : Fonts::instance()->definedFonts()) {
-      if (kv.second->getFont(fontMgr, themeFont->height(), guiscale()) == themeFont) {
-        fi = FontInfo(FontInfo::Type::Name,
-                      kv.first,
-                      themeFont->height(),
-                      text::FontStyle(),
-                      themeFont->antialias() ? FontInfo::Flags::Antialias : FontInfo::Flags::None);
-        break;
-      }
-    }
+    FontInfo fi = Fonts::instance()->infoFromFont(themeFont);
     fontEntry->setInfo(fi, FontEntry::From::Init);
   }
 

@@ -15,6 +15,7 @@
 #include "app/recent_files.h"
 #include "app/ui/font_popup.h"
 #include "app/ui/skin/skin_theme.h"
+#include "base/contains.h"
 #include "base/scoped_value.h"
 #include "fmt/format.h"
 #include "ui/display.h"
@@ -24,6 +25,7 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <vector>
 
 namespace app {
 
@@ -211,8 +213,33 @@ void FontEntry::FontFace::onCloseIconPressed()
 FontEntry::FontSize::FontSize()
 {
   setEditable(true);
-  for (int i : { 8, 9, 10, 11, 12, 14, 16, 18, 22, 24, 26, 28, 36, 48, 72 })
-    addItem(fmt::format("{}", i));
+}
+
+void FontEntry::FontSize::updateForFont(const FontInfo& info)
+{
+  std::vector<int> values = { 8, 9, 10, 11, 12, 14, 16, 18, 22, 24, 26, 28, 36, 48, 72 };
+  int h = 0;
+
+  // For SpriteSheet fonts we can offer the specific size that matches
+  // the bitmap font (+ x2 + x3)
+  text::FontRef font = Fonts::instance()->fontFromInfo(info);
+  if (font && font->type() == text::FontType::SpriteSheet) {
+    h = int(font->defaultSize());
+    if (h > 0) {
+      for (int i = h; i < h * 4; i += h) {
+        if (!base::contains(values, i))
+          values.insert(std::upper_bound(values.begin(), values.end(), i), i);
+      }
+    }
+  }
+
+  deleteAllItems();
+  for (int i : values) {
+    if (h && (i % h) == 0)
+      addItem(fmt::format("{}*", i));
+    else
+      addItem(fmt::format("{}", i));
+  }
 }
 
 void FontEntry::FontSize::onEntryChange()
@@ -314,8 +341,10 @@ void FontEntry::setInfo(const FontInfo& info, const From fromField)
   if (fromField != From::Face)
     m_face.setText(info.title());
 
-  if (fromField != From::Size)
+  if (fromField != From::Size) {
+    m_size.updateForFont(info);
     m_size.setValue(fmt::format("{}", info.size()));
+  }
 
   if (fromField != From::Style) {
     m_style.getItem(0)->setSelected(info.style().weight() >= text::FontStyle::Weight::SemiBold);

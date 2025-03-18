@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2024  Igara Studio S.A.
+// Copyright (c) 2024-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,6 +11,7 @@
 #include "base/convert_to.h"
 #include "base/enum_flags.h"
 #include "text/font_style.h"
+#include "text/font_type.h"
 #include "text/fwd.h"
 #include "text/typeface.h"
 

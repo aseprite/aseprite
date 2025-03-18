@@ -74,7 +74,7 @@ text::FontRef Fonts::fontFromInfo(const FontInfo& fontInfo)
       font->setSize(fontInfo.size());
   }
   else {
-    const int size = (fontInfo.useDefaultSize() ? 18 : fontInfo.size());
+    const float size = (fontInfo.useDefaultSize() ? 0.0f : fontInfo.size());
     font = fontByName(fontInfo.name(), size);
 
     if (!font && fontInfo.type() == FontInfo::Type::File) {
@@ -86,6 +86,20 @@ text::FontRef Fonts::fontFromInfo(const FontInfo& fontInfo)
     font->setAntialias(fontInfo.antialias());
 
   return font;
+}
+
+FontInfo Fonts::infoFromFont(const text::FontRef& font)
+{
+  for (const auto& kv : m_fonts) {
+    if (kv.second->getFont(m_fontMgr, font->height()) == font) {
+      return FontInfo(FontInfo::Type::Name,
+                      kv.first,
+                      font->height(),
+                      text::FontStyle(),
+                      font->antialias() ? FontInfo::Flags::Antialias : FontInfo::Flags::None);
+    }
+  }
+  return {};
 }
 
 } // namespace app

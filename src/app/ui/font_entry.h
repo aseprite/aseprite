@@ -62,6 +62,7 @@ private:
   class FontSize : public ui::ComboBox {
   public:
     FontSize();
+    void updateForFont(const FontInfo& info);
 
   protected:
     void onEntryChange() override;

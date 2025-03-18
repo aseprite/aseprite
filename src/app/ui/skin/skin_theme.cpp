@@ -439,7 +439,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         std::string id(idStr);
         LOG(VERBOSE, "THEME: Loading theme font %s\n", idStr);
 
-        int size = 10;
+        int size = 0;
         const char* sizeStr = xmlFont->Attribute("size");
         if (sizeStr)
           size = std::strtol(sizeStr, nullptr, 10);
@@ -447,12 +447,19 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         const char* mnemonicsStr = xmlFont->Attribute("mnemonics");
         bool mnemonics = mnemonicsStr ? (std::string(mnemonicsStr) != "off") : true;
 
-        text::FontRef font = fontData->getFont(m_fontMgr, size);
+        text::FontRef font = fontData->getFont(m_fontMgr, size * ui::guiscale());
+
+        // SpriteSheetFonts have a default preferred size.
+        if (size == 0 && font->defaultSize() > 0.0f) {
+          size = font->defaultSize();
+          font = fontData->getFont(m_fontMgr, size * ui::guiscale());
+        }
+
         m_themeFonts[idStr] = ThemeFont(font, mnemonics);
 
         // Store a unscaled version for using when ui scaling is not desired (i.e. in a Canvas
         // widget with autoScaling enabled).
-        m_unscaledFonts[font.get()] = fontData->getFont(m_fontMgr, size, 1);
+        m_unscaledFonts[font.get()] = fontData->getFont(m_fontMgr, size);
 
         if (id == "default")
           m_defaultFont = font;
