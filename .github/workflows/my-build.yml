@@ -1,90 +1,98 @@
 name: Build and release Aseprite (macOS x64)
 
 on:
-    push:
-        branches:
-            - main
-        paths:
-            - "BuildLog.md"
-    workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'BuildLog.md'
+  workflow_dispatch:
 
 env:
-    BUILD_TYPE: Release
+  BUILD_TYPE: Release
 
 jobs:
-    fetch-aseprite-info:
-        name: Fetch deps info
-        runs-on: ubuntu-latest
-        outputs:
-            download-link: ${{ steps.aseprite-link.outputs.download-link }}
-            release-tag: ${{ steps.aseprite-link.outputs.release-tag }}
-        steps:
-            - name: Fetch Aseprite release link
-              id: aseprite-link
-              uses: a1393323447/fetch-release@main
-              with:
-                  group: aseprite
-                  repo: aseprite
-                  match: Aseprite-.*?-Source.zip
+  fetch-aseprite-info:
+    name: Fetch deps info
+    runs-on: ubuntu-latest
+    outputs:
+      download-link: ${{ steps.aseprite-link.outputs.download-link }}
+      release-tag: ${{ steps.aseprite-link.outputs.release-tag }}
+    steps:
+      - name: Fetch Aseprite release link
+        id: aseprite-link
+        uses: a1393323447/fetch-release@main
+        with:
+          group: aseprite
+          repo: aseprite
+          match: "Aseprite-([0-9.]+)-Source.zip"
 
-    create-release:
-        name: Create Release
-        runs-on: ubuntu-latest
-        needs: fetch-aseprite-info
-        permissions:
-            contents: write
-        outputs:
-            download-link: ${{ needs.fetch-aseprite-info.outputs.download-link }}
-            release-tag: ${{ needs.fetch-aseprite-info.outputs.release-tag }}
-        steps:
-            - uses: actions/checkout@v2
-            - uses: ncipollo/release-action@v1
-              with:
-                  tag: ${{ needs.fetch-aseprite-info.outputs.release-tag }}
-                  body: Aseprite-${{ needs.fetch-aseprite-info.outputs.release-tag }}
-                  skipIfReleaseExists: true
-                  token: ${{ secrets.GITHUB_TOKEN }}
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: fetch-aseprite-info
+    permissions:
+      contents: write
+    outputs:
+      download-link: ${{ needs.fetch-aseprite-info.outputs.download-link }}
+      release-tag: ${{ needs.fetch-aseprite-info.outputs.release-tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ needs.fetch-aseprite-info.outputs.release-tag }}
+          body: "Aseprite ${{ needs.fetch-aseprite-info.outputs.release-tag }}"
+          skipIfReleaseExists: true
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-    build-aseprite:
-        name: Build Aseprite (macOS x64)
-        needs: create-release
-        permissions:
-            contents: write
-        runs-on: macOS-latest
-        steps:
-            - uses: actions/checkout@v4
-              with:
-                  submodules: recursive # 初始化子模块
+  build-aseprite:
+    name: Build Aseprite (macOS x64)
+    needs: create-release
+    permissions:
+      contents: write
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-            - name: Install Skia (macOS x64)
-              working-directory: aseprite
-              run: |
-                  wget https://github.com/aseprite/skia/releases/download/m124-08a5439a6b/Skia-macOS-Release-x64.zip
-                  unzip Skia-macOS-Release-x64.zip -d skia
+      - name: Install Dependencies
+        run: |
+          brew install ninja cmake ccache
 
-            - uses: aseprite/get-ninja@main
+      - name: Install Skia (macOS x64)
+        working-directory: aseprite
+        run: |
+          wget https://github.com/aseprite/skia/releases/download/m124-08a5439a6b/Skia-macOS-Release-x64.zip
+          unzip Skia-macOS-Release-x64.zip -d skia
 
-            - name: Build Aseprite (macOS x64)
-              working-directory: aseprite
-              run: |
-                  cmake -S . -B build -G Ninja \
-                    -DCMAKE_BUILD_TYPE=Release \
-                    -DENABLE_TESTS=OFF \
-                    -DENABLE_SCRIPTING=ON \
-                    -DENABLE_CCACHE=OFF \
-                    -DLAF_BACKEND=skia \
-                    -DSKIA_DIR=$(realpath skia) \
-                    -DSKIA_LIBRARY_DIR=$(realpath skia/out/Release-x64)
-                  cd build && ninja
+      - uses: aseprite/get-ninja@main
 
-            - name: Create Release Package (macOS x64)
-              working-directory: aseprite/build/bin
-              run: |
-                  echo '# This file is here so Aseprite behaves as a portable program' > aseprite.ini
-                  zip -r Aseprite-${{ needs.create-release.outputs.release-tag }}-macOS-x64.zip *
+      - name: Build Aseprite (macOS x64)
+        working-directory: aseprite
+        run: |
+          SKIA_DIR="$(pwd)/skia"
+          SKIA_LIBRARY_DIR="$(pwd)/skia/out/Release-x64"
 
-            - name: Upload Release (macOS x64)
-              uses: actions/upload-artifact@v4
-              with:
-                  name: Aseprite-macOS-x64
-                  path: aseprite/build/bin/Aseprite-${{ needs.create-release.outputs.release-tag }}-macOS-x64.zip
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DENABLE_TESTS=OFF \
+            -DENABLE_SCRIPTING=ON \
+            -DENABLE_CCACHE=OFF \
+            -DLAF_BACKEND=skia \
+            -DSKIA_DIR=$SKIA_DIR \
+            -DSKIA_LIBRARY_DIR=$SKIA_LIBRARY_DIR
+          cd build && ninja
+
+      - name: Create Release Package (macOS x64)
+        working-directory: aseprite/build/bin
+        run: |
+          touch aseprite.ini
+          echo '# Portable mode' > aseprite.ini
+          zip -r Aseprite-${{ needs.create-release.outputs.release-tag }}-macOS-x64.zip *
+
+      - name: Upload Release (macOS x64)
+        uses: actions/upload-artifact@v3
+        with:
+          name: Aseprite-macOS-x64
+          path: aseprite/build/bin/Aseprite-${{ needs.create-release.outputs.release-tag }}-macOS-x64.zip
