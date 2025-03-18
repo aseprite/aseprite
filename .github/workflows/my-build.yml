@@ -14,7 +14,7 @@ env:
 jobs:
   fetch-aseprite-info:
     name: Fetch deps info
-    runs-on: ubuntu-latest
+    runs-on: macOS-latest
     outputs:
       download-link: ${{ steps.aseprite-link.outputs.download-link }}
       release-tag: ${{ steps.aseprite-link.outputs.release-tag }}
@@ -29,7 +29,7 @@ jobs:
 
   create-release:
     name: Create Release
-    runs-on: ubuntu-latest
+    runs-on: macOS-latest
     needs: fetch-aseprite-info
     permissions:
       contents: write
