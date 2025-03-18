@@ -68,10 +68,6 @@ jobs:
       - name: Build Aseprite (macOS x64)
         working-directory: aseprite
         run: |
-          ls
-          cd aseprite
-          mkdir build
-          cd build
           cmake \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DCMAKE_OSX_ARCHITECTURES=x86_64 \
