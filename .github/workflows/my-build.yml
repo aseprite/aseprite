@@ -68,6 +68,7 @@ jobs:
       - name: Build Aseprite (macOS x64)
         working-directory: aseprite
         run: |
+          ls
           cd aseprite
           mkdir build
           cd build
