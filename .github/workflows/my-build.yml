@@ -59,6 +59,7 @@ jobs:
             - name: Install Skia (macOS x64)
               working-directory: aseprite
               run: |
+                  ls
                   wget https://github.com/aseprite/skia/releases/download/m124-08a5439a6b/Skia-macOS-Release-x64.zip
                   unzip Skia-macOS-Release-x64.zip -d skia
 
