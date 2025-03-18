@@ -65,7 +65,7 @@ jobs:
               working-directory: aseprite # 设置工作目录
               run: |
                   wget https://github.com/aseprite/skia/releases/download/m124-08a5439a6b/Skia-macOS-Debug-x64.zip
-                  unzip Skia-macOS-Release-x64.zip -d skia
+                  unzip Skia-macOS-Debug-x64.zip -d skia
 
             - uses: aseprite/get-ninja@main
 
