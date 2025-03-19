@@ -95,6 +95,7 @@ jobs:
                   pwd
                   ls
                   zip -r Aseprite-${{ needs.create-release.outputs.release-tag }}-macOS-x64.zip *
+                  ls
 
             - name: Upload Release (macOS x64)
               uses: actions/upload-artifact@v4
