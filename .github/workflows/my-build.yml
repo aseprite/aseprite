@@ -75,7 +75,7 @@ jobs:
                   cmake -S . -B build -G Ninja \
                     -DCMAKE_BUILD_TYPE=Release \
                     -DCMAKE_OSX_ARCHITECTURES=x86_64
-                    -DENABLE_TESTS=OFF \ = 
+                    -DENABLE_TESTS=OFF \ 
                     -DENABLE_SCRIPTING=ON \
                     -DENABLE_CCACHE=OFF \
                     -DLAF_BACKEND=skia \
