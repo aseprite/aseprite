@@ -94,11 +94,12 @@ jobs:
                   echo '# This file is here so Aseprite behaves as a portable program' > aseprite.ini
                   pwd
                   ls
-                  zip -r Aseprite-${{ needs.create-release.outputs.release-tag }}-macOS-x64.zip *
+                  zip -r Aseprite-macOS-x64.zip *
                   ls
 
             - name: Upload Release (macOS x64)
               uses: actions/upload-artifact@v4
               with:
                   name: Aseprite-macOS-x64
-                  path: /Users/runner/work/aseprite/aseprite/aseprite/build/bin/Aseprite-${{ needs.create-release.outputs.release-tag }}-macOS-x64.zip
+                  path: /Users/runner/work/aseprite/aseprite/aseprite/build/bin/Aseprite-macOS-x64.zip
+       
