@@ -100,4 +100,5 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                 name: Aseprite-macOS-x64
-                path: Aseprite-macOS-x64.zip
+                path: aseprite/build/bin/Aseprite-macOS-x64.zip
+                
