@@ -101,4 +101,4 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                   name: Aseprite-macOS-x64
-                  path: aseprite/build/bin/Aseprite-${{ needs.create-release.outputs.release-tag }}-macOS-x64.zip
+                  path: /Users/runner/work/aseprite/aseprite/aseprite/build/bin/Aseprite-${{ needs.create-release.outputs.release-tag }}-macOS-x64.zip
