@@ -72,6 +72,9 @@ jobs:
             - name: Build Aseprite (macOS x64)
               working-directory: aseprite
               run: |
+                  pwd
+                  ls
+                  
                   brew install ninja
                   cmake -S . -B build \
                   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
@@ -83,7 +86,7 @@ jobs:
                   -DSKIA_LIBRARY_DIR=$HOME/deps/skia/out/Release-x64 \
                   -DSKIA_LIBRARY=$HOME/deps/skia/out/Release-x64/libskia.a \
                   -G Ninja
-                
+
                   cmake --build build --config RelWithDebInfo
             - name: Create Release Package (macOS x64)
               working-directory: aseprite/build/bin
