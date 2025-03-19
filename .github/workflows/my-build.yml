@@ -58,7 +58,8 @@ jobs:
 
             - name: Install Aseprite
               run: |
-                  git clone --recurse-submodules -j8 https://github.com/aseprite/aseprite --branch ${{ needs.create-release.outputs.release-tag }}
+                #   git clone --recurse-submodules -j8 https://github.com/aseprite/aseprite --branch ${{ needs.create-release.outputs.release-tag }}
+                  git clone --recurse-submodules -j8 https://github.com/aseprite/aseprite --branch v1.3.13
                   mkdir -p aseprite/skia  # 确保 skia 目录存在
 
             - name: Install Skia (macOS x64)
