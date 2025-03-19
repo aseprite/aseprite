@@ -83,7 +83,8 @@ jobs:
                   -DSKIA_LIBRARY_DIR=$HOME/deps/skia/out/Release-x64 \
                   -DSKIA_LIBRARY=$HOME/deps/skia/out/Release-x64/libskia.a \
                   -G Ninja\
-
+                
+                  cmake --build build --config RelWithDebInfo
             - name: Create Release Package (macOS x64)
               working-directory: aseprite/build/bin
               run: |
