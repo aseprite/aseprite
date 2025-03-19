@@ -72,7 +72,7 @@ jobs:
             - name: Build Aseprite (macOS x64)
               working-directory: aseprite
               run: |
-                  cmake -S . -B build
+                  cmake -S . -B build \
                   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                   -DCMAKE_OSX_ARCHITECTURES=x86_64 \
                   -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
