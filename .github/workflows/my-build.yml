@@ -101,4 +101,4 @@ jobs:
               with:
                 name: Aseprite-macOS-x64
                 path: aseprite/build/bin/Aseprite-macOS-x64.zip
-                
+                if-no-files-found: error  # 如果 `zip` 文件不存在就报错
