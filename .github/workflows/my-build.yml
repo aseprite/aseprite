@@ -92,6 +92,8 @@ jobs:
               working-directory: aseprite/build/bin
               run: |
                   echo '# This file is here so Aseprite behaves as a portable program' > aseprite.ini
+                  pwd
+                  ls
                   zip -r Aseprite-${{ needs.create-release.outputs.release-tag }}-macOS-x64.zip *
 
             - name: Upload Release (macOS x64)
