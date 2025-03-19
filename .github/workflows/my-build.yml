@@ -83,7 +83,6 @@ jobs:
                   -DSKIA_LIBRARY=$HOME/deps/skia/out/Release-x64/libskia.a \
                   -G Ninja\ 
                   ..
-                  ninja aseprite
 
             - name: Create Release Package (macOS x64)
               working-directory: aseprite/build/bin
