@@ -73,13 +73,15 @@ jobs:
               working-directory: aseprite
               run: |
                   cmake -S . -B build -G Ninja \
-                    -DCMAKE_BUILD_TYPE=Release \
-                    -DCMAKE_OSX_ARCHITECTURES=x86_64
-                    -DENABLE_SCRIPTING=ON \
-                    -DENABLE_CCACHE=OFF \
-                    -DLAF_BACKEND=skia \
-                    -DSKIA_DIR=$(realpath skia) \
-                    -DSKIA_LIBRARY_DIR=$(realpath skia/out/Release-x64)
+                  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+                  -DCMAKE_OSX_ARCHITECTURES=x86_64 \
+                  -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
+                  -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk \
+                  -DLAF_BACKEND=skia \
+                  -DSKIA_DIR=$HOME/deps/skia \
+                  -DSKIA_LIBRARY_DIR=$HOME/deps/skia/out/Release-x64 \
+                  -DSKIA_LIBRARY=$HOME/deps/skia/out/Release-x64/libskia.a \
+                  -G Ninja \
                   cd build && ninja
 
             - name: Create Release Package (macOS x64)
