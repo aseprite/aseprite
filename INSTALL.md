@@ -49,7 +49,8 @@ clone the repository on Windows.
 
 To compile Aseprite you will need:
 
-* The latest version of [CMake](https://cmake.org) (3.16 or greater)
+* The latest version of [CMake 3](https://cmake.org)  (3.16 <= `cmake --version` < 4)
+  * submodule `libpng` uses [`cmake_minimum_required(VERSION 3.1)`](third_party\libpng\CMakeLists.txt) which is not supported in CMake 4+
 * [Ninja](https://ninja-build.org) build system
 * And a compiled version of the `aseprite-m102` branch of
   the [Skia library](https://github.com/aseprite/skia#readme).
@@ -104,11 +105,15 @@ On SUSE:
    In this way, if you want to start with a fresh copy of Aseprite
    source code, you can remove the `build` directory and start again.
 
-2. Enter in the new directory and execute `cmake`:
+2. Enter in the new directory and execute `cmake` directly...
 
         cd C:\aseprite\build
         cmake -G Ninja -DLAF_BACKEND=skia ..
 
+    OR run the build script  `build.sh` (see platform-specific details):
+
+        ./build.sh
+        
    Here `cmake` needs different options depending on your
    platform. You must check the details for
    [Windows](#windows-details), [macOS](#macos-details), and
@@ -138,7 +143,7 @@ Skia. When compiling with the 32-bit version, it is possible to open a
 [developer command prompt](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
 instead.
 
-And then
+And then, if using cmake directly
 
     cd aseprite
     mkdir build
@@ -147,7 +152,21 @@ And then
     ninja aseprite
 
 In this case, `C:\deps\skia` is the directory where Skia was compiled
-or uncompressed.
+or uncompressed. 
+
+Alternatively, use `build.cmd` or `build.ps1`
+
+    cd aseprite
+    mkdir build
+    ./build.cmd
+
+Follow the prompts setting build dir appropriately.
+
+Script config is saved to `.build` in case of issues.
+
+Script can be rerun from scratch by using `build.cmd --reset`.
+
+Note that this resets the configuration script. It does not remove CMake artifacts and existing builds.
 
 ### MinGW
 
