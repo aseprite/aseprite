@@ -507,7 +507,7 @@ gfx::Size Entry::sizeHintWithText(Entry* entry, const std::string& text)
 
   w = std::min(w, entry->display()->workareaSizeUIScale().w / 2);
 
-  const int h = +font->height() + entry->border().height();
+  const int h = font->lineHeight() + entry->border().height();
 
   return gfx::Size(w, h);
 }
@@ -523,7 +523,7 @@ void Entry::onSizeHint(SizeHintEvent& ev)
 
   w = std::min(w, display()->workareaSizeUIScale().w / 2);
 
-  int h = +font->height() + border().height();
+  int h = font->lineHeight() + border().height();
 
   ev.setSizeHint(w, h);
 }

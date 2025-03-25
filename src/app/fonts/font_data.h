@@ -31,6 +31,9 @@ public:
     m_fallbackSize = fallbackSize;
   }
 
+  // Descent font metrics for sprite sheet fonts
+  void setDescent(float descent) { m_descent = descent; }
+
   text::FontRef getFont(text::FontMgrRef& fontMgr, float size);
 
   const std::string& filename() const { return m_filename; }
@@ -43,6 +46,7 @@ private:
   std::map<float, text::FontRef> m_antialiasFonts;
   FontData* m_fallback;
   float m_fallbackSize;
+  float m_descent = 0.0f;
 
   DISABLE_COPYING(FontData);
 };

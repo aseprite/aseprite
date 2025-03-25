@@ -13,8 +13,8 @@
 
 #include "text/font.h"
 #include "text/font_mgr.h"
+#include "text/sprite_sheet_font.h"
 #include "ui/manager.h"
-#include "ui/scale.h"
 
 #include <set>
 
@@ -49,6 +49,9 @@ text::FontRef FontData::getFont(text::FontMgrRef& fontMgr, float size)
   switch (m_type) {
     case text::FontType::SpriteSheet:
       font = fontMgr->loadSpriteSheetFont(m_filename.c_str(), size);
+      if (font && m_descent != 0.0f) {
+        static_cast<text::SpriteSheetFont*>(font.get())->setDescent(m_descent);
+      }
       break;
     case text::FontType::FreeType: {
       font = fontMgr->loadTrueTypeFont(m_filename.c_str(), size);

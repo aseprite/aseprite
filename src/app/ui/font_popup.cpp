@@ -57,7 +57,18 @@ namespace app {
 
 using namespace ui;
 
-static std::map<std::string, os::SurfaceRef> g_thumbnails;
+namespace {
+
+struct ThumbnailInfo {
+  os::SurfaceRef surface;
+  float baseline = 0.0f;
+  float descent = 0.0f;
+  float ascent = 0.0f;
+};
+
+static std::map<std::string, ThumbnailInfo> g_thumbnails;
+
+} // namespace
 
 class FontItem : public ListItem {
 public:
@@ -109,52 +120,96 @@ public:
   obs::signal<void()> ThumbnailGenerated;
 
 private:
-  void getCachedThumbnail() { m_thumbnail = g_thumbnails[m_fontInfo.thumbnailId()]; }
+  void getCachedThumbnail()
+  {
+    auto it = g_thumbnails.find(m_fontInfo.thumbnailId());
+    if (it == g_thumbnails.end())
+      return;
+    m_thumbnail = it->second;
+  }
+
+  float onGetTextBaseline() const override
+  {
+    text::FontMetrics metrics;
+    font()->metrics(&metrics);
+    const float descent = std::max<float>(metrics.descent, m_thumbnail.descent);
+    return bounds().h - descent;
+  }
 
   void onPaint(PaintEvent& ev) override
   {
     ListItem::onPaint(ev);
 
     generateThumbnail();
+    if (!m_thumbnail.surface)
+      return;
 
-    if (m_thumbnail) {
-      const auto* theme = app::skin::SkinTheme::get(this);
-      Graphics* g = ev.graphics();
-      g->drawColoredRgbaSurface(m_thumbnail.get(), theme->colors.text(), textWidth() + 4, 0);
-    }
+    Graphics* g = ev.graphics();
+    const auto* theme = app::skin::SkinTheme::get(this);
+    const float y = textBaseline() - m_thumbnail.baseline;
+
+    g->drawColoredRgbaSurface(m_thumbnail.surface.get(),
+                              theme->colors.text(),
+                              textWidth() + 4 * guiscale(),
+                              y);
   }
 
   void onSizeHint(SizeHintEvent& ev) override
   {
     ListItem::onSizeHint(ev);
-    if (m_thumbnail) {
-      gfx::Size sz = ev.sizeHint();
-      ev.setSizeHint(sz.w + 4 + m_thumbnail->width(), std::max(sz.h, m_thumbnail->height()));
-    }
+    if (!m_thumbnail.surface)
+      return;
+
+    text::FontMetrics metrics;
+    font()->metrics(&metrics);
+    const float lineHeight = std::max<float>(metrics.descent, m_thumbnail.descent) -
+                             std::min<float>(metrics.ascent, m_thumbnail.ascent);
+
+    gfx::Size sz = ev.sizeHint();
+    ev.setSizeHint(sz.w + 4 * guiscale() + m_thumbnail.surface->width(),
+                   std::max<float>(sz.h, lineHeight));
   }
 
   void generateThumbnail()
   {
-    if (m_thumbnail)
+    if (m_thumbnail.surface)
       return;
 
     const auto* theme = app::skin::SkinTheme::get(this);
-
     try {
+      Fonts* fonts = Fonts::instance();
       const FontInfo fontInfoDefSize(m_fontInfo,
                                      FontInfo::kDefaultSize,
                                      text::FontStyle(),
                                      FontInfo::Flags::Antialias);
+      const text::FontRef font = fonts->fontFromInfo(fontInfoDefSize);
+      if (!font)
+        return;
 
-      doc::ImageRef image = render_text(fontInfoDefSize, text(), gfx::rgba(0, 0, 0));
+      if (font->type() != text::FontType::SpriteSheet)
+        font->setSize(12.0f);
+
+      text::TextBlobRef blob = text::TextBlob::MakeWithShaper(fonts->fontMgr(), font, text());
+      if (!blob)
+        return;
+
+      doc::ImageRef image = render_text_blob(blob, gfx::rgba(0, 0, 0));
       if (!image)
         return;
 
+      // This font metrics
+      text::FontMetrics metrics;
+      font->metrics(&metrics);
+      m_thumbnail.baseline = blob->baseline();
+      m_thumbnail.descent = metrics.descent;
+      m_thumbnail.ascent = metrics.ascent;
+
       // Convert the doc::Image into a os::Surface
-      m_thumbnail = os::System::instance()->makeRgbaSurface(image->width(), image->height());
+      m_thumbnail.surface = os::System::instance()->makeRgbaSurface(image->width(),
+                                                                    image->height());
       convert_image_to_surface(image.get(),
                                nullptr,
-                               m_thumbnail.get(),
+                               m_thumbnail.surface.get(),
                                0,
                                0,
                                0,
@@ -174,7 +229,7 @@ private:
 
   void onSelect(bool selected) override
   {
-    if (!selected || m_thumbnail)
+    if (!selected || m_thumbnail.surface)
       return;
 
     ListBox* listbox = static_cast<ListBox*>(parent());
@@ -186,7 +241,7 @@ private:
   }
 
 private:
-  os::SurfaceRef m_thumbnail;
+  ThumbnailInfo m_thumbnail;
   FontInfo m_fontInfo;
   text::FontStyleSetRef m_set;
 };

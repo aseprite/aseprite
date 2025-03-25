@@ -64,8 +64,8 @@ void SelectTextBoxState::onQuickboxEnd(Editor* editor, const gfx::Rect& rect0, u
   if (rect.w <= 3 || rect.h <= 3) {
     FontInfo fontInfo = App::instance()->contextBar()->fontInfo();
     if (auto font = Fonts::instance()->fontFromInfo(fontInfo)) {
-      rect.w = std::min(4 * font->height(), editor->sprite()->width());
-      rect.h = font->height();
+      rect.w = std::min<float>(4 * std::ceil(font->size()), editor->sprite()->width());
+      rect.h = std::ceil(font->size());
     }
   }
 

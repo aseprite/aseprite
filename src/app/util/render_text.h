@@ -11,7 +11,6 @@
 
 #include "doc/image_ref.h"
 #include "gfx/color.h"
-#include "text/font_mgr.h"
 #include "text/text_blob.h"
 
 #include <string>
@@ -23,8 +22,6 @@ class FontInfo;
 namespace skin {
 class SkinTheme;
 }
-
-text::TextBlobRef create_text_blob(const FontInfo& fontInfo, const std::string& text);
 
 // Returns the exact bounds that are required to draw this TextBlob,
 // i.e. the image size that will be required in render_text_blob().

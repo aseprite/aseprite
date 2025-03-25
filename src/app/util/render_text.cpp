@@ -49,12 +49,8 @@ public:
   {
     ASSERT(info.font);
     if (info.clusters && info.glyphCount > 0) {
-      const float height = info.font->metrics(nullptr);
-
-      for (int i = 0; i < info.glyphCount; ++i) {
-        auto rc = info.getGlyphBounds(i);
-        m_bounds |= gfx::RectF(rc.x, 0, rc.w, height);
-      }
+      for (int i = 0; i < info.glyphCount; ++i)
+        m_bounds |= info.getGlyphBounds(i);
     }
   }
 
@@ -64,20 +60,6 @@ private:
 
 } // anonymous namespace
 
-text::TextBlobRef create_text_blob(const FontInfo& fontInfo, const std::string& text)
-{
-  Fonts* fonts = Fonts::instance();
-  ASSERT(fonts);
-  if (!fonts)
-    return nullptr;
-
-  const text::FontRef font = fonts->fontFromInfo(fontInfo);
-  if (!font)
-    return nullptr;
-
-  return text::TextBlob::MakeWithShaper(fonts->fontMgr(), font, text);
-}
-
 gfx::Size get_text_blob_required_size(const text::TextBlobRef& blob)
 {
   ASSERT(blob != nullptr);
@@ -86,7 +68,6 @@ gfx::Size get_text_blob_required_size(const text::TextBlobRef& blob)
   blob->visitRuns([&bounds](text::TextBlob::RunInfo& run) {
     for (int i = 0; i < run.glyphCount; ++i) {
       bounds |= run.getGlyphBounds(i);
-      bounds |= gfx::RectF(0, 0, 1, run.font->metrics(nullptr));
     }
   });
   if (bounds.w < 1)

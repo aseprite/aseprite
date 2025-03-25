@@ -60,6 +60,7 @@
 #include "os/surface.h"
 #include "os/system.h"
 #include "text/font.h"
+#include "text/font_metrics.h"
 #include "ui/ui.h"
 #include "view/layers.h"
 #include "view/timeline_adapter.h"
@@ -2164,6 +2165,11 @@ void Timeline::drawPart(ui::Graphics* g,
                     (is_clicked ? ui::Style::Layer::kSelected : 0) |
                     (is_disabled ? ui::Style::Layer::kDisabled : 0);
 
+  text::FontMetrics metrics;
+  font()->metrics(&metrics);
+  info.baseline = guiscaled_center(bounds.y, bounds.h, metrics.descent - metrics.ascent) -
+                  metrics.ascent;
+
   theme()->paintWidgetPart(g, style, bounds, info);
 }
 
@@ -2663,9 +2669,11 @@ void Timeline::drawTags(ui::Graphics* g)
   SkinTheme* theme = skinTheme();
   auto& styles = theme->styles;
 
-  g->fillRect(
-    theme->colors.workspace(),
-    gfx::Rect(0, font()->height(), clientBounds().w, theme->dimensions.timelineTagsAreaHeight()));
+  g->fillRect(theme->colors.workspace(),
+              gfx::Rect(0,
+                        font()->lineHeight(),
+                        clientBounds().w,
+                        theme->dimensions.timelineTagsAreaHeight()));
 
   // Draw active frame tag band
   if (m_hot.band >= 0 && m_tagBands > 1 && m_tagFocusBand < 0) {
@@ -3107,11 +3115,11 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
         gfx::Rect bounds = bounds1.createUnion(bounds2);
         bounds.y -= skinTheme()->dimensions.timelineTagsAreaHeight();
 
-        int textHeight = font()->height();
+        int textHeight = font()->lineHeight();
         bounds.y -= textHeight + 2 * ui::guiscale();
         bounds.x += 3 * ui::guiscale();
         bounds.w = font()->textLength(tag->name().c_str()) + 4 * ui::guiscale();
-        bounds.h = font()->height() + 2 * ui::guiscale();
+        bounds.h = font()->lineHeight() + 2 * ui::guiscale();
 
         if (m_tagFocusBand < 0) {
           auto it = m_tagBand.find(tag);
@@ -4311,7 +4319,8 @@ int Timeline::outlineWidth() const
 
 int Timeline::oneTagHeight() const
 {
-  return font()->height() + 2 * ui::guiscale() + skinTheme()->dimensions.timelineTagsAreaHeight();
+  return font()->lineHeight() + 2 * ui::guiscale() +
+         skinTheme()->dimensions.timelineTagsAreaHeight();
 }
 
 double Timeline::zoom() const

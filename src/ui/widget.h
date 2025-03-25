@@ -288,6 +288,10 @@ public:
                        int icon_w = 0,
                        int icon_h = 0);
 
+  // Y-axis location where the text baseline should be located in the
+  // middle of the widget.
+  float textBaseline() const;
+
   // ===============================================================
   // REFRESH ISSUES
   // ===============================================================
@@ -435,6 +439,7 @@ protected:
   virtual double onGetTextDouble() const;
   virtual text::TextBlobRef onMakeTextBlob() const;
   virtual text::ShaperFeatures onGetTextShaperFeatures() const;
+  virtual float onGetTextBaseline() const;
 
   virtual void onDragEnter(DragEvent& e);
   virtual void onDragLeave(DragEvent& e);

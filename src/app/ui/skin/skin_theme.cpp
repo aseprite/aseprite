@@ -39,12 +39,14 @@
 #include "os/system.h"
 #include "text/draw_text.h"
 #include "text/font.h"
+#include "text/font_metrics.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
 #include "tinyxml2.h"
 
 #include <algorithm>
+#include <cstdlib>
 #include <cstring>
 #include <memory>
 
@@ -192,6 +194,8 @@ static FontData* load_font(const XMLElement* xmlFont, const std::string& xmlFile
     if (fileStr) {
       font = std::make_unique<FontData>(text::FontType::SpriteSheet);
       font->setFilename(base::join_path(xmlDir, fileStr));
+      if (const char* descent = xmlFont->Attribute("descent"))
+        font->setDescent(std::strtof(descent, nullptr));
     }
   }
   else if (type == "truetype") {
@@ -1327,12 +1331,15 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
 
     IntersectClip clip(g, bounds);
     if (clip) {
-      // TODO use a string_view()
-      g->drawText(std::string(pos, textString.end()),
-                  colors.text(),
-                  ColorNone,
-                  bounds.origin(),
-                  &delegate);
+      text::FontMetrics metrics;
+      widget->font()->metrics(&metrics);
+      const float baselineShift = -metrics.ascent - widget->textBlob()->baseline();
+
+      g->drawTextWithDelegate(std::string(pos, textString.end()), // TODO use a string_view()
+                              colors.text(),
+                              ColorNone,
+                              gfx::Point(bounds.x, bounds.y + baselineShift),
+                              &delegate);
     }
   }
 

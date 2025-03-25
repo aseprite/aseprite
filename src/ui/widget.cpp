@@ -6,6 +6,7 @@
 // Read LICENSE.txt for more information.
 
 // #define REPORT_SIGNALS
+// #define PAINT_BASELINE 1
 
 #ifdef HAVE_CONFIG_H
   #include "config.h"
@@ -21,6 +22,7 @@
 #include "os/system.h"
 #include "os/window.h"
 #include "text/font.h"
+#include "text/font_metrics.h"
 #include "text/font_mgr.h"
 #include "ui/app_state.h"
 #include "ui/drag_event.h"
@@ -39,6 +41,11 @@
 #include "ui/theme.h"
 #include "ui/view.h"
 #include "ui/window.h"
+
+#if LAF_SKIA && PAINT_BASELINE
+  #include "include/core/SkPathEffect.h"
+  #include "include/effects/SkDashPathEffect.h"
+#endif
 
 #include <algorithm>
 #include <cctype>
@@ -958,8 +965,9 @@ int Widget::textWidth() const
 
 int Widget::textHeight() const
 {
-  auto blob = textBlob();
-  return std::max<int>(font()->height(), (blob ? std::ceil(blob->bounds().h) : 0));
+  text::FontMetrics metrics;
+  font()->metrics(&metrics);
+  return metrics.descent - metrics.ascent;
 }
 
 void Widget::getTextIconInfo(gfx::Rect* box,
@@ -1067,6 +1075,11 @@ void Widget::getTextIconInfo(gfx::Rect* box,
   SETRECT(box);
   SETRECT(text);
   SETRECT(icon);
+}
+
+float Widget::textBaseline() const
+{
+  return onGetTextBaseline();
 }
 
 void Widget::setMinSize(const gfx::Size& sz)
@@ -1259,6 +1272,22 @@ bool Widget::paintEvent(Graphics* graphics, const bool isBg)
   PaintEvent ev(this, graphics);
   ev.setTransparentBg(isBg);
   onPaint(ev); // Fire onPaint event
+
+#if LAF_SKIA && PAINT_BASELINE
+  if (hasText()) {
+    // Paint baseline
+    float baseline = textBaseline();
+    Paint paint;
+    paint.color(gfx::rgba(0, 0, 0, 128));
+    paint.blendMode(os::BlendMode::SrcOver);
+    const SkScalar intervals[] = { 2.0f, 2.0f };
+    paint.skPaint().setPathEffect(SkDashPathEffect::Make(intervals, 2, 0.0f));
+    graphics->drawLine(gfx::PointF(clientBounds().x, baseline),
+                       gfx::PointF(clientBounds().x2(), baseline),
+                       paint);
+  }
+#endif
+
   return ev.isPainted();
 }
 
@@ -1801,6 +1830,18 @@ text::TextBlobRef Widget::onMakeTextBlob() const
 text::ShaperFeatures Widget::onGetTextShaperFeatures() const
 {
   return text::ShaperFeatures();
+}
+
+float Widget::onGetTextBaseline() const
+{
+  text::FontMetrics metrics;
+  font()->metrics(&metrics);
+  // Here we only use the descent+ascent to measure the text height,
+  // without the metrics.leading part (which is the used to separate
+  // text lines in a paragraph, but here'd make widgets too big)
+  const float textHeight = metrics.descent - metrics.ascent;
+  const gfx::Rect rc = clientChildrenBounds();
+  return guiscaled_center(rc.y, rc.h, textHeight) - metrics.ascent;
 }
 
 void Widget::onDragEnter(DragEvent& e)

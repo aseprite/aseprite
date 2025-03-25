@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -187,6 +187,7 @@ protected:
   void onPaint(ui::PaintEvent& ev) override;
   void onResize(ui::ResizeEvent& ev) override;
   void onSizeHint(ui::SizeHintEvent& ev) override;
+  float onGetTextBaseline() const override;
   void onAnimationFrame() override;
   void onAnimationStop(int animation) override;
 

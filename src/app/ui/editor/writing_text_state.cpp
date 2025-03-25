@@ -31,6 +31,7 @@
 #include "render/dithering.h"
 #include "render/quantization.h"
 #include "render/render.h"
+#include "text/font_metrics.h"
 #include "ui/entry.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
@@ -131,6 +132,13 @@ private:
       }
     }
     return Entry::onProcessMessage(msg);
+  }
+
+  float onGetTextBaseline() const override
+  {
+    text::FontMetrics metrics;
+    font()->metrics(&metrics);
+    return scale().y * -metrics.ascent;
   }
 
   void onInitTheme(InitThemeEvent& ev) override

@@ -11,11 +11,13 @@
 
 #include "ui/theme.h"
 
+#include "base/utf8_decode.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "text/font.h"
+#include "text/font_metrics.h"
 #include "ui/intern.h"
 #include "ui/manager.h"
 #include "ui/paint_event.h"
@@ -99,12 +101,6 @@ getDrawSurfaceFunction(Graphics* g, os::Surface* sheet, gfx::Color color)
 
 PaintWidgetPartInfo::PaintWidgetPartInfo()
 {
-  bgColor = gfx::ColorNone;
-  styleFlags = 0;
-  text = nullptr;
-  textBlob = nullptr;
-  mnemonic = 0;
-  icon = nullptr;
 }
 
 PaintWidgetPartInfo::PaintWidgetPartInfo(const Widget* widget)
@@ -113,6 +109,7 @@ PaintWidgetPartInfo::PaintWidgetPartInfo(const Widget* widget)
   styleFlags = PaintWidgetPartInfo::getStyleFlagsForWidget(widget);
   text = &widget->text();
   textBlob = widget->textBlob();
+  baseline = widget->textBaseline();
   mnemonic = widget->mnemonic();
   icon = nullptr;
   if (const Style::Layer::IconSurfaceProvider* iconProvider =
@@ -261,6 +258,7 @@ void Theme::paintWidgetPart(Graphics* g,
                               layer,
                               (info.text ? *info.text : std::string()),
                               info.textBlob,
+                              info.baseline,
                               info.mnemonic,
                               info.icon,
                               rc,
@@ -376,7 +374,8 @@ void Theme::paintLayer(Graphics* g,
                        const Style* style,
                        const Style::Layer& layer,
                        const std::string& text,
-                       const text::TextBlobRef& textBlob,
+                       text::TextBlobRef textBlob,
+                       const float baseline,
                        const int mnemonic,
                        os::Surface* providedIcon,
                        gfx::Rect& rc,
@@ -506,42 +505,40 @@ void Theme::paintLayer(Graphics* g,
           g->drawAlignedUIText(text, layer.color(), bgColor, textBounds, layer.align());
         }
         else {
-          const gfx::Size textSize = g->measureText(text);
+          if (!textBlob || style->font() != nullptr)
+            textBlob = text::TextBlob::MakeWithShaper(m_fontMgr, g->font(), text);
+
+          const gfx::RectF blobSize = textBlob->bounds();
           const gfx::Border padding = style->padding();
-          gfx::Point pt;
+          gfx::PointF pt;
 
           if (layer.align() & LEFT)
             pt.x = rc.x + padding.left();
           else if (layer.align() & RIGHT)
-            pt.x = rc.x + rc.w - textSize.w - padding.right();
-          else {
-            pt.x = guiscaled_center(rc.x + padding.left(), rc.w - padding.width(), textSize.w);
-          }
+            pt.x = rc.x + rc.w - blobSize.w - padding.right();
+          else
+            pt.x = guiscaled_center(rc.x + padding.left(), rc.w - padding.width(), blobSize.w);
 
           if (layer.align() & TOP)
             pt.y = rc.y + padding.top();
           else if (layer.align() & BOTTOM)
-            pt.y = rc.y + rc.h - textSize.h - padding.bottom();
-          else {
-            pt.y = guiscaled_center(rc.y + padding.top(), rc.h - padding.height(), textSize.h);
-          }
+            pt.y = rc.y + rc.h - blobSize.h - padding.bottom();
+          else
+            pt.y = baseline - textBlob->baseline();
 
           pt += layer.offset();
 
-          // Fast path with TextBlobs
-          if ((textBlob) && (!style->mnemonics() || mnemonic == 0) && (style->font() == nullptr)) {
-            Paint paint;
-            if (gfx::geta(bgColor) > 0) { // Paint background
-              paint.color(bgColor);
-              paint.style(os::Paint::Fill);
-              g->drawRect(gfx::RectF(textBlob->bounds()).offset(pt), paint);
-            }
-            paint.color(layer.color());
-            g->drawTextBlob(textBlob, gfx::PointF(pt), paint);
+          Paint paint;
+          if (gfx::geta(bgColor) > 0) { // Paint background
+            paint.color(bgColor);
+            paint.style(os::Paint::Fill);
+            g->drawRect(gfx::RectF(textBlob->bounds()).offset(pt), paint);
           }
-          else {
-            g->drawUIText(text, layer.color(), bgColor, pt, style->mnemonics() ? mnemonic : 0);
-          }
+          paint.color(layer.color());
+          g->drawTextBlob(textBlob, gfx::PointF(pt), paint);
+
+          if (style->mnemonics() && mnemonic != 0)
+            drawMnemonicUnderline(g, text, textBlob, pt, mnemonic, paint);
         }
 
         if (style->font())
@@ -648,12 +645,14 @@ void Theme::measureLayer(const Widget* widget,
         const text::FontRef& styleFont = style->font();
         gfx::Size textSize;
         if (styleFont && styleFont != widget->font()) {
-          textSize = gfx::Size(styleFont->textLength(widget->text()), styleFont->height());
+          textSize = gfx::Size(styleFont->textLength(widget->text()), styleFont->lineHeight());
         }
         else {
           // We can use Widget::textSize() because we're going to use
-          // the widget font and, probably, the cached TextBlob.
-          textSize = widget->textSize();
+          // the widget font and, probably, the cached TextBlob width.
+          text::FontMetrics metrics;
+          widget->font()->metrics(&metrics);
+          textSize = gfx::Size(widget->textSize().w, metrics.descent - metrics.ascent);
         }
 
         textHint.offset(layer.offset());
@@ -1012,6 +1011,63 @@ void Theme::drawTextBox(Graphics* g,
     *w += widget->border().width();
   if (h)
     *h += widget->border().height();
+}
+
+// static
+void Theme::drawMnemonicUnderline(Graphics* g,
+                                  const std::string& text,
+                                  text::TextBlobRef textBlob,
+                                  const gfx::PointF& pt,
+                                  const int mnemonic,
+                                  const Paint& paint)
+{
+  base::utf8_decode decode(text);
+  int pos = decode.pos() - text.begin();
+  int mnemonicUtf8Pos = -1;
+  while (int chr = decode.next()) {
+    if (std::tolower(chr) == std::tolower(mnemonic)) {
+      mnemonicUtf8Pos = pos;
+      break;
+    }
+    pos = decode.pos() - text.begin();
+  }
+
+  if (mnemonicUtf8Pos >= 0) {
+    decode = base::utf8_decode(text);
+    decode.next(); // Go to first char
+    size_t glyphUtf8Begin = 0;
+
+    textBlob->visitRuns([g, mnemonicUtf8Pos, pt, &paint, &decode, &glyphUtf8Begin, &text](
+                          text::TextBlob::RunInfo& info) {
+      for (int i = 0; i < info.glyphCount; ++i, decode.next()) {
+        // TODO This doesn't work because the TextBlob::RunInfo::clusters is nullptr at this
+        //      point, it's only valid when the RunHandler::commitRunBuffer()
+        if (info.clusters)
+          glyphUtf8Begin = info.getGlyphUtf8Range(i).begin;
+
+        if (mnemonicUtf8Pos == glyphUtf8Begin) {
+          text::FontMetrics metrics;
+          info.font->metrics(&metrics);
+
+          gfx::RectF mnemonicBounds = info.getGlyphBounds(i);
+          float thickness = metrics.underlineThickness * guiscale();
+          if (thickness < 1.0f)
+            thickness = 1.0f;
+
+          mnemonicBounds = gfx::RectF(
+            pt.x + mnemonicBounds.x,
+            pt.y - metrics.ascent + metrics.underlinePosition * guiscale(),
+            mnemonicBounds.w,
+            thickness);
+
+          g->drawRect(mnemonicBounds, paint);
+          break;
+        }
+
+        glyphUtf8Begin = decode.pos() - text.begin();
+      }
+    });
+  }
 }
 
 } // namespace ui

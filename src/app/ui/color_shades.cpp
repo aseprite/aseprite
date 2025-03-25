@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -287,6 +287,7 @@ void ColorShades::onPaint(ui::PaintEvent& ev)
     ui::PaintWidgetPartInfo info;
     const std::string& text = this->text();
     info.text = &text;
+    info.baseline = textBaseline();
     theme->paintWidgetPart(g, theme->styles.shadeEmpty(), bounds, info);
   }
 }

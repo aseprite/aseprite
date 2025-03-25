@@ -50,7 +50,7 @@ FontData* Fonts::fontDataByName(const std::string& name)
   return it->second.get();
 }
 
-text::FontRef Fonts::fontByName(const std::string& name, int size)
+text::FontRef Fonts::fontByName(const std::string& name, const float size)
 {
   auto it = m_fonts.find(name);
   if (it == m_fonts.end())
@@ -91,10 +91,10 @@ text::FontRef Fonts::fontFromInfo(const FontInfo& fontInfo)
 FontInfo Fonts::infoFromFont(const text::FontRef& font)
 {
   for (const auto& kv : m_fonts) {
-    if (kv.second->getFont(m_fontMgr, font->height()) == font) {
+    if (kv.second->getFont(m_fontMgr, font->size()) == font) {
       return FontInfo(FontInfo::Type::Name,
                       kv.first,
-                      font->height(),
+                      font->size(),
                       text::FontStyle(),
                       font->antialias() ? FontInfo::Flags::Antialias : FontInfo::Flags::None);
     }

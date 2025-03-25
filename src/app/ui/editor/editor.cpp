@@ -1239,9 +1239,9 @@ void Editor::drawTileNumbers(ui::Graphics* g, const Cel* cel)
   const text::FontRef& font = g->font();
   const doc::Grid grid = getSite().grid();
   const gfx::Size tileSize = editorToScreen(grid.tileToCanvas(gfx::Rect(0, 0, 1, 1))).size();
-  const int th = font->height();
+  const int th = font->lineHeight();
   if (tileSize.h > th) {
-    const gfx::Point offset = gfx::Point(tileSize.w / 2, tileSize.h / 2 - font->height() / 2) +
+    const gfx::Point offset = gfx::Point(tileSize.w / 2, tileSize.h / 2 - font->size() / 2) +
                               mainTilePosition();
 
     int ti_offset = static_cast<LayerTilemap*>(cel->layer())->tileset()->baseIndex() - 1;

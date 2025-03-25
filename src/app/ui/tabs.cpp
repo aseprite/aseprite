@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -19,6 +19,7 @@
 #include "os/surface.h"
 #include "os/system.h"
 #include "text/font.h"
+#include "text/font_metrics.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -472,6 +473,9 @@ void Tabs::onInitTheme(ui::InitThemeEvent& ev)
     setStyle(theme->styles.mainTabs());
   }
 
+  // TODO hardcoded 1.5f scalar
+  m_tabsHeight = std::max<float>(m_tabsHeight, 1.5f * textHeight());
+
   for (TabPtr& tab : m_list) {
     tab->textBlob = nullptr;
   }
@@ -555,6 +559,15 @@ void Tabs::onSizeHint(SizeHintEvent& ev)
   ev.setSizeHint(gfx::Size(0, m_tabsHeight));
 }
 
+float Tabs::onGetTextBaseline() const
+{
+  gfx::Rect box(0, 0, 1, m_tabsHeight - m_tabsBottomHeight);
+  text::FontMetrics metrics;
+  font()->metrics(&metrics);
+  const float textHeight = metrics.descent - metrics.ascent;
+  return guiscaled_center(box.y, box.h, textHeight) - metrics.ascent;
+}
+
 void Tabs::selectTabInternal(TabPtr& tab)
 {
   if (m_selected != tab) {
@@ -588,6 +601,7 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box, Tab* tab, int dy, bool ho
   PaintWidgetPartInfo info;
   info.styleFlags = (selected ? ui::Style::Layer::kFocus : 0) |
                     (hover ? ui::Style::Layer::kMouse : 0);
+  info.baseline = textBaseline();
   theme->paintWidgetPart(g, theme->styles.tab(), gfx::Rect(box.x, box.y + dy, box.w, box.h), info);
 
   gfx::Color tabColor = tab->color;
