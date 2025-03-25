@@ -90,7 +90,7 @@ void DuplicateSliceCommand::onExecute(Context* context)
   doc->notifyBeforeSlicesDuplication();
   for (auto* s : selectedSlices) {
     Slice* slice = new Slice(*s);
-    slice->setName(get_unique_slice_name(sprite, s->name()));
+    slice->setName(slice->name() + " Copy");
     // Offset a bit the duplicated slice to avoid overlapping
     offset(slice, 2, 2);
 
