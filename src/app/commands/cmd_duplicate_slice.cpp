@@ -24,6 +24,17 @@
 
 namespace app {
 
+// Moves the given slice by the dx and dy values
+void offset(Slice* slice, int dx, int dy)
+{
+  for (auto it = slice->begin(); it != slice->end(); ++it) {
+    auto* sk = (*it).value();
+    gfx::Rect bounds = sk->bounds();
+    bounds.offset(gfx::Point{ dx, dy });
+    sk->setBounds(bounds);
+  }
+}
+
 class DuplicateSliceCommand : public Command {
 public:
   DuplicateSliceCommand();
@@ -80,6 +91,9 @@ void DuplicateSliceCommand::onExecute(Context* context)
   for (auto* s : selectedSlices) {
     Slice* slice = new Slice(*s);
     slice->setName(get_unique_slice_name(sprite, s->name()));
+    // Offset a bit the duplicated slice to avoid overlapping
+    offset(slice, 2, 2);
+
     tx(new cmd::AddSlice(sprite, slice));
     doc->notifySliceDuplicated(slice);
   }
