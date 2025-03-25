@@ -98,7 +98,7 @@ bool PalettePopup::onProcessMessage(ui::Message* msg)
 
 void PalettePopup::onPalChange(const doc::Palette* palette)
 {
-  const bool state = (UIContext::instance()->activeDocument() && palette != nullptr);
+  const bool state = ((UIContext::instance()->activeDocument() != nullptr) && palette != nullptr);
 
   m_popup->loadPal()->setEnabled(state);
   m_popup->openFolder()->setEnabled(state);
@@ -106,10 +106,10 @@ void PalettePopup::onPalChange(const doc::Palette* palette)
 
 void PalettePopup::onSearchChange()
 {
-  MatchWords match(m_popup->search()->text());
+  const MatchWords match(m_popup->search()->text());
   bool selected = false;
 
-  for (auto child : m_paletteListBox.children()) {
+  for (auto* child : m_paletteListBox.children()) {
     if (dynamic_cast<ResourceListItem*>(child)) {
       const bool vis = match(child->text());
       child->setVisible(vis);
@@ -139,8 +139,7 @@ void PalettePopup::onLoadPal()
   if (!palette)
     return;
 
-  SetPaletteCommand* cmd = static_cast<SetPaletteCommand*>(
-    Commands::instance()->byId(CommandId::SetPalette()));
+  auto* cmd = static_cast<SetPaletteCommand*>(Commands::instance()->byId(CommandId::SetPalette()));
   cmd->setPalette(palette);
   UIContext::instance()->executeCommandFromMenuOrShortcut(cmd);
 
@@ -150,7 +149,7 @@ void PalettePopup::onLoadPal()
 
 void PalettePopup::onOpenFolder()
 {
-  Resource* res = m_paletteListBox.selectedResource();
+  const Resource* res = m_paletteListBox.selectedResource();
   if (!res)
     return;
 
