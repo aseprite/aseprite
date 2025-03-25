@@ -827,7 +827,7 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
       editor->clearSlicesSelection();
       for (auto& s : slices) {
         Slice* slice = new Slice(s);
-        slice->setName(get_unique_slice_name(dstSpr, s.name()));
+        slice->setName(slice->name() + " Copy");
         tx(new cmd::AddSlice(dstSpr, slice));
         editor->selectSlice(slice);
       }
