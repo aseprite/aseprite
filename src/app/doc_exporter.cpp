@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -43,6 +43,7 @@
 #include "gfx/size.h"
 #include "render/dithering.h"
 #include "render/ordered_dither.h"
+#include "render/quantization.h"
 #include "render/render.h"
 #include "ver/info.h"
 
@@ -174,6 +175,7 @@ public:
   {
     return (m_selLayers && m_selLayers->size() == 1 ? *m_selLayers->begin() : nullptr);
   }
+  ImageRef& image() { return m_image; }
   const Tag* tag() const { return m_tag; }
   SelectedLayers* selectedLayers() const { return m_selLayers; }
   frame_t frame() const { return m_frame; }
@@ -1228,15 +1230,41 @@ Doc* DocExporter::createEmptyTexture(const Samples& samples, base::task_token& t
   return document.release();
 }
 
+void DocExporter::convertImageSample(app::DocExporter::Sample* sample,
+                                     doc::PixelFormat newPixelFormat) const
+{
+  Image* image = sample->image().get();
+  if (image && image->pixelFormat() == newPixelFormat)
+    return;
+  Sprite* sprite = sample->sprite();
+  if (image) {
+    ImageSpec spec(ColorMode(newPixelFormat), image->width(), image->height(), image->maskColor());
+    ImageRef convertedImg(Image::create(spec));
+    clear_image(convertedImg.get(), 0);
+    render::Dithering dithering;
+    render::convert_pixel_format(image,
+                                 convertedImg.get(),
+                                 newPixelFormat,
+                                 dithering,
+                                 sprite ? sprite->rgbMap(0) : nullptr,
+                                 sprite ? sprite->palette(0) : nullptr,
+                                 sprite ? sprite->backgroundLayer() : nullptr,
+                                 0,
+                                 0,
+                                 nullptr);
+    std::swap(convertedImg, sample->image());
+  }
+}
+
 void DocExporter::renderTexture(Context* ctx,
-                                const Samples& samples,
+                                Samples& samples,
                                 Image* textureImage,
                                 base::task_token& token) const
 {
   textureImage->clear(textureImage->maskColor());
 
   int i = 0;
-  for (const auto& sample : samples) {
+  for (auto& sample : samples) {
     if (token.canceled())
       return;
     token.set_progress(0.6f + 0.2f * i / int(samples.size()));
@@ -1246,8 +1274,12 @@ void DocExporter::renderTexture(Context* ctx,
       continue;
     }
 
+    if (fromTilesets())
+      convertImageSample(&sample, textureImage->pixelFormat());
     // Make the sprite compatible with the texture so the render()
     // works correctly.
+    // TODO: It was observed that the following "if" and what is inside
+    // it was unnecessary in all "Export Sprite Sheet" tests since the sample image
     if (sample.sprite()->pixelFormat() != textureImage->pixelFormat()) {
       RgbMapAlgorithm rgbmapAlgo = Preferences::instance().quantization.rgbmapAlgorithm();
       FitCriteria fc = Preferences::instance().quantization.fitCriteria();
