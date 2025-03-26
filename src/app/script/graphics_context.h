@@ -93,7 +93,8 @@ public:
   void strokeRect(const gfx::Rect& rc)
   {
     m_paint.style(os::Paint::Stroke);
-    m_surface->drawRect(rc, m_paint);
+    gfx::Rect tempRect(rc.x, rc.y, rc.w + 1, rc.h + 1);
+    m_surface->drawRect(tempRect, m_paint);
   }
 
   void fillRect(const gfx::Rect& rc)
