@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -53,6 +53,7 @@ public:
   SpriteSheetType spriteSheetType() { return m_sheetType; }
   const std::string& filenameFormat() const { return m_filenameFormat; }
   const std::string& tagnameFormat() const { return m_tagnameFormat; }
+  bool fromTilesets() const { return m_fromTilesets; };
 
   void setDataFormat(SpriteSheetDataFormat format) { m_dataFormat = format; }
   void setDataFilename(const std::string& filename) { m_dataFilename = filename; }
@@ -79,6 +80,7 @@ public:
   void setListLayers(bool value) { m_listLayers = value; }
   void setListLayerHierarchy(bool value) { m_listLayerHierarchy = value; }
   void setListSlices(bool value) { m_listSlices = value; }
+  void setFromTilesets(bool value) { m_fromTilesets = value; }
 
   void addImage(Doc* doc, const doc::ImageRef& image);
 
@@ -111,8 +113,9 @@ private:
   void layoutSamples(Samples& samples, base::task_token& token);
   gfx::Size calculateSheetSize(const Samples& samples, base::task_token& token) const;
   Doc* createEmptyTexture(const Samples& samples, base::task_token& token) const;
+  void convertImageSample(app::DocExporter::Sample* sample, doc::PixelFormat newPixelFormat) const;
   void renderTexture(Context* ctx,
-                     const Samples& samples,
+                     Samples& samples,
                      doc::Image* textureImage,
                      base::task_token& token) const;
   void trimTexture(const Samples& samples, doc::Sprite* texture) const;
@@ -172,6 +175,7 @@ private:
   bool m_listLayers;
   bool m_listLayerHierarchy;
   bool m_listSlices;
+  bool m_fromTilesets;
   Items m_documents;
 
   // Buffers used

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -273,6 +273,7 @@ Doc* generate_sprite_sheet_from_params(DocExporter& exporter,
   exporter.setSplitTags(splitTags);
   exporter.setIgnoreEmptyCels(ignoreEmpty);
   exporter.setMergeDuplicates(mergeDuplicates);
+  exporter.setFromTilesets(fromTilesets);
   if (listLayers)
     exporter.setListLayers(true);
   if (listTags)
