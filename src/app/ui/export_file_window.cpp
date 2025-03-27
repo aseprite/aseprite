@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -123,6 +123,12 @@ void ExportFileWindow::savePref()
 
 std::string ExportFileWindow::outputFilenameValue() const
 {
+  if (base::is_absolute_path(m_outputFilename)) {
+    // Although the output filename already contains an absolute path,
+    // calling get_absolute_path() normalizes it (removes any extra component)
+    // which is useful to hit the same recent filename/path.
+    return base::get_absolute_path(m_outputFilename);
+  }
   return base::get_absolute_path(base::join_path(m_outputPath, m_outputFilename));
 }
 
