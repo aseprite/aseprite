@@ -219,6 +219,8 @@ bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
     if (m_toolLoopManager->releaseButton(m_lastPointer))
       return true;
   }
+  if (m_toolLoop->isSelectionToolLoop())
+    m_toolLoop->clearSelectionToolMask(true);
 
   destroyLoop(editor);
 
@@ -403,6 +405,9 @@ void DrawingState::destroyLoopIfCanceled(Editor* editor)
 {
   // Cancel drawing loop
   if (m_toolLoopManager->isCanceled()) {
+    if (m_toolLoop->isSelectionToolLoop())
+      m_toolLoop->clearSelectionToolMask(true);
+
     destroyLoop(editor);
 
     // Change to standby state

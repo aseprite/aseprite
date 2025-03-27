@@ -426,6 +426,11 @@ public:
 
   const app::TiledModeHelper& getTiledModeHelper() override { return m_tiledModeHelper; }
 
+  // Used by selection tools
+  bool isSelectionToolLoop() const override { return false; }
+  void addSelectionToolPoint(const gfx::Rect& rc) override {};
+  void clearSelectionToolMask(const bool finalStep) override {};
+
 protected:
   void updateAllVisibleRegion()
   {
@@ -444,16 +449,12 @@ protected:
 };
 
 //////////////////////////////////////////////////////////////////////
-// For drawing
+// Common properties between drawing/selection ToolLoop impl
 
-class ToolLoopImpl final : public ToolLoopBase,
-                           public EditorObserver {
+class PaintToolLoopBase : public ToolLoopBase,
+                          public EditorObserver {
+protected:
   Context* m_context;
-  bool m_filled;
-  bool m_previewFilled;
-  int m_sprayWidth;
-  int m_spraySpeed;
-  bool m_useMask;
   Mask* m_mask;
   gfx::Point m_maskOrigin;
   bool m_internalCancel = false;
@@ -463,12 +464,12 @@ class ToolLoopImpl final : public ToolLoopBase,
   bool m_saveLastPoint;
 
 public:
-  ToolLoopImpl(Editor* editor,
-               Site& site,
-               const doc::Grid& grid,
-               Context* context,
-               ToolLoopParams& params,
-               const bool saveLastPoint)
+  PaintToolLoopBase(Editor* editor,
+                    Site& site,
+                    const doc::Grid& grid,
+                    Context* context,
+                    ToolLoopParams& params,
+                    const bool saveLastPoint)
     : ToolLoopBase(editor, site, grid, params)
     , m_context(context)
     , m_tx(Tx::DontLockDoc,
@@ -481,6 +482,22 @@ public:
               ModifyDocument))
     , m_floodfillSrcImage(nullptr)
     , m_saveLastPoint(saveLastPoint)
+  {
+  }
+
+  ~PaintToolLoopBase()
+  {
+    if (m_editor)
+      m_editor->remove_observer(this);
+
+    // getSrcImage() is a virtual member function but ToolLoopImpl is
+    // marked as final to avoid not calling a derived version from
+    // this destructor.
+    if (m_floodfillSrcImage != getSrcImage())
+      delete m_floodfillSrcImage;
+  }
+
+  void constructor_prologue()
   {
     if (m_pointShape->isFloodFill()) {
       if (m_tilesMode) {
@@ -503,55 +520,10 @@ public:
         m_floodfillSrcImage = render::rasterize_with_sprite_bounds(cel);
       }
     }
+  }
 
-    // 'isSelectionPreview = true' if the intention is to show a preview
-    // of Selection tools or Slice tool.
-    const bool isSelectionPreview = m_ink->isSelection() || m_ink->isSlice();
-    m_expandCelCanvas.reset(new ExpandCelCanvas(
-      site,
-      m_layer,
-      m_docPref.tiled.mode(),
-      m_tx,
-      ExpandCelCanvas::Flags(
-        ExpandCelCanvas::NeedsSource |
-        (m_layer->isTilemap() && (!m_tilesMode || isSelectionPreview) ?
-           ExpandCelCanvas::PixelsBounds :
-           ExpandCelCanvas::None) |
-        (m_layer->isTilemap() && site.tilemapMode() == TilemapMode::Pixels &&
-             site.tilesetMode() == TilesetMode::Manual && !isSelectionPreview ?
-           ExpandCelCanvas::TilesetPreview :
-           ExpandCelCanvas::None) |
-        (isSelectionPreview ? ExpandCelCanvas::SelectionPreview : ExpandCelCanvas::None))));
-
-    if (!m_floodfillSrcImage)
-      m_floodfillSrcImage = const_cast<Image*>(getSrcImage());
-
-    // Settings
-    switch (m_tool->getFill(m_button)) {
-      case tools::FillNone:     m_filled = false; break;
-      case tools::FillAlways:   m_filled = true; break;
-      case tools::FillOptional: m_filled = m_toolPref.filled(); break;
-    }
-
-    m_previewFilled = m_toolPref.filledPreview();
-    m_sprayWidth = m_toolPref.spray.width();
-    m_spraySpeed = m_toolPref.spray.speed();
-
-    if (isSelectionPreview) {
-      m_useMask = false;
-    }
-    else {
-      m_useMask = m_document->isMaskVisible();
-    }
-
-    // Start with an empty mask if the user is selecting with "default selection mode"
-    if (isSelectionPreview &&
-        (!m_document->isMaskVisible() ||
-         (int(getModifiers()) & int(tools::ToolLoopModifiers::kReplaceSelection)))) {
-      Mask emptyMask;
-      m_tx(new cmd::SetMask(m_document, &emptyMask));
-    }
-
+  void constructor_epilogue()
+  {
     // Setup the new grid of ExpandCelCanvas which can be displaced to
     // match the new temporal cel position (m_celOrigin).
     m_grid = m_expandCelCanvas->getGrid();
@@ -566,18 +538,6 @@ public:
       m_editor->add_observer(this);
   }
 
-  ~ToolLoopImpl()
-  {
-    if (m_editor)
-      m_editor->remove_observer(this);
-
-    // getSrcImage() is a virtual member function but ToolLoopImpl is
-    // marked as final to avoid not calling a derived version from
-    // this destructor.
-    if (m_floodfillSrcImage != getSrcImage())
-      delete m_floodfillSrcImage;
-  }
-
   // IToolLoop interface
   bool needsCelCoordinates() override
   {
@@ -589,50 +549,6 @@ public:
     }
     else
       return ToolLoopBase::needsCelCoordinates();
-  }
-
-  void commit() override
-  {
-    bool redraw = false;
-
-    if (!m_internalCancel) {
-      // Freehand changes the last point
-      if (m_saveLastPoint) {
-        m_tx(new cmd::SetLastPoint(m_document, getController()->getLastPoint().toPoint()));
-      }
-
-      // Paint ink
-      if (m_ink->isPaint()) {
-        try {
-          ContextReader reader(m_context, 500);
-          ContextWriter writer(reader);
-          m_expandCelCanvas->commit();
-        }
-        catch (const LockedDocException& ex) {
-          Console::showException(ex);
-        }
-      }
-      // Selection ink
-      else if (m_ink->isSelection()) {
-        redraw = true;
-
-        // Show selection edges
-        if (Preferences::instance().selection.autoShowSelectionEdges())
-          m_docPref.show.selectionEdges(true);
-      }
-      // Slice ink
-      else if (m_ink->isSlice()) {
-        redraw = true;
-      }
-
-      m_tx.commit();
-    }
-    else {
-      rollback();
-    }
-
-    if (redraw)
-      update_screen_for_document(m_document);
   }
 
   void rollback() override
@@ -675,14 +591,9 @@ public:
     m_expandCelCanvas->copyValidDestToSourceCanvas(rgn);
   }
 
-  bool useMask() override { return m_useMask; }
   Mask* getMask() override { return m_mask; }
   void setMask(Mask* newMask) override { m_tx(new cmd::SetMask(m_document, newMask)); }
   gfx::Point getMaskOrigin() override { return m_maskOrigin; }
-  bool getFilled() override { return m_filled; }
-  bool getPreviewFilled() override { return m_previewFilled; }
-  int getSprayWidth() override { return m_sprayWidth; }
-  int getSpraySpeed() override { return m_spraySpeed; }
 
   void onSliceRect(const gfx::Rect& bounds) override
   {
@@ -731,6 +642,228 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////
+// For drawing
+
+class ToolLoopImpl final : public PaintToolLoopBase {
+public:
+  ToolLoopImpl(Editor* editor,
+               Site& site,
+               const doc::Grid& grid,
+               Context* context,
+               ToolLoopParams& params,
+               const bool saveLastPoint)
+    : PaintToolLoopBase(editor, site, grid, context, params, saveLastPoint)
+  {
+    constructor_prologue();
+
+    // 'isSelectionPreview = true' if the intention is to show a preview
+    // of Selection tools or Slice tool.
+    const bool isSelectionPreview = m_ink->isSelection() || m_ink->isSlice();
+    m_expandCelCanvas.reset(new ExpandCelCanvas(
+      site,
+      m_layer,
+      m_docPref.tiled.mode(),
+      m_tx,
+      ExpandCelCanvas::Flags(
+        ExpandCelCanvas::NeedsSource |
+        (m_layer->isTilemap() && (!m_tilesMode || isSelectionPreview) ?
+           ExpandCelCanvas::PixelsBounds :
+           ExpandCelCanvas::None) |
+        (m_layer->isTilemap() && site.tilemapMode() == TilemapMode::Pixels &&
+             site.tilesetMode() == TilesetMode::Manual && !isSelectionPreview ?
+           ExpandCelCanvas::TilesetPreview :
+           ExpandCelCanvas::None) |
+        (isSelectionPreview ? ExpandCelCanvas::SelectionPreview : ExpandCelCanvas::None))));
+
+    if (!m_floodfillSrcImage)
+      m_floodfillSrcImage = const_cast<Image*>(getSrcImage());
+
+    // Settings
+    switch (m_tool->getFill(m_button)) {
+      case tools::FillNone:     m_filled = false; break;
+      case tools::FillAlways:   m_filled = true; break;
+      case tools::FillOptional: m_filled = m_toolPref.filled(); break;
+    }
+
+    m_previewFilled = m_toolPref.filledPreview();
+    m_sprayWidth = m_toolPref.spray.width();
+    m_spraySpeed = m_toolPref.spray.speed();
+
+    if (isSelectionPreview) {
+      m_useMask = false;
+    }
+    else {
+      m_useMask = m_document->isMaskVisible();
+    }
+
+    // Start with an empty mask if the user is selecting with "default selection mode"
+    if (isSelectionPreview &&
+        (!m_document->isMaskVisible() ||
+         (int(getModifiers()) & int(tools::ToolLoopModifiers::kReplaceSelection)) != 0)) {
+      Mask emptyMask;
+      m_tx(new cmd::SetMask(m_document, &emptyMask));
+    }
+
+    constructor_epilogue();
+  }
+
+  // IToolLoop interface
+  void commit() override
+  {
+    bool redraw = false;
+
+    if (!m_internalCancel) {
+      // Freehand changes the last point
+      if (m_saveLastPoint) {
+        m_tx(new cmd::SetLastPoint(m_document, getController()->getLastPoint().toPoint()));
+      }
+
+      // Paint ink
+      if (m_ink->isPaint()) {
+        try {
+          ContextReader reader(m_context, 500);
+          ContextWriter writer(reader);
+          m_expandCelCanvas->commit();
+        }
+        catch (const LockedDocException& ex) {
+          Console::showException(ex);
+        }
+      }
+      // Selection ink
+      else if (m_ink->isSelection()) {
+        redraw = true;
+
+        // Show selection edges
+        if (Preferences::instance().selection.autoShowSelectionEdges())
+          m_docPref.show.selectionEdges(true);
+      }
+      // Slice ink
+      else if (m_ink->isSlice()) {
+        redraw = true;
+      }
+
+      m_tx.commit();
+    }
+    else {
+      rollback();
+    }
+
+    if (redraw)
+      update_screen_for_document(m_document);
+  }
+
+  bool useMask() override { return m_useMask; }
+  bool getFilled() override { return m_filled; }
+  bool getPreviewFilled() override { return m_previewFilled; }
+  int getSprayWidth() override { return m_sprayWidth; }
+  int getSpraySpeed() override { return m_spraySpeed; }
+
+private:
+  bool m_filled;
+  bool m_previewFilled;
+  int m_sprayWidth;
+  int m_spraySpeed;
+  bool m_useMask;
+};
+
+//////////////////////////////////////////////////////////////////////
+// For selection tools
+
+class SelectionToolLoopImpl final : public PaintToolLoopBase {
+public:
+  SelectionToolLoopImpl(Editor* editor,
+                        Site& site,
+                        const doc::Grid& grid,
+                        Context* context,
+                        ToolLoopParams& params,
+                        const bool saveLastPoint)
+    : PaintToolLoopBase(editor, site, grid, context, params, saveLastPoint)
+  {
+    constructor_prologue();
+
+    // 'isSelectionPreview = true' if the intention is to show a preview
+    // of Selection tools or Slice tool.
+    m_expandCelCanvas.reset(new ExpandCelCanvas(
+      site,
+      m_layer,
+      m_docPref.tiled.mode(),
+      m_tx,
+      ExpandCelCanvas::Flags(
+        ExpandCelCanvas::NeedsSource |
+        (m_layer->isTilemap() ? ExpandCelCanvas::PixelsBounds : ExpandCelCanvas::None) |
+        ExpandCelCanvas::SelectionPreview)));
+
+    if (!m_floodfillSrcImage)
+      m_floodfillSrcImage = const_cast<Image*>(getSrcImage());
+
+    // Start with an empty mask if the user is selecting with "default selection mode"
+    if (!m_document->isMaskVisible() ||
+        (int(getModifiers()) & int(tools::ToolLoopModifiers::kReplaceSelection)) != 0) {
+      Mask emptyMask;
+      m_tx(new cmd::SetMask(m_document, &emptyMask));
+    }
+
+    constructor_epilogue();
+  }
+
+  // For drawing the selection to second mask
+  bool isSelectionToolLoop() const override { return true; }
+  void addSelectionToolPoint(const gfx::Rect& rc) override
+  {
+    if (rc.w >= 1 && rc.h >= 1)
+      m_editor->getSelectionToolMask()->add(rc);
+  }
+
+  void clearSelectionToolMask(const bool finalStep) override
+  {
+    if (finalStep || getTracePolicy() == tools::TracePolicy::Last)
+      m_editor->getSelectionToolMask()->clear();
+  }
+
+  // IToolLoop interface
+  void commit() override
+  {
+    bool redraw = false;
+
+    if (!m_internalCancel) {
+      // Freehand changes the last point
+      if (m_saveLastPoint) {
+        m_tx(new cmd::SetLastPoint(m_document, getController()->getLastPoint().toPoint()));
+      }
+
+      // Selection ink
+      redraw = true;
+      if (m_ink->isSelection() && Preferences::instance().selection.autoShowSelectionEdges()) {
+        // Show selection edges
+        m_docPref.show.selectionEdges(true);
+      }
+
+      m_tx.commit();
+    }
+    else {
+      rollback();
+    }
+
+    if (redraw)
+      update_screen_for_document(m_document);
+  }
+
+  bool useMask() override { return false; }
+  bool getFilled() override { return true; }
+  bool getPreviewFilled() override
+  {
+    // NOTE: this condition is here for drawing mode switches, remove/rework after testing
+    if ((int(getModifiers()) & (int(tools::ToolLoopModifiers::kAddSelection) |
+                                int(tools::ToolLoopModifiers::kIntersectSelection))) != 0) {
+      return getTracePolicy() == tools::TracePolicy::Last;
+    }
+    return false;
+  }
+  int getSprayWidth() override { return 0; }
+  int getSpraySpeed() override { return 0; }
+};
+
+//////////////////////////////////////////////////////////////////////
 // For user UI painting
 
 // TODO add inks for tilemaps
@@ -745,7 +878,8 @@ tools::ToolLoop* create_tool_loop(Editor* editor,
                                   Context* context,
                                   const tools::Pointer::Button button,
                                   const bool convertLineToFreehand,
-                                  const bool selectTiles)
+                                  const bool selectTiles,
+                                  const bool selectionToolLoopEnabled)
 {
   Site site = editor->getSite();
   doc::Grid grid = site.grid();
@@ -850,8 +984,15 @@ tools::ToolLoop* create_tool_loop(Editor* editor,
     fill_toolloop_params_from_tool_preferences(params);
 
     ASSERT(context->activeDocument() == editor->document());
-    auto toolLoop = new ToolLoopImpl(editor, site, grid, context, params, saveLastPoint);
+    if (selectionToolLoopEnabled && (params.ink->isSelection() || params.ink->isSlice())) {
+      auto* toolLoop =
+        new SelectionToolLoopImpl(editor, site, grid, context, params, saveLastPoint);
+      if (selectTiles)
+        toolLoop->forceSnapToTiles();
 
+      return toolLoop;
+    }
+    auto* toolLoop = new ToolLoopImpl(editor, site, grid, context, params, saveLastPoint);
     if (selectTiles)
       toolLoop->forceSnapToTiles();
 
