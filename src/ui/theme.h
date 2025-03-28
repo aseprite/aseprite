@@ -77,6 +77,7 @@ public:
   virtual gfx::Size getEntryCaretSize(Widget* widget) { return gfx::Size(kDefaultFontHeight, 1); }
 
   virtual void paintEntry(PaintEvent& ev) {}
+  virtual void paintTextEdit(PaintEvent& ev) {}
   virtual void paintListBox(PaintEvent& ev);
   virtual void paintMenu(PaintEvent& ev) {}
   virtual void paintMenuItem(PaintEvent& ev) {}
@@ -128,6 +129,7 @@ public:
   virtual gfx::Color calcBgColor(const Widget* widget, const Style* style);
   virtual gfx::Size calcMinSize(const Widget* widget, const Style* style);
   virtual gfx::Size calcMaxSize(const Widget* widget, const Style* style);
+  virtual gfx::Color getColorById(const std::string& id) const { return gfx::ColorNone; };
 
   static void drawSlices(Graphics* g,
                          os::Surface* sheet,
