@@ -1012,6 +1012,23 @@ int Sprite_set_tileManagementPlugin(lua_State* L)
   return 0;
 }
 
+int Sprite_get_uuidsForLayers(lua_State* L)
+{
+  auto* sprite = get_docobj<Sprite>(L, 1);
+  lua_pushboolean(L, sprite->uuidsForLayers());
+  return 1;
+}
+
+int Sprite_set_uuidsForLayers(lua_State* L)
+{
+  auto* sprite = get_docobj<Sprite>(L, 1);
+  if (lua_isboolean(L, 2)) {
+    const bool value = lua_toboolean(L, 2);
+    sprite->setUuidsForLayers(value);
+  }
+  return 0;
+}
+
 const luaL_Reg Sprite_methods[] = {
   { "__eq",              Sprite_eq                },
   { "resize",            Sprite_resize            },
@@ -1076,6 +1093,7 @@ const Property Sprite_properties[] = {
   { "pixelRatio",           Sprite_get_pixelRatio,           Sprite_set_pixelRatio           },
   { "events",               Sprite_get_events,               nullptr                         },
   { "tileManagementPlugin", Sprite_get_tileManagementPlugin, Sprite_set_tileManagementPlugin },
+  { "uuidsForLayers",       Sprite_get_uuidsForLayers,       Sprite_set_uuidsForLayers       },
   { nullptr,                nullptr,                         nullptr                         }
 };
 
