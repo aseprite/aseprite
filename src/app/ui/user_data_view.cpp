@@ -58,7 +58,7 @@ void UserDataView::configureAndSet(const doc::UserData& userData, ui::Grid* pare
     parent->addChildInCell(colorLabel(), hspan1, vspan, ui::LEFT);
     parent->addChildInCell(color(), hspan2, vspan, ui::HORIZONTAL);
     parent->addChildInCell(entryLabel(), hspan1, vspan, ui::LEFT);
-    parent->addChildInCell(textEditView(), hspan2, vspan, ui::HORIZONTAL);
+    parent->addChildInCell(textEditView(), hspan2, vspan, ui::HORIZONTAL | ui::VERTICAL);
     color()->Change.connect([this] { onColorChange(); });
     textEdit()->Change.connect([this] { onEntryChange(); });
     m_isConfigured = true;
