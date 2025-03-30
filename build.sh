@@ -265,7 +265,7 @@ else
     # New build
     if [[ "$build_n" == "n" || "$build_n" == "N" ]] ; then
         read -p "Select build type [RELEASE/debug]? "
-        if [[ "${REPLY,,}" == "debug" ]] ; then
+        if [[ "${REPLY}" == "debug" ]] ; then
             build_type=Debug
             new_build_name=aseprite-debug
         else
