@@ -46,7 +46,7 @@ bool ResourceListItem::onProcessMessage(ui::Message* msg)
 
 void ResourceListItem::onPaint(PaintEvent& ev)
 {
-  const auto* theme = SkinTheme::get(this);
+  auto theme = SkinTheme::get(this);
   Graphics* g = ev.graphics();
   gfx::Rect bounds = clientBounds();
   gfx::Color bgcolor, fgcolor;
@@ -68,7 +68,7 @@ void ResourceListItem::onPaint(PaintEvent& ev)
     text(),
     fgcolor,
     gfx::ColorNone,
-    gfx::Point(bounds.x + (2 * guiscale()), bounds.y + (bounds.h / 2) - (g->font()->height() / 2)));
+    gfx::Point(bounds.x + 2 * guiscale(), bounds.y + bounds.h / 2 - g->font()->height() / 2));
 }
 
 void ResourceListItem::onSizeHint(SizeHintEvent& ev)
@@ -85,15 +85,8 @@ public:
 
   void makeProgress()
   {
-    std::string progress;
-    switch ((++m_state) % 4) {
-      case 0: progress = " /"; break;
-      case 1: progress = " -"; break;
-      case 2: progress = " \\"; break;
-      case 3: progress = " |"; break;
-    }
-
-    setText(Strings::resource_listbox_loading() + progress);
+    constexpr char progress[] = { '/', '-', '\\', '|' };
+    setText(fmt::format("{} {}", Strings::resource_listbox_loading(), progress[((++m_state) % 4)]));
   }
 
 private:

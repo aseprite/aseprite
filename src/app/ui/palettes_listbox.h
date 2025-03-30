@@ -41,11 +41,11 @@ protected:
   void toggleSeparator();
 
 private:
+  std::vector<std::string> m_pinned;
   ui::TooltipManager m_tooltips;
   app::SeparatorInView m_pinnedSeparator;
   obs::scoped_connection m_extPaletteChanges;
   obs::scoped_connection m_extPresetsChanges;
-  std::vector<std::string> m_pinned;
 };
 
 } // namespace app

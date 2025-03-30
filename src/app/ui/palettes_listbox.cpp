@@ -252,8 +252,11 @@ void PalettesListBox::savePinned()
     del_config_value(kSectionName, key.c_str());
   }
 
-  std::vector<std::string_view> ids;
+  // Crudely compare the outgoing pins to the current list so that we can remove any that don't
+  // exist anymore, faster than checking the filesystem for the palette file or doing the check when
+  // we load.
   const auto& c = children();
+  std::vector<std::string_view> ids;
   ids.resize(c.size());
   for (size_t i = 0; i < c.size(); ++i) {
     ids[i] = c[i]->text();
@@ -263,7 +266,7 @@ void PalettesListBox::savePinned()
     const auto& pinned = m_pinned[i];
     auto it = std::find(ids.begin(), ids.end(), pinned);
     if (it == ids.end())
-      continue; // Do not save repeated pinneds.
+      continue;
 
     set_config_string(kSectionName, fmt::format("{:04d}", i).c_str(), pinned.c_str());
   }
@@ -294,28 +297,28 @@ void PalettesListBox::onResourceChange(Resource* resource)
 
 void PalettesListBox::onPaintResource(Graphics* g, gfx::Rect& bounds, Resource* resource)
 {
-  const auto* theme = SkinTheme::get(this);
-  const Palette* palette = static_cast<PaletteResource*>(resource)->palette();
+  auto theme = SkinTheme::get(this);
+  const doc::Palette* palette = static_cast<PaletteResource*>(resource)->palette();
   os::Surface* tick = theme->parts.checkSelected()->bitmap(0);
 
   // Draw tick (to say "this palette matches the active sprite
   // palette").
-  auto* view = UIContext::instance()->activeView();
+  auto view = UIContext::instance()->activeView();
   if (view && view->document()) {
-    const auto* docPal = view->document()->sprite()->palette(view->editor()->frame());
+    auto docPal = view->document()->sprite()->palette(view->editor()->frame());
     if (docPal && *docPal == *palette)
-      g->drawRgbaSurface(tick, bounds.x, bounds.y + (bounds.h / 2) - (tick->height() / 2));
+      g->drawRgbaSurface(tick, bounds.x, bounds.y + bounds.h / 2 - tick->height() / 2);
   }
 
   bounds.x += tick->width();
   bounds.w -= tick->width();
 
-  gfx::Rect box(bounds.x, bounds.y + bounds.h - (6 * guiscale()), 4 * guiscale(), 4 * guiscale());
+  gfx::Rect box(bounds.x, bounds.y + bounds.h - 6 * guiscale(), 4 * guiscale(), 4 * guiscale());
 
   for (int i = 0; i < palette->size(); ++i) {
-    const doc::color_t c = palette->getEntry(i);
+    doc::color_t c = palette->getEntry(i);
 
-    g->fillRect(gfx::rgba(rgba_getr(c), rgba_getg(c), rgba_getb(c)), box);
+    g->fillRect(gfx::rgba(doc::rgba_getr(c), doc::rgba_getg(c), doc::rgba_getb(c)), box);
 
     box.x += box.w;
   }

@@ -69,8 +69,8 @@ void IconButton::onPaint(PaintEvent& ev)
   os::Surface* icon = m_part->bitmap(0);
   g->drawColoredRgbaSurface(icon,
                             fg,
-                            bounds.x + (bounds.w / 2) - (icon->width() / 2),
-                            bounds.y + (bounds.h / 2) - (icon->height() / 2));
+                            bounds.x + bounds.w / 2 - icon->width() / 2,
+                            bounds.y + bounds.h / 2 - icon->height() / 2);
 }
 
 } // namespace app
