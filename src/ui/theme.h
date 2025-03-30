@@ -129,7 +129,6 @@ public:
   virtual gfx::Color calcBgColor(const Widget* widget, const Style* style);
   virtual gfx::Size calcMinSize(const Widget* widget, const Style* style);
   virtual gfx::Size calcMaxSize(const Widget* widget, const Style* style);
-  virtual gfx::Color getColorById(const std::string& id) const { return gfx::ColorNone; };
 
   static void drawSlices(Graphics* g,
                          os::Surface* sheet,
