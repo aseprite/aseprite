@@ -73,7 +73,7 @@ void RunScriptCommand::onExecute(Context* context)
       return;
   }
 
-  App::instance()->scriptEngine()->evalUserFile(m_filename, m_params);
+  App::instance()->scriptEngine()->evalUserFileInTask(m_filename, m_params);
 
   if (context->isUIAvailable())
     ui::Manager::getDefault()->invalidate();

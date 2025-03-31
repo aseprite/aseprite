@@ -35,7 +35,10 @@
 #include "fmt/format.h"
 #include "ui/base.h"
 #include "ui/cursor_type.h"
+#include "ui/manager.h"
+#include "ui/message_loop.h"
 #include "ui/mouse_button.h"
+#include "ui/system.h"
 
 #include <fstream>
 #include <sstream>
@@ -213,7 +216,101 @@ void register_websocket_class(lua_State* L);
 
 void set_app_params(lua_State* L, const Params& params);
 
-Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(false)
+#define RUNNING_TASKS "RunningTasks"
+
+std::mutex runningTasksMutex;
+
+RunScriptTask::RunScriptTask(lua_State* L, int nelems, const std::string& description, Func&& func)
+  : m_LRef(LUA_REFNIL)
+  , m_description(description)
+{
+  m_L = lua_newthread(L);
+  // Move the thread object in the parent thread stack to the new thread stack.
+  lua_xmove(L, m_L, 1);
+  // Save a reference to the lua thread in the registry to avoid garbage collection
+  // before it gets executed.
+  m_LRef = luaL_ref(m_L, LUA_REGISTRYINDEX);
+
+  // Move nelems stack elements from main thread to the child lua thread.
+  lua_xmove(L, m_L, nelems);
+
+  // We use a global table to have access to the state of all the currently
+  // running scripts
+  {
+    std::lock_guard<std::mutex> lock(runningTasksMutex);
+    int type = lua_getglobal(m_L, RUNNING_TASKS);
+    if (type == LUA_TNIL) {
+      lua_newtable(m_L);
+      lua_pushvalue(m_L, -1);
+      lua_setglobal(m_L, RUNNING_TASKS);
+    }
+
+    lua_pushlightuserdata(m_L, this);
+    lua_rawsetp(m_L, -2, m_L);
+    lua_pop(m_L, 1);
+  }
+  lua_sethook(
+    m_L,
+    [](lua_State* L, lua_Debug* ar) {
+      if (ar->event == LUA_HOOKCOUNT) {
+        std::lock_guard<std::mutex> lock(runningTasksMutex);
+        int type = lua_getglobal(L, RUNNING_TASKS);
+        if (type == LUA_TTABLE) {
+          lua_rawgetp(L, -1, L);
+          RunScriptTask* task = (RunScriptTask*)lua_topointer(L, -1);
+          lua_pop(L, 2);
+          if (task->wantsToStop()) {
+            luaL_where(L, 0);
+            const char* where = lua_tostring(L, -1);
+            luaL_traceback(L, L, "Script stopped", 0);
+            const char* traceback = lua_tostring(L, -1);
+            std::string msg(fmt::format("{}{}", where, traceback));
+            lua_pop(L, 2);
+            lua_pushstring(L, msg.c_str());
+            lua_error(L);
+          }
+        }
+      }
+    },
+    LUA_MASKCOUNT,
+    10);
+
+  // TODO: use the token for allowing the script to report progress somehow.
+  m_task.on_execute([this, func](base::task_token& token) { func(m_L); });
+}
+
+RunScriptTask::~RunScriptTask()
+{
+  std::lock_guard<std::mutex> lock(runningTasksMutex);
+  int type = lua_getglobal(m_L, RUNNING_TASKS);
+  if (type == LUA_TTABLE) {
+    lua_pushlightuserdata(m_L, nullptr);
+    lua_rawsetp(m_L, -2, m_L);
+  }
+  lua_pop(m_L, 1);
+
+  luaL_unref(m_L, LUA_REGISTRYINDEX, m_LRef);
+
+  //  Collect script garbage.
+  lua_gc(m_L, LUA_GCCOLLECT);
+}
+
+void RunScriptTask::execute(base::thread_pool& pool)
+{
+  m_token = &m_task.start(pool);
+}
+
+void RunScriptTask::stop(base::thread_pool& pool)
+{
+  m_wantsToStop = true;
+  m_task.try_pop(pool);
+}
+
+Engine::Engine()
+  : L(luaL_newstate())
+  , m_delegate(nullptr)
+  , m_threadPool(3)
+  , m_printLastResult(false)
 {
 #if _DEBUG
   int top = lua_gettop(L);
@@ -525,6 +622,15 @@ Engine::~Engine()
 
 void Engine::destroy()
 {
+  // Stop all running tasks.
+  {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for (auto& task : m_tasks) {
+      task->stop(m_threadPool);
+    }
+  }
+  m_threadPool.wait_all();
+
   close_all_dialogs();
   lua_close(L);
   L = nullptr;
@@ -595,6 +701,11 @@ bool Engine::evalCode(const std::string& code, const std::string& filename)
 
 void Engine::handleException(const std::exception& ex)
 {
+  handleException(L, ex);
+}
+
+void Engine::handleException(lua_State* L, const std::exception& ex)
+{
   luaL_where(L, 1);
   const char* where = lua_tostring(L, -1);
   luaL_traceback(L, L, ex.what(), 1);
@@ -631,6 +742,123 @@ bool Engine::evalFile(const std::string& filename, const Params& params)
   return result;
 }
 
+void Engine::callInTask(lua_State* parentL, int nargs, const std::string& description)
+{
+  executeTask(parentL, nargs + 1, description, [this, nargs](lua_State* L) {
+    try {
+      if (lua_pcall(L, nargs, 0, 0)) {
+        if (const char* s = lua_tostring(L, -1)) {
+          std::string error = std::string(s);
+          ui::execute_from_ui_thread([this, error]() { consolePrint(error.c_str()); });
+        }
+      }
+    }
+    catch (const std::exception& ex) {
+      // This is used to catch unhandled exception or for
+      // example, std::runtime_error exceptions when a Tx() is
+      // created without an active sprite.
+      handleException(L, ex);
+    }
+  });
+}
+
+void Engine::executeTask(lua_State* parentL,
+                         int nelems,
+                         const std::string& description,
+                         RunScriptTask::Func&& func)
+{
+  auto task = std::make_unique<RunScriptTask>(parentL, nelems, description, std::move(func));
+  auto* taskPtr = task.get();
+  base::task::finfunc_t f = [this, taskPtr](const base::task_token&) { onTaskFinished(taskPtr); };
+  task->onFinished(std::move(f));
+  {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_tasks.push_back(std::move(task));
+  }
+  TaskStart(taskPtr);
+  taskPtr->execute(m_threadPool);
+}
+
+void Engine::onTaskFinished(const RunScriptTask* task)
+{
+  std::lock_guard<std::mutex> lock(m_mutex);
+  TaskDone(task);
+  for (auto it = m_tasks.begin(); it != m_tasks.end(); ++it) {
+    if ((*it).get() == task) {
+      m_tasks.erase(it);
+      break;
+    }
+  }
+}
+
+bool Engine::evalUserFileInTask(const std::string& filename, const Params& params)
+{
+  executeTask(L, 0, filename, [filename, params, this](lua_State* L) {
+    std::string absFilename = base::get_absolute_path(filename);
+    // Set the _SCRIPT_PATH global so require() can find .lua files from
+    // the script path.
+    std::string path = base::get_file_path(absFilename);
+    SetScriptForRequire setScript(L, path.c_str());
+
+    bool ok = true;
+    std::stringstream buf;
+    {
+      std::ifstream s(FSTREAM_PATH(filename));
+      // Returns false if we cannot open the file
+      if (!s) {
+        ok = false;
+        return;
+      }
+      buf << s.rdbuf();
+    }
+
+    AddScriptFilename addScript(absFilename);
+    set_app_params(L, params);
+
+    const std::string& code = buf.str();
+    const std::string& atFilename = "@" + absFilename;
+
+    int returnCode;
+    try {
+      if (luaL_loadbuffer(L, code.c_str(), code.size(), atFilename.c_str()) ||
+          lua_pcall(L, 0, 1, 0)) {
+        const char* s = lua_tostring(L, -1);
+        if (s) {
+          std::string error = std::string(s);
+          ui::execute_from_ui_thread([this, error]() { onConsoleError(error.c_str()); });
+        }
+        ok = false;
+        returnCode = -1;
+      }
+      else {
+        // Return code
+        if (lua_isinteger(L, -1))
+          returnCode = lua_tointeger(L, -1);
+        else
+          returnCode = 0;
+
+        // Code was executed correctly
+        if (m_printLastResult) {
+          if (!lua_isnone(L, -1)) {
+            const char* result = lua_tostring(L, -1);
+            if (result)
+              TRACE("Result: %s\n", result);
+            // onConsolePrint(result);
+          }
+        }
+      }
+      lua_pop(L, 1);
+    }
+    catch (const std::exception& ex) {
+      // handleException(ex);
+      TRACE("Exception: %s\n", ex.what());
+      ok = false;
+      returnCode = -1;
+    }
+  });
+  return true;
+}
+
 bool Engine::evalUserFile(const std::string& filename, const Params& params)
 {
   // Set the _SCRIPT_PATH global so require() can find .lua files from
@@ -658,6 +886,22 @@ void Engine::startDebugger(DebuggerDelegate* debuggerDelegate)
 void Engine::stopDebugger()
 {
   lua_sethook(L, nullptr, 0, 0);
+}
+
+void Engine::stopTask(const RunScriptTask* task)
+{
+  RunScriptTask* taskPtr = nullptr;
+  {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    for (const auto& t : m_tasks) {
+      if (t.get() == task) {
+        taskPtr = t.get();
+        break;
+      }
+    }
+  }
+  if (taskPtr)
+    taskPtr->stop(m_threadPool);
 }
 
 void Engine::onConsoleError(const char* text)

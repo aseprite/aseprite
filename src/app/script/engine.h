@@ -16,6 +16,8 @@
 #include "app/color.h"
 #include "app/commands/params.h"
 #include "app/extensions.h"
+#include "base/task.h"
+#include "base/thread_pool.h"
 #include "base/uuid.h"
 #include "doc/brush.h"
 #include "doc/frame.h"
@@ -84,8 +86,42 @@ public:
   virtual void endFile(const std::string& file) = 0;
 };
 
+class RunScriptTask {
+  friend class Engine;
+
+public:
+  typedef std::function<void(lua_State* L)> Func;
+
+  RunScriptTask(lua_State* L, int nelems, const std::string& description, Func&& func);
+  ~RunScriptTask();
+
+  void onFinished(base::task::finfunc_t&& onFinishedFunc)
+  {
+    m_task.on_finished(std::move(onFinishedFunc));
+  }
+  void execute(base::thread_pool& pool);
+  void stop(base::thread_pool& pool);
+  bool wantsToStop() const { return m_wantsToStop; }
+
+  int ref() const { return m_LRef; }
+  const std::string& description() const { return m_description; }
+  bool isRunning() const { return m_task.running(); }
+  bool isEnqueued() const { return m_task.enqueued(); }
+
+private:
+  // Lua's thread state.
+  lua_State* m_L;
+  int m_LRef;
+  base::task m_task;
+  bool m_wantsToStop = false;
+  std::string m_description;
+  base::task_token* m_token;
+};
+
 class Engine {
 public:
+  typedef std::vector<std::unique_ptr<RunScriptTask>> Tasks;
+
   Engine();
   ~Engine();
 
@@ -101,8 +137,22 @@ public:
   bool evalCode(const std::string& code, const std::string& filename = std::string());
   bool evalFile(const std::string& filename, const Params& params = Params());
   bool evalUserFile(const std::string& filename, const Params& params = Params());
+  bool evalUserFileInTask(const std::string& filename, const Params& params = Params());
+  // Calls the function in the stack with the number of arguments specified by nargs in
+  // a new RunScriptTask.
+  void callInTask(lua_State* L, int nargs, const std::string& description);
+  std::vector<const RunScriptTask*> tasks() const
+  {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    std::vector<const RunScriptTask*> tasks;
+    tasks.reserve(m_tasks.size());
+    for (const auto& task : m_tasks)
+      tasks.push_back(task.get());
+    return tasks;
+  }
 
   void handleException(const std::exception& ex);
+  void handleException(lua_State* L, const std::exception& ex);
 
   void consolePrint(const char* text) { onConsolePrint(text); }
 
@@ -112,13 +162,29 @@ public:
 
   void startDebugger(DebuggerDelegate* debuggerDelegate);
   void stopDebugger();
+  // Stops the specified task
+  void stopTask(const RunScriptTask* task);
+
+  obs::signal<void(const RunScriptTask*)> TaskStart;
+  obs::signal<void(const RunScriptTask*)> TaskDone;
 
 private:
   void onConsoleError(const char* text);
   void onConsolePrint(const char* text);
+  // Creates a new RunScriptTask based on parentL and moving nelems from parentL's stack
+  // to the child lua thread stack
+  void executeTask(lua_State* parentL,
+                   int nelems,
+                   const std::string& description,
+                   RunScriptTask::Func&& func);
+  void onTaskFinished(const RunScriptTask* task);
+  static void checkProgress(lua_State* L, lua_Debug* ar);
 
   lua_State* L;
   EngineDelegate* m_delegate;
+  base::thread_pool m_threadPool;
+  mutable std::mutex m_mutex;
+  Tasks m_tasks;
   bool m_printLastResult;
   int m_returnCode;
 };

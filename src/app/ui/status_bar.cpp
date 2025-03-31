@@ -44,9 +44,21 @@
 #include "fmt/format.h"
 #include "gfx/size.h"
 #include "os/surface.h"
+#include "os/system.h"
 #include "text/font.h"
+#include "ui/box.h"
+#include "ui/button.h"
+#include "ui/label.h"
+#include "ui/listbox.h"
+#include "ui/listitem.h"
+#include "ui/popup_window.h"
 #include "ui/ui.h"
+#include "ui/view.h"
 #include "ver/info.h"
+
+#ifdef ENABLE_SCRIPTING
+  #include "app/script/engine.h"
+#endif
 
 #include <algorithm>
 #include <cstdarg>
@@ -609,6 +621,71 @@ private:
   ui::Button m_button;
 };
 
+#ifdef ENABLE_SCRIPTING
+class StatusBar::RunningScriptsWindow : public ui::Window {
+public:
+  // TODO: Replace the title by a string
+  RunningScriptsWindow() : ui::Window(Type::WithTitleBar, "Running scripts")
+  {
+    setMinSize({ 500, 200 });
+    m_runningScripts.setExpansive(true);
+    m_view.setExpansive(true);
+    m_view.attachToView(&m_runningScripts);
+    addChild(&m_view);
+
+    initTheme();
+
+    refreshList();
+
+    App::instance()->scriptEngine()->TaskStart.connect([this](const script::RunScriptTask*) {
+      ui::execute_from_ui_thread([this] { refreshList(); });
+    });
+    App::instance()->scriptEngine()->TaskDone.connect([this](const script::RunScriptTask*) {
+      ui::execute_from_ui_thread([this] { refreshList(); });
+    });
+  }
+
+  void refreshList()
+  {
+    m_runningScripts.removeAllChildren();
+    for (const auto* task : App::instance()->scriptEngine()->tasks()) {
+      auto* item = new TaskItem(task);
+      m_runningScripts.addChild(item);
+    }
+    m_runningScripts.layout();
+    flushRedraw();
+  }
+
+private:
+  class TaskItem : public ListItem {
+  public:
+    TaskItem(const script::RunScriptTask* task) : m_label(""), m_stop("Stop")
+    {
+      m_task = task;
+      m_label.setText(
+        fmt::format("{} ({})", task->description(), (task->isEnqueued() ? "enqueued" : "running")));
+
+      m_label.setExpansive(true);
+      m_row.setExpansive(true);
+      m_row.addChild(&m_label);
+      m_row.addChild(&m_stop);
+      addChild(&m_row);
+
+      m_stop.Click.connect([this]() { App::instance()->scriptEngine()->stopTask(m_task); });
+    }
+
+  private:
+    const script::RunScriptTask* m_task;
+    ui::HBox m_row;
+    ui::Label m_label;
+    ui::Button m_stop;
+  };
+
+  ui::View m_view;
+  ui::ListBox m_runningScripts;
+};
+#endif
+
 // This widget is used to show the current frame.
 class GotoFrameEntry : public Entry {
 public:
@@ -887,6 +964,27 @@ void StatusBar::showSnapToGridWarning(bool state)
       m_snapToGridWindow->closeWindow(nullptr);
   }
 }
+
+#ifdef ENABLE_SCRIPTING
+void StatusBar::showRunningScriptsWindow(bool state)
+{
+  if (state) {
+    if (!m_runningScriptsWindow)
+      m_runningScriptsWindow = new RunningScriptsWindow;
+
+    m_runningScriptsWindow->setDisplay(display(), false);
+
+    if (!m_runningScriptsWindow->isVisible()) {
+      m_runningScriptsWindow->openWindow();
+      m_runningScriptsWindow->remapWindow();
+      // updateRunningScriptsWindowPosition();
+    }
+  }
+  else if (m_runningScriptsWindow) {
+    m_runningScriptsWindow->closeWindow(nullptr);
+  }
+}
+#endif
 
 //////////////////////////////////////////////////////////////////////
 // StatusBar message handler
