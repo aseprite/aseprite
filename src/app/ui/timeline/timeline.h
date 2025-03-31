@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -379,6 +379,7 @@ private:
   ui::ScrollBar m_vbar;
   gfx::Rect m_viewportArea;
   double m_zoom;
+  bool m_scaleUpToFit;
   Context* m_context;
   Editor* m_editor;
   Doc* m_document;
