@@ -303,7 +303,7 @@ void RunScriptTask::execute(base::thread_pool& pool)
 void RunScriptTask::stop(base::thread_pool& pool)
 {
   m_wantsToStop = true;
-  m_task.try_skip(pool);
+  m_task.try_pop(pool);
 }
 
 Engine::Engine()
@@ -769,7 +769,8 @@ void Engine::executeTask(lua_State* parentL,
 {
   auto task = std::make_unique<RunScriptTask>(parentL, nelems, description, std::move(func));
   auto* taskPtr = task.get();
-  task->onFinished([this, taskPtr](base::task_token&) { onTaskFinished(taskPtr); });
+  base::task::finfunc_t f = [this, taskPtr](const base::task_token&) { onTaskFinished(taskPtr); };
+  task->onFinished(std::move(f));
   {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_tasks.push_back(std::move(task));

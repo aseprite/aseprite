@@ -95,7 +95,7 @@ public:
   RunScriptTask(lua_State* L, int nelems, const std::string& description, Func&& func);
   ~RunScriptTask();
 
-  void onFinished(base::task::func_t&& onFinishedFunc)
+  void onFinished(base::task::finfunc_t&& onFinishedFunc)
   {
     m_task.on_finished(std::move(onFinishedFunc));
   }
