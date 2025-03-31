@@ -234,6 +234,7 @@ Timeline::Timeline(TooltipManager* tooltipManager)
   , m_hbar(HORIZONTAL, this)
   , m_vbar(VERTICAL, this)
   , m_zoom(1.0)
+  , m_scaleUpToFit(false)
   , m_context(UIContext::instance())
   , m_editor(NULL)
   , m_document(NULL)
@@ -308,6 +309,10 @@ void Timeline::setZoomAndUpdate(const double zoom, const bool updatePref)
 
 void Timeline::onThumbnailsPrefChange()
 {
+  if (m_scaleUpToFit != docPref().thumbnails.scaleUpToFit()) {
+    m_scaleUpToFit = docPref().thumbnails.scaleUpToFit();
+    invalidate();
+  }
   setZoomAndUpdate(docPref().thumbnails.enabled() ? docPref().thumbnails.zoom() : 1.0, false);
 }
 
@@ -357,6 +362,7 @@ void Timeline::updateUsingEditor(Editor* editor)
   m_thumbnailsPrefConn = docPref.thumbnails.AfterChange.connect(
     [this] { onThumbnailsPrefChange(); });
   setZoom(docPref.thumbnails.enabled() ? docPref.thumbnails.zoom() : 1.0);
+  m_scaleUpToFit = docPref.thumbnails.scaleUpToFit();
 
   m_state = STATE_STANDBY;
   m_hot.part = PART_NOTHING;
@@ -2516,7 +2522,8 @@ void Timeline::drawCel(ui::Graphics* g,
     gfx::Rect thumb_bounds = gfx::Rect(bounds).shrink(skinTheme()->calcBorder(this, style));
 
     if (!thumb_bounds.isEmpty()) {
-      if (os::SurfaceRef surface = thumb::get_cel_thumbnail(cel, thumb_bounds.size())) {
+      if (os::SurfaceRef surface =
+            thumb::get_cel_thumbnail(cel, m_scaleUpToFit, thumb_bounds.size())) {
         const int t = std::clamp(thumb_bounds.w / 8, 4, 16);
         draw_checkered_grid(g, thumb_bounds, gfx::Size(t, t), docPref());
 
@@ -2608,7 +2615,7 @@ void Timeline::drawCelOverlay(ui::Graphics* g)
     return;
 
   gfx::Rect rc = m_sprite->bounds().fitIn(gfx::Rect(m_thumbnailsOverlayBounds).shrink(1));
-  if (os::SurfaceRef surface = thumb::get_cel_thumbnail(cel, rc.size())) {
+  if (os::SurfaceRef surface = thumb::get_cel_thumbnail(cel, m_scaleUpToFit, rc.size())) {
     draw_checkered_grid(g, rc, gfx::Size(8, 8) * ui::guiscale(), docPref());
 
     g->drawRgbaSurface(surface.get(),

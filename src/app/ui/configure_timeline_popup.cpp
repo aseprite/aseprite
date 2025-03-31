@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -69,6 +69,7 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_box->thumbEnabled()->Click.connect([this] { onThumbEnabledChange(); });
   m_box->thumbOverlayEnabled()->Click.connect([this] { onThumbOverlayEnabledChange(); });
   m_box->thumbOverlaySize()->Change.connect([this] { onThumbOverlaySizeChange(); });
+  m_box->thumbScaleUpToFit()->Click.connect([this] { onScaleUpToFitChange(); });
 
   const bool visibleThumb = docPref().thumbnails.enabled();
   m_box->thumbHSeparator()->setVisible(visibleThumb);
@@ -128,6 +129,7 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
   m_box->thumbBox()->setVisible(visibleThumb);
   m_box->thumbOverlayEnabled()->setSelected(docPref.thumbnails.overlayEnabled());
   m_box->thumbOverlaySize()->setValue(docPref.thumbnails.overlaySize());
+  m_box->thumbScaleUpToFit()->setSelected(docPref.thumbnails.scaleUpToFit());
 
   expandWindow(sizeHint());
 }
@@ -235,6 +237,11 @@ void ConfigureTimelinePopup::onThumbOverlayEnabledChange()
 void ConfigureTimelinePopup::onThumbOverlaySizeChange()
 {
   docPref().thumbnails.overlaySize(m_box->thumbOverlaySize()->getValue());
+}
+
+void ConfigureTimelinePopup::onScaleUpToFitChange()
+{
+  docPref().thumbnails.scaleUpToFit(m_box->thumbScaleUpToFit()->isSelected());
 }
 
 } // namespace app

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2025  Igara Studio S.A. -->
 <!-- Copyright (C) 2014-2018  David Capello -->
 <preferences>
 
@@ -550,6 +550,7 @@
       <option id="enabled" type="bool" default="false" />
       <option id="overlay_enabled" type="bool" default="false" />
       <option id="overlay_size" type="int" default="5" />
+      <option id="scale_up_to_fit" type="bool" default="false" />
     </section>
     <section id="onionskin">
       <option id="active" type="bool" default="false" />
