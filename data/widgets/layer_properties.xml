@@ -4,7 +4,7 @@
 <gui>
 <window id="layer_properties" text="@.title">
   <vbox>
-    <grid id="properties_grid" columns="3">
+    <grid id="properties_grid" columns="3" expansive="true">
       <label text="@.name" />
       <entry text="" id="name" magnet="true" maxsize="256" minwidth="64" cell_align="horizontal" />
       <button id="user_data" icon="icon_user_data" tooltip="@general.user_data" />

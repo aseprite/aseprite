@@ -1110,6 +1110,8 @@ void SkinTheme::initWidget(Widget* widget)
       widget->setStyle(styles.textboxText());
       break;
 
+    case kTextEditWidget: widget->setStyle(styles.textedit()); break;
+
     case kViewWidget:
       widget->setChildSpacing(0);
       widget->setBgColor(colors.windowFace());
