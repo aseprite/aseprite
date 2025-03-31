@@ -22,7 +22,6 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
-#include "app/script/engine.h"
 #include "app/tools/active_tool.h"
 #include "app/tools/tool.h"
 #include "app/ui/button_set.h"
@@ -56,6 +55,10 @@
 #include "ui/ui.h"
 #include "ui/view.h"
 #include "ver/info.h"
+
+#ifdef ENABLE_SCRIPTING
+  #include "app/script/engine.h"
+#endif
 
 #include <algorithm>
 #include <cstdarg>
@@ -618,6 +621,7 @@ private:
   ui::Button m_button;
 };
 
+#ifdef ENABLE_SCRIPTING
 class StatusBar::RunningScriptsWindow : public ui::Window {
 public:
   // TODO: Replace the title by a string
@@ -680,6 +684,7 @@ private:
   ui::View m_view;
   ui::ListBox m_runningScripts;
 };
+#endif
 
 // This widget is used to show the current frame.
 class GotoFrameEntry : public Entry {
@@ -960,6 +965,7 @@ void StatusBar::showSnapToGridWarning(bool state)
   }
 }
 
+#ifdef ENABLE_SCRIPTING
 void StatusBar::showRunningScriptsWindow(bool state)
 {
   if (state) {
@@ -978,6 +984,7 @@ void StatusBar::showRunningScriptsWindow(bool state)
     m_runningScriptsWindow->closeWindow(nullptr);
   }
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////
 // StatusBar message handler
