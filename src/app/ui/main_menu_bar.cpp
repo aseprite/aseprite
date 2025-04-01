@@ -14,6 +14,8 @@
 #include "app/app.h"
 #include "app/app_menus.h"
 #include "app/extensions.h"
+#include "ui/manager.h"
+#include "ui/message.h"
 
 namespace app {
 
@@ -26,13 +28,26 @@ MainMenuBar::MainMenuBar()
 
   // Reload the main menu if there are changes in keyboard shortcuts
   // or scripts when extensions are installed/uninstalled or
-  // enabled/disabled.
-  m_extKeys = extensions.KeysChange.connect([this] { reload(); });
-  m_extScripts = extensions.ScriptsChange.connect([this] { reload(); });
+  // enabled/disabled, enqueued to avoid multiple reloads.
+  m_extKeys = extensions.KeysChange.connect([&] { queueReload(); });
+  m_extScripts = extensions.ScriptsChange.connect([&] { queueReload(); });
+}
+
+void MainMenuBar::queueReload()
+{
+  if (m_queuedReload)
+    return;
+
+  m_queuedReload = true;
+
+  auto* msg = new CallbackMessage([this] { reload(); });
+  msg->setRecipient(this);
+  Manager::getDefault()->enqueueMessage(msg);
 }
 
 void MainMenuBar::reload()
 {
+  m_queuedReload = false;
   setMenu(nullptr);
 
   // Reload all menus.
