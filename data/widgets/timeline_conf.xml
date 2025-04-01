@@ -1,4 +1,5 @@
 <!-- Aseprite -->
+<!-- Copyright (C) 2025 Igara Studio S.A. -->
 <!-- Copyright (C) 2014-2018 by David Capello -->
 <gui>
 <vbox id="timeline_conf">
@@ -30,6 +31,7 @@
 
         <check id="thumb_overlay_enabled" text="@.overlay_size"/>
         <slider min="2" max="10" id="thumb_overlay_size" cell_align="horizontal" width="128" />
+        <check id="thumb_scale_up_to_fit" text="@.scale_up_to_fit" cell_hspan="2" />
       </grid>
     </vbox>
   </hbox>

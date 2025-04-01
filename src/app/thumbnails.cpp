@@ -21,9 +21,17 @@
 
 namespace app { namespace thumb {
 
-os::SurfaceRef get_cel_thumbnail(const doc::Cel* cel, const gfx::Size& fitInSize)
+os::SurfaceRef get_cel_thumbnail(const doc::Cel* cel,
+                                 const bool scaleUpToFit,
+                                 const gfx::Size& fitInSize)
 {
-  gfx::Size newSize(gfx::Rect(cel->bounds()).fitIn(gfx::Rect(fitInSize)).size());
+  gfx::Size newSize;
+
+  if (scaleUpToFit || cel->bounds().w > fitInSize.w || cel->bounds().h > fitInSize.h)
+    newSize = gfx::Rect(cel->bounds()).fitIn(gfx::Rect(fitInSize)).size();
+  else
+    newSize = cel->bounds().size();
+
   if (newSize.w < 1 || newSize.h < 1)
     return nullptr;
 
