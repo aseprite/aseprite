@@ -23,6 +23,7 @@ public:
 private:
   obs::scoped_connection m_extKeys;
   obs::scoped_connection m_extScripts;
+  bool m_queuedReload = false;
 };
 
 } // namespace app
