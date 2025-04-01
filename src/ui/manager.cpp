@@ -196,12 +196,6 @@ Manager::Manager(const os::WindowRef& nativeWindow)
   , m_lockedWindow(nullptr)
   , m_mouseButton(kButtonNone)
 {
-  // The native window can be nullptr when running tests
-  if (nativeWindow) {
-    nativeWindow->setUserData(&m_display);
-    nativeWindow->setDragTarget(this);
-  }
-
   ASSERT(manager_thread == std::thread::id());
   manager_thread = std::this_thread::get_id();
 
@@ -242,6 +236,17 @@ Manager::Manager(const os::WindowRef& nativeWindow)
 
   // TODO check if this is needed
   onNewDisplayConfiguration(&m_display);
+
+  // The native window can be nullptr when running tests
+  if (nativeWindow) {
+    nativeWindow->setUserData(&m_display);
+
+    // Setting the drag target has a slight performance cost that we can offset by running it later.
+    auto* callbackMessage = new CallbackMessage(
+      [&, nativeWindow] { nativeWindow->setDragTarget(this); });
+    callbackMessage->setRecipient(this);
+    enqueueMessage(callbackMessage);
+  }
 }
 
 Manager::~Manager()
