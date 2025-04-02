@@ -180,7 +180,6 @@ DitheringSelector::DitheringSelector(Type type) : m_type(type)
   m_extChanges = extensions.DitheringMatricesChange.connect([this] { regenerate(); });
 
   setUseCustomWidget(true);
-  regenerate();
 }
 
 void DitheringSelector::onInitTheme(ui::InitThemeEvent& ev)
@@ -188,6 +187,16 @@ void DitheringSelector::onInitTheme(ui::InitThemeEvent& ev)
   ComboBox::onInitTheme(ev);
   if (getItem(0))
     setSizeHint(calcItemSizeHint(0));
+}
+
+void DitheringSelector::onVisible(bool visible)
+{
+  if (visible && !m_initialized) {
+    // Only do the expensive regeneration when we're set as visible for the first time.
+    regenerate();
+    m_initialized = true;
+  }
+  ComboBox::onVisible(visible);
 }
 
 void DitheringSelector::setSelectedItemByName(const std::string& name)
