@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2021-2024  Igara Studio S.A.
+# Copyright (C) 2021-2025  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 include_directories(.)
@@ -12,7 +12,9 @@ if(NOT USE_SHARED_ZLIB)
   set(SKIP_INSTALL_ALL on)
   # Don't build zlib tests
   set(ZLIB_BUILD_EXAMPLES OFF CACHE BOOL "Enable Zlib Examples")
+  set(ZLIB_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/zlib" CACHE INTERNAL "")
   add_subdirectory(zlib)
+  add_library(ZLIB::ZLIB ALIAS zlibstatic)
 endif()
 
 if(NOT USE_SHARED_LIBPNG)
