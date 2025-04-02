@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -43,7 +43,7 @@ public:
   Widget* recipient() const { return m_recipient; }
   bool fromFilter() const { return hasFlag(FromFilter); }
   void setFromFilter(const bool state) { setFlag(FromFilter, state); }
-  KeyModifiers modifiers() const { return m_modifiers; }
+  KeyModifiers modifiers() const;
   bool shiftPressed() const { return (m_modifiers & kKeyShiftModifier) == kKeyShiftModifier; }
   bool ctrlPressed() const { return (m_modifiers & kKeyCtrlModifier) == kKeyCtrlModifier; }
   bool altPressed() const { return (m_modifiers & kKeyAltModifier) == kKeyAltModifier; }
@@ -77,9 +77,9 @@ private:
   MessageType m_type; // Type of message
   int m_flags;        // Special flags for this message
   Display* m_display;
-  Widget* m_recipient;      // Recipient of this message
-  Widget* m_commonAncestor; // Common ancestor between the Leave <-> Enter messages
-  KeyModifiers m_modifiers; // Key modifiers pressed when message was created
+  Widget* m_recipient;              // Recipient of this message
+  Widget* m_commonAncestor;         // Common ancestor between the Leave <-> Enter messages
+  mutable KeyModifiers m_modifiers; // Key modifiers pressed when message was created
 };
 
 class CallbackMessage : public Message {
