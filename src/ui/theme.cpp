@@ -413,38 +413,45 @@ void Theme::paintLayer(Graphics* g,
 
             switch (layer.align()) {
               // Horizontal line
-              case MIDDLE:
+              case MIDDLE: {
+                const float y = guiscaled_center(rc.y, rc.h, layer.spriteBounds().h);
                 for (int x = rc.x; x < rc.x2(); x += layer.spriteBounds().w) {
                   draw(layer.spriteBounds().x,
                        layer.spriteBounds().y,
                        x,
-                       rc.y + rc.h / 2 - layer.spriteBounds().h / 2,
-                       layer.spriteBounds().w,
-                       layer.spriteBounds().h);
-                }
-                break;
-
-              // Vertical line
-              case CENTER:
-                for (int y = rc.y; y < rc.y2(); y += layer.spriteBounds().h) {
-                  draw(layer.spriteBounds().x,
-                       layer.spriteBounds().y,
-                       rc.x + rc.w / 2 - layer.spriteBounds().w / 2,
                        y,
                        layer.spriteBounds().w,
                        layer.spriteBounds().h);
                 }
                 break;
+              }
+
+              // Vertical line
+              case CENTER: {
+                const float x = guiscaled_center(rc.x, rc.w, layer.spriteBounds().w);
+                for (int y = rc.y; y < rc.y2(); y += layer.spriteBounds().h) {
+                  draw(layer.spriteBounds().x,
+                       layer.spriteBounds().y,
+                       x,
+                       y,
+                       layer.spriteBounds().w,
+                       layer.spriteBounds().h);
+                }
+                break;
+              }
 
               // One instance
-              case CENTER | MIDDLE:
+              case CENTER | MIDDLE: {
+                const float x = guiscaled_center(rc.x, rc.w, layer.spriteBounds().w);
+                const float y = guiscaled_center(rc.y, rc.h, layer.spriteBounds().h);
                 draw(layer.spriteBounds().x,
                      layer.spriteBounds().y,
-                     rc.x + rc.w / 2 - layer.spriteBounds().w / 2,
-                     rc.y + rc.h / 2 - layer.spriteBounds().h / 2,
+                     x,
+                     y,
                      layer.spriteBounds().w,
                      layer.spriteBounds().h);
                 break;
+              }
 
               // Pattern
               case 0:

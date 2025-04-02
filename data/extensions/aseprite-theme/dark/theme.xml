@@ -709,7 +709,7 @@
         <style id="workspace_splitter">
             <background color="workspace" />
         </style>
-        <style id="horizontal_separator" border-left="2" border-top="4" border-right="2" border-bottom="0">
+        <style id="horizontal_separator" border="2">
             <background color="window_face" />
             <background-border part="separator_horz" align="middle" />
             <text color="separator_label" x="4" align="left middle" />
