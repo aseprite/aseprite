@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -111,6 +111,8 @@ private:
   void layoutSamples(Samples& samples, base::task_token& token);
   gfx::Size calculateSheetSize(const Samples& samples, base::task_token& token) const;
   Doc* createEmptyTexture(const Samples& samples, base::task_token& token) const;
+  void adjustSamplesPixelFormat(app::DocExporter::Samples& samples,
+                                doc::PixelFormat newPixelFormat) const;
   void renderTexture(Context* ctx,
                      const Samples& samples,
                      doc::Image* textureImage,
