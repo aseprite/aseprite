@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -52,6 +52,7 @@
 #include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
+#include "doc/layer_tilemap.h"
 #include "doc/mask.h"
 #include "doc/palette.h"
 #include "doc/slice.h"
@@ -605,6 +606,18 @@ LayerImage* DocApi::newLayer(LayerGroup* parent, const std::string& name)
   return newLayer;
 }
 
+LayerImage* DocApi::newLayerAfter(LayerGroup* parent, const std::string& name, Layer* afterThis)
+{
+  LayerImage* newLayer = new LayerImage(parent->sprite());
+  newLayer->setName(name);
+
+  if (!afterThis)
+    afterThis = parent->lastLayer();
+
+  addLayer(parent, newLayer, afterThis);
+  return newLayer;
+}
+
 LayerGroup* DocApi::newGroup(LayerGroup* parent, const std::string& name)
 {
   LayerGroup* newLayerGroup = new LayerGroup(parent->sprite());
@@ -612,6 +625,33 @@ LayerGroup* DocApi::newGroup(LayerGroup* parent, const std::string& name)
 
   addLayer(parent, newLayerGroup, parent->lastLayer());
   return newLayerGroup;
+}
+
+LayerGroup* DocApi::newGroupAfter(LayerGroup* parent, const std::string& name, Layer* afterThis)
+{
+  LayerGroup* newLayerGroup = new LayerGroup(parent->sprite());
+  newLayerGroup->setName(name);
+
+  if (!afterThis)
+    afterThis = parent->lastLayer();
+
+  addLayer(parent, newLayerGroup, afterThis);
+  return newLayerGroup;
+}
+
+LayerTilemap* DocApi::newTilemapAfter(LayerGroup* parent,
+                                      const std::string& name,
+                                      tileset_index tsi,
+                                      Layer* afterThis)
+{
+  LayerTilemap* newTilemap = new LayerTilemap(parent->sprite(), tsi);
+  newTilemap->setName(name);
+
+  if (!afterThis)
+    afterThis = parent->lastLayer();
+
+  addLayer(parent, newTilemap, afterThis);
+  return newTilemap;
 }
 
 void DocApi::addLayer(LayerGroup* parent, Layer* newLayer, Layer* afterThis)
