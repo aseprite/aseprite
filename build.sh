@@ -57,28 +57,8 @@ if [ "$1" == "--norun" ] ; then
 fi
 
 # Platform.
-if [[ "$(uname)" =~ "MINGW32" ]] || [[ "$(uname)" =~ "MINGW64" ]] || [[ "$(uname)" =~ "MSYS_NT-10.0" ]] ; then
-    is_win=1
-    cpu=x64
-
-    if ! cl.exe >/dev/null 2>/dev/null ; then
-        echo ""
-        echo "MSVC compiler (cl.exe) not found in PATH"
-        echo ""
-        echo "  PATH=$PATH"
-        echo ""
-        exit 1
-    fi
-elif [[ "$(uname)" == "Linux" ]] ; then
-    is_linux=1
-    cpu=x64
-elif [[ "$(uname)" =~ "Darwin" ]] ; then
-    is_macos=1
-    if [[ $(uname -m) == "arm64" ]]; then
-        cpu=arm64
-    else
-        cpu=x64
-    fi
+if ! source "$pwd/misc/platform.sh" ; then
+    exit $?
 fi
 
 # Check utilities.
@@ -348,10 +328,7 @@ else
     elif git --git-dir="$source_dir/.git" branch --contains "$remote/main" | grep -q "^\* $branch_name\$" ; then
         base_branch_name=main
     else
-        echo ""
-        echo "Error: Branch $branch_name looks like doesn't belong to main or beta"
-        echo ""
-        exit 1
+        base_branch_name=$branch_name
     fi
 fi
 
@@ -366,15 +343,9 @@ else
 fi
 
 # Required Skia for the base branch.
-if [ "$base_branch_name" == "beta" ] ; then
-    skia_tag=m124-08a5439a6b
-    file_skia_dir=beta_skia_dir
-    possible_skia_dir_name=skia-m124
-else
-    skia_tag=m102-861e4743af
-    file_skia_dir=main_skia_dir
-    possible_skia_dir_name=skia
-fi
+skia_tag=$(cat "$pwd/misc/skia-tag.txt" | xargs)
+possible_skia_dir_name=skia-$(echo $skia_tag | cut -d "-" -f 1)
+file_skia_dir="$base_branch_name"_skia_dir
 
 # Check Skia dependency.
 if [ ! -f "$pwd/.build/$file_skia_dir" ] ; then
@@ -422,6 +393,8 @@ if [ ! -d "$skia_library_dir" ] ; then
     echo ""
     if [ ! $auto ] ; then
         read -sN 1 -p "Download pre-compiled Skia automatically [Y/n]? "
+        # Convert the Enter key as the default option: an empty string
+        REPLY=$(echo $REPLY | xargs)
     fi
     if [[ $auto || "$REPLY" == "" || "$REPLY" == "y" || "$REPLY" == "Y" ]] ; then
         if [[ $is_win && "$build_type" == "Debug" ]] ; then
@@ -429,17 +402,10 @@ if [ ! -d "$skia_library_dir" ] ; then
         else
             skia_build=Release
         fi
-
-        if [ $is_win ] ; then
-            skia_file=Skia-Windows-$skia_build-$cpu.zip
-        elif [ $is_macos ] ; then
-            skia_file=Skia-macOS-$skia_build-$cpu.zip
-        else
-            skia_file=Skia-Linux-$skia_build-$cpu-libstdc++.zip
-        fi
-        skia_url=https://github.com/aseprite/skia/releases/download/$skia_tag/$skia_file
+        skia_url=$(bash misc/skia-url.sh $skia_build | xargs)
+        skia_file=$(basename $skia_url)
         if [ ! -f "$skia_dir/$skia_file" ] ; then
-            curl -L -o "$skia_dir/$skia_file" "$skia_url"
+            curl --ssl-revoke-best-effort -L -o "$skia_dir/$skia_file" "$skia_url"
         fi
         if [ ! -d "$skia_library_dir" ] ; then
             unzip -n -d "$skia_dir" "$skia_dir/$skia_file"
