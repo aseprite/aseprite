@@ -706,6 +706,7 @@ target_sources(app-lib PRIVATE
   util/layer_utils.cpp
   util/msk_file.cpp
   util/new_image_from_mask.cpp
+  util/open_file_job.cpp
   util/pal_ops.cpp
   util/pic_file.cpp
   util/pixel_ratio.cpp
