@@ -15,6 +15,7 @@
 #include "doc/sprite.h"
 #include "doc/tilesets.h"
 #include "fmt/format.h"
+#include <memory>
 
 namespace app {
 
@@ -73,12 +74,12 @@ Layer* copy_layer_with_sprite(doc::Layer* layer, doc::Sprite* sprite)
       tilesetIndex = sprite->tilesets()->add(srcTilesetCopy);
     }
 
-    clone.reset(new LayerTilemap(sprite, tilesetIndex));
+    clone = std::make_unique<LayerTilemap>(sprite, tilesetIndex);
   }
   else if (layer->isImage())
-    clone.reset(new LayerImage(sprite));
+    clone = std::make_unique<LayerImage>(sprite);
   else if (layer->isGroup())
-    clone.reset(new LayerGroup(sprite));
+    clone = std::make_unique<LayerGroup>(sprite);
   else
     throw std::runtime_error("Invalid layer type");
 
