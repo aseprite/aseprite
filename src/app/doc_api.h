@@ -117,8 +117,14 @@ public:
   void removeLayer(Layer* layer);
   void restackLayerAfter(Layer* layer, LayerGroup* parent, Layer* afterThis);
   void restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeThis);
-  Layer* duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer* afterLayer);
-  Layer* duplicateLayerBefore(Layer* sourceLayer, LayerGroup* parent, Layer* beforeLayer);
+  Layer* duplicateLayerAfter(Layer* sourceLayer,
+                             LayerGroup* parent,
+                             Layer* afterLayer,
+                             const std::string& nameSuffix = std::string());
+  Layer* duplicateLayerBefore(Layer* sourceLayer,
+                              LayerGroup* parent,
+                              Layer* beforeLayer,
+                              const std::string& nameSuffix = std::string());
 
   // Images API
   void replaceImage(Sprite* sprite, const ImageRef& oldImage, const ImageRef& newImage);

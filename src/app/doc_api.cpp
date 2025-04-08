@@ -692,23 +692,29 @@ void DocApi::restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeT
   restackLayerAfter(layer, parent, afterThis);
 }
 
-Layer* DocApi::duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer* afterLayer)
+Layer* DocApi::duplicateLayerAfter(Layer* sourceLayer,
+                                   LayerGroup* parent,
+                                   Layer* afterLayer,
+                                   const std::string& nameSuffix)
 {
   ASSERT(parent);
-  Layer* newLayerPtr = copy_layer(sourceLayer);
+  Layer* newLayerPtr = copy_layer_with_sprite(sourceLayer, parent->sprite());
 
-  newLayerPtr->setName(newLayerPtr->name() + " Copy");
+  newLayerPtr->setName(newLayerPtr->name() + nameSuffix);
 
   addLayer(parent, newLayerPtr, afterLayer);
 
   return newLayerPtr;
 }
 
-Layer* DocApi::duplicateLayerBefore(Layer* sourceLayer, LayerGroup* parent, Layer* beforeLayer)
+Layer* DocApi::duplicateLayerBefore(Layer* sourceLayer,
+                                    LayerGroup* parent,
+                                    Layer* beforeLayer,
+                                    const std::string& nameSuffix)
 {
   ASSERT(parent);
   Layer* afterThis = (beforeLayer ? beforeLayer->getPreviousBrowsable() : nullptr);
-  Layer* newLayer = duplicateLayerAfter(sourceLayer, parent, afterThis);
+  Layer* newLayer = duplicateLayerAfter(sourceLayer, parent, afterThis, nameSuffix);
   if (newLayer)
     restackLayerBefore(newLayer, parent, beforeLayer);
   return newLayer;
