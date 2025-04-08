@@ -290,7 +290,6 @@ target_sources(app-lib PRIVATE
   cmd/copy_region.cpp
   cmd/crop_cel.cpp
   cmd/deselect_mask.cpp
-  cmd/drop_on_timeline.cpp
   cmd/flatten_layers.cpp
   cmd/flip_image.cpp
   cmd/flip_mask.cpp
@@ -526,6 +525,7 @@ target_sources(app-lib PRIVATE
   context_flags.cpp
   doc.cpp
   doc_api.cpp
+  doc_api_dnd_helper.cpp
   doc_diff.cpp
   doc_exporter.cpp
   doc_range_ops.cpp
@@ -684,6 +684,7 @@ target_sources(app-lib PRIVATE
   ui/tile_button.cpp
   ui/tileset_selector.cpp
   ui/timeline/ani_controls.cpp
+  ui/timeline/doc_providers.cpp
   ui/timeline/timeline.cpp
   ui/toolbar.cpp
   ui/user_data_view.cpp

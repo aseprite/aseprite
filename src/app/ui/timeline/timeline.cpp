@@ -13,7 +13,6 @@
 
 #include "app/app.h"
 #include "app/app_menus.h"
-#include "app/cmd/drop_on_timeline.h"
 #include "app/cmd/set_tag_range.h"
 #include "app/cmd_transaction.h"
 #include "app/color_utils.h"
@@ -42,6 +41,7 @@
 #include "app/ui/input_chain.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
+#include "app/ui/timeline/doc_providers.h"
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
@@ -4528,8 +4528,8 @@ void Timeline::onDrag(ui::DragEvent& e)
 
 void Timeline::onDrop(ui::DragEvent& e)
 {
-  using InsertionPoint = cmd::DropOnTimeline::InsertionPoint;
-  using DroppedOn = cmd::DropOnTimeline::DroppedOn;
+  using InsertionPoint = docapi::InsertionPoint;
+  using DroppedOn = docapi::DroppedOn;
   Widget::onDrop(e);
 
   // Determine at which frame and layer the content was dropped on.
@@ -4572,16 +4572,22 @@ void Timeline::onDrop(ui::DragEvent& e)
     auto surface = e.getImage();
 
     execute_from_ui_thread([=] {
-      std::string txmsg = (droppedImage ? "Dropped image on timeline" :
-                                          "Dropped paths on timeline");
-      Tx tx(m_document, txmsg);
+      std::string txmsg;
+      std::unique_ptr<docapi::DocProvider> docProvider = nullptr;
       if (droppedImage) {
+        txmsg = "Dropped image on timeline";
         doc::ImageRef image = nullptr;
         convert_surface_to_image(surface.get(), 0, 0, surface->width(), surface->height(), image);
-        tx(new cmd::DropOnTimeline(m_document, frame, layerIndex, insert, droppedOn, image));
+        docProvider = std::make_unique<DocProviderFromImage>(image);
       }
-      else
-        tx(new cmd::DropOnTimeline(m_document, frame, layerIndex, insert, droppedOn, paths));
+      else {
+        txmsg = "Dropped paths on timeline";
+        docProvider = std::make_unique<DocProviderFromPaths>(m_document->context(), paths);
+      }
+
+      Tx tx(m_document, txmsg);
+      DocApi docApi(m_document, tx);
+      docApi.dropDocumentsOnTimeline(m_document, frame, layerIndex, insert, droppedOn, *docProvider);
       tx.commit();
       m_document->notifyGeneralUpdate();
     });
