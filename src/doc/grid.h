@@ -19,7 +19,8 @@ class Grid {
 public:
   enum class Type {
     Orthogonal,
-    Isometric,
+    IsometricSharedEdges,
+    IsometricThickEdges,
   };
   explicit Grid(const gfx::Size& sz = gfx::Size(16, 16), const Type t = Type::Orthogonal)
     : m_tileSize(sz)
@@ -101,12 +102,28 @@ public:
     bool oddSize : 1;
     bool shareEdges : 1;
 
-    IsometricGuide(const gfx::Size& sz);
+    IsometricGuide(const gfx::Size& sz, const bool thickEdges = false);
   };
+
+  // Make IsometricGuide from Grid instance
+  IsometricGuide getIsometricGuide() const
+  {
+    return IsometricGuide(tileSize(), type() == Type::IsometricThickEdges);
+  }
 
   // Returns an array of coordinates used for calculating the
   // pixel-precise bounds of an isometric grid cell
-  static std::vector<gfx::Point> getIsometricLine(const gfx::Size& sz);
+  static std::vector<gfx::Point> getIsometricLine(const gfx::Size& sz,
+                                                  const bool thickEdges = false);
+
+  // Get the coordinate array from Grid instance
+  std::vector<gfx::Point> getIsometricLine() const
+  {
+    return getIsometricLine(tileSize(), type() == Type::IsometricThickEdges);
+  }
+
+  static bool isIsometric(const Type t);
+  bool isIsometric() const { return isIsometric(type()); }
 
 private:
   gfx::Size m_tileSize;

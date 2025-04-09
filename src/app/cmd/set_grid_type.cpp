@@ -54,8 +54,10 @@ std::string grid_type_to_string(const doc::Grid::Type t)
 {
   if (t == doc::Grid::Type::Orthogonal)
     return app::Strings::grid_settings_type_orthogonal();
-  if (t == doc::Grid::Type::Isometric)
-    return app::Strings::grid_settings_type_isometric();
+  if (t == doc::Grid::Type::IsometricSharedEdges)
+    return app::Strings::grid_settings_type_isometric_shared();
+  if (t == doc::Grid::Type::IsometricThickEdges)
+    return app::Strings::grid_settings_type_isometric_thick();
 
   throw base::Exception("Invalid grid type index: " + std::to_string(int(t)));
 }
@@ -64,8 +66,10 @@ doc::Grid::Type string_to_grid_type(const std::string& s)
 {
   if (s == app::Strings::grid_settings_type_orthogonal())
     return doc::Grid::Type::Orthogonal;
-  if (s == app::Strings::grid_settings_type_isometric())
-    return doc::Grid::Type::Isometric;
+  if (s == app::Strings::grid_settings_type_isometric_shared())
+    return doc::Grid::Type::IsometricSharedEdges;
+  if (s == app::Strings::grid_settings_type_isometric_thick())
+    return doc::Grid::Type::IsometricThickEdges;
 
   throw base::Exception("Invalid string for grid type: " + s);
 }

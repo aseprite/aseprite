@@ -30,6 +30,7 @@ extern const char* Eraser;
 extern const char* Eyedropper;
 extern const char* Hand;
 extern const char* Move;
+extern const char* Line;
 }; // namespace WellKnownTools
 
 namespace WellKnownInks {

@@ -25,26 +25,26 @@ namespace app { namespace tools {
 using namespace gfx;
 
 // Adjustment for snap to isometric grid
-static void snap_isometric_line(ToolLoop* loop, Stroke& stroke, bool lineCtl)
+static void snap_isometric_line(ToolLoop* loop, Stroke& stroke)
 {
   // Get last two points
   Stroke::Pt& a = stroke[stroke.size() - 2];
   Stroke::Pt& b = stroke[stroke.size() - 1];
 
-  // Get function invoked by line tool
-  bool lineTool = (string_id_to_brush_type(loop->getTool()->getId()) == kLineBrushType);
-
   // TODO: rectangles and ellipses
-  if (lineCtl && !loop->getIntertwine()->snapByAngle())
+  if (loop->getController()->isTwoPoints() && !loop->getIntertwine()->snapByAngle())
     return;
 
-  // Get line angle
-  PointF vto(b.x - a.x, b.y - a.y);
-  double len = ABS(vto.x) + ABS(vto.y);
-  vto /= len;
+  // Get line direction
+  const double len = ABS(b.x - a.x) + ABS(b.y - a.y);
+  const PointF vto((b.x - a.x) / len, (b.y - a.y) / len);
 
-  const gfx::Rect& grid = loop->getGridBounds();
-  const auto line = doc::Grid::IsometricGuide(grid.size());
+  const doc::Grid& docGrid = loop->getGrid();
+  const gfx::Rect grid(docGrid.bounds());
+  const auto line = docGrid.getIsometricGuide();
+
+  // Get function invoked by line tool
+  const bool lineTool = loop->getTool()->getId() == WellKnownTools::Line;
 
   // Offset vertical lines/single point to the left for line tool.
   // Because pressing the angle snap key will bypass this function,
@@ -90,9 +90,7 @@ static void snap_isometric_line(ToolLoop* loop, Stroke& stroke, bool lineCtl)
       // for freehand strokes would require changes to intertwiners,
       // not just the freehand controller itself.
       if (lineTool && vto.x < 0 && a.x % (grid.w - !line.evenWidth)) {
-        auto tmp = a;
-        a = b;
-        b = tmp;
+        std::swap(a, b);
       }
     }
     else {
@@ -166,8 +164,8 @@ public:
     m_last = pt;
     stroke.addPoint(pt);
     if (loop->getController()->canSnapToGrid() && loop->getSnapToGrid() &&
-        loop->sprite()->gridType() == doc::Grid::Type::Isometric) {
-      snap_isometric_line(loop, stroke, false);
+        doc::Grid::isIsometric(loop->sprite()->gridType())) {
+      snap_isometric_line(loop, stroke);
       m_last = stroke[stroke.size() - 1];
     }
   }
@@ -299,8 +297,8 @@ public:
       !(int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect)) &&
 
       // And snapping to isometric grid
-      (loop->getSnapToGrid() && loop->sprite()->gridType() == doc::Grid::Type::Isometric)) {
-      snap_isometric_line(loop, stroke, true);
+      (loop->getSnapToGrid() && doc::Grid::isIsometric(loop->sprite()->gridType()))) {
+      snap_isometric_line(loop, stroke);
     }
   }
 
@@ -346,7 +344,7 @@ public:
 
     bool isoAngle = false;
     bool isoMode = loop->getController()->canSnapToGrid() && loop->getSnapToGrid() &&
-                   loop->sprite()->gridType() == doc::Grid::Type::Isometric;
+                   doc::Grid::isIsometric(loop->sprite()->gridType());
 
     if ((int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect))) {
       int dx = stroke[1].x - m_first.x;
@@ -392,7 +390,7 @@ public:
       }
     }
     else if (isoMode) {
-      snap_isometric_line(loop, stroke, true);
+      snap_isometric_line(loop, stroke);
     }
 
     if (hasAngle()) {
@@ -487,7 +485,7 @@ public:
 private:
   void snapPointsToGridTiles(ToolLoop* loop, Stroke& stroke)
   {
-    auto grid = loop->getGridBounds();
+    const auto& grid = loop->getGrid();
 
     Rect a(snap_to_grid(grid, stroke[0].toPoint(), PreferSnapTo::BoxOrigin),
            snap_to_grid(grid, stroke[0].toPoint(), PreferSnapTo::BoxEnd));
