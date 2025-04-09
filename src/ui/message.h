@@ -13,6 +13,7 @@
 #include "base/paths.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
+#include "os/dnd.h"
 #include "ui/base.h"
 #include "ui/keys.h"
 #include "ui/message_type.h"
@@ -260,6 +261,62 @@ public:
 
 private:
   base::paths m_files;
+};
+
+class DndMessage : public Message {
+public:
+  os::DragEvent& event() { return m_event; }
+
+protected:
+  DndMessage(MessageType type, os::DragEvent& ev) : Message(type), m_event(ev) {}
+  DndMessage(const DndMessage&) = default;
+  DndMessage(DndMessage&&) = default;
+
+private:
+  os::DragEvent& m_event;
+};
+
+class DragEnterMessage : public DndMessage {
+public:
+  DragEnterMessage(os::DragEvent& ev) : DndMessage(kDragEnterMessage, ev) {}
+
+  // Returns the Widget under the mouse cursor when the user is dragging elements.
+  Widget* widget() { return m_widget; }
+  void widget(Widget* widget) { m_widget = widget; }
+
+private:
+  Widget* m_widget;
+};
+
+class DragLeaveMessage : public DndMessage {
+public:
+  DragLeaveMessage(os::DragEvent& ev) : DndMessage(kDragLeaveMessage, ev) {}
+
+  // Returns the Widget that was under the mouse cursor just before it hovers a
+  // new widget.
+  Widget* widget() { return m_widget; }
+  void widget(Widget* widget) { m_widget = widget; }
+
+private:
+  Widget* m_widget;
+};
+
+class DragMessage : public DndMessage {
+public:
+  DragMessage(os::DragEvent& ev) : DndMessage(kDragMessage, ev) {}
+
+  // Returns the widget currently being hovered by the dragged elements.
+  Widget* widget() { return m_widget; }
+  // Sets the widget currently being hovered by the dragged elements.
+  void widget(Widget* widget) { m_widget = widget; }
+
+private:
+  Widget* m_widget;
+};
+
+class DropMessage : public DndMessage {
+public:
+  DropMessage(os::DragEvent& ev) : DndMessage(kDropMessage, ev) {}
 };
 
 } // namespace ui
