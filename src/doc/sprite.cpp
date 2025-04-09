@@ -80,6 +80,7 @@ Sprite::Sprite(const ImageSpec& spec, int ncolors)
   , m_frlens(1, 100) // First frame with 100 msecs of duration
   , m_root(new LayerGroup(this))
   , m_gridBounds(Sprite::DefaultGridBounds())
+  , m_gridType(Sprite::DefaultGridType())
   , m_tags(this)
   , m_slices(this)
   , m_tilesets(nullptr)

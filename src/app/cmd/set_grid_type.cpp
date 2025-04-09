@@ -10,7 +10,9 @@
 
 #include "app/cmd/set_grid_type.h"
 
+#include "base/exception.h"
 #include "app/doc.h"
+#include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
 #include "doc/sprite.h"
 
@@ -46,4 +48,26 @@ void SetGridType::setGrid(const doc::Grid::Type type)
   spr->incrementVersion();
 }
 
-}} // namespace app::cmd
+} // namespace cmd
+
+std::string grid_type_to_string(const doc::Grid::Type t)
+{
+  if (t == doc::Grid::Type::Orthogonal)
+    return app::Strings::grid_settings_type_orthogonal();
+  if (t == doc::Grid::Type::Isometric)
+    return app::Strings::grid_settings_type_isometric();
+
+  throw base::Exception("Invalid grid type index: " + std::to_string(int(t)));
+}
+
+doc::Grid::Type string_to_grid_type(const std::string& s)
+{
+  if (s == app::Strings::grid_settings_type_orthogonal())
+    return doc::Grid::Type::Orthogonal;
+  if (s == app::Strings::grid_settings_type_isometric())
+    return doc::Grid::Type::Isometric;
+
+  throw base::Exception("Invalid string for grid type: " + s);
+}
+
+} // namespace app

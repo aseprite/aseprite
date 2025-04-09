@@ -67,12 +67,15 @@ Preferences::Preferences() : app::gen::GlobalPref("")
   load();
 
   // Create a connection with the default document preferences grid
-  // bounds to sync the default grid bounds for new sprites in the
+  // bounds/type to sync the default grid bounds/type for new sprites in the
   // "doc" layer.
   auto& defPref = document(nullptr);
   defPref.grid.bounds.AfterChange.connect(
     [](const gfx::Rect& newValue) { doc::Sprite::SetDefaultGridBounds(newValue); });
+  defPref.grid.type.AfterChange.connect(
+    [](const doc::Grid::Type& newValue) { doc::Sprite::SetDefaultGridType(newValue); });
   doc::Sprite::SetDefaultGridBounds(defPref.grid.bounds());
+  doc::Sprite::SetDefaultGridType(defPref.grid.type());
 
   // Reset confusing defaults for a new instance of the program.
   defPref.grid.snap(false);

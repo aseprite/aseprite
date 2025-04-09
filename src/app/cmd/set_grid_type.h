@@ -35,6 +35,11 @@ private:
   doc::Grid::Type m_newType;
 };
 
-}} // namespace app::cmd
+} // namespace cmd
+
+std::string grid_type_to_string(const doc::Grid::Type t);
+doc::Grid::Type string_to_grid_type(const std::string& s);
+
+} // namespace app
 
 #endif

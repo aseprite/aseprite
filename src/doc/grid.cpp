@@ -221,7 +221,7 @@ static void push_isometric_line_point(int x, int y, std::vector<gfx::Point>* dat
 std::vector<gfx::Point> Grid::getIsometricLine(const gfx::Size& sz)
 {
   std::vector<gfx::Point> result;
-  const auto guide = IsometricGuide(sz);
+  const IsometricGuide guide(sz);
 
   // We use the line drawing algorithm to find the points
   // for a single pixel-precise line
