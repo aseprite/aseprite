@@ -423,7 +423,10 @@
             <expr id="grid_w" text="" />
             <label text="@.grid_height" />
             <expr id="grid_h" text="" />
-            <combobox id="grid_type" editable="true" expansive="true">
+            <hbox />
+
+            <label text="" />
+            <combobox id="grid_type" expansive="true" cell_hspan="3">
               <listitem text="@.grid_type_orthogonal" />
               <listitem text="@.grid_type_isometric" />
             </combobox>

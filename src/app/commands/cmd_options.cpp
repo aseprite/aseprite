@@ -803,36 +803,30 @@ public:
     m_pref.range.alpha(static_cast<app::gen::AlphaRange>(alpha()->getSelectedItemIndex()));
     m_pref.range.opacity(static_cast<app::gen::AlphaRange>(opacity()->getSelectedItemIndex()));
 
-    // Change sprite grid bounds
-    if (m_context && m_context->activeDocument() && m_context->activeDocument()->sprite() &&
-        m_context->activeDocument()->sprite()->gridBounds() != gridBounds()) {
-      try {
-        ContextWriter writer(m_context, 1000);
-        Tx tx(writer, Strings::commands_GridSettings(), ModifyDocument);
-        tx(new cmd::SetGridBounds(writer.sprite(), gridBounds()));
-        tx.commit();
-      }
-      catch (const std::exception& ex) {
-        Console::showException(ex);
-      }
-    }
+    // Change sprite grid settings
+    if (m_context && m_context->activeDocument() && m_context->activeDocument()->sprite()) {
+      const bool setBounds = m_context->activeDocument()->sprite()->gridBounds() != gridBounds();
+      const bool setType = m_context->activeDocument()->sprite()->gridType() != gridTypeInt();
+      if (setBounds || setType) {
+        try {
+          ContextWriter writer(m_context, 1000);
+          Tx tx(writer, Strings::commands_GridSettings(), ModifyDocument);
+          if (setBounds)
+            tx(new cmd::SetGridBounds(writer.sprite(), gridBounds()));
+          if (setType)
+            tx(new cmd::SetGridType(writer.sprite(), gridTypeInt()));
 
-    // Change sprite grid type
-    if (m_context && m_context->activeDocument() && m_context->activeDocument()->sprite() &&
-        m_context->activeDocument()->sprite()->gridType() != gridTypeInt()) {
-      try {
-        ContextWriter writer(m_context, 1000);
-        Tx tx(writer, Strings::commands_GridSettings(), ModifyDocument);
-        tx(new cmd::SetGridType(writer.sprite(), gridTypeInt()));
-        tx.commit();
-      }
-      catch (const std::exception& ex) {
-        Console::showException(ex);
+          tx.commit();
+        }
+        catch (const std::exception& ex) {
+          Console::showException(ex);
+        }
       }
     }
 
     m_curPref->show.grid(gridVisible()->isSelected());
     m_curPref->grid.bounds(gridBounds());
+    m_curPref->grid.type(gridTypeInt());
     m_curPref->grid.color(gridColor()->getColor());
     m_curPref->grid.opacity(gridOpacity()->getValue());
     m_curPref->grid.autoOpacity(gridAutoOpacity()->isSelected());
@@ -1429,11 +1423,7 @@ private:
     gridW()->setTextf("%d", m_curPref->grid.bounds().w);
     gridH()->setTextf("%d", m_curPref->grid.bounds().h);
 
-    doc::Grid::Type type = m_curPref->grid.type();
-    std::string typestr = (type == doc::Grid::Type::Isometric ?
-                             app::Strings::grid_settings_type_isometric() :
-                             app::Strings::grid_settings_type_orthogonal());
-    gridType()->getEntryWidget()->setText(typestr);
+    gridType()->setSelectedItemIndex(gridTypeIndex(m_curPref->grid.type()));
 
     gridColor()->setColor(m_curPref->grid.color());
     gridOpacity()->setValue(m_curPref->grid.opacity());
@@ -1479,11 +1469,7 @@ private:
       gridW()->setTextf("%d", pref.grid.bounds.defaultValue().w);
       gridH()->setTextf("%d", pref.grid.bounds.defaultValue().h);
 
-      doc::Grid::Type type = pref.grid.type.defaultValue();
-      std::string typestr = (type == doc::Grid::Type::Isometric ?
-                               app::Strings::grid_settings_type_isometric() :
-                               app::Strings::grid_settings_type_orthogonal());
-      gridType()->getEntryWidget()->setText(typestr);
+      gridType()->setSelectedItemIndex(gridTypeIndex(pref.grid.type.defaultValue()));
 
       gridColor()->setColor(pref.grid.color.defaultValue());
       gridOpacity()->setValue(pref.grid.opacity.defaultValue());
@@ -1502,11 +1488,7 @@ private:
       gridW()->setTextf("%d", pref.grid.bounds().w);
       gridH()->setTextf("%d", pref.grid.bounds().h);
 
-      doc::Grid::Type type = pref.grid.type();
-      std::string typestr = (type == doc::Grid::Type::Isometric ?
-                               app::Strings::grid_settings_type_isometric() :
-                               app::Strings::grid_settings_type_orthogonal());
-      gridType()->getEntryWidget()->setText(typestr);
+      gridType()->setSelectedItemIndex(gridTypeIndex(pref.grid.type()));
 
       gridColor()->setColor(pref.grid.color());
       gridOpacity()->setValue(pref.grid.opacity());
@@ -1969,13 +1951,15 @@ private:
     return gfx::Rect(gridX()->textInt(), gridY()->textInt(), gridW()->textInt(), gridH()->textInt());
   }
 
+  int gridTypeIndex(const doc::Grid::Type type) const
+  {
+    return gridType()->findItemIndex(grid_type_to_string(type));
+  }
+
   doc::Grid::Type gridTypeInt() const
   {
-    std::string typestr = gridType()->getEntryWidget()->text();
-    if (typestr == app::Strings::grid_settings_type_isometric())
-      return doc::Grid::Type::Isometric;
-
-    return doc::Grid::Type::Orthogonal;
+    const int index = gridType()->getSelectedItemIndex();
+    return string_to_grid_type(gridType()->getItemText(index));
   }
 
   static std::string userThemeFolder()

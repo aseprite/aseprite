@@ -18,12 +18,12 @@ namespace doc {
 class Grid {
 public:
   enum class Type {
-    Orthogonal = 0x00,
-    Isometric = 0x01,
-
+    Orthogonal,
+    Isometric,
   };
-  explicit Grid(const gfx::Size& sz = gfx::Size(16, 16))
+  explicit Grid(const gfx::Size& sz = gfx::Size(16, 16), const Type t = Type::Orthogonal)
     : m_tileSize(sz)
+    , m_type(t)
     , m_origin(0, 0)
     , m_tileCenter(sz.w / 2, sz.h / 2)
     , m_tileOffset(sz)
@@ -33,8 +33,9 @@ public:
   {
   }
 
-  explicit Grid(const gfx::Rect& rc)
+  explicit Grid(const gfx::Rect& rc, const Type t = Type::Orthogonal)
     : m_tileSize(rc.size())
+    , m_type(t)
     , m_origin(rc.origin())
     , m_tileCenter(m_tileSize.w / 2, m_tileSize.h / 2)
     , m_tileOffset(m_tileSize)
@@ -50,13 +51,16 @@ public:
   bool isEmpty() const { return m_tileSize.w == 0 || m_tileSize.h == 0; }
 
   gfx::Size tileSize() const { return m_tileSize; }
+  Type type() const { return m_type; }
   gfx::Point origin() const { return m_origin; }
   gfx::Point tileCenter() const { return m_tileCenter; }
   gfx::Point tileOffset() const { return m_tileOffset; }
   gfx::Point oddRowOffset() const { return m_oddRowOffset; }
   gfx::Point oddColOffset() const { return m_oddColOffset; }
+  gfx::Rect bounds() const { return gfx::Rect(origin(), tileSize()); }
 
   void tileSize(const gfx::Size& tileSize) { m_tileSize = tileSize; }
+  void type(const Type t) { m_type = t; }
   void origin(const gfx::Point& origin) { m_origin = origin; }
   void tileCenter(const gfx::Point& tileCenter) { m_tileCenter = tileCenter; }
   void tileOffset(const gfx::Point& tileOffset) { m_tileOffset = tileOffset; }
@@ -89,19 +93,13 @@ public:
   struct IsometricGuide {
     gfx::Point start;
     gfx::Point end;
-
-    union {
-      struct {
-        bool evenWidth : 1;
-        bool evenHeight : 1;
-        bool evenHalfWidth : 1;
-        bool evenHalfHeight : 1;
-        bool squareRatio : 1;
-        bool oddSize : 1;
-        bool shareEdges : 1;
-      };
-      int flags;
-    };
+    bool evenWidth : 1;
+    bool evenHeight : 1;
+    bool evenHalfWidth : 1;
+    bool evenHalfHeight : 1;
+    bool squareRatio : 1;
+    bool oddSize : 1;
+    bool shareEdges : 1;
 
     IsometricGuide(const gfx::Size& sz);
   };
@@ -112,6 +110,7 @@ public:
 
 private:
   gfx::Size m_tileSize;
+  Type m_type;
   gfx::Point m_origin;
   gfx::Point m_tileCenter;
   gfx::Point m_tileOffset;

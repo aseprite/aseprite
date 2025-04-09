@@ -1149,7 +1149,7 @@ void Editor::drawGrid(Graphics* g,
     gfx::rgba(gfx::getr(grid_color), gfx::getg(grid_color), gfx::getb(grid_color), alpha);
 
   // Orthogonal grid
-  if (isPixelGrid || getSite().sprite()->gridType() == doc::Grid::Type::Orthogonal) {
+  if (isPixelGrid || m_sprite->gridType() == doc::Grid::Type::Orthogonal) {
     // Draw horizontal lines
     int x1 = spriteBounds.x;
     int y1 = gridF.y;
@@ -1221,7 +1221,6 @@ void Editor::drawGrid(Graphics* g,
       // Get length and direction of line (a, b)
       Point vto = Point(b - a);
       PointF ivto = PointF(-vto.x, vto.y);
-      const double lenF = sqrt(vto.x * vto.x + vto.y * vto.y);
 
       // Now displace point (b) to right edge of canvas
       b = a + PointF(dx * 0.5, -dy * 0.5);
@@ -1280,13 +1279,14 @@ gfx::Path& Editor::getIsometricGridPath(Rect& grid)
 
     // Prepare bitmap from points of pixel precise line.
     // A single grid cell is calculated from these
-    im->clear(0x00);
-    for (const auto p : doc::Grid::getIsometricLine(grid.size()))
-      im->fillRect(std::round(p.x * pix.w),
-                   std::round((grid.h - p.y) * pix.h),
-                   std::floor((grid.w - p.x) * pix.w),
-                   std::floor(p.y * pix.h),
-                   0x01);
+    im->clear(0);
+    for (const auto& p : doc::Grid::getIsometricLine(grid.size()))
+      fill_rect(im,
+                std::round(p.x * pix.w),
+                std::round((grid.h - p.y) * pix.h),
+                std::floor((grid.w - p.x) * pix.w),
+                std::floor(p.y * pix.h),
+                1);
 
     doc::MaskBoundaries immask;
     immask.regen(im);
