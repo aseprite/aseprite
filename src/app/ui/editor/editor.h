@@ -368,7 +368,7 @@ private:
                 const app::Color& color,
                 int alpha,
                 bool isPixelGrid);
-  gfx::Path& getIsometricGridPath(gfx::Rect& grid);
+  gfx::Path& getIsometricGridPath(const doc::Grid& docGrid);
   void drawSlices(ui::Graphics* g);
   void drawTileNumbers(ui::Graphics* g, const Cel* cel);
   void drawCelBounds(ui::Graphics* g, const Cel* cel, const gfx::Color color);

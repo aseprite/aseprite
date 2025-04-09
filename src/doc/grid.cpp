@@ -179,7 +179,7 @@ std::vector<gfx::Point> Grid::tilesInCanvasRegion(const gfx::Region& rgn) const
   return result;
 }
 
-Grid::IsometricGuide::IsometricGuide(const gfx::Size& sz)
+Grid::IsometricGuide::IsometricGuide(const gfx::Size& sz, const bool thickEdges)
 {
   evenWidth = sz.w % 2 == 0;
   evenHeight = sz.h % 2 == 0;
@@ -187,10 +187,7 @@ Grid::IsometricGuide::IsometricGuide(const gfx::Size& sz)
   evenHalfHeight = ((sz.h / 2) % 2) == 0;
   squareRatio = ABS(sz.w - sz.h) <= 1;
   oddSize = !evenWidth && evenHalfWidth && !evenHeight && evenHalfHeight;
-
-  // TODO: add 'share edges' checkbox to UI.
-  // For testing the option, set this 'false' to 'true'
-  shareEdges = !(false && !squareRatio && evenHeight);
+  shareEdges = !thickEdges || squareRatio || !evenHeight;
 
   start.x = 0;
   start.y = std::round(sz.h * 0.5);
@@ -218,10 +215,10 @@ static void push_isometric_line_point(int x, int y, std::vector<gfx::Point>* dat
   }
 }
 
-std::vector<gfx::Point> Grid::getIsometricLine(const gfx::Size& sz)
+std::vector<gfx::Point> Grid::getIsometricLine(const gfx::Size& sz, const bool thickEdges)
 {
   std::vector<gfx::Point> result;
-  const IsometricGuide guide(sz);
+  const IsometricGuide guide(sz, thickEdges);
 
   // We use the line drawing algorithm to find the points
   // for a single pixel-precise line
@@ -233,6 +230,14 @@ std::vector<gfx::Point> Grid::getIsometricLine(const gfx::Size& sz)
                                                     (doc::AlgoPixel)&push_isometric_line_point);
 
   return result;
+}
+
+bool Grid::isIsometric(const Type t)
+{
+  if (t == Type::IsometricSharedEdges || t == Type::IsometricThickEdges)
+    return true;
+
+  return false;
 }
 
 } // namespace doc

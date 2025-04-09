@@ -148,7 +148,7 @@ doc::AlgoLineWithAlgoPixel Intertwine::getLineAlgo(ToolLoop* loop,
     // "Snap to Grid" is enabled...
     (loop->getController()->canSnapToGrid() && loop->getSnapToGrid() &&
      // And we are not in isometric mode
-     loop->sprite()->gridType() != doc::Grid::Type::Isometric)) {
+     !doc::Grid::isIsometric(loop->sprite()->gridType()))) {
     // We prefer the perfect pixel lines that matches grid tiles
     return (needsFixForLineBrush ? algo_line_perfect_with_fix_for_line_brush : algo_line_perfect);
   }

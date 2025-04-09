@@ -19,7 +19,8 @@
     <boxfiller />
     <combobox id="grid_type" expansive="true" cell_hspan="3">
       <listitem text="@.type_orthogonal" />
-      <listitem text="@.type_isometric" />
+      <listitem text="@.type_isometric_shared" />
+      <listitem text="@.type_isometric_thick" />
     </combobox>
 
     <separator horizontal="true" cell_hspan="4" />

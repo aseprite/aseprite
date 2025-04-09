@@ -1149,7 +1149,7 @@ void Editor::drawGrid(Graphics* g,
     gfx::rgba(gfx::getr(grid_color), gfx::getg(grid_color), gfx::getb(grid_color), alpha);
 
   // Orthogonal grid
-  if (isPixelGrid || m_sprite->gridType() == doc::Grid::Type::Orthogonal) {
+  if (isPixelGrid || !doc::Grid::isIsometric(m_sprite->gridType())) {
     // Draw horizontal lines
     int x1 = spriteBounds.x;
     int y1 = gridF.y;
@@ -1168,6 +1168,7 @@ void Editor::drawGrid(Graphics* g,
   }
   // Isometric grid
   else {
+    const doc::Grid docGrid(grid, m_sprite->gridType());
     const RectF pix(editorToScreenF(RectF(0, 0, 1, 1)));
     int x1 = gridF.x;
     int y1 = gridF.y;
@@ -1176,7 +1177,7 @@ void Editor::drawGrid(Graphics* g,
     int dx = std::round(grid.w * pix.w);
     int dy = std::round(grid.h * pix.h);
 
-    auto guide = doc::Grid::IsometricGuide(grid.size());
+    const auto guide = docGrid.getIsometricGuide();
 
     // Diamonds share a side when their size is uneven
     dx -= pix.w * int(!guide.evenWidth);
@@ -1201,7 +1202,7 @@ void Editor::drawGrid(Graphics* g,
 
       // Move single cell across the screen
       // to draw entire grid
-      Path& cell = getIsometricGridPath(grid);
+      Path& cell = getIsometricGridPath(docGrid);
 
       for (int y = y1; y < y2; y += dy) {
         for (int x = x1; x < x2; x += dx) {
@@ -1259,14 +1260,17 @@ void Editor::drawGrid(Graphics* g,
   }
 }
 
-gfx::Path& Editor::getIsometricGridPath(Rect& grid)
+gfx::Path& Editor::getIsometricGridPath(const doc::Grid& docGrid)
 {
   static Path path;
   static Size prevSize(0, 0);
   static double prevScale = 0.00;
+  static doc::Grid::Type prevType = doc::Grid::Type::Orthogonal;
 
   // Regenerate bitmap on zoom or grid size change
-  if (prevScale != m_proj.zoom().scale() || prevSize != grid.size()) {
+  if (prevScale != m_proj.zoom().scale() || prevSize != docGrid.tileSize() ||
+      prevType != docGrid.type()) {
+    const Rect grid(docGrid.bounds());
     const RectF pix(editorToScreenF(RectF(0, 0, 1, 1)));
     doc::ImageRef imref(doc::Image::create(doc::PixelFormat::IMAGE_BITMAP,
                                            std::round(grid.w * pix.w),
@@ -1280,7 +1284,7 @@ gfx::Path& Editor::getIsometricGridPath(Rect& grid)
     // Prepare bitmap from points of pixel precise line.
     // A single grid cell is calculated from these
     im->clear(0);
-    for (const auto& p : doc::Grid::getIsometricLine(grid.size()))
+    for (const auto& p : docGrid.getIsometricLine())
       fill_rect(im,
                 std::round(p.x * pix.w),
                 std::round((grid.h - p.y) * pix.h),
@@ -1295,8 +1299,8 @@ gfx::Path& Editor::getIsometricGridPath(Rect& grid)
   }
   // Remember scale used to generate the current path
   prevScale = m_proj.zoom().scale();
-  prevSize.w = grid.w;
-  prevSize.h = grid.h;
+  prevSize = docGrid.tileSize();
+  prevType = docGrid.type();
   return path;
 }
 
@@ -2938,8 +2942,8 @@ void Editor::pasteImage(const Image* image, const Mask* mask, const gfx::Point* 
   // Snap to grid a pasted tilemap
   // TODO should we move this to PixelsMovement or MovingPixelsState?
   if (site.tilemapMode() == TilemapMode::Tiles) {
-    gfx::Rect gridBounds = site.gridBounds();
-    gfx::Point pt = snap_to_grid(gridBounds, gfx::Point(x, y), PreferSnapTo::ClosestGridVertex);
+    const doc::Grid& grid = site.grid();
+    const gfx::Point pt = snap_to_grid(grid, gfx::Point(x, y), PreferSnapTo::ClosestGridVertex);
     x = pt.x;
     y = pt.y;
   }

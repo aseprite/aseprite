@@ -23,13 +23,17 @@
 
 namespace app {
 
-gfx::Point snap_to_isometric_grid(const gfx::Rect& grid,
+gfx::Point snap_to_isometric_grid(const doc::Grid& docGrid,
                                   const gfx::Point& point,
                                   const PreferSnapTo prefer)
 {
+  const gfx::Rect grid(docGrid.bounds());
+  if (grid.isEmpty())
+    return point;
+
   // Because we force unworkable grid sizes to share a pixel,
   // we need to account for that here
-  auto guide = doc::Grid::IsometricGuide(grid.size());
+  const auto guide = docGrid.getIsometricGuide();
   const int width = grid.w - int(!guide.evenWidth);
   const int height = grid.h - int(!guide.evenHeight);
 
@@ -37,7 +41,8 @@ gfx::Point snap_to_isometric_grid(const gfx::Rect& grid,
   const gfx::PointF newPoint(int((point.x - grid.x) / width) * width,
                              int((point.y - grid.y) / height) * height);
   // And then make it relative to the center of a cell
-  const gfx::PointF vto((newPoint + gfx::Point(guide.end.x, guide.start.y)) - point);
+  const gfx::PointF vto((newPoint + gfx::Point(guide.end.x, guide.start.y)) -
+                        (point - grid.origin()));
 
   // The following happens here:
   //
@@ -58,7 +63,7 @@ gfx::Point snap_to_isometric_grid(const gfx::Rect& grid,
 
   if (prefer != PreferSnapTo::ClosestGridVertex) {
     // We use the pixel-precise grid for this bounds-check
-    const auto line = doc::Grid::getIsometricLine(grid.size());
+    const auto line = docGrid.getIsometricLine();
     const int index = int(ABS(vto.y) - int(vto.y > 0)) + 1;
     const gfx::Point co(-vto.x + guide.end.x, -vto.y + guide.start.y);
     const gfx::Point& p = line[index];
@@ -112,16 +117,17 @@ gfx::Point snap_to_isometric_grid(const gfx::Rect& grid,
   return gfx::Point(newPoint + near + grid.origin());
 }
 
-gfx::Point snap_to_grid(const gfx::Rect& grid, const gfx::Point& point, const PreferSnapTo prefer)
+gfx::Point snap_to_grid(const doc::Grid& docGrid,
+                        const gfx::Point& point,
+                        const PreferSnapTo prefer)
 {
+  // Use different logic for isometric grid
+  if (docGrid.isIsometric())
+    return snap_to_isometric_grid(docGrid, point, prefer);
+
+  const gfx::Rect grid(docGrid.bounds());
   if (grid.isEmpty())
     return point;
-
-  // Use different logic for isometric grid
-  const doc::Grid::Type gridType =
-    App::instance()->preferences().document(App::instance()->context()->documents()[0]).grid.type();
-  if (gridType == doc::Grid::Type::Isometric)
-    return snap_to_isometric_grid(grid, point, prefer);
 
   div_t d, dx, dy;
   dx = std::div(grid.x, grid.w);
