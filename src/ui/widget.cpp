@@ -1660,6 +1660,58 @@ bool Widget::onProcessMessage(Message* msg)
         return true;
       }
       break;
+
+    case kDragEnterMessage: {
+      if (hasFlags(ALLOW_DROP)) {
+        auto* dragEnterMsg = static_cast<DragEnterMessage*>(msg);
+        dragEnterMsg->widget(this);
+        DragEvent event(this, this, dragEnterMsg->event());
+        onDragEnter(event);
+        return true;
+      }
+      break;
+    }
+
+    case kDragLeaveMessage: {
+      auto* dragLeaveMsg = static_cast<DragLeaveMessage*>(msg);
+      DragEvent event(this, this, dragLeaveMsg->event());
+      onDragLeave(event);
+      break;
+    }
+
+    case kDragMessage: {
+      if (hasFlags(ALLOW_DROP)) {
+        auto* dragMsg = static_cast<DragMessage*>(msg);
+        if (dragMsg->widget() && dragMsg->widget() != this) {
+          DragLeaveMessage msg(dragMsg->event());
+          dragMsg->widget()->sendMessage(&msg);
+          dragMsg->widget(nullptr);
+        }
+
+        if (dragMsg->widget() != this) {
+          dragMsg->widget(this);
+          DragEnterMessage msg(dragMsg->event());
+          sendMessage(&msg);
+        }
+
+        DragEvent event(this, this, dragMsg->event());
+        onDrag(event);
+        return true;
+      }
+      break;
+    }
+
+    case kDropMessage: {
+      if (hasFlags(ALLOW_DROP)) {
+        auto* dropMsg = static_cast<DropMessage*>(msg);
+        DragEvent event(this, this, dropMsg->event());
+        onDrop(event);
+        if (event.handled())
+          return true;
+      }
+      break;
+    }
+
     case kCallbackMessage: {
       CallbackMessage* callback = static_cast<CallbackMessage*>(msg);
       callback->call();

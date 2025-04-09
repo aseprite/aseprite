@@ -4482,11 +4482,15 @@ void Timeline::onCancel(Context* ctx)
 
 void Timeline::onDragEnter(ui::DragEvent& e)
 {
+  Widget::onDragEnter(e);
+
   m_state = STATE_MOVING_RANGE;
 }
 
 void Timeline::onDragLeave(ui::DragEvent& e)
 {
+  Widget::onDragLeave(e);
+
   m_state = STATE_STANDBY;
   m_range.clearRange();
   m_dropRange.clearRange();
