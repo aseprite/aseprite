@@ -481,8 +481,6 @@ private:
 
   gfx::Border m_border; // Border separation with the parent
   int m_childSpacing;   // Separation between children
-
-  friend Manager;
 };
 
 WidgetType register_widget_type();
