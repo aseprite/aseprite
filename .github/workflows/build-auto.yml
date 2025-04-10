@@ -1,0 +1,44 @@
+name: build-auto
+on:
+  push:
+    paths:
+    - '.github/workflows/build-auto.yml'
+    - 'build.sh'
+    - 'misc/platform.sh'
+    - 'misc/skia-*.*'
+jobs:
+  build-auto:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        build_type: [RelWithDebInfo, Debug]
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+    - name: Install Dependencies
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y \
+          libpixman-1-dev libfreetype6-dev libharfbuzz-dev zlib1g-dev \
+          libx11-dev libxcursor-dev libxi-dev libgl1-mesa-dev libfontconfig1-dev
+    - uses: aseprite/get-ninja@main
+    - uses: ilammy/msvc-dev-cmd@v1
+      if: runner.os == 'Windows'
+    - name: Building
+      shell: bash
+      run: |
+        bash build.sh --auto --norun
+    - name: Running CLI Tests
+      shell: bash
+      run: |
+        if [[ "${{ runner.os }}" == "Linux" ]] ; then
+          export XVFB=xvfb-run
+        fi
+        export ASEPRITE=$PWD/build/bin/aseprite
+        cd tests
+        $XVFB bash run-tests.sh
