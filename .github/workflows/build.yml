@@ -38,7 +38,7 @@ jobs:
         else
           this_dir="${{ github.workspace }}"
         fi
-        skia_url=$(source $this_dir/misc/skia-url.sh | xargs)
+        skia_url=$(source $this_dir/laf/misc/skia-url.sh | xargs)
         skia_file=$(basename $skia_url)
         curl --ssl-revoke-best-effort -L -o "$skia_file" "$skia_url"
         unzip "$skia_file" -d skia

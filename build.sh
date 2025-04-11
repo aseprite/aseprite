@@ -57,7 +57,7 @@ if [ "$1" == "--norun" ] ; then
 fi
 
 # Platform.
-if ! source "$pwd/misc/platform.sh" ; then
+if ! source "$pwd/laf/misc/platform.sh" ; then
     exit $?
 fi
 
@@ -343,7 +343,7 @@ else
 fi
 
 # Required Skia for the base branch.
-skia_tag=$(cat "$pwd/misc/skia-tag.txt" | xargs)
+skia_tag=$(cat "$pwd/laf/misc/skia-tag.txt" | xargs)
 possible_skia_dir_name=skia-$(echo $skia_tag | cut -d "-" -f 1)
 file_skia_dir="$base_branch_name"_skia_dir
 
@@ -402,7 +402,7 @@ if [ ! -d "$skia_library_dir" ] ; then
         else
             skia_build=Release
         fi
-        skia_url=$(bash misc/skia-url.sh $skia_build | xargs)
+        skia_url=$(bash laf/misc/skia-url.sh $skia_build | xargs)
         skia_file=$(basename $skia_url)
         if [ ! -f "$skia_dir/$skia_file" ] ; then
             curl --ssl-revoke-best-effort -L -o "$skia_dir/$skia_file" "$skia_url"

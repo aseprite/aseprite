@@ -4,8 +4,7 @@ on:
     paths:
     - '.github/workflows/build-auto.yml'
     - 'build.sh'
-    - 'misc/platform.sh'
-    - 'misc/skia-*.*'
+    - 'laf'
 jobs:
   build-auto:
     runs-on: ${{ matrix.os }}
