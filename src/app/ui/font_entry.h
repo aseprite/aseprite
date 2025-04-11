@@ -28,6 +28,7 @@ public:
     Size,
     Style,
     Flags,
+    Hinting,
     Popup,
   };
 
@@ -40,6 +41,8 @@ public:
   obs::signal<void(const FontInfo&, From)> FontChange;
 
 private:
+  void onStyleItemClick(ButtonSet::Item* item);
+
   class FontFace : public SearchEntry {
   public:
     FontFace();
@@ -73,17 +76,10 @@ private:
     FontStyle();
   };
 
-  class FontLigatures : public ButtonSet {
-  public:
-    FontLigatures();
-  };
-
   FontInfo m_info;
   FontFace m_face;
   FontSize m_size;
   FontStyle m_style;
-  FontLigatures m_ligatures;
-  ui::CheckBox m_antialias;
   bool m_lockFace = false;
 };
 

@@ -181,7 +181,8 @@ private:
       const FontInfo fontInfoDefSize(m_fontInfo,
                                      FontInfo::kDefaultSize,
                                      text::FontStyle(),
-                                     FontInfo::Flags::Antialias);
+                                     FontInfo::Flags::Antialias,
+                                     text::FontHinting::Normal);
       const text::FontRef font = fonts->fontFromInfo(fontInfoDefSize);
       if (!font)
         return;

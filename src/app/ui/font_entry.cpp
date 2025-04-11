@@ -19,9 +19,12 @@
 #include "base/scoped_value.h"
 #include "fmt/format.h"
 #include "ui/display.h"
+#include "ui/fit_bounds.h"
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/scale.h"
+
+#include "font_style.xml.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -248,31 +251,22 @@ void FontEntry::FontSize::onEntryChange()
   Change();
 }
 
-FontEntry::FontStyle::FontStyle() : ButtonSet(2, true)
+FontEntry::FontStyle::FontStyle() : ButtonSet(3, true)
 {
   addItem("B");
   addItem("I");
+  addItem("...");
   setMultiMode(MultiMode::Set);
 }
 
-FontEntry::FontLigatures::FontLigatures() : ButtonSet(1, true)
-{
-  addItem("fi");
-  setMultiMode(MultiMode::Set);
-}
-
-FontEntry::FontEntry() : m_antialias("Antialias")
+FontEntry::FontEntry()
 {
   m_face.setExpansive(true);
   m_size.setExpansive(false);
   m_style.setExpansive(false);
-  m_ligatures.setExpansive(false);
-  m_antialias.setExpansive(false);
   addChild(&m_face);
   addChild(&m_size);
   addChild(&m_style);
-  addChild(&m_ligatures);
-  addChild(&m_antialias);
 
   m_face.setMinSize(gfx::Size(128 * guiscale(), 0));
 
@@ -280,52 +274,20 @@ FontEntry::FontEntry() : m_antialias("Antialias")
     if (newTypeName.size() > 0)
       setInfo(newTypeName, from);
     else {
-      setInfo(FontInfo(newTypeName, m_info.size(), m_info.style(), m_info.flags()), from);
+      setInfo(
+        FontInfo(newTypeName, m_info.size(), m_info.style(), m_info.flags(), m_info.hinting()),
+        from);
     }
     invalidate();
   });
 
   m_size.Change.connect([this]() {
     const float newSize = std::strtof(m_size.getValue().c_str(), nullptr);
-    setInfo(FontInfo(m_info, newSize, m_info.style(), m_info.flags()), From::Size);
+    setInfo(FontInfo(m_info, newSize, m_info.style(), m_info.flags(), m_info.hinting()),
+            From::Size);
   });
 
-  m_style.ItemChange.connect([this](ButtonSet::Item* item) {
-    text::FontStyle style = m_info.style();
-    switch (m_style.getItemIndex(item)) {
-      // Bold button changed
-      case 0: {
-        const bool bold = m_style.getItem(0)->isSelected();
-        style = text::FontStyle(
-          bold ? text::FontStyle::Weight::Bold : text::FontStyle::Weight::Normal,
-          style.width(),
-          style.slant());
-        break;
-      }
-      // Italic button changed
-      case 1: {
-        const bool italic = m_style.getItem(1)->isSelected();
-        style = text::FontStyle(
-          style.weight(),
-          style.width(),
-          italic ? text::FontStyle::Slant::Italic : text::FontStyle::Slant::Upright);
-        break;
-      }
-    }
-
-    setInfo(FontInfo(m_info, m_info.size(), style, m_info.flags()), From::Style);
-  });
-
-  auto flagsChange = [this]() {
-    FontInfo::Flags flags = FontInfo::Flags::None;
-    if (m_antialias.isSelected())
-      flags |= FontInfo::Flags::Antialias;
-    if (m_ligatures.getItem(0)->isSelected())
-      flags |= FontInfo::Flags::Ligatures;
-    setInfo(FontInfo(m_info, m_info.size(), m_info.style(), flags), From::Flags);
-  };
-  m_ligatures.ItemChange.connect(flagsChange);
-  m_antialias.Click.connect(flagsChange);
+  m_style.ItemChange.connect(&FontEntry::onStyleItemClick, this);
 }
 
 // Defined here as FontPopup type is not fully defined in the header
@@ -351,12 +313,84 @@ void FontEntry::setInfo(const FontInfo& info, const From fromField)
     m_style.getItem(1)->setSelected(info.style().slant() != text::FontStyle::Slant::Upright);
   }
 
-  if (fromField != From::Flags) {
-    m_ligatures.getItem(0)->setSelected(info.ligatures());
-    m_antialias.setSelected(info.antialias());
-  }
-
   FontChange(m_info, fromField);
+}
+
+void FontEntry::onStyleItemClick(ButtonSet::Item* item)
+{
+  text::FontStyle style = m_info.style();
+
+  switch (m_style.getItemIndex(item)) {
+    // Bold button changed
+    case 0: {
+      const bool bold = m_style.getItem(0)->isSelected();
+      style = text::FontStyle(
+        bold ? text::FontStyle::Weight::Bold : text::FontStyle::Weight::Normal,
+        style.width(),
+        style.slant());
+
+      setInfo(FontInfo(m_info, m_info.size(), style, m_info.flags(), m_info.hinting()),
+              From::Style);
+      break;
+    }
+      // Italic button changed
+    case 1: {
+      const bool italic = m_style.getItem(1)->isSelected();
+      style = text::FontStyle(
+        style.weight(),
+        style.width(),
+        italic ? text::FontStyle::Slant::Italic : text::FontStyle::Slant::Upright);
+
+      setInfo(FontInfo(m_info, m_info.size(), style, m_info.flags(), m_info.hinting()),
+              From::Style);
+      break;
+    }
+    case 2: {
+      item->setSelected(false); // Unselect the "..." button
+
+      ui::PopupWindow popup;
+      app::gen::FontStyle content;
+
+      content.antialias()->setSelected(m_info.antialias());
+      content.ligatures()->setSelected(m_info.ligatures());
+      content.hinting()->setSelected(m_info.hinting() == text::FontHinting::Normal);
+
+      auto flagsChange = [this, &content]() {
+        FontInfo::Flags flags = FontInfo::Flags::None;
+        if (content.antialias()->isSelected())
+          flags |= FontInfo::Flags::Antialias;
+        if (content.ligatures()->isSelected())
+          flags |= FontInfo::Flags::Ligatures;
+        setInfo(FontInfo(m_info, m_info.size(), m_info.style(), flags, m_info.hinting()),
+                From::Flags);
+      };
+
+      auto hintingChange = [this, &content]() {
+        auto hinting = (content.hinting()->isSelected() ? text::FontHinting::Normal :
+                                                          text::FontHinting::None);
+
+        setInfo(FontInfo(m_info, m_info.size(), m_info.style(), m_info.flags(), hinting),
+                From::Hinting);
+      };
+
+      content.antialias()->Click.connect(flagsChange);
+      content.ligatures()->Click.connect(flagsChange);
+      content.hinting()->Click.connect(hintingChange);
+
+      popup.addChild(&content);
+      popup.remapWindow();
+
+      gfx::Rect rc = item->bounds();
+      rc.y += rc.h - popup.border().bottom();
+
+      ui::fit_bounds(display(), &popup, gfx::Rect(rc.origin(), popup.sizeHint()));
+
+      popup.Open.connect([&popup] { popup.setHotRegion(gfx::Region(popup.boundsOnScreen())); });
+
+      popup.openWindowInForeground();
+      break;
+    }
+  }
 }
 
 } // namespace app

@@ -39,11 +39,25 @@ public:
   const std::string& filename() const { return m_filename; }
 
 private:
+  // Cache of loaded fonts so we avoid re-loading them.
+  struct Cache {
+    struct Key {
+      float size;
+      bool antialias : 1;
+      bool hinting : 1;
+      bool operator<(const Key& b) const
+      {
+        return size < b.size || antialias < b.antialias || hinting < b.hinting;
+      }
+    };
+    std::map<Key, text::FontRef> fonts;
+  };
+
   text::FontType m_type;
   std::string m_filename;
   bool m_antialias;
-  std::map<float, text::FontRef> m_fonts; // key=font size, value=real font
-  std::map<float, text::FontRef> m_antialiasFonts;
+  text::FontHinting m_hinting = text::FontHinting::Normal;
+  Cache m_cache;
   FontData* m_fallback;
   float m_fallbackSize;
   float m_descent = 0.0f;

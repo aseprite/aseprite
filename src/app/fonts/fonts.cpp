@@ -82,8 +82,10 @@ text::FontRef Fonts::fontFromInfo(const FontInfo& fontInfo)
     }
   }
 
-  if (font)
+  if (font) {
     font->setAntialias(fontInfo.antialias());
+    font->setHinting(fontInfo.hinting());
+  }
 
   return font;
 }

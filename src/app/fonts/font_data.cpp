@@ -32,17 +32,11 @@ text::FontRef FontData::getFont(text::FontMgrRef& fontMgr, float size)
 {
   ASSERT(fontMgr);
 
-  // Use cache
-  if (m_antialias) {
-    auto it = m_antialiasFonts.find(size);
-    if (it != m_antialiasFonts.end())
-      return it->second;
-  }
-  else {
-    auto it = m_fonts.find(size);
-    if (it != m_fonts.end())
-      return it->second;
-  }
+  // Use cached fonts
+  const Cache::Key cacheKey{ size, m_antialias, m_hinting != text::FontHinting::None };
+  auto it = m_cache.fonts.find(cacheKey);
+  if (it != m_cache.fonts.end())
+    return it->second; // Cache hit
 
   text::FontRef font = nullptr;
 
@@ -55,12 +49,18 @@ text::FontRef FontData::getFont(text::FontMgrRef& fontMgr, float size)
       break;
     case text::FontType::FreeType: {
       font = fontMgr->loadTrueTypeFont(m_filename.c_str(), size);
-      if (font)
+      if (font) {
         font->setAntialias(m_antialias);
+        font->setHinting(m_hinting);
+      }
       break;
     }
   }
 
+  // Cache this font
+  m_cache.fonts[cacheKey] = font;
+
+  // Load fallback
   if (m_fallback) {
     text::FontRef fallback = m_fallback->getFont(fontMgr, m_fallbackSize);
     if (font)
@@ -68,12 +68,6 @@ text::FontRef FontData::getFont(text::FontMgrRef& fontMgr, float size)
     else
       return fallback; // Don't double-cache the fallback font
   }
-
-  // Cache this font
-  if (m_antialias)
-    m_antialiasFonts[size] = font;
-  else
-    m_fonts[size] = font;
   return font;
 }
 

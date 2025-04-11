@@ -10,6 +10,7 @@
 
 #include "base/convert_to.h"
 #include "base/enum_flags.h"
+#include "text/font_hinting.h"
 #include "text/font_style.h"
 #include "text/font_type.h"
 #include "text/fwd.h"
@@ -49,9 +50,14 @@ public:
            const std::string& name = {},
            float size = kDefaultSize,
            text::FontStyle style = text::FontStyle(),
-           Flags flags = Flags::None);
+           Flags flags = Flags::None,
+           text::FontHinting hinting = text::FontHinting::Normal);
 
-  FontInfo(const FontInfo& other, float size, text::FontStyle style, Flags flags);
+  FontInfo(const FontInfo& other,
+           float size,
+           text::FontStyle style,
+           Flags flags,
+           text::FontHinting hinting);
 
   bool isValid() const { return m_type != Type::Unknown; }
   bool useDefaultSize() const { return m_size == kDefaultSize; }
@@ -72,6 +78,7 @@ public:
   Flags flags() const { return m_flags; }
   bool antialias() const;
   bool ligatures() const;
+  text::FontHinting hinting() const { return m_hinting; }
 
   text::TypefaceRef findTypeface(const text::FontMgrRef& fontMgr) const;
 
@@ -92,6 +99,7 @@ private:
   float m_size = kDefaultSize;
   text::FontStyle m_style;
   Flags m_flags = Flags::None;
+  text::FontHinting m_hinting = text::FontHinting::Normal;
 };
 
 LAF_ENUM_FLAGS(FontInfo::Flags);
