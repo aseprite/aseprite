@@ -1119,9 +1119,10 @@ void Editor::drawMaskBoundaries(ui::Graphics* g, doc::MaskBoundaries& segs, cons
 
   // We translate the path instead of applying a matrix to the
   // ui::Graphics so the "checkered" pattern is not scaled too.
-  gfx::Path path;
-  segs.path().transform(m_proj.scaleMatrix(), &path);
-  path.offset(pt.x, pt.y);
+  gfx::Matrix matrix = m_proj.scaleMatrix();
+  matrix.postTranslate(pt.x, pt.y);
+
+  gfx::Path path = segs.path().snapshot(matrix);
   g->drawPath(path, paint);
 }
 

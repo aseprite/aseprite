@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2025 Igara Studio S.A.
+// Copyright (c) 2025-present Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -19,8 +19,7 @@ namespace doc {
 void MaskBoundaries::reset()
 {
   m_segs.clear();
-  if (!m_path.isEmpty())
-    m_path.rewind();
+  m_path.reset();
 }
 
 void MaskBoundaries::regen(const Mask* mask)

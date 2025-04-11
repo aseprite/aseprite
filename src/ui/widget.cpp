@@ -1294,7 +1294,7 @@ bool Widget::paintEvent(Graphics* graphics, const bool isBg)
     paint.color(gfx::rgba(0, 0, 0, 128));
     paint.blendMode(os::BlendMode::SrcOver);
     const SkScalar intervals[] = { 2.0f, 2.0f };
-    paint.skPaint().setPathEffect(SkDashPathEffect::Make(intervals, 2, 0.0f));
+    paint.skPaint().setPathEffect(SkDashPathEffect::Make(intervals, 0.0f));
     graphics->drawLine(gfx::PointF(clientBounds().x, baseline),
                        gfx::PointF(clientBounds().x2(), baseline),
                        paint);

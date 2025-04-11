@@ -866,12 +866,10 @@ void BrushPreview::strokeBrushBoundaries(ui::Graphics* g, gfx::Point pos, const 
   segs.createPathIfNeeeded();
 
   const render::Projection& proj = m_editor->projection();
+  gfx::Matrix matrix = proj.scaleMatrix();
+  matrix.postTranslate(pos.x, pos.y);
 
-  gfx::Path path;
-  segs.path().transform(proj.scaleMatrix(), &path);
-
-  path.offset(pos.x, pos.y);
-
+  gfx::Path path = segs.path().snapshot(matrix);
   g->drawPath(path, paint);
 }
 
