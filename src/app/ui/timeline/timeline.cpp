@@ -55,8 +55,6 @@
 #include "fmt/format.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
-#include "os/event.h"
-#include "os/event_queue.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "text/font.h"
@@ -4496,8 +4494,7 @@ void Timeline::onDragLeave(ui::DragEvent& e)
   m_dropRange.clearRange();
   invalidate();
   flushRedraw();
-  os::Event ev;
-  os::System::instance()->eventQueue()->queueEvent(ev);
+  flushMessages();
 }
 
 void Timeline::onDrag(ui::DragEvent& e)
@@ -4526,8 +4523,7 @@ void Timeline::onDrag(ui::DragEvent& e)
 
   updateDropRange(e.position());
   flushRedraw();
-  os::Event ev;
-  os::System::instance()->eventQueue()->queueEvent(ev);
+  flushMessages();
 }
 
 void Timeline::onDrop(ui::DragEvent& e)
@@ -4603,8 +4599,7 @@ void Timeline::onDrop(ui::DragEvent& e)
   m_dropRange.clearRange();
   invalidate();
   flushRedraw();
-  os::Event ev;
-  os::System::instance()->eventQueue()->queueEvent(ev);
+  flushMessages();
 }
 
 int Timeline::tagFramesDuration(const Tag* tag) const
