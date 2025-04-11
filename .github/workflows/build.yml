@@ -87,6 +87,11 @@ jobs:
           -DLAF_BACKEND=$laf_backend \
           -DSKIA_DIR=$(realpath skia) \
           -DSKIA_LIBRARY_DIR=$(realpath skia/out/Release-$skia_arch)
+
+        if [[ "${{ matrix.ui }}" == cli ]] ; then
+          # Required to download external project libjpeg-turbo
+          cmake -B build
+        fi
     - name: Compiling
       shell: bash
       run: |
