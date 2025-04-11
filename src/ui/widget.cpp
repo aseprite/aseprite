@@ -1176,6 +1176,16 @@ void Widget::flushRedraw()
   }
 }
 
+void Widget::flushMessages() const
+{
+  Manager* manager = this->manager();
+  ASSERT(manager);
+  if (!manager)
+    return;
+
+  manager->flushMessages();
+}
+
 void Widget::paint(Graphics* graphics, const gfx::Region& drawRegion, const bool isBg)
 {
   if (drawRegion.isEmpty())

@@ -313,6 +313,10 @@ public:
   // Generates paint messages for the current update region.
   void flushRedraw();
 
+  // Wakes up the system's events queue to process the currently enqueued UI
+  // messages.
+  void flushMessages() const;
+
   GraphicsPtr getGraphics(const gfx::Rect& clip);
 
   // ===============================================================

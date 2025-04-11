@@ -881,6 +881,13 @@ void Manager::dispatchMessages()
   }
 }
 
+void Manager::flushMessages() const
+{
+  // Send a dummy event just to break the waiting loop.
+  os::Event evt;
+  m_eventQueue->queueEvent(evt);
+}
+
 void Manager::addToGarbage(Widget* widget)
 {
   ASSERT(widget);
