@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -247,6 +247,13 @@ int Layer_get_tileset(lua_State* L)
   return 1;
 }
 
+int Layer_get_uuid(lua_State* L)
+{
+  auto* layer = get_docobj<Layer>(L, 1);
+  push_obj(L, layer->uuid());
+  return 1;
+}
+
 int Layer_set_name(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
@@ -446,6 +453,7 @@ const Property Layer_properties[] = {
   { "data",          UserData_get_text<Layer>,       UserData_set_text<Layer>       },
   { "properties",    UserData_get_properties<Layer>, UserData_set_properties<Layer> },
   { "tileset",       Layer_get_tileset,              Layer_set_tileset              },
+  { "uuid",          Layer_get_uuid,                 nullptr                        },
   { nullptr,         nullptr,                        nullptr                        }
 };
 
