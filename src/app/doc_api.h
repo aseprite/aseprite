@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -15,6 +15,7 @@
 #include "doc/color.h"
 #include "doc/frame.h"
 #include "doc/image_ref.h"
+#include "doc/tile.h"
 #include "gfx/rect.h"
 
 #include <map>
@@ -26,6 +27,7 @@ class Image;
 class Layer;
 class LayerGroup;
 class LayerImage;
+class LayerTilemap;
 class Mask;
 class Palette;
 class Sprite;
@@ -104,7 +106,13 @@ public:
 
   // Layers API
   LayerImage* newLayer(LayerGroup* parent, const std::string& name);
+  LayerImage* newLayerAfter(LayerGroup* parent, const std::string& name, Layer* afterThis);
   LayerGroup* newGroup(LayerGroup* parent, const std::string& name);
+  LayerGroup* newGroupAfter(LayerGroup* parent, const std::string& name, Layer* afterThis);
+  LayerTilemap* newTilemapAfter(LayerGroup* parent,
+                                const std::string& name,
+                                tileset_index tsi,
+                                Layer* afterThis);
   void addLayer(LayerGroup* parent, Layer* newLayer, Layer* afterThis);
   void removeLayer(Layer* layer);
   void restackLayerAfter(Layer* layer, LayerGroup* parent, Layer* afterThis);
