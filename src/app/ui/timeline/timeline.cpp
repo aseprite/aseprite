@@ -4533,7 +4533,8 @@ void Timeline::onDrop(ui::DragEvent& e)
   switch (m_dropRange.type()) {
     case Range::kCels:
       frame = m_hot.frame;
-      layerIndex = m_hot.layer;
+      if (!m_hot.veryBottom)
+        layerIndex = m_hot.layer;
       droppedOn = DroppedOn::Cel;
       insert = (m_dropTarget.vhit == DropTarget::Top ? InsertionPoint::AfterLayer :
                                                        InsertionPoint::BeforeLayer);
