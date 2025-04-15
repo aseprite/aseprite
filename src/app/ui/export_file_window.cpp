@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -46,7 +46,7 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
     base = base::join_path(basePath, base::get_file_title(base));
 
     std::string newFn = base::replace_extension(base, defaultExtension());
-    if (newFn == base) {
+    if (newFn == base::replace_extension(base, base::get_file_extension(doc->filename()))) {
       newFn = base::join_path(
         base::get_file_path(newFn),
         base::get_file_title(newFn) + "-export." + base::get_file_extension(newFn));
