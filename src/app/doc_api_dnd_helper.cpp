@@ -120,6 +120,7 @@ void DocApi::dropDocumentsOnTimeline(app::Doc* destDoc,
     }
 
     for (auto* srcLayer : srcDoc->sprite()->root()->layers()) {
+      srcLayer->displaceFrames(0, frame);
       if (insert == InsertionPoint::AfterLayer) {
         refLayer = duplicateLayerAfter(srcLayer, group, refLayer);
       }
