@@ -153,6 +153,8 @@ private:
                   const DropFramePlace dropFramePlace,
                   const TagsHandling tagsHandling);
 
+  Layer* copyLayerWithSprite(doc::Layer* layer, doc::Sprite* sprite);
+
   class HandleLinkedCels {
   public:
     HandleLinkedCels(DocApi& api,
