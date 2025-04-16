@@ -15,10 +15,9 @@ namespace app { namespace util {
 
 static WEBP_CSP_MODE colorMode()
 {
-  auto surface = os::instance()->makeSurface(1, 1);
-  os::SurfaceFormatData fd;
-  surface->getFormat(&fd);
-  return (fd.redShift == 0 ? MODE_RGBA : MODE_BGRA);
+  return (os::Surface::getNativeColorChannelsOrder() == os::Surface::ColorChannelsOrder::RGB ?
+            MODE_RGBA :
+            MODE_BGRA);
 }
 
 os::SurfaceRef decode_webp(const uint8_t* buf, uint32_t len)
@@ -61,7 +60,7 @@ os::SurfaceRef decode_webp(const uint8_t* buf, uint32_t len)
   if (anim_info.frame_count <= 0)
     return nullptr;
 
-  auto surface = os::instance()->makeSurface(w, h);
+  auto surface = os::System::instance()->makeSurface(w, h);
 
   // We just want the first frame, so we don't iterate.
   WebPAnimDecoderHasMoreFrames(dec);

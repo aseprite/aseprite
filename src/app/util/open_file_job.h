@@ -23,32 +23,11 @@ public:
   {
   }
 
-  void showProgressWindow()
-  {
-    startJob();
-
-    if (isCanceled())
-      m_fop->stop();
-
-    waitJob();
-  }
+  void showProgressWindow();
 
 private:
   // Thread to do the hard work: load the file from the disk.
-  virtual void onJob() override
-  {
-    try {
-      m_fop->operate(this);
-    }
-    catch (const std::exception& e) {
-      m_fop->setError("Error loading file:\n%s", e.what());
-    }
-
-    if (m_fop->isStop() && m_fop->document())
-      delete m_fop->releaseDocument();
-
-    m_fop->done();
-  }
+  virtual void onJob() override;
 
   virtual void ackFileOpProgress(double progress) override { jobProgress(progress); }
 
