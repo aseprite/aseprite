@@ -33,12 +33,11 @@ public:
   const FontDataMap& definedFonts() const { return m_fonts; }
   bool isEmpty() const { return m_fonts.empty(); }
 
-  void addFontData(const std::string& name, std::unique_ptr<FontData>&& fontData);
+  void addFontData(std::unique_ptr<FontData>&& fontData);
 
   FontData* fontDataByName(const std::string& name);
   text::FontRef fontByName(const std::string& name, float size);
   text::FontRef fontFromInfo(const FontInfo& fontInfo);
-  FontInfo infoFromFont(const text::FontRef& font);
 
 private:
   text::FontMgrRef m_fontMgr;

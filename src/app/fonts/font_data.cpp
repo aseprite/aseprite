@@ -18,13 +18,19 @@
 
 #include <set>
 
+#define USE_CACHE 1
+
 namespace app {
 
-FontData::FontData(text::FontType type)
-  : m_type(type)
-  , m_antialias(false)
-  , m_fallback(nullptr)
-  , m_fallbackSize(0)
+FontData::FontData(text::FontType type) : m_type(type)
+{
+}
+
+FontData::FontData(const text::FontRef& nativeFont)
+  : m_type(nativeFont->type())
+  , m_antialias(nativeFont->antialias())
+  , m_hinting(nativeFont->hinting())
+  , m_nativeFont(nativeFont)
 {
 }
 
@@ -32,11 +38,16 @@ text::FontRef FontData::getFont(text::FontMgrRef& fontMgr, float size)
 {
   ASSERT(fontMgr);
 
+  if (size == 0.0f && m_size != 0.0f)
+    size = m_size;
+
+#if USE_CACHE
   // Use cached fonts
   const Cache::Key cacheKey{ size, m_antialias, m_hinting != text::FontHinting::None };
   auto it = m_cache.fonts.find(cacheKey);
-  if (it != m_cache.fonts.end())
-    return it->second; // Cache hit
+  if (it != m_cache.fonts.end()) // Cache hit
+    return it->second;
+#endif
 
   text::FontRef font = nullptr;
 
@@ -47,6 +58,7 @@ text::FontRef FontData::getFont(text::FontMgrRef& fontMgr, float size)
         static_cast<text::SpriteSheetFont*>(font.get())->setDescent(m_descent);
       }
       break;
+
     case text::FontType::FreeType: {
       font = fontMgr->loadTrueTypeFont(m_filename.c_str(), size);
       if (font) {
@@ -55,10 +67,23 @@ text::FontRef FontData::getFont(text::FontMgrRef& fontMgr, float size)
       }
       break;
     }
+
+    case text::FontType::Native:
+      if (size == m_nativeFont->size())
+        font = m_nativeFont;
+      else {
+        text::TypefaceRef typeface = m_nativeFont->typeface();
+        font = fontMgr->makeFont(typeface, size);
+        font->setAntialias(m_antialias);
+        font->setHinting(m_hinting);
+      }
+      break;
   }
 
+#if USE_CACHE
   // Cache this font
   m_cache.fonts[cacheKey] = font;
+#endif
 
   // Load fallback
   if (m_fallback) {

@@ -22,8 +22,18 @@ namespace app {
 class FontData {
 public:
   FontData(text::FontType type);
+  FontData(const text::FontRef& nativeFont);
 
+  text::FontType type() const { return m_type; }
+  const std::string& name() const { return m_name; }
+  const std::string& filename() const { return m_filename; }
+  float defaultSize() const { return m_size; }
+  bool antialias() const { return m_antialias; }
+  text::FontHinting hinting() const { return m_hinting; }
+
+  void setName(const std::string& name) { m_name = name; }
   void setFilename(const std::string& filename) { m_filename = filename; }
+  void setDefaultSize(const float size) { m_size = size; }
   void setAntialias(bool antialias) { m_antialias = antialias; }
   void setFallback(FontData* fallback, float fallbackSize)
   {
@@ -35,8 +45,6 @@ public:
   void setDescent(float descent) { m_descent = descent; }
 
   text::FontRef getFont(text::FontMgrRef& fontMgr, float size);
-
-  const std::string& filename() const { return m_filename; }
 
 private:
   // Cache of loaded fonts so we avoid re-loading them.
@@ -54,13 +62,16 @@ private:
   };
 
   text::FontType m_type;
+  std::string m_name;
   std::string m_filename;
-  bool m_antialias;
+  float m_size = 0.0f;
+  bool m_antialias = false;
   text::FontHinting m_hinting = text::FontHinting::Normal;
   Cache m_cache;
-  FontData* m_fallback;
-  float m_fallbackSize;
+  FontData* m_fallback = nullptr;
+  float m_fallbackSize = 0.0f;
   float m_descent = 0.0f;
+  text::FontRef m_nativeFont;
 
   DISABLE_COPYING(FontData);
 };

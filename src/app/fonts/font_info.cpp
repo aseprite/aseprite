@@ -10,6 +10,7 @@
 
 #include "app/fonts/font_info.h"
 
+#include "app/fonts/font_data.h"
 #include "app/pref/preferences.h"
 #include "base/fs.h"
 #include "base/split_string.h"
@@ -50,6 +51,21 @@ FontInfo::FontInfo(const FontInfo& other,
   , m_flags(flags)
   , m_hinting(hinting)
 {
+}
+
+FontInfo::FontInfo(const FontData* data, const float size)
+  : m_type(Type::Unknown)
+  , m_name(data->name())
+  , m_size(size != 0.0f ? size : data->defaultSize())
+  , m_flags(data->antialias() ? Flags::Antialias : Flags::None)
+  , m_hinting(data->hinting())
+{
+  switch (data->type()) {
+    case text::FontType::Unknown:     m_type = Type::Unknown; break;
+    case text::FontType::SpriteSheet:
+    case text::FontType::FreeType:    m_type = Type::File; break;
+    case text::FontType::Native:      m_type = Type::System; break;
+  }
 }
 
 std::string FontInfo::title() const

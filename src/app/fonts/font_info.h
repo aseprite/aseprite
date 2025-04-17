@@ -21,6 +21,8 @@
 
 namespace app {
 
+class FontData;
+
 // Represents a font reference from any place:
 // - Name: a font referenced by name, a font that came from fonts.xml files (Fonts/FontData)
 // - File: an external font loaded from a .ttf file
@@ -58,6 +60,8 @@ public:
            text::FontStyle style,
            Flags flags,
            text::FontHinting hinting);
+
+  FontInfo(const FontData* data, float size = 0.0f);
 
   bool isValid() const { return m_type != Type::Unknown; }
   bool useDefaultSize() const { return m_size == kDefaultSize; }

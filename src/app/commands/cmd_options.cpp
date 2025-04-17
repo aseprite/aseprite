@@ -463,11 +463,11 @@ public:
     // Theme Custom Font
     customThemeFont()->Click.connect([this] {
       auto* theme = skin::SkinTheme::get(this);
-      onSwitchCustomFontCheckBox(customThemeFont(), themeFont(), theme->getOriginalDefaultFont());
+      onSwitchCustomFontCheckBox(customThemeFont(), themeFont(), theme->getDefaultFontInfo());
     });
     customMiniFont()->Click.connect([this] {
       auto* theme = skin::SkinTheme::get(this);
-      onSwitchCustomFontCheckBox(customMiniFont(), themeMiniFont(), theme->getOriginalMiniFont());
+      onSwitchCustomFontCheckBox(customMiniFont(), themeMiniFont(), theme->getMiniFontInfo());
     });
     themeFont()->FontChange.connect([this] { updateFontPreviews(); });
     themeMiniFont()->FontChange.connect([this] { updateFontPreviews(); });
@@ -1109,14 +1109,10 @@ private:
     themeMiniFont()->setInfo(miniInfo, FontEntry::From::Init);
   }
 
-  void onSwitchCustomFontCheckBox(CheckBox* fontCheckBox,
-                                  FontEntry* fontEntry,
-                                  const text::FontRef& themeFont)
+  void onSwitchCustomFontCheckBox(CheckBox* fontCheckBox, FontEntry* fontEntry, const FontInfo& fi)
   {
     const bool state = fontCheckBox->isSelected();
     fontEntry->setEnabled(state);
-
-    FontInfo fi = Fonts::instance()->infoFromFont(themeFont);
     fontEntry->setInfo(fi, FontEntry::From::Init);
   }
 

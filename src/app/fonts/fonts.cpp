@@ -37,8 +37,10 @@ Fonts::~Fonts()
   g_instance = nullptr;
 }
 
-void Fonts::addFontData(const std::string& name, std::unique_ptr<FontData>&& fontData)
+void Fonts::addFontData(std::unique_ptr<FontData>&& fontData)
 {
+  ASSERT(fontData);
+  std::string name = fontData->name();
   m_fonts[name] = std::move(fontData);
 }
 
@@ -68,10 +70,13 @@ text::FontRef Fonts::fontFromInfo(const FontInfo& fontInfo)
   if (fontInfo.type() == FontInfo::Type::System) {
     // Just in case the typeface is not present in the FontInfo
     auto typeface = fontInfo.findTypeface(m_fontMgr);
+    if (!typeface)
+      return nullptr;
 
-    font = m_fontMgr->makeFont(typeface);
-    if (!fontInfo.useDefaultSize())
-      font->setSize(fontInfo.size());
+    if (fontInfo.useDefaultSize())
+      font = m_fontMgr->makeFont(typeface);
+    else
+      font = m_fontMgr->makeFont(typeface, fontInfo.size());
   }
   else {
     const float size = (fontInfo.useDefaultSize() ? 0.0f : fontInfo.size());
@@ -88,20 +93,6 @@ text::FontRef Fonts::fontFromInfo(const FontInfo& fontInfo)
   }
 
   return font;
-}
-
-FontInfo Fonts::infoFromFont(const text::FontRef& font)
-{
-  for (const auto& kv : m_fonts) {
-    if (kv.second->getFont(m_fontMgr, font->size()) == font) {
-      return FontInfo(FontInfo::Type::Name,
-                      kv.first,
-                      font->size(),
-                      text::FontStyle(),
-                      font->antialias() ? FontInfo::Flags::Antialias : FontInfo::Flags::None);
-    }
-  }
-  return {};
 }
 
 } // namespace app

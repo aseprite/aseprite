@@ -31,6 +31,7 @@
 #include "base/log.h"
 #include "base/string.h"
 #include "base/utf8_decode.h"
+#include "fmt/format.h"
 #include "gfx/border.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -40,6 +41,7 @@
 #include "text/draw_text.h"
 #include "text/font.h"
 #include "text/font_metrics.h"
+#include "text/font_style_set.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -157,6 +159,47 @@ static const char* g_cursor_names[kCursorTypes] = {
   "size_nw",    // kSizeNWCursor
 };
 
+static std::unique_ptr<FontData> try_to_load_system_font(const XMLElement* xmlFont)
+{
+  const char* systemStr = xmlFont->Attribute("system");
+  if (!systemStr)
+    return nullptr;
+
+  Fonts* fonts = Fonts::instance();
+  text::FontMgrRef fontMgr = fonts->fontMgr();
+  const text::FontStyleSetRef set = fontMgr->matchFamily(systemStr);
+  if (!set)
+    return nullptr;
+
+  text::FontStyle style;
+  text::TypefaceRef typeface = set->matchStyle(style);
+  if (!typeface)
+    return nullptr;
+
+  float size = 0.0f;
+  if (const char* sizeStr = xmlFont->Attribute("size"))
+    size = std::strtof(sizeStr, nullptr);
+
+  text::FontRef nativeFont;
+  if (size == 0.0f)
+    nativeFont = fontMgr->makeFont(typeface);
+  else
+    nativeFont = fontMgr->makeFont(typeface, size);
+  if (!nativeFont)
+    return nullptr;
+
+  nativeFont->setAntialias(bool_attr(xmlFont, "antialias", false));
+  nativeFont->setHinting(bool_attr(xmlFont, "hinting", true) ? text::FontHinting::Normal :
+                                                               text::FontHinting::None);
+
+  auto font = std::make_unique<FontData>(nativeFont);
+  font->setName(systemStr);
+  if (size != 0.0f)
+    font->setDefaultSize(size);
+
+  return font;
+}
+
 static FontData* load_font(const XMLElement* xmlFont, const std::string& xmlFilename)
 {
   Fonts* fonts = Fonts::instance();
@@ -165,27 +208,23 @@ static FontData* load_font(const XMLElement* xmlFont, const std::string& xmlFile
   if (const char* fontId = xmlFont->Attribute("font")) {
     if (FontData* fontData = fonts->fontDataByName(fontId))
       return fontData;
-    else
-      throw base::Exception("Font named '%s' not found\n", fontId);
+    else {
+      throw base::Exception(
+        fmt::format("{}:{}: Font named '{}' not found", xmlFilename, xmlFont->GetLineNum(), fontId));
+    }
   }
 
-  const char* nameStr = xmlFont->Attribute("name");
-  if (!nameStr)
-    throw base::Exception("No \"name\" or \"font\" attributes specified on <font>");
-
-  std::string name(nameStr);
-
-  // Use cached font data
-  if (FontData* fontData = fonts->fontDataByName(name))
-    return fontData;
-
-  LOG(VERBOSE, "THEME: Loading font '%s'\n", name.c_str());
-
+  const char* nameStr = xmlFont->Attribute("name"); // Optional name
   const char* typeStr = xmlFont->Attribute("type");
-  if (!typeStr)
-    throw base::Exception("<font> without 'type' attribute in '%s'\n", xmlFilename.c_str());
+  const char* systemStr = xmlFont->Attribute("system");
 
-  std::string type(typeStr);
+  LOG(VERBOSE,
+      "THEME: Loading font name='%s' type='%s' system='%s'\n",
+      nameStr ? nameStr : "",
+      typeStr ? systemStr : "",
+      systemStr ? systemStr : "");
+
+  std::string type(typeStr ? typeStr : "");
   std::string xmlDir(base::get_file_path(xmlFilename));
   std::unique_ptr<FontData> font(nullptr);
 
@@ -193,16 +232,19 @@ static FontData* load_font(const XMLElement* xmlFont, const std::string& xmlFile
     const char* fileStr = xmlFont->Attribute("file");
     if (fileStr) {
       font = std::make_unique<FontData>(text::FontType::SpriteSheet);
+      font->setName(nameStr ? nameStr : fileStr);
       font->setFilename(base::join_path(xmlDir, fileStr));
       if (const char* descent = xmlFont->Attribute("descent"))
         font->setDescent(std::strtof(descent, nullptr));
     }
   }
+  // Loads: <font type="truetype" file="..." />
+  // Or:    <font type="truetype" file_win="..." file_mac="..." file_linux="..." />
   else if (type == "truetype") {
     const char* platformFileAttrName =
-#ifdef _WIN32
+#if LAF_WINDOWS
       "file_win"
-#elif defined __APPLE__
+#elif LAF_MACOS
       "file_mac"
 #else
       "file_linux"
@@ -225,24 +267,72 @@ static FontData* load_font(const XMLElement* xmlFont, const std::string& xmlFile
     // want to keep the font information (e.g. to use the fallback
     // information of this font).
     font = std::make_unique<FontData>(text::FontType::FreeType);
+    font->setName(nameStr ? nameStr : (platformFileStr ? platformFileStr : fileStr));
     font->setFilename(fontFilename);
     font->setAntialias(antialias);
 
     if (!fontFilename.empty())
       LOG(VERBOSE, "THEME: Font file '%s' found\n", fontFilename.c_str());
   }
+  // Loads: <font system="..." />
+  // Or:    <font>
+  //          <windows system="..." />
+  //          <macos system="..." />
+  //          <linux system="..." />
+  //        </font>
+  else if (!typeStr || type == "system") {
+    // Try to get the platform-specific font first
+    const char* platformName =
+#if LAF_WINDOWS
+      "windows"
+#elif LAF_MACOS
+      "macos"
+#else
+      "linux"
+#endif
+      ;
+
+    // Load platform specific font from sub elements like
+    // <font>
+    //   <windows system="..." />
+    //   ...
+    // </font>
+    XMLElement* xmlPlatformFont = (XMLElement*)xmlFont->FirstChildElement(platformName);
+    while (xmlPlatformFont) {
+      if (auto platformFont = try_to_load_system_font(xmlPlatformFont)) {
+        font = std::move(platformFont);
+        break;
+      }
+      xmlPlatformFont = xmlPlatformFont->NextSiblingElement();
+    }
+
+    // Load the system font from
+    // <font system="..." />
+    if (!font && systemStr) {
+      font = try_to_load_system_font(xmlFont);
+    }
+  }
   else {
-    throw base::Exception("Invalid type=\"%s\" in '%s' for <font name=\"%s\" ...>\n",
-                          type.c_str(),
-                          xmlFilename.c_str(),
-                          name.c_str());
+    throw base::Exception(
+      fmt::format("{}:{}: Invalid font type (\"{}\")' attribute in <font /> element",
+                  xmlFilename,
+                  xmlFont->GetLineNum(),
+                  type));
   }
 
-  if (!font)
+  if (!font) {
+    if (!typeStr && !systemStr) {
+      throw base::Exception(
+        fmt::format("{}:{}: Missing 'font', 'type', or 'system' attributes in <font /> element",
+                    xmlFilename,
+                    xmlFont->GetLineNum()));
+    }
+
     return nullptr;
+  }
 
   FontData* result = font.get();
-  fonts->addFontData(name, std::move(font)); // "font" variable is invalid from now on
+  fonts->addFontData(std::move(font)); // "font" variable is invalid from now on
 
   // Fallback font
   const XMLElement* xmlFallback = (const XMLElement*)xmlFont->FirstChildElement("fallback");
@@ -250,7 +340,7 @@ static FontData* load_font(const XMLElement* xmlFont, const std::string& xmlFile
     FontData* fallback = load_font(xmlFallback, xmlFilename);
     if (fallback) {
       int size = 10;
-      const char* sizeStr = xmlFont->Attribute("size");
+      const char* sizeStr = xmlFallback->Attribute("size");
       if (sizeStr)
         size = std::strtol(sizeStr, nullptr, 10);
 
@@ -443,10 +533,12 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         std::string id(idStr);
         LOG(VERBOSE, "THEME: Loading theme font %s\n", idStr);
 
-        int size = 0;
-        const char* sizeStr = xmlFont->Attribute("size");
-        if (sizeStr)
-          size = std::strtol(sizeStr, nullptr, 10);
+        float size = 0.0f;
+        if (const char* sizeStr = xmlFont->Attribute("size"))
+          size = std::strtof(sizeStr, nullptr);
+
+        if (fontData->defaultSize() != 0.0f)
+          size = fontData->defaultSize();
 
         const char* mnemonicsStr = xmlFont->Attribute("mnemonics");
         bool mnemonics = mnemonicsStr ? (std::string(mnemonicsStr) != "off") : true;
@@ -454,7 +546,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         text::FontRef font = fontData->getFont(m_fontMgr, size * ui::guiscale());
 
         // SpriteSheetFonts have a default preferred size.
-        if (size == 0 && font->defaultSize() > 0.0f) {
+        if (size == 0.0f && font->defaultSize() > 0.0f) {
           size = font->defaultSize();
           font = fontData->getFont(m_fontMgr, size * ui::guiscale());
         }
@@ -465,10 +557,14 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         // widget with autoScaling enabled).
         m_unscaledFonts[font.get()] = fontData->getFont(m_fontMgr, size);
 
-        if (id == "default")
+        if (id == "default") {
           m_defaultFont = font;
-        else if (id == "mini")
+          m_defaultFontInfo = FontInfo(fontData, size);
+        }
+        else if (id == "mini") {
           m_miniFont = font;
+          m_miniFontInfo = FontInfo(fontData, size);
+        }
       }
 
       xmlFont = xmlFont->NextSiblingElement();
@@ -476,25 +572,31 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
   }
 
   // No available font to run the program
-  if (!m_defaultFont)
-    throw base::Exception("There is no default font");
-  if (!m_miniFont)
+  if (!m_defaultFont) {
+    throw base::Exception(
+      fmt::format("{}: No valid default font element found (<font id=\"default\" ... />)",
+                  xml_filename));
+  }
+  if (!m_miniFont) {
     m_miniFont = m_defaultFont;
-
-  m_originalDefaultFont = m_defaultFont;
-  m_originalMiniFont = m_miniFont;
+    m_miniFontInfo = m_defaultFontInfo;
+  }
 
   // Overwrite theme fonts by user defined fonts.
   Preferences& pref = Preferences::instance();
   if (!pref.theme.font().empty()) {
     auto fi = base::convert_to<FontInfo>(pref.theme.font());
-    if (auto f = fonts->fontFromInfo(fi))
+    if (auto f = fonts->fontFromInfo(fi)) {
       m_defaultFont = f;
+      m_defaultFontInfo = fi;
+    }
   }
   if (!pref.theme.miniFont().empty()) {
     auto fi = base::convert_to<FontInfo>(pref.theme.miniFont());
-    if (auto f = fonts->fontFromInfo(fi))
+    if (auto f = fonts->fontFromInfo(fi)) {
       m_miniFont = f;
+      m_miniFontInfo = fi;
+    }
   }
 
   // Load dimension

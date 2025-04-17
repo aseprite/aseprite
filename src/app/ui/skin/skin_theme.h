@@ -9,6 +9,7 @@
 #define APP_UI_SKIN_SKIN_THEME_H_INCLUDED
 #pragma once
 
+#include "app/fonts/font_info.h"
 #include "app/fonts/fonts.h"
 #include "app/ui/skin/skin_part.h"
 #include "gfx/color.h"
@@ -61,9 +62,8 @@ public:
   int preferredScreenScaling() const { return m_preferredScreenScaling; }
   int preferredUIScaling() const { return m_preferredUIScaling; }
 
-  text::FontRef getOriginalDefaultFont() const { return m_originalDefaultFont; }
-  text::FontRef getOriginalMiniFont() { return m_originalMiniFont; }
-
+  const FontInfo& getDefaultFontInfo() const { return m_defaultFontInfo; }
+  const FontInfo& getMiniFontInfo() const { return m_miniFontInfo; }
   text::FontRef getDefaultFont() const override { return m_defaultFont; }
   text::FontRef getWidgetFont(const ui::Widget* widget) const override;
   text::FontRef getMiniFont() const { return m_miniFont; }
@@ -216,8 +216,10 @@ private:
   std::map<std::string, ThemeFont> m_themeFonts;
   // Stores the unscaled font version of the Font pointer used as a key.
   std::map<text::Font*, text::FontRef> m_unscaledFonts;
-  text::FontRef m_originalDefaultFont, m_defaultFont;
-  text::FontRef m_originalMiniFont, m_miniFont;
+  FontInfo m_defaultFontInfo;
+  FontInfo m_miniFontInfo;
+  text::FontRef m_defaultFont;
+  text::FontRef m_miniFont;
   int m_preferredScreenScaling;
   int m_preferredUIScaling;
 };
