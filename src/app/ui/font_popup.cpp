@@ -39,6 +39,7 @@
 #include "ui/message.h"
 #include "ui/paint_event.h"
 #include "ui/size_hint_event.h"
+#include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/view.h"
 
@@ -175,7 +176,6 @@ private:
     if (m_thumbnail.surface)
       return;
 
-    const auto* theme = app::skin::SkinTheme::get(this);
     try {
       Fonts* fonts = Fonts::instance();
       const FontInfo fontInfoDefSize(m_fontInfo,
@@ -312,75 +312,17 @@ FontPopup::FontPopup(const FontInfo& fontInfo)
   }
 
   // Create one FontItem for each font
-  m_listBox.addChild(new SeparatorInView(Strings::font_popup_system_fonts()));
-  bool empty = true;
+  m_systemFontsSeparator = new SeparatorInView(Strings::font_popup_system_fonts());
+  m_listBox.addChild(m_systemFontsSeparator);
 
-  // Get system fonts from laf-text module
-  const text::FontMgrRef fontMgr = fonts->fontMgr();
-  const int n = fontMgr->countFamilies();
-  if (n > 0) {
-    for (int i = 0; i < n; ++i) {
-      std::string name = fontMgr->familyName(i);
-      text::FontStyleSetRef set = fontMgr->familyStyleSet(i);
-      if (set && set->count() > 0) {
-        // Match the typeface with the default FontStyle (Normal
-        // weight, Upright slant, etc.)
-        auto typeface = set->matchStyle(text::FontStyle());
-        if (typeface) {
-          auto* item = new FontItem(name, typeface->fontStyle(), set);
-          item->ThumbnailGenerated.connect([this] { onThumbnailGenerated(); });
-          m_listBox.addChild(item);
-          empty = false;
-        }
-      }
-    }
-  }
-  // Get fonts listing .ttf files TODO we should be able to remove
-  // this code in the future (probably after DirectWrite API is always
-  // available).
-  else {
-    base::paths fontDirs;
-    get_font_dirs(fontDirs);
-
-    // Create a list of fullpaths to every font found in all font
-    // directories (fontDirs)
-    base::paths files;
-    for (const auto& fontDir : fontDirs) {
-      for (const auto& file : base::list_files(fontDir, base::ItemType::Files)) {
-        files.push_back(base::join_path(fontDir, file));
-      }
-    }
-
-    // Sort all files by "file title"
-    std::sort(files.begin(), files.end(), [](const std::string& a, const std::string& b) {
-      return base::utf8_icmp(base::get_file_title(a), base::get_file_title(b)) < 0;
-    });
-
-    for (auto& file : files) {
-      std::string ext = base::string_to_lower(base::get_file_extension(file));
-      if (ext == "ttf" || ext == "ttc" || ext == "otf" || ext == "dfont") {
-        m_listBox.addChild(new FontItem(file));
-        empty = false;
-      }
-    }
-  }
-
-  if (empty)
-    m_listBox.addChild(new ListItem(Strings::font_popup_empty_fonts()));
-
-  for (auto* child : m_listBox.children()) {
-    if (auto* childItem = dynamic_cast<FontItem*>(child)) {
-      if (childItem->fontInfo().title() == childItem->text()) {
-        m_listBox.selectChild(childItem);
-        break;
-      }
-    }
-  }
+  m_listFontsTask.run([this](base::task_token& token) { listSystemFonts(token); });
 }
 
 FontPopup::~FontPopup()
 {
   m_timer.stop();
+  m_listFontsTask.cancel();
+  m_listFontsTask.wait();
 }
 
 void FontPopup::setSearchText(const std::string& searchText)
@@ -486,7 +428,8 @@ void FontPopup::onThumbnailGenerated()
 void FontPopup::onTickRelayout()
 {
   m_popup->view()->updateView();
-  m_timer.stop();
+  if (!m_listFontsTask.running())
+    m_timer.stop();
 }
 
 bool FontPopup::onProcessMessage(ui::Message* msg)
@@ -505,6 +448,107 @@ bool FontPopup::onProcessMessage(ui::Message* msg)
     }
   }
   return ui::PopupWindow::onProcessMessage(msg);
+}
+
+void FontPopup::listSystemFonts(base::task_token& token)
+{
+  Fonts* fonts = Fonts::instance();
+  bool empty = true;
+
+  // Get system fonts from laf-text module
+  const text::FontMgrRef fontMgr = fonts->fontMgr();
+  const int n = fontMgr->countFamilies();
+  if (n > 0) {
+    for (int i = 0; i < n; ++i) {
+      std::string name = fontMgr->familyName(i);
+      text::FontStyleSetRef set = fontMgr->familyStyleSet(i);
+      if (set && set->count() > 0) {
+        // Match the typeface with the default FontStyle (Normal
+        // weight, Upright slant, etc.)
+        auto typeface = set->matchStyle(text::FontStyle());
+        if (typeface) {
+          ui::execute_from_ui_thread([=, &token] {
+            if (token.canceled())
+              return;
+
+            auto* item = new FontItem(name, typeface->fontStyle(), set);
+            item->ThumbnailGenerated.connect([this] { onThumbnailGenerated(); });
+
+            int j = m_listBox.getChildIndex(m_systemFontsSeparator) + 1;
+            for (; j < m_listBox.getItemsCount(); ++j) {
+              if (name < m_listBox.at(j)->text())
+                break;
+            }
+            m_listBox.insertChild(j, item);
+            layout();
+          });
+          empty = false;
+        }
+      }
+
+      if (token.canceled())
+        goto done;
+    }
+  }
+  // Get fonts listing .ttf files TODO we should be able to remove
+  // this code in the future (probably after DirectWrite API is always
+  // available).
+  else {
+    base::paths fontDirs;
+    get_font_dirs(fontDirs);
+
+    // Create a list of fullpaths to every font found in all font
+    // directories (fontDirs)
+    base::paths files;
+    for (const auto& fontDir : fontDirs) {
+      for (const auto& file : base::list_files(fontDir, base::ItemType::Files)) {
+        files.push_back(base::join_path(fontDir, file));
+        if (token.canceled())
+          goto done;
+      }
+    }
+
+    // Sort all files by "file title"
+    std::sort(files.begin(), files.end(), [](const std::string& a, const std::string& b) {
+      return base::utf8_icmp(base::get_file_title(a), base::get_file_title(b)) < 0;
+    });
+
+    for (auto& file : files) {
+      std::string ext = base::string_to_lower(base::get_file_extension(file));
+      if (ext == "ttf" || ext == "ttc" || ext == "otf" || ext == "dfont") {
+        ui::execute_from_ui_thread([this, file, &token] {
+          if (token.canceled())
+            return;
+
+          m_listBox.addChild(new FontItem(file));
+        });
+        empty = false;
+      }
+    }
+  }
+
+done:;
+  if (token.canceled())
+    return;
+
+  if (empty) {
+    ui::execute_from_ui_thread([this, &token] {
+      if (token.canceled())
+        return;
+
+      m_listBox.addChild(new ListItem(Strings::font_popup_empty_fonts()));
+      layout();
+    });
+  }
+
+  ui::execute_from_ui_thread([this, &token] {
+    if (token.canceled())
+      return;
+
+    // Stop the view relayout
+    onTickRelayout();
+    m_timer.stop();
+  });
 }
 
 } // namespace app
