@@ -40,6 +40,8 @@ int secure_io_lines(lua_State* L);
 int secure_io_input(lua_State* L);
 int secure_io_output(lua_State* L);
 int secure_os_execute(lua_State* L);
+int secure_os_remove(lua_State* L);
+int secure_os_rename(lua_State* L);
 int secure_package_loadlib(lua_State* L);
 
 enum {
@@ -49,6 +51,8 @@ enum {
   io_input,
   io_output,
   os_execute,
+  os_remove,
+  os_rename,
   package_loadlib,
 };
 
@@ -64,6 +68,8 @@ static struct {
   { "io",      "input",   secure_io_input        },
   { "io",      "output",  secure_io_output       },
   { "os",      "execute", secure_os_execute      },
+  { "os",      "remove",  secure_os_remove       },
+  { "os",      "rename",  secure_os_rename       },
   { "package", "loadlib", secure_package_loadlib },
 };
 
@@ -185,6 +191,24 @@ int secure_os_execute(lua_State* L)
   return replaced_functions[os_execute].origfunc(L);
 }
 
+int secure_os_remove(lua_State* L)
+{
+  const char* cmd = luaL_checkstring(L, 1);
+  if (!ask_access(L, cmd, FileAccessMode::Write, ResourceType::File)) {
+    return luaL_error(L, "the script doesn't have access to remove '%s'", cmd);
+  }
+  return replaced_functions[os_remove].origfunc(L);
+}
+
+int secure_os_rename(lua_State* L)
+{
+  const char* cmd = luaL_checkstring(L, 1);
+  if (!ask_access(L, cmd, FileAccessMode::Write, ResourceType::File)) {
+    return luaL_error(L, "the script doesn't have access to rename '%s'", cmd);
+  }
+  return replaced_functions[os_rename].origfunc(L);
+}
+
 int secure_package_loadlib(lua_State* L)
 {
   const char* cmd = luaL_checkstring(L, 1);
@@ -201,7 +225,7 @@ void overwrite_unsecure_functions(lua_State* L)
 {
   // Remove unsupported functions
   lua_getglobal(L, "os");
-  for (const char* name : { "remove", "rename", "exit", "tmpname" }) {
+  for (const char* name : { "exit", "tmpname" }) {
     lua_pushcfunction(L, unsupported);
     lua_setfield(L, -2, name);
   }
@@ -280,7 +304,15 @@ bool ask_access(lua_State* L,
     {
       std::string label;
       switch (resourceType) {
-        case ResourceType::File:      label = Strings::script_access_file_label(); break;
+        case ResourceType::File: {
+          if (mode == FileAccessMode::Write) {
+            label = Strings::script_access_file_write_label();
+          }
+          else {
+            label = Strings::script_access_file_label();
+          }
+          break;
+        }
         case ResourceType::Command:   label = Strings::script_access_command_label(); break;
         case ResourceType::WebSocket: label = Strings::script_access_websocket_label(); break;
         case ResourceType::Clipboard: label = Strings::script_access_clipboard_label(); break;
