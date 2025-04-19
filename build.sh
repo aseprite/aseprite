@@ -135,14 +135,14 @@ if [ ! -f "$pwd/.build/userkind" ] ; then
         echo "  [U]ser: give a try to Aseprite"
         echo "  [D]eveloper: develop/modify Aseprite"
         echo ""
-        read -sN 1 -p "[U/D]? "
-        echo ""
-        if [[ "$REPLY" == "d" || "$REPLY" == "D" ]] ; then
+        read -p "[U/D]? "
+        REPLY=$(echo $REPLY | tr '[:upper:]' '[:lower:]')
+        if [[ "$REPLY" == "d" || "$REPLY" == "dev" || "$REPLY" == "developer" ]] ; then
             echo "developer" > $pwd/.build/userkind
-        elif [[ "$REPLY" == "u" || "$REPLY" == "U" ]] ; then
+        elif [[ "$REPLY" == "u" || "$REPLY" == "user" ]] ; then
             echo "user" > $pwd/.build/userkind
         else
-            echo "Use U or D keys to select kind of user/build process"
+            echo "Use U or D keys (and press Enter) to select kind of user/build process"
             exit 1
         fi
     fi
@@ -392,11 +392,11 @@ if [ ! -d "$skia_library_dir" ] ; then
     echo "Skia library wasn't found."
     echo ""
     if [ ! $auto ] ; then
-        read -sN 1 -p "Download pre-compiled Skia automatically [Y/n]? "
+        read -p "Download pre-compiled Skia automatically [Y/n]? "
         # Convert the Enter key as the default option: an empty string
-        REPLY=$(echo $REPLY | xargs)
+        REPLY=$(echo $REPLY | tr '[:upper:]' '[:lower:]' | xargs)
     fi
-    if [[ $auto || "$REPLY" == "" || "$REPLY" == "y" || "$REPLY" == "Y" ]] ; then
+    if [[ $auto || "$REPLY" == "" || "$REPLY" == "y" || "$REPLY" == "yes" ]] ; then
         if [[ $is_win && "$build_type" == "Debug" ]] ; then
             skia_build=Debug
         else
@@ -434,7 +434,7 @@ if [ ! -f "$active_build_dir/ninja.build" ] ; then
     echo "This will take some minutes."
     echo ""
     if [ ! $auto ] ; then
-        read -sN 1 -p "Press any key to continue. "
+        read -p "Press Enter to continue."
     fi
 
     if [ $is_macos ] ; then
