@@ -74,7 +74,11 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
   double dz = delta.x + delta.y;
   WheelAction wheelAction = WheelAction::None;
 
-  if (KeyboardShortcuts::instance()->hasMouseWheelCustomization()) {
+  if (tools::Tool* quickTool = App::instance()->activeToolManager()->quickTool();
+      quickTool && quickTool->getId() == tools::WellKnownInks::Zoom) {
+    wheelAction = WheelAction::Zoom;
+  }
+  else if (KeyboardShortcuts::instance()->hasMouseWheelCustomization()) {
     if (!Preferences::instance().editor.zoomWithSlide() && msg->preciseWheel())
       wheelAction = WheelAction::VScroll;
     else
