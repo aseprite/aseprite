@@ -481,18 +481,27 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 #endif
 
   switch (msg->type()) {
-    case kCloseDisplayMessage:
+    case kCloseDisplayMessage: {
       // Only call the exit command/close the app when the the main
       // display is the closed window in this kCloseDisplayMessage
-      // message and it's the current running foreground window.
-      if (msg->display() == this->display() &&
-          getForegroundWindow() == App::instance()->mainWindow()) {
+      // message and it's the current running foreground window, unless
+      // the foreground window is a popup that is expected to be closed.
+
+      auto* foregroundPopup = dynamic_cast<PopupWindow*>(getForegroundWindow());
+      if (foregroundPopup != nullptr &&
+          foregroundPopup->getClickBehavior() == PopupWindow::ClickBehavior::DoNothingOnClick)
+        break; // Valid PopupWindows that do nothing on click are still modal.
+
+      if (getForegroundWindow() != App::instance()->mainWindow() && !foregroundPopup)
+        break; // If the foreground window is not a main window and not a popup, do not close it.
+
+      if (msg->display() == this->display()) {
         // Execute the "Exit" command.
         Command* command = Commands::instance()->byId(CommandId::Exit());
         UIContext::instance()->executeCommandFromMenuOrShortcut(command);
         return true;
       }
-      break;
+    } break;
 
     case kDropFilesMessage:
       // Files are processed only when the main window is the current
