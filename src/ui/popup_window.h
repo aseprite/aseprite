@@ -41,6 +41,8 @@ public:
   void setClickBehavior(ClickBehavior behavior);
   void setEnterBehavior(EnterBehavior behavior);
 
+  ClickBehavior getClickBehavior() { return m_clickBehavior; };
+
   void makeFloating();
   void makeFixed();
 
