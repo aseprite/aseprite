@@ -108,7 +108,7 @@ endif()
 # This defines a specific webp decoding utility function for using
 # in Windows when dragging and dropping images that are stored as
 # webp files (like Chrome does).
-if(WIN32 AND ENABLE_WEBP)
+if(WIN32 AND ENABLE_WEBP AND LAF_BACKEND STREQUAL "skia")
   target_sources(app-lib PRIVATE util/decode_webp.cpp)
 endif()
 
