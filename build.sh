@@ -56,11 +56,6 @@ if [ "$1" == "--norun" ] ; then
     norun=1
 fi
 
-# Platform.
-if ! source "$pwd/laf/misc/platform.sh" ; then
-    exit $?
-fi
-
 # Check utilities.
 if ! cmake --version >/dev/null ; then
     echo ""
@@ -117,6 +112,23 @@ if [ $run_submodule_update ] ; then
     echo "Done"
 fi
 
+# Platform.
+if ! source "$pwd/laf/misc/platform.sh" ; then
+    exit $?
+fi
+
+if [ $is_win ] ; then
+    # Check MSVC compiler.
+    if ! cl.exe >/dev/null 2>/dev/null ; then
+        echo ""
+        echo "MSVC compiler (cl.exe) not found in PATH"
+        echo ""
+        echo "  PATH=$PATH"
+        echo ""
+        exit 1
+    fi
+fi
+
 # Create the directory to store the configuration.
 if [ ! -d "$pwd/.build" ] ; then
     mkdir "$pwd/.build"
@@ -130,7 +142,7 @@ if [ ! -f "$pwd/.build/userkind" ] ; then
         echo "user" > $pwd/.build/userkind
     else
         echo ""
-        echo "Select what kind of user you are (press U or D keys):"
+        echo "Select what kind of user you are (press U or D key and then Enter):"
         echo ""
         echo "  [U]ser: give a try to Aseprite"
         echo "  [D]eveloper: develop/modify Aseprite"
