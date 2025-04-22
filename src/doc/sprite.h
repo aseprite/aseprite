@@ -244,8 +244,8 @@ public:
 
   void setTileManagementPlugin(const std::string& plugin) { m_tileManagementPlugin = plugin; }
 
-  void setUuidsForLayers(bool value) { m_uuidsForLayers = value; }
-  bool uuidsForLayers() const { return m_uuidsForLayers; }
+  void useLayerUuids(bool value) { m_useLayerUuids = value; }
+  bool useLayerUuids() const { return m_useLayerUuids; }
 
 private:
   Document* m_document;
@@ -276,7 +276,7 @@ private:
   std::string m_tileManagementPlugin;
 
   // This setting indicates if the layers of this sprite are using UUIDs.
-  bool m_uuidsForLayers = false;
+  bool m_useLayerUuids = false;
 
   // Disable default constructor and copying
   Sprite();

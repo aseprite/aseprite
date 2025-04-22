@@ -21,32 +21,32 @@ do
   assert(l.data == "Data")
 end
 
--- Test layer uuid with uuidsForLayers enabled
+-- Test layer uuid with useLayerUuids enabled
 do
   local s = Sprite(32, 32)
   local l = s.layers[1]
-  assert(s.uuidsForLayers == false)
+  assert(s.useLayerUuids == false)
 
   local uuid = l.uuid
   assert(uuid ~= nil)
 
-  s.uuidsForLayers = true
+  s.useLayerUuids = true
 
-  assert(s.uuidsForLayers == true)
+  assert(s.useLayerUuids == true)
   s.filename = "_test_layer_uuid.aseprite"
   app.command.SaveFile()
   app.command.CloseFile()
 
   app.command.OpenFile { filename = "_test_layer_uuid.aseprite" }
-  assert(app.sprite.uuidsForLayers == true)
+  assert(app.sprite.useLayerUuids == true)
   assert(app.sprite.layers[1].uuid == uuid)
 end
 
--- Test layer uuid with uuidsForLayers disabled
+-- Test layer uuid with useLayerUuids disabled
 do
   local s = Sprite(32, 32)
   local l = s.layers[1]
-  assert(s.uuidsForLayers == false)
+  assert(s.useLayerUuids == false)
 
   local uuid = l.uuid
   assert(uuid ~= nil)
@@ -56,8 +56,8 @@ do
   app.command.CloseFile()
 
   app.command.OpenFile { filename = "_test_layer_uuid_2.aseprite" }
-  assert(app.sprite.uuidsForLayers == false)
-  -- UUIDs are not equal because it was not saved due to uuidsForLayers being
+  assert(app.sprite.useLayerUuids == false)
+  -- UUIDs are not equal because it was not saved due to useLayerUuids being
   -- disabled at the time of saving the file.
   assert(app.sprite.layers[1].uuid ~= uuid)
 end

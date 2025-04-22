@@ -1012,19 +1012,19 @@ int Sprite_set_tileManagementPlugin(lua_State* L)
   return 0;
 }
 
-int Sprite_get_uuidsForLayers(lua_State* L)
+int Sprite_get_useLayerUuids(lua_State* L)
 {
   auto* sprite = get_docobj<Sprite>(L, 1);
-  lua_pushboolean(L, sprite->uuidsForLayers());
+  lua_pushboolean(L, sprite->useLayerUuids());
   return 1;
 }
 
-int Sprite_set_uuidsForLayers(lua_State* L)
+int Sprite_set_useLayerUuids(lua_State* L)
 {
   auto* sprite = get_docobj<Sprite>(L, 1);
   if (lua_isboolean(L, 2)) {
     const bool value = lua_toboolean(L, 2);
-    sprite->setUuidsForLayers(value);
+    sprite->useLayerUuids(value);
   }
   return 0;
 }
@@ -1093,7 +1093,7 @@ const Property Sprite_properties[] = {
   { "pixelRatio",           Sprite_get_pixelRatio,           Sprite_set_pixelRatio           },
   { "events",               Sprite_get_events,               nullptr                         },
   { "tileManagementPlugin", Sprite_get_tileManagementPlugin, Sprite_set_tileManagementPlugin },
-  { "uuidsForLayers",       Sprite_get_uuidsForLayers,       Sprite_set_uuidsForLayers       },
+  { "useLayerUuids",        Sprite_get_useLayerUuids,        Sprite_set_useLayerUuids        },
   { nullptr,                nullptr,                         nullptr                         }
 };
 
