@@ -464,7 +464,7 @@ private:
       m_userDataView.setVisible(false, false);
     }
 
-    bool uuidVisible = m_document && m_document->sprite() && m_document->sprite()->uuidsForLayers();
+    bool uuidVisible = m_document && m_document->sprite() && m_document->sprite()->useLayerUuids();
     uuidLabel()->setVisible(uuidVisible);
     uuid()->setVisible(uuidVisible);
 
