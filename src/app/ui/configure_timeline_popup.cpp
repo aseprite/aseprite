@@ -74,6 +74,8 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   const bool visibleThumb = docPref().thumbnails.enabled();
   m_box->thumbHSeparator()->setVisible(visibleThumb);
   m_box->thumbBox()->setVisible(visibleThumb);
+
+  m_box->defaults()->Click.connect([this] { onSetAsDefaults(); });
 }
 
 Doc* ConfigureTimelinePopup::doc()
@@ -242,6 +244,30 @@ void ConfigureTimelinePopup::onThumbOverlaySizeChange()
 void ConfigureTimelinePopup::onScaleUpToFitChange()
 {
   docPref().thumbnails.scaleUpToFit(m_box->thumbScaleUpToFit()->isSelected());
+}
+
+void ConfigureTimelinePopup::onSetAsDefaults()
+{
+  const auto& docPref = this->docPref();
+  auto& defaults = Preferences::instance().document(nullptr);
+
+  defaults.timeline.firstFrame(docPref.timeline.firstFrame());
+
+  defaults.thumbnails.enabled(docPref.thumbnails.enabled());
+  defaults.thumbnails.zoom(docPref.thumbnails.zoom());
+  defaults.thumbnails.overlayEnabled(docPref.thumbnails.overlayEnabled());
+  defaults.thumbnails.overlaySize(docPref.thumbnails.overlaySize());
+  defaults.thumbnails.scaleUpToFit(docPref.thumbnails.scaleUpToFit());
+
+  defaults.onionskin.active(docPref.onionskin.active());
+  defaults.onionskin.prevFrames(docPref.onionskin.prevFrames());
+  defaults.onionskin.nextFrames(docPref.onionskin.nextFrames());
+  defaults.onionskin.opacityBase(docPref.onionskin.opacityBase());
+  defaults.onionskin.opacityStep(docPref.onionskin.opacityStep());
+  defaults.onionskin.type(docPref.onionskin.type());
+  defaults.onionskin.loopTag(docPref.onionskin.loopTag());
+  defaults.onionskin.currentLayer(docPref.onionskin.currentLayer());
+  defaults.onionskin.position(docPref.onionskin.position());
 }
 
 } // namespace app

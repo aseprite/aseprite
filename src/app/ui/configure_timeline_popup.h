@@ -48,6 +48,7 @@ protected:
   void onThumbOverlayEnabledChange();
   void onThumbOverlaySizeChange();
   void onScaleUpToFitChange();
+  void onSetAsDefaults();
 
 private:
   void updateWidgetsFromCurrentSettings();

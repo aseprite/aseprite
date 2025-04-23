@@ -57,5 +57,11 @@
       <radio group="2" text="@.in_front" id="infront" tooltip="@.in_front_toolip" />
     </hbox>
   </grid>
+
+  <separator horizontal="true" />
+  <hbox>
+    <boxfiller />
+    <button id="defaults" text="@.set_as_defaults" />
+  </hbox>
 </vbox>
 </gui>
