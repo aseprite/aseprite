@@ -18,19 +18,20 @@
 #include "doc/layer.h"
 #include "render/dithering.h"
 
-namespace app {
+namespace {
 
-using namespace docapi;
+using namespace app;
 
-// Returns true if the document srcDoc has a cel that can be moved to the destDoc.
-// The cel from srcDoc can be moved only when all of the following conditions
+// Returns true if the document srcDoc has a cel that can be copied into a
+// destDoc's cel.
+// The cel from srcDoc can be copied only when all of the following conditions
 // are met:
 // * Drop took place in a cel.
 // * Source doc has only one layer with just one frame.
 // * The layer from the source doc and the destination cel's layer are both
 // Image layers.
 // Otherwise this function returns false.
-bool canMoveCel(app::Doc* srcDoc, app::Doc* destDoc, DroppedOn droppedOn, doc::layer_t layerIndex)
+bool canCopyCel(Doc* srcDoc, Doc* destDoc, DroppedOn droppedOn, doc::layer_t layerIndex)
 {
   auto* srcLayer = srcDoc->sprite()->firstLayer();
   auto* destLayer = destDoc->sprite()->allLayers()[layerIndex];
@@ -38,7 +39,7 @@ bool canMoveCel(app::Doc* srcDoc, app::Doc* destDoc, DroppedOn droppedOn, doc::l
          srcDoc->sprite()->totalFrames() == 1 && srcLayer->isImage() && destLayer->isImage();
 }
 
-void setupInsertionLayer(app::Doc* destDoc,
+void setupInsertionLayer(Doc* destDoc,
                          doc::layer_t layerIndex,
                          InsertionPoint& insert,
                          Layer*& layer,
@@ -60,6 +61,12 @@ void setupInsertionLayer(app::Doc* destDoc,
 
   group = layer->parent();
 }
+
+} // namespace
+
+namespace app {
+
+using namespace docapi;
 
 void DocApi::dropDocumentsOnTimeline(app::Doc* destDoc,
                                      doc::frame_t frame,
@@ -101,11 +108,11 @@ void DocApi::dropDocumentsOnTimeline(app::Doc* destDoc,
       cmd.execute(destDoc->context());
     }
 
-    // If there is only one source document to process and it has a cel that
-    // can be moved, then copy the cel from the source doc into the
+    // If there is only one source document to process and it has a single cel
+    // that can be copied, then copy the cel from the source doc into the
     // destination doc's selected frame.
     const bool isJustOneDoc = (docsProcessed == 1 && docProvider.pendingDocs() == 0);
-    if (isJustOneDoc && canMoveCel(srcDoc.get(), destDoc, droppedOn, layerIndex)) {
+    if (isJustOneDoc && canCopyCel(srcDoc.get(), destDoc, droppedOn, layerIndex)) {
       auto* srcLayer = static_cast<LayerImage*>(srcDoc->sprite()->firstLayer());
       auto* destLayer = static_cast<LayerImage*>(destDoc->sprite()->allLayers()[layerIndex]);
       m_transaction.execute(new cmd::CopyCel(srcLayer, 0, destLayer, frame, false));
