@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -50,7 +50,7 @@ static constexpr bool is_url_char(const int chr)
 }
 
 constexpr const char* kSectionName = "PinnedPalettes";
-constexpr const uint8_t kPinnedLimit = 9999;
+constexpr const size_t kPinnedLimit = 9999;
 
 class PalettesListItem : public ResourceListItem {
   class CommentButton : public IconButton {
