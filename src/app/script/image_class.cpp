@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +9,7 @@
   #include "config.h"
 #endif
 
+#include "app/cmd/clear_rect.h"
 #include "app/cmd/copy_rect.h"
 #include "app/cmd/copy_region.h"
 #include "app/cmd/flip_image.h"
@@ -20,12 +21,14 @@
 #include "app/script/blend_mode.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
+#include "app/script/graphics_context.h"
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
 #include "app/site.h"
 #include "app/tx.h"
 #include "app/util/autocrop.h"
 #include "app/util/resize_image.h"
+#include "app/util/shader_helpers.h"
 #include "base/fs.h"
 #include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/flip_type.h"
@@ -37,6 +40,7 @@
 #include "doc/primitives.h"
 #include "doc/sprite.h"
 #include "render/render.h"
+#include "ui/scale.h"
 
 #include <algorithm>
 #include <cstring>
@@ -53,6 +57,11 @@ struct ImageObj {
   doc::ObjectId celId = 0;
   doc::ObjectId tilesetId = 0;
   doc::tile_index ti = 0;
+
+#if LAF_SKIA
+  std::unique_ptr<GraphicsContext> context = nullptr;
+#endif
+
   ImageObj(doc::Image* image) : imageId(image->id()) {}
   ImageObj(doc::Cel* cel) : imageId(cel->image()->id()), celId(cel->id()) {}
   ImageObj(doc::Tileset* tileset, doc::tile_index ti, doc::Image* image)
@@ -96,6 +105,7 @@ void render_sprite(Image* dst, const Sprite* sprite, const frame_t frame, const 
 {
   render::Render render;
   render.setNewBlend(true);
+  render.setComposeGroups(Preferences::instance().experimental.composeGroups());
   render.renderSprite(dst, sprite, frame, gfx::Clip(x, y, 0, 0, sprite->width(), sprite->height()));
 }
 
@@ -237,7 +247,15 @@ int Image_clear(lua_State* L)
   else
     color = convert_args_into_pixel_color(L, i, img->pixelFormat());
 
-  doc::fill_rect(img, rc, color); // Clips the rectangle to the image bounds
+  if (auto cel = obj->cel(L)) {
+    Tx tx(cel->sprite());
+    tx(new cmd::ClearRect(cel, rc.offset(cel->position()), color));
+    tx.commit();
+  }
+  // If the destination image is not related to a sprite, we just draw
+  // the source image without undo information.
+  else
+    doc::fill_rect(img, rc, color); // Clips the rectangle to the image bounds
   return 0;
 }
 
@@ -717,6 +735,24 @@ int Image_get_cel(lua_State* L)
   return 1;
 }
 
+int Image_get_context(lua_State* L)
+{
+#if LAF_SKIA
+  auto* obj = get_obj<ImageObj>(L, 1);
+
+  if (!obj->context) {
+    auto surface = wrap_docimage_in_surface(obj->image(L));
+    obj->context =
+      std::make_unique<GraphicsContext>(surface, ui::guiscale(), obj->image(L)->pixelFormat());
+  }
+
+  push_obj(L, *obj->context);
+  return 1;
+#else
+  return 0;
+#endif
+}
+
 const luaL_Reg Image_methods[] = {
   { "clone",        Image_clone        },
   { "clear",        Image_clear        },
@@ -752,6 +788,7 @@ const Property Image_properties[] = {
   { "colorMode",     Image_get_colorMode,     nullptr         },
   { "spec",          Image_get_spec,          nullptr         },
   { "cel",           Image_get_cel,           nullptr         },
+  { "context",       Image_get_context,       nullptr         },
   { nullptr,         nullptr,                 nullptr         }
 };
 

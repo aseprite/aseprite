@@ -104,6 +104,10 @@ static Item convert_to_item(XMLElement* elem)
     return item.typeIncl("ui::Entry", "ui/entry.h");
   if (name == "expr")
     return item.typeIncl("app::ExprEntry", "app/ui/expr_entry.h");
+  if (name == "filename")
+    return item.typeIncl("app::FilenameField", "app/ui/filename_field.h");
+  if (name == "font")
+    return item.typeIncl("app::FontEntry", "app/ui/font_entry.h");
   if (name == "grid")
     return item.typeIncl("ui::Grid", "ui/grid.h");
   if (name == "hbox")

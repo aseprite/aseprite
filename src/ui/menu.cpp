@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -13,7 +13,7 @@
 
 #include "base/scoped_value.h"
 #include "gfx/size.h"
-#include "os/font.h"
+#include "text/font.h"
 #include "ui/display.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
@@ -803,18 +803,7 @@ bool MenuBox::onProcessMessage(Message* msg)
       break;
 
     case kMouseWheelMessage: {
-      View* view = View::getView(this);
-      if (view) {
-        auto mouseMsg = static_cast<MouseMessage*>(msg);
-        gfx::Point scroll = view->viewScroll();
-
-        if (mouseMsg->preciseWheel())
-          scroll += mouseMsg->wheelDelta();
-        else
-          scroll += mouseMsg->wheelDelta() * textHeight() * 3;
-
-        view->setViewScroll(scroll);
-      }
+      View::scrollByMessage(this, msg);
       break;
     }
 

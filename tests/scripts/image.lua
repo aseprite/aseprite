@@ -64,6 +64,108 @@ do
                     1, 2 })
 end
 
+-- Clear command with an image which is linked to a sprite
+-- Clear command on RGBA images
+do
+  local spr = Sprite(4, 4, ColorMode.RGB)
+  local image = Image(2, 2, ColorMode.RGB)
+  local mask = app.pixelColor.rgba(0, 0, 0, 0)
+  local imageCols = { app.pixelColor.rgba(255, 0, 0), app.pixelColor.rgba(0, 255, 0),
+                      mask                          , app.pixelColor.rgba(0, 0  , 255) }
+  array_to_pixels(imageCols, image)
+  expect_img(image, imageCols)
+  spr:newCel(app.layer, 1, image, Point(2, 2))
+  image:clear()
+  expect_img(image, { mask, mask,
+                      mask, mask })
+
+  array_to_pixels(imageCols, image)
+  spr.layers[1]:cel(1).image = image
+  spr.layers[1]:cel(1).position = Point(2, 2)
+  image:clear(Rectangle(0, 0, 2, 1))
+  expect_img(image, { mask        , mask,
+                      imageCols[3], imageCols[4] })
+  app.undo()
+  -- Re-catch the cel image (TODO: 'image' variable should retain the link of the cel image)
+  image = spr.layers[1]:cel(1).image
+  expect_img(image, imageCols)
+
+  local yellow = app.pixelColor.rgba(128, 128, 0)
+  image:clear(Rectangle(0, 0, 2, 1), yellow)
+  expect_img(image, { yellow       , yellow,
+                      imageCols[3] , imageCols[4] })
+  app.undo()
+  expect_img(image, imageCols)
+end
+
+-- Clear command on Grayscale images
+do
+  local spr = Sprite(4, 4, ColorMode.GRAY)
+  local image = Image(2, 2, ColorMode.GRAY)
+  local mask = app.pixelColor.graya(0, 0)
+  local imageCols = { app.pixelColor.graya(255), app.pixelColor.graya(127),
+                      mask                     , app.pixelColor.graya(63) }
+  array_to_pixels(imageCols, image)
+  expect_img(image, imageCols)
+  spr:newCel(app.layer, 1, image, Point(2, 2))
+  image:clear()
+  expect_img(image, { mask, mask,
+                      mask, mask })
+
+  array_to_pixels(imageCols, image)
+  spr.layers[1]:cel(1).image = image
+  spr.layers[1]:cel(1).position = Point(2, 2)
+  image:clear(Rectangle(0, 0, 2, 1))
+  expect_img(image, { mask        , mask,
+                      imageCols[3], imageCols[4] })
+  app.undo()
+  -- Re-catch the cel image (TODO: 'image' variable should retain the link of the cel image)
+  image = spr.layers[1]:cel(1).image
+  expect_img(image, imageCols)
+
+  local white200 =  app.pixelColor.graya(200)
+  image:clear(Rectangle(0, 0, 2, 1),white200)
+  expect_img(image, { white200     , white200,
+                      imageCols[3] , imageCols[4] })
+  app.undo()
+  expect_img(image, imageCols)
+end
+
+-- Clear command on Indexed images
+do
+  local spr = Sprite(4, 4, ColorMode.INDEXED)
+  local image = Image(2, 2, ColorMode.INDEXED)
+  spr.palettes[1]:setColor(1, Color(255, 0  , 0))
+  spr.palettes[1]:setColor(2, Color(0  , 255, 0))
+  spr.palettes[1]:setColor(3, Color(0  , 0  , 255))
+
+  local imageCols = { 1, 2,
+                      0, 3 }
+  array_to_pixels(imageCols, image)
+  expect_img(image, imageCols)
+  spr:newCel(app.layer, 1, image, Point(2, 2))
+  image:clear()
+  expect_img(image, { 0, 0,
+                      0, 0 })
+
+  array_to_pixels(imageCols, image)
+  spr.layers[1]:cel(1).image = image
+  spr.layers[1]:cel(1).position = Point(2, 2)
+  image:clear(Rectangle(0, 0, 2, 1))
+  expect_img(image, { 0           , 0,
+                      imageCols[3], imageCols[4] })
+  app.undo()
+  -- Re-catch the cel image (TODO: 'image' variable should retain the link of the cel image)
+  image = spr.layers[1]:cel(1).image
+  expect_img(image, imageCols)
+
+  image:clear(Rectangle(0, 0, 2, 1), 4)
+  expect_img(image, { 4            , 4,
+                      imageCols[3] , imageCols[4] })
+  app.undo()
+  expect_img(image, imageCols)
+end
+
 -- Clone
 do
   local c = Image(a)
@@ -560,4 +662,92 @@ do
   expect_img(idx, { 1, 1,
                     2, 3 })
 
+end
+
+-- Test Image.context
+do
+  -- Draw onto an indexed image
+  do
+    local spec = ImageSpec{
+      width=3, height=4,
+      colorMode=ColorMode.INDEXED,
+      transparentColor=1 }
+
+    local img = Image(spec)
+    local gc = img.context
+    if gc then
+      expect_eq(gc.width, 3)
+      expect_eq(gc.height, 4)
+
+      gc.color = Color{ index=2 }
+      local c = gc.color.index
+      gc.strokeWidth = 1
+      -- Setting blendMode to BlendMode.SRC will make GraphicsContext's painting
+      -- behave correclty for indexed images.
+      gc.blendMode = BlendMode.SRC
+      gc:rect(Rectangle{0,0,1,1})
+      gc:stroke()
+
+      expect_img(img, { c, c, 1,
+                        c, c, 1,
+                        1, 1, 1,
+                        1, 1, 1 })
+    else
+      skipped("GraphicsContext unavailable")
+    end
+  end
+
+  -- Draw onto a grayscale image
+  do
+    local spec = ImageSpec{
+      width=3, height=4,
+      colorMode=ColorMode.GRAY }
+
+    local img = Image(spec)
+    local gc = img.context
+    if gc then
+      expect_eq(gc.width, 3)
+      expect_eq(gc.height, 4)
+
+      gc.color = Color{ gray=2, alpha=255 }
+      local c = gc.color.grayPixel
+      gc.strokeWidth = 1
+      gc:rect(Rectangle{0,0,1,1})
+      gc:stroke()
+
+      expect_img(img, { c, c, 0,
+                        c, c, 0,
+                        0, 0, 0,
+                        0, 0, 0 })
+    else
+      skipped("GraphicsContext unavailable")
+    end
+  end
+
+  -- Draw onto an RGB image
+  do
+    local spec = ImageSpec{
+      width=3, height=4,
+      colorMode=ColorMode.RGB }
+
+    local img = Image(spec)
+    local gc = img.context
+    if gc then
+      expect_eq(gc.width, 3)
+      expect_eq(gc.height, 4)
+
+      gc.color = Color(2,0,0,255)
+      local c = gc.color.rgbaPixel
+      gc.strokeWidth = 1
+      gc:rect(Rectangle{0,0,1,1})
+      gc:stroke()
+
+      expect_img(img, { c, c, 0,
+                        c, c, 0,
+                        0, 0, 0,
+                        0, 0, 0 })
+    else
+      skipped("GraphicsContext unavailable")
+    end
+  end
 end

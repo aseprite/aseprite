@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -14,8 +14,8 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
-#include "os/font.h"
 #include "os/surface.h"
+#include "text/font.h"
 #include "ui/base.h"
 
 #include <string>
@@ -96,6 +96,7 @@ public:
 
   typedef std::vector<Layer> Layers;
 
+  static constexpr const int kUndefinedSide = -1;
   static gfx::Border UndefinedBorder();
 
   static gfx::Size MinSize();
@@ -104,13 +105,21 @@ public:
   Style(const Style* base);
 
   const std::string& id() const { return m_id; }
-  const gfx::Border& margin() const { return m_margin; }
-  const gfx::Border& border() const { return m_border; }
-  const gfx::Border& padding() const { return m_padding; }
+
+  // Raw margin/border/padding values which might contain
+  // kUndefinedSide values.
+  const gfx::Border& rawMargin() const { return m_margin; }
+  const gfx::Border& rawBorder() const { return m_border; }
+  const gfx::Border& rawPadding() const { return m_padding; }
+
+  gfx::Border margin() const { return normalizeBorder(m_margin); }
+  gfx::Border border() const { return normalizeBorder(m_border); }
+  gfx::Border padding() const { return normalizeBorder(m_padding); }
+
   const gfx::Size& minSize() const { return m_minSize; }
   const gfx::Size& maxSize() const { return m_maxSize; }
   const gfx::Size& gap() const { return m_gap; }
-  os::Font* font() const { return m_font.get(); }
+  const text::FontRef& font() const { return m_font; }
   const bool mnemonics() const { return m_mnemonics; }
   const Layers& layers() const { return m_layers; }
   Layers& layers() { return m_layers; }
@@ -122,11 +131,31 @@ public:
   void setMinSize(const gfx::Size& sz);
   void setMaxSize(const gfx::Size& sz);
   void setGap(const gfx::Size& value) { m_gap = value; }
-  void setFont(const os::FontRef& font);
+  void setFont(const text::FontRef& font);
   void setMnemonics(const bool enabled) { m_mnemonics = enabled; }
   void addLayer(const Layer& layer);
 
+  static inline void applyOnlyDefinedBorders(gfx::Border& border, const gfx::Border& defBorder)
+  {
+    if (defBorder.left() != kUndefinedSide)
+      border.left(defBorder.left());
+    if (defBorder.top() != kUndefinedSide)
+      border.top(defBorder.top());
+    if (defBorder.right() != kUndefinedSide)
+      border.right(defBorder.right());
+    if (defBorder.bottom() != kUndefinedSide)
+      border.bottom(defBorder.bottom());
+  }
+
 private:
+  static inline gfx::Border normalizeBorder(const gfx::Border& b)
+  {
+    return gfx::Border(b.left() == kUndefinedSide ? 0 : b.left(),
+                       b.top() == kUndefinedSide ? 0 : b.top(),
+                       b.right() == kUndefinedSide ? 0 : b.right(),
+                       b.bottom() == kUndefinedSide ? 0 : b.bottom());
+  }
+
   std::string m_id; // Just for debugging purposes
   Layers m_layers;
   int m_insertionPoint;
@@ -139,7 +168,7 @@ private:
   gfx::Size m_maxSize;
   // Grid's columns and rows separation in pixels.
   gfx::Size m_gap;
-  os::FontRef m_font;
+  text::FontRef m_font;
   bool m_mnemonics;
 };
 

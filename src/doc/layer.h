@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,6 +9,8 @@
 #define DOC_LAYER_H_INCLUDED
 #pragma once
 
+#include "base/debug.h"
+#include "base/uuid.h"
 #include "doc/blend_mode.h"
 #include "doc/cel_list.h"
 #include "doc/frame.h"
@@ -122,16 +124,38 @@ public:
       m_flags = LayerFlags(int(m_flags) & ~int(flags));
   }
 
+  BlendMode blendMode() const { return m_blendmode; }
+  void setBlendMode(BlendMode blendmode) { m_blendmode = blendmode; }
+
+  int opacity() const { return m_opacity; }
+  void setOpacity(int opacity) { m_opacity = opacity; }
+
+  const base::Uuid& uuid() const
+  {
+    if (m_uuid == base::Uuid())
+      m_uuid = base::Uuid::Generate();
+    return m_uuid;
+  }
+  void setUuid(const base::Uuid& uuid)
+  {
+    ASSERT(m_uuid == base::Uuid());
+    m_uuid = uuid;
+  }
+
   virtual Grid grid() const;
   virtual Cel* cel(frame_t frame) const;
   virtual void getCels(CelList& cels) const = 0;
   virtual void displaceFrames(frame_t fromThis, frame_t delta) = 0;
 
 private:
-  std::string m_name;   // layer name
-  Sprite* m_sprite;     // owner of the layer
-  LayerGroup* m_parent; // parent layer
-  LayerFlags m_flags;   // stack order cannot be changed
+  std::string m_name;        // layer name
+  Sprite* m_sprite;          // owner of the layer
+  LayerGroup* m_parent;      // parent layer
+  LayerFlags m_flags;        // stack order cannot be changed
+  mutable base::Uuid m_uuid; // lazily generated layer's UUID
+
+  BlendMode m_blendmode;
+  int m_opacity;
 
   // Disable assigment
   Layer& operator=(const Layer& other);
@@ -147,12 +171,6 @@ public:
   virtual ~LayerImage();
 
   virtual int getMemSize() const override;
-
-  BlendMode blendMode() const { return m_blendmode; }
-  void setBlendMode(BlendMode blendmode) { m_blendmode = blendmode; }
-
-  int opacity() const { return m_opacity; }
-  void setOpacity(int opacity) { m_opacity = opacity; }
 
   void addCel(Cel* cel);
   void removeCel(Cel* cel);
@@ -178,8 +196,6 @@ public:
 private:
   void destroyAllCels();
 
-  BlendMode m_blendmode;
-  int m_opacity;
   CelList m_cels; // List of all cels inside this layer used by frames.
 };
 
@@ -199,6 +215,7 @@ public:
   void addLayer(Layer* layer);
   void removeLayer(Layer* layer);
   void insertLayer(Layer* layer, Layer* after);
+  void insertLayerBefore(Layer* layer, Layer* before);
   void stackLayer(Layer* layer, Layer* after);
 
   Layer* firstLayer() const { return (m_layers.empty() ? nullptr : m_layers.front()); }

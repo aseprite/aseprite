@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,7 +14,6 @@
 #include "app/app.h"
 #include "app/context.h"
 #include "app/site.h"
-#include "app/ui/timeline/timeline.h"
 
 namespace app {
 
@@ -38,7 +37,7 @@ CmdTransaction* CmdTransaction::moveToEmptyCopy()
   return copy;
 }
 
-void CmdTransaction::setNewDocRange(const DocRange& range)
+void CmdTransaction::setNewDocRange(const view::RealRange& range)
 {
   if (m_ranges)
     range.write(m_ranges->m_after);
@@ -115,30 +114,24 @@ size_t CmdTransaction::onMemSize() const
 
 SpritePosition CmdTransaction::calcSpritePosition() const
 {
+  // This check was added to allow executing transactions on documents that are
+  // not part of any context. For instance, when dragging and dropping a
+  // document on the timeline, the dragged document doesn't have any context (
+  // it is not associated with any editor).
+  if (!context())
+    return SpritePosition();
   Site site = context()->activeSite();
   return SpritePosition(site.layer(), site.frame());
 }
 
 bool CmdTransaction::isDocRangeEnabled() const
 {
-  if (App::instance()) {
-    Timeline* timeline = App::instance()->timeline();
-    if (timeline && timeline->range().enabled())
-      return true;
-  }
-  return false;
+  return (context() ? context()->range().enabled() : false);
 }
 
-DocRange CmdTransaction::calcDocRange() const
+view::RealRange CmdTransaction::calcDocRange() const
 {
-  // TODO We cannot use Context::activeSite() because it losts
-  //      important information about the DocRange() (type and
-  //      flags).
-  if (App* app = App::instance()) {
-    if (Timeline* timeline = app->timeline())
-      return timeline->range();
-  }
-  return DocRange();
+  return (context() ? context()->range() : view::RealRange());
 }
 
 } // namespace app

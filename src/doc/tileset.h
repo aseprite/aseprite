@@ -43,6 +43,9 @@ public:
   // least one non-empty tile.
   Tileset(Sprite* sprite, const Grid& grid, const tileset_index ntiles);
 
+  // Copy constructor
+  Tileset(Sprite* sprite, const Tileset* other);
+
   static Tileset* MakeCopyWithoutImages(const Tileset* tileset);
   static Tileset* MakeCopyWithSameImages(const Tileset* tileset);
   static Tileset* MakeCopyCopyingImages(const Tileset* tileset);

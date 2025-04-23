@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,7 +21,20 @@ namespace app { namespace cmd {
 
 using namespace doc;
 
+ClearRect::ClearRect(Cel* cel, const gfx::Rect& bounds, color_t color)
+{
+  ASSERT(cel);
+  initialize(cel, bounds, color);
+}
+
 ClearRect::ClearRect(Cel* cel, const gfx::Rect& bounds)
+{
+  ASSERT(cel);
+  Doc* doc = static_cast<Doc*>(cel->document());
+  initialize(cel, bounds, doc->bgColor(cel->layer()));
+}
+
+void ClearRect::initialize(Cel* cel, const gfx::Rect& bounds, color_t color)
 {
   ASSERT(cel);
 
@@ -37,9 +51,7 @@ ClearRect::ClearRect(Cel* cel, const gfx::Rect& bounds)
     return;
 
   m_dstImage.reset(new WithImage(image));
-
-  Doc* doc = static_cast<Doc*>(cel->document());
-  m_bgcolor = doc->bgColor(cel->layer());
+  m_bgcolor = color;
 
   m_copy.reset(crop_image(image, bounds2.x, bounds2.y, bounds2.w, bounds2.h, m_bgcolor));
 }

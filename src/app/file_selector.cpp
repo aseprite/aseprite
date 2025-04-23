@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,11 +13,16 @@
 
 #include "app/app.h"
 #include "app/pref/preferences.h"
+#include "app/ui/app_menuitem.h"
 #include "app/ui/file_selector.h"
 #include "base/fs.h"
-#include "os/native_dialogs.h"
+#include "dlgs/file_dialog.h"
 #include "os/system.h"
 #include "os/window.h"
+
+#if LAF_LINUX
+  #include "os/x11/x11.h"
+#endif
 
 namespace app {
 
@@ -27,12 +32,25 @@ bool show_file_selector(const std::string& title,
                         FileSelectorType type,
                         base::paths& output)
 {
+  const os::SystemRef system = os::System::instance();
   const std::string defExtension = Preferences::instance().saveFile.defaultExtension();
 
-  if (Preferences::instance().experimental.useNativeFileDialog() &&
-      os::instance()->nativeDialogs()) {
-    os::FileDialogRef dlg = os::instance()->nativeDialogs()->makeFileDialog();
+  if (Preferences::instance().experimental.useNativeFileDialog()) {
+    dlgs::FileDialog::Spec spec;
 
+#if LAF_MACOS
+    // Setup the standard "Edit" item for macOS
+    auto* editItem = AppMenuItem::GetStandardEditMenu();
+    if (editItem && editItem->native() && editItem->native()->menuItem) {
+      spec.editNSMenuItem = editItem->native()->menuItem->nativeHandle();
+    }
+#elif LAF_LINUX
+    // Connect laf-os <-> laf-dlgs information about the X11 server
+    // connection.
+    spec.x11display = os::X11::instance()->display();
+#endif
+
+    dlgs::FileDialogRef dlg = dlgs::FileDialog::make(spec);
     if (dlg) {
       dlg->setTitle(title);
 
@@ -43,28 +61,29 @@ bool show_file_selector(const std::string& title,
         dlg->setDefaultExtension(defExtension);
       }
 
-#if LAF_LINUX // As the X11 version doesn't store the default path to
-              // start navigating, we use our own
-              // get_initial_path_to_select_filename()
+#if LAF_LINUX
+      // As the X11 version doesn't store the default path to start
+      // navigating, we use our own
+      // get_initial_path_to_select_filename()
       dlg->setFileName(get_initial_path_to_select_filename(initialPath));
 #else // !LAF_LINUX
       dlg->setFileName(initialPath);
 #endif
 
-      os::FileDialog::Type nativeType = os::FileDialog::Type::OpenFile;
+      dlgs::FileDialog::Type nativeType = dlgs::FileDialog::Type::OpenFile;
       switch (type) {
-        case FileSelectorType::Open:         nativeType = os::FileDialog::Type::OpenFile; break;
-        case FileSelectorType::OpenMultiple: nativeType = os::FileDialog::Type::OpenFiles; break;
-        case FileSelectorType::Save:         nativeType = os::FileDialog::Type::SaveFile; break;
+        case FileSelectorType::Open:         nativeType = dlgs::FileDialog::Type::OpenFile; break;
+        case FileSelectorType::OpenMultiple: nativeType = dlgs::FileDialog::Type::OpenFiles; break;
+        case FileSelectorType::Save:         nativeType = dlgs::FileDialog::Type::SaveFile; break;
       }
       dlg->setType(nativeType);
 
       for (const auto& ext : extensions)
         dlg->addFilter(ext, ext + " files (*." + ext + ")");
 
-      auto res = dlg->show(os::instance()->defaultWindow());
-      if (res != os::FileDialog::Result::Error) {
-        if (res == os::FileDialog::Result::OK) {
+      auto res = dlg->show(system->defaultWindow()->nativeHandle());
+      if (res != dlgs::FileDialog::Result::Error) {
+        if (res == dlgs::FileDialog::Result::OK) {
           if (type == FileSelectorType::OpenMultiple)
             dlg->getMultipleFileNames(output);
           else

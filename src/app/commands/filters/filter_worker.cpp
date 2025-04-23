@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -149,9 +149,6 @@ void FilterWorker::run()
     Console console;
     console.printf("A problem has occurred.\n\nDetails:\n%s", m_error.c_str());
   }
-  else if (m_cancelled && !m_filterMgr->isTransaction()) {
-    StatusBar::instance()->showTip(2500, Strings::statusbar_tips_filter_no_unlocked_layer());
-  }
 }
 
 // Called by FilterManagerImpl to informate the progress of the filter.
@@ -217,9 +214,9 @@ void FilterWorker::onMonitoringTick()
 //
 // [main thread]
 //
-void start_filter_worker(FilterManagerImpl* filterMgr)
+void FilterManagerImpl::startWorker()
 {
-  FilterWorker filterWorker(filterMgr);
+  FilterWorker filterWorker(this);
   filterWorker.run();
 }
 

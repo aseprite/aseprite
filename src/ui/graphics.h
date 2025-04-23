@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -15,8 +15,11 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
-#include "os/font.h"
 #include "os/surface.h"
+#include "text/font.h"
+#include "text/fwd.h"
+#include "text/shaper_features.h"
+#include "ui/layer.h"
 #include "ui/paint.h"
 
 #include <memory>
@@ -29,9 +32,8 @@ class Region;
 } // namespace gfx
 
 namespace os {
-class DrawTextDelegate;
 struct Sampling;
-} // namespace os
+}
 
 namespace ui {
 class Display;
@@ -54,6 +56,7 @@ public:
   void saveClip();
   void restoreClip();
   bool clipRect(const gfx::Rect& rc);
+  void clipRegion(const gfx::Region& rgn);
 
   void save();
   void concat(const gfx::Matrix& matrix);
@@ -70,9 +73,11 @@ public:
   void drawVLine(int x, int y, int h, const Paint& paint);
   void drawVLine(gfx::Color color, int x, int y, int h);
   void drawLine(gfx::Color color, const gfx::Point& a, const gfx::Point& b);
+  void drawLine(const gfx::PointF& a, const gfx::PointF& b, const Paint& paint);
   void drawPath(gfx::Path& path, const Paint& paint);
 
   void drawRect(const gfx::Rect& rc, const Paint& paint);
+  void drawRect(const gfx::RectF& rc, const Paint& paint);
   void drawRect(gfx::Color color, const gfx::Rect& rc);
   void fillRect(gfx::Color color, const gfx::Rect& rc);
   void fillRegion(gfx::Color color, const gfx::Region& rgn);
@@ -106,14 +111,20 @@ public:
   // FONT & TEXT
   // ======================================================================
 
-  os::Font* font() { return m_font.get(); }
-  void setFont(const os::FontRef& font);
+  const text::FontRef& font() { return m_font; }
+  void setFont(const text::FontRef& font);
 
-  void drawText(const std::string& str,
-                gfx::Color fg,
-                gfx::Color bg,
-                const gfx::Point& pt,
-                os::DrawTextDelegate* delegate = nullptr);
+  [[deprecated]]
+  void drawTextWithDelegate(const std::string& str,
+                            gfx::Color fg,
+                            gfx::Color bg,
+                            const gfx::Point& pt,
+                            text::DrawTextDelegate* delegate = nullptr,
+                            text::ShaperFeatures features = {});
+
+  void drawTextBlob(const text::TextBlobRef& textBlob, const gfx::PointF& pt, const Paint& paint);
+
+  void drawText(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt);
   void drawUIText(const std::string& str,
                   gfx::Color fg,
                   gfx::Color bg,
@@ -125,8 +136,7 @@ public:
                          const gfx::Rect& rc,
                          const int align);
 
-  gfx::Size measureUIText(const std::string& str);
-  static int measureUITextLength(const std::string& str, os::Font* font);
+  gfx::Size measureText(const std::string& str);
   gfx::Size fitString(const std::string& str, int maxWidth, int align);
 
   // Can be used in case that you've accessed/changed the
@@ -148,15 +158,8 @@ private:
   int m_dx;
   int m_dy;
   gfx::Rect m_clipBounds;
-  os::FontRef m_font;
+  text::FontRef m_font;
   gfx::Rect m_dirtyBounds;
-};
-
-// Class to draw directly in the screen.
-class ScreenGraphics : public Graphics {
-public:
-  ScreenGraphics(Display* display);
-  virtual ~ScreenGraphics();
 };
 
 // Class to temporary set the Graphics' clip region to the full

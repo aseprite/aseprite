@@ -67,7 +67,6 @@ enable_testing()
 option(USE_SHARED_CMARK   "Use your installed copy of cmark" off)
 option(USE_SHARED_CURL    "Use your installed copy of curl" off)
 option(USE_SHARED_GIFLIB  "Use your installed copy of giflib" off)
-option(USE_SHARED_JPEGLIB "Use your installed copy of jpeglib" off)
 option(USE_SHARED_ZLIB    "Use your installed copy of zlib" off)
 option(USE_SHARED_LIBPNG  "Use your installed copy of libpng" off)
 option(USE_SHARED_TINYEXIF "Use your installed copy of TinyEXIF" off)
@@ -186,7 +185,6 @@ set(SOURCE_DATA_DIR     ${CMAKE_CURRENT_SOURCE_DIR}/data)
 set(CMARK_DIR           ${CMAKE_CURRENT_SOURCE_DIR}/third_party/cmark)
 set(CURL_DIR            ${CMAKE_CURRENT_SOURCE_DIR}/third_party/curl)
 set(GIFLIB_DIR          ${CMAKE_CURRENT_SOURCE_DIR}/third_party/giflib)
-set(LIBJPEG_DIR         ${CMAKE_CURRENT_SOURCE_DIR}/third_party/jpeg)
 set(LIBPNG_DIR          ${CMAKE_CURRENT_SOURCE_DIR}/third_party/libpng)
 set(LIBWEBP_DIR         ${CMAKE_CURRENT_SOURCE_DIR}/third_party/libwebp)
 set(PIXMAN_DIR          ${CMAKE_CURRENT_SOURCE_DIR}/third_party/pixman)
@@ -245,7 +243,13 @@ if(USE_SHARED_LIBPNG)
   add_definitions(${PNG_DEFINITIONS})
 else()
   set(PNG_FOUND ON)
-  set(PNG_LIBRARY png_static)
+
+  # Skia on Linux includes libpng symbols
+  if(UNIX AND NOT APPLE AND LAF_BACKEND STREQUAL "skia")
+    set(PNG_LIBRARY skia)
+  else()
+    set(PNG_LIBRARY png_static)
+  endif()
   set(PNG_LIBRARIES ${PNG_LIBRARY})
   set(PNG_INCLUDE_DIRS
     ${LIBPNG_DIR}
@@ -317,17 +321,10 @@ else()
 endif()
 include_directories(${GIF_INCLUDE_DIRS})
 
-if(USE_SHARED_JPEGLIB)
-  find_package(JPEG REQUIRED)
-else()
-  set(JPEG_FOUND ON)
-  set(JPEG_INCLUDE_DIR ${LIBJPEG_DIR})
-  set(JPEG_LIBRARY jpeg CACHE FILEPATH "")
-  set(JPEG_LIBRARIES ${JPEG_LIBRARY})
-  set(JPEG_INCLUDE_DIRS ${JPEG_INCLUDE_DIR})
-endif()
-include_directories(${JPEG_INCLUDE_DIRS})
+# libjpeg-turbo
+find_package(JpegTurbo)
 
+# cmark
 if(USE_SHARED_CMARK)
   find_library(CMARK_LIBRARIES NAMES cmark)
   find_path(CMARK_INCLUDE_DIRS NAMES cmark.h)
@@ -385,7 +382,11 @@ if(ENABLE_WEBP)
     set(WEBP_INCLUDE_DIR ${LIBWEBP_DIR}/src)
   endif()
 endif()
+
+# Print paths to used libraries
+message(STATUS "aseprite giflib: ${GIF_LIBRARY}")
 message(STATUS "aseprite libwebp: ${WEBP_LIBRARIES}")
+message(STATUS "aseprite libjpeg-turbo: ${LIBJPEG_TURBO_LIBRARY}")
 
 # LAF libraries + Aseprite are compiled with config.h
 target_include_directories(laf-base PUBLIC src)

@@ -10,7 +10,7 @@
 #pragma once
 
 #include "doc/color.h"
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/rgbmap.h"
 #include "gfx/point.h"

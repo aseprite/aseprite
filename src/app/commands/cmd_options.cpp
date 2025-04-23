@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -18,6 +18,8 @@
 #include "app/extensions.h"
 #include "app/file/file.h"
 #include "app/file_selector.h"
+#include "app/fonts/font_data.h"
+#include "app/fonts/fonts.h"
 #include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/launcher.h"
@@ -35,6 +37,7 @@
 #include "app/ui/sampling_selector.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/util/render_text.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/string.h"
@@ -161,7 +164,11 @@ class OptionsWindow : public app::gen::Options {
 
   class LangItem : public ListItem {
   public:
-    LangItem(const LangInfo& langInfo) : ListItem(langInfo.displayName), m_langInfo(langInfo) {}
+    LangItem(const LangInfo& langInfo)
+      : ListItem(fmt::format("{} ({})", langInfo.displayName, langInfo.id))
+      , m_langInfo(langInfo)
+    {
+    }
     const std::string& langId() const { return m_langInfo.id; }
 
   private:
@@ -254,7 +261,8 @@ class OptionsWindow : public app::gen::Options {
 
 public:
   OptionsWindow(Context* context, int& curSection)
-    : m_context(context)
+    : m_system(os::System::instance())
+    , m_context(context)
     , m_pref(Preferences::instance())
     , m_globPref(m_pref.document(nullptr))
     , m_docPref(m_pref.document(context->activeDocument()))
@@ -266,8 +274,21 @@ public:
   {
     sectionListbox()->Change.connect([this] { onChangeSection(); });
 
-    // Theme variants
+    // Theme variants/fonts.
     fillThemeVariants();
+    fillThemeFonts();
+    updateFontPreviews();
+
+    // Language change
+    language()->Change.connect([this] { onLanguageChange(); });
+    fontWarning()->Click.connect([this] {
+      for (auto item : sectionListbox()->children()) {
+        if (static_cast<ListItem*>(item)->getValue() == kSectionThemeId) {
+          sectionListbox()->selectChild(item);
+          break;
+        }
+      }
+    });
 
     // Recent files
     clearRecentFiles()->Click.connect([this] { onClearRecentFiles(); });
@@ -280,7 +301,7 @@ public:
     resetColorManagement()->Click.connect([this] { onResetColorManagement(); });
     colorManagement()->Click.connect([this] { onColorManagement(); });
     {
-      os::instance()->listColorSpaces(m_colorSpaces);
+      m_system->listColorSpaces(m_colorSpaces);
       for (auto& cs : m_colorSpaces) {
         if (cs->gfxColorSpace()->type() != gfx::ColorSpace::None)
           workingRgbCs()->addItem(new ColorSpaceItem(cs));
@@ -366,7 +387,7 @@ public:
 
 #ifdef ENABLE_DEVMODE // TODO enable this on Release when Aseprite supports
                       //      GPU-acceleration properly
-    if (!os::instance()->hasCapability(os::Capabilities::GpuAccelerationSwitch))
+    if (!m_system->hasCapability(os::Capabilities::GpuAccelerationSwitch))
 #endif
     {
       gpuAcceleration()->setVisible(false);
@@ -374,7 +395,7 @@ public:
 
     // If the platform does support native menus, we show the option,
     // in other case, the option doesn't make sense for this platform.
-    if (!os::instance()->menus())
+    if (!m_system->menus())
       showMenuBar()->setVisible(false);
 
     // Editor sampling
@@ -439,6 +460,18 @@ public:
     // Undo preferences
     limitUndo()->Click.connect([this] { onLimitUndoCheck(); });
 
+    // Theme Custom Font
+    customThemeFont()->Click.connect([this] {
+      auto* theme = skin::SkinTheme::get(this);
+      onSwitchCustomFontCheckBox(customThemeFont(), themeFont(), theme->getDefaultFontInfo());
+    });
+    customMiniFont()->Click.connect([this] {
+      auto* theme = skin::SkinTheme::get(this);
+      onSwitchCustomFontCheckBox(customMiniFont(), themeMiniFont(), theme->getMiniFontInfo());
+    });
+    themeFont()->FontChange.connect([this] { updateFontPreviews(); });
+    themeMiniFont()->FontChange.connect([this] { updateFontPreviews(); });
+
     // Theme buttons
     themeList()->Change.connect([this] { onThemeChange(); });
     themeList()->DoubleClickItem.connect([this] { onSelectTheme(); });
@@ -452,20 +485,43 @@ public:
     uninstallExtension()->Click.connect([this] { onUninstallExtension(); });
     openExtensionFolder()->Click.connect([this] { onOpenExtensionFolder(); });
 
+    // Aseprite Format preferences
+    celFormat()->Change.connect([this] { onCelFormatChange(); });
+
     // Reset checkboxes
 
     // Prevent the user from clicking "Reset" if they don't have anything selected.
     auto validateYesButton = [this] {
       resetSelectedButton()->setEnabled(
         defaultReset()->isSelected() || installedReset()->isSelected() ||
-        recentReset()->isSelected() || perfileReset()->isSelected() || toolsReset()->isSelected());
+        recentReset()->isSelected() || perfileReset()->isSelected() ||
+        windowReset()->isSelected() || toolsReset()->isSelected() || brushesReset()->isSelected());
+
+      resetToggle()->setSelected(defaultReset()->isSelected() && installedReset()->isSelected() &&
+                                 recentReset()->isSelected() && perfileReset()->isSelected() &&
+                                 windowReset()->isSelected() && toolsReset()->isSelected() &&
+                                 brushesReset()->isSelected());
     };
+
     defaultReset()->Click.connect(validateYesButton);
     installedReset()->Click.connect(validateYesButton);
     recentReset()->Click.connect(validateYesButton);
     perfileReset()->Click.connect(validateYesButton);
     toolsReset()->Click.connect(validateYesButton);
+    windowReset()->Click.connect(validateYesButton);
+    brushesReset()->Click.connect(validateYesButton);
     resetSelectedButton()->Click.connect([this] { onResetDefault(); });
+    resetToggle()->Click.connect([this, validateYesButton] {
+      bool toggle = resetToggle()->isSelected();
+      defaultReset()->setSelected(toggle);
+      installedReset()->setSelected(toggle);
+      recentReset()->setSelected(toggle);
+      perfileReset()->setSelected(toggle);
+      toolsReset()->setSelected(toggle);
+      windowReset()->setSelected(toggle);
+      brushesReset()->setSelected(toggle);
+      validateYesButton();
+    });
 
     defaultReset()->setSelected(true);
 
@@ -569,7 +625,7 @@ public:
     moveOnAddMode()->setSelected(m_pref.selection.moveOnAddMode());
 
     // If the platform supports native cursors...
-    if ((int(os::instance()->capabilities()) & int(os::Capabilities::CustomMouseCursor)) != 0) {
+    if ((int(m_system->capabilities()) & int(os::Capabilities::CustomMouseCursor)) != 0) {
       nativeCursor()->setSelected(m_pref.cursor.useNativeCursor());
 
       cursorScale()->setSelectedItemIndex(cursorScale()->findItemIndexByValue(
@@ -587,7 +643,7 @@ public:
 
 #ifdef LAF_WINDOWS // Show Tablet section on Windows
     {
-      const os::TabletAPI tabletAPI = os::instance()->tabletOptions().api;
+      const os::TabletAPI tabletAPI = m_system->tabletOptions().api;
       if (tabletAPI == os::TabletAPI::Wintab)
         tabletApiWintabSystem()->setSelected(true);
       else if (tabletAPI == os::TabletAPI::WintabPackets)
@@ -618,12 +674,12 @@ public:
     selectScalingItems();
 
 #ifdef ENABLE_DEVMODE
-    if (os::instance()->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
+    if (m_system->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
       gpuAcceleration()->setSelected(m_pref.general.gpuAcceleration());
     }
 #endif
 
-    if (os::instance()->menus())
+    if (m_system->menus())
       showMenuBar()->setSelected(m_pref.general.showMenuBar());
 
     showHome()->setSelected(m_pref.general.showHome());
@@ -641,6 +697,10 @@ public:
     onChangeBgScope();
     onChangeGridScope();
     sectionListbox()->selectIndex(m_curSection);
+
+    // Aseprite format preferences
+    celFormat()->setSelectedItemIndex(int(m_pref.asepriteFormat.celFormat()));
+    onCelFormatChange();
   }
 
   bool ok() { return (closer() == buttonOk()); }
@@ -823,6 +883,9 @@ public:
     m_pref.undo.gotoModified(undoGotoModified()->isSelected());
     m_pref.undo.allowNonlinearHistory(undoAllowNonlinearHistory()->isSelected());
 
+    // Aseprite format preferences
+    m_pref.asepriteFormat.celFormat(gen::CelContentFormat(celFormat()->getSelectedItemIndex()));
+
     // Experimental features
     m_pref.experimental.flashLayer(flashLayer()->isSelected());
     m_pref.experimental.nonactiveLayersOpacity(nonactiveLayersOpacity()->getValue());
@@ -859,12 +922,31 @@ public:
       os::TabletOptions options;
       options.api = tabletAPI;
       options.setCursorFix = m_pref.tablet.setCursorFix();
-      os::instance()->setTabletOptions(options);
+      m_system->setTabletOptions(options);
     }
 #endif
 
     ui::set_use_native_cursors(m_pref.cursor.useNativeCursor());
     ui::set_mouse_cursor_scale(m_pref.cursor.cursorScale());
+
+    // Change theme font
+    bool reset_theme = false;
+    {
+      const FontInfo fontInfo = (customThemeFont()->isSelected() ? themeFont()->info() :
+                                                                   FontInfo());
+      const FontInfo miniFontInfo = (customMiniFont()->isSelected() ? themeMiniFont()->info() :
+                                                                      FontInfo());
+
+      auto fontStr = base::convert_to<std::string>(fontInfo);
+      auto miniFontStr = base::convert_to<std::string>(miniFontInfo);
+
+      if (m_pref.theme.font() != fontStr || m_pref.theme.miniFont() != miniFontStr) {
+        m_pref.theme.font(fontStr);
+        m_pref.theme.miniFont(miniFontStr);
+
+        reset_theme = true;
+      }
+    }
 
     bool reset_screen = false;
     const int newScreenScale = base::convert_to<int>(screenScale()->getValue());
@@ -876,9 +958,12 @@ public:
     const int newUIScale = base::convert_to<int>(uiScale()->getValue());
     if (newUIScale != m_pref.general.uiScale()) {
       m_pref.general.uiScale(newUIScale);
-      ui::set_theme(ui::get_theme(), newUIScale);
+      reset_theme = true;
       reset_screen = true;
     }
+
+    if (reset_theme)
+      ui::set_theme(ui::get_theme(), newUIScale);
 
 #ifdef ENABLE_DEVMODE
     const bool newGpuAccel = gpuAcceleration()->isSelected();
@@ -888,7 +973,7 @@ public:
     }
 #endif
 
-    if (os::instance()->menus() && m_pref.general.showMenuBar() != showMenuBar()->isSelected()) {
+    if (m_system->menus() && m_pref.general.showMenuBar() != showMenuBar()->isSelected()) {
       m_pref.general.showMenuBar(showMenuBar()->isSelected());
     }
 
@@ -962,6 +1047,14 @@ public:
   }
 
 private:
+  void onInitTheme(InitThemeEvent& ev) override
+  {
+    app::gen::Options::onInitTheme(ev);
+
+    fontPreview()->setFont(m_font);
+    miniFontPreview()->setFont(m_miniFont);
+  }
+
   void fillThemeVariants()
   {
     ButtonSet* list = nullptr;
@@ -998,6 +1091,41 @@ private:
     m_themeVars = list;
     themeVariants()->setVisible(list ? true : false);
     themeVariants()->initTheme();
+  }
+
+  void fillThemeFonts()
+  {
+    auto& pref = Preferences::instance();
+    const FontInfo fontInfo = base::convert_to<FontInfo>(pref.theme.font());
+    const FontInfo miniInfo = base::convert_to<FontInfo>(pref.theme.miniFont());
+
+    customThemeFont()->setSelected(fontInfo.isValid());
+    customMiniFont()->setSelected(miniInfo.isValid());
+
+    themeFont()->setEnabled(fontInfo.isValid());
+    themeMiniFont()->setEnabled(miniInfo.isValid());
+
+    themeFont()->setInfo(fontInfo, FontEntry::From::Init);
+    themeMiniFont()->setInfo(miniInfo, FontEntry::From::Init);
+  }
+
+  void onSwitchCustomFontCheckBox(CheckBox* fontCheckBox, FontEntry* fontEntry, const FontInfo& fi)
+  {
+    const bool state = fontCheckBox->isSelected();
+    fontEntry->setEnabled(state);
+    fontEntry->setInfo(fi, FontEntry::From::Init);
+  }
+
+  void updateFontPreviews()
+  {
+    m_font = Fonts::instance()->fontFromInfo(themeFont()->info());
+    m_miniFont = Fonts::instance()->fontFromInfo(themeMiniFont()->info());
+    if (!m_miniFont)
+      m_miniFont = skin::SkinTheme::get(this)->getMiniFont();
+
+    fontPreview()->setFont(m_font);
+    miniFontPreview()->setFont(m_miniFont);
+    layout();
   }
 
   void fillExtensionsCombobox(ui::ComboBox* combobox, const std::string& defExt)
@@ -1125,6 +1253,35 @@ private:
       }
     }
 
+    if (windowReset()->isSelected()) {
+      // TODO avoid enumerating all config sections here
+      static constexpr auto windowSections = {
+        "GfxMode",           "CanvasSize",        "CelProperties",     "ChangePixelFormat",
+        "ExportSpriteSheet", "ImportSpriteSheet", "KeyboardShortcuts", "LayerProperties",
+        "MaskColor",         "ExportFile",        "SpriteProperties",  "SpriteSize",
+        "UndoHistory",       "FileSelector",      "MiniEditor",        "BrightnessContrast",
+        "ConvolutionMatrix", "Despeckle",         "HueSaturation",     "InvertColor",
+        "Outline",           "Replace Color"
+      };
+      for (const auto* windowSection : windowSections)
+        del_window_pos(windowSection);
+    }
+
+    if (brushesReset()->isSelected()) {
+      const auto userBrushPath = AppBrushes::userBrushesFilename();
+      if (base::is_file(userBrushPath)) {
+        try {
+          base::delete_file(userBrushPath);
+          LOG(VERBOSE, "Deleted user brushes file");
+
+          App::instance()->brushes().reset();
+        }
+        catch (const std::exception& ex) {
+          LOG(ERROR, "Error resetting user brushes: %s - %s", userBrushPath.c_str(), ex.what());
+        }
+      }
+    }
+
     if (defaultReset()->isSelected()) {
       onResetAlerts();
       onResetBg();
@@ -1138,6 +1295,8 @@ private:
 
       // Resetting all things.
       for (Section* section : m_pref.sectionList()) {
+        if (strcmp(section->name(), "updater") == 0)
+          continue; // Ignore updater to preserve the UUID and other data.
         for (OptionBase* option : section->optionList()) {
           option->resetToDefault();
         }
@@ -1166,7 +1325,7 @@ private:
   {
     bool state =
       // If the platform supports custom cursors...
-      (((int(os::instance()->capabilities()) & int(os::Capabilities::CustomMouseCursor)) != 0) &&
+      ((m_system->hasCapability(os::Capabilities::CustomMouseCursor)) &&
        // If the native cursor option is not selec
        !nativeCursor()->isSelected());
 
@@ -1199,6 +1358,19 @@ private:
       loadExtensions();
 
     panel()->showChild(findChild(item->getValue().c_str()));
+  }
+
+  void onLanguageChange()
+  {
+    auto* item = dynamic_cast<const LangItem*>(language()->getSelectedItem());
+    if (!item)
+      return;
+    const std::string lang = item->langId();
+    const bool state = (lang == "ar" || lang == "ja" || lang == "ko" || lang == "yue_Hant" ||
+                        lang == "zh_Hans" || lang == "zh_Hant");
+    fontWarningFiller()->setVisible(state);
+    fontWarning()->setVisible(state);
+    layout();
   }
 
   void onClearRecentFiles() { App::instance()->recentFiles()->clear(); }
@@ -1849,6 +2021,13 @@ private:
       item->openFolder();
   }
 
+  void onCelFormatChange()
+  {
+    auto format = gen::CelContentFormat(celFormat()->getSelectedItemIndex());
+    celFormatWarning()->setVisible(format == gen::CelContentFormat::RAW_IMAGE);
+    layout();
+  }
+
   void onCursorColorType()
   {
     switch (cursorColorType()->getSelectedItemIndex()) {
@@ -1958,6 +2137,7 @@ private:
   }
 #endif // LAF_WINDOWS
 
+  os::SystemRef m_system;
   Context* m_context;
   Preferences& m_pref;
   DocumentPreferences& m_globPref;
@@ -1975,6 +2155,8 @@ private:
   BestFitCriteriaSelector m_bestFitCriteriaSelector;
   ButtonSet* m_themeVars = nullptr;
   SamplingSelector* m_samplingSelector = nullptr;
+  text::FontRef m_font;
+  text::FontRef m_miniFont;
 };
 
 class OptionsCommand : public Command {

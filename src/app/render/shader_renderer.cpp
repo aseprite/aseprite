@@ -15,6 +15,7 @@
   #include "app/color_utils.h"
   #include "app/util/shader_helpers.h"
   #include "doc/render_plan.h"
+  #include "os/common/generic_surface.h"
   #include "os/skia/skia_surface.h"
 
   #include "include/core/SkCanvas.h"
@@ -41,7 +42,7 @@ uniform shader iImg;
 uniform shader iPal;
 
 half4 main(vec2 fragcoord) {
- int index = int(255.0 * iImg.eval(fragcoord).a);
+ half index = floor(255.0 * iImg.eval(fragcoord).a + 1.0);
  return iPal.eval(half2(index, 0));
 }
 )";
@@ -106,6 +107,11 @@ void ShaderRenderer::setNonactiveLayersOpacity(const int opacity)
 }
 
 void ShaderRenderer::setNewBlendMethod(const bool newBlend)
+{
+  // TODO impl
+}
+
+void ShaderRenderer::setComposeGroups(const bool composeGroups)
 {
   // TODO impl
 }
@@ -423,7 +429,7 @@ void ShaderRenderer::drawImage(SkCanvas* canvas,
       // width=number of palette colors, and height=1
       const size_t palSize = sizeof(color_t) * m_palette.size();
       auto skPalData = SkData::MakeWithoutCopy((const void*)m_palette.rawColorsData(), palSize);
-      auto skPal = SkImage::MakeRasterData(
+      auto skPal = SkImages::RasterFromData(
         SkImageInfo::Make(m_palette.size(), 1, kRGBA_8888_SkColorType, kUnpremul_SkAlphaType),
         skPalData,
         palSize);

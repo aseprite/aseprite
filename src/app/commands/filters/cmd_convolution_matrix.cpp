@@ -15,7 +15,6 @@
 #include "app/commands/filters/convolution_matrix_stock.h"
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/commands/filters/filter_window.h"
-#include "app/commands/filters/filter_worker.h"
 #include "app/commands/new_params.h"
 #include "app/context.h"
 #include "app/doc.h"
@@ -206,7 +205,7 @@ void ConvolutionMatrixCommand::onExecute(Context* context)
     }
   }
   else {
-    start_filter_worker(&filterMgr);
+    filterMgr.startWorker();
   }
 }
 

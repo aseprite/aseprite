@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -74,7 +74,7 @@ void convert_color_profile(doc::Sprite* sprite, const gfx::ColorSpaceRef& newCS)
   ASSERT(sprite->colorSpace());
   ASSERT(newCS);
 
-  os::System* system = os::instance();
+  const os::SystemRef system = os::System::instance();
   auto srcOCS = system->makeColorSpace(sprite->colorSpace());
   auto dstOCS = system->makeColorSpace(newCS);
   ASSERT(srcOCS);
@@ -127,7 +127,7 @@ void convert_color_profile(doc::Image* image,
   ASSERT(oldCS);
   ASSERT(newCS);
 
-  os::System* system = os::instance();
+  const os::SystemRef system = os::System::instance();
   auto srcOCS = system->makeColorSpace(oldCS);
   auto dstOCS = system->makeColorSpace(newCS);
   ASSERT(srcOCS);
@@ -160,7 +160,7 @@ void convert_color_profile(doc::Image* image,
 ConvertColorProfile::ConvertColorProfile(doc::Sprite* sprite, const gfx::ColorSpaceRef& newCS)
   : WithSprite(sprite)
 {
-  os::System* system = os::instance();
+  const os::SystemRef system = os::System::instance();
 
   ASSERT(sprite->colorSpace());
   ASSERT(newCS);

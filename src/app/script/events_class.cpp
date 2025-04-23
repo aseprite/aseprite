@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2023  Igara Studio S.A.
+// Copyright (C) 2021-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -37,10 +37,9 @@
 // This event was disabled because it can be triggered in a background thread
 // when any effect (e.g. like Replace Color or Convolution Matrix) is running.
 // And running script code in a background is not supported.
-// #define ENABLE_REMAP_TILESET_EVENT
+// #define ENABLE_REMAP_TILESET_EVENT 1
 
-namespace app {
-namespace script {
+namespace app { namespace script {
 
 using namespace doc;
 
@@ -161,6 +160,7 @@ class AppEvents : public Events,
 public:
   enum : EventType {
     Unknown = -1,
+    BeforeSiteChange,
     SiteChange,
     FgColorChange,
     BgColorChange,
@@ -168,12 +168,14 @@ public:
     AfterCommand,
   };
 
-  AppEvents() {}
+  AppEvents() : m_addedObserver(0) {}
 
   EventType eventType(const char* eventName) const override
   {
     if (std::strcmp(eventName, "sitechange") == 0)
       return SiteChange;
+    else if (std::strcmp(eventName, "beforesitechange") == 0)
+      return BeforeSiteChange;
     else if (std::strcmp(eventName, "fgcolorchange") == 0)
       return FgColorChange;
     else if (std::strcmp(eventName, "bgcolorchange") == 0)
@@ -193,7 +195,13 @@ private:
     auto ctx = app->context();
     auto& pref = Preferences::instance();
     switch (eventType) {
-      case SiteChange: ctx->add_observer(this); break;
+      case BeforeSiteChange: [[fallthrough]];
+      case SiteChange:       {
+        if (m_addedObserver == 0)
+          ctx->add_observer(this);
+
+        ++m_addedObserver;
+      } break;
       case FgColorChange:
         m_fgConn = pref.colorBar.fgColor.AfterChange.connect([this] { onFgColorChange(); });
         break;
@@ -212,7 +220,13 @@ private:
   void onRemoveLastListener(EventType eventType) override
   {
     switch (eventType) {
-      case SiteChange:    App::instance()->context()->remove_observer(this); break;
+      case BeforeSiteChange: [[fallthrough]];
+      case SiteChange:
+        --m_addedObserver;
+
+        if (m_addedObserver == 0)
+          App::instance()->context()->remove_observer(this);
+        break;
       case FgColorChange: m_fgConn.disconnect(); break;
       case BgColorChange: m_bgConn.disconnect(); break;
       case BeforeCommand: m_beforeCmdConn.disconnect(); break;
@@ -227,45 +241,73 @@ private:
   void onBeforeCommand(CommandExecutionEvent& ev)
   {
     s_stopPropagationFlag = false;
-    call(BeforeCommand, { { "name", ev.command()->id() },
-                          { "params", ev.params() },
-                          { "stopPropagation",
-                            (lua_CFunction)
-                            [](lua_State*) -> int {
-                              s_stopPropagationFlag = true;
-                              return 0;
+
+    auto stopPropagation = (lua_CFunction)[](lua_State*)->int
+    {
+      s_stopPropagationFlag = true;
+      return 0;
+    };
+
+    call(BeforeCommand,
+         {
+           { "name",            ev.command()->id() },
+           { "params",          ev.params()        },
+           { "stopPropagation", stopPropagation    }
+    });
+    if (s_stopPropagationFlag)
+      ev.cancel();
   }
-}
-} // namespace
-);
-if (s_stopPropagationFlag)
-  ev.cancel();
-} // namespace script
 
-void onAfterCommand(CommandExecutionEvent& ev)
-{
-  call(AfterCommand,
-       {
-         { "name",   ev.command()->id() },
-         { "params", ev.params()        }
-  });
-}
+  void onAfterCommand(CommandExecutionEvent& ev)
+  {
+    call(AfterCommand,
+         {
+           { "name",   ev.command()->id() },
+           { "params", ev.params()        }
+    });
+  }
 
-// ContextObserver impl
-void onActiveSiteChange(const Site& site) override
-{
-  const bool fromUndo = (site.document() && site.document()->isUndoing());
-  call(SiteChange,
-       {
-         { "fromUndo", fromUndo }
-  });
-}
+  // ContextObserver impl
+  void onActiveSiteChange(const Site& site) override
+  {
+    if (m_lastActiveSite.has_value() && *m_lastActiveSite == site) {
+      // Avoid multiple events that can happen when closing since
+      // we're changing views at the same time we're removing
+      // documents
+      return;
+    }
 
-obs::scoped_connection m_fgConn;
-obs::scoped_connection m_bgConn;
-obs::scoped_connection m_beforeCmdConn;
-obs::scoped_connection m_afterCmdConn;
-obs::scoped_connection m_beforePaintConn;
+    const bool fromUndo = (site.document() && site.document()->isUndoing());
+    call(SiteChange,
+         {
+           { "fromUndo", fromUndo }
+    });
+    m_lastBeforeActiveSite = std::nullopt;
+    m_lastActiveSite = site;
+  }
+
+  void onBeforeActiveSiteChange(const Site& fromSite) override
+  {
+    if (m_lastBeforeActiveSite.has_value() && *m_lastBeforeActiveSite == fromSite)
+      return;
+
+    const bool fromUndo = (fromSite.document() && fromSite.document()->isUndoing());
+    call(BeforeSiteChange,
+         {
+           { "fromUndo", fromUndo }
+    });
+    m_lastBeforeActiveSite = fromSite;
+  }
+
+  obs::scoped_connection m_fgConn;
+  obs::scoped_connection m_bgConn;
+  obs::scoped_connection m_beforeCmdConn;
+  obs::scoped_connection m_afterCmdConn;
+  obs::scoped_connection m_beforePaintConn;
+
+  int m_addedObserver;
+  std::optional<Site> m_lastActiveSite;
+  std::optional<Site> m_lastBeforeActiveSite;
 }; // namespace app
 
 class WindowEvents : public Events,
@@ -595,5 +637,4 @@ void push_window_events(lua_State* L, ui::Window* window)
   push_ptr<Events>(L, g_windowEvents.get());
 }
 
-} // namespace script
-} // namespace app
+}} // namespace app::script

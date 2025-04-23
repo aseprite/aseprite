@@ -11,7 +11,7 @@
 
 #include "ui/slider.h"
 
-#include "os/font.h"
+#include "text/font.h"
 #include "ui/message.h"
 #include "ui/size_hint_event.h"
 #include "ui/system.h"

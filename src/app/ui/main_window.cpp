@@ -39,7 +39,10 @@
 #include "app/ui/workspace_tabs.h"
 #include "app/ui_context.h"
 #include "base/fs.h"
+#include "os/event.h"
+#include "os/event_queue.h"
 #include "os/system.h"
+#include "ui/drag_event.h"
 #include "ui/message.h"
 #include "ui/splitter.h"
 #include "ui/system.h"
@@ -88,6 +91,8 @@ MainWindow::MainWindow()
   , m_devConsoleView(nullptr)
 #endif
 {
+  enableFlags(ALLOW_DROP);
+  setNeedsTabletPressure(true);
 }
 
 // This 'initialize' function is a way to split the creation of the
@@ -126,6 +131,7 @@ void MainWindow::initialize()
   m_timeline = new Timeline(m_tooltipManager);
 
   m_workspace->setTabsBar(m_tabsBar);
+  m_workspace->BeforeViewChanged.connect(&MainWindow::onBeforeViewChange, this);
   m_workspace->ActiveViewChanged.connect(&MainWindow::onActiveViewChange, this);
 
   // configure all widgets to expansives
@@ -405,6 +411,11 @@ void MainWindow::onResize(ui::ResizeEvent& ev)
   }
 }
 
+void MainWindow::onBeforeViewChange()
+{
+  UIContext::instance()->notifyBeforeActiveSiteChanged();
+}
+
 // When the active view is changed from methods like
 // Workspace::splitView(), this function is called, and we have to
 // inform to the UIContext that the current view has changed.
@@ -424,6 +435,22 @@ void MainWindow::onActiveViewChange()
     UIContext::instance()->setActiveView(docView);
   else
     UIContext::instance()->setActiveView(nullptr);
+}
+
+void MainWindow::onDrop(ui::DragEvent& e)
+{
+  if (e.hasImage() && !e.hasPaths()) {
+    auto* cmd = Commands::instance()->byId(CommandId::NewFile());
+    Params params;
+    params.set("fromDraggedData", "true");
+    UIContext::instance()->setDraggedData(std::make_unique<DraggedData>(e.getImage()));
+    UIContext::instance()->executeCommand(cmd, params);
+    e.handled(true);
+    invalidate();
+    flushRedraw();
+    os::Event ev;
+    os::System::instance()->eventQueue()->queueEvent(ev);
+  }
 }
 
 bool MainWindow::isTabModified(Tabs* tabs, TabView* tabView)
@@ -565,7 +592,7 @@ void MainWindow::configureWorkspaceLayout()
   bool normal = (m_mode == NormalMode);
   bool isDoc = (getDocView() != nullptr);
 
-  if (os::instance()->menus() == nullptr || pref.general.showMenuBar()) {
+  if (os::System::instance()->menus() == nullptr || pref.general.showMenuBar()) {
     m_menuBar->resetMaxSize();
   }
   else {

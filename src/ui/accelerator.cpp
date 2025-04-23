@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -329,7 +329,7 @@ bool Accelerator::isPressed(KeyModifiers modifiers, KeyScancode scancode, int un
 
 bool Accelerator::isPressed() const
 {
-  os::System* sys = os::instance();
+  os::SystemRef sys = os::System::instance();
   if (!sys)
     return false;
 
@@ -351,7 +351,7 @@ bool Accelerator::isPressed() const
 
 bool Accelerator::isLooselyPressed() const
 {
-  os::System* sys = os::instance();
+  os::SystemRef sys = os::System::instance();
   if (!sys)
     return false;
 

@@ -177,21 +177,11 @@ protected:
   {
     switch (msg->type()) {
       case kMouseWheelMessage: {
-        View* view = View::getView(this);
-        if (view) {
-          auto mouseMsg = static_cast<MouseMessage*>(msg);
-          gfx::Point scroll = view->viewScroll();
-
-          if (mouseMsg->preciseWheel())
-            scroll += mouseMsg->wheelDelta();
-          else
-            scroll += mouseMsg->wheelDelta() * textHeight() * 3;
-
-          view->setViewScroll(scroll);
-        }
+        View::scrollByMessage(this, msg);
         break;
       }
     }
+
     return Widget::onProcessMessage(msg);
   }
 
@@ -229,7 +219,7 @@ protected:
         // Draw the line number
         {
           auto lineNumText = base::convert_to<std::string>(i + 1);
-          int lw = Graphics::measureUITextLength(lineNumText, f);
+          int lw = f->textLength(lineNumText);
           g->drawText(lineNumText.c_str(),
                       fg,
                       linesBg,
@@ -254,7 +244,7 @@ protected:
         for (const uint8_t* line : m_fileContent->lines) {
           ASSERT(line);
           tmp.assign((const char*)line);
-          m_maxLineWidth = std::max(m_maxLineWidth, Graphics::measureUITextLength(tmp, f));
+          m_maxLineWidth = std::max<int>(m_maxLineWidth, std::ceil(f->textLength(tmp)));
         }
       }
 
@@ -268,7 +258,7 @@ private:
   {
     auto f = font();
     int nlines = (m_fileContent ? m_fileContent->lines.size() : 0);
-    return Graphics::measureUITextLength(base::convert_to<std::string>(nlines), f) +
+    return f->textLength(base::convert_to<std::string>(nlines)) +
            4 * guiscale(); // TODO configurable from the theme?
   }
 

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -12,6 +12,7 @@
 #include "ui/graphics.h"
 
 #include "base/string.h"
+#include "base/utf8_decode.h"
 #include "gfx/clip.h"
 #include "gfx/matrix.h"
 #include "gfx/path.h"
@@ -19,12 +20,15 @@
 #include "gfx/rect.h"
 #include "gfx/region.h"
 #include "gfx/size.h"
-#include "os/draw_text.h"
-#include "os/font.h"
 #include "os/sampling.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "os/window.h"
+#include "text/draw_text.h"
+#include "text/font.h"
+#include "text/font_metrics.h"
+#include "text/shaper_features.h"
+#include "text/text_blob.h"
 #include "ui/display.h"
 #include "ui/scale.h"
 #include "ui/theme.h"
@@ -84,6 +88,13 @@ void Graphics::restoreClip()
 bool Graphics::clipRect(const gfx::Rect& rc)
 {
   return m_surface->clipRect(gfx::Rect(rc).offset(m_dx, m_dy));
+}
+
+void Graphics::clipRegion(const gfx::Region& rgn)
+{
+  gfx::Region tmp(rgn);
+  tmp.offset(m_dx, m_dy);
+  m_surface->clipRegion(tmp);
 }
 
 void Graphics::save()
@@ -178,6 +189,16 @@ void Graphics::drawLine(gfx::Color color, const gfx::Point& _a, const gfx::Point
   m_surface->drawLine(a, b, paint);
 }
 
+void Graphics::drawLine(const gfx::PointF& _a, const gfx::PointF& _b, const Paint& paint)
+{
+  gfx::PointF a(m_dx + _a.x, m_dy + _a.y);
+  gfx::PointF b(m_dx + _b.x, m_dy + _b.y);
+  dirty(gfx::RectF(a, b));
+
+  os::SurfaceLock lock(m_surface.get());
+  m_surface->drawLine(a, b, paint);
+}
+
 void Graphics::drawPath(gfx::Path& path, const Paint& paint)
 {
   os::SurfaceLock lock(m_surface.get());
@@ -196,6 +217,16 @@ void Graphics::drawPath(gfx::Path& path, const Paint& paint)
 void Graphics::drawRect(const gfx::Rect& rcOrig, const Paint& paint)
 {
   gfx::Rect rc(rcOrig);
+  rc.offset(m_dx, m_dy);
+  dirty(rc);
+
+  os::SurfaceLock lock(m_surface.get());
+  m_surface->drawRect(rc, paint);
+}
+
+void Graphics::drawRect(const gfx::RectF& rcOrig, const Paint& paint)
+{
+  gfx::RectF rc(rcOrig);
   rc.offset(m_dx, m_dy);
   dirty(rc);
 
@@ -341,95 +372,62 @@ void Graphics::drawSurfaceNine(os::Surface* surface,
   m_surface->drawSurfaceNine(surface, src, center, displacedDst, drawCenter, paint);
 }
 
-void Graphics::setFont(const os::FontRef& font)
+void Graphics::setFont(const text::FontRef& font)
 {
   m_font = font;
 }
 
-void Graphics::drawText(const std::string& str,
-                        gfx::Color fg,
-                        gfx::Color bg,
-                        const gfx::Point& origPt,
-                        os::DrawTextDelegate* delegate)
+void Graphics::drawTextWithDelegate(const std::string& str,
+                                    gfx::Color fg,
+                                    gfx::Color bg,
+                                    const gfx::Point& origPt,
+                                    text::DrawTextDelegate* delegate,
+                                    text::ShaperFeatures features)
 {
+  ASSERT(m_font);
+  if (str.empty())
+    return;
+
   gfx::Point pt(m_dx + origPt.x, m_dy + origPt.y);
 
   os::SurfaceLock lock(m_surface.get());
-  gfx::Rect textBounds =
-    os::draw_text(m_surface.get(), m_font.get(), str, fg, bg, pt.x, pt.y, delegate);
+  gfx::Rect textBounds = text::draw_text(m_surface.get(),
+                                         get_theme()->fontMgr(),
+                                         m_font,
+                                         str,
+                                         fg,
+                                         bg,
+                                         pt.x,
+                                         pt.y,
+                                         delegate,
+                                         features);
 
   dirty(gfx::Rect(pt.x, pt.y, textBounds.w, textBounds.h));
 }
 
-namespace {
+void Graphics::drawTextBlob(const text::TextBlobRef& textBlob,
+                            const gfx::PointF& pt0,
+                            const Paint& paint)
+{
+  ASSERT(m_font);
+  if (!textBlob)
+    return;
 
-class DrawUITextDelegate : public os::DrawTextDelegate {
-public:
-  DrawUITextDelegate(os::Surface* surface, os::Font* font, const int mnemonic)
-    : m_surface(surface)
-    , m_font(font)
-    , m_mnemonic(std::tolower(mnemonic))
-    , m_underscoreColor(gfx::ColorNone)
-  {
-  }
+  gfx::PointF pt(m_dx + pt0.x, m_dy + pt0.y);
 
-  gfx::Rect bounds() const { return m_bounds; }
+  os::SurfaceLock lock(m_surface.get());
+  gfx::RectF textBounds = textBlob->bounds();
 
-  void preProcessChar(const int index,
-                      const int codepoint,
-                      gfx::Color& fg,
-                      gfx::Color& bg,
-                      const gfx::Rect& charBounds) override
-  {
-    if (m_surface) {
-      if (m_mnemonic &&
-          // TODO use ICU library to lower unicode chars
-          std::tolower(codepoint) == m_mnemonic) {
-        m_underscoreColor = fg;
-        m_mnemonic = 0; // Just one time
-      }
-      else {
-        m_underscoreColor = gfx::ColorNone;
-      }
-    }
-  }
+  text::draw_text(m_surface.get(), textBlob, pt, &paint);
 
-  bool preDrawChar(const gfx::Rect& charBounds) override
-  {
-    m_bounds |= charBounds;
-    return true;
-  }
+  textBounds.offset(pt);
+  dirty(textBounds);
+}
 
-  void postDrawChar(const gfx::Rect& charBounds) override
-  {
-    if (!gfx::is_transparent(m_underscoreColor)) {
-      // TODO underscore height = guiscale() should be configurable from ui::Theme
-      int dy = 0;
-      if (m_font->type() == os::FontType::FreeType) // TODO use other method to locate the underline
-        dy += guiscale();
-      gfx::Rect underscoreBounds(charBounds.x,
-                                 charBounds.y + charBounds.h + dy,
-                                 charBounds.w,
-                                 guiscale());
-
-      os::Paint paint;
-      paint.color(m_underscoreColor);
-      paint.style(os::Paint::Fill);
-      m_surface->drawRect(underscoreBounds, paint);
-
-      m_bounds |= underscoreBounds;
-    }
-  }
-
-private:
-  os::Surface* m_surface;
-  os::Font* m_font;
-  int m_mnemonic;
-  gfx::Color m_underscoreColor;
-  gfx::Rect m_bounds;
-};
-
-} // namespace
+void Graphics::drawText(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt)
+{
+  drawUIText(str, fg, bg, pt, 0);
+}
 
 void Graphics::drawUIText(const std::string& str,
                           gfx::Color fg,
@@ -437,14 +435,25 @@ void Graphics::drawUIText(const std::string& str,
                           const gfx::Point& pt,
                           const int mnemonic)
 {
-  os::SurfaceLock lock(m_surface.get());
-  int x = m_dx + pt.x;
-  int y = m_dy + pt.y;
+  ASSERT(m_font);
+  if (str.empty())
+    return;
 
-  DrawUITextDelegate delegate(m_surface.get(), m_font.get(), mnemonic);
-  os::draw_text(m_surface.get(), m_font.get(), str, fg, bg, x, y, &delegate);
+  auto fontMgr = get_theme()->fontMgr();
+  auto textBlob = text::TextBlob::MakeWithShaper(fontMgr, m_font, str);
 
-  dirty(delegate.bounds());
+  Paint paint;
+  if (gfx::geta(bg) > 0) { // Paint background
+    paint.color(bg);
+    paint.style(os::Paint::Fill);
+    drawRect(gfx::RectF(textBlob->bounds()).offset(pt), paint);
+  }
+  paint.color(fg);
+
+  drawTextBlob(textBlob, gfx::PointF(pt), paint);
+
+  if (mnemonic != 0)
+    Theme::drawMnemonicUnderline(this, str, textBlob, gfx::PointF(pt), mnemonic, paint);
 }
 
 void Graphics::drawAlignedUIText(const std::string& str,
@@ -456,17 +465,13 @@ void Graphics::drawAlignedUIText(const std::string& str,
   doUIStringAlgorithm(str, fg, bg, rc, align, true);
 }
 
-gfx::Size Graphics::measureUIText(const std::string& str)
+// TODO We should try to cache TextBlobs as much as possible instead
+//      of measuring text directly (which is a slow operation).
+gfx::Size Graphics::measureText(const std::string& str)
 {
-  return gfx::Size(Graphics::measureUITextLength(str, m_font.get()), m_font->height());
-}
-
-// static
-int Graphics::measureUITextLength(const std::string& str, os::Font* font)
-{
-  DrawUITextDelegate delegate(nullptr, font, 0);
-  os::draw_text(nullptr, font, str, gfx::ColorNone, gfx::ColorNone, 0, 0, &delegate);
-  return delegate.bounds().w;
+  ASSERT(m_font);
+  return text::draw_text(nullptr, get_theme()->fontMgr(), m_font, str.c_str(), 0, 0, 0, 0, nullptr)
+    .size();
 }
 
 gfx::Size Graphics::fitString(const std::string& str, int maxWidth, int align)
@@ -486,14 +491,20 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str,
                                         int align,
                                         bool draw)
 {
+  ASSERT(m_font);
+
   gfx::Point pt(0, rc.y);
 
   if ((align & (MIDDLE | BOTTOM)) != 0) {
-    gfx::Size preSize = doUIStringAlgorithm(str, gfx::ColorNone, gfx::ColorNone, rc, 0, false);
-    if (align & MIDDLE)
-      pt.y = rc.y + rc.h / 2 - preSize.h / 2;
-    else if (align & BOTTOM)
-      pt.y = rc.y + rc.h - preSize.h;
+    text::FontMetrics metrics;
+    m_font->metrics(&metrics);
+
+    if (align & MIDDLE) {
+      pt.y = rc.y + rc.h / 2 + metrics.ascent;
+    }
+    else if (align & BOTTOM) {
+      pt.y = rc.y + rc.h + metrics.ascent;
+    }
   }
 
   gfx::Size calculatedSize(0, 0);
@@ -515,15 +526,23 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str,
     }
     // With char-wrap
     else if ((align & CHARWRAP) == CHARWRAP) {
-      for (end = beg + 1; end < str.size(); ++end) {
-        // If we are out of the available width (rc.w) using the new "end"
-        if ((rc.w > 0) && (m_font->textLength(str.substr(beg, end - beg).c_str()) > rc.w)) {
-          if (end > beg + 1)
-            --end;
-          break;
+      if (rc.w > 0) {
+        // TODO replace all this with std::string_view in the future
+        std::string sub(str.substr(beg));
+        base::utf8_decode it(sub);
+        std::string progress;
+        while (!it.is_end()) {
+          end = beg + (it.pos() - sub.begin());
+          it.next();
+          progress = str.substr(beg, end - beg);
+
+          // If we are out of the available width (rc.w) using the
+          // "progress" string.
+          if (m_font->textLength(progress) > rc.w)
+            break;
         }
       }
-      newBeg = end;
+      newBeg = std::string::npos;
     }
     // With word-wrap
     else {
@@ -534,7 +553,7 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str,
         // If we have already a word to print (old_end != npos), and
         // we are out of the available width (rc.w) using the new "end"
         if ((old_end != std::string::npos) && (rc.w > 0) &&
-            (pt.x + m_font->textLength(str.substr(beg, end - beg).c_str()) > rc.w)) {
+            (pt.x + m_font->textLength(str.substr(beg, end - beg)) > rc.w)) {
           // We go back to the "old_end" and paint from "beg" to "end"
           end = old_end;
           break;
@@ -563,7 +582,7 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str,
     else
       line = str.substr(beg);
 
-    gfx::Size lineSize(m_font->textLength(line.c_str()), m_font->height() + lineSeparation);
+    gfx::Size lineSize(m_font->textLength(line), m_font->lineHeight() + lineSeparation);
     calculatedSize.w = std::max(calculatedSize.w, lineSize.w);
 
     // Render the text
@@ -576,12 +595,14 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str,
       else
         xout = pt.x;
 
-      drawText(line, fg, bg, gfx::Point(xout, pt.y));
+      if (!line.empty())
+        drawText(line, fg, bg, gfx::Point(xout, pt.y));
 
-      if (!gfx::is_transparent(bg))
+      if (!gfx::is_transparent(bg)) {
         fillAreaBetweenRects(bg,
                              gfx::Rect(rc.x, pt.y, rc.w, lineSize.h),
                              gfx::Rect(xout, pt.y, lineSize.w, lineSize.h));
+      }
     }
 
     pt.y += lineSize.h;
@@ -612,22 +633,9 @@ void Graphics::invalidate(const gfx::Rect& bounds)
 void Graphics::dirty(const gfx::Rect& bounds)
 {
   gfx::Rect rc = m_surface->getClipBounds();
-  rc = rc.createIntersection(bounds);
+  rc &= bounds;
   if (!rc.isEmpty())
     m_dirtyBounds |= rc;
-}
-
-//////////////////////////////////////////////////////////////////////
-// ScreenGraphics
-
-ScreenGraphics::ScreenGraphics(Display* display)
-  : Graphics(display, AddRef(display->surface()), 0, 0)
-{
-  setFont(AddRef(get_theme()->getDefaultFont()));
-}
-
-ScreenGraphics::~ScreenGraphics()
-{
 }
 
 } // namespace ui

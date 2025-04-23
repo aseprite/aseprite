@@ -111,8 +111,11 @@ protected:
   void onInitTheme(ui::InitThemeEvent& ev) override;
   void onSaveLayout(ui::SaveLayoutEvent& ev) override;
   void onResize(ui::ResizeEvent& ev) override;
+  void onBeforeViewChange();
   void onActiveViewChange();
   void onLanguageChange();
+
+  void onDrop(ui::DragEvent& e) override;
 
 private:
   DocView* getDocView();

@@ -32,6 +32,7 @@
 #include "app/ui/timeline/timeline.h"
 #include "app/ui/user_data_view.h"
 #include "app/ui_context.h"
+#include "base/convert_to.h"
 #include "base/scoped_value.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -151,7 +152,7 @@ public:
     m_timer.stop();
     m_document = doc;
     m_layer = layer;
-    m_range = App::instance()->timeline()->range();
+    m_range = UIContext::instance()->range();
 
     if (m_document)
       m_document->add_observer(this);
@@ -245,29 +246,33 @@ private:
     const doc::UserData newUserData = m_userDataView.userData();
     doc::BlendMode newBlendMode = blendModeValue();
 
-    if ((count > 1) || (count == 1 && m_layer &&
-                        (newName != m_layer->name() || newUserData != m_layer->userData() ||
-                         (m_layer->isImage() &&
-                          (newOpacity != static_cast<LayerImage*>(m_layer)->opacity() ||
-                           newBlendMode != static_cast<LayerImage*>(m_layer)->blendMode()))))) {
+    if ((count > 1) ||
+        (count == 1 && m_layer &&
+         (newName != m_layer->name() || newUserData != m_layer->userData() ||
+          (m_layer->isImage() ||
+           (m_layer->isGroup() && Preferences::instance().experimental.composeGroups())) ||
+          (newOpacity != m_layer->opacity() || newBlendMode != m_layer->blendMode())))) {
       try {
         ContextWriter writer(UIContext::instance());
         Tx tx(writer, "Set Layer Properties");
 
-        DocRange range;
+        view::RealRange range;
         if (m_range.enabled())
           range = m_range;
         else {
-          range.startRange(m_layer, -1, DocRange::kLayers);
+          range.startRange(m_layer, -1, view::Range::kLayers);
           range.endRange(m_layer, -1);
         }
 
+        const bool shouldChangeProperties = m_layer->isImage() ||
+                                            (m_layer->isGroup() &&
+                                             Preferences::instance().experimental.composeGroups());
+
         const bool nameChanged = (newName != m_layer->name());
         const bool userDataChanged = (newUserData != m_layer->userData());
-        const bool opacityChanged = (m_layer->isImage() &&
-                                     newOpacity != static_cast<LayerImage*>(m_layer)->opacity());
-        const bool blendModeChanged =
-          (m_layer->isImage() && newBlendMode != static_cast<LayerImage*>(m_layer)->blendMode());
+        const bool opacityChanged = (shouldChangeProperties && newOpacity != m_layer->opacity());
+        const bool blendModeChanged = (shouldChangeProperties &&
+                                       newBlendMode != m_layer->blendMode());
 
         for (Layer* layer : range.selectedLayers()) {
           if (nameChanged && newName != layer->name())
@@ -276,7 +281,8 @@ private:
           if (userDataChanged && newUserData != layer->userData())
             tx(new cmd::SetUserData(layer, newUserData, m_document));
 
-          if (layer->isImage()) {
+          if (layer->isImage() ||
+              (layer->isGroup() && Preferences::instance().experimental.composeGroups())) {
             if (opacityChanged && newOpacity != static_cast<LayerImage*>(layer)->opacity())
               tx(new cmd::SetLayerOpacity(static_cast<LayerImage*>(layer), newOpacity));
 
@@ -425,18 +431,19 @@ private:
       name()->setText(m_layer->name().c_str());
       name()->setEnabled(true);
 
-      if (m_layer->isImage()) {
+      if (m_layer->isImage() ||
+          (m_layer->isGroup() && Preferences::instance().experimental.composeGroups())) {
         mode()->setSelectedItem(nullptr);
         for (auto item : *mode()) {
           if (auto blendModeItem = dynamic_cast<BlendModeItem*>(item)) {
-            if (blendModeItem->mode() == static_cast<LayerImage*>(m_layer)->blendMode()) {
+            if (blendModeItem->mode() == m_layer->blendMode()) {
               mode()->setSelectedItem(item);
               break;
             }
           }
         }
         mode()->setEnabled(!m_layer->isBackground());
-        opacity()->setValue(static_cast<LayerImage*>(m_layer)->opacity());
+        opacity()->setValue(m_layer->opacity());
         opacity()->setEnabled(!m_layer->isBackground());
       }
       else {
@@ -457,6 +464,13 @@ private:
       m_userDataView.setVisible(false, false);
     }
 
+    bool uuidVisible = m_document && m_document->sprite() && m_document->sprite()->useLayerUuids();
+    uuidLabel()->setVisible(uuidVisible);
+    uuid()->setVisible(uuidVisible);
+
+    if (uuidVisible)
+      uuid()->setText(m_layer ? base::convert_to<std::string>(m_layer->uuid()) : std::string());
+
     if (tileset()->isVisible() != tilemapVisibility) {
       tileset()->setVisible(tilemapVisibility);
       tileset()->parent()->layout();
@@ -467,7 +481,7 @@ private:
   bool m_pendingChanges = false;
   Doc* m_document = nullptr;
   Layer* m_layer = nullptr;
-  DocRange m_range;
+  view::RealRange m_range;
   bool m_selfUpdate = false;
   UserDataView m_userDataView;
 };

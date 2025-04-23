@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021 Igara Studio S.A.
+// Copyright (C) 2019-2024 Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,7 +13,7 @@
 
 #include "app/doc.h"
 #include "app/site.h"
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/primitives.h"
@@ -82,7 +82,85 @@ doc::Image* new_image_from_mask(const Site& site,
   }
 
   // Copy the masked zones
+  copy_masked_zones(dst.get(), src, srcMask, x, y);
+
+  return dst.release();
+}
+
+doc::Image* new_image_from_mask(const Layer& layer,
+                                frame_t frame,
+                                const doc::Mask* srcMask,
+                                const bool newBlend)
+{
+  const Sprite* srcSprite = layer.sprite();
+  ASSERT(srcSprite);
+  ASSERT(srcMask);
+
+  const Image* srcMaskBitmap = srcMask->bitmap();
+  const gfx::Rect& srcBounds = srcMask->bounds();
+
+  ASSERT(srcMaskBitmap);
+  ASSERT(!srcBounds.isEmpty());
+
+  std::unique_ptr<Image> dst(Image::create(srcSprite->pixelFormat(), srcBounds.w, srcBounds.h));
+  if (!dst)
+    return nullptr;
+
+  // Clear the new image
+  dst->setMaskColor(srcSprite->transparentColor());
+  clear_image(dst.get(), dst->maskColor());
+
+  const Image* src = nullptr;
+  int x = 0, y = 0;
+  auto* cel = layer.cel(frame);
+  if (layer.isTilemap()) {
+    render::Render render;
+    render.setNewBlend(newBlend);
+    ASSERT(layer.isTilemap());
+    if (cel) {
+      render.renderCel(dst.get(),
+                       cel,
+                       srcSprite,
+                       cel->image(),
+                       cel->layer(),
+                       srcSprite->palette(cel->frame()),
+                       cel->bounds(),
+                       gfx::Clip(0, 0, srcBounds),
+                       255,
+                       BlendMode::NORMAL);
+    }
+    src = dst.get();
+  }
+  else {
+    if (cel) {
+      src = cel->image();
+      x = cel->x();
+      y = cel->y();
+    }
+  }
+
+  if (src)
+    // Copy the masked zones
+    copy_masked_zones(dst.get(), src, srcMask, x, y);
+
+  return dst.release();
+}
+
+void copy_masked_zones(Image* dst,
+                       const Image* src,
+                       const Mask* srcMask,
+                       int srcXoffset,
+                       int srcYoffset)
+{
+  ASSERT(srcMask);
+
   if (src) {
+    const Image* srcMaskBitmap = srcMask->bitmap();
+    const gfx::Rect& srcBounds = srcMask->bounds();
+
+    ASSERT(srcMaskBitmap);
+    ASSERT(!srcBounds.isEmpty());
+
     if (srcMaskBitmap) {
       // Copy active layer with mask
       const LockImageBits<BitmapTraits> maskBits(srcMaskBitmap,
@@ -93,12 +171,13 @@ doc::Image* new_image_from_mask(const Site& site,
         for (int u = 0; u < srcBounds.w; ++u, ++mask_it) {
           ASSERT(mask_it != maskBits.end());
 
-          if (src != dst.get()) {
+          if (src != dst) {
             if (*mask_it) {
-              int getx = u + srcBounds.x - x;
-              int gety = v + srcBounds.y - y;
+              int getx = u + srcBounds.x - srcXoffset;
+              int gety = v + srcBounds.y - srcYoffset;
 
-              if ((getx >= 0) && (getx < src->width()) && (gety >= 0) && (gety < src->height()))
+              if ((getx >= 0) && (getx < src->width()) && (gety >= 0) && (gety < src->height()) &&
+                  (u < dst->width()) && (v < dst->height()))
                 dst->putPixel(u, v, src->getPixel(getx, gety));
             }
           }
@@ -110,12 +189,10 @@ doc::Image* new_image_from_mask(const Site& site,
         }
       }
     }
-    else if (src != dst.get()) {
-      copy_image(dst.get(), src, -srcBounds.x, -srcBounds.y);
+    else if (src != dst) {
+      copy_image(dst, src, -srcBounds.x, -srcBounds.y);
     }
   }
-
-  return dst.release();
 }
 
 doc::Image* new_tilemap_from_mask(const Site& site, const doc::Mask* srcMask)

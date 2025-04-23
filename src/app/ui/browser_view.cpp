@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -21,7 +21,7 @@
 #include "base/file_handle.h"
 #include "base/fs.h"
 #include "base/split_string.h"
-#include "os/font.h"
+#include "text/font.h"
 #include "ui/alert.h"
 #include "ui/link_label.h"
 #include "ui/menu.h"
@@ -65,7 +65,7 @@ private:
 class BrowserView::CMarkBox : public Widget {
   class Break : public Widget {
   public:
-    Break() { setMinSize(gfx::Size(0, font()->height())); }
+    Break() { setMinSize(gfx::Size(0, font()->lineHeight())); }
   };
   class OpenList : public Widget {};
   class CloseList : public Widget {};
@@ -239,18 +239,7 @@ private:
 
     switch (msg->type()) {
       case kMouseWheelMessage: {
-        View* view = View::getView(this);
-        if (view) {
-          auto mouseMsg = static_cast<MouseMessage*>(msg);
-          gfx::Point scroll = view->viewScroll();
-
-          if (mouseMsg->preciseWheel())
-            scroll += mouseMsg->wheelDelta();
-          else
-            scroll += mouseMsg->wheelDelta() * textHeight() * 3;
-
-          view->setViewScroll(scroll);
-        }
+        View::scrollByMessage(this, msg);
         break;
       }
     }
@@ -450,7 +439,8 @@ private:
   void addSeparator()
   {
     auto sep = new SeparatorInView(std::string(), HORIZONTAL);
-    sep->setBorder(gfx::Border(0, font()->height(), 0, font()->height()));
+    float h = font()->lineHeight() / 2.0f;
+    sep->setBorder(gfx::Border(0, h, 0, h));
     sep->setExpansive(true);
     addChild(sep);
   }

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,7 +10,6 @@
 #pragma once
 
 #include "app/doc_observer.h"
-#include "app/doc_range.h"
 #include "app/docs_observer.h"
 #include "app/loop_tag.h"
 #include "app/pref/preferences.h"
@@ -32,6 +31,8 @@
 #include "ui/scroll_bar.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
+#include "view/range.h"
+#include "view/timeline_adapter.h"
 
 #include <memory>
 #include <vector>
@@ -46,6 +47,7 @@ class Sprite;
 namespace ui {
 class Graphics;
 class TooltipManager;
+class DragEvent;
 } // namespace ui
 
 namespace app {
@@ -72,7 +74,12 @@ class Timeline : public ui::Widget,
                  public InputChainElement,
                  public TagProvider {
 public:
-  typedef DocRange Range;
+  using Range = view::Range;
+  using RealRange = view::RealRange;
+  using VirtualRange = view::VirtualRange;
+  using fr_t = view::fr_t;
+  using col_t = view::col_t;
+  static constexpr const auto kNoCol = view::kNoCol;
 
   enum State {
     STATE_STANDBY,
@@ -109,13 +116,19 @@ public:
 
   bool isMovingCel() const;
 
-  Range range() const { return m_range; }
-  const SelectedLayers& selectedLayers() const { return m_range.selectedLayers(); }
-  const SelectedFrames& selectedFrames() const { return m_range.selectedFrames(); }
+  // The range is specified in "virtual frames" (not real sprite
+  // frames, we'll have to do a conversion each time we want to use
+  // this range with the sprite).
+  VirtualRange virtualRange() const { return m_range; }
+  bool isRangeEnabled() const { return m_range.enabled(); }
+
+  // Returns the range in "real sprite frames."
+  RealRange realRange() const;
 
   void prepareToMoveRange();
-  void moveRange(const Range& range);
-  void setRange(const Range& range);
+  void moveRange(const VirtualRange& range);
+  void setVirtualRange(const VirtualRange& range);
+  void setRealRange(const RealRange& range);
 
   void activateClipboardRange();
 
@@ -192,18 +205,27 @@ protected:
   bool onClear(Context* ctx) override;
   void onCancel(Context* ctx) override;
 
+  void onDragEnter(ui::DragEvent& e) override;
+  void onDragLeave(ui::DragEvent& e) override;
+  void onDrag(ui::DragEvent& e) override;
+  void onDrop(ui::DragEvent& e) override;
+
 private:
   struct DrawCelData;
 
   struct Hit {
     int part;
     layer_t layer;
-    frame_t frame;
+    col_t frame;
     ObjectId tag;
     bool veryBottom;
     int band;
 
-    Hit(int part = 0, layer_t layer = -1, frame_t frame = 0, ObjectId tag = NullId, int band = -1);
+    Hit(int part = 0,
+        layer_t layer = -1,
+        col_t frame = kNoCol,
+        ObjectId tag = NullId,
+        int band = -1);
     bool operator!=(const Hit& other) const;
     Tag* getTag() const;
   };
@@ -241,14 +263,14 @@ private:
   void handleRangeMouseDown(const ui::Message* msg,
                             const Range::Type rangeType,
                             doc::Layer* fromLayer,
-                            const doc::frame_t fromFrame);
+                            const col_t fromFrame);
 
-  void handleRangeMouseMove(doc::Layer* fromLayer, const doc::frame_t fromFrame);
+  void handleRangeMouseMove(doc::Layer* fromLayer, const col_t fromFrame);
 
   bool selectedLayersBounds(const SelectedLayers& layers, layer_t* first, layer_t* last) const;
 
   void setLayer(Layer* layer);
-  void setFrame(frame_t frame, bool byUser);
+  void setFrame(col_t frame, bool byUser);
   bool allLayersVisible();
   bool allLayersInvisible();
   bool allLayersLocked();
@@ -257,8 +279,9 @@ private:
   bool allLayersDiscontinuous();
   void detachDocument();
   void setCursor(ui::Message* msg, const Hit& hit);
-  void getDrawableLayers(layer_t* firstLayer, layer_t* lastLayer);
-  void getDrawableFrames(frame_t* firstFrame, frame_t* lastFrame);
+  bool getDrawableLayers(layer_t* firstLayer, layer_t* lastLayer);
+  void getDrawableFrames(col_t* firstFrame, col_t* lastFrame);
+  bool getTagFrames(const doc::Tag* tag, col_t* fromFrame, col_t* toFrame) const;
   void drawPart(ui::Graphics* g,
                 const gfx::Rect& bounds,
                 const std::string* text,
@@ -269,17 +292,17 @@ private:
                 const bool is_disabled = false);
   void drawTop(ui::Graphics* g);
   void drawHeader(ui::Graphics* g);
-  void drawHeaderFrame(ui::Graphics* g, const frame_t frame);
+  void drawHeaderFrame(ui::Graphics* g, const col_t col);
   void drawLayer(ui::Graphics* g, const layer_t layerIdx);
   void drawCel(ui::Graphics* g,
                const layer_t layerIdx,
-               const frame_t frame,
+               const col_t col,
                const Cel* cel,
                const DrawCelData* data);
   void drawCelLinkDecorators(ui::Graphics* g,
                              const gfx::Rect& bounds,
                              const Cel* cel,
-                             const frame_t frame,
+                             const col_t col,
                              const bool is_active,
                              const bool is_hover,
                              const DrawCelData* data);
@@ -290,7 +313,7 @@ private:
                      const gfx::Rect& clipBounds);
   void drawRangeOutline(ui::Graphics* g);
   void drawPaddings(ui::Graphics* g);
-  bool drawPart(ui::Graphics* g, int part, layer_t layer, frame_t frame);
+  bool drawPart(ui::Graphics* g, int part, layer_t layer, col_t frame);
   void drawClipboardRange(ui::Graphics* g);
   gfx::Rect getLayerHeadersBounds() const;
   gfx::Rect getFrameHeadersBounds() const;
@@ -299,10 +322,14 @@ private:
   gfx::Rect getPartBounds(const Hit& hit) const;
   gfx::Rect getRangeBounds(const Range& range) const;
   gfx::Rect getRangeClipBounds(const Range& range) const;
+  int getFrameXPos(const col_t frame) const;
+  int getFrameWidth(const col_t frame) const;
+  col_t getFrameInXPos(const int x) const;
   void invalidateHit(const Hit& hit);
   void invalidateLayer(const Layer* layer);
-  void invalidateFrame(const frame_t frame);
+  void invalidateFrame(const col_t frame);
   void invalidateRange();
+  void regenerateCols();
   void regenerateRows();
   void regenerateTagBands();
   int visibleTagBands() const;
@@ -311,7 +338,7 @@ private:
   Hit hitTest(ui::Message* msg, const gfx::Point& mousePos);
   Hit hitTestCel(const gfx::Point& mousePos);
   void setHot(const Hit& hit);
-  void showCel(layer_t layer, frame_t frame);
+  void showCel(layer_t layer, col_t frame);
   void showCurrentCel();
   void focusTagBand(int band);
   void cleanClk();
@@ -320,24 +347,26 @@ private:
   doc::Layer* getLayer(int layerIndex) const;
   layer_t getLayerIndex(const Layer* layer) const;
   bool isLayerActive(const layer_t layerIdx) const;
-  bool isFrameActive(const frame_t frame) const;
-  bool isCelActive(const layer_t layerIdx, const frame_t frame) const;
-  bool isCelLooselyActive(const layer_t layerIdx, const frame_t frame) const;
+  bool isFrameActive(const col_t frame) const;
+  bool isCelActive(const layer_t layerIdx, const col_t frame) const;
+  bool isCelLooselyActive(const layer_t layerIdx, const col_t frame) const;
+
   void updateStatusBar(ui::Message* msg);
-  void updateStatusBarForFrame(const frame_t frame, const Tag* tag, const Cel* cel);
+  void updateStatusBarForFrame(const col_t frame, const Tag* tag, const Cel* cel);
   void updateDropRange(const gfx::Point& pt);
   void clearClipboardRange();
+  void resetAllRanges();
 
   // The layer of the bottom (e.g. Background layer)
-  layer_t firstLayer() const { return 0; }
+  constexpr layer_t firstLayer() const { return 0; }
   // The layer of the top.
   layer_t lastLayer() const { return m_rows.size() - 1; }
 
-  frame_t firstFrame() const { return frame_t(0); }
-  frame_t lastFrame() const { return m_sprite->lastFrame(); }
+  constexpr col_t firstFrame() const { return col_t(0); }
+  col_t lastFrame() const;
 
   bool validLayer(layer_t layer) const { return layer >= firstLayer() && layer <= lastLayer(); }
-  bool validFrame(frame_t frame) const { return frame >= firstFrame() && frame <= lastFrame(); }
+  bool validFrame(col_t frame) const { return frame >= firstFrame() && frame <= lastFrame(); }
 
   int topHeight() const;
 
@@ -352,7 +381,7 @@ private:
   int frameBoxWidth() const;
   int outlineWidth() const;
   int oneTagHeight() const;
-  int calcTagVisibleToFrame(Tag* tag) const;
+  col_t calcTagVisibleToFrame(Tag* tag) const;
 
   void updateCelOverlayBounds(const Hit& hit);
   void drawCelOverlay(ui::Graphics* g);
@@ -372,29 +401,35 @@ private:
 
   int separatorX() const;
   void setSeparatorX(int newValue);
+  void updateTimelineAdapter(bool allTags);
 
   static gfx::Color highlightColor(const gfx::Color color);
 
+  std::unique_ptr<view::TimelineAdapter> m_adapter;
   ui::ScrollBar m_hbar;
   ui::ScrollBar m_vbar;
   gfx::Rect m_viewportArea;
   double m_zoom;
+  bool m_scaleUpToFit;
   Context* m_context;
   Editor* m_editor;
   Doc* m_document;
   Sprite* m_sprite;
   Layer* m_layer;
-  frame_t m_frame;
+  col_t m_frame;
   int m_rangeLocks;
-  Range m_range;
-  Range m_startRange;
-  Range m_dropRange;
+  VirtualRange m_range;
+  VirtualRange m_startRange;
+  VirtualRange m_dropRange;
   State m_state;
 
   // Version of the sprite before executing a command. Used to check
   // if the sprite was modified after executing a command to avoid
   // regenerating all rows if it's not necessary.
   doc::ObjectVersion m_savedVersion;
+
+  // Data used to display columns in the timeline
+  col_t m_ncols;
 
   // Data used to display each row in the timeline
   std::vector<Row> m_rows;
@@ -441,24 +476,23 @@ private:
   // Temporal data used to move the range.
   struct MoveRange {
     layer_t activeRelativeLayer;
-    frame_t activeRelativeFrame;
+    col_t activeRelativeFrame;
   } m_moveRangeData;
 
   // Temporal data used to move tags.
   struct ResizeTag {
     doc::ObjectId tag = doc::NullId;
-    doc::frame_t from, to;
+    col_t from, to;
     void reset() { tag = doc::NullId; }
-    void reset(const doc::ObjectId tagId)
+    void reset(const view::TimelineAdapter& adapter, const doc::ObjectId tagId)
     {
-      auto tag = doc::get<doc::Tag>(tagId);
-      if (tag) {
-        this->tag = tagId;
-        this->from = tag->fromFrame();
-        this->to = tag->toFrame();
+      if (auto t = doc::get<doc::Tag>(tagId)) {
+        tag = tagId;
+        from = adapter.toColFrame(fr_t(t->fromFrame()));
+        to = adapter.toColFrame(fr_t(t->toFrame()));
       }
       else {
-        this->tag = doc::NullId;
+        tag = doc::NullId;
       }
     }
   } m_resizeTagData;

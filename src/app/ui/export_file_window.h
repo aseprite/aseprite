@@ -26,7 +26,6 @@ public:
   bool show();
   void savePref();
 
-  std::string outputFilenameValue() const;
   double resizeValue() const;
   std::string areaValue() const;
   std::string layersValue() const;
@@ -37,16 +36,12 @@ public:
   bool applyPixelRatio() const;
   bool isForTwitter() const;
 
-  void setOutputFilename(const std::string& pathAndFilename);
   void setResizeScale(const double scale);
   void setArea(const std::string& area);
   void setAniDir(const doc::AniDir aniDir);
 
-  obs::signal<std::string()> SelectOutputFile;
-
 private:
-  void updateOutputFilenameEntry();
-  void onOutputFilenameEntryChange();
+  void onOutputFieldChange();
   void updateAniDir();
   void updatePlaySubtags();
   void updateAdjustResizeButton();
@@ -56,8 +51,6 @@ private:
 
   const Doc* m_doc;
   DocumentPreferences& m_docPref;
-  std::string m_outputPath;
-  std::string m_outputFilename;
   int m_preferredResize;
 };
 

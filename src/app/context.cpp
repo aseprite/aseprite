@@ -88,6 +88,14 @@ Doc* Context::activeDocument() const
   return site.document();
 }
 
+const view::RealRange& Context::range() const
+{
+  Site site;
+  onGetActiveSite(&site);
+  m_range = site.range(); // TODO cache this value as much as possible
+  return m_range;
+}
+
 void Context::setActiveDocument(Doc* document)
 {
   onSetActiveDocument(document, true);
@@ -103,7 +111,7 @@ void Context::setActiveFrame(const doc::frame_t frame)
   onSetActiveFrame(frame);
 }
 
-void Context::setRange(const DocRange& range)
+void Context::setRange(const view::RealRange& range)
 {
   onSetRange(range);
 }
@@ -126,9 +134,15 @@ bool Context::hasModifiedDocuments() const
   return false;
 }
 
+void Context::notifyBeforeActiveSiteChanged()
+{
+  const Site site = activeSite();
+  notify_observers<const Site&>(&ContextObserver::onBeforeActiveSiteChange, site);
+}
+
 void Context::notifyActiveSiteChanged()
 {
-  Site site = activeSite();
+  const Site site = activeSite();
   notify_observers<const Site&>(&ContextObserver::onActiveSiteChange, site);
 }
 
@@ -240,6 +254,11 @@ void Context::setCommandResult(const CommandResult& result)
   m_result = result;
 }
 
+void Context::onBeforeAddDocument(Doc* doc)
+{
+  notifyBeforeActiveSiteChanged();
+}
+
 void Context::onAddDocument(Doc* doc)
 {
   m_lastSelectedDoc = doc;
@@ -247,7 +266,16 @@ void Context::onAddDocument(Doc* doc)
   if (m_activeSiteHandler)
     m_activeSiteHandler->addDoc(doc);
 
-  notifyActiveSiteChanged();
+  // Checking for an active site handler of UI not available avoids a consistency issue
+  // when opening a sprite from the first time, from the home screen, which would notify of an empty
+  // active site twice.
+  if (m_activeSiteHandler || !isUIAvailable())
+    notifyActiveSiteChanged();
+}
+
+void Context::onBeforeRemoveDocument(Doc* doc)
+{
+  notifyBeforeActiveSiteChanged();
 }
 
 void Context::onRemoveDocument(Doc* doc)
@@ -297,7 +325,7 @@ void Context::onSetActiveFrame(const doc::frame_t frame)
   notifyActiveSiteChanged();
 }
 
-void Context::onSetRange(const DocRange& range)
+void Context::onSetRange(const view::RealRange& range)
 {
   if (m_lastSelectedDoc)
     activeSiteHandler()->setRangeInDoc(m_lastSelectedDoc, range);

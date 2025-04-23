@@ -26,12 +26,15 @@ class PalettePicks;
 class Tileset;
 } // namespace doc
 
+namespace view {
+class Range;
+}
+
 namespace app {
 class Context;
 class ContextReader;
 class ContextWriter;
 class Doc;
-class DocRange;
 class Site;
 class Tx;
 
@@ -52,7 +55,7 @@ public:
   ~Clipboard();
 
   ClipboardFormat format() const;
-  void getDocumentRangeInfo(Doc** document, DocRange* range);
+  void getDocumentRangeInfo(Doc** document, view::Range* range);
 
   void clearMaskFromCels(Tx& tx,
                          Doc* doc,
@@ -64,7 +67,7 @@ public:
   void cut(ContextWriter& context);
   void copy(const ContextReader& context);
   void copyMerged(const ContextReader& context);
-  void copyRange(const ContextReader& context, const DocRange& range);
+  void copyRange(const ContextReader& context, const view::Range& range);
   void copyImage(const doc::Image* image, const doc::Mask* mask, const doc::Palette* palette);
   void copyTilemap(const doc::Image* image,
                    const doc::Mask* mask,
@@ -86,6 +89,17 @@ public:
   // ui::ClipboardDelegate impl
   void setClipboardText(const std::string& text) override;
   bool getClipboardText(std::string& text) override;
+  bool hasClipboardText() override;
+
+  bool setNativeBitmap(const doc::Image* image,
+                       const doc::Mask* mask,
+                       const doc::Palette* palette,
+                       const doc::Tileset* tileset,
+                       const doc::color_t indexMaskColor);
+  bool getNativeBitmap(doc::Image** image,
+                       doc::Mask** mask,
+                       doc::Palette** palette,
+                       doc::Tileset** tileset);
 
 private:
   void setData(doc::Image* image,
@@ -100,15 +114,6 @@ private:
   void clearNativeContent();
   void registerNativeFormats();
   bool hasNativeBitmap() const;
-  bool setNativeBitmap(const doc::Image* image,
-                       const doc::Mask* mask,
-                       const doc::Palette* palette,
-                       const doc::Tileset* tileset,
-                       const doc::color_t indexMaskColor);
-  bool getNativeBitmap(doc::Image** image,
-                       doc::Mask** mask,
-                       doc::Palette** palette,
-                       doc::Tileset** tileset);
   bool getNativeBitmapSize(gfx::Size* size);
 
   bool setNativePalette(const doc::Palette* palette, const doc::PalettePicks& picks);

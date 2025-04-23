@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2020 Igara Studio S.A.
+// Copyright (c) 2020-2025 Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -14,7 +14,7 @@
 
 namespace render {
 
-class DitheringMatrix {
+class DitheringMatrix final {
 public:
   DitheringMatrix() : m_rows(1), m_cols(1), m_matrix(1, 1), m_maxValue(1) {}
 
@@ -47,21 +47,24 @@ private:
 };
 
 // Creates a Bayer dither matrix.
-class BayerMatrix : public DitheringMatrix {
+struct BayerMatrix {
   static int D2[4];
 
 public:
-  BayerMatrix(int n) : DitheringMatrix(n, n)
+  static DitheringMatrix make(int n)
   {
+    DitheringMatrix matrix(n, n);
+
     for (int i = 0; i < n; ++i)
       for (int j = 0; j < n; ++j)
-        operator()(i, j) = Dn(i, j, n);
+        matrix(i, j) = Dn(i, j, n);
 
-    calcMaxValue();
+    matrix.calcMaxValue();
+    return matrix;
   }
 
 private:
-  int Dn(int i, int j, int n) const
+  static int Dn(int i, int j, int n)
   {
     ASSERT(i >= 0 && i < n);
     ASSERT(j >= 0 && j < n);

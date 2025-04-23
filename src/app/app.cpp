@@ -11,6 +11,7 @@
 
 #include "app/app.h"
 
+#include "app/app_menus.h"
 #include "app/app_mod.h"
 #include "app/check_update.h"
 #include "app/cli/app_options.h"
@@ -78,6 +79,11 @@
   #include "os/x11/system.h"
 #endif
 
+#if ENABLE_WEBP && LAF_WINDOWS
+  #include "app/util/decode_webp.h"
+#endif
+
+#include <cstdio>
 #include <iostream>
 #include <memory>
 
@@ -121,18 +127,12 @@ public:
   app::UIContext m_context;
 };
 
-class App::LoadLanguage {
-public:
-  LoadLanguage(Preferences& pref, Extensions& exts) { Strings::createInstance(pref, exts); }
-};
-
 class App::Modules {
 public:
   LoggerModule m_loggerModule;
   FileSystemModule m_file_system_module;
   Extensions m_extensions;
-  // Load main language (after loading the extensions)
-  LoadLanguage m_loadLanguage;
+  Strings m_strings; // Load main language (after loading the extensions)
   tools::ToolBox m_toolbox;
   tools::ActiveToolManager m_activeToolManager;
   Commands m_commands;
@@ -148,7 +148,7 @@ public:
 
   Modules(const bool createLogInDesktop, Preferences& pref)
     : m_loggerModule(createLogInDesktop)
-    , m_loadLanguage(pref, m_extensions)
+    , m_strings(pref, m_extensions)
     , m_activeToolManager(&m_toolbox)
     , m_recent_files(pref.general.recentItems())
 #ifdef ENABLE_DATA_RECOVERY
@@ -249,9 +249,19 @@ App::App(AppMod* mod)
 
 int App::initialize(const AppOptions& options)
 {
-  os::System* system = os::instance();
+  const os::SystemRef system = os::System::instance();
 
-  m_isGui = options.startUI() && !options.previewCLI();
+  // Without Skia backend we don't have GUI.
+  const bool startGui = (options.startUI() && !options.previewCLI());
+#if LAF_SKIA
+  m_isGui = startGui;
+#else
+  // True if we should show a warning when running the main Aseprite
+  // executable (no test/benchmark) without args and the GUI is not
+  // available.
+  m_showCliOnlyWarning = (startGui && base::utf8_icmp(base::get_file_title(options.exeName()),
+                                                      get_app_name()) == 0);
+#endif
 
   // Notify the scripting engine that we're going to enter to GUI
   // mode, this is useful so we can mark the stdin file handle as
@@ -326,6 +336,7 @@ int App::initialize(const AppOptions& options)
   // Load modules
   m_modules = std::make_unique<Modules>(createLogInDesktop, pref);
   m_legacy = std::make_unique<LegacyModules>(isGui() ? REQUIRE_INTERFACE : 0);
+  m_appMenus = std::make_unique<AppMenus>(recentFiles());
   m_brushes = std::make_unique<AppBrushes>();
 
   // Data recovery is enabled only in GUI mode
@@ -462,7 +473,7 @@ struct DeleteAllDocs {
 
 } // anonymous namespace
 
-void App::run()
+void App::run(const bool runGuiManager)
 {
   CloseMainWindow closeMainWindow(m_mainWindow);
   DeleteAllDocs deleteAllDocsAtExit(context());
@@ -474,19 +485,23 @@ void App::run()
     // How to interpret one finger on Windows tablets.
     manager->display()->nativeWindow()->setInterpretOneFingerGestureAsMouseMovement(
       preferences().experimental.oneFingerAsMouseMovement());
+  #if ENABLE_WEBP
+    // In Windows we use a custom webp decoder for drag & drop operations.
+    os::set_decode_webp(util::decode_webp);
+  #endif
 #endif
 
 #if LAF_LINUX
     // Setup app icon for Linux window managers
     try {
-      os::Window* window = os::instance()->defaultWindow();
+      os::Window* window = os::System::instance()->defaultWindow();
       os::SurfaceList icons;
 
       for (const int size : { 32, 64, 128 }) {
         ResourceFinder rf;
         rf.includeDataDir(fmt::format("icons/ase{0}.png", size).c_str());
         if (rf.findFirst()) {
-          os::SurfaceRef surf = os::instance()->loadRgbaSurface(rf.filename().c_str());
+          os::SurfaceRef surf = os::System::instance()->loadRgbaSurface(rf.filename().c_str());
           if (surf) {
             surf->setImmutable();
             icons.push_back(surf);
@@ -508,7 +523,7 @@ void App::run()
     if (m_inAppSteam) {
       steam = std::make_unique<steam::SteamAPI>();
       if (steam->isInitialized())
-        os::instance()->activateApp();
+        os::System::instance()->activateApp();
     }
     else {
       // We tried to load the Steam SDK without calling
@@ -521,8 +536,7 @@ void App::run()
 #if defined(_DEBUG) || defined(ENABLE_DEVMODE)
     // On OS X, when we compile Aseprite on devmode, we're using it
     // outside an app bundle, so we must active the app explicitly.
-    if (isGui())
-      os::instance()->activateApp();
+    os::System::instance()->activateApp();
 #endif
 
 #ifdef ENABLE_UPDATER
@@ -546,13 +560,15 @@ void App::run()
 #endif
 
     // Run the GUI main message loop
-    try {
-      manager->run();
-      set_app_state(AppState::kClosing);
-    }
-    catch (...) {
-      set_app_state(AppState::kClosingWithException);
-      throw;
+    if (runGuiManager) {
+      try {
+        manager->run();
+        set_app_state(AppState::kClosing);
+      }
+      catch (...) {
+        set_app_state(AppState::kClosingWithException);
+        throw;
+      }
     }
   }
 
@@ -572,11 +588,6 @@ void App::run()
   extensions().executeExitActions();
 #endif
 
-  close();
-}
-
-void App::close()
-{
   if (isGui()) {
     ExitGui();
 
@@ -587,6 +598,12 @@ void App::close()
     // exceptions, and we are not in a destructor).
     m_modules->deleteDataRecovery();
   }
+#if !LAF_SKIA
+  else if (m_showCliOnlyWarning) {
+    std::printf("You have a CLI-only Aseprite version\n"
+                "To enable GUI support build with LAF_BACKEND=skia\n");
+  }
+#endif
 }
 
 // Finishes the Aseprite application.
@@ -623,6 +640,9 @@ App::~App()
     // Save brushes
     m_brushes.reset();
 
+    // TODO it'd be nice to destroy every module automatically with
+    //      the default ~App() impl.
+    m_appMenus.reset();
     m_legacy.reset();
     m_modules.reset();
 
@@ -789,7 +809,7 @@ void App::updateDisplayTitleBar()
   }
 
   title += defaultTitle;
-  os::instance()->defaultWindow()->setTitle(title);
+  os::System::instance()->defaultWindow()->setTitle(title);
 }
 
 InputChain& App::inputChain()

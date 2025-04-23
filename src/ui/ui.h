@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -21,6 +21,7 @@
 #include "ui/cursor.h"
 #include "ui/cursor_type.h"
 #include "ui/display.h"
+#include "ui/drag_event.h"
 #include "ui/entry.h"
 #include "ui/event.h"
 #include "ui/fit_bounds.h"
@@ -32,6 +33,7 @@
 #include "ui/int_entry.h"
 #include "ui/keys.h"
 #include "ui/label.h"
+#include "ui/layer.h"
 #include "ui/layout_io.h"
 #include "ui/link_label.h"
 #include "ui/listbox.h"
@@ -43,8 +45,6 @@
 #include "ui/message_loop.h"
 #include "ui/message_type.h"
 #include "ui/mouse_button.h"
-#include "ui/overlay.h"
-#include "ui/overlay_manager.h"
 #include "ui/paint_event.h"
 #include "ui/panel.h"
 #include "ui/pointer_type.h"
@@ -66,6 +66,7 @@
 #include "ui/theme.h"
 #include "ui/timer.h"
 #include "ui/tooltips.h"
+#include "ui/translation_delegate.h"
 #include "ui/view.h"
 #include "ui/viewport.h"
 #include "ui/widget.h"

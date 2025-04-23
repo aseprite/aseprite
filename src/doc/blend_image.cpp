@@ -11,7 +11,7 @@
 #include "doc/blend_image.h"
 
 #include "doc/blend_internals.h"
-#include "doc/image_impl.h"
+#include "doc/image.h"
 
 namespace doc {
 

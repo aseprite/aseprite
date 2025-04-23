@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -13,6 +13,7 @@
 // #define DEBUG_PAINT_MESSAGES      1
 // #define LIMIT_DISPATCH_TIME       1
 #define GARBAGE_TRACE(...) // TRACE(__VA_ARGS__)
+#define CAPTURE_TRACE(...) // TRACE(__VA_ARGS__)
 
 #ifdef HAVE_CONFIG_H
   #include "config.h"
@@ -21,6 +22,8 @@
 #include "ui/manager.h"
 
 #include "base/concurrent_queue.h"
+#include "base/contains.h"
+#include "base/remove_from_container.h"
 #include "base/scoped_value.h"
 #include "base/thread.h"
 #include "base/time.h"
@@ -31,6 +34,8 @@
 #include "os/system.h"
 #include "os/window.h"
 #include "os/window_spec.h"
+#include "ui/base.h"
+#include "ui/drag_event.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -181,14 +186,13 @@ os::Hit handle_native_hittest(os::Window* osWindow, const gfx::Point& pos)
 bool Manager::widgetAssociatedToManager(Widget* widget)
 {
   return (focus_widget == widget || mouse_widget == widget || capture_widget == widget ||
-          std::find(mouse_widgets_list.begin(), mouse_widgets_list.end(), widget) !=
-            mouse_widgets_list.end());
+          base::contains(mouse_widgets_list, widget));
 }
 
 Manager::Manager(const os::WindowRef& nativeWindow)
   : Widget(kManagerWidget)
   , m_display(nullptr, nativeWindow, this)
-  , m_eventQueue(os::instance()->eventQueue())
+  , m_eventQueue(os::System::instance()->eventQueue())
   , m_lockedWindow(nullptr)
   , m_mouseButton(kButtonNone)
 {
@@ -217,8 +221,33 @@ Manager::Manager(const os::WindowRef& nativeWindow)
   if (!m_defaultManager)
     m_defaultManager = this;
 
+  // Handle live resize too redraw the entire manager, dispatch the UI
+  // messages, and flip the window.
+  os::System::instance()->handleWindowResize = [this](os::Window* window) {
+    Display* display = Manager::getDisplayFromNativeWindow(window);
+    if (!display)
+      display = this->display();
+    ASSERT(display);
+
+    Message* msg = new Message(kResizeDisplayMessage);
+    msg->setDisplay(display);
+    msg->setRecipient(this);
+    msg->setPropagateToChildren(false);
+
+    enqueueMessage(msg);
+    dispatchMessages();
+  };
+
   // TODO check if this is needed
   onNewDisplayConfiguration(&m_display);
+
+  if (nativeWindow) {
+    // Setting the drag target has a slight performance cost that we can offset by running it later.
+    auto* callbackMessage = new CallbackMessage(
+      [this, nativeWindow] { nativeWindow->setDragTarget(this); });
+    callbackMessage->setRecipient(this);
+    enqueueMessage(callbackMessage);
+  }
 }
 
 Manager::~Manager()
@@ -242,6 +271,7 @@ Manager::~Manager()
         ASSERT(msg_filter.empty());
     }
     ASSERT(msg_queue.empty());
+    ASSERT(used_msg_queue.empty());
 #endif
 
     // No more default manager
@@ -249,7 +279,13 @@ Manager::~Manager()
 
     // Shutdown system
     mouse_widgets_list.clear();
+
+    focus_widget = nullptr;
+    mouse_widget = nullptr;
+    capture_widget = nullptr;
   }
+
+  manager_thread = std::thread::id();
 }
 
 // static
@@ -278,13 +314,6 @@ void Manager::run()
 
 void Manager::flipAllDisplays()
 {
-  OverlayManager* overlays = OverlayManager::instance();
-
-  update_cursor_overlay();
-
-  // Draw overlays.
-  overlays->drawOverlays();
-
   m_display.flipDisplay();
   if (get_multiple_displays()) {
     for (auto child : children()) {
@@ -388,27 +417,31 @@ void Manager::generateMessagesFromOSEvents()
   // Events from laf-os
   os::Event osEvent;
   for (;;) {
-    // Calculate how much time we can wait for the next message in the
-    // event queue.
     double timeout = 0.0;
-    if (msg_queue.empty() && redrawState == RedrawState::Normal) {
-      if (!Timer::getNextTimeout(timeout))
-        timeout = os::EventQueue::kWithoutTimeout;
-    }
 
-    if (timeout == os::EventQueue::kWithoutTimeout && used_msg_queue.empty())
-      collectGarbage();
+    // Calculate how much time we can wait for the next message in the
+    // event queue. We use kWithoutTimeout in case that we can wait
+    // indefinitely.
+    if (m_waitEvents) {
+      if (msg_queue.empty() && redrawState == RedrawState::Normal) {
+        if (!Timer::getNextTimeout(timeout))
+          timeout = os::EventQueue::kWithoutTimeout;
+      }
+
+      if (timeout == os::EventQueue::kWithoutTimeout && used_msg_queue.empty())
+        collectGarbage();
 #if _DEBUG
-    else if (!m_garbage.empty()) {
-      GARBAGE_TRACE("collectGarbage() wasn't called #objects=%d"
-                    " (msg_queue=%d used_msg_queue=%d redrawState=%d timeout=%.16g)\n",
-                    int(m_garbage.size()),
-                    msg_queue.size(),
-                    used_msg_queue.size(),
-                    int(redrawState),
-                    timeout);
-    }
+      else if (!m_garbage.empty()) {
+        GARBAGE_TRACE("collectGarbage() wasn't called #objects=%d"
+                      " (msg_queue=%d used_msg_queue=%d redrawState=%d timeout=%.16g)\n",
+                      int(m_garbage.size()),
+                      msg_queue.size(),
+                      used_msg_queue.size(),
+                      int(redrawState),
+                      timeout);
+      }
 #endif
+    }
 
     m_eventQueue->getEvent(osEvent, timeout);
     if (osEvent.type() == os::Event::None)
@@ -483,6 +516,8 @@ void Manager::generateMessagesFromOSEvents()
         set_mouse_cursor(kArrowCursor);
         mouse_display = display;
 
+        auto* widget = pick(osEvent.position());
+        setMouse(widget);
         lastMouseMoveEvent = osEvent;
         break;
       }
@@ -821,7 +856,7 @@ void Manager::dispatchMessages()
   // might change the state of widgets, etc. In case pumpQueue()
   // returns a number greater than 0, it means that we've processed
   // some messages, so we've to redraw the screen.
-  if (pumpQueue() > 0 || redrawState == RedrawState::RedrawDelayed) {
+  if (pumpQueue() > 0 || redrawState == RedrawState::RedrawDelayed || !m_waitEvents) {
     if (redrawState == RedrawState::ClosingApp) {
       // Do nothing, we don't flush nor process paint messages
     }
@@ -862,12 +897,12 @@ void Manager::enqueueMessage(Message* msg)
     concurrent_msg_queue.push(msg);
 }
 
-Window* Manager::getTopWindow()
+Window* Manager::getTopWindow() const
 {
   return static_cast<Window*>(UI_FIRST_WIDGET(children()));
 }
 
-Window* Manager::getDesktopWindow()
+Window* Manager::getDesktopWindow() const
 {
   for (auto child : children()) {
     Window* window = static_cast<Window*>(child);
@@ -877,7 +912,7 @@ Window* Manager::getDesktopWindow()
   return nullptr;
 }
 
-Window* Manager::getForegroundWindow()
+Window* Manager::getForegroundWindow() const
 {
   for (auto child : children()) {
     Window* window = static_cast<Window*>(child);
@@ -918,10 +953,11 @@ void Manager::setFocus(Widget* widget)
       (!(widget) || (!(widget->hasFlags(DISABLED)) && !(widget->hasFlags(HIDDEN)) &&
                      !(widget->hasFlags(DECORATIVE)) && someParentIsFocusStop(widget)))) {
     Widget* commonAncestor = findLowestCommonAncestor(focus_widget, widget);
+    Widget* oldFocus = focus_widget;
 
     // Fetch the focus
     if (focus_widget && focus_widget != commonAncestor) {
-      auto msg = new Message(kFocusLeaveMessage);
+      auto* msg = new FocusMessage(kFocusLeaveMessage, oldFocus, widget);
       msg->setRecipient(focus_widget);
       msg->setPropagateToParent(true);
       msg->setCommonAncestor(commonAncestor);
@@ -938,7 +974,7 @@ void Manager::setFocus(Widget* widget)
     // Put the focus
     focus_widget = widget;
     if (widget) {
-      auto msg = new Message(kFocusEnterMessage);
+      auto* msg = new FocusMessage(kFocusEnterMessage, oldFocus, widget);
       msg->setRecipient(widget);
       msg->setPropagateToParent(true);
       msg->setCommonAncestor(commonAncestor);
@@ -975,13 +1011,6 @@ void Manager::setMouse(Widget* widget)
     msg->setPropagateToParent(true);
     msg->setCommonAncestor(commonAncestor);
     enqueueMessage(msg);
-
-    // Remove HAS_MOUSE from all the hierarchy
-    auto a = mouse_widget;
-    while (a && a != commonAncestor) {
-      a->disableFlags(HAS_MOUSE);
-      a = a->parent();
-    }
   }
 
   // If the mouse is captured, we can just put the HAS_MOUSE flag in
@@ -1009,18 +1038,36 @@ void Manager::setMouse(Widget* widget)
     msg->setCommonAncestor(commonAncestor);
     enqueueMessage(msg);
     generateSetCursorMessage(display, mousePos, kKeyUninitializedModifier, PointerType::Unknown);
-
-    // Add HAS_MOUSE to all the hierarchy
-    auto a = mouse_widget;
-    while (a && a != commonAncestor) {
-      a->enableFlags(HAS_MOUSE);
-      a = a->parent();
-    }
   }
 }
 
-void Manager::setCapture(Widget* widget)
+void Manager::setCapture(Widget* widget, bool force)
 {
+  ASSERT(widget);
+  if (!widget)
+    return;
+
+  CAPTURE_TRACE("Manager::setCapture %s\n", typeid(*widget).name());
+  if (!force &&
+      // The given "widget" cannot capture the mouse if it's not
+      // "clickable".  The definition of "clickable" generally means
+      // that the widget is in the current foreground/modal window, or
+      // in the desktop window (or in any floating non-modal window).
+      // But it can also be in a top window, e.g. a combobox popup.
+      !isWidgetClickable(widget) &&
+      // In some special cases, a widget transfers a mouse message to
+      // another widget which doesn't belong to the current foreground
+      // modal window, this is done using onBroadcastMouseMessage()
+      // and/or transferAsMouseDownMessage(), so here we allow capturing
+      // the mouse from widgets inside the "mouse_widgets_list"
+      // (widgets that are allowed to capture the mouse / added with
+      // allowCapture() function).
+      (widget != mouse_widget && !base::contains(mouse_widgets_list, widget))) {
+    CAPTURE_TRACE("-> FILTERED!\n");
+    return;
+  }
+  CAPTURE_TRACE("-> OK\n");
+
   // To set the capture, we set first the mouse_widget (because
   // mouse_widget shouldn't be != capture_widget)
   setMouse(widget);
@@ -1032,6 +1079,13 @@ void Manager::setCapture(Widget* widget)
   ASSERT(display && display->nativeWindow());
   if (display && display->nativeWindow())
     display->nativeWindow()->captureMouse();
+}
+
+void Manager::allowCapture(Widget* widget)
+{
+  ASSERT(widget);
+  if (!base::contains(mouse_widgets_list, widget))
+    mouse_widgets_list.push_back(widget);
 }
 
 // Sets the focus to the "magnetic" widget inside the window
@@ -1068,6 +1122,8 @@ void Manager::freeMouse()
 void Manager::freeCapture()
 {
   if (capture_widget) {
+    CAPTURE_TRACE("Manager::freeCapture() %s\n", typeid(*capture_widget).name());
+
     Display* display = capture_widget->display();
 
     capture_widget->disableFlags(HAS_CAPTURE);
@@ -1099,9 +1155,7 @@ void Manager::freeWidget(Widget* widget)
   if (widget->hasMouse() || (widget == mouse_widget))
     freeMouse();
 
-  auto it = std::find(mouse_widgets_list.begin(), mouse_widgets_list.end(), widget);
-  if (it != mouse_widgets_list.end())
-    mouse_widgets_list.erase(it);
+  base::remove_from_container(mouse_widgets_list, widget);
 
   ASSERT(!Manager::widgetAssociatedToManager(widget));
 }
@@ -1265,6 +1319,53 @@ Widget* Manager::pickFromScreenPos(const gfx::Point& screenPos) const
   return Widget::pickFromScreenPos(screenPos);
 }
 
+void Manager::transferAsMouseDownMessage(Widget* from,
+                                         Widget* to,
+                                         const MouseMessage* mouseMsg,
+                                         const bool sendNow)
+{
+  ASSERT(to);
+  ASSERT(from);
+
+  // Remove the capture from the "from" widget.
+  if (from->hasCapture())
+    from->releaseMouse();
+
+  // Allow the "to" widget to re-capture the mouse.
+  allowCapture(to);
+
+  // We enqueue a copy of the mouse message but as a kMouseDownMessage.
+  auto mouseMsg2 = std::make_unique<MouseMessage>(kMouseDownMessage,
+                                                  *mouseMsg,
+                                                  mouseMsg->positionForDisplay(to->display()));
+  mouseMsg2->setRecipient(to);
+  mouseMsg2->setDisplay(to->display());
+
+  if (sendNow)
+    to->sendMessage(mouseMsg2.get());
+  else
+    enqueueMessage(mouseMsg2.release());
+}
+
+bool Manager::isWidgetClickable(const Widget* widget) const
+{
+  Window* widgetWindow = widget->window();
+  if (!widgetWindow)
+    return false;
+
+  for (auto* child : children()) {
+    Window* window = static_cast<Window*>(child);
+
+    if (widgetWindow == window)
+      return true;
+
+    if (window->isForeground() || window->isDesktop())
+      break;
+  }
+
+  return false;
+}
+
 void Manager::_closingAppWithException()
 {
   redrawState = RedrawState::ClosingApp;
@@ -1354,7 +1455,12 @@ void Manager::_openWindow(Window* window, bool center)
         spec.parent(parentDisplay->nativeWindow());
       }
 
-      os::WindowRef newNativeWindow = os::instance()->makeWindow(spec);
+#if LAF_WINDOWS
+      // Just in case we'll try to avoid using WinTab at all costs.
+      spec.useTabletOptions(window->needsTabletPressure());
+#endif
+
+      os::WindowRef newNativeWindow = os::System::instance()->makeWindow(spec);
       ui::Display* newDisplay = new ui::Display(parentDisplay, newNativeWindow, window);
 
       newNativeWindow->setUserData(newDisplay);
@@ -1726,6 +1832,9 @@ void Manager::onNewDisplayConfiguration(Display* display)
   if (!display->nativeWindow())
     return;
 
+  // Create/update the back layer surface of the display.
+  display->configureBackLayer();
+
   _internal_set_mouse_display(display);
   container->invalidate();
   container->flushRedraw();
@@ -1894,11 +2003,11 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
     PaintMessage* paintMsg = static_cast<PaintMessage*>(msg);
     Display* display = paintMsg->display();
 
-    // TODO use paintMsg->display() here
-    // Restore overlays in the region that we're going to paint.
-    OverlayManager::instance()->restoreOverlappedAreas(paintMsg->rect());
+    // Paint in the back layer surface by default.
+    const os::SurfaceRef surface = display->backLayer()->surface();
+    if (!surface)
+      return false;
 
-    os::SurfaceRef surface(base::AddRef(display->surface()));
     surface->saveClip();
 
     if (surface->clipRect(paintMsg->rect())) {
@@ -1938,6 +2047,97 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
   }
 
   return used;
+}
+
+Widget* Manager::findForDragAndDrop(Widget* widget)
+{
+  // If widget doesn't support drag & drop, try to find the nearest ancestor
+  // that supports it.
+  while (widget && !widget->hasFlags(ALLOW_DROP))
+    widget = widget->parent();
+
+  return widget;
+}
+
+void Manager::dragEnter(os::DragEvent& ev)
+{
+  Widget* widget = findForDragAndDrop(pick(ev.position()));
+
+  ASSERT(!widget || widget && widget->hasFlags(ALLOW_DROP));
+
+  if (widget) {
+    m_dragOverWidget = widget;
+    DragEvent uiev(this, widget, ev);
+    widget->onDragEnter(uiev);
+    ev.dropResult(uiev.supportsOperation());
+  }
+}
+
+void Manager::dragLeave(os::DragEvent& ev)
+{
+  Widget* widget = m_dragOverWidget;
+  if (widget) {
+    DragEvent uiev(this, widget, ev);
+    widget->onDragLeave(uiev);
+    m_dragOverWidget = nullptr;
+  }
+}
+
+void Manager::drag(os::DragEvent& ev)
+{
+  Widget* widget = findForDragAndDrop(pick(ev.position()));
+
+  ASSERT(!widget || widget && widget->hasFlags(ALLOW_DROP));
+
+  if (m_dragOverWidget && m_dragOverWidget != widget) {
+    DragEvent uiev(this, m_dragOverWidget, ev);
+    m_dragOverWidget->onDragLeave(uiev);
+    m_dragOverWidget = nullptr;
+  }
+
+  if (widget) {
+    DragEvent uiev(this, widget, ev);
+    if (m_dragOverWidget != widget) {
+      m_dragOverWidget = widget;
+      widget->onDragEnter(uiev);
+    }
+    widget->onDrag(uiev);
+    ev.dropResult(uiev.supportsOperation());
+  }
+}
+
+void Manager::drop(os::DragEvent& ev)
+{
+  m_dragOverWidget = nullptr;
+  Widget* widget = findForDragAndDrop(pick(ev.position()));
+
+  ASSERT(!widget || widget && widget->hasFlags(ALLOW_DROP));
+
+  DragEvent uiev(this, widget, ev);
+  while (widget) {
+    widget->onDrop(uiev);
+    if (uiev.handled()) {
+      ev.acceptDrop(true);
+      return;
+    }
+    // Propagate unhandled drop events to ancestors.
+    // TODO: Should we propagate dragEnter, dragLeave and drag events too?
+    widget = findForDragAndDrop(widget->parent());
+  }
+
+  // There were no widget that accepted the drop, then see if we can treat it
+  // like a DropFiles event.
+  if (ev.dataProvider()->contains(os::DragDataItemType::Paths)) {
+    ev.acceptDrop(true);
+    // We must queue an os::Event to wakeup the underlying system queue on
+    // masOS. If we had used the enqueueMessage() method instead, it could
+    // happen that the program might look unresponsive because it is waiting
+    // for an OS event.
+    os::Event dropFilesEv;
+    dropFilesEv.setType(os::Event::DropFiles);
+    dropFilesEv.setFiles(ev.dataProvider()->getPaths());
+    os::System::instance()->eventQueue()->queueEvent(dropFilesEv);
+  }
 }
 
 // It's like Widget::onInvalidateRegion() but optimized for the

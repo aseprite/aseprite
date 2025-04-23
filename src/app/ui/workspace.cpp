@@ -99,6 +99,10 @@ void Workspace::setActiveView(WorkspaceView* view)
   if (!m_activePanel)
     return;
 
+  // Avoid duplicating the BeforeViewChanged event when we open for the first time
+  if (m_activePanel->activeView() != view)
+    BeforeViewChanged();
+
   m_activePanel->setActiveView(view);
 
   ActiveViewChanged(); // Fire ActiveViewChanged event

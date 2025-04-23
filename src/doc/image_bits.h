@@ -9,6 +9,8 @@
 #define DOC_IMAGE_BITS_H_INCLUDED
 #pragma once
 
+#include "gfx/rect.h"
+
 #include <algorithm>
 
 namespace doc {

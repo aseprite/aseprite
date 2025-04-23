@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -51,9 +51,9 @@ void RemoveFrameCommand::onExecute(Context* context)
   {
     Tx tx(writer, "Remove Frame");
     DocApi api = document->getApi(tx);
-    const Site* site = writer.site();
-    if (site->inTimeline() && !site->selectedFrames().empty()) {
-      for (frame_t frame : site->selectedFrames().reversed()) {
+    const Site& site = writer.site();
+    if (site.inTimeline() && !site.selectedFrames().empty()) {
+      for (frame_t frame : site.selectedFrames().reversed()) {
         api.removeFrame(sprite, frame);
       }
     }

@@ -17,13 +17,15 @@
 namespace app {
 
 class RecentFiles {
-  enum { kPinnedFiles, kRecentFiles, kPinnedFolders, kRecentFolders, kCollections };
+  enum { kPinnedFiles, kRecentFiles, kPinnedFolders, kRecentFolders, kPinnedFonts, kCollections };
 
 public:
   const base::paths& pinnedFiles() const { return m_paths[kPinnedFiles]; }
   const base::paths& recentFiles() const { return m_paths[kRecentFiles]; }
   const base::paths& pinnedFolders() const { return m_paths[kPinnedFolders]; }
   const base::paths& recentFolders() const { return m_paths[kRecentFolders]; }
+  // TODO probably this collection should be in another kind of class.
+  base::paths& pinnedFonts() { return m_paths[kPinnedFonts]; }
 
   RecentFiles(const int limit);
   ~RecentFiles();

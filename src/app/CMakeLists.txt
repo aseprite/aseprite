@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2018-2024  Igara Studio S.A.
+# Copyright (C) 2018-2025  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 # Generate a ui::Widget for each widget in a XML file
@@ -98,11 +98,18 @@ add_library(app-lib ${generated_files})
 # These specific-platform files should be in an external library
 # (e.g. "base" or "os").
 if(WIN32)
-  target_sources(app-lib PRIVATE font_path_win.cpp)
+  target_sources(app-lib PRIVATE fonts/font_path_win.cpp)
 elseif(APPLE)
-  target_sources(app-lib PRIVATE font_path_osx.mm)
+  target_sources(app-lib PRIVATE fonts/font_path_osx.mm)
 else()
-  target_sources(app-lib PRIVATE font_path_unix.cpp)
+  target_sources(app-lib PRIVATE fonts/font_path_unix.cpp)
+endif()
+
+# This defines a specific webp decoding utility function for using
+# in Windows when dragging and dropping images that are stored as
+# webp files (like Chrome does).
+if(WIN32 AND ENABLE_WEBP)
+  target_sources(app-lib PRIVATE util/decode_webp.cpp)
 endif()
 
 # Trial-version vs Full version (enable save command)
@@ -183,6 +190,7 @@ if(ENABLE_SCRIPTING)
     commands/cmd_run_script.cpp
     commands/debugger.cpp
     script/app_command_object.cpp
+    script/app_clipboard_object.cpp
     script/app_fs_object.cpp
     script/app_object.cpp
     script/app_os_object.cpp
@@ -273,6 +281,7 @@ target_sources(app-lib PRIVATE
   cmd/clear_image.cpp
   cmd/clear_mask.cpp
   cmd/clear_rect.cpp
+  cmd/clear_slices.cpp
   cmd/configure_background.cpp
   cmd/convert_color_profile.cpp
   cmd/copy_cel.cpp
@@ -281,6 +290,7 @@ target_sources(app-lib PRIVATE
   cmd/copy_region.cpp
   cmd/crop_cel.cpp
   cmd/deselect_mask.cpp
+  cmd/drop_on_timeline.cpp
   cmd/flatten_layers.cpp
   cmd/flip_image.cpp
   cmd/flip_mask.cpp
@@ -518,7 +528,6 @@ target_sources(app-lib PRIVATE
   doc_api.cpp
   doc_diff.cpp
   doc_exporter.cpp
-  doc_range.cpp
   doc_range_ops.cpp
   doc_undo.cpp
   docs.cpp
@@ -535,7 +544,10 @@ target_sources(app-lib PRIVATE
   file_system.cpp
   filename_formatter.cpp
   flatten.cpp
-  font_path.cpp
+  fonts/font_data.cpp
+  fonts/font_info.cpp
+  fonts/font_path.cpp
+  fonts/fonts.cpp
   gui_xml.cpp
   i18n/strings.cpp
   i18n/xml_translator.cpp
@@ -619,10 +631,12 @@ target_sources(app-lib PRIVATE
   ui/editor/play_state.cpp
   ui/editor/scrolling_state.cpp
   ui/editor/select_box_state.cpp
+  ui/editor/select_text_box_state.cpp
   ui/editor/standby_state.cpp
   ui/editor/state_with_wheel_behavior.cpp
   ui/editor/tool_loop_impl.cpp
   ui/editor/transform_handles.cpp
+  ui/editor/writing_text_state.cpp
   ui/editor/zooming_state.cpp
   ui/export_file_window.cpp
   ui/expr_entry.cpp
@@ -630,6 +644,7 @@ target_sources(app-lib PRIVATE
   ui/file_list_view.cpp
   ui/file_selector.cpp
   ui/filename_field.cpp
+  ui/font_entry.cpp
   ui/font_popup.cpp
   ui/hex_color_entry.cpp
   ui/home_view.cpp
@@ -656,7 +671,6 @@ target_sources(app-lib PRIVATE
   ui/search_entry.cpp
   ui/select_accelerator.cpp
   ui/selection_mode_field.cpp
-  ui/skin/font_data.cpp
   ui/skin/skin_part.cpp
   ui/skin/skin_property.cpp
   ui/skin/skin_slider_property.cpp
@@ -684,10 +698,10 @@ target_sources(app-lib PRIVATE
   util/cel_ops.cpp
   util/clipboard.cpp
   util/clipboard_native.cpp
+  util/conversion_to_image.cpp
   util/conversion_to_surface.cpp
   util/expand_cel_canvas.cpp
   util/filetoks.cpp
-  util/freetype_utils.cpp
   util/layer_boundaries.cpp
   util/layer_utils.cpp
   util/msk_file.cpp
@@ -695,8 +709,8 @@ target_sources(app-lib PRIVATE
   util/pal_ops.cpp
   util/pic_file.cpp
   util/pixel_ratio.cpp
-  util/range_utils.cpp
   util/readable_time.cpp
+  util/render_text.cpp
   util/resize_image.cpp
   util/shader_helpers.cpp
   util/tile_flags_utils.cpp
@@ -732,6 +746,7 @@ target_link_libraries(app-lib
   cfg-lib
   clip
   doc-lib
+  view-lib
   dio-lib
   filters-lib
   fixmath-lib
@@ -739,8 +754,9 @@ target_link_libraries(app-lib
   tga-lib
   laf-gfx
   render-lib
-  laf-ft
+  laf-dlgs
   laf-os
+  laf-text
   ui-lib
   ver-lib
   updater-lib
@@ -748,10 +764,10 @@ target_link_libraries(app-lib
   ${CMARK_LIBRARIES}
   ${TINYXML_LIBRARY}
   ${TINYEXIF_LIBRARY}
-  ${JPEG_LIBRARIES}
   ${GIF_LIBRARIES}
   ${PNG_LIBRARIES}
   ${ZLIB_LIBRARIES}
+  libjpeg-turbo
   json11
   archive_static
   fmt

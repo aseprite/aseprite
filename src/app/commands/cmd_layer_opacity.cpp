@@ -66,9 +66,9 @@ void LayerOpacityCommand::onExecute(Context* context)
   {
     Tx tx(writer, "Set Layer Opacity");
 
-    // TODO the range of selected frames should be in app::Site.
+    Site site = writer.site();
     SelectedLayers selLayers;
-    auto range = App::instance()->timeline()->range();
+    auto range = site.range();
     if (range.enabled()) {
       selLayers = range.selectedLayers();
     }

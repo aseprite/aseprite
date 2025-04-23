@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -49,7 +49,6 @@ public:
 
   void remapWindow();
   void centerWindow(Display* parentDisplay = nullptr);
-  void moveWindow(const gfx::Rect& rect);
 
   // Expands or shrink the window to the given side (generally sizeHint())
   void expandWindow(const gfx::Size& size);
@@ -65,6 +64,13 @@ public:
   bool isWantFocus() const { return m_isWantFocus; }
   bool isSizeable() const { return m_isSizeable; }
   bool isMoveable() const { return m_isMoveable; }
+
+  // Use to inhibit buggy WinTab implementations that might crash
+  // the whole program just calling WTOpen(). This must be called
+  // before creating the native window (before
+  // Manager::_openWindow()).
+  void setNeedsTabletPressure(const bool s) { m_needsTabletPressure = s; }
+  bool needsTabletPressure() const { return m_needsTabletPressure; }
 
   // Returns true only inside onWindowResize() when the window size
   // changed.
@@ -132,6 +138,7 @@ private:
   bool m_isForeground : 1;
   bool m_isAutoRemap : 1;
   bool m_isResizing : 1;
+  bool m_needsTabletPressure : 1;
   int m_hitTest;
   gfx::Rect m_lastFrame;
 };

@@ -30,13 +30,6 @@ static Strings* singleton = nullptr;
 const char* Strings::kDefLanguage = "en";
 
 // static
-void Strings::createInstance(Preferences& pref, Extensions& exts)
-{
-  ASSERT(!singleton);
-  singleton = new Strings(pref, exts);
-}
-
-// static
 Strings* Strings::instance()
 {
   return singleton;
@@ -44,7 +37,16 @@ Strings* Strings::instance()
 
 Strings::Strings(Preferences& pref, Extensions& exts) : m_pref(pref), m_exts(exts)
 {
+  ASSERT(!singleton);
+  singleton = this;
+
   loadLanguage(currentLanguage());
+}
+
+Strings::~Strings()
+{
+  ASSERT(singleton == this);
+  singleton = nullptr;
 }
 
 std::set<LangInfo> Strings::availableLanguages() const

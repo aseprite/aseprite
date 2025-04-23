@@ -142,6 +142,10 @@ void UIContext::setActiveView(DocView* docView)
 void UIContext::onSetActiveDocument(Doc* document, bool notify)
 {
   notify = (notify && lastSelectedDoc() != document);
+
+  if (notify)
+    notifyBeforeActiveSiteChanged();
+
   app::Context::onSetActiveDocument(document, false);
 
   DocView* docView = getFirstDocView(document);
@@ -174,12 +178,12 @@ void UIContext::onSetActiveFrame(const doc::frame_t frame)
     Context::onSetActiveFrame(frame);
 }
 
-void UIContext::onSetRange(const DocRange& range)
+void UIContext::onSetRange(const view::RealRange& range)
 {
   Timeline* timeline =
     (App::instance()->mainWindow() ? App::instance()->mainWindow()->getTimeline() : nullptr);
   if (timeline) {
-    timeline->setRange(range);
+    timeline->setRealRange(range);
   }
   else if (!isUIAvailable()) {
     Context::onSetRange(range);
@@ -309,7 +313,6 @@ void UIContext::onAddDocument(Doc* doc)
   // Add a tab with the new view for the document
   App::instance()->workspace()->addView(view);
 
-  setActiveView(view);
   view->editor()->setDefaultScroll();
 }
 
@@ -347,8 +350,8 @@ void UIContext::onGetActiveSite(Site* site) const
       // could enable the range even if the timeline is hidden. In
       // this way we avoid using the timeline selection unexpectedly.
       Timeline* timeline = App::instance()->timeline();
-      if (timeline && timeline->isVisible() && timeline->range().enabled()) {
-        site->range(timeline->range());
+      if (timeline && timeline->isVisible() && timeline->isRangeEnabled()) {
+        site->range(timeline->realRange());
       }
       else {
         ColorBar* colorBar = ColorBar::instance();

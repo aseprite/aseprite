@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2022-2023  Igara Studio S.A.
+// Copyright (c) 2022-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,10 +9,11 @@
 #pragma once
 
 #include "doc/palette.h"
+#include "doc/pixel_format.h"
 #include "gfx/path.h"
-#include "os/font.h"
 #include "os/paint.h"
 #include "os/surface.h"
+#include "text/font.h"
 
 #include <stack>
 
@@ -30,22 +31,37 @@ private:
   };
 
 public:
-  GraphicsContext(const os::SurfaceRef& surface, int uiscale)
+  GraphicsContext(const os::SurfaceRef& surface,
+                  int uiscale,
+                  doc::PixelFormat formatHint = doc::PixelFormat::IMAGE_RGB)
     : m_surface(surface)
     , m_uiscale(uiscale)
+    , m_formatHint(formatHint)
   {
   }
-  GraphicsContext(GraphicsContext&& gc)
+  GraphicsContext(const GraphicsContext& gc)
+  {
+    m_surface = gc.m_surface;
+    m_font = gc.m_font;
+    m_paint = gc.m_paint;
+    m_palette = gc.m_palette;
+    m_path = gc.m_path;
+    m_saved = gc.m_saved;
+    m_formatHint = gc.m_formatHint;
+    m_uiscale = gc.m_uiscale;
+  }
+  GraphicsContext(GraphicsContext&& gc) noexcept
   {
     std::swap(m_surface, gc.m_surface);
     std::swap(m_paint, gc.m_paint);
     std::swap(m_font, gc.m_font);
     std::swap(m_path, gc.m_path);
+    m_formatHint = gc.m_formatHint;
     m_uiscale = gc.m_uiscale;
   }
 
-  os::FontRef font() const { return m_font; }
-  void font(const os::FontRef& font) { m_font = font; }
+  text::FontRef font() const { return m_font; }
+  void font(const text::FontRef& font) { m_font = font; }
 
   doc::Palette* palette() const { return m_palette; }
   void palette(doc::Palette* palette) { m_palette = palette; }
@@ -74,7 +90,7 @@ public:
   void antialias(bool value) { m_paint.antialias(value); }
 
   gfx::Color color() const { return m_paint.color(); }
-  void color(gfx::Color color) { m_paint.color(color); }
+  void color(gfx::Color color);
 
   float strokeWidth() const { return m_paint.strokeWidth(); }
   void strokeWidth(float value) { m_paint.strokeWidth(value); }
@@ -130,15 +146,19 @@ public:
 
   int uiscale() const { return m_uiscale; }
 
+  doc::PixelFormat formatHint() const { return m_formatHint; }
+
 private:
   os::SurfaceRef m_surface = nullptr;
   // Keeps the UI Scale currently in use when canvas autoScaling is enabled.
   int m_uiscale;
   os::Paint m_paint;
-  os::FontRef m_font;
+  text::FontRef m_font;
   gfx::Path m_path;
   std::stack<State> m_saved;
   doc::Palette* m_palette = nullptr;
+  // Pixel format hint about the underlying pixels wrapped by m_surface.
+  doc::PixelFormat m_formatHint = doc::PixelFormat::IMAGE_RGB;
 };
 
 }} // namespace app::script

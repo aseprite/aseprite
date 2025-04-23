@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -43,6 +43,7 @@
 #include "app/ui/dynamics_popup.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/expr_entry.h"
+#include "app/ui/font_entry.h"
 #include "app/ui/icon_button.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/layer_frame_comboboxes.h"
@@ -1501,12 +1502,14 @@ protected:
 
 class ContextBar::SymmetryField : public ButtonSet {
 public:
-  SymmetryField() : ButtonSet(3)
+  SymmetryField() : ButtonSet(5)
   {
     setMultiMode(MultiMode::Set);
-    auto* theme = SkinTheme::get(this);
+    auto theme = SkinTheme::get(this);
     addItem(theme->parts.horizontalSymmetry(), theme->styles.symmetryField());
     addItem(theme->parts.verticalSymmetry(), theme->styles.symmetryField());
+    addItem(theme->parts.rightDiagonalSymmetry(), theme->styles.symmetryField());
+    addItem(theme->parts.leftDiagonalSymmetry(), theme->styles.symmetryField());
     addItem("...", theme->styles.symmetryOptions());
   }
 
@@ -1514,7 +1517,9 @@ public:
   {
     tooltipManager->addTooltipFor(at(0), Strings::symmetry_toggle_horizontal(), BOTTOM);
     tooltipManager->addTooltipFor(at(1), Strings::symmetry_toggle_vertical(), BOTTOM);
-    tooltipManager->addTooltipFor(at(2), Strings::symmetry_show_options(), BOTTOM);
+    tooltipManager->addTooltipFor(at(2), Strings::symmetry_toggle_right_diagonal(), BOTTOM);
+    tooltipManager->addTooltipFor(at(3), Strings::symmetry_toggle_left_diagonal(), BOTTOM);
+    tooltipManager->addTooltipFor(at(4), Strings::symmetry_show_options(), BOTTOM);
   }
 
   void updateWithCurrentDocument()
@@ -1525,10 +1530,10 @@ public:
 
     DocumentPreferences& docPref = Preferences::instance().document(doc);
 
-    at(0)->setSelected(
-      int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::HORIZONTAL) ? true : false);
-    at(1)->setSelected(
-      int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::VERTICAL) ? true : false);
+    at(0)->setSelected(int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::HORIZONTAL));
+    at(1)->setSelected(int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::VERTICAL));
+    at(2)->setSelected(int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::RIGHT_DIAG));
+    at(3)->setSelected(int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::LEFT_DIAG));
   }
 
 private:
@@ -1547,13 +1552,18 @@ private:
       mode |= int(app::gen::SymmetryMode::HORIZONTAL);
     if (at(1)->isSelected())
       mode |= int(app::gen::SymmetryMode::VERTICAL);
+    if (at(2)->isSelected())
+      mode |= int(app::gen::SymmetryMode::RIGHT_DIAG);
+    if (at(3)->isSelected())
+      mode |= int(app::gen::SymmetryMode::LEFT_DIAG);
+
     if (app::gen::SymmetryMode(mode) != docPref.symmetry.mode()) {
       docPref.symmetry.mode(app::gen::SymmetryMode(mode));
       // Redraw symmetry rules
       doc->notifyGeneralUpdate();
     }
-    else if (at(2)->isSelected()) {
-      auto item = at(2);
+    else if (at(4)->isSelected()) {
+      auto* item = at(4);
 
       gfx::Rect bounds = item->bounds();
       item->setSelected(false);
@@ -1642,7 +1652,12 @@ class ContextBar::SliceFields : public HBox {
   };
 
 public:
-  SliceFields() : m_doc(nullptr), m_sel(2), m_combobox(this), m_action(2)
+  SliceFields()
+    : m_doc(nullptr)
+    , m_sel(2)
+    , m_combobox(this)
+    , m_transform(Strings::context_bar_slice_transform())
+    , m_action(2)
   {
     auto* theme = SkinTheme::get(this);
 
@@ -1654,6 +1669,11 @@ public:
     m_combobox.setExpansive(true);
     m_combobox.setMinSize(gfx::Size(256 * guiscale(), 0));
 
+    m_transform.Click.connect([this]() {
+      if (auto* editor = Editor::activeEditor())
+        editor->slicesTransforms(m_transform.isSelected());
+    });
+
     m_action.addItem(theme->parts.iconUserData(), theme->styles.buttonsetItemIconMono());
     m_action.addItem(theme->parts.iconClose(), theme->styles.buttonsetItemIconMono());
     m_action.ItemChange.connect(
@@ -1661,6 +1681,7 @@ public:
 
     addChild(&m_sel);
     addChild(&m_combobox);
+    addChild(&m_transform);
     addChild(&m_action);
 
     m_combobox.setVisible(false);
@@ -1671,6 +1692,7 @@ public:
   {
     tooltipManager->addTooltipFor(m_sel.at(0), Strings::context_bar_select_slices(), BOTTOM);
     tooltipManager->addTooltipFor(m_sel.at(1), Strings::context_bar_deselect_slices(), BOTTOM);
+    tooltipManager->addTooltipFor(&m_transform, Strings::context_bar_slice_transform_tip(), BOTTOM);
     tooltipManager->addTooltipFor(m_action.at(0), Strings::context_bar_slice_props(), BOTTOM);
     tooltipManager->addTooltipFor(m_action.at(1), Strings::context_bar_delete_slice(), BOTTOM);
   }
@@ -1714,6 +1736,13 @@ public:
   void closeComboBox() { m_combobox.closeListBox(); }
 
 private:
+  void onInitTheme(InitThemeEvent& ev) override
+  {
+    HBox::onInitTheme(ev);
+    auto* theme = SkinTheme::get(this);
+    m_transform.setStyle(theme->styles.miniCheckBox());
+  }
+
   void onVisible(bool visible) override
   {
     HBox::onVisible(visible);
@@ -1747,7 +1776,11 @@ private:
     const bool relayout = (visible != m_combobox.isVisible() || visible != m_action.isVisible());
 
     m_combobox.setVisible(visible);
+    m_transform.setVisible(visible);
     m_action.setVisible(visible);
+
+    if (auto* editor = Editor::activeEditor())
+      m_transform.setSelected(editor->slicesTransforms());
 
     if (relayout)
       parent()->layout();
@@ -1816,9 +1849,25 @@ private:
   Doc* m_doc;
   ButtonSet m_sel;
   Combo m_combobox;
+  CheckBox m_transform;
   ButtonSet m_action;
   bool m_changeFromEntry;
   std::string m_filter;
+};
+
+class ContextBar::FontSelector : public FontEntry {
+public:
+  FontSelector(ContextBar* contextBar)
+  {
+    // Load the font from the preferences
+    setInfo(FontInfo::getFromPreferences(), FontEntry::From::Init);
+
+    FontChange.connect([contextBar](const FontInfo& fontInfo, From from) {
+      contextBar->FontChange(fontInfo, from);
+    });
+  }
+
+  ~FontSelector() { info().updatePreferences(); }
 };
 
 ContextBar::ContextBar(TooltipManager* tooltipManager, ColorBar* colorBar)
@@ -1876,6 +1925,7 @@ ContextBar::ContextBar(TooltipManager* tooltipManager, ColorBar* colorBar)
   m_symmetry->setVisible(pref.symmetryMode.enabled());
 
   addChild(m_sliceFields = new SliceFields);
+  addChild(m_fontSelector = new FontSelector(this));
 
   setupTooltips(tooltipManager);
 
@@ -2148,6 +2198,9 @@ void ContextBar::updateForTool(tools::Tool* tool)
   // True if the current tool is slice tool.
   const bool isSlice = tool && (tool->getInk(0)->isSlice() || tool->getInk(1)->isSlice());
 
+  // True if the current tool is text tool.
+  const bool isText = tool && (tool->getInk(0)->isText() || tool->getInk(1)->isText());
+
   // True if the current tool is floodfill
   const bool isFloodfill = tool && (tool->getPointShape(0)->isFloodFill() ||
                                     tool->getPointShape(1)->isFloodFill());
@@ -2220,6 +2273,8 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_sliceFields->setVisible(isSlice);
   if (isSlice)
     updateSliceFields(UIContext::instance()->activeSite());
+
+  m_fontSelector->setVisible(isText);
 
   // Update ink shades with the current selected palette entries
   if (updateShade)
@@ -2321,7 +2376,6 @@ void ContextBar::setActiveBrushBySlot(tools::Tool* tool, int slot)
         // the slot.
         if (brush.hasFlag(BrushSlot::Flags::ImageColor))
           brush.brush()->resetImageColors();
-
         setActiveBrush(brush.brush());
       }
       else {
@@ -2498,6 +2552,11 @@ void ContextBar::reverseShadeColors()
 void ContextBar::setInkType(tools::InkType type)
 {
   m_inkType->setInkType(type);
+}
+
+FontInfo ContextBar::fontInfo() const
+{
+  return m_fontSelector->info();
 }
 
 render::DitheringMatrix ContextBar::ditheringMatrix()

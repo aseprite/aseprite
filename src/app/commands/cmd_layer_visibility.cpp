@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2024  Igara Studio S.A.
+// Copyright (C) 2023-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -12,7 +12,6 @@
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/modules/gui.h"
-#include "app/ui/timeline/timeline.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 
@@ -47,7 +46,7 @@ bool LayerVisibilityCommand::onChecked(Context* context)
     return false;
 
   SelectedLayers selLayers;
-  DocRange range = context->activeSite().range();
+  auto range = context->range();
   if (range.enabled()) {
     selLayers = range.selectedLayers();
   }
@@ -67,7 +66,7 @@ void LayerVisibilityCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Doc* doc = writer.document();
   SelectedLayers selLayers;
-  DocRange range = context->activeSite().range();
+  auto range = context->range();
   if (range.enabled()) {
     selLayers = range.selectedLayers();
   }

@@ -14,11 +14,15 @@
 #include "app/context_observer.h"
 #include "app/docs.h"
 #include "app/docs_observer.h"
+#include "app/util/conversion_to_image.h"
 #include "base/disable_copying.h"
 #include "base/exception.h"
 #include "doc/frame.h"
+#include "doc/image_ref.h"
 #include "obs/observable.h"
 #include "obs/signal.h"
+#include "os/surface.h"
+#include "view/range.h"
 
 #include <memory>
 #include <vector>
@@ -33,7 +37,6 @@ class ActiveSiteHandler;
 class Clipboard;
 class Command;
 class Doc;
-class DocRange;
 class DocView;
 class Preferences;
 
@@ -86,6 +89,21 @@ private:
   bool m_canceled;
 };
 
+class DraggedData {
+public:
+  DraggedData(const doc::ImageRef& image) { m_image = image; }
+  DraggedData(const os::SurfaceRef& surface)
+  {
+    if (surface)
+      convert_surface_to_image(surface.get(), 0, 0, surface->width(), surface->height(), m_image);
+  }
+
+  const doc::ImageRef& getImage() const { return m_image; }
+
+private:
+  doc::ImageRef m_image = nullptr;
+};
+
 class Context : public obs::observable<ContextObserver>,
                 public DocsObserver {
 public:
@@ -111,14 +129,22 @@ public:
 
   Site activeSite() const;
   Doc* activeDocument() const;
+  const view::RealRange& range() const;
   void setActiveDocument(Doc* document);
   void setActiveLayer(doc::Layer* layer);
   void setActiveFrame(doc::frame_t frame);
-  void setRange(const DocRange& range);
+  void setRange(const view::RealRange& range);
   void setSelectedColors(const doc::PalettePicks& picks);
   void setSelectedTiles(const doc::PalettePicks& picks);
   bool hasModifiedDocuments() const;
   void notifyActiveSiteChanged();
+  void notifyBeforeActiveSiteChanged();
+
+  void setDraggedData(std::unique_ptr<DraggedData> draggedData)
+  {
+    m_draggedData = std::move(draggedData);
+  }
+  const DraggedData* draggedData() const { return m_draggedData.get(); }
 
   void executeCommandFromMenuOrShortcut(Command* command, const Params& params = Params());
   virtual void executeCommand(Command* command, const Params& params = Params());
@@ -133,14 +159,16 @@ public:
 
 protected:
   // DocsObserver impl
+  void onBeforeAddDocument(Doc* doc) override;
   void onAddDocument(Doc* doc) override;
+  void onBeforeRemoveDocument(Doc* doc) override;
   void onRemoveDocument(Doc* doc) override;
 
   virtual void onGetActiveSite(Site* site) const;
   virtual void onSetActiveDocument(Doc* doc, bool notify);
   virtual void onSetActiveLayer(doc::Layer* layer);
   virtual void onSetActiveFrame(const doc::frame_t frame);
-  virtual void onSetRange(const DocRange& range);
+  virtual void onSetRange(const view::RealRange& range);
   virtual void onSetSelectedColors(const doc::PalettePicks& picks);
   virtual void onSetSelectedTiles(const doc::PalettePicks& picks);
   virtual void onCloseDocument(Doc* doc);
@@ -157,6 +185,8 @@ private:
   ContextFlags m_flags; // Last updated flags.
   Doc* m_lastSelectedDoc;
   mutable std::unique_ptr<Preferences> m_preferences;
+  std::unique_ptr<DraggedData> m_draggedData = nullptr;
+  mutable view::RealRange m_range; // Last/current range
 
   // Result of the execution of a command.
   CommandResult m_result;

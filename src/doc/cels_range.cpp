@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2023 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -96,6 +96,18 @@ CelsRange::iterator& CelsRange::iterator::operator++()
     }
   }
   return *this;
+}
+
+CelList CelsRange::toList()
+{
+  CelList list;
+  int n = size();
+  if (n > 0) {
+    list.reserve(n);
+    for (Cel* cel : *this)
+      list.push_back(cel);
+  }
+  return list;
 }
 
 } // namespace doc

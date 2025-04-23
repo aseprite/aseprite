@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -29,7 +29,7 @@ static gfx::Region get_workarea_region()
   // Returns the union of the workarea of all available screens
   gfx::Region wa;
   os::ScreenList screens;
-  os::instance()->listScreens(screens);
+  os::System::instance()->listScreens(screens);
   for (const auto& screen : screens)
     wa |= gfx::Region(screen->workarea());
   return wa;

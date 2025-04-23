@@ -34,6 +34,7 @@ class Engine;
 }
 #endif
 
+class AppMenus;
 class AppMod;
 class AppOptions;
 class BackupIndicator;
@@ -82,8 +83,7 @@ public:
   // window, in console/scripting it just runs the specified
   // scripts.
   int initialize(const AppOptions& options);
-  void run();
-  void close();
+  void run(bool runGuiManager);
 
   AppMod* mod() const { return m_mod; }
   tools::ToolBox* toolBox() const;
@@ -136,8 +136,12 @@ private:
   std::unique_ptr<CoreModules> m_coreModules;
   std::unique_ptr<Modules> m_modules;
   std::unique_ptr<LegacyModules> m_legacy;
+  std::unique_ptr<AppMenus> m_appMenus;
   bool m_isGui;
   bool m_isShell;
+#if !LAF_SKIA
+  bool m_showCliOnlyWarning = false;
+#endif
 #ifdef ENABLE_STEAM
   bool m_inAppSteam = true;
 #endif

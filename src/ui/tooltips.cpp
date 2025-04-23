@@ -83,7 +83,7 @@ bool TooltipManager::onProcessMessage(Message* msg)
           m_timer->start();
         }
       }
-      break;
+      return false;
     }
 
     case kKeyDownMessage:

@@ -21,7 +21,6 @@
 #include "doc/brush.h"
 #include "doc/color.h"
 #include "doc/image.h"
-#include "doc/image_impl.h"
 
 #include "tinyxml2.h"
 
@@ -182,20 +181,7 @@ void save_xml_image(XMLElement* imageElem, const Image* image)
 
 AppBrushes::AppBrushes()
 {
-  m_standard.push_back(BrushRef(new Brush(kCircleBrushType, 7, 0)));
-  m_standard.push_back(BrushRef(new Brush(kSquareBrushType, 7, 0)));
-  m_standard.push_back(BrushRef(new Brush(kLineBrushType, 7, 44)));
-
-  std::string fn = userBrushesFilename();
-  if (base::is_file(fn)) {
-    try {
-      load(fn);
-    }
-    catch (const std::exception& ex) {
-      LOG(ERROR, "BRSH: Error loading user brushes from '%s': %s\n", fn.c_str(), ex.what());
-    }
-  }
-  m_userBrushesFilename = fn;
+  init();
 }
 
 AppBrushes::~AppBrushes()
@@ -212,6 +198,13 @@ AppBrushes::~AppBrushes()
           ex.what());
     }
   }
+}
+
+void AppBrushes::reset()
+{
+  m_standard.clear();
+  init();
+  ItemsChange();
 }
 
 AppBrushes::slot_id AppBrushes::addBrushSlot(const BrushSlot& brush)
@@ -303,6 +296,25 @@ bool AppBrushes::isBrushSlotLocked(slot_id slot) const
 
 static const int kBrushFlags = int(BrushSlot::Flags::BrushType) | int(BrushSlot::Flags::BrushSize) |
                                int(BrushSlot::Flags::BrushAngle);
+
+void AppBrushes::init()
+{
+  m_standard.resize(3);
+  m_standard[0] = BrushRef(new Brush(kCircleBrushType, 7, 0));
+  m_standard[1] = BrushRef(new Brush(kSquareBrushType, 7, 0));
+  m_standard[2] = BrushRef(new Brush(kLineBrushType, 7, 44));
+
+  const std::string fn = userBrushesFilename();
+  if (base::is_file(fn)) {
+    try {
+      load(fn);
+    }
+    catch (const std::exception& ex) {
+      LOG(ERROR, "BRSH: Error loading user brushes from '%s': %s\n", fn.c_str(), ex.what());
+    }
+  }
+  m_userBrushesFilename = fn;
+}
 
 void AppBrushes::load(const std::string& filename)
 {

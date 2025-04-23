@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2023  Igara Studio SA
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -43,6 +44,8 @@ protected:
   virtual size_t onMemSize() const;
 
 private:
+  // TODO I think we could just remove this field (but we'll need to
+  //      include the Context* in all onEvent() member functions)
   Context* m_ctx;
 #if _DEBUG
   enum class State { NotExecuted, Executed, Undone, Redone };

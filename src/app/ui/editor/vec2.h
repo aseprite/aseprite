@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,7 +13,7 @@
 
 namespace app {
 
-using vec2 = base::Vector2d<double>;
+using vec2 = base::Vector2d<float>;
 
 template<typename T>
 inline const vec2 to_vec2(const gfx::PointT<T>& pt)

@@ -140,6 +140,7 @@ private:
 
 void push_app_events(lua_State* L);
 void push_app_theme(lua_State* L, int uiscale = 1);
+void push_app_clipboard(lua_State* L);
 int push_image_iterator_function(lua_State* L, const doc::Image* image, int extraArgIndex);
 void push_brush(lua_State* L, const doc::BrushRef& brush);
 void push_cel_image(lua_State* L, doc::Cel* cel);
@@ -194,7 +195,7 @@ doc::Image* get_image_from_arg(lua_State* L, int index);
 doc::Cel* get_image_cel_from_arg(lua_State* L, int index);
 doc::Tileset* get_image_tileset_from_arg(lua_State* L, int index);
 doc::frame_t get_frame_number_from_arg(lua_State* L, int index);
-const doc::Mask* get_mask_from_arg(lua_State* L, int index);
+doc::Mask* get_mask_from_arg(lua_State* L, int index);
 app::tools::Tool* get_tool_from_arg(lua_State* L, int index);
 doc::BrushRef get_brush_from_arg(lua_State* L, int index);
 doc::Tileset* get_tile_index_from_arg(lua_State* L, int index, doc::tile_index& ts);

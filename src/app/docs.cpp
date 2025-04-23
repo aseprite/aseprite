@@ -39,6 +39,8 @@ Doc* Docs::add(Doc* doc)
     return doc;
   }
 
+  notify_observers(&DocsObserver::onBeforeAddDocument, doc);
+
   m_docs.insert(begin(), doc);
 
   notify_observers(&DocsObserver::onAddDocument, doc);
@@ -60,6 +62,8 @@ void Docs::remove(Doc* doc)
   iterator it = std::find(begin(), end(), doc);
   if (it == end()) // Already removed.
     return;
+
+  notify_observers(&DocsObserver::onBeforeRemoveDocument, doc);
 
   m_docs.erase(it);
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2025  Igara Studio S.A.
 // Copyright (C) 2015  David Capello
 //
 // This program is distributed under the terms of
@@ -11,10 +11,19 @@
 
 #include "app/pref/preferences.h"
 #include "app/tools/stroke.h"
+#include "doc/brush.h"
 
 namespace app { namespace tools {
 
 class ToolLoop;
+
+static inline bool does_symmetry_rotate_image(doc::SymmetryIndex symmetry)
+{
+  return symmetry == doc::SymmetryIndex::ROTATED_90 ||
+         symmetry == doc::SymmetryIndex::ROTATED_270 ||
+         symmetry == doc::SymmetryIndex::ROT_FLIP_90 ||
+         symmetry == doc::SymmetryIndex::ROT_FLIP_270;
+}
 
 class Symmetry {
 public:
@@ -29,11 +38,14 @@ public:
 
   gen::SymmetryMode mode() const { return m_symmetryMode; }
 
+  static gen::SymmetryMode resolveMode(gen::SymmetryMode mode);
+
 private:
   void calculateSymmetricalStroke(const Stroke& refStroke,
                                   Stroke& stroke,
                                   ToolLoop* loop,
-                                  gen::SymmetryMode symmetryMode);
+                                  const doc::SymmetryIndex symmetry,
+                                  const bool isDoubleDiagonalSymmetry = false);
 
   gen::SymmetryMode m_symmetryMode;
   double m_x, m_y;

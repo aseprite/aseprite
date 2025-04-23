@@ -8,12 +8,12 @@
   #include "config.h"
 #endif
 
-#include "app/script/values.h"
-
 #include "app/pref/preferences.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "app/script/values.h"
+#include "app/site.h"
 #include "app/tools/dynamics.h"
 #include "doc/frame.h"
 #include "doc/layer.h"
@@ -369,6 +369,7 @@ FOR_ENUM(app::TilesetMode)
 FOR_ENUM(app::gen::BgType)
 FOR_ENUM(app::gen::BrushPreview)
 FOR_ENUM(app::gen::BrushType)
+FOR_ENUM(app::gen::CelContentFormat)
 FOR_ENUM(app::gen::ColorProfileBehavior)
 FOR_ENUM(app::gen::Downsampling)
 FOR_ENUM(app::gen::EyedropperChannel)

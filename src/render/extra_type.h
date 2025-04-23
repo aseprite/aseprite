@@ -23,7 +23,7 @@ enum class ExtraType {
   COMPOSITE,
 
   // Composite the current cel two times (don't use the extral cel),
-  // but the second time using the extral blend mode.
+  // but the second time using the extra cel blend mode.
   OVER_COMPOSITE,
 };
 

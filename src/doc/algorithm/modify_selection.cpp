@@ -11,7 +11,7 @@
 
 #include "doc/algorithm/modify_selection.h"
 
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/mask.h"
 #include "doc/primitives.h"
 

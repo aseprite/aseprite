@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -62,7 +62,7 @@ void MaskContentCommand::onExecute(Context* context)
     gfx::Color color;
     if (writer.layer()->isBackground()) {
       ColorPicker picker;
-      picker.pickColor(*writer.site(),
+      picker.pickColor(writer.site(),
                        gfx::PointF(0.0, 0.0),
                        Editor::activeEditor()->projection(),
                        ColorPicker::FromComposition);

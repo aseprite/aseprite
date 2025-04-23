@@ -13,7 +13,6 @@
 #include "app/commands/command.h"
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/commands/filters/filter_window.h"
-#include "app/commands/filters/filter_worker.h"
 #include "app/commands/new_params.h"
 #include "app/context.h"
 #include "app/i18n/strings.h"
@@ -118,7 +117,7 @@ void BrightnessContrastCommand::onExecute(Context* context)
     window.doModal();
   }
   else {
-    start_filter_worker(&filterMgr);
+    filterMgr.startWorker();
   }
 }
 

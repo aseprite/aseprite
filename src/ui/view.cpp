@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -14,6 +14,7 @@
 #include "gfx/size.h"
 #include "ui/display.h"
 #include "ui/intern.h"
+#include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/move_region.h"
 #include "ui/resize_event.h"
@@ -144,6 +145,15 @@ void View::updateView(const bool restoreScrollPos)
   Widget* vw = UI_FIRST_WIDGET(m_viewport.children());
   Point scroll = viewScroll();
 
+  // Get current mouse capture just in case if one of the scroll bars
+  // have the mouse captured, which means that while we were scrolling
+  // this updateView() was called/the viewport area changed (e.g. if
+  // an item thumbnail was generated when it was displayed and the
+  // viewport now is bigger).
+  Manager* man = manager();
+  Widget* mouseCapture = (man ? man->getCapture() : nullptr);
+  ASSERT(man);
+
   // Set minimum (remove scroll-bars)
   setScrollableSize(Size(0, 0), false);
 
@@ -172,6 +182,11 @@ void View::updateView(const bool restoreScrollPos)
   }
 
   invalidate();
+
+  // Restore the mouse capture if it changed, which means that a
+  // scroll bar (when it was temporarily removed) lost the capture.
+  if (man && man->getCapture() != mouseCapture && mouseCapture->isVisible())
+    man->setCapture(mouseCapture, true); // Force the capture
 }
 
 Viewport* View::viewport()
@@ -179,7 +194,7 @@ Viewport* View::viewport()
   return &m_viewport;
 }
 
-Rect View::viewportBounds()
+Rect View::viewportBounds() const
 {
   return m_viewport.bounds() - m_viewport.border();
 }
@@ -192,6 +207,27 @@ View* View::getView(const Widget* widget)
     return static_cast<View*>(widget->parent()->parent());
   else
     return 0;
+}
+
+void View::scrollByMessage(const Widget* widget, Message* message, std::optional<int> multiplier)
+{
+  View* view = View::getView(widget);
+  if (!view)
+    return;
+
+  auto mouseMsg = static_cast<MouseMessage*>(message);
+
+  if (!multiplier.has_value())
+    multiplier = widget->textHeight() * 3;
+
+  gfx::Point scroll = view->viewScroll();
+
+  if (mouseMsg->preciseWheel())
+    scroll += mouseMsg->wheelDelta();
+  else
+    scroll += mouseMsg->wheelDelta() * (*multiplier);
+
+  view->setViewScroll(scroll);
 }
 
 bool View::onProcessMessage(Message* msg)
@@ -300,7 +336,7 @@ void View::onSetViewScroll(const gfx::Point& pt)
   // scrolled region (which is inverse to the scroll position
   // delta/movement).
   const Point delta = oldScroll - newScroll;
-  {
+  if (display && !display->nativeWindow()->gpuAcceleration()) {
     // The movable region includes the given "validRegion"
     // intersecting itself when it's in the new position, so we don't
     // overlap regions outside the "validRegion".

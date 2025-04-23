@@ -1,11 +1,12 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
 // #define REPORT_SIGNALS
+// #define PAINT_BASELINE 1
 
 #ifdef HAVE_CONFIG_H
   #include "config.h"
@@ -17,11 +18,14 @@
 #include "base/memory.h"
 #include "base/string.h"
 #include "base/utf8_decode.h"
-#include "os/font.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "os/window.h"
+#include "text/font.h"
+#include "text/font_metrics.h"
+#include "text/font_mgr.h"
 #include "ui/app_state.h"
+#include "ui/drag_event.h"
 #include "ui/init_theme_event.h"
 #include "ui/intern.h"
 #include "ui/layout_io.h"
@@ -31,11 +35,17 @@
 #include "ui/paint_event.h"
 #include "ui/resize_event.h"
 #include "ui/save_layout_event.h"
+#include "ui/scale.h"
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/view.h"
 #include "ui/window.h"
+
+#if LAF_SKIA && PAINT_BASELINE
+  #include "include/core/SkPathEffect.h"
+  #include "include/effects/SkDashPathEffect.h"
+#endif
 
 #include <algorithm>
 #include <cctype>
@@ -88,7 +98,9 @@ Widget::~Widget()
   // for the parent that will be deleted too.
   Manager* manager = this->manager();
   ASSERT(manager);
-  if (manager) {
+  if (manager &&
+      // Don't call Manager functions when we're just destroying it.
+      manager != this) {
     manager->freeWidget(this);
     manager->removeMessagesFor(this);
     manager->removeMessageFilterFor(this);
@@ -116,6 +128,10 @@ void Widget::deferDelete()
 
 void Widget::initTheme()
 {
+  // This can be true if we've destroyed the user defined theme.
+  if (!m_theme)
+    return;
+
   InitThemeEvent ev(this, m_theme);
   onInitTheme(ev);
 }
@@ -158,15 +174,28 @@ void Widget::setTextQuiet(const std::string& text)
 {
   assert_ui_thread();
 
+  // Reset blob
+  if (m_text != text)
+    m_blob.reset();
+
   m_text = text;
   enableFlags(HAS_TEXT);
 }
 
-os::Font* Widget::font() const
+const text::FontRef& Widget::font() const
 {
   if (!m_font && m_theme)
-    m_font = AddRef(m_theme->getWidgetFont(this));
-  return m_font.get();
+    m_font = m_theme->getWidgetFont(this);
+  return m_font;
+}
+
+void Widget::setFont(const text::FontRef& font)
+{
+  if (m_font != font) {
+    m_font = font;
+    m_blob.reset();
+    onSetFont();
+  }
 }
 
 void Widget::setBgColor(gfx::Color color)
@@ -202,14 +231,14 @@ void Widget::setStyle(Style* style)
   assert_ui_thread();
   ASSERT(style);
   if (!style)
-    style = Theme::getDefaultStyle();
+    style = Theme::EmptyStyle();
   m_style = style;
   m_border = m_theme->calcBorder(this, style);
   m_bgColor = m_theme->calcBgColor(this, style);
   m_minSize = m_theme->calcMinSize(this, style);
   m_maxSize = m_theme->calcMaxSize(this, style);
   if (style->font())
-    m_font = AddRef(style->font());
+    m_font = style->font();
 }
 
 // ===============================================================
@@ -920,14 +949,25 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
   region &= Region(cpos);
 }
 
+text::TextBlobRef Widget::textBlob() const
+{
+  if (!m_blob && !m_text.empty())
+    m_blob = onMakeTextBlob();
+  return m_blob;
+}
+
 int Widget::textWidth() const
 {
-  return Graphics::measureUITextLength(text().c_str(), font());
+  if (auto blob = textBlob())
+    return std::ceil(blob->bounds().w);
+  return 0;
 }
 
 int Widget::textHeight() const
 {
-  return font()->height();
+  text::FontMetrics metrics;
+  font()->metrics(&metrics);
+  return metrics.descent - metrics.ascent;
 }
 
 void Widget::getTextIconInfo(gfx::Rect* box,
@@ -982,7 +1022,7 @@ void Widget::getTextIconInfo(gfx::Rect* box,
   if (align() & RIGHT)
     box_x = bounds.x2() - box_w - border().right();
   else if (align() & CENTER) {
-    box_x = CALC_FOR_CENTER(bounds.x + border().top(), bounds.w - border().width(), box_w);
+    box_x = guiscaled_center(bounds.x + border().top(), bounds.w - border().width(), box_w);
   }
   else
     box_x = bounds.x + border().left();
@@ -990,7 +1030,7 @@ void Widget::getTextIconInfo(gfx::Rect* box,
   if (align() & BOTTOM)
     box_y = bounds.y2() - box_h - border().bottom();
   else if (align() & MIDDLE) {
-    box_y = CALC_FOR_CENTER(bounds.y + border().left(), bounds.h - border().height(), box_h);
+    box_y = guiscaled_center(bounds.y + border().left(), bounds.h - border().height(), box_h);
   }
   else
     box_y = bounds.y + border().top();
@@ -1003,8 +1043,8 @@ void Widget::getTextIconInfo(gfx::Rect* box,
       icon_x = box_x + box_w - icon_w;
     }
     else if (icon_align & CENTER) {
-      text_x = CALC_FOR_CENTER(box_x, box_w, text_w);
-      icon_x = CALC_FOR_CENTER(box_x, box_w, icon_w);
+      text_x = guiscaled_center(box_x, box_w, text_w);
+      icon_x = guiscaled_center(box_x, box_w, icon_w);
     }
     else {
       text_x = box_x + box_w - text_w;
@@ -1017,8 +1057,8 @@ void Widget::getTextIconInfo(gfx::Rect* box,
       icon_y = box_y + box_h - icon_h;
     }
     else if (icon_align & MIDDLE) {
-      text_y = CALC_FOR_CENTER(box_y, box_h, text_h);
-      icon_y = CALC_FOR_CENTER(box_y, box_h, icon_h);
+      text_y = guiscaled_center(box_y, box_h, text_h);
+      icon_y = guiscaled_center(box_y, box_h, icon_h);
     }
     else {
       text_y = box_y + box_h - text_h;
@@ -1035,6 +1075,11 @@ void Widget::getTextIconInfo(gfx::Rect* box,
   SETRECT(box);
   SETRECT(text);
   SETRECT(icon);
+}
+
+float Widget::textBaseline() const
+{
+  return onGetTextBaseline();
 }
 
 void Widget::setMinSize(const gfx::Size& sz)
@@ -1163,7 +1208,7 @@ void Widget::paint(Graphics* graphics, const gfx::Region& drawRegion, const bool
                        base::AddRef(graphics->getInternalSurface()),
                        widget->bounds().x,
                        widget->bounds().y);
-    graphics2.setFont(AddRef(widget->font()));
+    graphics2.setFont(widget->font());
 
     for (const gfx::Rect& rc : region) {
       IntersectClip clip(&graphics2, Rect(rc).offset(-widget->bounds().x, -widget->bounds().y));
@@ -1227,6 +1272,22 @@ bool Widget::paintEvent(Graphics* graphics, const bool isBg)
   PaintEvent ev(this, graphics);
   ev.setTransparentBg(isBg);
   onPaint(ev); // Fire onPaint event
+
+#if LAF_SKIA && PAINT_BASELINE
+  if (hasText()) {
+    // Paint baseline
+    float baseline = textBaseline();
+    Paint paint;
+    paint.color(gfx::rgba(0, 0, 0, 128));
+    paint.blendMode(os::BlendMode::SrcOver);
+    const SkScalar intervals[] = { 2.0f, 2.0f };
+    paint.skPaint().setPathEffect(SkDashPathEffect::Make(intervals, 2, 0.0f));
+    graphics->drawLine(gfx::PointF(clientBounds().x, baseline),
+                       gfx::PointF(clientBounds().x2(), baseline),
+                       paint);
+  }
+#endif
+
   return ev.isPainted();
 }
 
@@ -1306,12 +1367,14 @@ GraphicsPtr Widget::getGraphics(const gfx::Rect& clip)
 {
   GraphicsPtr graphics;
   Display* display = this->display();
-  os::SurfaceRef dstSurface = AddRef(display->surface());
+
+  // We draw widgets in the back layer by default.
+  os::SurfaceRef dstSurface = display->backLayer()->surface();
 
   // In case of double-buffering, we need to create the temporary
   // buffer only if the default surface is the screen.
   if (isDoubleBuffered() && dstSurface->isDirectToScreen()) {
-    os::SurfaceRef surface = os::instance()->makeSurface(clip.w, clip.h);
+    os::SurfaceRef surface = os::System::instance()->makeSurface(clip.w, clip.h);
     graphics.reset(new Graphics(display, surface, -clip.x, -clip.y),
                    DeleteGraphicsAndSurface(clip, surface, dstSurface));
   }
@@ -1320,7 +1383,7 @@ GraphicsPtr Widget::getGraphics(const gfx::Rect& clip)
     graphics.reset(new Graphics(display, dstSurface, bounds().x, bounds().y));
   }
 
-  graphics->setFont(AddRef(font()));
+  graphics->setFont(font());
   return graphics;
 }
 
@@ -1367,15 +1430,20 @@ Size Widget::sizeHint()
 {
   if (m_sizeHint)
     return *m_sizeHint;
-  else {
-    SizeHintEvent ev(this, Size(0, 0));
+
+  SizeHintEvent ev(this, Size(0, 0));
+
+  // Call onSizeHint() only when the theme is set, as generally
+  // onSizeHint() will require some theme/font information to
+  // calculate the best size. The theme can be nullptr only in extreme
+  // cases, i.e. when we're closing a unit test.
+  if (m_theme)
     onSizeHint(ev);
 
-    Size sz(ev.sizeHint());
-    sz.w = std::clamp(sz.w, m_minSize.w, m_maxSize.w);
-    sz.h = std::clamp(sz.h, m_minSize.h, m_maxSize.h);
-    return sz;
-  }
+  Size sz(ev.sizeHint());
+  sz.w = std::clamp(sz.w, m_minSize.w, m_maxSize.w);
+  sz.h = std::clamp(sz.h, m_minSize.h, m_maxSize.h);
+  return sz;
 }
 
 /**
@@ -1469,22 +1537,15 @@ void Widget::releaseMouse()
   }
 }
 
-bool Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
+bool Widget::offerCapture(ui::MouseMessage* mouseMsg, const WidgetType widgetType)
 {
   if (hasCapture()) {
     const gfx::Point screenPos = mouseMsg->display()->nativeWindow()->pointToScreen(
       mouseMsg->position());
-    auto man = manager();
-    Widget* pick = (man ? man->pickFromScreenPos(screenPos) : nullptr);
-    if (pick && pick != this && pick->type() == widget_type) {
-      releaseMouse();
-
-      MouseMessage* mouseMsg2 = new MouseMessage(kMouseDownMessage,
-                                                 *mouseMsg,
-                                                 mouseMsg->positionForDisplay(pick->display()));
-      mouseMsg2->setDisplay(pick->display());
-      mouseMsg2->setRecipient(pick);
-      man->enqueueMessage(mouseMsg2);
+    Manager* mgr = manager();
+    Widget* pick = (mgr ? mgr->pickFromScreenPos(screenPos) : nullptr);
+    if (pick && pick != this && pick->type() == widgetType) {
+      mgr->transferAsMouseDownMessage(this, pick, mouseMsg);
       return true;
     }
   }
@@ -1586,6 +1647,10 @@ bool Widget::onProcessMessage(Message* msg)
       else
         break;
 
+    case kMouseEnterMessage: enableFlags(HAS_MOUSE); break;
+
+    case kMouseLeaveMessage: disableFlags(HAS_MOUSE); break;
+
     case kSetCursorMessage:
       // Propagate the message to the parent.
       if (parent())
@@ -1643,6 +1708,7 @@ void Widget::onInvalidateRegion(const Region& region)
 
 void Widget::onSizeHint(SizeHintEvent& ev)
 {
+  ASSERT(m_theme);
   if (m_style) {
     ev.setSizeHint(m_theme->calcSizeHint(this, style()));
   }
@@ -1673,7 +1739,7 @@ void Widget::onResize(ResizeEvent& ev)
 
 void Widget::onPaint(PaintEvent& ev)
 {
-  if (m_style)
+  if (m_style && m_theme)
     m_theme->paintWidget(ev.graphics(), this, style(), clientBounds());
 }
 
@@ -1684,8 +1750,10 @@ void Widget::onBroadcastMouseMessage(const gfx::Point& screenPos, WidgetsList& t
 
 void Widget::onInitTheme(InitThemeEvent& ev)
 {
-  // Reset cached font
-  m_font = nullptr;
+  // Reset cached font and TextBlob
+  m_font.reset();
+  m_blob.reset();
+
   // Create a copy of the children list and iterate it, just in case a
   // initTheme() modifies this list (e.g. this can happen in some
   // strange cases with viewports, where scrollbars are added/removed
@@ -1725,6 +1793,11 @@ void Widget::onSelect(bool selected)
   // Do nothing
 }
 
+void Widget::onSetFont()
+{
+  invalidate();
+}
+
 void Widget::onSetText()
 {
   invalidate();
@@ -1743,6 +1816,80 @@ int Widget::onGetTextInt() const
 double Widget::onGetTextDouble() const
 {
   return std::strtod(m_text.c_str(), nullptr);
+}
+
+text::TextBlobRef Widget::onMakeTextBlob() const
+{
+  return text::TextBlob::MakeWithShaper(theme()->fontMgr(),
+                                        font(),
+                                        text(),
+                                        nullptr,
+                                        onGetTextShaperFeatures());
+}
+
+text::ShaperFeatures Widget::onGetTextShaperFeatures() const
+{
+  return text::ShaperFeatures();
+}
+
+float Widget::onGetTextBaseline() const
+{
+  text::FontMetrics metrics;
+  font()->metrics(&metrics);
+  // Here we only use the descent+ascent to measure the text height,
+  // without the metrics.leading part (which is the used to separate
+  // text lines in a paragraph, but here'd make widgets too big)
+  const float textHeight = metrics.descent - metrics.ascent;
+  const gfx::Rect rc = clientChildrenBounds();
+  return guiscaled_center(rc.y, rc.h, textHeight) - metrics.ascent;
+}
+
+void Widget::onDragEnter(DragEvent& e)
+{
+#ifdef _DEBUG
+  LOG(VERBOSE,
+      "UI: [id=%s, type=%d]: onDragEnter(), position: (%d, %d)\n",
+      id().c_str(),
+      type(),
+      e.position().x,
+      e.position().y);
+#endif
+}
+
+void Widget::onDragLeave(DragEvent& e)
+{
+#ifdef _DEBUG
+  LOG(VERBOSE,
+      "UI: [id=%s, type=%d]: onDragLeave(), position: (%d, %d)\n",
+      id().c_str(),
+      type(),
+      e.position().x,
+      e.position().y);
+#endif
+}
+
+void Widget::onDrag(DragEvent& e)
+{
+#ifdef _DEBUG
+  LOG(VERBOSE,
+      "UI: [id=%s, type=%d]: onDrag(), position: (%d, %d)\n",
+      id().c_str(),
+      type(),
+      e.position().x,
+      e.position().y);
+#endif
+}
+
+void Widget::onDrop(DragEvent& e)
+{
+#ifdef _DEBUG
+  LOG(VERBOSE,
+      "UI: [id=%s, type=%d]: onDrop(), position: (%d, %d)\n",
+      id().c_str(),
+      type(),
+      e.position().x,
+      e.position().y);
+#endif
 }
 
 void Widget::offsetWidgets(int dx, int dy)

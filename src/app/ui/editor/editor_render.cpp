@@ -25,6 +25,7 @@ EditorRender::EditorRender()
   : m_renderer(std::make_unique<SimpleRenderer>())
 {
   m_renderer->setNewBlendMethod(Preferences::instance().experimental.newBlend());
+  m_renderer->setComposeGroups(Preferences::instance().experimental.composeGroups());
 }
 
 EditorRender::~EditorRender()
@@ -68,6 +69,11 @@ void EditorRender::setNonactiveLayersOpacity(const int opacity)
 void EditorRender::setNewBlendMethod(const bool newBlend)
 {
   m_renderer->setNewBlendMethod(newBlend);
+}
+
+void EditorRender::setComposeGroups(const bool composeGroups)
+{
+  m_renderer->setComposeGroups(composeGroups);
 }
 
 void EditorRender::setProjection(const render::Projection& projection)

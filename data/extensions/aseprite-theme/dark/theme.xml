@@ -367,9 +367,9 @@
         <part id="icon_white" x="64" y="256" w="16" h="16" />
         <part id="icon_transparent" x="80" y="256" w="16" h="16" />
         <part id="color_wheel_indicator" x="48" y="192" w="4" h="4" />
-        <part id="no_symmetry" x="144" y="240" w="13" h="13" />
-        <part id="horizontal_symmetry" x="160" y="240" w="13" h="13" />
-        <part id="vertical_symmetry" x="176" y="240" w="13" h="13" />
+        <part id="no_symmetry" x="128" y="240" w="13" h="13" />
+        <part id="horizontal_symmetry" x="144" y="240" w="13" h="13" />
+        <part id="vertical_symmetry" x="160" y="240" w="13" h="13" />
         <part id="icon_arrow_down" x="144" y="256" w="7" h="4" />
         <part id="icon_close" x="152" y="256" w="7" h="7" />
         <part id="icon_search" x="160" y="256" w="8" h="8" />
@@ -414,6 +414,7 @@
         <part id="tool_filled_ellipse" x="192" y="80" w="16" h="16" />
         <part id="tool_contour" x="144" y="96" w="16" h="16" />
         <part id="tool_polygon" x="160" y="96" w="16" h="16" />
+        <part id="tool_text" x="144" y="112" w="16" h="16" />
         <part id="tool_blur" x="160" y="112" w="16" h="16" />
         <part id="tool_jumble" x="176" y="112" w="16" h="16" />
         <part id="tool_configuration" x="144" y="128" w="16" h="16" />
@@ -453,6 +454,8 @@
         <part id="multi_win_icon" x="104" y="256" w="8" h="7" />
         <part id="spin_up" x="128" y="256" w="5" h="3" />
         <part id="spin_down" x="128" y="259" w="5" h="3" />
+        <part id="right_diagonal_symmetry" x="176" y="240" w="13" h="13" />
+        <part id="left_diagonal_symmetry" x="192" y="240" w="13" h="13" />
     </parts>
     <styles>
         <style id="box" />
@@ -482,25 +485,25 @@
             <icon part="window_close_icon" color="button_hot_text" state="mouse" />
             <icon part="window_close_icon" color="button_selected_text" state="selected" />
         </style>
-        <style id="window_center_button" extends="window_button" margin-top="3" margin-right="2">
+        <style id="window_center_button" extends="window_button" margin-top="3" margin-right="1">
             <newlayer />
             <icon part="window_center_icon" color="button_normal_text" />
             <icon part="window_center_icon" color="button_hot_text" state="mouse" />
             <icon part="window_center_icon" color="button_selected_text" state="selected" />
         </style>
-        <style id="window_play_button" extends="window_button" margin-top="3" margin-right="2">
+        <style id="window_play_button" extends="window_button" margin-top="3" margin-right="1">
             <newlayer />
             <icon part="window_play_icon" color="button_normal_text" />
             <icon part="window_play_icon" color="button_hot_text" state="mouse" />
             <icon part="window_play_icon" color="button_selected_text" state="selected" />
         </style>
-        <style id="window_stop_button" extends="window_button" margin-top="3" margin-right="2">
+        <style id="window_stop_button" extends="window_button" margin-top="3" margin-right="1">
             <newlayer />
             <icon part="window_stop_icon" color="button_normal_text" />
             <icon part="window_stop_icon" color="button_hot_text" state="mouse" />
             <icon part="window_stop_icon" color="button_selected_text" state="selected" />
         </style>
-        <style id="window_help_button" extends="window_button" margin-top="3" margin-right="2">
+        <style id="window_help_button" extends="window_button" margin-top="3" margin-right="1">
             <newlayer />
             <icon part="window_help_icon" color="button_normal_text" />
             <icon part="window_help_icon" color="button_hot_text" state="mouse" />
@@ -547,10 +550,13 @@
             <text color="disabled" align="left" state="disabled" />
         </style>
         <style id="mini_label" extends="label" font="mini" />
+        <style id="warning_label" extends="label">
+            <icon part="warning_box" align="right" />
+        </style>
         <style id="list_header_label" padding="2">
             <text color="text" align="left" x="2" />
         </style>
-        <style id="link">
+        <style id="link" padding="1">
             <text color="link_text" align="left" />
             <text color="link_hover" align="left" state="mouse" />
         </style>
@@ -703,7 +709,7 @@
         <style id="workspace_splitter">
             <background color="workspace" />
         </style>
-        <style id="horizontal_separator" border-left="2" border-top="4" border-right="2" border-bottom="0">
+        <style id="horizontal_separator" border="2">
             <background color="window_face" />
             <background-border part="separator_horz" align="middle" />
             <text color="separator_label" x="4" align="left middle" />

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2023  Igara Studio S.A.
+// Copyright (c) 2023-2025  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,7 +13,7 @@
 #include "doc/primitives.h"
 
 #include "doc/algorithm/random_image.h"
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/image_ref.h"
 #include "doc/primitives_fast.h"
 
@@ -43,13 +43,13 @@ TYPED_TEST(Primitives, IsSameImage)
   std::uniform_int_distribution<int> dist(0, 256);
 
 #if FULL_TEST
+  for (int h = 2; h < 207; h += 5) {
+    for (int w = 2; w < 207; w += 5) {
+#else
   int w = 200;
   int h = 200;
   {
     {
-#else
-  for (int h = 2; h < 207; h += 5) {
-    for (int w = 2; w < 207; w += 5) {
 #endif
       ImageRef a(Image::create(ImageTraits::pixel_format, w, h));
       doc::algorithm::random_image(a.get());

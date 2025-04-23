@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -28,10 +28,12 @@
 #include "app/ui/workspace.h"
 #include "base/mem_utils.h"
 #include "fmt/format.h"
+#include "text/font_metrics.h"
 #include "ui/init_theme_event.h"
 #include "ui/listitem.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
+#include "ui/scale.h"
 #include "ui/size_hint_event.h"
 #include "ui/view.h"
 #include "undo/undo_state.h"
@@ -168,18 +170,7 @@ public:
         case ui::kMouseUpMessage:    releaseMouse(); break;
 
         case ui::kMouseWheelMessage: {
-          auto view = ui::View::getView(this);
-          if (view) {
-            auto mouseMsg = static_cast<ui::MouseMessage*>(msg);
-            gfx::Point scroll = view->viewScroll();
-
-            if (mouseMsg->preciseWheel())
-              scroll += mouseMsg->wheelDelta();
-            else
-              scroll += mouseMsg->wheelDelta() * 3 * (m_itemHeight + 4 * ui::guiscale());
-
-            view->setViewScroll(scroll);
-          }
+          ui::View::scrollByMessage(this, msg, 3 * m_itemHeight + 4 * ui::guiscale());
           break;
         }
 
@@ -311,9 +302,14 @@ public:
         style = theme->styles.undoSavedItem();
       }
 
+      text::FontMetrics metrics;
+      font()->metrics(&metrics);
+      const float lineHeight = metrics.descent - metrics.ascent;
+
       ui::PaintWidgetPartInfo info;
       info.text = &itemText;
       info.styleFlags = (selected ? ui::Style::Layer::kSelected : 0);
+      info.baseline = ui::guiscaled_center(itemBounds.y, itemBounds.h, lineHeight) - metrics.ascent;
       theme->paintWidgetPart(g, style, itemBounds, info);
     }
 

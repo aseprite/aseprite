@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -41,10 +41,9 @@ void BM_ScrollEditor(benchmark::State& state)
   editor->setZoom(render::Zoom(zNum, zDen));
 
   auto mgr = ui::Manager::getDefault();
+  mgr->dontWaitEvents();
 
-  ui::Timer timer(1);
-  timer.start();
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     editor->setEditorScroll(gfx::Point(0, 0));
     mgr->generateMessages();
     mgr->dispatchMessages();
@@ -70,10 +69,9 @@ void BM_ZoomEditor(benchmark::State& state)
   editor->setScrollToCenter();
 
   auto mgr = ui::Manager::getDefault();
+  mgr->dontWaitEvents();
 
-  ui::Timer timer(1);
-  timer.start();
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     editor->setZoom(render::Zoom(4, 1));
     editor->invalidate();
     mgr->generateMessages();
@@ -136,15 +134,16 @@ BENCHMARK(BM_ZoomEditor)
 
 int app_main(int argc, char* argv[])
 {
-  os::SystemRef system(os::make_system());
+  os::SystemRef system = os::System::make();
   App app;
   const char* argv2[] = { argv[0] };
-  app.initialize(AppOptions(1, { argv2 }));
+  app.initialize(AppOptions(1, argv2));
   app.mainWindow()->expandWindow(gfx::Size(400, 300));
 
-  ::benchmark::Initialize(&argc, argv);
-  int status = ::benchmark::RunSpecifiedBenchmarks();
+  benchmark::Initialize(&argc, argv);
+  benchmark::RunSpecifiedBenchmarks();
+  benchmark::Shutdown();
 
-  app.close();
-  return status;
+  app.run(false);
+  return 0;
 }

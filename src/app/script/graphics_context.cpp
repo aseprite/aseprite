@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2023  Igara Studio S.A.
+// Copyright (C) 2022-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,22 +20,67 @@
 #include "app/util/conversion_to_surface.h"
 #include "doc/cel.h"
 #include "doc/tileset.h"
-#include "os/draw_text.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "text/draw_text.h"
 
 #include <algorithm>
 
 namespace app { namespace script {
 
+void GraphicsContext::color(gfx::Color color)
+{
+  switch (m_formatHint) {
+    case doc::PixelFormat::IMAGE_GRAYSCALE:
+      // Underlying SkSurface's color type is kR8G8_unorm_SkColorType, then we
+      // must transform the color to set R to the gray level and G to the
+      // alpha level.
+      color = gfx::rgba(gfx::getr(color), gfx::geta(color), 0);
+      break;
+    case doc::PixelFormat::IMAGE_INDEXED: {
+      // Underlying SkSurface's color type is kAlpha_8_SkColorType, then we
+      // must transform the color to set Alpha to the corresponding index.
+      int i = get_current_palette()->findExactMatch(gfx::getr(color),
+                                                    gfx::getg(color),
+                                                    gfx::getb(color),
+                                                    gfx::geta(color),
+                                                    -1);
+      if (i == -1) {
+        i = get_current_palette()->findBestfit(gfx::getr(color),
+                                               gfx::getg(color),
+                                               gfx::getb(color),
+                                               gfx::geta(color),
+                                               -1);
+      }
+
+      color = gfx::rgba(0, 0, 0, i);
+      break;
+    }
+  }
+  m_paint.color(color);
+}
+
 void GraphicsContext::fillText(const std::string& text, int x, int y)
 {
-  os::draw_text(m_surface.get(), m_font.get(), text, m_paint.color(), 0, x, y, nullptr);
+  if (auto theme = skin::SkinTheme::instance()) {
+    text::draw_text(m_surface.get(),
+                    theme->fontMgr(),
+                    m_font,
+                    text,
+                    m_paint.color(),
+                    0,
+                    x,
+                    y,
+                    nullptr);
+  }
 }
 
 gfx::Size GraphicsContext::measureText(const std::string& text) const
 {
-  return os::draw_text(nullptr, m_font.get(), text, 0, 0, 0, 0, nullptr).size();
+  if (auto theme = skin::SkinTheme::instance()) {
+    return text::draw_text(nullptr, theme->fontMgr(), m_font, text, 0, 0, 0, 0, nullptr).size();
+  }
+  return gfx::Size();
 }
 
 void GraphicsContext::drawImage(const doc::Image* img, int x, int y)
@@ -65,7 +110,7 @@ void GraphicsContext::drawImage(const doc::Image* img,
 
   static os::SurfaceRef tmpSurface = nullptr;
   if (!tmpSurface || tmpSurface->width() < srcRc.w || tmpSurface->height() < srcRc.h) {
-    tmpSurface = os::instance()->makeRgbaSurface(
+    tmpSurface = os::System::instance()->makeRgbaSurface(
       std::max(srcRc.w, (tmpSurface ? tmpSurface->width() : 0)),
       std::max(srcRc.h, (tmpSurface ? tmpSurface->height() : 0)));
   }
@@ -422,7 +467,22 @@ int GraphicsContext_set_antialias(lua_State* L)
 int GraphicsContext_get_color(lua_State* L)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
-  push_obj(L, color_utils::color_from_ui(gc->color()));
+
+  const gfx::Color gcColor = gc->color();
+  app::Color color;
+  switch (gc->formatHint()) {
+    case IMAGE_GRAYSCALE:
+      color = app::Color::fromGray(gfx::getr(gcColor), gfx::geta(gcColor));
+      break;
+    case IMAGE_INDEXED: {
+      const int i = gfx::geta(gcColor);
+      color = app::Color::fromIndex(i);
+      break;
+    }
+    case IMAGE_RGB:
+    default:        color = color_utils::color_from_ui(gcColor);
+  }
+  push_obj(L, color);
   return 1;
 }
 

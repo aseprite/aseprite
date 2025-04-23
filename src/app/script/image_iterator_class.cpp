@@ -16,7 +16,6 @@
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
 #include "doc/image.h"
-#include "doc/image_impl.h"
 #include "doc/image_ref.h"
 #include "doc/primitives.h"
 

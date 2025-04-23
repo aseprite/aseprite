@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -38,9 +39,11 @@ int main(int argc, char* argv[])
 
 #ifdef TEST_GUI
   {
-    os::SystemRef system(os::make_system());
+    os::SystemRef system = os::System::make();
     ui::UISystem uiSystem;
     ui::Manager uiManager(nullptr);
+    ui::Theme uiTheme;
+    ui::set_theme(&uiTheme, 1);
 #endif
 
     exitcode = RUN_ALL_TESTS();

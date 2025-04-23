@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -25,13 +25,13 @@
 #include "app/ui/status_bar.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
-#include "app/util/range_utils.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"
 #include "ui/message.h"
+#include "view/cels.h"
 
 #include <algorithm>
 #include <cmath>
@@ -48,7 +48,7 @@ MovingCelCollect::MovingCelCollect(Editor* editor, Layer* layer) : m_mainCel(nul
     m_mainCel = layer->cel(editor->frame());
 
   Timeline* timeline = App::instance()->timeline();
-  DocRange range = timeline->range();
+  view::RealRange range = timeline->realRange();
   if (!range.enabled() || !timeline->isVisible()) {
     range.startRange(editor->layer(), editor->frame(), DocRange::kCels);
     range.endRange(editor->layer(), editor->frame());
@@ -69,7 +69,7 @@ MovingCelCollect::MovingCelCollect(Editor* editor, Layer* layer) : m_mainCel(nul
   }
 
   // Record start positions of all cels in selected range
-  for (Cel* cel : get_unique_cels_to_move_cel(editor->sprite(), range2)) {
+  for (Cel* cel : view::get_unique_cels_to_move_cel(editor->sprite(), range2)) {
     Layer* layer = cel->layer();
     ASSERT(layer);
 

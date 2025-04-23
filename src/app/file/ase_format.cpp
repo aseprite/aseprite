@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +9,7 @@
   #include "config.h"
 #endif
 
+#include "app/console.h"
 #include "app/context.h"
 #include "app/doc.h"
 #include "app/file/file.h"
@@ -19,6 +20,7 @@
 #include "base/file_handle.h"
 #include "base/fs.h"
 #include "base/mem_utils.h"
+#include "base/uuid.h"
 #include "dio/aseprite_common.h"
 #include "dio/aseprite_decoder.h"
 #include "dio/decode_delegate.h"
@@ -129,8 +131,9 @@ public:
 static void ase_file_prepare_header(FILE* f,
                                     dio::AsepriteHeader* header,
                                     const Sprite* sprite,
-                                    const frame_t firstFrame,
-                                    const frame_t totalFrames);
+                                    frame_t firstFrame,
+                                    frame_t totalFrames,
+                                    bool composeGroups);
 static void ase_file_write_header(FILE* f, dio::AsepriteHeader* header);
 static void ase_file_write_header_filesize(FILE* f, dio::AsepriteHeader* header);
 
@@ -139,6 +142,7 @@ static void ase_file_write_frame_header(FILE* f, dio::AsepriteFrameHeader* frame
 
 static void ase_file_write_layers(FILE* f,
                                   FileOp* fop,
+                                  const dio::AsepriteHeader* header,
                                   dio::AsepriteFrameHeader* frame_header,
                                   const dio::AsepriteExternalFiles& ext_files,
                                   const Layer* layer,
@@ -170,10 +174,12 @@ static void ase_file_write_palette_chunk(FILE* f,
                                          int from,
                                          int to);
 static void ase_file_write_layer_chunk(FILE* f,
+                                       const dio::AsepriteHeader* header,
                                        dio::AsepriteFrameHeader* frame_header,
                                        const Layer* layer,
                                        int child_level);
 static void ase_file_write_cel_chunk(FILE* f,
+                                     FileOp* fop,
                                      dio::AsepriteFrameHeader* frame_header,
                                      const Cel* cel,
                                      const LayerImage* layer,
@@ -250,6 +256,15 @@ private:
 };
 
 class AseFormat : public FileFormat {
+public:
+  class AsepriteOptions : public FormatOptions {
+  public:
+    AsepriteOptions() : celType(ASE_FILE_COMPRESSED_CEL) {}
+
+    int celType;
+  };
+
+private:
   const char* onGetName() const override { return "ase"; }
 
   void onGetExtensions(base::paths& exts) const override
@@ -265,7 +280,8 @@ class AseFormat : public FileFormat {
     return FILE_SUPPORT_LOAD | FILE_SUPPORT_SAVE | FILE_SUPPORT_RGB | FILE_SUPPORT_RGBA |
            FILE_SUPPORT_GRAY | FILE_SUPPORT_GRAYA | FILE_SUPPORT_INDEXED | FILE_SUPPORT_LAYERS |
            FILE_SUPPORT_FRAMES | FILE_SUPPORT_PALETTES | FILE_SUPPORT_TAGS |
-           FILE_SUPPORT_BIG_PALETTES | FILE_SUPPORT_PALETTE_WITH_ALPHA;
+           FILE_SUPPORT_BIG_PALETTES | FILE_SUPPORT_PALETTE_WITH_ALPHA |
+           FILE_SUPPORT_GET_FORMAT_OPTIONS;
   }
 
   bool onLoad(FileOp* fop) override;
@@ -273,6 +289,7 @@ class AseFormat : public FileFormat {
 #ifdef ENABLE_SAVE
   bool onSave(FileOp* fop) override;
 #endif
+  FormatOptionsPtr onAskUserForFormatOptions(FileOp* fop) override;
 };
 
 FileFormat* CreateAseFormat()
@@ -311,6 +328,13 @@ bool AseFormat::onLoad(FileOp* fop)
   // embedded grid bounds.
   if (!sprite->gridBounds().isEmpty())
     fop->setEmbeddedGridBounds();
+
+  // Setup the file-data.
+  if (!fop->formatOptions()) {
+    auto aseOptions = std::make_shared<AsepriteOptions>();
+    aseOptions->celType = decoder.celType();
+    fop->setLoadedFormatOptions(aseOptions);
+  }
 
   return true;
 }
@@ -354,7 +378,12 @@ bool AseFormat::onSave(FileOp* fop)
 
   // Write the header
   dio::AsepriteHeader header;
-  ase_file_prepare_header(f, &header, sprite, fop->roi().fromFrame(), fop->roi().frames());
+  ase_file_prepare_header(f,
+                          &header,
+                          sprite,
+                          fop->roi().fromFrame(),
+                          fop->roi().frames(),
+                          fop->config().composeGroups);
   ase_file_write_header(f, &header);
 
   bool require_new_palette_chunk = false;
@@ -431,7 +460,7 @@ bool AseFormat::onSave(FileOp* fop)
       // before layers so older version don't get confused by the new
       // user data chunks for tags.
       for (Layer* child : sprite->root()->layers())
-        ase_file_write_layers(f, fop, &frame_header, ext_files, child, 0);
+        ase_file_write_layers(f, fop, &header, &frame_header, ext_files, child, 0);
 
       // Write slice chunks
       ase_file_write_slice_chunks(f,
@@ -472,11 +501,35 @@ bool AseFormat::onSave(FileOp* fop)
 
 #endif // ENABLE_SAVE
 
+FormatOptionsPtr AseFormat::onAskUserForFormatOptions(FileOp* fop)
+{
+  auto opts = fop->formatOptionsOfDocument<AsepriteOptions>();
+  if (fop->context() && fop->context()->isUIAvailable()) {
+    try {
+      auto& pref = Preferences::instance();
+      if (pref.isSet(pref.asepriteFormat.celFormat)) {
+        switch (pref.asepriteFormat.celFormat()) {
+          case app::gen::CelContentFormat::COMPRESSED:
+            opts->celType = ASE_FILE_COMPRESSED_CEL;
+            break;
+          case app::gen::CelContentFormat::RAW_IMAGE: opts->celType = ASE_FILE_RAW_CEL; break;
+        }
+      }
+    }
+    catch (std::exception& e) {
+      Console::showException(e);
+      return std::shared_ptr<AsepriteOptions>(nullptr);
+    }
+  }
+  return opts;
+}
+
 static void ase_file_prepare_header(FILE* f,
                                     dio::AsepriteHeader* header,
                                     const Sprite* sprite,
                                     const frame_t firstFrame,
-                                    const frame_t totalFrames)
+                                    const frame_t totalFrames,
+                                    const bool composeGroups)
 {
   header->pos = ftell(f);
 
@@ -489,7 +542,9 @@ static void ase_file_prepare_header(FILE* f,
                    sprite->pixelFormat() == IMAGE_GRAYSCALE ? 16 :
                    sprite->pixelFormat() == IMAGE_INDEXED   ? 8 :
                                                               0);
-  header->flags = ASE_FILE_FLAG_LAYER_WITH_OPACITY;
+  header->flags = (ASE_FILE_FLAG_LAYER_WITH_OPACITY |
+                   (composeGroups ? ASE_FILE_FLAG_COMPOSITE_GROUPS : 0) |
+                   (sprite->useLayerUuids() ? ASE_FILE_FLAG_LAYER_WITH_UUID : 0));
   header->speed = sprite->frameDuration(firstFrame);
   header->next = 0;
   header->frit = 0;
@@ -578,18 +633,19 @@ static void ase_file_write_frame_header(FILE* f, dio::AsepriteFrameHeader* frame
 
 static void ase_file_write_layers(FILE* f,
                                   FileOp* fop,
+                                  const dio::AsepriteHeader* header,
                                   dio::AsepriteFrameHeader* frame_header,
                                   const dio::AsepriteExternalFiles& ext_files,
                                   const Layer* layer,
                                   int child_index)
 {
-  ase_file_write_layer_chunk(f, frame_header, layer, child_index);
+  ase_file_write_layer_chunk(f, header, frame_header, layer, child_index);
   if (!layer->userData().isEmpty())
     ase_file_write_user_data_chunk(f, fop, frame_header, ext_files, &layer->userData());
 
   if (layer->isGroup()) {
     for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers())
-      ase_file_write_layers(f, fop, frame_header, ext_files, child, child_index + 1);
+      ase_file_write_layers(f, fop, header, frame_header, ext_files, child, child_index + 1);
   }
 }
 
@@ -606,6 +662,7 @@ static layer_t ase_file_write_cels(FILE* f,
     const Cel* cel = layer->cel(frame);
     if (cel) {
       ase_file_write_cel_chunk(f,
+                               fop,
                                frame_header,
                                cel,
                                static_cast<const LayerImage*>(layer),
@@ -731,10 +788,18 @@ static void ase_file_write_palette_chunk(FILE* f,
   }
 }
 
+static void ase_file_write_uuid(FILE* f, const base::Uuid& uuid)
+{
+  for (int i = 0; i < 16; ++i) {
+    fputc(uuid[i], f);
+  }
+}
+
 static void ase_file_write_layer_chunk(FILE* f,
+                                       const dio::AsepriteHeader* header,
                                        dio::AsepriteFrameHeader* frame_header,
                                        const Layer* layer,
-                                       int child_level)
+                                       const int child_level)
 {
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_LAYER);
 
@@ -743,13 +808,21 @@ static void ase_file_write_layer_chunk(FILE* f,
         f);
 
   // Layer type
+  bool saveBlendInfo = false;
   int layerType = ASE_FILE_LAYER_IMAGE;
   if (layer->isImage()) {
+    saveBlendInfo = true;
     if (layer->isTilemap())
       layerType = ASE_FILE_LAYER_TILEMAP;
   }
   else if (layer->isGroup()) {
     layerType = ASE_FILE_LAYER_GROUP;
+
+    // If the "composite groups" flag is not specified, group layers
+    // don't contain blend mode + opacity.
+    if ((header->flags & ASE_FILE_FLAG_COMPOSITE_GROUPS) == ASE_FILE_FLAG_COMPOSITE_GROUPS) {
+      saveBlendInfo = true;
+    }
   }
   fputw(layerType, f);
 
@@ -759,8 +832,8 @@ static void ase_file_write_layer_chunk(FILE* f,
   // Default width & height, and blend mode
   fputw(0, f);
   fputw(0, f);
-  fputw(layer->isImage() ? (int)static_cast<const LayerImage*>(layer)->blendMode() : 0, f);
-  fputc(layer->isImage() ? (int)static_cast<const LayerImage*>(layer)->opacity() : 0, f);
+  fputw(saveBlendInfo ? int(layer->blendMode()) : 0, f);
+  fputc(saveBlendInfo ? int(layer->opacity()) : 0, f);
 
   // Padding
   ase_file_write_padding(f, 3);
@@ -771,6 +844,9 @@ static void ase_file_write_layer_chunk(FILE* f,
   // Tileset index
   if (layer->isTilemap())
     fputl(static_cast<const LayerTilemap*>(layer)->tilesetIndex(), f);
+
+  if ((header->flags & ASE_FILE_FLAG_LAYER_WITH_UUID) == ASE_FILE_FLAG_LAYER_WITH_UUID)
+    ase_file_write_uuid(f, layer->uuid());
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -972,6 +1048,7 @@ static void write_compressed_image(FILE* f,
 //////////////////////////////////////////////////////////////////////
 
 static void ase_file_write_cel_chunk(FILE* f,
+                                     FileOp* fop,
                                      dio::AsepriteFrameHeader* frame_header,
                                      const Cel* cel,
                                      const LayerImage* layer,
@@ -979,6 +1056,9 @@ static void ase_file_write_cel_chunk(FILE* f,
                                      const Sprite* sprite,
                                      const frame_t firstFrame)
 {
+  const auto aseOptions = std::static_pointer_cast<AseFormat::AsepriteOptions>(
+    fop->formatOptions());
+
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_CEL);
 
   const Cel* link = cel->link();
@@ -998,6 +1078,7 @@ static void ase_file_write_cel_chunk(FILE* f,
 
   int cel_type = (link                      ? ASE_FILE_LINK_CEL :
                   cel->layer()->isTilemap() ? ASE_FILE_COMPRESSED_TILEMAP :
+                  aseOptions                ? aseOptions->celType :
                                               ASE_FILE_COMPRESSED_CEL);
 
   fputw(layer_index, f);
@@ -1607,9 +1688,7 @@ static void ase_file_write_property_value(FILE* f, const UserData::Variant& valu
     }
     case USER_DATA_PROPERTY_TYPE_UUID: {
       auto& uuid = *std::get_if<base::Uuid>(&value);
-      for (int i = 0; i < 16; ++i) {
-        fputc(uuid[i], f);
-      }
+      ase_file_write_uuid(f, uuid);
       break;
     }
   }

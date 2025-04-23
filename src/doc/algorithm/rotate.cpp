@@ -13,7 +13,7 @@
 
 #include "base/pi.h"
 #include "doc/blend_funcs.h"
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/mask.h"
 #include "doc/primitives.h"
 #include "doc/primitives_fast.h"
@@ -373,6 +373,23 @@ public:
     if (c != 0) // TODO
       *m_it = c;
   }
+};
+
+class TilemapDelegate : public GenericDelegate<TilemapTraits> {
+public:
+  TilemapDelegate(color_t mask_color) : m_mask_color(mask_color) {}
+
+  void putPixel(const Image* spr, int spr_x, int spr_y)
+  {
+    ASSERT(m_it != m_end);
+
+    color_t c = get_pixel_fast<TilemapTraits>(spr, spr_x, spr_y);
+    if (c != m_mask_color)
+      *m_it = c;
+  }
+
+private:
+  color_t m_mask_color;
 };
 
 /* _parallelogram_map:
@@ -829,6 +846,18 @@ static void ase_parallelogram_map_standard(Image* bmp,
                                                           ys,
                                                           false,
                                                           delegate);
+      break;
+    }
+
+    case IMAGE_TILEMAP: {
+      TilemapDelegate delegate(sprite->maskColor());
+      ase_parallelogram_map<TilemapTraits, TilemapDelegate>(bmp,
+                                                            sprite,
+                                                            mask,
+                                                            xs,
+                                                            ys,
+                                                            false,
+                                                            delegate);
       break;
     }
   }

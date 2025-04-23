@@ -643,7 +643,7 @@ bool CliProcessor::openFile(Context* ctx, CliOpenFile& cof)
     auto fn = base::normalize_path(usedFn);
     m_usedFiles.insert(fn);
 
-    os::instance()->markCliFileAsProcessed(fn);
+    os::System::instance()->markCliFileAsProcessed(fn);
   }
 
   Doc* doc = ctx->activeDocument();

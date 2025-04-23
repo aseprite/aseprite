@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -37,6 +37,7 @@ public:
               const std::string& commandId = std::string(),
               const Params& params = Params());
   AppMenuItem(const std::string& text, std::nullptr_t) = delete;
+  ~AppMenuItem();
 
   KeyPtr key() { return m_key; }
   void setKey(const KeyPtr& key);
@@ -53,12 +54,14 @@ public:
   void disposeNative();
   void syncNativeMenuItemKeyShortcut();
 
-  // Indicates if this is the standard "Edit" menu, used for macOS
+#if LAF_MACOS
+  // Sets this item as the standard "Edit" menu, used for macOS
   // which requires a standard "Edit" menu when the native file
   // dialog is displayed, so Command+C/X/V/A, etc. shortcuts start
   // working as expected.
-  bool isStandardEditMenu() const { return m_isStandardEditMenu; }
-  void setStandardEditMenu() { m_isStandardEditMenu = true; }
+  void setAsStandardEditMenu();
+  static AppMenuItem* GetStandardEditMenu();
+#endif
 
   static void setContextParams(const Params& params);
 
@@ -73,10 +76,12 @@ private:
   std::string m_commandId;
   Params m_params;
   bool m_isRecentFileItem = false;
-  bool m_isStandardEditMenu = false;
   std::unique_ptr<Native> m_native;
 
   static Params s_contextParams;
+#if LAF_MACOS
+  static AppMenuItem* s_standardEditMenu;
+#endif
 };
 
 } // namespace app

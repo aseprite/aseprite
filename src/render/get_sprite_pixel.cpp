@@ -24,7 +24,8 @@ color_t get_sprite_pixel(const Sprite* sprite,
                          const double y,
                          const frame_t frame,
                          const Projection& proj,
-                         const bool newBlend)
+                         const bool newBlend,
+                         const bool composeGroups)
 {
   color_t color = 0;
 
@@ -33,6 +34,7 @@ color_t get_sprite_pixel(const Sprite* sprite,
 
     render::Render render;
     render.setNewBlend(newBlend);
+    render.setComposeGroups(composeGroups);
     render.setRefLayersVisiblity(true);
     render.setProjection(proj);
     render.renderSprite(image.get(),

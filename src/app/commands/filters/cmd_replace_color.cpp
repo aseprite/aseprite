@@ -18,7 +18,6 @@
 #include "app/commands/commands.h"
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/commands/filters/filter_window.h"
-#include "app/commands/filters/filter_worker.h"
 #include "app/commands/new_params.h"
 #include "app/context.h"
 #include "app/find_widget.h"
@@ -201,7 +200,7 @@ void ReplaceColorCommand::onExecute(Context* context)
       set_config_int(ConfigSection, "Tolerance", filter.getTolerance());
   }
   else {
-    start_filter_worker(&filterMgr);
+    filterMgr.startWorker();
   }
 }
 

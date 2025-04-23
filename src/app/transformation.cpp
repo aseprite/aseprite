@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -24,7 +24,7 @@ Transformation::Transformation()
 {
 }
 
-Transformation::Transformation(const RectF& bounds, double cornerThick)
+Transformation::Transformation(const RectF& bounds, const float cornerThick)
   : m_bounds(bounds)
   , m_cornerThick(cornerThick)
 {
@@ -64,14 +64,14 @@ void Transformation::displacePivotTo(const PointF& newPivot)
 
 PointF Transformation::rotatePoint(const PointF& point,
                                    const PointF& pivot,
-                                   const double angle,
-                                   const double skew)
+                                   const float angle,
+                                   const float skew)
 {
-  double cos = std::roundl(std::cos(-angle) * 100000.0) / 100000.0;
-  double sin = std::roundl(std::sin(-angle) * 100000.0) / 100000.0;
-  double tan = std::roundl(std::tan(skew) * 100000.0) / 100000.0;
-  double dx = point.x - pivot.x;
-  double dy = point.y - pivot.y;
+  const float cos = std::roundl(std::cos(-angle) * 100000.0f) / 100000.0f;
+  const float sin = std::roundl(std::sin(-angle) * 100000.0f) / 100000.0f;
+  const float tan = std::roundl(std::tan(skew) * 100000.0f) / 100000.0f;
+  float dx = point.x - pivot.x;
+  float dy = point.y - pivot.y;
   dx += dy * tan;
   return PointF(pivot.x + dx * cos - dy * sin, pivot.y + dx * sin + dy * cos);
 }

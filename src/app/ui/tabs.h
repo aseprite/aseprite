@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,7 +10,9 @@
 #pragma once
 
 #include "base/ref.h"
+#include "text/fwd.h"
 #include "ui/animated_widget.h"
+#include "ui/layer.h"
 #include "ui/widget.h"
 
 #include <memory>
@@ -18,8 +20,7 @@
 
 namespace ui {
 class Graphics;
-class Overlay;
-} // namespace ui
+}
 
 namespace app {
 class Tabs;
@@ -121,6 +122,7 @@ class Tabs : public ui::Widget,
   struct Tab {
     TabView* view;
     std::string text;
+    text::TextBlobRef textBlob;
     TabIcon icon;
     gfx::Color color;
     int x, width;
@@ -185,6 +187,7 @@ protected:
   void onPaint(ui::PaintEvent& ev) override;
   void onResize(ui::ResizeEvent& ev) override;
   void onSizeHint(ui::SizeHintEvent& ev) override;
+  float onGetTextBaseline() const override;
   void onAnimationFrame() override;
   void onAnimationStop(int animation) override;
 
@@ -206,9 +209,9 @@ private:
   gfx::Rect getTabBounds(Tab* tab);
   void startReorderTabsAnimation();
   void startRemoveDragTabAnimation();
-  void createFloatingOverlay(Tab* tab);
+  void createFloatingUILayer(Tab* tab);
   void destroyFloatingTab();
-  void destroyFloatingOverlay();
+  void destroyFloatingUILayer();
   void updateMouseCursor();
   void updateDragTabIndexes(int mouseX, bool force_animation);
   void updateDragCopyCursor(ui::Message* msg);
@@ -287,14 +290,14 @@ private:
   // location).
   TabPtr m_floatingTab;
 
-  // Overlay used to show the floating tab outside the Tabs widget
-  // (this overlay floats next to the mouse cursor).  It's destroyed
+  // UILayer used to show the floating tab outside the Tabs widget
+  // (this layer floats next to the mouse cursor).  It's destroyed
   // and recreated every time the tab is put inside or outside the
   // Tabs widget.
-  base::Ref<ui::Overlay> m_floatingOverlay;
+  ui::UILayerRef m_floatingUILayer;
 
   // Relative mouse position inside the m_dragTab (used to adjust
-  // the m_floatingOverlay precisely).
+  // the m_floatingUILayer precisely).
   gfx::Point m_floatingOffset;
 
   ////////////////////////////////////////

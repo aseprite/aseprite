@@ -26,7 +26,7 @@
 #include "doc/algorithm/polygon.h"
 #include "doc/brush.h"
 #include "doc/compressed_image.h"
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/mask.h"
 
 #include "tinyxml2.h"
@@ -74,6 +74,7 @@ const char* WellKnownInks::Slice = "slice";
 const char* WellKnownInks::MoveSlice = "move_slice";
 const char* WellKnownInks::Blur = "blur";
 const char* WellKnownInks::Jumble = "jumble";
+const char* WellKnownInks::Text = "text";
 
 const char* WellKnownControllers::Freehand = "freehand";
 const char* WellKnownControllers::PointByPoint = "point_by_point";
@@ -140,6 +141,7 @@ ToolBox::ToolBox()
   m_inks[WellKnownInks::Slice] = new SliceInk();
   m_inks[WellKnownInks::Blur] = new BlurInk();
   m_inks[WellKnownInks::Jumble] = new JumbleInk();
+  m_inks[WellKnownInks::Text] = new TextInk();
 
   m_controllers[WellKnownControllers::Freehand] = new FreehandController();
   m_controllers[WellKnownControllers::PointByPoint] = new PointByPointController();

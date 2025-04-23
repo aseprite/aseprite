@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2023 Igara Studio S.A.
+// Copyright (c) 2023-2024 Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -23,7 +23,7 @@ void BM_FlipSlow(benchmark::State& state)
   const int h = state.range(2);
   const auto ft = (doc::algorithm::FlipType)state.range(3);
   std::unique_ptr<Image> img(Image::create(pf, w, h));
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     algorithm::flip_image_slow(img.get(), img->bounds(), ft);
   }
 }
@@ -35,7 +35,7 @@ void BM_FlipRawPtr(benchmark::State& state)
   const int h = state.range(2);
   const auto ft = (doc::algorithm::FlipType)state.range(3);
   std::unique_ptr<Image> img(Image::create(pf, w, h));
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     algorithm::flip_image(img.get(), img->bounds(), ft);
   }
 }

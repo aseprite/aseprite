@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,7 +16,6 @@
 #include "app/script/luacpp.h"
 #include "app/site.h"
 #include "app/ui/editor/editor.h"
-#include "app/util/range_utils.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/object_ids.h"
@@ -24,6 +23,7 @@
 #include "doc/slices.h"
 #include "doc/sprite.h"
 #include "doc/tile.h"
+#include "view/cels.h"
 
 #include <set>
 #include <vector>
@@ -75,7 +75,7 @@ struct RangeObj { // This is like DocRange but referencing objects with IDs
       // it might not be possible because we have to save the IDs of the
       // objects (and we cannot store the DocRange because it contains
       // pointers instead of IDs).
-      for (const Cel* cel : get_cels(site.sprite(), range))
+      for (const Cel* cel : view::get_cels(site.sprite(), range))
         cels.insert(cel->id());
     }
     else {

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -13,9 +13,11 @@
 #include "gfx/color.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
+#include "text/font_mgr.h"
+#include "text/fwd.h"
 #include "ui/base.h"
 #include "ui/cursor_type.h"
-#include "ui/scale.h"
+#include "ui/paint.h"
 #include "ui/style.h"
 
 namespace gfx {
@@ -39,17 +41,14 @@ class Theme;
 void set_theme(Theme* theme, const int uiscale);
 Theme* get_theme();
 
-inline int CALC_FOR_CENTER(int p, int s1, int s2)
-{
-  return (p / guiscale() + (s1 / guiscale()) / 2 - (s2 / guiscale()) / 2) * guiscale();
-}
-
 struct PaintWidgetPartInfo {
-  gfx::Color bgColor;
-  int styleFlags; // ui::Style::Layer flags
-  const std::string* text;
-  int mnemonic;
-  os::Surface* icon;
+  gfx::Color bgColor = gfx::ColorNone;
+  int styleFlags = 0; // ui::Style::Layer flags
+  const std::string* text = nullptr;
+  text::TextBlobRef textBlob;
+  float baseline = 0.0f;
+  int mnemonic = 0;
+  os::Surface* icon = nullptr;
 
   PaintWidgetPartInfo();
   PaintWidgetPartInfo(const Widget* widget);
@@ -61,27 +60,30 @@ class Theme {
   friend void set_theme(Theme* theme, const int uiscale);
 
 public:
+  static constexpr int kDefaultFontHeight = 16;
+
   Theme();
   virtual ~Theme();
 
-  virtual os::Font* getDefaultFont() const = 0;
-  virtual os::Font* getWidgetFont(const Widget* widget) const = 0;
+  virtual text::FontMgrRef fontMgr() const { return m_fontMgr; }
+  virtual text::FontRef getDefaultFont() const;
+  virtual text::FontRef getWidgetFont(const Widget* widget) const { return getDefaultFont(); }
 
-  virtual ui::Cursor* getStandardCursor(CursorType type) = 0;
-  virtual void initWidget(Widget* widget) = 0;
-  virtual void getWindowMask(Widget* widget, gfx::Region& region) = 0;
+  virtual ui::Cursor* getStandardCursor(CursorType type) { return nullptr; }
+  virtual void initWidget(Widget* widget);
+  virtual void getWindowMask(Widget* widget, gfx::Region& region) {}
   virtual void setDecorativeWidgetBounds(Widget* widget);
-  virtual int getScrollbarSize() = 0;
-  virtual gfx::Size getEntryCaretSize(Widget* widget) = 0;
+  virtual int getScrollbarSize() { return kDefaultFontHeight; }
+  virtual gfx::Size getEntryCaretSize(Widget* widget) { return gfx::Size(kDefaultFontHeight, 1); }
 
-  virtual void paintEntry(PaintEvent& ev) = 0;
-  virtual void paintListBox(PaintEvent& ev) = 0;
-  virtual void paintMenu(PaintEvent& ev) = 0;
-  virtual void paintMenuItem(PaintEvent& ev) = 0;
-  virtual void paintSlider(PaintEvent& ev) = 0;
-  virtual void paintComboBoxEntry(PaintEvent& ev) = 0;
-  virtual void paintTextBox(PaintEvent& ev) = 0;
-  virtual void paintViewViewport(PaintEvent& ev) = 0;
+  virtual void paintEntry(PaintEvent& ev) {}
+  virtual void paintListBox(PaintEvent& ev);
+  virtual void paintMenu(PaintEvent& ev) {}
+  virtual void paintMenuItem(PaintEvent& ev) {}
+  virtual void paintSlider(PaintEvent& ev) {}
+  virtual void paintComboBoxEntry(PaintEvent& ev) {}
+  virtual void paintTextBox(PaintEvent& ev) {}
+  virtual void paintViewViewport(PaintEvent& ev);
 
   virtual void paintWidgetPart(Graphics* g,
                                const Style* style,
@@ -142,10 +144,19 @@ public:
                           gfx::Color bg,
                           gfx::Color fg);
 
-  static ui::Style* getDefaultStyle() { return &m_defaultStyle; }
+  static void drawMnemonicUnderline(Graphics* g,
+                                    const std::string& text,
+                                    text::TextBlobRef textBlob,
+                                    const gfx::PointF& pt,
+                                    const int mnemonic,
+                                    const Paint& paint);
+
+  static ui::Style* EmptyStyle() { return &m_emptyStyle; }
 
 protected:
-  virtual void onRegenerateTheme() = 0;
+  virtual void onRegenerateTheme() {}
+
+  text::FontMgrRef m_fontMgr;
 
 private:
   void regenerateTheme();
@@ -153,6 +164,8 @@ private:
                   const Style* style,
                   const Style::Layer& layer,
                   const std::string& text,
+                  text::TextBlobRef textBlob,
+                  const float baseline,
                   const int mnemonic,
                   os::Surface* icon,
                   gfx::Rect& rc,
@@ -172,7 +185,8 @@ private:
                          gfx::Rect& textHint,
                          int& textAlign);
 
-  static ui::Style m_defaultStyle;
+  static ui::Style m_emptyStyle;
+  static ui::Style m_simpleStyle;
 };
 
 } // namespace ui

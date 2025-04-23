@@ -198,7 +198,7 @@ bool WebPFormat::onLoad(FileOp* fop)
   }
   WebPAnimDecoderReset(dec);
 
-  if (!has_alpha)
+  if (!has_alpha && !fop->avoidBackgroundLayer())
     layer->configureAsBackground();
 
   WebPAnimDecoderDelete(dec);

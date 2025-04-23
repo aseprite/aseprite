@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,16 +9,16 @@
 #define APP_SITE_H_INCLUDED
 #pragma once
 
-#include "app/doc_range.h"
 #include "app/tilemap_mode.h"
 #include "app/tileset_mode.h"
+#include "doc/cel_list.h"
 #include "doc/frame.h"
 #include "doc/palette_picks.h"
 #include "doc/selected_objects.h"
 #include "gfx/fwd.h"
+#include "view/range.h"
 
 namespace doc {
-class Cel;
 class Grid;
 class Image;
 class Layer;
@@ -65,14 +65,14 @@ public:
   doc::Layer* layer() const { return m_layer; }
   doc::frame_t frame() const { return m_frame; }
   doc::Cel* cel() const;
-  const DocRange& range() const { return m_range; }
+  const view::RealRange& range() const { return m_range; }
 
   void focus(Focus focus) { m_focus = focus; }
   void document(Doc* document) { m_document = document; }
   void sprite(doc::Sprite* sprite) { m_sprite = sprite; }
   void layer(doc::Layer* layer) { m_layer = layer; }
   void frame(doc::frame_t frame) { m_frame = frame; }
-  void range(const DocRange& range);
+  void range(const view::RealRange& range);
 
   const doc::SelectedLayers& selectedLayers() const { return m_range.selectedLayers(); }
   const doc::SelectedFrames& selectedFrames() const { return m_range.selectedFrames(); }
@@ -105,7 +105,21 @@ public:
   TilemapMode tilemapMode() const { return m_tilemapMode; }
   TilesetMode tilesetMode() const { return m_tilesetMode; }
 
-  bool shouldTrimCel(Cel* cel) const;
+  bool shouldTrimCel(doc::Cel* cel) const;
+
+  // Returns the list of selected "unique" cels (to avoid iterating
+  // two or more times through linked cels), or just a list of the
+  // active cel if there is no range in the given site.
+  doc::CelList selectedUniqueCels() const;
+
+  // Same as uniqueCels() with cels from non-locked/editable layers.
+  doc::CelList selectedUniqueCelsToEditPixels() const;
+
+  inline bool operator==(const Site& other) const
+  {
+    return (document() == other.document() && sprite() == other.sprite() &&
+            layer() == other.layer() && frame() == other.frame() && cel() == other.cel());
+  }
 
 private:
   Focus m_focus;
@@ -113,7 +127,7 @@ private:
   doc::Sprite* m_sprite;
   doc::Layer* m_layer;
   doc::frame_t m_frame;
-  DocRange m_range;
+  view::RealRange m_range;
   doc::PalettePicks m_selectedColors;
   doc::PalettePicks m_selectedTiles;
   doc::SelectedObjects m_selectedSlices;

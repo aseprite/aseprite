@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,6 +27,7 @@ using namespace doc;
 class ClearRect : public Cmd {
 public:
   ClearRect(Cel* cel, const gfx::Rect& bounds);
+  ClearRect(Cel* cel, const gfx::Rect& bounds, color_t color);
 
 protected:
   void onExecute() override;
@@ -37,6 +39,7 @@ protected:
   }
 
 private:
+  void initialize(Cel* cel, const gfx::Rect& bounds, color_t color);
   void clear();
   void restore();
 

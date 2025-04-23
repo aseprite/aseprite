@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,6 +9,7 @@
 #define UI_MESSAGE_H_INCLUDED
 #pragma once
 
+#include "base/codepoint.h"
 #include "base/paths.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -42,7 +43,7 @@ public:
   Widget* recipient() const { return m_recipient; }
   bool fromFilter() const { return hasFlag(FromFilter); }
   void setFromFilter(const bool state) { setFlag(FromFilter, state); }
-  KeyModifiers modifiers() const { return m_modifiers; }
+  KeyModifiers modifiers() const;
   bool shiftPressed() const { return (m_modifiers & kKeyShiftModifier) == kKeyShiftModifier; }
   bool ctrlPressed() const { return (m_modifiers & kKeyCtrlModifier) == kKeyCtrlModifier; }
   bool altPressed() const { return (m_modifiers & kKeyAltModifier) == kKeyAltModifier; }
@@ -76,9 +77,9 @@ private:
   MessageType m_type; // Type of message
   int m_flags;        // Special flags for this message
   Display* m_display;
-  Widget* m_recipient;      // Recipient of this message
-  Widget* m_commonAncestor; // Common ancestor between the Leave <-> Enter messages
-  KeyModifiers m_modifiers; // Key modifiers pressed when message was created
+  Widget* m_recipient;              // Recipient of this message
+  Widget* m_commonAncestor;         // Common ancestor between the Leave <-> Enter messages
+  mutable KeyModifiers m_modifiers; // Key modifiers pressed when message was created
 };
 
 class CallbackMessage : public Message {
@@ -94,23 +95,39 @@ private:
   std::function<void()> m_callback;
 };
 
+class FocusMessage : public Message {
+public:
+  FocusMessage(MessageType type, Widget* oldFocus, Widget* newFocus)
+    : Message(type)
+    , m_oldFocus(oldFocus)
+    , m_newFocus(newFocus)
+  {
+  }
+  Widget* oldFocus() { return m_oldFocus; }
+  Widget* newFocus() { return m_newFocus; }
+
+private:
+  Widget* m_oldFocus;
+  Widget* m_newFocus;
+};
+
 class KeyMessage : public Message {
 public:
   KeyMessage(MessageType type,
              KeyScancode scancode,
              KeyModifiers modifiers,
-             int unicodeChar,
+             base::codepoint_t unicodeChar,
              int repeat);
 
   KeyScancode scancode() const { return m_scancode; }
-  int unicodeChar() const { return m_unicodeChar; }
+  base::codepoint_t unicodeChar() const { return m_unicodeChar; }
   int repeat() const { return m_repeat; }
   bool isDeadKey() const { return m_isDead; }
   void setDeadKey(bool state) { m_isDead = state; }
 
 private:
   KeyScancode m_scancode;
-  int m_unicodeChar;
+  base::codepoint_t m_unicodeChar;
   int m_repeat; // repeat=0 means the first time the key is pressed
   bool m_isDead;
 };

@@ -49,6 +49,19 @@ Tileset::Tileset(Sprite* sprite, const Grid& grid, const tileset_index ntiles)
   }
 }
 
+Tileset::Tileset(Sprite* sprite, const Tileset* other)
+  : WithUserData(ObjectType::Tileset)
+  , m_sprite(sprite)
+  , m_grid(other->grid())
+  , m_tiles(other->size())
+{
+  for (tile_index ti = 0; ti < other->size(); ++ti) {
+    const ImageRef image = other->get(ti);
+    set(ti, ImageRef(Image::createCopy(image.get())));
+    setTileData(ti, other->getTileData(ti));
+  }
+}
+
 // static
 Tileset* Tileset::MakeCopyWithoutImages(const Tileset* tileset)
 {

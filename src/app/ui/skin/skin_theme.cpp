@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -14,35 +14,41 @@
 #include "app/app.h"
 #include "app/console.h"
 #include "app/extensions.h"
-#include "app/font_path.h"
+#include "app/fonts/font_data.h"
+#include "app/fonts/font_info.h"
+#include "app/fonts/font_path.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/resource_finder.h"
 #include "app/ui/app_menuitem.h"
 #include "app/ui/keyboard_shortcuts.h"
-#include "app/ui/skin/font_data.h"
 #include "app/ui/skin/skin_property.h"
 #include "app/ui/skin/skin_slider_property.h"
+#include "app/util/render_text.h"
 #include "app/xml_document.h"
 #include "app/xml_exception.h"
 #include "base/fs.h"
 #include "base/log.h"
 #include "base/string.h"
 #include "base/utf8_decode.h"
+#include "fmt/format.h"
 #include "gfx/border.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
-#include "os/draw_text.h"
-#include "os/font.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "text/draw_text.h"
+#include "text/font.h"
+#include "text/font_metrics.h"
+#include "text/font_style_set.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
 #include "tinyxml2.h"
 
 #include <algorithm>
+#include <cstdlib>
 #include <cstring>
 #include <memory>
 
@@ -153,51 +159,92 @@ static const char* g_cursor_names[kCursorTypes] = {
   "size_nw",    // kSizeNWCursor
 };
 
-static FontData* load_font(std::map<std::string, FontData*>& fonts,
-                           const XMLElement* xmlFont,
-                           const std::string& xmlFilename)
+static std::unique_ptr<FontData> try_to_load_system_font(const XMLElement* xmlFont)
 {
-  const char* fontRef = xmlFont->Attribute("font");
-  if (fontRef) {
-    auto it = fonts.find(fontRef);
-    if (it == fonts.end())
-      throw base::Exception("Font named '%s' not found\n", fontRef);
-    return it->second;
+  const char* systemStr = xmlFont->Attribute("system");
+  if (!systemStr)
+    return nullptr;
+
+  Fonts* fonts = Fonts::instance();
+  text::FontMgrRef fontMgr = fonts->fontMgr();
+  const text::FontStyleSetRef set = fontMgr->matchFamily(systemStr);
+  if (!set)
+    return nullptr;
+
+  text::FontStyle style;
+  text::TypefaceRef typeface = set->matchStyle(style);
+  if (!typeface)
+    return nullptr;
+
+  float size = 0.0f;
+  if (const char* sizeStr = xmlFont->Attribute("size"))
+    size = std::strtof(sizeStr, nullptr);
+
+  text::FontRef nativeFont;
+  if (size == 0.0f)
+    nativeFont = fontMgr->makeFont(typeface);
+  else
+    nativeFont = fontMgr->makeFont(typeface, size);
+  if (!nativeFont)
+    return nullptr;
+
+  nativeFont->setAntialias(bool_attr(xmlFont, "antialias", false));
+  nativeFont->setHinting(bool_attr(xmlFont, "hinting", true) ? text::FontHinting::Normal :
+                                                               text::FontHinting::None);
+
+  auto font = std::make_unique<FontData>(nativeFont);
+  font->setName(systemStr);
+  if (size != 0.0f)
+    font->setDefaultSize(size);
+
+  return font;
+}
+
+static FontData* load_font(const XMLElement* xmlFont, const std::string& xmlFilename)
+{
+  Fonts* fonts = Fonts::instance();
+  ASSERT(fonts);
+
+  if (const char* fontId = xmlFont->Attribute("font")) {
+    if (FontData* fontData = fonts->fontDataByName(fontId))
+      return fontData;
+    else {
+      throw base::Exception(
+        fmt::format("{}:{}: Font named '{}' not found", xmlFilename, xmlFont->GetLineNum(), fontId));
+    }
   }
 
-  const char* nameStr = xmlFont->Attribute("name");
-  if (!nameStr)
-    throw base::Exception("No \"name\" or \"font\" attributes specified on <font>");
-
-  std::string name(nameStr);
-
-  // Use cached font data
-  auto it = fonts.find(name);
-  if (it != fonts.end())
-    return it->second;
-
-  LOG(VERBOSE, "THEME: Loading font '%s'\n", name.c_str());
-
+  const char* nameStr = xmlFont->Attribute("name"); // Optional name
   const char* typeStr = xmlFont->Attribute("type");
-  if (!typeStr)
-    throw base::Exception("<font> without 'type' attribute in '%s'\n", xmlFilename.c_str());
+  const char* systemStr = xmlFont->Attribute("system");
 
-  std::string type(typeStr);
+  LOG(VERBOSE,
+      "THEME: Loading font name='%s' type='%s' system='%s'\n",
+      nameStr ? nameStr : "",
+      typeStr ? systemStr : "",
+      systemStr ? systemStr : "");
+
+  std::string type(typeStr ? typeStr : "");
   std::string xmlDir(base::get_file_path(xmlFilename));
   std::unique_ptr<FontData> font(nullptr);
 
   if (type == "spritesheet") {
     const char* fileStr = xmlFont->Attribute("file");
     if (fileStr) {
-      font.reset(new FontData(os::FontType::SpriteSheet));
+      font = std::make_unique<FontData>(text::FontType::SpriteSheet);
+      font->setName(nameStr ? nameStr : fileStr);
       font->setFilename(base::join_path(xmlDir, fileStr));
+      if (const char* descent = xmlFont->Attribute("descent"))
+        font->setDescent(std::strtof(descent, nullptr));
     }
   }
+  // Loads: <font type="truetype" file="..." />
+  // Or:    <font type="truetype" file_win="..." file_mac="..." file_linux="..." />
   else if (type == "truetype") {
     const char* platformFileAttrName =
-#ifdef _WIN32
+#if LAF_WINDOWS
       "file_win"
-#elif defined __APPLE__
+#elif LAF_MACOS
       "file_mac"
 #else
       "file_linux"
@@ -219,37 +266,85 @@ static FontData* load_font(std::map<std::string, FontData*>& fonts,
     // The filename can be empty if the font was not found, anyway we
     // want to keep the font information (e.g. to use the fallback
     // information of this font).
-    font.reset(new FontData(os::FontType::FreeType));
+    font = std::make_unique<FontData>(text::FontType::FreeType);
+    font->setName(nameStr ? nameStr : (platformFileStr ? platformFileStr : fileStr));
     font->setFilename(fontFilename);
     font->setAntialias(antialias);
 
     if (!fontFilename.empty())
       LOG(VERBOSE, "THEME: Font file '%s' found\n", fontFilename.c_str());
   }
+  // Loads: <font system="..." />
+  // Or:    <font>
+  //          <windows system="..." />
+  //          <macos system="..." />
+  //          <linux system="..." />
+  //        </font>
+  else if (!typeStr || type == "system") {
+    // Try to get the platform-specific font first
+    const char* platformName =
+#if LAF_WINDOWS
+      "windows"
+#elif LAF_MACOS
+      "macos"
+#else
+      "linux"
+#endif
+      ;
+
+    // Load platform specific font from sub elements like
+    // <font>
+    //   <windows system="..." />
+    //   ...
+    // </font>
+    XMLElement* xmlPlatformFont = (XMLElement*)xmlFont->FirstChildElement(platformName);
+    while (xmlPlatformFont) {
+      if (auto platformFont = try_to_load_system_font(xmlPlatformFont)) {
+        font = std::move(platformFont);
+        break;
+      }
+      xmlPlatformFont = xmlPlatformFont->NextSiblingElement();
+    }
+
+    // Load the system font from
+    // <font system="..." />
+    if (!font && systemStr) {
+      font = try_to_load_system_font(xmlFont);
+    }
+  }
   else {
-    throw base::Exception("Invalid type=\"%s\" in '%s' for <font name=\"%s\" ...>\n",
-                          type.c_str(),
-                          xmlFilename.c_str(),
-                          name.c_str());
+    throw base::Exception(
+      fmt::format("{}:{}: Invalid font type (\"{}\")' attribute in <font /> element",
+                  xmlFilename,
+                  xmlFont->GetLineNum(),
+                  type));
   }
 
-  FontData* result = nullptr;
-  if (font) {
-    fonts[name] = result = font.get();
-    font.release();
+  if (!font) {
+    if (!typeStr && !systemStr) {
+      throw base::Exception(
+        fmt::format("{}:{}: Missing 'font', 'type', or 'system' attributes in <font /> element",
+                    xmlFilename,
+                    xmlFont->GetLineNum()));
+    }
 
-    // Fallback font
-    const XMLElement* xmlFallback = (const XMLElement*)xmlFont->FirstChildElement("fallback");
-    if (xmlFallback) {
-      FontData* fallback = load_font(fonts, xmlFallback, xmlFilename);
-      if (fallback) {
-        int size = 10;
-        const char* sizeStr = xmlFont->Attribute("size");
-        if (sizeStr)
-          size = std::strtol(sizeStr, nullptr, 10);
+    return nullptr;
+  }
 
-        result->setFallback(fallback, size);
-      }
+  FontData* result = font.get();
+  fonts->addFontData(std::move(font)); // "font" variable is invalid from now on
+
+  // Fallback font
+  const XMLElement* xmlFallback = (const XMLElement*)xmlFont->FirstChildElement("fallback");
+  if (xmlFallback) {
+    FontData* fallback = load_font(xmlFallback, xmlFilename);
+    if (fallback) {
+      int size = 10;
+      const char* sizeStr = xmlFallback->Attribute("size");
+      if (sizeStr)
+        size = std::strtol(sizeStr, nullptr, 10);
+
+      result->setFallback(fallback, size);
     }
   }
   return result;
@@ -274,9 +369,8 @@ SkinTheme* SkinTheme::get(const ui::Widget* widget)
 }
 
 SkinTheme::SkinTheme()
-  : m_sheet(nullptr)
-  , m_defaultFont(nullptr)
-  , m_miniFont(nullptr)
+  : m_fonts(m_fontMgr)
+  , m_sheet(nullptr)
   , m_preferredScreenScaling(-1)
   , m_preferredUIScaling(-1)
 {
@@ -297,11 +391,6 @@ SkinTheme::~SkinTheme()
   for (auto style : m_styles)
     delete style.second;
   m_styles.clear();
-
-  // Destroy fonts
-  for (auto& kv : m_fonts)
-    delete kv.second; // Delete all FontDatas
-  m_fonts.clear();
 }
 
 void SkinTheme::onRegenerateTheme()
@@ -351,7 +440,7 @@ void SkinTheme::loadFontData()
 
   XMLElement* xmlFont = handle.FirstChildElement("fonts").FirstChildElement("font").ToElement();
   while (xmlFont) {
-    load_font(m_fonts, xmlFont, rf.filename());
+    load_font(xmlFont, rf.filename());
     xmlFont = xmlFont->NextSiblingElement();
   }
 }
@@ -360,7 +449,7 @@ void SkinTheme::loadAll(const std::string& themeId, BackwardCompatibility* backw
 {
   LOG("THEME: Loading theme %s\n", themeId.c_str());
 
-  if (m_fonts.empty())
+  if (Fonts::instance()->isEmpty())
     loadFontData();
 
   m_path = findThemePath(themeId);
@@ -373,11 +462,13 @@ void SkinTheme::loadAll(const std::string& themeId, BackwardCompatibility* backw
 
 void SkinTheme::loadSheet()
 {
+  os::SystemRef system = os::System::instance();
+
   // Load the skin sheet
   std::string sheet_filename(base::join_path(m_path, "sheet.png"));
   os::SurfaceRef newSheet;
   try {
-    newSheet = os::instance()->loadRgbaSurface(sheet_filename.c_str());
+    newSheet = os::System::instance()->loadRgbaSurface(sheet_filename.c_str());
   }
   catch (...) {
     // Ignore the error, newSheet is nullptr and we will throw our own
@@ -386,22 +477,14 @@ void SkinTheme::loadSheet()
   if (!newSheet)
     throw base::Exception("Error loading %s file", sheet_filename.c_str());
 
-  // TODO Change os::Surface::applyScale() to return a new surface,
-  //      avoid loading two times the same file (even more, if there
-  //      is no scale to apply, m_unscaledSheet must reference the
-  //      same m_sheet).
-  m_unscaledSheet = os::instance()->loadRgbaSurface(sheet_filename.c_str());
-
-  // Replace the sprite sheet
-  if (m_sheet)
-    m_sheet.reset();
-  m_sheet = newSheet;
-  if (m_sheet)
-    m_sheet->applyScale(guiscale());
+  // Set the unscaled and scaled version of the sprite sheet.
+  m_unscaledSheet = newSheet;
+  m_unscaledSheet->setImmutable();
+  m_sheet = newSheet->applyScale(guiscale());
   m_sheet->setImmutable();
 
   // Reset sprite sheet and font of all layer styles (to avoid
-  // dangling pointers to os::Surface or os::Font).
+  // dangling pointers to os::Surface or text::Font).
   for (auto& it : m_styles) {
     for (auto& layer : it.second->layers()) {
       layer.setIcon(nullptr);
@@ -413,6 +496,7 @@ void SkinTheme::loadSheet()
 
 void SkinTheme::loadXml(BackwardCompatibility* backward)
 {
+  Fonts* fonts = Fonts::instance();
   const int scale = guiscale();
 
   // Load the skin XML
@@ -444,30 +528,43 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
                             .ToElement();
     while (xmlFont) {
       const char* idStr = xmlFont->Attribute("id");
-      FontData* fontData = load_font(m_fonts, xmlFont, xml_filename);
+      FontData* fontData = load_font(xmlFont, xml_filename);
       if (idStr && fontData) {
         std::string id(idStr);
         LOG(VERBOSE, "THEME: Loading theme font %s\n", idStr);
 
-        int size = 10;
-        const char* sizeStr = xmlFont->Attribute("size");
-        if (sizeStr)
-          size = std::strtol(sizeStr, nullptr, 10);
+        float size = 0.0f;
+        if (const char* sizeStr = xmlFont->Attribute("size"))
+          size = std::strtof(sizeStr, nullptr);
+
+        if (fontData->defaultSize() != 0.0f)
+          size = fontData->defaultSize();
 
         const char* mnemonicsStr = xmlFont->Attribute("mnemonics");
         bool mnemonics = mnemonicsStr ? (std::string(mnemonicsStr) != "off") : true;
 
-        os::FontRef font = fontData->getFont(size);
+        text::FontRef font = fontData->getFont(m_fontMgr, size * ui::guiscale());
+
+        // SpriteSheetFonts have a default preferred size.
+        if (size == 0.0f && font->defaultSize() > 0.0f) {
+          size = font->defaultSize();
+          font = fontData->getFont(m_fontMgr, size * ui::guiscale());
+        }
+
         m_themeFonts[idStr] = ThemeFont(font, mnemonics);
 
         // Store a unscaled version for using when ui scaling is not desired (i.e. in a Canvas
         // widget with autoScaling enabled).
-        m_unscaledFonts[font.get()] = fontData->getFont(size, 1);
+        m_unscaledFonts[font.get()] = fontData->getFont(m_fontMgr, size);
 
-        if (id == "default")
+        if (id == "default") {
           m_defaultFont = font;
-        else if (id == "mini")
+          m_defaultFontInfo = FontInfo(fontData, size);
+        }
+        else if (id == "mini") {
           m_miniFont = font;
+          m_miniFontInfo = FontInfo(fontData, size);
+        }
       }
 
       xmlFont = xmlFont->NextSiblingElement();
@@ -475,10 +572,32 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
   }
 
   // No available font to run the program
-  if (!m_defaultFont)
-    throw base::Exception("There is no default font");
-  if (!m_miniFont)
+  if (!m_defaultFont) {
+    throw base::Exception(
+      fmt::format("{}: No valid default font element found (<font id=\"default\" ... />)",
+                  xml_filename));
+  }
+  if (!m_miniFont) {
     m_miniFont = m_defaultFont;
+    m_miniFontInfo = m_defaultFontInfo;
+  }
+
+  // Overwrite theme fonts by user defined fonts.
+  Preferences& pref = Preferences::instance();
+  if (!pref.theme.font().empty()) {
+    auto fi = base::convert_to<FontInfo>(pref.theme.font());
+    if (auto f = fonts->fontFromInfo(fi)) {
+      m_defaultFont = f;
+      m_defaultFontInfo = fi;
+    }
+  }
+  if (!pref.theme.miniFont().empty()) {
+    auto fi = base::convert_to<FontInfo>(pref.theme.miniFont());
+    if (auto f = fonts->fontFromInfo(fi)) {
+      m_miniFont = f;
+      m_miniFontInfo = fi;
+    }
+  }
 
   // Load dimension
   {
@@ -678,7 +797,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         const char* t = xmlStyle->Attribute("margin-top");
         const char* r = xmlStyle->Attribute("margin-right");
         const char* b = xmlStyle->Attribute("margin-bottom");
-        gfx::Border margin = style->margin();
+        gfx::Border margin = style->rawMargin();
         if (m || l)
           margin.left(scale * std::strtol(l ? l : m, nullptr, 10));
         if (m || t)
@@ -697,7 +816,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         const char* t = xmlStyle->Attribute("border-top");
         const char* r = xmlStyle->Attribute("border-right");
         const char* b = xmlStyle->Attribute("border-bottom");
-        gfx::Border border = style->border();
+        gfx::Border border = style->rawBorder();
         if (m || l)
           border.left(scale * std::strtol(l ? l : m, nullptr, 10));
         if (m || t)
@@ -716,7 +835,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         const char* t = xmlStyle->Attribute("padding-top");
         const char* r = xmlStyle->Attribute("padding-right");
         const char* b = xmlStyle->Attribute("padding-bottom");
-        gfx::Border padding = style->padding();
+        gfx::Border padding = style->rawPadding();
         if (m || l)
           padding.left(scale * std::strtol(l ? l : m, nullptr, 10));
         if (m || t)
@@ -779,9 +898,21 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
       {
         const char* fontId = xmlStyle->Attribute("font");
         if (fontId) {
-          auto themeFont = m_themeFonts[fontId];
-          style->setFont(themeFont.font());
-          style->setMnemonics(themeFont.mnemonics());
+          // Use m_defaultFont/m_miniFont just in case the user
+          // customized these fonts.
+          if (std::strcmp(fontId, "default") == 0) {
+            style->setFont(m_defaultFont);
+            style->setMnemonics(true);
+          }
+          else if (std::strcmp(fontId, "mini") == 0) {
+            style->setFont(m_miniFont);
+            style->setMnemonics(false);
+          }
+          else {
+            auto themeFont = m_themeFonts[fontId];
+            style->setFont(themeFont.font());
+            style->setMnemonics(themeFont.mnemonics());
+          }
         }
 
         // Override mnemonics value if it is defined for this style.
@@ -940,7 +1071,7 @@ static os::SurfaceRef sliceSheet(os::SurfaceRef sheet, os::SurfaceRef sur, const
 
   if (!bounds.isEmpty()) {
     if (!sur)
-      sur = os::instance()->makeRgbaSurface(bounds.w, bounds.h);
+      sur = os::System::instance()->makeRgbaSurface(bounds.w, bounds.h);
 
     os::SurfaceLock lockSrc(sheet.get());
     os::SurfaceLock lockDst(sur.get());
@@ -969,7 +1100,7 @@ os::SurfaceRef SkinTheme::sliceUnscaledSheet(os::SurfaceRef sur, const gfx::Rect
   return app::skin::sliceSheet(m_unscaledSheet, sur, bounds);
 }
 
-os::Font* SkinTheme::getWidgetFont(const Widget* widget) const
+text::FontRef SkinTheme::getWidgetFont(const Widget* widget) const
 {
   auto skinPropery = std::static_pointer_cast<SkinProperty>(
     widget->getProperty(SkinProperty::Name));
@@ -1144,7 +1275,7 @@ int SkinTheme::getScrollbarSize()
 
 gfx::Size SkinTheme::getEntryCaretSize(Widget* widget)
 {
-  if (widget->font()->type() == os::FontType::FreeType)
+  if (widget->font()->type() == text::FontType::FreeType)
     return gfx::Size(2 * guiscale(), widget->textHeight());
   else
     return gfx::Size(2 * guiscale(), widget->textHeight() + 2 * guiscale());
@@ -1157,7 +1288,9 @@ void SkinTheme::paintEntry(PaintEvent& ev)
   gfx::Rect bounds = widget->clientBounds();
 
   // Outside borders
-  g->fillRect(BGCOLOR, bounds);
+  const gfx::Color borders = BGCOLOR;
+  if (!is_transparent(borders))
+    g->fillRect(borders, bounds);
 
   bool isMiniLook = false;
   auto skinPropery = std::static_pointer_cast<SkinProperty>(
@@ -1165,18 +1298,26 @@ void SkinTheme::paintEntry(PaintEvent& ev)
   if (skinPropery)
     isMiniLook = (skinPropery->getLook() == MiniLook);
 
+  // Inside background
+  gfx::Color bg;
+  if (widget->isReadOnly())
+    bg = colors.windowFace();
+  else
+    bg = gfx::ColorNone;
+
   drawRect(g,
            bounds,
            (widget->hasFocus() ?
               (isMiniLook ? parts.sunkenMiniFocused().get() : parts.sunkenFocused().get()) :
-              (isMiniLook ? parts.sunkenMiniNormal().get() : parts.sunkenNormal().get())));
+              (isMiniLook ? parts.sunkenMiniNormal().get() : parts.sunkenNormal().get())),
+           is_transparent(bg)); // Paint center if there is no special background color
 
   drawEntryText(g, widget);
 }
 
 namespace {
 
-class DrawEntryTextDelegate : public os::DrawTextDelegate {
+class DrawEntryTextDelegate : public text::DrawTextDelegate {
 public:
   DrawEntryTextDelegate(Entry* widget, Graphics* graphics, const gfx::Point& pos, const int h)
     : m_widget(widget)
@@ -1195,7 +1336,7 @@ public:
   const gfx::Rect& textBounds() const { return m_textBounds; }
 
   void preProcessChar(const int index,
-                      const int codepoint,
+                      const base::codepoint_t codepoint,
                       gfx::Color& fg,
                       gfx::Color& bg,
                       const gfx::Rect& charBounds) override
@@ -1283,18 +1424,26 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
   DrawEntryTextDelegate delegate(widget, g, bounds.origin(), widget->textHeight());
   int scroll = delegate.index();
 
-  const std::string& textString = widget->text();
-  base::utf8_decode dec(textString);
-  auto pos = dec.pos();
-  for (int i = 0; i < scroll && dec.next(); ++i)
-    pos = dec.pos();
+  if (!widget->text().empty()) {
+    const std::string& textString = widget->text();
+    base::utf8_decode dec(textString);
+    auto pos = dec.pos();
+    for (int i = 0; i < scroll && dec.next(); ++i)
+      pos = dec.pos();
 
-  // TODO use a string_view()
-  g->drawText(std::string(pos, textString.end()),
-              colors.text(),
-              ColorNone,
-              bounds.origin(),
-              &delegate);
+    IntersectClip clip(g, bounds);
+    if (clip) {
+      text::FontMetrics metrics;
+      widget->font()->metrics(&metrics);
+      const float baselineShift = -metrics.ascent - widget->textBlob()->baseline();
+
+      g->drawTextWithDelegate(std::string(pos, textString.end()), // TODO use a string_view()
+                              colors.text(),
+                              ColorNone,
+                              gfx::Point(bounds.x, bounds.y + baselineShift),
+                              &delegate);
+    }
+  }
 
   bounds.x += delegate.textBounds().w;
 
@@ -1302,7 +1451,7 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
   if (!widget->getSuffix().empty()) {
     Rect sufBounds(bounds.x,
                    bounds.y,
-                   bounds.x2() - widget->childSpacing() * guiscale() - bounds.x,
+                   bounds.x2() - widget->childSpacing() - bounds.x,
                    widget->textHeight());
     IntersectClip clip(g, sufBounds & widget->clientChildrenBounds());
     if (clip) {
@@ -1627,12 +1776,15 @@ void SkinTheme::drawText(Graphics* g,
   if (t || widget->hasText()) {
     Rect textrc;
 
-    g->setFont(AddRef(widget->font()));
+    g->setFont(widget->font());
 
-    if (!t)
+    if (!t) {
       t = widget->text().c_str();
-
-    textrc.setSize(g->measureUIText(t));
+      textrc.setSize(widget->textSize());
+    }
+    else {
+      textrc.setSize(g->measureText(t));
+    }
 
     // Horizontally text alignment
 

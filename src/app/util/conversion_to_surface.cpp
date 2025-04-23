@@ -14,7 +14,7 @@
 #include "base/24bits.h"
 #include "doc/algo.h"
 #include "doc/color_scales.h"
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/rgbmap.h"
 #include "os/surface.h"

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2025  Igara Studio S.A. -->
 <!-- Copyright (C) 2014-2018  David Capello -->
 <preferences>
 
@@ -94,6 +94,10 @@
       <value id="HORIZONTAL" value="1" />
       <value id="VERTICAL" value="2" />
       <value id="BOTH" value="3" />
+      <value id="RIGHT_DIAG" value="4" />
+      <value id="LEFT_DIAG" value="8" />
+      <value id="BOTH_DIAG" value="12" />
+      <value id="ALL" value="15" />
     </enum>
     <enum id="PaintingCursorType">
       <value id="SIMPLE_CROSSHAIR" value="0" />
@@ -137,6 +141,11 @@
       <value id="EIGHT_BIT" value="0" />
       <value id="PERCENTAGE" value="1" />
     </enum>
+    <enum id="CelContentFormat">
+      <value id="COMPRESSED" value="0" />
+      <value id="KEEP_AS_IS" value="1" />
+      <value id="RAW_IMAGE" value="2" />
+    </enum>
   </types>
 
   <global>
@@ -157,6 +166,7 @@
       <option id="keep_closed_sprite_on_memory" type="bool" default="true" />
       <option id="keep_closed_sprite_on_memory_for" type="double" default="15.0" />
       <option id="show_full_path" type="bool" default="true" />
+      <option id="edit_full_path" type="bool" default="false" />
       <option id="timeline_position" type="TimelinePosition" default="TimelinePosition::BOTTOM" />
       <option id="timeline_layer_panel_width" type="int" default="100" />
       <option id="show_menu_bar" type="bool" default="true" />
@@ -237,6 +247,7 @@
       <option id="multiple_windows" type="bool" default="false" />
       <option id="new_render_engine" type="bool" default="true" />
       <option id="new_blend" type="bool" default="true" />
+      <option id="compose_groups" type="bool" default="false" />
       <option id="use_native_clipboard" type="bool" default="true" />
       <option id="use_native_file_dialog" type="bool" default="true" />
       <option id="use_shaders_for_color_selectors" type="bool" default="true" />
@@ -350,6 +361,7 @@
       <option id="font_face" type="std::string" />
       <option id="font_size" type="int" default="12" />
       <option id="antialias" type="bool" default="false" />
+      <option id="font_info" type="std::string" />
     </section>
     <section id="symmetry_mode">
       <option id="enabled" type="bool" default="false" />
@@ -453,6 +465,9 @@
     <section id="tilemap">
       <option id="show_delete_unused_tileset_alert" type="bool" default="true" />
     </section>
+    <section id="aseprite_format">
+      <option id="cel_format" type="CelContentFormat" default="CelContentFormat::COMPRESSED" />
+    </section>
   </global>
 
   <tool>
@@ -535,6 +550,7 @@
       <option id="enabled" type="bool" default="false" />
       <option id="overlay_enabled" type="bool" default="false" />
       <option id="overlay_size" type="int" default="5" />
+      <option id="scale_up_to_fit" type="bool" default="false" />
     </section>
     <section id="onionskin">
       <option id="active" type="bool" default="false" />

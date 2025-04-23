@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -35,7 +35,6 @@
 #include "app/ui/toolbar.h"
 #include "app/ui/zoom_entry.h"
 #include "app/ui_context.h"
-#include "app/util/range_utils.h"
 #include "app/util/tile_flags_utils.h"
 #include "base/fs.h"
 #include "base/string.h"
@@ -44,8 +43,8 @@
 #include "doc/sprite.h"
 #include "fmt/format.h"
 #include "gfx/size.h"
-#include "os/font.h"
 #include "os/surface.h"
+#include "text/font.h"
 #include "ui/ui.h"
 #include "ver/info.h"
 
@@ -137,7 +136,7 @@ class StatusBar::Indicators : public HBox {
         g->drawText(text(),
                     textColor,
                     ColorNone,
-                    Point(rc.x, rc.y + rc.h / 2 - font()->height() / 2));
+                    Point(rc.x, guiscaled_center(rc.y, rc.h, font()->lineHeight())));
       }
     }
   };
@@ -181,10 +180,12 @@ class StatusBar::Indicators : public HBox {
       os::Surface* icon = m_part->bitmap(0);
 
       g->fillRect(bgColor(), rc);
+
+      const int y = guiscaled_center(rc.y, rc.h, icon->height());
       if (m_colored)
-        g->drawColoredRgbaSurface(icon, textColor, rc.x, rc.y + rc.h / 2 - icon->height() / 2);
+        g->drawColoredRgbaSurface(icon, textColor, rc.x, y);
       else
-        g->drawRgbaSurface(icon, rc.x, rc.y + rc.h / 2 - icon->height() / 2);
+        g->drawRgbaSurface(icon, rc.x, y);
     }
 
     skin::SkinPartPtr m_part;

@@ -13,7 +13,6 @@
 
 #include "base/vector2d.h"
 #include "doc/image.h"
-#include "doc/image_impl.h"
 #include "render/dithering_matrix.h"
 
 namespace render {

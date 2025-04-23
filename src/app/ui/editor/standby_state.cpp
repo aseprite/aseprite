@@ -41,6 +41,7 @@
 #include "app/ui/editor/pivot_helpers.h"
 #include "app/ui/editor/pixels_movement.h"
 #include "app/ui/editor/scrolling_state.h"
+#include "app/ui/editor/select_text_box_state.h"
 #include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui/editor/transform_handles.h"
 #include "app/ui/editor/vec2.h"
@@ -48,7 +49,6 @@
 #include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
-#include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
 #include "app/util/layer_utils.h"
 #include "app/util/new_image_from_mask.h"
@@ -156,7 +156,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
       ColorPicker picker;
       picker.pickColor(site, cursor, editor->projection(), ColorPicker::FromComposition);
 
-      auto range = App::instance()->timeline()->range();
+      const view::RealRange& range = context->range();
       if (picker.layer() && !range.contains(picker.layer())) {
         layer = picker.layer();
         if (layer) {
@@ -212,6 +212,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     return true;
   }
 
+  // Handle Slice tool
   if (clickedInk->isSlice()) {
     EditorHit hit = editor->calcHit(msg->position());
     switch (hit.type()) {
@@ -248,6 +249,13 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
         }
         return true;
     }
+  }
+
+  // Handle Text tool
+  if (clickedInk->isText()) {
+    EditorStatePtr newState(new SelectTextBoxState(editor, msg));
+    editor->setState(newState);
+    return true;
   }
 
   // Only if the selected tool or quick tool is selection, we give the
@@ -440,6 +448,10 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
           }
           return true;
       }
+    }
+    else if (ink->isText()) {
+      editor->showMouseCursor(kCrosshairCursor);
+      return true;
     }
   }
 
@@ -858,7 +870,7 @@ bool StandbyState::Decorator::onSetCursor(tools::Ink* ink,
 
   if (ink && ink->isSelection() && editor->document()->isMaskVisible() &&
       (!Preferences::instance().selection.modifiersDisableHandles() ||
-       os::instance()->keyModifiers() == kKeyNoneModifier)) {
+       os::System::instance()->keyModifiers() == kKeyNoneModifier)) {
     auto theme = skin::SkinTheme::get(editor);
     const Transformation transformation(m_standbyState->getTransformation(editor));
     TransformHandles* tr = getTransformHandles(editor);
@@ -988,7 +1000,7 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
   if (StandbyState::Decorator::getSymmetryHandles(editor, handles)) {
     auto theme = skin::SkinTheme::get(editor);
     os::Surface* part = theme->parts.transformationHandle()->bitmap(0);
-    ScreenGraphics g(editor->display());
+    ui::Graphics g(editor->display(), editor->display()->backLayer()->surface(), 0, 0);
     for (const auto& handle : handles)
       g.drawRgbaSurface(part, handle.bounds.x, handle.bounds.y);
   }
@@ -1017,7 +1029,9 @@ bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, Handles& handle
       auto theme = skin::SkinTheme::get(editor);
       os::Surface* part = theme->parts.transformationHandle()->bitmap(0);
 
-      if (int(mode) & int(app::gen::SymmetryMode::HORIZONTAL)) {
+      if ((int(mode) & int(app::gen::SymmetryMode::HORIZONTAL)) ||
+          (int(mode) & int(app::gen::SymmetryMode::RIGHT_DIAG)) ||
+          (int(mode) & int(app::gen::SymmetryMode::LEFT_DIAG))) {
         double pos = symmetry.xAxis();
         gfx::PointF pt1, pt2;
 
@@ -1036,7 +1050,9 @@ bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, Handles& handle
           Handle(BOTTOM, gfx::Rect(int(pt2.x), int(pt2.y), part->width(), part->height())));
       }
 
-      if (int(mode) & int(app::gen::SymmetryMode::VERTICAL)) {
+      if ((int(mode) & int(app::gen::SymmetryMode::VERTICAL)) ||
+          (int(mode) & int(app::gen::SymmetryMode::RIGHT_DIAG)) ||
+          (int(mode) & int(app::gen::SymmetryMode::LEFT_DIAG))) {
         double pos = symmetry.yAxis();
         gfx::PointF pt1, pt2;
 

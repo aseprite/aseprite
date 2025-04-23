@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -90,10 +90,12 @@ void ColorPicker::pickColor(const Site& site,
   m_alpha = 255;
   m_color = app::Color::fromMask();
 
+  auto& pref = Preferences::instance();
+
   // Check tiled mode
   if (sprite && site.document()) {
     auto doc = static_cast<const Doc*>(site.document());
-    DocumentPreferences& docPref = Preferences::instance().document(doc);
+    DocumentPreferences& docPref = pref.document(doc);
 
     pos = wrap_pointF(docPref.tiled.mode(), site.sprite()->size(), pos);
   }
@@ -102,7 +104,7 @@ void ColorPicker::pickColor(const Site& site,
   switch (mode) {
     // Pick from the composed image
     case FromComposition: {
-      doc::RenderPlan plan;
+      doc::RenderPlan plan(pref.experimental.composeGroups());
       plan.addLayer(sprite->root(), site.frame());
 
       doc::CelList cels;
@@ -134,7 +136,8 @@ void ColorPicker::pickColor(const Site& site,
                                    pos.y,
                                    site.frame(),
                                    proj,
-                                   Preferences::instance().experimental.newBlend()));
+                                   pref.experimental.newBlend(),
+                                   pref.experimental.composeGroups()));
       }
       break;
     }
@@ -173,7 +176,7 @@ void ColorPicker::pickColor(const Site& site,
     }
 
     case FromFirstReferenceLayer: {
-      doc::RenderPlan plan;
+      doc::RenderPlan plan(pref.experimental.composeGroups());
       for (doc::Layer* refLayer : sprite->allVisibleReferenceLayers())
         plan.addLayer(refLayer, site.frame());
 

@@ -10,6 +10,8 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
+#include "app/commands/new_params.h"
+#include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/ini_file.h"
 #include "app/ui_context.h"
@@ -25,7 +27,13 @@ namespace app {
 
 using namespace ui;
 
-class DuplicateSpriteCommand : public Command {
+struct DuplicateSpriteParams : public NewParams {
+  Param<bool> ui{ this, true, "ui" };
+  Param<std::string> filename{ this, std::string(), "filename" };
+  Param<bool> flatten{ this, false, "flatten" };
+};
+
+class DuplicateSpriteCommand : public CommandWithNewParams<DuplicateSpriteParams> {
 public:
   DuplicateSpriteCommand();
 
@@ -35,7 +43,7 @@ protected:
 };
 
 DuplicateSpriteCommand::DuplicateSpriteCommand()
-  : Command(CommandId::DuplicateSprite(), CmdUIOnlyFlag)
+  : CommandWithNewParams<DuplicateSpriteParams>(CommandId::DuplicateSprite(), CmdRecordableFlag)
 {
 }
 
@@ -46,35 +54,52 @@ bool DuplicateSpriteCommand::onEnabled(Context* context)
 
 void DuplicateSpriteCommand::onExecute(Context* context)
 {
+  const bool ui = (params().ui() && context->isUIAvailable());
+
   const ContextReader reader(context);
   const Doc* document = reader.document();
 
-  // Load the window widget
-  app::gen::DuplicateSprite window;
-  std::string fn = document->filename();
-  std::string ext = base::get_file_extension(fn);
-  window.srcName()->setText(base::get_file_name(fn));
-  window.dstName()->setText(base::get_file_title(fn) + " Copy" + (!ext.empty() ? "." + ext : ""));
+  const std::string fn = document->filename();
+  const std::string ext = base::get_file_extension(fn);
 
-  if (get_config_bool("DuplicateSprite", "Flatten", false))
-    window.flatten()->setSelected(true);
+  std::string duplicateFn = params().filename.isSet() ?
+                              params().filename() :
+                              base::get_file_title(fn) + " Copy" + (!ext.empty() ? "." + ext : "");
 
-  // Open the window
-  window.openWindowInForeground();
+  bool flatten = params().flatten.isSet() ? params().flatten() :
+                                            get_config_bool("DuplicateSprite", "Flatten", false);
 
-  if (window.closer() == window.ok()) {
-    set_config_bool("DuplicateSprite", "Flatten", window.flatten()->isSelected());
+  if (ui) {
+    // Load the window widget
+    app::gen::DuplicateSprite window;
+    window.srcName()->setText(base::get_file_name(fn));
+    window.dstName()->setText(duplicateFn);
+    window.flatten()->setSelected(flatten);
 
-    // Make a copy of the document
-    Doc* docCopy;
-    if (window.flatten()->isSelected())
-      docCopy = document->duplicate(DuplicateWithFlattenLayers);
-    else
-      docCopy = document->duplicate(DuplicateExactCopy);
+    // Open the window
+    window.openWindowInForeground();
 
-    docCopy->setFilename(window.dstName()->text().c_str());
-    docCopy->setContext(context);
+    if (window.closer() == window.ok()) {
+      flatten = window.flatten()->isSelected();
+      duplicateFn = window.dstName()->text();
+
+      // Only set the config when we do it from the UI, to avoid automation messing with user
+      // expectations.
+      set_config_bool("DuplicateSprite", "Flatten", flatten);
+    }
+    else // Abort if we close/cancel the window
+      return;
   }
+
+  // Make a copy of the document
+  Doc* docCopy;
+  if (flatten)
+    docCopy = document->duplicate(DuplicateWithFlattenLayers);
+  else
+    docCopy = document->duplicate(DuplicateExactCopy);
+
+  docCopy->setFilename(duplicateFn);
+  docCopy->setContext(context);
 }
 
 Command* CommandFactory::createDuplicateSpriteCommand()

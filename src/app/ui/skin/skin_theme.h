@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +9,8 @@
 #define APP_UI_SKIN_SKIN_THEME_H_INCLUDED
 #pragma once
 
+#include "app/fonts/font_info.h"
+#include "app/fonts/fonts.h"
 #include "app/ui/skin/skin_part.h"
 #include "gfx/color.h"
 #include "gfx/fwd.h"
@@ -31,24 +33,22 @@ class Graphics;
 
 namespace app { namespace skin {
 
-class FontData;
-
 class ThemeFont {
 public:
   ThemeFont() {}
-  ThemeFont(os::FontRef font, bool mnemonics) : m_font(font), m_mnemonics(mnemonics) {}
-  os::FontRef font() { return m_font; }
+  ThemeFont(text::FontRef font, bool mnemonics) : m_font(font), m_mnemonics(mnemonics) {}
+  text::FontRef font() { return m_font; }
   bool mnemonics() { return m_mnemonics; }
 
 private:
-  os::FontRef m_font;
+  text::FontRef m_font;
   bool m_mnemonics;
 };
 
 // This is the GUI theme used by Aseprite (which use images from
 // data/skins directory).
-class SkinTheme : public ui::Theme,
-                  public app::gen::ThemeFile<SkinTheme> {
+class SkinTheme final : public ui::Theme,
+                        public app::gen::ThemeFile<SkinTheme> {
 public:
   static const char* kThemesFolderName;
 
@@ -62,14 +62,16 @@ public:
   int preferredScreenScaling() const { return m_preferredScreenScaling; }
   int preferredUIScaling() const { return m_preferredUIScaling; }
 
-  os::Font* getDefaultFont() const override { return m_defaultFont.get(); }
-  os::Font* getWidgetFont(const ui::Widget* widget) const override;
-  os::Font* getMiniFont() const { return m_miniFont.get(); }
-  os::Font* getUnscaledFont(os::Font* font) const
+  const FontInfo& getDefaultFontInfo() const { return m_defaultFontInfo; }
+  const FontInfo& getMiniFontInfo() const { return m_miniFontInfo; }
+  text::FontRef getDefaultFont() const override { return m_defaultFont; }
+  text::FontRef getWidgetFont(const ui::Widget* widget) const override;
+  text::FontRef getMiniFont() const { return m_miniFont; }
+  text::FontRef getUnscaledFont(const text::FontRef& font) const
   {
-    auto it = m_unscaledFonts.find(font);
+    auto it = m_unscaledFonts.find(font.get());
     if (it != m_unscaledFonts.end())
-      return it->second.get();
+      return it->second;
     else
       return font;
   }
@@ -122,7 +124,7 @@ public:
     if (it != m_styles.end())
       return it->second;
     else
-      return getDefaultStyle();
+      return EmptyStyle();
   }
 
   SkinPartPtr getPartById(const std::string& id) const
@@ -198,6 +200,7 @@ private:
 
   std::string findThemePath(const std::string& themeId) const;
 
+  Fonts m_fonts;
   std::string m_path;
   os::SurfaceRef m_sheet;
   // Contains the sheet surface as is, without any scale.
@@ -210,12 +213,13 @@ private:
   std::map<std::string, ui::Cursor*> m_cursors;
   std::array<ui::Cursor*, ui::kCursorTypes> m_standardCursors;
   std::map<std::string, ui::Style*> m_styles;
-  std::map<std::string, FontData*> m_fonts;
   std::map<std::string, ThemeFont> m_themeFonts;
   // Stores the unscaled font version of the Font pointer used as a key.
-  std::map<os::Font*, os::FontRef> m_unscaledFonts;
-  os::FontRef m_defaultFont;
-  os::FontRef m_miniFont;
+  std::map<text::Font*, text::FontRef> m_unscaledFonts;
+  FontInfo m_defaultFontInfo;
+  FontInfo m_miniFontInfo;
+  text::FontRef m_defaultFont;
+  text::FontRef m_miniFont;
   int m_preferredScreenScaling;
   int m_preferredUIScaling;
 };

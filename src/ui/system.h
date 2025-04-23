@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -12,6 +12,7 @@
 #include "gfx/fwd.h"
 #include "ui/base.h"
 #include "ui/cursor_type.h"
+#include "ui/translation_delegate.h"
 
 #include <functional>
 #include <string>
@@ -23,18 +24,22 @@ class Cursor;
 class Display;
 class Widget;
 
-class UISystem {
+class UISystem : public TranslationDelegate {
 public:
   static UISystem* instance();
 
   UISystem();
   ~UISystem();
 
+  ClipboardDelegate* clipboardDelegate() const { return m_clipboardDelegate; }
+  TranslationDelegate* translationDelegate() const { return m_translationDelegate; }
+
   void setClipboardDelegate(ClipboardDelegate* delegate) { m_clipboardDelegate = delegate; }
-  ClipboardDelegate* clipboardDelegate() { return m_clipboardDelegate; }
+  void setTranslationDelegate(TranslationDelegate* delegate) { m_translationDelegate = delegate; }
 
 private:
-  ClipboardDelegate* m_clipboardDelegate;
+  ClipboardDelegate* m_clipboardDelegate = nullptr;
+  TranslationDelegate* m_translationDelegate = nullptr;
 };
 
 void set_multiple_displays(bool multi);
@@ -45,18 +50,11 @@ bool get_clipboard_text(std::string& text);
 
 // Mouse related
 
-// Updates the position of the mouse cursor overlay depending on the
-// current mouse position.
-void update_cursor_overlay();
-
 void set_use_native_cursors(bool state);
 CursorType get_mouse_cursor();
 void set_mouse_cursor(CursorType type, const Cursor* cursor = nullptr);
 void set_mouse_cursor_scale(const int newScale);
 void set_mouse_cursor_reset_info();
-
-void hide_mouse_cursor();
-void show_mouse_cursor();
 
 void _internal_set_mouse_display(Display* display);
 void _internal_no_mouse_position();
@@ -69,6 +67,9 @@ gfx::Point get_mouse_position();
 void set_mouse_position(const gfx::Point& newPos, Display* display);
 
 void execute_from_ui_thread(std::function<void()>&& func);
+// If it is called from the UI thread just executes the function, if it is
+// called from a different thread, then call execute_from_ui_thread.
+void execute_now_or_enqueue(std::function<void()>&& func);
 bool is_ui_thread();
 #ifdef _DEBUG
 void assert_ui_thread();

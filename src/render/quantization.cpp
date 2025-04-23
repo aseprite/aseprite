@@ -11,7 +11,7 @@
 
 #include "render/quantization.h"
 
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/octree_map.h"
 #include "doc/palette.h"

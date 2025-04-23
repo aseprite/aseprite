@@ -15,8 +15,7 @@
 
 #include "doc/blend_funcs.h"
 #include "doc/image.h"
-#include "doc/image_bits.h"
-#include "doc/image_iterator.h"
+#include "doc/image_traits.h"
 #include "doc/palette.h"
 
 namespace doc {
@@ -25,7 +24,7 @@ template<typename ImageTraits>
 class LockImageBits;
 
 template<class Traits>
-class ImageImpl : public Image {
+class ImageImpl final : public Image {
 public:
   using traits_t = Traits;
   using address_t = typename traits_t::address_t;

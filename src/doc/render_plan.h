@@ -35,6 +35,7 @@ public:
   using Items = std::vector<Item>;
 
   RenderPlan();
+  RenderPlan(const bool composeGroups) : m_composeGroups(composeGroups) {}
 
   const Items& items() const
   {
@@ -51,6 +52,7 @@ private:
   int m_order = 0;
   mutable Items m_items;
   mutable bool m_processZIndex = true;
+  bool m_composeGroups = false;
 };
 
 } // namespace doc

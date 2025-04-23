@@ -10,7 +10,7 @@
 
 #include "doc/mask_boundaries.h"
 
-#include "doc/image_impl.h"
+#include "doc/image.h"
 
 namespace doc {
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -94,7 +94,7 @@ bool DraggingValueState::onMouseMove(Editor* editor, MouseMessage* msg)
     const gfx::Point delta = (msg->position() - initialPos);
     const DragVector deltaV(delta.x, delta.y);
     const DragVector invDragVector(key->dragVector().x, -key->dragVector().y);
-    const double threshold = invDragVector.magnitude();
+    const float threshold = invDragVector.magnitude();
 
     DragVector v = deltaV.projectOn(invDragVector);
     double dz = v.magnitude();

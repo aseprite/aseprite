@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2025 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -24,6 +24,7 @@
 #include "doc/string_io.h"
 #include "doc/subobjects_io.h"
 #include "doc/user_data_io.h"
+#include "doc/uuid_io.h"
 
 #include <iostream>
 #include <memory>
@@ -40,7 +41,6 @@ void write_layer(std::ostream& os, const Layer* layer)
 {
   write32(os, layer->id());
   write_string(os, layer->name());
-
   write32(os, static_cast<int>(layer->flags())); // Flags
   write16(os, static_cast<int>(layer->type()));  // Type
 
@@ -106,6 +106,7 @@ void write_layer(std::ostream& os, const Layer* layer)
   }
 
   write_user_data(os, layer->userData());
+  write_uuid(os, layer->uuid());
 }
 
 Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const SerialFormat serial)
@@ -187,12 +188,19 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const Seri
 
   const UserData userData = read_user_data(is, serial);
 
-  if (layer) {
-    layer->setName(name);
-    layer->setFlags(static_cast<LayerFlags>(flags));
-    layer->setId(id);
-    layer->setUserData(userData);
-  }
+  base::Uuid uuid;
+  if (serial >= SerialFormat::Ver3)
+    uuid = read_uuid(is);
+
+  if (!layer)
+    return nullptr;
+
+  layer->setName(name);
+  layer->setFlags(static_cast<LayerFlags>(flags));
+  layer->setId(id);
+  layer->setUserData(userData);
+  if (serial >= SerialFormat::Ver3)
+    layer->setUuid(uuid);
 
   return layer.release();
 }

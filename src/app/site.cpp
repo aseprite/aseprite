@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -19,6 +19,8 @@
 #include "doc/sprite.h"
 #include "doc/tileset.h"
 #include "ui/system.h"
+#include "view/cels.h"
+#include "view/range.h"
 
 namespace app {
 
@@ -66,13 +68,13 @@ Palette* Site::palette() const
   return (m_sprite ? m_sprite->palette(m_frame) : nullptr);
 }
 
-void Site::range(const DocRange& range)
+void Site::range(const view::RealRange& range)
 {
   m_range = range;
   switch (range.type()) {
-    case DocRange::kCels:   m_focus = Site::InCels; break;
-    case DocRange::kFrames: m_focus = Site::InFrames; break;
-    case DocRange::kLayers: m_focus = Site::InLayers; break;
+    case view::Range::kCels:   m_focus = Site::InCels; break;
+    case view::Range::kFrames: m_focus = Site::InFrames; break;
+    case view::Range::kLayers: m_focus = Site::InLayers; break;
   }
 }
 
@@ -133,6 +135,30 @@ bool Site::shouldTrimCel(Cel* cel) const
           // Don't trim tiles in manual mode
           !(m_tilemapMode == TilemapMode::Pixels && m_tilesetMode == TilesetMode::Manual &&
             cel->layer()->isTilemap()));
+}
+
+CelList Site::selectedUniqueCels() const
+{
+  if (m_range.enabled()) {
+    return view::get_unique_cels(m_sprite, m_range);
+  }
+  else if (auto c = cel()) {
+    return CelList{ c };
+  }
+  else
+    return CelList();
+}
+
+CelList Site::selectedUniqueCelsToEditPixels() const
+{
+  if (m_range.enabled()) {
+    return view::get_unique_cels_to_edit_pixels(m_sprite, m_range);
+  }
+  else if (auto c = cel()) {
+    if (m_layer && m_layer->canEditPixels())
+      return CelList{ c };
+  }
+  return CelList();
 }
 
 } // namespace app

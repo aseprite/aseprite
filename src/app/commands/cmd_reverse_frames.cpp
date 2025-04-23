@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2023  Igara Studio SA
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -32,14 +33,14 @@ ReverseFramesCommand::ReverseFramesCommand() : Command(CommandId::ReverseFrames(
 
 bool ReverseFramesCommand::onEnabled(Context* context)
 {
-  auto range = App::instance()->timeline()->range();
+  const view::RealRange& range = context->range();
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable) && range.enabled() &&
          range.frames() >= 2; // We need at least 2 frames to reverse
 }
 
 void ReverseFramesCommand::onExecute(Context* context)
 {
-  auto range = App::instance()->timeline()->range();
+  const view::RealRange& range = context->range();
   if (!range.enabled())
     return; // Nothing to do
 

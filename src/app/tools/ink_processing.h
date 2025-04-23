@@ -6,11 +6,12 @@
 // the End-User License Agreement for Aseprite.
 
 #include "app/color_utils.h"
+#include "app/tools/symmetry.h"
 #include "app/util/wrap_point.h"
 #include "app/util/wrap_value.h"
 #include "doc/blend_funcs.h"
 #include "doc/blend_internals.h"
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/remap.h"
@@ -32,7 +33,13 @@ public:
   virtual ~BaseInkProcessing() {}
   virtual void processScanline(int x1, int y, int x2, ToolLoop* loop) = 0;
   virtual void prepareForStrokes(ToolLoop* loop, Strokes& strokes) {}
-  virtual void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) {}
+  virtual void prepareForPointShape(ToolLoop* loop,
+                                    bool firstPoint,
+                                    int x,
+                                    int y,
+                                    doc::SymmetryIndex index)
+  {
+  }
   virtual void prepareVForPointShape(ToolLoop* loop, int y) {}
   virtual void prepareUForPointShapeWholeScanline(ToolLoop* loop, int x1) {}
   virtual void prepareUForPointShapeSlicedScanline(ToolLoop* loop, bool leftSlice, int x1) {}
@@ -136,7 +143,11 @@ class CopyInkProcessing : public SimpleInkProcessing<CopyInkProcessing<ImageTrai
 public:
   CopyInkProcessing(ToolLoop* loop) {}
 
-  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override
+  void prepareForPointShape(ToolLoop* loop,
+                            bool firstPoint,
+                            int x,
+                            int y,
+                            doc::SymmetryIndex index) override
   {
     m_color = loop->getPrimaryColor();
 
@@ -164,7 +175,11 @@ class LockAlphaInkProcessing
 public:
   LockAlphaInkProcessing(ToolLoop* loop) : m_opacity(loop->getOpacity()) {}
 
-  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override
+  void prepareForPointShape(ToolLoop* loop,
+                            bool firstPoint,
+                            int x,
+                            int y,
+                            doc::SymmetryIndex index) override
   {
     m_color = loop->getPrimaryColor();
   }
@@ -206,7 +221,11 @@ public:
   {
   }
 
-  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override
+  void prepareForPointShape(ToolLoop* loop,
+                            bool firstPoint,
+                            int x,
+                            int y,
+                            doc::SymmetryIndex index) override
   {
     m_color = m_palette->getEntry(loop->getPrimaryColor());
   }
@@ -246,7 +265,11 @@ class TransparentInkProcessing
 public:
   TransparentInkProcessing(ToolLoop* loop) { m_opacity = loop->getOpacity(); }
 
-  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override
+  void prepareForPointShape(ToolLoop* loop,
+                            bool firstPoint,
+                            int x,
+                            int y,
+                            doc::SymmetryIndex index) override
   {
     m_color = loop->getPrimaryColor();
   }
@@ -286,7 +309,11 @@ public:
   {
   }
 
-  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override
+  void prepareForPointShape(ToolLoop* loop,
+                            bool firstPoint,
+                            int x,
+                            int y,
+                            doc::SymmetryIndex index) override
   {
     m_color = m_palette->getEntry(loop->getPrimaryColor());
   }
@@ -325,7 +352,11 @@ class MergeInkProcessing
 public:
   MergeInkProcessing(ToolLoop* loop) { m_opacity = loop->getOpacity(); }
 
-  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override
+  void prepareForPointShape(ToolLoop* loop,
+                            bool firstPoint,
+                            int x,
+                            int y,
+                            doc::SymmetryIndex index) override
   {
     m_color = loop->getPrimaryColor();
   }
@@ -364,7 +395,11 @@ public:
   {
   }
 
-  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override
+  void prepareForPointShape(ToolLoop* loop,
+                            bool firstPoint,
+                            int x,
+                            int y,
+                            doc::SymmetryIndex index) override
   {
     m_color = (int(loop->getPrimaryColor()) == m_maskIndex ?
                  (m_palette->getEntry(loop->getPrimaryColor()) & rgba_rgb_mask) :
@@ -1161,9 +1196,6 @@ public:
     m_bgColor = loop->getSecondaryColor();
     m_palette = loop->getPalette();
     m_brush = loop->getBrush();
-    m_brushImage = (m_brush->patternImage() ? m_brush->patternImage() : m_brush->image());
-    m_brushMask = m_brush->maskBitmap();
-    m_patternAlign = m_brush->pattern();
     m_opacity = loop->getOpacity();
     m_width = m_brush->bounds().w;
     m_height = m_brush->bounds().h;
@@ -1178,15 +1210,27 @@ public:
     }
     else
       m_transparentColor = 0;
+    m_isBoundsRotated = false;
   }
 
-  void prepareForPointShape(ToolLoop* loop, bool firstPoint, int x, int y) override
+  void prepareForPointShape(ToolLoop* loop,
+                            bool firstPoint,
+                            int x,
+                            int y,
+                            doc::SymmetryIndex index) override
   {
+    m_isBoundsRotated = does_symmetry_rotate_image(index);
+    m_brushImage = (m_brush->patternImage() ? m_brush->patternImage() :
+                                              m_brush->getSymmetryImage(index));
+    m_brushMask = m_brush->getSymmetryMask(index);
+    m_patternAlign = m_brush->pattern();
     if (m_patternAlign != BrushPattern::ALIGNED_TO_SRC) {
+      const int brushW = brushWidth();
+      const int brushH = brushHeight();
       // Case: during painting process with PaintBucket Tool
       if (loop->getPointShape()->isFloodFill()) {
-        m_u = x - m_brush->bounds().w / 2;
-        m_v = y - m_brush->bounds().h / 2;
+        m_u = x - brushW / 2;
+        m_v = y - brushH / 2;
       }
       // Case: during brush preview of PaintBucket Tool
       else if (loop->getController()->isOnePoint()) {
@@ -1195,64 +1239,67 @@ public:
       }
       else {
         m_u = ((m_brush->patternOrigin().x % loop->sprite()->width()) - loop->getCelOrigin().x) %
-              m_width;
+              brushW;
         m_v = ((m_brush->patternOrigin().y % loop->sprite()->height()) - loop->getCelOrigin().y) %
-              m_height;
+              brushH;
       }
     }
   }
 
   void prepareVForPointShape(ToolLoop* loop, int y) override
   {
+    const int brushH = brushHeight();
     if (m_patternAlign == doc::BrushPattern::ALIGNED_TO_SRC) {
-      m_v = (m_brush->patternOrigin().y - loop->getCelOrigin().y) % m_height;
+      m_v = (m_brush->patternOrigin().y - loop->getCelOrigin().y) % brushH;
       if (m_v < 0)
-        m_v += m_height;
+        m_v += brushH;
     }
     else {
       int spriteH = loop->sprite()->height();
       if (y / spriteH > 0)
         // 'y' is outside of the center tile.
-        m_v = (m_brush->patternOrigin().y + m_height - (y / spriteH) * spriteH) % m_height;
+        m_v = (m_brush->patternOrigin().y + brushH - (y / spriteH) * spriteH) % brushH;
       else
         // 'y' is inside of the center tile.
-        m_v = ((m_brush->patternOrigin().y % spriteH) - loop->getCelOrigin().y) % m_height;
+        m_v = ((m_brush->patternOrigin().y % spriteH) - loop->getCelOrigin().y) % brushH;
     }
   }
 
   void prepareUForPointShapeWholeScanline(ToolLoop* loop, int x1) override
   {
+    const int brushW = brushWidth();
     if (m_patternAlign == doc::BrushPattern::ALIGNED_TO_SRC) {
-      m_u = (m_brush->patternOrigin().x - loop->getCelOrigin().x) % m_width;
+      m_u = (m_brush->patternOrigin().x - loop->getCelOrigin().x) % brushW;
       if (m_u < 0)
-        m_u += m_height;
+        m_u += brushHeight();
     }
     else {
       m_u = ((m_brush->patternOrigin().x % loop->sprite()->width()) - loop->getCelOrigin().x) %
-            m_width;
+            brushW;
       if (x1 / loop->sprite()->width() > 0)
-        m_u = (m_brush->patternOrigin().x + m_width -
+        m_u = (m_brush->patternOrigin().x + brushW -
                (x1 / loop->sprite()->width()) * loop->sprite()->width()) %
-              m_width;
+              brushW;
     }
   }
 
   void prepareUForPointShapeSlicedScanline(ToolLoop* loop, bool leftSlice, int x1) override
   {
+    const int brushW(brushWidth());
     if (m_patternAlign == doc::BrushPattern::ALIGNED_TO_SRC) {
-      m_u = (m_brush->patternOrigin().x - loop->getCelOrigin().x) % m_width;
+      m_u = (m_brush->patternOrigin().x - loop->getCelOrigin().x) % brushW;
       if (m_u < 0)
-        m_u += m_height;
+        m_u += brushHeight();
       return;
     }
     else {
       if (leftSlice)
         m_u = ((m_brush->patternOrigin().x % loop->sprite()->width()) - loop->getCelOrigin().x) %
-              m_width;
+              brushW;
       else
-        m_u = (m_brush->patternOrigin().x + m_width -
+        m_u = (m_brush->patternOrigin().x + brushW -
                (x1 / loop->sprite()->width() + 1) * loop->sprite()->width()) %
-              m_width;
+              brushW;
     }
   }
 
@@ -1273,12 +1320,14 @@ public:
 protected:
   bool alignPixelPoint(int& x0, int& y0)
   {
-    int x = (x0 - m_u) % m_width;
-    int y = (y0 - m_v) % m_height;
+    const int brushW = brushWidth();
+    const int brushH = brushHeight();
+    int x = (x0 - m_u) % brushW;
+    int y = (y0 - m_v) % brushH;
     if (x < 0)
-      x = m_width - ((-x) % m_width);
+      x = brushW - ((-x) % brushW);
     if (y < 0)
-      y = m_height - ((-y) % m_height);
+      y = brushH - ((-y) % brushH);
 
     if (m_brushMask && !get_pixel_fast<BitmapTraits>(m_brushMask, x, y))
       return false;
@@ -1299,10 +1348,13 @@ protected:
     return true;
   }
 
+  inline int brushWidth() const { return m_isBoundsRotated ? m_height : m_width; }
+  inline int brushHeight() const { return m_isBoundsRotated ? m_width : m_height; }
+
   color_t m_fgColor;
   color_t m_bgColor;
   const Palette* m_palette;
-  const Brush* m_brush;
+  Brush* m_brush;
   const Image* m_brushImage;
   const Image* m_brushMask;
   BrushPattern m_patternAlign;
@@ -1312,6 +1364,7 @@ protected:
   // which is the background color in order to translate to transparent color
   // in a RGBA sprite.
   color_t m_transparentColor;
+  bool m_isBoundsRotated;
 };
 
 template<>

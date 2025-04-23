@@ -15,7 +15,7 @@
 #include "doc/blend_internals.h"
 #include "doc/blend_mode.h"
 #include "doc/doc.h"
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/layer_tilemap.h"
 #include "doc/playback.h"
 #include "doc/render_plan.h"
@@ -569,6 +569,11 @@ void Render::setNewBlend(const bool newBlend)
   m_newBlendMethod = newBlend;
 }
 
+void Render::setComposeGroups(const bool composeGroup)
+{
+  m_composeGroups = composeGroup;
+}
+
 void Render::setProjection(const Projection& projection)
 {
   m_proj = projection;
@@ -663,7 +668,7 @@ void Render::renderLayer(Image* dstImage,
 
   m_globalOpacity = 255;
 
-  doc::RenderPlan plan;
+  doc::RenderPlan plan(m_composeGroups);
   plan.addLayer(layer, frame);
   renderPlan(plan, dstImage, area, frame, compositeImage, true, true, blendMode);
 }
@@ -752,7 +757,7 @@ void Render::renderSpriteLayers(Image* dstImage,
                                 frame_t frame,
                                 CompositeImageFunc compositeImage)
 {
-  doc::RenderPlan plan;
+  doc::RenderPlan plan(m_composeGroups);
   plan.addLayer(m_sprite->root(), frame);
 
   // Draw the background layer.
@@ -854,7 +859,7 @@ void Render::renderOnionskin(Image* dstImage,
         else if (m_onionskin.type() == OnionskinType::RED_BLUE_TINT)
           blendMode = (frameOut < frame ? BlendMode::RED_TINT : BlendMode::BLUE_TINT);
 
-        doc::RenderPlan plan;
+        doc::RenderPlan plan(m_composeGroups);
         plan.addLayer(onionLayer, frameIn);
         renderPlan(plan,
                    dstImage,
@@ -1052,19 +1057,18 @@ void Render::renderPlan(RenderPlan& plan,
           }
 
           if (celImage) {
-            const LayerImage* imgLayer = static_cast<const LayerImage*>(layer);
-            BlendMode layerBlendMode =
-              (blendMode == BlendMode::UNSPECIFIED ? imgLayer->blendMode() : blendMode);
+            BlendMode layerBlendMode = (blendMode == BlendMode::UNSPECIFIED ? layer->blendMode() :
+                                                                              blendMode);
 
             ASSERT(cel->opacity() >= 0);
             ASSERT(cel->opacity() <= 255);
-            ASSERT(imgLayer->opacity() >= 0);
-            ASSERT(imgLayer->opacity() <= 255);
+            ASSERT(layer->opacity() >= 0);
+            ASSERT(layer->opacity() <= 255);
 
             // Multiple three opacities: cel*layer*global (*nonactive-layer-opacity)
             int t;
             int opacity = cel->opacity();
-            opacity = MUL_UN8(opacity, imgLayer->opacity(), t);
+            opacity = MUL_UN8(opacity, layer->opacity(), t);
             opacity = MUL_UN8(opacity, m_globalOpacity, t);
             if (!isSelected && m_nonactiveLayersOpacity != 255)
               opacity = MUL_UN8(opacity, m_nonactiveLayersOpacity, t);
@@ -1118,7 +1122,45 @@ void Render::renderPlan(RenderPlan& plan,
         break;
       }
 
-      case ObjectType::LayerGroup: ASSERT(false); break;
+      case ObjectType::LayerGroup: {
+        if (!m_composeGroups) {
+          ASSERT(false);
+          break;
+        }
+
+        RenderPlan subPlan(m_composeGroups);
+
+        for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers()) {
+          if (child->isVisible())
+            subPlan.addLayer(child, frame);
+        }
+
+        // We treat the group layer as a separate image so we can apply modifiers
+        // in the whole group while not affecting the layers behind it.
+        ImageRef groupImage(Image::createCopy(image));
+        groupImage.get()->clear(0);
+
+        // Render the group sublayers
+        // We don't apply any blend mode here, as the group layer is a separate image
+        // and we want to first calculate the layer blendmodes separately and then merge the images
+        renderPlan(subPlan,
+                   groupImage.get(),
+                   area,
+                   frame,
+                   compositeImage,
+                   render_background,
+                   render_transparent,
+                   BlendMode::UNSPECIFIED);
+
+        // Get the pallete of the sprite in the current frame
+        Palette* pal = m_sprite->palette(frame);
+
+        // Render the group image in the main image, applying the group modifiers
+        // The global opacity is not applied here, as it is applied in the LayerImage case.
+        composite_image(image, groupImage.get(), pal, 0, 0, layer->opacity(), layer->blendMode());
+
+        break;
+      }
     }
 
     // Draw extras

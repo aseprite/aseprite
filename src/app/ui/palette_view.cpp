@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -36,9 +36,9 @@
 #include "fmt/format.h"
 #include "gfx/color.h"
 #include "gfx/point.h"
-#include "os/font.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "text/font.h"
 #include "ui/graphics.h"
 #include "ui/manager.h"
 #include "ui/message.h"
@@ -307,7 +307,7 @@ public:
     if (tileImage) {
       int w = tileImage->width();
       int h = tileImage->height();
-      os::SurfaceRef surface = os::instance()->makeRgbaSurface(w, h);
+      os::SurfaceRef surface = os::System::instance()->makeRgbaSurface(w, h);
       convert_image_to_surface(tileImage.get(),
                                get_current_palette(),
                                surface.get(),
@@ -917,14 +917,14 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
         gfx::Color negColor;
         m_adapter->drawEntry(g, theme, i, k, childSpacing(), box2, negColor);
 
-        os::Font* minifont = theme->getMiniFont();
+        text::FontRef minifont = theme->getMiniFont();
         const std::string text = base::convert_to<std::string>(k);
-        g->setFont(AddRef(minifont));
+        g->setFont(minifont);
         g->drawText(text,
                     negColor,
                     gfx::ColorNone,
-                    gfx::Point(box2.x + box2.w / 2 - minifont->textLength(text) / 2,
-                               box2.y + box2.h / 2 - minifont->height() / 2));
+                    gfx::Point(guiscaled_center(box2.x, box2.w, minifont->textLength(text)),
+                               guiscaled_center(box2.y, box2.h, minifont->lineHeight())));
       }
 
       // Draw the selection

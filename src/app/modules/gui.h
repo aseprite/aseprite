@@ -40,6 +40,7 @@ void update_screen_for_document(const Doc* document);
 
 void load_window_pos(ui::Window* window, const char* section, const bool limitMinSize = true);
 void save_window_pos(ui::Window* window, const char* section);
+void del_window_pos(const char* section);
 
 ui::Widget* setup_mini_font(ui::Widget* widget);
 ui::Widget* setup_mini_look(ui::Widget* widget);

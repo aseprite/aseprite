@@ -111,7 +111,7 @@ void Transaction::commit()
     else
       set_current_palette(nullptr, false);
 
-    if (m_ctx->isUIAvailable())
+    if (m_ctx && m_ctx->isUIAvailable())
       ui::Manager::getDefault()->invalidate();
   }
 }

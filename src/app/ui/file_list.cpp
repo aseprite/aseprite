@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,8 +16,8 @@
 #include "app/ui/skin/skin_theme.h"
 #include "base/string.h"
 #include "base/time.h"
-#include "os/font.h"
 #include "os/surface.h"
+#include "text/font.h"
 #include "ui/ui.h"
 
 #include <algorithm>
@@ -366,15 +366,7 @@ bool FileList::onProcessMessage(Message* msg)
           break;
         }
         else {
-          gfx::Point scroll = view->viewScroll();
-
-          if (static_cast<MouseMessage*>(msg)->preciseWheel())
-            scroll += static_cast<MouseMessage*>(msg)->wheelDelta();
-          else
-            scroll += static_cast<MouseMessage*>(msg)->wheelDelta() * 3 *
-                      (textHeight() + 4 * guiscale());
-
-          view->setViewScroll(scroll);
+          View::scrollByMessage(this, msg, 3 * (textHeight() + 4 * guiscale()));
         }
       }
       break;

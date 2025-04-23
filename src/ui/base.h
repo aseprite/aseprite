@@ -32,9 +32,11 @@ enum {
   TRANSPARENT = 0x00004000, // The widget has transparent parts that needs the background painted
                             // before
   CTRL_RIGHT_CLICK = 0x00008000, // The widget should transform Ctrl+click to right-click on OS X.
+  ALLOW_DROP = 0x40000000,       // The widget can participate as a drop target in a drag & drop
+                                 // operation.
   IGNORE_MOUSE = 0x80000000,     // Don't process mouse messages for this widget (useful for labels,
                                  // boxes, grids, etc.)
-  PROPERTIES_MASK = 0x8000ffff,
+  PROPERTIES_MASK = 0xC000ffff,
 
   HORIZONTAL = 0x00010000,
   VERTICAL = 0x00020000,
@@ -47,7 +49,7 @@ enum {
   HOMOGENEOUS = 0x01000000,
   WORDWRAP = 0x02000000,
   CHARWRAP = 0x04000000,
-  ALIGN_MASK = 0x7fff0000,
+  ALIGN_MASK = 0x3fff0000,
 };
 
 } // namespace ui

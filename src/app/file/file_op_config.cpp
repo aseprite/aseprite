@@ -27,6 +27,7 @@ void FileOpConfig::fillFromPreferences()
   rgbMapAlgorithm = pref.quantization.rgbmapAlgorithm();
   fitCriteria = pref.quantization.fitCriteria();
   cacheCompressedTilesets = pref.tileset.cacheCompressedTilesets();
+  composeGroups = pref.experimental.composeGroups();
 }
 
 } // namespace app

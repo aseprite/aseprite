@@ -75,8 +75,11 @@ A 128-byte header (same as FLC/FLI header, but with other magic number):
                   32 bpp = RGBA
                   16 bpp = Grayscale
                   8 bpp = Indexed
-    DWORD       Flags:
+    DWORD       Flags (see NOTE.6):
                   1 = Layer opacity has valid value
+                  2 = Layer blend mode/opacity is valid for groups
+                      (composite groups separately first when rendering)
+                  4 = Layers have an UUID
     WORD        Speed (milliseconds between frame, like in FLC files)
                 DEPRECATED: You should use the frame duration field
                 from each frame header
@@ -175,7 +178,7 @@ entire layers layout:
     WORD        Layer child level (see NOTE.1)
     WORD        Default layer width in pixels (ignored)
     WORD        Default layer height in pixels (ignored)
-    WORD        Blend mode (always 0 for layer set)
+    WORD        Blend mode (see NOTE.6)
                   Normal         = 0
                   Multiply       = 1
                   Screen         = 2
@@ -195,12 +198,13 @@ entire layers layout:
                   Addition       = 16
                   Subtract       = 17
                   Divide         = 18
-    BYTE        Opacity
-                  Note: valid only if file header flags field has bit 1 set
+    BYTE        Opacity (see NOTE.6)
     BYTE[3]     For future (set to zero)
     STRING      Layer name
     + If layer type = 2
       DWORD     Tileset index
+    + If file header flags have bit 4:
+      UUID      Layer's universally unique identifier
 
 ### Cel Chunk (0x2005)
 
@@ -608,6 +612,14 @@ Basically we first compare `layerIndex + zIndex` of each cel, and then
 if this value is the same, we compare the specific `zIndex` value to
 disambiguate some scenarios. An example of this implementation can be
 found in the [RenderPlan code](https://github.com/aseprite/aseprite/blob/8e91d22b704d6d1e95e1482544318cee9f166c4d/src/doc/render_plan.cpp#L77).
+
+### NOTE.6
+
+The blend mode and opacity fields of Layer Chunks (0x2004) are always
+valid for image and tilemap layers. The opacity field only when the
+[main header](#header) "Flags" field has the bit 1 enabled. Both
+fields are valid for group layers too when the same "Flags" field has
+the bit 2.
 
 ## File Format Changes
 

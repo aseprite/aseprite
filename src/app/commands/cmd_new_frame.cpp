@@ -113,27 +113,28 @@ void NewFrameCommand::onExecute(Context* context)
           case Content::DUPLICATE_CELS_LINKED: continuous.reset(new bool(true)); break;
         }
 
-        const Site* site = writer.site();
-        if (site->inTimeline() && !site->selectedLayers().empty() &&
-            !site->selectedFrames().empty()) {
-          auto timeline = App::instance()->timeline();
-          timeline->prepareToMoveRange();
-          DocRange range = timeline->range();
+        const Site& site = writer.site();
+        if (site.inTimeline() && !site.selectedLayers().empty() && !site.selectedFrames().empty()) {
+          auto* timeline = App::instance()->timeline();
+          if (timeline)
+            timeline->prepareToMoveRange();
+
+          view::RealRange range = site.range();
 
           SelectedLayers selLayers;
-          if (site->inFrames())
+          if (site.inFrames())
             selLayers.selectAllLayers(writer.sprite()->root());
           else {
-            selLayers = site->selectedLayers();
+            selLayers = site.selectedLayers();
             selLayers.expandCollapsedGroups();
           }
 
-          frame_t frameRange = (site->selectedFrames().lastFrame() -
-                                site->selectedFrames().firstFrame() + 1);
+          frame_t frameRange = (site.selectedFrames().lastFrame() -
+                                site.selectedFrames().firstFrame() + 1);
 
           for (Layer* layer : selLayers) {
             if (layer->isImage()) {
-              for (frame_t srcFrame : site->selectedFrames().reversed()) {
+              for (frame_t srcFrame : site.selectedFrames().reversed()) {
                 frame_t dstFrame = srcFrame + frameRange;
                 api.copyCel(static_cast<LayerImage*>(layer),
                             srcFrame,
@@ -145,7 +146,8 @@ void NewFrameCommand::onExecute(Context* context)
           }
 
           range.displace(0, frameRange);
-          timeline->moveRange(range);
+          if (timeline)
+            timeline->moveRange(range);
         }
         else if (auto layer = static_cast<LayerImage*>(writer.layer())) {
           api.copyCel(layer, writer.frame(), layer, writer.frame() + 1, continuous.get());

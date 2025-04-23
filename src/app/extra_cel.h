@@ -33,6 +33,7 @@ public:
     Unknown,
     BrushPreview,
     TransformationPreview,
+    TextPreview,
   };
 
   ExtraCel();

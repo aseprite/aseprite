@@ -28,16 +28,19 @@ class XMLHandle;
 namespace app {
 class Command;
 class Params;
+class RecentFiles;
 
 using namespace ui;
 
 // Class to handle/get/reload available menus in gui.xml file.
 class AppMenus {
-  AppMenus();
   DISABLE_COPYING(AppMenus);
 
 public:
   static AppMenus* instance();
+
+  AppMenus(RecentFiles* recentFiles);
+  ~AppMenus();
 
   void reload();
   void initTheme();
@@ -122,6 +125,8 @@ private:
   // support native menus)
   os::MenuRef m_osMenu;
   XmlTranslator m_xmlTranslator;
+
+  static AppMenus* s_instance;
 };
 
 os::Shortcut get_os_shortcut_from_key(const Key* key);

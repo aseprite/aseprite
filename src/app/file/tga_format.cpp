@@ -19,7 +19,7 @@
 #include "base/convert_to.h"
 #include "base/file_handle.h"
 #include "doc/doc.h"
-#include "doc/image_bits.h"
+#include "doc/image.h"
 #include "tga/tga.h"
 #include "ui/combobox.h"
 #include "ui/listitem.h"

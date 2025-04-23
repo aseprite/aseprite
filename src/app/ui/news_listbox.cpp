@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -20,6 +20,7 @@
 #include "base/fs.h"
 #include "base/string.h"
 #include "base/time.h"
+#include "text/font_metrics.h"
 #include "ui/link_label.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
@@ -84,15 +85,15 @@ std::string parse_html(const std::string& str)
 
         std::string tag = str.substr(j, i - j);
         if (tag == "li") {
-          if (!paraOpen)
+          if (!paraOpen && result.back() != '\n')
             result.push_back('\n');
           result.push_back((char)0xc2);
           result.push_back((char)0xb7); // middle dot
           result.push_back(' ');
           paraOpen = false;
         }
-        else if (tag == "p" || tag == "ul") {
-          if (!paraOpen)
+        else if (tag == "p" || tag == "ul" || tag[0] == 'h') {
+          if (!paraOpen && result.back() != '\n')
             result.push_back('\n');
           paraOpen = true;
         }
@@ -126,7 +127,15 @@ std::string parse_html(const std::string& str)
       paraOpen = false;
     }
     else {
-      result.push_back(str[i++]);
+      auto character = str[i++];
+      if (character == '\n') {
+        // Rely only on paragraphs for newlines, otherwise we render them as just spaces because
+        // sometimes they show up in the middle of sentences.
+        result.push_back(' ');
+      }
+      else {
+        result.push_back(character);
+      }
       paraOpen = false;
     }
   }
@@ -150,11 +159,12 @@ protected:
     auto theme = SkinTheme::get(this);
     ui::Style* style = theme->styles.newsItem();
 
-    setTextQuiet(m_title);
     gfx::Size sz = theme->calcSizeHint(this, style);
 
-    if (!m_desc.empty())
-      sz.h *= 5;
+    if (!m_desc.empty()) {
+      // Title + number of total lines
+      sz.h *= 1 + std::count(m_desc.begin(), m_desc.end(), '\n');
+    }
 
     ev.setSizeHint(gfx::Size(0, sz.h));
   }
@@ -167,15 +177,24 @@ protected:
     ui::Style* style = theme->styles.newsItem();
     ui::Style* styleDetail = theme->styles.newsItemDetail();
 
-    setTextQuiet(m_title);
+    text::FontMetrics metrics;
+    font()->metrics(&metrics);
+
     gfx::Size textSize = theme->calcSizeHint(this, style);
     gfx::Rect textBounds(bounds.x, bounds.y, bounds.w, textSize.h);
     gfx::Rect detailsBounds(bounds.x, bounds.y + textSize.h, bounds.w, bounds.h - textSize.h);
 
-    theme->paintWidget(g, this, style, textBounds);
+    gfx::Border border = theme->calcBorder(this, style);
+    gfx::Border borderDetail = theme->calcBorder(this, styleDetail);
 
-    setTextQuiet(m_desc);
-    theme->paintWidget(g, this, styleDetail, detailsBounds);
+    PaintWidgetPartInfo info(this);
+    info.text = &m_title;
+    info.baseline = border.top() - metrics.ascent;
+    theme->paintWidgetPart(g, style, bounds, info);
+
+    info.text = &m_desc;
+    info.baseline += border.bottom() + borderDetail.top() + metrics.descent - metrics.ascent;
+    theme->paintWidgetPart(g, styleDetail, detailsBounds, info);
   }
 
 private:

@@ -22,6 +22,18 @@
 
 namespace doc {
 
+enum class SymmetryIndex {
+  ORIGINAL = 0,
+  FLIPPED_X = 1,
+  FLIPPED_Y = 2,
+  FLIPPED_XY = 3,
+  ROTATED_270 = 4,
+  ROT_FLIP_90 = 5,
+  ROTATED_90 = 6,
+  ROT_FLIP_270 = 7,
+  ELEMENTS = 8
+};
+
 class Brush;
 using BrushRef = std::shared_ptr<Brush>;
 
@@ -86,6 +98,11 @@ public:
     return m_image.get();
   }
 
+  void resetSymmetries();
+  void reserveSymmetries();
+  Image* getSymmetryImage(const SymmetryIndex index);
+  Image* getSymmetryMask(const SymmetryIndex index);
+
 private:
   void clean();
   void regenerate();
@@ -104,6 +121,10 @@ private:
   gfx::Point m_patternOrigin; // From what position the brush was taken
   ImageRef m_patternImage;
   int m_gen;
+
+  // Symmetry image/mask buffers
+  std::vector<ImageRef> m_symmetryImages;
+  std::vector<ImageRef> m_symmetryMasks;
 
   // Extra data used for setImageColor()
   ImageRef m_backupImage;             // Backup image to avoid losing original brush colors/pattern

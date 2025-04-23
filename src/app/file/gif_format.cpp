@@ -265,7 +265,7 @@ public:
           break;
       }
 
-      if (m_layer && m_opaque)
+      if (m_layer && m_opaque && !m_fop->avoidBackgroundLayer())
         m_layer->configureAsBackground();
 
       // sRGB is the default color space for GIF files

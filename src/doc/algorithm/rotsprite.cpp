@@ -10,7 +10,7 @@
 #endif
 
 #include "doc/algorithm/rotate.h"
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/primitives.h"
 
 #include <algorithm>

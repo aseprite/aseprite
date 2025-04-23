@@ -47,6 +47,11 @@ struct FileOpConfig {
   // compressed data that was loaded as-is).
   bool cacheCompressedTilesets = true;
 
+  // True if layer groups are composed in a separate image first,
+  // and then composed with the rest of the sprite. In this case
+  // blend mode and opacity fields are valid for groups too.
+  bool composeGroups = false;
+
   void fillFromPreferences();
 };
 

@@ -42,6 +42,11 @@ public:
     // True if renderSprite() composite an unpremultiplied RGBA
     // surface when we draw on a transparent background.
     bool outputsUnpremultiplied = false;
+
+    // True if the renderer can compose groups of layers in a
+    // layer image, in other case the renderer should render each
+    // layer separately merging one by one.
+    bool composeGroups = false;
   };
 
   virtual ~Renderer() {}
@@ -56,6 +61,7 @@ public:
   virtual void setRefLayersVisiblity(const bool visible) = 0;
   virtual void setNonactiveLayersOpacity(const int opacity) = 0;
   virtual void setNewBlendMethod(const bool newBlend) = 0;
+  virtual void setComposeGroups(bool composeGroups) = 0;
   virtual void setBgOptions(const render::BgOptions& bg) = 0;
   virtual void setProjection(const render::Projection& projection) = 0;
 

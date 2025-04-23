@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -244,6 +244,9 @@ public:
 
   void setTileManagementPlugin(const std::string& plugin) { m_tileManagementPlugin = plugin; }
 
+  void useLayerUuids(bool value) { m_useLayerUuids = value; }
+  bool useLayerUuids() const { return m_useLayerUuids; }
+
 private:
   Document* m_document;
   ImageSpec m_spec;
@@ -271,6 +274,9 @@ private:
   // (e.g. drag & drop tiles, or TilesetMode::Auto mode, etc.),
   // giving the possibility to handle tiles exclusively to a plugin.
   std::string m_tileManagementPlugin;
+
+  // This setting indicates if the layers of this sprite are using UUIDs.
+  bool m_useLayerUuids = false;
 
   // Disable default constructor and copying
   Sprite();

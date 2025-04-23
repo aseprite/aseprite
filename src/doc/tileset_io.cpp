@@ -62,13 +62,17 @@ Tileset* read_tileset(std::istream& is,
   const ObjectId id = read32(is);
   const tileset_index ntiles = read32(is);
   const Grid grid = read_grid(is);
-  auto tileset = new Tileset(sprite, grid, ntiles);
+  auto* tileset = new Tileset(sprite, grid, sprite ? ntiles : 0);
   if (setId)
     tileset->setId(id);
 
   for (tileset_index ti = 0; ti < ntiles; ++ti) {
-    ImageRef image(read_image(is, setId));
-    tileset->set(ti, image);
+    const ImageRef image(read_image(is, setId));
+
+    if (sprite)
+      tileset->set(ti, image);
+    else
+      tileset->add(image);
   }
 
   // Read extra version byte after tiles

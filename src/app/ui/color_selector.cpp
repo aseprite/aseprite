@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -119,7 +119,7 @@ public:
       stopCurrentPainting(lock);
 
       os::SurfaceRef oldCanvas = m_canvas;
-      m_canvas = os::instance()->makeSurface(w, h, activeCS);
+      m_canvas = os::System::instance()->makeSurface(w, h, activeCS);
       os::Paint paint;
       paint.color(bgColor);
       paint.style(os::Paint::Fill);

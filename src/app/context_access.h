@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2023  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,15 +20,12 @@ template<typename DocumentAccessT>
 class ContextAccess {
 public:
   const Context* context() const { return m_context; }
-  const Site* site() const { return &m_site; }
+  const Site& site() const { return m_site; }
   const DocumentAccessT& document() const { return m_document; }
   const Sprite* sprite() const { return m_site.sprite(); }
   const Layer* layer() const { return m_site.layer(); }
   frame_t frame() const { return m_site.frame(); }
   const Cel* cel() const { return m_site.cel(); }
-
-  // You cannot change the site directly from a writable ContextAccess anyway.
-  const Site* site() { return &m_site; }
 
   Context* context() { return const_cast<Context*>(m_context); }
   DocumentAccessT& document() { return m_document; }

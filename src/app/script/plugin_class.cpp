@@ -16,6 +16,7 @@
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/ui/app_menuitem.h"
+#include "base/version.h"
 
 namespace app { namespace script {
 
@@ -301,15 +302,30 @@ int Plugin_newMenuSeparator(lua_State* L)
 
 int Plugin_get_name(lua_State* L)
 {
-  auto plugin = get_obj<Plugin>(L, 1);
+  auto* plugin = get_obj<Plugin>(L, 1);
   lua_pushstring(L, plugin->ext->name().c_str());
+  return 1;
+}
+
+int Plugin_get_displayName(lua_State* L)
+{
+  auto* plugin = get_obj<Plugin>(L, 1);
+  lua_pushstring(L, plugin->ext->displayName().c_str());
   return 1;
 }
 
 int Plugin_get_path(lua_State* L)
 {
-  auto plugin = get_obj<Plugin>(L, 1);
+  auto* plugin = get_obj<Plugin>(L, 1);
   lua_pushstring(L, plugin->ext->path().c_str());
+  return 1;
+}
+
+int Plugin_get_version(lua_State* L)
+{
+  auto* plugin = get_obj<Plugin>(L, 1);
+  const base::Version version(plugin->ext->version());
+  push_version(L, version);
   return 1;
 }
 
@@ -342,7 +358,9 @@ const luaL_Reg Plugin_methods[] = {
 
 const Property Plugin_properties[] = {
   { "name",        Plugin_get_name,        nullptr                },
+  { "displayName", Plugin_get_displayName, nullptr                },
   { "path",        Plugin_get_path,        nullptr                },
+  { "version",     Plugin_get_version,     nullptr                },
   { "preferences", Plugin_get_preferences, Plugin_set_preferences },
   { nullptr,       nullptr,                nullptr                }
 };

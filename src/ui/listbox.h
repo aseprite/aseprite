@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -35,8 +35,8 @@ public:
 
   void makeChildVisible(Widget* item);
   void centerScroll();
-  void sortItems();
-  void sortItems(bool (*cmp)(Widget* a, Widget* b));
+  virtual void sortItems();
+  void sortItems(const std::function<bool(Widget*, Widget*)>& cmp);
 
   obs::signal<void()> Change;
   obs::signal<void()> DoubleClickItem;
@@ -48,6 +48,7 @@ protected:
   virtual void onSizeHint(SizeHintEvent& ev) override;
   virtual void onChange();
   virtual void onDoubleClickItem();
+  virtual bool onAcceptKeyInput();
 
   int advanceIndexThroughVisibleItems(int startIndex, int delta, const bool loop);
 

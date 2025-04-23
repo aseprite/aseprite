@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2019  Igara Studio S.A.
+// Copyright (c) 2019-2023  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -56,7 +56,7 @@ protected:
     if (!tileset)
       return;
 
-    PalettePicks picks = writer.site()->selectedTiles();
+    PalettePicks picks = writer.site().selectedTiles();
     if (picks.picks() == 0)
       return;
 

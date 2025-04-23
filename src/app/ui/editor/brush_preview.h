@@ -20,6 +20,7 @@
 #include "gfx/region.h"
 #include "os/surface.h"
 #include "ui/cursor.h"
+#include "ui/layer.h"
 
 #include <vector>
 
@@ -86,8 +87,6 @@ public:
   void invalidateRegion(const gfx::Region& region);
 
 private:
-  typedef void (BrushPreview::*PixelDelegate)(ui::Graphics*, const gfx::Point&, gfx::Color);
-
   doc::BrushRef getCurrentBrush();
   static doc::color_t getBrushColor(doc::Sprite* sprite, doc::Layer* layer);
 
@@ -95,26 +94,17 @@ private:
   // Used within 'generateBoundaries' function.
   void calculateTileBoundariesOrigin(const doc::Grid& grid, const gfx::Point& spritePos);
 
-  void generateBoundaries(const Site& site, const gfx::Point& spritePos);
+  bool createUILayer(const gfx::Rect& brushBounds);
+  void createBoundaries(const Site& site, const gfx::Point& spritePos);
 
   // Creates a little native cursor to draw the CROSSHAIR
   void createCrosshairCursor(ui::Graphics* g, const gfx::Color cursorColor);
 
-  void forEachBrushPixel(ui::Graphics* g,
-                         const gfx::Point& spritePos,
-                         gfx::Color color,
-                         PixelDelegate pixelDelegate);
-
-  void traceSelectionCrossPixels(ui::Graphics* g,
-                                 const gfx::Point& pt,
-                                 gfx::Color color,
-                                 int thickness,
-                                 PixelDelegate pixel);
-  void traceBrushBoundaries(ui::Graphics* g, gfx::Point pos, gfx::Color color, PixelDelegate pixel);
-
-  void savePixelDelegate(ui::Graphics* g, const gfx::Point& pt, gfx::Color color);
-  void drawPixelDelegate(ui::Graphics* g, const gfx::Point& pt, gfx::Color color);
-  void clearPixelDelegate(ui::Graphics* g, const gfx::Point& pt, gfx::Color color);
+  void strokeSelectionCrossPixels(ui::Graphics* g,
+                                  gfx::Point pos,
+                                  const os::Paint& paint,
+                                  int thickness);
+  void strokeBrushBoundaries(ui::Graphics* g, gfx::Point pos, const os::Paint& paint);
 
   Editor* m_editor;
   int m_type = CROSSHAIR;
@@ -130,19 +120,17 @@ private:
   gfx::Point m_screenPosition; // Position in the screen (view)
   gfx::Point m_editorPosition; // Position in the editor (model)
 
+  // UI layer to draw (and move) the brush boundaries
+  ui::UILayerRef m_uiLayer;
+  bool m_layerAdded = false;
+  int m_cachedType = 0;
+  int m_cachedBrushGen = 0;
+
   // Information about current brush
   doc::MaskBoundaries m_brushBoundaries;
   int m_brushGen;
 
-  // True if we've modified pixels in the display surface
-  // (e.g. drawing the selection crosshair or the brush edges).
-  bool m_withModifiedPixels = false;
-  std::vector<gfx::Color> m_savedPixels;
-  int m_savedPixelsIterator;
-  int m_savedPixelsLimit;
-
   gfx::Region m_clippingRegion;
-  gfx::Region m_oldClippingRegion;
 
   // Information stored in show() and used in hide() to clear the
   // brush preview in the exact same place.

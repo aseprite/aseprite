@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2024 Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -32,7 +33,7 @@ void BM_Rgba(benchmark::State& state)
   color_t b = color_t(state.range(1));
   int opacity = state.range(2);
   BlendFunc func = F;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     color_t c = func(a, b, opacity);
     c = func(c, b, opacity);
   }

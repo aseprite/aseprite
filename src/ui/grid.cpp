@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -14,6 +14,7 @@
 #include "ui/grid.h"
 #include "ui/message.h"
 #include "ui/resize_event.h"
+#include "ui/scale.h"
 #include "ui/size_hint_event.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
@@ -127,7 +128,7 @@ void Grid::setStyle(Style* style)
 {
   ASSERT(style);
   if (!style)
-    style = Theme::getDefaultStyle();
+    style = Theme::EmptyStyle();
   Widget::setStyle(style);
   setGap(style->gap());
 }
@@ -186,7 +187,7 @@ void Grid::onResize(ResizeEvent& ev)
           w = reqSize.w;
         }
         else if (cell->align & CENTER) {
-          x += w / 2 - reqSize.w / 2;
+          x = guiscaled_center(x, w, reqSize.w);
           w = reqSize.w;
         }
         else if (cell->align & RIGHT) {
@@ -198,7 +199,7 @@ void Grid::onResize(ResizeEvent& ev)
           h = reqSize.h;
         }
         else if (cell->align & MIDDLE) {
-          y += h / 2 - reqSize.h / 2;
+          y = guiscaled_center(y, h, reqSize.h);
           h = reqSize.h;
         }
         else if (cell->align & BOTTOM) {
@@ -394,7 +395,7 @@ void Grid::expandStrip(std::vector<Strip>& colstrip,
             }
 
             // Divide the available size of the cell in the number of columns which are expandible
-            int size = cell_size / expand;
+            int size = guiscaled_div(cell_size, expand);
             for (i = col; i < col + cell_span; ++i) {
               if (colstrip[i].expand_count == max_expand_count) {
                 // For the last column, use all the available space in the column
@@ -468,7 +469,7 @@ void Grid::distributeStripSize(std::vector<Strip>& colstrip,
       }
     }
 
-    int extra_foreach = extra_total / wantmore_count;
+    int extra_foreach = guiscaled_div(extra_total, wantmore_count);
 
     for (i = 0; i < (int)colstrip.size(); ++i) {
       if (colstrip[i].expand_count == max_expand_count || same_width) {

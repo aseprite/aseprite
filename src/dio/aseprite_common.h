@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018-2023 Igara Studio S.A.
+// Copyright (c) 2018-2025 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -18,6 +18,8 @@
 #define ASE_FILE_FRAME_MAGIC             0xF1FA
 
 #define ASE_FILE_FLAG_LAYER_WITH_OPACITY 1
+#define ASE_FILE_FLAG_COMPOSITE_GROUPS   2
+#define ASE_FILE_FLAG_LAYER_WITH_UUID    4
 
 #define ASE_FILE_CHUNK_FLI_COLOR2        4
 #define ASE_FILE_CHUNK_FLI_COLOR         11

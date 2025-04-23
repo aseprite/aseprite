@@ -68,7 +68,6 @@ public:
 
 private:
   void handleMouseMovement();
-  bool canInterpretMouseMovementAsJustOneClick();
   bool canExecuteCommands();
   void onBeforeCommandExecution(CommandExecutionEvent& ev);
   void destroyLoopIfCanceled(Editor* editor);
@@ -86,14 +85,6 @@ private:
 
   // Tool-loop manager
   std::unique_ptr<tools::ToolLoopManager> m_toolLoopManager;
-
-  // These fields are used to detect a selection tool cancelation
-  // (deselect command) when the user just click (press and release
-  // the mouse button in the "same location" approximately).
-  bool m_mouseMoveReceived;
-  gfx::Point m_mouseMaxDelta;
-  gfx::Point m_mouseDownPos;
-  base::tick_t m_mouseDownTime;
 
   // Stores the last mouse pointer, used to re-use the latest mouse
   // button when onScrollChange() event is received.

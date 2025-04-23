@@ -29,7 +29,8 @@ color_t get_sprite_pixel(const Sprite* sprite,
                          const double y,
                          const frame_t frame,
                          const Projection& proj,
-                         const bool newBlend);
+                         const bool newBlend,
+                         const bool composeGroups);
 
 } // namespace render
 

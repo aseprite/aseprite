@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2024  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -37,7 +37,7 @@ os::CursorRef Cursor::nativeCursor(const int scale) const
   if (m_cursor && m_scale == scale)
     return m_cursor;
 
-  m_cursor = os::instance()->makeCursor(m_surface.get(), m_focus, m_scale = scale);
+  m_cursor = os::System::instance()->makeCursor(m_surface.get(), m_focus, m_scale = scale);
   return m_cursor;
 }
 

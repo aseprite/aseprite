@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -15,7 +15,7 @@
 #include "app/tx.h"
 #include "base/exception.h"
 #include "base/task.h"
-#include "doc/image_impl.h"
+#include "doc/image.h"
 #include "doc/image_ref.h"
 #include "doc/pixel_format.h"
 #include "filters/filter_indexed_data.h"
@@ -100,6 +100,7 @@ public:
   doc::Sprite* sprite() { return m_site.sprite(); }
   doc::Layer* layer() { return m_site.layer(); }
   doc::frame_t frame() { return m_site.frame(); }
+  doc::Cel* cel() { return m_site.cel(); }
   doc::Image* destinationImage() const { return m_dst.get(); }
   gfx::Point position() const { return gfx::Point(0, 0); }
 
@@ -128,6 +129,8 @@ public:
   const doc::RgbMap* getRgbMap() const override;
   doc::Palette* getNewPalette() override;
   doc::PalettePicks getPalettePicks() override;
+
+  void startWorker();
 
 private:
   void init(doc::Cel* cel);

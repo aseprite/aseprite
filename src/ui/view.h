@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2024  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,9 +11,12 @@
 
 #include "gfx/point.h"
 #include "gfx/size.h"
+#include "ui/message.h"
 #include "ui/scroll_bar.h"
 #include "ui/viewport.h"
 #include "ui/widget.h"
+
+#include <optional>
 
 namespace ui {
 class ScrollRegionEvent;
@@ -53,10 +56,16 @@ public:
   void updateView(const bool restoreScrollPos = true);
 
   Viewport* viewport();
-  gfx::Rect viewportBounds();
+  gfx::Rect viewportBounds() const;
 
   // For viewable widgets
   static View* getView(const Widget* viewableWidget);
+
+  // Scroll the given widget's view with the mouse wheel event.
+  // The default multiplier is 3 * textHeight()
+  static void scrollByMessage(const Widget* viewableWidget,
+                              Message* message,
+                              std::optional<int> multiplier = std::nullopt);
 
 protected:
   // Events

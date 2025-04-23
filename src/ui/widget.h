@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -16,7 +16,8 @@
 #include "gfx/region.h"
 #include "gfx/size.h"
 #include "obs/signal.h"
-#include "os/font.h"
+#include "text/font.h"
+#include "text/text_blob.h"
 #include "ui/base.h"
 #include "ui/component.h"
 #include "ui/graphics.h"
@@ -43,6 +44,7 @@ class SizeHintEvent;
 class Style;
 class Theme;
 class Window;
+class DragEvent;
 
 class Widget : public Component {
 public:
@@ -84,6 +86,7 @@ public:
   void setTextf(const char* text, ...);
   void setTextQuiet(const std::string& text);
 
+  text::TextBlobRef textBlob() const;
   int textWidth() const;
   int textHeight() const;
 
@@ -130,7 +133,8 @@ public:
   // LOOK & FEEL
   // ===============================================================
 
-  os::Font* font() const;
+  const text::FontRef& font() const;
+  void setFont(const text::FontRef& font);
 
   // Gets the background color of the widget.
   gfx::Color bgColor() const
@@ -284,6 +288,10 @@ public:
                        int icon_w = 0,
                        int icon_h = 0);
 
+  // Y-axis location where the text baseline should be located in the
+  // middle of the widget.
+  float textBaseline() const;
+
   // ===============================================================
   // REFRESH ISSUES
   // ===============================================================
@@ -332,6 +340,11 @@ public:
 
   void requestFocus();
   void releaseFocus();
+
+  // Captures the mouse to continue receiving its messages until we
+  // release the capture. Useful for widgets with painting-like
+  // capabilities, where we want to keep track of the mouse until the
+  // user releases the mouse button, or drag-and-drop behaviors.
   void captureMouse();
   void releaseMouse();
 
@@ -367,9 +380,9 @@ public:
   // the widget bounds.
   gfx::Point mousePosInClientBounds() const { return toClient(mousePosInDisplay()); }
 
-  // Offer the capture to widgets of the given type. Returns true if
+  // Offers the capture to widgets of the given type. Returns true if
   // the capture was passed to other widget.
-  bool offerCapture(MouseMessage* mouseMsg, int widget_type);
+  bool offerCapture(MouseMessage* mouseMsg, WidgetType widgetType);
 
   // Returns lower-case letter that represet the mnemonic of the widget
   // (the underscored character, i.e. the letter after & symbol).
@@ -419,10 +432,19 @@ protected:
   virtual void onVisible(bool visible);
   virtual void onEnable(bool enabled);
   virtual void onSelect(bool selected);
+  virtual void onSetFont();
   virtual void onSetText();
   virtual void onSetBgColor();
   virtual int onGetTextInt() const;
   virtual double onGetTextDouble() const;
+  virtual text::TextBlobRef onMakeTextBlob() const;
+  virtual text::ShaperFeatures onGetTextShaperFeatures() const;
+  virtual float onGetTextBaseline() const;
+
+  virtual void onDragEnter(DragEvent& e);
+  virtual void onDragLeave(DragEvent& e);
+  virtual void onDrag(DragEvent& e);
+  virtual void onDrop(DragEvent& e);
 
 private:
   void removeChild(const WidgetsList::iterator& it);
@@ -435,9 +457,10 @@ private:
   int m_flags;       // Special boolean properties (see flags in ui/base.h)
   Theme* m_theme;    // Widget's theme
   Style* m_style;
-  std::string m_text;         // Widget text
-  mutable os::FontRef m_font; // Cached font returned by the theme
-  gfx::Color m_bgColor;       // Background color
+  std::string m_text;               // Widget text
+  mutable text::FontRef m_font;     // Cached font returned by the theme
+  mutable text::TextBlobRef m_blob; // Cached TextBlob
+  gfx::Color m_bgColor;             // Background color
   gfx::Rect m_bounds;
   gfx::Region m_updateRegion; // Region to be redrawed.
   WidgetsList m_children;     // Sub-widgets
@@ -458,6 +481,8 @@ private:
 
   gfx::Border m_border; // Border separation with the parent
   int m_childSpacing;   // Separation between children
+
+  friend Manager;
 };
 
 WidgetType register_widget_type();

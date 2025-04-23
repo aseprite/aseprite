@@ -119,6 +119,8 @@ Window::Window(Type type, const std::string& text)
   , m_isWantFocus(true)
   , m_isForeground(false)
   , m_isAutoRemap(true)
+  , m_isResizing(false)
+  , m_needsTabletPressure(false)
 {
   setVisible(false);
   setAlign(LEFT | MIDDLE);
@@ -347,11 +349,6 @@ void Window::centerWindow(Display* parentDisplay)
                        displaySize.h / 2 - windowSize.h / 2,
                        windowSize.w,
                        windowSize.h));
-}
-
-void Window::moveWindow(const gfx::Rect& rect)
-{
-  moveWindow(rect, true);
 }
 
 void Window::expandWindow(const gfx::Size& size)
@@ -885,21 +882,20 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
 
     // Move the window's graphics
     Display* display = this->display();
-    ScreenGraphics g(display);
-    hide_mouse_cursor();
+    Graphics g(display, display->backLayer()->surface(), 0, 0);
     {
       IntersectClip clip(&g, man_pos);
       if (clip) {
         ui::move_region(display, moveableRegion, dx, dy);
       }
     }
-    show_mouse_cursor();
 
     reg1.createSubtraction(reg1, moveableRegion);
     reg1.offset(dx, dy);
     invalidateRegion(reg1);
   }
 
+  // We invalidate the old region of the window.
   manager->invalidateRegion(invalidManagerRegion);
 
   onWindowMovement();

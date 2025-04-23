@@ -10,6 +10,7 @@
 #pragma once
 
 #include "doc/color.h"
+#include "doc/image_traits.h"
 #include "doc/primitives_fast.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"

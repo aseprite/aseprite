@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2024  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -31,7 +31,7 @@ void initialize_color_spaces(Preferences& pref)
 
 os::ColorSpaceRef get_screen_color_space()
 {
-  return os::instance()->defaultWindow()->colorSpace();
+  return os::System::instance()->defaultWindow()->colorSpace();
 }
 
 os::ColorSpaceRef get_current_color_space()
@@ -50,7 +50,7 @@ gfx::ColorSpaceRef get_working_rgb_space_from_preferences()
       return gfx::ColorSpace::MakeSRGB();
 
     std::vector<os::ColorSpaceRef> colorSpaces;
-    os::instance()->listColorSpaces(colorSpaces);
+    os::System::instance()->listColorSpaces(colorSpaces);
     for (auto& cs : colorSpaces) {
       if (cs->gfxColorSpace()->name() == name)
         return cs->gfxColorSpace();
@@ -68,14 +68,14 @@ ConvertCS::ConvertCS()
     auto srcCS = get_current_color_space();
     auto dstCS = get_screen_color_space();
     if (srcCS && dstCS)
-      m_conversion = os::instance()->convertBetweenColorSpace(srcCS, dstCS);
+      m_conversion = os::System::instance()->convertBetweenColorSpace(srcCS, dstCS);
   }
 }
 
 ConvertCS::ConvertCS(const os::ColorSpaceRef& srcCS, const os::ColorSpaceRef& dstCS)
 {
   if (g_manage) {
-    m_conversion = os::instance()->convertBetweenColorSpace(srcCS, dstCS);
+    m_conversion = os::System::instance()->convertBetweenColorSpace(srcCS, dstCS);
   }
 }
 
@@ -102,7 +102,7 @@ ConvertCS convert_from_current_to_screen_color_space()
 
 ConvertCS convert_from_custom_to_srgb(const os::ColorSpaceRef& from)
 {
-  return ConvertCS(from, os::instance()->makeColorSpace(gfx::ColorSpace::MakeSRGB()));
+  return ConvertCS(from, os::System::instance()->makeColorSpace(gfx::ColorSpace::MakeSRGB()));
 }
 
 } // namespace app

@@ -1058,7 +1058,7 @@ Extension* Extensions::installCompressedExtension(const std::string& zipFn,
   {
     json11::Json::object obj;
     obj["installedFiles"] = json11::Json(installedFiles);
-    json11::Json json(obj);
+    const json11::Json json(obj);
 
     const std::string fullFn = base::join_path(info.dstPath, kInfoJson);
     LOG("EXT: Saving list of installed files in <%s>\n", fullFn.c_str());
@@ -1084,9 +1084,9 @@ Extension* Extensions::loadExtension(const std::string& path,
 {
   json11::Json json;
   read_json_file(fullPackageFilename, json);
-  auto name = json["name"].string_value();
-  auto version = json["version"].string_value();
-  auto displayName = json["displayName"].string_value();
+  const auto& name = json["name"].string_value();
+  const auto& version = json["version"].string_value();
+  const auto& displayName = json["displayName"].string_value();
 
   LOG("EXT: Extension '%s' loaded\n", name.c_str());
 
@@ -1111,13 +1111,13 @@ Extension* Extensions::loadExtension(const std::string& path,
                                                get_config_bool("extensions", name.c_str(), true),
                                                isBuiltinExtension);
 
-  auto contributes = json["contributes"];
+  const auto& contributes = json["contributes"];
   if (contributes.is_object()) {
     // Keys
     auto keys = contributes["keys"];
     if (keys.is_array()) {
       for (const auto& key : keys.array_items()) {
-        std::string keyId = key["id"].string_value();
+        const std::string& keyId = key["id"].string_value();
         std::string keyPath = key["path"].string_value();
 
         // The path must be always relative to the extension
@@ -1130,12 +1130,12 @@ Extension* Extensions::loadExtension(const std::string& path,
     }
 
     // Languages
-    auto languages = contributes["languages"];
+    const auto& languages = contributes["languages"];
     if (languages.is_array()) {
       for (const auto& lang : languages.array_items()) {
-        std::string langId = lang["id"].string_value();
+        const std::string& langId = lang["id"].string_value();
         std::string langPath = lang["path"].string_value();
-        std::string langDisplayName = lang["displayName"].string_value();
+        const std::string& langDisplayName = lang["displayName"].string_value();
 
         // The path must be always relative to the extension
         langPath = base::join_path(path, langPath);
@@ -1150,12 +1150,12 @@ Extension* Extensions::loadExtension(const std::string& path,
     }
 
     // Themes
-    auto themes = contributes["themes"];
+    const auto& themes = contributes["themes"];
     if (themes.is_array()) {
       for (const auto& theme : themes.array_items()) {
-        std::string themeId = theme["id"].string_value();
+        const std::string& themeId = theme["id"].string_value();
         std::string themePath = theme["path"].string_value();
-        std::string themeVariant = theme["variant"].string_value();
+        const std::string& themeVariant = theme["variant"].string_value();
 
         // The path must be always relative to the extension
         themePath = base::join_path(path, themePath);
@@ -1170,10 +1170,10 @@ Extension* Extensions::loadExtension(const std::string& path,
     }
 
     // Palettes
-    auto palettes = contributes["palettes"];
+    const auto& palettes = contributes["palettes"];
     if (palettes.is_array()) {
       for (const auto& palette : palettes.array_items()) {
-        std::string palId = palette["id"].string_value();
+        const std::string& palId = palette["id"].string_value();
         std::string palPath = palette["path"].string_value();
 
         // The path must be always relative to the extension
@@ -1186,10 +1186,10 @@ Extension* Extensions::loadExtension(const std::string& path,
     }
 
     // Dithering matrices
-    auto ditheringMatrices = contributes["ditheringMatrices"];
+    const auto& ditheringMatrices = contributes["ditheringMatrices"];
     if (ditheringMatrices.is_array()) {
       for (const auto& ditheringMatrix : ditheringMatrices.array_items()) {
-        std::string matId = ditheringMatrix["id"].string_value();
+        const std::string& matId = ditheringMatrix["id"].string_value();
         std::string matPath = ditheringMatrix["path"].string_value();
         std::string matName = ditheringMatrix["name"].string_value();
         if (matName.empty())
@@ -1206,7 +1206,7 @@ Extension* Extensions::loadExtension(const std::string& path,
 
 #ifdef ENABLE_SCRIPTING
     // Scripts
-    auto scripts = contributes["scripts"];
+    const auto& scripts = contributes["scripts"];
     if (scripts.is_array()) {
       for (const auto& script : scripts.array_items()) {
         std::string scriptPath = script["path"].string_value();

@@ -59,6 +59,7 @@ public:
   void setRefLayersVisiblity(const bool visible);
   void setNonactiveLayersOpacity(const int opacity);
   void setNewBlend(const bool newBlend);
+  void setComposeGroups(bool composeGroup);
   void setProjection(const Projection& projection);
   void setBgOptions(const BgOptions& bg);
   void setSelectedLayer(const Layer* layer);
@@ -200,6 +201,7 @@ private:
   BlendMode m_previewBlendMode;
   OnionskinOptions m_onionskin;
   ImageBufferPtr m_tmpBuf;
+  bool m_composeGroups = false;
 };
 
 void composite_image(Image* dst,

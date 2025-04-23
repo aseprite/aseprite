@@ -19,6 +19,10 @@
 
 #include <stdexcept>
 
+namespace view {
+class Range;
+}
+
 namespace app {
 
 // Wrapper to create a new transaction or get the current
@@ -105,7 +109,7 @@ public:
       m_transaction->commit();
   }
 
-  void setNewDocRange(const DocRange& range) { m_transaction->setNewDocRange(range); }
+  void setNewDocRange(const view::Range& range) { m_transaction->setNewDocRange(range); }
 
   void rollbackAndStartAgain() { m_transaction->rollbackAndStartAgain(); }
 

@@ -25,7 +25,9 @@ private:
 class DocsObserver {
 public:
   virtual ~DocsObserver() {}
+  virtual void onBeforeAddDocument(Doc* doc) {}
   virtual void onAddDocument(Doc* doc) {}
+  virtual void onBeforeRemoveDocument(Doc* doc) {}
   virtual void onRemoveDocument(Doc* doc) {}
 };
 

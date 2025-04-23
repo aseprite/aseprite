@@ -12,6 +12,7 @@
 
   #include "app/color.h"
   #include "gfx/color.h"
+  #include "os/surface.h"
 
   #include "include/core/SkCanvas.h"
   #include "include/core/SkImage.h"
@@ -20,8 +21,6 @@
 
   #if SK_ENABLE_SKSL
     #include "include/effects/SkRuntimeEffect.h"
-    // To include kRGB_to_HSL_sksl and kHSL_to_RGB_sksl
-    #include "src/core/SkRuntimeEffectPriv.h"
   #endif
 
   #include <memory>
@@ -93,12 +92,15 @@ inline SkV4 appColorHsl_to_SkV4(const app::Color& color)
 }
 
 sk_sp<SkRuntimeEffect> make_shader(const char* code);
+sk_sp<SkRuntimeEffect> make_blender(const char* code);
 
   #endif // SK_ENABLE_SKSL
 
 SkImageInfo get_skimageinfo_for_docimage(const doc::Image* img);
 sk_sp<SkImage> make_skimage_for_docimage(const doc::Image* img);
 std::unique_ptr<SkCanvas> make_skcanvas_for_docimage(const doc::Image* img);
+sk_sp<SkSurface> wrap_docimage_in_sksurface(const doc::Image* img);
+os::SurfaceRef wrap_docimage_in_surface(const doc::Image* img);
 
 } // namespace app
 

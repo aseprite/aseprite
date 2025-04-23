@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2024 Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -27,7 +27,7 @@ void BM_ShrinkBounds(benchmark::State& state)
   std::unique_ptr<Image> img(Image::create(pixelFormat, w, h));
   img->putPixel(w / 2, h / 2, rgba(1, 2, 3, 4));
   gfx::Rect rc;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     doc::algorithm::shrink_bounds(img.get(), 0, nullptr, rc);
   }
 }
