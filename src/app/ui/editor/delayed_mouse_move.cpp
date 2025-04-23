@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2024  Igara Studio S.A.
+// Copyright (C) 2022-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -25,10 +25,10 @@ DelayedMouseMove::DelayedMouseMove(DelayedMouseMoveDelegate* delegate,
   : m_delegate(delegate)
   , m_editor(editor)
   , m_timer(interval)
-  , m_spritePos(std::numeric_limits<float>::min(), std::numeric_limits<float>::min())
   , m_mouseMoveReceived(false)
   , m_mouseDownPos(kNoPosReceived)
   , m_mouseDownTime(base::current_tick())
+  , m_spritePos(std::numeric_limits<float>::min(), std::numeric_limits<float>::min())
 {
   ASSERT(m_delegate);
   m_timer.Tick.connect([this] { commitMouseMove(); });
