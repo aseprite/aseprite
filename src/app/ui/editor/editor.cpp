@@ -2539,8 +2539,6 @@ void Editor::onBeforeLayerEditableChange(DocEvent& ev, bool newState)
 
 void Editor::setCursor(const gfx::Point& mouseDisplayPos)
 {
-  Rect vp = View::getView(this)->viewportBounds();
-
   bool used = false;
   if (m_sprite)
     used = m_state->onSetCursor(this, mouseDisplayPos);

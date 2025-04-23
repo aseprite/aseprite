@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -719,7 +719,6 @@ Widget* AppMenus::convertXmlelemToMenuitem(XMLElement* elem, Menu* menu)
 {
   const char* id = elem->Attribute("id");
   const char* group = elem->Attribute("group");
-  const char* standard = elem->Attribute("standard");
 
   // is it a <separator>?
   if (strcmp(elem->Value(), "separator") == 0) {
@@ -781,6 +780,7 @@ Widget* AppMenus::convertXmlelemToMenuitem(XMLElement* elem, Menu* menu)
   }
 
 #if LAF_MACOS
+  const char* standard = elem->Attribute("standard");
   if (standard && strcmp(standard, "edit") == 0)
     menuitem->setAsStandardEditMenu();
 #endif
