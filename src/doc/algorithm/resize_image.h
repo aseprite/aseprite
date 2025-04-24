@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019  Igara Studio S.A.
+// Copyright (c) 2019-2025  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -25,12 +25,13 @@ enum ResizeMethod {
   RESIZE_METHOD_ROTSPRITE,
 };
 
-// Resizes the source image 'src' to the destination image 'dst'.
+// Resizes the source image "src" to the destination image "dst".
 //
-// Warning: If you are using the RESIZE_METHOD_BILINEAR, it is
-// recommended to use 'fixup_image_transparent_colors' function
-// over the source image 'src' BEFORE using this routine.
-void resize_image(const Image* src,
+// Warning: If you are using the RESIZE_METHOD_BILINEAR, the "src"
+// image will be first filtered with the
+// fixup_image_transparent_colors() function, which modifies the
+// transparent pixels of the "src" image.
+void resize_image(Image* src,
                   Image* dst,
                   const ResizeMethod method,
                   const Palette* palette,
@@ -42,7 +43,7 @@ void resize_image(const Image* src,
 // (alpha = 0) with the average of its 4-neighbors.  Useful if you
 // want to use resize_image() with images that contains
 // transparent pixels.
-void fixup_image_transparent_colors(Image* image, bool skip_for_nearest_neighbor);
+void fixup_image_transparent_colors(Image* image);
 
 } // namespace algorithm
 } // namespace doc

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2019-2022  Igara Studio S.A.
+// Copyright (c) 2019-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -26,7 +26,7 @@
 
 namespace app {
 
-doc::Image* resize_image(const doc::Image* image,
+doc::Image* resize_image(doc::Image* image,
                          const gfx::SizeF& scale,
                          const doc::algorithm::ResizeMethod method,
                          const Palette* pal,
@@ -38,9 +38,6 @@ doc::Image* resize_image(const doc::Image* image,
   std::unique_ptr<doc::Image> newImage(doc::Image::create(spec));
   newImage->setMaskColor(image->maskColor());
 
-  doc::algorithm::fixup_image_transparent_colors(
-    newImage.get(),
-    method == doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR);
   doc::algorithm::resize_image(image, newImage.get(), method, pal, rgbmap, newImage->maskColor());
 
   return newImage.release();
@@ -79,9 +76,6 @@ void resize_cel_image(Tx& tx,
         doc::Image::create(image->pixelFormat(), std::max(1, w), std::max(1, h)));
       newImage->setMaskColor(image->maskColor());
 
-      doc::algorithm::fixup_image_transparent_colors(
-        image,
-        method == doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR);
       doc::algorithm::resize_image(
         image,
         newImage.get(),

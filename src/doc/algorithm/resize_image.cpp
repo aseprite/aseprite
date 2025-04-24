@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019  Igara Studio S.A.
+// Copyright (c) 2019-2025  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -41,13 +41,18 @@ void resize_image_nearest(const Image* src, Image* dst)
   }
 }
 
-void resize_image(const Image* src,
+void resize_image(Image* src,
                   Image* dst,
                   const ResizeMethod method,
                   const Palette* pal,
                   const RgbMap* rgbmap,
                   const color_t maskColor)
 {
+  // For resize methods that will merge neighbor pixels, we have to
+  // call fixup_image_transparent_colors().
+  if (method != RESIZE_METHOD_NEAREST_NEIGHBOR)
+    fixup_image_transparent_colors(src);
+
   switch (method) {
     // TODO optimize this
     case RESIZE_METHOD_NEAREST_NEIGHBOR: {
@@ -184,10 +189,8 @@ void resize_image(const Image* src,
   }
 }
 
-void fixup_image_transparent_colors(Image* image, bool skip_for_nearest_neighbor)
+void fixup_image_transparent_colors(Image* image)
 {
-  if (skip_for_nearest_neighbor)
-    return;
   int x, y;
 
   switch (image->pixelFormat()) {
