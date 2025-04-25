@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -487,6 +487,22 @@ bool MenuBox::onProcessMessage(Message* msg)
   Menu* menu = MenuBox::getMenu();
 
   switch (msg->type()) {
+    case kCloseDisplayMessage:
+      if (menu)
+        menu->closeAll();
+
+      // In case that this event is received when we are inside a
+      // modal loop to show this menu box
+      // (showPopup()/openWindowInForeground()) we redirect this
+      // kCloseDisplayMessage to the main window.
+      if (window()->isForeground()) {
+        auto* closeMsg2 = new Message(kCloseDisplayMessage);
+        closeMsg2->setRecipient(msg->recipient());
+        closeMsg2->setDisplay(msg->display());
+        manager()->enqueueMessage(closeMsg2);
+      }
+      break;
+
     case kMouseMoveMessage: {
       MenuBaseData* base = get_base(this);
       ASSERT(base);
@@ -1363,6 +1379,7 @@ void MenuBox::startFilteringMouseDown()
 {
   if (m_base && !m_base->is_filtering) {
     m_base->is_filtering = true;
+    Manager::getDefault()->addMessageFilter(kCloseDisplayMessage, this);
     Manager::getDefault()->addMessageFilter(kMouseDownMessage, this);
     Manager::getDefault()->addMessageFilter(kDoubleClickMessage, this);
   }
@@ -1372,6 +1389,7 @@ void MenuBox::stopFilteringMouseDown()
 {
   if (m_base && m_base->is_filtering) {
     m_base->is_filtering = false;
+    Manager::getDefault()->removeMessageFilter(kCloseDisplayMessage, this);
     Manager::getDefault()->removeMessageFilter(kMouseDownMessage, this);
     Manager::getDefault()->removeMessageFilter(kDoubleClickMessage, this);
   }
