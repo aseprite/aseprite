@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -100,6 +100,11 @@ bool PopupWindow::onProcessMessage(Message* msg)
       break;
 
     case kCloseMessage: stopFilteringMessages(); break;
+
+    case kCloseDisplayMessage:
+      // Close the popup when the main native window (os::Window) is closed.
+      closeWindow(nullptr);
+      break;
 
     case kMouseLeaveMessage:
       if (m_hotRegion.isEmpty() && m_fixed)
@@ -205,6 +210,7 @@ void PopupWindow::startFilteringMessages()
     m_filtering = true;
 
     Manager* manager = Manager::getDefault();
+    manager->addMessageFilter(kCloseDisplayMessage, this);
     manager->addMessageFilter(kMouseMoveMessage, this);
     manager->addMessageFilter(kMouseDownMessage, this);
     manager->addMessageFilter(kKeyDownMessage, this);
@@ -217,6 +223,7 @@ void PopupWindow::stopFilteringMessages()
     m_filtering = false;
 
     Manager* manager = Manager::getDefault();
+    manager->removeMessageFilter(kCloseDisplayMessage, this);
     manager->removeMessageFilter(kMouseMoveMessage, this);
     manager->removeMessageFilter(kMouseDownMessage, this);
     manager->removeMessageFilter(kKeyDownMessage, this);
