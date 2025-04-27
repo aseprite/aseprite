@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2024  Igara Studio S.A.
+// Copyright (C) 2021-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -39,7 +39,6 @@ public:
 
     gfx::Point m_mouseOffset;
     ui::UILayerRef m_floatingUILayer;
-    bool m_hidePreview;
   };
 
   Dock();
