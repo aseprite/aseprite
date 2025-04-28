@@ -1068,7 +1068,8 @@ bool Timeline::onProcessMessage(Message* msg)
 
       if (hasCapture()) {
         switch (m_state) {
-          case STATE_MOVING_RANGE: {
+          case STATE_DRAGGING_EXTERNAL_RANGE:
+          case STATE_MOVING_RANGE:            {
             col_t newFrame;
             if (m_range.type() == Range::kLayers) {
               // If we are moving only layers we don't change the
@@ -2065,10 +2066,14 @@ void Timeline::setCursor(ui::Message* msg, const Hit& hit)
   }
   // Moving.
   else if (m_state == STATE_MOVING_RANGE) {
-    if (is_copy_key_pressed(msg))
+    if (msg && is_copy_key_pressed(msg))
       ui::set_mouse_cursor(kArrowPlusCursor);
     else
       ui::set_mouse_cursor(kMoveCursor);
+  }
+  // Dragging elements from external source.
+  else if (m_state == STATE_DRAGGING_EXTERNAL_RANGE) {
+    ui::set_mouse_cursor(kArrowPlusCursor);
   }
   // Normal state.
   else if (hit.part == PART_HEADER_ONIONSKIN_RANGE_LEFT ||
@@ -2080,7 +2085,7 @@ void Timeline::setCursor(ui::Message* msg, const Hit& hit)
     ui::set_mouse_cursor(kSizeECursor);
   }
   else if (hit.part == PART_RANGE_OUTLINE) {
-    if (is_copy_key_pressed(msg))
+    if (msg && is_copy_key_pressed(msg))
       ui::set_mouse_cursor(kArrowPlusCursor);
     else
       ui::set_mouse_cursor(kMoveCursor);
@@ -2823,6 +2828,43 @@ void Timeline::drawTagBraces(ui::Graphics* g,
   }
 }
 
+void Timeline::paintDropFrameDeco(ui::Graphics* g, PaintWidgetPartInfo info, gfx::Rect dropBounds)
+{
+  auto& styles = skinTheme()->styles;
+  int w = 5 * guiscale(); // TODO get width from the skin info
+
+  if (m_dropTarget.hhit == DropTarget::Before)
+    dropBounds.x -= w / 2;
+  else if (m_dropRange == m_range)
+    dropBounds.x = dropBounds.x + getRangeBounds(m_range).w - w / 2;
+  else
+    dropBounds.x = dropBounds.x + dropBounds.w - w / 2;
+
+  dropBounds.w = w;
+
+  info.styleFlags = 0;
+  theme()->paintWidgetPart(g, styles.timelineDropFrameDeco(), dropBounds, info);
+}
+
+void Timeline::paintDropLayerDeco(ui::Graphics* g,
+                                  const PaintWidgetPartInfo& info,
+                                  gfx::Rect dropBounds)
+{
+  auto& styles = skinTheme()->styles;
+  int h = 5 * guiscale(); // TODO get height from the skin info
+
+  if (m_dropTarget.vhit == DropTarget::Top)
+    dropBounds.y -= h / 2;
+  else if (m_dropRange == m_range)
+    dropBounds.y = dropBounds.y + getRangeBounds(m_range).h - h / 2;
+  else
+    dropBounds.y = dropBounds.y + dropBounds.h - h / 2;
+
+  dropBounds.h = h;
+
+  theme()->paintWidgetPart(g, styles.timelineDropLayerDeco(), dropBounds, info);
+}
+
 void Timeline::drawRangeOutline(ui::Graphics* g)
 {
   auto& styles = skinTheme()->styles;
@@ -2842,42 +2884,24 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
 
   switch (m_dropRange.type()) {
     case Range::kCels: {
-      dropBounds = dropBounds.enlarge(outlineWidth());
+      gfx::Rect outlineBounds(dropBounds);
+      outlineBounds.enlarge(outlineWidth());
       info.styleFlags = ui::Style::Layer::kFocus;
-      theme()->paintWidgetPart(g, styles.timelineRangeOutline(), dropBounds, info);
+      theme()->paintWidgetPart(g, styles.timelineRangeOutline(), outlineBounds, info);
+
+      if (m_state == STATE_DRAGGING_EXTERNAL_RANGE)
+        paintDropLayerDeco(g, info, getSelectedLayersBounds(m_dropRange));
+
       break;
     }
 
     case Range::kFrames: {
-      int w = 5 * guiscale(); // TODO get width from the skin info
-
-      if (m_dropTarget.hhit == DropTarget::Before)
-        dropBounds.x -= w / 2;
-      else if (m_dropRange == m_range)
-        dropBounds.x = dropBounds.x + getRangeBounds(m_range).w - w / 2;
-      else
-        dropBounds.x = dropBounds.x + dropBounds.w - w / 2;
-
-      dropBounds.w = w;
-
-      info.styleFlags = 0;
-      theme()->paintWidgetPart(g, styles.timelineDropFrameDeco(), dropBounds, info);
+      paintDropFrameDeco(g, info, dropBounds);
       break;
     }
 
     case Range::kLayers: {
-      int h = 5 * guiscale(); // TODO get height from the skin info
-
-      if (m_dropTarget.vhit == DropTarget::Top)
-        dropBounds.y -= h / 2;
-      else if (m_dropRange == m_range)
-        dropBounds.y = dropBounds.y + getRangeBounds(m_range).h - h / 2;
-      else
-        dropBounds.y = dropBounds.y + dropBounds.h - h / 2;
-
-      dropBounds.h = h;
-
-      theme()->paintWidgetPart(g, styles.timelineDropLayerDeco(), dropBounds, info);
+      paintDropLayerDeco(g, info, dropBounds);
       break;
     }
   }
@@ -3172,6 +3196,27 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
   return gfx::Rect();
 }
 
+gfx::Rect Timeline::getSelectedFramesBounds(const Range& range) const
+{
+  gfx::Rect rc;
+  for (frame_t frame : range.selectedFrames()) {
+    rc |= getPartBounds(Hit(PART_HEADER_FRAME, 0, col_t(frame)));
+    rc |= getPartBounds(Hit(PART_CEL, 0, col_t(frame)));
+  }
+  return rc;
+}
+
+gfx::Rect Timeline::getSelectedLayersBounds(const Range& range) const
+{
+  gfx::Rect rc;
+  for (auto* layer : range.selectedLayers()) {
+    layer_t layerIdx = getLayerIndex(layer);
+    rc |= getPartBounds(Hit(PART_ROW_TEXT, layerIdx));
+    rc |= getPartBounds(Hit(PART_CEL, layerIdx, lastFrame()));
+  }
+  return rc;
+}
+
 gfx::Rect Timeline::getRangeBounds(const Range& range) const
 {
   gfx::Rect rc;
@@ -3180,26 +3225,15 @@ gfx::Rect Timeline::getRangeBounds(const Range& range) const
       // Return empty rectangle
       break;
     case Range::kCels:
-      for (auto layer : range.selectedLayers()) {
+      for (auto* layer : range.selectedLayers()) {
         layer_t layerIdx = getLayerIndex(layer);
         for (frame_t frame : range.selectedFrames())
           rc |= getPartBounds(Hit(PART_CEL, layerIdx, col_t(frame)));
       }
       break;
-    case Range::kFrames: {
-      for (frame_t frame : range.selectedFrames()) {
-        rc |= getPartBounds(Hit(PART_HEADER_FRAME, 0, col_t(frame)));
-        rc |= getPartBounds(Hit(PART_CEL, 0, col_t(frame)));
-      }
-      break;
-    }
-    case Range::kLayers:
-      for (auto layer : range.selectedLayers()) {
-        layer_t layerIdx = getLayerIndex(layer);
-        rc |= getPartBounds(Hit(PART_ROW_TEXT, layerIdx));
-        rc |= getPartBounds(Hit(PART_CEL, layerIdx, lastFrame()));
-      }
-      break;
+    case Range::kFrames: return getSelectedFramesBounds(range);
+
+    case Range::kLayers: return getSelectedLayersBounds(range);
   }
   return rc;
 }
@@ -3209,7 +3243,12 @@ gfx::Rect Timeline::getRangeClipBounds(const Range& range) const
   gfx::Rect celBounds = getCelsBounds();
   gfx::Rect clipBounds, unionBounds;
   switch (range.type()) {
-    case Range::kCels:   clipBounds = celBounds; break;
+    case Range::kCels: {
+      clipBounds = celBounds;
+      if (m_state == STATE_DRAGGING_EXTERNAL_RANGE)
+        clipBounds |= getLayerHeadersBounds();
+      break;
+    }
     case Range::kFrames: {
       clipBounds = getFrameHeadersBounds();
 
@@ -4186,7 +4225,7 @@ void Timeline::updateDropRange(const gfx::Point& pt)
   m_dropTarget.vhit = DropTarget::VNone;
   m_dropTarget.outside = false;
 
-  if (m_state != STATE_MOVING_RANGE) {
+  if (m_state != STATE_MOVING_RANGE && m_state != STATE_DRAGGING_EXTERNAL_RANGE) {
     m_dropRange.clearRange();
     return;
   }
@@ -4482,7 +4521,8 @@ void Timeline::onDragEnter(ui::DragEvent& e)
 {
   Widget::onDragEnter(e);
 
-  m_state = STATE_MOVING_RANGE;
+  m_state = STATE_DRAGGING_EXTERNAL_RANGE;
+  setCursor(nullptr, Hit());
 }
 
 void Timeline::onDragLeave(ui::DragEvent& e)
@@ -4495,6 +4535,7 @@ void Timeline::onDragLeave(ui::DragEvent& e)
   invalidate();
   flushRedraw();
   flushMessages();
+  updateByMousePos(nullptr, e.position());
 }
 
 void Timeline::onDrag(ui::DragEvent& e)
@@ -4504,6 +4545,7 @@ void Timeline::onDrag(ui::DragEvent& e)
   m_range.clearRange();
   setHot(hitTest(nullptr, e.position()));
   switch (m_hot.part) {
+    case PART_NOTHING:             invalidate();
     case PART_ROW:
     case PART_ROW_EYE_ICON:
     case PART_ROW_CONTINUOUS_ICON:
@@ -4537,6 +4579,7 @@ void Timeline::onDrop(ui::DragEvent& e)
   layer_t layerIndex = getLayerIndex(m_layer);
   InsertionPoint insert = InsertionPoint::BeforeLayer;
   DroppedOn droppedOn = DroppedOn::Unspecified;
+  TRACE("m_dropRange.type() %d\n", m_dropRange.type());
   switch (m_dropRange.type()) {
     case Range::kCels:
       frame = m_hot.frame;
@@ -4545,6 +4588,11 @@ void Timeline::onDrop(ui::DragEvent& e)
       droppedOn = DroppedOn::Cel;
       insert = (m_dropTarget.vhit == DropTarget::Top ? InsertionPoint::AfterLayer :
                                                        InsertionPoint::BeforeLayer);
+      TRACE("m_hot part=%d veryBottom=%d frame=%d layer=%d\n",
+            m_hot.part,
+            m_hot.veryBottom,
+            m_hot.frame,
+            m_hot.layer);
       break;
     case Range::kFrames:
       frame = m_dropRange.firstFrame();
