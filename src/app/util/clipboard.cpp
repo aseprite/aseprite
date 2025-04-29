@@ -21,6 +21,7 @@
 #include "app/doc_api.h"
 #include "app/doc_range.h"
 #include "app/doc_range_ops.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
@@ -827,7 +828,7 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
       editor->clearSlicesSelection();
       for (auto& s : slices) {
         Slice* slice = new Slice(s);
-        slice->setName(slice->name() + " Copy");
+        slice->setName(Strings::general_copy_of(slice->name()));
         tx(new cmd::AddSlice(dstSpr, slice));
         editor->selectSlice(slice);
       }
