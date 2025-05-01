@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -180,8 +180,9 @@ void MainWindow::initialize()
 
   m_dock->top()->right()->dock(ui::RIGHT, m_notifications.get());
   m_dock->top()->right()->dock(ui::CENTER, m_layoutSelector.get());
-  m_dock->top()->dock(ui::BOTTOM, m_tabsBar.get());
-  m_dock->top()->dock(ui::CENTER, m_menuBar.get());
+  m_dock->top()->center()->dock(ui::BOTTOM, m_tabsBar.get());
+  m_dock->top()->center()->dock(ui::CENTER, m_menuBar.get());
+
   m_dock->dock(ui::CENTER, m_customizableDockPlaceholder.get());
 
   // After the user resizes the dock we save the updated layout
@@ -713,32 +714,13 @@ void MainWindow::configureWorkspaceLayout()
 
   const auto& pref = Preferences::instance();
   bool normal = (m_mode == NormalMode);
+  bool showMenu = normal;
   bool isDoc = (getDocView() != nullptr);
 
-  if (os::System::instance()->menus() == nullptr || pref.general.showMenuBar()) {
-    if (!m_menuBar->parent())
-      m_dock->top()->dock(ui::CENTER, m_menuBar.get());
-  }
-  else {
-    if (m_menuBar->parent()) {
-      m_dock->undock(m_dock->top());
-      m_dock->top()->resetDocks();
+  if (os::System::instance()->menus() && !pref.general.showMenuBar())
+    showMenu = false;
 
-      // TODO: I've tried a dozen different ways but I cannot get this combination to dock well
-      // without running into sizing problems for the notifications & selector buttons.
-
-      if (m_tabsBar)
-        m_dock->top()->dock(ui::CENTER, m_tabsBar.get());
-
-      if (m_notifications)
-        m_dock->top()->right()->dock(ui::CENTER, m_notifications.get());
-
-      if (m_layoutSelector)
-        m_dock->top()->right()->dock(ui::RIGHT, m_layoutSelector.get());
-    }
-  }
-
-  m_menuBar->setVisible(normal);
+  m_menuBar->setVisible(showMenu);
   m_notifications->setVisible(normal && m_notifications->hasNotifications());
   m_tabsBar->setVisible(normal);
   m_colorBar->setVisible(normal && isDoc);
