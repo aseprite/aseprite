@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2024  Igara Studio S.A.
+// Copyright (C) 2021-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -326,16 +326,14 @@ LayoutSelector::LayoutSelector(TooltipManager* tooltipManager)
 
   m_comboBox.setVisible(false);
 
-  addChild(&m_comboBox);
-  addChild(&m_button);
+  m_top.setExpansive(true);
+  addChild(&m_top);
+  addChild(&m_center);
+  addChild(&m_bottom);
+  m_center.addChild(&m_comboBox);
+  m_center.addChild(&m_button);
 
   setupTooltips(tooltipManager);
-
-  InitTheme.connect([this] {
-    noBorderNoChildSpacing();
-    m_comboBox.noBorderNoChildSpacing();
-    m_button.noBorderNoChildSpacing();
-  });
   initTheme();
 }
 
@@ -392,6 +390,20 @@ void LayoutSelector::updateActiveLayout(const LayoutPtr& newLayout)
     // Mark it with an asterisk if we're editing a default layout.
     populateComboBox();
   }
+}
+
+void LayoutSelector::onInitTheme(ui::InitThemeEvent& ev)
+{
+  VBox::onInitTheme(ev);
+
+  noBorderNoChildSpacing();
+  m_comboBox.noBorderNoChildSpacing();
+  m_button.noBorderNoChildSpacing();
+
+  auto* theme = SkinTheme::get(this);
+  m_bottom.setStyle(theme->styles.tabBottom());
+  auto hint = theme->calcSizeHint(&m_bottom, m_bottom.style());
+  m_bottom.setMinSize(hint);
 }
 
 void LayoutSelector::onAnimationFrame()
@@ -521,6 +533,7 @@ void LayoutSelector::populateComboBox()
 
   m_comboBox.getEntryWidget()->deselectText();
 }
+
 LayoutSelector::LayoutItem* LayoutSelector::getItemByLayoutId(const std::string& id)
 {
   for (auto* child : m_comboBox) {

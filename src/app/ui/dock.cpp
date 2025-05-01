@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2024  Igara Studio S.A.
+// Copyright (C) 2021-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -313,19 +313,47 @@ Dock* Dock::subdock(int side)
 
 void Dock::onSizeHint(ui::SizeHintEvent& ev)
 {
-  gfx::Size sz = border().size();
+  gfx::Size fitIn = ev.fitInSize();
+  gfx::Size sz;
 
-  if (hasVisibleSide(kLeftIndex))
-    sz.w += m_sides[kLeftIndex]->sizeHint().w + childSpacing();
-  if (hasVisibleSide(kRightIndex))
-    sz.w += m_sides[kRightIndex]->sizeHint().w + childSpacing();
-  if (hasVisibleSide(kTopIndex))
-    sz.h += m_sides[kTopIndex]->sizeHint().h + childSpacing();
-  if (hasVisibleSide(kBottomIndex))
-    sz.h += m_sides[kBottomIndex]->sizeHint().h + childSpacing();
-  if (hasVisibleSide(kCenterIndex))
-    sz += m_sides[kCenterIndex]->sizeHint();
+  for (int i = 0; i < kSides; ++i) {
+    auto* widget = m_sides[i];
+    if (!widget || !widget->isVisible() || widget->isDecorative()) {
+      m_sizes[i] = gfx::Size(0, 0);
+      continue;
+    }
 
+    const int spacing = (m_aligns[i] & EXPANSIVE ? childSpacing() : 0);
+    const auto hint = m_sides[i]->sizeHint(fitIn);
+    m_sizes[i] = hint;
+
+    switch (i) {
+      case kTopIndex:
+      case kBottomIndex:
+        sz.h += hint.h;
+        fitIn.h = std::max(0, fitIn.h - hint.h);
+        if (spacing > 0) {
+          sz.h += spacing;
+          fitIn.h = std::max(0, fitIn.h - spacing);
+        }
+        break;
+      case kLeftIndex:
+      case kRightIndex:
+        sz.w += hint.w;
+        fitIn.w = std::max(0, fitIn.w - hint.w);
+        if (spacing > 0) {
+          sz.w += spacing;
+          fitIn.w = std::max(0, fitIn.w - spacing);
+        }
+        break;
+      case kCenterIndex:
+        sz += gfx::Size(std::max(hint.w, std::max(m_sizes[kTopIndex].w, m_sizes[kBottomIndex].w)),
+                        std::max(hint.h, std::max(m_sizes[kLeftIndex].h, m_sizes[kRightIndex].h)));
+        break;
+    }
+  }
+
+  sz += border();
   ev.setSizeHint(sz);
 }
 
@@ -707,9 +735,8 @@ void Dock::forEachSide(gfx::Rect bounds,
       continue;
     }
 
-    int spacing = (m_aligns[i] & EXPANSIVE ? childSpacing() : 0);
-
-    const gfx::Size sz = (m_aligns[i] & EXPANSIVE ? m_sizes[i] : widget->sizeHint());
+    const int spacing = (m_aligns[i] & EXPANSIVE ? childSpacing() : 0);
+    const gfx::Size sz = (m_aligns[i] & EXPANSIVE ? m_sizes[i] : widget->sizeHint(bounds.size()));
 
     gfx::Rect rc, separator;
     switch (i) {
