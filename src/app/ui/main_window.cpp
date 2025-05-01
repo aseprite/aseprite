@@ -172,11 +172,6 @@ void MainWindow::initialize()
 
   m_customizableDockPlaceholder = std::make_unique<Widget>();
   m_customizableDockPlaceholder->addChild(m_customizableDock);
-  m_customizableDockPlaceholder->InitTheme.connect([this] {
-    auto theme = static_cast<skin::SkinTheme*>(this->theme());
-    m_customizableDock->setBgColor(theme->colors.workspace());
-  });
-  m_customizableDockPlaceholder->initTheme();
 
   m_dock->top()->right()->dock(ui::RIGHT, m_notifications.get());
   m_dock->top()->right()->dock(ui::CENTER, m_layoutSelector.get());
@@ -206,6 +201,8 @@ void MainWindow::initialize()
   // When the language is changed, we reload the menu bar strings and
   // relayout the whole main window.
   Strings::instance()->LanguageChange.connect([this] { onLanguageChange(); });
+
+  initTheme();
 }
 
 MainWindow::~MainWindow()
@@ -503,6 +500,10 @@ void MainWindow::onInitTheme(ui::InitThemeEvent& ev)
   noBorderNoChildSpacing();
   if (m_previewEditor)
     m_previewEditor->initTheme();
+
+  auto* theme = static_cast<skin::SkinTheme*>(this->theme());
+  m_dock->setBgColor(theme->colors.windowFace());
+  m_customizableDock->setBgColor(theme->colors.workspace());
 }
 
 void MainWindow::onResize(ui::ResizeEvent& ev)
