@@ -317,8 +317,9 @@ void LayoutSelector::LayoutComboBox::onCloseListBox()
   }
 }
 
-LayoutSelector::LayoutSelector(TooltipManager* tooltipManager)
+LayoutSelector::LayoutSelector(TooltipManager* tooltipManager, Widget* notifications)
   : m_button(SkinTheme::instance()->parts.iconLayout())
+  , m_notifications(notifications)
 {
   setActiveLayoutId(Preferences::instance().general.workspaceLayout());
 
@@ -332,6 +333,7 @@ LayoutSelector::LayoutSelector(TooltipManager* tooltipManager)
   addChild(&m_bottom);
   m_center.addChild(&m_comboBox);
   m_center.addChild(&m_button);
+  m_center.addChild(m_notifications);
 
   setupTooltips(tooltipManager);
   initTheme();
@@ -339,6 +341,8 @@ LayoutSelector::LayoutSelector(TooltipManager* tooltipManager)
 
 LayoutSelector::~LayoutSelector()
 {
+  m_center.removeChild(m_notifications);
+
   Preferences::instance().general.workspaceLayout(m_activeLayoutId);
 
   if (!is_app_state_closing())
