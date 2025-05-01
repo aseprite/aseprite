@@ -1,5 +1,6 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013, 2015  David Capello
+// Copyright (C) 2025  Igara Studio S.A.
+// Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -31,33 +32,6 @@ SizeHintEvent::SizeHintEvent(Widget* source, const Size& fitIn)
   , m_fitIn(fitIn)
   , m_sizeHint(0, 0)
 {
-}
-
-/**
-   Destroys the SizeHintEvent.
-*/
-SizeHintEvent::~SizeHintEvent()
-{
-}
-
-Size SizeHintEvent::fitInSize() const
-{
-  return m_fitIn;
-}
-
-int SizeHintEvent::fitInWidth() const
-{
-  return m_fitIn.w;
-}
-
-int SizeHintEvent::fitInHeight() const
-{
-  return m_fitIn.h;
-}
-
-Size SizeHintEvent::sizeHint() const
-{
-  return m_sizeHint;
 }
 
 void SizeHintEvent::setSizeHint(const Size& sz)

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -276,7 +276,7 @@ void Splitter::onSizeHint(SizeHintEvent& ev)
     if (!child->isVisible())
       continue;
 
-    reqSize = child->sizeHint();
+    reqSize = child->sizeHint(ev.fitInSize());
 
     if (this->align() & HORIZONTAL)
       GET_CHILD_SIZE(w, h);

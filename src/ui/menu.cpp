@@ -424,6 +424,11 @@ Widget* Menu::findItemById(const char* id) const
   return nullptr;
 }
 
+bool Menu::inBar() const
+{
+  return (parent() && parent()->type() == kMenuBarWidget);
+}
+
 void Menu::onPaint(PaintEvent& ev)
 {
   theme()->paintMenu(ev);
@@ -433,40 +438,59 @@ void Menu::onResize(ResizeEvent& ev)
 {
   setBoundsQuietly(ev.bounds());
 
-  Rect cpos = childrenBounds();
-  bool isBar = (parent()->type() == kMenuBarWidget);
+  const Rect bounds = childrenBounds();
+  const bool inBar = this->inBar();
+  Rect cpos = bounds;
 
   for (auto child : children()) {
     Size reqSize = child->sizeHint();
+    cpos.h = reqSize.h;
 
-    if (isBar)
+    if (inBar) {
       cpos.w = reqSize.w;
+      if (cpos.x > bounds.x && cpos.x2() > bounds.x2()) {
+        cpos.x = bounds.x;
+        cpos.y += cpos.h;
+      }
+    }
     else
       cpos.h = reqSize.h;
 
     child->setBounds(cpos);
 
-    if (isBar)
-      cpos.x += cpos.w;
+    if (inBar)
+      cpos.x += cpos.w + childSpacing();
     else
-      cpos.y += cpos.h;
+      cpos.y += cpos.h + childSpacing();
   }
 }
 
 void Menu::onSizeHint(SizeHintEvent& ev)
 {
+  const bool inBar = this->inBar();
+
   Size size(0, 0);
   Size reqSize;
+  int x = 0;
 
   for (auto it = children().begin(), end = children().end(); it != end;) {
     auto next = it;
     ++next;
 
-    reqSize = (*it)->sizeHint();
+    reqSize = (*it)->sizeHint(ev.fitInSize());
 
-    if (parent() && parent()->type() == kMenuBarWidget) {
-      size.w += reqSize.w + ((next != end) ? childSpacing() : 0);
-      size.h = std::max(size.h, reqSize.h);
+    if (inBar) {
+      size.w = reqSize.w;
+
+      if (ev.fitInSize().w > 0 && x > 0 && x + reqSize.w > ev.fitInSize().w) {
+        x = 0;
+        size.h += reqSize.h;
+      }
+      else {
+        size.h = std::max(size.h, reqSize.h);
+      }
+
+      x += size.w + childSpacing();
     }
     else {
       size.w = std::max(size.w, reqSize.w);
@@ -478,7 +502,6 @@ void Menu::onSizeHint(SizeHintEvent& ev)
 
   size.w += border().width();
   size.h += border().height();
-
   ev.setSizeHint(size);
 }
 
@@ -844,9 +867,14 @@ void MenuBox::onResize(ResizeEvent& ev)
 void MenuBox::onSizeHint(SizeHintEvent& ev)
 {
   Size size(0, 0);
+  Size fitIn = ev.fitInSize();
+  if (fitIn.w > 0)
+    fitIn.w = std::max(1, fitIn.w - border().width());
+  if (fitIn.h > 0)
+    fitIn.h = std::max(1, fitIn.h - border().height());
 
   if (Menu* menu = getMenu())
-    size = menu->sizeHint();
+    size = menu->sizeHint(fitIn);
 
   size.w += border().width();
   size.h += border().height();

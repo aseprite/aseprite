@@ -1464,15 +1464,15 @@ Size Widget::sizeHint(const Size& fitIn)
 {
   if (m_sizeHint)
     return *m_sizeHint;
-  else {
-    SizeHintEvent ev(this, fitIn);
+
+  SizeHintEvent ev(this, fitIn);
+  if (m_theme)
     onSizeHint(ev);
 
-    Size sz(ev.sizeHint());
-    sz.w = std::clamp(sz.w, m_minSize.w, m_maxSize.w);
-    sz.h = std::clamp(sz.h, m_minSize.h, m_maxSize.h);
-    return sz;
-  }
+  Size sz(ev.sizeHint());
+  sz.w = std::clamp(sz.w, m_minSize.w, m_maxSize.w);
+  sz.h = std::clamp(sz.h, m_minSize.h, m_maxSize.h);
+  return sz;
 }
 
 /**

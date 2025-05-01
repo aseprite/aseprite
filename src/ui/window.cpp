@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -654,7 +654,7 @@ void Window::onSizeHint(SizeHintEvent& ev)
 
     for (auto child : children()) {
       if (!child->isDecorative()) {
-        reqSize = child->sizeHint();
+        reqSize = child->sizeHint(ev.fitInSize());
 
         maxSize.w = std::max(maxSize.w, reqSize.w);
         maxSize.h = std::max(maxSize.h, reqSize.h);

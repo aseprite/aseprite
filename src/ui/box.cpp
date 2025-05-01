@@ -39,6 +39,7 @@ void Box::onSizeHint(SizeHintEvent& ev)
     else                                                                                           \
       prefSize.w += childSize.w;                                                                   \
     prefSize.h = std::max(prefSize.h, childSize.h);                                                \
+    fitIn.w = std::max(0, fitIn.w - prefSize.w);                                                   \
   }
 
 #define FINAL_ADJUSTMENT(w)                                                                        \
@@ -49,17 +50,23 @@ void Box::onSizeHint(SizeHintEvent& ev)
   }
 
   int visibleChildren = 0;
-  for (auto child : children()) {
+  for (auto* child : children()) {
     if (!child->hasFlags(HIDDEN))
       ++visibleChildren;
   }
 
   Size prefSize(0, 0);
+  Size fitIn(0, 0);
+  if (align() & HORIZONTAL)
+    fitIn.w = ev.fitInWidth();
+  else
+    fitIn.h = ev.fitInHeight();
+
   for (auto child : children()) {
     if (child->hasFlags(HIDDEN))
       continue;
 
-    Size childSize = child->sizeHint();
+    Size childSize = child->sizeHint(fitIn);
     if (align() & HORIZONTAL) {
       ADD_CHILD_SIZE(w, h);
     }
@@ -99,6 +106,7 @@ void Box::onResize(ResizeEvent& ev)
         continue;                                                                                  \
                                                                                                    \
       int size = 0;                                                                                \
+      int sizeDiff = 0;                                                                            \
                                                                                                    \
       if (align() & HOMOGENEOUS) {                                                                 \
         if (i < visibleChildren - 1)                                                               \
@@ -107,7 +115,7 @@ void Box::onResize(ResizeEvent& ev)
           size = availSize.w;                                                                      \
       }                                                                                            \
       else {                                                                                       \
-        size = child->sizeHint().w;                                                                \
+        size = child->sizeHint(availSize).w;                                                       \
                                                                                                    \
         if (child->isExpansive()) {                                                                \
           const int extraSize = guiscaled_div(availExtraSize, (expansiveChildren - j));            \
@@ -115,6 +123,9 @@ void Box::onResize(ResizeEvent& ev)
           availExtraSize -= extraSize;                                                             \
           if (++j == expansiveChildren)                                                            \
             size += availExtraSize;                                                                \
+        }                                                                                          \
+        else {                                                                                     \
+          availExtraSize -= (size - child->sizeHint().w);                                          \
         }                                                                                          \
       }                                                                                            \
                                                                                                    \
@@ -142,8 +153,8 @@ void Box::onResize(ResizeEvent& ev)
   }
 
   if (visibleChildren > 0) {
-    Size prefSize(sizeHint());
-    Size availSize(childrenBounds().size());
+    Size availSize = childrenBounds().size();
+    Size prefSize = sizeHint(availSize);
     int homogeneousSize = 0;
     int availExtraSize = 0;
 

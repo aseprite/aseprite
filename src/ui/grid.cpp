@@ -181,7 +181,7 @@ void Grid::onResize(ResizeEvent& ev)
         calculateCellSize(col, cell->hspan, m_colstrip, w);
         calculateCellSize(row, cell->vspan, m_rowstrip, h);
 
-        reqSize = cell->child->sizeHint();
+        reqSize = cell->child->sizeHint(Size(w, h));
 
         if (cell->align & LEFT) {
           w = reqSize.w;
