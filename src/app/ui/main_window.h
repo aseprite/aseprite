@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -144,6 +144,7 @@ private:
   Dock* m_customizableDock;
   std::unique_ptr<Widget> m_customizableDockPlaceholder;
   std::unique_ptr<MainMenuBar> m_menuBar;
+  std::unique_ptr<Notifications> m_notifications;
   std::unique_ptr<LayoutSelector> m_layoutSelector;
   std::unique_ptr<StatusBar> m_statusBar;
   std::unique_ptr<ColorBar> m_colorBar;
@@ -155,7 +156,6 @@ private:
   std::unique_ptr<Workspace> m_workspace;
   std::unique_ptr<PreviewEditorWindow> m_previewEditor;
   std::unique_ptr<HomeView> m_homeView;
-  std::unique_ptr<Notifications> m_notifications;
   std::unique_ptr<INotificationDelegate> m_scalePanic;
   std::unique_ptr<BrowserView> m_browserView;
 #ifdef ENABLE_SCRIPTING
