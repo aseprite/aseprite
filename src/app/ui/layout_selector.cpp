@@ -318,7 +318,7 @@ void LayoutSelector::LayoutComboBox::onCloseListBox()
 }
 
 LayoutSelector::LayoutSelector(TooltipManager* tooltipManager)
-  : m_button(SkinTheme::instance()->parts.iconUserData())
+  : m_button(SkinTheme::instance()->parts.iconLayout())
 {
   setActiveLayoutId(Preferences::instance().general.workspaceLayout());
 
@@ -396,14 +396,18 @@ void LayoutSelector::onInitTheme(ui::InitThemeEvent& ev)
 {
   VBox::onInitTheme(ev);
 
+  auto* theme = SkinTheme::get(this);
+  setBgColor(theme->colors.windowFace());
+
   noBorderNoChildSpacing();
+  m_top.noBorderNoChildSpacing();
+  m_center.noBorderNoChildSpacing();
+  m_bottom.noBorderNoChildSpacing();
   m_comboBox.noBorderNoChildSpacing();
   m_button.noBorderNoChildSpacing();
 
-  auto* theme = SkinTheme::get(this);
   m_bottom.setStyle(theme->styles.tabBottom());
-  auto hint = theme->calcSizeHint(&m_bottom, m_bottom.style());
-  m_bottom.setMinSize(hint);
+  m_bottom.setMinSize(gfx::Size(0, theme->dimensions.tabsBottomHeight()));
 }
 
 void LayoutSelector::onAnimationFrame()

@@ -154,10 +154,6 @@ Dock::Dock()
     m_sizes[i] = gfx::Size(0, 0);
   }
 
-  InitTheme.connect([this] {
-    if (auto p = parent())
-      setBgColor(p->bgColor());
-  });
   initTheme();
 }
 
@@ -408,7 +404,7 @@ void Dock::onPaint(ui::PaintEvent& ev)
                   auto th = textHeight();
                   if (isCustomizing()) {
                     auto* theme = SkinTheme::get(this);
-                    const auto& color = theme->colors.workspaceText();
+                    const gfx::Color color = theme->colors.workspaceText();
                     int handleSide = 0;
                     if (auto* dockable = dynamic_cast<Dockable*>(widget))
                       handleSide = dockable->dockHandleSide();
@@ -440,6 +436,12 @@ void Dock::onInitTheme(ui::InitThemeEvent& ev)
   Widget::onInitTheme(ev);
   setBorder(gfx::Border(0));
   setChildSpacing(4 * ui::guiscale());
+
+  for (int i = 0; i < kSides; ++i) {
+    Widget* widget = m_sides[i];
+    if (widget)
+      widget->initTheme();
+  }
 }
 
 bool Dock::onProcessMessage(ui::Message* msg)
