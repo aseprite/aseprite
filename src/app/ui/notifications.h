@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -32,12 +32,12 @@ public:
   int dockableAt() const override { return ui::TOP | ui::BOTTOM | ui::LEFT | ui::RIGHT; }
 
 protected:
+  void onInitTheme(ui::InitThemeEvent& ev) override;
   void onSizeHint(ui::SizeHintEvent& ev) override;
   void onPaint(ui::PaintEvent& ev) override;
   void onClick() override;
 
 private:
-  ui::Style* m_flagStyle;
   bool m_red;
   ui::Menu m_popup;
 };

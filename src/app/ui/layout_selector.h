@@ -44,7 +44,7 @@ class LayoutSelector : public ui::VBox,
   };
 
 public:
-  LayoutSelector(ui::TooltipManager* tooltipManager);
+  LayoutSelector(ui::TooltipManager* tooltipManager, ui::Widget* notifications);
   ~LayoutSelector();
 
   LayoutPtr activeLayout() const;
@@ -88,6 +88,7 @@ private:
   ui::HBox m_top, m_center, m_bottom;
   LayoutComboBox m_comboBox;
   IconButton m_button;
+  Widget* m_notifications = nullptr;
   gfx::Size m_startSize;
   gfx::Size m_endSize;
   Layouts m_layouts;

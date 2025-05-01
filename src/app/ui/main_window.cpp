@@ -117,7 +117,8 @@ MainWindow::MainWindow()
 void MainWindow::initialize()
 {
   m_menuBar = std::make_unique<MainMenuBar>();
-  m_layoutSelector = std::make_unique<LayoutSelector>(m_tooltipManager);
+  m_notifications = std::make_unique<Notifications>();
+  m_layoutSelector = std::make_unique<LayoutSelector>(m_tooltipManager, m_notifications.get());
 
   // Register commands to load menus+shortcuts for these commands
   Editor::registerCommands();
@@ -128,7 +129,6 @@ void MainWindow::initialize()
   // Setup the main menubar
   m_menuBar->setMenu(AppMenus::instance()->getRootMenu());
 
-  m_notifications = std::make_unique<Notifications>();
   m_statusBar = std::make_unique<StatusBar>(m_tooltipManager);
   m_toolBar = std::make_unique<ToolBar>();
   m_tabsBar = std::make_unique<WorkspaceTabs>(this);
@@ -173,8 +173,7 @@ void MainWindow::initialize()
   m_customizableDockPlaceholder = std::make_unique<Widget>();
   m_customizableDockPlaceholder->addChild(m_customizableDock);
 
-  m_dock->top()->right()->dock(ui::RIGHT, m_notifications.get());
-  m_dock->top()->right()->dock(ui::CENTER, m_layoutSelector.get());
+  m_dock->top()->dock(ui::RIGHT, m_layoutSelector.get());
   m_dock->top()->center()->dock(ui::BOTTOM, m_tabsBar.get());
   m_dock->top()->center()->dock(ui::CENTER, m_menuBar.get());
 
