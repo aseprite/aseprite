@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2024  Igara Studio S.A.
+// Copyright (C) 2021-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -25,7 +25,7 @@ class TooltipManager;
 
 namespace app {
 
-class LayoutSelector : public ui::HBox,
+class LayoutSelector : public ui::VBox,
                        public ui::AnimatedWidget,
                        public Dockable {
   enum Ani : int {
@@ -61,6 +61,9 @@ public:
   // Dockable impl
   int dockableAt() const override { return ui::TOP | ui::BOTTOM; }
 
+protected:
+  void onInitTheme(ui::InitThemeEvent& ev) override;
+
 private:
   void setupTooltips(ui::TooltipManager* tooltipManager);
   void setActiveLayoutId(const std::string& layoutId)
@@ -82,6 +85,7 @@ private:
   void onAnimationStop(int animation) override;
 
   std::string m_activeLayoutId;
+  ui::HBox m_top, m_center, m_bottom;
   LayoutComboBox m_comboBox;
   IconButton m_button;
   gfx::Size m_startSize;
