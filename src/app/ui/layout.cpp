@@ -35,7 +35,7 @@ static void save_dock_layout(XMLElement* elem, const Dock* dock)
 {
   for (const auto* child : dock->children()) {
     const int side = dock->whichSideChildIsDocked(child);
-    const gfx::Size& size = dock->getUserDefinedSizeAtSide(side);
+    const gfx::Size size = dock->getUserDefinedSizeAtSide(side);
 
     std::string sideStr;
     switch (side) {
