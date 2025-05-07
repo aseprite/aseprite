@@ -197,7 +197,9 @@ public:
         }
 
         m_selector->setActiveLayoutId(Layout::kDefault);
-      } break;
+        break;
+      }
+
       case MIRRORED_DEFAULT: {
         if (const auto& mirroredLayout = win->layoutSelector()->m_layouts.getById(
               Layout::kMirroredDefault)) {
@@ -208,14 +210,17 @@ public:
         }
 
         m_selector->setActiveLayoutId(Layout::kMirroredDefault);
-      } break;
+        break;
+      }
+
       case USER_DEFINED: {
         const auto selectedLayout = m_selector->m_layouts.getById(m_layoutId);
         ASSERT(!m_layoutId.empty());
         ASSERT(selectedLayout);
         m_selector->setActiveLayoutId(m_layoutId);
         win->loadUserLayout(selectedLayout.get());
-      } break;
+        break;
+      }
     }
   }
 
