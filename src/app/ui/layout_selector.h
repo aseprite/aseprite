@@ -66,18 +66,7 @@ protected:
 
 private:
   void setupTooltips(ui::TooltipManager* tooltipManager);
-  void setActiveLayoutId(const std::string& layoutId)
-  {
-    if (layoutId.empty()) {
-      m_activeLayoutId = Layout::kDefault;
-      return;
-    }
-
-    if (layoutId == m_activeLayoutId)
-      return;
-
-    m_activeLayoutId = layoutId;
-  }
+  void setActiveLayoutId(const std::string& layoutId);
 
   void populateComboBox();
   LayoutItem* getItemByLayoutId(const std::string& id);

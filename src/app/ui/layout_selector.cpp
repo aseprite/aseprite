@@ -503,6 +503,19 @@ void LayoutSelector::setupTooltips(TooltipManager* tooltipManager)
   tooltipManager->addTooltipFor(&m_button, Strings::main_window_layout(), TOP);
 }
 
+void LayoutSelector::setActiveLayoutId(const std::string& layoutId)
+{
+  if (layoutId.empty()) {
+    m_activeLayoutId = Layout::kDefault;
+    return;
+  }
+
+  if (layoutId == m_activeLayoutId)
+    return;
+
+  m_activeLayoutId = layoutId;
+}
+
 void LayoutSelector::populateComboBox()
 {
   m_comboBox.deleteAllItems();
