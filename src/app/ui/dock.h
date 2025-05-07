@@ -29,8 +29,9 @@ public:
   class DropzonePlaceholder final : public Widget,
                                     public Dockable {
   public:
-    explicit DropzonePlaceholder(Widget* dragWidget, const gfx::Point& mousePosition);
+    DropzonePlaceholder(Widget* dragWidget, const gfx::Point& mousePosition);
     ~DropzonePlaceholder() override;
+
     void setGhostPosition(const gfx::Point& position) const;
 
   private:

@@ -110,7 +110,7 @@ Dock::DropzonePlaceholder::DropzonePlaceholder(Widget* dragWidget, const gfx::Po
   display()->addLayer(m_floatingUILayer);
 }
 
-inline Dock::DropzonePlaceholder::~DropzonePlaceholder()
+Dock::DropzonePlaceholder::~DropzonePlaceholder()
 {
   display()->removeLayer(m_floatingUILayer);
 }
@@ -570,7 +570,6 @@ bool Dock::onProcessMessage(ui::Message* msg)
     case kMouseUpMessage: {
       if (hasCapture()) {
         releaseMouse();
-        const auto* mouseMessage = static_cast<MouseMessage*>(msg);
 
         if (m_dropzonePlaceholder && m_dropzonePlaceholder->parent()) {
           // Always undock the dropzone placeholder to avoid dangling sizes.
@@ -586,6 +585,7 @@ bool Dock::onProcessMessage(ui::Message* msg)
 
           assert(dockableWidget && widgetDock);
 
+          const auto* mouseMessage = static_cast<MouseMessage*>(msg);
           if (mouseMessage->right() && !m_dragging) {
             Menu menu;
             MenuItem left(Strings::dock_left());
@@ -791,15 +791,17 @@ void Dock::forEachSide(gfx::Rect bounds,
 
 void Dock::redockWidget(app::Dock* widgetDock, ui::Widget* dockableWidget, const int side)
 {
-  const gfx::Rect workspaceBounds = widgetDock->bounds();
-
   gfx::Size size;
+
   if (dockableWidget->id() == "timeline") {
+    const gfx::Rect workspaceBounds = widgetDock->bounds();
+
     size.w = 64;
     size.h = 64;
-    auto timelineSplitterPos =
+    const auto timelineSplitterPos =
       get_config_double(kLegacyLayoutMainWindowSection, kLegacyLayoutTimelineSplitter, 75.0) /
       100.0;
+
     auto pos = gen::TimelinePosition::LEFT;
     size.w = (workspaceBounds.w * (1.0 - timelineSplitterPos)) / guiscale();
 
