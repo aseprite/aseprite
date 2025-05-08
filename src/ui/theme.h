@@ -77,6 +77,7 @@ public:
   virtual gfx::Size getEntryCaretSize(Widget* widget) { return gfx::Size(kDefaultFontHeight, 1); }
 
   virtual void paintEntry(PaintEvent& ev) {}
+  virtual void paintTextEdit(PaintEvent& ev) {}
   virtual void paintListBox(PaintEvent& ev);
   virtual void paintMenu(PaintEvent& ev) {}
   virtual void paintMenuItem(PaintEvent& ev) {}
