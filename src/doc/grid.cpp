@@ -10,6 +10,7 @@
 
 #include "doc/grid.h"
 
+#include "doc/algo.h"
 #include "doc/image.h"
 #include "doc/image_ref.h"
 #include "doc/primitives.h"
@@ -19,6 +20,7 @@
 #include "gfx/size.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <limits>
 #include <vector>
@@ -175,6 +177,67 @@ std::vector<gfx::Point> Grid::tilesInCanvasRegion(const gfx::Region& rgn) const
       result.push_back(gfx::Point(it.x() + bounds.x, it.y() + bounds.y));
   }
   return result;
+}
+
+Grid::IsometricGuide::IsometricGuide(const gfx::Size& sz, const bool thickEdges)
+{
+  evenWidth = sz.w % 2 == 0;
+  evenHeight = sz.h % 2 == 0;
+  evenHalfWidth = ((sz.w / 2) % 2) == 0;
+  evenHalfHeight = ((sz.h / 2) % 2) == 0;
+  squareRatio = ABS(sz.w - sz.h) <= 1;
+  oddSize = !evenWidth && evenHalfWidth && !evenHeight && evenHalfHeight;
+  shareEdges = !thickEdges || squareRatio || !evenHeight;
+
+  start.x = 0;
+  start.y = std::round(sz.h * 0.5);
+  end.x = sz.w / 2;
+  end.y = sz.h;
+
+  if (!squareRatio) {
+    if (evenWidth) {
+      end.x--;
+    }
+    else if (oddSize) {
+      start.x--;
+      end.x++;
+    }
+  }
+  if (!shareEdges) {
+    start.y++;
+  }
+}
+
+static void push_isometric_line_point(int x, int y, std::vector<gfx::Point>* data)
+{
+  if (data->empty() || data->back().y != y) {
+    data->push_back(gfx::Point(x * int(x >= 0), y));
+  }
+}
+
+std::vector<gfx::Point> Grid::getIsometricLine(const gfx::Size& sz, const bool thickEdges)
+{
+  std::vector<gfx::Point> result;
+  const IsometricGuide guide(sz, thickEdges);
+
+  // We use the line drawing algorithm to find the points
+  // for a single pixel-precise line
+  doc::algo_line_continuous_with_fix_for_line_brush(guide.start.x,
+                                                    guide.start.y,
+                                                    guide.end.x,
+                                                    guide.end.y,
+                                                    &result,
+                                                    (doc::AlgoPixel)&push_isometric_line_point);
+
+  return result;
+}
+
+bool Grid::isIsometric(const Type t)
+{
+  if (t == Type::IsometricSharedEdges || t == Type::IsometricThickEdges)
+    return true;
+
+  return false;
 }
 
 } // namespace doc
