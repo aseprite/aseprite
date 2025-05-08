@@ -1450,6 +1450,7 @@ void Manager::_openWindow(Window* window, bool center)
       spec.minimizable(window->isDesktop());
       spec.borderless(!window->isDesktop());
       spec.transparent(window->isTransparent());
+      spec.modal(window->isForeground() || window->isOnTop());
 
       if (!window->isDesktop()) {
         spec.parent(parentDisplay->nativeWindow());
