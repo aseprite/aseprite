@@ -63,6 +63,10 @@ public:
   bool generateMessages();
   void dispatchMessages();
 
+  // Wakes up the system's events queue to process the currently enqueued UI
+  // messages.
+  void flushMessages() const;
+
   // Makes the generateMessages() function to return immediately if
   // there is no user events in the OS queue. Useful only for tests
   // or benchmarks where we don't wait the user (or we don't even
@@ -193,7 +197,6 @@ private:
   int pumpQueue();
   bool sendMessageToWidget(Message* msg, Widget* widget);
 
-  Widget* findForDragAndDrop(Widget* widget);
   void dragEnter(os::DragEvent& ev) override;
   void dragLeave(os::DragEvent& ev) override;
   void drag(os::DragEvent& ev) override;

@@ -108,7 +108,7 @@ endif()
 # This defines a specific webp decoding utility function for using
 # in Windows when dragging and dropping images that are stored as
 # webp files (like Chrome does).
-if(WIN32 AND ENABLE_WEBP)
+if(WIN32 AND ENABLE_WEBP AND LAF_BACKEND STREQUAL "skia")
   target_sources(app-lib PRIVATE util/decode_webp.cpp)
 endif()
 
@@ -290,7 +290,6 @@ target_sources(app-lib PRIVATE
   cmd/copy_region.cpp
   cmd/crop_cel.cpp
   cmd/deselect_mask.cpp
-  cmd/drop_on_timeline.cpp
   cmd/flatten_layers.cpp
   cmd/flip_image.cpp
   cmd/flip_mask.cpp
@@ -526,6 +525,7 @@ target_sources(app-lib PRIVATE
   context_flags.cpp
   doc.cpp
   doc_api.cpp
+  doc_api_dnd_helper.cpp
   doc_diff.cpp
   doc_exporter.cpp
   doc_range_ops.cpp
@@ -684,6 +684,7 @@ target_sources(app-lib PRIVATE
   ui/tile_button.cpp
   ui/tileset_selector.cpp
   ui/timeline/ani_controls.cpp
+  ui/timeline/doc_providers.cpp
   ui/timeline/timeline.cpp
   ui/toolbar.cpp
   ui/user_data_view.cpp
@@ -706,6 +707,7 @@ target_sources(app-lib PRIVATE
   util/layer_utils.cpp
   util/msk_file.cpp
   util/new_image_from_mask.cpp
+  util/open_file_job.cpp
   util/pal_ops.cpp
   util/pic_file.cpp
   util/pixel_ratio.cpp
