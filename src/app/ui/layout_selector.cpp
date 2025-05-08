@@ -105,13 +105,12 @@ public:
     , m_selector(selector)
     , m_layoutId(layoutId)
   {
-    auto* hbox = new HBox;
-    hbox->setTransparent(true);
-    addChild(hbox);
+    m_hbox.setTransparent(true);
+    addChild(&m_hbox);
 
     auto* filler = new BoxFiller();
     filler->setTransparent(true);
-    hbox->addChild(filler);
+    m_hbox.addChild(filler);
 
     if (option == USER_DEFINED ||
         ((option == DEFAULT || option == MIRRORED_DEFAULT) && !layoutId.empty())) {
@@ -128,13 +127,10 @@ public:
     ASSERT(!m_layoutId.empty());
 
     // TODO: Custom icons for each one would be nice here.
-    m_actionButton = std::unique_ptr<IconButton>(
-      new IconButton(SkinTheme::instance()->parts.iconClose()));
-    m_actionButton->setSizeHint(
-      gfx::Size(m_actionButton->textHeight(), m_actionButton->textHeight()));
-
+    m_actionButton = new IconButton(SkinTheme::instance()->parts.iconClose());
+    const int th = m_actionButton->textHeight();
+    m_actionButton->setSizeHint(gfx::Size(th, th));
     m_actionButton->setTransparent(true);
-
     m_actionButton->InitTheme.connect(
       [this] { m_actionButton->setBgColor(gfx::rgba(0, 0, 0, 0)); });
 
@@ -177,7 +173,7 @@ public:
       });
     }
 
-    children()[0]->addChild(m_actionButton.get());
+    m_hbox.addChild(m_actionButton);
   }
 
   std::string_view getLayoutId() const { return m_layoutId; }
@@ -298,15 +294,20 @@ public:
 
 private:
   LayoutOption m_option;
-  LayoutSelector* m_selector;
+  LayoutSelector* m_selector = nullptr;
   std::string m_layoutId;
-  std::unique_ptr<IconButton> m_actionButton;
+  HBox m_hbox;
+  IconButton* m_actionButton = nullptr;
   obs::scoped_connection m_actionConn;
 };
 
 void LayoutSelector::LayoutComboBox::onChange()
 {
   ComboBox::onChange();
+
+  if (m_lockChange)
+    return;
+
   if (auto* item = dynamic_cast<LayoutItem*>(getSelectedItem())) {
     item->selectImmediately();
     m_selected = item;
@@ -316,6 +317,10 @@ void LayoutSelector::LayoutComboBox::onChange()
 void LayoutSelector::LayoutComboBox::onCloseListBox()
 {
   ComboBox::onCloseListBox();
+
+  if (m_lockChange)
+    return;
+
   if (m_selected) {
     m_selected->selectAfterClose();
     m_selected = nullptr;
@@ -363,12 +368,7 @@ void LayoutSelector::addLayout(const LayoutPtr& layout)
 {
   m_layouts.addLayout(layout);
 
-  // HACK: Because this function is called from inside a LayoutItem, clearing the combobox items
-  // will crash.
-  // TODO: Is there a better way to do this?
-  auto* msg = new CallbackMessage([this] { populateComboBox(); });
-  msg->setRecipient(this);
-  manager()->enqueueMessage(msg);
+  populateComboBox();
 }
 
 void LayoutSelector::removeLayout(const LayoutPtr& layout)
@@ -376,10 +376,7 @@ void LayoutSelector::removeLayout(const LayoutPtr& layout)
   m_layouts.removeLayout(layout);
   m_layouts.saveUserLayouts();
 
-  // TODO: See addLayout
-  auto* msg = new CallbackMessage([this] { populateComboBox(); });
-  msg->setRecipient(this);
-  manager()->enqueueMessage(msg);
+  populateComboBox();
 }
 
 void LayoutSelector::removeLayout(const std::string& layoutId)
@@ -523,7 +520,21 @@ void LayoutSelector::setActiveLayoutId(const std::string& layoutId)
 
 void LayoutSelector::populateComboBox()
 {
-  m_comboBox.deleteAllItems();
+  // Disable combobox onChange() event processing when we are
+  // re-creating the combobox items. This avoids calling
+  // LayoutSelector::LayoutItem::selectImmediately() which could
+  // delete docks that generate this same event, e.g. resizing a dock
+  // can generate a UserResizedDock which might call this
+  // populateComboBox() function.
+  m_comboBox.setLockChange(true);
+
+  // Defer deletion of current items because we can be inside one of
+  // these item callbacks.
+  auto itemsCopy = m_comboBox.items();
+  for (auto* item : itemsCopy) {
+    m_comboBox.removeItem(item);
+    item->deferDelete();
+  }
 
   m_comboBox.addItem(new SeparatorInView(Strings::main_window_layout(), HORIZONTAL));
   m_comboBox.addItem(
@@ -558,6 +569,8 @@ void LayoutSelector::populateComboBox()
     m_comboBox.setSelectedItemIndex(2);
 
   m_comboBox.getEntryWidget()->deselectText();
+
+  m_comboBox.setLockChange(false);
 }
 
 LayoutSelector::LayoutItem* LayoutSelector::getItemByLayoutId(const std::string& id)

@@ -37,10 +37,14 @@ class LayoutSelector : public ui::VBox,
   class LayoutItem;
 
   class LayoutComboBox : public ui::ComboBox {
+  public:
+    void setLockChange(bool state) { m_lockChange = state; }
+
   private:
     void onChange() override;
     void onCloseListBox() override;
     LayoutItem* m_selected = nullptr;
+    bool m_lockChange = false;
   };
 
 public:
