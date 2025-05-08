@@ -183,10 +183,6 @@ void MainWindow::initialize()
   m_saveDockLayoutConn = m_customizableDock->UserResizedDock.connect(&MainWindow::saveActiveLayout,
                                                                      this);
 
-  setDefaultLayout();
-  if (LayoutPtr layout = m_layoutSelector->activeLayout())
-    loadUserLayout(layout.get());
-
   // Reconfigure workspace when the timeline position is changed.
   auto& pref = Preferences::instance();
   pref.general.timelinePosition.AfterChange.connect([this] { configureWorkspaceLayout(); });
@@ -412,22 +408,32 @@ void MainWindow::setDefaultLayout()
   const auto timelineSplitterPos =
     get_config_double(kLegacyLayoutMainWindowSection, kLegacyLayoutTimelineSplitter, 75.0) / 100.0;
   const auto timelinePos = Preferences::instance().general.timelinePosition();
-  const auto workspaceBounds = m_workspace->bounds();
+
+  // We calculate a estimate of the workspace bounds (as we don't yet
+  // know its size, because we're just constructing the dock where the
+  // workspace will be inside).
+  const int kLegacySplitterSeparation = 3 * ui::guiscale();
+  auto workspaceBounds = bounds();
+  workspaceBounds.w -= colorBarWidth + m_toolBar->sizeHint().w + 2 * kLegacySplitterSeparation;
+  workspaceBounds.h -= m_menuBar->sizeHint().h + m_tabsBar->sizeHint().h +
+                       m_contextBar->sizeHint().h + m_statusBar->sizeHint().h;
 
   int timelineSide;
-  switch (timelinePos) {
-    case gen::TimelinePosition::LEFT:   timelineSide = ui::LEFT; break;
-    case gen::TimelinePosition::RIGHT:  timelineSide = ui::LEFT; break;
-    default:
-    case gen::TimelinePosition::BOTTOM: timelineSide = ui::BOTTOM; break;
-  }
-
   gfx::Size timelineSize(75, 75);
-  if ((timelineSide & RIGHT) || (timelineSide & LEFT)) {
-    timelineSize.w = (workspaceBounds.w * (1.0 - timelineSplitterPos)) / guiscale();
-  }
-  if ((timelineSide & BOTTOM) || (timelineSide & TOP)) {
-    timelineSize.h = (workspaceBounds.h * (1.0 - timelineSplitterPos)) / guiscale();
+  switch (timelinePos) {
+    case gen::TimelinePosition::LEFT:
+      timelineSide = ui::LEFT;
+      timelineSize.w = (workspaceBounds.w * (1.0 - timelineSplitterPos));
+      break;
+    case gen::TimelinePosition::RIGHT:
+      timelineSide = ui::RIGHT;
+      timelineSize.w = (workspaceBounds.w * (1.0 - timelineSplitterPos));
+      break;
+    default:
+    case gen::TimelinePosition::BOTTOM:
+      timelineSide = ui::BOTTOM;
+      timelineSize.h = (workspaceBounds.h * (1.0 - timelineSplitterPos));
+      break;
   }
 
   // Timeline config
@@ -508,6 +514,25 @@ void MainWindow::onInitTheme(ui::InitThemeEvent& ev)
 void MainWindow::onResize(ui::ResizeEvent& ev)
 {
   ui::Window::onResize(ev);
+
+  // Load default or user-selected layout after the first resize event
+  // is received.
+  if (m_firstResize) {
+    m_firstResize = false;
+    setDefaultLayout();
+
+    const std::string layoutId = m_layoutSelector->activeLayoutId();
+    if (layoutId != Layout::kDefault) {
+      // Load the mirror layout
+      if (layoutId == Layout::kMirroredDefault) {
+        setMirroredDefaultLayout();
+      }
+      // Or load an user defined layout
+      else if (LayoutPtr layout = m_layoutSelector->activeLayout()) {
+        loadUserLayout(layout.get());
+      }
+    }
+  }
 
   os::Window* nativeWindow = (display() ? display()->nativeWindow() : nullptr);
   if (nativeWindow && nativeWindow->screen()) {

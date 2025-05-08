@@ -314,14 +314,11 @@ void Dock::onSizeHint(ui::SizeHintEvent& ev)
 
   for (int i = 0; i < kSides; ++i) {
     auto* widget = m_sides[i];
-    if (!widget || !widget->isVisible() || widget->isDecorative()) {
-      m_sizes[i] = gfx::Size(0, 0);
+    if (!widget || !widget->isVisible() || widget->isDecorative())
       continue;
-    }
 
     const int spacing = (m_aligns[i] & EXPANSIVE ? childSpacing() : 0);
-    const auto hint = m_sides[i]->sizeHint(fitIn);
-    m_sizes[i] = hint;
+    const auto hint = (m_aligns[i] & EXPANSIVE ? m_sizes[i] : widget->sizeHint(fitIn));
 
     switch (i) {
       case kTopIndex:
@@ -633,6 +630,11 @@ bool Dock::onProcessMessage(ui::Message* msg)
 
         m_dropzonePlaceholder = nullptr;
         m_dragging = false;
+
+        // Call UserResizedDock signal after resizing a Dock splitter
+        if (m_hit.sideIndex >= 0)
+          onUserResizedDock();
+
         m_hit = Hit();
       }
       break;

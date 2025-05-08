@@ -164,6 +164,7 @@ private:
   obs::scoped_connection m_timelineResizeConn;
   obs::scoped_connection m_colorBarResizeConn;
   obs::scoped_connection m_saveDockLayoutConn;
+  bool m_firstResize = true;
 };
 
 } // namespace app
