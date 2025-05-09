@@ -136,6 +136,9 @@ public:
 
     if (m_option == USER_DEFINED) {
       m_actionConn = m_actionButton->Click.connect([this] {
+        MainWindow* win = App::instance()->mainWindow();
+        win->layoutSelector()->closeComboBox();
+
         const auto alert = Alert::create(Strings::new_layout_deleting_layout());
         alert->addLabel(Strings::new_layout_deleting_layout_confirmation(text()), LEFT);
         alert->addButton(Strings::general_ok());
@@ -152,6 +155,9 @@ public:
     }
     else {
       m_actionConn = m_actionButton->Click.connect([this] {
+        MainWindow* win = App::instance()->mainWindow();
+        win->layoutSelector()->closeComboBox();
+
         const auto alert = Alert::create(Strings::new_layout_restoring_layout());
         alert->addLabel(
           Strings::new_layout_restoring_layout_confirmation(text().substr(0, text().size() - 1)),
@@ -460,6 +466,11 @@ void LayoutSelector::switchSelectorFromCommand()
 bool LayoutSelector::isSelectorVisible() const
 {
   return (m_comboBox.isVisible());
+}
+
+void LayoutSelector::closeComboBox()
+{
+  m_comboBox.closeListBox();
 }
 
 void LayoutSelector::setupTooltips(TooltipManager* tooltipManager)
