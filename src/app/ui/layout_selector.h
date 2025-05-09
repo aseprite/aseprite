@@ -61,6 +61,7 @@ public:
   void switchSelector();
   void switchSelectorFromCommand();
   bool isSelectorVisible() const;
+  void closeComboBox();
 
   // Dockable impl
   int dockableAt() const override { return ui::TOP | ui::BOTTOM; }
