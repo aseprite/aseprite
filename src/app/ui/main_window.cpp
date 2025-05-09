@@ -519,18 +519,17 @@ void MainWindow::onResize(ui::ResizeEvent& ev)
   // is received.
   if (m_firstResize) {
     m_firstResize = false;
-    setDefaultLayout();
 
-    const std::string layoutId = m_layoutSelector->activeLayoutId();
-    if (layoutId != Layout::kDefault) {
-      // Load the mirror layout
-      if (layoutId == Layout::kMirroredDefault) {
-        setMirroredDefaultLayout();
-      }
-      // Or load an user defined layout
-      else if (LayoutPtr layout = m_layoutSelector->activeLayout()) {
-        loadUserLayout(layout.get());
-      }
+    // If the layout is defined in the user layouts file, we loaded it
+    // (it can be a modified default/mirrored layout).
+    if (LayoutPtr layout = m_layoutSelector->activeLayout()) {
+      loadUserLayout(layout.get());
+    }
+    else if (m_layoutSelector->activeLayoutId() == Layout::kMirroredDefault) {
+      setMirroredDefaultLayout();
+    }
+    else {
+      setDefaultLayout();
     }
   }
 
