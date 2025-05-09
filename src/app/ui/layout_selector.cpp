@@ -231,34 +231,6 @@ public:
     MainWindow* win = App::instance()->mainWindow();
     gen::NewLayout window;
 
-    if (m_selector->m_layouts.size() > 0)
-      window.base()->addItem(new SeparatorInView());
-
-    // Sort the layouts by putting the defaults first, in case the user made a custom new one before
-    // modifying a default.
-    constexpr struct {
-      bool operator()(LayoutPtr& a, LayoutPtr& b) const { return a->isDefault(); }
-    } customDefaultSort;
-    std::sort(m_selector->m_layouts.begin(), m_selector->m_layouts.end(), customDefaultSort);
-
-    for (const auto& layout : m_selector->m_layouts) {
-      ListItem* item;
-      if (layout->isDefault()) {
-        item = new ListItem(Strings::new_layout_modified(
-          layout->id() == Layout::kDefault ? Strings::main_window_default_layout() :
-                                             Strings::main_window_mirrored_default_layout()));
-      }
-      else {
-        item = new ListItem(layout->name());
-      }
-
-      item->setValue(layout->id());
-      window.base()->addItem(item);
-
-      if (m_selector->m_activeLayoutId == layout->id())
-        window.base()->setSelectedItemIndex(window.base()->getItemCount() - 1);
-    }
-
     window.name()->Change.connect([&] {
       bool valid = Layout::isValidName(window.name()->text()) &&
                    m_selector->m_layouts.getById(window.name()->text()) == nullptr;
@@ -268,16 +240,6 @@ public:
     window.openWindowInForeground();
 
     if (window.closer() == window.ok()) {
-      if (window.base()->getValue() == Layout::kDefaultOriginal)
-        win->setDefaultLayout();
-      else if (window.base()->getValue() == Layout::kMirroredDefaultOriginal)
-        win->setMirroredDefaultLayout();
-      else {
-        const auto baseLayout = m_selector->m_layouts.getById(window.base()->getValue());
-        ASSERT(baseLayout);
-        win->loadUserLayout(baseLayout.get());
-      }
-
       const auto layout =
         Layout::MakeFromDock(window.name()->text(), window.name()->text(), win->customizableDock());
 
@@ -516,6 +478,15 @@ void LayoutSelector::setActiveLayoutId(const std::string& layoutId)
     return;
 
   m_activeLayoutId = layoutId;
+
+  for (auto* item : m_comboBox.items()) {
+    if (auto* layoutItem = dynamic_cast<LayoutItem*>(item)) {
+      if (layoutItem->getLayoutId() == layoutId) {
+        m_comboBox.setSelectedItem(item);
+        break;
+      }
+    }
+  }
 }
 
 void LayoutSelector::populateComboBox()
