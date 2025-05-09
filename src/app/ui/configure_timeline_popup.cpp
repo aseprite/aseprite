@@ -53,6 +53,7 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_box = new app::gen::TimelineConf();
   addChild(m_box);
 
+  m_box->layout()->Click.connect([this] { onWorkspaceLayout(); });
   m_box->firstFrame()->Change.connect([this] { onChangeFirstFrame(); });
   m_box->merge()->Click.connect([this] { onChangeType(); });
   m_box->tint()->Click.connect([this] { onChangeType(); });
@@ -135,6 +136,12 @@ bool ConfigureTimelinePopup::onProcessMessage(ui::Message* msg)
     }
   }
   return PopupWindow::onProcessMessage(msg);
+}
+
+void ConfigureTimelinePopup::onWorkspaceLayout()
+{
+  UIContext::instance()->executeCommand(
+    Commands::instance()->byId(CommandId::ToggleWorkspaceLayout()));
 }
 
 void ConfigureTimelinePopup::onChangeFirstFrame()
