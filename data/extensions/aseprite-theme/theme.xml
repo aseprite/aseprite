@@ -212,7 +212,7 @@
         <part id="tab_normal" x="2" y="112" w1="4" w2="5" w3="5" h1="4" h2="6" h3="2" />
         <part id="tab_active" x="16" y="112" w1="4" w2="7" w3="5" h1="4" h2="6" h3="2" />
         <part id="tab_bottom_active" x="16" y="124" w1="4" w2="7" w3="5" h1="2" h2="1" h3="2" />
-        <part id="tab_bottom_normal" x="2" y="124" w="12" h="5" />
+        <part id="tab_bottom_normal" x="2" y="124" w1="4" w2="5" w3="3" h1="2" h2="1" h3="2" />
         <part id="tab_filler" x="0" y="112" w="2" h="12" />
         <part id="tab_modified_icon_normal" x="32" y="112" w="5" h="5" />
         <part id="tab_modified_icon_active" x="32" y="117" w="5" h="5" />
@@ -370,6 +370,7 @@
         <part id="icon_close" x="152" y="256" w="7" h="7" />
         <part id="icon_search" x="160" y="256" w="8" h="8" />
         <part id="icon_user_data" x="168" y="256" w="8" h="8" />
+        <part id="icon_layout" x="176" y="256" w="5" h="6" />
         <part id="icon_pos" x="144" y="264" w="8" h="8" />
         <part id="icon_size" x="152" y="264" w="8" h="8" />
         <part id="icon_selsize" x="160" y="264" w="8" h="8" />
