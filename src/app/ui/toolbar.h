@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -54,6 +55,7 @@ public:
 protected:
   bool onProcessMessage(ui::Message* msg) override;
   void onSizeHint(ui::SizeHintEvent& ev) override;
+  void onResize(ui::ResizeEvent& ev) override;
   void onPaint(ui::PaintEvent& ev) override;
   void onVisible(bool visible) override;
 

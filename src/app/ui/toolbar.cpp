@@ -125,18 +125,6 @@ bool ToolBar::isToolVisible(Tool* tool)
 bool ToolBar::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
-    case kPaintMessage: {
-      auto toolbox = App::instance()->toolBox();
-      auto lastToolBounds = getToolGroupBounds(toolbox->getGroupsCount());
-      int minHeight = lastToolBounds.y + lastToolBounds.h;
-
-      if (minHeight != m_minHeight) {
-        m_minHeight = minHeight;
-        invalidate();
-      }
-      break;
-    }
-
     case kMouseDownMessage: {
       auto mouseMsg = static_cast<const MouseMessage*>(msg);
       const Point mousePos = mouseMsg->positionForDisplay(display());
@@ -330,6 +318,18 @@ void ToolBar::onSizeHint(SizeHintEvent& ev)
     closePopupWindow();
     closeTipWindow();
   }
+}
+
+void ToolBar::onResize(ui::ResizeEvent& ev)
+{
+  Widget::onResize(ev);
+
+  auto* toolbox = App::instance()->toolBox();
+  auto lastToolBounds = getToolGroupBounds(toolbox->getGroupsCount());
+  m_minHeight = lastToolBounds.y2() -
+                origin().y
+                // Preview and timeline buttons
+                + 2 * (getToolIconSize(this).h - 1) + 3 * guiscale();
 }
 
 void ToolBar::onPaint(ui::PaintEvent& ev)
@@ -676,9 +676,9 @@ int ToolBar::getHiddenGroups() const
   auto* toolbox = App::instance()->toolBox();
   const int height = size().h;
   if (height < m_minHeight) {
-    int hidden = (m_minHeight - height) / getToolIconSize(this).h;
+    int hidden = (m_minHeight - height) / (getToolIconSize(this).h - 1 * guiscale());
     if (hidden >= 1)
-      return std::clamp(hidden + 1, 2, toolbox->getGroupsCount() - 1);
+      return std::clamp(hidden + 1, 2, toolbox->getGroupsCount());
   }
   return 0;
 }
