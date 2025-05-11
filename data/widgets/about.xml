@@ -1,29 +1,14 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2025  Igara Studio S.A. -->
 <!-- Copyright (C) 2018  David Capello -->
 <gui i18nwarnings="false">
 <window id="about" text="About Aseprite">
   <vbox>
     <label text="" id="title" />
     <label text="Animated sprite editor &amp;&amp; pixel art tool" />
-    <hbox homogeneous="true">
-      <hbox>
-        <vbox expansive="true">
-          <separator text="Developer Team" horizontal="true" />
-          <link text="David Capello" url="https://twitter.com/davidcapello" />
-          <link text="Gaspar Capello" url="https://twitter.com/Gasparoken" />
-          <link text="Martín Capello" url="https://twitter.com/martincapell0" />
-          <vbox minheight="8" />
-        </vbox>
-        <separator vertical="true" />
-      </hbox>
-      <vbox>
-        <separator text="Credits" horizontal="true" cell_hspan="2" />
-        <link text="Contributors" url="" id="credits" />
-        <link text="Translators" url="" id="i18n_credits" />
-        <link text="Open Source Projects" url="" id="licenses" />
-      </vbox>
-    </hbox>
+    <link text="Authors &amp;&amp; Credits" url="" id="credits" />
+    <link text="Translators" url="" id="i18n_credits" />
+    <link text="Open Source Projects" url="" id="licenses" />
     <separator horizontal="true" />
     <hbox>
       <label text="Copyright (C) 2001-2025" />
