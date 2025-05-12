@@ -101,6 +101,7 @@ struct AsepriteHeader {
   int16_t grid_y;
   uint16_t grid_width;
   uint16_t grid_height;
+  uint16_t grid_type;
 };
 
 struct AsepriteFrameHeader {
