@@ -696,7 +696,6 @@ public:
 
     onChangeBgScope();
     onChangeGridScope();
-    sectionListbox()->selectIndex(m_curSection);
 
     // Aseprite format preferences
     celFormat()->setSelectedItemIndex(int(m_pref.asepriteFormat.celFormat()));
@@ -1045,6 +1044,9 @@ public:
     installExtension(filename);
     return true;
   }
+
+protected:
+  void onOpen(Event& evt) override { sectionListbox()->selectIndex(m_curSection); }
 
 private:
   void onInitTheme(InitThemeEvent& ev) override
