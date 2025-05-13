@@ -59,6 +59,7 @@ public:
   virtual void onLayerBlendModeChange(DocEvent& ev) {}
   virtual void onLayerRestacked(DocEvent& ev) {}
   virtual void onLayerMergedDown(DocEvent& ev) {}
+  virtual void onLayerContinuousChange(DocEvent& ev) {}
 
   virtual void onCelMoved(DocEvent& ev) {}
   virtual void onCelCopied(DocEvent& ev) {}
@@ -96,6 +97,9 @@ public:
 
   // The collapsed/expanded flag of a specific layer changed.
   virtual void onLayerCollapsedChanged(DocEvent& ev) {}
+
+  // The continuous flag of a specific layer changed.
+  virtual void onLayerContinuousChanged(DocEvent& ev) {}
 
   // The visibility flag of a specific layer is going to change/changed.
   virtual void onBeforeLayerVisibilityChange(DocEvent& ev, bool newState) {}

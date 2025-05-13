@@ -320,6 +320,13 @@ void Doc::notifyTilesetChanged(Tileset* tileset)
   notify_observers<DocEvent&>(&DocObserver::onTilesetChanged, ev);
 }
 
+void Doc::notifyLayerContinuousChange(Layer* layer)
+{
+  DocEvent ev(this);
+  ev.layer(layer);
+  notify_observers<DocEvent&>(&DocObserver::onLayerContinuousChange, ev);
+}
+
 void Doc::notifyLayerGroupCollapseChange(Layer* layer)
 {
   DocEvent ev(this);

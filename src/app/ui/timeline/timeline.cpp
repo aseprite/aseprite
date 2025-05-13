@@ -4709,6 +4709,7 @@ void Timeline::setLayerContinuousFlag(const layer_t l, const bool state)
 
   if (layer->isImage() && layer->isContinuous() != state) {
     layer->setContinuous(state);
+    m_document->notifyLayerContinuousChange(layer);
     invalidate();
   }
 }
