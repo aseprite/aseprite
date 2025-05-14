@@ -44,6 +44,7 @@
 #include "app/context.h"
 #include "app/doc.h"
 #include "app/doc_undo.h"
+#include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
 #include "app/snap_to_grid.h"
 #include "app/transaction.h"
@@ -697,7 +698,7 @@ Layer* DocApi::duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer
   ASSERT(parent);
   Layer* newLayerPtr = copy_layer(sourceLayer);
 
-  newLayerPtr->setName(newLayerPtr->name() + " Copy");
+  newLayerPtr->setName(Strings::general_text_copy_of(newLayerPtr->name()));
 
   addLayer(parent, newLayerPtr, afterLayer);
 
