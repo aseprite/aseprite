@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -79,7 +79,7 @@
   #include "os/x11/system.h"
 #endif
 
-#if ENABLE_WEBP && LAF_WINDOWS
+#if ENABLE_WEBP && LAF_WINDOWS && LAF_SKIA
   #include "app/util/decode_webp.h"
 #endif
 
@@ -485,7 +485,7 @@ void App::run(const bool runGuiManager)
     // How to interpret one finger on Windows tablets.
     manager->display()->nativeWindow()->setInterpretOneFingerGestureAsMouseMovement(
       preferences().experimental.oneFingerAsMouseMovement());
-  #if ENABLE_WEBP
+  #if ENABLE_WEBP && LAF_SKIA
     // In Windows we use a custom webp decoder for drag & drop operations.
     os::set_decode_webp(util::decode_webp);
   #endif

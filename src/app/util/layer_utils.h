@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -24,9 +24,6 @@ class Editor;
 bool layer_is_locked(Editor* editor);
 
 std::string get_layer_path(const doc::Layer* layer);
-
-doc::Layer* copy_layer(doc::Layer* layer);
-doc::Layer* copy_layer_with_sprite(doc::Layer* layer, doc::Sprite* sprite);
 
 } // namespace app
 
