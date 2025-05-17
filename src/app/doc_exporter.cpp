@@ -1411,6 +1411,9 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, doc::
       includedSprites.insert(sprite->id());
 
       for (Tag* tag : sprite->tags()) {
+        if (!m_selectedTagName.empty() && m_selectedTagName != tag->name())
+          continue; // Ignore unselected tags if we picked a specific one.
+
         if (firstTag)
           firstTag = false;
         else
@@ -1421,12 +1424,21 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, doc::
           format = "{tag}";
         }
 
+        frame_t fromFrame = tag->fromFrame();
+        frame_t toFrame = tag->toFrame();
+        if (!m_selectedTagName.empty()) {
+          // Reset the frame offset when we're only exporting one frame tag so they're consistent
+          // with the exported frame list.
+          toFrame = toFrame - fromFrame;
+          fromFrame = 0;
+        }
+
         FilenameInfo fnInfo;
         fnInfo.filename(doc->filename()).innerTagName(tag->name());
         std::string tagname = filename_formatter(format, fnInfo);
         os << "\n   { \"name\": \"" << escape_for_json(tagname) << "\","
-           << " \"from\": " << (tag->fromFrame()) << ","
-           << " \"to\": " << (tag->toFrame())
+           << " \"from\": " << fromFrame << ","
+           << " \"to\": " << toFrame
            << ","
               " \"direction\": \""
            << escape_for_json(convert_anidir_to_string(tag->aniDir())) << "\"";
