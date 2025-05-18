@@ -17,6 +17,7 @@
 #include "app/context.h"
 #include "app/doc.h"
 #include "app/drm.h"
+#include "app/extensions.h"
 #include "app/file/file_data.h"
 #include "app/file/file_format.h"
 #include "app/file/file_formats_manager.h"
@@ -193,6 +194,14 @@ base::paths get_readable_extensions()
     if (format->support(FILE_SUPPORT_LOAD))
       format->getExtensions(paths);
   }
+
+#ifdef ENABLE_SCRIPTING
+  for (const auto& extension :
+       App::instance()->extensions().customFormatList(Extension::FileFormat::Load)) {
+    paths.push_back(extension);
+  }
+#endif
+
   return paths;
 }
 
@@ -204,6 +213,14 @@ base::paths get_writable_extensions(const int requiredFormatFlag)
         (requiredFormatFlag == 0 || format->support(requiredFormatFlag)))
       format->getExtensions(paths);
   }
+
+#ifdef ENABLE_SCRIPTING
+  for (const auto& extension :
+       App::instance()->extensions().customFormatList(Extension::FileFormat::Load)) {
+    paths.push_back(extension);
+  }
+#endif
+
   return paths;
 }
 
