@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2024  Igara Studio S.A.
+// Copyright (C) 2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,7 +11,7 @@
 #include "app/cmd/drop_on_timeline.h"
 
 #include "app/cmd/add_layer.h"
-#include "app/cmd/move_cel.h"
+#include "app/cmd/copy_cel.h"
 #include "app/cmd/set_pixel_format.h"
 #include "app/console.h"
 #include "app/context_flags.h"
@@ -107,13 +107,13 @@ void DropOnTimeline::onExecute()
       }
 
       // If there is only one source document to process and it has a cel that
-      // can be moved, then move the cel from the source doc into the
+      // can be moved, then copy the cel from the source doc into the
       // destination doc's selected frame.
       const bool isJustOneDoc = (docsProcessed == 1 && !hasPendingWork());
       if (isJustOneDoc && canMoveCelFrom(srcDoc.get())) {
         auto* srcLayer = static_cast<LayerImage*>(srcDoc->sprite()->firstLayer());
         auto* destLayer = static_cast<LayerImage*>(destDoc->sprite()->allLayers()[m_layerIndex]);
-        executeAndAdd(new MoveCel(srcLayer, 0, destLayer, m_frame, false));
+        executeAndAdd(new CopyCel(srcLayer, 0, destLayer, m_frame, false));
         break;
       }
 
