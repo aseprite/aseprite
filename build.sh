@@ -160,7 +160,7 @@ if [ ! -f "$pwd/.build/userkind" ] ; then
     fi
 fi
 
-userkind=$(echo -n $(cat $pwd/.build/userkind))
+userkind=$(cat $pwd/.build/userkind)
 if [ "$userkind" == "developer" ] ; then
     echo "======================= BUILDING FOR DEVELOPER ======================="
 else
@@ -221,7 +221,7 @@ if [ ! -f "$pwd/.build/builds_dir" ] ; then
     echo "$builds_dir" > "$pwd/.build/builds_dir"
 fi
 # Overwrite $builds_dir variable from the config content.
-builds_dir="$(echo -n $(cat $pwd/.build/builds_dir))"
+builds_dir="$(cat $pwd/.build/builds_dir)"
 
 # List all builds.
 builds_list="$(mktemp)"
@@ -356,7 +356,7 @@ else
 fi
 
 # Required Skia for the base branch.
-skia_tag=$(cat "$pwd/laf/misc/skia-tag.txt" | xargs)
+skia_tag=$(cat "$pwd/laf/misc/skia-tag.txt")
 possible_skia_dir_name=skia-$(echo $skia_tag | cut -d "-" -f 1)
 file_skia_dir="$base_branch_name"_skia_dir
 
@@ -395,7 +395,7 @@ if [ ! -f "$pwd/.build/$file_skia_dir" ] ; then
     fi
     echo $skia_dir > "$pwd/.build/$file_skia_dir"
 fi
-skia_dir=$(echo -n $(cat $pwd/.build/$file_skia_dir))
+skia_dir=$(cat $pwd/.build/$file_skia_dir)
 if [ ! -d "$skia_dir" ] ; then
     mkdir "$skia_dir"
 fi
@@ -417,7 +417,7 @@ if [ ! -d "$skia_library_dir" ] ; then
     if [ ! $auto ] ; then
         read -p "Download pre-compiled Skia automatically [Y/n]? "
         # Convert the Enter key as the default option: an empty string
-        REPLY=$(echo $REPLY | tr '[:upper:]' '[:lower:]' | xargs)
+        REPLY=$(echo $REPLY | tr '[:upper:]' '[:lower:]')
     fi
     if [[ $auto || "$REPLY" == "" || "$REPLY" == "y" || "$REPLY" == "yes" ]] ; then
         if [[ $is_win && "$build_type" == "Debug" ]] ; then
@@ -425,7 +425,7 @@ if [ ! -d "$skia_library_dir" ] ; then
         else
             skia_build=Release
         fi
-        skia_url=$(bash laf/misc/skia-url.sh $skia_build | xargs)
+        skia_url=$(bash laf/misc/skia-url.sh $skia_build)
         skia_file=$(basename $skia_url)
         if [ ! -f "$skia_dir/$skia_file" ] ; then
             curl --ssl-revoke-best-effort -L -o "$skia_dir/$skia_file" "$skia_url"
