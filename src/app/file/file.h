@@ -81,6 +81,7 @@ public:
   doc::Tag* tag() const { return m_tag; }
   doc::frame_t fromFrame() const { return m_framesSeq.firstFrame(); }
   doc::frame_t toFrame() const { return m_framesSeq.lastFrame(); }
+  gfx::Rect bounds() const { return m_bounds; }
   const doc::FramesSequence& framesSequence() const { return m_framesSeq; }
 
   doc::frame_t frames() const { return (doc::frame_t)m_framesSeq.size(); }
