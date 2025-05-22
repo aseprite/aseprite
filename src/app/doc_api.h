@@ -9,6 +9,7 @@
 #define APP_DOC_API_H_INCLUDED
 #pragma once
 
+#include "app/doc_api_dnd_helper.h"
 #include "app/drop_frame_place.h"
 #include "app/tags_handling.h"
 #include "doc/algorithm/flip_type.h"
@@ -38,6 +39,7 @@ class Doc;
 class Transaction;
 
 using namespace doc;
+using namespace docapi;
 
 // High-level API to modify a document adding undo information, i.e.
 // adding new "Cmd"s in the given transaction.
@@ -117,8 +119,14 @@ public:
   void removeLayer(Layer* layer);
   void restackLayerAfter(Layer* layer, LayerGroup* parent, Layer* afterThis);
   void restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeThis);
-  Layer* duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer* afterLayer);
-  Layer* duplicateLayerBefore(Layer* sourceLayer, LayerGroup* parent, Layer* beforeLayer);
+  Layer* duplicateLayerAfter(Layer* sourceLayer,
+                             LayerGroup* parent,
+                             Layer* afterLayer,
+                             const std::string& nameSuffix = std::string());
+  Layer* duplicateLayerBefore(Layer* sourceLayer,
+                              LayerGroup* parent,
+                              Layer* beforeLayer,
+                              const std::string& nameSuffix = std::string());
 
   // Images API
   void replaceImage(Sprite* sprite, const ImageRef& oldImage, const ImageRef& newImage);
@@ -134,6 +142,14 @@ public:
   // Palette API
   void setPalette(Sprite* sprite, frame_t frame, const Palette* newPalette);
 
+  // Drag and Drop helper API
+  void dropDocumentsOnTimeline(app::Doc* doc,
+                               doc::frame_t frame,
+                               doc::layer_t layerIndex,
+                               InsertionPoint insert,
+                               DroppedOn droppedOn,
+                               DocProvider& provider);
+
 private:
   void cropImageLayer(LayerImage* layer, const gfx::Rect& bounds, const bool trimOutside);
   bool cropCel(LayerImage* layer, Cel* cel, const gfx::Rect& bounds, const bool trimOutside);
@@ -144,6 +160,8 @@ private:
                   const frame_t delta,
                   const DropFramePlace dropFramePlace,
                   const TagsHandling tagsHandling);
+
+  Layer* copyLayerWithSprite(doc::Layer* layer, doc::Sprite* sprite);
 
   class HandleLinkedCels {
   public:
