@@ -1030,11 +1030,11 @@ void DocExporter::captureSamples(Samples& samples, base::task_token& token)
         if (m_trimCels) {
           // TODO merge this code with the code in DocApi::trimSprite()
           if (m_trimByGrid) {
-            const gfx::Rect& gridBounds = doc->sprite()->gridBounds();
+            const doc::Grid grid(sprite->gridBounds(), sprite->gridType());
             gfx::Point posTopLeft =
-              snap_to_grid(gridBounds, frameBounds.origin(), PreferSnapTo::FloorGrid);
+              snap_to_grid(grid, frameBounds.origin(), PreferSnapTo::FloorGrid);
             gfx::Point posBottomRight =
-              snap_to_grid(gridBounds, frameBounds.point2(), PreferSnapTo::CeilGrid);
+              snap_to_grid(grid, frameBounds.point2(), PreferSnapTo::CeilGrid);
             frameBounds = gfx::Rect(posTopLeft, posBottomRight);
           }
           sample.setTrimmedBounds(frameBounds);
@@ -1053,8 +1053,9 @@ void DocExporter::captureSamples(Samples& samples, base::task_token& token)
 
       if (item.splitGrid) {
         const gfx::Rect& gridBounds = sprite->gridBounds();
+        const doc::Grid grid(gridBounds, sprite->gridType());
         gfx::Point initPos(0, 0), pos;
-        initPos = pos = snap_to_grid(gridBounds, initPos, PreferSnapTo::BoxOrigin);
+        initPos = pos = snap_to_grid(grid, initPos, PreferSnapTo::BoxOrigin);
 
         for (; pos.y + gridBounds.h <= spriteBounds.h; pos.y += gridBounds.h) {
           for (pos.x = initPos.x; pos.x + gridBounds.w <= spriteBounds.w; pos.x += gridBounds.w) {

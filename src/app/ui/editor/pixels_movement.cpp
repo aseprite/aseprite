@@ -386,9 +386,9 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
           // Movement through mouse/trackpad:
           const int gridW = m_site.gridBounds().w;
           const int gridH = m_site.gridBounds().h;
-          gfx::PointF point(snap_to_grid(gfx::Rect(0, 0, gridW, gridH),
-                                         (gfx::Point)(pos - m_catchPos),
-                                         PreferSnapTo::ClosestGridVertex));
+          const doc::Grid grid(gfx::Rect(0, 0, gridW, gridH), m_site.gridType());
+          const gfx::PointF point(
+            snap_to_grid(grid, (gfx::Point)(pos - m_catchPos), PreferSnapTo::ClosestGridVertex));
           dx = point.x;
           dy = point.y;
         }
@@ -413,9 +413,9 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
 
       if (!tilesModeOn && (moveModifier & SnapToGridMovement) == SnapToGridMovement) {
         // Snap the x1,y1 point to the grid.
-        gfx::PointF gridOffset(snap_to_grid(m_site.gridBounds(),
-                                            gfx::Point(bounds.origin()),
-                                            PreferSnapTo::ClosestGridVertex));
+        const gfx::PointF gridOffset(snap_to_grid(m_site.grid(),
+                                                  gfx::Point(bounds.origin()),
+                                                  PreferSnapTo::ClosestGridVertex));
 
         // Now we calculate the difference from x1,y1 point and we can
         // use it to adjust all coordinates (x1, y1, x2, y2).
@@ -528,9 +528,9 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
         // unless the corners are inverted (a > b)
         b.x = b.x - (a.x <= b.x ? 1 : 0);
         b.y = b.y - (a.y <= b.y ? 1 : 0);
-        gfx::Rect gridBounds = m_site.gridBounds();
-        a = gfx::PointF(snap_to_grid(gridBounds, gfx::Point(a), PreferSnapTo::BoxOrigin));
-        b = gfx::PointF(snap_to_grid(gridBounds, gfx::Point(b), PreferSnapTo::BoxEnd));
+        const doc::Grid& grid = m_site.grid();
+        a = gfx::PointF(snap_to_grid(grid, gfx::Point(a), PreferSnapTo::BoxOrigin));
+        b = gfx::PointF(snap_to_grid(grid, gfx::Point(b), PreferSnapTo::BoxEnd));
       }
 
       // Do not use "gfx::Rect(a, b)" here because if a > b we want to

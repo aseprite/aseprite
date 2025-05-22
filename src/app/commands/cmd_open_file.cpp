@@ -194,10 +194,12 @@ void OpenFileCommand::onExecute(Context* context)
             // interact with old versions of Aseprite saving the grid
             // bounds in the aseprite.ini file)
             docPref.grid.bounds(doc->sprite()->gridBounds());
+            docPref.grid.type(doc->sprite()->gridType());
           }
           else {
             // Get grid bounds from preferences
             doc->sprite()->setGridBounds(docPref.grid.bounds());
+            doc->sprite()->setGridType(docPref.grid.type());
           }
         }
 
