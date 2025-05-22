@@ -140,6 +140,7 @@ public:
   void notifySelectionBoundariesChanged();
   void notifyTilesetChanged(Tileset* tileset);
   void notifyLayerGroupCollapseChange(Layer* layer);
+  void notifyLayerContinuousChange(Layer* layer);
   void notifyAfterAddTile(LayerTilemap* layer, frame_t frame, tile_index ti);
 
   //////////////////////////////////////////////////////////////////////
