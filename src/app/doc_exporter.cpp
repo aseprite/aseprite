@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -43,6 +43,7 @@
 #include "gfx/size.h"
 #include "render/dithering.h"
 #include "render/ordered_dither.h"
+#include "render/quantization.h"
 #include "render/render.h"
 #include "ver/info.h"
 
@@ -298,6 +299,35 @@ public:
         render.renderSprite(dst, m_sprite, m_frame, clip);
       }
     }
+  }
+
+  void setPixelFormat(const doc::PixelFormat newPixelFormat)
+  {
+    if (!m_image || m_image->pixelFormat() == newPixelFormat)
+      return;
+
+    ImageSpec spec(ColorMode(newPixelFormat),
+                   m_image->width(),
+                   m_image->height(),
+                   m_image->maskColor());
+    ImageRef convertedImg(Image::create(spec));
+    if (!convertedImg)
+      return;
+
+    clear_image(convertedImg.get(), 0);
+    render::Dithering dithering;
+    Sprite* sprite = this->sprite();
+    render::convert_pixel_format(m_image.get(),
+                                 convertedImg.get(),
+                                 newPixelFormat,
+                                 dithering,
+                                 sprite ? sprite->rgbMap(0) : nullptr,
+                                 sprite ? sprite->palette(0) : nullptr,
+                                 sprite ? sprite->backgroundLayer() : nullptr,
+                                 0,
+                                 0,
+                                 nullptr);
+    m_image = convertedImg;
   }
 
 private:
@@ -678,6 +708,9 @@ Doc* DocExporter::exportSheet(Context* ctx, base::task_token& token)
 
   Sprite* texture = textureDocument->sprite();
   Image* textureImage = texture->root()->firstLayer()->cel(frame_t(0))->image();
+
+  for (auto& sample : samples)
+    sample.setPixelFormat(texture->pixelFormat());
 
   renderTexture(ctx, samples, textureImage, token);
   if (token.canceled())
@@ -1245,22 +1278,6 @@ void DocExporter::renderTexture(Context* ctx,
       ++i;
       continue;
     }
-
-    // Make the sprite compatible with the texture so the render()
-    // works correctly.
-    if (sample.sprite()->pixelFormat() != textureImage->pixelFormat()) {
-      RgbMapAlgorithm rgbmapAlgo = Preferences::instance().quantization.rgbmapAlgorithm();
-      FitCriteria fc = Preferences::instance().quantization.fitCriteria();
-      cmd::SetPixelFormat(sample.sprite(),
-                          textureImage->pixelFormat(),
-                          render::Dithering(),
-                          rgbmapAlgo,
-                          nullptr, // toGray is not needed because the texture is Indexed or RGB
-                          nullptr, // TODO add a delegate to show progress
-                          fc)
-        .execute(ctx);
-    }
-
     sample.renderSample(textureImage,
                         sample.inTextureBounds().x + m_innerPadding,
                         sample.inTextureBounds().y + m_innerPadding,
