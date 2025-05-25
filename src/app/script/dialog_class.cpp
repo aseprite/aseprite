@@ -575,8 +575,9 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
   bool vexpand = (widget->type() == Canvas::Type());
 
   // This is to separate different kind of widgets without label in
-  // different rows.
-  if (dlg->lastWidgetType != widget->type() || dlg->autoNewRow) {
+  // different rows. Separator widgets will always create a new row.
+  if (dlg->lastWidgetType != widget->type() || dlg->autoNewRow ||
+      widget->type() == ui::kSeparatorWidget) {
     dlg->lastWidgetType = widget->type();
     dlg->hbox = nullptr;
   }
@@ -631,8 +632,8 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
         dlg->labelWidgets[id] = labelWidget;
     }
     else {
-      // For tabs we don't want the empty space of an unspecified label.
-      if (widget->type() != Tabs::Type()) {
+      // For tabs and separators, we don't want the empty space of an unspecified label.
+      if (widget->type() != Tabs::Type() && widget->type() != ui::kSeparatorWidget) {
         dlg->currentGrid->addChildInCell(new ui::HBox, 1, 1, ui::LEFT | ui::TOP);
       }
     }
@@ -641,14 +642,15 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
     if (widget->type() == ui::kButtonWidget)
       hbox->enableFlags(ui::HOMOGENEOUS);
 
-    // For tabs we don't want the empty space of an unspecified label, so
+    // For tabs and unlabeled separators, we don't want the empty space of an unspecified label, so
     // span 2 columns.
-    const int hspan = (widget->type() == Tabs::Type() ? 2 : 1);
+    const int hspan =
+      ((widget->type() == Tabs::Type()) || (widget->type() == ui::kSeparatorWidget && !label) ? 2 :
+                                                                                                1);
     dlg->currentGrid->addChildInCell(hbox,
                                      hspan,
                                      1,
                                      ui::HORIZONTAL | (vexpand ? ui::VERTICAL : ui::TOP));
-
     dlg->hbox = hbox;
   }
 
@@ -709,12 +711,7 @@ int Dialog_separator(lua_State* L)
     dlg->dataWidgets[id] = widget;
   }
 
-  dlg->mainWidgets.push_back(widget);
-  dlg->currentGrid->addChildInCell(widget, 2, 1, ui::HORIZONTAL | ui::TOP);
-  dlg->hbox = nullptr;
-
-  lua_pushvalue(L, 1);
-  return 1;
+  return Dialog_add_widget(L, widget);
 }
 
 int Dialog_label(lua_State* L)
