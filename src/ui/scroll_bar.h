@@ -56,6 +56,7 @@ private:
 
   static int m_wherepos;
   static int m_whereclick;
+  static bool m_dragging;
 };
 
 } // namespace ui
