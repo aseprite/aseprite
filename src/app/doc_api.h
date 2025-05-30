@@ -21,6 +21,9 @@
 #include <map>
 
 namespace doc {
+class Tag;
+}
+namespace doc {
 class Cel;
 class CelData;
 class Image;
@@ -71,7 +74,7 @@ public:
 
   // Frames API
   void addFrame(Sprite* sprite, frame_t newFrame);
-  void addEmptyFrame(Sprite* sprite, frame_t newFrame);
+  void addEmptyFrame(Sprite* sprite, frame_t newFrame, bool adjustTags = true);
   void addEmptyFramesTo(Sprite* sprite, frame_t newFrame);
   void copyFrame(Sprite* sprite,
                  frame_t fromFrame,
@@ -133,6 +136,10 @@ public:
 
   // Palette API
   void setPalette(Sprite* sprite, frame_t frame, const Palette* newPalette);
+
+  // Tags API
+  void copyTag(Tag* sourceTag, Sprite* dstSprite, frame_t fromFrame);
+  void setTagRange(Tag* tag, frame_t fromFrame, frame_t Frame);
 
 private:
   void cropImageLayer(LayerImage* layer, const gfx::Rect& bounds, const bool trimOutside);
