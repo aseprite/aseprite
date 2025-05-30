@@ -358,6 +358,18 @@ private:
   obs::scoped_connection m_resizeConn;
 };
 
+// Layer Change events, TODO: Do we want this in a struct/script constant?
+const std::string kLayerChangeVisibility = "visibility";
+const std::string kLayerChangeAdded = "added";
+const std::string kLayerChangeRemoved = "removed";
+const std::string kLayerChangeEditable = "editable";
+const std::string kLayerChangeBlendMode = "blendmode";
+const std::string kLayerChangeCollapsed = "collapsed";
+const std::string kLayerChangeMergedDown = "mergeddown";
+const std::string kLayerChangeOpacity = "opacity";
+const std::string kLayerChangeRestacked = "restacked";
+const std::string kLayerChangeContinuous = "continuous";
+
 class SpriteEvents : public Events,
                      public DocUndoObserver,
                      public DocObserver {
@@ -370,6 +382,7 @@ public:
 #if ENABLE_REMAP_TILESET_EVENT
     RemapTileset,
 #endif
+    LayerChange,
   };
 
   SpriteEvents(const Sprite* sprite) : m_spriteId(sprite->id()) { doc()->add_observer(this); }
@@ -401,6 +414,8 @@ public:
     else if (std::strcmp(eventName, "remaptileset") == 0)
       return RemapTileset;
 #endif
+    else if (std::strcmp(eventName, "layerchange") == 0)
+      return LayerChange;
     else
       return Unknown;
   }
@@ -413,6 +428,106 @@ public:
     if (it != g_spriteEvents.end()) {
       // As this is an unique_ptr, here we are calling ~SpriteEvents()
       g_spriteEvents.erase(it);
+    }
+  }
+
+  void onAfterLayerVisibilityChange(DocEvent& ev) override
+  {
+    call(LayerChange,
+         {
+           { "layer", ev.layer()             },
+           { "type",  kLayerChangeVisibility }
+    });
+  }
+
+  void onAddLayer(DocEvent& ev) override
+  {
+    call(LayerChange,
+         {
+           { "layer", ev.layer()        },
+           { "type",  kLayerChangeAdded }
+    });
+  }
+
+  void onBeforeRemoveLayer(DocEvent& ev) override
+  {
+    call(LayerChange,
+         {
+           { "layer", ev.layer()          },
+           { "type",  kLayerChangeRemoved }
+    });
+  }
+
+  void onBeforeLayerEditableChange(DocEvent& ev, bool newState) override
+  {
+    call(LayerChange,
+         {
+           { "layer",    ev.layer()           },
+           { "type",     kLayerChangeEditable },
+           // TODO: Do we want to an "after" event to avoid this?
+           { "newState", newState             }
+    });
+  }
+
+  void onLayerContinuousChange(DocEvent& ev) override
+  {
+    call(LayerChange,
+         {
+           { "layer", ev.layer()             },
+           { "type",  kLayerChangeContinuous }
+    });
+  }
+
+  void onLayerBlendModeChange(DocEvent& ev) override
+  {
+    call(LayerChange,
+         {
+           { "layer", ev.layer()            },
+           { "type",  kLayerChangeBlendMode }
+    });
+  }
+  void onLayerCollapsedChanged(DocEvent& ev) override
+  {
+    call(LayerChange,
+         {
+           { "layer", ev.layer()            },
+           { "type",  kLayerChangeCollapsed }
+    });
+  }
+  void onLayerMergedDown(DocEvent& ev) override
+  {
+    call(LayerChange,
+         {
+           { "layer", ev.layer()             },
+           { "type",  kLayerChangeMergedDown }
+    });
+  }
+  void onLayerOpacityChange(DocEvent& ev) override
+  {
+    call(LayerChange,
+         {
+           { "layer", ev.layer()          },
+           { "type",  kLayerChangeOpacity }
+    });
+  }
+
+  void onLayerRestacked(DocEvent& ev) override
+  {
+    call(LayerChange,
+         {
+           { "layer", ev.layer()            },
+           { "type",  kLayerChangeRestacked }
+    });
+  }
+
+  void onLayerNameChange(DocEvent& ev) override
+  {
+    {
+      call(LayerChange,
+           {
+             { "layer", ev.layer() },
+             { "type",  "name"     }
+      });
     }
   }
 
