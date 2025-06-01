@@ -69,6 +69,100 @@ std::string escape_for_json(const std::string& path)
   return res;
 }
 
+// Forward declaration
+void serialize_properties(const doc::UserData::Properties& props, std::ostream& os);
+
+// Helper for a single value
+void serialize_variant(const doc::UserData::Variant& value, std::ostream& os)
+{
+  using Properties = doc::UserData::Properties;
+  std::visit(
+    [&os](auto&& arg) {
+      using T = std::decay_t<decltype(arg)>;
+      if constexpr (std::is_same_v<T, bool>) {
+        os << (arg ? "true" : "false");
+      }
+      // Handle all integer types
+      else if constexpr (std::is_same_v<T, int8_t> || std::is_same_v<T, uint8_t> ||
+                         std::is_same_v<T, int16_t> || std::is_same_v<T, uint16_t> ||
+                         std::is_same_v<T, int32_t> || std::is_same_v<T, uint32_t> ||
+                         std::is_same_v<T, int64_t> || std::is_same_v<T, uint64_t>) {
+        os << static_cast<int64_t>(arg); // or static_cast<int64_t>(arg) for uniformity
+      }
+      else if constexpr (std::is_same_v<T, float> || std::is_same_v<T, double>) {
+        os << arg;
+      }
+      else if constexpr (std::is_same_v<T, std::string>) {
+        os << "\"" << escape_for_json(arg) << "\"";
+      }
+      else if constexpr (std::is_same_v<T, Properties>) {
+        serialize_properties(arg, os);
+      }
+      else {
+        std::cerr << "serialize_variant: unsupported type: " << typeid(T).name() << std::endl;
+        os << "\"[unsupported type]\"";
+      }
+    },
+    value);
+}
+
+// Serializes a map of properties
+void serialize_properties(const doc::UserData::Properties& props, std::ostream& os)
+{
+  os << "{";
+  bool first = true;
+  for (const auto& [key, value] : props) {
+    if (!first)
+      os << ",";
+    first = false;
+    os << "\"" << escape_for_json(key) << "\": ";
+    serialize_variant(value, os);
+  }
+  os << "}";
+}
+
+// Serializes the "properties" field for any WithUserData object
+template<typename T, typename std::enable_if<std::is_base_of<WithUserData, T>::value, int>::type = 0>
+void serialize_userdata_properties(const T& obj, std::ostream& os)
+{
+  const auto& propsMaps = obj.userData().propertiesMaps();
+  bool hasAnyProps = false;
+  for (const auto& [group, props] : propsMaps) {
+    if (!props.empty()) {
+      hasAnyProps = true;
+      break;
+    }
+  }
+  if (hasAnyProps) {
+    os << ", \"properties\": {";
+    bool firstProp = true;
+    for (const auto& [group, props] : propsMaps) {
+      if (!props.empty()) {
+        if (!firstProp)
+          os << ",";
+        firstProp = false;
+        if (group.empty()) {
+          // Default group: flatten its keys at the top level
+          bool firstKey = true;
+          for (const auto& [key, value] : props) {
+            if (!firstKey)
+              os << ",";
+            firstKey = false;
+            os << "\"" << escape_for_json(key) << "\": ";
+            serialize_variant(value, os);
+          }
+        }
+        else {
+          // Named group: nest under its group name
+          os << "\"" << escape_for_json(group) << "\": ";
+          serialize_properties(props, os);
+        }
+      }
+    }
+    os << "}";
+  }
+}
+
 std::ostream& operator<<(std::ostream& os, const doc::UserData& data)
 {
   doc::color_t color = data.color();
@@ -1433,7 +1527,13 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, doc::
         if (tag->repeat() > 0) {
           os << ", \"repeat\": \"" << tag->repeat() << "\"";
         }
-        os << tag->userData() << " }";
+        os << tag->userData();
+
+        // Add tag user and extension (group) properties
+        serialize_userdata_properties(*tag, os);
+
+        // Close tag
+        os << " }";
       }
     }
     os << "\n  ]";
@@ -1497,6 +1597,9 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, doc::
       }
       os << layer->userData();
 
+      // Add layer user and extension (group) properties
+      serialize_userdata_properties(*layer, os);
+
       // Cels
       CelList cels;
       layer->getCels(cels);
@@ -1528,6 +1631,9 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, doc::
             }
             if (!cel->data()->userData().isEmpty()) {
               os << cel->data()->userData();
+
+              // Add cel user and extension (group) properties
+              serialize_userdata_properties(*cel->data(), os);
             }
             os << " }";
           }
@@ -1571,6 +1677,9 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, doc::
         else
           os << ",";
         os << "\n   { \"name\": \"" << escape_for_json(slice->name()) << "\"" << slice->userData();
+
+        // Add slice user and extension (group) properties
+        serialize_userdata_properties(*slice, os);
 
         // Keys
         if (!slice->empty()) {
