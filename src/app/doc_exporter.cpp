@@ -76,34 +76,40 @@ void serialize_properties(const doc::UserData::Properties& props, std::ostream& 
 void serialize_variant(const doc::UserData::Variant& value, std::ostream& os)
 {
   using Properties = doc::UserData::Properties;
-  std::visit(
-    [&os](auto&& arg) {
-      using T = std::decay_t<decltype(arg)>;
-      if constexpr (std::is_same_v<T, bool>) {
-        os << (arg ? "true" : "false");
-      }
-      // Handle all integer types
-      else if constexpr (std::is_same_v<T, int8_t> || std::is_same_v<T, uint8_t> ||
-                         std::is_same_v<T, int16_t> || std::is_same_v<T, uint16_t> ||
-                         std::is_same_v<T, int32_t> || std::is_same_v<T, uint32_t> ||
-                         std::is_same_v<T, int64_t> || std::is_same_v<T, uint64_t>) {
-        os << static_cast<int64_t>(arg); // or static_cast<int64_t>(arg) for uniformity
-      }
-      else if constexpr (std::is_same_v<T, float> || std::is_same_v<T, double>) {
-        os << arg;
-      }
-      else if constexpr (std::is_same_v<T, std::string>) {
-        os << "\"" << escape_for_json(arg) << "\"";
-      }
-      else if constexpr (std::is_same_v<T, Properties>) {
-        serialize_properties(arg, os);
-      }
-      else {
-        std::cerr << "serialize_variant: unsupported type: " << typeid(T).name() << std::endl;
-        os << "\"[unsupported type]\"";
-      }
-    },
-    value);
+  switch (value.index()) {
+    case USER_DATA_PROPERTY_TYPE_BOOL: os << (get_value<bool>(value) ? "true" : "false"); break;
+    case USER_DATA_PROPERTY_TYPE_INT8: os << static_cast<int64_t>(get_value<int8_t>(value)); break;
+    case USER_DATA_PROPERTY_TYPE_UINT8:
+      os << static_cast<int64_t>(get_value<uint8_t>(value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_INT16:
+      os << static_cast<int64_t>(get_value<int16_t>(value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_UINT16:
+      os << static_cast<int64_t>(get_value<uint16_t>(value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_INT32:
+      os << static_cast<int64_t>(get_value<int32_t>(value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_UINT32:
+      os << static_cast<int64_t>(get_value<uint32_t>(value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_INT64:
+      os << static_cast<int64_t>(get_value<int64_t>(value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_UINT64:
+      os << static_cast<int64_t>(get_value<uint64_t>(value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_FLOAT:  os << get_value<float>(value); break;
+    case USER_DATA_PROPERTY_TYPE_DOUBLE: os << get_value<double>(value); break;
+    case USER_DATA_PROPERTY_TYPE_STRING:
+      os << "\"" << escape_for_json(get_value<std::string>(value)) << "\"";
+      break;
+    case USER_DATA_PROPERTY_TYPE_PROPERTIES:
+      serialize_properties(get_value<Properties>(value), os);
+      break;
+    default: os << "\"[unsupported type]\""; break;
+  }
 }
 
 // Serializes a map of properties
