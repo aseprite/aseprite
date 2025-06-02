@@ -31,7 +31,7 @@ using namespace app;
 // * The layer from the source doc and the destination cel's layer are both
 // Image layers.
 // Otherwise this function returns false.
-bool canCopyCel(Doc* srcDoc, Doc* destDoc, DroppedOn droppedOn, doc::layer_t layerIndex)
+bool can_copy_cel(Doc* srcDoc, Doc* destDoc, DroppedOn droppedOn, doc::layer_t layerIndex)
 {
   auto* srcLayer = srcDoc->sprite()->firstLayer();
   auto* destLayer = destDoc->sprite()->allLayers()[layerIndex];
@@ -39,11 +39,11 @@ bool canCopyCel(Doc* srcDoc, Doc* destDoc, DroppedOn droppedOn, doc::layer_t lay
          srcDoc->sprite()->totalFrames() == 1 && srcLayer->isImage() && destLayer->isImage();
 }
 
-void setupInsertionLayer(Doc* destDoc,
-                         doc::layer_t layerIndex,
-                         InsertionPoint& insert,
-                         Layer*& layer,
-                         LayerGroup*& group)
+void setup_insertion_layer(Doc* destDoc,
+                           doc::layer_t layerIndex,
+                           InsertionPoint& insert,
+                           Layer*& layer,
+                           LayerGroup*& group)
 {
   const LayerList& allLayers = destDoc->sprite()->allLayers();
   layer = allLayers[layerIndex];
@@ -81,7 +81,7 @@ void DocApi::dropDocumentsOnTimeline(app::Doc* destDoc,
   // Parent group of the reference layer layer.
   LayerGroup* group = nullptr;
   // Keep track of the current insertion point.
-  setupInsertionLayer(destDoc, layerIndex, insert, refLayer, group);
+  setup_insertion_layer(destDoc, layerIndex, insert, refLayer, group);
 
   int docsProcessed = 0;
   while (docProvider.pendingDocs() > 0) {
@@ -112,7 +112,7 @@ void DocApi::dropDocumentsOnTimeline(app::Doc* destDoc,
     // that can be copied, then copy the cel from the source doc into the
     // destination doc's selected frame.
     const bool isJustOneDoc = (docsProcessed == 1 && docProvider.pendingDocs() == 0);
-    if (isJustOneDoc && canCopyCel(srcDoc.get(), destDoc, droppedOn, layerIndex)) {
+    if (isJustOneDoc && can_copy_cel(srcDoc.get(), destDoc, droppedOn, layerIndex)) {
       auto* srcLayer = static_cast<LayerImage*>(srcDoc->sprite()->firstLayer());
       auto* destLayer = static_cast<LayerImage*>(destDoc->sprite()->allLayers()[layerIndex]);
       m_transaction.execute(new cmd::CopyCel(srcLayer, 0, destLayer, frame, false));
