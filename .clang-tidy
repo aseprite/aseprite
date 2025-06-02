@@ -60,6 +60,8 @@ Checks: >
   -readability-uppercase-literal-suffix
 WarningsAsErrors: ''
 CheckOptions:
+  - key: readability-implicit-bool-conversion.AllowIntegerConditions
+    value: true
   - key: readability-implicit-bool-conversion.AllowPointerConditions
     value: true
   - key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
