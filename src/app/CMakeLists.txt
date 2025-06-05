@@ -320,6 +320,7 @@ target_sources(app-lib PRIVATE
   cmd/set_cel_zindex.cpp
   cmd/set_frame_duration.cpp
   cmd/set_grid_bounds.cpp
+  cmd/set_grid_type.cpp
   cmd/set_last_point.cpp
   cmd/set_layer_blend_mode.cpp
   cmd/set_layer_flags.cpp
