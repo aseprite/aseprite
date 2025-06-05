@@ -713,6 +713,7 @@
             <background color="window_face" />
             <background-border part="separator_horz" align="middle" />
             <text color="separator_label" x="4" align="left middle" />
+            <text color="disabled" x="4" align="left middle" state="disabled"/>
         </style>
         <style id="menu_separator" extends="horizontal_separator" />
         <style id="separator_in_view" extends="horizontal_separator">
