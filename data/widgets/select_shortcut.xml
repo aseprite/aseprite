@@ -1,7 +1,8 @@
 <!-- Aseprite -->
+<!-- Copyright (C) 2025 by Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2016 by David Capello -->
 <gui>
-  <window id="select_accelerator" text="@.title">
+  <window id="select_shortcut" text="@.title">
     <vbox expansive="true">
       <grid columns="3">
         <label text="@.key" />

@@ -1577,13 +1577,13 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
     }
     // Draw the keyboard shortcut
     else if (AppMenuItem* appMenuItem = dynamic_cast<AppMenuItem*>(widget)) {
-      if (appMenuItem->key() && !appMenuItem->key()->accels().empty()) {
+      if (appMenuItem->key() && !appMenuItem->key()->shortcuts().empty()) {
         int old_align = appMenuItem->align();
 
         pos = bounds;
         pos.w -= widget->childSpacing() / 4;
 
-        std::string buf = appMenuItem->key()->accels().front().toString();
+        std::string buf = appMenuItem->key()->shortcuts().front().toString();
 
         widget->setAlign(RIGHT | MIDDLE);
         drawText(g, buf.c_str(), fg, ColorNone, widget, pos, widget->align(), 0);

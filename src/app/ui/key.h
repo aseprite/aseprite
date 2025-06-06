@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,7 +13,7 @@
 #include "app/ui/key_context.h"
 #include "base/convert_to.h"
 #include "base/vector2d.h"
-#include "ui/accelerator.h"
+#include "ui/shortcut.h"
 
 #include <memory>
 #include <utility>
@@ -106,7 +106,7 @@ inline KeyAction operator&(KeyAction a, KeyAction b)
 class Key;
 using KeyPtr = std::shared_ptr<Key>;
 using Keys = std::vector<KeyPtr>;
-using KeySourceAccelList = std::vector<std::pair<KeySource, ui::Accelerator>>;
+using KeySourceShortcutList = std::vector<std::pair<KeySource, ui::Shortcut>>;
 using DragVector = base::Vector2d<double>;
 
 class Key {
@@ -119,29 +119,26 @@ public:
   static KeyPtr MakeDragAction(WheelAction dragAction);
 
   KeyType type() const { return m_type; }
-  const ui::Accelerators& accels() const;
-  const KeySourceAccelList addsKeys() const { return m_adds; }
-  const KeySourceAccelList delsKeys() const { return m_dels; }
+  const ui::Shortcuts& shortcuts() const;
+  const KeySourceShortcutList& addsKeys() const { return m_adds; }
+  const KeySourceShortcutList& delsKeys() const { return m_dels; }
 
-  void add(const ui::Accelerator& accel, const KeySource source, KeyboardShortcuts& globalKeys);
-  const ui::Accelerator* isPressed(const ui::Message* msg,
-                                   const KeyboardShortcuts& globalKeys,
-                                   const KeyContext keyContext) const;
-  const ui::Accelerator* isPressed(const ui::Message* msg,
-                                   const KeyboardShortcuts& globalKeys) const;
+  void add(const ui::Shortcut& shortcut, KeySource source, KeyboardShortcuts& globalKeys);
+  const ui::Shortcut* isPressed(const ui::Message* msg, KeyContext keyContext) const;
+  const ui::Shortcut* isPressed(const ui::Message* msg) const;
   bool isPressed() const;
   bool isLooselyPressed() const;
   bool isCommandListed() const;
 
-  bool hasAccel(const ui::Accelerator& accel) const;
-  bool hasUserDefinedAccels() const;
+  bool hasShortcut(const ui::Shortcut& shortcut) const;
+  bool hasUserDefinedShortcuts() const;
 
   // The KeySource indicates from where the key was disabled
   // (e.g. if it was removed from an extension-defined file, or from
   // user-defined).
-  void disableAccel(const ui::Accelerator& accel, const KeySource source);
+  void disableShortcut(const ui::Shortcut& shortcut, KeySource source);
 
-  // Resets user accelerators to the original & extension-defined ones.
+  // Resets user shortcuts to the original & extension-defined ones.
   void reset();
 
   void copyOriginalToUser();
@@ -164,11 +161,11 @@ public:
 
 private:
   KeyType m_type;
-  KeySourceAccelList m_adds;
-  KeySourceAccelList m_dels;
-  // Final list of accelerators after processing the
+  KeySourceShortcutList m_adds;
+  KeySourceShortcutList m_dels;
+  // Final list of shortcuts after processing the
   // addition/deletion of extension-defined & user-defined keys.
-  mutable std::unique_ptr<ui::Accelerators> m_accels;
+  mutable std::unique_ptr<ui::Shortcuts> m_shortcuts;
   KeyContext m_keycontext;
 
   // for KeyType::Command

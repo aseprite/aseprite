@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -41,10 +41,10 @@
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"
-#include "ui/accelerator.h"
 #include "ui/alert.h"
 #include "ui/menu.h"
 #include "ui/message.h"
+#include "ui/shortcut.h"
 #include "ui/system.h"
 #include "ui/view.h"
 
@@ -147,11 +147,11 @@ protected:
           KeyPtr rmb = keys->action(KeyAction::RightMouseButton, KeyContext::Any);
 
           // Convert action keys into mouse messages.
-          if (lmb->isPressed(msg, *keys) || rmb->isPressed(msg, *keys)) {
+          if (lmb->isPressed(msg) || rmb->isPressed(msg)) {
             MouseMessage mouseMsg(
               (msg->type() == kKeyDownMessage ? kMouseDownMessage : kMouseUpMessage),
               PointerType::Unknown,
-              (lmb->isPressed(msg, *keys) ? kButtonLeft : kButtonRight),
+              (lmb->isPressed(msg) ? kButtonLeft : kButtonRight),
               msg->modifiers(),
               mousePosInDisplay());
 
