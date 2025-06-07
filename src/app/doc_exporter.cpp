@@ -127,11 +127,9 @@ void serialize_properties(const doc::UserData::Properties& props, std::ostream& 
   os << "}";
 }
 
-// Serializes the "properties" field for any WithUserData object
-template<typename T, typename std::enable_if<std::is_base_of<WithUserData, T>::value, int>::type = 0>
-void serialize_userdata_properties(const T& obj, std::ostream& os)
+void serialize_userdata_properties(const doc::UserData& data, std::ostream& os)
 {
-  const auto& propsMaps = obj.userData().propertiesMaps();
+  const auto& propsMaps = data.propertiesMaps();
   bool hasAnyProps = false;
   for (const auto& [group, props] : propsMaps) {
     if (!props.empty()) {
@@ -180,6 +178,9 @@ std::ostream& operator<<(std::ostream& os, const doc::UserData& data)
   }
   if (!data.text().empty())
     os << ", \"data\": \"" << escape_for_json(data.text()) << "\"";
+
+  serialize_userdata_properties(data, os);
+
   return os;
 }
 
@@ -1533,13 +1534,7 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, doc::
         if (tag->repeat() > 0) {
           os << ", \"repeat\": \"" << tag->repeat() << "\"";
         }
-        os << tag->userData();
-
-        // Add tag user and extension (group) properties
-        serialize_userdata_properties(*tag, os);
-
-        // Close tag
-        os << " }";
+        os << tag->userData() << " }";
       }
     }
     os << "\n  ]";
@@ -1603,9 +1598,6 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, doc::
       }
       os << layer->userData();
 
-      // Add layer user and extension (group) properties
-      serialize_userdata_properties(*layer, os);
-
       // Cels
       CelList cels;
       layer->getCels(cels);
@@ -1637,9 +1629,6 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, doc::
             }
             if (!cel->data()->userData().isEmpty()) {
               os << cel->data()->userData();
-
-              // Add cel user and extension (group) properties
-              serialize_userdata_properties(*cel->data(), os);
             }
             os << " }";
           }
@@ -1683,9 +1672,6 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, doc::
         else
           os << ",";
         os << "\n   { \"name\": \"" << escape_for_json(slice->name()) << "\"" << slice->userData();
-
-        // Add slice user and extension (group) properties
-        serialize_userdata_properties(*slice, os);
 
         // Keys
         if (!slice->empty()) {
