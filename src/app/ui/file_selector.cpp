@@ -408,7 +408,8 @@ bool FileSelector::show(const std::string& title,
 
   remapWindow();
   centerWindow();
-  load_window_pos(this, kConfigSection);
+  // The minimum size is large, so do not limit the minimum loaded size
+  load_window_pos(this, kConfigSection, false);
 
   // Change the file formats/extensions to be shown
   std::string initialExtension = base::get_file_extension(initialPath);
