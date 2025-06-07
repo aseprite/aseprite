@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1048,7 +1048,7 @@ int Dialog_shades(lua_State* L)
 int Dialog_file(lua_State* L)
 {
   std::string title = "Open File";
-  std::string path = std::string();
+  std::string path;
   std::string fn;
   base::paths exts;
   auto dlgType = FileSelectorType::Open;
@@ -1114,11 +1114,14 @@ int Dialog_file(lua_State* L)
 
   // Set default path if 'basepath' is blank
   if (path.empty()) {
-    const auto* doc = App::instance()->context()->activeDocument();
-    if (doc)
-      path = base::get_file_path(doc->filename());
-    else
-      path = (base::get_file_path(fn).empty() ? base::get_current_path() : base::get_file_path(fn));
+    // We use the 'filename' path the relative path if it was given.
+    path = base::get_file_path(fn);
+    if (path.empty()) {
+      if (const auto* doc = App::instance()->context()->activeDocument())
+        path = base::get_file_path(doc->filename());
+      else
+        path = base::get_current_path();
+    }
   }
 
   // Update the widget with the provided filename

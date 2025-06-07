@@ -23,6 +23,7 @@ using namespace gfx;
 // two scroll-bars at the same time).
 int ScrollBar::m_wherepos = 0;
 int ScrollBar::m_whereclick = 0;
+bool ScrollBar::m_dragging = false;
 
 ScrollBar::ScrollBar(int align, ScrollableViewDelegate* delegate)
   : Widget(kViewScrollbarWidget)
@@ -74,6 +75,7 @@ bool ScrollBar::onProcessMessage(Message* msg)
 
       m_wherepos = pos;
       m_whereclick = (align() & HORIZONTAL) ? mousePos.x : mousePos.y;
+      m_dragging = false;
 
       x1 = bounds().x;
       y1 = bounds().y;
@@ -135,6 +137,17 @@ bool ScrollBar::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
       if (hasCapture()) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+
+        // Only continue drag logic after mouse movement is detected (avoids 1px shift on scrollbar
+        // click)
+        if (!m_dragging) {
+          if (((align() & HORIZONTAL) && mousePos.x == m_whereclick) ||
+              ((!(align() & HORIZONTAL)) && mousePos.y == m_whereclick)) {
+            return true;
+          }
+          m_dragging = true;
+        }
+
         int pos, len, bar_size, viewport_size;
 
         getScrollBarInfo(&pos, &len, &bar_size, &viewport_size);
@@ -162,6 +175,7 @@ bool ScrollBar::onProcessMessage(Message* msg)
       break;
 
     case kMouseUpMessage:
+      m_dragging = false;
       setSelected(false);
       releaseMouse();
       break;

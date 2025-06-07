@@ -135,7 +135,15 @@ public:
 
     remapWindow();
     centerWindow();
+
+    gfx::Rect originalBounds = bounds();
+
     load_window_pos(this, "LayerProperties");
+
+    // Queue a remap for after the user data view is configured
+    // if the window size has been reset and user data is visible
+    if (originalBounds == bounds() && Preferences::instance().layers.userDataVisibility())
+      m_remapAfterConfigure = true;
 
     UIContext::instance()->add_observer(this);
   }
@@ -159,6 +167,11 @@ public:
 
     if (countLayers() > 0) {
       m_userDataView.configureAndSet(m_layer->userData(), g_window->propertiesGrid());
+      if (m_remapAfterConfigure) {
+        remapWindow();
+        centerWindow();
+        m_remapAfterConfigure = false;
+      }
     }
 
     updateFromLayer();
@@ -484,6 +497,7 @@ private:
   view::RealRange m_range;
   bool m_selfUpdate = false;
   UserDataView m_userDataView;
+  bool m_remapAfterConfigure = false;
 };
 
 LayerPropertiesCommand::LayerPropertiesCommand()

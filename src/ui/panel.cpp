@@ -55,7 +55,7 @@ void Panel::onResize(ResizeEvent& ev)
   // Set all the children to the same "cpos"
   gfx::Rect cpos = childrenBounds();
   for (auto child : children()) {
-    if (!child->isDecorative())
+    if (!child->isDecorative() && child->isVisible())
       child->setBounds(cpos);
   }
 }

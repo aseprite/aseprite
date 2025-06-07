@@ -48,6 +48,7 @@ namespace ui {
 class Graphics;
 class TooltipManager;
 class DragEvent;
+struct PaintWidgetPartInfo;
 } // namespace ui
 
 namespace app {
@@ -103,6 +104,8 @@ public:
     STATE_DISABLING_CONTINUOUS_LAYERS,
     STATE_EXPANDING_LAYERS,
     STATE_COLLAPSING_LAYERS,
+    // Drag & drop handling state
+    STATE_DRAGGING_EXTERNAL_RANGE,
   };
 
   enum DropOp { kMove, kCopy };
@@ -311,6 +314,10 @@ private:
                      gfx::Color tagColor,
                      const gfx::Rect& bounds,
                      const gfx::Rect& clipBounds);
+  void paintDropFrameDeco(ui::Graphics* g, ui::PaintWidgetPartInfo info, gfx::Rect dropBounds);
+  void paintDropLayerDeco(ui::Graphics* g,
+                          const ui::PaintWidgetPartInfo& info,
+                          gfx::Rect dropBounds);
   void drawRangeOutline(ui::Graphics* g);
   void drawPaddings(ui::Graphics* g);
   bool drawPart(ui::Graphics* g, int part, layer_t layer, col_t frame);
@@ -320,6 +327,8 @@ private:
   gfx::Rect getOnionskinFramesBounds() const;
   gfx::Rect getCelsBounds() const;
   gfx::Rect getPartBounds(const Hit& hit) const;
+  gfx::Rect getSelectedFramesBounds(const Range& range) const;
+  gfx::Rect getSelectedLayersBounds(const Range& range) const;
   gfx::Rect getRangeBounds(const Range& range) const;
   gfx::Rect getRangeClipBounds(const Range& range) const;
   int getFrameXPos(const col_t frame) const;

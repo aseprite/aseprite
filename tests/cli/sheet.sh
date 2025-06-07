@@ -1,5 +1,5 @@
 #! /bin/bash
-# Copyright (C) 2019-2022 Igara Studio S.A.
+# Copyright (C) 2019-2025 Igara Studio S.A.
 
 # $1 = first sprite sheet json file
 # $2 = second sprite sheet json file
@@ -416,3 +416,38 @@ t = tags["tags3-reverse"]  assert(t.from == 4 and t.to == 7)
 t = tags["tags3-pingpong"] assert(t.from == 8 and t.to == 11)
 EOF
 $ASEPRITE -b -script "$d/compare.lua" || exit 1
+
+# https://github.com/aseprite/aseprite/issues/5053
+# --export-tileset in different pixel formats
+d=$t/export-tileset
+$ASEPRITE -b -export-tileset "sprites/2x2tilemap2x2tile.aseprite" "sprites/2x3tilemap-indexed.aseprite" "sprites/3x2tilemap-grayscale.aseprite" \
+          -data "$d/tilesets.json" \
+          -format json-array \
+          -sheet "$d/tilesets.png" || exit 1
+cat >$d/compare.lua <<EOF
+local file = app.params["file"]
+local spriteSheet = Sprite{ fromFile=file }
+local sheetImage = spriteSheet.layers[1].cels[1].image
+local filenames = { "sprites/2x2tilemap2x2tile.aseprite", "sprites/2x3tilemap-indexed.aseprite", "sprites/3x2tilemap-grayscale.aseprite" }
+local origins = { Point(0, 0), Point(0, 2), Point(0, 5) }
+for k=1, #filenames do
+  local spr = Sprite{ fromFile=filenames[k] }
+  if spr.colorMode ~= spriteSheet.colorMode then
+    app.sprite = spr
+    app.command.ChangePixelFormat { format="rgb" }
+  end
+  local ts = spr.layers[1].tileset
+  local origin = origins[k]
+  for i=0, #ts-1 do
+    local tileImage = ts:getTile(i)
+    local offset = Point(origin.x + i*tileImage.width, origin.y)
+    for y=0, tileImage.height-1 do
+      for x=0, tileImage.width-1 do
+        assert(tileImage:getPixel(x, y) == sheetImage:getPixel(offset.x + x, offset.y + y))
+      end
+    end
+  end
+end
+EOF
+$ASEPRITE -b -script-param file=$d/tilesets.png \
+          -script "$d/compare.lua" || exit 1
