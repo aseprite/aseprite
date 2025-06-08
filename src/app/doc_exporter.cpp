@@ -119,7 +119,7 @@ void serialize_properties(const doc::UserData::Properties& props, std::ostream& 
   bool first = true;
   for (const auto& [key, value] : props) {
     if (!first)
-      os << ",";
+      os << ", ";
     first = false;
     os << "\"" << escape_for_json(key) << "\": ";
     serialize_variant(value, os);
@@ -143,14 +143,14 @@ void serialize_userdata_properties(const doc::UserData& data, std::ostream& os)
     for (const auto& [group, props] : propsMaps) {
       if (!props.empty()) {
         if (!firstProp)
-          os << ",";
+          os << ", ";
         firstProp = false;
         if (group.empty()) {
           // Default group: flatten its keys at the top level
           bool firstKey = true;
           for (const auto& [key, value] : props) {
             if (!firstKey)
-              os << ",";
+              os << ", ";
             firstKey = false;
             os << "\"" << escape_for_json(key) << "\": ";
             serialize_variant(value, os);
