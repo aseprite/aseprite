@@ -71,7 +71,7 @@ do
   end
 
   -- Layer properties
-  local layer = meta.layers[2] -- Assuming Layer 2 is at index 2
+  local layer = meta.layers[2]
   assert(layer ~= nil)
   assert(layer.properties.user_defined_data == true)
   assert(layer.properties["my_plugin"].extension_defined_data == "sample data")
