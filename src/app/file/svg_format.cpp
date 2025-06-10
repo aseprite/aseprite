@@ -75,20 +75,86 @@ bool SvgFormat::onSave(FileOp* fop)
   const int pixelScaleValue = std::clamp(svg_options->pixelScale, 0, 10000);
   FileHandle handle(open_file_with_exception_sync_on_close(fop->filename(), "wb"));
   FILE* f = handle.get();
-  auto printcol = [f](int x, int y, int r, int g, int b, int a, int pxScale) {
-    fprintf(f,
-            "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" fill=\"#%02X%02X%02X\" ",
-            x * pxScale,
-            y * pxScale,
-            pxScale,
-            pxScale,
-            r,
-            g,
-            b);
-    if (a != 255)
-      fprintf(f, "opacity=\"%f\" ", (float)a / 255.0);
-    fprintf(f, "/>\n");
+
+  auto printRect =
+    [f](int x, int y, int width, int height, int r, int g, int b, int a, int pxScale) {
+      fprintf(f,
+              "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" fill=\"#%02X%02X%02X\" ",
+              x * pxScale,
+              y * pxScale,
+              width * pxScale,
+              height * pxScale,
+              r,
+              g,
+              b);
+      if (a != 255)
+        fprintf(f, "opacity=\"%f\" ", (float)a / 255.0);
+      fprintf(f, "/>\n");
+    };
+
+  // Helper function for greedy merge of same-colored pixels
+  auto mergePixels = [&](auto getPixelColor) {
+    std::vector<std::vector<bool>> processed(image->height(),
+                                             std::vector<bool>(image->width(), false));
+
+    for (y = 0; y < image->height(); y++) {
+      for (x = 0; x < image->width(); x++) {
+        if (processed[y][x])
+          continue;
+
+        auto [pixelR, pixelG, pixelB, pixelA, shouldSkip] = getPixelColor(x, y);
+        if (shouldSkip) {
+          processed[y][x] = true;
+          continue;
+        }
+
+        // Find the largest rectangle starting from this pixel
+        int maxWidth = 0;
+        int maxHeight = 0;
+
+        // Find maximum width for current row
+        for (int w = x; w < image->width(); w++) {
+          if (processed[y][w])
+            break;
+          auto [checkR, checkG, checkB, checkA, skip] = getPixelColor(w, y);
+          if (skip || checkR != pixelR || checkG != pixelG || checkB != pixelB || checkA != pixelA)
+            break;
+          maxWidth = w - x + 1;
+        }
+
+        // Find maximum height with current width
+        for (int h = y; h < image->height(); h++) {
+          bool canExtend = true;
+          for (int w = x; w < x + maxWidth; w++) {
+            if (processed[h][w]) {
+              canExtend = false;
+              break;
+            }
+            auto [checkR, checkG, checkB, checkA, skip] = getPixelColor(w, h);
+            if (skip || checkR != pixelR || checkG != pixelG || checkB != pixelB ||
+                checkA != pixelA) {
+              canExtend = false;
+              break;
+            }
+          }
+          if (!canExtend)
+            break;
+          maxHeight = h - y + 1;
+        }
+
+        // Mark rectangle as processed and output it
+        for (int h = y; h < y + maxHeight; h++) {
+          for (int w = x; w < x + maxWidth; w++) {
+            processed[h][w] = true;
+          }
+        }
+
+        printRect(x, y, maxWidth, maxHeight, pixelR, pixelG, pixelB, pixelA, pixelScaleValue);
+      }
+      fop->setProgress((float)y / (float)(image->height()));
+    }
   };
+
   fprintf(f, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
   fprintf(
     f,
@@ -98,59 +164,55 @@ bool SvgFormat::onSave(FileOp* fop)
 
   switch (image->pixelFormat()) {
     case IMAGE_RGB: {
-      for (y = 0; y < image->height(); y++) {
-        for (x = 0; x < image->width(); x++) {
-          c = get_pixel_fast<RgbTraits>(image.get(), x, y);
-          alpha = rgba_geta(c);
-          if (alpha != 0x00)
-            printcol(x, y, rgba_getr(c), rgba_getg(c), rgba_getb(c), alpha, pixelScaleValue);
-        }
-        fop->setProgress((float)y / (float)(image->height()));
-      }
+      auto getPixelColor = [&](int px, int py) -> std::tuple<int, int, int, int, bool> {
+        c = get_pixel_fast<RgbTraits>(image.get(), px, py);
+        alpha = rgba_geta(c);
+        if (alpha == 0x00)
+          return { 0, 0, 0, 0, true };
+        return { rgba_getr(c), rgba_getg(c), rgba_getb(c), alpha, false };
+      };
+      mergePixels(getPixelColor);
       break;
     }
     case IMAGE_GRAYSCALE: {
-      for (y = 0; y < image->height(); y++) {
-        for (x = 0; x < image->width(); x++) {
-          c = get_pixel_fast<GrayscaleTraits>(image.get(), x, y);
-          auto v = graya_getv(c);
-          alpha = graya_geta(c);
-          if (alpha != 0x00)
-            printcol(x, y, v, v, v, alpha, pixelScaleValue);
-        }
-        fop->setProgress((float)y / (float)(image->height()));
-      }
+      auto getPixelColor = [&](int px, int py) -> std::tuple<int, int, int, int, bool> {
+        c = get_pixel_fast<GrayscaleTraits>(image.get(), px, py);
+        auto v = graya_getv(c);
+        alpha = graya_geta(c);
+        if (alpha == 0x00)
+          return { 0, 0, 0, 0, true };
+        return { v, v, v, alpha, false };
+      };
+      mergePixels(getPixelColor);
       break;
     }
     case IMAGE_INDEXED: {
       unsigned char image_palette[256][4];
-      for (y = 0; y < 256; y++) {
-        fop->sequenceGetColor(y, &r, &g, &b);
-        image_palette[y][0] = r;
-        image_palette[y][1] = g;
-        image_palette[y][2] = b;
-        fop->sequenceGetAlpha(y, &a);
-        image_palette[y][3] = a;
+      for (int i = 0; i < 256; i++) {
+        fop->sequenceGetColor(i, &r, &g, &b);
+        image_palette[i][0] = r;
+        image_palette[i][1] = g;
+        image_palette[i][2] = b;
+        fop->sequenceGetAlpha(i, &a);
+        image_palette[i][3] = a;
       }
       color_t mask_color = -1;
       if (fop->document()->sprite()->backgroundLayer() == NULL ||
           !fop->document()->sprite()->backgroundLayer()->isVisible()) {
         mask_color = fop->document()->sprite()->transparentColor();
       }
-      for (y = 0; y < image->height(); y++) {
-        for (x = 0; x < image->width(); x++) {
-          c = get_pixel_fast<IndexedTraits>(image.get(), x, y);
-          if (c != mask_color)
-            printcol(x,
-                     y,
-                     image_palette[c][0] & 0xff,
-                     image_palette[c][1] & 0xff,
-                     image_palette[c][2] & 0xff,
-                     image_palette[c][3] & 0xff,
-                     pixelScaleValue);
-        }
-        fop->setProgress((float)y / (float)(image->height()));
-      }
+
+      auto getPixelColor = [&](int px, int py) -> std::tuple<int, int, int, int, bool> {
+        c = get_pixel_fast<IndexedTraits>(image.get(), px, py);
+        if (c == mask_color)
+          return { 0, 0, 0, 0, true };
+        return { image_palette[c][0] & 0xff,
+                 image_palette[c][1] & 0xff,
+                 image_palette[c][2] & 0xff,
+                 image_palette[c][3] & 0xff,
+                 false };
+      };
+      mergePixels(getPixelColor);
       break;
     }
   }
