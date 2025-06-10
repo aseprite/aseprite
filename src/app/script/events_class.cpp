@@ -370,6 +370,10 @@ public:
 #if ENABLE_REMAP_TILESET_EVENT
     RemapTileset,
 #endif
+    LayerBlendMode,
+    LayerName,
+    LayerOpacity,
+    LayerVisibility,
   };
 
   SpriteEvents(const Sprite* sprite) : m_spriteId(sprite->id()) { doc()->add_observer(this); }
@@ -401,6 +405,14 @@ public:
     else if (std::strcmp(eventName, "remaptileset") == 0)
       return RemapTileset;
 #endif
+    else if (std::strcmp(eventName, "layerblendmode") == 0)
+      return LayerBlendMode;
+    else if (std::strcmp(eventName, "layername") == 0)
+      return LayerName;
+    else if (std::strcmp(eventName, "layeropacity") == 0)
+      return LayerOpacity;
+    else if (std::strcmp(eventName, "layervisibility") == 0)
+      return LayerVisibility;
     else
       return Unknown;
   }
@@ -457,6 +469,38 @@ public:
     call(Change,
          {
            { "fromUndo", true }
+    });
+  }
+
+  void onLayerBlendModeChange(DocEvent& ev) override
+  {
+    call(LayerBlendMode,
+         {
+           { "layer", ev.layer() }
+    });
+  }
+
+  void onLayerNameChange(DocEvent& ev) override
+  {
+    call(LayerName,
+         {
+           { "layer", ev.layer() }
+    });
+  }
+
+  void onLayerOpacityChange(DocEvent& ev) override
+  {
+    call(LayerOpacity,
+         {
+           { "layer", ev.layer() }
+    });
+  }
+
+  void onAfterLayerVisibilityChange(DocEvent& ev) override
+  {
+    call(LayerVisibility,
+         {
+           { "layer", ev.layer() }
     });
   }
 
