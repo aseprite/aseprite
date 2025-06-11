@@ -31,7 +31,6 @@ public:
 
 protected:
   void onInitTheme(ui::InitThemeEvent& ev) override;
-  void onVisible(bool visible) override;
 
 private:
   void regenerate(int selectedItemIndex = 0);
@@ -39,7 +38,6 @@ private:
 
   Type m_type;
   obs::scoped_connection m_extChanges;
-  bool m_initialized = false;
 };
 
 } // namespace app
