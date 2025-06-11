@@ -221,7 +221,7 @@ int secure_os_remove(lua_State* L)
       base::remove_directory(absFilename);
       return file_result(L, true);
     }
-    catch (std::exception& e) {
+    catch (const std::exception&) {
       return file_result(L, false, EIO, absFilename);
     }
   }
@@ -229,7 +229,7 @@ int secure_os_remove(lua_State* L)
   try {
     base::delete_file(absFilename);
   }
-  catch (std::exception& e) {
+  catch (const std::exception&) {
     return file_result(L, false, EIO, absFilename);
   }
 
@@ -261,7 +261,7 @@ int secure_os_rename(lua_State* L)
     base::move_file(absSourceFilename, absDestFilename);
     return file_result(L, true);
   }
-  catch (std::exception& e) {
+  catch (const std::exception&) {
     return file_result(L, false, EIO, absSourceFilename);
   }
 }
