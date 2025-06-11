@@ -292,8 +292,15 @@ public:
       m_maxBounds |= rc;
     else {
       rc &= loop->getDstImage()->bounds();
-      for (int v = rc.y; v < rc.y2(); ++v)
-        BaseInk::inkHline(rc.x, v, rc.x2() - 1, loop);
+      if (loop->isSelectionToolLoop())
+        loop->addSelectionToolPoint(rc);
+
+      // NOTE: this condition is here for drawing mode switches, remove/rework after testing
+      if (!loop->isSelectionToolLoop() ||
+          (loop->getPointShape()->isFloodFill() || !loop->getPreviewFilled())) {
+        for (int v = rc.y; v < rc.y2(); ++v)
+          BaseInk::inkHline(rc.x, v, rc.x2() - 1, loop);
+      }
     }
   }
 
@@ -457,8 +464,15 @@ public:
     }
     else {
       rc &= loop->getDstImage()->bounds();
-      for (int v = rc.y; v < rc.y2(); ++v)
-        BaseInk::inkHline(rc.x, v, rc.x2() - 1, loop);
+      if (loop->isSelectionToolLoop())
+        loop->addSelectionToolPoint(rc);
+
+      // NOTE: this condition is here for drawing mode switches, remove/rework after testing
+      if (!loop->isSelectionToolLoop() ||
+          (loop->getPointShape()->isFloodFill() || !loop->getPreviewFilled())) {
+        for (int v = rc.y; v < rc.y2(); ++v)
+          BaseInk::inkHline(rc.x, v, rc.x2() - 1, loop);
+      }
     }
   }
 

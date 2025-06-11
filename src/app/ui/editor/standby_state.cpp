@@ -458,8 +458,10 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
   return StateWithWheelBehavior::onSetCursor(editor, mouseScreenPos);
 }
 
+static bool selectionToolLoopEnabled = true;
 bool StandbyState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
+  selectionToolLoopEnabled = true;
   if (Preferences::instance().editor.straightLinePreview() &&
       checkStartDrawingStraightLine(editor, nullptr, nullptr))
     return false;
@@ -470,6 +472,8 @@ bool StandbyState::onKeyDown(Editor* editor, KeyMessage* msg)
     // in a selection-like tool
     if (keys.size() == 1 && keys[0]->wheelAction() == WheelAction::BrushSize &&
         editor->getCurrentEditorInk()->isSelection()) {
+      // TEST: disable new tool loop implementation for selection tools
+      selectionToolLoopEnabled = false;
       return false;
     }
 
@@ -619,7 +623,8 @@ DrawingState* StandbyState::startDrawingState(Editor* editor,
                                                UIContext::instance(),
                                                pointer.button(),
                                                (drawingType == DrawingType::LineFreehand),
-                                               (drawingType == DrawingType::SelectTiles));
+                                               (drawingType == DrawingType::SelectTiles),
+                                               selectionToolLoopEnabled);
   if (!toolLoop)
     return nullptr;
 
