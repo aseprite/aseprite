@@ -1046,7 +1046,11 @@ public:
   }
 
 protected:
-  void onOpen(Event& evt) override { sectionListbox()->selectIndex(m_curSection); }
+  void onOpen(Event& evt) override
+  {
+    sectionListbox()->selectIndex(m_curSection);
+    app::gen::Options::onOpen(evt);
+  }
 
 private:
   void onInitTheme(InitThemeEvent& ev) override
