@@ -166,6 +166,12 @@ void FontEntry::FontFace::onChange()
   base::ScopedValue lock(m_fromEntryChange, true);
   SearchEntry::onChange();
 
+  // This shouldn't happen, but we received crash reports where the
+  // m_popup is nullptr here.
+  ASSERT(m_popup);
+  if (!m_popup)
+    return;
+
   m_popup->setSearchText(text());
 
   // Changing the search text doesn't generate a FontChange
@@ -207,8 +213,13 @@ void FontEntry::FontFace::onCloseIconPressed()
     std::sort(pinnedFonts.begin(), pinnedFonts.end());
   }
 
-  // Refill the list with the new pinned/unpinned item
-  m_popup->recreatePinnedItems();
+  // This shouldn't happen, but we received crash reports where the
+  // m_popup is nullptr here.
+  ASSERT(m_popup);
+  if (m_popup) {
+    // Refill the list with the new pinned/unpinned item
+    m_popup->recreatePinnedItems();
+  }
 
   invalidate();
 }
