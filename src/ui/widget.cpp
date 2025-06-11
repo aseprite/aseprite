@@ -965,6 +965,9 @@ int Widget::textWidth() const
 
 int Widget::textHeight() const
 {
+  if (auto blob = textBlob())
+    return blob->textHeight();
+
   text::FontMetrics metrics;
   font()->metrics(&metrics);
   return metrics.descent - metrics.ascent;
@@ -1896,14 +1899,16 @@ text::ShaperFeatures Widget::onGetTextShaperFeatures() const
 
 float Widget::onGetTextBaseline() const
 {
-  text::FontMetrics metrics;
-  font()->metrics(&metrics);
-  // Here we only use the descent+ascent to measure the text height,
-  // without the metrics.leading part (which is the used to separate
-  // text lines in a paragraph, but here'd make widgets too big)
-  const float textHeight = metrics.descent - metrics.ascent;
+  // Here we use TextBlob::textHeight() which is calculated as
+  // descent+ascent to measure the text height, without the
+  // metrics.leading part (which is the used to separate text lines in
+  // a paragraph, but here'd make widgets too big).
+  text::TextBlobRef blob = textBlob();
+  if (!blob)
+    return 0.0f;
+
   const gfx::Rect rc = clientChildrenBounds();
-  return guiscaled_center(rc.y, rc.h, textHeight) - metrics.ascent;
+  return guiscaled_center(rc.y, rc.h, blob->textHeight()) + blob->baseline();
 }
 
 void Widget::onDragEnter(DragEvent& e)

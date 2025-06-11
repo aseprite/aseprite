@@ -1372,8 +1372,8 @@ private:
     if (!item)
       return;
     const std::string lang = item->langId();
-    const bool state = (lang == "ar" || lang == "ja" || lang == "ko" || lang == "yue_Hant" ||
-                        lang == "zh_Hans" || lang == "zh_Hant");
+    const bool state = (lang == "ar" || lang == "ja" || lang == "ko" || lang == "th" ||
+                        lang == "yue_Hant" || lang == "zh_Hans" || lang == "zh_Hant");
     fontWarningFiller()->setVisible(state);
     fontWarning()->setVisible(state);
     layout();

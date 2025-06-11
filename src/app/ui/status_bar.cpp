@@ -136,7 +136,7 @@ class StatusBar::Indicators : public HBox {
         g->drawText(text(),
                     textColor,
                     ColorNone,
-                    Point(rc.x, guiscaled_center(rc.y, rc.h, font()->lineHeight())));
+                    Point(rc.x, guiscaled_center(rc.y, rc.h, textHeight())));
       }
     }
   };

@@ -656,10 +656,8 @@ void Theme::measureLayer(const Widget* widget,
         }
         else {
           // We can use Widget::textSize() because we're going to use
-          // the widget font and, probably, the cached TextBlob width.
-          text::FontMetrics metrics;
-          widget->font()->metrics(&metrics);
-          textSize = gfx::Size(widget->textSize().w, metrics.descent - metrics.ascent);
+          // the widget font and, probably, the cached TextBlob size.
+          textSize = widget->textSize();
         }
 
         textHint.offset(layer.offset());
@@ -1044,7 +1042,8 @@ void Theme::drawMnemonicUnderline(Graphics* g,
     decode.next(); // Go to first char
     size_t glyphUtf8Begin = 0;
 
-    textBlob->visitRuns([g, mnemonicUtf8Pos, pt, &paint, &decode, &glyphUtf8Begin, &text](
+    float baseline = textBlob->baseline();
+    textBlob->visitRuns([g, baseline, mnemonicUtf8Pos, pt, &paint, &decode, &glyphUtf8Begin, &text](
                           text::TextBlob::RunInfo& info) {
       for (int i = 0; i < info.glyphCount; ++i, decode.next()) {
         // TODO This doesn't work because the TextBlob::RunInfo::clusters is nullptr at this
@@ -1061,11 +1060,10 @@ void Theme::drawMnemonicUnderline(Graphics* g,
           if (thickness < 1.0f)
             thickness = 1.0f;
 
-          mnemonicBounds = gfx::RectF(
-            pt.x + mnemonicBounds.x,
-            pt.y - metrics.ascent + metrics.underlinePosition * guiscale(),
-            mnemonicBounds.w,
-            thickness);
+          mnemonicBounds = gfx::RectF(pt.x + mnemonicBounds.x,
+                                      pt.y + baseline + metrics.underlinePosition * guiscale(),
+                                      mnemonicBounds.w,
+                                      thickness);
 
           g->drawRect(mnemonicBounds, paint);
           break;

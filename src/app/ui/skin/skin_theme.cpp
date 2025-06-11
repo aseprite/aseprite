@@ -311,6 +311,9 @@ static FontData* load_font(const XMLElement* xmlFont, const std::string& xmlFile
     if (!font && systemStr) {
       font = try_to_load_system_font(xmlFont);
     }
+
+    if (font && nameStr)
+      font->setName(nameStr);
   }
   else {
     throw base::Exception(
@@ -1440,14 +1443,10 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
 
     IntersectClip clip(g, bounds);
     if (clip) {
-      text::FontMetrics metrics;
-      widget->font()->metrics(&metrics);
-      const float baselineShift = -metrics.ascent - widget->textBlob()->baseline();
-
       g->drawTextWithDelegate(std::string(pos, textString.end()), // TODO use a string_view()
                               colors.text(),
                               ColorNone,
-                              gfx::Point(bounds.x, bounds.y + baselineShift),
+                              bounds.origin(),
                               &delegate);
     }
   }
