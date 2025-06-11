@@ -258,6 +258,9 @@ static FontData* load_font(const XMLElement* xmlFont, const std::string& xmlFile
     if (xmlFont->Attribute("antialias"))
       antialias = bool_attr(xmlFont, "antialias", false);
 
+    text::FontHinting hinting = (bool_attr(xmlFont, "hinting", true) ? text::FontHinting::Normal :
+                                                                       text::FontHinting::None);
+
     std::string fontFilename;
     if (platformFileStr)
       fontFilename = app::find_font(xmlDir, platformFileStr);
@@ -271,6 +274,7 @@ static FontData* load_font(const XMLElement* xmlFont, const std::string& xmlFile
     font->setName(nameStr ? nameStr : (platformFileStr ? platformFileStr : fileStr));
     font->setFilename(fontFilename);
     font->setAntialias(antialias);
+    font->setHinting(hinting);
 
     if (!fontFilename.empty())
       LOG(VERBOSE, "THEME: Font file '%s' found\n", fontFilename.c_str());

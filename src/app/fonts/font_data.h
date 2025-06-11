@@ -34,7 +34,8 @@ public:
   void setName(const std::string& name) { m_name = name; }
   void setFilename(const std::string& filename) { m_filename = filename; }
   void setDefaultSize(const float size) { m_size = size; }
-  void setAntialias(bool antialias) { m_antialias = antialias; }
+  void setAntialias(const bool antialias) { m_antialias = antialias; }
+  void setHinting(const text::FontHinting hinting) { m_hinting = hinting; }
   void setFallback(FontData* fallback, float fallbackSize)
   {
     m_fallback = fallback;
