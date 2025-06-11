@@ -36,6 +36,12 @@
 
 namespace ui {
 
+// Maximum width for Entry fields as size hint (like half the screen /
+// a screen of 800x600).  We were using Display::workareaSizeUIScale()
+// but that might be slow on Linux/X11 for each mouse motion/window
+// resize event to ask.
+static int kMaxWidthHintForEntry = 400;
+
 // Shared timer between all entries.
 static std::unique_ptr<Timer> s_timer;
 
@@ -506,7 +512,7 @@ gfx::Size Entry::sizeHintWithText(Entry* entry, const std::string& text)
   int w = font->textLength(text) + +2 * entry->theme()->getEntryCaretSize(entry).w +
           entry->border().width();
 
-  w = std::min(w, entry->display()->workareaSizeUIScale().w / 2);
+  w = std::min(w, guiscale() * kMaxWidthHintForEntry);
 
   const int h = font->lineHeight() + entry->border().height();
 
@@ -522,7 +528,7 @@ void Entry::onSizeHint(SizeHintEvent& ev)
 
   int w = font->textLength("w") * std::min(m_maxsize, 6) + +trailing + border().width();
 
-  w = std::min(w, display()->workareaSizeUIScale().w / 2);
+  w = std::min(w, guiscale() * kMaxWidthHintForEntry);
 
   int h = font->lineHeight() + border().height();
 
