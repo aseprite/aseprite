@@ -84,6 +84,7 @@ protected:
   void onPaint(PaintEvent& ev) override;
   void onSetFont() override;
   void onSetText() override;
+  float onGetTextBaseline() const override;
 
   // New Events
   virtual void onChange();

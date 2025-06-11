@@ -15,6 +15,7 @@
 #include "os/system.h"
 #include "text/draw_text.h"
 #include "text/font.h"
+#include "text/font_metrics.h"
 #include "ui/clipboard_delegate.h"
 #include "ui/display.h"
 #include "ui/menu.h"
@@ -547,6 +548,18 @@ void Entry::onSetText()
   int textlen = lastCaretPos();
   if (m_caret >= 0 && m_caret > textlen)
     m_caret = textlen;
+}
+
+float Entry::onGetTextBaseline() const
+{
+  text::FontMetrics metrics;
+  font()->metrics(&metrics);
+  // Here we only use the descent+ascent to measure the text height,
+  // without the metrics.leading part (which is the used to separate
+  // text lines in a paragraph, but here'd make widgets too big)
+  const float textHeight = metrics.descent - metrics.ascent;
+  const gfx::Rect rc = getEntryTextBounds();
+  return guiscaled_center(rc.y, rc.h, textHeight) - metrics.ascent;
 }
 
 void Entry::onChange()

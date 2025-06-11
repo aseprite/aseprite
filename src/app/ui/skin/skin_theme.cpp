@@ -42,6 +42,7 @@
 #include "text/font.h"
 #include "text/font_metrics.h"
 #include "text/font_style_set.h"
+#include "text/text_blob.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -1443,11 +1444,12 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
 
     IntersectClip clip(g, bounds);
     if (clip) {
-      g->drawTextWithDelegate(std::string(pos, textString.end()), // TODO use a string_view()
-                              colors.text(),
-                              ColorNone,
-                              bounds.origin(),
-                              &delegate);
+      g->drawTextWithDelegate(
+        std::string(pos, textString.end()), // TODO use a string_view()
+        colors.text(),
+        ColorNone,
+        gfx::Point(bounds.x, widget->textBaseline() - widget->textBlob()->baseline()),
+        &delegate);
     }
   }
 
