@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -48,9 +48,12 @@ public:
 
     // When the main window is closed, we should close the console (in
     // other case the main message loop will continue running for the
-    // console too).
-    m_mainWindowClosedConn = App::instance()->mainWindow()->Close.connect(
-      [this] { closeWindow(nullptr); });
+    // console too). The main window can be nullptr if the console is
+    // used to show an error when loading the default theme or font at
+    // the initialization.
+    if (auto* mainWin = App::instance()->mainWindow()) {
+      m_mainWindowClosedConn = mainWin->Close.connect([this] { closeWindow(nullptr); });
+    }
 
     // When the window is closed, we clear the text
     Close.connect([this] {

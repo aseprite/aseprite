@@ -545,6 +545,13 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
 
         text::FontRef font = fontData->getFont(m_fontMgr, size * ui::guiscale());
 
+        // No font?
+        if (font == nullptr) {
+          LOG(ERROR, "THEME: Error loading font for theme %s\n", idStr);
+          xmlFont = xmlFont->NextSiblingElement();
+          continue;
+        }
+
         // SpriteSheetFonts have a default preferred size.
         if (size == 0.0f && font->defaultSize() > 0.0f) {
           size = font->defaultSize();
