@@ -74,6 +74,7 @@ bool AsepriteDecoder::decode()
   // Set grid bounds
   sprite->setGridBounds(
     gfx::Rect(header.grid_x, header.grid_y, header.grid_width, header.grid_height));
+  sprite->setGridType(static_cast<doc::Grid::Type>(header.grid_type));
 
   sprite->useLayerUuids((header.flags & ASE_FILE_FLAG_LAYER_WITH_UUID) ==
                         ASE_FILE_FLAG_LAYER_WITH_UUID);
@@ -339,6 +340,7 @@ bool AsepriteDecoder::readHeader(AsepriteHeader* header)
   header->grid_y = (int16_t)read16();
   header->grid_width = read16();
   header->grid_height = read16();
+  header->grid_type = read16();
 
   if (header->depth != 8) // Transparent index only valid for indexed images
     header->transparent_index = 0;
