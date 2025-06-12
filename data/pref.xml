@@ -329,6 +329,7 @@
     <section id="quantization">
       <option id="with_alpha" type="bool" default="true" />
       <option id="dithering_algorithm" type="std::string" />
+      <option id="zig_zag" type="bool" default="true" />
       <option id="dithering_factor" type="int" default="100" />
       <option id="to_gray" type="ToGrayAlgorithm" default="ToGrayAlgorithm::DEFAULT" />
       <option id="advanced" type="bool" default="false" />

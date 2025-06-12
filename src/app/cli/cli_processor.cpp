@@ -453,8 +453,18 @@ int CliProcessor::process(Context* ctx)
             ditheringAlgorithm = render::DitheringAlgorithm::Ordered;
           else if (value.value() == "old")
             ditheringAlgorithm = render::DitheringAlgorithm::Old;
-          else if (value.value() == "error-diffusion")
-            ditheringAlgorithm = render::DitheringAlgorithm::ErrorDiffusion;
+          else if (value.value() == "error-diffusion" || value.value() == "floyd-steinberg")
+            ditheringAlgorithm = render::DitheringAlgorithm::FloydSteinberg;
+          else if (value.value() == "jarvis-judice-ninke")
+            ditheringAlgorithm = render::DitheringAlgorithm::JarvisJudiceNinke;
+          else if (value.value() == "stucki")
+            ditheringAlgorithm = render::DitheringAlgorithm::Stucki;
+          else if (value.value() == "atkinson")
+            ditheringAlgorithm = render::DitheringAlgorithm::Atkinson;
+          else if (value.value() == "burkes")
+            ditheringAlgorithm = render::DitheringAlgorithm::Burkes;
+          else if (value.value() == "sierra")
+            ditheringAlgorithm = render::DitheringAlgorithm::Sierra;
           else
             throw std::runtime_error(
               "--dithering-algorithm needs a valid algorithm name\n"
@@ -481,7 +491,7 @@ int CliProcessor::process(Context* ctx)
               case render::DitheringAlgorithm::None:    params.set("dithering", "none"); break;
               case render::DitheringAlgorithm::Ordered: params.set("dithering", "ordered"); break;
               case render::DitheringAlgorithm::Old:     params.set("dithering", "old"); break;
-              case render::DitheringAlgorithm::ErrorDiffusion:
+              case render::DitheringAlgorithm::FloydSteinberg:
                 params.set("dithering", "error-diffusion");
                 break;
             }

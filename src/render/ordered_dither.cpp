@@ -254,7 +254,7 @@ void dither_rgb_image_to_indexed(DitheringAlgorithmBase& algorithm,
   }
   else {
     auto dstIt = doc::get_pixel_address_fast<doc::IndexedTraits>(dstImage, 0, 0);
-    const bool zigZag = algorithm.zigZag();
+    auto zigZag = dithering.zigzag();
 
     for (int y = 0; y < h; ++y) {
       if (zigZag && (y & 1)) { // Odd row: go from right-to-left
@@ -269,7 +269,7 @@ void dither_rgb_image_to_indexed(DitheringAlgorithmBase& algorithm,
         }
         dstIt += w + 1;
       }
-      else { // Even row: go fromo left-to-right
+      else { // Even row: go from left-to-right
         for (int x = 0; x < w; ++x, ++dstIt) {
           ASSERT(dstIt == doc::get_pixel_address_fast<doc::IndexedTraits>(dstImage, x, y));
           *dstIt = algorithm.ditherRgbToIndex2D(x, y, rgbmap, palette);

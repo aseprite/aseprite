@@ -231,9 +231,24 @@ void DitheringSelector::regenerate(int selectedItemIndex)
           Console::showException(e);
         }
       }
-      addItem(new DitherItem(render::DitheringAlgorithm::ErrorDiffusion,
+      addItem(new DitherItem(render::DitheringAlgorithm::FloydSteinberg,
                              render::DitheringMatrix(),
                              Strings::dithering_selector_floyd_steinberg()));
+      addItem(new DitherItem(render::DitheringAlgorithm::JarvisJudiceNinke,
+                             render::DitheringMatrix(),
+                             Strings::dithering_selector_jarvis_judice_ninke()));
+      addItem(new DitherItem(render::DitheringAlgorithm::Stucki,
+                             render::DitheringMatrix(),
+                             Strings::dithering_selector_stucki()));
+      addItem(new DitherItem(render::DitheringAlgorithm::Atkinson,
+                             render::DitheringMatrix(),
+                             Strings::dithering_selector_atkinson()));
+      addItem(new DitherItem(render::DitheringAlgorithm::Burkes,
+                             render::DitheringMatrix(),
+                             Strings::dithering_selector_burkes()));
+      addItem(new DitherItem(render::DitheringAlgorithm::Sierra,
+                             render::DitheringMatrix(),
+                             Strings::dithering_selector_sierra()));
       break;
     case SelectMatrix:
       addItem(
