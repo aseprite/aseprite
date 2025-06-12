@@ -50,6 +50,7 @@ add_library(ui-lib
   style.cpp
   system.cpp
   textbox.cpp
+  textedit.cpp
   theme.cpp
   timer.cpp
   tooltips.cpp
