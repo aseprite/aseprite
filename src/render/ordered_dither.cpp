@@ -240,14 +240,11 @@ void dither_rgb_image_to_indexed(DitheringAlgorithmBase& algorithm,
         ASSERT(srcIt != srcBits.end());
         ASSERT(dstIt != dstBits.end());
         *dstIt = algorithm.ditherRgbPixelToIndex(dithering.matrix(), *srcIt, x, y, rgbmap, palette);
-
-        if (delegate) {
-          if (!delegate->continueTask())
-            return;
-        }
       }
 
       if (delegate) {
+        if (!delegate->continueTask())
+          return;
         delegate->notifyTaskProgress(double(y + 1) / double(h));
       }
     }
@@ -262,10 +259,6 @@ void dither_rgb_image_to_indexed(DitheringAlgorithmBase& algorithm,
         for (int x = w - 1; x >= 0; --x, --dstIt) {
           ASSERT(dstIt == doc::get_pixel_address_fast<doc::IndexedTraits>(dstImage, x, y));
           *dstIt = algorithm.ditherRgbToIndex2D(x, y, rgbmap, palette, -1);
-          if (delegate) {
-            if (!delegate->continueTask())
-              return;
-          }
         }
         dstIt += w + 1;
       }
@@ -273,14 +266,12 @@ void dither_rgb_image_to_indexed(DitheringAlgorithmBase& algorithm,
         for (int x = 0; x < w; ++x, ++dstIt) {
           ASSERT(dstIt == doc::get_pixel_address_fast<doc::IndexedTraits>(dstImage, x, y));
           *dstIt = algorithm.ditherRgbToIndex2D(x, y, rgbmap, palette, +1);
-
-          if (delegate) {
-            if (!delegate->continueTask())
-              return;
-          }
         }
       }
+
       if (delegate) {
+        if (!delegate->continueTask())
+          return;
         delegate->notifyTaskProgress(double(y + 1) / double(h));
       }
     }
