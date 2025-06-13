@@ -57,7 +57,8 @@ public:
   doc::color_t ditherRgbToIndex2D(const int x,
                                   const int y,
                                   const doc::RgbMap* rgbmap,
-                                  const doc::Palette* palette) override;
+                                  const doc::Palette* palette,
+                                  const int direction) override;
 
 private:
   const ErrorDiffusionMatrix& getCurrentMatrix() const;

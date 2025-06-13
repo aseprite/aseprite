@@ -45,7 +45,8 @@ public:
   virtual doc::color_t ditherRgbToIndex2D(const int x,
                                           const int y,
                                           const doc::RgbMap* rgbmap,
-                                          const doc::Palette* palette)
+                                          const doc::Palette* palette,
+                                          const int direction)
   {
     return 0;
   }

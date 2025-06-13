@@ -158,7 +158,8 @@ void ErrorDiffusionDither::finish()
 doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(const int x,
                                                       const int y,
                                                       const doc::RgbMap* rgbmap,
-                                                      const doc::Palette* palette)
+                                                      const doc::Palette* palette,
+                                                      const int direction)
 {
   const ErrorDiffusionMatrix& matrix = getCurrentMatrix();
 
@@ -214,11 +215,11 @@ doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(const int x,
 
     for (int my = 0; my < matrix.height; ++my) {
       // Use circular buffer indexing
-      int bufferRow = (m_currentRowOffset + my) % matrix.height; // hoist
+      int bufferRow = (m_currentRowOffset + my) % matrix.height;
       int bufferRowIndex = bufferRow * m_width;
 
       for (int mx = 0; mx < matrix.width; ++mx) {
-        const int coeff = matrix.coefficients[my][mx];
+        const int coeff = direction > 0 ? matrix.coefficients[my][mx] : matrix.coefficients[my][matrix.width - 1 - mx];
         if (coeff == 0)
           continue;
 
