@@ -261,7 +261,7 @@ void dither_rgb_image_to_indexed(DitheringAlgorithmBase& algorithm,
         dstIt += w - 1;
         for (int x = w - 1; x >= 0; --x, --dstIt) {
           ASSERT(dstIt == doc::get_pixel_address_fast<doc::IndexedTraits>(dstImage, x, y));
-          *dstIt = algorithm.ditherRgbToIndex2D(x, y, rgbmap, palette);
+          *dstIt = algorithm.ditherRgbToIndex2D(x, y, rgbmap, palette, -1);
           if (delegate) {
             if (!delegate->continueTask())
               return;
@@ -272,7 +272,7 @@ void dither_rgb_image_to_indexed(DitheringAlgorithmBase& algorithm,
       else { // Even row: go from left-to-right
         for (int x = 0; x < w; ++x, ++dstIt) {
           ASSERT(dstIt == doc::get_pixel_address_fast<doc::IndexedTraits>(dstImage, x, y));
-          *dstIt = algorithm.ditherRgbToIndex2D(x, y, rgbmap, palette);
+          *dstIt = algorithm.ditherRgbToIndex2D(x, y, rgbmap, palette, +1);
 
           if (delegate) {
             if (!delegate->continueTask())
