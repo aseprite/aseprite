@@ -16,7 +16,7 @@
 
 namespace render {
 
-enum class ErrorDiffusionType {
+enum class ErrorDiffusionType : uint8_t {
   FloydSteinberg,
   JarvisJudiceNinke,
   Stucki,

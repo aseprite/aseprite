@@ -24,89 +24,89 @@ class ErrorDiffusionMatrices {
 public:
   static const ErrorDiffusionMatrix& getFloydSteinberg()
   {
-    static ErrorDiffusionMatrix matrix(3,
-                                       2,
-                                       1,
-                                       0,
-                                       {
-                                         { 0, 0, 7 },
-                                         { 3, 5, 1 }
+    static const ErrorDiffusionMatrix matrix(3,
+                                             2,
+                                             1,
+                                             0,
+                                             {
+                                               { 0, 0, 7 },
+                                               { 3, 5, 1 }
     },
-                                       16);
+                                             16);
     return matrix;
   }
 
   static const ErrorDiffusionMatrix& getJarvisJudiceNinke()
   {
-    static ErrorDiffusionMatrix matrix(5,
-                                       3,
-                                       2,
-                                       0,
-                                       {
-                                         { 0, 0, 0, 7, 5 },
-                                         { 3, 5, 7, 5, 3 },
-                                         { 1, 3, 5, 3, 1 }
+    static const ErrorDiffusionMatrix matrix(5,
+                                             3,
+                                             2,
+                                             0,
+                                             {
+                                               { 0, 0, 0, 7, 5 },
+                                               { 3, 5, 7, 5, 3 },
+                                               { 1, 3, 5, 3, 1 }
     },
-                                       48);
+                                             48);
     return matrix;
   }
 
   static const ErrorDiffusionMatrix& getStucki()
   {
-    static ErrorDiffusionMatrix matrix(5,
-                                       3,
-                                       2,
-                                       0,
-                                       {
-                                         { 0, 0, 0, 8, 4 },
-                                         { 2, 4, 8, 4, 2 },
-                                         { 1, 2, 4, 2, 1 }
+    static const ErrorDiffusionMatrix matrix(5,
+                                             3,
+                                             2,
+                                             0,
+                                             {
+                                               { 0, 0, 0, 8, 4 },
+                                               { 2, 4, 8, 4, 2 },
+                                               { 1, 2, 4, 2, 1 }
     },
-                                       42);
+                                             42);
     return matrix;
   }
 
   static const ErrorDiffusionMatrix& getAtkinson()
   {
-    static ErrorDiffusionMatrix matrix(4,
-                                       3,
-                                       1,
-                                       0,
-                                       {
-                                         { 0, 0, 1, 1 },
-                                         { 1, 1, 1, 0 },
-                                         { 0, 1, 0, 0 }
+    static const ErrorDiffusionMatrix matrix(4,
+                                             3,
+                                             1,
+                                             0,
+                                             {
+                                               { 0, 0, 1, 1 },
+                                               { 1, 1, 1, 0 },
+                                               { 0, 1, 0, 0 }
     },
-                                       8);
+                                             8);
     return matrix;
   }
 
   static const ErrorDiffusionMatrix& getBurkes()
   {
-    static ErrorDiffusionMatrix matrix(5,
-                                       2,
-                                       2,
-                                       0,
-                                       {
-                                         { 0, 0, 0, 8, 4 },
-                                         { 2, 4, 8, 4, 2 }
+    static const ErrorDiffusionMatrix matrix(5,
+                                             2,
+                                             2,
+                                             0,
+                                             {
+                                               { 0, 0, 0, 8, 4 },
+                                               { 2, 4, 8, 4, 2 }
     },
-                                       32);
+                                             32);
     return matrix;
   }
 
   static const ErrorDiffusionMatrix& getSierra()
   {
-    static ErrorDiffusionMatrix matrix(5,
-                                       3,
-                                       2,
-                                       0,
-                                       {
-                                         { 0, 0, 0, 5, 3 },
-                                         { 2, 4, 5, 4, 2 },
-                                         { 0, 2, 3, 2, 0 }
+    static const ErrorDiffusionMatrix matrix(5,
+                                             3,
+                                             2,
+                                             0,
+                                             {
+                                               { 0, 0, 0, 5, 3 },
+                                               { 2, 4, 5, 4, 2 },
+                                               { 0, 2, 3, 2, 0 }
     },
-                                       32);
+                                             32);
     return matrix;
   }
 };
@@ -139,11 +139,12 @@ void ErrorDiffusionDither::start(const doc::Image* srcImage,
 
   // Get the current matrix to determine buffer size needed
   const ErrorDiffusionMatrix& matrix = getCurrentMatrix();
-  int bufferRows = matrix.height;
+  const int bufferRows = matrix.height;
 
   // Resize error buffers to accommodate the matrix height
+  std::vector<int>::size_type bufferSize = m_width * bufferRows;
   for (int i = 0; i < kChannels; ++i)
-    m_err[i].resize(m_width * bufferRows, 0);
+    m_err[i].resize(bufferSize, 0);
 
   m_lastY = -1;
   m_factor = int(factor * 100.0);
@@ -210,12 +211,12 @@ doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(const int x,
 
     for (int my = 0; my < matrix.height; ++my) {
       for (int mx = 0; mx < matrix.width; ++mx) {
-        int coeff = matrix.coefficients[my][mx];
+        const int coeff = matrix.coefficients[my][mx];
         if (coeff == 0)
           continue;
 
-        int errorPixelX = x + mx - matrix.centerX;
-        int errorPixelY = y + my - matrix.centerY;
+        const int errorPixelX = x + mx - matrix.centerX;
+        const int errorPixelY = y + my - matrix.centerY;
 
         // Check bounds
         if (errorPixelX < 0 || errorPixelX >= srcWidth)
@@ -224,9 +225,9 @@ doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(const int x,
           continue; // Don't go backwards
 
         // Calculate error as 16-bit fixed point
-        int errorValue = ((qerr * coeff) << 16) / matrix.divisor;
-        int bufferRow = my;
-        int bufferIndex = bufferRow * m_width + errorPixelX + 1;
+        const int errorValue = ((qerr * coeff) << 16) / matrix.divisor;
+        const int bufferRow = my;
+        const int bufferIndex = bufferRow * m_width + errorPixelX + 1;
 
         m_err[i][bufferIndex] += errorValue;
       }
