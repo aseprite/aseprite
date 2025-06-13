@@ -147,6 +147,7 @@ void ErrorDiffusionDither::start(const doc::Image* srcImage,
     m_err[i].resize(bufferSize, 0);
 
   m_lastY = -1;
+  m_currentRowOffset = 0;
   m_factor = int(factor * 100.0);
 }
 
@@ -162,17 +163,17 @@ doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(const int x,
   const ErrorDiffusionMatrix& matrix = getCurrentMatrix();
 
   if (y != m_lastY) {
-    for (int i = 0; i < kChannels; ++i) {
-      // Shift error rows up
-      for (int row = 0; row < matrix.height - 1; ++row) {
-        int* srcRow = &m_err[i][m_width * (row + 1)];
-        int* dstRow = &m_err[i][m_width * row];
-        std::copy(srcRow, srcRow + m_width, dstRow);
-      }
-      // Clear the last row
-      int* lastRow = &m_err[i][m_width * (matrix.height - 1)];
-      std::fill(lastRow, lastRow + m_width, 0);
+    // Instead of shifting all rows, just advance the circular buffer
+    // and clear the row that will be reused
+    m_currentRowOffset = (m_currentRowOffset + 1) % matrix.height;
+
+    // Clear only the row that will be used as the "last" row
+    int clearRowIndex = (m_currentRowOffset + matrix.height - 1) % matrix.height;
+    for (int c = 0; c < kChannels; ++c) {
+      int* rowToClear = &m_err[c][m_width * clearRowIndex];
+      std::fill(rowToClear, rowToClear + m_width, 0);
     }
+
     m_lastY = y;
   }
 
@@ -185,8 +186,10 @@ doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(const int x,
                        doc::rgba_geta(color) };
 
   // Add accumulated error (16-bit fixed point) and convert to 0..255
-  for (int i = 0; i < kChannels; ++i)
-    v[i] = std::clamp(((v[i] << 16) + m_err[i][x + 1] + 32767) >> 16, 0, 255);
+  for (int c = 0; c < kChannels; ++c)
+    v[c] = std::clamp(((v[c] << 16) + m_err[c][m_width * m_currentRowOffset + x + 1] + 32767) >> 16,
+                      0,
+                      255);
 
   const doc::color_t index = (rgbmap ?
                                 rgbmap->mapColor(v[0], v[1], v[2], v[3]) :
@@ -206,10 +209,14 @@ doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(const int x,
   const int srcWidth = m_srcImage->width();
 
   // Distribute error using the configurable matrix
-  for (int i = 0; i < kChannels; ++i) {
-    const int qerr = quantError[i] * m_factor / 100;
+  for (int c = 0; c < kChannels; ++c) {
+    const int qerr = quantError[c] * m_factor / 100;
 
     for (int my = 0; my < matrix.height; ++my) {
+      // Use circular buffer indexing
+      int bufferRow = (m_currentRowOffset + my) % matrix.height; // hoist
+      int bufferRowIndex = bufferRow * m_width;
+
       for (int mx = 0; mx < matrix.width; ++mx) {
         const int coeff = matrix.coefficients[my][mx];
         if (coeff == 0)
@@ -229,7 +236,7 @@ doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(const int x,
         const int bufferRow = my;
         const int bufferIndex = bufferRow * m_width + errorPixelX + 1;
 
-        m_err[i][bufferIndex] += errorValue;
+        m_err[c][bufferRowIndex + errorPixelX + 1] += errorValue;
       }
     }
   }

@@ -66,6 +66,7 @@ private:
   ErrorDiffusionType m_diffusionType;
   const doc::Image* m_srcImage;
   int m_width, m_lastY;
+  int m_currentRowOffset;
   static const int kChannels = 4;
   std::vector<int> m_err[kChannels];
   int m_factor;
