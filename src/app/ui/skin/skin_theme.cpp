@@ -544,8 +544,7 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
         float size = 0.0f;
         if (const char* sizeStr = xmlFont->Attribute("size"))
           size = std::strtof(sizeStr, nullptr);
-
-        if (fontData->defaultSize() != 0.0f)
+        if (size == 0.0f && fontData->defaultSize() != 0.0f)
           size = fontData->defaultSize();
 
         const char* mnemonicsStr = xmlFont->Attribute("mnemonics");
@@ -560,9 +559,16 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
           continue;
         }
 
-        // SpriteSheetFonts have a default preferred size.
-        if (size == 0.0f && font->defaultSize() > 0.0f) {
-          size = font->defaultSize();
+        if (size == 0.0f) {
+          // SpriteSheetFonts have a default preferred size.
+          if (font->defaultSize() > 0.0f) {
+            size = font->defaultSize();
+          }
+          // For some user extensions, we need to specify at least a
+          // default size of 10 for TTF theme fonts.
+          else {
+            size = 10.0f;
+          }
           font = fontData->getFont(m_fontMgr, size * ui::guiscale());
         }
 
