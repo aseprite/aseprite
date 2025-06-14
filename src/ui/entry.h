@@ -76,7 +76,7 @@ public:
   obs::signal<void()> Change;
 
 protected:
-  gfx::Rect getCharBoxBounds(int i);
+  gfx::Rect getCharBoxBounds(int i) const;
 
   // Events
   bool onProcessMessage(Message* msg) override;
