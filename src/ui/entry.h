@@ -61,7 +61,7 @@ public:
   void setSuffix(const std::string& suffix);
   std::string getSuffix();
 
-  void setTranslateDeadKeys(bool state);
+  void setTextInput(bool state, const gfx::Point& screenCaretPos = {});
 
   // for themes
   void getEntryThemeInfo(int* scroll, int* caret, int* state, Range* range) const;
@@ -145,7 +145,7 @@ private:
   bool m_recent_focused : 1;
   bool m_lock_selection : 1;
   bool m_persist_selection : 1;
-  bool m_translate_dead_keys : 1;
+  bool m_text_input : 1;
   Range m_selecting_words;
   std::unique_ptr<std::string> m_suffix;
 
