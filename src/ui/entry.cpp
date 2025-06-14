@@ -251,7 +251,7 @@ gfx::Rect Entry::getEntryTextBounds() const
   return onGetEntryTextBounds();
 }
 
-gfx::Rect Entry::getCharBoxBounds(const int i)
+gfx::Rect Entry::getCharBoxBounds(const int i) const
 {
   ASSERT(i >= 0 && i < int(m_boxes.size()));
   if (i >= 0 && i < int(m_boxes.size()))
