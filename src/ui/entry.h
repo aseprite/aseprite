@@ -43,6 +43,7 @@ public:
 
   int caretPos() const { return m_caret; }
   int lastCaretPos() const;
+  gfx::Point caretPosOnScreen() const;
 
   void setCaretPos(int pos);
   void setCaretToEnd();

@@ -121,6 +121,15 @@ int Entry::lastCaretPos() const
   return int(m_boxes.size() - 1);
 }
 
+gfx::Point Entry::caretPosOnScreen() const
+{
+  gfx::Point caretPos = getCharBoxBounds(m_caret).origin();
+  os::Window* nativeWindow = display()->nativeWindow();
+  gfx::Point pos = nativeWindow->pointToScreen(caretPos + bounds().origin());
+
+  return pos;
+}
+
 void Entry::setCaretPos(const int pos)
 {
   gfx::Size caretSize = theme()->getEntryCaretSize(this);
