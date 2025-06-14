@@ -162,6 +162,8 @@ void Entry::setCaretPos(const int pos)
     startTimer();
   m_state = true;
 
+  os::System::instance()->setTextInput(true, caretPosOnScreen());
+
   invalidate();
 }
 
@@ -290,8 +292,9 @@ bool Entry::onProcessMessage(Message* msg)
       }
 
       // Start processing dead keys
-      if (m_text_input)
-        os::System::instance()->setTextInput(true);
+      if (m_text_input) {
+        os::System::instance()->setTextInput(true, caretPosOnScreen());
+      }
       break;
 
     case kFocusLeaveMessage:
