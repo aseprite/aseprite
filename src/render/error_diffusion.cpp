@@ -142,7 +142,7 @@ void ErrorDiffusionDither::start(const doc::Image* srcImage,
   const int bufferRows = matrix.height;
 
   // Resize error buffers to accommodate the matrix height
-  std::vector<int>::size_type bufferSize = m_width * bufferRows;
+  const std::vector<int>::size_type bufferSize = m_width * bufferRows;
   for (int i = 0; i < kChannels; ++i)
     m_err[i].resize(bufferSize, 0);
 
@@ -169,7 +169,7 @@ doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(const int x,
     m_currentRowOffset = (m_currentRowOffset + 1) % matrix.height;
 
     // Clear only the row that will be used as the "last" row
-    int clearRowIndex = (m_currentRowOffset + matrix.height - 1) % matrix.height;
+    const int clearRowIndex = (m_currentRowOffset + matrix.height - 1) % matrix.height;
     for (int c = 0; c < kChannels; ++c) {
       int* rowToClear = &m_err[c][m_width * clearRowIndex];
       std::fill(rowToClear, rowToClear + m_width, 0);
@@ -215,8 +215,8 @@ doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(const int x,
 
     for (int my = 0; my < matrix.height; ++my) {
       // Use circular buffer indexing
-      int bufferRow = (m_currentRowOffset + my) % matrix.height;
-      int bufferRowIndex = bufferRow * m_width;
+      const int bufferRow = (m_currentRowOffset + my) % matrix.height;
+      const int bufferRowIndex = bufferRow * m_width;
 
       for (int mx = 0; mx < matrix.width; ++mx) {
         const int coeff = direction > 0 ? matrix.coefficients[my][mx] : matrix.coefficients[my][matrix.width - 1 - mx];
@@ -234,9 +234,6 @@ doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(const int x,
 
         // Calculate error as 16-bit fixed point
         const int errorValue = ((qerr * coeff) << 16) / matrix.divisor;
-        const int bufferRow = my;
-        const int bufferIndex = bufferRow * m_width + errorPixelX + 1;
-
         m_err[c][bufferRowIndex + errorPixelX + 1] += errorValue;
       }
     }
