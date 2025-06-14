@@ -583,11 +583,13 @@ void ChangePixelFormatCommand::onExecute(Context* ctx)
     if (window.closer() != window.ok())
       return;
 
+    const auto d = window.dithering();
+
     params().colorMode(window.selectedColorMode());
-    params().dithering(window.dithering().algorithm());
-    matrix = window.dithering().matrix();
-    params().factor(window.dithering().factor());
-    params().zigZag(window.dithering().zigzag());
+    params().dithering(d.algorithm());
+    matrix = d.matrix();
+    params().factor(d.factor());
+    params().zigZag(d.zigzag());
     params().rgbmap(window.rgbMapAlgorithm());
     params().fitCriteria(window.fitCriteria());
     params().toGray(window.toGray());
@@ -634,7 +636,7 @@ void ChangePixelFormatCommand::onExecute(Context* ctx)
       tx(new cmd::SetPixelFormat(
         sprite,
         (PixelFormat)params().colorMode(),
-        render::Dithering(params().dithering(), matrix, params().factor(), params().zigZag()),
+        render::Dithering(params().dithering(), matrix, params().zigZag(), params().factor()),
         params().rgbmap(),
         get_gray_func(params().toGray()),
         &job, // SpriteJob is a render::TaskDelegate
