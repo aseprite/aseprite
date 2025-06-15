@@ -16,8 +16,23 @@ enum class DitheringAlgorithm {
   None,
   Ordered,
   Old,
-  ErrorDiffusion,
+  FloydSteinberg,
+  JarvisJudiceNinke,
+  Stucki,
+  Atkinson,
+  Burkes,
+  Sierra,
 };
+
+inline bool IsDiffusion(DitheringAlgorithm algo)
+{
+  switch (algo) {
+    case DitheringAlgorithm::None:
+    case DitheringAlgorithm::Ordered:
+    case DitheringAlgorithm::Old:     return false;
+    default:                          return true;
+  }
+}
 
 } // namespace render
 
