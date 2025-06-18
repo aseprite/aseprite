@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>UTExportedTypeDeclarations</key>
+  <array>
+    <dict>
+      <key>UTTypeIdentifier</key>
+      <string>org.aseprite.aseprite.sprite</string>
+      <key>UTTypeDescription</key>
+      <string>Aseprite Sprite</string>
+      <key>UTTypeConformsTo</key>
+      <array>
+          <string>public.image</string>
+      </array>
+      <key>UTTypeTagSpecification</key>
+      <dict>
+        <key>public.filename-extension</key>
+        <array>
+          <string>aseprite</string>
+          <string>ase</string>
+        </array>
+        <key>public.mime-type</key>
+        <string>image/aseprite</string>
+      </dict>
+    </dict>
+  </array>
+  <key>CFBundleIdentifier</key>
+  <string>org.aseprite.aseprite</string>
+  <key>CFBundleVersion</key>
+  <string>1.3.dev</string>
+  <key>CFBundleShortVersionString</key>
+  <string>1.3.dev</string>
+  <key>BuildMachineOSBuild</key>
+  <string>24C101</string>
+  <key>CFBundleDevelopmentRegion</key>
+  <string>English</string>
+  <key>CFBundleExecutable</key>
+  <string>aseprite</string>
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
+  <key>CFBundleLongVersionString</key>
+  <string>1.3.dev</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleSignature</key>
+  <string>????</string>
+  <key>CFBundleSupportedPlatforms</key>
+  <array>
+          <string>MacOSX</string>
+  </array>
+  <key>CSResourcesFileMapped</key>
+  <true/>
+  <key>LSHasPlugIns</key>
+  <true/>
+  <key>DTCompiler</key>
+  <string>com.apple.compilers.llvm.clang.1_0</string>
+  <key>DTPlatformBuild</key>
+  <string>24C94</string>
+  <key>DTPlatformName</key>
+  <string>macosx</string>
+  <key>DTPlatformVersion</key>
+  <string>15.2</string>
+  <key>DTSDKBuild</key>
+  <string>24C94</string>
+  <key>DTSDKName</key>
+  <string>macosx15.2</string>
+  <key>DTXcode</key>
+  <string>1620</string>
+  <key>DTXcodeBuild</key>
+  <string>16C5032a</string>
+  <key>LSMinimumSystemVersion</key>
+  <string>10.15</string>
+</dict>
+</plist>
