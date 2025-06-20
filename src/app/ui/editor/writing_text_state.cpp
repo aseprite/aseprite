@@ -85,7 +85,8 @@ public:
 
   void setExtraCelBounds(const gfx::Rect& bounds)
   {
-    if (bounds.w != m_extraCel->image()->width() || bounds.h != m_extraCel->image()->height()) {
+    doc::Image* extraImg = m_extraCel->image();
+    if (!extraImg || bounds.w != extraImg->width() || bounds.h != extraImg->height()) {
       createExtraCel(m_editor->getSite(), bounds);
     }
     else {
@@ -228,12 +229,21 @@ private:
 
   void renderExtraCelBase()
   {
-    auto extraImg = m_extraCel->image();
+    doc::Image* extraImg = m_extraCel->image();
+    ASSERT(extraImg);
+    if (!extraImg)
+      return;
+
+    const doc::Cel* extraCel = m_extraCel->cel();
+    ASSERT(extraCel);
+    if (!extraCel)
+      return;
+
     extraImg->clear(extraImg->maskColor());
     render::Render().renderLayer(extraImg,
                                  m_editor->layer(),
                                  m_editor->frame(),
-                                 gfx::Clip(0, 0, m_extraCel->cel()->bounds()),
+                                 gfx::Clip(0, 0, extraCel->bounds()),
                                  doc::BlendMode::SRC);
   }
 
@@ -271,7 +281,12 @@ private:
       }
     }
 
-    doc::blend_image(m_extraCel->image(),
+    doc::Image* extraImg = m_extraCel->image();
+    ASSERT(extraImg);
+    if (!extraImg)
+      return;
+
+    doc::blend_image(extraImg,
                      image.get(),
                      gfx::Clip(image->bounds().size()),
                      m_doc->sprite()->palette(m_editor->frame()),
