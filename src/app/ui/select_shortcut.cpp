@@ -27,7 +27,7 @@ class SelectShortcut::KeyField : public ui::Entry {
 public:
   KeyField(const Shortcut& shortcut) : ui::Entry(256, "")
   {
-    setTranslateDeadKeys(false);
+    setTextInput(false);
     setExpansive(true);
     setFocusMagnet(true);
     setShortcut(shortcut);
