@@ -29,8 +29,10 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
 {
   Ink* ink = loop->getInk();
   TiledMode tiledMode = loop->getTiledMode();
-  const int dstw = loop->getDstImage()->width();
-  const int dsth = loop->getDstImage()->height();
+  const int dstw = (!loop->isSelectionToolLoop() ? loop->getDstImage()->width() :
+                                                   loop->sprite()->bounds().w);
+  const int dsth = (!loop->isSelectionToolLoop() ? loop->getDstImage()->height() :
+                                                   loop->sprite()->bounds().h);
   int x, w, size; // width or height
 
   // In case the ink needs original cel coordinates, we have to

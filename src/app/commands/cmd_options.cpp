@@ -654,6 +654,7 @@ public:
     }
 #endif
 
+    useSelectionToolLoop()->setSelected(m_pref.experimental.useSelectionToolLoop());
     flashLayer()->setSelected(m_pref.experimental.flashLayer());
     nonactiveLayersOpacity()->setValue(m_pref.experimental.nonactiveLayersOpacity());
 
@@ -885,6 +886,7 @@ public:
     m_pref.asepriteFormat.celFormat(gen::CelContentFormat(celFormat()->getSelectedItemIndex()));
 
     // Experimental features
+    m_pref.experimental.useSelectionToolLoop(useSelectionToolLoop()->isSelected());
     m_pref.experimental.flashLayer(flashLayer()->isSelected());
     m_pref.experimental.nonactiveLayersOpacity(nonactiveLayersOpacity()->getValue());
     m_pref.quantization.rgbmapAlgorithm(m_rgbmapAlgorithmSelector.algorithm());

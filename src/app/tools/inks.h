@@ -291,13 +291,12 @@ public:
     if (m_createSlice)
       m_maxBounds |= rc;
     else {
-      rc &= loop->getDstImage()->bounds();
-      if (loop->isSelectionToolLoop())
+      if (loop->isSelectionToolLoop()) {
+        rc &= loop->sprite()->bounds();
         loop->addSelectionToolPoint(rc);
-
-      // NOTE: this condition is here for drawing mode switches, remove/rework after testing
-      if (!loop->isSelectionToolLoop() ||
-          (loop->getPointShape()->isFloodFill() || !loop->getPreviewFilled())) {
+      }
+      else {
+        rc &= loop->getDstImage()->bounds();
         for (int v = rc.y; v < rc.y2(); ++v)
           BaseInk::inkHline(rc.x, v, rc.x2() - 1, loop);
       }
@@ -311,7 +310,8 @@ public:
       m_maxBounds = gfx::Rect(0, 0, 0, 0);
     }
     else {
-      m_maxBounds &= loop->getDstImage()->bounds();
+      m_maxBounds &= (loop->isSelectionToolLoop() ? loop->sprite()->bounds() :
+                                                    loop->getDstImage()->bounds());
       loop->onSliceRect(m_maxBounds);
     }
   }
@@ -463,13 +463,12 @@ public:
       m_maxBounds |= rc;
     }
     else {
-      rc &= loop->getDstImage()->bounds();
-      if (loop->isSelectionToolLoop())
+      if (loop->isSelectionToolLoop()) {
+        rc &= loop->sprite()->bounds();
         loop->addSelectionToolPoint(rc);
-
-      // NOTE: this condition is here for drawing mode switches, remove/rework after testing
-      if (!loop->isSelectionToolLoop() ||
-          (loop->getPointShape()->isFloodFill() || !loop->getPreviewFilled())) {
+      }
+      else {
+        rc &= loop->getDstImage()->bounds();
         for (int v = rc.y; v < rc.y2(); ++v)
           BaseInk::inkHline(rc.x, v, rc.x2() - 1, loop);
       }
