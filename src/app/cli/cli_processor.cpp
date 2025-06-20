@@ -447,29 +447,13 @@ int CliProcessor::process(Context* ctx)
         }
         // --dithering-algorithm <algorithm>
         else if (opt == &m_options.ditheringAlgorithm()) {
-          if (value.value() == "none")
-            ditheringAlgorithm = render::DitheringAlgorithm::None;
-          else if (value.value() == "ordered")
-            ditheringAlgorithm = render::DitheringAlgorithm::Ordered;
-          else if (value.value() == "old")
-            ditheringAlgorithm = render::DitheringAlgorithm::Old;
-          else if (value.value() == "error-diffusion" || value.value() == "floyd-steinberg")
-            ditheringAlgorithm = render::DitheringAlgorithm::FloydSteinberg;
-          else if (value.value() == "jarvis-judice-ninke")
-            ditheringAlgorithm = render::DitheringAlgorithm::JarvisJudiceNinke;
-          else if (value.value() == "stucki")
-            ditheringAlgorithm = render::DitheringAlgorithm::Stucki;
-          else if (value.value() == "atkinson")
-            ditheringAlgorithm = render::DitheringAlgorithm::Atkinson;
-          else if (value.value() == "burkes")
-            ditheringAlgorithm = render::DitheringAlgorithm::Burkes;
-          else if (value.value() == "sierra")
-            ditheringAlgorithm = render::DitheringAlgorithm::Sierra;
-          else
+          ditheringAlgorithm = render::DitheringAlgorithmFromString(value.value());
+          if (ditheringAlgorithm == render::DitheringAlgorithm::Unknown) {
             throw std::runtime_error(
               "--dithering-algorithm needs a valid algorithm name\n"
               "Usage: --dithering-algorithm <algorithm>\n"
-              "Where <algorithm> can be none, ordered, old, or error-diffusion");
+              "Where <algorithm> can be: none, ordered, old, floyd-steinberg, jarvis-judice-ninke, stucki, atkinson, burkes or sierra.");
+          }
         }
         // --dithering-matrix <id>
         else if (opt == &m_options.ditheringMatrix()) {
@@ -487,15 +471,7 @@ int CliProcessor::process(Context* ctx)
           }
           else if (value.value() == "indexed") {
             params.set("format", "indexed");
-            switch (ditheringAlgorithm) {
-              case render::DitheringAlgorithm::None:    params.set("dithering", "none"); break;
-              case render::DitheringAlgorithm::Ordered: params.set("dithering", "ordered"); break;
-              case render::DitheringAlgorithm::Old:     params.set("dithering", "old"); break;
-              case render::DitheringAlgorithm::FloydSteinberg:
-                params.set("dithering", "error-diffusion");
-                break;
-            }
-
+            params.set("dithering", DitheringAlgorithmToString(ditheringAlgorithm).c_str());
             if (ditheringAlgorithm != render::DitheringAlgorithm::None &&
                 !ditheringMatrix.empty()) {
               params.set("dithering-matrix", ditheringMatrix.c_str());
