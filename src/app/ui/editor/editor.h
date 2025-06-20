@@ -317,8 +317,12 @@ public:
   // an Editor or EditorState event.
   void showUnhandledException(const std::exception& ex, const ui::Message* msg);
 
-  static void registerCommands();
   Mask* getSelectionToolMask() { return m_selectionToolMask.get(); }
+  void makeSelectionToolMask();
+  void deleteSelectionToolMask();
+  bool hasSelectionToolMask();
+
+  static void registerCommands();
 
 protected:
   bool onProcessMessage(ui::Message* msg) override;
@@ -508,7 +512,7 @@ private:
   static std::unique_ptr<EditorRender> m_renderEngine;
 
   // Used for selection tool feedback
-  std::unique_ptr<Mask> m_selectionToolMask;
+  static std::unique_ptr<Mask> m_selectionToolMask;
 };
 
 } // namespace app

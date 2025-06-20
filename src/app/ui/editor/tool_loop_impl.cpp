@@ -459,7 +459,6 @@ protected:
   gfx::Point m_maskOrigin;
   bool m_internalCancel = false;
   Tx m_tx;
-  std::unique_ptr<ExpandCelCanvas> m_expandCelCanvas;
   Image* m_floodfillSrcImage;
   bool m_saveLastPoint;
 
@@ -489,18 +488,12 @@ public:
   {
     if (m_editor)
       m_editor->remove_observer(this);
-
-    // getSrcImage() is a virtual member function but ToolLoopImpl is
-    // marked as final to avoid not calling a derived version from
-    // this destructor.
-    if (m_floodfillSrcImage != getSrcImage())
-      delete m_floodfillSrcImage;
   }
 
   void constructor_prologue()
   {
     if (m_pointShape->isFloodFill()) {
-      if (m_tilesMode) {
+      if (m_tilesMode && !isSelectionToolLoop()) {
         // This will be set later to getSrcImage()
         m_floodfillSrcImage = nullptr;
       }
@@ -519,16 +512,17 @@ public:
       else if (Cel* cel = m_layer->cel(m_frame)) {
         m_floodfillSrcImage = render::rasterize_with_sprite_bounds(cel);
       }
+      else if (isSelectionToolLoop() && !m_layer->cel(m_frame)) {
+        m_floodfillSrcImage =
+          Image::create(m_sprite->pixelFormat(), m_sprite->width(), m_sprite->height());
+
+        m_floodfillSrcImage->clear(m_sprite->transparentColor());
+      }
     }
   }
 
   void constructor_epilogue()
   {
-    // Setup the new grid of ExpandCelCanvas which can be displaced to
-    // match the new temporal cel position (m_celOrigin).
-    m_grid = m_expandCelCanvas->getGrid();
-    m_celOrigin = m_expandCelCanvas->getCelOrigin();
-
     m_mask = m_document->mask();
     m_maskOrigin = (!m_mask->isEmpty() ? gfx::Point(m_mask->bounds().x - m_celOrigin.x,
                                                     m_mask->bounds().y - m_celOrigin.y) :
@@ -551,46 +545,7 @@ public:
       return ToolLoopBase::needsCelCoordinates();
   }
 
-  void rollback() override
-  {
-    try {
-      ContextReader reader(m_context, 500);
-      ContextWriter writer(reader);
-      m_expandCelCanvas->rollback();
-    }
-    catch (const LockedDocException& ex) {
-      Console::showException(ex);
-    }
-    update_screen_for_document(m_document);
-  }
-
-  const Cel* getCel() override { return m_expandCelCanvas->getCel(); }
-  const Image* getSrcImage() override { return m_expandCelCanvas->getSourceCanvas(); }
   const Image* getFloodFillSrcImage() override { return m_floodfillSrcImage; }
-  Image* getDstImage() override { return m_expandCelCanvas->getDestCanvas(); }
-  Tileset* getDstTileset() override { return m_expandCelCanvas->getDestTileset(); }
-  void validateSrcImage(const gfx::Region& rgn) override
-  {
-    m_expandCelCanvas->validateSourceCanvas(rgn);
-  }
-  void validateDstImage(const gfx::Region& rgn) override
-  {
-    m_expandCelCanvas->validateDestCanvas(rgn);
-  }
-  void validateDstTileset(const gfx::Region& rgn) override
-  {
-    m_expandCelCanvas->validateDestTileset(rgn, getIntertwine()->forceTilemapRegionToValidate());
-  }
-  void invalidateDstImage() override { m_expandCelCanvas->invalidateDestCanvas(); }
-  void invalidateDstImage(const gfx::Region& rgn) override
-  {
-    m_expandCelCanvas->invalidateDestCanvas(rgn);
-  }
-  void copyValidDstToSrcImage(const gfx::Region& rgn) override
-  {
-    m_expandCelCanvas->copyValidDestToSourceCanvas(rgn);
-  }
-
   Mask* getMask() override { return m_mask; }
   void setMask(Mask* newMask) override { m_tx(new cmd::SetMask(m_document, newMask)); }
   gfx::Point getMaskOrigin() override { return m_maskOrigin; }
@@ -704,7 +659,21 @@ public:
       m_tx(new cmd::SetMask(m_document, &emptyMask));
     }
 
+    // Setup the new grid of ExpandCelCanvas which can be displaced to
+    // match the new temporal cel position (m_celOrigin).
+    m_grid = m_expandCelCanvas->getGrid();
+    m_celOrigin = m_expandCelCanvas->getCelOrigin();
+
     constructor_epilogue();
+  }
+
+  ~ToolLoopImpl()
+  {
+    // getSrcImage() is a virtual member function but ToolLoopImpl is
+    // marked as final to avoid not calling a derived version from
+    // this destructor.
+    if (m_floodfillSrcImage != getSrcImage())
+      delete m_floodfillSrcImage;
   }
 
   // IToolLoop interface
@@ -752,6 +721,45 @@ public:
       update_screen_for_document(m_document);
   }
 
+  void rollback() override
+  {
+    try {
+      ContextReader reader(m_context, 500);
+      ContextWriter writer(reader);
+      m_expandCelCanvas->rollback();
+    }
+    catch (const LockedDocException& ex) {
+      Console::showException(ex);
+    }
+    update_screen_for_document(m_document);
+  }
+
+  const Cel* getCel() override { return m_expandCelCanvas->getCel(); }
+  const Image* getSrcImage() override { return m_expandCelCanvas->getSourceCanvas(); }
+  Image* getDstImage() override { return m_expandCelCanvas->getDestCanvas(); }
+  Tileset* getDstTileset() override { return m_expandCelCanvas->getDestTileset(); }
+  void validateSrcImage(const gfx::Region& rgn) override
+  {
+    m_expandCelCanvas->validateSourceCanvas(rgn);
+  }
+  void validateDstImage(const gfx::Region& rgn) override
+  {
+    m_expandCelCanvas->validateDestCanvas(rgn);
+  }
+  void validateDstTileset(const gfx::Region& rgn) override
+  {
+    m_expandCelCanvas->validateDestTileset(rgn, getIntertwine()->forceTilemapRegionToValidate());
+  }
+  void invalidateDstImage() override { m_expandCelCanvas->invalidateDestCanvas(); }
+  void invalidateDstImage(const gfx::Region& rgn) override
+  {
+    m_expandCelCanvas->invalidateDestCanvas(rgn);
+  }
+  void copyValidDstToSrcImage(const gfx::Region& rgn) override
+  {
+    m_expandCelCanvas->copyValidDestToSourceCanvas(rgn);
+  }
+
   bool useMask() override { return m_useMask; }
   bool getFilled() override { return m_filled; }
   bool getPreviewFilled() override { return m_previewFilled; }
@@ -764,6 +772,7 @@ private:
   int m_sprayWidth;
   int m_spraySpeed;
   bool m_useMask;
+  std::unique_ptr<ExpandCelCanvas> m_expandCelCanvas;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -781,21 +790,6 @@ public:
   {
     constructor_prologue();
 
-    // 'isSelectionPreview = true' if the intention is to show a preview
-    // of Selection tools or Slice tool.
-    m_expandCelCanvas.reset(new ExpandCelCanvas(
-      site,
-      m_layer,
-      m_docPref.tiled.mode(),
-      m_tx,
-      ExpandCelCanvas::Flags(
-        ExpandCelCanvas::NeedsSource |
-        (m_layer->isTilemap() ? ExpandCelCanvas::PixelsBounds : ExpandCelCanvas::None) |
-        ExpandCelCanvas::SelectionPreview)));
-
-    if (!m_floodfillSrcImage)
-      m_floodfillSrcImage = const_cast<Image*>(getSrcImage());
-
     // Start with an empty mask if the user is selecting with "default selection mode"
     if (!m_document->isMaskVisible() ||
         (int(getModifiers()) & int(tools::ToolLoopModifiers::kReplaceSelection)) != 0) {
@@ -803,7 +797,14 @@ public:
       m_tx(new cmd::SetMask(m_document, &emptyMask));
     }
 
+    m_editor->makeSelectionToolMask();
     constructor_epilogue();
+  }
+
+  ~SelectionToolLoopImpl()
+  {
+    m_editor->deleteSelectionToolMask();
+    delete m_floodfillSrcImage;
   }
 
   // For drawing the selection to second mask
@@ -847,18 +848,21 @@ public:
     if (redraw)
       update_screen_for_document(m_document);
   }
+  void rollback() override {}
+
+  const Image* getSrcImage() override { return m_floodfillSrcImage; }
+  Image* getDstImage() override { return nullptr; }
+  Tileset* getDstTileset() override { return nullptr; }
+  void validateSrcImage(const gfx::Region& rgn) override {}
+  void validateDstImage(const gfx::Region& rgn) override {}
+  void validateDstTileset(const gfx::Region& rgn) override {}
+  void invalidateDstImage() override {}
+  void invalidateDstImage(const gfx::Region& rgn) override {}
+  void copyValidDstToSrcImage(const gfx::Region& rgn) override {}
 
   bool useMask() override { return false; }
   bool getFilled() override { return true; }
-  bool getPreviewFilled() override
-  {
-    // NOTE: this condition is here for drawing mode switches, remove/rework after testing
-    if ((int(getModifiers()) & (int(tools::ToolLoopModifiers::kAddSelection) |
-                                int(tools::ToolLoopModifiers::kIntersectSelection))) != 0) {
-      return getTracePolicy() == tools::TracePolicy::Last;
-    }
-    return false;
-  }
+  bool getPreviewFilled() override { return getTracePolicy() == tools::TracePolicy::Last; }
   int getSprayWidth() override { return 0; }
   int getSpraySpeed() override { return 0; }
 };
@@ -878,8 +882,7 @@ tools::ToolLoop* create_tool_loop(Editor* editor,
                                   Context* context,
                                   const tools::Pointer::Button button,
                                   const bool convertLineToFreehand,
-                                  const bool selectTiles,
-                                  const bool selectionToolLoopEnabled)
+                                  const bool selectTiles)
 {
   Site site = editor->getSite();
   doc::Grid grid = site.grid();
@@ -984,7 +987,8 @@ tools::ToolLoop* create_tool_loop(Editor* editor,
     fill_toolloop_params_from_tool_preferences(params);
 
     ASSERT(context->activeDocument() == editor->document());
-    if (selectionToolLoopEnabled && (params.ink->isSelection() || params.ink->isSlice())) {
+    if (Preferences::instance().experimental.useSelectionToolLoop() &&
+        (params.ink->isSelection() || params.ink->isSlice())) {
       auto* toolLoop =
         new SelectionToolLoopImpl(editor, site, grid, context, params, saveLastPoint);
       if (selectTiles)

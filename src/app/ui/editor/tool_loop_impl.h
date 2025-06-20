@@ -58,8 +58,7 @@ tools::ToolLoop* create_tool_loop(Editor* editor,
                                   Context* context,
                                   const tools::Pointer::Button button,
                                   const bool convertLineToFreehand,
-                                  const bool selectTiles,
-                                  const bool selectionToolLoopEnabled);
+                                  const bool selectTiles);
 
 tools::ToolLoop* create_tool_loop_preview(Editor* editor,
                                           const doc::BrushRef& brush,
