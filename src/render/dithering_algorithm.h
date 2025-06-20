@@ -9,6 +9,8 @@
 #define RENDER_DITHERING_METHOD_H_INCLUDED
 #pragma once
 
+#include <string>
+
 namespace render {
 
 // Dithering algorithms
@@ -22,17 +24,12 @@ enum class DitheringAlgorithm {
   Atkinson,
   Burkes,
   Sierra,
+  Unknown
 };
 
-inline bool IsDiffusion(DitheringAlgorithm algo)
-{
-  switch (algo) {
-    case DitheringAlgorithm::None:
-    case DitheringAlgorithm::Ordered:
-    case DitheringAlgorithm::Old:     return false;
-    default:                          return true;
-  }
-}
+bool DitheringAlgorithmIsDiffusion(DitheringAlgorithm algo);
+const std::string DitheringAlgorithmToString(DitheringAlgorithm algo);
+const DitheringAlgorithm DitheringAlgorithmFromString(std::string name);
 
 } // namespace render
 

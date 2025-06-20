@@ -332,7 +332,7 @@ public:
       if (auto item = m_ditheringSelector->getSelectedItem()) {
         pref.quantization.ditheringAlgorithm(item->text());
 
-        if (IsDiffusion(m_ditheringSelector->ditheringAlgorithm()))
+        if (DitheringAlgorithmIsDiffusion(m_ditheringSelector->ditheringAlgorithm()))
           pref.quantization.ditheringFactor(factor()->getValue());
       }
 
@@ -375,7 +375,8 @@ private:
       const bool toIndexed = (dstColorMode == doc::ColorMode::INDEXED);
       m_ditheringSelector->setVisible(toIndexed);
 
-      const bool errorDiff = (render::IsDiffusion(m_ditheringSelector->ditheringAlgorithm()));
+      const bool errorDiff =
+        (render::DitheringAlgorithmIsDiffusion(m_ditheringSelector->ditheringAlgorithm()));
       amount()->setVisible(toIndexed && errorDiff);
     }
 

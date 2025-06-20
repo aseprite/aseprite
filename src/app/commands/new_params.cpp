@@ -275,25 +275,10 @@ void Param<doc::FitCriteria>::fromString(const std::string& value)
 template<>
 void Param<render::DitheringAlgorithm>::fromString(const std::string& value)
 {
-  if (base::utf8_icmp(value, "ordered") == 0)
-    setValue(render::DitheringAlgorithm::Ordered);
-  else if (base::utf8_icmp(value, "old") == 0)
-    setValue(render::DitheringAlgorithm::Old);
-  else if (base::utf8_icmp(value, "error-diffusion") == 0 ||
-           base::utf8_icmp(value, "floyd-steinberg") == 0)
-    setValue(render::DitheringAlgorithm::FloydSteinberg);
-  else if (base::utf8_icmp(value, "jarvis-judice-ninke") == 0)
-    setValue(render::DitheringAlgorithm::JarvisJudiceNinke);
-  else if (base::utf8_icmp(value, "stucki") == 0)
-    setValue(render::DitheringAlgorithm::Stucki);
-  else if (base::utf8_icmp(value, "atkinson") == 0)
-    setValue(render::DitheringAlgorithm::Atkinson);
-  else if (base::utf8_icmp(value, "burkes") == 0)
-    setValue(render::DitheringAlgorithm::Burkes);
-  else if (base::utf8_icmp(value, "sierra") == 0)
-    setValue(render::DitheringAlgorithm::Sierra);
-  else
-    setValue(render::DitheringAlgorithm::None);
+  auto algo = render::DitheringAlgorithmFromString(value);
+  if (algo == render::DitheringAlgorithm::Unknown)
+    algo = render::DitheringAlgorithm::None;
+  setValue(algo);
 }
 
 template<>
