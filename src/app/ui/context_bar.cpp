@@ -2572,8 +2572,26 @@ render::DitheringAlgorithmBase* ContextBar::ditheringAlgorithm()
     case render::DitheringAlgorithm::None:    s_dither.reset(nullptr); break;
     case render::DitheringAlgorithm::Ordered: s_dither.reset(new render::OrderedDither2(-1)); break;
     case render::DitheringAlgorithm::Old:     s_dither.reset(new render::OrderedDither(-1)); break;
-    case render::DitheringAlgorithm::ErrorDiffusion:
-      s_dither.reset(new render::ErrorDiffusionDither(-1));
+    case render::DitheringAlgorithm::FloydSteinberg:
+      s_dither.reset(
+        new render::ErrorDiffusionDither(render::ErrorDiffusionType::FloydSteinberg, -1));
+      break;
+    case render::DitheringAlgorithm::JarvisJudiceNinke:
+      s_dither.reset(
+        new render::ErrorDiffusionDither(render::ErrorDiffusionType::JarvisJudiceNinke, -1));
+      break;
+    case render::DitheringAlgorithm::Stucki:
+      s_dither.reset(new render::ErrorDiffusionDither(render::ErrorDiffusionType::Stucki, -1));
+      break;
+    case render::DitheringAlgorithm::Atkinson:
+      s_dither.reset(new render::ErrorDiffusionDither(render::ErrorDiffusionType::Atkinson, -1));
+      break;
+    case render::DitheringAlgorithm::Burkes:
+      s_dither.reset(new render::ErrorDiffusionDither(render::ErrorDiffusionType::Burkes, -1));
+      break;
+    case render::DitheringAlgorithm::Sierra:
+      s_dither.reset(new render::ErrorDiffusionDither(render::ErrorDiffusionType::Sierra, -1));
+      break;
       break;
   }
 
