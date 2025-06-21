@@ -35,13 +35,13 @@ bool DitheringAlgorithmIsDiffusion(DitheringAlgorithm algo)
   }
 }
 
-const std::string DitheringAlgorithmToString(DitheringAlgorithm algo)
+std::string DitheringAlgorithmToString(DitheringAlgorithm algo)
 {
   auto it = names.find(algo);
   return (it != names.end()) ? it->second : "unknown";
 }
 
-const DitheringAlgorithm DitheringAlgorithmFromString(std::string name)
+const DitheringAlgorithm DitheringAlgorithmFromString(const std::string name)
 {
   auto it = std::find_if(names.begin(), names.end(), [name](const auto& pair) {
     return base::utf8_icmp(pair.second, name) == 0;
