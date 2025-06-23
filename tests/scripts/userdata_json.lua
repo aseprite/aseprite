@@ -5,15 +5,9 @@ dofile('./test_utils.lua')
 
 -- Helper to export sprite to JSON and parse it
 local function export_json(sprite, filename)
-  -- Create a subfolder for test outputs
-  local out_dir = app.fs.joinPath(app.fs.userConfigPath, "userdata_json")
-  if not app.fs.isDirectory(out_dir) then
-    app.fs.makeDirectory(out_dir)
-  end
-
-  local out_json = app.fs.joinPath(out_dir, "_test_userdata_json.json")
-  local out_png  = app.fs.joinPath(out_dir, "_test_userdata_json.png")
-  local out_ase  = app.fs.joinPath(out_dir, "_test_userdata_json.aseprite")
+  local out_json = "_test_userdata_json.json"
+  local out_png  = "_test_userdata_json.png"
+  local out_ase  = "_test_userdata_json.aseprite"
 
   print("Exporting to:")
   print("  out_json: " .. out_json)
