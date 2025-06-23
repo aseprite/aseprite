@@ -31,6 +31,8 @@
 #include "app/ui_context.h"
 #include "app/util/cel_ops.h"
 #include "app/util/clipboard.h"
+
+#include "app/i18n/strings.h"
 #include "app/util/new_image_from_mask.h"
 #include "clip/clip.h"
 #include "doc/algorithm/shrink_bounds.h"
@@ -346,7 +348,7 @@ void Clipboard::cut(ContextWriter& writer)
   else {
     // TODO This code is similar to DocView::onClear()
     {
-      Tx tx(writer, "Cut");
+      Tx tx(writer, Strings::commands_Cut());
       Site site = writer.context()->activeSite();
       CelList cels = site.selectedUniqueCelsToEditPixels();
       clearMaskFromCels(tx, writer.document(), site, cels,
@@ -538,7 +540,7 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
         }
 
         ContextWriter writer(ctx);
-        Tx tx(writer, "Paste Image");
+        Tx tx(writer, Strings::undo_history_paste_cels());
         DocApi api = dstDoc->getApi(tx);
         Cel* dstCel;
         if (isAnImageOnDstCel)
@@ -627,7 +629,7 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
           }
 
           ContextWriter writer(ctx);
-          Tx tx(writer, "Paste Cels");
+          Tx tx(writer, Strings::undo_history_paste_cels());
           DocApi api = dstDoc->getApi(tx);
 
           // Add extra frames if needed
@@ -688,14 +690,14 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
           }
 
           ContextWriter writer(ctx);
-          Tx tx(writer, "Paste Frames");
+          Tx tx(writer, Strings::undo_history_paste_frames());
           DocApi api = dstDoc->getApi(tx);
 
           auto srcLayers = srcSpr->allBrowsableLayers();
           auto dstLayers = dstSpr->allBrowsableLayers();
 
           for (frame_t srcFrame : srcRange.selectedFrames()) {
-            api.addEmptyFrame(dstSpr, dstFrame);
+            api.addEmptyFrame(dstSpr, dstFrame, false);
             api.setFrameDuration(dstSpr, dstFrame, srcSpr->frameDuration(srcFrame));
 
             auto srcIt = srcLayers.begin();
@@ -719,8 +721,43 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
               }
             }
 
+            // Copy any tags from these frames, if available.
+            for (Tag* tag : srcSpr->tags()) {
+              if (!tag->contains(srcFrame))
+                continue;
+
+              Tag* existingTag = nullptr;
+              for (Tag* destTag : dstSpr->tags().getInternalList()) {
+                if (destTag->name() == tag->name()) {
+                  if (existingTag && !destTag->contains(dstFrame))
+                    continue;
+
+                  existingTag = destTag;
+                }
+              }
+
+              if (existingTag) {
+                // If this tag already exists fully, bail instead of attaching
+                if (existingTag->fromFrame() == tag->fromFrame() &&
+                    existingTag->toFrame() == tag->toFrame()) {
+                  continue;
+                }
+
+                if (dstFrame == existingTag->toFrame() + 1) {
+                  // Only attach these together if they're next to each other.
+                  api.setTagRange(existingTag, existingTag->fromFrame(), dstFrame);
+                  continue;
+                }
+              }
+
+              api.copyTag(tag, dstSpr, dstFrame);
+            }
+
             ++dstFrame;
           }
+
+          // TODO: There's still a chance that we could duplicate frames when copy-pasting, maybe
+          // they should have an internal uuid we could copy across?
 
           tx.commit();
           updateDstDoc = true;
@@ -733,7 +770,7 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
               "You cannot copy layers of document with different color modes");
 
           ContextWriter writer(ctx);
-          Tx tx(writer, "Paste Layers");
+          Tx tx(writer, Strings::undo_history_paste_layers());
           DocApi api = dstDoc->getApi(tx);
 
           // Remove children if their parent is selected so we only
