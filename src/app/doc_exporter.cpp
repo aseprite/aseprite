@@ -424,7 +424,7 @@ public:
                                  dithering,
                                  sprite ? sprite->rgbMap(0) : nullptr,
                                  sprite ? sprite->palette(0) : nullptr,
-                                 sprite ? sprite->backgroundLayer() : nullptr,
+                                 (sprite && sprite->backgroundLayer()),
                                  0,
                                  0,
                                  nullptr);
