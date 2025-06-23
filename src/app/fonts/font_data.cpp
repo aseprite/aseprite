@@ -14,6 +14,7 @@
 #include "text/font.h"
 #include "text/font_mgr.h"
 #include "text/sprite_sheet_font.h"
+#include "text/typeface.h"
 #include "ui/manager.h"
 #include "ui/scale.h"
 

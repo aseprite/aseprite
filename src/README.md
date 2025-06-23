@@ -72,6 +72,10 @@ In Debug mode (`_DEBUG`):
 * [`TRACEARGS`](https://github.com/aseprite/laf/blob/f3222bdee2d21556e9da55343e73803c730ecd97/base/debug.h#L40):
   in debug mode, it prints in the terminal/console each given argument
 
+In release mode you can use a similar function:
+
+* `PRINTARGS` prints in the terminal/console each given argument
+
 # Detect Platform
 
 You can check the platform using some `laf` macros:
