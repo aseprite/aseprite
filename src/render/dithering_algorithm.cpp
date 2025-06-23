@@ -4,6 +4,7 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
+#include <algorithm>
 #include <string>
 #include <unordered_map>
 
