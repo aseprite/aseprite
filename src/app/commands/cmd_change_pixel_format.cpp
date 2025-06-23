@@ -374,6 +374,7 @@ private:
     if (m_ditheringSelector) {
       const bool toIndexed = (dstColorMode == doc::ColorMode::INDEXED);
       m_ditheringSelector->setVisible(toIndexed);
+      m_zigZagCheck->setVisible(toIndexed);
 
       const bool errorDiff =
         (render::DitheringAlgorithmIsDiffusion(m_ditheringSelector->ditheringAlgorithm()));
