@@ -177,9 +177,6 @@ protected:
     ui::Style* style = theme->styles.newsItem();
     ui::Style* styleDetail = theme->styles.newsItemDetail();
 
-    text::FontMetrics metrics;
-    font()->metrics(&metrics);
-
     gfx::Size textSize = theme->calcSizeHint(this, style);
     gfx::Rect textBounds(bounds.x, bounds.y, bounds.w, textSize.h);
     gfx::Rect detailsBounds(bounds.x, bounds.y + textSize.h, bounds.w, bounds.h - textSize.h);
@@ -187,19 +184,28 @@ protected:
     gfx::Border border = theme->calcBorder(this, style);
     gfx::Border borderDetail = theme->calcBorder(this, styleDetail);
 
-    PaintWidgetPartInfo info(this);
-    info.text = &m_title;
-    info.baseline = border.top() - metrics.ascent;
-    theme->paintWidgetPart(g, style, bounds, info);
+    if (!m_titleBlob)
+      m_titleBlob = text::TextBlob::MakeWithShaper(theme->fontMgr(), font(), m_title);
 
-    info.text = &m_desc;
-    info.baseline += border.bottom() + borderDetail.top() + metrics.descent - metrics.ascent;
-    theme->paintWidgetPart(g, styleDetail, detailsBounds, info);
+    PaintWidgetPartInfo info(this);
+    info.baseline = border.top();
+    if (m_titleBlob) {
+      info.textBlob = m_titleBlob;
+      info.baseline += m_titleBlob->baseline();
+      theme->paintWidgetPart(g, style, bounds, info);
+      info.baseline += border.bottom();
+
+      info.text = &m_desc;
+      info.textBlob = nullptr;
+      info.baseline += borderDetail.top() + m_titleBlob->baseline();
+      theme->paintWidgetPart(g, styleDetail, detailsBounds, info);
+    }
   }
 
 private:
   std::string m_title;
   std::string m_desc;
+  text::TextBlobRef m_titleBlob;
 };
 
 class ProblemsItem : public NewsItem {
