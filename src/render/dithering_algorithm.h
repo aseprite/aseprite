@@ -29,7 +29,7 @@ enum class DitheringAlgorithm {
 
 bool DitheringAlgorithmIsDiffusion(DitheringAlgorithm algo);
 std::string DitheringAlgorithmToString(DitheringAlgorithm algo);
-const DitheringAlgorithm DitheringAlgorithmFromString(const std::string name);
+DitheringAlgorithm DitheringAlgorithmFromString(const std::string& name);
 
 } // namespace render
 

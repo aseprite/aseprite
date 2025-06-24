@@ -219,7 +219,8 @@ doc::color_t ErrorDiffusionDither::ditherRgbToIndex2D(const int x,
       const int bufferRowIndex = bufferRow * m_width;
 
       for (int mx = 0; mx < matrix.width; ++mx) {
-        const int coeff = direction > 0 ? matrix.coefficients[my][mx] : matrix.coefficients[my][matrix.width - 1 - mx];
+        const int coeff = direction > 0 ? matrix.coefficients[my][mx] :
+                                          matrix.coefficients[my][matrix.width - 1 - mx];
         if (coeff == 0)
           continue;
 
