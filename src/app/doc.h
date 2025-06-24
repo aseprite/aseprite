@@ -195,6 +195,7 @@ public:
   const MaskBoundaries& maskBoundaries() const { return m_maskBoundaries; }
 
   MaskBoundaries& maskBoundaries() { return m_maskBoundaries; }
+  void setMaskBoundaries(const MaskBoundaries& segs) { m_maskBoundaries = segs; }
 
   bool hasMaskBoundaries() const { return !m_maskBoundaries.isEmpty(); }
 

@@ -317,6 +317,11 @@ public:
   // an Editor or EditorState event.
   void showUnhandledException(const std::exception& ex, const ui::Message* msg);
 
+  Mask* getSelectionToolMask() { return m_selectionToolMask.get(); }
+  void makeSelectionToolMask();
+  void deleteSelectionToolMask();
+  bool hasSelectionToolMask();
+
   static void registerCommands();
 
 protected:
@@ -361,7 +366,8 @@ private:
   void drawBackground(ui::Graphics* g);
   void drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc);
   void drawMaskSafe();
-  void drawMask(ui::Graphics* g);
+  enum MaskIndex { Document, SelectionTool, Count };
+  void drawMask(ui::Graphics* g, MaskIndex index);
   void drawGrid(ui::Graphics* g,
                 const gfx::Rect& spriteBounds,
                 const gfx::Rect& gridBounds,
@@ -504,6 +510,9 @@ private:
   // same document can show the same preview image/stroke being drawn
   // (search for Render::setPreviewImage()).
   static std::unique_ptr<EditorRender> m_renderEngine;
+
+  // Used for selection tool feedback
+  static std::unique_ptr<Mask> m_selectionToolMask;
 };
 
 } // namespace app

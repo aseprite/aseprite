@@ -624,6 +624,7 @@
                  text="@.hue_with_sat_value"
                  pref="experimental.hue_with_sat_value_for_color_selector" />
           <check id="flash_layer" text="@.flash_selected_layer" />
+          <check id="use_selection_tool_loop" text="@.use_selection_tool_loop" />
           <hbox>
             <label text="@.non_active_layer_opacity" />
             <slider id="nonactive_layers_opacity" min="0" max="255" width="128" />
