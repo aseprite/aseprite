@@ -147,6 +147,7 @@ set(ENABLE_TAR OFF CACHE BOOL "Enable tar building")
 set(ENABLE_CPIO OFF CACHE BOOL "Enable cpio building")
 set(ENABLE_LIBB2 OFF CACHE BOOL "Enable the use of the system LIBB2 library if found")
 set(ENABLE_ICONV OFF CACHE BOOL "Enable iconv support")
+set(WINDOWS_VERSION "WS08" CACHE STRING "Set Windows Vista as the target version for compiling libarchive (Windows only)" FORCE)
 add_subdirectory(libarchive)
 target_include_directories(archive_static INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libarchive/libarchive>)
