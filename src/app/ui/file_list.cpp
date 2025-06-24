@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -18,6 +18,7 @@
 #include "base/time.h"
 #include "os/surface.h"
 #include "text/font.h"
+#include "text/font_metrics.h"
 #include "ui/ui.h"
 
 #include <algorithm>
@@ -401,7 +402,6 @@ void FileList::onPaint(ui::PaintEvent& ev)
   gfx::Rect bounds = clientBounds();
 
   g->fillRect(theme->colors.background(), bounds);
-  // g->fillRect(bgcolor, gfx::Rect(bounds.x, y, bounds.w, itemSize.h));
 
   int i = 0, selectedIndex = -1;
   for (IFileItem* fi : m_list) {
@@ -506,17 +506,28 @@ void FileList::paintItem(ui::Graphics* g, IFileItem* fi, const int i)
 
   // item name
   if (isIconView() && textBounds.w > info.bounds.w) {
-    g->drawAlignedUIText(fi->displayName().c_str(),
+    g->drawAlignedUIText(fi->displayName(),
                          fgcolor,
                          bgcolor,
                          (textBounds & gfx::Rect(info.bounds).shrink(2 * guiscale())),
                          ui::CENTER | ui::TOP | ui::CHARWRAP);
   }
   else {
-    g->drawText(fi->displayName().c_str(),
-                fgcolor,
-                bgcolor,
-                gfx::Point(textBounds.x + 2 * guiscale(), textBounds.y + 2 * guiscale()));
+    auto blob = text::TextBlob::MakeWithShaper(theme->fontMgr(), font(), fi->displayName());
+    if (blob) {
+      Paint paint;
+      paint.color(fgcolor);
+      paint.style(os::Paint::Fill);
+
+      text::FontMetrics metrics;
+      font()->metrics(&metrics);
+      const float baselineDelta = -metrics.ascent - blob->baseline();
+
+      g->drawTextBlob(
+        blob,
+        gfx::PointF(textBounds.x + 2 * guiscale(), textBounds.y + 2 * guiscale() + baselineDelta),
+        paint);
+    }
   }
 
   // Draw thumbnail progress bar
