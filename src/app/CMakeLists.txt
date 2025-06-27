@@ -705,6 +705,7 @@ target_sources(app-lib PRIVATE
   util/filetoks.cpp
   util/layer_boundaries.cpp
   util/layer_utils.cpp
+  util/moving_utils.cpp
   util/msk_file.cpp
   util/new_image_from_mask.cpp
   util/open_file_job.cpp
