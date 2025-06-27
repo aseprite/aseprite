@@ -402,12 +402,10 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
         dy = (pos.y - m_catchPos.y);
       }
 
-      if ((moveModifier & LockAxisMovement) == LockAxisMovement) {
-        if (std::abs(dx) < std::abs(dy))
-          dx = 0.0;
-        else
-          dy = 0.0;
-      }
+      if ((moveModifier & LockAxisMovement) == LockAxisMovement)
+        lockAxisProcess(m_lockedAxis, dx, dy);
+      else
+        m_lockedAxis = LockedAxis::NONE;
 
       bounds.offset(dx, dy);
 
