@@ -62,7 +62,7 @@ Entry::Entry(const int maxsize, const char* format, ...)
   , m_recent_focused(false)
   , m_lock_selection(false)
   , m_persist_selection(false)
-  , m_translate_dead_keys(true)
+  , m_text_input(true)
   , m_scale(1.0f, 1.0f)
 {
   enableFlags(CTRL_RIGHT_CLICK);
@@ -128,6 +128,15 @@ int Entry::lastCaretPos() const
   return int(m_boxes.size() - 1);
 }
 
+gfx::Point Entry::caretPosOnScreen() const
+{
+  gfx::Point caretPos = getCharBoxBounds(m_caret).origin();
+  os::Window* nativeWindow = display()->nativeWindow();
+  gfx::Point pos = nativeWindow->pointToScreen(caretPos + bounds().origin());
+
+  return pos;
+}
+
 void Entry::setCaretPos(const int pos)
 {
   gfx::Size caretSize = theme()->getEntryCaretSize(this);
@@ -159,6 +168,8 @@ void Entry::setCaretPos(const int pos)
   if (shouldStartTimer(hasFocus()))
     startTimer();
   m_state = true;
+
+  os::System::instance()->setTextInput(true, caretPosOnScreen());
 
   invalidate();
 }
@@ -229,9 +240,9 @@ std::string Entry::getSuffix()
   return (m_suffix ? *m_suffix : std::string());
 }
 
-void Entry::setTranslateDeadKeys(bool state)
+void Entry::setTextInput(bool state, const gfx::Point& screenCaretPos)
 {
-  m_translate_dead_keys = state;
+  m_text_input = state;
 }
 
 void Entry::getEntryThemeInfo(int* scroll, int* caret, int* state, Range* range) const
@@ -251,7 +262,7 @@ gfx::Rect Entry::getEntryTextBounds() const
   return onGetEntryTextBounds();
 }
 
-gfx::Rect Entry::getCharBoxBounds(const int i)
+gfx::Rect Entry::getCharBoxBounds(const int i) const
 {
   ASSERT(i >= 0 && i < int(m_boxes.size()));
   if (i >= 0 && i < int(m_boxes.size()))
@@ -288,8 +299,9 @@ bool Entry::onProcessMessage(Message* msg)
       }
 
       // Start processing dead keys
-      if (m_translate_dead_keys)
-        os::System::instance()->setTranslateDeadKeys(true);
+      if (m_text_input) {
+        os::System::instance()->setTextInput(true, caretPosOnScreen());
+      }
       break;
 
     case kFocusLeaveMessage:
@@ -303,8 +315,8 @@ bool Entry::onProcessMessage(Message* msg)
       m_recent_focused = false;
 
       // Stop processing dead keys
-      if (m_translate_dead_keys)
-        os::System::instance()->setTranslateDeadKeys(false);
+      if (m_text_input)
+        os::System::instance()->setTextInput(false);
       break;
 
     case kKeyDownMessage:

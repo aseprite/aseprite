@@ -43,6 +43,7 @@ public:
 
   int caretPos() const { return m_caret; }
   int lastCaretPos() const;
+  gfx::Point caretPosOnScreen() const;
 
   void setCaretPos(int pos);
   void setCaretToEnd();
@@ -61,7 +62,7 @@ public:
   void setSuffix(const std::string& suffix);
   std::string getSuffix();
 
-  void setTranslateDeadKeys(bool state);
+  void setTextInput(bool state, const gfx::Point& screenCaretPos = {});
 
   // for themes
   void getEntryThemeInfo(int* scroll, int* caret, int* state, Range* range) const;
@@ -76,7 +77,7 @@ public:
   obs::signal<void()> Change;
 
 protected:
-  gfx::Rect getCharBoxBounds(int i);
+  gfx::Rect getCharBoxBounds(int i) const;
 
   // Events
   bool onProcessMessage(Message* msg) override;
@@ -146,7 +147,7 @@ private:
   bool m_recent_focused : 1;
   bool m_lock_selection : 1;
   bool m_persist_selection : 1;
-  bool m_translate_dead_keys : 1;
+  bool m_text_input : 1;
   Range m_selecting_words;
   std::unique_ptr<std::string> m_suffix;
 
