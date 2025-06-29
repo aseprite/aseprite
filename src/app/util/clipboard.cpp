@@ -10,6 +10,7 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd/add_slice.h"
 #include "app/cmd/clear_mask.h"
 #include "app/cmd/deselect_mask.h"
 #include "app/cmd/set_mask.h"
@@ -20,6 +21,7 @@
 #include "app/doc_api.h"
 #include "app/doc_range.h"
 #include "app/doc_range_ops.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
@@ -32,6 +34,7 @@
 #include "app/util/cel_ops.h"
 #include "app/util/clipboard.h"
 #include "app/util/new_image_from_mask.h"
+#include "app/util/slice_utils.h"
 #include "clip/clip.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/blend_image.h"
@@ -114,6 +117,9 @@ struct Clipboard::Data {
   // Selected set of layers/layers/cels
   ClipboardRange range;
 
+  // Selected slices
+  std::vector<Slice> slices;
+
   Data() { range.observeUIContext(); }
 
   ~Data()
@@ -132,6 +138,7 @@ struct Clipboard::Data {
     picks.clear();
     mask.reset();
     range.invalidate();
+    slices.clear();
   }
 
   ClipboardFormat format() const
@@ -146,6 +153,8 @@ struct Clipboard::Data {
       return ClipboardFormat::PaletteEntries;
     else if (tileset && picks.picks())
       return ClipboardFormat::Tileset;
+    else if (!slices.empty())
+      return ClipboardFormat::Slices;
     else
       return ClipboardFormat::None;
   }
@@ -212,6 +221,7 @@ void Clipboard::setData(Image* image,
                         Mask* mask,
                         Palette* palette,
                         Tileset* tileset,
+                        const std::vector<Slice*>* slices,
                         bool set_native_clipboard,
                         bool image_source_is_transparent)
 {
@@ -225,6 +235,11 @@ void Clipboard::setData(Image* image,
     m_data->tilemap.reset(image);
   else
     m_data->image.reset(image);
+
+  if (slices) {
+    for (auto* slice : *slices)
+      m_data->slices.push_back(*slice);
+  }
 
   if (set_native_clipboard && use_native_clipboard()) {
     // Copy tilemap to the native clipboard
@@ -262,6 +277,7 @@ bool Clipboard::copyFromDocument(const Site& site, bool merged)
             (mask ? new Mask(*mask) : nullptr),
             (pal ? new Palette(*pal) : nullptr),
             Tileset::MakeCopyCopyingImages(ts),
+            nullptr,
             true, // set native clipboard
             site.layer() && !site.layer()->isBackground());
 
@@ -276,6 +292,7 @@ bool Clipboard::copyFromDocument(const Site& site, bool merged)
   setData(image,
           (mask ? new Mask(*mask) : nullptr),
           (pal ? new Palette(*pal) : nullptr),
+          nullptr,
           nullptr,
           true, // set native clipboard
           site.layer() && !site.layer()->isBackground());
@@ -401,6 +418,7 @@ void Clipboard::copyImage(const Image* image, const Mask* mask, const Palette* p
           (mask ? new Mask(*mask) : nullptr),
           (pal ? new Palette(*pal) : nullptr),
           nullptr,
+          nullptr,
           App::instance()->isGui(),
           false);
 }
@@ -415,6 +433,7 @@ void Clipboard::copyTilemap(const Image* image,
           (mask ? new Mask(*mask) : nullptr),
           (pal ? new Palette(*pal) : nullptr),
           Tileset::MakeCopyCopyingImages(tileset),
+          nullptr,
           true,
           false);
 }
@@ -428,6 +447,7 @@ void Clipboard::copyPalette(const Palette* palette, const PalettePicks& picks)
           nullptr,
           new Palette(*palette),
           nullptr,
+          nullptr,
           false, // Don't touch the native clipboard now
           false);
 
@@ -436,6 +456,20 @@ void Clipboard::copyPalette(const Palette* palette, const PalettePicks& picks)
     setNativePalette(palette, picks);
 
   m_data->picks = picks;
+}
+
+void Clipboard::copySlices(const std::vector<Slice*> slices)
+{
+  if (slices.empty())
+    return;
+
+  setData(nullptr,
+          nullptr,
+          nullptr,
+          nullptr,
+          &slices,
+          false, // Don't touch the native clipboard now
+          false);
 }
 
 void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* position)
@@ -782,6 +816,26 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
       }
       break;
     }
+
+    case ClipboardFormat::Slices: {
+      auto& slices = m_data->slices;
+
+      if (slices.empty())
+        return;
+
+      ContextWriter writer(ctx);
+      Tx tx(writer, "Paste Slices");
+      editor->clearSlicesSelection();
+      for (auto& s : slices) {
+        Slice* slice = new Slice(s);
+        slice->setName(Strings::general_copy_of(slice->name()));
+        tx(new cmd::AddSlice(dstSpr, slice));
+        editor->selectSlice(slice);
+      }
+      tx.commit();
+      updateDstDoc = true;
+      break;
+    }
   }
 
   // Update all editors/views showing this document
@@ -799,7 +853,7 @@ ImageRef Clipboard::getImage(Palette* palette)
     Tileset* native_tileset = nullptr;
     getNativeBitmap(&native_image, &native_mask, &native_palette, &native_tileset);
     if (native_image) {
-      setData(native_image, native_mask, native_palette, native_tileset, false, false);
+      setData(native_image, native_mask, native_palette, native_tileset, nullptr, false, false);
     }
   }
   if (m_data->palette && palette)
