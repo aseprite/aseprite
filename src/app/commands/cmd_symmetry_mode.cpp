@@ -48,6 +48,7 @@ std::string SymmetryModeCommand::onGetFriendlyName() const
     case app::gen::SymmetryMode::VERTICAL:   return Strings::symmetry_toggle_vertical();
     case app::gen::SymmetryMode::RIGHT_DIAG: return Strings::symmetry_toggle_right_diagonal();
     case app::gen::SymmetryMode::LEFT_DIAG:  return Strings::symmetry_toggle_left_diagonal();
+    case app::gen::SymmetryMode::POINT:  return Strings::symmetry_toggle_point();
     default:                                 return Strings::symmetry_toggle();
   }
 }
@@ -63,6 +64,8 @@ void SymmetryModeCommand::onLoadParams(const Params& params)
     m_mode = app::gen::SymmetryMode::RIGHT_DIAG;
   else if (mode == "left_diagonal")
     m_mode = app::gen::SymmetryMode::LEFT_DIAG;
+  else if (mode == "point")
+    m_mode = app::gen::SymmetryMode::POINT;
   else
     m_mode = app::gen::SymmetryMode::NONE;
 }

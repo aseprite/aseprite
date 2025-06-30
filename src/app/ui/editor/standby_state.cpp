@@ -1030,7 +1030,8 @@ bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, Handles& handle
 
       if ((int(mode) & int(app::gen::SymmetryMode::HORIZONTAL)) ||
           (int(mode) & int(app::gen::SymmetryMode::RIGHT_DIAG)) ||
-          (int(mode) & int(app::gen::SymmetryMode::LEFT_DIAG))) {
+          (int(mode) & int(app::gen::SymmetryMode::LEFT_DIAG)) ||
+          (int(mode) & int(app::gen::SymmetryMode::POINT))) {
         double pos = symmetry.xAxis();
         gfx::PointF pt1, pt2;
 
@@ -1051,7 +1052,8 @@ bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, Handles& handle
 
       if ((int(mode) & int(app::gen::SymmetryMode::VERTICAL)) ||
           (int(mode) & int(app::gen::SymmetryMode::RIGHT_DIAG)) ||
-          (int(mode) & int(app::gen::SymmetryMode::LEFT_DIAG))) {
+          (int(mode) & int(app::gen::SymmetryMode::LEFT_DIAG)) ||
+          (int(mode) & int(app::gen::SymmetryMode::POINT))) {
         double pos = symmetry.yAxis();
         gfx::PointF pt1, pt2;
 

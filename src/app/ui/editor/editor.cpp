@@ -916,6 +916,18 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
             topLeft,
             bottomRight);
         }
+        if (mode & int(app::gen::SymmetryMode::POINT)) {
+          g->drawHLine(
+            symmetryButtons & int(app::gen::SymmetryMode::POINT) ? color : semiTransparentColor,
+            enclosingRect.x + x - enclosingRect.w * 0.10f,
+            enclosingRect.y + y,
+            enclosingRect.w * 0.10f * 2.0f);
+          g->drawVLine(
+            (symmetryButtons & int(app::gen::SymmetryMode::POINT)) ? color : semiTransparentColor,
+            enclosingRect.x + x,
+            enclosingRect.y + y - enclosingRect.h * 0.10f,
+            enclosingRect.h * 0.10f * 2.0f);
+        }
       }
     }
   }

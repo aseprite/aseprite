@@ -73,6 +73,15 @@ void Symmetry::generateStrokes(const Stroke& stroke, Strokes& strokes, ToolLoop*
       break;
     }
 
+    case gen::SymmetryMode::POINT: {
+      Stroke strokeTemp;
+      calculateSymmetricalStroke(stroke, strokeTemp, loop, doc::SymmetryIndex::FLIPPED_Y);
+
+      calculateSymmetricalStroke(strokeTemp, stroke2, loop, doc::SymmetryIndex::FLIPPED_XY);
+      strokes.push_back(stroke2);
+      break;
+    }
+
     case gen::SymmetryMode::ALL: {
       calculateSymmetricalStroke(stroke, stroke2, loop, doc::SymmetryIndex::FLIPPED_X);
       strokes.push_back(stroke2);
@@ -175,8 +184,13 @@ gen::SymmetryMode Symmetry::resolveMode(gen::SymmetryMode mode)
 {
   return (((int(mode) & int(gen::SymmetryMode::HORIZONTAL)) ||
            (int(mode) & int(gen::SymmetryMode::VERTICAL))) &&
-          ((int(mode) & int(gen::SymmetryMode::RIGHT_DIAG)) ||
-           (int(mode) & int(gen::SymmetryMode::LEFT_DIAG)))) ?
+           ((int(mode) & int(gen::SymmetryMode::RIGHT_DIAG)) ||
+           (int(mode) & int(gen::SymmetryMode::LEFT_DIAG)))) ||
+           ((int(mode) & int(gen::SymmetryMode::POINT)) &&
+           ((int(mode) & int(gen::SymmetryMode::RIGHT_DIAG)) ||
+           (int(mode) & int(gen::SymmetryMode::LEFT_DIAG)) ||
+           (int(mode) & int(gen::SymmetryMode::HORIZONTAL)) ||
+           (int(mode) & int(gen::SymmetryMode::VERTICAL)))) ?
            gen::SymmetryMode::ALL :
            mode;
 }
