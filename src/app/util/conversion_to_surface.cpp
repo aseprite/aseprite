@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2020-2024  Igara Studio S.A.
+// Copyright (c) 2020-2025  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This program is distributed under the terms of
@@ -250,6 +250,11 @@ void convert_image_to_surface(const doc::Image* image,
   os::SurfaceLock lockDst(surface);
   os::SurfaceFormatData fd;
   surface->getFormat(&fd);
+#if LAF_SKIA
+  // Needed because Skia surfaces work with premultiplied alpha and
+  // here we need to copy unpremultiplied alpha RGB values to the Skia surface.
+  ((os::SkiaSurface*)surface)->bitmap().setAlphaType(kUnpremul_SkAlphaType);
+#endif
 
   switch (image->pixelFormat()) {
     case IMAGE_RGB:
