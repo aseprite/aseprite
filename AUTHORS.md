@@ -4,7 +4,7 @@ Aseprite is being developed and maintained currently by [Igara Studio](https://i
 The active team of developers is:
 
 * [David Capello](https://github.com/dacap)
-* [Gaspar Capello](https://github.com/Gsparoken)
+* [Gaspar Capello](https://github.com/Gasparoken)
 * [Martín Capello](https://github.com/martincapello)
 * [Christian Kaiser](https://github.com/ckaiser)
 * [Dante Paola](https://github.com/Liebranca)
