@@ -50,6 +50,7 @@
 #include "app/transaction.h"
 #include "app/util/autocrop.h"
 #include "app/util/layer_utils.h"
+#include "cmd/set_user_data.h"
 #include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
@@ -324,10 +325,12 @@ void DocApi::addFrame(Sprite* sprite, frame_t newFrame)
   copyFrame(sprite, newFrame - 1, newFrame, kDropBeforeFrame, kDefaultTagsAdjustment);
 }
 
-void DocApi::addEmptyFrame(Sprite* sprite, frame_t newFrame)
+void DocApi::addEmptyFrame(Sprite* sprite, frame_t newFrame, bool adjust)
 {
   m_transaction.execute(new cmd::AddFrame(sprite, newFrame));
-  adjustTags(sprite, newFrame, +1, kDropBeforeFrame, kDefaultTagsAdjustment);
+
+  if (adjust)
+    adjustTags(sprite, newFrame, +1, kDropBeforeFrame, kDefaultTagsAdjustment);
 }
 
 void DocApi::addEmptyFramesTo(Sprite* sprite, frame_t newFrame)
@@ -804,6 +807,22 @@ void DocApi::setPalette(Sprite* sprite, frame_t frame, const Palette* newPalette
   if (from >= 0 && to >= from) {
     m_transaction.execute(new cmd::SetPalette(sprite, frame, newPalette));
   }
+}
+
+// Copies the given source tag onto the destination sprite, copying everything except for the
+// frames.
+void DocApi::copyTag(Tag* sourceTag, Sprite* dstSprite, const frame_t fromFrame)
+{
+  auto* dstTag = new Tag(*sourceTag);
+  m_transaction.execute(new cmd::AddTag(dstSprite, dstTag));
+  m_transaction.execute(
+    new cmd::SetUserData(dstTag, sourceTag->userData(), static_cast<Doc*>(dstSprite->document())));
+  setTagRange(dstTag, fromFrame, fromFrame);
+}
+
+void DocApi::setTagRange(Tag* tag, const frame_t fromFrame, const frame_t toFrame)
+{
+  m_transaction.execute(new cmd::SetTagRange(tag, fromFrame, toFrame));
 }
 
 void DocApi::adjustTags(Sprite* sprite,
