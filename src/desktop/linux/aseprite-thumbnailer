@@ -9,11 +9,11 @@ if [ $# -ge 2 -a $# -lt 4 ]; then
   mkdir -p /tmp/Aseprite
   filename=${1//\//.}$RANDOM
   if [ $# -eq 2 ]; then
-    aseprite -b --frame-range "0,0" $1 --sheet /tmp/Aseprite/$filename.png
+    aseprite -b --frame-range "0,0" "$1" --sheet "/tmp/Aseprite/$filename.png"
   elif [ $# -eq 3 ]; then
-    aseprite -b --frame-range "0,0" $1 --shrink-to "$3,$3" --sheet /tmp/Aseprite/$filename.png
+    aseprite -b --frame-range "0,0" "$1" --shrink-to "$3,$3" --sheet "/tmp/Aseprite/$filename.png"
   fi
-  mkdir -p $(dirname "$2"); mv /tmp/Aseprite/$filename.png $2;
+  mkdir -p "$(dirname "$2")"; mv "/tmp/Aseprite/$filename.png" "$2";
 else
   echo "Parameters for aseprite thumbnailer are: inputfile outputfile [size]"
 fi
