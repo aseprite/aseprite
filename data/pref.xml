@@ -97,6 +97,7 @@
       <value id="RIGHT_DIAG" value="4" />
       <value id="LEFT_DIAG" value="8" />
       <value id="BOTH_DIAG" value="12" />
+      <value id="POINT" value="16" />
       <value id="ALL" value="15" />
     </enum>
     <enum id="PaintingCursorType">
