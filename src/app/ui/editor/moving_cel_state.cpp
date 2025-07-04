@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -247,14 +247,10 @@ void MovingCelState::onCommitMouseMove(Editor* editor, const gfx::PointF& newCur
       m_celOffset = newCursorPos - m_cursorStart;
       if (int(editor->getCustomizationDelegate()->getPressedKeyAction(
                 KeyContext::TranslatingSelection) &
-              KeyAction::LockAxis)) {
-        if (ABS(m_celOffset.x) < ABS(m_celOffset.y)) {
-          m_celOffset.x = 0;
-        }
-        else {
-          m_celOffset.y = 0;
-        }
-      }
+              KeyAction::LockAxis))
+        app::lockAxis(m_lockedAxis, m_celOffset);
+      else
+        m_lockedAxis = NONE;
       if (!m_moved && intCelOffset() != gfx::Point(0, 0))
         m_moved = true;
       break;
