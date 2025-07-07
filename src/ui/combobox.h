@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -38,6 +38,8 @@ public:
 
   Items::iterator begin() { return m_items.begin(); }
   Items::iterator end() { return m_items.end(); }
+  bool empty() const { return m_items.empty(); }
+  const Items& items() { return m_items; }
 
   void setEditable(bool state);
   void setClickOpen(bool state);

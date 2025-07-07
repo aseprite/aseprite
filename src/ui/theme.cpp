@@ -515,37 +515,39 @@ void Theme::paintLayer(Graphics* g,
           if (!textBlob || style->font() != nullptr)
             textBlob = text::TextBlob::MakeWithShaper(m_fontMgr, g->font(), text);
 
-          const gfx::RectF blobSize = textBlob->bounds();
-          const gfx::Border padding = style->padding();
-          gfx::PointF pt;
+          if (textBlob) {
+            const gfx::RectF blobSize = textBlob->bounds();
+            const gfx::Border padding = style->padding();
+            gfx::PointF pt;
 
-          if (layer.align() & LEFT)
-            pt.x = rc.x + padding.left();
-          else if (layer.align() & RIGHT)
-            pt.x = rc.x + rc.w - blobSize.w - padding.right();
-          else
-            pt.x = guiscaled_center(rc.x + padding.left(), rc.w - padding.width(), blobSize.w);
+            if (layer.align() & LEFT)
+              pt.x = rc.x + padding.left();
+            else if (layer.align() & RIGHT)
+              pt.x = rc.x + rc.w - blobSize.w - padding.right();
+            else
+              pt.x = guiscaled_center(rc.x + padding.left(), rc.w - padding.width(), blobSize.w);
 
-          if (layer.align() & TOP)
-            pt.y = rc.y + padding.top();
-          else if (layer.align() & BOTTOM)
-            pt.y = rc.y + rc.h - blobSize.h - padding.bottom();
-          else
-            pt.y = baseline - textBlob->baseline();
+            if (layer.align() & TOP)
+              pt.y = rc.y + padding.top();
+            else if (layer.align() & BOTTOM)
+              pt.y = rc.y + rc.h - blobSize.h - padding.bottom();
+            else
+              pt.y = baseline - textBlob->baseline();
 
-          pt += layer.offset();
+            pt += layer.offset();
 
-          Paint paint;
-          if (gfx::geta(bgColor) > 0) { // Paint background
-            paint.color(bgColor);
-            paint.style(os::Paint::Fill);
-            g->drawRect(gfx::RectF(textBlob->bounds()).offset(pt), paint);
+            Paint paint;
+            if (gfx::geta(bgColor) > 0) { // Paint background
+              paint.color(bgColor);
+              paint.style(os::Paint::Fill);
+              g->drawRect(gfx::RectF(textBlob->bounds()).offset(pt), paint);
+            }
+            paint.color(layer.color());
+            g->drawTextBlob(textBlob, gfx::PointF(pt), paint);
+
+            if (style->mnemonics() && mnemonic != 0)
+              drawMnemonicUnderline(g, text, textBlob, pt, mnemonic, paint);
           }
-          paint.color(layer.color());
-          g->drawTextBlob(textBlob, gfx::PointF(pt), paint);
-
-          if (style->mnemonics() && mnemonic != 0)
-            drawMnemonicUnderline(g, text, textBlob, pt, mnemonic, paint);
         }
 
         if (style->font())

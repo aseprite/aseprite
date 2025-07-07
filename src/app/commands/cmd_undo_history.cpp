@@ -21,6 +21,7 @@
 #include "app/doc_undo.h"
 #include "app/doc_undo_observer.h"
 #include "app/docs_observer.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/site.h"
@@ -292,7 +293,7 @@ public:
                    base::get_pretty_memory_size(static_cast<Cmd*>(state->cmd())->memSize())
 #endif
                  :
-                 std::string("Initial State"));
+                 Strings::undo_history_initial_state());
 
       if ((g->getClipBounds() & itemBounds).isEmpty())
         return;

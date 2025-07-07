@@ -6,13 +6,7 @@
   <hbox>
     <vbox>
       <separator cell_hspan="2" text="@.position" left="true" horizontal="true" />
-      <hbox>
-        <buttonset columns="2" id="position">
-          <item text="@.left" />
-          <item text="@.right" />
-          <item text="@.bottom" hspan="2" />
-        </buttonset>
-      </hbox>
+      <button id="layout" icon="icon_layout" />
     </vbox>
     <vbox>
       <separator text="@.frame_header" left="true" horizontal="true" />
