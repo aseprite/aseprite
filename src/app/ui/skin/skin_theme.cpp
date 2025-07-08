@@ -1483,6 +1483,8 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
 
   // Draw caret at the end of the text
   if (!delegate.caretDrawn()) {
+    bounds.x += delegate.textBounds().w;
+
     gfx::Rect charBounds(bounds.x + widget->bounds().x,
                          bounds.y + widget->bounds().y,
                          0,
