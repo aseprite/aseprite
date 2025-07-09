@@ -54,6 +54,7 @@ public:
   double zoom() const { return m_zoom; }
   void setZoom(const double zoom);
   void animateToZoom(const double zoom);
+  void setShowHidden(const bool show);
 
   obs::signal<void()> FileSelected;
   obs::signal<void()> FileAccepted;
@@ -137,6 +138,7 @@ private:
   double m_toZoom;
 
   int m_itemsPerRow;
+  bool m_showHidden;
 };
 
 } // namespace app
