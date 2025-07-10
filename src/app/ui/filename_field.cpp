@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -24,6 +24,11 @@ namespace app {
 
 using namespace ui;
 
+FilenameField::FilenameButton::FilenameButton(const std::string& text) : ButtonSet(1)
+{
+  addItem(text);
+}
+
 FilenameField::FilenameField(const Type type, const std::string& pathAndFilename)
   : m_entry(type == EntryAndButton ? new ui::Entry(1024, "") : nullptr)
   , m_button(type == EntryAndButton ? Strings::select_file_browse() : Strings::select_file_text())
@@ -46,7 +51,10 @@ FilenameField::FilenameField(const Type type, const std::string& pathAndFilename
   if (m_entry)
     m_entry->Change.connect([this] { setFilename(updatedFilename()); });
 
-  m_button.Click.connect([this] { onBrowse(); });
+  m_button.ItemChange.connect([this](ButtonSet::Item* item) {
+    m_button.setSelectedItem(nullptr);
+    onBrowse();
+  });
   initTheme();
 
   m_editFullPathChangeConn = Preferences::instance().general.editFullPath.AfterChange.connect(
@@ -94,7 +102,6 @@ void FilenameField::onSetEditFullPath()
 void FilenameField::onBrowse()
 {
   const gfx::Rect bounds = m_button.bounds();
-  m_button.setSelected(false);
 
   ui::Menu menu;
   ui::MenuItem choose(Strings::select_file_choose());
@@ -164,11 +171,6 @@ void FilenameField::onInitTheme(ui::InitThemeEvent& ev)
 {
   HBox::onInitTheme(ev);
   setChildSpacing(0);
-
-  auto theme = skin::SkinTheme::get(this);
-  ui::Style* style = theme->styles.miniButton();
-  if (style)
-    m_button.setStyle(style);
 }
 
 void FilenameField::onUpdateText()
@@ -181,9 +183,9 @@ void FilenameField::updateWidgets()
   if (m_entry)
     m_entry->setText(displayedFilename());
   else if (m_file.empty())
-    m_button.setText(Strings::select_file_text());
+    m_button.getItem(0)->setText(Strings::select_file_text());
   else
-    m_button.setText(displayedFilename());
+    m_button.getItem(0)->setText(displayedFilename());
 
   Change();
 }
