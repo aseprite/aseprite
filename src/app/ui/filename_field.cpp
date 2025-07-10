@@ -10,8 +10,10 @@
 
 #include "app/ui/filename_field.h"
 
+#include "app/app.h"
 #include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
+#include "app/recent_files.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/fs.h"
 #include "ui/box.h"
@@ -114,6 +116,11 @@ void FilenameField::onBrowse()
   menu.addChild(&relative);
   menu.addChild(&absolute);
 
+  if (auto* recent = App::instance()->recentFiles()) {
+    addFoldersToMenu(&menu, recent->pinnedFolders(), Strings::file_selector_pinned_folders());
+    addFoldersToMenu(&menu, recent->recentFolders(), Strings::file_selector_recent_folders());
+  }
+
   choose.Click.connect([this] {
     std::string fn = SelectOutputFile();
     if (!fn.empty()) {
@@ -125,6 +132,21 @@ void FilenameField::onBrowse()
   absolute.Click.connect([this] { setEditFullPath(true); });
 
   menu.showPopup(gfx::Point(bounds.x, bounds.y2()), display());
+}
+
+void FilenameField::addFoldersToMenu(ui::Menu* menu,
+                                     const base::paths& folders,
+                                     const std::string& separatorTitle)
+{
+  if (folders.empty())
+    return;
+
+  menu->addChild(new ui::Separator(separatorTitle, ui::HORIZONTAL));
+  for (const std::string& folder : folders) {
+    MenuItem* folderItem = new MenuItem(folder);
+    folderItem->Click.connect([this, folder] { setFilename(base::join_path(folder, m_file)); });
+    menu->addChild(folderItem);
+  }
 }
 
 void FilenameField::setFilename(const std::string& pathAndFilename)

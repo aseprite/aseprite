@@ -9,12 +9,17 @@
 #pragma once
 
 #include "app/ui/button_set.h"
+#include "base/paths.h"
 #include "obs/connection.h"
 #include "obs/signal.h"
 #include "ui/box.h"
 #include "ui/entry.h"
 
 #include <string>
+
+namespace ui {
+class Menu;
+}
 
 namespace app {
 
@@ -53,6 +58,9 @@ private:
   void updateWidgets();
   void onBrowse();
   std::string updatedFilename() const;
+  void addFoldersToMenu(ui::Menu* menu,
+                        const base::paths& folders,
+                        const std::string& separatorTitle);
 
   std::string m_path;
   std::string m_pathBase;
