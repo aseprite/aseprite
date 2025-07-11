@@ -356,6 +356,7 @@
     <section id="file_selector">
       <option id="current_folder" type="std::string" default="&quot;&lt;empty&gt;&quot;" />
       <option id="zoom" type="double" default="1.0" />
+      <option id="show_hidden" type="bool" default="false" />
     </section>
     <section id="text_tool">
       <option id="font_face" type="std::string" />

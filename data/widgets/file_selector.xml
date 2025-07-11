@@ -23,6 +23,7 @@
       <combobox id="location" expansive="true" />
       <button text="" id="refresh_button" style="refresh_button"
                 tooltip="@.refresh_button_tooltip" tooltip_dir="bottom" />
+      <check id="show_hidden_check" text="@.show_hidden" />
     </box>
     <vbox id="file_view_placeholder" expansive="true" />
     <grid columns="2">
