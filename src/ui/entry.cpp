@@ -128,6 +128,15 @@ int Entry::lastCaretPos() const
   return int(m_boxes.size() - 1);
 }
 
+gfx::Point Entry::caretPosOnScreen() const
+{
+  const gfx::Point caretPos = getCharBoxBounds(m_caret).point2();
+  const os::Window* nativeWindow = display()->nativeWindow();
+  const gfx::Point pos = nativeWindow->pointToScreen(caretPos + bounds().origin());
+
+  return pos;
+}
+
 void Entry::setCaretPos(const int pos)
 {
   gfx::Size caretSize = theme()->getEntryCaretSize(this);
@@ -159,6 +168,8 @@ void Entry::setCaretPos(const int pos)
   if (shouldStartTimer(hasFocus()))
     startTimer();
   m_state = true;
+
+  os::System::instance()->setTextInput(true, caretPosOnScreen());
 
   invalidate();
 }
@@ -251,7 +262,7 @@ gfx::Rect Entry::getEntryTextBounds() const
   return onGetEntryTextBounds();
 }
 
-gfx::Rect Entry::getCharBoxBounds(const int i)
+gfx::Rect Entry::getCharBoxBounds(const int i) const
 {
   ASSERT(i >= 0 && i < int(m_boxes.size()));
   if (i >= 0 && i < int(m_boxes.size()))
@@ -288,8 +299,9 @@ bool Entry::onProcessMessage(Message* msg)
       }
 
       // Start processing dead keys
-      if (m_translate_dead_keys)
-        os::System::instance()->setTextInput(true);
+      if (m_translate_dead_keys) {
+        os::System::instance()->setTextInput(true, caretPosOnScreen());
+      }
       break;
 
     case kFocusLeaveMessage:
