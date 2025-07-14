@@ -106,7 +106,6 @@ void Box::onResize(ResizeEvent& ev)
         continue;                                                                                  \
                                                                                                    \
       int size = 0;                                                                                \
-      int sizeDiff = 0;                                                                            \
                                                                                                    \
       if (align() & HOMOGENEOUS) {                                                                 \
         if (i < visibleChildren - 1)                                                               \
