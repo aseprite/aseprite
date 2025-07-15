@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -36,6 +36,7 @@ protected:
 
   // New events
   virtual void onValueChange();
+  virtual bool onAcceptUnicodeChar(int unicodeChar);
 
   int m_min;
   int m_max;

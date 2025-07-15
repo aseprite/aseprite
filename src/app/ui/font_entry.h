@@ -14,6 +14,9 @@
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/combobox.h"
+#include "ui/int_entry.h"
+#include "ui/paint.h"
+#include "ui/tooltips.h"
 
 #include <string>
 
@@ -30,6 +33,7 @@ public:
     Flags,
     Hinting,
     Popup,
+    Paint,
   };
 
   FontEntry();
@@ -38,10 +42,13 @@ public:
   FontInfo info() { return m_info; }
   void setInfo(const FontInfo& info, From from);
 
+  ui::Paint paint();
+
   obs::signal<void(const FontInfo&, From)> FontChange;
 
 private:
   void onStyleItemClick(ButtonSet::Item* item);
+  void onStrokeChange();
 
   class FontFace : public SearchEntry {
   public:
@@ -73,13 +80,40 @@ private:
 
   class FontStyle : public ButtonSet {
   public:
-    FontStyle();
+    FontStyle(ui::TooltipManager* tooltips);
   };
 
+  class FontStroke : public HBox {
+  public:
+    FontStroke(ui::TooltipManager* tooltips);
+    bool fill() const;
+    float stroke() const;
+    obs::signal<void()> Change;
+
+  private:
+    class WidthEntry : public ui::IntEntry,
+                       public ui::SliderDelegate {
+    public:
+      WidthEntry();
+      obs::signal<void()> ValueChange;
+
+    private:
+      void onValueChange() override;
+      bool onAcceptUnicodeChar(int unicodeChar) override;
+      // SliderDelegate impl
+      std::string onGetTextFromValue(int value) override;
+      int onGetValueFromText(const std::string& text) override;
+    };
+    ButtonSet m_fill;
+    WidthEntry m_stroke;
+  };
+
+  ui::TooltipManager m_tooltips;
   FontInfo m_info;
   FontFace m_face;
   FontSize m_size;
   FontStyle m_style;
+  FontStroke m_stroke;
   bool m_lockFace = false;
 };
 

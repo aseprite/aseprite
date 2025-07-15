@@ -2559,6 +2559,11 @@ FontInfo ContextBar::fontInfo() const
   return m_fontSelector->info();
 }
 
+FontEntry* ContextBar::fontEntry()
+{
+  return m_fontSelector;
+}
+
 render::DitheringMatrix ContextBar::ditheringMatrix()
 {
   return m_ditheringSelector->ditheringMatrix();

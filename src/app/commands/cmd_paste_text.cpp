@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +10,7 @@
 #endif
 
 #include "app/app.h"
+#include "app/color_utils.h"
 #include "app/commands/command.h"
 #include "app/console.h"
 #include "app/context.h"
@@ -88,10 +89,10 @@ void PasteTextCommand::onExecute(Context* ctx)
     std::string text = window.userText()->text();
     app::Color color = window.fontColor()->getColor();
 
-    doc::ImageRef image = render_text(
-      fontInfo,
-      text,
-      gfx::rgba(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()));
+    ui::Paint paint = window.fontFace()->paint();
+    paint.color(color_utils::color_for_ui(color));
+
+    doc::ImageRef image = render_text(fontInfo, text, paint);
     if (image) {
       Sprite* sprite = editor->sprite();
       if (image->pixelFormat() != sprite->pixelFormat()) {

@@ -12,10 +12,12 @@
 
 #include "app/app.h"
 #include "app/console.h"
+#include "app/i18n/strings.h"
 #include "app/recent_files.h"
 #include "app/ui/font_popup.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/contains.h"
+#include "base/convert_to.h"
 #include "base/scoped_value.h"
 #include "fmt/format.h"
 #include "ui/display.h"
@@ -262,22 +264,88 @@ void FontEntry::FontSize::onEntryChange()
   Change();
 }
 
-FontEntry::FontStyle::FontStyle() : ButtonSet(3, true)
+FontEntry::FontStyle::FontStyle(ui::TooltipManager* tooltips) : ButtonSet(3, true)
 {
   addItem("B");
   addItem("I");
   addItem("...");
   setMultiMode(MultiMode::Set);
+
+  tooltips->addTooltipFor(getItem(0), Strings::text_tool_bold(), BOTTOM);
+  tooltips->addTooltipFor(getItem(1), Strings::text_tool_italic(), BOTTOM);
+  tooltips->addTooltipFor(getItem(2), Strings::text_tool_more_options(), BOTTOM);
 }
 
-FontEntry::FontEntry()
+FontEntry::FontStroke::FontStroke(ui::TooltipManager* tooltips) : m_fill(2)
+{
+  auto* theme = skin::SkinTheme::get(this);
+
+  m_fill.addItem(theme->parts.toolFilledRectangle(), theme->styles.contextBarButton());
+  m_fill.addItem(theme->parts.toolRectangle(), theme->styles.contextBarButton());
+  m_fill.setSelectedItem(0);
+  m_fill.ItemChange.connect([this] { Change(); });
+
+  m_stroke.setText("0");
+  m_stroke.setSuffix("pt");
+  m_stroke.ValueChange.connect([this] { Change(); });
+
+  addChild(&m_fill);
+  addChild(&m_stroke);
+
+  tooltips->addTooltipFor(m_fill.getItem(0), Strings::shape_fill(), BOTTOM);
+  tooltips->addTooltipFor(m_fill.getItem(1), Strings::shape_stroke(), BOTTOM);
+  tooltips->addTooltipFor(&m_stroke, Strings::shape_stroke_width(), BOTTOM);
+}
+
+bool FontEntry::FontStroke::fill() const
+{
+  return const_cast<FontStroke*>(this)->m_fill.getItem(0)->isSelected();
+}
+
+float FontEntry::FontStroke::stroke() const
+{
+  return m_stroke.textDouble();
+}
+
+FontEntry::FontStroke::WidthEntry::WidthEntry() : ui::IntEntry(0, 100, this)
+{
+}
+
+void FontEntry::FontStroke::WidthEntry::onValueChange()
+{
+  ui::IntEntry::onValueChange();
+  ValueChange();
+}
+
+bool FontEntry::FontStroke::WidthEntry::onAcceptUnicodeChar(int unicodeChar)
+{
+  return (IntEntry::onAcceptUnicodeChar(unicodeChar) || unicodeChar == '.');
+}
+
+std::string FontEntry::FontStroke::WidthEntry::onGetTextFromValue(int value)
+{
+  return fmt::format("{:.1f}", value / 10.0);
+}
+
+int FontEntry::FontStroke::WidthEntry::onGetValueFromText(const std::string& text)
+{
+  return int(10.0 * base::convert_to<double>(text));
+}
+
+FontEntry::FontEntry() : m_style(&m_tooltips), m_stroke(&m_tooltips)
 {
   m_face.setExpansive(true);
   m_size.setExpansive(false);
   m_style.setExpansive(false);
+
+  addChild(&m_tooltips);
   addChild(&m_face);
   addChild(&m_size);
   addChild(&m_style);
+  addChild(&m_stroke);
+
+  m_tooltips.addTooltipFor(&m_face, Strings::text_tool_font_family(), BOTTOM);
+  m_tooltips.addTooltipFor(m_size.getEntryWidget(), Strings::text_tool_font_size(), BOTTOM);
 
   m_face.setMinSize(gfx::Size(128 * guiscale(), 0));
 
@@ -299,6 +367,7 @@ FontEntry::FontEntry()
   });
 
   m_style.ItemChange.connect(&FontEntry::onStyleItemClick, this);
+  m_stroke.Change.connect(&FontEntry::onStrokeChange, this);
 }
 
 // Defined here as FontPopup type is not fully defined in the header
@@ -325,6 +394,28 @@ void FontEntry::setInfo(const FontInfo& info, const From fromField)
   }
 
   FontChange(m_info, fromField);
+}
+
+ui::Paint FontEntry::paint()
+{
+  ui::Paint paint;
+  const float stroke = m_stroke.stroke();
+
+  ui::Paint::Style style = ui::Paint::StrokeAndFill;
+  if (m_stroke.fill()) {
+    if (stroke <= 0.0f)
+      style = ui::Paint::Fill;
+    else
+      paint.strokeWidth(stroke);
+  }
+  else {
+    style = ui::Paint::Stroke;
+    paint.strokeWidth(stroke);
+  }
+
+  paint.style(style);
+
+  return paint;
 }
 
 void FontEntry::onStyleItemClick(ButtonSet::Item* item)
@@ -402,6 +493,11 @@ void FontEntry::onStyleItemClick(ButtonSet::Item* item)
       break;
     }
   }
+}
+
+void FontEntry::onStrokeChange()
+{
+  FontChange(m_info, From::Paint);
 }
 
 } // namespace app
