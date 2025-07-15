@@ -909,6 +909,20 @@ int Sprite_set_filename(lua_State* L)
   return 0;
 }
 
+int Sprite_set_isModified(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+  const bool isModified = lua_toboolean(L, 2);
+  Doc* doc = static_cast<Doc*>(sprite->document());
+  if (doc && !isModified)
+    doc->markAsSaved();
+  else // TODO: Allow scripts to unmark modified? Allow this only from onload/onsave functions
+       // somehow?
+    return luaL_error(L, "isModified can only be set to false from scripts");
+
+  return 0;
+}
+
 int Sprite_set_width(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -1069,7 +1083,7 @@ const luaL_Reg Sprite_methods[] = {
 const Property Sprite_properties[] = {
   { "id",                   Sprite_get_id,                   nullptr                         },
   { "filename",             Sprite_get_filename,             Sprite_set_filename             },
-  { "isModified",           Sprite_get_isModified,           nullptr                         },
+  { "isModified",           Sprite_get_isModified,           Sprite_set_isModified           },
   { "width",                Sprite_get_width,                Sprite_set_width                },
   { "height",               Sprite_get_height,               Sprite_set_height               },
   { "colorMode",            Sprite_get_colorMode,            nullptr                         },
