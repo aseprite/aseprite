@@ -332,7 +332,9 @@ int FontEntry::FontStroke::WidthEntry::onGetValueFromText(const std::string& tex
   return int(10.0 * base::convert_to<double>(text));
 }
 
-FontEntry::FontEntry() : m_style(&m_tooltips), m_stroke(&m_tooltips)
+FontEntry::FontEntry(const bool withStrokeAndFill)
+  : m_style(&m_tooltips)
+  , m_stroke(withStrokeAndFill ? std::make_unique<FontStroke>(&m_tooltips) : nullptr)
 {
   m_face.setExpansive(true);
   m_size.setExpansive(false);
@@ -342,7 +344,8 @@ FontEntry::FontEntry() : m_style(&m_tooltips), m_stroke(&m_tooltips)
   addChild(&m_face);
   addChild(&m_size);
   addChild(&m_style);
-  addChild(&m_stroke);
+  if (m_stroke)
+    addChild(m_stroke.get());
 
   m_tooltips.addTooltipFor(&m_face, Strings::text_tool_font_family(), BOTTOM);
   m_tooltips.addTooltipFor(m_size.getEntryWidget(), Strings::text_tool_font_size(), BOTTOM);
@@ -367,7 +370,8 @@ FontEntry::FontEntry() : m_style(&m_tooltips), m_stroke(&m_tooltips)
   });
 
   m_style.ItemChange.connect(&FontEntry::onStyleItemClick, this);
-  m_stroke.Change.connect(&FontEntry::onStrokeChange, this);
+  if (m_stroke)
+    m_stroke->Change.connect(&FontEntry::onStrokeChange, this);
 }
 
 // Defined here as FontPopup type is not fully defined in the header
@@ -399,22 +403,23 @@ void FontEntry::setInfo(const FontInfo& info, const From fromField)
 ui::Paint FontEntry::paint()
 {
   ui::Paint paint;
-  const float stroke = m_stroke.stroke();
+  ui::Paint::Style style = ui::Paint::Fill;
 
-  ui::Paint::Style style = ui::Paint::StrokeAndFill;
-  if (m_stroke.fill()) {
-    if (stroke <= 0.0f)
-      style = ui::Paint::Fill;
-    else
+  if (m_stroke) {
+    const float stroke = m_stroke->stroke();
+    if (m_stroke->fill()) {
+      if (stroke > 0.0f) {
+        style = ui::Paint::StrokeAndFill;
+        paint.strokeWidth(stroke);
+      }
+    }
+    else {
+      style = ui::Paint::Stroke;
       paint.strokeWidth(stroke);
-  }
-  else {
-    style = ui::Paint::Stroke;
-    paint.strokeWidth(stroke);
+    }
   }
 
   paint.style(style);
-
   return paint;
 }
 

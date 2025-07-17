@@ -532,7 +532,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
   }
   else if (elem_name == "font") {
     if (!widget)
-      widget = new FontEntry;
+      widget = new FontEntry(false);
   }
 
   // Was the widget created?

@@ -18,6 +18,7 @@
 #include "ui/paint.h"
 #include "ui/tooltips.h"
 
+#include <memory>
 #include <string>
 
 namespace app {
@@ -36,7 +37,7 @@ public:
     Paint,
   };
 
-  FontEntry();
+  FontEntry(bool withStrokeAndFill);
   ~FontEntry();
 
   FontInfo info() { return m_info; }
@@ -113,7 +114,7 @@ private:
   FontFace m_face;
   FontSize m_size;
   FontStyle m_style;
-  FontStroke m_stroke;
+  std::unique_ptr<FontStroke> m_stroke;
   bool m_lockFace = false;
 };
 
