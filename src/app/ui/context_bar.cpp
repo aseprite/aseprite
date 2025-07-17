@@ -1857,7 +1857,7 @@ private:
 
 class ContextBar::FontSelector : public FontEntry {
 public:
-  FontSelector(ContextBar* contextBar)
+  FontSelector(ContextBar* contextBar) : FontEntry(true) // With stroke and fill options
   {
     // Load the font from the preferences
     setInfo(FontInfo::getFromPreferences(), FontEntry::From::Init);
