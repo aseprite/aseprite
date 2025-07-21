@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -457,6 +457,8 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
       // Here we re-use the cached surface
       if (!cached && m_uiLayer->surface()) {
+        m_uiLayer->surface()->clear();
+
         gfx::Rect layerBounds = m_uiLayer->surface()->bounds();
         ui::Graphics g(display, m_uiLayer->surface(), 0, 0);
 
