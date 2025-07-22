@@ -428,8 +428,8 @@ bool MovingSliceState::onMouseMove(Editor* editor, MouseMessage* msg)
   if (editor->slicesTransforms())
     drawExtraCel();
 
-  // Redraw the editor.
-  editor->invalidate();
+  // Notify changes
+  m_site.document()->notifyGeneralUpdate();
 
   // Use StandbyState implementation
   return StandbyState::onMouseMove(editor, msg);
