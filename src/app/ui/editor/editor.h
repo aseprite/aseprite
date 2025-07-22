@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -457,6 +457,13 @@ private:
   EditorCustomizationDelegate* m_customizationDelegate;
 
   DocView* m_docView;
+
+  // Special flag to avoid re-entering a new state when we are leaving
+  // the current one. This avoids an infinite onLeaveState() recursion
+  // in some special cases when an extension (third-party code)
+  // creates a new sprite change in the same sprite change scripting
+  // event.
+  bool m_leavingState = false;
 
   // Last known mouse position received by this editor when the
   // mouse button was pressed. Used for auto-scrolling. To get the
