@@ -10,6 +10,7 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd/add_tileset.h"
 #include "app/cmd/clear_mask.h"
 #include "app/cmd/deselect_mask.h"
 #include "app/cmd/set_mask.h"
@@ -584,7 +585,10 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
         // TODO add post-command parameters (issue #2324)
 
         // Change to MovingTilemapState
-        editor->pasteImage(m_data->tilemap.get(), m_data->mask.get(), position);
+        editor->pasteImage(m_data->tilemap.get(),
+                           m_data->mask.get(),
+                           position,
+                           m_data->tileset.get());
       }
       else {
         // TODO non-interactive version (for scripts)
@@ -763,7 +767,14 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
               afterThis = dstSpr->root()->lastLayer();
 
             Layer* newLayer = nullptr;
-            if (srcLayer->isImage())
+            if (srcLayer->isTilemap()) {
+              Tileset* srcTileset = static_cast<LayerTilemap*>(srcLayer)->tileset();
+              Tileset* tilesetCopy = Tileset::MakeCopyCopyingImagesForSprite(srcTileset, dstSpr);
+              const tileset_index tsi = dstSpr->tilesets()->size();
+              tx(new cmd::AddTileset(dstSpr, tilesetCopy));
+              newLayer = new LayerTilemap(dstSpr, tsi);
+            }
+            else if (srcLayer->isImage())
               newLayer = new LayerImage(dstSpr);
             else if (srcLayer->isGroup())
               newLayer = new LayerGroup(dstSpr);

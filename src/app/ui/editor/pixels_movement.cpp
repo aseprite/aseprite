@@ -12,6 +12,7 @@
 #include "app/ui/editor/pixels_movement.h"
 
 #include "app/app.h"
+#include "app/cmd/add_tile.h"
 #include "app/cmd/clear_mask.h"
 #include "app/cmd/deselect_mask.h"
 #include "app/cmd/set_mask.h"
@@ -1354,6 +1355,39 @@ void PixelsMovement::drawTransformedTilemap(const Transformation& transformation
       draw_row(y, v, boxh);
   }
   draw_row(dst->height() - 1, src->height() - 1, 1);
+}
+
+void PixelsMovement::remapTilesForPaste(const Tileset* srcTileset)
+{
+  // Check that tile size matches before doing anything
+  LayerTilemap* dstLayer = static_cast<LayerTilemap*>(m_site.layer());
+  Tileset* dstTileset = dstLayer->tileset();
+  const doc::Grid& srcGrid = srcTileset->grid();
+  const doc::Grid& dstGrid = dstTileset->grid();
+  if (srcGrid.tileSize() != dstGrid.tileSize())
+    throw base::Exception("Tile size does not match.");
+
+  // Map source to destination
+  tile_index dstSz = dstTileset->size();
+  for (int y = 0; y < m_originalImage->height(); ++y) {
+    for (int x = 0; x < m_originalImage->width(); ++x) {
+      // Blank tile can be skipped
+      const color_t srcTi = m_originalImage->getPixel(x, y);
+      if (!srcTi)
+        continue;
+
+      // Add tile to destination if missing
+      tile_index dstTi;
+      const ImageRef t = srcTileset->get(srcTi);
+      if (!dstTileset->findTileIndex(t, dstTi)) {
+        m_tx(new cmd::AddTile(dstTileset, t, srcTileset->getTileData(srcTi)));
+        dstTi = dstSz++;
+      }
+
+      // Update tile index in image
+      m_originalImage->putPixel(x, y, dstTi);
+    }
+  }
 }
 
 void PixelsMovement::onPivotChange()
