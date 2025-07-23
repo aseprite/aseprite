@@ -64,6 +64,7 @@
 #include "doc/tag.h"
 #include "doc/tileset.h"
 #include "doc/tilesets.h"
+#include "undo/undo_state.h"
 
 #include <algorithm>
 
@@ -1029,6 +1030,42 @@ int Sprite_set_useLayerUuids(lua_State* L)
   return 0;
 }
 
+int Sprite_get_undoHistory(lua_State* L)
+{
+  const auto* sprite = get_docobj<Sprite>(L, 1);
+  const auto* doc = static_cast<Doc*>(sprite->document());
+  const auto* history = doc->undoHistory();
+
+  if (!history) {
+    lua_pushnil(L);
+    return 1;
+  }
+
+  const undo::UndoState* currentState = history->currentState();
+  const undo::UndoState* s = history->firstState();
+  const bool canRedo = history->canRedo();
+  bool pastCurrent = !currentState && canRedo;
+
+  int undoSteps = 0;
+  int redoSteps = 0;
+  while (s) {
+    if (pastCurrent && canRedo)
+      redoSteps++;
+    else if (currentState || !canRedo)
+      undoSteps++;
+
+    if (s == currentState || !currentState)
+      pastCurrent = true;
+
+    s = s->next();
+  }
+
+  lua_newtable(L);
+  setfield_integer(L, "undoSteps", undoSteps);
+  setfield_integer(L, "redoSteps", redoSteps);
+  return 1;
+}
+
 const luaL_Reg Sprite_methods[] = {
   { "__eq",              Sprite_eq                },
   { "resize",            Sprite_resize            },
@@ -1094,6 +1131,7 @@ const Property Sprite_properties[] = {
   { "events",               Sprite_get_events,               nullptr                         },
   { "tileManagementPlugin", Sprite_get_tileManagementPlugin, Sprite_set_tileManagementPlugin },
   { "useLayerUuids",        Sprite_get_useLayerUuids,        Sprite_set_useLayerUuids        },
+  { "undoHistory",          Sprite_get_undoHistory,          nullptr                         },
   { nullptr,                nullptr,                         nullptr                         }
 };
 
