@@ -168,6 +168,21 @@ SelectLayerBoundariesOp get_select_layer_in_canvas_op(ui::Message* msg)
     return SelectLayerBoundariesOp::REPLACE;
 }
 
+bool get_layer_index(LayerGroup* parent, const Layer* layer, layer_t& index)
+{
+  for (Layer* child : parent->layers()) {
+    if (child->isGroup() && get_layer_index(static_cast<LayerGroup*>(child), layer, index)) {
+      return index;
+    }
+
+    if (child == layer) {
+      return true;
+    }
+    index++;
+  }
+  return false;
+}
+
 } // anonymous namespace
 
 Timeline::Hit::Hit(int part, layer_t layer, col_t frame, ObjectId tag, int band)
@@ -4055,6 +4070,12 @@ layer_t Timeline::getLayerIndex(const Layer* layer) const
   return -1;
 }
 
+layer_t Timeline::getLayerIndexFromSprite(const Layer* layer) const
+{
+  layer_t index = 0;
+  return get_layer_index(m_sprite->root(), layer, index) ? index : -1;
+}
+
 bool Timeline::isLayerActive(const layer_t layerIndex) const
 {
   Layer* layer = getLayer(layerIndex);
@@ -4576,7 +4597,7 @@ void Timeline::onDrop(ui::DragEvent& e)
 
   // Determine at which frame and layer the content was dropped on.
   frame_t frame = m_frame;
-  layer_t layerIndex = getLayerIndex(m_layer);
+  layer_t layerIndex = getLayerIndexFromSprite(m_layer);
   InsertionPoint insert = InsertionPoint::BeforeLayer;
   DroppedOn droppedOn = DroppedOn::Unspecified;
   TRACE("m_dropRange.type() %d\n", m_dropRange.type());
@@ -4602,7 +4623,7 @@ void Timeline::onDrop(ui::DragEvent& e)
       break;
     case Range::kLayers:
       droppedOn = DroppedOn::Layer;
-      if (m_dropTarget.vhit != DropTarget::VeryBottom) {
+      if (m_dropTarget.vhit != DropTarget::VeryBottom && !m_dropRange.selectedLayers().empty()) {
         auto* selectedLayer = *m_dropRange.selectedLayers().begin();
         layerIndex = getLayerIndex(selectedLayer);
       }
