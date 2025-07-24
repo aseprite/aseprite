@@ -1,11 +1,10 @@
 // Desktop Integration
-// Copyright (c) 2022  Igara Studio S.A.
+// Copyright (c) 2022-2025  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#include "thumbnail.h"
-
+#include "app/file_system.h"
 #include "dio/decode_delegate.h"
 #include "dio/decode_file.h"
 #include "dio/file_interface.h"
@@ -13,8 +12,7 @@
 #include "render/render.h"
 
 #include <Cocoa/Cocoa.h>
-
-#include <algorithm>
+#include <QuickLookThumbnailing/QuickLookThumbnailing.h>
 
 namespace desktop {
 
@@ -87,7 +85,7 @@ public:
 
 } // anonymous namespace
 
-CGImageRef get_thumbnail(CFURLRef url, CFDictionaryRef options, CGSize maxSize)
+CGImageRef get_thumbnail(CFURLRef url, CGSize maxSize)
 {
   auto data = [[NSData alloc] initWithContentsOfURL:(NSURL*)url];
   if (!data)
@@ -153,3 +151,42 @@ CGImageRef get_thumbnail(CFURLRef url, CFDictionaryRef options, CGSize maxSize)
 }
 
 } // namespace desktop
+
+@interface ThumbnailProvider : QLThumbnailProvider
+@end
+
+@implementation ThumbnailProvider
+
+- (void)provideThumbnailForFileRequest:(QLFileThumbnailRequest*)request
+                     completionHandler:
+                       (void (^)(QLThumbnailReply* _Nullable, NSError* _Nullable))handler
+{
+  CFURLRef url = (__bridge CFURLRef)(request.fileURL);
+  CGSize maxSize = request.maximumSize;
+  CGImageRef cgImage = desktop::get_thumbnail(url, maxSize);
+  if (!cgImage) {
+    handler(nil, nil);
+    return;
+  }
+  CGSize imageSize = CGSizeMake(CGImageGetWidth(cgImage), CGImageGetHeight(cgImage));
+  handler([QLThumbnailReply replyWithContextSize:maxSize
+                      currentContextDrawingBlock:^BOOL {
+                        CGContextRef ctx = [[NSGraphicsContext currentContext] CGContext];
+                        CGContextSaveGState(ctx);
+                        CGFloat scale = MIN(maxSize.width / imageSize.width,
+                                            maxSize.height / imageSize.height);
+                        CGSize scaledSize = CGSizeMake(imageSize.width * scale,
+                                                       imageSize.height * scale);
+                        CGRect drawRect = CGRectMake((maxSize.width - scaledSize.width) / 2,
+                                                     (maxSize.height - scaledSize.height) / 2,
+                                                     scaledSize.width,
+                                                     scaledSize.height);
+                        CGContextDrawImage(ctx, drawRect, cgImage);
+                        CGContextRestoreGState(ctx);
+                        CGImageRelease(cgImage);
+                        return YES;
+                      }],
+          nil);
+}
+
+@end

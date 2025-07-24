@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>UTExportedTypeDeclarations</key>
+  <array>
+    <dict>
+      <key>UTTypeIdentifier</key>
+      <string>org.aseprite.Aseprite.sprite</string>
+      <key>UTTypeDescription</key>
+      <string>Aseprite Sprite</string>
+      <key>UTTypeConformsTo</key>
+      <array>
+          <string>public.image</string>
+      </array>
+      <key>UTTypeTagSpecification</key>
+      <dict>
+        <key>public.filename-extension</key>
+        <array>
+          <string>aseprite</string>
+          <string>ase</string>
+        </array>
+        <key>public.mime-type</key>
+        <string>image/aseprite</string>
+      </dict>
+    </dict>
+  </array>
+  <key>CFBundleDocumentTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleTypeExtensions</key>
+      <array>
+        <string>aseprite</string>
+      </array>
+      <key>CFBundleTypeIconFile</key>
+      <string>Document.icns</string>
+      <key>CFBundleTypeName</key>
+      <string>Aseprite Sprite</string>
+      <key>CFBundleTypeRole</key>
+      <string>Editor</string>
+      <key>LSHandlerRank</key>
+      <string>Owner</string>
+    </dict>
+    <dict>
+      <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>ase</string>
+          <string>bmp</string>
+          <string>flc</string>
+          <string>fli</string>
+          <string>gif</string>
+          <string>ico</string>
+          <string>jpeg</string>
+          <string>jpg</string>
+          <string>pcx</string>
+          <string>png</string>
+          <string>tga</string>
+        </array>
+      <key>CFBundleTypeIconFile</key>
+      <string>Document.icns</string>
+      <key>CFBundleTypeName</key>
+      <string>Aseprite Sprite</string>
+      <key>CFBundleTypeRole</key>
+      <string>Editor</string>
+    </dict>
+    <dict>
+      <key>CFBundleTypeExtensions</key>
+      <array>
+         <string>aseprite-extension</string>
+      </array>
+      <key>CFBundleTypeIconFile</key>
+      <string>Extension.icns</string>
+      <key>CFBundleTypeName</key>
+      <string>Aseprite Extension</string>
+      <key>CFBundleTypeRole</key>
+      <string>Editor</string>
+      <key>LSHandlerRank</key>
+      <string>Owner</string>
+    </dict>
+  </array>
+  <key>CFBundleName</key>
+  <string>Aseprite</string>
+  <key>CFBundleIdentifier</key>
+  <string>org.aseprite.Aseprite</string>
+  <key>BuildMachineOSBuild</key>
+  <string>24C101</string>
+  <key>CFBundleDevelopmentRegion</key>
+  <string>English</string>
+  <key>CFBundleDisplayName</key>
+  <string>Aseprite</string>
+  <key>CFBundleExecutable</key>
+  <string>aseprite</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
+  <key>CFBundleShortVersionString</key>
+  <string>$VERSION</string>
+  <key>CFBundleVersion</key>
+  <string>$VERSION</string>
+  <key>CFBundleIconFile</key>
+  <string>Aseprite.icns</string>
+  <key>LSApplicationCategoryType</key>
+  <string>public.app-category.graphics-design</string>
+  <key>NSHumanReadableCopyright</key>
+  <string>Copyright © 2001-2025, Igara Studio S.A.
+All rights reserved.</string>
+  <key>NSHighResolutionCapable</key>
+  <true/>
+  <key>NSRequiresAquaSystemAppearance</key>
+  <false/>
+  <key>CFBundleSupportedPlatforms</key>
+  <array>
+    <string>MacOSX</string>
+  </array>
+  <key>CSResourcesFileMapped</key>
+  <true/>
+  <key>LSHasPlugIns</key>
+  <true/>
+  <key>DTCompiler</key>
+  <string>com.apple.compilers.llvm.clang.1_0</string>
+  <key>LSMinimumSystemVersion</key>
+  <string>10.15</string>
+</dict>
+</plist>

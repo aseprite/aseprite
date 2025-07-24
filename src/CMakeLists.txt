@@ -86,10 +86,6 @@ if(ENABLE_STEAM)
   add_subdirectory(steam)
 endif()
 
-if(ENABLE_DESKTOP_INTEGRATION)
-  add_subdirectory(desktop)
-endif()
-
 add_subdirectory(app)
 
 ######################################################################
@@ -187,6 +183,10 @@ if(ENABLE_ASEPRITE_EXE)
   add_executable(${main_target}
     main/main.cpp
     ${main_resources})
+
+  if(ENABLE_DESKTOP_INTEGRATION)
+    add_subdirectory(desktop)
+  endif()
   if(LAF_BACKEND STREQUAL "skia")
     if(WIN32)
       set_target_properties(${main_target} PROPERTIES WIN32_EXECUTABLE true)
