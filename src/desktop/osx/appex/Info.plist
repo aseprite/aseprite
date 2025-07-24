@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+        <key>CFBundleExecutable</key>
+        <string>AsepriteThumbnailer</string>
+        <key>CFBundleIdentifier</key>
+        <string>org.aseprite.Aseprite.AsepriteThumbnailer</string>
+        <key>CFBundleName</key>
+        <string>AsepriteThumbnailer</string>
+        <key>CFBundleShortVersionString</key>
+        <string>$VERSION</string>
+        <key>CFBundleVersion</key>
+        <string>$VERSION</string>
+        <key>CFBundlePackageType</key>
+        <string>XPC!</string>
+        <key>NSExtension</key>
+        <dict>
+                <key>NSExtensionAttributes</key>
+                <dict>
+                        <key>QLSupportedContentTypes</key>
+                        <array>
+                            <string>org.aseprite.aseprite.sprite</string>
+                        </array>
+                        <key>QLThumbnailMinimumDimension</key>
+                        <integer>32</integer>
+                </dict>
+                <key>NSExtensionPointIdentifier</key>
+                <string>com.apple.quicklook.thumbnail</string>
+                <key>NSExtensionPrincipalClass</key>
+                <string>ThumbnailProvider</string>
+        </dict>
+        <key>NSHumanReadableCopyright</key>
+        <string>Copyright © 2001-2025, Igara Studio S.A.
+All rights reserved.</string>
+</dict>
+</plist>
