@@ -255,6 +255,7 @@
       <option id="one_finger_as_mouse_movement" type="bool" default="true" />
       <option id="load_wintab_driver" type="bool" default="false" />
       <option id="flash_layer" type="bool" default="false" />
+      <option id="use_selection_tool_loop" type="bool" default="false" />
       <option id="nonactive_layers_opacity" type="int" default="255" />
       <option id="nonactive_layers_opacity_preview" type="int" default="255" />
     </section>
