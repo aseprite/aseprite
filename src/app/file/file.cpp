@@ -17,6 +17,7 @@
 #include "app/context.h"
 #include "app/doc.h"
 #include "app/drm.h"
+#include "app/extensions.h"
 #include "app/file/file_data.h"
 #include "app/file/file_format.h"
 #include "app/file/file_formats_manager.h"
@@ -193,6 +194,14 @@ base::paths get_readable_extensions()
     if (format->support(FILE_SUPPORT_LOAD))
       format->getExtensions(paths);
   }
+
+#ifdef ENABLE_SCRIPTING
+  for (const auto& extension :
+       App::instance()->extensions().customFormatList(Extension::FileFormat::Load)) {
+    paths.push_back(extension);
+  }
+#endif
+
   return paths;
 }
 
@@ -204,6 +213,14 @@ base::paths get_writable_extensions(const int requiredFormatFlag)
         (requiredFormatFlag == 0 || format->support(requiredFormatFlag)))
       format->getExtensions(paths);
   }
+
+#ifdef ENABLE_SCRIPTING
+  for (const auto& extension :
+       App::instance()->extensions().customFormatList(Extension::FileFormat::Load)) {
+    paths.push_back(extension);
+  }
+#endif
+
   return paths;
 }
 
@@ -366,6 +383,7 @@ FileOp* FileOp::createLoadDocumentOperation(Context* context,
   // Get the format through the extension of the filename
   fop->m_format = FileFormatsManager::instance()->getFileFormat(dio::detect_format(filename));
   if (!fop->m_format || !fop->m_format->support(FILE_SUPPORT_LOAD)) {
+    fop->setUnknownFormatError(true);
     fop->setError("%s can't load \"%s\" file (\"%s\")\n",
                   get_app_name(),
                   filename.c_str(),
@@ -535,6 +553,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
   fop->m_format = FileFormatsManager::instance()->getFileFormat(
     dio::detect_format_by_file_extension(filename));
   if (!fop->m_format || !fop->m_format->support(FILE_SUPPORT_SAVE)) {
+    fop->setUnknownFormatError(true);
     fop->setError("%s can't save \"%s\" file (\"%s\")\n",
                   get_app_name(),
                   filename.c_str(),
@@ -1449,6 +1468,7 @@ FileOp::FileOp(FileOpType type, Context* context, const FileOpConfig* config)
   , m_createPaletteFromRgba(false)
   , m_ignoreEmpty(false)
   , m_avoidBackgroundLayer(false)
+  , m_unknownFormatError(false)
   , m_embeddedColorProfile(false)
   , m_embeddedGridBounds(false)
 {
