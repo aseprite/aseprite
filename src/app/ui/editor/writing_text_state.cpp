@@ -443,12 +443,7 @@ bool WritingTextState::onSetCursor(Editor* editor, const gfx::Point& mouseScreen
   return true;
 }
 
-bool WritingTextState::onKeyDown(Editor*, KeyMessage*)
-{
-  return false;
-}
-
-bool WritingTextState::onKeyUp(Editor*, KeyMessage* msg)
+bool WritingTextState::onKeyDown(Editor*, KeyMessage* msg)
 {
   // Cancel loop pressing Esc key
   if (msg->scancode() == ui::kKeyEsc) {
@@ -457,7 +452,17 @@ bool WritingTextState::onKeyUp(Editor*, KeyMessage* msg)
   // Drop text pressing Enter key
   else if (msg->scancode() == ui::kKeyEnter) {
     drop();
+    return true;
   }
+  return false;
+}
+
+bool WritingTextState::onKeyUp(Editor*, KeyMessage* msg)
+{
+  // Note: We cannot process kKeyEnter key here to drop the text as it
+  // could be received after the Enter key is pressed in the IME
+  // dialog to accept the composition (not to accept the text). So we
+  // process kKeyEnter in onKeyDown().
   return true;
 }
 
