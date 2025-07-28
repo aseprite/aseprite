@@ -180,8 +180,8 @@ if(ENABLE_ASEPRITE_EXE)
 
   if(WIN32)
     set(main_resources
-      main/resources_win32.rc
-      main/settings.manifest)
+      main/win/resources_win32.rc
+      main/win/settings.manifest)
   endif()
 
   add_executable(${main_target}
