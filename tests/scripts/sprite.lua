@@ -228,3 +228,69 @@ do
   c = app.open(fn)
   assert(c.tileManagementPlugin == nil)
 end
+
+-- Undo History
+
+function test_undo_history()
+  local sprite = Sprite(1, 1)
+
+  assert(sprite.undoHistory.undoSteps == 0)
+  assert(sprite.undoHistory.redoSteps == 0)
+
+  sprite:resize(10, 10)
+
+  assert(sprite.undoHistory.undoSteps == 1)
+  assert(sprite.undoHistory.redoSteps == 0)
+
+  sprite:resize(10, 15)
+
+  assert(sprite.undoHistory.undoSteps == 2)
+  assert(sprite.undoHistory.redoSteps == 0)
+
+  sprite:resize(10, 30)
+
+  assert(sprite.undoHistory.undoSteps == 3)
+  assert(sprite.undoHistory.redoSteps == 0)
+
+  app.undo()
+  assert(sprite.undoHistory.undoSteps == 2)
+  assert(sprite.undoHistory.redoSteps == 1)
+
+  app.undo()
+  assert(sprite.undoHistory.undoSteps == 1)
+  assert(sprite.undoHistory.redoSteps == 2)
+
+  app.redo()
+  assert(sprite.undoHistory.undoSteps == 2)
+  assert(sprite.undoHistory.redoSteps == 1)
+
+  app.undo()
+  app.undo()
+
+  assert(sprite.undoHistory.undoSteps == 0)
+  assert(sprite.undoHistory.redoSteps == 3)
+
+  sprite:resize(10, 30)
+
+  if (app.preferences.undo.allow_nonlinear_history) then
+    assert(sprite.undoHistory.undoSteps == 4)
+    assert(sprite.undoHistory.redoSteps == 0)
+  else
+    assert(sprite.undoHistory.undoSteps == 1)
+    assert(sprite.undoHistory.redoSteps == 0)
+  end
+end
+
+do
+  local prevSetting = app.preferences.undo.allow_nonlinear_history
+  app.preferences.undo.allow_nonlinear_history = true
+  test_undo_history()
+  app.preferences.undo.allow_nonlinear_history = prevSetting
+end
+
+do
+  local prevSetting = app.preferences.undo.allow_nonlinear_history
+  app.preferences.undo.allow_nonlinear_history = false
+  test_undo_history()
+  app.preferences.undo.allow_nonlinear_history = prevSetting
+end

@@ -94,9 +94,6 @@ ToolBar::ToolBar() : Widget(kGenericWidget), m_openedRecently(false), m_tipTimer
   m_hotTool = NULL;
   m_hotIndex = NoneIndex;
   m_openOnHot = false;
-  m_popupWindow = NULL;
-  m_currentStrip = NULL;
-  m_tipWindow = NULL;
   m_tipOpened = false;
   m_minHeight = 0;
 
@@ -112,9 +109,6 @@ ToolBar::ToolBar() : Widget(kGenericWidget), m_openedRecently(false), m_tipTimer
 ToolBar::~ToolBar()
 {
   App::instance()->activeToolManager()->remove_observer(this);
-
-  delete m_popupWindow;
-  delete m_tipWindow;
 }
 
 bool ToolBar::isToolVisible(Tool* tool)
@@ -314,10 +308,14 @@ void ToolBar::onSizeHint(SizeHintEvent& ev)
   iconsize.h += border().height();
   ev.setSizeHint(iconsize);
 
+#if 0 // The Dock widget will ask for sizeHint() of this widget when
+      // we open the popup, so we cannot close the recently closed
+      // popup.
   if (m_popupWindow) {
     closePopupWindow();
     closeTipWindow();
   }
+#endif
 }
 
 void ToolBar::onResize(ui::ResizeEvent& ev)
@@ -401,6 +399,11 @@ void ToolBar::onVisible(bool visible)
   }
 }
 
+bool ToolBar::isDockedAtLeftSide() const
+{
+  return bounds().center().x < window()->bounds().center().x;
+}
+
 int ToolBar::getToolGroupIndex(ToolGroup* group)
 {
   ToolBox* toolbox = App::instance()->toolBox();
@@ -465,7 +468,7 @@ void ToolBar::openPopupWindow(GroupType group_type, int group_index, tools::Tool
 
   // In case this tool contains more than just one tool, show the popup window
   m_openOnHot = true;
-  m_popupWindow = new TransparentPopupWindow(
+  m_popupWindow = std::make_unique<TransparentPopupWindow>(
     PopupWindow::ClickBehavior::CloseOnClickOutsideHotRegion);
   m_closeConn = m_popupWindow->Close.connect([this] { onClosePopup(); });
   m_openedRecently = true;
@@ -474,19 +477,23 @@ void ToolBar::openPopupWindow(GroupType group_type, int group_index, tools::Tool
   m_currentStrip = toolstrip;
   m_popupWindow->addChild(toolstrip);
 
+  const int borderWidth = border().width();
   Rect rc = getToolGroupBounds(group_index);
-  int w = 0;
+  int w = borderWidth;
   for (const auto* tool : tools) {
     (void)tool;
-    w += bounds().w - border().width() - 1 * guiscale();
+    w += bounds().w - borderWidth - 1 * guiscale();
   }
 
-  rc.x -= w;
+  if (isDockedAtLeftSide())
+    rc.x = bounds().x2() - borderWidth;
+  else
+    rc.x -= w - borderWidth;
   rc.w = w;
 
   // Set hotregion of popup window
   m_popupWindow->setAutoRemap(false);
-  ui::fit_bounds(display(), m_popupWindow, rc);
+  ui::fit_bounds(display(), m_popupWindow.get(), rc);
   m_popupWindow->setBounds(rc);
 
   Region rgn(m_popupWindow->boundsOnScreen().enlarge(16 * guiscale()));
@@ -500,8 +507,7 @@ void ToolBar::closePopupWindow()
 {
   if (m_popupWindow) {
     m_popupWindow->closeWindow(nullptr);
-    delete m_popupWindow;
-    m_popupWindow = nullptr;
+    m_popupWindow.reset();
   }
 }
 
@@ -542,7 +548,7 @@ Point ToolBar::getToolPositionInGroup(const Tool* tool) const
   const auto& tools = m_currentStrip->tools();
   const int nth = std::find(tools.begin(), tools.end(), tool) - tools.begin();
 
-  return Point(iconsize.w / 2 + nth * (iconsize.w - 1 * guiscale()), iconsize.h);
+  return Point(iconsize.w / 2 + nth * (iconsize.w - border().right()), iconsize.h);
 }
 
 void ToolBar::openTipWindow(ToolGroup* tool_group, Tool* tool)
@@ -591,15 +597,31 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
   else
     return;
 
-  m_tipWindow = new TipWindow(tooltip);
+  m_tipWindow = std::make_unique<TipWindow>(tooltip);
   m_tipWindow->remapWindow();
 
   Rect toolrc = getToolGroupBounds(group_index);
   Point arrow = (tool ? getToolPositionInGroup(tool) : Point(0, 0));
-  if (tool && m_popupWindow && m_popupWindow->isVisible())
-    toolrc.x += arrow.x - m_popupWindow->bounds().w;
 
-  m_tipWindow->pointAt(TOP | RIGHT, toolrc, ui::Manager::getDefault()->display());
+  int pointAt = TOP;
+  if (isDockedAtLeftSide()) {
+    pointAt |= LEFT;
+    toolrc.x -= border().width();
+  }
+  else {
+    pointAt |= RIGHT;
+    toolrc.x += border().width();
+  }
+
+  // Tooltip for subtools (tools inside groups)
+  if (tool && m_popupWindow && m_popupWindow->isVisible()) {
+    if (isDockedAtLeftSide())
+      toolrc.x += arrow.x + bounds().w - border().width();
+    else
+      toolrc.x += arrow.x - m_popupWindow->bounds().w + border().width();
+  }
+
+  m_tipWindow->pointAt(pointAt, toolrc, ui::Manager::getDefault()->display());
 
   if (m_tipOpened)
     m_tipWindow->openWindow();
@@ -613,8 +635,7 @@ void ToolBar::closeTipWindow()
 
   if (m_tipWindow) {
     m_tipWindow->closeWindow(NULL);
-    delete m_tipWindow;
-    m_tipWindow = NULL;
+    m_tipWindow.reset();
   }
 }
 
@@ -651,7 +672,7 @@ void ToolBar::onClosePopup()
   m_openOnHot = false;
   m_hotTool = NULL;
   m_hotIndex = NoneIndex;
-  m_currentStrip = NULL;
+  m_currentStrip = nullptr;
 
   invalidate();
 }
