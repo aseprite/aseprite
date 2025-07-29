@@ -934,6 +934,19 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
             topLeft,
             bottomRight);
         }
+        if (mode & int(app::gen::SymmetryMode::POINT)) {
+          int smallestDimension = std::min(enclosingRect.w, enclosingRect.h);
+          g->drawHLine(
+            symmetryButtons & int(app::gen::SymmetryMode::POINT) ? color : semiTransparentColor,
+            enclosingRect.x + x - smallestDimension * 0.10f,
+            enclosingRect.y + y,
+            smallestDimension * 0.10f * 2.0f);
+          g->drawVLine(
+            (symmetryButtons & int(app::gen::SymmetryMode::POINT)) ? color : semiTransparentColor,
+            enclosingRect.x + x,
+            enclosingRect.y + y - smallestDimension * 0.10f,
+            smallestDimension * 0.10f * 2.0f);
+        }
       }
     }
   }

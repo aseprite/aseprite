@@ -252,12 +252,12 @@
         <part id="pal_presets" x="160" y="200" w="5" h="5" />
         <part id="pal_options" x="168" y="200" w="5" h="5" />
         <part id="pal_resize" x="176" y="200" w="5" h="5" />
-        <part id="debug_continue" x="208" y="240" w="7" h="7" />
-        <part id="debug_pause" x="208" y="247" w="7" h="7" />
-        <part id="debug_step_into" x="222" y="240" w="7" h="7" />
-        <part id="debug_step_over" x="215" y="240" w="7" h="7" />
-        <part id="debug_step_out" x="229" y="240" w="7" h="7" />
-        <part id="debug_breakpoint" x="236" y="240" w="7" h="7" />
+        <part id="debug_continue" x="224" y="240" w="7" h="7" />
+        <part id="debug_pause" x="224" y="247" w="7" h="7" />
+        <part id="debug_step_into" x="238" y="240" w="7" h="7" />
+        <part id="debug_step_over" x="231" y="240" w="7" h="7" />
+        <part id="debug_step_out" x="245" y="240" w="7" h="7" />
+        <part id="debug_breakpoint" x="252" y="240" w="7" h="7" />
         <part id="selection_replace" x="176" y="160" w="7" h="7" />
         <part id="selection_add" x="184" y="160" w="7" h="7" />
         <part id="selection_subtract" x="192" y="160" w="7" h="7" />
@@ -452,6 +452,7 @@
         <part id="spin_down" x="128" y="259" w="5" h="3" />
         <part id="right_diagonal_symmetry" x="176" y="240" w="13" h="13" />
         <part id="left_diagonal_symmetry" x="192" y="240" w="13" h="13" />
+        <part id="point_symmetry" x="208" y="240" w="13" h="13" />
     </parts>
     <styles>
         <style id="box" />
