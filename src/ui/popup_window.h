@@ -18,7 +18,8 @@ public:
   enum class ClickBehavior {
     DoNothingOnClick,
     CloseOnClickInOtherWindow,
-    CloseOnClickOutsideHotRegion
+    CloseOnClickOutsideHotRegion,
+    CloseOnClick
   };
 
   enum class EnterBehavior {
