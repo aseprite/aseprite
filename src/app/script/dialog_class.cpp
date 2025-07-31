@@ -127,12 +127,13 @@ struct Dialog {
   int showRef = LUA_REFNIL;
   lua_State* L = nullptr;
 
-  Dialog(const ui::Window::Type windowType, const std::string& title)
+  Dialog(const ui::Window::Type windowType, const std::string& title, bool sizeable)
     : window(windowType, title)
     , grid(2, false)
     , currentGrid(&grid)
   {
     window.addChild(&grid);
+    window.setSizeable(sizeable);
     all_dialogs.push_back(this);
   }
 
@@ -365,6 +366,7 @@ int Dialog_new(lua_State* L)
   // Get the title and the type of window (with or without title bar)
   ui::Window::Type windowType = ui::Window::WithTitleBar;
   std::string title = "Script";
+  bool sizeable = true;
   if (lua_isstring(L, 1)) {
     title = lua_tostring(L, 1);
   }
@@ -378,9 +380,14 @@ int Dialog_new(lua_State* L)
     if (type != LUA_TNIL && lua_toboolean(L, -1))
       windowType = ui::Window::WithoutTitleBar;
     lua_pop(L, 1);
+
+    type = lua_getfield(L, 1, "resizeable");
+    if (type != LUA_TNIL && !lua_toboolean(L, -1))
+      sizeable = false;
+    lua_pop(L, 1);
   }
 
-  auto dlg = push_new<Dialog>(L, windowType, title);
+  auto dlg = push_new<Dialog>(L, windowType, title, sizeable);
 
   // The uservalue of the dialog userdata will contain a table that
   // stores all the callbacks to handle events. As these callbacks can
