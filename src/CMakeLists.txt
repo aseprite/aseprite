@@ -97,6 +97,13 @@ add_subdirectory(app)
 
 set(DATA_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin/data)
 
+if(ENABLE_ASEPRITE_EXE)
+  set(main_target aseprite)
+  if(APPLE)
+    set(DATA_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin/${main_target}.app/Contents/Resources/data)
+  endif()
+endif()
+
 ######################################################################
 # Clone "strings" repo with translations into bin/data/strings.git
 
@@ -176,15 +183,20 @@ add_custom_target(copy_data DEPENDS clone_strings ${out_data_files})
 # Aseprite application
 
 if(ENABLE_ASEPRITE_EXE)
-  set(main_target aseprite)
-
   if(WIN32)
     set(main_resources
       main/win/resources_win32.rc
       main/win/settings.manifest)
   endif()
 
-  add_executable(${main_target}
+  set(BUNDLE_PARAM "")
+  set(INSTALL_OPT RUNTIME)
+  if(APPLE)
+    set(BUNDLE_PARAM MACOSX_BUNDLE)
+    set(INSTALL_OPT BUNDLE)
+  endif()
+
+  add_executable(${main_target} ${BUNDLE_PARAM}
     main/main.cpp
     ${main_resources})
   if(LAF_BACKEND STREQUAL "skia")
@@ -193,6 +205,10 @@ if(ENABLE_ASEPRITE_EXE)
     endif()
   endif()
   set_target_properties(${main_target} PROPERTIES LINK_FLAGS "${LAF_BACKEND_LINK_FLAGS}")
+  if(APPLE)
+    set_target_properties(${main_target} PROPERTIES
+      MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_LIST_DIR}/main/osx/Info.plist")
+  endif()
   target_link_libraries(${main_target} app-lib)
   add_dependencies(${main_target} copy_data)
 
@@ -202,7 +218,7 @@ if(ENABLE_ASEPRITE_EXE)
   endif()
 
   install(TARGETS ${main_target}
-    RUNTIME DESTINATION bin)
+    ${INSTALL_OPT} DESTINATION bin)
 
   install(DIRECTORY ../data
     DESTINATION share/aseprite)
