@@ -275,13 +275,15 @@ endif()
 
 # TinyEXIF
 if(USE_SHARED_TINYEXIF)
-  find_library(TINYEXIF_LIBRARY NAMES TinyEXIF)
-  find_path(TINYEXIF_INCLUDE_DIR NAMES TinyEXIF.h)
+  find_package(TinyEXIF REQUIRED)
+  set(TINYEXIF_LIBRARY TinyEXIF)
 else()
+  CPMAddPackage(
+    URI "gh:aseprite/TinyEXIF#21d6cf762724260f8e5bcee4abdee5411ae47813"
+    OPTIONS "BUILD_SHARED_LIBS OFF" "BUILD_STATIC_LIBS ON" "LINK_CRT_STATIC_LIBS OFF" "BUILD_DEMO OFF"
+  )
   set(TINYEXIF_LIBRARY TinyEXIFstatic)
-  set(TINYEXIF_INCLUDE_DIR ${TINYEXIF_DIR})
 endif()
-include_directories(${TINYEXIF_INCLUDE_DIR})
 
 # pixman
 if(USE_SHARED_PIXMAN)
