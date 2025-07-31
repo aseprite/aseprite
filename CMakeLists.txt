@@ -54,6 +54,9 @@ if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/laf/CMakeLists.txt" OR
     "  https://github.com/aseprite/aseprite/blob/main/INSTALL.md#get-the-source-code")
 endif()
 
+set(CPM_SOURCE_CACHE third_party)
+include(cmake/CPM.cmake)
+
 # This is required for KDE/Qt destop integration, which sets
 # BUILD_SHARED_LIBS to TRUE by default
 set(BUILD_SHARED_LIBS off)
