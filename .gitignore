@@ -18,3 +18,5 @@ build
 .build
 .deps
 CMakeSettings.json
+# third_party exclusions
+third_party/tinyxml2

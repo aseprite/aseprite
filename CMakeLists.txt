@@ -265,13 +265,13 @@ add_definitions(-DPNG_NO_MMX_CODE) # Do not use MMX optimizations in PNG code
 
 # tinyxml2
 if(USE_SHARED_TINYXML)
-  find_library(TINYXML_LIBRARY NAMES tinyxml2)
-  find_path(TINYXML_INCLUDE_DIR NAMES tinyxml2.h)
+  find_package(tinyxml2 REQUIRED)
 else()
-  set(TINYXML_LIBRARY tinyxml2)
-  set(TINYXML_INCLUDE_DIR ${TINYXML_DIR})
+  CPMAddPackage(
+    URI "gh:aseprite/tinyxml2#312a8092245df393db14a0b2427457ed2ba75e1b"
+    OPTIONS "tinyxml2_BUILD_TESTING OFF"
+  )
 endif()
-include_directories(${TINYXML_INCLUDE_DIR})
 
 # TinyEXIF
 if(USE_SHARED_TINYEXIF)

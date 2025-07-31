@@ -51,11 +51,6 @@ if(ENABLE_WEBP AND NOT LAF_BACKEND STREQUAL "skia")
   endif()
 endif()
 
-if(NOT USE_SHARED_TINYXML)
-  set(tinyxml2_BUILD_TESTING OFF CACHE BOOL "Build tests for tinyxml2")
-  add_subdirectory(tinyxml2)
-endif()
-
 if(NOT USE_SHARED_TINYEXIF)
   set(BUILD_SHARED_LIBS OFF CACHE BOOL "build as shared library")
   set(BUILD_STATIC_LIBS ON CACHE BOOL "build as static library")
