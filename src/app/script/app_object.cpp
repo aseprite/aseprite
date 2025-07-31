@@ -498,6 +498,35 @@ int App_useTool(lua_State* L)
   return 0;
 }
 
+int App_isValid(lua_State* L)
+{
+  if (!lua_isuserdata(L, 1)) {
+    // If it's not a valid userdata object we can do a crude conversion to boolean
+    // TODO: Do we want this or should we throw an error or false if we don't pass a proper object?
+    lua_pushboolean(L, lua_toboolean(L, 1));
+    return 1;
+  }
+
+  int metafieldType = luaL_getmetafield(L, 1, "__name");
+  if (metafieldType != LUA_TSTRING) {
+    // TODO: Error or just false?
+    lua_pushboolean(L, false);
+    return 1;
+  }
+
+  const std::string kind = lua_tostring(L, -1);
+  if (kind.find("doc::") == 0) {
+    const auto* id = static_cast<ObjectId*>(luaL_testudata(L, 1, kind.c_str()));
+    if (id && get_object(*id)) {
+      lua_pushboolean(L, true);
+      return 1;
+    }
+  }
+
+  lua_pushboolean(L, false);
+  return 1;
+}
+
 int App_get_events(lua_State* L)
 {
   push_app_events(L);
@@ -820,6 +849,7 @@ const luaL_Reg App_methods[] = {
   { "alert",       App_alert       },
   { "refresh",     App_refresh     },
   { "useTool",     App_useTool     },
+  { "isValid",     App_isValid     },
   { nullptr,       nullptr         }
 };
 
