@@ -198,6 +198,8 @@ void Context::executeCommand(Command* command, const Params& params)
     }
     else {
       LOG(VERBOSE, "CTXT: Command %s is disabled\n", command->id().c_str());
+      m_result = CommandResult(CommandResult::kDisabled);
+      return;
     }
 
     AfterCommandExecution(ev);

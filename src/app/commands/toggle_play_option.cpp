@@ -39,7 +39,7 @@ protected:
 TogglePlayOptionCommand::TogglePlayOptionCommand(const char* id,
                                                  Option<bool>* general,
                                                  Option<bool>* preview)
-  : Command(id, CmdUIOnlyFlag)
+  : Command(id)
   , m_general(general)
   , m_preview(preview)
 {

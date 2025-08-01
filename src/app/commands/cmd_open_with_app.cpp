@@ -25,7 +25,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-OpenWithAppCommand::OpenWithAppCommand() : Command(CommandId::OpenWithApp(), CmdUIOnlyFlag)
+OpenWithAppCommand::OpenWithAppCommand() : Command(CommandId::OpenWithApp())
 {
 }
 

@@ -30,7 +30,7 @@ struct Plugin {
 class PluginCommand : public Command {
 public:
   PluginCommand(const std::string& id, const std::string& title, int onclickRef, int onenabledRef)
-    : Command(id.c_str(), CmdUIOnlyFlag)
+    : Command(id.c_str())
     , m_title(title)
     , m_onclickRef(onclickRef)
     , m_onenabledRef(onenabledRef)

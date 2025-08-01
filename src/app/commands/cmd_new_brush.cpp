@@ -52,13 +52,13 @@ private:
   void selectPencilTool();
 };
 
-NewBrushCommand::NewBrushCommand() : Command(CommandId::NewBrush(), CmdUIOnlyFlag)
+NewBrushCommand::NewBrushCommand() : Command(CommandId::NewBrush())
 {
 }
 
 bool NewBrushCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
+  return context->isUIAvailable() && context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
 void NewBrushCommand::onExecute(Context* context)

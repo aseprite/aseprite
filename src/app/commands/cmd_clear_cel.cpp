@@ -19,7 +19,6 @@
 #include "app/ui/status_bar.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
-#include "doc/sprite.h"
 
 namespace app {
 
@@ -32,7 +31,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-ClearCelCommand::ClearCelCommand() : Command(CommandId::ClearCel(), CmdRecordableFlag)
+ClearCelCommand::ClearCelCommand() : Command(CommandId::ClearCel())
 {
 }
 
@@ -76,7 +75,7 @@ void ClearCelCommand::onExecute(Context* context)
     tx.commit();
   }
 
-  if (nonEditableLayers)
+  if (context->isUIAvailable() && nonEditableLayers)
     StatusBar::instance()->showTip(1000, Strings::statusbar_tips_locked_layers());
 
   update_screen_for_document(document);

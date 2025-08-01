@@ -59,7 +59,7 @@ protected:
 };
 
 InvertColorCommand::InvertColorCommand()
-  : CommandWithNewParams<InvertColorParams>(CommandId::InvertColor(), CmdRecordableFlag)
+  : CommandWithNewParams<InvertColorParams>(CommandId::InvertColor())
 {
 }
 

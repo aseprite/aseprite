@@ -36,8 +36,6 @@
 #include "app/ui/status_bar.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
-#include "base/scoped_value.h"
-#include "base/thread.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
@@ -86,8 +84,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////
 
-SaveFileBaseCommand::SaveFileBaseCommand(const char* id, CommandFlags flags)
-  : CommandWithNewParams<SaveFileParams>(id, flags)
+SaveFileBaseCommand::SaveFileBaseCommand(const char* id) : CommandWithNewParams<SaveFileParams>(id)
 {
 }
 
@@ -269,7 +266,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-SaveFileCommand::SaveFileCommand() : SaveFileBaseCommand(CommandId::SaveFile(), CmdRecordableFlag)
+SaveFileCommand::SaveFileCommand() : SaveFileBaseCommand(CommandId::SaveFile())
 {
 }
 
@@ -310,8 +307,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-SaveFileAsCommand::SaveFileAsCommand()
-  : SaveFileBaseCommand(CommandId::SaveFileAs(), CmdRecordableFlag)
+SaveFileAsCommand::SaveFileAsCommand() : SaveFileBaseCommand(CommandId::SaveFileAs())
 {
 }
 
@@ -335,8 +331,7 @@ private:
   void moveToUndoState(Doc* doc, const undo::UndoState* state);
 };
 
-SaveFileCopyAsCommand::SaveFileCopyAsCommand()
-  : SaveFileBaseCommand(CommandId::SaveFileCopyAs(), CmdRecordableFlag)
+SaveFileCopyAsCommand::SaveFileCopyAsCommand() : SaveFileBaseCommand(CommandId::SaveFileCopyAs())
 {
 }
 

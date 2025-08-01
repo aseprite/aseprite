@@ -10,9 +10,7 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
-#include "app/context_access.h"
 #include "app/ui/timeline/timeline.h"
-#include "ui/base.h"
 
 namespace app {
 
@@ -25,13 +23,13 @@ protected:
   void onExecute(Context* context) override;
 };
 
-CopyCelCommand::CopyCelCommand() : Command(CommandId::CopyCel(), CmdUIOnlyFlag)
+CopyCelCommand::CopyCelCommand() : Command(CommandId::CopyCel())
 {
 }
 
 bool CopyCelCommand::onEnabled(Context* context)
 {
-  return App::instance()->timeline()->isMovingCel();
+  return App::instance()->timeline() && App::instance()->timeline()->isMovingCel();
 }
 
 void CopyCelCommand::onExecute(Context* context)

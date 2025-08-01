@@ -16,7 +16,6 @@
 #include "app/doc.h"
 #include "app/job.h"
 #include "app/ui/main_window.h"
-#include "ui/alert.h"
 
 #ifdef ENABLE_SCRIPTING
   #include "app/commands/debugger.h"
@@ -32,7 +31,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-ExitCommand::ExitCommand() : Command(CommandId::Exit(), CmdUIOnlyFlag)
+ExitCommand::ExitCommand() : Command(CommandId::Exit())
 {
 }
 

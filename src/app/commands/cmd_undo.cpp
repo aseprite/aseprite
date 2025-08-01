@@ -23,7 +23,6 @@
 #include "base/thread.h"
 #include "doc/sprite.h"
 #include "ui/manager.h"
-#include "ui/system.h"
 
 namespace app {
 
@@ -42,7 +41,7 @@ private:
 };
 
 UndoCommand::UndoCommand(Type type)
-  : Command((type == Undo ? CommandId::Undo() : CommandId::Redo()), CmdUIOnlyFlag)
+  : Command((type == Undo ? CommandId::Undo() : CommandId::Redo()))
   , m_type(type)
 {
 }

@@ -16,7 +16,6 @@
 #include "app/modules/gui.h"
 #include "app/tx.h"
 #include "doc/sprite.h"
-#include "ui/ui.h"
 
 namespace app {
 
@@ -29,7 +28,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-RemoveFrameCommand::RemoveFrameCommand() : Command(CommandId::RemoveFrame(), CmdRecordableFlag)
+RemoveFrameCommand::RemoveFrameCommand() : Command(CommandId::RemoveFrame())
 {
 }
 

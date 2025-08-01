@@ -31,7 +31,7 @@ using namespace doc;
 
 class GotoCommand : public Command {
 protected:
-  GotoCommand(const char* id) : Command(id, CmdRecordableFlag) {}
+  GotoCommand(const char* id) : Command(id) {}
 
   bool onEnabled(Context* context) override { return (Editor::activeEditor() != nullptr); }
 

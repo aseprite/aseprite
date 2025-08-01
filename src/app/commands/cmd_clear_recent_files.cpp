@@ -23,8 +23,7 @@ protected:
   void onExecute(Context* ctx) override;
 };
 
-ClearRecentFilesCommand::ClearRecentFilesCommand()
-  : Command(CommandId::ClearRecentFiles(), CmdUIOnlyFlag)
+ClearRecentFilesCommand::ClearRecentFilesCommand() : Command(CommandId::ClearRecentFiles())
 {
 }
 

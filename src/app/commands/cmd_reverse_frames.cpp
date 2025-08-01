@@ -27,7 +27,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-ReverseFramesCommand::ReverseFramesCommand() : Command(CommandId::ReverseFrames(), CmdUIOnlyFlag)
+ReverseFramesCommand::ReverseFramesCommand() : Command(CommandId::ReverseFrames())
 {
 }
 

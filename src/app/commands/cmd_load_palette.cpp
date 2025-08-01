@@ -37,14 +37,19 @@ protected:
 private:
   std::string m_preset;
   std::string m_filename;
+  bool m_ui = true;
 };
 
-LoadPaletteCommand::LoadPaletteCommand() : Command(CommandId::LoadPalette(), CmdRecordableFlag)
+LoadPaletteCommand::LoadPaletteCommand() : Command(CommandId::LoadPalette())
 {
 }
 
 void LoadPaletteCommand::onLoadParams(const Params& params)
 {
+  if (params.has_param("ui"))
+    m_ui = params.get_as<bool>("ui");
+  else
+    m_ui = true;
   m_preset = params.get("preset");
   m_filename = params.get("filename");
 }
@@ -58,19 +63,19 @@ void LoadPaletteCommand::onExecute(Context* context)
     if (!base::is_file(filename))
       filename = get_preset_palette_filename(m_preset, ".gpl");
   }
-  else if (!m_filename.empty()) {
-    filename = m_filename;
-  }
-  else if (context->isUIAvailable()) {
-    base::paths exts = get_readable_palette_extensions();
+  else if (context->isUIAvailable() && m_ui) {
+    const base::paths exts = get_readable_palette_extensions();
     base::paths filenames;
     if (app::show_file_selector(Strings::load_palette_title(),
-                                "",
+                                m_filename,
                                 exts,
                                 FileSelectorType::Open,
                                 filenames)) {
       filename = filenames.front();
     }
+  }
+  else if (!m_filename.empty()) {
+    filename = m_filename;
   }
 
   // Do nothing

@@ -31,7 +31,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-InvertMaskCommand::InvertMaskCommand() : Command(CommandId::InvertMask(), CmdRecordableFlag)
+InvertMaskCommand::InvertMaskCommand() : Command(CommandId::InvertMask())
 {
 }
 

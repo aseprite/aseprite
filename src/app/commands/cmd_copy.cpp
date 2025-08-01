@@ -23,7 +23,7 @@ protected:
   void onExecute(Context* ctx) override;
 };
 
-CopyCommand::CopyCommand() : Command(CommandId::Copy(), CmdUIOnlyFlag)
+CopyCommand::CopyCommand() : Command(CommandId::Copy())
 {
 }
 

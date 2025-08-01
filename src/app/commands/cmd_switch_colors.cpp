@@ -14,7 +14,6 @@
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
-#include "ui/base.h"
 
 namespace app {
 
@@ -27,7 +26,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-SwitchColorsCommand::SwitchColorsCommand() : Command(CommandId::SwitchColors(), CmdUIOnlyFlag)
+SwitchColorsCommand::SwitchColorsCommand() : Command(CommandId::SwitchColors())
 {
 }
 

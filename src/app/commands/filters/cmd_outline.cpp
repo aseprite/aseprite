@@ -195,8 +195,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-OutlineCommand::OutlineCommand()
-  : CommandWithNewParams<OutlineParams>(CommandId::Outline(), CmdRecordableFlag)
+OutlineCommand::OutlineCommand() : CommandWithNewParams<OutlineParams>(CommandId::Outline())
 {
 }
 

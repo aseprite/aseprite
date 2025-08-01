@@ -20,10 +20,7 @@ using namespace gfx;
 
 class TilesetModeCommand : public Command {
 public:
-  TilesetModeCommand() : Command(CommandId::TilesetMode(), CmdUIOnlyFlag)
-  {
-    m_mode = TilesetMode::Auto;
-  }
+  TilesetModeCommand() : Command(CommandId::TilesetMode()) { m_mode = TilesetMode::Auto; }
 
 protected:
   void onLoadParams(const Params& params) override

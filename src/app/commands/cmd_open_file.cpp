@@ -19,14 +19,12 @@
 #include "app/file/file.h"
 #include "app/file_selector.h"
 #include "app/i18n/strings.h"
-#include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/recent_files.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/open_file_job.h"
 #include "base/fs.h"
-#include "base/thread.h"
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
@@ -35,7 +33,7 @@
 namespace app {
 
 OpenFileCommand::OpenFileCommand()
-  : Command(CommandId::OpenFile(), CmdRecordableFlag)
+  : Command(CommandId::OpenFile())
   , m_ui(true)
   , m_repeatCheckbox(false)
   , m_oneFrame(false)

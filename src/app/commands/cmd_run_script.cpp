@@ -16,7 +16,6 @@
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
-#include "app/console.h"
 #include "app/context.h"
 #include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
@@ -26,8 +25,6 @@
 #include "base/fs.h"
 #include "fmt/format.h"
 #include "ui/manager.h"
-
-#include <cstdio>
 
 namespace app {
 
@@ -46,7 +43,7 @@ private:
   Params m_params;
 };
 
-RunScriptCommand::RunScriptCommand() : Command(CommandId::RunScript(), CmdRecordableFlag)
+RunScriptCommand::RunScriptCommand() : Command(CommandId::RunScript())
 {
 }
 

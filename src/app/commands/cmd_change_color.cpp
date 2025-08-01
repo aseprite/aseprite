@@ -14,6 +14,7 @@
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
+#include "app/context.h"
 #include "app/i18n/strings.h"
 #include "app/modules/palettes.h"
 #include "app/ui/color_bar.h"
@@ -39,16 +40,22 @@ public:
   ChangeColorCommand();
 
 protected:
+  bool onEnabled(Context* context) override;
   bool onNeedsParams() const override { return true; }
   void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
   std::string onGetFriendlyName() const override;
 };
 
-ChangeColorCommand::ChangeColorCommand() : Command(CommandId::ChangeColor(), CmdUIOnlyFlag)
+ChangeColorCommand::ChangeColorCommand() : Command(CommandId::ChangeColor())
 {
   m_background = false;
   m_change = None;
+}
+
+bool ChangeColorCommand::onEnabled(Context* context)
+{
+  return context->isUIAvailable();
 }
 
 void ChangeColorCommand::onLoadParams(const Params& params)

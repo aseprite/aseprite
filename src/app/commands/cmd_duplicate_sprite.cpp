@@ -16,12 +16,9 @@
 #include "app/ini_file.h"
 #include "app/ui_context.h"
 #include "base/fs.h"
-#include "doc/sprite.h"
 #include "ui/ui.h"
 
 #include "duplicate_sprite.xml.h"
-
-#include <cstdio>
 
 namespace app {
 
@@ -43,7 +40,7 @@ protected:
 };
 
 DuplicateSpriteCommand::DuplicateSpriteCommand()
-  : CommandWithNewParams<DuplicateSpriteParams>(CommandId::DuplicateSprite(), CmdRecordableFlag)
+  : CommandWithNewParams<DuplicateSpriteParams>(CommandId::DuplicateSprite())
 {
 }
 

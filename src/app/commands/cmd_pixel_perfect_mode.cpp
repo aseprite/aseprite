@@ -10,8 +10,6 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
-#include "app/commands/params.h"
-#include "app/context.h"
 #include "app/pref/preferences.h"
 #include "app/tools/freehand_algorithm.h"
 #include "app/tools/tool.h"
@@ -28,8 +26,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-PixelPerfectModeCommand::PixelPerfectModeCommand()
-  : Command(CommandId::PixelPerfectMode(), CmdUIOnlyFlag)
+PixelPerfectModeCommand::PixelPerfectModeCommand() : Command(CommandId::PixelPerfectMode())
 {
 }
 

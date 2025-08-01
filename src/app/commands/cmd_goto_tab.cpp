@@ -24,7 +24,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-GotoNextTabCommand::GotoNextTabCommand() : Command(CommandId::GotoNextTab(), CmdUIOnlyFlag)
+GotoNextTabCommand::GotoNextTabCommand() : Command(CommandId::GotoNextTab())
 {
 }
 
@@ -50,8 +50,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-GotoPreviousTabCommand::GotoPreviousTabCommand()
-  : Command(CommandId::GotoPreviousTab(), CmdRecordableFlag)
+GotoPreviousTabCommand::GotoPreviousTabCommand() : Command(CommandId::GotoPreviousTab())
 {
 }
 

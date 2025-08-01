@@ -158,7 +158,7 @@ protected:
 };
 
 ReplaceColorCommand::ReplaceColorCommand()
-  : CommandWithNewParams<ReplaceColorParams>(CommandId::ReplaceColor(), CmdRecordableFlag)
+  : CommandWithNewParams<ReplaceColorParams>(CommandId::ReplaceColor())
 {
 }
 

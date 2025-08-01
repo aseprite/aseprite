@@ -19,7 +19,7 @@ namespace app {
 
 class InlineCommandExecution : public Command {
 public:
-  InlineCommandExecution(Context* ctx) : Command("", CmdUIOnlyFlag), m_context(ctx)
+  InlineCommandExecution(Context* ctx) : Command(""), m_context(ctx)
   {
     CommandExecutionEvent ev(this, m_noParams);
     m_context->BeforeCommandExecution(ev);

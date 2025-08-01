@@ -33,8 +33,7 @@ class MoveColorsCommand : public CommandWithNewParams<MoveColorsParams> {
 public:
   MoveColorsCommand(bool copy)
     : CommandWithNewParams<MoveColorsParams>(
-        (copy ? CommandId::CopyColors() : CommandId::MoveColors()),
-        CmdRecordableFlag)
+        (copy ? CommandId::CopyColors() : CommandId::MoveColors()))
     , m_copy(copy)
   {
   }

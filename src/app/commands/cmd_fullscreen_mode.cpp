@@ -27,7 +27,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-FullscreenModeCommand::FullscreenModeCommand() : Command(CommandId::FullscreenMode(), CmdUIOnlyFlag)
+FullscreenModeCommand::FullscreenModeCommand() : Command(CommandId::FullscreenMode())
 {
 }
 

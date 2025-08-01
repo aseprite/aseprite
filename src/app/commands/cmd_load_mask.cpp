@@ -26,6 +26,7 @@ namespace app {
 
 class LoadMaskCommand : public Command {
   std::string m_filename;
+  bool m_ui = true;
 
 public:
   LoadMaskCommand();
@@ -36,13 +37,16 @@ protected:
   void onExecute(Context* context) override;
 };
 
-LoadMaskCommand::LoadMaskCommand() : Command(CommandId::LoadMask(), CmdRecordableFlag)
+LoadMaskCommand::LoadMaskCommand() : Command(CommandId::LoadMask())
 {
-  m_filename = "";
 }
 
 void LoadMaskCommand::onLoadParams(const Params& params)
 {
+  if (params.has_param("ui"))
+    m_ui = params.get_as<bool>("ui");
+  else
+    m_ui = true;
   m_filename = params.get("filename");
 }
 
@@ -55,7 +59,7 @@ void LoadMaskCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
 
-  if (context->isUIAvailable()) {
+  if (context->isUIAvailable() && m_ui) {
     base::paths exts = { "msk" };
     base::paths selectedFilename;
     if (!app::show_file_selector(Strings::load_selection_title(),
@@ -70,7 +74,8 @@ void LoadMaskCommand::onExecute(Context* context)
 
   std::unique_ptr<Mask> mask(load_msk_file(m_filename.c_str()));
   if (!mask) {
-    ui::Alert::show(Strings::alerts_error_loading_file(m_filename));
+    if (context->isUIAvailable())
+      ui::Alert::show(Strings::alerts_error_loading_file(m_filename));
     return;
   }
 

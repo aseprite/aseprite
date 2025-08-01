@@ -20,7 +20,6 @@
 #include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/doc_api.h"
-#include "app/doc_range.h"
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/tools/tool_box.h"
@@ -38,11 +37,10 @@
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
-#include "gfx/size.h"
 
 namespace app {
 
-FlipCommand::FlipCommand() : Command(CommandId::Flip(), CmdRecordableFlag)
+FlipCommand::FlipCommand() : Command(CommandId::Flip())
 {
   m_flipMask = false;
   m_flipType = doc::algorithm::FlipHorizontal;

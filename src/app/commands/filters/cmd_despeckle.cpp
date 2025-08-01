@@ -106,8 +106,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-DespeckleCommand::DespeckleCommand()
-  : CommandWithNewParams<DespeckleParams>(CommandId::Despeckle(), CmdRecordableFlag)
+DespeckleCommand::DespeckleCommand() : CommandWithNewParams<DespeckleParams>(CommandId::Despeckle())
 {
 }
 

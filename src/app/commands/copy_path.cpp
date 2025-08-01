@@ -26,7 +26,7 @@ protected:
   void onExecute(Context* ctx) override;
 };
 
-CopyPathCommand::CopyPathCommand() : Command(CommandId::CopyPath(), CmdRecordableFlag)
+CopyPathCommand::CopyPathCommand() : Command(CommandId::CopyPath())
 {
 }
 

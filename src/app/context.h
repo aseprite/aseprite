@@ -48,6 +48,8 @@ public:
     kError,
     // Canceled by user.
     kCanceled,
+    // Disabled.
+    kDisabled
   };
 
   CommandResult(Type type = Type::kOk) : m_type(type) {}

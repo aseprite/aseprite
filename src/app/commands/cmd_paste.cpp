@@ -31,7 +31,7 @@ private:
   std::unique_ptr<gfx::Point> m_position;
 };
 
-PasteCommand::PasteCommand() : Command(CommandId::Paste(), CmdUIOnlyFlag)
+PasteCommand::PasteCommand() : Command(CommandId::Paste())
 {
 }
 

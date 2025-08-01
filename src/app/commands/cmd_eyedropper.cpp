@@ -17,7 +17,6 @@
 #include "app/context.h"
 #include "app/pref/preferences.h"
 #include "app/site.h"
-#include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
@@ -28,7 +27,7 @@ namespace app {
 
 using namespace ui;
 
-EyedropperCommand::EyedropperCommand() : Command(CommandId::Eyedropper(), CmdUIOnlyFlag)
+EyedropperCommand::EyedropperCommand() : Command(CommandId::Eyedropper())
 {
   m_background = false;
 }

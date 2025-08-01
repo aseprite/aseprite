@@ -26,22 +26,17 @@
 #include "app/ui/select_shortcut.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
-#include "base/fs.h"
 #include "base/pi.h"
 #include "base/scoped_value.h"
-#include "base/split_string.h"
-#include "base/string.h"
 #include "ui/alert.h"
 #include "ui/fit_bounds.h"
 #include "ui/graphics.h"
 #include "ui/listitem.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
-#include "ui/resize_event.h"
 #include "ui/separator.h"
 #include "ui/size_hint_event.h"
 #include "ui/splitter.h"
-#include "ui/system.h"
 
 #include "keyboard_shortcuts.xml.h"
 
@@ -977,6 +972,7 @@ public:
   KeyboardShortcutsCommand();
 
 protected:
+  bool onEnabled(Context* context) override;
   void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
 
@@ -986,9 +982,13 @@ private:
   std::string m_search;
 };
 
-KeyboardShortcutsCommand::KeyboardShortcutsCommand()
-  : Command(CommandId::KeyboardShortcuts(), CmdUIOnlyFlag)
+KeyboardShortcutsCommand::KeyboardShortcutsCommand() : Command(CommandId::KeyboardShortcuts())
 {
+}
+
+bool KeyboardShortcutsCommand::onEnabled(Context* context)
+{
+  return context->isUIAvailable();
 }
 
 void KeyboardShortcutsCommand::onLoadParams(const Params& params)

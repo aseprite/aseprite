@@ -39,7 +39,7 @@ private:
 };
 
 SlicePropertiesCommand::SlicePropertiesCommand()
-  : Command(CommandId::SliceProperties(), CmdUIOnlyFlag)
+  : Command(CommandId::SliceProperties())
   , m_sliceId(NullId)
 {
 }
@@ -57,7 +57,7 @@ void SlicePropertiesCommand::onLoadParams(const Params& params)
 
 bool SlicePropertiesCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
+  return context->isUIAvailable() && context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
 void SlicePropertiesCommand::onExecute(Context* context)

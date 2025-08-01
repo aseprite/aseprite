@@ -11,12 +11,12 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
-#include "app/modules/gui.h"
 #include "app/ui/main_window.h"
 #include "fmt/format.h"
 #include "ver/info.h"
 
 #include "about.xml.h"
+#include "app/context.h"
 
 namespace app {
 
@@ -27,11 +27,17 @@ public:
   AboutCommand();
 
 protected:
+  bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
 };
 
-AboutCommand::AboutCommand() : Command(CommandId::About(), CmdUIOnlyFlag)
+AboutCommand::AboutCommand() : Command(CommandId::About())
 {
+}
+
+bool AboutCommand::onEnabled(Context* context)
+{
+  return context->isUIAvailable();
 }
 
 void AboutCommand::onExecute(Context* context)

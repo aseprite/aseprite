@@ -31,7 +31,7 @@ protected:
 };
 
 SetPlaybackSpeedCommand::SetPlaybackSpeedCommand()
-  : CommandWithNewParams(CommandId::SetPlaybackSpeed(), CmdUIOnlyFlag)
+  : CommandWithNewParams(CommandId::SetPlaybackSpeed())
 {
 }
 
