@@ -1095,6 +1095,9 @@ public:
     gifframe_t nframes = totalFrames();
     for (gifframe_t gifFrame = 0; gifFrame < nframes; ++gifFrame) {
       ASSERT(frame_it != frame_end);
+      if (m_fop->isStop())
+        break;
+
       frame_t frame = *frame_it;
       ++frame_it;
 
