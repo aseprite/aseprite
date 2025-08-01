@@ -34,10 +34,10 @@
 #include "app/tools/tool_loop_manager.h"
 #include "app/tx.h"
 #include "app/ui/context_bar.h"
-#include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui/main_window.h"
+#include "app/ui/status_bar.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
 #include "base/fs.h"
@@ -498,6 +498,30 @@ int App_useTool(lua_State* L)
   return 0;
 }
 
+int App_tip(lua_State* L)
+{
+  const auto* ctx = App::instance()->context();
+  if (!ctx || !ctx->isUIAvailable() || !StatusBar::instance())
+    return 0; // No UI to show the tooltip
+
+  if (!lua_isstring(L, 1))
+    return luaL_error(L, "app.tip() message parameter must be a string");
+
+  const std::string message = lua_tostring(L, 1);
+  if (message.empty())
+    return luaL_error(L, "app.tip() message cannot be empty");
+
+  int duration = 2000;
+  if (lua_isinteger(L, 2)) {
+    const int durationInput = lua_tointeger(L, 2);
+    if (durationInput > 0 && durationInput < 30000) // Reasonable limits
+      duration = lua_tointeger(L, 2);
+  }
+
+  StatusBar::instance()->showTip(duration, message);
+  return 0;
+}
+
 int App_get_events(lua_State* L)
 {
   push_app_events(L);
@@ -820,6 +844,7 @@ const luaL_Reg App_methods[] = {
   { "alert",       App_alert       },
   { "refresh",     App_refresh     },
   { "useTool",     App_useTool     },
+  { "tip",         App_tip         },
   { nullptr,       nullptr         }
 };
 
