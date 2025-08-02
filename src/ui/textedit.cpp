@@ -130,14 +130,14 @@ bool TextEdit::onProcessMessage(Message* msg)
       startTimer();
       m_drawCaret = true; // Immediately draw the caret for fast UI feedback.
       invalidate();
-      os::System::instance()->setTranslateDeadKeys(true);
+      os::System::instance()->setTextInput(true, m_caretRect.center());
       break;
     }
     case kFocusLeaveMessage: {
       stopTimer();
       m_drawCaret = false;
       invalidateRect(m_caretRect);
-      os::System::instance()->setTranslateDeadKeys(false);
+      os::System::instance()->setTextInput(false);
       break;
     }
     case kKeyDownMessage: {
@@ -731,6 +731,9 @@ void TextEdit::onSetText()
 
   Change();
   Widget::onSetText();
+
+  // TODO: Test with IMEs? Is this function made to be called a bunch?
+  os::System::instance()->setTextInput(true, m_drawCaret ? m_caretRect.center() : gfx::Point{});
 }
 
 void TextEdit::onSetFont()
