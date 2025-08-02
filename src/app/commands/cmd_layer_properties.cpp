@@ -467,7 +467,7 @@ private:
       color_t c = m_layer->userData().color();
       m_userDataView.color()->setColor(
         Color::fromRgb(rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c)));
-      m_userDataView.entry()->setText(m_layer->userData().text());
+      m_userDataView.textEdit()->setText(m_layer->userData().text());
     }
     else {
       name()->setText(Strings::layer_properties_no_layer());
