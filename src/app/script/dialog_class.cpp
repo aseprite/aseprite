@@ -1516,6 +1516,10 @@ int Dialog_modify(lua_State* L)
     type = lua_getfield(L, 2, "text");
     if (const char* s = lua_tostring(L, -1)) {
       widget->setText(s);
+
+      // Re-process mnemonics for buttons
+      if (widget->type() == WidgetType::kButtonWidget)
+        widget->processMnemonicFromText();
       relayout = true;
     }
     lua_pop(L, 1);

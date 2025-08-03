@@ -172,6 +172,7 @@ int Plugin_newCommand(lua_State* L)
       if (!group.empty() && App::instance()->isGui()) { // On CLI menus do not make sense
         if (auto appMenus = AppMenus::instance()) {
           auto menuItem = std::make_unique<AppMenuItem>(title, id);
+          menuItem->processMnemonicFromText();
           appMenus->addMenuItemIntoGroup(group, std::move(menuItem));
         }
       }
