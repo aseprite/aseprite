@@ -177,6 +177,7 @@ app::FontInfo convert_to(const std::string& from)
   bool italic = false;
   app::FontInfo::Flags flags = app::FontInfo::Flags::None;
   text::FontHinting hinting = text::FontHinting::Normal;
+  text::FontStyle::Weight weight = text::FontStyle::Weight::Normal;
 
   if (!parts.empty()) {
     if (parts[0].compare(0, 5, "file=") == 0) {
@@ -214,16 +215,16 @@ app::FontInfo convert_to(const std::string& from)
         else if (hintingStr == "full")
           hinting = text::FontHinting::Full;
       }
+      else if (parts[i].compare(0, 7, "weight=") == 0) {
+        std::string weightStr = parts[i].substr(7);
+        weight = static_cast<text::FontStyle::Weight>(std::atoi(weightStr.c_str()));
+      }
     }
   }
 
-  text::FontStyle style;
-  if (bold && italic)
-    style = text::FontStyle::BoldItalic();
-  else if (bold)
-    style = text::FontStyle::Bold();
-  else if (italic)
-    style = text::FontStyle::Italic();
+  text::FontStyle style(bold ? text::FontStyle::Weight::Bold : weight,
+                        text::FontStyle::Width::Normal,
+                        italic ? text::FontStyle::Slant::Italic : text::FontStyle::Slant::Upright);
 
   return app::FontInfo(type, name, size, style, flags, hinting);
 }
@@ -243,7 +244,7 @@ std::string convert_to(const app::FontInfo& from)
   if (!result.empty()) {
     if (from.size() > 0.0f)
       result += fmt::format(",size={}", from.size());
-    if (from.style().weight() >= text::FontStyle::Weight::SemiBold)
+    if (from.style().weight() == text::FontStyle::Weight::Bold)
       result += ",bold";
     if (from.style().slant() != text::FontStyle::Slant::Upright)
       result += ",italic";
@@ -262,6 +263,8 @@ std::string convert_to(const app::FontInfo& from)
         case text::FontHinting::Full: result += "full"; break;
       }
     }
+    if (from.style().weight() != text::FontStyle::Weight::Bold)
+      result += ",weight=" + std::to_string(static_cast<int>(from.style().weight()));
   }
   return result;
 }
