@@ -20,9 +20,11 @@
 #include "base/convert_to.h"
 #include "base/scoped_value.h"
 #include "fmt/format.h"
+#include "text/font_style_set.h"
 #include "ui/display.h"
 #include "ui/fit_bounds.h"
 #include "ui/manager.h"
+#include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/scale.h"
 
@@ -271,7 +273,7 @@ FontEntry::FontStyle::FontStyle(ui::TooltipManager* tooltips) : ButtonSet(3, tru
   addItem("...");
   setMultiMode(MultiMode::Set);
 
-  tooltips->addTooltipFor(getItem(0), Strings::text_tool_bold(), BOTTOM);
+  tooltips->addTooltipFor(getItem(0), Strings::font_style_font_weight(), BOTTOM);
   tooltips->addTooltipFor(getItem(1), Strings::text_tool_italic(), BOTTOM);
   tooltips->addTooltipFor(getItem(2), Strings::text_tool_more_options(), BOTTOM);
 }
@@ -384,16 +386,59 @@ void FontEntry::setInfo(const FontInfo& info, const From fromField)
 {
   m_info = info;
 
-  if (fromField != From::Face)
+  auto family = theme()->fontMgr()->matchFamily(m_info.name());
+  bool hasBold = false;
+  m_availableWeights.clear();
+
+  if (family) {
+    auto checkWeight = [this, &family, &hasBold](text::FontStyle::Weight w) {
+      auto ref = family->matchStyle(
+        text::FontStyle(w, m_info.style().width(), m_info.style().slant()));
+      if (ref->fontStyle().weight() == w)
+        m_availableWeights.push_back(w);
+
+      if (ref->fontStyle().weight() == text::FontStyle::Weight::Bold)
+        hasBold = true;
+    };
+
+    checkWeight(text::FontStyle::Weight::Thin);
+    checkWeight(text::FontStyle::Weight::ExtraLight);
+    checkWeight(text::FontStyle::Weight::Light);
+    checkWeight(text::FontStyle::Weight::Normal);
+    checkWeight(text::FontStyle::Weight::Medium);
+    checkWeight(text::FontStyle::Weight::SemiBold);
+    checkWeight(text::FontStyle::Weight::Bold);
+    checkWeight(text::FontStyle::Weight::Black);
+    checkWeight(text::FontStyle::Weight::ExtraBlack);
+  }
+  else {
+    // Stick to only "normal" for fonts without a family.
+    m_availableWeights.push_back(text::FontStyle::Weight::Normal);
+    m_style.getItem(0)->setEnabled(false);
+  }
+
+  if (fromField != From::Face) {
     m_face.setText(info.title());
+  }
 
   if (fromField != From::Size) {
     m_size.updateForFont(info);
     m_size.setValue(fmt::format("{}", info.size()));
   }
 
+  m_style.getItem(0)->setEnabled(hasBold);
+  m_style.getItem(0)->setSelected(info.style().weight() != text::FontStyle::Weight::Normal);
+  m_style.getItem(0)->setText("B");
+
+  // Give some indication of what the weight is, if we have any variation
+  if (m_style.getItem(0)->isSelected() && m_availableWeights.size() > 1) {
+    if (info.style().weight() > text::FontStyle::Weight::Bold)
+      m_style.getItem(0)->setText("B+");
+    else if (info.style().weight() < text::FontStyle::Weight::Bold)
+      m_style.getItem(0)->setText("B-");
+  }
+
   if (fromField != From::Style) {
-    m_style.getItem(0)->setSelected(info.style().weight() >= text::FontStyle::Weight::SemiBold);
     m_style.getItem(1)->setSelected(info.style().slant() != text::FontStyle::Slant::Upright);
   }
 
@@ -430,17 +475,51 @@ void FontEntry::onStyleItemClick(ButtonSet::Item* item)
   switch (m_style.getItemIndex(item)) {
     // Bold button changed
     case 0: {
-      const bool bold = m_style.getItem(0)->isSelected();
-      style = text::FontStyle(
-        bold ? text::FontStyle::Weight::Bold : text::FontStyle::Weight::Normal,
-        style.width(),
-        style.slant());
+      if (m_availableWeights.size() > 2) {
+        // Ensure consistency, since the click also affects the "selected" highlighting.
+        item->setSelected(style.weight() != text::FontStyle::Weight::Normal);
 
-      setInfo(FontInfo(m_info, m_info.size(), style, m_info.flags(), m_info.hinting()),
-              From::Style);
+        Menu weightMenu;
+        auto currentWeight = m_info.style().weight();
+
+        auto weightChange = [this](text::FontStyle::Weight newWeight) {
+          text::FontStyle style(newWeight, m_info.style().width(), m_info.style().slant());
+          setInfo(FontInfo(m_info, m_info.size(), style, m_info.flags(), m_info.hinting()),
+                  From::Style);
+        };
+
+        for (auto weight : m_availableWeights) {
+          auto* menuItem = new MenuItem(Strings::Translate(
+            ("font_style.font_weight_" + std::to_string(static_cast<int>(weight))).c_str()));
+          menuItem->setSelected(weight == currentWeight);
+          if (!menuItem->isSelected())
+            menuItem->Click.connect([&weightChange, weight] { weightChange(weight); });
+
+          if (weight == text::FontStyle::Weight::Bold &&
+              currentWeight == text::FontStyle::Weight::Normal)
+            menuItem->setHighlighted(true);
+
+          weightMenu.addChild(menuItem);
+        }
+
+        weightMenu.initTheme();
+        const auto& bounds = m_style.getItem(0)->bounds();
+
+        weightMenu.showPopup(gfx::Point(bounds.x, bounds.y2()), display());
+      }
+      else {
+        const bool isBold = m_info.style().weight() == text::FontStyle::Weight::Bold;
+        style = text::FontStyle(
+          isBold ? text::FontStyle::Weight::Normal : text::FontStyle::Weight::Bold,
+          style.width(),
+          style.slant());
+
+        setInfo(FontInfo(m_info, m_info.size(), style, m_info.flags(), m_info.hinting()),
+                From::Style);
+      }
       break;
     }
-      // Italic button changed
+    // Italic button changed
     case 1: {
       const bool italic = m_style.getItem(1)->isSelected();
       style = text::FontStyle(
