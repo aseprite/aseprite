@@ -9,6 +9,7 @@
 #define APP_UI_TABS_H_INCLUDED
 #pragma once
 
+#include "app/ui/dockable.h"
 #include "base/ref.h"
 #include "text/fwd.h"
 #include "ui/animated_widget.h"
@@ -118,7 +119,8 @@ public:
 
 // Tabs control. Used to show opened documents.
 class Tabs : public ui::Widget,
-             public ui::AnimatedWidget {
+             public ui::AnimatedWidget,
+             public Dockable {
   struct Tab {
     TabView* view;
     std::string text;
@@ -180,6 +182,9 @@ public:
   void setDropViewPreview(const gfx::Point& screenPos, TabView* view);
   void removeDropViewPreview();
   int getDropTabIndex() const { return m_dropNewIndex; }
+
+  // Dockable impl
+  int dockableAt() const override { return ui::TOP | ui::BOTTOM; }
 
 protected:
   bool onProcessMessage(ui::Message* msg) override;

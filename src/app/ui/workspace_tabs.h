@@ -20,6 +20,10 @@ public:
   WorkspaceTabs(TabsDelegate* tabsDelegate);
   ~WorkspaceTabs();
 
+  // Dockable impl
+  int dockableAt() const override { return ui::TOP | ui::BOTTOM; }
+  int dockHandleSide() const override { return ui::LEFT; }
+
   WorkspacePanel* panel() const { return m_panel; }
   void setPanel(WorkspacePanel* panel);
 
