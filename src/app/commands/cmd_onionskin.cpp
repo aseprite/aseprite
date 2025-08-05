@@ -8,7 +8,6 @@
   #include "config.h"
 #endif
 
-#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/doc.h"
@@ -20,7 +19,7 @@ using namespace gfx;
 
 class ShowOnionSkinCommand : public Command {
 public:
-  ShowOnionSkinCommand() : Command(CommandId::ShowOnionSkin(), CmdUIOnlyFlag) {}
+  ShowOnionSkinCommand() : Command(CommandId::ShowOnionSkin()) {}
 
 protected:
   bool onChecked(Context* context) override

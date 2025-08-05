@@ -12,11 +12,9 @@
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/move_thing.h"
-#include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/i18n/strings.h"
 #include "app/ui/editor/editor.h"
-#include "base/convert_to.h"
 #include "ui/view.h"
 
 namespace app {
@@ -36,7 +34,7 @@ private:
   MoveThing m_moveThing;
 };
 
-ScrollCommand::ScrollCommand() : Command(CommandId::Scroll(), CmdUIOnlyFlag)
+ScrollCommand::ScrollCommand() : Command(CommandId::Scroll())
 {
 }
 
@@ -47,7 +45,7 @@ void ScrollCommand::onLoadParams(const Params& params)
 
 bool ScrollCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::HasActiveDocument);
+  return context->isUIAvailable() && context->checkFlags(ContextFlags::HasActiveDocument);
 }
 
 void ScrollCommand::onExecute(Context* context)

@@ -30,8 +30,6 @@
 #include "base/mem_utils.h"
 #include "fmt/format.h"
 #include "text/font_metrics.h"
-#include "ui/init_theme_event.h"
-#include "ui/listitem.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
 #include "ui/scale.h"
@@ -497,13 +495,19 @@ public:
   UndoHistoryCommand();
 
 protected:
+  bool onEnabled(Context* context) override;
   void onExecute(Context* ctx) override;
 };
 
 static UndoHistoryWindow* g_window = NULL;
 
-UndoHistoryCommand::UndoHistoryCommand() : Command(CommandId::UndoHistory(), CmdUIOnlyFlag)
+UndoHistoryCommand::UndoHistoryCommand() : Command(CommandId::UndoHistory())
 {
+}
+
+bool UndoHistoryCommand::onEnabled(Context* context)
+{
+  return context->isUIAvailable();
 }
 
 void UndoHistoryCommand::onExecute(Context* ctx)

@@ -34,7 +34,6 @@
 #include "app/ui_context.h"
 #include "base/convert_to.h"
 #include "base/scoped_value.h"
-#include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/layer_tilemap.h"
 #include "doc/sprite.h"
@@ -500,14 +499,14 @@ private:
   bool m_remapAfterConfigure = false;
 };
 
-LayerPropertiesCommand::LayerPropertiesCommand()
-  : Command(CommandId::LayerProperties(), CmdRecordableFlag)
+LayerPropertiesCommand::LayerPropertiesCommand() : Command(CommandId::LayerProperties())
 {
 }
 
 bool LayerPropertiesCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasActiveLayer);
+  return context->isUIAvailable() &&
+         context->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasActiveLayer);
 }
 
 void LayerPropertiesCommand::onExecute(Context* context)

@@ -10,6 +10,7 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
+#include "app/context.h"
 #include "app/ui/layout_selector.h"
 #include "app/ui/main_window.h"
 
@@ -20,13 +21,19 @@ public:
   ToggleWorkspaceLayoutCommand();
 
 protected:
+  bool onEnabled(Context* ctx) override;
   bool onChecked(Context* ctx) override;
   void onExecute(Context* ctx) override;
 };
 
 ToggleWorkspaceLayoutCommand::ToggleWorkspaceLayoutCommand()
-  : Command(CommandId::ToggleWorkspaceLayout(), CmdUIOnlyFlag)
+  : Command(CommandId::ToggleWorkspaceLayout())
 {
+}
+
+bool ToggleWorkspaceLayoutCommand::onEnabled(Context* ctx)
+{
+  return ctx->isUIAvailable();
 }
 
 bool ToggleWorkspaceLayoutCommand::onChecked(Context* ctx)

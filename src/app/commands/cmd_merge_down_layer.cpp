@@ -13,16 +13,12 @@
 #include "app/cmd/flatten_layers.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
-#include "app/doc.h"
-#include "app/doc_api.h"
 #include "app/doc_range.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/tx.h"
-#include "doc/blend_internals.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
-#include "ui/ui.h"
 
 namespace app {
 
@@ -35,8 +31,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-MergeDownLayerCommand::MergeDownLayerCommand()
-  : Command(CommandId::MergeDownLayer(), CmdRecordableFlag)
+MergeDownLayerCommand::MergeDownLayerCommand() : Command(CommandId::MergeDownLayer())
 {
 }
 

@@ -64,7 +64,7 @@ protected:
 // static
 int NewFileCommand::g_spriteCounter = 0;
 
-NewFileCommand::NewFileCommand() : CommandWithNewParams(CommandId::NewFile(), CmdRecordableFlag)
+NewFileCommand::NewFileCommand() : CommandWithNewParams(CommandId::NewFile())
 {
 }
 

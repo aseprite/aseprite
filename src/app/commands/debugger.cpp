@@ -775,7 +775,7 @@ private:
   bool m_fileOk = true;
 };
 
-DebuggerCommand::DebuggerCommand() : Command(CommandId::Debugger(), CmdRecordableFlag)
+DebuggerCommand::DebuggerCommand() : Command(CommandId::Debugger())
 {
 }
 

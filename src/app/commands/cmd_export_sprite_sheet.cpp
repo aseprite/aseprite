@@ -33,15 +33,12 @@
 #include "app/ui/status_bar.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/util/layer_utils.h"
-#include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/string.h"
 #include "base/thread.h"
 #include "doc/layer.h"
-#include "doc/layer_tilemap.h"
 #include "doc/tag.h"
 #include "doc/tileset.h"
-#include "doc/tilesets.h"
 #include "fmt/format.h"
 #include "ui/message.h"
 #include "ui/system.h"
@@ -1187,8 +1184,7 @@ private:
 
 } // anonymous namespace
 
-ExportSpriteSheetCommand::ExportSpriteSheetCommand(const char* id)
-  : CommandWithNewParams(id, CmdRecordableFlag)
+ExportSpriteSheetCommand::ExportSpriteSheetCommand(const char* id) : CommandWithNewParams(id)
 {
 }
 

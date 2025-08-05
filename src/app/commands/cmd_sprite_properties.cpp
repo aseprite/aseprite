@@ -30,7 +30,6 @@
 #include "app/util/pixel_ratio.h"
 #include "app/util/tileset_utils.h"
 #include "base/mem_utils.h"
-#include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
 #include "doc/tilesets.h"
@@ -235,15 +234,14 @@ protected:
   void onExecute(Context* context) override;
 };
 
-SpritePropertiesCommand::SpritePropertiesCommand()
-  : Command(CommandId::SpriteProperties(), CmdUIOnlyFlag)
+SpritePropertiesCommand::SpritePropertiesCommand() : Command(CommandId::SpriteProperties())
 {
 }
 
 bool SpritePropertiesCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasActiveSprite);
+  return context->isUIAvailable() && context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                                                         ContextFlags::HasActiveSprite);
 }
 
 void SpritePropertiesCommand::onExecute(Context* context)

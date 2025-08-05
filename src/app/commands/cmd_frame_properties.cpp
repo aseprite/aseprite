@@ -44,12 +44,11 @@ private:
 
   // Frame to be shown. It can be ALL_FRAMES, CURRENT_RANGE, or a
   // number indicating a specific frame (1 is the first frame).
-  Target m_target;
-  frame_t m_frame;
+  Target m_target = CURRENT_RANGE;
+  frame_t m_frame = 1;
 };
 
-FramePropertiesCommand::FramePropertiesCommand()
-  : Command(CommandId::FrameProperties(), CmdUIOnlyFlag)
+FramePropertiesCommand::FramePropertiesCommand() : Command(CommandId::FrameProperties())
 {
 }
 
@@ -59,7 +58,7 @@ void FramePropertiesCommand::onLoadParams(const Params& params)
   if (frame == "all") {
     m_target = ALL_FRAMES;
   }
-  else if (frame == "current") {
+  else if (frame == "current" || !params.has_param("frame")) {
     m_target = CURRENT_RANGE;
   }
   else {
@@ -70,7 +69,7 @@ void FramePropertiesCommand::onLoadParams(const Params& params)
 
 bool FramePropertiesCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
+  return context->isUIAvailable() && context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
 void FramePropertiesCommand::onExecute(Context* context)

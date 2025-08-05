@@ -18,19 +18,15 @@
 #include "app/doc_api.h"
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
-#include "app/pref/preferences.h"
 #include "app/tx.h"
 #include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui_context.h"
-#include "base/convert_to.h"
 #include "doc/mask.h"
-#include "doc/sprite.h"
-#include "ui/view.h"
 
 namespace app {
 
-MoveMaskCommand::MoveMaskCommand() : Command(CommandId::MoveMask(), CmdRecordableFlag)
+MoveMaskCommand::MoveMaskCommand() : Command(CommandId::MoveMask())
 {
 }
 

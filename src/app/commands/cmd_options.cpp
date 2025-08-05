@@ -37,7 +37,6 @@
 #include "app/ui/sampling_selector.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
-#include "app/util/render_text.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/string.h"
@@ -2177,7 +2176,7 @@ private:
   std::string m_installExtensionFilename;
 };
 
-OptionsCommand::OptionsCommand() : Command(CommandId::Options(), CmdUIOnlyFlag)
+OptionsCommand::OptionsCommand() : Command(CommandId::Options())
 {
   Preferences& preferences = Preferences::instance();
 

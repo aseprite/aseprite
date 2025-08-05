@@ -39,7 +39,7 @@ private:
 };
 
 FillCommand::FillCommand(Type type)
-  : Command(type == Stroke ? CommandId::Stroke() : CommandId::Fill(), CmdUIOnlyFlag)
+  : Command(type == Stroke ? CommandId::Stroke() : CommandId::Fill())
   , m_type(type)
 {
 }

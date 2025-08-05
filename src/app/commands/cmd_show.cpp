@@ -18,7 +18,7 @@ namespace app {
 
 class ShowExtrasCommand : public Command {
 public:
-  ShowExtrasCommand() : Command(CommandId::ShowExtras(), CmdUIOnlyFlag) {}
+  ShowExtrasCommand() : Command(CommandId::ShowExtras()) {}
 
 protected:
   bool onChecked(Context* ctx) override
@@ -49,7 +49,7 @@ protected:
 
 class ShowLayerEdgesCommand : public Command {
 public:
-  ShowLayerEdgesCommand() : Command(CommandId::ShowLayerEdges(), CmdUIOnlyFlag) {}
+  ShowLayerEdgesCommand() : Command(CommandId::ShowLayerEdges()) {}
 
 protected:
   bool onChecked(Context* ctx) override
@@ -67,7 +67,7 @@ protected:
 
 class ShowGridCommand : public Command {
 public:
-  ShowGridCommand() : Command(CommandId::ShowGrid(), CmdUIOnlyFlag) {}
+  ShowGridCommand() : Command(CommandId::ShowGrid()) {}
 
 protected:
   bool onChecked(Context* ctx) override
@@ -85,7 +85,7 @@ protected:
 
 class ShowPixelGridCommand : public Command {
 public:
-  ShowPixelGridCommand() : Command(CommandId::ShowPixelGrid(), CmdUIOnlyFlag) {}
+  ShowPixelGridCommand() : Command(CommandId::ShowPixelGrid()) {}
 
 protected:
   bool onChecked(Context* ctx) override
@@ -103,7 +103,7 @@ protected:
 
 class ShowSelectionEdgesCommand : public Command {
 public:
-  ShowSelectionEdgesCommand() : Command(CommandId::ShowSelectionEdges(), CmdUIOnlyFlag) {}
+  ShowSelectionEdgesCommand() : Command(CommandId::ShowSelectionEdges()) {}
 
 protected:
   bool onChecked(Context* ctx) override
@@ -121,7 +121,7 @@ protected:
 
 class ShowBrushPreviewCommand : public Command {
 public:
-  ShowBrushPreviewCommand() : Command(CommandId::ShowBrushPreview(), CmdUIOnlyFlag) {}
+  ShowBrushPreviewCommand() : Command(CommandId::ShowBrushPreview()) {}
 
 protected:
   bool onChecked(Context* ctx) override
@@ -146,10 +146,7 @@ protected:
 // Preview in the Preview window), not based on the active document.
 class ShowBrushPreviewInPreviewCommand : public Command {
 public:
-  ShowBrushPreviewInPreviewCommand()
-    : Command(CommandId::ShowBrushPreviewInPreview(), CmdUIOnlyFlag)
-  {
-  }
+  ShowBrushPreviewInPreviewCommand() : Command(CommandId::ShowBrushPreviewInPreview()) {}
 
 protected:
   bool onChecked(Context* ctx) override
@@ -167,7 +164,7 @@ protected:
 
 class ShowAutoGuidesCommand : public Command {
 public:
-  ShowAutoGuidesCommand() : Command(CommandId::ShowAutoGuides(), CmdUIOnlyFlag) {}
+  ShowAutoGuidesCommand() : Command(CommandId::ShowAutoGuides()) {}
 
 protected:
   bool onChecked(Context* ctx) override
@@ -185,7 +182,7 @@ protected:
 
 class ShowSlicesCommand : public Command {
 public:
-  ShowSlicesCommand() : Command(CommandId::ShowSlices(), CmdUIOnlyFlag) {}
+  ShowSlicesCommand() : Command(CommandId::ShowSlices()) {}
 
 protected:
   bool onChecked(Context* ctx) override
@@ -203,7 +200,7 @@ protected:
 
 class ShowTileNumbersCommand : public Command {
 public:
-  ShowTileNumbersCommand() : Command(CommandId::ShowTileNumbers(), CmdUIOnlyFlag) {}
+  ShowTileNumbersCommand() : Command(CommandId::ShowTileNumbers()) {}
 
 protected:
   bool onChecked(Context* ctx) override

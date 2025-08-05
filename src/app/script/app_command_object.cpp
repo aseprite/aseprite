@@ -63,6 +63,17 @@ int Command_call(lua_State* L)
   return 1;
 }
 
+int Command_enabled(lua_State* L)
+{
+  app::Context* ctx = App::instance()->context();
+  if (!ctx)
+    return 0;
+
+  auto* command = get_ptr<Command>(L, 1);
+  lua_pushboolean(L, command->isEnabled(ctx));
+  return 1;
+}
+
 int AppCommand_index(lua_State* L)
 {
   const char* id = lua_tostring(L, 2);
@@ -82,6 +93,11 @@ const luaL_Reg Command_methods[] = {
   { nullptr,  nullptr      }
 };
 
+const Property Command_properties[] = {
+  { "enabled", Command_enabled, nullptr },
+  { nullptr,   nullptr,         nullptr }
+};
+
 const luaL_Reg AppCommand_methods[] = {
   { "__index", AppCommand_index },
   { nullptr,   nullptr          }
@@ -95,6 +111,8 @@ DEF_MTNAME(AppCommand);
 void register_app_command_object(lua_State* L)
 {
   REG_CLASS(L, Command);
+  REG_CLASS_PROPERTIES(L, Command);
+
   REG_CLASS(L, AppCommand);
 
   lua_getglobal(L, "app");

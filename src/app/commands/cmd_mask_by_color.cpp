@@ -15,7 +15,6 @@
 #include "app/color_utils.h"
 #include "app/commands/command.h"
 #include "app/commands/new_params.h"
-#include "app/console.h"
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/doc.h"
@@ -26,9 +25,6 @@
 #include "app/ui/color_bar.h"
 #include "app/ui/color_button.h"
 #include "app/ui/selection_mode_field.h"
-#include "base/chrono.h"
-#include "base/convert_to.h"
-#include "base/scoped_value.h"
 #include "doc/image.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
@@ -203,8 +199,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-MaskByColorCommand::MaskByColorCommand()
-  : CommandWithNewParams(CommandId::MaskByColor(), CmdUIOnlyFlag)
+MaskByColorCommand::MaskByColorCommand() : CommandWithNewParams(CommandId::MaskByColor())
 {
 }
 
