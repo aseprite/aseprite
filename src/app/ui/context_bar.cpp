@@ -1001,12 +1001,12 @@ public:
     m_angle.setSuffix("°");
     m_skew.setSuffix("°");
 
-    addChild(new Label("P:"));
+    addChild(new Label(Strings::context_bar_position_label()));
     addChild(&m_x);
     addChild(&m_y);
     addChild(&m_w);
     addChild(&m_h);
-    addChild(new Label("R:"));
+    addChild(new Label(Strings::context_bar_rotation_label()));
     addChild(&m_angle);
     addChild(&m_skew);
 
@@ -1045,6 +1045,16 @@ public:
     });
     m_angle.Change.connect([this] { onChangeAngle(); });
     m_skew.Change.connect([this] { onChangeSkew(); });
+  }
+
+  void setupTooltips(TooltipManager* tooltipManager)
+  {
+    tooltipManager->addTooltipFor(&m_x, Strings::context_bar_position_x(), BOTTOM);
+    tooltipManager->addTooltipFor(&m_y, Strings::context_bar_position_y(), BOTTOM);
+    tooltipManager->addTooltipFor(&m_w, Strings::context_bar_size_width(), BOTTOM);
+    tooltipManager->addTooltipFor(&m_h, Strings::context_bar_size_height(), BOTTOM);
+    tooltipManager->addTooltipFor(&m_angle, Strings::context_bar_rotation_angle(), BOTTOM);
+    tooltipManager->addTooltipFor(&m_skew, Strings::context_bar_rotation_skew(), BOTTOM);
   }
 
   void update(const Transformation& t)
@@ -2626,6 +2636,7 @@ void ContextBar::setupTooltips(TooltipManager* tooltipManager)
   m_dropPixels->setupTooltips(tooltipManager);
   m_symmetry->setupTooltips(tooltipManager);
   m_sliceFields->setupTooltips(tooltipManager);
+  m_transformation->setupTooltips(tooltipManager);
 }
 
 void ContextBar::registerCommands()
