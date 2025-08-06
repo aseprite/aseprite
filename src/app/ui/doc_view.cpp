@@ -42,6 +42,7 @@
 #include "doc/sprite.h"
 #include "fmt/format.h"
 #include "ui/alert.h"
+#include "ui/display.h"
 #include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/shortcut.h"
@@ -306,6 +307,11 @@ bool DocView::onCloseView(Workspace* workspace, bool quitting)
 
     // See if the sprite has changes
     while (m_document->isModified()) {
+      if (quitting) {
+        // Make sure the window is active so we can see the message when we close the app.
+        display()->nativeWindow()->activate();
+      }
+
       // ask what want to do the user with the changes in the sprite
       int ret = Alert::show(Strings::alerts_save_sprite_changes(
         m_document->name(),
