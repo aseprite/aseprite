@@ -355,8 +355,6 @@ private:
   gfx::Point getMaxScrollablePos() const;
   doc::Layer* getLayer(int layerIndex) const;
   layer_t getLayerIndex(const Layer* layer) const;
-  // Get layer index regardless of visibility in the UI.
-  layer_t getLayerIndexFromSprite(const Layer* layer) const;
   bool isLayerActive(const layer_t layerIdx) const;
   bool isFrameActive(const col_t frame) const;
   bool isCelActive(const layer_t layerIdx, const col_t frame) const;
