@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>UTExportedTypeDeclarations</key>
+  <array>
+    <dict>
+      <key>UTTypeIdentifier</key>
+      <string>$ASEPRITE_BUNDLE_ID.sprite</string>
+      <key>UTTypeDescription</key>
+      <string>Aseprite Sprite</string>
+      <key>UTTypeConformsTo</key>
+      <array>
+          <string>public.image</string>
+      </array>
+      <key>UTTypeTagSpecification</key>
+      <dict>
+        <key>public.filename-extension</key>
+        <array>
+          <string>aseprite</string>
+          <string>ase</string>
+        </array>
+        <key>public.mime-type</key>
+        <string>image/aseprite</string>
+      </dict>
+    </dict>
+  </array>
+  <key>CFBundleIdentifier</key>
+  <string>$ASEPRITE_BUNDLE_ID</string>
+  <key>CFBundleVersion</key>
+  <string>$VERSION</string>
+  <key>CFBundleShortVersionString</key>
+  <string>$VERSION</string>
+  <key>CFBundleExecutable</key>
+  <string>aseprite</string>
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleSupportedPlatforms</key>
+  <array>
+          <string>MacOSX</string>
+  </array>
+  <key>CSResourcesFileMapped</key>
+  <true/>
+  <key>LSHasPlugIns</key>
+  <true/>
+  <key>LSMinimumSystemVersion</key>
+  <string>10.15</string>
+</dict>
+</plist>

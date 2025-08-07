@@ -1,11 +1,10 @@
-// Desktop Integration
-// Copyright (c) 2022  Igara Studio S.A.
+// Aseprite
+// Copyright (c) 2025  Igara Studio S.A.
 //
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-#include "thumbnail.h"
-
+#include "app/file_system.h"
 #include "dio/decode_delegate.h"
 #include "dio/decode_file.h"
 #include "dio/file_interface.h"
@@ -13,10 +12,7 @@
 #include "render/render.h"
 
 #include <Cocoa/Cocoa.h>
-
-#include <algorithm>
-
-namespace desktop {
+#include <QuickLookThumbnailing/QuickLookThumbnailing.h>
 
 namespace {
 
@@ -38,13 +34,13 @@ class StreamAdaptor : public dio::FileInterface {
 public:
   StreamAdaptor(NSData* data) : m_data(data), m_ok(m_data != nullptr), m_pos(0) {}
 
-  bool ok() const { return m_ok; }
+  bool ok() const override { return m_ok; }
 
-  size_t tell() { return m_pos; }
+  size_t tell() override { return m_pos; }
 
-  void seek(size_t absPos) { m_pos = absPos; }
+  void seek(size_t absPos) override { m_pos = absPos; }
 
-  uint8_t read8()
+  uint8_t read8() override
   {
     if (!m_ok)
       return 0;
@@ -57,7 +53,7 @@ public:
     }
   }
 
-  size_t readBytes(uint8_t* buf, size_t n)
+  size_t readBytes(uint8_t* buf, size_t n) override
   {
     if (!m_ok)
       return 0;
@@ -75,21 +71,16 @@ public:
     }
   }
 
-  void write8(uint8_t value)
-  {
-    // Do nothing, we don't write in the file
-  }
+  void write8(uint8_t value) override {};
 
   NSData* m_data;
   bool m_ok;
   size_t m_pos;
 };
 
-} // anonymous namespace
-
-CGImageRef get_thumbnail(CFURLRef url, CFDictionaryRef options, CGSize maxSize)
+CGImageRef get_thumbnail(CFURLRef url, CGSize maxSize)
 {
-  auto data = [[NSData alloc] initWithContentsOfURL:(NSURL*)url];
+  auto data = [[NSData alloc] initWithContentsOfURL:(__bridge NSURL*)url];
   if (!data)
     return nullptr;
 
@@ -152,4 +143,52 @@ CGImageRef get_thumbnail(CFURLRef url, CFDictionaryRef options, CGSize maxSize)
   return img;
 }
 
-} // namespace desktop
+} // namespace
+
+@interface ThumbnailProvider : QLThumbnailProvider
+@end
+
+@implementation ThumbnailProvider
+
+- (void)provideThumbnailForFileRequest:(QLFileThumbnailRequest*)request
+                     completionHandler:
+                       (void (^)(QLThumbnailReply* _Nullable, NSError* _Nullable))handler
+{
+  CFURLRef url = (__bridge CFURLRef)(request.fileURL);
+  CGSize maxSize = request.maximumSize;
+  CGImageRef cgImage = get_thumbnail(url, maxSize);
+  if (!cgImage) {
+    handler(nil, nil);
+    return;
+  }
+  CGSize imageSize = CGSizeMake(CGImageGetWidth(cgImage), CGImageGetHeight(cgImage));
+  handler([QLThumbnailReply replyWithContextSize:maxSize
+                      currentContextDrawingBlock:^BOOL {
+                        CGContextRef ctx = [[NSGraphicsContext currentContext] CGContext];
+                        CGContextSaveGState(ctx);
+                        CGFloat scale = MIN(maxSize.width / imageSize.width,
+                                            maxSize.height / imageSize.height);
+                        CGSize scaledSize = CGSizeMake(imageSize.width * scale,
+                                                       imageSize.height * scale);
+                        CGRect drawRect = CGRectMake((maxSize.width - scaledSize.width) / 2,
+                                                     (maxSize.height - scaledSize.height) / 2,
+                                                     scaledSize.width,
+                                                     scaledSize.height);
+                        CGContextDrawImage(ctx, drawRect, cgImage);
+                        CGContextRestoreGState(ctx);
+                        CGImageRelease(cgImage);
+                        return YES;
+                      }],
+          nil);
+}
+
+@end
+
+// This constructor ensures that the ThumbnailProvider class is explicitly referenced
+// during linking. Without this, the linker may discard the symbol, preventing the QuickLook
+// from discovering the provider. This is required to ensure the symbol
+// OBJC_CLASS_$_ThumbnailProvider is exported correctly from the .appex binary.
+__attribute__((constructor)) static void forceExportThumbnailProvider()
+{
+  [ThumbnailProvider class];
+}
