@@ -470,13 +470,12 @@ bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
 
   if (msg->scancode() == kKeyEnter || // TODO make this key customizable
       msg->scancode() == kKeyEnterPad || msg->scancode() == kKeyEsc) {
-    dropPixels();
-
-    // The escape key drop pixels and deselect the mask.
     if (msg->scancode() == kKeyEsc) { // TODO make this key customizable
-      Command* cmd = Commands::instance()->byId(CommandId::DeselectMask());
-      UIContext::instance()->executeCommandFromMenuOrShortcut(cmd);
+      m_pixelsMovement->discardImage(PixelsMovement::DontCommitChanges);
+      m_discarded = true;
     }
+
+    dropPixels();
 
     return true;
   }
