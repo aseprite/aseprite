@@ -136,6 +136,7 @@ private:
 // static
 Editor* Editor::m_activeEditor = nullptr;
 std::unique_ptr<Mask> Editor::m_selectionToolMask = nullptr;
+std::unique_ptr<MaskBoundaries> Editor::m_selectionToolMaskBoundaries = nullptr;
 
 // static
 std::unique_ptr<EditorRender> Editor::m_renderEngine = nullptr;
@@ -1038,20 +1039,15 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
     }
   }
 
-  // Draw the mask
-  const bool haveSegs = m_document->hasMaskBoundaries();
-  if (haveSegs)
-    drawMask(g, MaskIndex::Document);
+  // Draw the current selection mask
+  if (m_document->hasMaskBoundaries())
+    drawMask(g);
 
+  // If we are in a selection tool and the user has the new selection
+  // feedback...
   if (hasSelectionToolMask()) {
-    const auto segs = m_document->maskBoundaries();
-    m_document->generateMaskBoundaries(m_selectionToolMask.get());
-    drawMask(g, MaskIndex::SelectionTool);
-
-    if (haveSegs)
-      m_document->setMaskBoundaries(segs);
-    else
-      m_document->destroyMaskBoundaries();
+    m_selectionToolMaskBoundaries->regen(m_selectionToolMask.get());
+    drawMaskBoundaries(g, *m_selectionToolMaskBoundaries, 0);
 
     const gfx::Point prevPoint(m_selectionToolMask->bounds().point2());
     if (prevPoint.x >= m_sprite->width() || prevPoint.y >= m_sprite->height())
@@ -1084,40 +1080,32 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
   }
 }
 
-/**
- * Draws the boundaries, really this routine doesn't use the "mask"
- * field of the sprite, only the "bound" field (so you can have other
- * mask in the sprite and could be showed other boundaries), to
- * regenerate boundaries, use the sprite_generate_mask_boundaries()
- * routine.
- */
-void Editor::drawMask(Graphics* g, const MaskIndex index)
+// Draws the current sprite mask boundaries (the active selection).
+void Editor::drawMask(Graphics* g)
 {
-  if (index == MaskIndex::Document &&
-      ((m_flags & kShowMask) == 0 || !m_docPref.show.selectionEdges()))
+  if ((m_flags & kShowMask) == 0 || !m_docPref.show.selectionEdges())
     return;
 
   ASSERT(m_document->hasMaskBoundaries());
 
+  drawMaskBoundaries(g, m_document->maskBoundaries(), m_antsOffset);
+}
+
+void Editor::drawMaskBoundaries(ui::Graphics* g, doc::MaskBoundaries& segs, const int antsOffset)
+{
   gfx::Point pt = mainTilePosition();
   pt.x = m_padding.x + m_proj.applyX(pt.x);
   pt.y = m_padding.y + m_proj.applyY(pt.y);
 
   // Create the mask boundaries path
-  auto& segs = m_document->maskBoundaries();
   segs.createPathIfNeeeded();
 
   ui::Paint paint;
   paint.style(ui::Paint::Stroke);
-  if (index == MaskIndex::Document) {
-    set_checkered_paint_mode(paint,
-                             m_antsOffset,
-                             gfx::rgba(0, 0, 0, 255),
-                             gfx::rgba(255, 255, 255, 255));
-  }
-  else {
-    set_checkered_paint_mode(paint, 0, gfx::rgba(0, 0, 0, 255), gfx::rgba(255, 255, 255, 255));
-  }
+  set_checkered_paint_mode(paint,
+                           antsOffset,
+                           gfx::rgba(0, 0, 0, 255),
+                           gfx::rgba(255, 255, 255, 255));
 
   // We translate the path instead of applying a matrix to the
   // ui::Graphics so the "checkered" pattern is not scaled too.
@@ -1145,23 +1133,17 @@ void Editor::drawMaskSafe()
       for (const gfx::Rect& rc : region) {
         IntersectClip clip(g.get(), rc);
         if (clip)
-          drawMask(g.get(), MaskIndex::Document);
+          drawMask(g.get());
       }
     }
 
     if (hasSelectionToolMask()) {
-      const auto segs = m_document->maskBoundaries();
-      m_document->generateMaskBoundaries(m_selectionToolMask.get());
+      m_selectionToolMaskBoundaries->regen(m_selectionToolMask.get());
       for (const gfx::Rect& rc : region) {
         IntersectClip clip(g.get(), rc);
         if (clip)
-          drawMask(g.get(), MaskIndex::SelectionTool);
+          drawMaskBoundaries(g.get(), *m_selectionToolMaskBoundaries, 0);
       }
-
-      if (haveSegs)
-        m_document->setMaskBoundaries(segs);
-      else
-        m_document->destroyMaskBoundaries();
     }
   }
 }
@@ -2062,12 +2044,14 @@ void Editor::showUnhandledException(const std::exception& ex, const ui::Message*
 
 void Editor::makeSelectionToolMask()
 {
-  m_selectionToolMask.reset(new Mask());
+  m_selectionToolMask = std::make_unique<Mask>();
+  m_selectionToolMaskBoundaries = std::make_unique<MaskBoundaries>();
 }
 
 void Editor::deleteSelectionToolMask()
 {
   m_selectionToolMask.reset();
+  m_selectionToolMaskBoundaries.reset();
 }
 
 bool Editor::hasSelectionToolMask()
@@ -2458,7 +2442,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
 
       // Draw the mask boundaries
       if (m_document->hasMaskBoundaries()) {
-        drawMask(g, MaskIndex::Document);
+        drawMask(g);
         m_antsTimer.start();
       }
       else {

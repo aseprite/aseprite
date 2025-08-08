@@ -44,6 +44,7 @@
 
 namespace doc {
 class Layer;
+class MaskBoundaries;
 class Sprite;
 } // namespace doc
 namespace gfx {
@@ -366,8 +367,8 @@ private:
   void drawBackground(ui::Graphics* g);
   void drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc);
   void drawMaskSafe();
-  enum MaskIndex { Document, SelectionTool, Count };
-  void drawMask(ui::Graphics* g, MaskIndex index);
+  void drawMask(ui::Graphics* g);
+  void drawMaskBoundaries(ui::Graphics* g, doc::MaskBoundaries& segs, int antsOffset = 0);
   void drawGrid(ui::Graphics* g,
                 const gfx::Rect& spriteBounds,
                 const gfx::Rect& gridBounds,
@@ -518,8 +519,10 @@ private:
   // (search for Render::setPreviewImage()).
   static std::unique_ptr<EditorRender> m_renderEngine;
 
-  // Used for selection tool feedback
-  static std::unique_ptr<Mask> m_selectionToolMask;
+  // Used for selection tool feedback.
+  // TODO move this to SelectionToolLoopImpl
+  static std::unique_ptr<doc::Mask> m_selectionToolMask;
+  static std::unique_ptr<doc::MaskBoundaries> m_selectionToolMaskBoundaries;
 };
 
 } // namespace app

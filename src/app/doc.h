@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -195,7 +195,6 @@ public:
   const MaskBoundaries& maskBoundaries() const { return m_maskBoundaries; }
 
   MaskBoundaries& maskBoundaries() { return m_maskBoundaries; }
-  void setMaskBoundaries(const MaskBoundaries& segs) { m_maskBoundaries = segs; }
 
   bool hasMaskBoundaries() const { return !m_maskBoundaries.isEmpty(); }
 
