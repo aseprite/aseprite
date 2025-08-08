@@ -597,4 +597,22 @@ void LayerGroup::displaceFrames(frame_t fromThis, frame_t delta)
     layer->displaceFrames(fromThis, delta);
 }
 
+layer_t LayerGroup::getLayerIndex(const Layer* layer, layer_t& index) const
+{
+  for (Layer* child : this->layers()) {
+    if ((child->isGroup() && static_cast<LayerGroup*>(child)->getLayerIndex(layer, index) != -1) ||
+        (child == layer)) {
+      return index;
+    }
+    index++;
+  }
+  return -1;
+}
+
+layer_t LayerGroup::getLayerIndex(const Layer* layer) const
+{
+  layer_t index = 0;
+  return this->getLayerIndex(layer, index);
+}
+
 } // namespace doc

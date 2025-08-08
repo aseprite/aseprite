@@ -236,8 +236,12 @@ public:
 
   bool isBrowsable() const override { return isGroup() && isExpanded() && !m_layers.empty(); }
 
+  layer_t getLayerIndex(const Layer* layer) const;
+
 private:
   void destroyAllLayers();
+
+  layer_t getLayerIndex(const Layer* layer, layer_t& index) const;
 
   LayerList m_layers;
 };
