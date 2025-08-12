@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -14,6 +14,7 @@
 #include "app/ui/main_menu_bar.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
+#include "fmt/format.h"
 #include "ui/scale.h"
 #include "ui/system.h"
 #include "ui/theme.h"
