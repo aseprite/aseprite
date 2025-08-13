@@ -74,9 +74,9 @@
 namespace app {
 
 DocApi::HandleLinkedCels::HandleLinkedCels(DocApi& api,
-                                           doc::LayerImage* srcLayer,
+                                           doc::Layer* srcLayer,
                                            const doc::frame_t srcFrame,
-                                           doc::LayerImage* dstLayer,
+                                           doc::Layer* dstLayer,
                                            const doc::frame_t dstFrame)
   : m_api(api)
   , m_srcDataId(doc::NullId)
@@ -353,7 +353,7 @@ void DocApi::copyFrame(Sprite* sprite,
 
   for (Layer* layer : sprite->allLayers()) {
     if (layer->isImage()) {
-      copyCel(static_cast<LayerImage*>(layer), fromFrame, static_cast<LayerImage*>(layer), newFrame);
+      copyCel(layer, fromFrame, layer, newFrame);
     }
   }
 
@@ -481,7 +481,7 @@ void DocApi::moveFrameLayer(Layer* layer, frame_t frame, frame_t beforeFrame)
   }
 }
 
-void DocApi::addCel(LayerImage* layer, Cel* cel)
+void DocApi::addCel(Layer* layer, Cel* cel)
 {
   ASSERT(layer);
   ASSERT(cel);
@@ -540,7 +540,7 @@ void DocApi::clearCelAndAllLinks(Cel* cel)
   }
 }
 
-void DocApi::moveCel(LayerImage* srcLayer, frame_t srcFrame, LayerImage* dstLayer, frame_t dstFrame)
+void DocApi::moveCel(Layer* srcLayer, frame_t srcFrame, Layer* dstLayer, frame_t dstFrame)
 {
   ASSERT(srcLayer != dstLayer || srcFrame != dstFrame);
   if (srcLayer == dstLayer && srcFrame == dstFrame)
@@ -557,9 +557,9 @@ void DocApi::moveCel(LayerImage* srcLayer, frame_t srcFrame, LayerImage* dstLaye
     new cmd::MoveCel(srcLayer, srcFrame, dstLayer, dstFrame, dstLayer->isContinuous()));
 }
 
-void DocApi::copyCel(LayerImage* srcLayer,
+void DocApi::copyCel(Layer* srcLayer,
                      frame_t srcFrame,
-                     LayerImage* dstLayer,
+                     Layer* dstLayer,
                      frame_t dstFrame,
                      const bool* forceContinuous)
 {
@@ -579,7 +579,7 @@ void DocApi::copyCel(LayerImage* srcLayer,
                      (forceContinuous ? *forceContinuous : dstLayer->isContinuous())));
 }
 
-void DocApi::swapCel(LayerImage* layer, frame_t frame1, frame_t frame2)
+void DocApi::swapCel(Layer* layer, frame_t frame1, frame_t frame2)
 {
   ASSERT(frame1 != frame2);
 

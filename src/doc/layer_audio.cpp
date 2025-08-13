@@ -20,14 +20,4 @@ LayerAudio::~LayerAudio()
 {
 }
 
-void LayerAudio::getCels(CelList& cels) const
-{
-  // TODO
-}
-
-void LayerAudio::displaceFrames(frame_t fromThis, frame_t delta)
-{
-  // TODO
-}
-
 } // namespace doc

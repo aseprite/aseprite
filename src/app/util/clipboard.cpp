@@ -688,10 +688,7 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
               Cel* srcCel = srcLayer->cel(srcFrame);
 
               if (srcCel && srcCel->image()) {
-                api.copyCel(static_cast<LayerImage*>(srcLayer),
-                            srcFrame,
-                            static_cast<LayerImage*>(dstLayer),
-                            dstFrame);
+                api.copyCel(srcLayer, srcFrame, dstLayer, dstFrame);
               }
               else {
                 if (Cel* dstCel = dstLayer->cel(dstFrame))

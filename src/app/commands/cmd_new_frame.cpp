@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -126,11 +126,7 @@ void NewFrameCommand::onExecute(Context* context)
             if (layer->isImage()) {
               for (frame_t srcFrame : site.selectedFrames().reversed()) {
                 frame_t dstFrame = srcFrame + frameRange;
-                api.copyCel(static_cast<LayerImage*>(layer),
-                            srcFrame,
-                            static_cast<LayerImage*>(layer),
-                            dstFrame,
-                            continuous.get());
+                api.copyCel(layer, srcFrame, layer, dstFrame, continuous.get());
               }
             }
           }

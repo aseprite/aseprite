@@ -22,9 +22,6 @@ public:
   virtual ~LayerText();
 
   // TODO associated text/font/location per frame/keyframe
-
-  void getCels(CelList& cels) const override;
-  void displaceFrames(frame_t fromThis, frame_t delta) override;
 };
 
 } // namespace doc

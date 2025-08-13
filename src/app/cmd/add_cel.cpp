@@ -62,7 +62,7 @@ void AddCel::onRedo()
 
 void AddCel::addCel(Layer* layer, Cel* cel)
 {
-  static_cast<LayerImage*>(layer)->addCel(cel);
+  layer->addCel(cel);
   layer->incrementVersion();
 
   Doc* doc = static_cast<Doc*>(cel->document());
@@ -82,7 +82,7 @@ void AddCel::removeCel(Layer* layer, Cel* cel)
   ev.cel(cel);
   doc->notify_observers<DocEvent&>(&DocObserver::onBeforeRemoveCel, ev);
 
-  static_cast<LayerImage*>(layer)->removeCel(cel);
+  layer->removeCel(cel);
   layer->incrementVersion();
 
   doc->notify_observers<DocEvent&>(&DocObserver::onAfterRemoveCel, ev);

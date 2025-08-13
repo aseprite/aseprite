@@ -20,14 +20,4 @@ LayerText::~LayerText()
 {
 }
 
-void LayerText::getCels(CelList& cels) const
-{
-  // TODO
-}
-
-void LayerText::displaceFrames(frame_t fromThis, frame_t delta)
-{
-  // TODO
-}
-
 } // namespace doc

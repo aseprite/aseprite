@@ -22,9 +22,6 @@ public:
   virtual ~LayerSubsprite();
 
   // TODO associated subsprite and bounds/rotation/transformation per frame/keyframe
-
-  void getCels(CelList& cels) const override;
-  void displaceFrames(frame_t fromThis, frame_t delta) override;
 };
 
 } // namespace doc

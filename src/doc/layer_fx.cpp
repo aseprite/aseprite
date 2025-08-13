@@ -20,14 +20,4 @@ LayerFx::~LayerFx()
 {
 }
 
-void LayerFx::getCels(CelList& cels) const
-{
-  // TODO
-}
-
-void LayerFx::displaceFrames(frame_t fromThis, frame_t delta)
-{
-  // TODO
-}
-
 } // namespace doc

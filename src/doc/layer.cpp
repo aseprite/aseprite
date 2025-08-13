@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -40,11 +40,47 @@ Layer::Layer(ObjectType type, Sprite* sprite)
 
 Layer::~Layer()
 {
+  destroyAllCels();
 }
 
 int Layer::getMemSize() const
 {
-  return sizeof(Layer);
+  int size = sizeof(Layer);
+  CelConstIterator it = getCelBegin();
+  const CelConstIterator end = getCelEnd();
+
+  for (; it != end; ++it) {
+    const Cel* cel = *it;
+
+    if (cel->link()) // Skip link
+      continue;
+
+    size += cel->getMemSize();
+  }
+
+  return size;
+}
+
+void Layer::suspendObject()
+{
+  CelIterator it = getCelBegin();
+  CelIterator end = getCelEnd();
+  for (; it != end; ++it) {
+    Cel* cel = *it;
+    cel->suspendObject();
+  }
+  WithUserData::suspendObject();
+}
+
+void Layer::restoreObject()
+{
+  WithUserData::restoreObject();
+  CelIterator it = getCelBegin();
+  CelIterator end = getCelEnd();
+  for (; it != end; ++it) {
+    Cel* cel = *it;
+    cel->restoreObject();
+  }
 }
 
 Layer* Layer::getPrevious() const
@@ -212,66 +248,13 @@ Grid Layer::grid() const
 
 Cel* Layer::cel(frame_t frame) const
 {
+  const CelConstIterator it = findCelIterator(frame);
+  if (it != getCelEnd())
+    return *it;
   return nullptr;
 }
 
-//////////////////////////////////////////////////////////////////////
-// LayerImage class
-
-LayerImage::LayerImage(ObjectType type, Sprite* sprite) : Layer(type, sprite)
-{
-}
-
-LayerImage::LayerImage(Sprite* sprite) : LayerImage(ObjectType::LayerImage, sprite)
-{
-}
-
-LayerImage::~LayerImage()
-{
-  destroyAllCels();
-}
-
-int LayerImage::getMemSize() const
-{
-  int size = sizeof(LayerImage);
-  CelConstIterator it = getCelBegin();
-  CelConstIterator end = getCelEnd();
-
-  for (; it != end; ++it) {
-    const Cel* cel = *it;
-
-    if (cel->link()) // Skip link
-      continue;
-
-    size += cel->getMemSize();
-  }
-
-  return size;
-}
-
-void LayerImage::suspendObject()
-{
-  CelIterator it = getCelBegin();
-  CelIterator end = getCelEnd();
-  for (; it != end; ++it) {
-    Cel* cel = *it;
-    cel->suspendObject();
-  }
-  Layer::suspendObject();
-}
-
-void LayerImage::restoreObject()
-{
-  Layer::restoreObject();
-  CelIterator it = getCelBegin();
-  CelIterator end = getCelEnd();
-  for (; it != end; ++it) {
-    Cel* cel = *it;
-    cel->restoreObject();
-  }
-}
-
-void LayerImage::destroyAllCels()
+void Layer::destroyAllCels()
 {
   CelIterator it = getCelBegin();
   CelIterator end = getCelEnd();
@@ -283,39 +266,29 @@ void LayerImage::destroyAllCels()
   m_cels.clear();
 }
 
-Cel* LayerImage::cel(frame_t frame) const
-{
-  CelConstIterator it = findCelIterator(frame);
-  if (it != getCelEnd())
-    return *it;
-  else
-    return nullptr;
-}
-
-void LayerImage::getCels(CelList& cels) const
+void Layer::getCels(CelList& cels) const
 {
   CelConstIterator it = getCelBegin();
-  CelConstIterator end = getCelEnd();
+  const CelConstIterator end = getCelEnd();
 
   for (; it != end; ++it)
     cels.push_back(*it);
 }
 
-Cel* LayerImage::getLastCel() const
+Cel* Layer::getLastCel() const
 {
   if (!m_cels.empty())
     return m_cels.back();
-  else
-    return NULL;
+  return nullptr;
 }
 
-CelConstIterator LayerImage::findCelIterator(frame_t frame) const
+CelConstIterator Layer::findCelIterator(frame_t frame) const
 {
-  CelIterator it = const_cast<LayerImage*>(this)->findCelIterator(frame);
+  const CelIterator it = const_cast<Layer*>(this)->findCelIterator(frame);
   return CelConstIterator(it);
 }
 
-CelIterator LayerImage::findCelIterator(frame_t frame)
+CelIterator Layer::findCelIterator(frame_t frame)
 {
   auto first = getCelBegin();
   auto end = getCelEnd();
@@ -332,7 +305,7 @@ CelIterator LayerImage::findCelIterator(frame_t frame)
     return end;
 }
 
-CelIterator LayerImage::findFirstCelIteratorAfter(frame_t firstAfterFrame)
+CelIterator Layer::findFirstCelIteratorAfter(frame_t firstAfterFrame)
 {
   auto first = getCelBegin();
   auto end = getCelEnd();
@@ -345,7 +318,7 @@ CelIterator LayerImage::findFirstCelIteratorAfter(frame_t firstAfterFrame)
   return first;
 }
 
-void LayerImage::addCel(Cel* cel)
+void Layer::addCel(Cel* cel)
 {
   ASSERT(cel);
   ASSERT(cel->data() && "The cel doesn't contain CelData");
@@ -366,7 +339,7 @@ void LayerImage::addCel(Cel* cel)
  * It doesn't destroy the cel, you have to delete it after calling
  * this routine.
  */
-void LayerImage::removeCel(Cel* cel)
+void Layer::removeCel(Cel* cel)
 {
   ASSERT(cel);
   CelIterator it = findCelIterator(cel->frame());
@@ -377,12 +350,50 @@ void LayerImage::removeCel(Cel* cel)
   cel->setParentLayer(NULL);
 }
 
-void LayerImage::moveCel(Cel* cel, frame_t frame)
+void Layer::moveCel(Cel* cel, frame_t frame)
 {
   removeCel(cel);
   cel->setFrame(frame);
   cel->incrementVersion(); // TODO this should be in app::cmd module
   addCel(cel);
+}
+
+void Layer::displaceFrames(frame_t fromThis, frame_t delta)
+{
+  Sprite* sprite = this->sprite();
+
+  if (delta > 0) {
+    for (frame_t c = sprite->lastFrame(); c >= fromThis; --c) {
+      if (Cel* cel = this->cel(c))
+        moveCel(cel, c + delta);
+    }
+  }
+  else {
+    for (frame_t c = fromThis; c <= sprite->lastFrame(); ++c) {
+      if (Cel* cel = this->cel(c))
+        moveCel(cel, c + delta);
+    }
+  }
+}
+
+//////////////////////////////////////////////////////////////////////
+// LayerImage class
+
+LayerImage::LayerImage(ObjectType type, Sprite* sprite) : Layer(type, sprite)
+{
+}
+
+LayerImage::LayerImage(Sprite* sprite) : LayerImage(ObjectType::LayerImage, sprite)
+{
+}
+
+LayerImage::~LayerImage()
+{
+}
+
+int LayerImage::getMemSize() const
+{
+  return sizeof(LayerImage) + Layer::getMemSize() - sizeof(Layer);
 }
 
 /**
@@ -401,24 +412,6 @@ void LayerImage::configureAsBackground()
   setName("Background");
 
   sprite()->root()->stackLayer(this, NULL);
-}
-
-void LayerImage::displaceFrames(frame_t fromThis, frame_t delta)
-{
-  Sprite* sprite = this->sprite();
-
-  if (delta > 0) {
-    for (frame_t c = sprite->lastFrame(); c >= fromThis; --c) {
-      if (Cel* cel = this->cel(c))
-        moveCel(cel, c + delta);
-    }
-  }
-  else {
-    for (frame_t c = fromThis; c <= sprite->lastFrame(); ++c) {
-      if (Cel* cel = this->cel(c))
-        moveCel(cel, c + delta);
-    }
-  }
 }
 
 //////////////////////////////////////////////////////////////////////
