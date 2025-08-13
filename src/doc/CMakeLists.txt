@@ -1,5 +1,5 @@
 # Aseprite Document Library
-# Copyright (C) 2019-2024 Igara Studio S.A.
+# Copyright (C) 2019-2025 Igara Studio S.A.
 # Copyright (C) 2001-2018 David Capello
 
 if(WIN32)
@@ -47,9 +47,15 @@ add_library(doc-lib
   image_io.cpp
   image_iterators2.cpp
   layer.cpp
+  layer_audio.cpp
+  layer_fx.cpp
   layer_io.cpp
   layer_list.cpp
+  layer_mask.cpp
+  layer_subsprite.cpp
+  layer_text.cpp
   layer_tilemap.cpp
+  layer_vector.cpp
   mask.cpp
   mask_boundaries.cpp
   mask_io.cpp
