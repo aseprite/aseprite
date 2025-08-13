@@ -175,7 +175,7 @@ void Cel::restoreObject()
   }
 }
 
-void Cel::setParentLayer(LayerImage* layer)
+void Cel::setParentLayer(Layer* layer)
 {
   m_layer = layer;
   fixupImage();

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -57,12 +57,18 @@ LAF_ENUM_FLAGS(LayerFlags);
 
 class Layer : public WithUserData {
 protected:
+  // Only constructured by derived classes
   Layer(ObjectType type, Sprite* sprite);
 
 public:
+  // Disable assigment
+  Layer& operator=(const Layer& other) = delete;
+
   virtual ~Layer();
 
   int getMemSize() const override;
+  void suspendObject() override;
+  void restoreObject() override;
 
   const std::string& name() const { return m_name; }
   void setName(const std::string& name) { m_name = name; }
@@ -145,22 +151,45 @@ public:
   }
 
   virtual Grid grid() const;
-  virtual Cel* cel(frame_t frame) const;
-  virtual void getCels(CelList& cels) const = 0;
-  virtual void displaceFrames(frame_t fromThis, frame_t delta) = 0;
+
+  // Cels management
+
+  void addCel(Cel* cel);
+  void removeCel(Cel* cel);
+  void moveCel(Cel* cel, frame_t frame);
+
+  Cel* cel(frame_t frame) const;
+  virtual void getCels(CelList& cels) const;
+  virtual void displaceFrames(frame_t fromThis, frame_t delta);
+
+  Cel* getLastCel() const;
+  CelConstIterator findCelIterator(frame_t frame) const;
+  CelIterator findCelIterator(frame_t frame);
+  CelIterator findFirstCelIteratorAfter(frame_t firstAfterFrame);
+
+  CelIterator getCelBegin() { return m_cels.begin(); }
+  CelIterator getCelEnd() { return m_cels.end(); }
+  CelConstIterator getCelBegin() const { return m_cels.begin(); }
+  CelConstIterator getCelEnd() const { return m_cels.end(); }
+  int getCelsCount() const { return (int)m_cels.size(); }
 
 private:
+  void destroyAllCels();
+
   std::string m_name;        // layer name
   Sprite* m_sprite;          // owner of the layer
   LayerGroup* m_parent;      // parent layer
   LayerFlags m_flags;        // stack order cannot be changed
   mutable base::Uuid m_uuid; // lazily generated layer's UUID
 
+  // Some of these fields might not be used depending on the layer
+  // kind (e.g. the blend mode and opacity don't make sense for audio
+  // layers).
   BlendMode m_blendmode;
   int m_opacity;
 
-  // Disable assigment
-  Layer& operator=(const Layer& other);
+  // List of all cels inside this layer used by frames.
+  CelList m_cels;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -173,34 +202,8 @@ public:
   virtual ~LayerImage();
 
   int getMemSize() const override;
-  void suspendObject() override;
-  void restoreObject() override;
-
-  void addCel(Cel* cel);
-  void removeCel(Cel* cel);
-  void moveCel(Cel* cel, frame_t frame);
-
-  Cel* cel(frame_t frame) const override;
-  void getCels(CelList& cels) const override;
-  void displaceFrames(frame_t fromThis, frame_t delta) override;
-
-  Cel* getLastCel() const;
-  CelConstIterator findCelIterator(frame_t frame) const;
-  CelIterator findCelIterator(frame_t frame);
-  CelIterator findFirstCelIteratorAfter(frame_t firstAfterFrame);
 
   void configureAsBackground();
-
-  CelIterator getCelBegin() { return m_cels.begin(); }
-  CelIterator getCelEnd() { return m_cels.end(); }
-  CelConstIterator getCelBegin() const { return m_cels.begin(); }
-  CelConstIterator getCelEnd() const { return m_cels.end(); }
-  int getCelsCount() const { return (int)m_cels.size(); }
-
-private:
-  void destroyAllCels();
-
-  CelList m_cels; // List of all cels inside this layer used by frames.
 };
 
 //////////////////////////////////////////////////////////////////////
