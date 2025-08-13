@@ -58,6 +58,8 @@ struct NewLayerParams : public NewParams {
   Param<bool> group{ this, false, "group" };
   Param<bool> reference{ this, false, "reference" };
   Param<bool> tilemap{ this, false, "tilemap" };
+  // Alternative for group/reference/tilemap params and used for future layer types
+  Param<std::string> type{ this, {}, "type" };
   Param<gfx::Rect> gridBounds{ this, gfx::Rect(), "gridBounds" };
   Param<bool> ask{ this, false, "ask" };
   Param<bool> fromFile{
@@ -105,11 +107,11 @@ void NewLayerCommand::onLoadParams(const Params& commandParams)
   CommandWithNewParams<NewLayerParams>::onLoadParams(commandParams);
 
   m_type = Type::Layer;
-  if (params().group())
+  if (params().group() || params().type() == "group")
     m_type = Type::Group;
-  else if (params().reference())
+  else if (params().reference() || params().type() == "reference")
     m_type = Type::ReferenceLayer;
-  else if (params().tilemap())
+  else if (params().tilemap() || params().type() == "tilemap")
     m_type = Type::TilemapLayer;
   else
     m_type = Type::Layer;
