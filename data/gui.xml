@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2025  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <!-- Keyboard shortcuts -->
@@ -897,6 +897,11 @@
           </item>
           <item command="NewLayer" text="@.layer_new_tilemap_layer">
             <param name="tilemap" value="true" />
+            <param name="ask" value="true" />
+          </item>
+          <separator />
+          <item command="NewLayer" text="@.layer_new_audio_layer">
+            <param name="type" value="audio" />
             <param name="ask" value="true" />
           </item>
         </menu>

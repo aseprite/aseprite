@@ -33,7 +33,7 @@ Layer::Layer(ObjectType type, Sprite* sprite)
   , m_opacity(255)
 {
   ASSERT(type == ObjectType::LayerImage || type == ObjectType::LayerGroup ||
-         type == ObjectType::LayerTilemap);
+         type == ObjectType::LayerTilemap || type == ObjectType::LayerAudio);
 
   setName("Layer");
 }
