@@ -34,10 +34,10 @@
 #include "app/tools/tool_loop_manager.h"
 #include "app/tx.h"
 #include "app/ui/context_bar.h"
-#include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui/main_window.h"
+#include "app/ui/status_bar.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
 #include "base/fs.h"
@@ -498,6 +498,44 @@ int App_useTool(lua_State* L)
   return 0;
 }
 
+int App_tip(lua_State* L)
+{
+  const auto* ctx = App::instance()->context();
+  if (!ctx || !ctx->isUIAvailable() || !StatusBar::instance())
+    return 0; // No UI to show the tooltip
+
+  std::string text;
+  double duration = 2.0;
+
+  if (lua_istable(L, 1)) {
+    int type = lua_getfield(L, 1, "text");
+    if (type == LUA_TSTRING)
+      text = lua_tostring(L, -1);
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 1, "duration");
+    if (type == LUA_TNUMBER)
+      duration = lua_tonumber(L, -1);
+    lua_pop(L, 1);
+  }
+  else {
+    if (!lua_isstring(L, 1))
+      return luaL_error(L, "app.tip text parameter must be a string");
+
+    text = lua_tostring(L, 1);
+
+    if (lua_isnumber(L, 2))
+      duration = lua_tonumber(L, 2);
+  }
+
+  if (text.empty())
+    return luaL_error(L, "app.tip text cannot be empty");
+
+  int msecs = std::clamp<int>(duration * 1000.0, 500, 30000);
+  StatusBar::instance()->showTip(msecs, text);
+  return 0;
+}
+
 int App_get_events(lua_State* L)
 {
   push_app_events(L);
@@ -820,6 +858,7 @@ const luaL_Reg App_methods[] = {
   { "alert",       App_alert       },
   { "refresh",     App_refresh     },
   { "useTool",     App_useTool     },
+  { "tip",         App_tip         },
   { nullptr,       nullptr         }
 };
 
