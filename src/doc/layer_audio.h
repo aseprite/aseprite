@@ -19,9 +19,6 @@ public:
   virtual ~LayerAudio();
 
   // TODO associated audio data from/to frame
-
-  void getCels(CelList& cels) const override;
-  void displaceFrames(frame_t fromThis, frame_t delta) override;
 };
 
 } // namespace doc
