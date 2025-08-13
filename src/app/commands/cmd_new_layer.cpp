@@ -33,6 +33,7 @@
 #include "app/util/clipboard.h"
 #include "app/util/new_image_from_mask.h"
 #include "doc/layer.h"
+#include "doc/layer_audio.h"
 #include "doc/layer_tilemap.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
@@ -58,6 +59,8 @@ struct NewLayerParams : public NewParams {
   Param<bool> group{ this, false, "group" };
   Param<bool> reference{ this, false, "reference" };
   Param<bool> tilemap{ this, false, "tilemap" };
+  // Alternative for group/reference/tilemap params and used for future layer types
+  Param<std::string> type{ this, {}, "type" };
   Param<gfx::Rect> gridBounds{ this, gfx::Rect(), "gridBounds" };
   Param<bool> ask{ this, false, "ask" };
   Param<bool> fromFile{
@@ -74,7 +77,7 @@ struct NewLayerParams : public NewParams {
 
 class NewLayerCommand : public CommandWithNewParams<NewLayerParams> {
 public:
-  enum class Type { Layer, Group, ReferenceLayer, TilemapLayer };
+  enum class Type { Layer, Group, ReferenceLayer, TilemapLayer, AudioLayer };
   enum class Place { AfterActiveLayer, BeforeActiveLayer, Top };
 
   NewLayerCommand();
@@ -105,12 +108,14 @@ void NewLayerCommand::onLoadParams(const Params& commandParams)
   CommandWithNewParams<NewLayerParams>::onLoadParams(commandParams);
 
   m_type = Type::Layer;
-  if (params().group())
+  if (params().group() || params().type() == "group")
     m_type = Type::Group;
-  else if (params().reference())
+  else if (params().reference() || params().type() == "reference")
     m_type = Type::ReferenceLayer;
-  else if (params().tilemap())
+  else if (params().tilemap() || params().type() == "tilemap")
     m_type = Type::TilemapLayer;
+  else if (params().type() == "audio")
+    m_type = Type::AudioLayer;
   else
     m_type = Type::Layer;
 
@@ -291,6 +296,13 @@ void NewLayerCommand::onExecute(Context* context)
         }
 
         layer = api.newTilemapAfter(parent, name, tsi, activeLayer);
+        break;
+      }
+      case Type::AudioLayer: {
+        layer = new LayerAudio(parent->sprite());
+        layer->setName(name);
+
+        api.addLayer(parent, layer, parent->lastLayer());
         break;
       }
     }
@@ -534,6 +546,7 @@ std::string NewLayerCommand::layerPrefix() const
     case Type::Group:          return Strings::commands_NewLayer_Group();
     case Type::ReferenceLayer: return Strings::commands_NewLayer_ReferenceLayer();
     case Type::TilemapLayer:   return Strings::commands_NewLayer_TilemapLayer();
+    case Type::AudioLayer:     return Strings::commands_NewLayer_AudioLayer();
   }
   return "Unknown";
 }

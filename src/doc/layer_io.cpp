@@ -18,6 +18,7 @@
 #include "doc/cel_io.h"
 #include "doc/image_io.h"
 #include "doc/layer.h"
+#include "doc/layer_audio.h"
 #include "doc/layer_io.h"
 #include "doc/layer_tilemap.h"
 #include "doc/sprite.h"
@@ -103,6 +104,10 @@ void write_layer(std::ostream& os, const Layer* layer)
         write_layer(os, child);
       break;
     }
+
+    case ObjectType::LayerAudio:
+      // TODO
+      break;
   }
 
   write_user_data(os, layer->userData());
@@ -182,6 +187,11 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const Seri
       }
       break;
     }
+
+    case ObjectType::LayerAudio:
+      layer.reset(new LayerAudio(subObjects->sprite()));
+      // TODO
+      break;
 
     default: throw InvalidLayerType("Invalid layer type found in stream");
   }

@@ -47,9 +47,15 @@ add_library(doc-lib
   image_io.cpp
   image_iterators2.cpp
   layer.cpp
+  layer_audio.cpp
+  layer_fx.cpp
   layer_io.cpp
   layer_list.cpp
+  layer_mask.cpp
+  layer_subsprite.cpp
+  layer_text.cpp
   layer_tilemap.cpp
+  layer_vector.cpp
   mask.cpp
   mask_boundaries.cpp
   mask_io.cpp

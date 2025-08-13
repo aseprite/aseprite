@@ -279,6 +279,10 @@ private:
         // Do nothing (the layer parent/children structure is saved in
         // writeSprite/writeAllLayersID() functions)
         break;
+
+      case ObjectType::LayerAudio:
+        // TODO
+        break;
     }
 
     // Save user data

@@ -492,6 +492,10 @@ private:
         lay->setFlags(flags);
         break;
 
+      case ObjectType::LayerAudio:
+        // TODO
+        break;
+
       default:
         Console().printf("Unable to load layer named '%s', type #%d\n", name.c_str(), (int)type);
         break;
