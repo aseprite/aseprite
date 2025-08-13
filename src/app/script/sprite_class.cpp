@@ -457,7 +457,7 @@ int Sprite_newCel(lua_State* L)
   auto sprite = get_docobj<Sprite>(L, 1);
   auto layerBase = get_docobj<Layer>(L, 2);
   if (!layerBase->isImage())
-    return luaL_error(L, "unexpected kinf of layer in Sprite:newCel()");
+    return luaL_error(L, "unexpected kind of layer in Sprite:newCel()");
 
   frame_t frame = get_frame_number_from_arg(L, 3);
   if (frame < 0 || frame > sprite->lastFrame())
