@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2024 Igara Studio S.A.
+// Copyright (c) 2019-2025 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -21,9 +21,16 @@ namespace doc {
 
 class Document;
 class Grid;
-class LayerImage;
+class Layer;
 class Sprite;
 
+// Short for celluloid. Initially used to represent an image in a
+// specific layer/frame location, but it could refer any kind of data
+// for other layers in a specific frame (e.g. a block of audio).
+//
+// This means that the image of a cel could be nullptr for layers that
+// don't require it (e.g. an audio layer) or could be a rendered cache
+// of the layer content (e.g. a text layer).
 class Cel : public Object {
 public:
   Cel(frame_t frame, const ImageRef& image);
@@ -43,7 +50,7 @@ public:
 
   gfx::Rect imageBounds() const { return m_data->imageBounds(); }
 
-  LayerImage* layer() const { return m_layer; }
+  Layer* layer() const { return m_layer; }
   Image* image() const { return m_data->image(); }
   ImageRef imageRef() const { return m_data->imageRef(); }
   CelData* data() const { return const_cast<CelData*>(m_data.get()); }
@@ -55,7 +62,7 @@ public:
 
   // You should change the frame only if the cel isn't member of a
   // layer. If the cel is already in a layer, you should use
-  // LayerImage::moveCel() member function.
+  // Layer::moveCel() member function.
   void setFrame(frame_t frame);
   void setDataRef(const CelDataRef& celData);
   void setPosition(int x, int y);
@@ -67,7 +74,7 @@ public:
 
   virtual int getMemSize() const override { return sizeof(Cel) + m_data->getMemSize(); }
 
-  void setParentLayer(LayerImage* layer);
+  void setParentLayer(Layer* layer);
   Grid grid() const;
 
   // Copies properties that are not shared between linked cels
@@ -77,7 +84,7 @@ public:
 private:
   void fixupImage();
 
-  LayerImage* m_layer;
+  Layer* m_layer;
   frame_t m_frame; // Frame position
   CelDataRef m_data;
   int m_zIndex = 0;

@@ -22,9 +22,6 @@ public:
   virtual ~LayerFx();
 
   // TODO associated FX data per frame/keyframe
-
-  void getCels(CelList& cels) const override;
-  void displaceFrames(frame_t fromThis, frame_t delta) override;
 };
 
 } // namespace doc
