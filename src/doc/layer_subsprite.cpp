@@ -20,14 +20,4 @@ LayerSubsprite::~LayerSubsprite()
 {
 }
 
-void LayerSubsprite::getCels(CelList& cels) const
-{
-  // TODO
-}
-
-void LayerSubsprite::displaceFrames(frame_t fromThis, frame_t delta)
-{
-  // TODO
-}
-
 } // namespace doc

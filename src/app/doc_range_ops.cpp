@@ -507,8 +507,7 @@ void reverse_frames(Doc* doc, const DocRange& range)
         if (frame == frameRev)
           continue;
 
-        LayerImage* imageLayer = static_cast<LayerImage*>(layer);
-        api.swapCel(imageLayer, frame, frameRev);
+        api.swapCel(layer, frame, frameRev);
       }
     }
   }

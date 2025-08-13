@@ -20,14 +20,4 @@ LayerVector::~LayerVector()
 {
 }
 
-void LayerVector::getCels(CelList& cels) const
-{
-  // TODO
-}
-
-void LayerVector::displaceFrames(frame_t fromThis, frame_t delta)
-{
-  // TODO
-}
-
 } // namespace doc

@@ -91,20 +91,20 @@ public:
                  const TagsHandling tagsHandling);
 
   // Cels API
-  void addCel(LayerImage* layer, Cel* cel);
+  void addCel(Layer* layer, Cel* cel);
   Cel* addCel(LayerImage* layer, frame_t frameNumber, const ImageRef& image);
   void clearCel(Layer* layer, frame_t frame);
   void clearCel(Cel* cel);
   void clearCelAndAllLinks(Cel* cel);
   void setCelPosition(Sprite* sprite, Cel* cel, int x, int y);
   void setCelOpacity(Sprite* sprite, Cel* cel, int newOpacity);
-  void moveCel(LayerImage* srcLayer, frame_t srcFrame, LayerImage* dstLayer, frame_t dstFrame);
-  void copyCel(LayerImage* srcLayer,
+  void moveCel(Layer* srcLayer, frame_t srcFrame, Layer* dstLayer, frame_t dstFrame);
+  void copyCel(Layer* srcLayer,
                frame_t srcFrame,
-               LayerImage* dstLayer,
+               Layer* dstLayer,
                frame_t dstFrame,
                const bool* forceContinuous = nullptr);
-  void swapCel(LayerImage* layer, frame_t frame1, frame_t frame2);
+  void swapCel(Layer* layer, frame_t frame1, frame_t frame2);
 
   // Layers API
   LayerImage* newLayer(LayerGroup* parent, const std::string& name);
@@ -166,9 +166,9 @@ private:
   class HandleLinkedCels {
   public:
     HandleLinkedCels(DocApi& api,
-                     doc::LayerImage* srcLayer,
+                     doc::Layer* srcLayer,
                      const doc::frame_t srcFrame,
-                     doc::LayerImage* dstLayer,
+                     doc::Layer* dstLayer,
                      const doc::frame_t dstFrame);
     ~HandleLinkedCels();
     bool linkWasCreated() { return m_created; }
