@@ -428,9 +428,17 @@ if [ ! -d "$skia_library_dir" ] ; then
         skia_url=$(bash laf/misc/skia-url.sh $skia_build)
         skia_file=$(basename $skia_url)
         if [ ! -f "$skia_dir/$skia_file" ] ; then
+            if ! command -v curl >/dev/null 2>&1 ; then
+                echo "Error: 'curl' command line tool is not available in PATH"
+                exit 1
+            fi
             curl --ssl-revoke-best-effort -L -o "$skia_dir/$skia_file" "$skia_url"
         fi
         if [ ! -d "$skia_library_dir" ] ; then
+            if ! command -v unzip >/dev/null 2>&1 ; then
+                echo "Error: 'unzip' command line tool is not available in PATH"
+                exit 1
+            fi
             unzip -n -d "$skia_dir" "$skia_dir/$skia_file"
         fi
     else

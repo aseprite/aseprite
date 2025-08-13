@@ -286,9 +286,6 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
   UIContext* ctx = UIContext::instance();
   ctx->setActiveView(editor->getDocView());
 
-  ContextBar* contextBar = App::instance()->contextBar();
-  contextBar->updateForMovingPixels(getTransformation(editor));
-
   // Start scroll loop
   if (editor->checkForScroll(msg) || editor->checkForZoom(msg))
     return true;
@@ -442,10 +439,6 @@ void MovingPixelsState::onCommitMouseMove(Editor* editor, const gfx::PointF& spr
   // Drag the image to that position
   m_pixelsMovement->moveImage(spritePos, moveModifier);
 
-  // Update context bar and status bar
-  ContextBar* contextBar = App::instance()->contextBar();
-  contextBar->updateForMovingPixels(transformation);
-
   m_editor->updateStatusBar();
 }
 
@@ -528,6 +521,10 @@ bool MovingPixelsState::onUpdateStatusBar(Editor* editor)
 
   const Transformation& transform(getTransformation(editor));
   gfx::Size imageSize = m_pixelsMovement->getInitialImageSize();
+
+  // Update the context bar along with the status bar
+  ContextBar* contextBar = App::instance()->contextBar();
+  contextBar->updateForMovingPixels(transform);
 
   int w = int(transform.bounds().w);
   int h = int(transform.bounds().h);

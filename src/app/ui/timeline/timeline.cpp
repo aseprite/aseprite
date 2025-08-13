@@ -4576,7 +4576,7 @@ void Timeline::onDrop(ui::DragEvent& e)
 
   // Determine at which frame and layer the content was dropped on.
   frame_t frame = m_frame;
-  layer_t layerIndex = getLayerIndex(m_layer);
+  layer_t layerIndex = m_sprite->root()->getLayerIndex(m_layer);
   InsertionPoint insert = InsertionPoint::BeforeLayer;
   DroppedOn droppedOn = DroppedOn::Unspecified;
   TRACE("m_dropRange.type() %d\n", m_dropRange.type());
@@ -4602,7 +4602,7 @@ void Timeline::onDrop(ui::DragEvent& e)
       break;
     case Range::kLayers:
       droppedOn = DroppedOn::Layer;
-      if (m_dropTarget.vhit != DropTarget::VeryBottom) {
+      if (m_dropTarget.vhit != DropTarget::VeryBottom && !m_dropRange.selectedLayers().empty()) {
         auto* selectedLayer = *m_dropRange.selectedLayers().begin();
         layerIndex = getLayerIndex(selectedLayer);
       }
