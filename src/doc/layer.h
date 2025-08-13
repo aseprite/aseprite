@@ -202,7 +202,7 @@ private:
 //////////////////////////////////////////////////////////////////////
 // LayerGroup class
 
-class LayerGroup : public Layer {
+class LayerGroup final : public Layer {
 public:
   explicit LayerGroup(Sprite* sprite);
   virtual ~LayerGroup();
