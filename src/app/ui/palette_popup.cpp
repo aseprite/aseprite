@@ -65,15 +65,10 @@ void PalettePopup::showPopup(ui::Display* display, const gfx::Rect& buttonPos)
   m_popup->openFolder()->setEnabled(false);
   m_paletteListBox.selectChild(NULL);
 
+  const gfx::Rect workarea = display->containedWidget()->bounds();
   fit_bounds(display,
              this,
-             gfx::Rect(buttonPos.x, buttonPos.y2(), 32, 32),
-             [](const gfx::Rect& workarea,
-                gfx::Rect& bounds,
-                std::function<gfx::Rect(Widget*)> getWidgetBounds) {
-               bounds.w = workarea.w / 2;
-               bounds.h = workarea.h * 3 / 4;
-             });
+             gfx::Rect(buttonPos.x, buttonPos.y2(), workarea.w / 2, workarea.h * 3 / 4));
 
   openWindowInForeground();
 }
