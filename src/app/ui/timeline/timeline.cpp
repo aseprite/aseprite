@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1754,28 +1754,28 @@ void Timeline::onPaint(ui::PaintEvent& ev)
             data.firstLink = data.activeIt;
             data.lastLink = data.activeIt;
 
-            ObjectId imageId = (*data.activeIt)->image()->id();
+            if (ObjectId dataId = (*data.activeIt)->dataId()) {
+              auto it2 = data.activeIt;
+              if (it2 != data.begin) {
+                do {
+                  --it2;
+                  if ((*it2)->dataId() == dataId) {
+                    data.firstLink = it2;
+                    if ((*it2)->frame() < firstRealFrame)
+                      break;
+                  }
+                } while (it2 != data.begin);
+              }
 
-            auto it2 = data.activeIt;
-            if (it2 != data.begin) {
-              do {
-                --it2;
-                if ((*it2)->image()->id() == imageId) {
-                  data.firstLink = it2;
-                  if ((*it2)->frame() < firstRealFrame)
+              it2 = data.activeIt;
+              while (it2 != data.end) {
+                if ((*it2)->dataId() == dataId) {
+                  data.lastLink = it2;
+                  if ((*it2)->frame() > lastRealFrame)
                     break;
                 }
-              } while (it2 != data.begin);
-            }
-
-            it2 = data.activeIt;
-            while (it2 != data.end) {
-              if ((*it2)->image()->id() == imageId) {
-                data.lastLink = it2;
-                if ((*it2)->frame() > lastRealFrame)
-                  break;
+                ++it2;
               }
-              ++it2;
             }
           }
         }
@@ -2447,7 +2447,7 @@ void Timeline::drawCel(ui::Graphics* g,
   bool is_hover = (m_hot.part == PART_CEL && m_hot.layer == layerIndex && m_hot.frame == col);
   const bool is_active = isCelActive(layerIndex, col);
   const bool is_loosely_active = isCelLooselyActive(layerIndex, col);
-  const bool is_empty = (image == nullptr);
+  const bool is_empty = (cel == nullptr);
   gfx::Rect bounds = getPartBounds(Hit(PART_CEL, layerIndex, col));
   gfx::Rect full_bounds = bounds;
   IntersectClip clip(g, bounds);
@@ -2502,10 +2502,8 @@ void Timeline::drawCel(ui::Graphics* g,
     if (right && right->frame() != frame + 1)
       right = nullptr;
 
-    ObjectId leftImg = (left ? left->image()->id() : 0);
-    ObjectId rightImg = (right ? right->image()->id() : 0);
-    fromLeft = (leftImg == cel->image()->id());
-    fromRight = (rightImg == cel->image()->id());
+    fromLeft = (left && left->dataId() == cel->dataId());
+    fromRight = (right && right->dataId() == cel->dataId());
 
     if (fromLeft && fromRight)
       style = styles.timelineFromBoth();
@@ -2637,25 +2635,26 @@ void Timeline::drawCelLinkDecorators(ui::Graphics* g,
                                      const DrawCelData* data)
 {
   auto& styles = skinTheme()->styles;
-  ObjectId imageId = (*data->activeIt)->image()->id();
+  const ObjectId dataId = (*data->activeIt)->dataId();
 
   ui::Style* style1 = nullptr;
   ui::Style* style2 = nullptr;
 
   // Links at the left or right side
   fr_t frame = m_adapter->toRealFrame(col);
-  bool left = (data->firstLink != data->end ? frame > (*data->firstLink)->frame() : false);
-  bool right = (data->lastLink != data->end ? frame < (*data->lastLink)->frame() : false);
+  bool left = (dataId && data->firstLink != data->end ? frame > (*data->firstLink)->frame() :
+                                                        false);
+  bool right = (dataId && data->lastLink != data->end ? frame < (*data->lastLink)->frame() : false);
 
-  if (cel && cel->image()->id() == imageId) {
+  if (cel && cel->dataId() == dataId) {
     if (left) {
       Cel* prevCel = m_layer->cel(cel->frame() - 1);
-      if (!prevCel || prevCel->image()->id() != imageId)
+      if (!prevCel || prevCel->dataId() != dataId)
         style1 = styles.timelineLeftLink();
     }
     if (right) {
       Cel* nextCel = m_layer->cel(cel->frame() + 1);
-      if (!nextCel || nextCel->image()->id() != imageId)
+      if (!nextCel || nextCel->dataId() != dataId)
         style2 = styles.timelineRightLink();
     }
   }

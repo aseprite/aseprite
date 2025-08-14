@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2025 Igara Studio S.A.
+// Copyright (c) 2019-2026 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -53,9 +53,11 @@ public:
 
   Layer* layer() const { return m_layer; }
   Image* image() const { return m_data->image(); }
+  ObjectId imageId() const { return m_data->image() ? m_data->image()->id() : NullId; }
   ImageRef imageRef() const { return m_data->imageRef(); }
   CelData* data() const { return const_cast<CelData*>(m_data.get()); }
   CelDataRef dataRef() const { return m_data; }
+  ObjectId dataId() const { return m_data ? m_data->id() : NullId; }
   Document* document() const;
   Sprite* sprite() const;
   Cel* link() const;
