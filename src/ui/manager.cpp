@@ -1487,7 +1487,7 @@ void Manager::_openWindow(Window* window, bool center)
 
       // Move all widgets to the os::Display origin (0,0)
       if (changeFrame) {
-        window->setBounds(newNativeWindow->bounds() / scale);
+        window->setBoundsQuietly(newNativeWindow->bounds() / scale);
       }
       else {
         window->offsetWidgets(-window->origin().x, -window->origin().y);

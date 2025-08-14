@@ -353,7 +353,8 @@ void Window::centerWindow(Display* parentDisplay)
 
 void Window::expandWindow(const gfx::Size& size)
 {
-  const gfx::Rect oldBounds = bounds();
+  if (bounds().size() == size)
+    return;
 
   if (ownDisplay()) {
     os::Window* nativeWindow = display()->nativeWindow();
@@ -362,14 +363,10 @@ void Window::expandWindow(const gfx::Size& size)
     frame.setSize(size * scale);
     nativeWindow->setFrame(frame);
     setBounds(gfx::Rect(bounds().origin(), size));
-
-    layout();
-    invalidate();
   }
   else {
+    const gfx::Rect oldBounds = bounds();
     setBounds(gfx::Rect(bounds().origin(), size));
-
-    layout();
     manager()->invalidateRect(oldBounds);
   }
 }

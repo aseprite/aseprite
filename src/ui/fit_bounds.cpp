@@ -136,7 +136,7 @@ void fit_bounds(const Display* parentDisplay,
 
     // Set frame bounds directly
     pos = nativeWindow->pointFromScreen(frame.origin());
-    window->setBounds(gfx::Rect(pos.x, pos.y, frame.w / scale, frame.h / scale));
+    window->setBoundsQuietly(gfx::Rect(pos.x, pos.y, frame.w / scale, frame.h / scale));
     window->loadNativeFrame(frame);
 
     if (window->isVisible()) {
