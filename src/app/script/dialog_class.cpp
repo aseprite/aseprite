@@ -405,6 +405,14 @@ int Dialog_new(lua_State* L)
       });
     }
     lua_pop(L, 1);
+
+    type = lua_getfield(L, 1, "onresize");
+    if (type == LUA_TFUNCTION) {
+      Dialog_connect_signal(L, -2, dlg->window.Resize, [](lua_State*, ResizeEvent&) {
+        // Do nothing
+      });
+    }
+    lua_pop(L, 1);
   }
 
   // The showRef must be the last reference to the dialog to be
