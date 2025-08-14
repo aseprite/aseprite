@@ -1728,7 +1728,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
           continue;
 
         Layer* layerPtr = getLayer(layer);
-        if (!layerPtr || !layerPtr->isImage()) {
+        if (!layerPtr) {
           // Draw empty cels
           for (frame = firstFrame; frame <= lastFrame; frame = col_t(frame + 1)) {
             drawCel(g, layer, frame, nullptr, nullptr);
@@ -1741,13 +1741,12 @@ void Timeline::onPaint(ui::PaintEvent& ev)
 
         // Get the first CelIterator to be drawn (it is the first cel with cel->frame >=
         // first_frame)
-        LayerImage* layerImagePtr = static_cast<LayerImage*>(layerPtr);
-        data.begin = layerImagePtr->getCelBegin();
-        data.end = layerImagePtr->getCelEnd();
+        data.begin = layerPtr->getCelBegin();
+        data.end = layerPtr->getCelEnd();
 
         const frame_t firstRealFrame(m_adapter->toRealFrame(firstFrame));
         const frame_t lastRealFrame(m_adapter->toRealFrame(lastFrame));
-        data.it = layerImagePtr->findFirstCelIteratorAfter(firstRealFrame - 1);
+        data.it = layerPtr->findFirstCelIteratorAfter(firstRealFrame - 1);
 
         if (firstRealFrame > 0 && data.it != data.begin)
           data.prevIt = data.it - 1;
@@ -1760,33 +1759,34 @@ void Timeline::onPaint(ui::PaintEvent& ev)
         data.lastLink = data.end;
 
         if (layerPtr == m_layer) {
-          data.activeIt = layerImagePtr->findCelIterator(frame_t(realActiveFrame));
+          data.activeIt = layerPtr->findCelIterator(frame_t(realActiveFrame));
           if (data.activeIt != data.end) {
             data.firstLink = data.activeIt;
             data.lastLink = data.activeIt;
 
-            ObjectId imageId = (*data.activeIt)->image()->id();
+            // TODO impl an alternative way to find links (not only by image ID)
+            if (ObjectId imageId = (*data.activeIt)->imageId()) {
+              auto it2 = data.activeIt;
+              if (it2 != data.begin) {
+                do {
+                  --it2;
+                  if ((*it2)->imageId() == imageId) {
+                    data.firstLink = it2;
+                    if ((*it2)->frame() < firstRealFrame)
+                      break;
+                  }
+                } while (it2 != data.begin);
+              }
 
-            auto it2 = data.activeIt;
-            if (it2 != data.begin) {
-              do {
-                --it2;
-                if ((*it2)->image()->id() == imageId) {
-                  data.firstLink = it2;
-                  if ((*it2)->frame() < firstRealFrame)
+              it2 = data.activeIt;
+              while (it2 != data.end) {
+                if ((*it2)->imageId() == imageId) {
+                  data.lastLink = it2;
+                  if ((*it2)->frame() > lastRealFrame)
                     break;
                 }
-              } while (it2 != data.begin);
-            }
-
-            it2 = data.activeIt;
-            while (it2 != data.end) {
-              if ((*it2)->image()->id() == imageId) {
-                data.lastLink = it2;
-                if ((*it2)->frame() > lastRealFrame)
-                  break;
+                ++it2;
               }
-              ++it2;
             }
           }
         }
@@ -2350,6 +2350,16 @@ void Timeline::drawLayer(ui::Graphics* g, const int layerIdx)
              (hotlayer && m_hot.part == PART_ROW_CONTINUOUS_ICON),
              (clklayer && m_clk.part == PART_ROW_CONTINUOUS_ICON));
   }
+  // Just an empty box for other kind of layers
+  else {
+    drawPart(g,
+             bounds,
+             nullptr,
+             styles.timelineBox(),
+             is_active || (clklayer && m_clk.part == PART_ROW_CONTINUOUS_ICON),
+             (hotlayer && m_hot.part == PART_ROW_CONTINUOUS_ICON),
+             (clklayer && m_clk.part == PART_ROW_CONTINUOUS_ICON));
+  }
 
   // Get the layer's name bounds.
   bounds = getPartBounds(Hit(PART_ROW_TEXT, layerIdx));
@@ -2448,7 +2458,7 @@ void Timeline::drawCel(ui::Graphics* g,
   bool is_hover = (m_hot.part == PART_CEL && m_hot.layer == layerIndex && m_hot.frame == col);
   const bool is_active = isCelActive(layerIndex, col);
   const bool is_loosely_active = isCelLooselyActive(layerIndex, col);
-  const bool is_empty = (image == nullptr);
+  const bool is_empty = (cel == nullptr);
   gfx::Rect bounds = getPartBounds(Hit(PART_CEL, layerIndex, col));
   gfx::Rect full_bounds = bounds;
   IntersectClip clip(g, bounds);
@@ -2503,10 +2513,8 @@ void Timeline::drawCel(ui::Graphics* g,
     if (right && right->frame() != frame + 1)
       right = nullptr;
 
-    ObjectId leftImg = (left ? left->image()->id() : 0);
-    ObjectId rightImg = (right ? right->image()->id() : 0);
-    fromLeft = (leftImg == cel->image()->id());
-    fromRight = (rightImg == cel->image()->id());
+    fromLeft = (left && left->image() && left->imageId() == cel->imageId());
+    fromRight = (right && right->image() && right->imageId() == cel->imageId());
 
     if (fromLeft && fromRight)
       style = styles.timelineFromBoth();
@@ -2637,25 +2645,27 @@ void Timeline::drawCelLinkDecorators(ui::Graphics* g,
                                      const DrawCelData* data)
 {
   auto& styles = skinTheme()->styles;
-  ObjectId imageId = (*data->activeIt)->image()->id();
+  ObjectId imageId = (*data->activeIt)->imageId();
 
   ui::Style* style1 = nullptr;
   ui::Style* style2 = nullptr;
 
   // Links at the left or right side
   fr_t frame = m_adapter->toRealFrame(col);
-  bool left = (data->firstLink != data->end ? frame > (*data->firstLink)->frame() : false);
-  bool right = (data->lastLink != data->end ? frame < (*data->lastLink)->frame() : false);
+  bool left = (imageId && data->firstLink != data->end ? frame > (*data->firstLink)->frame() :
+                                                         false);
+  bool right = (imageId && data->lastLink != data->end ? frame < (*data->lastLink)->frame() :
+                                                         false);
 
-  if (cel && cel->image()->id() == imageId) {
+  if (cel && cel->imageId() == imageId) {
     if (left) {
       Cel* prevCel = m_layer->cel(cel->frame() - 1);
-      if (!prevCel || prevCel->image()->id() != imageId)
+      if (!prevCel || prevCel->imageId() != imageId)
         style1 = styles.timelineLeftLink();
     }
     if (right) {
       Cel* nextCel = m_layer->cel(cel->frame() + 1);
-      if (!nextCel || nextCel->image()->id() != imageId)
+      if (!nextCel || nextCel->imageId() != imageId)
         style2 = styles.timelineRightLink();
     }
   }
