@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -302,37 +302,48 @@ Cel* create_cel_copy(CmdSequence* cmds,
                      Layer* dstLayer,
                      const frame_t dstFrame)
 {
+  gfx::Size dstSize(0, 0);
+  doc::PixelFormat dstPixelFormat = dstSprite->pixelFormat();
+
   const Image* srcImage = srcCel->image();
-  doc::PixelFormat dstPixelFormat = (dstLayer->isTilemap() ? IMAGE_TILEMAP :
-                                                             dstSprite->pixelFormat());
-  gfx::Size dstSize(srcImage->width(), srcImage->height());
+  if (srcImage) {
+    if (dstLayer->isTilemap())
+      dstPixelFormat = IMAGE_TILEMAP;
+    dstSize = gfx::Size(srcImage->width(), srcImage->height());
 
-  // From Tilemap -> Image
-  if (srcCel->layer()->isTilemap() && !dstLayer->isTilemap()) {
-    auto layerTilemap = static_cast<doc::LayerTilemap*>(srcCel->layer());
-    dstSize = layerTilemap->tileset()->grid().tilemapSizeToCanvas(dstSize);
-  }
-  // From Image or Tilemap -> Tilemap
-  else if (dstLayer->isTilemap()) {
-    auto dstLayerTilemap = static_cast<doc::LayerTilemap*>(dstLayer);
+    // From Tilemap -> Image
+    if (srcCel->layer()->isTilemap() && !dstLayer->isTilemap()) {
+      auto layerTilemap = static_cast<doc::LayerTilemap*>(srcCel->layer());
+      dstSize = layerTilemap->tileset()->grid().tilemapSizeToCanvas(dstSize);
+    }
+    // From Image or Tilemap -> Tilemap
+    else if (dstLayer->isTilemap()) {
+      auto dstLayerTilemap = static_cast<doc::LayerTilemap*>(dstLayer);
 
-    Grid grid = dstLayerTilemap->tileset()->grid();
+      Grid grid = dstLayerTilemap->tileset()->grid();
 
-    // Tilemap -> Tilemap
-    if (srcCel->layer()->isTilemap())
-      grid.origin(srcCel->position());
+      // Tilemap -> Tilemap
+      if (srcCel->layer()->isTilemap())
+        grid.origin(srcCel->position());
 
-    const gfx::Rect tilemapBounds = grid.canvasToTile(srcCel->bounds());
-    dstSize = tilemapBounds.size();
+      const gfx::Rect tilemapBounds = grid.canvasToTile(srcCel->bounds());
+      dstSize = tilemapBounds.size();
+    }
   }
 
   // New cel
-  auto dstCel =
-    std::make_unique<Cel>(dstFrame, ImageRef(Image::create(dstPixelFormat, dstSize.w, dstSize.h)));
+  ImageRef dstImage;
+  if (dstSize.w > 0 && dstSize.h > 0)
+    dstImage.reset(Image::create(dstPixelFormat, dstSize.w, dstSize.h));
 
+  auto dstCel = std::make_unique<Cel>(dstFrame, dstImage);
   dstCel->setOpacity(srcCel->opacity());
   dstCel->copyNonsharedPropertiesFrom(srcCel);
   dstCel->data()->setUserData(srcCel->data()->userData());
+
+  if (!srcImage)
+    return dstCel.release();
+  // The following code is to copy the image between cels...
 
   // Special case were we copy from a tilemap...
   if (srcCel->layer()->isTilemap()) {
@@ -341,7 +352,7 @@ Cel* create_cel_copy(CmdSequence* cmds,
       // Best case, copy a cel in the same layer (we have the same
       // tileset available, so we just copy the tilemap as it is).
       if (srcCel->layer() == dstLayer) {
-        dstCel->image()->copy(srcImage, gfx::Clip(0, 0, srcImage->bounds()));
+        dstImage->copy(srcImage, gfx::Clip(0, 0, srcImage->bounds()));
       }
       // Tilemap -> Tilemap (with different tilesets)
       else {

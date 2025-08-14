@@ -390,8 +390,8 @@ CelPropertiesCommand::CelPropertiesCommand() : Command(CommandId::CelProperties(
 
 bool CelPropertiesCommand::onEnabled(Context* context)
 {
-  return context->isUIAvailable() && context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                                                         ContextFlags::ActiveLayerIsImage);
+  return context->isUIAvailable() &&
+         context->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasActiveCel);
 }
 
 void CelPropertiesCommand::onExecute(Context* context)

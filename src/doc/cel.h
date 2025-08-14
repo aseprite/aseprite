@@ -53,6 +53,7 @@ public:
 
   Layer* layer() const { return m_layer; }
   Image* image() const { return m_data->image(); }
+  ObjectId imageId() const { return m_data->image() ? m_data->image()->id() : NullId; }
   ImageRef imageRef() const { return m_data->imageRef(); }
   CelData* data() const { return const_cast<CelData*>(m_data.get()); }
   CelDataRef dataRef() const { return m_data; }

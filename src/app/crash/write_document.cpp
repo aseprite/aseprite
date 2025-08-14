@@ -111,7 +111,8 @@ public:
         if (cel->link()) // Skip link
           continue;
 
-        if (!saveObject("img", cel->image(), &Writer::writeImage))
+        // TODO backup other cel data, e.g. for audio layers
+        if (cel->image() && !saveObject("img", cel->image(), &Writer::writeImage))
           return false;
 
         if (!saveObject("celdata", cel->data(), &Writer::writeCelData))

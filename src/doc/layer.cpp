@@ -322,10 +322,7 @@ void Layer::addCel(Cel* cel)
 {
   ASSERT(cel);
   ASSERT(cel->data() && "The cel doesn't contain CelData");
-  ASSERT(cel->image());
   ASSERT(sprite());
-  ASSERT(cel->image()->pixelFormat() == sprite()->pixelFormat() ||
-         cel->image()->pixelFormat() == IMAGE_TILEMAP);
 
   CelIterator it = findFirstCelIteratorAfter(cel->frame());
   m_cels.insert(it, cel);

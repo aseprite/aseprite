@@ -532,7 +532,7 @@ void Sprite::setDurationForAllFrames(int msecs)
 ImageRef Sprite::getImageRef(ObjectId imageId)
 {
   for (Cel* cel : cels()) {
-    if (cel->image()->id() == imageId)
+    if (cel->imageId() == imageId)
       return cel->imageRef();
   }
   if (hasTilesets()) {
@@ -565,7 +565,7 @@ CelDataRef Sprite::getCelDataRef(ObjectId celDataId)
 void Sprite::replaceImage(ObjectId curImageId, const ImageRef& newImage)
 {
   for (Cel* cel : cels()) {
-    if (cel->image()->id() == curImageId)
+    if (cel->imageId() == curImageId)
       cel->data()->setImage(newImage, cel->layer());
   }
 
@@ -604,7 +604,7 @@ void Sprite::replaceTileset(tileset_index tsi, Tileset* newTileset)
 void Sprite::getImages(std::vector<ImageRef>& images) const
 {
   for (Cel* cel : uniqueCels())
-    if (cel->image()->pixelFormat() != IMAGE_TILEMAP)
+    if (cel->image() && cel->image()->pixelFormat() != IMAGE_TILEMAP)
       images.push_back(cel->imageRef());
 
   if (hasTilesets()) {

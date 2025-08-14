@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -35,6 +35,7 @@ public:
   int opacity() const { return m_opacity; }
   std::size_t refs() const { return m_refs; }
   Image* image() const { return const_cast<Image*>(m_image.get()); }
+  ObjectId imageId() const { return m_image ? m_image->id() : NullId; };
   ImageRef imageRef() const { return m_image; }
 
   // Returns a rectangle with the bounds of the image (width/height
@@ -43,7 +44,9 @@ public:
   // bounds).
   gfx::Rect imageBounds() const
   {
-    return gfx::Rect(m_bounds.x, m_bounds.y, m_image->width(), m_image->height());
+    if (m_image)
+      return gfx::Rect(m_bounds.x, m_bounds.y, m_image->width(), m_image->height());
+    return {};
   }
 
   void setImage(const ImageRef& image, Layer* layer);
@@ -51,28 +54,8 @@ public:
 
   void setOpacity(int opacity) { m_opacity = opacity; }
 
-  void setBounds(const gfx::Rect& bounds)
-  {
-    ASSERT(bounds.w > 0);
-    ASSERT(bounds.h > 0);
-    m_bounds = bounds;
-    if (m_boundsF)
-      *m_boundsF = gfx::RectF(bounds);
-  }
-
-  void setBoundsF(const gfx::RectF& boundsF)
-  {
-    if (m_boundsF)
-      *m_boundsF = boundsF;
-    else
-      m_boundsF = std::make_unique<gfx::RectF>(boundsF);
-
-    m_bounds = gfx::Rect(boundsF);
-    if (m_bounds.w <= 0)
-      m_bounds.w = 1;
-    if (m_bounds.h <= 0)
-      m_bounds.h = 1;
-  }
+  void setBounds(const gfx::Rect& bounds);
+  void setBoundsF(const gfx::RectF& boundsF);
 
   const gfx::RectF& boundsF() const
   {
@@ -85,8 +68,7 @@ public:
 
   int getMemSize() const override
   {
-    ASSERT(m_image);
-    return sizeof(CelData) + m_image->getMemSize();
+    return sizeof(CelData) + (m_image ? m_image->getMemSize() : 0);
   }
   void suspendObject() override;
   void restoreObject() override;
@@ -104,7 +86,7 @@ private:
   mutable std::unique_ptr<gfx::RectF> m_boundsF;
 };
 
-typedef std::shared_ptr<CelData> CelDataRef;
+using CelDataRef = std::shared_ptr<CelData>;
 
 } // namespace doc
 

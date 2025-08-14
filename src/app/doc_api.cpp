@@ -351,11 +351,8 @@ void DocApi::copyFrame(Sprite* sprite,
   if (fromFrame >= newFrame)
     ++fromFrame;
 
-  for (Layer* layer : sprite->allLayers()) {
-    if (layer->isImage()) {
-      copyCel(layer, fromFrame, layer, newFrame);
-    }
-  }
+  for (Layer* layer : sprite->allLayers())
+    copyCel(layer, fromFrame, layer, newFrame);
 
   adjustTags(sprite, newFrame0, +1, dropFramePlace, tagsHandling);
 }
