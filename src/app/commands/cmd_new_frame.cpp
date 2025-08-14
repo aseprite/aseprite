@@ -123,11 +123,9 @@ void NewFrameCommand::onExecute(Context* context)
                                 site.selectedFrames().firstFrame() + 1);
 
           for (Layer* layer : selLayers) {
-            if (layer->isImage()) {
-              for (frame_t srcFrame : site.selectedFrames().reversed()) {
-                frame_t dstFrame = srcFrame + frameRange;
-                api.copyCel(layer, srcFrame, layer, dstFrame, continuous.get());
-              }
+            for (frame_t srcFrame : site.selectedFrames().reversed()) {
+              frame_t dstFrame = srcFrame + frameRange;
+              api.copyCel(layer, srcFrame, layer, dstFrame, continuous.get());
             }
           }
 
@@ -135,7 +133,7 @@ void NewFrameCommand::onExecute(Context* context)
           if (timeline)
             timeline->moveRange(range);
         }
-        else if (auto layer = static_cast<LayerImage*>(writer.layer())) {
+        else if (Layer* layer = writer.layer()) {
           api.copyCel(layer, writer.frame(), layer, writer.frame() + 1, continuous.get());
 
           context->setActiveFrame(writer.frame() + 1);

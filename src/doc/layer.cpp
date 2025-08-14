@@ -300,10 +300,15 @@ void Layer::addCel(Cel* cel)
 {
   ASSERT(cel);
   ASSERT(cel->data() && "The cel doesn't contain CelData");
-  ASSERT(cel->image());
   ASSERT(sprite());
-  ASSERT(cel->image()->pixelFormat() == sprite()->pixelFormat() ||
-         cel->image()->pixelFormat() == IMAGE_TILEMAP);
+#if _DEBUG
+  if (isTilemap()) {
+    ASSERT(!cel->image() || cel->image()->pixelFormat() == IMAGE_TILEMAP);
+  }
+  else if (isImage()) {
+    ASSERT(!cel->image() || cel->image()->pixelFormat() == sprite()->pixelFormat());
+  }
+#endif
 
   CelIterator it = findFirstCelIteratorAfter(cel->frame());
   m_cels.insert(it, cel);

@@ -49,11 +49,11 @@ static void move_or_copy_cels(DocApi& api,
     auto dstFrameEnd = dstFrames.end();
 
     for (; srcFrame != srcFrameEnd && dstFrame != dstFrameEnd; ++srcFrame, ++dstFrame) {
-      if (i >= 0 && i < srcLayers.size() && srcLayers[i]->isImage()) {
-        LayerImage* srcLayer = static_cast<LayerImage*>(srcLayers[i]);
+      if (i >= 0 && i < srcLayers.size()) {
+        Layer* srcLayer = srcLayers[i];
 
-        if (i < dstLayers.size() && dstLayers[i]->isImage()) {
-          LayerImage* dstLayer = static_cast<LayerImage*>(dstLayers[i]);
+        if (i < dstLayers.size()) {
+          Layer* dstLayer = dstLayers[i];
 
 #ifdef TRACE_RANGE_OPS
           std::clog << (op == Move ? "Moving" : "Copying") << " cel " << srcLayer->name() << "["
@@ -498,9 +498,6 @@ void reverse_frames(Doc* doc, const DocRange& range)
   }
   else if (swapCels) {
     for (Layer* layer : layers) {
-      if (!layer->isImage())
-        continue;
-
       for (frame_t frame = frameBegin, frameRev = frameEnd;
            frame != (frameBegin + frameEnd) / 2 + 1;
            ++frame, --frameRev) {
