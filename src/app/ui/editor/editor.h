@@ -244,7 +244,8 @@ public:
 
   void pasteImage(const Image* image,
                   const Mask* mask = nullptr,
-                  const gfx::Point* position = nullptr);
+                  const gfx::Point* position = nullptr,
+                  const Tileset* srcTileset = nullptr);
 
   void startSelectionTransformation(const gfx::Point& move, double angle);
   void startFlipTransformation(doc::algorithm::FlipType flipType);
