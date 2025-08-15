@@ -61,10 +61,8 @@
               <listbox id="drag_actions" />
             </view>
             <separator horizontal="true" />
-            <hbox>
-              <vbox>
-                <label text="@.drag_angle" />
-              </vbox>
+            <grid columns="4">
+              <label text="@.drag_angle" for="drag_angle" cell_align="top" />
               <buttonset columns="3" id="drag_angle">
                 <item icon="canvas_nw"
                       style="dir_item"
@@ -100,15 +98,11 @@
                       tooltip="@.drag_angle_tooltip"
                       tooltip_dir="top" />
               </buttonset>
-              <vbox>
-                <label text="@.drag_distance" />
-              </vbox>
-              <vbox>
-                <slider min="1" max="100" id="drag_distance" cell_align="horizontal" width="128"
-                        tooltip="@.drag_distance_tooltip"
-                        tooltip_dir="bottom" />
-              </vbox>
-            </hbox>
+              <label text="@.drag_distance" for="drag_distance" cell_align="top" />
+              <box>
+                <slider min="1" max="100" id="drag_distance" width="128" tooltip="@.drag_distance_tooltip" tooltip_dir="bottom" />
+              </box>
+            </grid>
           </vbox>
         </vbox>
       </splitter>

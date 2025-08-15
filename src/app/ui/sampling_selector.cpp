@@ -24,6 +24,8 @@ SamplingSelector::SamplingSelector(Behavior behavior)
   addChild(&m_downsamplingLabel);
   addChild(&m_downsampling);
 
+  m_downsamplingLabel.setBuddy(&m_downsampling);
+
   m_downsampling.addItem(new ListItem(Strings::downsampling_nearest()));
   m_downsampling.addItem(new ListItem(Strings::downsampling_bilinear()));
   m_downsampling.addItem(new ListItem(Strings::downsampling_bilinear_mipmap()));

@@ -3,9 +3,9 @@
 <gui>
 <hbox id="despeckle">
   <grid columns="2">
-    <label text="@.width" />
+    <label text="@.width" for="width" />
     <expr id="width" cell_align="horizontal" />
-    <label text="@.height" />
+    <label text="@.height" for="height" />
     <expr id="height" cell_align="horizontal" />
   </grid>
 </hbox>

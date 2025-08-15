@@ -5,13 +5,13 @@
   <vbox expansive="true" id="controls">
     <hbox expansive="true">
       <grid columns="2" id="controls">
-        <label text="@replace_color.from" />
+        <label text="@replace_color.from" for="from" />
         <colorpicker id="from" cell_align="horizontal" />
-        <label text="@replace_color.to" />
+        <label text="@replace_color.to" for="to" />
         <colorpicker id="to" cell_align="horizontal" />
       </grid>
     </hbox>
-    <label text="@replace_color.tolerance" />
+    <label text="@replace_color.tolerance" for="tolerance" />
     <slider min="0" max="255" id="tolerance" />
   </vbox>
 </gui>

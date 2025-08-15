@@ -1096,6 +1096,7 @@ private:
       m_themeVars->deferDelete();
     }
     m_themeVars = list;
+    themeModeLabel()->setBuddy(m_themeVars);
     themeVariants()->setVisible(list ? true : false);
     themeVariants()->initTheme();
   }

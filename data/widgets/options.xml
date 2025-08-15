@@ -36,18 +36,18 @@
         <vbox id="section_general">
           <separator text="@.section_general" horizontal="true" />
           <grid columns="2">
-            <label text="@.ui_windows" />
+            <label text="@.ui_windows" for="ui_windows" />
             <hbox>
               <buttonset columns="2" id="ui_windows">
                 <item icon="one_win_icon" tooltip="@.one_win" tooltip_dir="bottom" style="multi_window_item" />
                 <item icon="multi_win_icon" tooltip="@.multi_win" tooltip_dir="bottom" style="multi_window_item" />
               </buttonset>
               <hbox id="theme_variants">
-                <label text="@.theme_mode" />
+                <label id="theme_mode_label" text="@.theme_mode" /> <!-- TODO: Get future dynamic ID, if any -->
               </hbox>
             </hbox>
 
-            <label text="@.screen_scaling" />
+            <label text="@.screen_scaling" for="screen_scale" />
             <combobox id="screen_scale">
               <listitem text="100%" value="1" />
               <listitem text="200%" value="2" />
@@ -55,7 +55,7 @@
               <listitem text="400%" value="4" />
             </combobox>
 
-            <label text="@.ui_scaling" />
+            <label text="@.ui_scaling" for="ui_scale" />
             <combobox id="ui_scale">
               <listitem text="100%" value="1" />
               <listitem text="200%" value="2" />
@@ -125,21 +125,21 @@
           <separator text="@.section_files" horizontal="true" />
           <label text="@.default_extension_for" />
           <grid columns="2">
-            <label text="@.save_default_extension" />
+            <label text="@.save_default_extension" for="default_extension" />
             <combobox id="default_extension" />
 
-            <label text="@.export_image_default_extension" />
+            <label text="@.export_image_default_extension" for="export_image_default_extension" />
             <combobox id="export_image_default_extension" />
 
-            <label text="@.export_animation_default_extension" />
+            <label text="@.export_animation_default_extension" for="export_animation_default_extension" />
             <combobox id="export_animation_default_extension" />
 
-            <label text="@.export_sprite_sheet_default_extension" />
+            <label text="@.export_sprite_sheet_default_extension" for="export_sprite_sheet_default_extension" />
             <combobox id="export_sprite_sheet_default_extension" />
           </grid>
 
           <grid columns="2">
-            <label text="@.recent_files" />
+            <label text="@.recent_files" for="recent_files" />
             <hbox>
               <slider min="0" max="100" id="recent_files" width="128" tooltip="@.recent_files_tooltip" />
               <button id="clear_recent_files" text="@.clear_recent_files" tooltip="@.clear_recent_files_tooltip" minwidth="60" />
@@ -203,7 +203,7 @@
           <check text="@.color_management" id="color_management" pref="color.manage" />
 
           <grid columns="2">
-            <label text="@.window_cs" id="window_cs_label" />
+            <label text="@.window_cs" id="window_cs_label" for="window_cs" />
             <combobox id="window_cs">
               <listitem text="@.use_monitor_cs" />
               <listitem text="@.use_srgb_cs" />
@@ -213,10 +213,10 @@
             <boxfiller />
             <separator horizontal="true" />
 
-            <label text="@.working_rgb_cs" id="working_rgb_cs_label" />
+            <label text="@.working_rgb_cs" id="working_rgb_cs_label" for="working_rgb_cs" />
             <combobox id="working_rgb_cs" />
 
-            <label text="@.files_with_cs" id="files_with_cs_label" />
+            <label text="@.files_with_cs" id="files_with_cs_label" for="files_with_cs" />
             <combobox id="files_with_cs">
               <listitem text="@.disable_cs" />
               <listitem text="@.use_embedded_cs" />
@@ -225,7 +225,7 @@
               <listitem text="@.ask_cs" />
             </combobox>
 
-            <label text="@.missing_cs" id="missing_cs_label" />
+            <label text="@.missing_cs" id="missing_cs_label" for="missing_cs" />
             <combobox id="missing_cs">
               <listitem text="@.disable_cs" />
               <listitem text="@.assign_cs" />
@@ -240,12 +240,12 @@
 
           <separator text="@.alpha_and_opacity" horizontal="true" />
           <grid columns="2">
-            <label text="@.alpha_range" id="alpha_range_label" />
+            <label text="@.alpha_range" id="alpha_range_label" for="alpha" />
             <combobox id="alpha">
               <listitem text="@.8bit_value" />
               <listitem text="@.percentage" />
             </combobox>
-            <label text="@.opacity_range" id="opacity_range_label" />
+            <label text="@.opacity_range" id="opacity_range_label" for="opacity" />
             <combobox id="opacity">
               <listitem text="@.8bit_value" />
               <listitem text="@.percentage" />
@@ -270,7 +270,7 @@
           <check text="@.discard_brush" id="discard_brush" />
           <hbox id="sampling_placeholder" />
           <hbox>
-            <label text="@.right_click" />
+            <label text="@.right_click" for="right_click_behavior" />
             <combobox id="right_click_behavior" expansive="true" />
           </hbox>
         </vbox>
@@ -303,7 +303,7 @@
           <check text="@.rewind_on_stop" id="rewind_on_stop" tooltip="@.rewind_on_stop_tooltip"
                  pref="general.rewind_on_stop" />
           <hbox>
-            <label text="@.default_first_frame" />
+            <label text="@.default_first_frame" for="first_frame" />
             <expr id="first_frame" />
           </hbox>
           <separator text="@.timeline_selection" horizontal="true" />
@@ -337,7 +337,7 @@
           <separator text="@.ui_mouse_cursor" horizontal="true" />
           <check id="native_cursor" text="@.native_cursor" />
           <hbox>
-            <label id="cursor_scale_label" text="@.cursor_scale_label" />
+            <label id="cursor_scale_label" text="@.cursor_scale_label" for="cursor_scale" />
             <combobox id="cursor_scale">
               <listitem text="100%" value="1" />
               <listitem text="200%" value="2" />
@@ -349,13 +349,13 @@
           <separator text="@.painting_cursors" horizontal="true" />
 
           <grid columns="2">
-            <label text="@.crosshair_type" />
+            <label text="@.crosshair_type" for="painting_cursor_type" />
             <combobox id="painting_cursor_type">
               <listitem text="@.simple_crosshair" value="0" />
               <listitem text="@.crosshair_on_sprite" value="1" />
             </combobox>
 
-            <label text="@.brush_preview" />
+            <label text="@.brush_preview" for="brush_preview" />
             <combobox id="brush_preview">
               <listitem text="@.brush_preview_none" value="0" />
               <listitem text="@.brush_preview_edges" value="1" />
@@ -364,7 +364,7 @@
               <listitem text="@.brush_preview_fullnedges" value="4" />
             </combobox>
 
-            <label text="@.cursor_color_type" />
+            <label text="@.cursor_color_type" for="cursor_color_type" />
             <combobox id="cursor_color_type">
               <listitem text="@.cursor_neg_bw" value="0" />
               <listitem text="@.cursor_specific_color" value="1" />
@@ -384,7 +384,7 @@
 
           <separator text="@.bg_checkered" horizontal="true" />
           <grid columns="2">
-            <label text="@.bg_size" />
+            <label text="@.bg_size" for="checkered_bg_size" />
             <hbox>
               <combobox id="checkered_bg_size" />
               <expr id="checkered_bg_custom_w" />
@@ -414,23 +414,23 @@
           </hbox>
 
           <grid columns="5">
-            <label text="@.grid_x" />
+            <label text="@.grid_x" for="grid_x" />
             <expr id="grid_x" text="" />
-            <label text="@.grid_y" />
+            <label text="@.grid_y" for="grid_y" />
             <expr id="grid_y" text="" />
             <hbox />
 
-            <label text="@.grid_width" />
+            <label text="@.grid_width" for="grid_w" />
             <expr id="grid_w" text="" />
-            <label text="@.grid_height" />
+            <label text="@.grid_height" for="grid_h" />
             <expr id="grid_h" text="" />
             <hbox />
 
-            <label text="@.grid_color" />
+            <label text="@.grid_color" for="grid_color" />
             <colorpicker id="grid_color" rgba="true" cell_hspan="3" />
             <hbox />
 
-            <label text="@.grid_opacity" />
+            <label text="@.grid_opacity" for="grid_opacity" />
             <slider id="grid_opacity" cell_hspan="3" min="1" max="255" width="128" />
             <check id="grid_auto_opacity" text="@.grid_auto" />
           </grid>
@@ -440,11 +440,11 @@
             <separator horizontal="true" expansive="true" />
           </hbox>
           <grid columns="3">
-            <label text="@.grid_color" />
+            <label text="@.grid_color" for="pixel_grid_color" />
             <colorpicker id="pixel_grid_color" rgba="true" />
             <hbox />
 
-            <label text="@.grid_opacity" />
+            <label text="@.grid_opacity" for="pixel_grid_opacity" />
             <slider id="pixel_grid_opacity" min="1" max="255" width="128" />
             <check id="pixel_grid_auto_opacity" text="@.grid_auto" />
           </grid>
@@ -459,15 +459,15 @@
         <vbox id="section_guides_and_slices">
           <separator text="@.guides" horizontal="true" />
           <grid columns="2">
-            <label text="@.layer_edges_color" />
+            <label text="@.layer_edges_color" for="layer_edges_color" />
             <colorpicker id="layer_edges_color" rgba="true" />
-            <label text="@.auto_guides_color" />
+            <label text="@.auto_guides_color" for="auto_guides_color" />
             <colorpicker id="auto_guides_color" rgba="true" />
           </grid>
 
           <separator text="@.slices" horizontal="true" />
           <hbox>
-            <label text="@.default_slice_color" />
+            <label text="@.default_slice_color" for="default_slice_color" />
             <colorpicker id="default_slice_color" rgba="true" />
           </hbox>
         </vbox>
@@ -478,7 +478,7 @@
           <hbox>
             <check id="limit_undo" text="@.undo_size_limit" />
             <expr id="undo_size_limit" tooltip="@.undo_size_limit_tooltip" />
-            <label text="@.undo_mb" />
+            <label text="@.undo_mb" for="undo_size_limit" />
           </hbox>
 
           <vbox>
@@ -496,7 +496,7 @@
         <vbox id="section_alerts">
           <separator text="@.section_alerts" horizontal="true" />
           <hbox>
-            <label text="@.open_sequence_alert" />
+            <label text="@.open_sequence_alert" for="open_sequence" />
             <combobox id="open_sequence">
               <listitem text="@.open_sequence_alert_ask" value="0" />
               <listitem text="@.open_sequence_alert_yes" value="1" />
@@ -582,7 +582,7 @@
         <vbox id="section_aseprite_format">
           <separator text="@.section_aseprite_format" horizontal="true" />
           <grid columns="2">
-            <label text="@.cel_content_format" />
+            <label text="@.cel_content_format" for="cel_format" />
             <combobox id="cel_format">
               <listitem text="@.cel_format_compressed" />
               <listitem text="@.cel_format_keep" />
@@ -626,14 +626,14 @@
           <check id="flash_layer" text="@.flash_selected_layer" />
           <check id="use_selection_tool_loop" text="@.use_selection_tool_loop" />
           <hbox>
-            <label text="@.non_active_layer_opacity" />
+            <label text="@.non_active_layer_opacity" for="nonactive_layers_opacity" />
             <slider id="nonactive_layers_opacity" min="0" max="255" width="128" />
           </hbox>
           <separator text="@.color_quantization" horizontal="true" />
           <grid columns="2">
-            <label text="@rgbmap_algorithm_selector.label" />
+            <label text="@rgbmap_algorithm_selector.label" for="rgbmap_algorithm_selector" />
             <hbox id="rgbmap_algorithm_placeholder" />
-            <label text="@best_fit_criteria_selector.label" />
+            <label text="@best_fit_criteria_selector.label" for="best_fit_criteria_selector" />
             <hbox id="best_fit_criteria_placeholder" />
           </grid>
           <separator text="@.performance" horizontal="true" />

@@ -22,6 +22,8 @@ BestFitCriteriaSelector::BestFitCriteriaSelector()
                   int(doc::FitCriteria::CIELAB) == 4,
                 "Unexpected doc::FitCriteria values");
 
+  setId("best_fit_criteria_selector");
+
   addItem(Strings::best_fit_criteria_selector_default());
   addItem(Strings::best_fit_criteria_selector_rgb());
   addItem(Strings::best_fit_criteria_selector_linearized_rgb());

@@ -5,7 +5,7 @@
   <vbox>
     <grid columns="2">
 
-      <label id="by_label" text="" />
+      <label id="by_label" text="" for="quantity" />
       <expr id="quantity" expansive="true" magnet="true" suffix="px" />
 
       <hbox />

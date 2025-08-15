@@ -6,7 +6,7 @@
 <window id="slice_properties" text="@.title" help="slices#slice-properties">
   <vbox expansive="true">
     <grid id="properties_grid" columns="3">
-      <label id="label1" text="@.name" />
+      <label text="@.name" for="name" />
       <entry id="name" maxsize="256" magnet="true" cell_align="horizontal" expansive="true" />
       <button id="user_data" icon="icon_user_data" maxsize="32" tooltip="@.user_data_tooltip" />
     </grid>

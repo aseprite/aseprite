@@ -4,12 +4,12 @@
 <gui>
 <window id="open_sequence" text="@.title">
   <vbox>
-    <label text="@.description" />
+    <label text="@.description" for="files" />
     <view expansive="true" id="view" minwidth="128" minheight="64">
       <listbox id="files" multiselect="true" />
     </view>
     <hbox>
-      <label text="@.duration" />
+      <label text="@.duration" for="duration" />
       <expr text="0" id="duration" suffix="ms" />
     </hbox>
     <separator horizontal="true" />
