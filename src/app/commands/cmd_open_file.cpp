@@ -16,6 +16,7 @@
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/doc.h"
+#include "app/extensions.h"
 #include "app/file/file.h"
 #include "app/file_selector.h"
 #include "app/i18n/strings.h"
@@ -27,6 +28,10 @@
 #include "base/fs.h"
 #include "doc/sprite.h"
 #include "ui/ui.h"
+
+#ifdef ENABLE_SCRIPTING
+  #include "app/script/security.h"
+#endif
 
 #include <cstdio>
 
@@ -140,6 +145,13 @@ void OpenFileCommand::onExecute(Context* context)
       return;
 
     if (fop->hasError()) {
+#ifdef ENABLE_SCRIPTING
+      if (fop->hasUnknownFormatError() && loadCustomFormat(filename)) {
+        // If a script was detected and loaded the file without errors, then we can return safely
+        return;
+      }
+#endif
+
       console.printf(fop->error().c_str());
       unrecent = true;
     }
@@ -227,6 +239,32 @@ std::string OpenFileCommand::onGetFriendlyName() const
        (": " + (m_filename.size() >= pos ? m_filename.substr(m_filename.size() - pos, pos) :
                                            m_filename))));
 }
+
+#ifdef ENABLE_SCRIPTING
+bool OpenFileCommand::loadCustomFormat(const std::string& filename)
+{
+  const std::string detectedExtension = base::string_to_lower(base::get_file_extension(filename));
+  if (detectedExtension.empty())
+    return false;
+
+  for (const auto& customFormatExtension : App::instance()->extensions().customFormatList()) {
+    if (base::string_to_lower(customFormatExtension) == detectedExtension) {
+      for (Extension* extension : App::instance()->extensions()) {
+        if (!extension->isEnabled() || !extension->hasFileFormats())
+          continue;
+
+        auto formatId = extension->getCustomFormatIdForExtension(customFormatExtension,
+                                                                 Extension::FileFormat::Load);
+        if (formatId.has_value()) {
+          return extension->loadCustomFormat(*formatId, filename);
+        }
+      }
+    }
+  }
+
+  return false;
+}
+#endif
 
 Command* CommandFactory::createOpenFileCommand()
 {
