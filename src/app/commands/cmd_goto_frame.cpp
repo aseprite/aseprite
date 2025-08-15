@@ -212,7 +212,7 @@ private:
     if (m_showUI) {
       app::gen::GotoFrame window;
       TagsEntry combobox(editor->sprite()->tags());
-
+      combobox.setId("frame");
       window.framePlaceholder()->addChild(&combobox);
 
       combobox.setFocusMagnet(true);

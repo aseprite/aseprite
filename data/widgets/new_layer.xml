@@ -5,7 +5,7 @@
   <window id="new_layer" text="@.title" help="new-layer">
     <vbox>
       <grid columns="2">
-        <label text="@.name" />
+        <label text="@.name" for="name" />
         <entry maxsize="256" text="@.default_new_layer_name" id="name" magnet="true" />
 
         <vbox>

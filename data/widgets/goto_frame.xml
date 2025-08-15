@@ -3,7 +3,7 @@
 <gui>
 <window id="goto_frame" text="@.title">
   <vbox>
-    <label text="@.frame_or_tags" />
+    <label text="@.frame_or_tags" for="frame" />
     <vbox id="frame_placeholder" />
 
     <separator horizontal="true" />

@@ -22,19 +22,19 @@
     <grid columns="2">
       <separator text="@.advanced" horizontal="true" cell_hspan="2" />
 
-      <label text="@.transparent_color" />
+      <label text="@.transparent_color" for="transparent_color" />
       <hbox>
         <hbox id="transparent_color_placeholder" />
       </hbox>
 
-      <label text="@.pixel_ratio" />
+      <label text="@.pixel_ratio" for="pixel_ratio" />
       <combobox id="pixel_ratio" cell_align="horizontal">
         <listitem text="@.square_pixels" value="1:1" />
         <listitem text="@.double_wide" value="2:1" />
         <listitem text="@.double_high" value="1:2" />
       </combobox>
 
-      <label text="@.color_profile" />
+      <label text="@.color_profile" for="color_profile" />
       <hbox>
         <combobox id="color_profile" cell_align="horizontal" expansive="true" />
         <hbox homogeneous="true">

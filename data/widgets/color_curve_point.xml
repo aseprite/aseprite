@@ -5,10 +5,10 @@
   <vbox>
     <hbox expansive="true">
       <grid columns="2">
-        <label text="@.x" />
+        <label text="@.x" for="x" />
         <expr id="x" magnet="true" />
 
-        <label text="@.y" />
+        <label text="@.y" for="y" />
         <expr id="y" />
       </grid>
     </hbox>
