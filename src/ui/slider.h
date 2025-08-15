@@ -9,6 +9,7 @@
 #define UI_SLIDER_H_INCLUDED
 #pragma once
 
+#include "base/time.h"
 #include "obs/signal.h"
 #include "ui/widget.h"
 
@@ -67,6 +68,9 @@ private:
   int m_value;
   bool m_readOnly;
   SliderDelegate* m_delegate;
+
+  base::tick_t m_keyTiming = 0;
+  std::string m_keyBuffer;
 };
 
 } // namespace ui
