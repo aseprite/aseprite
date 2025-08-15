@@ -14,7 +14,7 @@
     <check id="alpha_channel" text="@.alpha_channel" cell_hspan="2" />
     <check id="advanced_check" text="@general.advanced_options" cell_hspan="2" />
     <hbox id="advanced" cell_hspan="2">
-      <label text="@rgbmap_algorithm_selector.label" />
+      <label text="@rgbmap_algorithm_selector.label" for="rgbmap_algorithm_selector" />
       <hbox id="rgbmap_algorithm_placeholder" />
     </hbox>
 

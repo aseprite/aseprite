@@ -4,7 +4,7 @@
 <window id="new_layout" text="@.title">
   <vbox>
     <hbox>
-      <label text="@.name" />
+      <label text="@.name" for="name" />
       <entry maxsize="128" id="name" magnet="true" expansive="true" />
     </hbox>
 

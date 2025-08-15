@@ -7,36 +7,36 @@
       <grid columns="4">
         <button id="select_file" text="@select_file.text" cell_hspan="4" />
 
-        <label text="@.type" />
+        <label text="@.type" for="sheet_type" />
         <combobox id="sheet_type" cell_hspan="3" />
 
         <separator text="@.tiles" horizontal="true" cell_hspan="4" />
 
-        <label text="@.x" />
+        <label text="@.x" for="x" />
         <expr id="x" text="0" />
 
-        <label text="@.y" />
+        <label text="@.y" for="y" />
         <expr id="y" text="0" />
 
-        <label text="@.width" />
+        <label text="@.width" for="width" />
         <expr id="width" text="16" />
 
-        <label text="@.height" />
+        <label text="@.height" for="height" />
         <expr id="height" text="16" />
 
         <separator horizontal="true" cell_hspan="4" />
 
-        <label text="@.columns" />
+        <label text="@.columns" for="columns" />
         <expr id="columns" />
 
-        <label text="@.rows" />
+        <label text="@.rows" for="rows" />
         <expr id="rows" />
 
         <check id="padding_enabled" text="@.padding" cell_hspan="4" />
 
-        <label text="@.horizontal_padding" id="horizontal_padding_label" />
+        <label text="@.horizontal_padding" id="horizontal_padding_label" for="horizontal_padding" />
         <expr id="horizontal_padding" text="0" />
-        <label text="@.vertical_padding" id="vertical_padding_label" />
+        <label text="@.vertical_padding" id="vertical_padding_label" for="vertical_padding" />
         <expr id="vertical_padding" text="0" />
 
         <check id="partial_tiles" text="@.partial_tiles" cell_hspan="4" />

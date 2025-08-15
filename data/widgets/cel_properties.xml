@@ -4,11 +4,11 @@
 <gui>
 <window id="cel_properties" text="@.title">
   <grid id="properties_grid" columns="4">
-    <label text="@.opacity" />
+    <label text="@.opacity" for="opacity" />
     <opacityslider id="opacity" cell_align="horizontal" width="128" cell_hspan="2" />
     <button id="user_data" icon="icon_user_data" tooltip="@.user_data_tooltip" />
 
-    <label text="@.zindex" />
+    <label text="@.zindex" for="zindex" />
     <expr id="zindex" cell_align="horizontal" width="128" />
     <buttonset id="zindex_spin" columns="1">
       <item icon="spin_up" />

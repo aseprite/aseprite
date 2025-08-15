@@ -16,6 +16,17 @@ namespace ui {
 class Label : public Widget {
 public:
   Label(const std::string& text);
+
+  Widget* buddy();
+  void setBuddy(Widget* buddy);
+  void setBuddy(const std::string& buddyId);
+
+protected:
+  bool onProcessMessage(Message* msg) override;
+
+private:
+  Widget* m_buddy;
+  std::string m_buddyId;
 };
 
 } // namespace ui

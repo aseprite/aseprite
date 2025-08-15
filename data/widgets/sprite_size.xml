@@ -1,45 +1,36 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2024 by Igara Studio S.A. -->
+<!-- Copyright (C) 2025 by Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018 by David Capello -->
 <gui>
 <window id="sprite_size" text="@.title" help="resize">
   <box vertical="true">
     <box vertical="true">
       <separator text="@.pixels" left="true" horizontal="true" />
-      <box vertical="true" expansive="true">
-        <box horizontal="true">
-          <box vertical="true" homogeneous="true">
-            <label text="@.width" />
-            <label text="@.height" />
-          </box>
-          <box vertical="true" homogeneous="true" expansive="true">
-            <expr expansive="true" id="width_px" suffix="px" magnet="true" tooltip="@.width_px_tooltip" />
-            <expr expansive="true" id="height_px" suffix="px" tooltip="@.height_px_tooltip" />
-          </box>
-          <check text="@.lock_ratio" id="lock_ratio" selected="true" />
-        </box>
-      </box>
+      <grid columns="3">
+        <label text="@.width" for="width_px" />
+        <expr expansive="true" id="width_px" suffix="px" magnet="true" tooltip="@.width_px_tooltip" />
+
+        <check text="@.lock_ratio" id="lock_ratio" selected="true" expansive="false" cell_vspan="2" />
+
+        <label text="@.height" for="height_px" />
+        <expr expansive="true" id="height_px" suffix="px" tooltip="@.height_px_tooltip" />
+      </grid>
+
       <separator text="@.percentage" left="true" horizontal="true" />
-      <box vertical="true" expansive="true">
-        <box horizontal="true">
-          <box vertical="true" homogeneous="true">
-            <label text="@.width" />
-            <label text="@.height" />
-          </box>
-          <box vertical="true" homogeneous="true" expansive="true">
-            <expr expansive="true" text="100" suffix="%" id="width_perc" magnet="true" tooltip="@.width_perc_tooltip"
-                  decimals="4" />
-            <expr expansive="true" text="100" suffix="%" id="height_perc" tooltip="@.height_perc_tooltip"
-                  decimals="4" />
-          </box>
-          <box horizontal="true" width="64" />
-        </box>
-      </box>
+      <grid columns="3">
+        <label text="@.width" for="width_perc" />
+        <expr expansive="true" text="100" suffix="%" id="width_perc" magnet="true" tooltip="@.width_perc_tooltip" decimals="4" />
+
+        <boxfiller cell_vspan="2" />
+
+        <label text="@.height" for="height_perc" />
+        <expr expansive="true" text="100" suffix="%" id="height_perc" tooltip="@.height_perc_tooltip" decimals="4" />
+      </grid>
     </box>
     <separator text="@.interpolation" left="true" horizontal="true" />
     <box vertical="true" expansive="true">
       <box horizontal="true">
-        <label text="@.method" />
+        <label text="@.method" for="method" />
         <combobox id="method" expansive="true" />
       </box>
     </box>
