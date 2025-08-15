@@ -21,6 +21,8 @@ RgbMapAlgorithmSelector::RgbMapAlgorithmSelector()
                   int(doc::RgbMapAlgorithm::OCTREE) == 2,
                 "Unexpected doc::RgbMapAlgorithm values");
 
+  setId("rgbmap_algorithm_selector");
+
   addItem(Strings::rgbmap_algorithm_selector_default());
   addItem(Strings::rgbmap_algorithm_selector_rgb5a3());
   addItem(Strings::rgbmap_algorithm_selector_octree());

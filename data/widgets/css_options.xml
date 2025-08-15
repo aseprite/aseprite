@@ -3,7 +3,7 @@
 <gui>
 <window id="css_options" text="@.title">
   <grid columns="2">
-    <label text="@.pixel_scale" />
+    <label text="@.pixel_scale" for="pixel_scale" />
     <expr id="pixel_scale" magnet="true" cell_align="horizontal"/>
 
     <check text="@.with_vars" id="with_vars" cell_hspan="2" />
