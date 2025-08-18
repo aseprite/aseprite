@@ -199,7 +199,7 @@ int Clipboard_set_content(lua_State* L)
   type = lua_getfield(L, 2, "selection");
   if (type != LUA_TNIL) {
     mask = get_mask_from_arg(L, -1);
-    if (!mask)
+    if (!mask || !mask->bitmap())
       return luaL_error(L, "invalid selection provided");
   }
   lua_pop(L, 1);
