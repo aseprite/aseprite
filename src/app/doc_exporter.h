@@ -79,6 +79,7 @@ public:
   void setListLayers(bool value) { m_listLayers = value; }
   void setListLayerHierarchy(bool value) { m_listLayerHierarchy = value; }
   void setListSlices(bool value) { m_listSlices = value; }
+  void setSelectedTag(const std::string& tagName) { m_selectedTagName = tagName; }
 
   void addImage(Doc* doc, const doc::ImageRef& image);
 
@@ -153,6 +154,7 @@ private:
   std::string m_textureFilename;
   std::string m_filenameFormat;
   std::string m_tagnameFormat;
+  std::string m_selectedTagName;
   int m_textureWidth;
   int m_textureHeight;
   int m_textureColumns;
