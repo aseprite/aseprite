@@ -130,6 +130,9 @@ public:
   const Transformation& getTransformation() const { return m_currentData; }
   void setTransformation(const Transformation& t);
 
+  // For copy/paste between tilemap layers
+  void remapTilesForPaste(const Tileset* srcTileset);
+
 private:
   void setTransformationBase(const Transformation& t);
   void adjustPivot();
