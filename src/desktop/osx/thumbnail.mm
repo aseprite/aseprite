@@ -1,11 +1,10 @@
 // Desktop Integration
-// Copyright (c) 2022  Igara Studio S.A.
+// Copyright (c) 2022-2025  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#include "thumbnail.h"
-
+#include "app/file_system.h"
 #include "dio/decode_delegate.h"
 #include "dio/decode_file.h"
 #include "dio/file_interface.h"
@@ -13,8 +12,7 @@
 #include "render/render.h"
 
 #include <Cocoa/Cocoa.h>
-
-#include <algorithm>
+#include <QuickLookThumbnailing/QuickLookThumbnailing.h>
 
 namespace desktop {
 
@@ -87,7 +85,7 @@ public:
 
 } // anonymous namespace
 
-CGImageRef get_thumbnail(CFURLRef url, CFDictionaryRef options, CGSize maxSize)
+CGImageRef get_thumbnail(CFURLRef url, CGSize maxSize)
 {
   auto data = [[NSData alloc] initWithContentsOfURL:(NSURL*)url];
   if (!data)
@@ -126,6 +124,18 @@ CGImageRef get_thumbnail(CFURLRef url, CFDictionaryRef options, CGSize maxSize)
                         0,
                         gfx::ClipF(0, 0, 0, 0, image->width(), image->height()));
 
+    // Alpha premultiplication.
+    // CGBitmapContextCreate doesn't support unpremultiplied alpha images (kCGImageAlphaFirst).
+    doc::LockImageBits<doc::RgbTraits> bits(image.get());
+    doc::LockImageBits<doc::RgbTraits>::iterator it, end;
+    for (it = bits.begin(), end = bits.end(); it != end; ++it) {
+      const int a = doc::rgba_geta(*it);
+      *it = doc::rgba(doc::rgba_getr(*it) * a / 255,
+                      doc::rgba_getg(*it) * a / 255,
+                      doc::rgba_getb(*it) * a / 255,
+                      a);
+    }
+
     w = image->width();
     h = image->height();
   }
@@ -133,9 +143,6 @@ CGImageRef get_thumbnail(CFURLRef url, CFDictionaryRef options, CGSize maxSize)
     NSLog(@"AsepriteThumbnailer error: %s", e.what());
     return nullptr;
   }
-
-  // TODO Premultiply alpha because CGBitmapContextCreate doesn't
-  //      support unpremultiplied alpha (kCGImageAlphaFirst).
 
   CGColorSpaceRef cs = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
   CGContextRef gc = CGBitmapContextCreate(image->getPixelAddress(0, 0),
@@ -153,3 +160,42 @@ CGImageRef get_thumbnail(CFURLRef url, CFDictionaryRef options, CGSize maxSize)
 }
 
 } // namespace desktop
+
+@interface ThumbnailProvider : QLThumbnailProvider
+@end
+
+@implementation ThumbnailProvider
+
+- (void)provideThumbnailForFileRequest:(QLFileThumbnailRequest*)request
+                     completionHandler:
+                       (void (^)(QLThumbnailReply* _Nullable, NSError* _Nullable))handler
+{
+  CFURLRef url = (__bridge CFURLRef)(request.fileURL);
+  CGSize maxSize = request.maximumSize;
+  CGImageRef cgImage = desktop::get_thumbnail(url, maxSize);
+  if (!cgImage) {
+    handler(nil, nil);
+    return;
+  }
+  CGSize imageSize = CGSizeMake(CGImageGetWidth(cgImage), CGImageGetHeight(cgImage));
+  handler([QLThumbnailReply replyWithContextSize:maxSize
+                      currentContextDrawingBlock:^BOOL {
+                        CGContextRef ctx = [[NSGraphicsContext currentContext] CGContext];
+                        CGContextSaveGState(ctx);
+                        CGFloat scale = MIN(maxSize.width / imageSize.width,
+                                            maxSize.height / imageSize.height);
+                        CGSize scaledSize = CGSizeMake(imageSize.width * scale,
+                                                       imageSize.height * scale);
+                        CGRect drawRect = CGRectMake((maxSize.width - scaledSize.width) / 2,
+                                                     (maxSize.height - scaledSize.height) / 2,
+                                                     scaledSize.width,
+                                                     scaledSize.height);
+                        CGContextDrawImage(ctx, drawRect, cgImage);
+                        CGContextRestoreGState(ctx);
+                        CGImageRelease(cgImage);
+                        return YES;
+                      }],
+          nil);
+}
+
+@end
