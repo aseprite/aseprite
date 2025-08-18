@@ -485,7 +485,8 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
                                                      0));
       }
 
-      if (editor && interactive) {
+      bool validMask = (m_data->mask && m_data->mask->bitmap());
+      if (editor && interactive && validMask) {
         // TODO we don't support pasting in multiple cels at the
         //      moment, so we clear the range here (same as in
         //      PasteTextCommand::onExecute())
@@ -529,12 +530,14 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
             site.palette(),
             255,
             BlendMode::NORMAL);
-          doc::blend_image(result.get(),
-                           src_image.get(),
-                           gfx::Clip(*position - resultBounds.origin(), src_image->bounds()),
-                           site.palette(),
-                           255,
-                           BlendMode::NORMAL);
+          doc::blend_image(
+            result.get(),
+            src_image.get(),
+            gfx::Clip(position ? *position - resultBounds.origin() : resultBounds.origin(),
+                      src_image->bounds()),
+            site.palette(),
+            255,
+            BlendMode::NORMAL);
         }
 
         ContextWriter writer(ctx);
