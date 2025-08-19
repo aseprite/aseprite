@@ -273,6 +273,9 @@ void NewLayerCommand::onExecute(Context* context)
           layer = api.newLayer(parent, name);
           api.restackLayerBefore(layer, parent, activeLayer);
         }
+        else if (m_place == Place::Top) {
+          layer = api.newLayer(sprite->root(), name);
+        }
         else
           layer = api.newLayerAfter(parent, name, activeLayer);
         break;
