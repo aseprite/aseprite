@@ -25,6 +25,7 @@ public:
   ~TiledModeHelper() {}
 
   void mode(const filters::TiledMode mode) { m_mode = mode; }
+  bool hasModeFlag(filters::TiledMode mode) const { return (int(m_mode) & int(mode)) == int(mode); }
 
   gfx::Size canvasSize() const
   {
