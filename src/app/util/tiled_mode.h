@@ -113,11 +113,15 @@ public:
     if (int(m_mode) == int(filters::TiledMode::NONE))
       return;
 
-    if (int(m_mode) & int(filters::TiledMode::X_AXIS))
-      rgn.offset(m_canvas->width() * (1 - (rgn.bounds().x / m_canvas->width())), 0);
+    if (int(m_mode) & int(filters::TiledMode::X_AXIS)) {
+      int w = rgn.bounds().origin().x < 0 ? (rgn.bounds().w - m_canvas->width()) : 0;
+      rgn.offset(-m_canvas->width() * ((rgn.bounds().x + w) / m_canvas->width()), 0);
+    }
 
-    if (int(m_mode) & int(filters::TiledMode::Y_AXIS))
-      rgn.offset(0, m_canvas->height() * (1 - (rgn.bounds().y / m_canvas->height())));
+    if (int(m_mode) & int(filters::TiledMode::Y_AXIS)) {
+      int h = rgn.bounds().origin().y < 0 ? (rgn.bounds().h - m_canvas->height()) : 0;
+      rgn.offset(0, -m_canvas->height() * ((rgn.bounds().y + h) / m_canvas->height()));
+    }
   }
 
 private:
