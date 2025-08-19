@@ -4321,6 +4321,13 @@ void Timeline::clearAndInvalidateRange()
   }
 }
 
+void Timeline::refresh()
+{
+  regenerateCols();
+  regenerateRows();
+  invalidate();
+}
+
 app::gen::GlobalPref::Timeline& Timeline::timelinePref() const
 {
   return Preferences::instance().timeline;
