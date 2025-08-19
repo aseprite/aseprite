@@ -747,7 +747,8 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
                                                         site,
                                                         tmpImage.get(),
                                                         document->mask(),
-                                                        "Transformation"));
+                                                        "Transformation",
+                                                        &editor->getTiledModeHelper()));
 
     // If the Ctrl key is pressed and there is a handle, start dragging a copy of the selection
     EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
