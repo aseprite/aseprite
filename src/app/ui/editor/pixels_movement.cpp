@@ -1134,7 +1134,6 @@ void PixelsMovement::redrawExtraImage(Transformation* transformation)
     // Wrap the transformed bounds position
     gfx::Region rgn(bounds);
     m_tiledModeHelper->wrapPosition(rgn);
-    rgn.offset(-m_document->sprite()->width(), -m_document->sprite()->height());
     // Calculate position deltas between bounds positions before and after wrapping
     auto dx = rgn.bounds().x - bounds.x;
     auto dy = rgn.bounds().y - bounds.y;
