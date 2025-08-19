@@ -155,6 +155,8 @@ public:
 
   void clearAndInvalidateRange();
 
+  void refresh();
+
 protected:
   bool onProcessMessage(ui::Message* msg) override;
   void onInitTheme(ui::InitThemeEvent& ev) override;
