@@ -1129,22 +1129,11 @@ void PixelsMovement::redrawExtraImage(Transformation* transformation)
   if (!m_extraCel)
     m_extraCel.reset(new ExtraCel);
 
-  gfx::Rect bounds = transformation->transformedBounds();
+  gfx::Rect bounds;
   if (m_tiledModeHelper) {
-    // Wrap the transformed bounds position
-    gfx::Region rgn(bounds);
-    m_tiledModeHelper->wrapPosition(rgn);
-    // Calculate position deltas between bounds positions before and after wrapping
-    auto dx = rgn.bounds().x - bounds.x;
-    auto dy = rgn.bounds().y - bounds.y;
-    auto b = transformation->bounds();
-    auto p = transformation->pivot();
-    // Move transformation bounds and pivot by the deltas.
-    transformation->bounds(b.offset(dx, dy));
-    p += gfx::PointF(dx, dy);
-    transformation->pivot(p);
-    // Get the new transformed bounds and enlarge it to be able to draw copies
-    // of the transformed pixels on it.
+    m_tiledModeHelper->wrapTransformation(transformation);
+    // Get the wrapped transformed bounds and enlarge it to make room for the copies
+    // of the chunk of pixels that will be drawn later on the extra cel.
     bounds = transformation->transformedBounds();
     if (m_tiledModeHelper->hasModeFlag(TiledMode::X_AXIS)) {
       bounds.enlargeXW(m_document->sprite()->width());
@@ -1152,6 +1141,9 @@ void PixelsMovement::redrawExtraImage(Transformation* transformation)
     if (m_tiledModeHelper->hasModeFlag(TiledMode::Y_AXIS)) {
       bounds.enlargeYH(m_document->sprite()->height());
     }
+  }
+  else {
+    bounds = transformation->transformedBounds();
   }
 
   if (!bounds.isEmpty()) {
@@ -1253,136 +1245,9 @@ void PixelsMovement::drawImage(const Transformation& transformation,
 
     drawParallelogram(transformation, dst, m_originalImage.get(), m_initialMask.get(), corners, pt);
 
-    // Temporal image. Used for copying several times the pixels being transformed by the user
-    //  when tile mode is active.
-    doc::ImageRef tmp;
-    Mask tmpMask;
-    tmpMask.freeze();
-    int x = 0;
-    int y = 0;
-    if (m_tiledModeHelper && (m_tiledModeHelper->hasModeFlag(TiledMode::X_AXIS) ||
-                              m_tiledModeHelper->hasModeFlag(TiledMode::Y_AXIS))) {
-      // Since tiled mode is enabled, we will draw the transformed image in a temporal bitmap
-      // and then copy it several times.
-      x = (m_tiledModeHelper->hasModeFlag(TiledMode::X_AXIS) ? m_document->sprite()->width() : 0);
-      y = (m_tiledModeHelper->hasModeFlag(TiledMode::Y_AXIS) ? m_document->sprite()->height() : 0);
-      tmp.reset(Image::create(dst->pixelFormat(), unexpandedBounds.w, unexpandedBounds.h));
-      drawParallelogram(transformation,
-                        tmp.get(),
-                        m_originalImage.get(),
-                        m_initialMask.get(),
-                        corners,
-                        gfx::PointF(unexpandedBounds.origin()));
-      tmpMask.fromImage(tmp.get(), m_initialMask->origin());
+    if (m_tiledModeHelper) {
+      m_tiledModeHelper->drawTiled(dst);
     }
-
-    if (m_tiledModeHelper && m_tiledModeHelper->hasModeFlag(TiledMode::X_AXIS)) {
-      // Draw at the left side
-      doc::algorithm::parallelogram(dst,
-                                    tmp.get(),
-                                    tmpMask.bitmap(),
-                                    0,
-                                    y,
-                                    unexpandedBounds.w,
-                                    y,
-                                    unexpandedBounds.w,
-                                    y + unexpandedBounds.h,
-                                    0,
-                                    y + unexpandedBounds.h);
-
-      // Draw at the right side
-      doc::algorithm::parallelogram(dst,
-                                    tmp.get(),
-                                    tmpMask.bitmap(),
-                                    dst->width() - unexpandedBounds.w,
-                                    y,
-                                    dst->width(),
-                                    y,
-                                    dst->width(),
-                                    y + unexpandedBounds.h,
-                                    dst->width() - unexpandedBounds.w,
-                                    y + unexpandedBounds.h);
-    }
-    if (m_tiledModeHelper && m_tiledModeHelper->hasModeFlag(TiledMode::Y_AXIS)) {
-      // Draw at the top.
-      doc::algorithm::parallelogram(dst,
-                                    tmp.get(),
-                                    tmpMask.bitmap(),
-                                    x,
-                                    0,
-                                    x + unexpandedBounds.w,
-                                    0,
-                                    x + unexpandedBounds.w,
-                                    unexpandedBounds.h,
-                                    x,
-                                    unexpandedBounds.h);
-
-      // Draw at the bottom.
-      doc::algorithm::parallelogram(dst,
-                                    tmp.get(),
-                                    tmpMask.bitmap(),
-                                    x,
-                                    dst->height() - unexpandedBounds.h,
-                                    x + unexpandedBounds.w,
-                                    dst->height() - unexpandedBounds.h,
-                                    x + unexpandedBounds.w,
-                                    dst->height(),
-                                    x,
-                                    dst->height());
-    }
-    if (m_tiledModeHelper && m_tiledModeHelper->hasModeFlag(TiledMode::BOTH)) {
-      // Draw at the top-left corner.
-      doc::algorithm::parallelogram(dst,
-                                    tmp.get(),
-                                    tmpMask.bitmap(),
-                                    0,
-                                    0,
-                                    unexpandedBounds.w,
-                                    0,
-                                    unexpandedBounds.w,
-                                    unexpandedBounds.h,
-                                    0,
-                                    unexpandedBounds.h);
-      // Draw at the bottom-left corner.
-      doc::algorithm::parallelogram(dst,
-                                    tmp.get(),
-                                    tmpMask.bitmap(),
-                                    0,
-                                    dst->height() - unexpandedBounds.h,
-                                    unexpandedBounds.w,
-                                    dst->height() - unexpandedBounds.h,
-                                    unexpandedBounds.w,
-                                    dst->height(),
-                                    0,
-                                    dst->height());
-
-      // Draw at the top-right corner.
-      doc::algorithm::parallelogram(dst,
-                                    tmp.get(),
-                                    tmpMask.bitmap(),
-                                    dst->width() - unexpandedBounds.w,
-                                    0,
-                                    dst->width(),
-                                    0,
-                                    dst->width(),
-                                    unexpandedBounds.h,
-                                    dst->width() - unexpandedBounds.w,
-                                    unexpandedBounds.h);
-
-      // Draw at the bottom-right corner.
-      doc::algorithm::parallelogram(dst,
-                                    tmp.get(),
-                                    tmpMask.bitmap(),
-                                    dst->width() - unexpandedBounds.w,
-                                    dst->height() - unexpandedBounds.h,
-                                    dst->width(),
-                                    dst->height() - unexpandedBounds.h,
-                                    dst->width(),
-                                    dst->height(),
-                                    dst->width() - unexpandedBounds.w,
-                                    dst->height());
-    }
-    tmpMask.unfreeze();
   }
 }
 
