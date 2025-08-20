@@ -1132,7 +1132,7 @@ void PixelsMovement::redrawExtraImage(Transformation* transformation)
   gfx::Rect bounds;
   if (m_tiledModeHelper && m_tiledModeHelper->tiledEnabled()) {
     m_tiledModeHelper->wrapTransformation(transformation);
-    // Get the wrapped transformed bounds and enlarge it to make room for the copies
+    // Enlarge the wrapped transformed bounds to make room for the copies
     // of the chunk of pixels that will be drawn later on the extra cel.
     bounds = transformation->transformedBounds();
     if (m_tiledModeHelper->hasModeFlag(TiledMode::X_AXIS)) {

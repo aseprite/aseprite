@@ -124,29 +124,32 @@ public:
 
     if (int(m_mode) & int(filters::TiledMode::X_AXIS)) {
       int w = rgn.bounds().origin().x < 0 ? (rgn.bounds().w - m_canvas->width()) : 0;
-      rgn.offset(-m_canvas->width() * ((rgn.bounds().x + w) / m_canvas->width()), 0);
+      rgn.offset(m_canvas->width() - m_canvas->width() * ((rgn.bounds().x + w) / m_canvas->width()),
+                 0);
     }
 
     if (int(m_mode) & int(filters::TiledMode::Y_AXIS)) {
       int h = rgn.bounds().origin().y < 0 ? (rgn.bounds().h - m_canvas->height()) : 0;
-      rgn.offset(0, -m_canvas->height() * ((rgn.bounds().y + h) / m_canvas->height()));
+      rgn.offset(
+        0,
+        m_canvas->height() - m_canvas->height() * ((rgn.bounds().y + h) / m_canvas->height()));
     }
   }
 
-  // Wraps around the position of the transformation according to the canvas size.
-  // Basically it does:
-  // When X axis tiled mode is enabled:
-  // * If x + w <= 0 then offset the transformation to the right by the corresponding canvas w
-  // multiple.
-  // * If x >= canvas w then offset the transformation to the left by the corresponding canvas w
-  // multiple.
-  // When Y axis tiled mode is enable, the analog algorithm is used for the Y coordinates.
+  // Wraps around the position of the transformation according to the canvas size,
+  // including its pivot.
   void wrapTransformation(Transformation* transformation) const
   {
     gfx::Rect bounds = transformation->transformedBounds();
     // Wrap the transformed bounds position
     gfx::Region rgn(bounds);
     wrapPosition(rgn);
+    // Center the wrapped bounds.
+    if (hasModeFlag(TiledMode::X_AXIS))
+      rgn.offset(-m_canvas->width(), 0);
+    if (hasModeFlag(TiledMode::Y_AXIS))
+      rgn.offset(0, -m_canvas->height());
+
     // Calculate position deltas between bounds positions before and after wrapping
     auto dx = rgn.bounds().x - bounds.x;
     auto dy = rgn.bounds().y - bounds.y;
