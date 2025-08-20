@@ -30,6 +30,11 @@ public:
 
   void mode(const filters::TiledMode mode) { m_mode = mode; }
   bool hasModeFlag(filters::TiledMode mode) const { return (int(m_mode) & int(mode)) == int(mode); }
+  // Returns true if some of the tiled modes are enabled.
+  bool tiledEnabled() const
+  {
+    return hasModeFlag(TiledMode::X_AXIS) || hasModeFlag(TiledMode::Y_AXIS);
+  }
 
   gfx::Size canvasSize() const
   {
@@ -202,7 +207,7 @@ public:
   // +-------+------+-------+------+-------+          +-------+
   void drawTiled(doc::Image* dst) const
   {
-    if (!hasModeFlag(TiledMode::X_AXIS) && !hasModeFlag(TiledMode::Y_AXIS)) {
+    if (!tiledEnabled()) {
       return;
     }
 
