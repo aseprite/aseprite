@@ -1130,7 +1130,7 @@ void PixelsMovement::redrawExtraImage(Transformation* transformation)
     m_extraCel.reset(new ExtraCel);
 
   gfx::Rect bounds;
-  if (m_tiledModeHelper) {
+  if (m_tiledModeHelper && m_tiledModeHelper->tiledEnabled()) {
     m_tiledModeHelper->wrapTransformation(transformation);
     // Get the wrapped transformed bounds and enlarge it to make room for the copies
     // of the chunk of pixels that will be drawn later on the extra cel.
@@ -1245,7 +1245,7 @@ void PixelsMovement::drawImage(const Transformation& transformation,
 
     drawParallelogram(transformation, dst, m_originalImage.get(), m_initialMask.get(), corners, pt);
 
-    if (m_tiledModeHelper) {
+    if (m_tiledModeHelper && m_tiledModeHelper->tiledEnabled()) {
       m_tiledModeHelper->drawTiled(dst);
     }
   }
