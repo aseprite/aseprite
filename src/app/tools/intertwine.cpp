@@ -145,8 +145,10 @@ doc::AlgoLineWithAlgoPixel Intertwine::getLineAlgo(ToolLoop* loop,
 
   if ( // When "Snap Angle" in being used or...
     (int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect)) ||
-    // "Snap to Grid" is enabled
-    (loop->getController()->canSnapToGrid() && loop->getSnapToGrid())) {
+    // "Snap to Grid" is enabled...
+    (loop->getController()->canSnapToGrid() && loop->getSnapToGrid() &&
+     // And we are not in isometric mode
+     !doc::Grid::isIsometric(loop->sprite()->gridType()))) {
     // We prefer the perfect pixel lines that matches grid tiles
     return (needsFixForLineBrush ? algo_line_perfect_with_fix_for_line_brush : algo_line_perfect);
   }
