@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2020-2023, 2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -29,11 +29,16 @@ struct Plugin {
 
 class PluginCommand : public Command {
 public:
-  PluginCommand(const std::string& id, const std::string& title, int onclickRef, int onenabledRef)
-    : Command(id.c_str(), CmdUIOnlyFlag)
+  PluginCommand(const std::string& id,
+                const std::string& title,
+                int onclickRef,
+                int onenabledRef,
+                int oncheckedRef)
+    : Command(id.c_str())
     , m_title(title)
     , m_onclickRef(onclickRef)
     , m_onenabledRef(onenabledRef)
+    , m_oncheckedRef(oncheckedRef)
   {
   }
 
@@ -72,28 +77,44 @@ protected:
   bool onEnabled(Context* context) override
   {
     if (m_onenabledRef) {
-      script::Engine* engine = App::instance()->scriptEngine();
-      lua_State* L = engine->luaState();
-
-      lua_rawgeti(L, LUA_REGISTRYINDEX, m_onenabledRef);
-      if (lua_pcall(L, 0, 1, 0)) {
-        if (const char* s = lua_tostring(L, -1)) {
-          Console().printf("Error: %s", s);
-          return false;
-        }
-      }
-      else {
-        bool ret = lua_toboolean(L, -1);
-        lua_pop(L, 1);
-        return ret;
-      }
+      return callScriptRef(m_onenabledRef);
     }
     return true;
+  }
+
+  bool onChecked(Context* context) override
+  {
+    if (m_oncheckedRef) {
+      return callScriptRef(m_oncheckedRef);
+    }
+    return false;
+  }
+
+private:
+  bool callScriptRef(int ref)
+  {
+    ASSERT(ref);
+    script::Engine* engine = App::instance()->scriptEngine();
+    lua_State* L = engine->luaState();
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
+    if (lua_pcall(L, 0, 1, 0)) {
+      if (const char* s = lua_tostring(L, -1)) {
+        Console().printf("Error: %s", s);
+        return false;
+      }
+    }
+    else {
+      bool ret = lua_toboolean(L, -1);
+      lua_pop(L, 1);
+      return ret;
+    }
   }
 
   std::string m_title;
   int m_onclickRef;
   int m_onenabledRef;
+  int m_oncheckedRef;
 };
 
 void deleteCommandIfExistent(Extension* ext, const std::string& id)
@@ -126,6 +147,7 @@ int Plugin_newCommand(lua_State* L)
   if (lua_istable(L, 2)) {
     std::string id, title, group;
     int onenabledRef = 0;
+    int oncheckedRef = 0;
 
     lua_getfield(L, 2, "id");
     if (const char* s = lua_tostring(L, -1)) {
@@ -156,6 +178,14 @@ int Plugin_newCommand(lua_State* L)
       lua_pop(L, 1);
     }
 
+    type = lua_getfield(L, 2, "onchecked");
+    if (type == LUA_TFUNCTION) {
+      oncheckedRef = luaL_ref(L, LUA_REGISTRYINDEX); // does a pop
+    }
+    else {
+      lua_pop(L, 1);
+    }
+
     type = lua_getfield(L, 2, "onclick");
     if (type == LUA_TFUNCTION) {
       int onclickRef = luaL_ref(L, LUA_REGISTRYINDEX);
@@ -164,7 +194,7 @@ int Plugin_newCommand(lua_State* L)
       // overwriting a previous registered command)
       deleteCommandIfExistent(plugin->ext, id);
 
-      auto cmd = new PluginCommand(id, title, onclickRef, onenabledRef);
+      auto cmd = new PluginCommand(id, title, onclickRef, onenabledRef, oncheckedRef);
       Commands::instance()->add(cmd);
       plugin->ext->addCommand(id);
 
@@ -172,6 +202,7 @@ int Plugin_newCommand(lua_State* L)
       if (!group.empty() && App::instance()->isGui()) { // On CLI menus do not make sense
         if (auto appMenus = AppMenus::instance()) {
           auto menuItem = std::make_unique<AppMenuItem>(title, id);
+          menuItem->processMnemonicFromText();
           appMenus->addMenuItemIntoGroup(group, std::move(menuItem));
         }
       }

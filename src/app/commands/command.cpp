@@ -16,7 +16,7 @@
 
 namespace app {
 
-Command::Command(const char* id, CommandFlags flags) : m_id(id), m_flags(flags)
+Command::Command(const char* id) : m_id(id)
 {
 }
 

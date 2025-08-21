@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2025  Igara Studio S.A. -->
 <!-- Copyright (C) 2014-2018  David Capello -->
 <preferences>
 
@@ -167,6 +167,7 @@
       <option id="keep_closed_sprite_on_memory_for" type="double" default="15.0" />
       <option id="show_full_path" type="bool" default="true" />
       <option id="edit_full_path" type="bool" default="false" />
+      <option id="workspace_layout" type="std::string" />
       <option id="timeline_position" type="TimelinePosition" default="TimelinePosition::BOTTOM" />
       <option id="timeline_layer_panel_width" type="int" default="100" />
       <option id="show_menu_bar" type="bool" default="true" />
@@ -255,6 +256,7 @@
       <option id="one_finger_as_mouse_movement" type="bool" default="true" />
       <option id="load_wintab_driver" type="bool" default="false" />
       <option id="flash_layer" type="bool" default="false" />
+      <option id="use_selection_tool_loop" type="bool" default="false" />
       <option id="nonactive_layers_opacity" type="int" default="255" />
       <option id="nonactive_layers_opacity_preview" type="int" default="255" />
     </section>
@@ -356,6 +358,7 @@
     <section id="file_selector">
       <option id="current_folder" type="std::string" default="&quot;&lt;empty&gt;&quot;" />
       <option id="zoom" type="double" default="1.0" />
+      <option id="show_hidden" type="bool" default="false" />
     </section>
     <section id="text_tool">
       <option id="font_face" type="std::string" />
@@ -551,6 +554,7 @@
       <option id="enabled" type="bool" default="false" />
       <option id="overlay_enabled" type="bool" default="false" />
       <option id="overlay_size" type="int" default="5" />
+      <option id="scale_up_to_fit" type="bool" default="false" />
     </section>
     <section id="onionskin">
       <option id="active" type="bool" default="false" />

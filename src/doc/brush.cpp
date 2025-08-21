@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -20,11 +20,12 @@
 #include "doc/primitives.h"
 
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 
 namespace doc {
 
-static int generation = 0;
+static std::atomic<int> g_generation = 0;
 
 Brush::Brush()
 {
@@ -300,7 +301,7 @@ void Brush::setCenter(const gfx::Point& center)
 // Cleans the brush's data (image and region).
 void Brush::clean()
 {
-  m_gen = ++generation;
+  m_gen = ++g_generation;
   m_image.reset();
   m_maskBitmap.reset();
   m_backupImage.reset();

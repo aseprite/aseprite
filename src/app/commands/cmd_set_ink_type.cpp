@@ -28,15 +28,20 @@ public:
   SetInkTypeCommand();
 
 protected:
+  bool onEnabled(Context* context) override;
   bool onNeedsParams() const override { return true; }
   bool onChecked(Context* context) override;
   void onExecute(Context* context) override;
   std::string onGetFriendlyName() const override;
 };
 
-SetInkTypeCommand::SetInkTypeCommand()
-  : CommandWithNewParams(CommandId::SetInkType(), CmdUIOnlyFlag)
+SetInkTypeCommand::SetInkTypeCommand() : CommandWithNewParams(CommandId::SetInkType())
 {
+}
+
+bool SetInkTypeCommand::onEnabled(Context* context)
+{
+  return context->isUIAvailable();
 }
 
 bool SetInkTypeCommand::onChecked(Context* context)

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -923,8 +923,8 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
         g->drawText(text,
                     negColor,
                     gfx::ColorNone,
-                    gfx::Point(box2.x + box2.w / 2 - minifont->textLength(text) / 2,
-                               box2.y + box2.h / 2 - minifont->height() / 2));
+                    gfx::Point(guiscaled_center(box2.x, box2.w, minifont->textLength(text)),
+                               guiscaled_center(box2.y, box2.h, minifont->lineHeight())));
       }
 
       // Draw the selection

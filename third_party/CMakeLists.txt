@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2021-2024  Igara Studio S.A.
+# Copyright (C) 2021-2025  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 include_directories(.)
@@ -12,7 +12,9 @@ if(NOT USE_SHARED_ZLIB)
   set(SKIP_INSTALL_ALL on)
   # Don't build zlib tests
   set(ZLIB_BUILD_EXAMPLES OFF CACHE BOOL "Enable Zlib Examples")
+  set(ZLIB_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/zlib" CACHE INTERNAL "")
   add_subdirectory(zlib)
+  add_library(ZLIB::ZLIB ALIAS zlibstatic)
 endif()
 
 if(NOT USE_SHARED_LIBPNG)
@@ -145,6 +147,7 @@ set(ENABLE_TAR OFF CACHE BOOL "Enable tar building")
 set(ENABLE_CPIO OFF CACHE BOOL "Enable cpio building")
 set(ENABLE_LIBB2 OFF CACHE BOOL "Enable the use of the system LIBB2 library if found")
 set(ENABLE_ICONV OFF CACHE BOOL "Enable iconv support")
+set(WINDOWS_VERSION "WS08" CACHE STRING "Set Windows Vista as the target version for compiling libarchive (Windows only)" FORCE)
 add_subdirectory(libarchive)
 target_include_directories(archive_static INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libarchive/libarchive>)

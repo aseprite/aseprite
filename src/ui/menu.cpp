@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -424,6 +424,11 @@ Widget* Menu::findItemById(const char* id) const
   return nullptr;
 }
 
+bool Menu::inBar() const
+{
+  return (parent() && parent()->type() == kMenuBarWidget);
+}
+
 void Menu::onPaint(PaintEvent& ev)
 {
   theme()->paintMenu(ev);
@@ -433,40 +438,59 @@ void Menu::onResize(ResizeEvent& ev)
 {
   setBoundsQuietly(ev.bounds());
 
-  Rect cpos = childrenBounds();
-  bool isBar = (parent()->type() == kMenuBarWidget);
+  const Rect bounds = childrenBounds();
+  const bool inBar = this->inBar();
+  Rect cpos = bounds;
 
   for (auto child : children()) {
     Size reqSize = child->sizeHint();
+    cpos.h = reqSize.h;
 
-    if (isBar)
+    if (inBar) {
       cpos.w = reqSize.w;
+      if (cpos.x > bounds.x && cpos.x2() > bounds.x2()) {
+        cpos.x = bounds.x;
+        cpos.y += cpos.h;
+      }
+    }
     else
       cpos.h = reqSize.h;
 
     child->setBounds(cpos);
 
-    if (isBar)
-      cpos.x += cpos.w;
+    if (inBar)
+      cpos.x += cpos.w + childSpacing();
     else
-      cpos.y += cpos.h;
+      cpos.y += cpos.h + childSpacing();
   }
 }
 
 void Menu::onSizeHint(SizeHintEvent& ev)
 {
+  const bool inBar = this->inBar();
+
   Size size(0, 0);
   Size reqSize;
+  int x = 0;
 
   for (auto it = children().begin(), end = children().end(); it != end;) {
     auto next = it;
     ++next;
 
-    reqSize = (*it)->sizeHint();
+    reqSize = (*it)->sizeHint(ev.fitInSize());
 
-    if (parent() && parent()->type() == kMenuBarWidget) {
-      size.w += reqSize.w + ((next != end) ? childSpacing() : 0);
-      size.h = std::max(size.h, reqSize.h);
+    if (inBar) {
+      size.w = reqSize.w;
+
+      if (ev.fitInSize().w > 0 && x > 0 && x + reqSize.w > ev.fitInSize().w) {
+        x = 0;
+        size.h += reqSize.h;
+      }
+      else {
+        size.h = std::max(size.h, reqSize.h);
+      }
+
+      x += size.w + childSpacing();
     }
     else {
       size.w = std::max(size.w, reqSize.w);
@@ -478,7 +502,6 @@ void Menu::onSizeHint(SizeHintEvent& ev)
 
   size.w += border().width();
   size.h += border().height();
-
   ev.setSizeHint(size);
 }
 
@@ -487,6 +510,22 @@ bool MenuBox::onProcessMessage(Message* msg)
   Menu* menu = MenuBox::getMenu();
 
   switch (msg->type()) {
+    case kCloseDisplayMessage:
+      if (menu)
+        menu->closeAll();
+
+      // In case that this event is received when we are inside a
+      // modal loop to show this menu box
+      // (showPopup()/openWindowInForeground()) we redirect this
+      // kCloseDisplayMessage to the main window.
+      if (window()->isForeground()) {
+        auto* closeMsg2 = new Message(kCloseDisplayMessage);
+        closeMsg2->setRecipient(msg->recipient());
+        closeMsg2->setDisplay(msg->display());
+        manager()->enqueueMessage(closeMsg2);
+      }
+      break;
+
     case kMouseMoveMessage: {
       MenuBaseData* base = get_base(this);
       ASSERT(base);
@@ -828,9 +867,14 @@ void MenuBox::onResize(ResizeEvent& ev)
 void MenuBox::onSizeHint(SizeHintEvent& ev)
 {
   Size size(0, 0);
+  Size fitIn = ev.fitInSize();
+  if (fitIn.w > 0)
+    fitIn.w = std::max(1, fitIn.w - border().width());
+  if (fitIn.h > 0)
+    fitIn.h = std::max(1, fitIn.h - border().height());
 
   if (Menu* menu = getMenu())
-    size = menu->sizeHint();
+    size = menu->sizeHint(fitIn);
 
   size.w += border().width();
   size.h += border().height();
@@ -1363,6 +1407,7 @@ void MenuBox::startFilteringMouseDown()
 {
   if (m_base && !m_base->is_filtering) {
     m_base->is_filtering = true;
+    Manager::getDefault()->addMessageFilter(kCloseDisplayMessage, this);
     Manager::getDefault()->addMessageFilter(kMouseDownMessage, this);
     Manager::getDefault()->addMessageFilter(kDoubleClickMessage, this);
   }
@@ -1372,6 +1417,7 @@ void MenuBox::stopFilteringMouseDown()
 {
   if (m_base && m_base->is_filtering) {
     m_base->is_filtering = false;
+    Manager::getDefault()->removeMessageFilter(kCloseDisplayMessage, this);
     Manager::getDefault()->removeMessageFilter(kMouseDownMessage, this);
     Manager::getDefault()->removeMessageFilter(kDoubleClickMessage, this);
   }

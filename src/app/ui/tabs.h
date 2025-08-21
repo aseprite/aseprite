@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +9,7 @@
 #define APP_UI_TABS_H_INCLUDED
 #pragma once
 
+#include "app/ui/dockable.h"
 #include "base/ref.h"
 #include "text/fwd.h"
 #include "ui/animated_widget.h"
@@ -118,7 +119,8 @@ public:
 
 // Tabs control. Used to show opened documents.
 class Tabs : public ui::Widget,
-             public ui::AnimatedWidget {
+             public ui::AnimatedWidget,
+             public Dockable {
   struct Tab {
     TabView* view;
     std::string text;
@@ -181,12 +183,16 @@ public:
   void removeDropViewPreview();
   int getDropTabIndex() const { return m_dropNewIndex; }
 
+  // Dockable impl
+  int dockableAt() const override { return ui::TOP | ui::BOTTOM; }
+
 protected:
   bool onProcessMessage(ui::Message* msg) override;
   void onInitTheme(ui::InitThemeEvent& ev) override;
   void onPaint(ui::PaintEvent& ev) override;
   void onResize(ui::ResizeEvent& ev) override;
   void onSizeHint(ui::SizeHintEvent& ev) override;
+  float onGetTextBaseline() const override;
   void onAnimationFrame() override;
   void onAnimationStop(int animation) override;
 

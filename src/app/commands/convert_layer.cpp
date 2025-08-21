@@ -79,7 +79,7 @@ private:
 };
 
 ConvertLayerCommand::ConvertLayerCommand()
-  : CommandWithNewParams<ConvertLayerParams>(CommandId::ConvertLayer(), CmdRecordableFlag)
+  : CommandWithNewParams<ConvertLayerParams>(CommandId::ConvertLayer())
 {
 }
 

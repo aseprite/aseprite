@@ -12,6 +12,7 @@
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
+#include "app/context.h"
 #include "app/ui/color_bar.h"
 
 namespace app {
@@ -21,6 +22,7 @@ public:
   SetPaletteEntrySizeCommand();
 
 protected:
+  bool onEnabled(Context* context) override;
   void onLoadParams(const Params& params) override;
   bool onChecked(Context* context) override;
   void onExecute(Context* context) override;
@@ -32,9 +34,14 @@ private:
 };
 
 SetPaletteEntrySizeCommand::SetPaletteEntrySizeCommand()
-  : Command(CommandId::SetPaletteEntrySize(), CmdUIOnlyFlag)
+  : Command(CommandId::SetPaletteEntrySize())
   , m_size(7)
 {
+}
+
+bool SetPaletteEntrySizeCommand::onEnabled(Context* context)
+{
+  return context->isUIAvailable();
 }
 
 void SetPaletteEntrySizeCommand::onLoadParams(const Params& params)

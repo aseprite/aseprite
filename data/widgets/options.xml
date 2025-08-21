@@ -1,5 +1,6 @@
+
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2025  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <window id="options" text="@.title" help="preferences">
@@ -34,7 +35,7 @@
         <!-- General -->
         <vbox id="section_general">
           <separator text="@.section_general" horizontal="true" />
-          <grid columns="3">
+          <grid columns="2">
             <label text="@.ui_windows" />
             <hbox>
               <buttonset columns="2" id="ui_windows">
@@ -45,7 +46,6 @@
                 <label text="@.theme_mode" />
               </hbox>
             </hbox>
-            <boxfiller />
 
             <label text="@.screen_scaling" />
             <combobox id="screen_scale">
@@ -54,7 +54,6 @@
               <listitem text="300%" value="3" />
               <listitem text="400%" value="4" />
             </combobox>
-            <boxfiller />
 
             <label text="@.ui_scaling" />
             <combobox id="ui_scale">
@@ -63,12 +62,14 @@
               <listitem text="300%" value="3" />
               <listitem text="400%" value="4" />
             </combobox>
-            <boxfiller />
 
-            <label text="@.language" />
+            <link text="@.language" url="https://www.aseprite.org/languages/" />
             <combobox id="language" />
-            <link text="@.download_translations" url="https://www.aseprite.org/languages/" />
+
+            <boxfiller id="font_warning_filler" visible="false" />
+            <link text="@.font_warning" id="font_warning" visible="false" />
           </grid>
+          <separator horizontal="true" />
           <check id="gpu_acceleration"
                  text="@.gpu_acceleration"
                  tooltip="@.gpu_acceleration_tooltip" />
@@ -545,6 +546,20 @@
 
         <!-- Theme -->
         <vbox id="section_theme">
+          <separator text="@.customize_theme" horizontal="true" />
+          <grid columns="2">
+            <label text="@.preview" />
+            <vbox cell_align="horizontal" >
+              <label id="font_preview" text="@.font_preview" />
+              <label id="mini_font_preview" text="@.mini_font_preview" />
+            </vbox>
+
+            <check id="custom_theme_font" text="@.font" />
+            <font id="theme_font" cell_align="horizontal" />
+
+            <check id="custom_mini_font" text="@.mini_font" />
+            <font id="theme_mini_font" cell_align="horizontal" />
+          </grid>
           <separator text="@.available_themes" horizontal="true" />
           <view expansive="true" maxsize="true">
             <listbox id="theme_list" />
@@ -581,6 +596,10 @@
               <listitem text="@.cel_format_keep" />
               <listitem text="@.cel_format_raw" />
             </combobox>
+
+            <boxfiller />
+            <label id="cel_format_warning"
+                   text="@.cel_format_raw_warning" style="warning_label" />
           </grid>
         </vbox>
 
@@ -613,6 +632,7 @@
                  text="@.hue_with_sat_value"
                  pref="experimental.hue_with_sat_value_for_color_selector" />
           <check id="flash_layer" text="@.flash_selected_layer" />
+          <check id="use_selection_tool_loop" text="@.use_selection_tool_loop" />
           <hbox>
             <label text="@.non_active_layer_opacity" />
             <slider id="nonactive_layers_opacity" min="0" max="255" width="128" />

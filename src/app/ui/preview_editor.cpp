@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -65,17 +65,16 @@ protected:
   {
     auto theme = SkinTheme::get(this);
     Widget* window = parent();
-    gfx::Rect rect(0, 0, 0, 0);
-    gfx::Size centerSize = this->sizeHint();
-    gfx::Size playSize = theme->calcSizeHint(this, theme->styles.windowPlayButton());
-    gfx::Size closeSize = theme->calcSizeHint(this, theme->styles.windowCloseButton());
+    const gfx::Size centerSize = this->sizeHint();
+    const gfx::Size playSize = theme->calcSizeHint(this, theme->styles.windowPlayButton());
+    const gfx::Size closeSize = theme->calcSizeHint(this, theme->styles.windowCloseButton());
+    const gfx::Border margin = style()->margin();
 
-    rect.w = centerSize.w;
-    rect.h = centerSize.h;
+    gfx::Rect rect(centerSize);
     rect.offset(window->bounds().x2() - theme->styles.windowCloseButton()->margin().width() -
                   closeSize.w - theme->styles.windowPlayButton()->margin().width() - playSize.w -
-                  style()->margin().right() - centerSize.w,
-                window->bounds().y + style()->margin().top());
+                  margin.right() - centerSize.w,
+                window->bounds().y + margin.top());
 
     setBounds(rect);
   }
@@ -129,16 +128,14 @@ private:
   {
     auto theme = SkinTheme::get(this);
     Widget* window = parent();
-    gfx::Rect rect(0, 0, 0, 0);
-    gfx::Size playSize = this->sizeHint();
-    gfx::Size closeSize = theme->calcSizeHint(this, theme->styles.windowCloseButton());
-    gfx::Border margin(0, 0, 0, 0);
+    const gfx::Size playSize = this->sizeHint();
+    const gfx::Size closeSize = theme->calcSizeHint(this, theme->styles.windowCloseButton());
+    const gfx::Border margin = style()->margin();
 
-    rect.w = playSize.w;
-    rect.h = playSize.h;
+    gfx::Rect rect(playSize);
     rect.offset(window->bounds().x2() - theme->styles.windowCloseButton()->margin().width() -
-                  closeSize.w - style()->margin().right() - playSize.w,
-                window->bounds().y + style()->margin().top());
+                  closeSize.w - margin.right() - playSize.w,
+                window->bounds().y + margin.top());
 
     setBounds(rect);
   }

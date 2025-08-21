@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -43,6 +43,7 @@
 #include "gfx/size.h"
 #include "render/dithering.h"
 #include "render/ordered_dither.h"
+#include "render/quantization.h"
 #include "render/render.h"
 #include "ver/info.h"
 
@@ -69,6 +70,104 @@ std::string escape_for_json(const std::string& path)
   return res;
 }
 
+// Forward declaration
+void serialize_properties(const doc::UserData::Properties& props, std::ostream& os);
+
+// Helper for a single value
+void serialize_variant(const doc::UserData::Variant& value, std::ostream& os)
+{
+  using Properties = doc::UserData::Properties;
+  switch (value.index()) {
+    case USER_DATA_PROPERTY_TYPE_BOOL: os << (get_value<bool>(value) ? "true" : "false"); break;
+    case USER_DATA_PROPERTY_TYPE_INT8: os << static_cast<int64_t>(get_value<int8_t>(value)); break;
+    case USER_DATA_PROPERTY_TYPE_UINT8:
+      os << static_cast<int64_t>(get_value<uint8_t>(value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_INT16:
+      os << static_cast<int64_t>(get_value<int16_t>(value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_UINT16:
+      os << static_cast<int64_t>(get_value<uint16_t>(value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_INT32:
+      os << static_cast<int64_t>(get_value<int32_t>(value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_UINT32:
+      os << static_cast<int64_t>(get_value<uint32_t>(value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_INT64:
+      os << static_cast<int64_t>(get_value<int64_t>(value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_UINT64:
+      os << static_cast<int64_t>(get_value<uint64_t>(value));
+      break;
+    case USER_DATA_PROPERTY_TYPE_FLOAT:  os << get_value<float>(value); break;
+    case USER_DATA_PROPERTY_TYPE_DOUBLE: os << get_value<double>(value); break;
+    case USER_DATA_PROPERTY_TYPE_STRING:
+      os << "\"" << escape_for_json(get_value<std::string>(value)) << "\"";
+      break;
+    case USER_DATA_PROPERTY_TYPE_PROPERTIES:
+      serialize_properties(get_value<Properties>(value), os);
+      break;
+    default: os << "\"[unsupported type]\""; break;
+  }
+}
+
+// Serializes a map of properties
+void serialize_properties(const doc::UserData::Properties& props, std::ostream& os)
+{
+  os << "{";
+  bool first = true;
+  for (const auto& [key, value] : props) {
+    if (!first)
+      os << ", ";
+    first = false;
+    os << "\"" << escape_for_json(key) << "\": ";
+    serialize_variant(value, os);
+  }
+  os << "}";
+}
+
+void serialize_userdata_properties(const doc::UserData& data, std::ostream& os)
+{
+  const auto& propsMaps = data.propertiesMaps();
+  bool hasAnyProps = false;
+  for (const auto& [group, props] : propsMaps) {
+    if (!props.empty()) {
+      hasAnyProps = true;
+      break;
+    }
+  }
+  if (hasAnyProps) {
+    os << ", \"properties\": {";
+    bool firstProp = true;
+    for (const auto& [group, props] : propsMaps) {
+      if (!props.empty()) {
+        if (!firstProp)
+          os << ", ";
+        firstProp = false;
+        if (group.empty()) {
+          // Default group: flatten its keys at the top level
+          bool firstKey = true;
+          for (const auto& [key, value] : props) {
+            if (!firstKey)
+              os << ", ";
+            firstKey = false;
+            os << "\"" << escape_for_json(key) << "\": ";
+            serialize_variant(value, os);
+          }
+        }
+        else {
+          // Named group: nest under its group name
+          os << "\"" << escape_for_json(group) << "\": ";
+          serialize_properties(props, os);
+        }
+      }
+    }
+    os << "}";
+  }
+}
+
 std::ostream& operator<<(std::ostream& os, const doc::UserData& data)
 {
   doc::color_t color = data.color();
@@ -80,6 +179,9 @@ std::ostream& operator<<(std::ostream& os, const doc::UserData& data)
   }
   if (!data.text().empty())
     os << ", \"data\": \"" << escape_for_json(data.text()) << "\"";
+
+  serialize_userdata_properties(data, os);
+
   return os;
 }
 
@@ -298,6 +400,35 @@ public:
         render.renderSprite(dst, m_sprite, m_frame, clip);
       }
     }
+  }
+
+  void setPixelFormat(const doc::PixelFormat newPixelFormat)
+  {
+    if (!m_image || m_image->pixelFormat() == newPixelFormat)
+      return;
+
+    ImageSpec spec(ColorMode(newPixelFormat),
+                   m_image->width(),
+                   m_image->height(),
+                   m_image->maskColor());
+    ImageRef convertedImg(Image::create(spec));
+    if (!convertedImg)
+      return;
+
+    clear_image(convertedImg.get(), 0);
+    render::Dithering dithering;
+    Sprite* sprite = this->sprite();
+    render::convert_pixel_format(m_image.get(),
+                                 convertedImg.get(),
+                                 newPixelFormat,
+                                 dithering,
+                                 sprite ? sprite->rgbMap(0) : nullptr,
+                                 sprite ? sprite->palette(0) : nullptr,
+                                 (sprite && sprite->backgroundLayer()),
+                                 0,
+                                 0,
+                                 nullptr);
+    m_image = convertedImg;
   }
 
 private:
@@ -678,6 +809,9 @@ Doc* DocExporter::exportSheet(Context* ctx, base::task_token& token)
 
   Sprite* texture = textureDocument->sprite();
   Image* textureImage = texture->root()->firstLayer()->cel(frame_t(0))->image();
+
+  for (auto& sample : samples)
+    sample.setPixelFormat(texture->pixelFormat());
 
   renderTexture(ctx, samples, textureImage, token);
   if (token.canceled())
@@ -1246,22 +1380,6 @@ void DocExporter::renderTexture(Context* ctx,
       ++i;
       continue;
     }
-
-    // Make the sprite compatible with the texture so the render()
-    // works correctly.
-    if (sample.sprite()->pixelFormat() != textureImage->pixelFormat()) {
-      RgbMapAlgorithm rgbmapAlgo = Preferences::instance().quantization.rgbmapAlgorithm();
-      FitCriteria fc = Preferences::instance().quantization.fitCriteria();
-      cmd::SetPixelFormat(sample.sprite(),
-                          textureImage->pixelFormat(),
-                          render::Dithering(),
-                          rgbmapAlgo,
-                          nullptr, // toGray is not needed because the texture is Indexed or RGB
-                          nullptr, // TODO add a delegate to show progress
-                          fc)
-        .execute(ctx);
-    }
-
     sample.renderSample(textureImage,
                         sample.inTextureBounds().x + m_innerPadding,
                         sample.inTextureBounds().y + m_innerPadding,

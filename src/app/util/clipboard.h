@@ -89,6 +89,7 @@ public:
   // ui::ClipboardDelegate impl
   void setClipboardText(const std::string& text) override;
   bool getClipboardText(std::string& text) override;
+  bool hasClipboardText() override;
 
   bool setNativeBitmap(const doc::Image* image,
                        const doc::Mask* mask,

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -50,20 +50,20 @@ public:
   KeyPtr tool(tools::Tool* tool) const;
   KeyPtr quicktool(tools::Tool* tool) const;
   KeyPtr action(const KeyAction action, const KeyContext keyContext = KeyContext::Any) const;
-  KeyPtr wheelAction(const WheelAction action) const;
-  KeyPtr dragAction(const WheelAction action) const;
+  KeyPtr wheelAction(WheelAction action) const;
+  KeyPtr dragAction(WheelAction action) const;
 
-  void disableAccel(const ui::Accelerator& accel,
-                    const KeySource source,
-                    const KeyContext keyContext,
-                    const Key* newKey);
+  void disableShortcut(const ui::Shortcut& shortcut,
+                       KeySource source,
+                       KeyContext keyContext,
+                       const Key* newKey);
 
-  KeyContext getCurrentKeyContext() const;
+  static KeyContext getCurrentKeyContext();
   bool getCommandFromKeyMessage(const ui::Message* msg, Command** command, Params* params);
   tools::Tool* getCurrentQuicktool(tools::Tool* currentTool);
   KeyAction getCurrentActionModifiers(KeyContext context);
-  WheelAction getWheelActionFromMouseMessage(const KeyContext context, const ui::Message* msg);
-  Keys getDragActionsFromKeyMessage(const KeyContext context, const ui::Message* msg);
+  WheelAction getWheelActionFromMouseMessage(KeyContext context, const ui::Message* msg);
+  Keys getDragActionsFromKeyMessage(const ui::Message* msg);
   bool hasMouseWheelCustomization() const;
   void clearMouseWheelKeys();
   void addMissingMouseWheelKeys();
@@ -77,10 +77,10 @@ public:
 
 private:
   void exportKeys(tinyxml2::XMLElement* parent, KeyType type);
-  void exportAccel(tinyxml2::XMLElement* parent,
-                   const Key* key,
-                   const ui::Accelerator& accel,
-                   bool removed);
+  static void exportShortcut(tinyxml2::XMLElement* parent,
+                             const Key* key,
+                             const ui::Shortcut& shortcut,
+                             bool removed);
 
   mutable Keys m_keys;
 };

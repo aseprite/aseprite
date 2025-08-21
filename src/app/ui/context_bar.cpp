@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1001,12 +1001,12 @@ public:
     m_angle.setSuffix("°");
     m_skew.setSuffix("°");
 
-    addChild(new Label("P:"));
+    addChild(new Label(Strings::context_bar_position_label()));
     addChild(&m_x);
     addChild(&m_y);
     addChild(&m_w);
     addChild(&m_h);
-    addChild(new Label("R:"));
+    addChild(new Label(Strings::context_bar_rotation_label()));
     addChild(&m_angle);
     addChild(&m_skew);
 
@@ -1045,6 +1045,16 @@ public:
     });
     m_angle.Change.connect([this] { onChangeAngle(); });
     m_skew.Change.connect([this] { onChangeSkew(); });
+  }
+
+  void setupTooltips(TooltipManager* tooltipManager)
+  {
+    tooltipManager->addTooltipFor(&m_x, Strings::context_bar_position_x(), BOTTOM);
+    tooltipManager->addTooltipFor(&m_y, Strings::context_bar_position_y(), BOTTOM);
+    tooltipManager->addTooltipFor(&m_w, Strings::context_bar_size_width(), BOTTOM);
+    tooltipManager->addTooltipFor(&m_h, Strings::context_bar_size_height(), BOTTOM);
+    tooltipManager->addTooltipFor(&m_angle, Strings::context_bar_rotation_angle(), BOTTOM);
+    tooltipManager->addTooltipFor(&m_skew, Strings::context_bar_rotation_skew(), BOTTOM);
   }
 
   void update(const Transformation& t)
@@ -1530,14 +1540,10 @@ public:
 
     DocumentPreferences& docPref = Preferences::instance().document(doc);
 
-    at(0)->setSelected(
-      int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::HORIZONTAL) ? true : false);
-    at(1)->setSelected(
-      int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::VERTICAL) ? true : false);
-    at(2)->setSelected(
-      int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::RIGHT_DIAG) ? true : false);
-    at(3)->setSelected(
-      int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::LEFT_DIAG) ? true : false);
+    at(0)->setSelected(int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::HORIZONTAL));
+    at(1)->setSelected(int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::VERTICAL));
+    at(2)->setSelected(int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::RIGHT_DIAG));
+    at(3)->setSelected(int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::LEFT_DIAG));
   }
 
 private:
@@ -1551,60 +1557,7 @@ private:
 
     DocumentPreferences& docPref = Preferences::instance().document(doc);
 
-    auto oldMode = docPref.symmetry.mode();
     int mode = 0;
-    if (at(0)->isSelected())
-      mode |= int(app::gen::SymmetryMode::HORIZONTAL);
-    if (at(1)->isSelected())
-      mode |= int(app::gen::SymmetryMode::VERTICAL);
-    if (at(2)->isSelected())
-      mode |= int(app::gen::SymmetryMode::RIGHT_DIAG);
-    if (at(3)->isSelected())
-      mode |= int(app::gen::SymmetryMode::LEFT_DIAG);
-
-    // Non sense symmetries filter:
-    //  - H + 1Diag
-    //  - V + 1Diag
-    //  - H + V + 1Diag
-    const bool HorV = (mode & int(app::gen::SymmetryMode::HORIZONTAL)) ||
-                      (mode & int(app::gen::SymmetryMode::VERTICAL));
-    const bool HxorV = !(mode & int(app::gen::SymmetryMode::HORIZONTAL)) !=
-                       !(mode & int(app::gen::SymmetryMode::VERTICAL));
-    const bool RDxorLD = !(mode & int(app::gen::SymmetryMode::RIGHT_DIAG)) !=
-                         !(mode & int(app::gen::SymmetryMode::LEFT_DIAG));
-    if (oldMode == gen::SymmetryMode::HORIZONTAL || oldMode == gen::SymmetryMode::VERTICAL ||
-        oldMode == gen::SymmetryMode::BOTH) {
-      if (HorV && RDxorLD) {
-        mode = int(app::gen::SymmetryMode::ALL);
-        at(0)->setSelected(true);
-        at(1)->setSelected(true);
-        at(2)->setSelected(true);
-        at(3)->setSelected(true);
-      }
-    }
-    else if (oldMode == gen::SymmetryMode::ALL) {
-      if (HxorV) {
-        mode = int(app::gen::SymmetryMode::BOTH_DIAG);
-        at(0)->setSelected(false);
-        at(1)->setSelected(false);
-      }
-      else if (RDxorLD) {
-        mode = int(app::gen::SymmetryMode::BOTH);
-        at(2)->setSelected(false);
-        at(3)->setSelected(false);
-      }
-    }
-    else if ((oldMode == gen::SymmetryMode::RIGHT_DIAG || oldMode == gen::SymmetryMode::LEFT_DIAG ||
-              oldMode == gen::SymmetryMode::BOTH_DIAG) &&
-             HorV) {
-      mode = int(app::gen::SymmetryMode::ALL);
-      at(0)->setSelected(true);
-      at(1)->setSelected(true);
-      at(2)->setSelected(true);
-      at(3)->setSelected(true);
-    }
-    // Non sense symmetries filter end
-
     if (at(0)->isSelected())
       mode |= int(app::gen::SymmetryMode::HORIZONTAL);
     if (at(1)->isSelected())
@@ -1914,7 +1867,7 @@ private:
 
 class ContextBar::FontSelector : public FontEntry {
 public:
-  FontSelector(ContextBar* contextBar)
+  FontSelector(ContextBar* contextBar) : FontEntry(true) // With stroke and fill options
   {
     // Load the font from the preferences
     setInfo(FontInfo::getFromPreferences(), FontEntry::From::Init);
@@ -2019,6 +1972,12 @@ void ContextBar::onInitTheme(ui::InitThemeEvent& ev)
   auto theme = SkinTheme::get(this);
   gfx::Border border = this->border();
   border.bottom(2 * guiscale());
+
+  // Docked at the left side
+  // TODO improve this how this is calculated
+  if (bounds().x == 0)
+    border.left(border.left() + 2 * guiscale());
+
   setBorder(border);
   setBgColor(theme->colors.workspace());
   m_sprayLabel->setStyle(theme->styles.miniLabel());
@@ -2616,6 +2575,11 @@ FontInfo ContextBar::fontInfo() const
   return m_fontSelector->info();
 }
 
+FontEntry* ContextBar::fontEntry()
+{
+  return m_fontSelector;
+}
+
 render::DitheringMatrix ContextBar::ditheringMatrix()
 {
   return m_ditheringSelector->ditheringMatrix();
@@ -2678,6 +2642,7 @@ void ContextBar::setupTooltips(TooltipManager* tooltipManager)
   m_dropPixels->setupTooltips(tooltipManager);
   m_symmetry->setupTooltips(tooltipManager);
   m_sliceFields->setupTooltips(tooltipManager);
+  m_transformation->setupTooltips(tooltipManager);
 }
 
 void ContextBar::registerCommands()

@@ -13,6 +13,7 @@
 #include "app/context_observer.h"
 #include "app/tools/active_tool_observer.h"
 #include "app/ui/doc_observer_widget.h"
+#include "app/ui/dockable.h"
 #include "base/time.h"
 #include "doc/tile.h"
 #include "ui/base.h"
@@ -44,7 +45,8 @@ class Tool;
 }
 
 class StatusBar : public DocObserverWidget<ui::HBox>,
-                  public tools::ActiveToolObserver {
+                  public tools::ActiveToolObserver,
+                  public Dockable {
   static StatusBar* m_instance;
 
 public:
@@ -71,6 +73,10 @@ public:
   void updateFromEditor(Editor* editor);
 
   void showBackupIcon(BackupIcon icon);
+
+  // Dockable impl
+  int dockableAt() const override { return ui::TOP | ui::BOTTOM; }
+  int dockHandleSide() const override { return ui::LEFT; }
 
 protected:
   void onInitTheme(ui::InitThemeEvent& ev) override;

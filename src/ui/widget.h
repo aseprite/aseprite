@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -288,6 +288,10 @@ public:
                        int icon_w = 0,
                        int icon_h = 0);
 
+  // Y-axis location where the text baseline should be located in the
+  // middle of the widget.
+  float textBaseline() const;
+
   // ===============================================================
   // REFRESH ISSUES
   // ===============================================================
@@ -308,6 +312,10 @@ public:
 
   // Generates paint messages for the current update region.
   void flushRedraw();
+
+  // Wakes up the system's events queue to process the currently enqueued UI
+  // messages.
+  void flushMessages() const;
 
   GraphicsPtr getGraphics(const gfx::Rect& clip);
 
@@ -336,6 +344,11 @@ public:
 
   void requestFocus();
   void releaseFocus();
+
+  // Captures the mouse to continue receiving its messages until we
+  // release the capture. Useful for widgets with painting-like
+  // capabilities, where we want to keep track of the mouse until the
+  // user releases the mouse button, or drag-and-drop behaviors.
   void captureMouse();
   void releaseMouse();
 
@@ -371,9 +384,9 @@ public:
   // the widget bounds.
   gfx::Point mousePosInClientBounds() const { return toClient(mousePosInDisplay()); }
 
-  // Offer the capture to widgets of the given type. Returns true if
+  // Offers the capture to widgets of the given type. Returns true if
   // the capture was passed to other widget.
-  bool offerCapture(MouseMessage* mouseMsg, int widget_type);
+  bool offerCapture(MouseMessage* mouseMsg, WidgetType widgetType);
 
   // Returns lower-case letter that represet the mnemonic of the widget
   // (the underscored character, i.e. the letter after & symbol).
@@ -430,6 +443,7 @@ protected:
   virtual double onGetTextDouble() const;
   virtual text::TextBlobRef onMakeTextBlob() const;
   virtual text::ShaperFeatures onGetTextShaperFeatures() const;
+  virtual float onGetTextBaseline() const;
 
   virtual void onDragEnter(DragEvent& e);
   virtual void onDragLeave(DragEvent& e);
@@ -471,8 +485,6 @@ private:
 
   gfx::Border m_border; // Border separation with the parent
   int m_childSpacing;   // Separation between children
-
-  friend Manager;
 };
 
 WidgetType register_widget_type();

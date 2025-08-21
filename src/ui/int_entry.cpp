@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -89,17 +89,11 @@ bool IntEntry::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
       if (hasCapture()) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-        Widget* pick = manager()->pickFromScreenPos(
+        Manager* mgr = manager();
+        Widget* pick = mgr->pickFromScreenPos(
           display()->nativeWindow()->pointToScreen(mouseMsg->position()));
         if (pick == m_slider.get()) {
-          releaseMouse();
-
-          MouseMessage mouseMsg2(kMouseDownMessage,
-                                 *mouseMsg,
-                                 mouseMsg->positionForDisplay(pick->display()));
-          mouseMsg2.setRecipient(pick);
-          mouseMsg2.setDisplay(pick->display());
-          pick->sendMessage(&mouseMsg2);
+          mgr->transferAsMouseDownMessage(this, pick, mouseMsg);
         }
       }
       break;
@@ -121,8 +115,8 @@ bool IntEntry::onProcessMessage(Message* msg)
     case kKeyDownMessage:
       if (hasFocus() && !isReadOnly()) {
         KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
-        int chr = keymsg->unicodeChar();
-        if (chr >= 32 && (chr < '0' || chr > '9')) {
+        const int chr = keymsg->unicodeChar();
+        if (chr >= 32 && !onAcceptUnicodeChar(chr)) {
           // "Eat" all keys that aren't number
           return true;
         }
@@ -170,6 +164,11 @@ void IntEntry::onChange()
 void IntEntry::onValueChange()
 {
   // Do nothing
+}
+
+bool IntEntry::onAcceptUnicodeChar(const int unicodeChar)
+{
+  return (unicodeChar >= '0' && unicodeChar <= '9');
 }
 
 void IntEntry::openPopup()

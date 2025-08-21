@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -15,6 +15,8 @@
 #include "os/system.h"
 #include "text/draw_text.h"
 #include "text/font.h"
+#include "text/font_metrics.h"
+#include "ui/clipboard_delegate.h"
 #include "ui/display.h"
 #include "ui/menu.h"
 #include "ui/message.h"
@@ -23,6 +25,7 @@
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/timer.h"
+#include "ui/translation_delegate.h"
 #include "ui/widget.h"
 
 #include <algorithm>
@@ -32,6 +35,12 @@
 #include <memory>
 
 namespace ui {
+
+// Maximum width for Entry fields as size hint (like half the screen /
+// a screen of 800x600).  We were using Display::workareaSizeUIScale()
+// but that might be slow on Linux/X11 for each mouse motion/window
+// resize event to ask.
+static int kMaxWidthHintForEntry = 400;
 
 // Shared timer between all entries.
 static std::unique_ptr<Timer> s_timer;
@@ -119,6 +128,15 @@ int Entry::lastCaretPos() const
   return int(m_boxes.size() - 1);
 }
 
+gfx::Point Entry::caretPosOnScreen() const
+{
+  const gfx::Point caretPos = getCharBoxBounds(m_caret).point2();
+  const os::Window* nativeWindow = display()->nativeWindow();
+  const gfx::Point pos = nativeWindow->pointToScreen(caretPos + bounds().origin());
+
+  return pos;
+}
+
 void Entry::setCaretPos(const int pos)
 {
   gfx::Size caretSize = theme()->getEntryCaretSize(this);
@@ -150,6 +168,8 @@ void Entry::setCaretPos(const int pos)
   if (shouldStartTimer(hasFocus()))
     startTimer();
   m_state = true;
+
+  os::System::instance()->setTextInput(true, caretPosOnScreen());
 
   invalidate();
 }
@@ -242,7 +262,7 @@ gfx::Rect Entry::getEntryTextBounds() const
   return onGetEntryTextBounds();
 }
 
-gfx::Rect Entry::getCharBoxBounds(const int i)
+gfx::Rect Entry::getCharBoxBounds(const int i) const
 {
   ASSERT(i >= 0 && i < int(m_boxes.size()));
   if (i >= 0 && i < int(m_boxes.size()))
@@ -279,8 +299,9 @@ bool Entry::onProcessMessage(Message* msg)
       }
 
       // Start processing dead keys
-      if (m_translate_dead_keys)
-        os::System::instance()->setTranslateDeadKeys(true);
+      if (m_translate_dead_keys) {
+        os::System::instance()->setTextInput(true, caretPosOnScreen());
+      }
       break;
 
     case kFocusLeaveMessage:
@@ -295,7 +316,7 @@ bool Entry::onProcessMessage(Message* msg)
 
       // Stop processing dead keys
       if (m_translate_dead_keys)
-        os::System::instance()->setTranslateDeadKeys(false);
+        os::System::instance()->setTextInput(false);
       break;
 
     case kKeyDownMessage:
@@ -503,9 +524,9 @@ gfx::Size Entry::sizeHintWithText(Entry* entry, const std::string& text)
   int w = font->textLength(text) + +2 * entry->theme()->getEntryCaretSize(entry).w +
           entry->border().width();
 
-  w = std::min(w, entry->display()->workareaSizeUIScale().w / 2);
+  w = std::min(w, guiscale() * kMaxWidthHintForEntry);
 
-  const int h = +font->height() + entry->border().height();
+  const int h = font->lineHeight() + entry->border().height();
 
   return gfx::Size(w, h);
 }
@@ -519,9 +540,9 @@ void Entry::onSizeHint(SizeHintEvent& ev)
 
   int w = font->textLength("w") * std::min(m_maxsize, 6) + +trailing + border().width();
 
-  w = std::min(w, display()->workareaSizeUIScale().w / 2);
+  w = std::min(w, guiscale() * kMaxWidthHintForEntry);
 
-  int h = +font->height() + border().height();
+  int h = font->lineHeight() + border().height();
 
   ev.setSizeHint(w, h);
 }
@@ -547,6 +568,18 @@ void Entry::onSetText()
     m_caret = textlen;
 }
 
+float Entry::onGetTextBaseline() const
+{
+  text::FontMetrics metrics;
+  font()->metrics(&metrics);
+  // Here we only use the descent+ascent to measure the text height,
+  // without the metrics.leading part (which is the used to separate
+  // text lines in a paragraph, but here'd make widgets too big)
+  const float textHeight = metrics.descent - metrics.ascent;
+  const gfx::Rect rc = getEntryTextBounds();
+  return guiscaled_center(rc.y, rc.h, textHeight) - metrics.ascent;
+}
+
 void Entry::onChange()
 {
   Change();
@@ -556,7 +589,7 @@ gfx::Rect Entry::onGetEntryTextBounds() const
 {
   gfx::Rect bounds = clientBounds();
   bounds.x += border().left();
-  bounds.y += CALC_FOR_CENTER(0, bounds.h, textHeight());
+  bounds.y += guiscaled_center(0, bounds.h, textHeight());
   bounds.w -= border().width();
   bounds.h = textHeight();
   return bounds;
@@ -872,20 +905,37 @@ bool Entry::isPosInSelection(int pos)
 void Entry::showEditPopupMenu(const gfx::Point& pt)
 {
   Menu menu;
-  MenuItem cut("Cut");
-  MenuItem copy("Copy");
-  MenuItem paste("Paste");
+
+  auto* clipboard = UISystem::instance()->clipboardDelegate();
+  if (!clipboard)
+    return;
+
+  auto* translate = UISystem::instance()->translationDelegate();
+  ASSERT(translate); // We provide UISystem as default translation delegate
+  if (!translate)
+    return;
+
+  MenuItem cut(translate->cut());
+  MenuItem copy(translate->copy());
+  MenuItem paste(translate->paste());
+  MenuItem selectAll(translate->selectAll());
   menu.addChild(&cut);
   menu.addChild(&copy);
   menu.addChild(&paste);
+  menu.addChild(new MenuSeparator);
+  menu.addChild(&selectAll);
+
+  for (auto* item : menu.children())
+    item->processMnemonicFromText();
+
   cut.Click.connect([this] { executeCmd(EntryCmd::Cut, 0, false); });
   copy.Click.connect([this] { executeCmd(EntryCmd::Copy, 0, false); });
   paste.Click.connect([this] { executeCmd(EntryCmd::Paste, 0, false); });
+  selectAll.Click.connect([this] { executeCmd(EntryCmd::SelectAll, 0, false); });
 
-  if (isReadOnly()) {
-    cut.setEnabled(false);
-    paste.setEnabled(false);
-  }
+  copy.setEnabled(m_select >= 0);
+  cut.setEnabled(m_select >= 0 && !isReadOnly());
+  paste.setEnabled(clipboard->hasClipboardText() && !isReadOnly());
 
   menu.showPopup(pt, display());
 }

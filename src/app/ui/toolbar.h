@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2021-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +10,7 @@
 #pragma once
 
 #include "app/tools/active_tool_observer.h"
+#include "app/ui/dockable.h"
 #include "app/ui/skin/skin_part.h"
 #include "gfx/point.h"
 #include "obs/connection.h"
@@ -16,6 +18,7 @@
 #include "ui/widget.h"
 
 #include <map>
+#include <memory>
 
 namespace ui {
 class CloseEvent;
@@ -31,6 +34,7 @@ class ToolGroup;
 
 // Class to show selected tools for each tool (vertically)
 class ToolBar : public ui::Widget,
+                public Dockable,
                 public tools::ActiveToolObserver {
   static ToolBar* m_instance;
 
@@ -51,15 +55,25 @@ public:
   void openTipWindow(tools::ToolGroup* toolGroup, tools::Tool* tool);
   void closeTipWindow();
 
+  // Dockable impl
+  int dockableAt() const override
+  {
+    // TODO add future support to dock the tool bar at the
+    // top/bottom sides
+    return ui::LEFT | ui::RIGHT;
+  }
+
 protected:
   bool onProcessMessage(ui::Message* msg) override;
   void onSizeHint(ui::SizeHintEvent& ev) override;
+  void onResize(ui::ResizeEvent& ev) override;
   void onPaint(ui::PaintEvent& ev) override;
   void onVisible(bool visible) override;
 
 private:
   enum class GroupType { Regular, Overflow };
 
+  bool isDockedAtLeftSide() const;
   int getToolGroupIndex(tools::ToolGroup* group);
   void openPopupWindow(GroupType group_type,
                        int group_index = 0,
@@ -93,12 +107,12 @@ private:
   bool m_openedRecently;
 
   // Window displayed to show a tool-group
-  ui::PopupWindow* m_popupWindow;
+  std::unique_ptr<ui::PopupWindow> m_popupWindow;
   class ToolStrip;
-  ToolStrip* m_currentStrip;
+  ToolStrip* m_currentStrip = nullptr;
 
   // Tool-tip window
-  ui::TipWindow* m_tipWindow;
+  std::unique_ptr<ui::TipWindow> m_tipWindow;
 
   ui::Timer m_tipTimer;
   bool m_tipOpened;

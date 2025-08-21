@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,12 +11,12 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
-#include "app/modules/gui.h"
 #include "app/ui/main_window.h"
 #include "fmt/format.h"
 #include "ver/info.h"
 
 #include "about.xml.h"
+#include "app/context.h"
 
 namespace app {
 
@@ -27,11 +27,17 @@ public:
   AboutCommand();
 
 protected:
+  bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
 };
 
-AboutCommand::AboutCommand() : Command(CommandId::About(), CmdUIOnlyFlag)
+AboutCommand::AboutCommand() : Command(CommandId::About())
 {
+}
+
+bool AboutCommand::onEnabled(Context* context)
+{
+  return context->isUIAvailable();
 }
 
 void AboutCommand::onExecute(Context* context)
@@ -44,7 +50,7 @@ void AboutCommand::onExecute(Context* context)
   });
   window.credits()->Click.connect([&window] {
     window.closeWindow(nullptr);
-    App::instance()->mainWindow()->showBrowser("README.md", "Authors");
+    App::instance()->mainWindow()->showBrowser("AUTHORS.md", "Authors");
   });
   window.i18nCredits()->Click.connect([&window] {
     window.closeWindow(nullptr);

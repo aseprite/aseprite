@@ -40,7 +40,7 @@ protected:
 };
 
 SetLoopSectionCommand::SetLoopSectionCommand()
-  : Command(CommandId::SetLoopSection(), CmdRecordableFlag)
+  : Command(CommandId::SetLoopSection())
   , m_action(Action::Auto)
   , m_begin(0)
   , m_end(0)
@@ -129,7 +129,8 @@ void SetLoopSectionCommand::onExecute(Context* ctx)
     }
   }
 
-  App::instance()->timeline()->invalidate();
+  if (App::instance()->timeline())
+    App::instance()->timeline()->invalidate();
 }
 
 Command* CommandFactory::createSetLoopSectionCommand()

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -405,7 +405,8 @@ static DocRange drop_range_op(Doc* doc,
             if (place == kDocRangeBefore) {
               Layer* beforeThis = (!dstLayers.empty() ? dstLayers.front() : nullptr);
               for (Layer* srcLayer : srcLayers) {
-                Layer* copiedLayer = api.duplicateLayerBefore(srcLayer, parent, beforeThis);
+                Layer* copiedLayer =
+                  api.duplicateLayerBefore(srcLayer, parent, beforeThis, " Copy");
 
                 resultRange.startRange(copiedLayer, -1, DocRange::kLayers);
                 resultRange.endRange(copiedLayer, -1);
@@ -416,7 +417,7 @@ static DocRange drop_range_op(Doc* doc,
 
               Layer* afterThis = (!dstLayers.empty() ? dstLayers.back() : nullptr);
               for (Layer* srcLayer : srcLayers) {
-                Layer* copiedLayer = api.duplicateLayerAfter(srcLayer, parent, afterThis);
+                Layer* copiedLayer = api.duplicateLayerAfter(srcLayer, parent, afterThis, " Copy");
 
                 resultRange.startRange(copiedLayer, -1, DocRange::kLayers);
                 resultRange.endRange(copiedLayer, -1);

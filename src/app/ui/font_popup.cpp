@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,13 +13,14 @@
 
 #include "app/app.h"
 #include "app/file_selector.h"
-#include "app/font_info.h"
-#include "app/font_path.h"
+#include "app/fonts/font_data.h"
+#include "app/fonts/font_info.h"
+#include "app/fonts/font_path.h"
+#include "app/fonts/fonts.h"
 #include "app/i18n/strings.h"
 #include "app/match_words.h"
 #include "app/recent_files.h"
 #include "app/ui/separator_in_view.h"
-#include "app/ui/skin/font_data.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/util/conversion_to_surface.h"
 #include "app/util/render_text.h"
@@ -38,6 +39,7 @@
 #include "ui/message.h"
 #include "ui/paint_event.h"
 #include "ui/size_hint_event.h"
+#include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/view.h"
 
@@ -56,7 +58,18 @@ namespace app {
 
 using namespace ui;
 
-static std::map<std::string, os::SurfaceRef> g_thumbnails;
+namespace {
+
+struct ThumbnailInfo {
+  os::SurfaceRef surface;
+  float baseline = 0.0f;
+  float descent = 0.0f;
+  float ascent = 0.0f;
+};
+
+static std::map<std::string, ThumbnailInfo> g_thumbnails;
+
+} // namespace
 
 class FontItem : public ListItem {
 public:
@@ -108,52 +121,100 @@ public:
   obs::signal<void()> ThumbnailGenerated;
 
 private:
-  void getCachedThumbnail() { m_thumbnail = g_thumbnails[m_fontInfo.thumbnailId()]; }
+  void getCachedThumbnail()
+  {
+    auto it = g_thumbnails.find(m_fontInfo.thumbnailId());
+    if (it == g_thumbnails.end())
+      return;
+    m_thumbnail = it->second;
+  }
+
+  float onGetTextBaseline() const override
+  {
+    text::FontMetrics metrics;
+    font()->metrics(&metrics);
+    const float descent = std::max<float>(metrics.descent, m_thumbnail.descent);
+    return bounds().h - descent;
+  }
 
   void onPaint(PaintEvent& ev) override
   {
     ListItem::onPaint(ev);
 
     generateThumbnail();
+    if (!m_thumbnail.surface)
+      return;
 
-    if (m_thumbnail) {
-      const auto* theme = app::skin::SkinTheme::get(this);
-      Graphics* g = ev.graphics();
-      g->drawColoredRgbaSurface(m_thumbnail.get(), theme->colors.text(), textWidth() + 4, 0);
-    }
+    Graphics* g = ev.graphics();
+    const auto* theme = app::skin::SkinTheme::get(this);
+    const float y = textBaseline() - m_thumbnail.baseline;
+
+    g->drawColoredRgbaSurface(m_thumbnail.surface.get(),
+                              theme->colors.text(),
+                              textWidth() + 4 * guiscale(),
+                              y);
   }
 
   void onSizeHint(SizeHintEvent& ev) override
   {
     ListItem::onSizeHint(ev);
-    if (m_thumbnail) {
-      gfx::Size sz = ev.sizeHint();
-      ev.setSizeHint(sz.w + 4 + m_thumbnail->width(), std::max(sz.h, m_thumbnail->height()));
-    }
+    if (!m_thumbnail.surface)
+      return;
+
+    text::FontMetrics metrics;
+    font()->metrics(&metrics);
+    const float lineHeight = std::max<float>(metrics.descent, m_thumbnail.descent) -
+                             std::min<float>(metrics.ascent, m_thumbnail.ascent);
+
+    gfx::Size sz = ev.sizeHint();
+    ev.setSizeHint(sz.w + 4 * guiscale() + m_thumbnail.surface->width(),
+                   std::max<float>(sz.h, lineHeight));
   }
 
   void generateThumbnail()
   {
-    if (m_thumbnail)
+    if (m_thumbnail.surface)
       return;
 
-    const auto* theme = app::skin::SkinTheme::get(this);
-
     try {
+      Fonts* fonts = Fonts::instance();
       const FontInfo fontInfoDefSize(m_fontInfo,
                                      FontInfo::kDefaultSize,
                                      text::FontStyle(),
-                                     FontInfo::Flags::Antialias);
+                                     FontInfo::Flags::Antialias,
+                                     text::FontHinting::Normal);
+      const text::FontRef font = fonts->fontFromInfo(fontInfoDefSize);
+      if (!font)
+        return;
 
-      doc::ImageRef image = render_text(fontInfoDefSize, text(), gfx::rgba(0, 0, 0));
+      if (font->type() != text::FontType::SpriteSheet)
+        font->setSize(12.0f);
+
+      text::TextBlobRef blob = text::TextBlob::MakeWithShaper(fonts->fontMgr(), font, text());
+      if (!blob)
+        return;
+
+      ui::Paint paint;
+      paint.color(gfx::rgba(0, 0, 0));
+      paint.style(ui::Paint::Fill);
+      const gfx::RectF textBounds = get_text_blob_required_bounds(blob);
+      doc::ImageRef image = render_text_blob(blob, textBounds, paint);
       if (!image)
         return;
 
+      // This font metrics
+      text::FontMetrics metrics;
+      font->metrics(&metrics);
+      m_thumbnail.baseline = blob->baseline();
+      m_thumbnail.descent = metrics.descent;
+      m_thumbnail.ascent = metrics.ascent;
+
       // Convert the doc::Image into a os::Surface
-      m_thumbnail = os::System::instance()->makeRgbaSurface(image->width(), image->height());
+      m_thumbnail.surface = os::System::instance()->makeRgbaSurface(image->width(),
+                                                                    image->height());
       convert_image_to_surface(image.get(),
                                nullptr,
-                               m_thumbnail.get(),
+                               m_thumbnail.surface.get(),
                                0,
                                0,
                                0,
@@ -173,7 +234,7 @@ private:
 
   void onSelect(bool selected) override
   {
-    if (!selected || m_thumbnail)
+    if (!selected || m_thumbnail.surface)
       return;
 
     ListBox* listbox = static_cast<ListBox*>(parent());
@@ -185,7 +246,7 @@ private:
   }
 
 private:
-  os::SurfaceRef m_thumbnail;
+  ThumbnailInfo m_thumbnail;
   FontInfo m_fontInfo;
   text::FontStyleSetRef m_set;
 };
@@ -242,8 +303,9 @@ FontPopup::FontPopup(const FontInfo& fontInfo)
   m_listBox.addChild(m_pinnedSeparator);
 
   // Default fonts
+  Fonts* fonts = Fonts::instance();
   bool first = true;
-  for (auto kv : skin::SkinTheme::get(this)->getWellKnownFonts()) {
+  for (const auto& kv : fonts->definedFonts()) {
     if (!kv.second->filename().empty()) {
       if (first) {
         m_listBox.addChild(new SeparatorInView(Strings::font_popup_theme_fonts()));
@@ -254,75 +316,17 @@ FontPopup::FontPopup(const FontInfo& fontInfo)
   }
 
   // Create one FontItem for each font
-  m_listBox.addChild(new SeparatorInView(Strings::font_popup_system_fonts()));
-  bool empty = true;
+  m_systemFontsSeparator = new SeparatorInView(Strings::font_popup_system_fonts());
+  m_listBox.addChild(m_systemFontsSeparator);
 
-  // Get system fonts from laf-text module
-  const text::FontMgrRef fontMgr = theme()->fontMgr();
-  const int n = fontMgr->countFamilies();
-  if (n > 0) {
-    for (int i = 0; i < n; ++i) {
-      std::string name = fontMgr->familyName(i);
-      text::FontStyleSetRef set = fontMgr->familyStyleSet(i);
-      if (set && set->count() > 0) {
-        // Match the typeface with the default FontStyle (Normal
-        // weight, Upright slant, etc.)
-        auto typeface = set->matchStyle(text::FontStyle());
-        if (typeface) {
-          auto* item = new FontItem(name, typeface->fontStyle(), set);
-          item->ThumbnailGenerated.connect([this] { onThumbnailGenerated(); });
-          m_listBox.addChild(item);
-          empty = false;
-        }
-      }
-    }
-  }
-  // Get fonts listing .ttf files TODO we should be able to remove
-  // this code in the future (probably after DirectWrite API is always
-  // available).
-  else {
-    base::paths fontDirs;
-    get_font_dirs(fontDirs);
-
-    // Create a list of fullpaths to every font found in all font
-    // directories (fontDirs)
-    base::paths files;
-    for (const auto& fontDir : fontDirs) {
-      for (const auto& file : base::list_files(fontDir, base::ItemType::Files)) {
-        files.push_back(base::join_path(fontDir, file));
-      }
-    }
-
-    // Sort all files by "file title"
-    std::sort(files.begin(), files.end(), [](const std::string& a, const std::string& b) {
-      return base::utf8_icmp(base::get_file_title(a), base::get_file_title(b)) < 0;
-    });
-
-    for (auto& file : files) {
-      std::string ext = base::string_to_lower(base::get_file_extension(file));
-      if (ext == "ttf" || ext == "ttc" || ext == "otf" || ext == "dfont") {
-        m_listBox.addChild(new FontItem(file));
-        empty = false;
-      }
-    }
-  }
-
-  if (empty)
-    m_listBox.addChild(new ListItem(Strings::font_popup_empty_fonts()));
-
-  for (auto* child : m_listBox.children()) {
-    if (auto* childItem = dynamic_cast<FontItem*>(child)) {
-      if (childItem->fontInfo().title() == childItem->text()) {
-        m_listBox.selectChild(childItem);
-        break;
-      }
-    }
-  }
+  m_listFontsTask.run([this](base::task_token& token) { listSystemFonts(token); });
 }
 
 FontPopup::~FontPopup()
 {
   m_timer.stop();
+  m_listFontsTask.cancel();
+  m_listFontsTask.wait();
 }
 
 void FontPopup::setSearchText(const std::string& searchText)
@@ -428,7 +432,8 @@ void FontPopup::onThumbnailGenerated()
 void FontPopup::onTickRelayout()
 {
   m_popup->view()->updateView();
-  m_timer.stop();
+  if (!m_listFontsTask.running())
+    m_timer.stop();
 }
 
 bool FontPopup::onProcessMessage(ui::Message* msg)
@@ -447,6 +452,107 @@ bool FontPopup::onProcessMessage(ui::Message* msg)
     }
   }
   return ui::PopupWindow::onProcessMessage(msg);
+}
+
+void FontPopup::listSystemFonts(base::task_token& token)
+{
+  Fonts* fonts = Fonts::instance();
+  bool empty = true;
+
+  // Get system fonts from laf-text module
+  const text::FontMgrRef fontMgr = fonts->fontMgr();
+  const int n = fontMgr->countFamilies();
+  if (n > 0) {
+    for (int i = 0; i < n; ++i) {
+      std::string name = fontMgr->familyName(i);
+      text::FontStyleSetRef set = fontMgr->familyStyleSet(i);
+      if (set && set->count() > 0) {
+        // Match the typeface with the default FontStyle (Normal
+        // weight, Upright slant, etc.)
+        auto typeface = set->matchStyle(text::FontStyle());
+        if (typeface) {
+          ui::execute_from_ui_thread([=, &token] {
+            if (token.canceled())
+              return;
+
+            auto* item = new FontItem(name, typeface->fontStyle(), set);
+            item->ThumbnailGenerated.connect([this] { onThumbnailGenerated(); });
+
+            int j = m_listBox.getChildIndex(m_systemFontsSeparator) + 1;
+            for (; j < m_listBox.getItemsCount(); ++j) {
+              if (name < m_listBox.at(j)->text())
+                break;
+            }
+            m_listBox.insertChild(j, item);
+            layout();
+          });
+          empty = false;
+        }
+      }
+
+      if (token.canceled())
+        goto done;
+    }
+  }
+  // Get fonts listing .ttf files TODO we should be able to remove
+  // this code in the future (probably after DirectWrite API is always
+  // available).
+  else {
+    base::paths fontDirs;
+    get_font_dirs(fontDirs);
+
+    // Create a list of fullpaths to every font found in all font
+    // directories (fontDirs)
+    base::paths files;
+    for (const auto& fontDir : fontDirs) {
+      for (const auto& file : base::list_files(fontDir, base::ItemType::Files)) {
+        files.push_back(base::join_path(fontDir, file));
+        if (token.canceled())
+          goto done;
+      }
+    }
+
+    // Sort all files by "file title"
+    std::sort(files.begin(), files.end(), [](const std::string& a, const std::string& b) {
+      return base::utf8_icmp(base::get_file_title(a), base::get_file_title(b)) < 0;
+    });
+
+    for (auto& file : files) {
+      std::string ext = base::string_to_lower(base::get_file_extension(file));
+      if (ext == "ttf" || ext == "ttc" || ext == "otf" || ext == "dfont") {
+        ui::execute_from_ui_thread([this, file, &token] {
+          if (token.canceled())
+            return;
+
+          m_listBox.addChild(new FontItem(file));
+        });
+        empty = false;
+      }
+    }
+  }
+
+done:;
+  if (token.canceled())
+    return;
+
+  if (empty) {
+    ui::execute_from_ui_thread([this, &token] {
+      if (token.canceled())
+        return;
+
+      m_listBox.addChild(new ListItem(Strings::font_popup_empty_fonts()));
+      layout();
+    });
+  }
+
+  ui::execute_from_ui_thread([this, &token] {
+    if (token.canceled())
+      return;
+
+    // Stop the view relayout
+    onTickRelayout();
+    m_timer.stop();
+  });
 }
 
 } // namespace app

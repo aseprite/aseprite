@@ -153,7 +153,7 @@ UISystem* UISystem::instance()
   return g_instance;
 }
 
-UISystem::UISystem() : m_clipboardDelegate(nullptr)
+UISystem::UISystem() : m_clipboardDelegate(nullptr), m_translationDelegate(this)
 {
   ASSERT(!g_instance);
   g_instance = this;

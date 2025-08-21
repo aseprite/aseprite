@@ -21,7 +21,6 @@
 #include "app/transaction.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/rgbmap_algorithm_selector.h"
-#include "app/ui_context.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
 #include "render/quantization.h"
@@ -71,7 +70,7 @@ protected:
 };
 
 ColorQuantizationCommand::ColorQuantizationCommand()
-  : CommandWithNewParams<ColorQuantizationParams>(CommandId::ColorQuantization(), CmdRecordableFlag)
+  : CommandWithNewParams<ColorQuantizationParams>(CommandId::ColorQuantization())
 {
 }
 

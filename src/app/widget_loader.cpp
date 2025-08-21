@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -257,11 +257,9 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
       ((ExprEntry*)widget)->setDecimals(strtol(decimals, nullptr, 10));
   }
   if (elem_name == "filename") {
-    const char* button_only = elem->Attribute("button_only");
-    const app::FilenameField::Type type = ((button_only != nullptr &&
-                                            strtol(button_only, nullptr, 10) == 1) ?
-                                             app::FilenameField::Type::ButtonOnly :
-                                             app::FilenameField::Type::EntryAndButton);
+    const bool buttononly = bool_attr(elem, "buttononly", false);
+    const app::FilenameField::Type type = (buttononly ? app::FilenameField::Type::ButtonOnly :
+                                                        app::FilenameField::Type::EntryAndButton);
 
     widget = new app::FilenameField(type, "");
   }
@@ -534,7 +532,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
   }
   else if (elem_name == "font") {
     if (!widget)
-      widget = new FontEntry;
+      widget = new FontEntry(false);
   }
 
   // Was the widget created?

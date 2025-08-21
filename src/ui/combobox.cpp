@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -503,18 +503,17 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
         gfx::Point screenPos = mouseMsg->display()->nativeWindow()->pointToScreen(
           mouseMsg->position());
-        Widget* pick = manager()->pickFromScreenPos(screenPos);
+        Manager* mgr = manager();
+        Widget* pick = mgr->pickFromScreenPos(screenPos);
         Widget* listbox = m_comboBox->m_listbox;
 
         if (pick != nullptr && (pick == listbox || pick->hasAncestor(listbox))) {
-          releaseMouse();
-
-          MouseMessage mouseMsg2(kMouseDownMessage,
-                                 *mouseMsg,
-                                 mouseMsg->positionForDisplay(pick->display()));
-          mouseMsg2.setRecipient(pick);
-          mouseMsg2.setDisplay(pick->display());
-          pick->sendMessage(&mouseMsg2);
+          mgr->transferAsMouseDownMessage(this,
+                                          pick,
+                                          mouseMsg,
+                                          // Send the message right now, if we enqueue
+                                          // the message the popup window is closed.
+                                          true);
           return true;
         }
       }

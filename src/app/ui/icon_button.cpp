@@ -28,12 +28,18 @@ IconButton::IconButton(const SkinPartPtr& part) : Button(""), m_part(part)
   initTheme();
 }
 
+void IconButton::setIcon(const skin::SkinPartPtr& part)
+{
+  m_part = part;
+  invalidate();
+}
+
 void IconButton::onInitTheme(InitThemeEvent& ev)
 {
-  Button::onInitTheme(ev);
-
   auto theme = SkinTheme::get(this);
   setBgColor(theme->colors.menuitemNormalFace());
+
+  Button::onInitTheme(ev);
 }
 
 void IconButton::onSizeHint(SizeHintEvent& ev)
@@ -44,7 +50,7 @@ void IconButton::onSizeHint(SizeHintEvent& ev)
 
 void IconButton::onPaint(PaintEvent& ev)
 {
-  auto theme = SkinTheme::get(this);
+  const auto* theme = SkinTheme::get(this);
   Graphics* g = ev.graphics();
   gfx::Color fg, bg;
 
@@ -61,9 +67,11 @@ void IconButton::onPaint(PaintEvent& ev)
     bg = bgColor();
   }
 
-  g->fillRect(bg, g->getClipBounds());
+  if (!isTransparent()) {
+    g->fillRect(bg, g->getClipBounds());
+  }
 
-  gfx::Rect bounds = clientBounds();
+  const gfx::Rect bounds = clientBounds();
   os::Surface* icon = m_part->bitmap(0);
   g->drawColoredRgbaSurface(icon,
                             fg,

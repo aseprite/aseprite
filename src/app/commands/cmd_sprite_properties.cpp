@@ -30,7 +30,6 @@
 #include "app/util/pixel_ratio.h"
 #include "app/util/tileset_utils.h"
 #include "base/mem_utils.h"
-#include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
 #include "doc/tilesets.h"
@@ -142,6 +141,8 @@ public:
   {
     userData()->Click.connect([this] { onToggleUserData(); });
 
+    useUuidForLayers()->setSelected(sprite->useLayerUuids());
+
     m_userDataView.configureAndSet(m_sprite->userData(), propertiesGrid());
 
     if (sprite->tilesets()->size() == 0) {
@@ -233,15 +234,14 @@ protected:
   void onExecute(Context* context) override;
 };
 
-SpritePropertiesCommand::SpritePropertiesCommand()
-  : Command(CommandId::SpriteProperties(), CmdUIOnlyFlag)
+SpritePropertiesCommand::SpritePropertiesCommand() : Command(CommandId::SpriteProperties())
 {
 }
 
 bool SpritePropertiesCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasActiveSprite);
+  return context->isUIAvailable() && context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                                                         ContextFlags::HasActiveSprite);
 }
 
 void SpritePropertiesCommand::onExecute(Context* context)
@@ -396,6 +396,8 @@ void SpritePropertiesCommand::onExecute(Context* context)
     PixelRatio pixelRatio = base::convert_to<PixelRatio>(window.pixelRatio()->getValue());
 
     const UserData newUserData = window.getUserData();
+
+    sprite->useLayerUuids(window.useUuidForLayers()->isSelected());
 
     if (index != sprite->transparentColor() || pixelRatio != sprite->pixelRatio() ||
         newUserData != sprite->userData()) {

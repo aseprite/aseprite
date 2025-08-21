@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -20,6 +20,7 @@
 #include "base/fs.h"
 #include "base/string.h"
 #include "base/time.h"
+#include "text/font_metrics.h"
 #include "ui/link_label.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
@@ -158,7 +159,6 @@ protected:
     auto theme = SkinTheme::get(this);
     ui::Style* style = theme->styles.newsItem();
 
-    setTextQuiet(m_title);
     gfx::Size sz = theme->calcSizeHint(this, style);
 
     if (!m_desc.empty()) {
@@ -177,20 +177,35 @@ protected:
     ui::Style* style = theme->styles.newsItem();
     ui::Style* styleDetail = theme->styles.newsItemDetail();
 
-    setTextQuiet(m_title);
     gfx::Size textSize = theme->calcSizeHint(this, style);
     gfx::Rect textBounds(bounds.x, bounds.y, bounds.w, textSize.h);
     gfx::Rect detailsBounds(bounds.x, bounds.y + textSize.h, bounds.w, bounds.h - textSize.h);
 
-    theme->paintWidget(g, this, style, textBounds);
+    gfx::Border border = theme->calcBorder(this, style);
+    gfx::Border borderDetail = theme->calcBorder(this, styleDetail);
 
-    setTextQuiet(m_desc);
-    theme->paintWidget(g, this, styleDetail, detailsBounds);
+    if (!m_titleBlob)
+      m_titleBlob = text::TextBlob::MakeWithShaper(theme->fontMgr(), font(), m_title);
+
+    PaintWidgetPartInfo info(this);
+    info.baseline = border.top();
+    if (m_titleBlob) {
+      info.textBlob = m_titleBlob;
+      info.baseline += m_titleBlob->baseline();
+      theme->paintWidgetPart(g, style, bounds, info);
+      info.baseline += border.bottom();
+
+      info.text = &m_desc;
+      info.textBlob = nullptr;
+      info.baseline += borderDetail.top() + m_titleBlob->baseline();
+      theme->paintWidgetPart(g, styleDetail, detailsBounds, info);
+    }
   }
 
 private:
   std::string m_title;
   std::string m_desc;
+  text::TextBlobRef m_titleBlob;
 };
 
 class ProblemsItem : public NewsItem {

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -17,7 +17,7 @@
 #include "text/fwd.h"
 #include "ui/base.h"
 #include "ui/cursor_type.h"
-#include "ui/scale.h"
+#include "ui/paint.h"
 #include "ui/style.h"
 
 namespace gfx {
@@ -41,18 +41,14 @@ class Theme;
 void set_theme(Theme* theme, const int uiscale);
 Theme* get_theme();
 
-inline int CALC_FOR_CENTER(int p, int s1, int s2)
-{
-  return (p / guiscale() + (s1 / guiscale()) / 2 - (s2 / guiscale()) / 2) * guiscale();
-}
-
 struct PaintWidgetPartInfo {
-  gfx::Color bgColor;
-  int styleFlags; // ui::Style::Layer flags
-  const std::string* text;
+  gfx::Color bgColor = gfx::ColorNone;
+  int styleFlags = 0; // ui::Style::Layer flags
+  const std::string* text = nullptr;
   text::TextBlobRef textBlob;
-  int mnemonic;
-  os::Surface* icon;
+  float baseline = 0.0f;
+  int mnemonic = 0;
+  os::Surface* icon = nullptr;
 
   PaintWidgetPartInfo();
   PaintWidgetPartInfo(const Widget* widget);
@@ -148,6 +144,13 @@ public:
                           gfx::Color bg,
                           gfx::Color fg);
 
+  static void drawMnemonicUnderline(Graphics* g,
+                                    const std::string& text,
+                                    text::TextBlobRef textBlob,
+                                    const gfx::PointF& pt,
+                                    const int mnemonic,
+                                    const Paint& paint);
+
   static ui::Style* EmptyStyle() { return &m_emptyStyle; }
 
 protected:
@@ -161,7 +164,8 @@ private:
                   const Style* style,
                   const Style::Layer& layer,
                   const std::string& text,
-                  const text::TextBlobRef& textBlob,
+                  text::TextBlobRef textBlob,
+                  const float baseline,
                   const int mnemonic,
                   os::Surface* icon,
                   gfx::Rect& rc,

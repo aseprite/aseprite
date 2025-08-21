@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -186,7 +186,7 @@ void View::updateView(const bool restoreScrollPos)
   // Restore the mouse capture if it changed, which means that a
   // scroll bar (when it was temporarily removed) lost the capture.
   if (man && man->getCapture() != mouseCapture && mouseCapture->isVisible())
-    man->setCapture(mouseCapture);
+    man->setCapture(mouseCapture, true); // Force the capture
 }
 
 Viewport* View::viewport()

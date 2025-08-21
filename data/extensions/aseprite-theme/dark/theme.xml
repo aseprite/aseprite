@@ -216,7 +216,7 @@
         <part id="tab_normal" x="2" y="112" w1="4" w2="5" w3="5" h1="4" h2="6" h3="2" />
         <part id="tab_active" x="16" y="112" w1="4" w2="7" w3="5" h1="4" h2="6" h3="2" />
         <part id="tab_bottom_active" x="16" y="124" w1="4" w2="7" w3="5" h1="2" h2="1" h3="2" />
-        <part id="tab_bottom_normal" x="2" y="124" w="12" h="5" />
+        <part id="tab_bottom_normal" x="2" y="124" w1="4" w2="5" w3="3" h1="2" h2="1" h3="2" />
         <part id="tab_filler" x="0" y="112" w="2" h="12" />
         <part id="tab_modified_icon_normal" x="32" y="112" w="5" h="5" />
         <part id="tab_modified_icon_active" x="32" y="117" w="5" h="5" />
@@ -374,6 +374,7 @@
         <part id="icon_close" x="152" y="256" w="7" h="7" />
         <part id="icon_search" x="160" y="256" w="8" h="8" />
         <part id="icon_user_data" x="168" y="256" w="8" h="8" />
+        <part id="icon_layout" x="176" y="256" w="5" h="6" />
         <part id="icon_pos" x="144" y="264" w="8" h="8" />
         <part id="icon_size" x="152" y="264" w="8" h="8" />
         <part id="icon_selsize" x="160" y="264" w="8" h="8" />
@@ -485,25 +486,25 @@
             <icon part="window_close_icon" color="button_hot_text" state="mouse" />
             <icon part="window_close_icon" color="button_selected_text" state="selected" />
         </style>
-        <style id="window_center_button" extends="window_button" margin-top="3" margin-right="2">
+        <style id="window_center_button" extends="window_button" margin-top="3" margin-right="1">
             <newlayer />
             <icon part="window_center_icon" color="button_normal_text" />
             <icon part="window_center_icon" color="button_hot_text" state="mouse" />
             <icon part="window_center_icon" color="button_selected_text" state="selected" />
         </style>
-        <style id="window_play_button" extends="window_button" margin-top="3" margin-right="2">
+        <style id="window_play_button" extends="window_button" margin-top="3" margin-right="1">
             <newlayer />
             <icon part="window_play_icon" color="button_normal_text" />
             <icon part="window_play_icon" color="button_hot_text" state="mouse" />
             <icon part="window_play_icon" color="button_selected_text" state="selected" />
         </style>
-        <style id="window_stop_button" extends="window_button" margin-top="3" margin-right="2">
+        <style id="window_stop_button" extends="window_button" margin-top="3" margin-right="1">
             <newlayer />
             <icon part="window_stop_icon" color="button_normal_text" />
             <icon part="window_stop_icon" color="button_hot_text" state="mouse" />
             <icon part="window_stop_icon" color="button_selected_text" state="selected" />
         </style>
-        <style id="window_help_button" extends="window_button" margin-top="3" margin-right="2">
+        <style id="window_help_button" extends="window_button" margin-top="3" margin-right="1">
             <newlayer />
             <icon part="window_help_icon" color="button_normal_text" />
             <icon part="window_help_icon" color="button_hot_text" state="mouse" />
@@ -550,10 +551,13 @@
             <text color="disabled" align="left" state="disabled" />
         </style>
         <style id="mini_label" extends="label" font="mini" />
+        <style id="warning_label" extends="label">
+            <icon part="warning_box" align="right" />
+        </style>
         <style id="list_header_label" padding="2">
             <text color="text" align="left" x="2" />
         </style>
-        <style id="link">
+        <style id="link" padding="1">
             <text color="link_text" align="left" />
             <text color="link_hover" align="left" state="mouse" />
         </style>
@@ -706,10 +710,11 @@
         <style id="workspace_splitter">
             <background color="workspace" />
         </style>
-        <style id="horizontal_separator" border-left="2" border-top="4" border-right="2" border-bottom="0">
+        <style id="horizontal_separator" border="2">
             <background color="window_face" />
             <background-border part="separator_horz" align="middle" />
             <text color="separator_label" x="4" align="left middle" />
+            <text color="disabled" x="4" align="left middle" state="disabled"/>
         </style>
         <style id="menu_separator" extends="horizontal_separator" />
         <style id="separator_in_view" extends="horizontal_separator">

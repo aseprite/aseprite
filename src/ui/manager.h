@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -63,6 +63,10 @@ public:
   bool generateMessages();
   void dispatchMessages();
 
+  // Wakes up the system's events queue to process the currently enqueued UI
+  // messages.
+  void flushMessages() const;
+
   // Makes the generateMessages() function to return immediately if
   // there is no user events in the OS queue. Useful only for tests
   // or benchmarks where we don't wait the user (or we don't even
@@ -72,9 +76,9 @@ public:
   void addToGarbage(Widget* widget);
   void collectGarbage();
 
-  Window* getTopWindow();
-  Window* getDesktopWindow();
-  Window* getForegroundWindow();
+  Window* getTopWindow() const;
+  Window* getDesktopWindow() const;
+  Window* getForegroundWindow() const;
   Display* getForegroundDisplay();
 
   Widget* getFocus();
@@ -83,7 +87,7 @@ public:
 
   void setFocus(Widget* widget);
   void setMouse(Widget* widget);
-  void setCapture(Widget* widget);
+  void setCapture(Widget* widget, bool force = false);
   void attractFocus(Widget* widget);
   void focusFirstChild(Widget* widget);
   void freeFocus();
@@ -106,6 +110,30 @@ public:
   bool processFocusMovementMessage(Message* msg);
 
   Widget* pickFromScreenPos(const gfx::Point& screenPos) const override;
+
+  // Transfers the given MouseMessage received "from" (generally a
+  // kMouseMoveMessage) to the given "to" widget, sending a copy of
+  // the message but changing its type to kMouseDownMessage. By
+  // default it enqueues the message.
+  //
+  // If "from" has the mouse capture, it will be released as it is
+  // highly probable that the "to" widget will recapture the mouse
+  // again.
+  //
+  // This is used in cases were the user presses the mouse button on
+  // one widget, and then drags the mouse to another widget. With this
+  // we can transfer the mouse capture between widgets (from -> to)
+  // simulating a kMouseDownMessage for the new widget "to".
+  void transferAsMouseDownMessage(Widget* from,
+                                  Widget* to,
+                                  const MouseMessage* mouseMsg,
+                                  bool sendNow = false);
+
+  // Returns true if the widget is accessible with the mouse, i.e. the
+  // widget is in the current foreground window (or a top window above
+  // the foreground, e.g. a combobox popup), or there is no foreground
+  // window and the widget is in the desktop window.
+  bool isWidgetClickable(const Widget* widget) const;
 
   void _openWindow(Window* window, bool center);
   void _closeWindow(Window* window, bool redraw_background);
@@ -164,11 +192,11 @@ private:
                           const double magnification);
   bool handleWindowZOrder();
   void updateMouseWidgets(const gfx::Point& mousePos, Display* display);
+  void allowCapture(Widget* widget);
 
   int pumpQueue();
   bool sendMessageToWidget(Message* msg, Widget* widget);
 
-  Widget* findForDragAndDrop(Widget* widget);
   void dragEnter(os::DragEvent& ev) override;
   void dragLeave(os::DragEvent& ev) override;
   void drag(os::DragEvent& ev) override;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1095,6 +1095,9 @@ public:
     gifframe_t nframes = totalFrames();
     for (gifframe_t gifFrame = 0; gifFrame < nframes; ++gifFrame) {
       ASSERT(frame_it != frame_end);
+      if (m_fop->isStop())
+        break;
+
       frame_t frame = *frame_it;
       ++frame_it;
 
@@ -1401,7 +1404,7 @@ private:
           color_t color = *srcIt;
           int i;
 
-          if (rgba_geta(color) >= 128) {
+          if (rgba_geta(color) > 0) {
             i = framePalette.findExactMatch(rgba_getr(color),
                                             rgba_getg(color),
                                             rgba_getb(color),

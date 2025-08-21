@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2024  Igara Studio S.A.
+// Copyright (c) 2024-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,18 +12,25 @@
 
 #include "app/app.h"
 #include "app/console.h"
+#include "app/i18n/strings.h"
 #include "app/recent_files.h"
 #include "app/ui/font_popup.h"
 #include "app/ui/skin/skin_theme.h"
+#include "base/contains.h"
+#include "base/convert_to.h"
 #include "base/scoped_value.h"
 #include "fmt/format.h"
 #include "ui/display.h"
+#include "ui/fit_bounds.h"
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/scale.h"
 
+#include "font_style.xml.h"
+
 #include <algorithm>
 #include <cstdlib>
+#include <vector>
 
 namespace app {
 
@@ -51,18 +58,12 @@ bool FontEntry::FontFace::onProcessMessage(Message* msg)
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
         const gfx::Point screenPos = mouseMsg->display()->nativeWindow()->pointToScreen(
           mouseMsg->position());
-        Widget* pick = manager()->pickFromScreenPos(screenPos);
+        Manager* mgr = manager();
+        Widget* pick = mgr->pickFromScreenPos(screenPos);
         Widget* target = m_popup->getListBox();
 
         if (pick && (pick == target || pick->hasAncestor(target))) {
-          releaseMouse();
-
-          MouseMessage mouseMsg2(kMouseDownMessage,
-                                 *mouseMsg,
-                                 mouseMsg->positionForDisplay(pick->display()));
-          mouseMsg2.setRecipient(pick);
-          mouseMsg2.setDisplay(pick->display());
-          pick->sendMessage(&mouseMsg2);
+          mgr->transferAsMouseDownMessage(this, pick, mouseMsg);
           return true;
         }
       }
@@ -70,6 +71,9 @@ bool FontEntry::FontFace::onProcessMessage(Message* msg)
 
     case kMouseDownMessage:
     case kFocusEnterMessage:
+      if (!isEnabled())
+        break;
+
       if (!m_popup) {
         try {
           const FontInfo info = fontEntry()->info();
@@ -164,6 +168,12 @@ void FontEntry::FontFace::onChange()
   base::ScopedValue lock(m_fromEntryChange, true);
   SearchEntry::onChange();
 
+  // This shouldn't happen, but we received crash reports where the
+  // m_popup is nullptr here.
+  ASSERT(m_popup);
+  if (!m_popup)
+    return;
+
   m_popup->setSearchText(text());
 
   // Changing the search text doesn't generate a FontChange
@@ -205,8 +215,13 @@ void FontEntry::FontFace::onCloseIconPressed()
     std::sort(pinnedFonts.begin(), pinnedFonts.end());
   }
 
-  // Refill the list with the new pinned/unpinned item
-  m_popup->recreatePinnedItems();
+  // This shouldn't happen, but we received crash reports where the
+  // m_popup is nullptr here.
+  ASSERT(m_popup);
+  if (m_popup) {
+    // Refill the list with the new pinned/unpinned item
+    m_popup->recreatePinnedItems();
+  }
 
   invalidate();
 }
@@ -214,8 +229,33 @@ void FontEntry::FontFace::onCloseIconPressed()
 FontEntry::FontSize::FontSize()
 {
   setEditable(true);
-  for (int i : { 8, 9, 10, 11, 12, 14, 16, 18, 22, 24, 26, 28, 36, 48, 72 })
-    addItem(fmt::format("{}", i));
+}
+
+void FontEntry::FontSize::updateForFont(const FontInfo& info)
+{
+  std::vector<int> values = { 8, 9, 10, 11, 12, 14, 16, 18, 22, 24, 26, 28, 36, 48, 72 };
+  int h = 0;
+
+  // For SpriteSheet fonts we can offer the specific size that matches
+  // the bitmap font (+ x2 + x3)
+  text::FontRef font = Fonts::instance()->fontFromInfo(info);
+  if (font && font->type() == text::FontType::SpriteSheet) {
+    h = int(font->defaultSize());
+    if (h > 0) {
+      for (int i = h; i < h * 4; i += h) {
+        if (!base::contains(values, i))
+          values.insert(std::upper_bound(values.begin(), values.end(), i), i);
+      }
+    }
+  }
+
+  deleteAllItems();
+  for (int i : values) {
+    if (h && (i % h) == 0)
+      addItem(fmt::format("{}*", i));
+    else
+      addItem(fmt::format("{}", i));
+  }
 }
 
 void FontEntry::FontSize::onEntryChange()
@@ -224,31 +264,91 @@ void FontEntry::FontSize::onEntryChange()
   Change();
 }
 
-FontEntry::FontStyle::FontStyle() : ButtonSet(2, true)
+FontEntry::FontStyle::FontStyle(ui::TooltipManager* tooltips) : ButtonSet(3, true)
 {
   addItem("B");
   addItem("I");
+  addItem("...");
   setMultiMode(MultiMode::Set);
+
+  tooltips->addTooltipFor(getItem(0), Strings::text_tool_bold(), BOTTOM);
+  tooltips->addTooltipFor(getItem(1), Strings::text_tool_italic(), BOTTOM);
+  tooltips->addTooltipFor(getItem(2), Strings::text_tool_more_options(), BOTTOM);
 }
 
-FontEntry::FontLigatures::FontLigatures() : ButtonSet(1, true)
+FontEntry::FontStroke::FontStroke(ui::TooltipManager* tooltips) : m_fill(2)
 {
-  addItem("fi");
-  setMultiMode(MultiMode::Set);
+  auto* theme = skin::SkinTheme::get(this);
+
+  m_fill.addItem(theme->parts.toolFilledRectangle(), theme->styles.contextBarButton());
+  m_fill.addItem(theme->parts.toolRectangle(), theme->styles.contextBarButton());
+  m_fill.setSelectedItem(0);
+  m_fill.ItemChange.connect([this] { Change(); });
+
+  m_stroke.setText("0");
+  m_stroke.setSuffix("pt");
+  m_stroke.ValueChange.connect([this] { Change(); });
+
+  addChild(&m_fill);
+  addChild(&m_stroke);
+
+  tooltips->addTooltipFor(m_fill.getItem(0), Strings::shape_fill(), BOTTOM);
+  tooltips->addTooltipFor(m_fill.getItem(1), Strings::shape_stroke(), BOTTOM);
+  tooltips->addTooltipFor(&m_stroke, Strings::shape_stroke_width(), BOTTOM);
 }
 
-FontEntry::FontEntry() : m_antialias("Antialias")
+bool FontEntry::FontStroke::fill() const
+{
+  return const_cast<FontStroke*>(this)->m_fill.getItem(0)->isSelected();
+}
+
+float FontEntry::FontStroke::stroke() const
+{
+  return m_stroke.textDouble();
+}
+
+FontEntry::FontStroke::WidthEntry::WidthEntry() : ui::IntEntry(0, 100, this)
+{
+}
+
+void FontEntry::FontStroke::WidthEntry::onValueChange()
+{
+  ui::IntEntry::onValueChange();
+  ValueChange();
+}
+
+bool FontEntry::FontStroke::WidthEntry::onAcceptUnicodeChar(int unicodeChar)
+{
+  return (IntEntry::onAcceptUnicodeChar(unicodeChar) || unicodeChar == '.');
+}
+
+std::string FontEntry::FontStroke::WidthEntry::onGetTextFromValue(int value)
+{
+  return fmt::format("{:.1f}", value / 10.0);
+}
+
+int FontEntry::FontStroke::WidthEntry::onGetValueFromText(const std::string& text)
+{
+  return int(10.0 * base::convert_to<double>(text));
+}
+
+FontEntry::FontEntry(const bool withStrokeAndFill)
+  : m_style(&m_tooltips)
+  , m_stroke(withStrokeAndFill ? std::make_unique<FontStroke>(&m_tooltips) : nullptr)
 {
   m_face.setExpansive(true);
   m_size.setExpansive(false);
   m_style.setExpansive(false);
-  m_ligatures.setExpansive(false);
-  m_antialias.setExpansive(false);
+
+  addChild(&m_tooltips);
   addChild(&m_face);
   addChild(&m_size);
   addChild(&m_style);
-  addChild(&m_ligatures);
-  addChild(&m_antialias);
+  if (m_stroke)
+    addChild(m_stroke.get());
+
+  m_tooltips.addTooltipFor(&m_face, Strings::text_tool_font_family(), BOTTOM);
+  m_tooltips.addTooltipFor(m_size.getEntryWidget(), Strings::text_tool_font_size(), BOTTOM);
 
   m_face.setMinSize(gfx::Size(128 * guiscale(), 0));
 
@@ -256,52 +356,22 @@ FontEntry::FontEntry() : m_antialias("Antialias")
     if (newTypeName.size() > 0)
       setInfo(newTypeName, from);
     else {
-      setInfo(FontInfo(newTypeName, m_info.size(), m_info.style(), m_info.flags()), from);
+      setInfo(
+        FontInfo(newTypeName, m_info.size(), m_info.style(), m_info.flags(), m_info.hinting()),
+        from);
     }
     invalidate();
   });
 
   m_size.Change.connect([this]() {
     const float newSize = std::strtof(m_size.getValue().c_str(), nullptr);
-    setInfo(FontInfo(m_info, newSize, m_info.style(), m_info.flags()), From::Size);
+    setInfo(FontInfo(m_info, newSize, m_info.style(), m_info.flags(), m_info.hinting()),
+            From::Size);
   });
 
-  m_style.ItemChange.connect([this](ButtonSet::Item* item) {
-    text::FontStyle style = m_info.style();
-    switch (m_style.getItemIndex(item)) {
-      // Bold button changed
-      case 0: {
-        const bool bold = m_style.getItem(0)->isSelected();
-        style = text::FontStyle(
-          bold ? text::FontStyle::Weight::Bold : text::FontStyle::Weight::Normal,
-          style.width(),
-          style.slant());
-        break;
-      }
-      // Italic button changed
-      case 1: {
-        const bool italic = m_style.getItem(1)->isSelected();
-        style = text::FontStyle(
-          style.weight(),
-          style.width(),
-          italic ? text::FontStyle::Slant::Italic : text::FontStyle::Slant::Upright);
-        break;
-      }
-    }
-
-    setInfo(FontInfo(m_info, m_info.size(), style, m_info.flags()), From::Style);
-  });
-
-  auto flagsChange = [this]() {
-    FontInfo::Flags flags = FontInfo::Flags::None;
-    if (m_antialias.isSelected())
-      flags |= FontInfo::Flags::Antialias;
-    if (m_ligatures.getItem(0)->isSelected())
-      flags |= FontInfo::Flags::Ligatures;
-    setInfo(FontInfo(m_info, m_info.size(), m_info.style(), flags), From::Flags);
-  };
-  m_ligatures.ItemChange.connect(flagsChange);
-  m_antialias.Click.connect(flagsChange);
+  m_style.ItemChange.connect(&FontEntry::onStyleItemClick, this);
+  if (m_stroke)
+    m_stroke->Change.connect(&FontEntry::onStrokeChange, this);
 }
 
 // Defined here as FontPopup type is not fully defined in the header
@@ -317,20 +387,122 @@ void FontEntry::setInfo(const FontInfo& info, const From fromField)
   if (fromField != From::Face)
     m_face.setText(info.title());
 
-  if (fromField != From::Size)
+  if (fromField != From::Size) {
+    m_size.updateForFont(info);
     m_size.setValue(fmt::format("{}", info.size()));
+  }
 
   if (fromField != From::Style) {
     m_style.getItem(0)->setSelected(info.style().weight() >= text::FontStyle::Weight::SemiBold);
     m_style.getItem(1)->setSelected(info.style().slant() != text::FontStyle::Slant::Upright);
   }
 
-  if (fromField != From::Flags) {
-    m_ligatures.getItem(0)->setSelected(info.ligatures());
-    m_antialias.setSelected(info.antialias());
+  FontChange(m_info, fromField);
+}
+
+ui::Paint FontEntry::paint()
+{
+  ui::Paint paint;
+  ui::Paint::Style style = ui::Paint::Fill;
+
+  if (m_stroke) {
+    const float stroke = m_stroke->stroke();
+    if (m_stroke->fill()) {
+      if (stroke > 0.0f) {
+        style = ui::Paint::StrokeAndFill;
+        paint.strokeWidth(stroke);
+      }
+    }
+    else {
+      style = ui::Paint::Stroke;
+      paint.strokeWidth(stroke);
+    }
   }
 
-  FontChange(m_info, fromField);
+  paint.style(style);
+  return paint;
+}
+
+void FontEntry::onStyleItemClick(ButtonSet::Item* item)
+{
+  text::FontStyle style = m_info.style();
+
+  switch (m_style.getItemIndex(item)) {
+    // Bold button changed
+    case 0: {
+      const bool bold = m_style.getItem(0)->isSelected();
+      style = text::FontStyle(
+        bold ? text::FontStyle::Weight::Bold : text::FontStyle::Weight::Normal,
+        style.width(),
+        style.slant());
+
+      setInfo(FontInfo(m_info, m_info.size(), style, m_info.flags(), m_info.hinting()),
+              From::Style);
+      break;
+    }
+      // Italic button changed
+    case 1: {
+      const bool italic = m_style.getItem(1)->isSelected();
+      style = text::FontStyle(
+        style.weight(),
+        style.width(),
+        italic ? text::FontStyle::Slant::Italic : text::FontStyle::Slant::Upright);
+
+      setInfo(FontInfo(m_info, m_info.size(), style, m_info.flags(), m_info.hinting()),
+              From::Style);
+      break;
+    }
+    case 2: {
+      item->setSelected(false); // Unselect the "..." button
+
+      ui::PopupWindow popup;
+      app::gen::FontStyle content;
+
+      content.antialias()->setSelected(m_info.antialias());
+      content.ligatures()->setSelected(m_info.ligatures());
+      content.hinting()->setSelected(m_info.hinting() == text::FontHinting::Normal);
+
+      auto flagsChange = [this, &content]() {
+        FontInfo::Flags flags = FontInfo::Flags::None;
+        if (content.antialias()->isSelected())
+          flags |= FontInfo::Flags::Antialias;
+        if (content.ligatures()->isSelected())
+          flags |= FontInfo::Flags::Ligatures;
+        setInfo(FontInfo(m_info, m_info.size(), m_info.style(), flags, m_info.hinting()),
+                From::Flags);
+      };
+
+      auto hintingChange = [this, &content]() {
+        auto hinting = (content.hinting()->isSelected() ? text::FontHinting::Normal :
+                                                          text::FontHinting::None);
+
+        setInfo(FontInfo(m_info, m_info.size(), m_info.style(), m_info.flags(), hinting),
+                From::Hinting);
+      };
+
+      content.antialias()->Click.connect(flagsChange);
+      content.ligatures()->Click.connect(flagsChange);
+      content.hinting()->Click.connect(hintingChange);
+
+      popup.addChild(&content);
+      popup.remapWindow();
+
+      gfx::Rect rc = item->bounds();
+      rc.y += rc.h - popup.border().bottom();
+
+      ui::fit_bounds(display(), &popup, gfx::Rect(rc.origin(), popup.sizeHint()));
+
+      popup.Open.connect([&popup] { popup.setHotRegion(gfx::Region(popup.boundsOnScreen())); });
+
+      popup.openWindowInForeground();
+      break;
+    }
+  }
+}
+
+void FontEntry::onStrokeChange()
+{
+  FontChange(m_info, From::Paint);
 }
 
 } // namespace app

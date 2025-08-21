@@ -247,6 +247,9 @@ void FilterManagerImpl::apply()
   }
   else {
     result = CommandResult(CommandResult::kCanceled);
+
+    // Rollback transaction
+    m_tx.reset();
   }
 
   ASSERT(m_reader.context());

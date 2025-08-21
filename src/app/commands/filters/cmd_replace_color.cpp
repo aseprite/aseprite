@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -128,7 +128,7 @@ private:
       case ui::kKeyDownMessage: {
         KeyboardShortcuts* keys = KeyboardShortcuts::instance();
         const KeyPtr key = keys->command(CommandId::SwitchColors());
-        if (key && key->isPressed(msg, *keys)) {
+        if (key && key->isPressed(msg)) {
           // Switch colors
           app::Color from = m_fromButton->getColor();
           app::Color to = m_toButton->getColor();
@@ -158,7 +158,7 @@ protected:
 };
 
 ReplaceColorCommand::ReplaceColorCommand()
-  : CommandWithNewParams<ReplaceColorParams>(CommandId::ReplaceColor(), CmdRecordableFlag)
+  : CommandWithNewParams<ReplaceColorParams>(CommandId::ReplaceColor())
 {
 }
 

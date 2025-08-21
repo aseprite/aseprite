@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2019-2021  Igara Studio S.A.
+// Copyright (c) 2019-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -23,7 +23,10 @@ class RgbMap;
 namespace app {
 class Tx;
 
-doc::Image* resize_image(const doc::Image* image,
+// The "image" parameter can be modified with
+// doc::algorithm::fixup_image_transparent_colors() function if
+// it's needed.
+doc::Image* resize_image(doc::Image* image,
                          const gfx::SizeF& scale,
                          const doc::algorithm::ResizeMethod method,
                          const doc::Palette* pal,

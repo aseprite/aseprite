@@ -43,6 +43,7 @@ public:
 
   int caretPos() const { return m_caret; }
   int lastCaretPos() const;
+  gfx::Point caretPosOnScreen() const;
 
   void setCaretPos(int pos);
   void setCaretToEnd();
@@ -76,7 +77,7 @@ public:
   obs::signal<void()> Change;
 
 protected:
-  gfx::Rect getCharBoxBounds(int i);
+  gfx::Rect getCharBoxBounds(int i) const;
 
   // Events
   bool onProcessMessage(Message* msg) override;
@@ -84,6 +85,7 @@ protected:
   void onPaint(PaintEvent& ev) override;
   void onSetFont() override;
   void onSetText() override;
+  float onGetTextBaseline() const override;
 
   // New Events
   virtual void onChange();

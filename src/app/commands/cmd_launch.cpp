@@ -34,10 +34,7 @@ private:
   std::string m_path;
 };
 
-LaunchCommand::LaunchCommand()
-  : Command(CommandId::Launch(), CmdUIOnlyFlag)
-  , m_type(Url)
-  , m_path("")
+LaunchCommand::LaunchCommand() : Command(CommandId::Launch()), m_type(Url), m_path("")
 {
 }
 

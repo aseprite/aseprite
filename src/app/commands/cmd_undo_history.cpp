@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -21,6 +21,7 @@
 #include "app/doc_undo.h"
 #include "app/doc_undo_observer.h"
 #include "app/docs_observer.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/site.h"
@@ -28,10 +29,10 @@
 #include "app/ui/workspace.h"
 #include "base/mem_utils.h"
 #include "fmt/format.h"
-#include "ui/init_theme_event.h"
-#include "ui/listitem.h"
+#include "text/font_metrics.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
+#include "ui/scale.h"
 #include "ui/size_hint_event.h"
 #include "ui/view.h"
 #include "undo/undo_state.h"
@@ -290,7 +291,7 @@ public:
                    base::get_pretty_memory_size(static_cast<Cmd*>(state->cmd())->memSize())
 #endif
                  :
-                 std::string("Initial State"));
+                 Strings::undo_history_initial_state());
 
       if ((g->getClipBounds() & itemBounds).isEmpty())
         return;
@@ -300,9 +301,14 @@ public:
         style = theme->styles.undoSavedItem();
       }
 
+      text::FontMetrics metrics;
+      font()->metrics(&metrics);
+      const float lineHeight = metrics.descent - metrics.ascent;
+
       ui::PaintWidgetPartInfo info;
       info.text = &itemText;
       info.styleFlags = (selected ? ui::Style::Layer::kSelected : 0);
+      info.baseline = ui::guiscaled_center(itemBounds.y, itemBounds.h, lineHeight) - metrics.ascent;
       theme->paintWidgetPart(g, style, itemBounds, info);
     }
 
@@ -489,13 +495,19 @@ public:
   UndoHistoryCommand();
 
 protected:
+  bool onEnabled(Context* context) override;
   void onExecute(Context* ctx) override;
 };
 
 static UndoHistoryWindow* g_window = NULL;
 
-UndoHistoryCommand::UndoHistoryCommand() : Command(CommandId::UndoHistory(), CmdUIOnlyFlag)
+UndoHistoryCommand::UndoHistoryCommand() : Command(CommandId::UndoHistory())
 {
+}
+
+bool UndoHistoryCommand::onEnabled(Context* context)
+{
+  return context->isUIAvailable();
 }
 
 void UndoHistoryCommand::onExecute(Context* ctx)

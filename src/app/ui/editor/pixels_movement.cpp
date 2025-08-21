@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -420,10 +420,12 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
         // Now we calculate the difference from x1,y1 point and we can
         // use it to adjust all coordinates (x1, y1, x2, y2).
         bounds.setOrigin(gridOffset);
+        newTransformation.pivot(abs_initial_pivot - m_initialData.bounds().origin() + gridOffset);
       }
+      else
+        newTransformation.pivot(abs_initial_pivot + gfx::PointF(dx, dy));
 
       newTransformation.bounds(bounds);
-      newTransformation.pivot(abs_initial_pivot + gfx::PointF(dx, dy));
       break;
     }
 

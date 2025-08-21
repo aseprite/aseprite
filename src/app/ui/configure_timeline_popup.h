@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2022-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -32,7 +33,7 @@ public:
 
 protected:
   bool onProcessMessage(ui::Message* msg) override;
-  void onChangePosition();
+  void onWorkspaceLayout();
   void onChangeFirstFrame();
   void onChangeType();
   void onOpacity();
@@ -46,6 +47,8 @@ protected:
   void onThumbEnabledChange();
   void onThumbOverlayEnabledChange();
   void onThumbOverlaySizeChange();
+  void onScaleUpToFitChange();
+  void onSetAsDefaults();
 
 private:
   void updateWidgetsFromCurrentSettings();

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -18,6 +18,7 @@
 #include "base/time.h"
 #include "os/surface.h"
 #include "text/font.h"
+#include "text/font_metrics.h"
 #include "ui/ui.h"
 
 #include <algorithm>
@@ -44,6 +45,7 @@ FileList::FileList()
   , m_multiselect(false)
   , m_zoom(1.0)
   , m_itemsPerRow(0)
+  , m_showHidden(Preferences::instance().fileSelector.showHidden())
 {
   setFocusStop(true);
   setDoubleBuffered(true);
@@ -170,6 +172,14 @@ void FileList::animateToZoom(const double zoom)
   m_fromZoom = m_zoom;
   m_toZoom = zoom;
   startAnimation(ANI_ZOOM, 10);
+}
+
+void FileList::setShowHidden(const bool show)
+{
+  m_showHidden = show;
+  m_req_valid = false;
+  m_selected = nullptr;
+  regenerateList();
 }
 
 bool FileList::onProcessMessage(Message* msg)
@@ -401,7 +411,6 @@ void FileList::onPaint(ui::PaintEvent& ev)
   gfx::Rect bounds = clientBounds();
 
   g->fillRect(theme->colors.background(), bounds);
-  // g->fillRect(bgcolor, gfx::Rect(bounds.x, y, bounds.w, itemSize.h));
 
   int i = 0, selectedIndex = -1;
   for (IFileItem* fi : m_list) {
@@ -506,17 +515,28 @@ void FileList::paintItem(ui::Graphics* g, IFileItem* fi, const int i)
 
   // item name
   if (isIconView() && textBounds.w > info.bounds.w) {
-    g->drawAlignedUIText(fi->displayName().c_str(),
+    g->drawAlignedUIText(fi->displayName(),
                          fgcolor,
                          bgcolor,
                          (textBounds & gfx::Rect(info.bounds).shrink(2 * guiscale())),
                          ui::CENTER | ui::TOP | ui::CHARWRAP);
   }
   else {
-    g->drawText(fi->displayName().c_str(),
-                fgcolor,
-                bgcolor,
-                gfx::Point(textBounds.x + 2 * guiscale(), textBounds.y + 2 * guiscale()));
+    auto blob = text::TextBlob::MakeWithShaper(theme->fontMgr(), font(), fi->displayName());
+    if (blob) {
+      Paint paint;
+      paint.color(fgcolor);
+      paint.style(os::Paint::Fill);
+
+      text::FontMetrics metrics;
+      font()->metrics(&metrics);
+      const float baselineDelta = -metrics.ascent - blob->baseline();
+
+      g->drawTextBlob(
+        blob,
+        gfx::PointF(textBounds.x + 2 * guiscale(), textBounds.y + 2 * guiscale() + baselineDelta),
+        paint);
+    }
   }
 
   // Draw thumbnail progress bar
@@ -814,7 +834,7 @@ void FileList::regenerateList()
     for (FileItemList::iterator it = m_list.begin(); it != m_list.end();) {
       IFileItem* fileitem = *it;
 
-      if (fileitem->isHidden())
+      if (fileitem->isHidden() && !m_showHidden)
         it = m_list.erase(it);
       else if (!fileitem->isFolder() && !fileitem->hasExtension(m_exts)) {
         it = m_list.erase(it);

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -31,6 +31,7 @@
 #include "app/tools/active_tool.h"
 #include "app/tools/controller.h"
 #include "app/tools/ink.h"
+#include "app/tools/symmetry.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
@@ -58,6 +59,7 @@
 #include "base/chrono.h"
 #include "base/convert_to.h"
 #include "base/pi.h"
+#include "base/scoped_value.h"
 #include "doc/algo.h"
 #include "doc/doc.h"
 #include "doc/mask_boundaries.h"
@@ -135,6 +137,8 @@ private:
 
 // static
 Editor* Editor::m_activeEditor = nullptr;
+std::unique_ptr<Mask> Editor::m_selectionToolMask = nullptr;
+std::unique_ptr<MaskBoundaries> Editor::m_selectionToolMaskBoundaries = nullptr;
 
 // static
 std::unique_ptr<EditorRender> Editor::m_renderEngine = nullptr;
@@ -266,6 +270,23 @@ WidgetType Editor::Type()
 void Editor::setStateInternal(const EditorStatePtr& newState)
 {
   m_brushPreview.hide();
+
+  // Some onLeaveState impls (like the ones from MovingPixelsState,
+  // WritingTextState, MovingSelectionState) might generate a
+  // Tx/Transaction::commit(), which will add a new undo state,
+  // triggering a sprite change scripting event
+  // (SpriteEvents::onAddUndoState). This event could be handled by an
+  // extension and that extension might want to save the current
+  // sprite (e.g. calling Sprite_saveCopyAs, the kind of extension
+  // that takes snapshots after each sprite change). That will be a
+  // new Context::executeCommand() for the save command, generating a
+  // BeforeCommandExecution signal, getting back to onLeaveState
+  // again. In that case, we just ignore the reentry as the first
+  // onLeaveState should handle everything (to avoid an stack
+  // overflow/infinite recursion).
+  if (m_leavingState)
+    return;
+  base::ScopedValue leaving(m_leavingState, true);
 
   // Fire before change state event, set the state, and fire after
   // change state event.
@@ -784,7 +805,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
     }
   }
 
-  // Draw grids
+  // Draw  Slices and Grids
   {
     gfx::Rect enclosingRect(m_padding.x + dx,
                             m_padding.y + dy,
@@ -793,6 +814,11 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
 
     IntersectClip clip(g, dest);
     if (clip) {
+      // Draw slices
+      if (m_docPref.show.slices() && dx == m_proj.applyX(mainTilePosition().x) &&
+          dy == m_proj.applyY(mainTilePosition().y))
+        drawSlices(g);
+
       // Draw the pixel grid
       if ((m_proj.zoom().scale() > 2.0) && m_docPref.show.pixelGrid()) {
         int alpha = m_docPref.pixelGrid.opacity();
@@ -833,6 +859,86 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
         m_docPref.grid.forceSection();
       }
       m_docPref.show.grid.forceDirtyFlag();
+
+      // Symmetry mode
+      if (isActive() && (m_flags & Editor::kShowSymmetryLine) &&
+          Preferences::instance().symmetryMode.enabled()) {
+        const int symmetryButtons = int(m_docPref.symmetry.mode());
+        // Symmetry::resolveMode is to calculate the right symmetry
+        // mode. This is necessary because some symmetry settings
+        // do not make sense and should be forced to 'ALL'
+        const int mode = int(tools::Symmetry::resolveMode(m_docPref.symmetry.mode()));
+        const gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
+        const gfx::Color semiTransparentColor =
+          gfx::rgba(rgba_getr(color), rgba_getg(color), rgba_getb(color), rgba_geta(color) / 4);
+        const double x = int(m_proj.applyX<double>(m_docPref.symmetry.xAxis()));
+        const double y = int(m_proj.applyY<double>(m_docPref.symmetry.yAxis()));
+
+        if (mode & int(app::gen::SymmetryMode::HORIZONTAL) && x > 0) {
+          g->drawVLine(symmetryButtons & int(app::gen::SymmetryMode::HORIZONTAL) ?
+                         color :
+                         semiTransparentColor,
+                       enclosingRect.x + x,
+                       enclosingRect.y,
+                       enclosingRect.h);
+        }
+        if (mode & int(app::gen::SymmetryMode::VERTICAL) && y > 0) {
+          g->drawHLine(
+            symmetryButtons & int(app::gen::SymmetryMode::VERTICAL) ? color : semiTransparentColor,
+            enclosingRect.x,
+            enclosingRect.y + y,
+            enclosingRect.w);
+        }
+        if (mode & int(app::gen::SymmetryMode::RIGHT_DIAG)) {
+          // Bottom point intersection:
+          gfx::Point bottomLeft(
+            enclosingRect.x + x + m_proj.turnYinTermsOfX<int>(y - enclosingRect.h),
+            enclosingRect.y2());
+          if (bottomLeft.x < enclosingRect.x) {
+            // Left intersection
+            bottomLeft.y = enclosingRect.y2() +
+                           m_proj.turnXinTermsOfY<int>(bottomLeft.x - enclosingRect.x);
+            bottomLeft.x = enclosingRect.x;
+          }
+          // Top intersection
+          gfx::Point topRight(enclosingRect.x + x + m_proj.turnYinTermsOfX<int>(y),
+                              enclosingRect.y);
+          if (enclosingRect.x2() < topRight.x) {
+            // Right intersection
+            topRight.y = enclosingRect.y +
+                         m_proj.applyY<int>(m_proj.removeX<int>(topRight.x - enclosingRect.x2()));
+            topRight.x = enclosingRect.x2();
+          }
+          g->drawLine(symmetryButtons & int(app::gen::SymmetryMode::RIGHT_DIAG) ?
+                        color :
+                        semiTransparentColor,
+                      bottomLeft,
+                      topRight);
+        }
+        if (mode & int(app::gen::SymmetryMode::LEFT_DIAG)) {
+          // Bottom point intersection:
+          gfx::Point bottomRight(
+            enclosingRect.x + x + m_proj.turnYinTermsOfX<int>(enclosingRect.h - y),
+            enclosingRect.y2());
+          if (enclosingRect.x2() < bottomRight.x) {
+            // Left intersection
+            bottomRight.y = enclosingRect.y2() +
+                            m_proj.turnXinTermsOfY<int>(enclosingRect.x2() - bottomRight.x);
+            bottomRight.x = enclosingRect.x2();
+          }
+          // Top intersection
+          gfx::Point topLeft(enclosingRect.x + x - m_proj.turnYinTermsOfX<int>(y), enclosingRect.y);
+          if (topLeft.x < enclosingRect.x) {
+            // Right intersection
+            topLeft.y = enclosingRect.y + m_proj.turnXinTermsOfY<int>(enclosingRect.x - topLeft.x);
+            topLeft.x = enclosingRect.x;
+          }
+          g->drawLine(
+            symmetryButtons & int(app::gen::SymmetryMode::LEFT_DIAG) ? color : semiTransparentColor,
+            topLeft,
+            bottomRight);
+        }
+      }
     }
   }
 }
@@ -878,6 +984,13 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
                        m_proj.applyY(m_sprite->height()));
   gfx::Rect enclosingRect = spriteRect;
 
+  // Redraw the background when the selection tool mask draws over it
+  static bool redrawBackground = false;
+  if (redrawBackground) {
+    drawBackground(g);
+    redrawBackground = false;
+  }
+
   // Draw the main sprite at the center.
   drawOneSpriteUnclippedRect(g, rc, 0, 0);
 
@@ -905,90 +1018,6 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
     enclosingRect = gfx::Rect(spriteRect.x, spriteRect.y, spriteRect.w * 3, spriteRect.h * 3);
   }
 
-  // Draw slices
-  if (m_docPref.show.slices())
-    drawSlices(g);
-
-  // Symmetry mode
-  if (isActive() && (m_flags & Editor::kShowSymmetryLine) &&
-      Preferences::instance().symmetryMode.enabled()) {
-    int mode = int(m_docPref.symmetry.mode());
-    if (mode & int(app::gen::SymmetryMode::HORIZONTAL)) {
-      double x = m_docPref.symmetry.xAxis();
-      if (x > 0) {
-        gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
-        g->drawVLine(
-          color,
-          spriteRect.x + m_proj.applyX(mainTilePosition().x) + int(m_proj.applyX<double>(x)),
-          enclosingRect.y,
-          enclosingRect.h);
-      }
-    }
-    if (mode & int(app::gen::SymmetryMode::VERTICAL)) {
-      double y = m_docPref.symmetry.yAxis();
-      if (y > 0) {
-        gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
-        g->drawHLine(
-          color,
-          enclosingRect.x,
-          spriteRect.y + m_proj.applyY(mainTilePosition().y) + int(m_proj.applyY<double>(y)),
-          enclosingRect.w);
-      }
-    }
-    if (mode & int(app::gen::SymmetryMode::RIGHT_DIAG)) {
-      double y = m_docPref.symmetry.yAxis();
-      double x = m_docPref.symmetry.xAxis();
-      gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
-      // Bottom point intersection:
-      gfx::Point bottomLeft(
-        enclosingRect.x + m_proj.applyY(mainTilePosition().x) + int(m_proj.applyX<double>(x)) -
-          (enclosingRect.h - m_proj.applyY(mainTilePosition().y) - int(m_proj.applyY<double>(y))),
-        enclosingRect.y2());
-      if (bottomLeft.x < enclosingRect.x) {
-        // Left intersection
-        bottomLeft.y = enclosingRect.y2() - enclosingRect.x + bottomLeft.x;
-        bottomLeft.x = enclosingRect.x;
-      }
-      // Top intersection
-      gfx::Point topRight(enclosingRect.x + m_proj.applyY(mainTilePosition().x) +
-                            int(m_proj.applyX<double>(x)) + m_proj.applyY(mainTilePosition().y) +
-                            int(m_proj.applyY<double>(y)),
-                          enclosingRect.y);
-      if (enclosingRect.x2() < topRight.x) {
-        // Right intersection
-        topRight.y = enclosingRect.y + topRight.x - enclosingRect.x2();
-        topRight.x = enclosingRect.x2();
-      }
-      g->drawLine(color, bottomLeft, topRight);
-    }
-    if (mode & int(app::gen::SymmetryMode::LEFT_DIAG)) {
-      double y = m_docPref.symmetry.yAxis();
-      double x = m_docPref.symmetry.xAxis();
-      gfx::Color color = color_utils::color_for_ui(m_docPref.grid.color());
-      // Bottom point intersection:
-      gfx::Point bottomRight(
-        enclosingRect.x + m_proj.applyY(mainTilePosition().x) + int(m_proj.applyX<double>(x)) +
-          (enclosingRect.h - m_proj.applyY(mainTilePosition().y) - int(m_proj.applyX<double>(y))),
-        enclosingRect.y2());
-      if (enclosingRect.x2() < bottomRight.x) {
-        // Left intersection
-        bottomRight.y = enclosingRect.y2() - bottomRight.x + enclosingRect.x2();
-        bottomRight.x = enclosingRect.x2();
-      }
-      // Top intersection
-      gfx::Point topLeft(enclosingRect.x + m_proj.applyY(mainTilePosition().x) +
-                           int(m_proj.applyX<double>(x)) - m_proj.applyY(mainTilePosition().y) -
-                           int(m_proj.applyY<double>(y)),
-                         enclosingRect.y);
-      if (topLeft.x < enclosingRect.x) {
-        // Right intersection
-        topLeft.y = enclosingRect.y + enclosingRect.x - topLeft.x;
-        topLeft.x = enclosingRect.x;
-      }
-      g->drawLine(color, topLeft, bottomRight);
-    }
-  }
-
   // Draw active layer/cel edges
   if ((m_docPref.show.layerEdges() || m_showAutoCelGuides) &&
       // Show layer edges and possibly cel guides only on states that
@@ -1012,9 +1041,20 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
     }
   }
 
-  // Draw the mask
+  // Draw the current selection mask
   if (m_document->hasMaskBoundaries())
     drawMask(g);
+
+  // If we are in a selection tool and the user has the new selection
+  // feedback...
+  if (hasSelectionToolMask()) {
+    m_selectionToolMaskBoundaries->regen(m_selectionToolMask.get());
+    drawMaskBoundaries(g, *m_selectionToolMaskBoundaries, 0);
+
+    const gfx::Point prevPoint(m_selectionToolMask->bounds().point2());
+    if (prevPoint.x >= m_sprite->width() || prevPoint.y >= m_sprite->height())
+      redrawBackground = true;
+  }
 
   // Post-render decorator.
   if ((m_flags & kShowDecorators) && m_decorator) {
@@ -1042,13 +1082,7 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
   }
 }
 
-/**
- * Draws the boundaries, really this routine doesn't use the "mask"
- * field of the sprite, only the "bound" field (so you can have other
- * mask in the sprite and could be showed other boundaries), to
- * regenerate boundaries, use the sprite_generate_mask_boundaries()
- * routine.
- */
+// Draws the current sprite mask boundaries (the active selection).
 void Editor::drawMask(Graphics* g)
 {
   if ((m_flags & kShowMask) == 0 || !m_docPref.show.selectionEdges())
@@ -1056,18 +1090,22 @@ void Editor::drawMask(Graphics* g)
 
   ASSERT(m_document->hasMaskBoundaries());
 
+  drawMaskBoundaries(g, m_document->maskBoundaries(), m_antsOffset);
+}
+
+void Editor::drawMaskBoundaries(ui::Graphics* g, doc::MaskBoundaries& segs, const int antsOffset)
+{
   gfx::Point pt = mainTilePosition();
   pt.x = m_padding.x + m_proj.applyX(pt.x);
   pt.y = m_padding.y + m_proj.applyY(pt.y);
 
   // Create the mask boundaries path
-  auto& segs = m_document->maskBoundaries();
   segs.createPathIfNeeeded();
 
   ui::Paint paint;
   paint.style(ui::Paint::Stroke);
   set_checkered_paint_mode(paint,
-                           m_antsOffset,
+                           antsOffset,
                            gfx::rgba(0, 0, 0, 255),
                            gfx::rgba(255, 255, 255, 255));
 
@@ -1081,10 +1119,11 @@ void Editor::drawMask(Graphics* g)
 
 void Editor::drawMaskSafe()
 {
-  if ((m_flags & kShowMask) == 0)
+  if (((m_flags & kShowMask) == 0 && !hasSelectionToolMask()) || !(isVisible() && m_document))
     return;
 
-  if (isVisible() && m_document && m_document->hasMaskBoundaries()) {
+  const bool haveSegs = m_document->hasMaskBoundaries();
+  if (haveSegs || hasSelectionToolMask()) {
     Region region;
     getDrawableRegion(region, kCutTopWindows);
     region.offset(-bounds().origin());
@@ -1092,10 +1131,21 @@ void Editor::drawMaskSafe()
     HideBrushPreview hide(m_brushPreview);
     GraphicsPtr g = getGraphics(clientBounds());
 
-    for (const gfx::Rect& rc : region) {
-      IntersectClip clip(g.get(), rc);
-      if (clip)
-        drawMask(g.get());
+    if (haveSegs) {
+      for (const gfx::Rect& rc : region) {
+        IntersectClip clip(g.get(), rc);
+        if (clip)
+          drawMask(g.get());
+      }
+    }
+
+    if (hasSelectionToolMask()) {
+      m_selectionToolMaskBoundaries->regen(m_selectionToolMask.get());
+      for (const gfx::Rect& rc : region) {
+        IntersectClip clip(g.get(), rc);
+        if (clip)
+          drawMaskBoundaries(g.get(), *m_selectionToolMaskBoundaries, 0);
+      }
     }
   }
 }
@@ -1380,9 +1430,9 @@ void Editor::drawTileNumbers(ui::Graphics* g, const Cel* cel)
   const text::FontRef& font = g->font();
   const doc::Grid grid = getSite().grid();
   const gfx::Size tileSize = editorToScreen(grid.tileToCanvas(gfx::Rect(0, 0, 1, 1))).size();
-  const int th = font->height();
+  const int th = font->lineHeight();
   if (tileSize.h > th) {
-    const gfx::Point offset = gfx::Point(tileSize.w / 2, tileSize.h / 2 - font->height() / 2) +
+    const gfx::Point offset = gfx::Point(tileSize.w / 2, tileSize.h / 2 - font->size() / 2) +
                               mainTilePosition();
 
     int ti_offset = static_cast<LayerTilemap*>(cel->layer())->tileset()->baseIndex() - 1;
@@ -2134,6 +2184,23 @@ void Editor::showUnhandledException(const std::exception& ex, const ui::Message*
                  (state ? typeid(*state).name() : "None"));
 }
 
+void Editor::makeSelectionToolMask()
+{
+  m_selectionToolMask = std::make_unique<Mask>();
+  m_selectionToolMaskBoundaries = std::make_unique<MaskBoundaries>();
+}
+
+void Editor::deleteSelectionToolMask()
+{
+  m_selectionToolMask.reset();
+  m_selectionToolMaskBoundaries.reset();
+}
+
+bool Editor::hasSelectionToolMask()
+{
+  return m_selectionToolMask && !m_selectionToolMask->isEmpty();
+}
+
 //////////////////////////////////////////////////////////////////////
 // Message handler for the editor
 
@@ -2592,6 +2659,12 @@ void Editor::onTiledModeChange()
   spritePos += mainTilePosition();
   screenPos = editorToScreen(spritePos);
 
+  auto lastPoint = document()->lastDrawingPoint();
+  if (lastPoint != Doc::NoLastDrawingPoint()) {
+    lastPoint += mainTilePosition() - m_oldMainTilePos;
+    document()->setLastDrawingPoint(lastPoint);
+  }
+
   centerInSpritePoint(spritePos);
 }
 
@@ -2673,8 +2746,6 @@ void Editor::onBeforeLayerEditableChange(DocEvent& ev, bool newState)
 
 void Editor::setCursor(const gfx::Point& mouseDisplayPos)
 {
-  Rect vp = View::getView(this)->viewportBounds();
-
   bool used = false;
   if (m_sprite)
     used = m_state->onSetCursor(this, mouseDisplayPos);

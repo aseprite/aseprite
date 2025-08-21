@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,7 +9,6 @@
 #define UI_UI_H_INCLUDED
 #pragma once
 
-#include "ui/accelerator.h"
 #include "ui/alert.h"
 #include "ui/app_state.h"
 #include "ui/base.h"
@@ -57,6 +56,7 @@
 #include "ui/scroll_bar.h"
 #include "ui/scroll_helper.h"
 #include "ui/separator.h"
+#include "ui/shortcut.h"
 #include "ui/size_hint_event.h"
 #include "ui/slider.h"
 #include "ui/splitter.h"
@@ -66,6 +66,7 @@
 #include "ui/theme.h"
 #include "ui/timer.h"
 #include "ui/tooltips.h"
+#include "ui/translation_delegate.h"
 #include "ui/view.h"
 #include "ui/viewport.h"
 #include "ui/widget.h"

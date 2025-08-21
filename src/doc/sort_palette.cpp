@@ -4,6 +4,12 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
+#if defined(__GNUC__) || defined(__clang__)
+  // To avoid deprecated warning on gcc/clang using
+  // std::get_temporary_buffer() from std::stable_sort()
+  #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 #ifdef HAVE_CONFIG_H
   #include "config.h"
 #endif

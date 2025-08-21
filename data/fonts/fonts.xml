@@ -32,14 +32,16 @@
 
   <font name="Aseprite"
         type="spritesheet"
+        descent="2"
         file="aseprite_font.png">
-    <fallback font="Unicode" size="8" />
+    <fallback font="Unicode" size="14" />
   </font>
 
   <font name="Aseprite Mini"
         type="spritesheet"
+        descent="1"
         file="aseprite_mini.png">
-    <fallback font="Unicode" size="6" />
+    <fallback font="Unicode" size="10" />
   </font>
 
 </fonts>

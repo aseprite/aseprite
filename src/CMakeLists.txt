@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2019-2024  Igara Studio S.A.
+# Copyright (C) 2019-2025  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 ######################################################################
@@ -153,6 +153,12 @@ add_custom_command(
 list(APPEND out_data_files ${DATA_OUTPUT_DIR}/README.md)
 
 add_custom_command(
+  OUTPUT ${DATA_OUTPUT_DIR}/AUTHORS.md
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../AUTHORS.md ${DATA_OUTPUT_DIR}/AUTHORS.md
+  MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/../AUTHORS.md)
+list(APPEND out_data_files ${DATA_OUTPUT_DIR}/AUTHORS.md)
+
+add_custom_command(
   OUTPUT ${DATA_OUTPUT_DIR}/EULA.txt
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../EULA.txt ${DATA_OUTPUT_DIR}/EULA.txt
   MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/../EULA.txt)
@@ -174,8 +180,8 @@ if(ENABLE_ASEPRITE_EXE)
 
   if(WIN32)
     set(main_resources
-      main/resources_win32.rc
-      main/settings.manifest)
+      main/win/resources_win32.rc
+      main/win/settings.manifest)
   endif()
 
   add_executable(${main_target}

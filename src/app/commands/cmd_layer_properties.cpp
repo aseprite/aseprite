@@ -32,8 +32,8 @@
 #include "app/ui/timeline/timeline.h"
 #include "app/ui/user_data_view.h"
 #include "app/ui_context.h"
+#include "base/convert_to.h"
 #include "base/scoped_value.h"
-#include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/layer_tilemap.h"
 #include "doc/sprite.h"
@@ -134,7 +134,15 @@ public:
 
     remapWindow();
     centerWindow();
+
+    gfx::Rect originalBounds = bounds();
+
     load_window_pos(this, "LayerProperties");
+
+    // Queue a remap for after the user data view is configured
+    // if the window size has been reset and user data is visible
+    if (originalBounds == bounds() && Preferences::instance().layers.userDataVisibility())
+      m_remapAfterConfigure = true;
 
     UIContext::instance()->add_observer(this);
   }
@@ -158,6 +166,11 @@ public:
 
     if (countLayers() > 0) {
       m_userDataView.configureAndSet(m_layer->userData(), g_window->propertiesGrid());
+      if (m_remapAfterConfigure) {
+        remapWindow();
+        centerWindow();
+        m_remapAfterConfigure = false;
+      }
     }
 
     updateFromLayer();
@@ -463,6 +476,13 @@ private:
       m_userDataView.setVisible(false, false);
     }
 
+    bool uuidVisible = m_document && m_document->sprite() && m_document->sprite()->useLayerUuids();
+    uuidLabel()->setVisible(uuidVisible);
+    uuid()->setVisible(uuidVisible);
+
+    if (uuidVisible)
+      uuid()->setText(m_layer ? base::convert_to<std::string>(m_layer->uuid()) : std::string());
+
     if (tileset()->isVisible() != tilemapVisibility) {
       tileset()->setVisible(tilemapVisibility);
       tileset()->parent()->layout();
@@ -476,16 +496,17 @@ private:
   view::RealRange m_range;
   bool m_selfUpdate = false;
   UserDataView m_userDataView;
+  bool m_remapAfterConfigure = false;
 };
 
-LayerPropertiesCommand::LayerPropertiesCommand()
-  : Command(CommandId::LayerProperties(), CmdRecordableFlag)
+LayerPropertiesCommand::LayerPropertiesCommand() : Command(CommandId::LayerProperties())
 {
 }
 
 bool LayerPropertiesCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasActiveLayer);
+  return context->isUIAvailable() &&
+         context->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasActiveLayer);
 }
 
 void LayerPropertiesCommand::onExecute(Context* context)

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -73,9 +73,11 @@ public:
   void drawVLine(int x, int y, int h, const Paint& paint);
   void drawVLine(gfx::Color color, int x, int y, int h);
   void drawLine(gfx::Color color, const gfx::Point& a, const gfx::Point& b);
+  void drawLine(const gfx::PointF& a, const gfx::PointF& b, const Paint& paint);
   void drawPath(gfx::Path& path, const Paint& paint);
 
   void drawRect(const gfx::Rect& rc, const Paint& paint);
+  void drawRect(const gfx::RectF& rc, const Paint& paint);
   void drawRect(gfx::Color color, const gfx::Rect& rc);
   void fillRect(gfx::Color color, const gfx::Rect& rc);
   void fillRegion(gfx::Color color, const gfx::Region& rgn);
@@ -113,15 +115,16 @@ public:
   void setFont(const text::FontRef& font);
 
   [[deprecated]]
-  void drawText(const std::string& str,
-                gfx::Color fg,
-                gfx::Color bg,
-                const gfx::Point& pt,
-                text::DrawTextDelegate* delegate = nullptr,
-                text::ShaperFeatures features = {});
+  void drawTextWithDelegate(const std::string& str,
+                            gfx::Color fg,
+                            gfx::Color bg,
+                            const gfx::Point& pt,
+                            text::DrawTextDelegate* delegate = nullptr,
+                            text::ShaperFeatures features = {});
 
   void drawTextBlob(const text::TextBlobRef& textBlob, const gfx::PointF& pt, const Paint& paint);
 
+  void drawText(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt);
   void drawUIText(const std::string& str,
                   gfx::Color fg,
                   gfx::Color bg,

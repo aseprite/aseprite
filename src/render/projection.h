@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2020 Igara Studio S.A.
+// Copyright (c) 2020-2025 Igara Studio S.A.
 // Copyright (c) 2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -30,6 +30,20 @@ public:
 
   void setPixelRatio(const doc::PixelRatio& pixelRatio) { m_pixelRatio = pixelRatio; }
   void setZoom(const Zoom& zoom) { m_zoom = zoom; }
+
+  // To identify simplest composite scale up cases'
+  bool isSimpleScaleUpCase() const
+  {
+    return scaleX() >= 1.0 && scaleY() >= 1.0 && (m_pixelRatio.w == 1 || m_pixelRatio.w % 2 == 0) &&
+           (m_pixelRatio.h == 1 || m_pixelRatio.h % 2 == 0);
+  }
+
+  // To identify simplest composite scale down cases
+  bool isSimpleScaleDownCase() const
+  {
+    return scaleX() <= 1.0 && scaleY() <= 1.0 && std::fmod(1.0 / scaleX(), 1.0) == 0.0 &&
+           std::fmod(1.0 / scaleY(), 1.0) == 0.0;
+  }
 
   double scaleX() const { return m_zoom.scale() * m_pixelRatio.w; }
   double scaleY() const { return m_zoom.scale() * m_pixelRatio.h; }
@@ -68,6 +82,20 @@ public:
   T removeYCeiling(T y) const
   {
     return T(m_zoom.removeCeiling(y)) / T(m_pixelRatio.h);
+  }
+
+  // Used in 'editor.cpp' to do some math between x,y values.
+  // Useful for calculating diagonal symmetry axis positions when pixel ratio is other than 1:1
+  template<typename T>
+  T turnXinTermsOfY(T x) const
+  {
+    return x * T(m_pixelRatio.h) / T(m_pixelRatio.w);
+  }
+
+  template<typename T>
+  T turnYinTermsOfX(T y) const
+  {
+    return y * T(m_pixelRatio.w) / T(m_pixelRatio.h);
   }
 
   gfx::Rect apply(const gfx::Rect& r) const

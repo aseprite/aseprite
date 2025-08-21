@@ -12,7 +12,9 @@
 *.res
 .DS_Store
 .vs
+.vscode
 tests/_test*
 build
 .build
+.deps
 CMakeSettings.json

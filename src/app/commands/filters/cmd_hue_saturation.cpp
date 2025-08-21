@@ -139,7 +139,7 @@ protected:
 };
 
 HueSaturationCommand::HueSaturationCommand()
-  : CommandWithNewParams<HueSaturationParams>(CommandId::HueSaturation(), CmdRecordableFlag)
+  : CommandWithNewParams<HueSaturationParams>(CommandId::HueSaturation())
 {
 }
 

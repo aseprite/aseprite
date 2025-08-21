@@ -15,7 +15,8 @@ namespace app {
 
 class IconButton : public ui::Button {
 public:
-  IconButton(const skin::SkinPartPtr& part);
+  explicit IconButton(const skin::SkinPartPtr& part);
+  void setIcon(const skin::SkinPartPtr& part);
 
 protected:
   void onInitTheme(ui::InitThemeEvent& ev) override;

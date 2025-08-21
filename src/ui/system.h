@@ -12,6 +12,7 @@
 #include "gfx/fwd.h"
 #include "ui/base.h"
 #include "ui/cursor_type.h"
+#include "ui/translation_delegate.h"
 
 #include <functional>
 #include <string>
@@ -23,18 +24,22 @@ class Cursor;
 class Display;
 class Widget;
 
-class UISystem {
+class UISystem : public TranslationDelegate {
 public:
   static UISystem* instance();
 
   UISystem();
   ~UISystem();
 
+  ClipboardDelegate* clipboardDelegate() const { return m_clipboardDelegate; }
+  TranslationDelegate* translationDelegate() const { return m_translationDelegate; }
+
   void setClipboardDelegate(ClipboardDelegate* delegate) { m_clipboardDelegate = delegate; }
-  ClipboardDelegate* clipboardDelegate() { return m_clipboardDelegate; }
+  void setTranslationDelegate(TranslationDelegate* delegate) { m_translationDelegate = delegate; }
 
 private:
-  ClipboardDelegate* m_clipboardDelegate;
+  ClipboardDelegate* m_clipboardDelegate = nullptr;
+  TranslationDelegate* m_translationDelegate = nullptr;
 };
 
 void set_multiple_displays(bool multi);

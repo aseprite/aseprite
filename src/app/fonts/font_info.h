@@ -1,16 +1,18 @@
 // Aseprite
-// Copyright (c) 2024  Igara Studio S.A.
+// Copyright (c) 2024-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifndef APP_UI_FONT_INFO_H_INCLUDED
-#define APP_UI_FONT_INFO_H_INCLUDED
+#ifndef APP_FONTS_FONT_INFO_H_INCLUDED
+#define APP_FONTS_FONT_INFO_H_INCLUDED
 #pragma once
 
 #include "base/convert_to.h"
 #include "base/enum_flags.h"
+#include "text/font_hinting.h"
 #include "text/font_style.h"
+#include "text/font_type.h"
 #include "text/fwd.h"
 #include "text/typeface.h"
 
@@ -19,7 +21,16 @@
 
 namespace app {
 
-// TODO should we merge this with skin::FontData?
+class FontData;
+
+// Represents a font reference from any place:
+// - Name: a font referenced by name, a font that came from fonts.xml files (Fonts/FontData)
+// - File: an external font loaded from a .ttf file
+// - System: native laf-os fonts (i.e. Skia fonts loaded from the operating system)
+//
+// This font reference can be serialize to a string to be saved in the
+// aseprite.ini configuration (e.g. latest font used in text tool, or
+// custom theme fonts, etc.).
 class FontInfo {
 public:
   enum class Type {
@@ -41,9 +52,16 @@ public:
            const std::string& name = {},
            float size = kDefaultSize,
            text::FontStyle style = text::FontStyle(),
-           Flags flags = Flags::None);
+           Flags flags = Flags::None,
+           text::FontHinting hinting = text::FontHinting::Normal);
 
-  FontInfo(const FontInfo& other, float size, text::FontStyle style, Flags flags);
+  FontInfo(const FontInfo& other,
+           float size,
+           text::FontStyle style,
+           Flags flags,
+           text::FontHinting hinting);
+
+  FontInfo(const FontData* data, float size = 0.0f);
 
   bool isValid() const { return m_type != Type::Unknown; }
   bool useDefaultSize() const { return m_size == kDefaultSize; }
@@ -64,6 +82,7 @@ public:
   Flags flags() const { return m_flags; }
   bool antialias() const;
   bool ligatures() const;
+  text::FontHinting hinting() const { return m_hinting; }
 
   text::TypefaceRef findTypeface(const text::FontMgrRef& fontMgr) const;
 
@@ -84,6 +103,7 @@ private:
   float m_size = kDefaultSize;
   text::FontStyle m_style;
   Flags m_flags = Flags::None;
+  text::FontHinting m_hinting = text::FontHinting::Normal;
 };
 
 LAF_ENUM_FLAGS(FontInfo::Flags);

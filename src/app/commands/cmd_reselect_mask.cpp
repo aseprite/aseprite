@@ -15,7 +15,6 @@
 #include "app/modules/gui.h"
 #include "app/tx.h"
 #include "doc/mask.h"
-#include "doc/sprite.h"
 
 namespace app {
 
@@ -28,7 +27,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-ReselectMaskCommand::ReselectMaskCommand() : Command(CommandId::ReselectMask(), CmdRecordableFlag)
+ReselectMaskCommand::ReselectMaskCommand() : Command(CommandId::ReselectMask())
 {
 }
 

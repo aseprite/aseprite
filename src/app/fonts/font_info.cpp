@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2024  Igara Studio S.A.
+// Copyright (c) 2024-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,7 +8,9 @@
   #include "config.h"
 #endif
 
-#include "app/font_info.h"
+#include "app/fonts/font_info.h"
+
+#include "app/fonts/font_data.h"
 #include "app/pref/preferences.h"
 #include "base/fs.h"
 #include "base/split_string.h"
@@ -26,25 +28,44 @@ FontInfo::FontInfo(Type type,
                    const std::string& name,
                    const float size,
                    const text::FontStyle style,
-                   const Flags flags)
+                   const Flags flags,
+                   const text::FontHinting hinting)
   : m_type(type)
   , m_name(name)
   , m_size(size)
   , m_style(style)
   , m_flags(flags)
+  , m_hinting(hinting)
 {
 }
 
 FontInfo::FontInfo(const FontInfo& other,
                    const float size,
                    const text::FontStyle style,
-                   const Flags flags)
+                   const Flags flags,
+                   text::FontHinting hinting)
   : m_type(other.type())
   , m_name(other.name())
   , m_size(size)
   , m_style(style)
   , m_flags(flags)
+  , m_hinting(hinting)
 {
+}
+
+FontInfo::FontInfo(const FontData* data, const float size)
+  : m_type(Type::Unknown)
+  , m_name(data->name())
+  , m_size(size != 0.0f ? size : data->defaultSize())
+  , m_flags(data->antialias() ? Flags::Antialias : Flags::None)
+  , m_hinting(data->hinting())
+{
+  switch (data->type()) {
+    case text::FontType::Unknown:     m_type = Type::Unknown; break;
+    case text::FontType::SpriteSheet:
+    case text::FontType::FreeType:    m_type = Type::File; break;
+    case text::FontType::Native:      m_type = Type::System; break;
+  }
 }
 
 std::string FontInfo::title() const
@@ -129,6 +150,12 @@ std::string FontInfo::humanString() const
       result += " Antialias";
     if (ligatures())
       result += " Ligatures";
+    switch (hinting()) {
+      case text::FontHinting::None:   result += " No Hinting"; break;
+      case text::FontHinting::Slight: result += " Slight Hinting"; break;
+      case text::FontHinting::Normal: break;
+      case text::FontHinting::Full:   result += " Full Hinting"; break;
+    }
   }
   return result;
 }
@@ -149,6 +176,7 @@ app::FontInfo convert_to(const std::string& from)
   bool bold = false;
   bool italic = false;
   app::FontInfo::Flags flags = app::FontInfo::Flags::None;
+  text::FontHinting hinting = text::FontHinting::Normal;
 
   if (!parts.empty()) {
     if (parts[0].compare(0, 5, "file=") == 0) {
@@ -159,7 +187,7 @@ app::FontInfo convert_to(const std::string& from)
       type = app::FontInfo::Type::System;
       name = parts[0].substr(7);
     }
-    else {
+    else if (!parts[0].empty()) {
       type = app::FontInfo::Type::Name;
       name = parts[0];
     }
@@ -175,6 +203,17 @@ app::FontInfo convert_to(const std::string& from)
       else if (parts[i].compare(0, 5, "size=") == 0) {
         size = std::strtof(parts[i].substr(5).c_str(), nullptr);
       }
+      else if (parts[i].compare(0, 8, "hinting=") == 0) {
+        std::string hintingStr = parts[i].substr(8);
+        if (hintingStr == "none")
+          hinting = text::FontHinting::None;
+        else if (hintingStr == "slight")
+          hinting = text::FontHinting::Slight;
+        else if (hintingStr == "normal")
+          hinting = text::FontHinting::Normal;
+        else if (hintingStr == "full")
+          hinting = text::FontHinting::Full;
+      }
     }
   }
 
@@ -186,7 +225,7 @@ app::FontInfo convert_to(const std::string& from)
   else if (italic)
     style = text::FontStyle::Italic();
 
-  return app::FontInfo(type, name, size, style, flags);
+  return app::FontInfo(type, name, size, style, flags, hinting);
 }
 
 template<>
@@ -212,6 +251,17 @@ std::string convert_to(const app::FontInfo& from)
       result += ",antialias";
     if (from.ligatures())
       result += ",ligatures";
+    if (from.hinting() != text::FontHinting::Normal) {
+      result += ",hinting=";
+      switch (from.hinting()) {
+        case text::FontHinting::None:   result += "none"; break;
+        case text::FontHinting::Slight: result += "slight"; break;
+        case text::FontHinting::Normal:
+          // Filtered out by above if
+          break;
+        case text::FontHinting::Full: result += "full"; break;
+      }
+    }
   }
   return result;
 }

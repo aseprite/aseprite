@@ -27,8 +27,7 @@ protected:
   virtual void onExecute(Context* context) override;
 };
 
-RepeatLastExportCommand::RepeatLastExportCommand()
-  : Command(CommandId::RepeatLastExport(), CmdRecordableFlag)
+RepeatLastExportCommand::RepeatLastExportCommand() : Command(CommandId::RepeatLastExport())
 {
 }
 

@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2025 Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,6 +12,7 @@
 #include "doc/mask_boundaries.h"
 
 #include "doc/image.h"
+#include "doc/mask.h"
 
 namespace doc {
 
@@ -19,6 +21,18 @@ void MaskBoundaries::reset()
   m_segs.clear();
   if (!m_path.isEmpty())
     m_path.rewind();
+}
+
+void MaskBoundaries::regen(const Mask* mask)
+{
+  reset();
+
+  ASSERT(mask);
+  if (!mask || mask->isEmpty())
+    return;
+
+  regen(mask->bitmap());
+  offset(mask->bounds().x, mask->bounds().y);
 }
 
 void MaskBoundaries::regen(const Image* bitmap)

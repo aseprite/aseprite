@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2021  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -10,7 +10,6 @@
 #endif
 
 #include "app/app.h"
-#include "app/app_menus.h"
 #include "app/commands/command.h"
 #include "app/ui/main_menu_bar.h"
 #include "app/ui/main_window.h"
@@ -39,7 +38,7 @@ private:
   void postCancelMenuLoop();
 };
 
-RefreshCommand::RefreshCommand() : Command(CommandId::Refresh(), CmdUIOnlyFlag)
+RefreshCommand::RefreshCommand() : Command(CommandId::Refresh())
 {
 }
 

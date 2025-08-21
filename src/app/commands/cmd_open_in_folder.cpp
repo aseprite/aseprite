@@ -25,7 +25,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-OpenInFolderCommand::OpenInFolderCommand() : Command(CommandId::OpenInFolder(), CmdUIOnlyFlag)
+OpenInFolderCommand::OpenInFolderCommand() : Command(CommandId::OpenInFolder())
 {
 }
 

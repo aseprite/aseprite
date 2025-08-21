@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -52,13 +52,13 @@ private:
   void selectPencilTool();
 };
 
-NewBrushCommand::NewBrushCommand() : Command(CommandId::NewBrush(), CmdUIOnlyFlag)
+NewBrushCommand::NewBrushCommand() : Command(CommandId::NewBrush())
 {
 }
 
 bool NewBrushCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
+  return context->isUIAvailable() && context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
 void NewBrushCommand::onExecute(Context* context)
@@ -164,10 +164,10 @@ void NewBrushCommand::createBrush(const Site& site, const Mask* mask)
   params.set("change", "custom");
   params.set("slot", base::convert_to<std::string>(slot).c_str());
   KeyPtr key = KeyboardShortcuts::instance()->command(CommandId::ChangeBrush(), params);
-  if (key && !key->accels().empty()) {
+  if (key && !key->shortcuts().empty()) {
     std::string tooltip;
     tooltip += Strings::new_brush_shortcut() + " ";
-    tooltip += key->accels().front().toString();
+    tooltip += key->shortcuts().front().toString();
     StatusBar::instance()->showTip(2000, tooltip);
   }
 }

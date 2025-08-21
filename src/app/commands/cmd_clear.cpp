@@ -23,7 +23,7 @@ protected:
   void onExecute(Context* ctx) override;
 };
 
-ClearCommand::ClearCommand() : Command(CommandId::Clear(), CmdUIOnlyFlag)
+ClearCommand::ClearCommand() : Command(CommandId::Clear())
 {
 }
 

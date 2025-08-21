@@ -85,8 +85,7 @@ protected:
 };
 
 BrightnessContrastCommand::BrightnessContrastCommand()
-  : CommandWithNewParams<BrightnessContrastParams>(CommandId::BrightnessContrast(),
-                                                   CmdRecordableFlag)
+  : CommandWithNewParams<BrightnessContrastParams>(CommandId::BrightnessContrast())
 {
 }
 

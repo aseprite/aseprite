@@ -79,6 +79,7 @@ A 128-byte header (same as FLC/FLI header, but with other magic number):
                   1 = Layer opacity has valid value
                   2 = Layer blend mode/opacity is valid for groups
                       (composite groups separately first when rendering)
+                  4 = Layers have an UUID
     WORD        Speed (milliseconds between frame, like in FLC files)
                 DEPRECATED: You should use the frame duration field
                 from each frame header
@@ -202,6 +203,8 @@ entire layers layout:
     STRING      Layer name
     + If layer type = 2
       DWORD     Tileset index
+    + If file header flags have bit 4:
+      UUID      Layer's universally unique identifier
 
 ### Cel Chunk (0x2005)
 

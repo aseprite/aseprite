@@ -1,17 +1,12 @@
 <!-- Aseprite -->
+<!-- Copyright (C) 2025 Igara Studio S.A. -->
 <!-- Copyright (C) 2014-2018 by David Capello -->
 <gui>
 <vbox id="timeline_conf">
   <hbox>
     <vbox>
       <separator cell_hspan="2" text="@.position" left="true" horizontal="true" />
-      <hbox>
-        <buttonset columns="2" id="position">
-          <item text="@.left" />
-          <item text="@.right" />
-          <item text="@.bottom" hspan="2" />
-        </buttonset>
-      </hbox>
+      <button id="layout" icon="icon_layout" />
     </vbox>
     <vbox>
       <separator text="@.frame_header" left="true" horizontal="true" />
@@ -30,6 +25,7 @@
 
         <check id="thumb_overlay_enabled" text="@.overlay_size"/>
         <slider min="2" max="10" id="thumb_overlay_size" cell_align="horizontal" width="128" />
+        <check id="thumb_scale_up_to_fit" text="@.scale_up_to_fit" cell_hspan="2" />
       </grid>
     </vbox>
   </hbox>
@@ -55,5 +51,11 @@
       <radio group="2" text="@.in_front" id="infront" tooltip="@.in_front_toolip" />
     </hbox>
   </grid>
+
+  <separator horizontal="true" />
+  <hbox>
+    <boxfiller />
+    <button id="defaults" text="@.set_as_defaults" />
+  </hbox>
 </vbox>
 </gui>

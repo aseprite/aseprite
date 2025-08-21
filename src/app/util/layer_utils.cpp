@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -15,6 +15,7 @@
 #include "doc/sprite.h"
 #include "doc/tilesets.h"
 #include "fmt/format.h"
+#include <memory>
 
 namespace app {
 
@@ -52,41 +53,6 @@ std::string get_layer_path(const Layer* layer)
     path.insert(0, layer->name());
   }
   return path;
-}
-
-Layer* copy_layer(doc::Layer* layer)
-{
-  return copy_layer_with_sprite(layer, layer->sprite());
-}
-
-Layer* copy_layer_with_sprite(doc::Layer* layer, doc::Sprite* sprite)
-{
-  std::unique_ptr<doc::Layer> clone;
-  if (layer->isTilemap()) {
-    auto* srcTilemap = static_cast<LayerTilemap*>(layer);
-    tileset_index tilesetIndex = srcTilemap->tilesetIndex();
-    // If the caller is trying to make a copy of a tilemap layer specifying a
-    // different sprite as its owner, then we must copy the tilesets of the
-    // given tilemap layer into the new owner.
-    if (sprite != srcTilemap->sprite()) {
-      auto* srcTilesetCopy = Tileset::MakeCopyCopyingImages(srcTilemap->tileset());
-      tilesetIndex = sprite->tilesets()->add(srcTilesetCopy);
-    }
-
-    clone.reset(new LayerTilemap(sprite, tilesetIndex));
-  }
-  else if (layer->isImage())
-    clone.reset(new LayerImage(sprite));
-  else if (layer->isGroup())
-    clone.reset(new LayerGroup(sprite));
-  else
-    throw std::runtime_error("Invalid layer type");
-
-  if (auto* doc = dynamic_cast<app::Doc*>(sprite->document())) {
-    doc->copyLayerContent(layer, doc, clone.get());
-  }
-
-  return clone.release();
 }
 
 } // namespace app

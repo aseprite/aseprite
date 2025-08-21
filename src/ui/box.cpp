@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -13,6 +13,7 @@
 #include "ui/box.h"
 #include "ui/message.h"
 #include "ui/resize_event.h"
+#include "ui/scale.h"
 #include "ui/size_hint_event.h"
 #include "ui/theme.h"
 
@@ -38,6 +39,7 @@ void Box::onSizeHint(SizeHintEvent& ev)
     else                                                                                           \
       prefSize.w += childSize.w;                                                                   \
     prefSize.h = std::max(prefSize.h, childSize.h);                                                \
+    fitIn.w = std::max(0, fitIn.w - prefSize.w);                                                   \
   }
 
 #define FINAL_ADJUSTMENT(w)                                                                        \
@@ -48,17 +50,23 @@ void Box::onSizeHint(SizeHintEvent& ev)
   }
 
   int visibleChildren = 0;
-  for (auto child : children()) {
+  for (auto* child : children()) {
     if (!child->hasFlags(HIDDEN))
       ++visibleChildren;
   }
 
   Size prefSize(0, 0);
+  Size fitIn(0, 0);
+  if (align() & HORIZONTAL)
+    fitIn.w = ev.fitInWidth();
+  else
+    fitIn.h = ev.fitInHeight();
+
   for (auto child : children()) {
     if (child->hasFlags(HIDDEN))
       continue;
 
-    Size childSize = child->sizeHint();
+    Size childSize = child->sizeHint(fitIn);
     if (align() & HORIZONTAL) {
       ADD_CHILD_SIZE(w, h);
     }
@@ -106,14 +114,17 @@ void Box::onResize(ResizeEvent& ev)
           size = availSize.w;                                                                      \
       }                                                                                            \
       else {                                                                                       \
-        size = child->sizeHint().w;                                                                \
+        size = child->sizeHint(availSize).w;                                                       \
                                                                                                    \
         if (child->isExpansive()) {                                                                \
-          int extraSize = (availExtraSize / (expansiveChildren - j));                              \
+          const int extraSize = guiscaled_div(availExtraSize, (expansiveChildren - j));            \
           size += extraSize;                                                                       \
           availExtraSize -= extraSize;                                                             \
           if (++j == expansiveChildren)                                                            \
             size += availExtraSize;                                                                \
+        }                                                                                          \
+        else {                                                                                     \
+          availExtraSize -= (size - child->sizeHint().w);                                          \
         }                                                                                          \
       }                                                                                            \
                                                                                                    \
@@ -141,8 +152,8 @@ void Box::onResize(ResizeEvent& ev)
   }
 
   if (visibleChildren > 0) {
-    Size prefSize(sizeHint());
-    Size availSize(childrenBounds().size());
+    Size availSize = childrenBounds().size();
+    Size prefSize = sizeHint(availSize);
     int homogeneousSize = 0;
     int availExtraSize = 0;
 

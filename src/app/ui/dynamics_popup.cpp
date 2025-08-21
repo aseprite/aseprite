@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -131,11 +131,12 @@ private:
                       theme->parts.miniSliderFull().get());
     }
 
+    const int sensorH = guiscaled_div(rc.h, 4);
     g->fillRect(theme->colors.sliderEmptyText(),
-                gfx::Rect(rc.x, rc.y + rc.h / 2 - rc.h / 8, sensorW, rc.h / 4));
+                gfx::Rect(rc.x, guiscaled_center(rc.y, rc.h, sensorH), sensorW, sensorH));
 
-    g->drawRgbaSurface(thumb, minX - thumb->width() / 2, thumb_y);
-    g->drawRgbaSurface(thumb, maxX - thumb->width() / 2, thumb_y);
+    g->drawRgbaSurface(thumb, minX - guiscaled_div(thumb->width(), 2), thumb_y);
+    g->drawRgbaSurface(thumb, maxX - guiscaled_div(thumb->width(), 2), thumb_y);
   }
 
   bool onProcessMessage(Message* msg) override

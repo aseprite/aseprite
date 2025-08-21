@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2023  Igara Studio S.A.
+// Copyright (c) 2019-2025  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -47,8 +47,10 @@ public:
   Tileset(Sprite* sprite, const Tileset* other);
 
   static Tileset* MakeCopyWithoutImages(const Tileset* tileset);
+  static Tileset* MakeCopyWithoutImagesForSprite(const Tileset* tileset, Sprite* sprite);
   static Tileset* MakeCopyWithSameImages(const Tileset* tileset);
   static Tileset* MakeCopyCopyingImages(const Tileset* tileset);
+  static Tileset* MakeCopyCopyingImagesForSprite(const Tileset* tileset, Sprite* sprite);
 
   Sprite* sprite() const { return m_sprite; }
   const Grid& grid() const { return m_grid; }

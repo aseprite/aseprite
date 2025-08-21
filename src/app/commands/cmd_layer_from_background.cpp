@@ -14,8 +14,6 @@
 #include "app/context_access.h"
 #include "app/modules/gui.h"
 #include "app/tx.h"
-#include "doc/layer.h"
-#include "doc/sprite.h"
 
 namespace app {
 
@@ -28,8 +26,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-LayerFromBackgroundCommand::LayerFromBackgroundCommand()
-  : Command(CommandId::LayerFromBackground(), CmdRecordableFlag)
+LayerFromBackgroundCommand::LayerFromBackgroundCommand() : Command(CommandId::LayerFromBackground())
 {
 }
 

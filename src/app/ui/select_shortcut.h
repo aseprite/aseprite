@@ -1,35 +1,36 @@
 // Aseprite
+// Copyright (C) 2025  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifndef APP_UI_SELECT_ACCELERATOR_H_INCLUDED
-#define APP_UI_SELECT_ACCELERATOR_H_INCLUDED
+#ifndef APP_UI_SELECT_SHORTCUT_H_INCLUDED
+#define APP_UI_SELECT_SHORTCUT_H_INCLUDED
 #pragma once
 
 #include "app/ui/key_context.h"
-#include "ui/accelerator.h"
+#include "ui/shortcut.h"
 #include "ui/tooltips.h"
 
-#include "select_accelerator.xml.h"
+#include "select_shortcut.xml.h"
 
 namespace app {
 class KeyboardShortcuts;
 
-class SelectAccelerator : public app::gen::SelectAccelerator {
+class SelectShortcut : public app::gen::SelectShortcut {
 public:
-  SelectAccelerator(const ui::Accelerator& accelerator,
-                    const KeyContext keyContext,
-                    const KeyboardShortcuts& currentKeys);
+  SelectShortcut(const ui::Shortcut& shortcut,
+                 KeyContext keyContext,
+                 const KeyboardShortcuts& currentKeys);
 
   bool isOK() const { return m_ok; }
   bool isModified() const { return m_modified; }
-  const ui::Accelerator& accel() const { return m_accel; }
+  const ui::Shortcut& shortcut() const { return m_shortcut; }
 
 private:
   void onModifierChange(ui::KeyModifiers modifier, ui::CheckBox* checkbox);
-  void onAccelChange(const ui::Accelerator* accel);
+  void onShortcutChange(const ui::Shortcut* shortcut);
   void onClear();
   void onOK();
   void onCancel();
@@ -42,8 +43,8 @@ private:
   KeyField* m_keyField;
   KeyContext m_keyContext;
   const KeyboardShortcuts& m_currentKeys;
-  ui::Accelerator m_origAccel;
-  ui::Accelerator m_accel;
+  ui::Shortcut m_origShortcut;
+  ui::Shortcut m_shortcut;
   bool m_ok;
   bool m_modified;
 };

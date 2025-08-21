@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,8 +10,10 @@
 
 #include "app/ui/filename_field.h"
 
+#include "app/app.h"
 #include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
+#include "app/recent_files.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/fs.h"
 #include "ui/box.h"
@@ -23,6 +25,11 @@
 namespace app {
 
 using namespace ui;
+
+FilenameField::FilenameButton::FilenameButton(const std::string& text) : ButtonSet(1)
+{
+  addItem(text);
+}
 
 FilenameField::FilenameField(const Type type, const std::string& pathAndFilename)
   : m_entry(type == EntryAndButton ? new ui::Entry(1024, "") : nullptr)
@@ -46,7 +53,10 @@ FilenameField::FilenameField(const Type type, const std::string& pathAndFilename
   if (m_entry)
     m_entry->Change.connect([this] { setFilename(updatedFilename()); });
 
-  m_button.Click.connect([this] { onBrowse(); });
+  m_button.ItemChange.connect([this](ButtonSet::Item* item) {
+    m_button.setSelectedItem(nullptr);
+    onBrowse();
+  });
   initTheme();
 
   m_editFullPathChangeConn = Preferences::instance().general.editFullPath.AfterChange.connect(
@@ -94,7 +104,6 @@ void FilenameField::onSetEditFullPath()
 void FilenameField::onBrowse()
 {
   const gfx::Rect bounds = m_button.bounds();
-  m_button.setSelected(false);
 
   ui::Menu menu;
   ui::MenuItem choose(Strings::select_file_choose());
@@ -107,6 +116,11 @@ void FilenameField::onBrowse()
   menu.addChild(&relative);
   menu.addChild(&absolute);
 
+  if (auto* recent = App::instance()->recentFiles()) {
+    addFoldersToMenu(&menu, recent->pinnedFolders(), Strings::file_selector_pinned_folders());
+    addFoldersToMenu(&menu, recent->recentFolders(), Strings::file_selector_recent_folders());
+  }
+
   choose.Click.connect([this] {
     std::string fn = SelectOutputFile();
     if (!fn.empty()) {
@@ -118,6 +132,21 @@ void FilenameField::onBrowse()
   absolute.Click.connect([this] { setEditFullPath(true); });
 
   menu.showPopup(gfx::Point(bounds.x, bounds.y2()), display());
+}
+
+void FilenameField::addFoldersToMenu(ui::Menu* menu,
+                                     const base::paths& folders,
+                                     const std::string& separatorTitle)
+{
+  if (folders.empty())
+    return;
+
+  menu->addChild(new ui::Separator(separatorTitle, ui::HORIZONTAL));
+  for (const std::string& folder : folders) {
+    MenuItem* folderItem = new MenuItem(folder);
+    folderItem->Click.connect([this, folder] { setFilename(base::join_path(folder, m_file)); });
+    menu->addChild(folderItem);
+  }
 }
 
 void FilenameField::setFilename(const std::string& pathAndFilename)
@@ -164,11 +193,6 @@ void FilenameField::onInitTheme(ui::InitThemeEvent& ev)
 {
   HBox::onInitTheme(ev);
   setChildSpacing(0);
-
-  auto theme = skin::SkinTheme::get(this);
-  ui::Style* style = theme->styles.miniButton();
-  if (style)
-    m_button.setStyle(style);
 }
 
 void FilenameField::onUpdateText()
@@ -181,9 +205,9 @@ void FilenameField::updateWidgets()
   if (m_entry)
     m_entry->setText(displayedFilename());
   else if (m_file.empty())
-    m_button.setText(Strings::select_file_text());
+    m_button.getItem(0)->setText(Strings::select_file_text());
   else
-    m_button.setText(displayedFilename());
+    m_button.getItem(0)->setText(displayedFilename());
 
   Change();
 }

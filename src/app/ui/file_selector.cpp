@@ -316,6 +316,7 @@ FileSelector::FileSelector(FileSelectorType type) : m_type(type), m_navigationLo
   for (auto child : viewType()->children())
     child->setFocusStop(false);
 
+  showHiddenCheck()->setSelected(Preferences::instance().fileSelector.showHidden());
   m_fileList = new FileList();
   m_fileList->setId("fileview");
   m_fileName->setAssociatedFileList(m_fileList);
@@ -334,6 +335,10 @@ FileSelector::FileSelector(FileSelectorType type) : m_type(type), m_navigationLo
   viewType()->ItemChange.connect([this] { onChangeViewType(); });
   location()->CloseListBox.connect([this] { onLocationCloseListBox(); });
   fileType()->Change.connect([this] { onFileTypeChange(); });
+  showHiddenCheck()->Click.connect([this] {
+    Preferences::instance().fileSelector.showHidden(showHiddenCheck()->isSelected());
+    m_fileList->setShowHidden(showHiddenCheck()->isSelected());
+  });
   m_fileList->FileSelected.connect([this] { onFileListFileSelected(); });
   m_fileList->FileAccepted.connect([this] { onFileListFileAccepted(); });
   m_fileList->CurrentFolderChanged.connect([this] { onFileListCurrentFolderChanged(); });
@@ -408,7 +413,8 @@ bool FileSelector::show(const std::string& title,
 
   remapWindow();
   centerWindow();
-  load_window_pos(this, kConfigSection);
+  // The minimum size is large, so do not limit the minimum loaded size
+  load_window_pos(this, kConfigSection, false);
 
   // Change the file formats/extensions to be shown
   std::string initialExtension = base::get_file_extension(initialPath);

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -391,7 +391,8 @@ void ColorSliders::addSlider(const Channel channel,
   gfx::Size sz(std::numeric_limits<int>::max(), theme->dimensions.colorSliderHeight());
   item.label->setMaxSize(sz);
   item.box->setMaxSize(sz);
-  item.entry->setMaxSize(sz);
+  // Don't limit the entry size as it will be too small for UI Scaling=200%
+  // item.entry->setMaxSize(sz);
 
   m_grid.addChildInCell(item.label, 1, 1, LEFT | MIDDLE);
   m_grid.addChildInCell(item.box, 1, 1, HORIZONTAL | VERTICAL);

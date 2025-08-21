@@ -18,7 +18,7 @@ using namespace gfx;
 
 class ToggleTilesModeCommand : public Command {
 public:
-  ToggleTilesModeCommand() : Command(CommandId::ToggleTilesMode(), CmdUIOnlyFlag) {}
+  ToggleTilesModeCommand() : Command(CommandId::ToggleTilesMode()) {}
 
 protected:
   bool onChecked(Context* context) override

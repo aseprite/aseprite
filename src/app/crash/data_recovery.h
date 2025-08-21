@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -44,6 +44,8 @@ public:
 
   // Returns a copy of the list of sessions that can be recovered.
   Sessions sessions();
+
+  bool isRunningSession(const SessionPtr& session) const;
 
   // Triggered in the UI-thread from the m_thread using an
   // ui::execute_from_ui_thread() when the list of sessions is ready

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -195,6 +195,16 @@ bool Clipboard::getClipboardText(std::string& text)
   else {
     text = m_data->text;
     return true;
+  }
+}
+
+bool Clipboard::hasClipboardText()
+{
+  if (use_native_clipboard()) {
+    return clip::has(clip::text_format());
+  }
+  else {
+    return !m_data->text.empty();
   }
 }
 

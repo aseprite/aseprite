@@ -23,10 +23,7 @@
 #include "app/ui/main_window.h"
 #include "app/ui/preview_editor.h"
 #include "app/ui/status_bar.h"
-#include "app/util/conversion_to_surface.h"
-#include "doc/image.h"
 #include "doc/palette.h"
-#include "doc/primitives.h"
 #include "doc/sprite.h"
 #include "gfx/matrix.h"
 #include "os/surface.h"
@@ -308,8 +305,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-FullscreenPreviewCommand::FullscreenPreviewCommand()
-  : Command(CommandId::FullscreenPreview(), CmdUIOnlyFlag)
+FullscreenPreviewCommand::FullscreenPreviewCommand() : Command(CommandId::FullscreenPreview())
 {
 }
 

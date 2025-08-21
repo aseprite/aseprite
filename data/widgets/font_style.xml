@@ -1,0 +1,10 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2025 by Igara Studio S.A. -->
+<gui>
+  <vbox id="font_style">
+    <check id="antialias" text="@.antialias" />
+    <check id="hinting" text="@.hinting" />
+    <separator horizontal="true" />
+    <check id="ligatures" text="@.ligatures" />
+  </vbox>
+</gui>

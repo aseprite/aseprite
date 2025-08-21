@@ -244,7 +244,7 @@ protected:
         for (const uint8_t* line : m_fileContent->lines) {
           ASSERT(line);
           tmp.assign((const char*)line);
-          m_maxLineWidth = std::max(m_maxLineWidth, f->textLength(tmp));
+          m_maxLineWidth = std::max<int>(m_maxLineWidth, std::ceil(f->textLength(tmp)));
         }
       }
 
@@ -775,7 +775,7 @@ private:
   bool m_fileOk = true;
 };
 
-DebuggerCommand::DebuggerCommand() : Command(CommandId::Debugger(), CmdRecordableFlag)
+DebuggerCommand::DebuggerCommand() : Command(CommandId::Debugger())
 {
 }
 

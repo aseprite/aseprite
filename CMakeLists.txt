@@ -243,7 +243,13 @@ if(USE_SHARED_LIBPNG)
   add_definitions(${PNG_DEFINITIONS})
 else()
   set(PNG_FOUND ON)
-  set(PNG_LIBRARY png_static)
+
+  # Skia on Linux includes libpng symbols
+  if(UNIX AND NOT APPLE AND LAF_BACKEND STREQUAL "skia")
+    set(PNG_LIBRARY skia)
+  else()
+    set(PNG_LIBRARY png_static)
+  endif()
   set(PNG_LIBRARIES ${PNG_LIBRARY})
   set(PNG_INCLUDE_DIRS
     ${LIBPNG_DIR}

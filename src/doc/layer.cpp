@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -595,6 +595,24 @@ void LayerGroup::displaceFrames(frame_t fromThis, frame_t delta)
 {
   for (Layer* layer : m_layers)
     layer->displaceFrames(fromThis, delta);
+}
+
+layer_t LayerGroup::getLayerIndex(const Layer* layer, layer_t& index) const
+{
+  for (Layer* child : this->layers()) {
+    if ((child->isGroup() && static_cast<LayerGroup*>(child)->getLayerIndex(layer, index) != -1) ||
+        (child == layer)) {
+      return index;
+    }
+    index++;
+  }
+  return -1;
+}
+
+layer_t LayerGroup::getLayerIndex(const Layer* layer) const
+{
+  layer_t index = 0;
+  return this->getLayerIndex(layer, index);
 }
 
 } // namespace doc

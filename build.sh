@@ -56,31 +56,6 @@ if [ "$1" == "--norun" ] ; then
     norun=1
 fi
 
-# Platform.
-if [[ "$(uname)" =~ "MINGW32" ]] || [[ "$(uname)" =~ "MINGW64" ]] || [[ "$(uname)" =~ "MSYS_NT-10.0" ]] ; then
-    is_win=1
-    cpu=x64
-
-    if ! cl.exe >/dev/null 2>/dev/null ; then
-        echo ""
-        echo "MSVC compiler (cl.exe) not found in PATH"
-        echo ""
-        echo "  PATH=$PATH"
-        echo ""
-        exit 1
-    fi
-elif [[ "$(uname)" == "Linux" ]] ; then
-    is_linux=1
-    cpu=x64
-elif [[ "$(uname)" =~ "Darwin" ]] ; then
-    is_macos=1
-    if [[ $(uname -m) == "arm64" ]]; then
-        cpu=arm64
-    else
-        cpu=x64
-    fi
-fi
-
 # Check utilities.
 if ! cmake --version >/dev/null ; then
     echo ""
@@ -137,6 +112,23 @@ if [ $run_submodule_update ] ; then
     echo "Done"
 fi
 
+# Platform.
+if ! source "$pwd/laf/misc/platform.sh" ; then
+    exit $?
+fi
+
+if [ $is_win ] ; then
+    # Check MSVC compiler.
+    if ! cl.exe >/dev/null 2>/dev/null ; then
+        echo ""
+        echo "MSVC compiler (cl.exe) not found in PATH"
+        echo ""
+        echo "  PATH=$PATH"
+        echo ""
+        exit 1
+    fi
+fi
+
 # Create the directory to store the configuration.
 if [ ! -d "$pwd/.build" ] ; then
     mkdir "$pwd/.build"
@@ -150,25 +142,25 @@ if [ ! -f "$pwd/.build/userkind" ] ; then
         echo "user" > $pwd/.build/userkind
     else
         echo ""
-        echo "Select what kind of user you are (press U or D keys):"
+        echo "Select what kind of user you are (press U or D key and then Enter):"
         echo ""
         echo "  [U]ser: give a try to Aseprite"
         echo "  [D]eveloper: develop/modify Aseprite"
         echo ""
-        read -sN 1 -p "[U/D]? "
-        echo ""
-        if [[ "$REPLY" == "d" || "$REPLY" == "D" ]] ; then
+        read -p "[U/D]? "
+        REPLY=$(echo $REPLY | tr '[:upper:]' '[:lower:]')
+        if [[ "$REPLY" == "d" || "$REPLY" == "dev" || "$REPLY" == "developer" ]] ; then
             echo "developer" > $pwd/.build/userkind
-        elif [[ "$REPLY" == "u" || "$REPLY" == "U" ]] ; then
+        elif [[ "$REPLY" == "u" || "$REPLY" == "user" ]] ; then
             echo "user" > $pwd/.build/userkind
         else
-            echo "Use U or D keys to select kind of user/build process"
+            echo "Use U or D keys (and press Enter) to select kind of user/build process"
             exit 1
         fi
     fi
 fi
 
-userkind=$(echo -n $(cat $pwd/.build/userkind))
+userkind=$(cat $pwd/.build/userkind)
 if [ "$userkind" == "developer" ] ; then
     echo "======================= BUILDING FOR DEVELOPER ======================="
 else
@@ -229,7 +221,7 @@ if [ ! -f "$pwd/.build/builds_dir" ] ; then
     echo "$builds_dir" > "$pwd/.build/builds_dir"
 fi
 # Overwrite $builds_dir variable from the config content.
-builds_dir="$(echo -n $(cat $pwd/.build/builds_dir))"
+builds_dir="$(cat $pwd/.build/builds_dir)"
 
 # List all builds.
 builds_list="$(mktemp)"
@@ -265,7 +257,8 @@ else
     # New build
     if [[ "$build_n" == "n" || "$build_n" == "N" ]] ; then
         read -p "Select build type [RELEASE/debug]? "
-        if [[ "${REPLY,,}" == "debug" ]] ; then
+        REPLY=$(echo $REPLY | tr '[:upper:]' '[:lower:]')
+        if [[ "${REPLY}" == "debug" ]] ; then
             build_type=Debug
             new_build_name=aseprite-debug
         else
@@ -348,10 +341,7 @@ else
     elif git --git-dir="$source_dir/.git" branch --contains "$remote/main" | grep -q "^\* $branch_name\$" ; then
         base_branch_name=main
     else
-        echo ""
-        echo "Error: Branch $branch_name looks like doesn't belong to main or beta"
-        echo ""
-        exit 1
+        base_branch_name=$branch_name
     fi
 fi
 
@@ -366,15 +356,9 @@ else
 fi
 
 # Required Skia for the base branch.
-if [ "$base_branch_name" == "beta" ] ; then
-    skia_tag=m124-08a5439a6b
-    file_skia_dir=beta_skia_dir
-    possible_skia_dir_name=skia-m124
-else
-    skia_tag=m102-861e4743af
-    file_skia_dir=main_skia_dir
-    possible_skia_dir_name=skia
-fi
+skia_tag=$(cat "$pwd/laf/misc/skia-tag.txt")
+possible_skia_dir_name=skia-$(echo $skia_tag | cut -d "-" -f 1)
+file_skia_dir="$base_branch_name"_skia_dir
 
 # Check Skia dependency.
 if [ ! -f "$pwd/.build/$file_skia_dir" ] ; then
@@ -385,23 +369,33 @@ if [ ! -f "$pwd/.build/$file_skia_dir" ] ; then
         skia_dir="$HOME/deps/$possible_skia_dir_name"
     fi
 
+    # Set default location if not found
     if [ ! -d "$skia_dir" ] ; then
-        echo ""
-        echo "Skia directory wasn't found."
-        echo ""
-
-        echo "Select Skia directory to create [$skia_dir]? "
-        if [ ! $auto ] ; then
-            read skia_dir_read
-            if [ "$skia_dir_read" != "" ] ; then
-                skia_dir="$skia_dir_read"
-            fi
+        # Use .deps directory to download Skia for users (which is a
+        # simple setup). In case of developers we'd prefer the shared
+        # directory by default.
+        if [ "$userkind" == "user" ] ; then
+            skia_dir="$pwd/.deps/$possible_skia_dir_name"
         fi
-        mkdir -p $skia_dir || exit 1
+
+        if [ ! -d "$skia_dir" ] ; then
+            echo ""
+            echo "Skia directory wasn't found."
+            echo ""
+
+            echo "Select Skia directory to create [$skia_dir]? "
+            if [ ! $auto ] ; then
+                read skia_dir_read
+                if [ "$skia_dir_read" != "" ] ; then
+                    skia_dir="$skia_dir_read"
+                fi
+            fi
+            mkdir -p $skia_dir || exit 1
+        fi
     fi
     echo $skia_dir > "$pwd/.build/$file_skia_dir"
 fi
-skia_dir=$(echo -n $(cat $pwd/.build/$file_skia_dir))
+skia_dir=$(cat $pwd/.build/$file_skia_dir)
 if [ ! -d "$skia_dir" ] ; then
     mkdir "$skia_dir"
 fi
@@ -421,27 +415,30 @@ if [ ! -d "$skia_library_dir" ] ; then
     echo "Skia library wasn't found."
     echo ""
     if [ ! $auto ] ; then
-        read -sN 1 -p "Download pre-compiled Skia automatically [Y/n]? "
+        read -p "Download pre-compiled Skia automatically [Y/n]? "
+        # Convert the Enter key as the default option: an empty string
+        REPLY=$(echo $REPLY | tr '[:upper:]' '[:lower:]')
     fi
-    if [[ $auto || "$REPLY" == "" || "$REPLY" == "y" || "$REPLY" == "Y" ]] ; then
+    if [[ $auto || "$REPLY" == "" || "$REPLY" == "y" || "$REPLY" == "yes" ]] ; then
         if [[ $is_win && "$build_type" == "Debug" ]] ; then
             skia_build=Debug
         else
             skia_build=Release
         fi
-
-        if [ $is_win ] ; then
-            skia_file=Skia-Windows-$skia_build-$cpu.zip
-        elif [ $is_macos ] ; then
-            skia_file=Skia-macOS-$skia_build-$cpu.zip
-        else
-            skia_file=Skia-Linux-$skia_build-$cpu-libstdc++.zip
-        fi
-        skia_url=https://github.com/aseprite/skia/releases/download/$skia_tag/$skia_file
+        skia_url=$(bash laf/misc/skia-url.sh $skia_build)
+        skia_file=$(basename $skia_url)
         if [ ! -f "$skia_dir/$skia_file" ] ; then
-            curl -L -o "$skia_dir/$skia_file" "$skia_url"
+            if ! command -v curl >/dev/null 2>&1 ; then
+                echo "Error: 'curl' command line tool is not available in PATH"
+                exit 1
+            fi
+            curl --ssl-revoke-best-effort -L -o "$skia_dir/$skia_file" "$skia_url"
         fi
         if [ ! -d "$skia_library_dir" ] ; then
+            if ! command -v unzip >/dev/null 2>&1 ; then
+                echo "Error: 'unzip' command line tool is not available in PATH"
+                exit 1
+            fi
             unzip -n -d "$skia_dir" "$skia_dir/$skia_file"
         fi
     else
@@ -468,7 +465,7 @@ if [ ! -f "$active_build_dir/ninja.build" ] ; then
     echo "This will take some minutes."
     echo ""
     if [ ! $auto ] ; then
-        read -sN 1 -p "Press any key to continue. "
+        read -p "Press Enter to continue."
     fi
 
     if [ $is_macos ] ; then
