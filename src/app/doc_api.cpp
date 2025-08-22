@@ -693,27 +693,32 @@ void DocApi::restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeT
 Layer* DocApi::copyLayerWithSprite(doc::Layer* layer, doc::Sprite* sprite)
 {
   std::unique_ptr<doc::Layer> clone;
-  if (layer->isTilemap()) {
-    auto* srcTilemap = static_cast<LayerTilemap*>(layer);
-    tileset_index tilesetIndex = srcTilemap->tilesetIndex();
-    // If the caller is trying to make a copy of a tilemap layer specifying a
-    // different sprite as its owner, then we must copy the tilesets of the
-    // given tilemap layer into the new owner.
-    if (sprite != srcTilemap->sprite()) {
-      auto* srcTilesetCopy = Tileset::MakeCopyCopyingImagesForSprite(srcTilemap->tileset(), sprite);
-      auto* addTileset = new cmd::AddTileset(sprite, srcTilesetCopy);
-      m_transaction.execute(addTileset);
-      tilesetIndex = addTileset->tilesetIndex();
+
+  switch (layer->type()) {
+    case ObjectType::LayerImage:   clone = std::make_unique<LayerImage>(sprite); break;
+
+    case ObjectType::LayerGroup:   clone = std::make_unique<LayerGroup>(sprite); break;
+
+    case ObjectType::LayerTilemap: {
+      auto* srcTilemap = static_cast<LayerTilemap*>(layer);
+      tileset_index tilesetIndex = srcTilemap->tilesetIndex();
+      // If the caller is trying to make a copy of a tilemap layer specifying a
+      // different sprite as its owner, then we must copy the tilesets of the
+      // given tilemap layer into the new owner.
+      if (sprite != srcTilemap->sprite()) {
+        auto* srcTilesetCopy = Tileset::MakeCopyCopyingImagesForSprite(srcTilemap->tileset(),
+                                                                       sprite);
+        auto* addTileset = new cmd::AddTileset(sprite, srcTilesetCopy);
+        m_transaction.execute(addTileset);
+        tilesetIndex = addTileset->tilesetIndex();
+      }
+
+      clone = std::make_unique<LayerTilemap>(sprite, tilesetIndex);
+      break;
     }
 
-    clone = std::make_unique<LayerTilemap>(sprite, tilesetIndex);
+    default: throw std::runtime_error("Invalid layer type");
   }
-  else if (layer->isImage())
-    clone = std::make_unique<LayerImage>(sprite);
-  else if (layer->isGroup())
-    clone = std::make_unique<LayerGroup>(sprite);
-  else
-    throw std::runtime_error("Invalid layer type");
 
   if (auto* doc = dynamic_cast<app::Doc*>(sprite->document())) {
     doc->copyLayerContent(layer, doc, clone.get());
