@@ -26,3 +26,9 @@ This is a little hacking guide about how to add a new kind of layer to Aseprite:
 1. Add the serialization for [data recovery](https://www.aseprite.org/docs/data-recovery/)
    purposes of the layer specifics in [Writer::writeLayerStructure()](../src/app/crash/write_document.cpp)
    and [Reader::readLayer()](../src/app/crash/read_document.cpp) functions
+
+For `DuplicateLayerCommand`:
+
+1. Add the new `doc::ObjectType` in
+   `app::DocApi::copyLayerWithSprite()` and
+   `app::Doc::copyLayerContent()`
