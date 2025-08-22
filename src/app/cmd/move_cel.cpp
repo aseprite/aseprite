@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -33,9 +33,9 @@ namespace app { namespace cmd {
 
 using namespace doc;
 
-MoveCel::MoveCel(LayerImage* srcLayer,
+MoveCel::MoveCel(Layer* srcLayer,
                  frame_t srcFrame,
-                 LayerImage* dstLayer,
+                 Layer* dstLayer,
                  frame_t dstFrame,
                  bool continuous)
   : m_srcLayer(srcLayer)
@@ -48,9 +48,8 @@ MoveCel::MoveCel(LayerImage* srcLayer,
 
 void MoveCel::onExecute()
 {
-  LayerImage* srcLayer = static_cast<LayerImage*>(m_srcLayer.layer());
-  LayerImage* dstLayer = static_cast<LayerImage*>(m_dstLayer.layer());
-
+  Layer* srcLayer = m_srcLayer.layer();
+  Layer* dstLayer = m_dstLayer.layer();
   ASSERT(srcLayer);
   ASSERT(dstLayer);
 

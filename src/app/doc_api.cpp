@@ -53,6 +53,7 @@
 #include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
+#include "doc/layer_audio.h"
 #include "doc/layer_tilemap.h"
 #include "doc/mask.h"
 #include "doc/palette.h"
@@ -74,9 +75,9 @@
 namespace app {
 
 DocApi::HandleLinkedCels::HandleLinkedCels(DocApi& api,
-                                           doc::LayerImage* srcLayer,
+                                           doc::Layer* srcLayer,
                                            const doc::frame_t srcFrame,
-                                           doc::LayerImage* dstLayer,
+                                           doc::Layer* dstLayer,
                                            const doc::frame_t dstFrame)
   : m_api(api)
   , m_srcDataId(doc::NullId)
@@ -351,11 +352,8 @@ void DocApi::copyFrame(Sprite* sprite,
   if (fromFrame >= newFrame)
     ++fromFrame;
 
-  for (Layer* layer : sprite->allLayers()) {
-    if (layer->isImage()) {
-      copyCel(static_cast<LayerImage*>(layer), fromFrame, static_cast<LayerImage*>(layer), newFrame);
-    }
-  }
+  for (Layer* layer : sprite->allLayers())
+    copyCel(layer, fromFrame, layer, newFrame);
 
   adjustTags(sprite, newFrame0, +1, dropFramePlace, tagsHandling);
 }
@@ -481,7 +479,7 @@ void DocApi::moveFrameLayer(Layer* layer, frame_t frame, frame_t beforeFrame)
   }
 }
 
-void DocApi::addCel(LayerImage* layer, Cel* cel)
+void DocApi::addCel(Layer* layer, Cel* cel)
 {
   ASSERT(layer);
   ASSERT(cel);
@@ -540,7 +538,7 @@ void DocApi::clearCelAndAllLinks(Cel* cel)
   }
 }
 
-void DocApi::moveCel(LayerImage* srcLayer, frame_t srcFrame, LayerImage* dstLayer, frame_t dstFrame)
+void DocApi::moveCel(Layer* srcLayer, frame_t srcFrame, Layer* dstLayer, frame_t dstFrame)
 {
   ASSERT(srcLayer != dstLayer || srcFrame != dstFrame);
   if (srcLayer == dstLayer && srcFrame == dstFrame)
@@ -557,9 +555,9 @@ void DocApi::moveCel(LayerImage* srcLayer, frame_t srcFrame, LayerImage* dstLaye
     new cmd::MoveCel(srcLayer, srcFrame, dstLayer, dstFrame, dstLayer->isContinuous()));
 }
 
-void DocApi::copyCel(LayerImage* srcLayer,
+void DocApi::copyCel(Layer* srcLayer,
                      frame_t srcFrame,
-                     LayerImage* dstLayer,
+                     Layer* dstLayer,
                      frame_t dstFrame,
                      const bool* forceContinuous)
 {
@@ -579,7 +577,7 @@ void DocApi::copyCel(LayerImage* srcLayer,
                      (forceContinuous ? *forceContinuous : dstLayer->isContinuous())));
 }
 
-void DocApi::swapCel(LayerImage* layer, frame_t frame1, frame_t frame2)
+void DocApi::swapCel(Layer* layer, frame_t frame1, frame_t frame2)
 {
   ASSERT(frame1 != frame2);
 
@@ -696,27 +694,34 @@ void DocApi::restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeT
 Layer* DocApi::copyLayerWithSprite(doc::Layer* layer, doc::Sprite* sprite)
 {
   std::unique_ptr<doc::Layer> clone;
-  if (layer->isTilemap()) {
-    auto* srcTilemap = static_cast<LayerTilemap*>(layer);
-    tileset_index tilesetIndex = srcTilemap->tilesetIndex();
-    // If the caller is trying to make a copy of a tilemap layer specifying a
-    // different sprite as its owner, then we must copy the tilesets of the
-    // given tilemap layer into the new owner.
-    if (sprite != srcTilemap->sprite()) {
-      auto* srcTilesetCopy = Tileset::MakeCopyCopyingImagesForSprite(srcTilemap->tileset(), sprite);
-      auto* addTileset = new cmd::AddTileset(sprite, srcTilesetCopy);
-      m_transaction.execute(addTileset);
-      tilesetIndex = addTileset->tilesetIndex();
+
+  switch (layer->type()) {
+    case ObjectType::LayerImage:   clone = std::make_unique<LayerImage>(sprite); break;
+
+    case ObjectType::LayerGroup:   clone = std::make_unique<LayerGroup>(sprite); break;
+
+    case ObjectType::LayerTilemap: {
+      auto* srcTilemap = static_cast<LayerTilemap*>(layer);
+      tileset_index tilesetIndex = srcTilemap->tilesetIndex();
+      // If the caller is trying to make a copy of a tilemap layer specifying a
+      // different sprite as its owner, then we must copy the tilesets of the
+      // given tilemap layer into the new owner.
+      if (sprite != srcTilemap->sprite()) {
+        auto* srcTilesetCopy = Tileset::MakeCopyCopyingImagesForSprite(srcTilemap->tileset(),
+                                                                       sprite);
+        auto* addTileset = new cmd::AddTileset(sprite, srcTilesetCopy);
+        m_transaction.execute(addTileset);
+        tilesetIndex = addTileset->tilesetIndex();
+      }
+
+      clone = std::make_unique<LayerTilemap>(sprite, tilesetIndex);
+      break;
     }
 
-    clone = std::make_unique<LayerTilemap>(sprite, tilesetIndex);
+    case ObjectType::LayerAudio: clone = std::make_unique<LayerAudio>(sprite); break;
+
+    default:                     throw std::runtime_error("Invalid layer type");
   }
-  else if (layer->isImage())
-    clone = std::make_unique<LayerImage>(sprite);
-  else if (layer->isGroup())
-    clone = std::make_unique<LayerGroup>(sprite);
-  else
-    throw std::runtime_error("Invalid layer type");
 
   if (auto* doc = dynamic_cast<app::Doc*>(sprite->document())) {
     doc->copyLayerContent(layer, doc, clone.get());
