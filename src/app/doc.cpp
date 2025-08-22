@@ -530,46 +530,7 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
   destLayer0->setFlags(dstFlags);
   destLayer0->setUserData(sourceLayer0->userData());
 
-  if (sourceLayer0->isImage() && destLayer0->isImage()) {
-    const LayerImage* sourceLayer = static_cast<const LayerImage*>(sourceLayer0);
-    LayerImage* destLayer = static_cast<LayerImage*>(destLayer0);
-
-    // Copy blend mode and opacity
-    destLayer->setBlendMode(sourceLayer->blendMode());
-    destLayer->setOpacity(sourceLayer->opacity());
-
-    // Copy cels
-    CelConstIterator it = sourceLayer->getCelBegin();
-    CelConstIterator end = sourceLayer->getCelEnd();
-
-    std::map<ObjectId, Cel*> linked;
-
-    for (; it != end; ++it) {
-      const Cel* sourceCel = *it;
-      if (sourceCel->frame() > destLayer->sprite()->lastFrame())
-        break;
-
-      std::unique_ptr<Cel> newCel(nullptr);
-
-      auto it = linked.find(sourceCel->data()->id());
-      if (it != linked.end()) {
-        newCel.reset(Cel::MakeLink(sourceCel->frame(), it->second));
-        newCel->copyNonsharedPropertiesFrom(sourceCel);
-      }
-      else {
-        newCel.reset(create_cel_copy(nullptr, // TODO add undo information?
-                                     sourceCel,
-                                     destLayer->sprite(),
-                                     destLayer,
-                                     sourceCel->frame()));
-        linked.insert(std::make_pair(sourceCel->data()->id(), newCel.get()));
-      }
-
-      destLayer->addCel(newCel.get());
-      newCel.release();
-    }
-  }
-  else if (sourceLayer0->isGroup() && destLayer0->isGroup()) {
+  if (sourceLayer0->isGroup() && destLayer0->isGroup()) {
     const LayerGroup* sourceLayer = static_cast<const LayerGroup*>(sourceLayer0);
     LayerGroup* destLayer = static_cast<LayerGroup*>(destLayer0);
 
@@ -606,6 +567,45 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
       destChild.release();
 
       destLayer->stackLayer(newLayer, afterThis);
+    }
+  }
+  else if (sourceLayer0->type() == destLayer0->type()) {
+    const Layer* sourceLayer = sourceLayer0;
+    Layer* destLayer = destLayer0;
+
+    // Copy blend mode and opacity
+    destLayer->setBlendMode(sourceLayer->blendMode());
+    destLayer->setOpacity(sourceLayer->opacity());
+
+    // Copy cels
+    CelConstIterator it = sourceLayer->getCelBegin();
+    const CelConstIterator end = sourceLayer->getCelEnd();
+
+    std::map<ObjectId, Cel*> linked;
+
+    for (; it != end; ++it) {
+      const Cel* sourceCel = *it;
+      if (sourceCel->frame() > destLayer->sprite()->lastFrame())
+        break;
+
+      std::unique_ptr<Cel> newCel(nullptr);
+
+      auto it = linked.find(sourceCel->data()->id());
+      if (it != linked.end()) {
+        newCel.reset(Cel::MakeLink(sourceCel->frame(), it->second));
+        newCel->copyNonsharedPropertiesFrom(sourceCel);
+      }
+      else {
+        newCel.reset(create_cel_copy(nullptr, // TODO add undo information?
+                                     sourceCel,
+                                     destLayer->sprite(),
+                                     destLayer,
+                                     sourceCel->frame()));
+        linked.insert(std::make_pair(sourceCel->data()->id(), newCel.get()));
+      }
+
+      destLayer->addCel(newCel.get());
+      newCel.release();
     }
   }
   else {
