@@ -55,6 +55,8 @@ public:
     }
   }
 
+  bool isPlugin() override { return true; }
+
 protected:
   std::string onGetFriendlyName() const override { return m_title; }
 

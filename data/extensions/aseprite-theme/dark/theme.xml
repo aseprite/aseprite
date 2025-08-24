@@ -1160,5 +1160,18 @@
         <style id="outline_cell" extends="buttonset_item_icon" width="17" height="19"/>
         <style id="ani_button" extends="buttonset_item_icon" width="17"/>
         <style id="multi_window_item" extends="buttonset_item_icon" width="17" height="17"/>
+        <style id="runner_command_item" height="15" border="3">
+          <background color="menuitem_hot_face" state="selected" />
+          <text color="text" x="3" align="left" />
+          <text color="disabled" x="3" align="left" state="disabled" />
+          <text color="menuitem_hot_text" x="3" align="left" state="selected" />
+        </style>
+        <style id="runner_extension_tag" font="mini">
+          <background color="menuitem_highlight_face" />
+          <text color="menuitem_highlight_text" align="center" />
+        </style>
+        <style id="runner_command_checked" width="8" height="8">
+            <icon part="check_selected" align="center middle" />
+        </style>
     </styles>
 </theme>

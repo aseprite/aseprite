@@ -74,6 +74,8 @@ public:
   void removeMenuItemFromGroup(Command* cmd);
   void removeMenuItemFromGroup(Widget* menuItem);
 
+  obs::signal<void()> MenusLoaded;
+
 private:
   template<typename Pred>
   void removeMenuItemFromGroup(Pred pred);
