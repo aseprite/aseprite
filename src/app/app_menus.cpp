@@ -26,7 +26,6 @@
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
 #include "app/ui_context.h"
-#include "app/util/filetoks.h"
 #include "base/fs.h"
 #include "base/string.h"
 #include "fmt/format.h"
@@ -463,6 +462,8 @@ void AppMenus::reload()
   // Create native menus after the default + user defined keyboard
   // shortcuts are loaded correctly.
   createNativeMenus();
+
+  MenusLoaded();
 }
 
 #ifdef ENABLE_SCRIPTING
