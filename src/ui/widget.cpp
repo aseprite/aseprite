@@ -1598,6 +1598,10 @@ void Widget::processMnemonicFromText(const int escapeChar, const bool requireMod
       if (!chr) {
         break; // Ill-formed string (it ends with escape character)
       }
+      if (std::isspace(chr)) {
+        // Avoid mnemonics for space characters.
+        newText.push_back(escapeChar);
+      }
       else if (chr != escapeChar) {
         setMnemonic(chr, requireModifiers);
       }

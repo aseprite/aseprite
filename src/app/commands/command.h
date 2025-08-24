@@ -36,6 +36,7 @@ public:
   // Returns true if the command must be displayed in the Keyboard
   // Shortcuts list.
   virtual bool isListed(const Params& params) const { return true; }
+  virtual bool isPlugin() { return false; }
 
 protected:
   virtual bool onNeedsParams() const;

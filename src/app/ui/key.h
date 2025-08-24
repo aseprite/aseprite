@@ -169,13 +169,13 @@ private:
   KeyContext m_keycontext;
 
   // for KeyType::Command
-  Command* m_command;
+  Command* m_command = nullptr;
   Params m_params;
 
-  tools::Tool* m_tool;       // for KeyType::Tool or Quicktool
-  KeyAction m_action;        // for KeyType::Action
-  WheelAction m_wheelAction; // for KeyType::WheelAction / DragAction
-  DragVector m_dragVector;   // for KeyType::DragAction
+  tools::Tool* m_tool = nullptr; // for KeyType::Tool or Quicktool
+  KeyAction m_action;            // for KeyType::Action
+  WheelAction m_wheelAction;     // for KeyType::WheelAction / DragAction
+  DragVector m_dragVector;       // for KeyType::DragAction
 };
 
 // Clears collection with strings that depends on the current
