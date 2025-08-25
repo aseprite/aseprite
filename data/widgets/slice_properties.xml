@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2019-2024  Igara Studio S.A. -->
+<!-- Copyright (C) 2019-2025  Igara Studio S.A. -->
 <!-- Copyright (C) 2017-2018  David Capello -->
 <gui>
 <window id="slice_properties" text="@.title" help="slices#slice-properties">
-  <vbox>
+  <vbox expansive="true">
     <grid id="properties_grid" columns="3">
       <label id="label1" text="@.name" />
       <entry id="name" maxsize="256" magnet="true" cell_align="horizontal" expansive="true" />
       <button id="user_data" icon="icon_user_data" maxsize="32" tooltip="@.user_data_tooltip" />
     </grid>
-    <grid columns="2">
-      <separator horizontal="true" cell_hspan="2" />
+    <grid columns="3" expansive="true">
+      <separator horizontal="true" cell_hspan="3" />
 
       <box />
       <hbox homogeneous="true">
@@ -20,6 +20,7 @@
         <label text="@.width" />
         <label text="@.height" />
       </hbox>
+      <boxfiller cell_align="horizontal" />
 
       <label text="@.bounds" />
       <hbox homogeneous="true">
@@ -28,6 +29,7 @@
         <expr id="bounds_w" />
         <expr id="bounds_h" />
       </hbox>
+      <boxfiller />
 
       <check text="@.center" id="center" />
       <hbox homogeneous="true">
@@ -36,16 +38,18 @@
         <expr id="center_w" />
         <expr id="center_h" />
       </hbox>
+      <boxfiller />
 
       <check text="@.pivot" id="pivot" />
       <hbox>
         <expr id="pivot_x" />
         <expr id="pivot_y" />
       </hbox>
+      <boxfiller />
 
-      <separator horizontal="true" cell_hspan="2" />
-
-      <hbox cell_hspan="2">
+      <boxfiller cell_align="vertical" cell_hspan="3" />
+      <separator horizontal="true" cell_hspan="3" cell_align="horizontal" />
+      <hbox cell_hspan="3">
         <boxfiller />
         <hbox homogeneous="true">
           <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />

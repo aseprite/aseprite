@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -188,8 +188,7 @@ private:
   void onToggleUserData()
   {
     m_userDataView.toggleVisibility();
-    remapWindow();
-    manager()->invalidate();
+    expandWindow(gfx::Size(bounds().w, sizeHint().h));
   }
 
   void onTilesedDuplicated(const Tileset* tilesetClone)
