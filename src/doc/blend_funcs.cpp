@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2022 Igara Studio S.A.
+// Copyright (c) 2019-2025 Igara Studio S.A.
 // Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -397,73 +397,19 @@ static void set_lum(double& r, double& g, double& b, double l)
   clip_color(r, g, b);
 }
 
-static inline uint8_t get_imin_channel(const double r, const double g, const double b)
-{
-  // We use '<=' to get min so as to catch two channels being equal
-  if (r <= g && r <= b)
-    return 0b001;
-  if (g <= r && g <= b)
-    return 0b010;
-
-  return 0b100;
-}
-
-static inline uint8_t get_imax_channel(const double r, const double g, const double b)
-{
-  if (r > g && r > b)
-    return 0b001;
-  if (g > r && g > b)
-    return 0b010;
-
-  return 0b100;
-}
-
-static inline uint8_t get_imid_channel(uint8_t imin, uint8_t imax)
-{
-  // Getting the remaining channel through exclusion guarantees that it is neither min nor max
-  return (~(imax | imin)) & 0b111;
-}
-
-static inline double& index_to_ref(double& r, double& g, double& b, uint8_t i)
-{
-  if (i == 0b001)
-    return r;
-  if (i == 0b010)
-    return g;
-
-  return b;
-}
-
-// TODO replace this with a better impl (and test this, not sure if it's correct)
 static void set_sat(double& r, double& g, double& b, double s)
 {
-#undef MIN
-#undef MAX
-#undef MID
-#define MIN(x, y) (((x) < (y)) ? (x) : (y))
-#define MAX(x, y) (((x) > (y)) ? (x) : (y))
-#define MID(x, y, z)                                                                               \
-  ((x) > (y) ? ((y) > (z) ? (y) : ((x) > (z) ? (z) : (x))) :                                       \
-               ((y) > (z) ? ((z) > (x) ? (z) : (x)) : (y)))
+  const double minv = std::min(std::min(r, g), b);
+  const double maxv = std::max(std::max(r, g), b);
+  const double range = maxv - minv;
 
-  // Fetch channel indices
-  const uint8_t imin = get_imin_channel(r, g, b);
-  const uint8_t imax = get_imax_channel(r, g, b);
-  const uint8_t imid = get_imid_channel(imin, imax);
-
-  // Map the indices for each channel to references
-  double& min = index_to_ref(r, g, b, imin);
-  double& max = index_to_ref(r, g, b, imax);
-  double& mid = index_to_ref(r, g, b, imid);
-
-  if (max > min) {
-    mid = ((mid - min) * s) / (max - min);
-    max = s;
+  if (range > 0.0) {
+    r = ((r - minv) * s) / range;
+    g = ((g - minv) * s) / range;
+    b = ((b - minv) * s) / range;
   }
   else
-    mid = max = 0;
-
-  min = 0;
+    r = g = b = 0.0;
 }
 
 color_t rgba_blender_hsl_hue(color_t backdrop, color_t src, int opacity)
@@ -552,7 +498,7 @@ color_t rgba_blender_subtract(color_t backdrop, color_t src, int opacity)
   int r = rgba_getr(backdrop) - rgba_getr(src);
   int g = rgba_getg(backdrop) - rgba_getg(src);
   int b = rgba_getb(backdrop) - rgba_getb(src);
-  src = rgba(MAX(r, 0), MAX(g, 0), MAX(b, 0), 0) | (src & rgba_a_mask);
+  src = rgba(std::max(r, 0), std::max(g, 0), std::max(b, 0), 0) | (src & rgba_a_mask);
   return rgba_blender_normal(backdrop, src, opacity);
 }
 
