@@ -4323,7 +4323,6 @@ void Timeline::clearAndInvalidateRange()
 
 void Timeline::refresh()
 {
-  regenerateCols();
   regenerateRows();
   invalidate();
 }
