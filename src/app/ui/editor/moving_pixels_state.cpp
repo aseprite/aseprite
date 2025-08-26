@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,6 +22,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/move_thing.h"
 #include "app/console.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/tools/ink.h"
@@ -48,6 +49,7 @@
 #include "fmt/format.h"
 #include "gfx/rect.h"
 #include "ui/manager.h"
+#include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/system.h"
 #include "ui/view.h"
@@ -468,15 +470,13 @@ bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
   // FineControl now (e.g. if we pressed another modifier key).
   m_lockedKeyAction = KeyAction::None;
 
-  if (msg->scancode() == kKeyEnter || // TODO make this key customizable
-      msg->scancode() == kKeyEnterPad || msg->scancode() == kKeyEsc) {
-    if (msg->scancode() == kKeyEsc) { // TODO make this key customizable
-      m_pixelsMovement->discardImage(PixelsMovement::DontCommitChanges);
-      m_discarded = true;
-    }
-
+  // TODO make these keys customizable
+  if (msg->scancode() == kKeyEsc) {
+    cancelDrag();
+    return true;
+  }
+  if (msg->scancode() == kKeyEnter || msg->scancode() == kKeyEnterPad) {
     dropPixels();
-
     return true;
   }
 
@@ -792,14 +792,64 @@ void MovingPixelsState::onDropPixels(ContextBarObserver::DropAction action)
 
   switch (action) {
     case ContextBarObserver::DropPixels: dropPixels(); break;
+    case ContextBarObserver::CancelDrag: cancelDrag(); break;
+  }
+}
 
-    case ContextBarObserver::CancelDrag:
+void MovingPixelsState::cancelDrag()
+{
+  if (!m_pixelsMovement || m_discarded)
+    return;
+
+  switch (Preferences::instance().selection.cancelSelection()) {
+    case gen::CancelSelection::DISCARD:
       m_pixelsMovement->discardImage(PixelsMovement::DontCommitChanges);
       m_discarded = true;
 
       // Quit from MovingPixelsState, back to standby.
-      m_editor->backToPreviousState();
+      dropPixels();
       break;
+
+    case gen::CancelSelection::DESELECT: {
+      dropPixels();
+
+      Command* cmd = Commands::instance()->byId(CommandId::DeselectMask());
+      UIContext::instance()->executeCommandFromMenuOrShortcut(cmd);
+      break;
+    }
+  }
+}
+
+void MovingPixelsState::onConfigureDropPixels(ContextBarObserver::DropAction action,
+                                              const gfx::Point& pt)
+{
+  if (!isActiveEditor())
+    return;
+
+  switch (action) {
+    case ContextBarObserver::DropPixels:
+      // Do nothing
+      break;
+
+    case ContextBarObserver::CancelDrag: {
+      Menu menu;
+
+      MenuItem discardChanges(Strings::context_bar_discard_changes());
+      MenuItem deselect(Strings::context_bar_deselect());
+      menu.addChild(&discardChanges);
+      menu.addChild(&deselect);
+
+      auto& opt = Preferences::instance().selection.cancelSelection;
+      discardChanges.setSelected(opt() == gen::CancelSelection::DISCARD);
+      deselect.setSelected(opt() == gen::CancelSelection::DESELECT);
+
+      discardChanges.Click.connect([&opt] { opt(gen::CancelSelection::DISCARD); });
+      deselect.Click.connect([&opt] { opt(gen::CancelSelection::DESELECT); });
+
+      ContextBar* contextBar = App::instance()->contextBar();
+      menu.showPopup(pt, contextBar->display());
+      break;
+    }
   }
 }
 

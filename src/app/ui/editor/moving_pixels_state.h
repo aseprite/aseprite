@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -77,6 +77,7 @@ public:
 
   // ContextBarObserver
   void onDropPixels(ContextBarObserver::DropAction action) override;
+  void onConfigureDropPixels(ContextBarObserver::DropAction action, const gfx::Point& pt) override;
 
   // PixelsMovementDelegate
   void onPivotChange() override;
@@ -95,6 +96,7 @@ private:
 
   void setTransparentColor(bool opaque, const app::Color& color);
   void dropPixels();
+  void cancelDrag();
 
   bool isActiveDocument() const;
   bool isActiveEditor() const;

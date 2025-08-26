@@ -146,6 +146,10 @@
       <value id="KEEP_AS_IS" value="1" />
       <value id="RAW_IMAGE" value="2" />
     </enum>
+    <enum id="CancelSelection">
+      <value id="DISCARD" value="0" />
+      <value id="DESELECT" value="1" />
+    </enum>
   </types>
 
   <global>
@@ -325,6 +329,7 @@
       <option id="force_rotsprite" type="bool" default="false" />
       <option id="multicel_when_layers_or_frames" type="bool" default="true" />
       <option id="snap_to_grid" type="bool" default="true" />
+      <option id="cancel_selection" type="CancelSelection" default="CancelSelection::DISCARD" />
     </section>
     <section id="quantization">
       <option id="with_alpha" type="bool" default="true" />
