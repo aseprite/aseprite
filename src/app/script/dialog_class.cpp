@@ -60,6 +60,8 @@ namespace app { namespace script {
 
 using namespace ui;
 
+static constexpr const int kDefaultAutofit = ui::LEFT | ui::TOP;
+
 namespace {
 
 class DialogWindow : public WindowWithHand {
@@ -107,7 +109,7 @@ struct Dialog {
   std::map<std::string, ui::Widget*> dataWidgets;
   std::map<std::string, ui::Widget*> labelWidgets;
   int currentRadioGroup = 0;
-  int autofit = ui::LEFT | ui::TOP;
+  int autofit = kDefaultAutofit;
 
   // Member used to hold current state about the creation of a tabs
   // widget. After creation it is reset to null to be ready for the
@@ -377,7 +379,7 @@ int Dialog_new(lua_State* L)
   ui::Window::Type windowType = ui::Window::WithTitleBar;
   std::string title = "Script";
   bool sizeable = true;
-  int autofit = -1;
+  int autofit = kDefaultAutofit;
   if (lua_isstring(L, 1)) {
     title = lua_tostring(L, 1);
   }
