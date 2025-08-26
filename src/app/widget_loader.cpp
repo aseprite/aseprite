@@ -253,6 +253,9 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
     if (suffix)
       ((Entry*)widget)->setSuffix(suffix);
 
+    if (elem->Attribute("placeholder"))
+      ((Entry*)widget)->setPlaceholder(m_xmlTranslator(elem, "placeholder"));
+
     if (elem_name == "expr" && decimals)
       ((ExprEntry*)widget)->setDecimals(strtol(decimals, nullptr, 10));
   }
@@ -529,6 +532,11 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
   else if (elem_name == "search") {
     if (!widget)
       widget = new SearchEntry;
+
+    if (elem->Attribute("placeholder"))
+      ((SearchEntry*)widget)->setPlaceholder(m_xmlTranslator(elem, "placeholder"));
+    else
+      ((SearchEntry*)widget)->setPlaceholder(Strings::general_search());
   }
   else if (elem_name == "font") {
     if (!widget)

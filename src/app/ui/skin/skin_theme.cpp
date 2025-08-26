@@ -1452,11 +1452,13 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
   DrawEntryTextDelegate delegate(widget, g, bounds.origin(), widget->textHeight());
   int scroll = delegate.index();
 
-  // Full text to paint: widget text + suffix
-  const std::string textString = widget->text() + widget->getSuffix();
+  const std::string& fullText = widget->text() + widget->getSuffix();
 
-  if (!textString.empty()) {
-    base::utf8_decode dec(textString);
+  // Full text to paint: widget text + suffix or placeholder
+  const std::string& paintText = fullText.empty() ? widget->placeholder() : fullText;
+
+  if (!paintText.empty()) {
+    base::utf8_decode dec(paintText);
     auto pos = dec.pos();
     for (int i = 0; i < scroll && dec.next(); ++i)
       pos = dec.pos();
@@ -1473,8 +1475,8 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
         baselineAdjustment += metrics.ascent;
       }
 
-      g->drawTextWithDelegate(std::string(pos, textString.end()), // TODO use a string_view()
-                              colors.text(),
+      g->drawTextWithDelegate(std::string(pos, paintText.end()), // TODO use a string_view()
+                              fullText.empty() ? colors.disabled() : colors.text(),
                               ColorNone,
                               gfx::Point(bounds.x, baselineAdjustment),
                               &delegate);
