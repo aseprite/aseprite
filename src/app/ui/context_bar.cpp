@@ -1528,7 +1528,7 @@ protected:
 
 class ContextBar::SymmetryField : public ButtonSet {
 public:
-  SymmetryField() : ButtonSet(5)
+  SymmetryField() : ButtonSet(6)
   {
     setMultiMode(MultiMode::Set);
     auto theme = SkinTheme::get(this);
@@ -1536,6 +1536,7 @@ public:
     addItem(theme->parts.verticalSymmetry(), theme->styles.symmetryField());
     addItem(theme->parts.rightDiagonalSymmetry(), theme->styles.symmetryField());
     addItem(theme->parts.leftDiagonalSymmetry(), theme->styles.symmetryField());
+    addItem(theme->parts.pointSymmetry(), theme->styles.symmetryField());
     addItem("...", theme->styles.symmetryOptions());
   }
 
@@ -1545,7 +1546,8 @@ public:
     tooltipManager->addTooltipFor(at(1), Strings::symmetry_toggle_vertical(), BOTTOM);
     tooltipManager->addTooltipFor(at(2), Strings::symmetry_toggle_right_diagonal(), BOTTOM);
     tooltipManager->addTooltipFor(at(3), Strings::symmetry_toggle_left_diagonal(), BOTTOM);
-    tooltipManager->addTooltipFor(at(4), Strings::symmetry_show_options(), BOTTOM);
+    tooltipManager->addTooltipFor(at(4), Strings::symmetry_toggle_point(), BOTTOM);
+    tooltipManager->addTooltipFor(at(5), Strings::symmetry_show_options(), BOTTOM);
   }
 
   void updateWithCurrentDocument()
@@ -1560,6 +1562,7 @@ public:
     at(1)->setSelected(int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::VERTICAL));
     at(2)->setSelected(int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::RIGHT_DIAG));
     at(3)->setSelected(int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::LEFT_DIAG));
+    at(4)->setSelected(int(docPref.symmetry.mode()) & int(app::gen::SymmetryMode::POINT));
   }
 
 private:
@@ -1582,14 +1585,16 @@ private:
       mode |= int(app::gen::SymmetryMode::RIGHT_DIAG);
     if (at(3)->isSelected())
       mode |= int(app::gen::SymmetryMode::LEFT_DIAG);
+    if (at(4)->isSelected())
+      mode |= int(app::gen::SymmetryMode::POINT);
 
     if (app::gen::SymmetryMode(mode) != docPref.symmetry.mode()) {
       docPref.symmetry.mode(app::gen::SymmetryMode(mode));
       // Redraw symmetry rules
       doc->notifyGeneralUpdate();
     }
-    else if (at(4)->isSelected()) {
-      auto* item = at(4);
+    else if (at(5)->isSelected()) {
+      auto* item = at(5);
 
       gfx::Rect bounds = item->bounds();
       item->setSelected(false);
