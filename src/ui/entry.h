@@ -73,6 +73,9 @@ public:
 
   static gfx::Size sizeHintWithText(Entry* entry, const std::string& text);
 
+  void setPlaceholder(const std::string& placeholder);
+  const std::string& placeholder();
+
   // Signals
   obs::signal<void()> Change;
 
@@ -155,6 +158,8 @@ private:
   // case you are going to display/paint the text scaled and want to
   // convert the mouse position correctly.
   gfx::PointF m_scale;
+
+  std::string m_placeholder;
 };
 
 } // namespace ui
