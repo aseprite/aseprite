@@ -331,6 +331,8 @@
         <part id="flag_highlight" x="16" y="240" w="16" h="10"/>
         <part id="drop_pixels_ok" x="176" y="176" w="7" h="8"/>
         <part id="drop_pixels_ok_selected" x="176" y="184" w="7" h="8"/>
+        <part id="drop_pixels_drop" x="184" y="176" w="7" h="8"/>
+        <part id="drop_pixels_drop_selected" x="184" y="184" w="7" h="8"/>
         <part id="drop_pixels_cancel" x="192" y="176" w="7" h="8"/>
         <part id="drop_pixels_cancel_selected" x="192" y="184" w="7" h="8"/>
         <part id="warning_box" x="112" y="80" w="9" h="10"/>

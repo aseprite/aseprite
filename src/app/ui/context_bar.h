@@ -129,7 +129,6 @@ private:
   void onFgOrBgColorChange(doc::Brush::ImageColor imageColor);
   void onOpacityRangeChange();
   void onDropPixels(ContextBarObserver::DropAction action);
-  void onConfigureDropPixels(ContextBarObserver::DropAction action, const gfx::Point& pt);
   void updateSliceFields(const Site& site);
 
   // ActiveToolObserver impl
@@ -214,7 +213,6 @@ private:
   obs::scoped_connection m_alphaRangeConn;
   obs::scoped_connection m_keysConn;
   obs::scoped_connection m_dropPixelsConn;
-  obs::scoped_connection m_configureDropPixelsConn;
   obs::scoped_connection m_sizeConn;
   obs::scoped_connection m_angleConn;
   obs::scoped_connection m_opacityConn;

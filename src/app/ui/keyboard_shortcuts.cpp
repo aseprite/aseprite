@@ -22,6 +22,7 @@
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
+#include "app/ui/editor/editor.h"
 #include "app/ui/key.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
@@ -157,6 +158,7 @@ static struct {
   { "FreehandTool",         app::KeyContext::FreehandTool         },
   { "ShapeTool",            app::KeyContext::ShapeTool            },
   { "FramesSelection",      app::KeyContext::FramesSelection      },
+  { "Transformation",       app::KeyContext::Transformation       },
   { NULL,                   app::KeyContext::Any                  }
 };
 
@@ -1078,6 +1080,12 @@ void KeyboardShortcuts::disableShortcut(const ui::Shortcut& shortcut,
 // static
 KeyContext KeyboardShortcuts::getCurrentKeyContext()
 {
+  // For shortcuts to Apply/Cancel transformation/moving pixels state.
+  auto* editor = Editor::activeEditor();
+  if (editor && editor->isMovingPixels()) {
+    return KeyContext::Transformation;
+  }
+
   auto* ctx = UIContext::instance();
   Doc* doc = ctx->activeDocument();
   if (doc && doc->isMaskVisible() &&
@@ -1335,6 +1343,7 @@ std::string convertKeyContextToUserFriendlyString(KeyContext keyContext)
     case KeyContext::FreehandTool:         return I18N_KEY(key_context_freehand_tool);
     case KeyContext::ShapeTool:            return I18N_KEY(key_context_shape_tool);
     case KeyContext::FramesSelection:      return I18N_KEY(key_context_frames_selection);
+    case KeyContext::Transformation:       return I18N_KEY(key_context_transformation);
   }
   return std::string();
 }

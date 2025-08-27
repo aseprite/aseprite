@@ -74,7 +74,7 @@ add_custom_command(
   COMMAND ${CMAKE_COMMAND} -E copy_if_different ${output_fn}.tmp ${output_fn}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   MAIN_DEPENDENCY ${strings_en_ini}
-  DEPENDS ${GEN_DEP})
+  DEPENDS ${GEN_DEP} commands/commands_list.h)
 list(APPEND generated_files ${output_fn})
 
 # Check translations
@@ -368,6 +368,7 @@ target_sources(app-lib PRIVATE
   color_picker.cpp
   color_spaces.cpp
   color_utils.cpp
+  commands/apply.cpp
   commands/cmd_about.cpp
   commands/cmd_add_color.cpp
   commands/cmd_advanced_mode.cpp

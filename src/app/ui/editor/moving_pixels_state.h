@@ -77,7 +77,6 @@ public:
 
   // ContextBarObserver
   void onDropPixels(ContextBarObserver::DropAction action) override;
-  void onConfigureDropPixels(ContextBarObserver::DropAction action, const gfx::Point& pt) override;
 
   // PixelsMovementDelegate
   void onPivotChange() override;
@@ -95,6 +94,8 @@ private:
   void onBeforeCommandExecution(CommandExecutionEvent& ev);
 
   void setTransparentColor(bool opaque, const app::Color& color);
+
+  void deselect();
   void dropPixels();
   void cancelDrag();
 

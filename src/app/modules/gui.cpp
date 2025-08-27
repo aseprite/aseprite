@@ -681,81 +681,89 @@ void CustomizedGuiManager::onNewDisplayConfiguration(Display* display)
 bool CustomizedGuiManager::processKey(Message* msg)
 {
   App* app = App::instance();
+  const KeyContext currentCtx = KeyboardShortcuts::getCurrentKeyContext();
   const KeyboardShortcuts* keys = KeyboardShortcuts::instance();
-  const KeyContext contexts[] = { KeyboardShortcuts::getCurrentKeyContext(), KeyContext::Normal };
+  const KeyContext contexts[] = { currentCtx, KeyContext::Normal };
   int n = (contexts[0] != contexts[1] ? 2 : 1);
+
+  // Find best match (prefer the shortcut that matches the context first)
+  KeyPtr key = nullptr;
   for (int i = 0; i < n; ++i) {
-    for (const KeyPtr& key : *keys) {
-      if (key->isPressed(msg, contexts[i])) {
-        // Cancel menu-bar loops (to close any popup menu)
-        app->mainWindow()->getMenuBar()->cancelMenuLoop();
-
-        switch (key->type()) {
-          case KeyType::Tool: {
-            tools::Tool* current_tool = app->activeTool();
-            tools::Tool* select_this_tool = key->tool();
-            tools::ToolBox* toolbox = app->toolBox();
-            std::vector<tools::Tool*> possibles;
-
-            // Collect all tools with the pressed keyboard-shortcut
-            for (tools::Tool* tool : *toolbox) {
-              const KeyPtr key = keys->tool(tool);
-              if (key && key->isPressed(msg))
-                possibles.push_back(tool);
-            }
-
-            if (possibles.size() >= 2) {
-              bool done = false;
-
-              for (size_t i = 0; i < possibles.size(); ++i) {
-                if (possibles[i] != current_tool &&
-                    ToolBar::instance()->isToolVisible(possibles[i])) {
-                  select_this_tool = possibles[i];
-                  done = true;
-                  break;
-                }
-              }
-
-              if (!done) {
-                for (size_t i = 0; i < possibles.size(); ++i) {
-                  // If one of the possibilities is the current tool
-                  if (possibles[i] == current_tool) {
-                    // We select the next tool in the possibilities
-                    select_this_tool = possibles[(i + 1) % possibles.size()];
-                    break;
-                  }
-                }
-              }
-            }
-
-            ToolBar::instance()->selectTool(select_this_tool);
-            return true;
-          }
-
-          case KeyType::Command: {
-            Command* command = key->command();
-
-            // Commands are executed only when the main window is
-            // the current window running.
-            if (getForegroundWindow() == app->mainWindow()) {
-              // OK, so we can execute the command represented
-              // by the pressed-key in the message...
-              UIContext::instance()->executeCommandFromMenuOrShortcut(command, key->params());
-              return true;
-            }
-            break;
-          }
-
-          case KeyType::Quicktool: {
-            // Do nothing, it is used in the editor through the
-            // KeyboardShortcuts::getCurrentQuicktool() function.
-            break;
-          }
-        }
-        break;
+    for (const KeyPtr& k : *keys) {
+      if (k->isPressed(msg, contexts[i]) &&
+          (!key || (key->keycontext() != currentCtx && k->keycontext() == currentCtx))) {
+        key = k;
       }
     }
   }
+  if (!key)
+    return false;
+
+  // Cancel menu-bar loops (to close any popup menu)
+  app->mainWindow()->getMenuBar()->cancelMenuLoop();
+
+  switch (key->type()) {
+    case KeyType::Tool: {
+      tools::Tool* current_tool = app->activeTool();
+      tools::Tool* select_this_tool = key->tool();
+      tools::ToolBox* toolbox = app->toolBox();
+      std::vector<tools::Tool*> possibles;
+
+      // Collect all tools with the pressed keyboard-shortcut
+      for (tools::Tool* tool : *toolbox) {
+        const KeyPtr key = keys->tool(tool);
+        if (key && key->isPressed(msg))
+          possibles.push_back(tool);
+      }
+
+      if (possibles.size() >= 2) {
+        bool done = false;
+
+        for (size_t i = 0; i < possibles.size(); ++i) {
+          if (possibles[i] != current_tool && ToolBar::instance()->isToolVisible(possibles[i])) {
+            select_this_tool = possibles[i];
+            done = true;
+            break;
+          }
+        }
+
+        if (!done) {
+          for (size_t i = 0; i < possibles.size(); ++i) {
+            // If one of the possibilities is the current tool
+            if (possibles[i] == current_tool) {
+              // We select the next tool in the possibilities
+              select_this_tool = possibles[(i + 1) % possibles.size()];
+              break;
+            }
+          }
+        }
+      }
+
+      ToolBar::instance()->selectTool(select_this_tool);
+      return true;
+    }
+
+    case KeyType::Command: {
+      Command* command = key->command();
+
+      // Commands are executed only when the main window is
+      // the current window running.
+      if (getForegroundWindow() == app->mainWindow()) {
+        // OK, so we can execute the command represented
+        // by the pressed-key in the message...
+        UIContext::instance()->executeCommandFromMenuOrShortcut(command, key->params());
+        return true;
+      }
+      break;
+    }
+
+    case KeyType::Quicktool: {
+      // Do nothing, it is used in the editor through the
+      // KeyboardShortcuts::getCurrentQuicktool() function.
+      break;
+    }
+  }
+
   return false;
 }
 

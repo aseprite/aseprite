@@ -470,16 +470,6 @@ bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
   // FineControl now (e.g. if we pressed another modifier key).
   m_lockedKeyAction = KeyAction::None;
 
-  // TODO make these keys customizable
-  if (msg->scancode() == kKeyEsc) {
-    cancelDrag();
-    return true;
-  }
-  if (msg->scancode() == kKeyEnter || msg->scancode() == kKeyEnterPad) {
-    dropPixels();
-    return true;
-  }
-
   // Use StandbyState implementation
   return StandbyState::onKeyDown(editor, msg);
 }
@@ -629,6 +619,12 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
       ev.cancel();
       return;
     }
+  }
+  // Handle undo directly as cancelDrag() to avoid adding an action in the history.
+  else if (command->id() == CommandId::Undo()) {
+    cancelDrag();
+    ev.cancel();
+    return;
   }
   // Don't drop pixels if the user zooms/scrolls/picks a color
   // using commands.
@@ -791,9 +787,21 @@ void MovingPixelsState::onDropPixels(ContextBarObserver::DropAction action)
     return;
 
   switch (action) {
+    case ContextBarObserver::Deselect:   deselect(); break;
     case ContextBarObserver::DropPixels: dropPixels(); break;
     case ContextBarObserver::CancelDrag: cancelDrag(); break;
   }
+}
+
+void MovingPixelsState::deselect()
+{
+  if (!m_pixelsMovement || m_discarded)
+    return;
+
+  dropPixels();
+
+  Command* cmd = Commands::instance()->byId(CommandId::DeselectMask());
+  UIContext::instance()->executeCommandFromMenuOrShortcut(cmd);
 }
 
 void MovingPixelsState::cancelDrag()
@@ -801,56 +809,11 @@ void MovingPixelsState::cancelDrag()
   if (!m_pixelsMovement || m_discarded)
     return;
 
-  switch (Preferences::instance().selection.cancelSelection()) {
-    case gen::CancelSelection::DISCARD:
-      m_pixelsMovement->discardImage(PixelsMovement::DontCommitChanges);
-      m_discarded = true;
+  m_pixelsMovement->discardImage(PixelsMovement::DontCommitChanges);
+  m_discarded = true;
 
-      // Quit from MovingPixelsState, back to standby.
-      dropPixels();
-      break;
-
-    case gen::CancelSelection::DESELECT: {
-      dropPixels();
-
-      Command* cmd = Commands::instance()->byId(CommandId::DeselectMask());
-      UIContext::instance()->executeCommandFromMenuOrShortcut(cmd);
-      break;
-    }
-  }
-}
-
-void MovingPixelsState::onConfigureDropPixels(ContextBarObserver::DropAction action,
-                                              const gfx::Point& pt)
-{
-  if (!isActiveEditor())
-    return;
-
-  switch (action) {
-    case ContextBarObserver::DropPixels:
-      // Do nothing
-      break;
-
-    case ContextBarObserver::CancelDrag: {
-      Menu menu;
-
-      MenuItem discardChanges(Strings::context_bar_discard_changes());
-      MenuItem deselect(Strings::context_bar_deselect());
-      menu.addChild(&discardChanges);
-      menu.addChild(&deselect);
-
-      auto& opt = Preferences::instance().selection.cancelSelection;
-      discardChanges.setSelected(opt() == gen::CancelSelection::DISCARD);
-      deselect.setSelected(opt() == gen::CancelSelection::DESELECT);
-
-      discardChanges.Click.connect([&opt] { opt(gen::CancelSelection::DISCARD); });
-      deselect.Click.connect([&opt] { opt(gen::CancelSelection::DESELECT); });
-
-      ContextBar* contextBar = App::instance()->contextBar();
-      menu.showPopup(pt, contextBar->display());
-      break;
-    }
-  }
+  // Quit from MovingPixelsState, back to standby.
+  dropPixels();
 }
 
 void MovingPixelsState::onPivotChange()

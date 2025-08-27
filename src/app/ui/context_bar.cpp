@@ -1390,11 +1390,12 @@ public:
 
 class ContextBar::DropPixelsField : public ButtonSet {
 public:
-  DropPixelsField() : ButtonSet(2)
+  DropPixelsField() : ButtonSet(3)
   {
     auto* theme = SkinTheme::get(this);
 
     addItem(theme->parts.dropPixelsOk(), theme->styles.contextBarButton());
+    addItem(theme->parts.dropPixelsDrop(), theme->styles.contextBarButton());
     addItem(theme->parts.dropPixelsCancel(), theme->styles.contextBarButton());
     setOfferCapture(false);
   }
@@ -1402,12 +1403,29 @@ public:
   void setupTooltips(TooltipManager* tooltipManager)
   {
     // TODO Enter and Esc should be configurable keys
-    tooltipManager->addTooltipFor(at(0), Strings::context_bar_drop_pixel(), BOTTOM);
-    tooltipManager->addTooltipFor(at(1), Strings::context_bar_cancel_drag(), BOTTOM);
+
+    tooltipManager->addTooltipFor(
+      at(0),
+      key_tooltip(Strings::context_bar_drop_pixel_and_deselect().c_str(),
+                  CommandId::DeselectMask(),
+                  {},
+                  KeyContext::Transformation),
+      BOTTOM);
+    tooltipManager->addTooltipFor(at(1),
+                                  key_tooltip(Strings::context_bar_drop_pixel().c_str(),
+                                              CommandId::Apply(),
+                                              {},
+                                              KeyContext::Transformation),
+                                  BOTTOM);
+    tooltipManager->addTooltipFor(at(2),
+                                  key_tooltip(Strings::context_bar_cancel_drag().c_str(),
+                                              CommandId::Undo(),
+                                              {},
+                                              KeyContext::Transformation),
+                                  BOTTOM);
   }
 
   obs::signal<void(ContextBarObserver::DropAction)> DropPixels;
-  obs::signal<void(ContextBarObserver::DropAction, const gfx::Point&)> ConfigureDropPixels;
 
 protected:
   void onItemChange(Item* item) override
@@ -1415,24 +1433,10 @@ protected:
     ButtonSet::onItemChange(item);
 
     switch (selectedItem()) {
-      case 0: DropPixels(ContextBarObserver::DropPixels); break;
-      case 1: DropPixels(ContextBarObserver::CancelDrag); break;
+      case 0: DropPixels(ContextBarObserver::Deselect); break;
+      case 1: DropPixels(ContextBarObserver::DropPixels); break;
+      case 2: DropPixels(ContextBarObserver::CancelDrag); break;
     }
-  }
-
-  void onRightClick(Item* item) override
-  {
-    ButtonSet::onRightClick(item);
-
-    const gfx::Rect rc = item->bounds();
-    const gfx::Point pt(rc.x, rc.y2());
-
-    auto action = ContextBarObserver::DropPixels;
-    switch (selectedItem()) {
-      case 0: action = ContextBarObserver::DropPixels; break;
-      case 1: action = ContextBarObserver::CancelDrag; break;
-    }
-    ConfigureDropPixels(action, pt);
   }
 };
 
@@ -1968,8 +1972,6 @@ ContextBar::ContextBar(TooltipManager* tooltipManager, ColorBar* colorBar)
   m_keysConn = KeyboardShortcuts::instance()->UserChange.connect(
     [this, tooltipManager] { setupTooltips(tooltipManager); });
   m_dropPixelsConn = m_dropPixels->DropPixels.connect(&ContextBar::onDropPixels, this);
-  m_configureDropPixelsConn =
-    m_dropPixels->ConfigureDropPixels.connect(&ContextBar::onConfigureDropPixels, this);
 
   setActiveBrush(createBrushFromPreferences());
 
@@ -2112,14 +2114,6 @@ void ContextBar::onOpacityRangeChange()
 void ContextBar::onDropPixels(ContextBarObserver::DropAction action)
 {
   notify_observers(&ContextBarObserver::onDropPixels, action);
-}
-
-void ContextBar::onConfigureDropPixels(ContextBarObserver::DropAction action, const gfx::Point& pt)
-{
-  notify_observers<ContextBarObserver::DropAction, const gfx::Point&>(
-    &ContextBarObserver::onConfigureDropPixels,
-    action,
-    pt);
 }
 
 void ContextBar::updateSliceFields(const Site& site)
