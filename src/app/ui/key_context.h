@@ -26,6 +26,13 @@ enum class KeyContext {
   Transformation,
 };
 
+inline bool match_key_context(const KeyContext a, const KeyContext b)
+{
+  return (a == b) || (a == KeyContext::Any || b == KeyContext::Any) ||
+         ((a == KeyContext::SelectionTool && b == KeyContext::Transformation) ||
+          (a == KeyContext::Transformation && b == KeyContext::SelectionTool));
+}
+
 } // namespace app
 
 #endif

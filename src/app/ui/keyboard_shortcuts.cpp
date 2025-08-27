@@ -493,7 +493,7 @@ const ui::Shortcut* Key::isPressed(const Message* msg, const KeyContext keyConte
   if (const auto* keyMsg = dynamic_cast<const KeyMessage*>(msg)) {
     for (const Shortcut& shortcut : shortcuts()) {
       if (shortcut.isPressed(keyMsg->modifiers(), keyMsg->scancode(), keyMsg->unicodeChar()) &&
-          (m_keycontext == KeyContext::Any || m_keycontext == keyContext)) {
+          (m_keycontext == KeyContext::Any || match_key_context(m_keycontext, keyContext))) {
         return &shortcut;
       }
     }

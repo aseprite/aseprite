@@ -691,7 +691,8 @@ bool CustomizedGuiManager::processKey(Message* msg)
   for (int i = 0; i < n; ++i) {
     for (const KeyPtr& k : *keys) {
       if (k->isPressed(msg, contexts[i]) &&
-          (!key || (key->keycontext() != currentCtx && k->keycontext() == currentCtx))) {
+          (!key ||
+           (key->keycontext() != currentCtx && match_key_context(k->keycontext(), currentCtx)))) {
         key = k;
       }
     }
