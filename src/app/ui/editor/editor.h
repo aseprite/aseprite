@@ -323,6 +323,8 @@ public:
   void deleteSelectionToolMask();
   bool hasSelectionToolMask();
 
+  const TiledModeHelper& getTiledModeHelper() const { return m_tiledModeHelper; }
+
   static void registerCommands();
 
 protected:
