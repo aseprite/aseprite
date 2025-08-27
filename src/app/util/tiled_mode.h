@@ -51,10 +51,10 @@ public:
   gfx::Point mainTilePosition() const
   {
     gfx::Point pt(0, 0);
-    if (int(m_mode) & int(filters::TiledMode::X_AXIS)) {
+    if (hasModeFlag(filters::TiledMode::X_AXIS)) {
       pt.x += m_canvas->width();
     }
-    if (int(m_mode) & int(filters::TiledMode::Y_AXIS)) {
+    if (hasModeFlag(filters::TiledMode::Y_AXIS)) {
       pt.y += m_canvas->height();
     }
     return pt;
@@ -63,8 +63,8 @@ public:
   void expandRegionByTiledMode(gfx::Region& rgn, const render::Projection* proj = nullptr) const
   {
     gfx::Region tile = rgn;
-    const bool xTiled = (int(m_mode) & int(filters::TiledMode::X_AXIS));
-    const bool yTiled = (int(m_mode) & int(filters::TiledMode::Y_AXIS));
+    const bool xTiled = hasModeFlag(filters::TiledMode::X_AXIS);
+    const bool yTiled = hasModeFlag(filters::TiledMode::Y_AXIS);
     int w = m_canvas->width();
     int h = m_canvas->height();
     if (proj) {
@@ -122,13 +122,13 @@ public:
     if (int(m_mode) == int(filters::TiledMode::NONE))
       return;
 
-    if (int(m_mode) & int(filters::TiledMode::X_AXIS)) {
+    if (hasModeFlag(filters::TiledMode::X_AXIS)) {
       int w = rgn.bounds().origin().x < 0 ? (rgn.bounds().w - m_canvas->width()) : 0;
       rgn.offset(m_canvas->width() - m_canvas->width() * ((rgn.bounds().x + w) / m_canvas->width()),
                  0);
     }
 
-    if (int(m_mode) & int(filters::TiledMode::Y_AXIS)) {
+    if (hasModeFlag(filters::TiledMode::Y_AXIS)) {
       int h = rgn.bounds().origin().y < 0 ? (rgn.bounds().h - m_canvas->height()) : 0;
       rgn.offset(
         0,
