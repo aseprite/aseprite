@@ -936,6 +936,10 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
     if (p) {
       region &= Region(p->bounds());
     }
+    // Intersect with window bounds
+    if (this->window()) {
+      region &= Region(this->window()->bounds());
+    }
   }
 
   // Limit to the displayable area
