@@ -207,8 +207,9 @@ struct Dialog {
   {
     Display* parentDisplay = window.parentDisplay();
     if (!parentDisplay) {
-      const auto mainWindow = App::instance()->mainWindow();
-      parentDisplay = mainWindow->display();
+      const auto* mainWindow = App::instance()->mainWindow();
+      if (mainWindow)
+        parentDisplay = mainWindow->display();
     }
     return parentDisplay;
   }
@@ -220,6 +221,9 @@ struct Dialog {
     // origin/scale (or main window if a parent window wasn't specified).
     if (window.ownDisplay()) {
       const Display* parentDisplay = this->parentDisplay();
+      if (!parentDisplay)
+        return bounds;
+
       const int scale = parentDisplay->scale();
       const gfx::Point dialogOrigin = window.display()->nativeWindow()->contentRect().origin();
       const gfx::Point mainOrigin = parentDisplay->nativeWindow()->contentRect().origin();
@@ -234,6 +238,9 @@ struct Dialog {
       window.expandWindow(rc.size());
 
       Display* parentDisplay = this->parentDisplay();
+      if (!parentDisplay)
+        return;
+
       const int scale = parentDisplay->scale();
       const gfx::Point mainOrigin = parentDisplay->nativeWindow()->contentRect().origin();
       gfx::Rect frame = window.display()->nativeWindow()->contentRect();
