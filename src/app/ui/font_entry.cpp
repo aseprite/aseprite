@@ -417,29 +417,41 @@ void FontEntry::setInfo(const FontInfo& info, const From fromField)
     m_style.getItem(0)->setEnabled(false);
   }
 
+  if (std::find(m_availableWeights.begin(), m_availableWeights.end(), m_info.style().weight()) ==
+      m_availableWeights.end()) {
+    // The currently selected weight is not available, reset it back to normal.
+    m_info = app::FontInfo(m_info,
+                           m_info.size(),
+                           text::FontStyle(text::FontStyle::Weight::Normal,
+                                           m_info.style().width(),
+                                           m_info.style().slant()),
+                           m_info.flags(),
+                           m_info.hinting());
+  }
+
   if (fromField != From::Face) {
-    m_face.setText(info.title());
+    m_face.setText(m_info.title());
   }
 
   if (fromField != From::Size) {
-    m_size.updateForFont(info);
-    m_size.setValue(fmt::format("{}", info.size()));
+    m_size.updateForFont(m_info);
+    m_size.setValue(fmt::format("{}", m_info.size()));
   }
 
   m_style.getItem(0)->setEnabled(hasBold);
-  m_style.getItem(0)->setSelected(info.style().weight() != text::FontStyle::Weight::Normal);
+  m_style.getItem(0)->setSelected(m_info.style().weight() != text::FontStyle::Weight::Normal);
   m_style.getItem(0)->setText("B");
 
   // Give some indication of what the weight is, if we have any variation
   if (m_style.getItem(0)->isSelected() && m_availableWeights.size() > 1) {
-    if (info.style().weight() > text::FontStyle::Weight::Bold)
+    if (m_info.style().weight() > text::FontStyle::Weight::Bold)
       m_style.getItem(0)->setText("B+");
-    else if (info.style().weight() < text::FontStyle::Weight::Bold)
+    else if (m_info.style().weight() < text::FontStyle::Weight::Bold)
       m_style.getItem(0)->setText("B-");
   }
 
   if (fromField != From::Style) {
-    m_style.getItem(1)->setSelected(info.style().slant() != text::FontStyle::Slant::Upright);
+    m_style.getItem(1)->setSelected(m_info.style().slant() != text::FontStyle::Slant::Upright);
   }
 
   FontChange(m_info, fromField);
@@ -483,14 +495,14 @@ void FontEntry::onStyleItemClick(ButtonSet::Item* item)
         auto currentWeight = m_info.style().weight();
 
         auto weightChange = [this](text::FontStyle::Weight newWeight) {
-          text::FontStyle style(newWeight, m_info.style().width(), m_info.style().slant());
+          const text::FontStyle style(newWeight, m_info.style().width(), m_info.style().slant());
           setInfo(FontInfo(m_info, m_info.size(), style, m_info.flags(), m_info.hinting()),
                   From::Style);
         };
 
         for (auto weight : m_availableWeights) {
           auto* menuItem = new MenuItem(Strings::Translate(
-            ("font_style.font_weight_" + std::to_string(static_cast<int>(weight))).c_str()));
+            fmt::format("font_style.font_weight_{}", static_cast<int>(weight)).c_str()));
           menuItem->setSelected(weight == currentWeight);
           if (!menuItem->isSelected())
             menuItem->Click.connect([&weightChange, weight] { weightChange(weight); });

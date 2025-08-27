@@ -11,6 +11,7 @@
 #include "app/fonts/font_info.h"
 
 #include "app/fonts/font_data.h"
+#include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
 #include "base/fs.h"
 #include "base/split_string.h"
@@ -142,19 +143,22 @@ std::string FontInfo::humanString() const
   }
   result += fmt::format(" {}pt", size());
   if (!result.empty()) {
-    if (style().weight() >= text::FontStyle::Weight::SemiBold)
-      result += " Bold";
+    if (style().weight() != text::FontStyle::Weight::Normal)
+      result +=
+        " " +
+        Strings::Translate(
+          fmt::format("font_style.font_weight_{}", static_cast<int>(style().weight())).c_str());
     if (style().slant() != text::FontStyle::Slant::Upright)
-      result += " Italic";
+      result += " " + Strings::font_style_italic();
     if (antialias())
-      result += " Antialias";
+      result += " " + Strings::font_style_antialias();
     if (ligatures())
-      result += " Ligatures";
+      result += " " + Strings::font_style_ligatures();
     switch (hinting()) {
-      case text::FontHinting::None:   result += " No Hinting"; break;
-      case text::FontHinting::Slight: result += " Slight Hinting"; break;
+      case text::FontHinting::None:   result += " " + Strings::font_style_hinting(); break;
+      case text::FontHinting::Slight: result += " " + Strings::font_style_hinting_slight(); break;
       case text::FontHinting::Normal: break;
-      case text::FontHinting::Full:   result += " Full Hinting"; break;
+      case text::FontHinting::Full:   result += " " + Strings::font_style_hinting_full(); break;
     }
   }
   return result;
@@ -222,9 +226,10 @@ app::FontInfo convert_to(const std::string& from)
     }
   }
 
-  text::FontStyle style(bold ? text::FontStyle::Weight::Bold : weight,
-                        text::FontStyle::Width::Normal,
-                        italic ? text::FontStyle::Slant::Italic : text::FontStyle::Slant::Upright);
+  const text::FontStyle style(
+    bold ? text::FontStyle::Weight::Bold : weight,
+    text::FontStyle::Width::Normal,
+    italic ? text::FontStyle::Slant::Italic : text::FontStyle::Slant::Upright);
 
   return app::FontInfo(type, name, size, style, flags, hinting);
 }
