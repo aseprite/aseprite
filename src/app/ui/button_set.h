@@ -28,14 +28,22 @@ public:
     os::Surface* iconSurface() const override { return m_icon ? m_icon->bitmap(0) : nullptr; }
     skin::SkinPartPtr icon() const { return m_icon; }
     ButtonSet* buttonSet();
+    void invalidate();
 
   protected:
     void onPaint(ui::PaintEvent& ev) override;
     bool onProcessMessage(ui::Message* msg) override;
     virtual void onClick();
     virtual void onRightClick();
+    virtual void onInvalidateRegion(const gfx::Region& region) override;
+    virtual void getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags) override;
 
   private:
+    // Expands the passed rectangle only if needed as a result of overlapping items.
+    // This is a helper function used to properly paint overlapped items in a
+    // ButtonSet.
+    void expandForOverlappingItems(gfx::Rect& bounds);
+
     skin::SkinPartPtr m_icon;
   };
 
@@ -69,6 +77,11 @@ public:
   void setOfferCapture(bool state);
   void setTriggerOnMouseUp(bool state);
   void setMultiMode(MultiMode mode);
+
+  bool hasOverlappingItems() const
+  {
+    return children().size() > 1 && (m_rowgap < 0 || m_colgap < 0);
+  }
 
   obs::signal<void(Item*)> ItemChange;
   obs::signal<void(Item*)> RightClick;
