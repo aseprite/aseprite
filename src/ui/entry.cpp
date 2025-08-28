@@ -531,6 +531,16 @@ gfx::Size Entry::sizeHintWithText(Entry* entry, const std::string& text)
   return gfx::Size(w, h);
 }
 
+void Entry::setPlaceholder(const std::string& placeholder)
+{
+  m_placeholder = placeholder;
+}
+
+const std::string& Entry::placeholder()
+{
+  return m_placeholder;
+}
+
 void Entry::onSizeHint(SizeHintEvent& ev)
 {
   const auto& font = this->font();
