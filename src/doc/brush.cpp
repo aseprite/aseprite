@@ -485,13 +485,58 @@ void Brush::regenerate()
       case kLineBrushType: {
         const double a = PI * m_angle / 180;
         const double r = m_size / 2.0;
-        const int cx = m_center.x;
-        const int cy = m_center.y;
-        const int dx = int(r * cos(-a));
-        const int dy = int(r * sin(-a));
+        int cx = m_center.x;
+        int cy = m_center.y;
+        int dx;
+        int dy;
+        // Special case for size 2.
+        if (m_size == 2) {
+          constexpr double cos22_5 = 0.92387953; // cos(PI * 22.5 / 180.0);
+          constexpr double cos67_5 = 0.38268343; // cos(PI * 67.5 / 180.0);
+          double x = cos(-a);
+          double y = sin(-a);
 
-        draw_line(m_image.get(), cx, cy, cx + dx, cy + dy, BitmapTraits::max_value);
-        draw_line(m_image.get(), cx, cy, cx - dx, cy - dy, BitmapTraits::max_value);
+          // m_angle in range [-22.5°, 22.5°] '_' (bottom aligned)
+          if (x >= cos22_5 && x <= 1) {
+            cx = 0, cy = 1;
+            dx = 1, dy = 0;
+          }
+          // m_angle in range [-157.5°, 157.5°] '-' (top aligned)
+          else if (x <= -cos22_5 && x >= -1) {
+            cx = 0, cy = 0;
+            dx = 1, dy = 0;
+          }
+          // m_angle in range [22.5°, 67.5°] or [-157.5°, -112.5°] '/'
+          else if ((x >= cos67_5 && x < cos22_5 && y < 0) ||
+                   (x <= -cos67_5 && x > -cos22_5 && y > 0)) {
+            cx = 0, cy = 1;
+            dx = 1, dy = -1;
+          }
+          // m_angle in range [67.5°, 112.5°] ' |' (right aligned)
+          else if (x < cos67_5 && x >= -cos67_5 && y < 0) {
+            cx = 1, cy = 0;
+            dx = 0, dy = 1;
+          }
+          // m_angle in range [-112.5°, -67.5°] '| ' (lef aligned)
+          else if (x < cos67_5 && x >= -cos67_5 && y > 0) {
+            cx = 0, cy = 0;
+            dx = 0, dy = 1;
+          }
+          // m_angle in range [112.5°, 157.7°] or [-22.5°, -67.5°] '\'
+          else {
+            cx = 0, cy = 0;
+            dx = 1, dy = 1;
+          }
+
+          draw_line(m_image.get(), cx, cy, cx + dx, cy + dy, BitmapTraits::max_value);
+        }
+        else {
+          dx = int(r * cos(-a));
+          dy = int(r * sin(-a));
+
+          draw_line(m_image.get(), cx, cy, cx + dx, cy + dy, BitmapTraits::max_value);
+          draw_line(m_image.get(), cx, cy, cx - dx, cy - dy, BitmapTraits::max_value);
+        }
         break;
       }
     }
