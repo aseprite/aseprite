@@ -140,6 +140,76 @@ do -- NewLayer/RemoveLayer
   assert(#s.layers == 1)
 end
 
+-- NewLayer Ordering
+do
+  local function testNewLayerOrdering(testGroup, testTilemap)
+      local s = Sprite(32, 32)
+      assert(#s.layers == 1)
+      local base = app.layer
+
+      app.command.NewLayer{ name = "First", group = testGroup, tilemap = testTilemap }
+      local first = app.layer
+      app.command.NewLayer{ name = "Second", group = testGroup, tilemap = testTilemap }
+      local second = app.layer
+      app.command.NewLayer{ name = "Third", group = testGroup, tilemap = testTilemap }
+      local third = app.layer
+
+      s:deleteLayer(base)
+
+      expect_eq(first.name, "First")
+      expect_eq(second.name, "Second")
+      expect_eq(third.name, "Third")
+
+      expect_eq(first.stackIndex, 1)
+      expect_eq(second.stackIndex, 2)
+      expect_eq(third.stackIndex, 3)
+
+      app.layer = second
+      app.command.NewLayer{ before = true, name = "Before Second", group = testGroup, tilemap = testTilemap }
+      local beforeSecond = app.layer
+
+      app.layer = second
+      app.command.NewLayer{ before = false, name = "After Second", group = testGroup, tilemap = testTilemap }
+      local afterSecond = app.layer
+
+      expect_eq(first.name, "First")
+      expect_eq(second.name, "Second")
+      expect_eq(third.name, "Third")
+      expect_eq(beforeSecond.name, "Before Second")
+      expect_eq(afterSecond.name, "After Second")
+
+      expect_eq(first.stackIndex, 1)
+      expect_eq(beforeSecond.stackIndex, 2)
+      expect_eq(second.stackIndex, 3)
+      expect_eq(afterSecond.stackIndex, 4)
+      expect_eq(third.stackIndex, 5)
+
+      app.layer = second
+      app.command.NewLayer{ top = true, name = "Top", group = testGroup, tilemap = testTilemap }
+      local top = app.layer
+
+      expect_eq(top.stackIndex, 6)
+
+      app.layer = first
+      app.command.NewLayer{ before = true, name = "Bottom", group = testGroup, tilemap = testTilemap }
+      local bottom = app.layer
+
+      expect_eq(bottom.stackIndex, 1)
+      expect_eq(first.stackIndex, 2)
+      expect_eq(beforeSecond.stackIndex, 3)
+      expect_eq(second.stackIndex, 4)
+      expect_eq(afterSecond.stackIndex, 5)
+      expect_eq(third.stackIndex, 6)
+      expect_eq(top.stackIndex, 7)
+
+      s:close()
+  end
+
+  testNewLayerOrdering(false, false) -- Regular layers
+  testNewLayerOrdering(true, false) -- Groups
+  testNewLayerOrdering(false, true) -- Tilemaps
+end
+
 do -- Background/Transparent layers
   local s = Sprite(32, 32)
   assert(s.layers[1].isTransparent)
