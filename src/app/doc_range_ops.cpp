@@ -405,8 +405,7 @@ static DocRange drop_range_op(Doc* doc,
             if (place == kDocRangeBefore) {
               Layer* beforeThis = (!dstLayers.empty() ? dstLayers.front() : nullptr);
               for (Layer* srcLayer : srcLayers) {
-                Layer* copiedLayer =
-                  api.duplicateLayerBefore(srcLayer, parent, beforeThis, " Copy");
+                Layer* copiedLayer = api.duplicateLayerBefore(srcLayer, parent, beforeThis);
 
                 resultRange.startRange(copiedLayer, -1, DocRange::kLayers);
                 resultRange.endRange(copiedLayer, -1);
@@ -417,7 +416,7 @@ static DocRange drop_range_op(Doc* doc,
 
               Layer* afterThis = (!dstLayers.empty() ? dstLayers.back() : nullptr);
               for (Layer* srcLayer : srcLayers) {
-                Layer* copiedLayer = api.duplicateLayerAfter(srcLayer, parent, afterThis, " Copy");
+                Layer* copiedLayer = api.duplicateLayerAfter(srcLayer, parent, afterThis);
 
                 resultRange.startRange(copiedLayer, -1, DocRange::kLayers);
                 resultRange.endRange(copiedLayer, -1);
