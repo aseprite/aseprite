@@ -115,6 +115,7 @@ private:
   FontSize m_size;
   FontStyle m_style;
   std::unique_ptr<FontStroke> m_stroke;
+  std::vector<text::FontStyle::Weight> m_availableWeights;
   bool m_lockFace = false;
 };
 
