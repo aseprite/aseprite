@@ -51,7 +51,7 @@ void DuplicateLayerCommand::onExecute(Context* context)
     Tx tx(writer, "Layer Duplication");
     LayerImage* sourceLayer = static_cast<LayerImage*>(writer.layer());
     DocApi api = document->getApi(tx);
-    api.duplicateLayerAfter(sourceLayer, sourceLayer->parent(), sourceLayer, " Copy");
+    api.duplicateLayerAfter(sourceLayer, sourceLayer->parent(), sourceLayer);
     tx.commit();
   }
 
