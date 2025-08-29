@@ -305,6 +305,7 @@ FileSelector::FileSelector(FileSelectorType type) : m_type(type), m_navigationLo
 
   m_fileName = new CustomFileNameEntry;
   m_fileName->setFocusMagnet(true);
+  m_fileName->setId("file_name");
   fileNamePlaceholder()->addChild(m_fileName);
 
   goBackButton()->setFocusStop(false);

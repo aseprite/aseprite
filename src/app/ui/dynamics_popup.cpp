@@ -54,8 +54,9 @@ enum {
 // Special slider to set the min/max threshold values of a sensor
 class DynamicsPopup::ThresholdSlider : public Widget {
 public:
-  ThresholdSlider()
+  ThresholdSlider(const char* id)
   {
+    setId(id);
     setExpansive(true);
     initTheme();
   }
@@ -278,8 +279,10 @@ DynamicsPopup::DynamicsPopup(Delegate* delegate)
     Preferences::instance().shared.shareDynamics(sameInAllTools);
   });
   m_dynamics->gradientPlaceholder()->addChild(m_ditheringSel);
-  m_dynamics->pressurePlaceholder()->addChild(m_pressureThreshold = new ThresholdSlider);
-  m_dynamics->velocityPlaceholder()->addChild(m_velocityThreshold = new ThresholdSlider);
+  m_dynamics->pressurePlaceholder()->addChild(
+    m_pressureThreshold = new ThresholdSlider("pressure_slider"));
+  m_dynamics->velocityPlaceholder()->addChild(
+    m_velocityThreshold = new ThresholdSlider("velocity_slider"));
   addChild(m_dynamics);
 }
 

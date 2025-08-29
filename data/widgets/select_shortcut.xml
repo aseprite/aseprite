@@ -5,7 +5,7 @@
   <window id="select_shortcut" text="@.title">
     <vbox expansive="true">
       <grid columns="3">
-        <label text="@.key" />
+        <label text="@.key" for="key_field" />
         <hbox id="key_placeholder" cell_align="horizontal" />
         <button text="@.clear" id="clear_button" minwidth="60" />
 

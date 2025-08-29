@@ -3,7 +3,7 @@
 <gui>
 <window id="tga_options" text="@.title">
   <grid columns="2">
-    <label text="@.bits_per_pixel" id="bits_per_pixel_label" />
+    <label text="@.bits_per_pixel" id="bits_per_pixel_label" for="bits_per_pixel" />
     <combobox id="bits_per_pixel" cell_align="horizontal" />
 
     <check text="@.compress" id="compress" cell_hspan="2" />

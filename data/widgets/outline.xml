@@ -3,9 +3,9 @@
 <gui>
   <vbox id="outline" expansive="true">
     <grid columns="2">
-      <label text="@.color" />
+      <label text="@.color" for="color" />
       <colorpicker id="color" cell_align="horizontal" />
-      <label text="@.bg_color" />
+      <label text="@.bg_color" for="bg_color" />
       <colorpicker id="bg_color" cell_align="horizontal" />
     </grid>
     <hbox>

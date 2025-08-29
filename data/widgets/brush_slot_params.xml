@@ -4,27 +4,27 @@
   <vbox id="brush_slot_params">
     <grid columns="2">
 
-      <label text="@.brush" />
+      <label text="@.brush" for="brush_params" />
       <buttonset id="brush_params" columns="3" multiple="true">
         <item id="brush_type" text="@.brush_type" />
         <item id="brush_size" text="@.brush_size" />
         <item id="brush_angle" text="@.brush_angle" />
       </buttonset>
 
-      <label text="@.color" />
+      <label text="@.color" for="color_params" />
       <buttonset id="color_params" columns="2" multiple="true">
         <item id="fg_color" text="@.foreground" />
         <item id="bg_color" text="@.background" />
         <item id="image_color" text="@.image_color" hspan="2" />
       </buttonset>
 
-      <label text="@.ink" />
+      <label text="@.ink" for="ink_params" />
       <buttonset id="ink_params" columns="2" multiple="true">
         <item id="ink_type" text="@.ink_type" />
         <item id="ink_opacity" text="@.ink_opacity" />
       </buttonset>
 
-      <label text="@.extras" />
+      <label text="@.extras" for="extra_params" />
       <buttonset id="extra_params" columns="2" multiple="true">
         <item id="shade" text="@.shade" />
         <item id="pixel_perfect" text="@.pixel_perfect" />

@@ -3,7 +3,7 @@
 <gui>
 <window id="palette_size" text="@.title">
   <grid columns="3">
-    <label text="@.number_of_colors" />
+    <label text="@.number_of_colors" for="colors" />
     <expr expansive="true" id="colors" magnet="true" />
     <box cell_align="horizontal" />
 
