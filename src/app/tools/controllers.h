@@ -1,11 +1,15 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #include "app/snap_to_grid.h"
+#include "app/tools/controller.h"
+#include "app/tools/intertwine.h"
+#include "app/tools/tool_loop.h"
+#include "app/tools/tool_loop_modifiers.h"
 #include "base/gcd.h"
 #include "base/pi.h"
 #include "fmt/format.h"
@@ -135,6 +139,12 @@ public:
     if (MoveOriginCapability::isMovingOrigin(loop, stroke, pt))
       return;
 
+    if ((int(loop->getModifiers()) & int(ToolLoopModifiers::kCornerRadius))) {
+      int dr = stroke[1].y - pt.y;
+      m_cornerRadius = ABS(m_lastCornerRadius + dr);
+      return;
+    }
+
     if (!loop->getIntertwine()->snapByAngle() &&
         int(loop->getModifiers()) & int(ToolLoopModifiers::kRotateShape)) {
       if ((int(loop->getModifiers()) & int(ToolLoopModifiers::kFromCenter))) {
@@ -149,8 +159,13 @@ public:
       return;
     }
 
-    stroke[0] = m_first;
-    stroke[1] = pt;
+    if (m_lastCornerRadius != m_cornerRadius) {
+      m_lastCornerRadius = m_cornerRadius;
+    }
+    else {
+      stroke[0] = m_first;
+      stroke[1] = pt;
+    }
 
     bool isoAngle = false;
 
@@ -277,11 +292,16 @@ public:
       text += fmt::format(" :angle: {:.1f}", 180.0 * angle / PI);
     }
 
+    if (hasCornerRadius()) {
+      text += fmt::format(" :corner_radius: {}", m_cornerRadius);
+    }
+
     // Aspect ratio at the end
     text += fmt::format(" :aspect_ratio: {}:{}", w / gcd, h / gcd);
   }
 
   double getShapeAngle() const override { return m_angle; }
+  int getCornerRadius() const override { return m_cornerRadius; }
 
 private:
   void snapPointsToGridTiles(ToolLoop* loop, Stroke& stroke)
@@ -301,6 +321,8 @@ private:
 
   bool hasAngle() const { return (ABS(m_angle) > 0.001); }
 
+  bool hasCornerRadius() const { return (ABS(m_cornerRadius) > 1); }
+
   void onMoveOrigin(const Point& delta) override
   {
     m_first.x += delta.x;
@@ -312,6 +334,8 @@ private:
   Stroke::Pt m_first;
   Stroke::Pt m_center;
   double m_angle;
+  int m_lastCornerRadius = 0;
+  int m_cornerRadius = 0;
 };
 
 // Controls clicks for tools like polygon

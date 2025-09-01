@@ -18,6 +18,7 @@
 #include "app/tools/tool_loop.h"
 #include "base/pi.h"
 #include "doc/algo.h"
+#include "doc/algorithm/hline.h"
 #include "doc/layer.h"
 
 #include <cmath>
@@ -156,6 +157,23 @@ doc::AlgoLineWithAlgoPixel Intertwine::getLineAlgo(ToolLoop* loop,
     return (needsFixForLineBrush ? algo_line_continuous_with_fix_for_line_brush :
                                    algo_line_continuous);
   }
+}
+
+// static
+void Intertwine::doPointshapeCircle(int xm, int ym, int r, int sx, int sy, ToolLoop* loop, bool fill)
+{
+  if (fill) {
+    algo_circlefill(xm, ym, sx, sy, r, loop, (AlgoHLine)doPointshapeHline);
+  }
+  else {
+    algo_circle(xm, ym, sx, sy, r, loop, (AlgoPixel)doPointshapePoint);
+  }
+}
+
+// static
+void Intertwine::doPointshapeArc(int xm, int ym, double sa, double ea, int r, ToolLoop* loop)
+{
+  algo_arc(xm, ym, sa, ea, r, loop, (AlgoPixel)doPointshapePoint);
 }
 
 }} // namespace app::tools

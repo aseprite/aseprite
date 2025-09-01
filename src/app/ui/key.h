@@ -64,6 +64,7 @@ enum class KeyAction {
   AngleSnapFromLastPoint = 0x00010000,
   RotateShape = 0x00020000,
   FineControl = 0x00040000,
+  CornerRadius = 0x00080000,
 };
 
 enum class WheelAction {

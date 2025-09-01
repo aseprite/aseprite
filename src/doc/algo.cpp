@@ -12,6 +12,7 @@
 #include "doc/algo.h"
 
 #include "base/debug.h"
+#include "base/pi.h"
 
 #include <algorithm>
 #include <cmath>
@@ -178,6 +179,183 @@ void algo_line_continuous_with_fix_for_line_brush(int x0,
       y0 += sy;
     }
   }
+}
+
+// Circle code based on Alois Zingl work released under the MIT
+// license http://members.chello.at/easyfilter/bresenham.html
+//
+// Adapted for Aseprite by Igara Studio S.A.
+//
+// Draws a circle divided in 4 parts, separated sx pixels horizontally and sy
+// pixels vertically:
+//             |---sx---|
+//
+//          OOO          OOO
+//        O                  O
+//       O                    O
+//  T
+//  |
+//  |
+//  sy           xm,xy
+//  |
+//  |
+//  _
+//       O                    O
+//        O                  O
+//          OOO          OOO
+//
+// If sx and sy are 0, it draws a regular circle.
+void algo_circle(int xm, int ym, int sx, int sy, int r, void* data, AlgoPixel proc)
+{
+  int x = -r, y = 0, err = 2 - 2 * r; /* II. Quadrant */
+  sx = sx < 0 ? 0 : sx;
+  sy = sy < 0 ? 0 : sy;
+  int offsetx = sx / 2;
+  int offsety = sy / 2;
+  // Fix the position when sx or sy are not even.
+  int fixx = sx - 2 * offsetx;
+  int fixy = sy - 2 * offsety;
+  do {
+    proc(xm - x + offsetx + fixx, ym + y + offsety + fixy, data); /*   I. Quadrant */
+    proc(xm - y - offsetx, ym - x + offsety + fixy, data);        /*  II. Quadrant */
+    proc(xm + x - offsetx, ym - y - offsety, data);               /* III. Quadrant */
+    proc(xm + y + offsetx + fixx, ym + x - offsety, data);        /*  IV. Quadrant */
+    r = err;
+    if (r <= y)
+      err += ++y * 2 + 1; /* e_xy+e_y < 0 */
+    if (r > x || err > y)
+      err += ++x * 2 + 1; /* e_xy+e_x > 0 or no 2nd y-step */
+  } while (x < 0);
+}
+
+// Same as algo_circle but with the parts filled.
+void algo_circlefill(int xm, int ym, int sx, int sy, int r, void* data, AlgoHLine proc)
+{
+  int x = -r, y = 0, err = 2 - 2 * r; /* II. Quadrant */
+  sx = sx < 0 ? 0 : sx;
+  sy = sy < 0 ? 0 : sy;
+  int offsetx = sx / 2;
+  int offsety = sy / 2;
+  // Fix the position when sx or sy are not even.
+  int fixx = sx - 2 * offsetx;
+  int fixy = sy - 2 * offsety;
+  do {
+    proc(xm, ym + y + offsety + fixy, xm - x + offsetx + fixx, data); /*   I. Quadrant */
+    proc(xm - y - offsetx, ym - x + offsety + fixy, xm, data);        /*  II. Quadrant */
+    proc(xm + x - offsetx, ym - y - offsety, xm, data);               /* III. Quadrant */
+    proc(xm, ym + x - offsety, xm + y + offsetx + fixx, data);        /*  IV. Quadrant */
+    r = err;
+    if (r <= y)
+      err += ++y * 2 + 1; /* e_xy+e_y < 0 */
+    if (r > x || err > y)
+      err += ++x * 2 + 1; /* e_xy+e_x > 0 or no 2nd y-step */
+  } while (x < 0);
+}
+
+void algo_arc(int xm, int ym, double sa, double ea, int r, void* data, AlgoPixel proc)
+{
+  int sx = std::cos(sa) * r;
+  int ex = std::cos(ea) * r;
+
+  int startQuadrant;
+  if (sa <= 0 && sa > -PI / 2) {
+    startQuadrant = 4;
+  }
+  else if (sa <= -PI / 2 && sa >= -PI) {
+    startQuadrant = 3;
+  }
+  else if (sa > 0 && sa < PI / 2) {
+    startQuadrant = 1;
+  }
+  else {
+    startQuadrant = 2;
+  }
+
+  int endQuadrant;
+  if (ea <= 0 && ea > -PI / 2) {
+    endQuadrant = 4;
+  }
+  else if (ea <= -PI / 2 && ea >= -PI) {
+    endQuadrant = 3;
+  }
+  else if (ea > 0 && ea < PI / 2) {
+    endQuadrant = 1;
+  }
+  else {
+    endQuadrant = 2;
+  }
+
+  // If start angle and end angle falls in the same quadrant we have to determine
+  // if we have to include the other quadrants or not since the arc is determined
+  // from start angle to end angle in clockwise direction.
+  bool includeQuadrant[4] = { false, false, false, false };
+  if (startQuadrant == endQuadrant) {
+    // If start angle is greater than end angle, include all quadrants for drawing
+    if (sa > ea) {
+      includeQuadrant[0] = true;
+      includeQuadrant[1] = true;
+      includeQuadrant[2] = true;
+      includeQuadrant[3] = true;
+    }
+    else {
+      // start angle is less to or equal to end angle then only include one quadrant
+      // for drawing.
+      includeQuadrant[startQuadrant - 1] = true;
+    }
+  }
+  else {
+    for (int i = startQuadrant - 1; i < startQuadrant - 1 + 4; ++i) {
+      int q = i % 4;
+      includeQuadrant[q] = true;
+      if (q == endQuadrant - 1)
+        break;
+    }
+  }
+
+  int x = -r, y = 0, err = 2 - 2 * r; /* II. Quadrant */
+  do {
+    if (includeQuadrant[0]) {
+      if ((startQuadrant != 1 && endQuadrant != 1) ||
+          (startQuadrant == 1 && endQuadrant != 1 && -x <= sx) ||
+          (startQuadrant != 1 && endQuadrant == 1 && -x >= ex) ||
+          (startQuadrant == 1 && endQuadrant == 1 &&
+           ((sa <= ea && -x <= sx && -x >= ex) || (sa > ea && (-x <= sx || -x >= ex)))))
+        proc(xm - x, ym + y, data); /*   I. Quadrant */
+    }
+
+    if (includeQuadrant[1]) {
+      if ((startQuadrant != 2 && endQuadrant != 2) ||
+          (startQuadrant == 2 && endQuadrant != 2 && -y <= sx) ||
+          (startQuadrant != 2 && endQuadrant == 2 && -y >= ex) ||
+          (startQuadrant == 2 && endQuadrant == 2 &&
+           ((sa <= ea && -y <= sx && -y >= ex) || (sa > ea && (-y <= sx || -y >= ex)))))
+        proc(xm - y, ym - x, data); /*  II. Quadrant */
+    }
+
+    if (includeQuadrant[2]) {
+      if ((startQuadrant != 3 && endQuadrant != 3) ||
+          (startQuadrant == 3 && endQuadrant != 3 && x >= sx) ||
+          (startQuadrant != 3 && endQuadrant == 3 && x <= ex) ||
+          (startQuadrant == 3 && endQuadrant == 3 &&
+           ((sa <= ea && -x <= -sx && -x >= -ex) || (sa > ea && (-x <= -sx || -x >= -ex)))))
+        proc(xm + x, ym - y, data); /* III. Quadrant */
+    }
+
+    if (includeQuadrant[3]) {
+      if ((startQuadrant != 4 && endQuadrant != 4) ||
+          (startQuadrant == 4 && endQuadrant != 4 && y >= sx) ||
+          (startQuadrant != 4 && endQuadrant == 4 && y <= ex) ||
+          (startQuadrant == 4 && endQuadrant == 4 &&
+           ((sa <= ea && y >= sx && y <= ex) || (sa > ea && (y >= sx || y <= ex)))))
+        proc(xm + y, ym + x, data); /*  IV. Quadrant */
+    }
+
+    r = err;
+    if (r <= y)
+      err += ++y * 2 + 1; /* e_xy+e_y < 0 */
+    if (r > x || err > y)
+      err += ++x * 2 + 1; /* e_xy+e_x > 0 or no 2nd y-step */
+  } while (x < 0);
 }
 
 static int adjust_ellipse_args(int& x0, int& y0, int& x1, int& y1, int& hPixels, int& vPixels)
