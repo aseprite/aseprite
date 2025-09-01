@@ -48,6 +48,12 @@ void algo_line_continuous_with_fix_for_line_brush(int x1,
                                                   void* data,
                                                   AlgoPixel proc);
 
+void algo_circle(int xm, int ym, int sx, int sy, int r, void* data, AlgoPixel proc);
+
+void algo_circlefill(int xm, int ym, int sx, int sy, int r, void* data, AlgoHLine proc);
+
+void algo_arc(int xm, int ym, double sa, double ea, int r, void* data, AlgoPixel proc);
+
 void algo_ellipse(int x1,
                   int y1,
                   int x2,
