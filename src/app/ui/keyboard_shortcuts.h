@@ -59,7 +59,13 @@ public:
                        const Key* newKey);
 
   static KeyContext getCurrentKeyContext();
-  bool getCommandFromKeyMessage(const ui::Message* msg, Command** command, Params* params);
+
+  bool getCommandFromKeyMessage(
+    const ui::Message* msg,
+    Command** command,
+    Params* params,
+    KeyContext currentKeyContext = KeyboardShortcuts::getCurrentKeyContext());
+
   tools::Tool* getCurrentQuicktool(tools::Tool* currentTool);
   KeyAction getCurrentActionModifiers(KeyContext context);
   WheelAction getWheelActionFromMouseMessage(KeyContext context, const ui::Message* msg);

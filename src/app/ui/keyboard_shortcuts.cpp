@@ -89,8 +89,10 @@ void KeyboardShortcuts::destroyInstance()
 
 KeyboardShortcuts::KeyboardShortcuts()
 {
-  ASSERT(Strings::instance());
-  Strings::instance()->LanguageChange.connect([] { reset_key_tables_that_depends_on_language(); });
+  // Strings instance can be nullptr in tests.
+  if (auto* strings = Strings::instance()) {
+    strings->LanguageChange.connect([] { reset_key_tables_that_depends_on_language(); });
+  }
 }
 
 KeyboardShortcuts::~KeyboardShortcuts()
@@ -574,11 +576,12 @@ KeyContext KeyboardShortcuts::getCurrentKeyContext()
   return KeyContext::Normal;
 }
 
-bool KeyboardShortcuts::getCommandFromKeyMessage(const Message* msg,
+bool KeyboardShortcuts::getCommandFromKeyMessage(const ui::Message* msg,
                                                  Command** command,
-                                                 Params* params)
+                                                 Params* params,
+                                                 KeyContext currentKeyContext)
 {
-  const KeyContext contexts[] = { getCurrentKeyContext(), KeyContext::Normal };
+  const KeyContext contexts[] = { currentKeyContext, KeyContext::Normal };
   int n = (contexts[0] != contexts[1] ? 2 : 1);
   for (int i = 0; i < n; ++i) {
     for (KeyPtr& key : m_keys) {
