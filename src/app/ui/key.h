@@ -178,7 +178,13 @@ private:
   DragVector m_dragVector;   // for KeyType::DragAction
 };
 
-std::string convertKeyContextToUserFriendlyString(KeyContext keyContext);
+// Clears collection with strings that depends on the current
+// language, so they can be reconstructed when they are needed with a
+// new selected language.
+void reset_key_tables_that_depends_on_language();
+
+std::string key_tooltip(const char* str, const Key* key);
+std::string convert_keycontext_to_user_friendly_string(KeyContext keyctx);
 
 } // namespace app
 
@@ -193,6 +199,11 @@ template<>
 app::WheelAction convert_to(const std::string& from);
 template<>
 std::string convert_to(const app::WheelAction& from);
+
+template<>
+app::KeyContext convert_to(const std::string& from);
+template<>
+std::string convert_to(const app::KeyContext& from);
 
 } // namespace base
 

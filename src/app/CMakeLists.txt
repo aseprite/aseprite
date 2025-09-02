@@ -653,6 +653,7 @@ target_sources(app-lib PRIVATE
   ui/icon_button.cpp
   ui/incompat_file_window.cpp
   ui/input_chain.cpp
+  ui/key.cpp
   ui/keyboard_shortcuts.cpp
   ui/layer_frame_comboboxes.cpp
   ui/main_menu_bar.cpp
