@@ -1664,6 +1664,10 @@ int Dialog_modify(lua_State* L)
     lua_pop(L, 1);
 
     type = lua_getfield(L, 2, "mouseCursor");
+    if (type == LUA_TNIL) {
+      lua_pop(L, 1);
+      type = lua_getfield(L, 2, "mousecursor");
+    }
     if (type != LUA_TNIL) {
       if (auto canvas = dynamic_cast<Canvas*>(widget)) {
         auto cursor = (ui::CursorType)lua_tointeger(L, -1);
