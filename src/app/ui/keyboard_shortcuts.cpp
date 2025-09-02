@@ -367,12 +367,12 @@ void KeyboardShortcuts::exportKeys(XMLElement* parent, KeyType type)
       continue;
 
     for (const auto& kv : key->delsKeys())
-      if (kv.first == KeySource::UserDefined)
-        exportShortcut(parent, key.get(), kv.second, true);
+      if (kv.source == KeySource::UserDefined)
+        exportShortcut(parent, key.get(), kv.shortcut, true);
 
     for (const auto& kv : key->addsKeys())
-      if (kv.first == KeySource::UserDefined)
-        exportShortcut(parent, key.get(), kv.second, false);
+      if (kv.source == KeySource::UserDefined)
+        exportShortcut(parent, key.get(), kv.shortcut, false);
   }
 }
 
@@ -634,10 +634,10 @@ WheelAction KeyboardShortcuts::getWheelActionFromMouseMessage(const KeyContext c
                                                               const ui::Message* msg)
 {
   WheelAction wheelAction = WheelAction::None;
-  const ui::Shortcut* bestShortcut = nullptr;
+  const AppShortcut* bestShortcut = nullptr;
   for (const KeyPtr& key : m_keys) {
     if (key->type() == KeyType::WheelAction && key->keycontext() == context) {
-      const ui::Shortcut* shortcut = key->isPressed(msg);
+      const AppShortcut* shortcut = key->isPressed(msg);
       if ((shortcut) && (!bestShortcut || bestShortcut->modifiers() < shortcut->modifiers())) {
         bestShortcut = shortcut;
         wheelAction = key->wheelAction();
@@ -653,7 +653,7 @@ Keys KeyboardShortcuts::getDragActionsFromKeyMessage(const ui::Message* msg)
   Keys keys;
   for (const KeyPtr& key : m_keys) {
     if (key->type() == KeyType::DragAction) {
-      const ui::Shortcut* shortcut = key->isPressed(msg);
+      const AppShortcut* shortcut = key->isPressed(msg);
       if (shortcut) {
         keys.push_back(key);
       }

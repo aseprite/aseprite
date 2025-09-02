@@ -22,8 +22,6 @@
 #include <string>
 #include <vector>
 
-#include <algorithm>
-
 namespace ui {
 
 #ifdef _WIN32
@@ -375,27 +373,6 @@ bool Shortcut::isLooselyPressed() const
   }
 
   return false;
-}
-
-//////////////////////////////////////////////////////////////////////
-// Shortcuts
-
-bool Shortcuts::has(const Shortcut& shortcut) const
-{
-  return (std::find(begin(), end(), shortcut) != end());
-}
-
-void Shortcuts::add(const Shortcut& shortcut)
-{
-  if (!has(shortcut))
-    m_list.push_back(shortcut);
-}
-
-void Shortcuts::remove(const Shortcut& shortcut)
-{
-  auto it = std::find(begin(), end(), shortcut);
-  if (it != end())
-    m_list.erase(it);
 }
 
 } // namespace ui

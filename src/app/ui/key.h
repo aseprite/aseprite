@@ -103,10 +103,34 @@ inline KeyAction operator&(KeyAction a, KeyAction b)
   return KeyAction(int(a) & int(b));
 }
 
+struct AppShortcut {
+  KeySource source;
+  ui::Shortcut shortcut;
+
+  AppShortcut(const KeySource source, const ui::Shortcut& shortcut)
+    : source(source)
+    , shortcut(shortcut)
+  {
+  }
+
+  bool isEmpty() const { return shortcut.isEmpty(); }
+  std::string toString() const { return shortcut.toString(); }
+  bool isPressed() const { return shortcut.isPressed(); }
+  bool isLooselyPressed() const { return shortcut.isLooselyPressed(); }
+
+  bool operator==(const AppShortcut& other) const { return shortcut.operator==(other.shortcut); }
+  bool operator!=(const AppShortcut& other) const { return shortcut.operator!=(other.shortcut); }
+
+  ui::KeyModifiers modifiers() const { return shortcut.modifiers(); }
+  ui::KeyScancode scancode() const { return shortcut.scancode(); }
+  int unicodeChar() const { return shortcut.unicodeChar(); }
+};
+
+using AppShortcuts = ui::ShortcutsT<AppShortcut>;
+
 class Key;
 using KeyPtr = std::shared_ptr<Key>;
 using Keys = std::vector<KeyPtr>;
-using KeySourceShortcutList = std::vector<std::pair<KeySource, ui::Shortcut>>;
 using DragVector = base::Vector2d<double>;
 
 class Key {
@@ -119,13 +143,13 @@ public:
   static KeyPtr MakeDragAction(WheelAction dragAction);
 
   KeyType type() const { return m_type; }
-  const ui::Shortcuts& shortcuts() const;
-  const KeySourceShortcutList& addsKeys() const { return m_adds; }
-  const KeySourceShortcutList& delsKeys() const { return m_dels; }
+  const AppShortcuts& shortcuts() const;
+  const AppShortcuts& addsKeys() const { return m_adds; }
+  const AppShortcuts& delsKeys() const { return m_dels; }
 
   void add(const ui::Shortcut& shortcut, KeySource source, KeyboardShortcuts& globalKeys);
-  const ui::Shortcut* isPressed(const ui::Message* msg, KeyContext keyContext) const;
-  const ui::Shortcut* isPressed(const ui::Message* msg) const;
+  const AppShortcut* isPressed(const ui::Message* msg, KeyContext keyContext) const;
+  const AppShortcut* isPressed(const ui::Message* msg) const;
   bool isPressed() const;
   bool isLooselyPressed() const;
   bool isCommandListed() const;
@@ -161,11 +185,11 @@ public:
 
 private:
   KeyType m_type;
-  KeySourceShortcutList m_adds;
-  KeySourceShortcutList m_dels;
+  AppShortcuts m_adds;
+  AppShortcuts m_dels;
   // Final list of shortcuts after processing the
   // addition/deletion of extension-defined & user-defined keys.
-  mutable std::unique_ptr<ui::Shortcuts> m_shortcuts;
+  mutable std::unique_ptr<AppShortcuts> m_shortcuts;
   KeyContext m_keycontext;
 
   // for KeyType::Command

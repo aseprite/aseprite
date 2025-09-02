@@ -9,6 +9,7 @@
 #define UI_SHORTCUT_H_INCLUDED
 #pragma once
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -51,11 +52,12 @@ private:
   int m_unicodeChar;
 };
 
-class Shortcuts {
+template<typename T>
+class ShortcutsT {
 public:
-  typedef std::vector<Shortcut> List;
-  typedef List::iterator iterator;
-  typedef List::const_iterator const_iterator;
+  using List = std::vector<T>;
+  using iterator = typename List::iterator;
+  using const_iterator = typename List::const_iterator;
 
   iterator begin() { return m_list.begin(); }
   iterator end() { return m_list.end(); }
@@ -65,20 +67,38 @@ public:
   bool empty() const { return m_list.empty(); }
   std::size_t size() const { return m_list.size(); }
 
-  const ui::Shortcut& front() const { return m_list.front(); }
+  const T& front() const { return m_list.front(); }
 
-  const ui::Shortcut& operator[](int index) const { return m_list[index]; }
+  const T& operator[](int index) const { return m_list[index]; }
 
-  ui::Shortcut& operator[](int index) { return m_list[index]; }
+  T& operator[](int index) { return m_list[index]; }
 
   void clear() { m_list.clear(); }
-  bool has(const Shortcut& shortcut) const;
-  void add(const Shortcut& shortcut);
-  void remove(const Shortcut& shortcut);
+
+  bool has(const T& shortcut) const { return (std::find(begin(), end(), shortcut) != end()); }
+
+  void push_back(const T& shortcut) { m_list.push_back(shortcut); }
+
+  void add(const T& shortcut)
+  {
+    if (!has(shortcut))
+      m_list.push_back(shortcut);
+  }
+
+  void remove(const T& shortcut)
+  {
+    auto it = std::find(begin(), end(), shortcut);
+    if (it != end())
+      m_list.erase(it);
+  }
+
+  iterator erase(const iterator& it) { return m_list.erase(it); }
 
 private:
   List m_list;
 };
+
+using Shortcuts = ShortcutsT<Shortcut>;
 
 } // namespace ui
 
