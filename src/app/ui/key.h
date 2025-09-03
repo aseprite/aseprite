@@ -103,6 +103,8 @@ inline KeyAction operator&(KeyAction a, KeyAction b)
   return KeyAction(int(a) & int(b));
 }
 
+// This is a ui::Shortcut wrapper (just one key shortcut) defined by
+// the app, an extension, or the user (KeySource).
 struct AppShortcut {
   KeySource source;
   ui::Shortcut shortcut;
@@ -124,6 +126,13 @@ struct AppShortcut {
   ui::KeyModifiers modifiers() const { return shortcut.modifiers(); }
   ui::KeyScancode scancode() const { return shortcut.scancode(); }
   int unicodeChar() const { return shortcut.unicodeChar(); }
+
+  // Returns true if this AppShortcut is better for the current
+  // context, compared to another shortcut.
+  bool fitsBetterThan(KeyContext currentContext,
+                      KeyContext thisShortcutContext,
+                      KeyContext otherShortcutContext,
+                      const AppShortcut& otherShortcut) const;
 };
 
 using AppShortcuts = ui::ShortcutsT<AppShortcut>;
@@ -133,6 +142,8 @@ using KeyPtr = std::shared_ptr<Key>;
 using Keys = std::vector<KeyPtr>;
 using DragVector = base::Vector2d<double>;
 
+// A set of key shortcuts (AppShortcuts) associated to one command,
+// tool, or specific action.
 class Key {
 public:
   Key(const Key& key);
@@ -148,6 +159,8 @@ public:
   const AppShortcuts& delsKeys() const { return m_dels; }
 
   void add(const ui::Shortcut& shortcut, KeySource source, KeyboardShortcuts& globalKeys);
+
+  bool fitsContext(KeyContext keyContext) const;
   const AppShortcut* isPressed(const ui::Message* msg, KeyContext keyContext) const;
   const AppShortcut* isPressed(const ui::Message* msg) const;
   bool isPressed() const;
