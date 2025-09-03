@@ -295,6 +295,26 @@ namespace app {
 
 using namespace ui;
 
+bool AppShortcut::fitsBetterThan(const KeyContext currentContext,
+                                 const KeyContext thisShortcutContext,
+                                 const KeyContext otherShortcutContext,
+                                 const AppShortcut& otherShortcut) const
+{
+  return
+    // Better context in the same source
+    (otherShortcut.source == this->source && otherShortcutContext != currentContext &&
+     thisShortcutContext == currentContext) ||
+    // Better key source/level: User-defined > Extension-defined > App-defined
+    (int(this->source) > int(otherShortcut.source) && (thisShortcutContext == currentContext ||
+                                                       // User-defined "Any" context overwrites all
+                                                       // app-defined context
+                                                       thisShortcutContext == KeyContext::Any)) ||
+    // Normal > SelectionTool > Transformation
+    ((currentContext == KeyContext::Transformation &&
+      otherShortcutContext != KeyContext::Transformation &&
+      thisShortcutContext == KeyContext::SelectionTool));
+}
+
 Key::Key(const Key& k)
   : m_type(k.m_type)
   , m_adds(k.m_adds)
@@ -437,31 +457,50 @@ void Key::add(const ui::Shortcut& shortcut, const KeySource source, KeyboardShor
   }
 }
 
+bool Key::fitsContext(const KeyContext keyContext) const
+{
+  return
+    // This key is for any context
+    (m_keycontext == KeyContext::Any) ||
+    // This key is for the same context
+    (m_keycontext == keyContext) ||
+    // Use Normal or SelectionTool keys in Transformation context
+    (keyContext == KeyContext::Transformation &&
+     (m_keycontext == KeyContext::SelectionTool || m_keycontext == KeyContext::Normal)) ||
+    // Use Normal keys in SelectionTool or FramesSelection contexts
+    ((keyContext == KeyContext::SelectionTool || keyContext == KeyContext::FramesSelection) &&
+     (m_keycontext == KeyContext::Normal));
+}
+
 const AppShortcut* Key::isPressed(const Message* msg, const KeyContext keyContext) const
 {
+  const AppShortcut* best = nullptr;
+
   if (const auto* keyMsg = dynamic_cast<const KeyMessage*>(msg)) {
-    for (const AppShortcut& shortcut : shortcuts()) {
-      if (shortcut.shortcut.isPressed(keyMsg->modifiers(),
-                                      keyMsg->scancode(),
-                                      keyMsg->unicodeChar()) &&
-          (m_keycontext == KeyContext::Any || match_key_context(m_keycontext, keyContext))) {
-        return &shortcut;
+    if (fitsContext(keyContext)) {
+      for (const AppShortcut& shortcut : shortcuts()) {
+        if (shortcut.shortcut.isPressed(keyMsg->modifiers(),
+                                        keyMsg->scancode(),
+                                        keyMsg->unicodeChar()) &&
+            (!best || shortcut.fitsBetterThan(keyContext, keycontext(), keycontext(), *best))) {
+          best = &shortcut;
+        }
       }
     }
   }
   else if (const auto* mouseMsg = dynamic_cast<const MouseMessage*>(msg)) {
-    for (const AppShortcut& shortcut : shortcuts()) {
-      if ((shortcut.shortcut.modifiers() == mouseMsg->modifiers()) &&
-          (m_keycontext == KeyContext::Any ||
-           // TODO we could have multiple mouse wheel key-context,
-           // like "sprite editor" context, or "timeline" context,
-           // etc.
-           m_keycontext == KeyContext::MouseWheel)) {
-        return &shortcut;
+    if (m_keycontext == KeyContext::Any ||
+        // TODO we could have multiple mouse wheel key-context,
+        // like "sprite editor" context, or "timeline" context,
+        // etc.
+        m_keycontext == KeyContext::MouseWheel) {
+      for (const AppShortcut& shortcut : shortcuts()) {
+        if (shortcut.shortcut.modifiers() == mouseMsg->modifiers())
+          return &shortcut;
       }
     }
   }
-  return nullptr;
+  return best;
 }
 
 const AppShortcut* Key::isPressed(const Message* msg) const
