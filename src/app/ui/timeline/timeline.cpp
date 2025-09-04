@@ -4321,6 +4321,12 @@ void Timeline::clearAndInvalidateRange()
   }
 }
 
+void Timeline::refresh()
+{
+  regenerateRows();
+  invalidate();
+}
+
 app::gen::GlobalPref::Timeline& Timeline::timelinePref() const
 {
   return Preferences::instance().timeline;
@@ -4545,7 +4551,7 @@ void Timeline::onDrag(ui::DragEvent& e)
   m_range.clearRange();
   setHot(hitTest(nullptr, e.position()));
   switch (m_hot.part) {
-    case PART_NOTHING:             invalidate();
+    case PART_NOTHING:             invalidate(); [[fallthrough]];
     case PART_ROW:
     case PART_ROW_EYE_ICON:
     case PART_ROW_CONTINUOUS_ICON:

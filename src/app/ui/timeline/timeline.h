@@ -157,6 +157,8 @@ public:
 
   void clearAndInvalidateRange();
 
+  void refresh();
+
   // Dockable impl
   int dockableAt() const override
   {

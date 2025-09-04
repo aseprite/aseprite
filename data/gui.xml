@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2025  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <!-- Keyboard shortcuts -->
@@ -371,6 +371,12 @@
         <param name="units" value="zoomed-tile-height" />
         <param name="quantity" value="1" />
       </key>
+
+      <!-- Main selection actions (apply transformation / undo) -->
+      <key command="DeselectMask" shortcut="Esc" context="Transformation" />
+      <key command="Apply" shortcut="Enter" context="Transformation" />
+      <key command="Apply" shortcut="Enter Pad" context="Transformation" />
+      <key command="Undo" shortcut="Ctrl+Z" mac="Cmd+Z" context="Transformation" />
 
       <!-- Move selection with arrows -->
       <key command="MoveMask" shortcut="Left" context="Selection">
@@ -1205,6 +1211,7 @@
 
     <menu id="slice_popup_menu">
       <item command="SliceProperties" text="@.properties" group="slice_popup_properties" />
+      <item command="DuplicateSlice" text="@.duplicate" group="slice_popup_duplicate" />
       <item command="RemoveSlice" text="@.delete" group="slice_popup_delete" />
     </menu>
 

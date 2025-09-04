@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -8,6 +8,7 @@
 FOR_EACH_COMMAND(About)
 FOR_EACH_COMMAND(AddColor)
 FOR_EACH_COMMAND(AdvancedMode)
+FOR_EACH_COMMAND(Apply)
 FOR_EACH_COMMAND(AutocropSprite)
 FOR_EACH_COMMAND(BackgroundFromLayer)
 FOR_EACH_COMMAND(BrightnessContrast)
@@ -40,6 +41,7 @@ FOR_EACH_COMMAND(DeselectMask)
 FOR_EACH_COMMAND(Despeckle)
 FOR_EACH_COMMAND(DiscardBrush)
 FOR_EACH_COMMAND(DuplicateLayer)
+FOR_EACH_COMMAND(DuplicateSlice)
 FOR_EACH_COMMAND(DuplicateSprite)
 FOR_EACH_COMMAND(DuplicateView)
 FOR_EACH_COMMAND(Exit)

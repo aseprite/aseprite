@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2019-2021  Igara Studio S.A. -->
+<!-- Copyright (C) 2019-2025  Igara Studio S.A. -->
 <!-- Copyright (C) 2015-2018  David Capello -->
 <gui>
 <window id="tag_properties" text="@.title">
@@ -23,13 +23,14 @@
       <check text="@.repeat" id="limit_repeat" />
       <vbox id="repeat_placeholder" cell_hspan="2" />
     </grid>
+    <boxfiller />
     <grid columns="2">
-      <separator horizontal="true" cell_hspan="2" minwidth="180" />
+      <separator horizontal="true" cell_align="horizontal" cell_hspan="2" minwidth="180" />
 
-      <box horizontal="true" homogeneous="true" cell_hspan="2" cell_align="right">
+      <hbox homogeneous="true" cell_hspan="2" cell_align="right">
         <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
         <button text="@general.cancel" closewindow="true" />
-      </box>
+      </hbox>
     </grid>
   </vbox>
 </window>

@@ -85,8 +85,6 @@ private:
   mutable Keys m_keys;
 };
 
-std::string key_tooltip(const char* str, const Key* key);
-
 inline std::string key_tooltip(const char* str,
                                const char* commandName,
                                const Params& params = Params(),

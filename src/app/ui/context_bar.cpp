@@ -1390,11 +1390,12 @@ public:
 
 class ContextBar::DropPixelsField : public ButtonSet {
 public:
-  DropPixelsField() : ButtonSet(2)
+  DropPixelsField() : ButtonSet(3)
   {
     auto* theme = SkinTheme::get(this);
 
     addItem(theme->parts.dropPixelsOk(), theme->styles.contextBarButton());
+    addItem(theme->parts.dropPixelsDrop(), theme->styles.contextBarButton());
     addItem(theme->parts.dropPixelsCancel(), theme->styles.contextBarButton());
     setOfferCapture(false);
   }
@@ -1402,8 +1403,26 @@ public:
   void setupTooltips(TooltipManager* tooltipManager)
   {
     // TODO Enter and Esc should be configurable keys
-    tooltipManager->addTooltipFor(at(0), Strings::context_bar_drop_pixel(), BOTTOM);
-    tooltipManager->addTooltipFor(at(1), Strings::context_bar_cancel_drag(), BOTTOM);
+
+    tooltipManager->addTooltipFor(
+      at(0),
+      key_tooltip(Strings::context_bar_drop_pixel_and_deselect().c_str(),
+                  CommandId::DeselectMask(),
+                  {},
+                  KeyContext::Transformation),
+      BOTTOM);
+    tooltipManager->addTooltipFor(at(1),
+                                  key_tooltip(Strings::context_bar_drop_pixel().c_str(),
+                                              CommandId::Apply(),
+                                              {},
+                                              KeyContext::Transformation),
+                                  BOTTOM);
+    tooltipManager->addTooltipFor(at(2),
+                                  key_tooltip(Strings::context_bar_cancel_drag().c_str(),
+                                              CommandId::Undo(),
+                                              {},
+                                              KeyContext::Transformation),
+                                  BOTTOM);
   }
 
   obs::signal<void(ContextBarObserver::DropAction)> DropPixels;
@@ -1414,8 +1433,9 @@ protected:
     ButtonSet::onItemChange(item);
 
     switch (selectedItem()) {
-      case 0: DropPixels(ContextBarObserver::DropPixels); break;
-      case 1: DropPixels(ContextBarObserver::CancelDrag); break;
+      case 0: DropPixels(ContextBarObserver::Deselect); break;
+      case 1: DropPixels(ContextBarObserver::DropPixels); break;
+      case 2: DropPixels(ContextBarObserver::CancelDrag); break;
     }
   }
 };

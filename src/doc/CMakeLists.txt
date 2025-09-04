@@ -45,6 +45,7 @@ add_library(doc-lib
   image.cpp
   image_impl.cpp
   image_io.cpp
+  image_iterators2.cpp
   layer.cpp
   layer_io.cpp
   layer_list.cpp

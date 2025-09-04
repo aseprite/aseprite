@@ -264,16 +264,8 @@ void NewLayerCommand::onExecute(Context* context)
     bool afterBackground = false;
 
     switch (m_type) {
-      case Type::Layer:
-
-        if (m_place == Place::BeforeActiveLayer) {
-          layer = api.newLayer(parent, name);
-          api.restackLayerBefore(layer, parent, activeLayer);
-        }
-        else
-          layer = api.newLayerAfter(parent, name, activeLayer);
-        break;
-      case Type::Group: layer = api.newGroupAfter(parent, name, activeLayer); break;
+      case Type::Layer: layer = api.newLayer(parent, name); break;
+      case Type::Group: layer = api.newGroup(parent, name); break;
       case Type::ReferenceLayer:
         layer = api.newLayer(parent, name);
         if (layer)
@@ -307,6 +299,15 @@ void NewLayerCommand::onExecute(Context* context)
       return;
 
     ASSERT(layer->parent());
+
+    // Reorder the resulting layer.
+    switch (m_place) {
+      case Place::AfterActiveLayer:  api.restackLayerAfter(layer, parent, activeLayer); break;
+      case Place::BeforeActiveLayer: api.restackLayerBefore(layer, parent, activeLayer); break;
+      case Place::Top:
+        api.restackLayerAfter(layer, sprite->root(), sprite->root()->lastLayer());
+        break;
+    }
 
     // Put new layer as an overlay of the background or in the first
     // layer in case the sprite is transparent.

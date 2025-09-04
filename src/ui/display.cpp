@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -87,7 +87,8 @@ void Display::configureBackLayer()
       layerSurface->width() != displaySurface->width() ||
       layerSurface->height() != displaySurface->height()) {
     layerSurface = os::System::instance()->makeSurface(displaySurface->width(),
-                                                       displaySurface->height());
+                                                       displaySurface->height(),
+                                                       displaySurface->colorSpace());
     layer->setSurface(layerSurface);
   }
 }

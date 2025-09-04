@@ -141,6 +141,8 @@ public:
   void notifyTilesetChanged(Tileset* tileset);
   void notifyLayerGroupCollapseChange(Layer* layer);
   void notifyAfterAddTile(LayerTilemap* layer, frame_t frame, tile_index ti);
+  void notifyBeforeSlicesDuplication();
+  void notifySliceDuplicated(Slice* slice);
 
   //////////////////////////////////////////////////////////////////////
   // File related properties

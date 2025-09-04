@@ -99,16 +99,14 @@ private:
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
     if (lua_pcall(L, 0, 1, 0)) {
-      if (const char* s = lua_tostring(L, -1)) {
+      if (const char* s = lua_tostring(L, -1))
         Console().printf("Error: %s", s);
-        return false;
-      }
+      return false;
     }
-    else {
-      bool ret = lua_toboolean(L, -1);
-      lua_pop(L, 1);
-      return ret;
-    }
+
+    bool ret = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+    return ret;
   }
 
   std::string m_title;

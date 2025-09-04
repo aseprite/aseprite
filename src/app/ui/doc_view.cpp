@@ -36,12 +36,15 @@
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
+#include "app/util/slice_utils.h"
 #include "base/fs.h"
 #include "doc/color.h"
 #include "doc/layer.h"
+#include "doc/slice.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"
 #include "ui/alert.h"
+#include "ui/display.h"
 #include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/shortcut.h"
@@ -306,6 +309,11 @@ bool DocView::onCloseView(Workspace* workspace, bool quitting)
 
     // See if the sprite has changes
     while (m_document->isModified()) {
+      if (quitting) {
+        // Make sure the window is active so we can see the message when we close the app.
+        display()->nativeWindow()->activate();
+      }
+
       // ask what want to do the user with the changes in the sprite
       int ret = Alert::show(Strings::alerts_save_sprite_changes(
         m_document->name(),
@@ -510,6 +518,8 @@ bool DocView::onCanCopy(Context* ctx)
     return true;
   else if (m_editor->isMovingPixels())
     return true;
+  else if (m_editor->hasSelectedSlices())
+    return true;
   else
     return false;
 }
@@ -527,6 +537,11 @@ bool DocView::onCanPaste(Context* ctx)
              ctx->checkFlags(ContextFlags::ActiveLayerIsTilemap)) {
       return true;
     }
+  }
+
+  if (ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable) &&
+      ctx->clipboard()->format() == ClipboardFormat::Slices) {
+    return true;
   }
   return false;
 }
@@ -560,15 +575,22 @@ bool DocView::onCopy(Context* ctx)
     ctx->clipboard()->copy(reader);
     return true;
   }
-  else
-    return false;
+
+  std::vector<Slice*> selectedSlices = get_selected_slices(reader.site());
+  if (!selectedSlices.empty()) {
+    ctx->clipboard()->copySlices(selectedSlices);
+    return true;
+  }
+
+  return false;
 }
 
 bool DocView::onPaste(Context* ctx, const gfx::Point* position)
 {
   auto clipboard = ctx->clipboard();
   if (clipboard->format() == ClipboardFormat::Image ||
-      clipboard->format() == ClipboardFormat::Tilemap) {
+      clipboard->format() == ClipboardFormat::Tilemap ||
+      clipboard->format() == ClipboardFormat::Slices) {
     clipboard->paste(ctx, true, position);
     return true;
   }

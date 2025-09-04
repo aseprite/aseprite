@@ -22,6 +22,7 @@
 #include "app/script/luacpp.h"
 #include "app/script/userdata.h"
 #include "app/tx.h"
+#include "app/ui/timeline/timeline.h"
 #include "doc/layer.h"
 #include "doc/layer_tilemap.h"
 #include "doc/sprite.h"
@@ -355,6 +356,9 @@ int Layer_set_isCollapsed(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   layer->setCollapsed(lua_toboolean(L, 2));
+
+  if (auto* timeline = App::instance()->timeline())
+    timeline->refresh();
   return 0;
 }
 
@@ -362,6 +366,9 @@ int Layer_set_isExpanded(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   layer->setCollapsed(!lua_toboolean(L, 2));
+
+  if (auto* timeline = App::instance()->timeline())
+    timeline->refresh();
   return 0;
 }
 

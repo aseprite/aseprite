@@ -2602,6 +2602,16 @@ void Editor::onBeforeLayerEditableChange(DocEvent& ev, bool newState)
     m_state->onBeforeLayerEditableChange(this, ev.layer(), newState);
 }
 
+void Editor::onBeforeSlicesDuplication(DocEvent& ev)
+{
+  clearSlicesSelection();
+}
+
+void Editor::onSliceDuplicated(DocEvent& ev)
+{
+  selectSlice(ev.slice());
+}
+
 void Editor::setCursor(const gfx::Point& mouseDisplayPos)
 {
   bool used = false;

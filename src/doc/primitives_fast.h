@@ -49,6 +49,8 @@ inline void put_pixel_fast(Image* image, int x, int y, typename Traits::pixel_t 
 //////////////////////////////////////////////////////////////////////
 // Bitmap specialization
 
+#if DOC_USE_BITMAP_AS_1BPP
+
 template<>
 inline BitmapTraits::pixel_t get_pixel_fast<BitmapTraits>(const Image* image, int x, int y)
 {
@@ -69,6 +71,8 @@ inline void put_pixel_fast<BitmapTraits>(Image* image, int x, int y, BitmapTrait
   else
     *image->getPixelAddress(x, y) &= ~(1 << (x % 8));
 }
+
+#endif // DOC_USE_BITMAP_AS_1BPP
 
 } // namespace doc
 

@@ -264,7 +264,7 @@ private:
 
     if (m_key && m_key->keycontext() != KeyContext::Any) {
       int w = m_headerItem->contextXPos() +
-              font()->textLength(convertKeyContextToUserFriendlyString(m_key->keycontext()));
+              font()->textLength(convert_keycontext_to_user_friendly_string(m_key->keycontext()));
       size.w = std::max(size.w, w);
     }
 
@@ -312,7 +312,7 @@ private:
 
     if (m_key && !m_key->shortcuts().empty()) {
       if (m_key->keycontext() != KeyContext::Any) {
-        g->drawText(convertKeyContextToUserFriendlyString(m_key->keycontext()),
+        g->drawText(convert_keycontext_to_user_friendly_string(m_key->keycontext()),
                     fg,
                     bg,
                     gfx::Point(contextXPos, y));
@@ -590,7 +590,7 @@ private:
         case KeyContext::MoveTool:
         case KeyContext::FreehandTool:
         case KeyContext::ShapeTool:
-          text = convertKeyContextToUserFriendlyString(key->keycontext()) + ": " + text;
+          text = convert_keycontext_to_user_friendly_string(key->keycontext()) + ": " + text;
           break;
       }
       KeyItem* keyItem = new KeyItem(m_keys, m_menuKeys, text, key, nullptr, 0, &m_headerItem);

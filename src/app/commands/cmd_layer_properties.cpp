@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -165,7 +165,7 @@ public:
       m_document->add_observer(this);
 
     if (countLayers() > 0) {
-      m_userDataView.configureAndSet(m_layer->userData(), g_window->propertiesGrid());
+      m_userDataView.configureAndSet(m_layer->userData(), propertiesGrid());
       if (m_remapAfterConfigure) {
         remapWindow();
         centerWindow();
@@ -367,8 +367,7 @@ private:
   {
     if (m_layer) {
       m_userDataView.toggleVisibility();
-      g_window->remapWindow();
-      manager()->invalidate();
+      expandWindow(gfx::Size(bounds().w, sizeHint().h));
     }
   }
 
