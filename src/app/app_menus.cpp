@@ -285,7 +285,7 @@ void destroy_menu_item(ui::Widget* item)
 os::Shortcut get_os_shortcut_from_key(const Key* key)
 {
   if (key && !key->shortcuts().empty()) {
-    const ui::Shortcut& shortcut = key->shortcuts().front();
+    const ui::Shortcut& shortcut = key->shortcuts().front().shortcut;
 
 #if LAF_MACOS
     // Shortcuts with spacebar as modifier do not work well in macOS
