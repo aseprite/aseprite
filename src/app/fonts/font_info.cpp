@@ -155,7 +155,7 @@ std::string FontInfo::humanString() const
     if (ligatures())
       result += " " + Strings::font_style_ligatures();
     switch (hinting()) {
-      case text::FontHinting::None:   result += " " + Strings::font_style_hinting(); break;
+      case text::FontHinting::None:   result += " " + Strings::font_style_hinting_none(); break;
       case text::FontHinting::Slight: result += " " + Strings::font_style_hinting_slight(); break;
       case text::FontHinting::Normal: break;
       case text::FontHinting::Full:   result += " " + Strings::font_style_hinting_full(); break;
