@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -15,6 +15,7 @@
 #include "app/transformation.h"
 #include "app/tx.h"
 #include "app/ui/editor/handle_type.h"
+#include "app/util/moving_utils.h"
 #include "doc/algorithm/flip_type.h"
 #include "doc/frame.h"
 #include "doc/image_ref.h"
@@ -190,6 +191,7 @@ private:
   Transformation m_currentData;
   std::unique_ptr<Mask> m_initialMask, m_initialMask0;
   std::unique_ptr<Mask> m_currentMask;
+  LockedAxis m_lockedAxis;
   bool m_opaque;
   color_t m_maskColor;
   obs::scoped_connection m_pivotVisConn;
