@@ -259,9 +259,9 @@ gfx::Rect get_trimmed_bounds(const doc::Sprite* sprite, const bool byGrid)
 
     // TODO merge this code with the code in DocExporter::captureSamples()
     if (byGrid) {
-      const gfx::Rect& gridBounds = sprite->gridBounds();
-      gfx::Point posTopLeft = snap_to_grid(gridBounds, bounds.origin(), PreferSnapTo::FloorGrid);
-      gfx::Point posBottomRight = snap_to_grid(gridBounds, bounds.point2(), PreferSnapTo::CeilGrid);
+      const doc::Grid grid(sprite->gridBounds(), sprite->gridType());
+      const gfx::Point posTopLeft(snap_to_grid(grid, bounds.origin(), PreferSnapTo::FloorGrid));
+      const gfx::Point posBottomRight(snap_to_grid(grid, bounds.point2(), PreferSnapTo::CeilGrid));
       bounds = gfx::Rect(posTopLeft, posBottomRight);
     }
   }

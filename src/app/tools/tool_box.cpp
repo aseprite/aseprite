@@ -51,6 +51,7 @@ const char* WellKnownTools::Eraser = "eraser";
 const char* WellKnownTools::Eyedropper = "eyedropper";
 const char* WellKnownTools::Hand = "hand";
 const char* WellKnownTools::Move = "move";
+const char* WellKnownTools::Line = "line";
 
 const char* WellKnownInks::Selection = "selection";
 const char* WellKnownInks::Paint = "paint";

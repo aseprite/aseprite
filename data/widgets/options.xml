@@ -426,6 +426,14 @@
             <expr id="grid_h" text="" />
             <hbox />
 
+            <label text="" />
+            <combobox id="grid_type" expansive="true" cell_hspan="3">
+              <listitem text="@.grid_type_orthogonal" />
+              <listitem text="@.grid_type_isometric_shared" />
+              <listitem text="@.grid_type_isometric_thick" />
+            </combobox>
+            <hbox />
+
             <label text="@.grid_color" />
             <colorpicker id="grid_color" rgba="true" cell_hspan="3" />
             <hbox />

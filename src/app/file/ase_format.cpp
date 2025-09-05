@@ -559,6 +559,7 @@ static void ase_file_prepare_header(FILE* f,
   header->grid_y = sprite->gridBounds().y;
   header->grid_width = sprite->gridBounds().w;
   header->grid_height = sprite->gridBounds().h;
+  header->grid_type = uint16_t(sprite->gridType());
 }
 
 static void ase_file_write_header(FILE* f, dio::AsepriteHeader* header)
@@ -586,6 +587,7 @@ static void ase_file_write_header(FILE* f, dio::AsepriteHeader* header)
   fputw(header->grid_y, f);
   fputw(header->grid_width, f);
   fputw(header->grid_height, f);
+  fputw(header->grid_type, f);
 
   fseek(f, header->pos + 128, SEEK_SET);
 }

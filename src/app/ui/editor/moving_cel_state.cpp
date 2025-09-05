@@ -236,8 +236,15 @@ void MovingCelState::calcPivot()
   // to be relative to initial position
   m_fullBounds = calcFullBounds();
   m_pivot = gfx::PointF(0, 0);
-  const gfx::RectF& gridBounds = m_editor->getSite().gridBounds();
-  m_pivotOffset = gfx::PointF(gridBounds.size()) - (m_pivot - m_fullBounds.origin());
+  const doc::Grid& grid = m_editor->getSite().grid();
+  if (grid.isIsometric()) {
+    m_pivotOffset = -gfx::PointF(
+      snap_to_grid(grid, gfx::Point(m_fullBounds.origin()), PreferSnapTo::ClosestGridVertex) +
+      (m_pivot - m_fullBounds.origin()));
+  }
+  else {
+    m_pivotOffset = gfx::PointF(grid.tileSize()) - (m_pivot - m_fullBounds.origin());
+  }
 }
 
 void MovingCelState::onCommitMouseMove(Editor* editor, const gfx::PointF& newCursorPos)
@@ -395,11 +402,16 @@ gfx::RectF MovingCelState::calcFullBounds() const
   return bounds;
 }
 
+doc::Grid MovingCelState::getDisplacedGrid() const
+{
+  doc::Grid displacedGrid(m_editor->getSite().grid());
+  displacedGrid.origin(displacedGrid.origin() + m_pivotOffset);
+  return displacedGrid;
+}
+
 void MovingCelState::snapOffsetToGrid(gfx::Point& offset) const
 {
-  const gfx::RectF& gridBounds = m_editor->getSite().gridBounds();
-  const gfx::RectF displaceGrid(gridBounds.origin() + m_pivotOffset, gridBounds.size());
-  offset = snap_to_grid(displaceGrid,
+  offset = snap_to_grid(getDisplacedGrid(),
                         gfx::Point(m_fullBounds.origin() + offset),
                         PreferSnapTo::ClosestGridVertex) -
            m_fullBounds.origin();
@@ -407,21 +419,20 @@ void MovingCelState::snapOffsetToGrid(gfx::Point& offset) const
 
 void MovingCelState::snapBoundsToGrid(gfx::RectF& celBounds) const
 {
-  const gfx::RectF& gridBounds = m_editor->getSite().gridBounds();
-  const gfx::RectF displaceGrid(gridBounds.origin() + m_pivotOffset, gridBounds.size());
   const gfx::PointF& origin = celBounds.origin();
   if (m_scaled) {
-    gfx::PointF gridOffset(snap_to_grid(displaceGrid,
-                                        gfx::Point(origin.x + celBounds.w, origin.y + celBounds.h),
-                                        PreferSnapTo::ClosestGridVertex) -
-                           origin);
+    const doc::Grid displacedGrid(getDisplacedGrid());
+    gfx::Point gridOffset(snap_to_grid(displacedGrid,
+                                       gfx::Point(origin.x + celBounds.w, origin.y + celBounds.h),
+                                       PreferSnapTo::ClosestGridVertex) -
+                          origin);
 
-    celBounds.w = std::max(gridBounds.w, gridOffset.x);
-    celBounds.h = std::max(gridBounds.h, gridOffset.y);
+    celBounds.w = std::max(displacedGrid.bounds().w, gridOffset.x);
+    celBounds.h = std::max(displacedGrid.bounds().h, gridOffset.y);
   }
   else if (m_moved) {
     gfx::PointF gridOffset(
-      snap_to_grid(displaceGrid, gfx::Point(origin), PreferSnapTo::ClosestGridVertex));
+      snap_to_grid(getDisplacedGrid(), gfx::Point(origin), PreferSnapTo::ClosestGridVertex));
 
     celBounds.setOrigin(gridOffset);
   }

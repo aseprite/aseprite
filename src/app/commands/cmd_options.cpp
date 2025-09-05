@@ -11,6 +11,7 @@
 
 #include "app/app.h"
 #include "app/cmd/set_grid_bounds.h"
+#include "app/cmd/set_grid_type.h"
 #include "app/commands/command.h"
 #include "app/console.h"
 #include "app/context.h"
@@ -837,22 +838,30 @@ public:
     m_pref.range.alpha(static_cast<app::gen::AlphaRange>(alpha()->getSelectedItemIndex()));
     m_pref.range.opacity(static_cast<app::gen::AlphaRange>(opacity()->getSelectedItemIndex()));
 
-    // Change sprite grid bounds
-    if (m_context && m_context->activeDocument() && m_context->activeDocument()->sprite() &&
-        m_context->activeDocument()->sprite()->gridBounds() != gridBounds()) {
-      try {
-        ContextWriter writer(m_context, 1000);
-        Tx tx(writer, Strings::commands_GridSettings(), ModifyDocument);
-        tx(new cmd::SetGridBounds(writer.sprite(), gridBounds()));
-        tx.commit();
-      }
-      catch (const std::exception& ex) {
-        Console::showException(ex);
+    // Change sprite grid settings
+    if (m_context && m_context->activeDocument() && m_context->activeDocument()->sprite()) {
+      const bool setBounds = m_context->activeDocument()->sprite()->gridBounds() != gridBounds();
+      const bool setType = m_context->activeDocument()->sprite()->gridType() != gridTypeInt();
+      if (setBounds || setType) {
+        try {
+          ContextWriter writer(m_context, 1000);
+          Tx tx(writer, Strings::commands_GridSettings(), ModifyDocument);
+          if (setBounds)
+            tx(new cmd::SetGridBounds(writer.sprite(), gridBounds()));
+          if (setType)
+            tx(new cmd::SetGridType(writer.sprite(), gridTypeInt()));
+
+          tx.commit();
+        }
+        catch (const std::exception& ex) {
+          Console::showException(ex);
+        }
       }
     }
 
     m_curPref->show.grid(gridVisible()->isSelected());
     m_curPref->grid.bounds(gridBounds());
+    m_curPref->grid.type(gridTypeInt());
     m_curPref->grid.color(gridColor()->getColor());
     m_curPref->grid.opacity(gridOpacity()->getValue());
     m_curPref->grid.autoOpacity(gridAutoOpacity()->isSelected());
@@ -1535,6 +1544,8 @@ private:
     gridW()->setTextf("%d", m_curPref->grid.bounds().w);
     gridH()->setTextf("%d", m_curPref->grid.bounds().h);
 
+    gridType()->setSelectedItemIndex(gridTypeIndex(m_curPref->grid.type()));
+
     gridColor()->setColor(m_curPref->grid.color());
     gridOpacity()->setValue(m_curPref->grid.opacity());
     gridAutoOpacity()->setSelected(m_curPref->grid.autoOpacity());
@@ -1579,6 +1590,8 @@ private:
       gridW()->setTextf("%d", pref.grid.bounds.defaultValue().w);
       gridH()->setTextf("%d", pref.grid.bounds.defaultValue().h);
 
+      gridType()->setSelectedItemIndex(gridTypeIndex(pref.grid.type.defaultValue()));
+
       gridColor()->setColor(pref.grid.color.defaultValue());
       gridOpacity()->setValue(pref.grid.opacity.defaultValue());
       gridAutoOpacity()->setSelected(pref.grid.autoOpacity.defaultValue());
@@ -1595,6 +1608,8 @@ private:
       gridY()->setTextf("%d", pref.grid.bounds().y);
       gridW()->setTextf("%d", pref.grid.bounds().w);
       gridH()->setTextf("%d", pref.grid.bounds().h);
+
+      gridType()->setSelectedItemIndex(gridTypeIndex(pref.grid.type()));
 
       gridColor()->setColor(pref.grid.color());
       gridOpacity()->setValue(pref.grid.opacity());
@@ -2062,6 +2077,17 @@ private:
   gfx::Rect gridBounds() const
   {
     return gfx::Rect(gridX()->textInt(), gridY()->textInt(), gridW()->textInt(), gridH()->textInt());
+  }
+
+  int gridTypeIndex(const doc::Grid::Type type) const
+  {
+    return gridType()->findItemIndex(grid_type_to_string(type));
+  }
+
+  doc::Grid::Type gridTypeInt() const
+  {
+    const int index = gridType()->getSelectedItemIndex();
+    return string_to_grid_type(gridType()->getItemText(index));
   }
 
   static std::string userThemeFolder()
