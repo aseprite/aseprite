@@ -44,6 +44,7 @@ enum class ObjectType : uint16_t {
   LayerVector = 20,
   LayerAudio = 21,
   LayerSubsprite = 22,
+  LayerHitbox = 23,
 };
 
 } // namespace doc
