@@ -49,6 +49,7 @@ add_library(doc-lib
   layer.cpp
   layer_audio.cpp
   layer_fx.cpp
+  layer_hitbox.cpp
   layer_io.cpp
   layer_list.cpp
   layer_mask.cpp
