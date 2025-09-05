@@ -15,10 +15,8 @@ namespace doc {
 // Applies Cel images as a mask for the next layer.
 // TODO to implement
 class LayerMask final : public LayerImage {
-protected:
-  LayerMask(Sprite* sprite);
-
 public:
+  LayerMask(Sprite* sprite);
   virtual ~LayerMask();
 };
 

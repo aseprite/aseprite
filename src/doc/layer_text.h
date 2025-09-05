@@ -15,10 +15,8 @@ namespace doc {
 // Dynamically renders a text for each cel.
 // TODO to implement
 class LayerText final : public Layer {
-protected:
-  LayerText(Sprite* sprite);
-
 public:
+  LayerText(Sprite* sprite);
   virtual ~LayerText();
 
   // TODO associated text/font/location per frame/keyframe

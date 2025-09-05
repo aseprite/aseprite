@@ -15,10 +15,8 @@ namespace doc {
 // Applies an FX to the next non-FX Layer
 // TODO to implement
 class LayerFx final : public Layer {
-protected:
-  LayerFx(Sprite* sprite);
-
 public:
+  LayerFx(Sprite* sprite);
   virtual ~LayerFx();
 
   // TODO associated FX data per frame/keyframe
