@@ -31,6 +31,7 @@ class Sprite;
 
 namespace app {
 class Doc;
+class TiledModeHelper;
 
 namespace cmd {
 class SetMask;
@@ -73,7 +74,8 @@ public:
                  Site site,
                  const Image* moveThis,
                  const Mask* mask,
-                 const char* operationName);
+                 const char* operationName,
+                 const TiledModeHelper* tiledModeHelper = nullptr);
   ~PixelsMovement();
 
   const Site& site() { return m_site; }
@@ -192,6 +194,7 @@ private:
   std::unique_ptr<Mask> m_currentMask;
   bool m_opaque;
   color_t m_maskColor;
+  const TiledModeHelper* m_tiledModeHelper = nullptr;
   obs::scoped_connection m_pivotVisConn;
   obs::scoped_connection m_pivotPosConn;
   obs::scoped_connection m_rotAlgoConn;
