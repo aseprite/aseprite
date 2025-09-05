@@ -13,6 +13,7 @@
 
 #include "app/app.h"
 #include "app/color.h"
+#include "app/color_spaces.h"
 #include "app/color_utils.h"
 #include "app/commands/commands.h"
 #include "app/modules/gfx.h"
@@ -307,7 +308,8 @@ public:
     if (tileImage) {
       int w = tileImage->width();
       int h = tileImage->height();
-      os::SurfaceRef surface = os::System::instance()->makeRgbaSurface(w, h);
+      os::SurfaceRef surface =
+        os::System::instance()->makeRgbaSurface(w, h, get_current_color_space());
       convert_image_to_surface(tileImage.get(),
                                get_current_palette(),
                                surface.get(),

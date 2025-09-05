@@ -1391,7 +1391,8 @@ GraphicsPtr Widget::getGraphics(const gfx::Rect& clip)
   // In case of double-buffering, we need to create the temporary
   // buffer only if the default surface is the screen.
   if (isDoubleBuffered() && dstSurface->isDirectToScreen()) {
-    os::SurfaceRef surface = os::System::instance()->makeSurface(clip.w, clip.h);
+    os::SurfaceRef surface =
+      os::System::instance()->makeSurface(clip.w, clip.h, dstSurface->colorSpace());
     graphics.reset(new Graphics(display, surface, -clip.x, -clip.y),
                    DeleteGraphicsAndSurface(clip, surface, dstSurface));
   }

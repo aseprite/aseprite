@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -219,7 +219,7 @@ void draw_tile(ui::Graphics* g, const Rect& rc, const Site& site, doc::tile_t ti
   int w = tileImage->width();
   int h = tileImage->height();
 
-  os::SurfaceRef surface = os::System::instance()->makeRgbaSurface(w, h);
+  os::SurfaceRef surface = os::System::instance()->makeRgbaSurface(w, h, get_current_color_space());
   convert_image_to_surface(tileImage.get(), get_current_palette(), surface.get(), 0, 0, 0, 0, w, h);
 
   ui::Paint paint;

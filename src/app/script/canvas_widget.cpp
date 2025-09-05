@@ -1,11 +1,12 @@
 // Aseprite
-// Copyright (c) 2022-2024  Igara Studio S.A.
+// Copyright (c) 2022-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #include "app/script/canvas_widget.h"
 
+#include "app/color_spaces.h"
 #include "app/script/graphics_context.h"
 #include "app/ui/skin/skin_theme.h"
 #include "os/system.h"
@@ -14,6 +15,10 @@
 #include "ui/resize_event.h"
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
+
+#ifdef LAF_SKIA
+  #include "os/skia/skia_color_space.h"
+#endif
 
 namespace app { namespace script {
 
@@ -45,8 +50,14 @@ void Canvas::callPaint()
     return;
 
   os::Paint p;
+#ifdef LAF_SKIA
+  if (m_surface && m_surface->colorSpace())
+    p.color(bgColor(), m_surface->colorSpace().get());
+  else
+#else
   p.color(bgColor());
-  m_surface->drawRect(m_surface->bounds(), p);
+#endif
+    m_surface->drawRect(m_surface->bounds(), p);
 
   // Draw only on resize (onPaint we draw the cached m_surface)
   GraphicsContext gc(m_surface, m_autoScaling ? ui::guiscale() : 1);
@@ -189,7 +200,7 @@ void Canvas::onResize(ui::ResizeEvent& ev)
     }
 
     if (!m_surface || m_surface->width() != w || m_surface->height() != h) {
-      m_surface = system->makeSurface(w, h);
+      m_surface = system->makeSurface(w, h, get_current_color_space());
       callPaint();
     }
   }
