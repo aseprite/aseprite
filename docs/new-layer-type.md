@@ -28,3 +28,9 @@ This is a little hacking guide about how to add a new kind of layer to Aseprite:
    and [Reader::readLayer()](../src/app/crash/read_document.cpp) functions
 1. To make `DuplicateLayerCommand` work, add the new `doc::ObjectType`
    in `app::DocApi::copyLayerWithSprite()` and `app::Doc::copyLayerContent()`
+
+# Layer Properties
+
+Customize the `LayerPropertiesCommand` dialog:
+
+1. Hide widgets that don't make sense for this layer type
