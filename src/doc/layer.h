@@ -159,6 +159,7 @@ public:
   void moveCel(Cel* cel, frame_t frame);
 
   Cel* cel(frame_t frame) const;
+  const CelList& cels() const { return m_cels; }
   virtual void getCels(CelList& cels) const;
   virtual void displaceFrames(frame_t fromThis, frame_t delta);
 
