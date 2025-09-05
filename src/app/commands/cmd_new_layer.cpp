@@ -33,7 +33,14 @@
 #include "app/util/clipboard.h"
 #include "app/util/new_image_from_mask.h"
 #include "doc/layer.h"
+#include "doc/layer_audio.h"
+#include "doc/layer_fx.h"
+#include "doc/layer_hitbox.h"
+#include "doc/layer_mask.h"
+#include "doc/layer_subsprite.h"
+#include "doc/layer_text.h"
 #include "doc/layer_tilemap.h"
+#include "doc/layer_vector.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"
@@ -58,6 +65,8 @@ struct NewLayerParams : public NewParams {
   Param<bool> group{ this, false, "group" };
   Param<bool> reference{ this, false, "reference" };
   Param<bool> tilemap{ this, false, "tilemap" };
+  // Alternative for group/reference/tilemap params and used for future layer types
+  Param<std::string> type{ this, {}, "type" };
   Param<gfx::Rect> gridBounds{ this, gfx::Rect(), "gridBounds" };
   Param<bool> ask{ this, false, "ask" };
   Param<bool> fromFile{
@@ -74,7 +83,19 @@ struct NewLayerParams : public NewParams {
 
 class NewLayerCommand : public CommandWithNewParams<NewLayerParams> {
 public:
-  enum class Type { Layer, Group, ReferenceLayer, TilemapLayer };
+  enum class Type {
+    Layer,
+    Group,
+    ReferenceLayer,
+    TilemapLayer,
+    MaskLayer,
+    FxLayer,
+    TextLayer,
+    VectorLayer,
+    AudioLayer,
+    SubspriteLayer,
+    HitboxLayer
+  };
   enum class Place { AfterActiveLayer, BeforeActiveLayer, Top };
 
   NewLayerCommand();
@@ -105,12 +126,28 @@ void NewLayerCommand::onLoadParams(const Params& commandParams)
   CommandWithNewParams<NewLayerParams>::onLoadParams(commandParams);
 
   m_type = Type::Layer;
-  if (params().group())
+  if (params().group() || params().type() == "group")
     m_type = Type::Group;
-  else if (params().reference())
+  else if (params().reference() || params().type() == "reference")
     m_type = Type::ReferenceLayer;
-  else if (params().tilemap())
+  else if (params().tilemap() || params().type() == "tilemap")
     m_type = Type::TilemapLayer;
+#ifdef ENABLE_DEVMODE // TODO not yet production-ready
+  else if (params().type() == "mask")
+    m_type = Type::MaskLayer;
+  else if (params().type() == "fx")
+    m_type = Type::FxLayer;
+  else if (params().type() == "text")
+    m_type = Type::TextLayer;
+  else if (params().type() == "vector")
+    m_type = Type::VectorLayer;
+  else if (params().type() == "audio")
+    m_type = Type::AudioLayer;
+  else if (params().type() == "subsprite")
+    m_type = Type::SubspriteLayer;
+  else if (params().type() == "hitbox")
+    m_type = Type::HitboxLayer;
+#endif // ENABLE_DEVMODE
   else
     m_type = Type::Layer;
 
@@ -290,6 +327,62 @@ void NewLayerCommand::onExecute(Context* context)
         }
 
         layer = api.newTilemapAfter(parent, name, tsi, activeLayer);
+        break;
+      }
+
+      case Type::MaskLayer: {
+        layer = new LayerMask(parent->sprite());
+        layer->setName(name);
+
+        api.addLayer(parent, layer, parent->lastLayer());
+        break;
+      }
+
+      case Type::FxLayer: {
+        layer = new LayerFx(parent->sprite());
+        layer->setName(name);
+
+        api.addLayer(parent, layer, parent->lastLayer());
+        break;
+      }
+
+      case Type::TextLayer: {
+        layer = new LayerText(parent->sprite());
+        layer->setName(name);
+
+        api.addLayer(parent, layer, parent->lastLayer());
+        break;
+      }
+
+      case Type::VectorLayer: {
+        layer = new LayerVector(parent->sprite());
+        layer->setName(name);
+
+        api.addLayer(parent, layer, parent->lastLayer());
+        break;
+      }
+
+      case Type::AudioLayer: {
+        layer = new LayerAudio(parent->sprite());
+        layer->setName(name);
+
+        api.addLayer(parent, layer, parent->lastLayer());
+        break;
+      }
+
+      case Type::SubspriteLayer: {
+        layer = new LayerSubsprite(parent->sprite());
+        layer->setName(name);
+
+        api.addLayer(parent, layer, parent->lastLayer());
+        break;
+      }
+
+      case Type::HitboxLayer: {
+        layer = new LayerHitbox(parent->sprite());
+        layer->setName(name);
+
+        api.addLayer(parent, layer, parent->lastLayer());
         break;
       }
     }
@@ -533,6 +626,13 @@ std::string NewLayerCommand::layerPrefix() const
     case Type::Group:          return Strings::commands_NewLayer_Group();
     case Type::ReferenceLayer: return Strings::commands_NewLayer_ReferenceLayer();
     case Type::TilemapLayer:   return Strings::commands_NewLayer_TilemapLayer();
+    case Type::FxLayer:        return Strings::commands_NewLayer_FxLayer();
+    case Type::MaskLayer:      return Strings::commands_NewLayer_MaskLayer();
+    case Type::TextLayer:      return Strings::commands_NewLayer_TextLayer();
+    case Type::VectorLayer:    return Strings::commands_NewLayer_VectorLayer();
+    case Type::AudioLayer:     return Strings::commands_NewLayer_AudioLayer();
+    case Type::SubspriteLayer: return Strings::commands_NewLayer_SubspriteLayer();
+    case Type::HitboxLayer:    return Strings::commands_NewLayer_HitboxLayer();
   }
   return "Unknown";
 }
