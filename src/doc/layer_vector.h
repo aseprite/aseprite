@@ -15,10 +15,8 @@ namespace doc {
 // Dynamically renders a path/vector for each cel.
 // TODO to implement
 class LayerVector final : public Layer {
-protected:
-  LayerVector(Sprite* sprite);
-
 public:
+  LayerVector(Sprite* sprite);
   virtual ~LayerVector();
 
   // TODO associated path/vector data per frame/keyframe

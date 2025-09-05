@@ -15,10 +15,8 @@ namespace doc {
 // Includes an subsprite (external or embedded)
 // TODO to implement
 class LayerSubsprite final : public Layer {
-protected:
-  LayerSubsprite(Sprite* sprite);
-
 public:
+  LayerSubsprite(Sprite* sprite);
   virtual ~LayerSubsprite();
 
   // TODO associated subsprite and bounds/rotation/transformation per frame/keyframe

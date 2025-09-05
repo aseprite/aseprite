@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -213,8 +213,10 @@ void Sprite::setSize(int width, int height)
 void Sprite::setColorSpace(const gfx::ColorSpaceRef& colorSpace)
 {
   m_spec.setColorSpace(colorSpace);
-  for (auto cel : uniqueCels())
-    cel->image()->setColorSpace(colorSpace);
+  for (Cel* cel : uniqueCels()) {
+    if (Image* img = cel->image())
+      img->setColorSpace(colorSpace);
+  }
 }
 
 bool Sprite::isOpaque() const

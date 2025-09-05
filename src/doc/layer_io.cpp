@@ -19,8 +19,14 @@
 #include "doc/image_io.h"
 #include "doc/layer.h"
 #include "doc/layer_audio.h"
+#include "doc/layer_fx.h"
+#include "doc/layer_hitbox.h"
 #include "doc/layer_io.h"
+#include "doc/layer_mask.h"
+#include "doc/layer_subsprite.h"
+#include "doc/layer_text.h"
 #include "doc/layer_tilemap.h"
+#include "doc/layer_vector.h"
 #include "doc/sprite.h"
 #include "doc/string_io.h"
 #include "doc/subobjects_io.h"
@@ -48,7 +54,10 @@ void write_layer(std::ostream& os, const Layer* layer)
   switch (layer->type()) {
     case ObjectType::LayerImage:
     case ObjectType::LayerTilemap:
-    case ObjectType::LayerAudio:   {
+    case ObjectType::LayerText:
+    case ObjectType::LayerVector:
+    case ObjectType::LayerAudio:
+    case ObjectType::LayerHitbox:  {
       CelConstIterator it;
       const CelConstIterator begin = layer->getCelBegin();
       const CelConstIterator end = layer->getCelEnd();
@@ -123,7 +132,13 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const Seri
   switch (static_cast<ObjectType>(layer_type)) {
     case ObjectType::LayerImage:
     case ObjectType::LayerTilemap:
-    case ObjectType::LayerAudio:   {
+    case ObjectType::LayerMask:
+    case ObjectType::LayerFx:
+    case ObjectType::LayerText:
+    case ObjectType::LayerVector:
+    case ObjectType::LayerAudio:
+    case ObjectType::LayerSubsprite:
+    case ObjectType::LayerHitbox:    {
       // Create layer
       switch ((static_cast<ObjectType>(layer_type))) {
         case ObjectType::LayerImage:
@@ -132,8 +147,24 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const Seri
         case ObjectType::LayerTilemap:
           layer = std::make_unique<LayerTilemap>(subObjects->sprite(), 0);
           break;
+        case ObjectType::LayerMask:
+          layer = std::make_unique<LayerMask>(subObjects->sprite());
+          break;
+        case ObjectType::LayerFx: layer = std::make_unique<LayerFx>(subObjects->sprite()); break;
+        case ObjectType::LayerText:
+          layer = std::make_unique<LayerText>(subObjects->sprite());
+          break;
+        case ObjectType::LayerVector:
+          layer = std::make_unique<LayerVector>(subObjects->sprite());
+          break;
         case ObjectType::LayerAudio:
           layer = std::make_unique<LayerAudio>(subObjects->sprite());
+          break;
+        case ObjectType::LayerSubsprite:
+          layer = std::make_unique<LayerSubsprite>(subObjects->sprite());
+          break;
+        case ObjectType::LayerHitbox:
+          layer = std::make_unique<LayerHitbox>(subObjects->sprite());
           break;
       }
 
