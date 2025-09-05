@@ -35,6 +35,7 @@
 #include "base/fs.h"
 #include "base/memory.h"
 #include "os/system.h"
+#include "ui/textedit.h"
 #include "ui/ui.h"
 
 #include "tinyxml2.h"
@@ -259,12 +260,15 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
     if (elem_name == "expr" && decimals)
       ((ExprEntry*)widget)->setDecimals(strtol(decimals, nullptr, 10));
   }
-  if (elem_name == "filename") {
+  else if (elem_name == "filename") {
     const bool buttononly = bool_attr(elem, "buttononly", false);
     const app::FilenameField::Type type = (buttononly ? app::FilenameField::Type::ButtonOnly :
                                                         app::FilenameField::Type::EntryAndButton);
 
     widget = new app::FilenameField(type, "");
+  }
+  else if (elem_name == "textedit") {
+    widget = new TextEdit();
   }
   else if (elem_name == "grid") {
     const char* columns = elem->Attribute("columns");
