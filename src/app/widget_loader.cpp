@@ -285,6 +285,11 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
 
     widget->setAlign((center ? CENTER : (right ? RIGHT : LEFT)) |
                      (top ? TOP : (bottom ? BOTTOM : MIDDLE)));
+
+    const char* buddy = elem->Attribute("for");
+    if (buddy != NULL) {
+      ((Label*)widget)->setBuddy(buddy);
+    }
   }
   else if (elem_name == "link") {
     const char* url = elem->Attribute("url");

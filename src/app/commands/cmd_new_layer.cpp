@@ -227,6 +227,7 @@ void NewLayerCommand::onExecute(Context* context)
     if (isTilemap) {
       tilesetSelector = new TilesetSelector(sprite, tilesetInfo);
       window.tilesetOptions()->addChild(tilesetSelector);
+      window.tilesetLabel()->setBuddy(tilesetSelector->tilesets());
     }
 
     window.openWindowInForeground();

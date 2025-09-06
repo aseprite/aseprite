@@ -98,18 +98,31 @@ private:
 
 class FocusMessage : public Message {
 public:
-  FocusMessage(MessageType type, Widget* oldFocus, Widget* newFocus)
+  enum class Source {
+    Keyboard,
+    Mouse,
+    // Focused by window opening, either from being the first child, or the focus magnet
+    Window,
+    // Focused by the label buddy
+    Buddy,
+    // Any other type of focus
+    Other
+  };
+  FocusMessage(MessageType type, Widget* oldFocus, Widget* newFocus, Source source = Source::Other)
     : Message(type)
     , m_oldFocus(oldFocus)
     , m_newFocus(newFocus)
+    , m_source(source)
   {
   }
   Widget* oldFocus() { return m_oldFocus; }
   Widget* newFocus() { return m_newFocus; }
+  Source source() const { return m_source; }
 
 private:
   Widget* m_oldFocus;
   Widget* m_newFocus;
+  Source m_source;
 };
 
 class KeyMessage : public Message {

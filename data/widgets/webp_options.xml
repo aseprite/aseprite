@@ -7,7 +7,7 @@
     <label text="@.save_as" />
     <check text="@.animation_loop" id="loop" />
     <hbox>
-      <label text="@.type" />
+      <label text="@.type" for="type" />
       <combobox id="type" cell_align="horizontal" cell_hspan="2">
         <listitem text="@.simple_webp" value="0" />
         <listitem text="@.lossless_webp" value="1" />
@@ -16,11 +16,11 @@
     </hbox>
     <vbox id="lossless_options">
       <hbox>
-        <label width="55" text="@.compression" />
+        <label width="55" text="@.compression" for="compression" />
         <slider min="0" max="9" id="compression" cell_align="horizontal" width="128" />
       </hbox>
       <hbox>
-        <label width="55" text="@.image_hint" />
+        <label width="55" text="@.image_hint" for="image_hint" />
         <combobox width="128" id="image_hint">
           <listitem text="@.image_hint_default" value="0" />
           <listitem text="@.image_hint_picture" value="1" />
@@ -31,11 +31,11 @@
     </vbox>
     <vbox id="lossy_options">
       <hbox>
-        <label width="55" text="@.quality" />
+        <label width="55" text="@.quality" for="quality" />
         <slider min="0" max="100" id="quality" cell_align="horizontal" width="128" />
       </hbox>
       <hbox>
-        <label width="55" text="@.image_preset" />
+        <label width="55" text="@.image_preset" for="image_preset" />
         <combobox width="128" id="image_preset">
           <listitem text="@.image_preset_default" value="0" />
           <listitem text="@.image_preset_picture" value="1" />

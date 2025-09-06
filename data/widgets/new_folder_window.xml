@@ -4,7 +4,7 @@
   <window id="new_folder_window" text="@new_folder.title">
     <vbox>
       <hbox>
-        <label text="@new_folder.folder_name" />
+        <label text="@new_folder.folder_name" for="name" />
         <entry text="@new_folder.default_new_folder_name" id="name" maxsize="256" magnet="true" expansive="true" minwidth="128" />
       </hbox>
       <hbox>

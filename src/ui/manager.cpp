@@ -787,7 +787,7 @@ bool Manager::handleWindowZOrder()
   }
 
   // Put the focus
-  setFocus(mouse_widget);
+  setFocus(mouse_widget, FocusMessage::Source::Mouse);
   return true;
 }
 
@@ -954,7 +954,7 @@ Widget* Manager::getCapture()
   return capture_widget;
 }
 
-void Manager::setFocus(Widget* widget)
+void Manager::setFocus(Widget* widget, FocusMessage::Source source)
 {
   if ((focus_widget != widget) &&
       (!(widget) || (!(widget->hasFlags(DISABLED)) && !(widget->hasFlags(HIDDEN)) &&
@@ -964,7 +964,7 @@ void Manager::setFocus(Widget* widget)
 
     // Fetch the focus
     if (focus_widget && focus_widget != commonAncestor) {
-      auto* msg = new FocusMessage(kFocusLeaveMessage, oldFocus, widget);
+      auto* msg = new FocusMessage(kFocusLeaveMessage, oldFocus, widget, source);
       msg->setRecipient(focus_widget);
       msg->setPropagateToParent(true);
       msg->setCommonAncestor(commonAncestor);
@@ -981,7 +981,7 @@ void Manager::setFocus(Widget* widget)
     // Put the focus
     focus_widget = widget;
     if (widget) {
-      auto* msg = new FocusMessage(kFocusEnterMessage, oldFocus, widget);
+      auto* msg = new FocusMessage(kFocusEnterMessage, oldFocus, widget, source);
       msg->setRecipient(widget);
       msg->setPropagateToParent(true);
       msg->setCommonAncestor(commonAncestor);
@@ -1103,14 +1103,14 @@ void Manager::attractFocus(Widget* widget)
 
   // If magnetic widget exists and it doesn't have the focus
   if (magnet && !magnet->hasFocus())
-    setFocus(magnet);
+    setFocus(magnet, FocusMessage::Source::Window);
 }
 
 void Manager::focusFirstChild(Widget* widget)
 {
   for (Widget* it = widget->window(); it; it = next_widget(it)) {
     if (does_accept_focus(it) && !(child_accept_focus(it, true))) {
-      setFocus(it);
+      setFocus(it, FocusMessage::Source::Window);
       break;
     }
   }
@@ -2438,7 +2438,7 @@ bool Manager::processFocusMovementMessage(Message* msg)
     }
 
     if ((focus) && (focus != focus_widget))
-      setFocus(focus);
+      setFocus(focus, FocusMessage::Source::Keyboard);
   }
 
   return ret;

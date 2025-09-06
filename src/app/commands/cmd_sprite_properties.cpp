@@ -303,7 +303,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
       color_button = new ColorButton(app::Color::fromIndex(sprite->transparentColor()),
                                      IMAGE_INDEXED,
                                      ColorButtonOptions());
-
+      color_button->setId("transparent_color");
       window.transparentColorPlaceholder()->addChild(color_button);
 
       // TODO add a way to get or create an existent TooltipManager

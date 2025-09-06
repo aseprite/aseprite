@@ -14,6 +14,7 @@
 #include "ui/display.h"
 #include "ui/keys.h"
 #include "ui/layer.h"
+#include "ui/message.h"
 #include "ui/message_type.h"
 #include "ui/mouse_button.h"
 #include "ui/pointer_type.h"
@@ -85,7 +86,7 @@ public:
   Widget* getMouse();
   Widget* getCapture();
 
-  void setFocus(Widget* widget);
+  void setFocus(Widget* widget, FocusMessage::Source source = FocusMessage::Source::Other);
   void setMouse(Widget* widget);
   void setCapture(Widget* widget, bool force = false);
   void attractFocus(Widget* widget);

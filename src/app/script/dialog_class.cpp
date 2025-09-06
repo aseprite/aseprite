@@ -658,6 +658,8 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
   if (label || !dlg->hbox) {
     if (label) {
       auto labelWidget = new ui::Label(label);
+      labelWidget->setBuddy(widget);
+
       if (!visible)
         labelWidget->setVisible(false);
 

@@ -9,9 +9,9 @@
     </view>
     <hbox id="dithering_placeholder" />
     <hbox id="amount">
-      <label text="@.amount" />
+      <label text="@.amount" for="factor" />
       <slider min="0" max="100" id="factor" minwidth="100" />
-      <label text="%" />
+      <label text="%" for="factor" />
     </hbox>
 
     <combobox id="to_gray_combobox">
@@ -24,10 +24,10 @@
 
     <check id="advanced_check" text="@general.advanced_options" />
     <grid id="advanced" columns="2">
-      <label text="@rgbmap_algorithm_selector.label" />
+      <label text="@rgbmap_algorithm_selector.label" for="rgbmap_algorithm_selector" />
       <hbox id="rgbmap_algorithm_placeholder" cell_align="horizontal" />
 
-      <label text="@best_fit_criteria_selector.label" />
+      <label text="@best_fit_criteria_selector.label" for="best_fit_criteria_selector" />
       <hbox id="best_fit_criteria_placeholder" cell_align="horizontal" />
     </grid>
 
