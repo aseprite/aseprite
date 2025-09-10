@@ -140,8 +140,9 @@ public:
       return;
 
     if ((int(loop->getModifiers()) & int(ToolLoopModifiers::kCornerRadius))) {
-      int dr = stroke[1].y - pt.y;
-      m_cornerRadius = ABS(m_lastCornerRadius + dr);
+      int dx = stroke[1].x - pt.x;
+      int dy = stroke[1].y - pt.y;
+      m_cornerRadius = std::max(0, m_lastCornerRadius + std::max(dx, dy));
       return;
     }
 
