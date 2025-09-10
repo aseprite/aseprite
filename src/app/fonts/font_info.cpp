@@ -10,9 +10,12 @@
 
 #include "app/fonts/font_info.h"
 
+#include "app/app.h"
 #include "app/fonts/font_data.h"
 #include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
+#include "app/ui/main_window.h"
+#include "app/ui/skin/skin_theme.h"
 #include "base/fs.h"
 #include "base/split_string.h"
 #include "fmt/format.h"
@@ -115,6 +118,12 @@ FontInfo FontInfo::getFromPreferences()
   // New configuration
   if (!pref.textTool.fontInfo().empty()) {
     fontInfo = base::convert_to<FontInfo>(pref.textTool.fontInfo());
+  }
+
+  if (!fontInfo.isValid()) {
+    // No valid settings found, use the default widget font
+    fontInfo = static_cast<app::skin::SkinTheme*>(App::instance()->mainWindow()->theme())
+                 ->getDefaultFontInfo();
   }
 
   return fontInfo;
