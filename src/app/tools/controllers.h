@@ -109,6 +109,54 @@ private:
   Stroke::Pt m_last;
 };
 
+class CornerRadius {
+public:
+  bool hasRadius() const { return m_radius > 0; }
+
+  void modifyRadius(Stroke& stroke, const Stroke::Pt& pt)
+  {
+    if (!m_modifying) {
+      m_lastRadius = std::min(m_radius, maxRadius(stroke));
+      m_modifying = true;
+    }
+
+    int dx = stroke[1].x - pt.x;
+    int dy = stroke[1].y - pt.y;
+    if (stroke[1].y < stroke[0].y)
+      dy = -dy;
+    if (stroke[1].x < stroke[0].x)
+      dx = -dx;
+
+    m_radius = std::max(0, m_lastRadius + dx + dy);
+
+    capRadius(stroke);
+  }
+
+  bool isModifying() const { return m_modifying; }
+
+  void stopModifying()
+  {
+    m_modifying = false;
+    m_lastRadius = m_radius;
+  }
+
+  int radius() const { return m_radius; }
+
+  int radius(const Stroke& stroke) const { return std::min(m_radius, maxRadius(stroke)); }
+
+  void capRadius(Stroke& stroke) { m_radius = radius(stroke); }
+
+private:
+  static int maxRadius(const Stroke& stroke)
+  {
+    return std::min(ABS(stroke[1].x - stroke[0].x), ABS(stroke[1].y - stroke[0].y)) / 2;
+  }
+
+  bool m_modifying = false;
+  int m_lastRadius = 0;
+  int m_radius = 0;
+};
+
 // Controls clicks for tools like line
 class TwoPointsController : public MoveOriginCapability {
 public:
@@ -130,8 +178,7 @@ public:
 
   bool releaseButton(Stroke& stroke, const Stroke::Pt& pt) override
   {
-    int maxRadius = std::min(ABS(stroke[1].x - stroke[0].x), ABS(stroke[1].y - stroke[0].y)) / 2;
-    m_cornerRadius = std::min(m_cornerRadius, maxRadius);
+    m_cornerRadius.capRadius(stroke);
     return false;
   }
 
@@ -145,9 +192,12 @@ public:
       return;
 
     if ((int(loop->getModifiers()) & int(ToolLoopModifiers::kCornerRadius))) {
-      int dx = stroke[1].x - pt.x;
-      int dy = stroke[1].y - pt.y;
-      m_cornerRadius = std::max(0, m_lastCornerRadius + std::max(dx, dy));
+      m_cornerRadius.modifyRadius(stroke, pt);
+      return;
+    }
+
+    if (m_cornerRadius.isModifying()) {
+      m_cornerRadius.stopModifying();
       return;
     }
 
@@ -165,13 +215,8 @@ public:
       return;
     }
 
-    if (m_lastCornerRadius != m_cornerRadius) {
-      m_lastCornerRadius = m_cornerRadius;
-    }
-    else {
-      stroke[0] = m_first;
-      stroke[1] = pt;
-    }
+    stroke[0] = m_first;
+    stroke[1] = pt;
 
     bool isoAngle = false;
 
@@ -298,18 +343,15 @@ public:
       text += fmt::format(" :angle: {:.1f}", 180.0 * angle / PI);
     }
 
-    if (hasCornerRadius()) {
-      int maxRadius = std::min(ABS(stroke[1].x - stroke[0].x), ABS(stroke[1].y - stroke[0].y)) / 2;
-      int cornerRadius = std::min(m_cornerRadius, maxRadius);
-      text += fmt::format(" :corner_radius: {}", cornerRadius);
-    }
+    if (m_cornerRadius.hasRadius())
+      text += fmt::format(" :corner_radius: {}", m_cornerRadius.radius(stroke));
 
     // Aspect ratio at the end
     text += fmt::format(" :aspect_ratio: {}:{}", w / gcd, h / gcd);
   }
 
   double getShapeAngle() const override { return m_angle; }
-  int getCornerRadius() const override { return m_cornerRadius; }
+  int getCornerRadius() const override { return m_cornerRadius.radius(); }
 
 private:
   void snapPointsToGridTiles(ToolLoop* loop, Stroke& stroke)
@@ -329,8 +371,6 @@ private:
 
   bool hasAngle() const { return (ABS(m_angle) > 0.001); }
 
-  bool hasCornerRadius() const { return (ABS(m_cornerRadius) > 0); }
-
   void onMoveOrigin(const Point& delta) override
   {
     m_first.x += delta.x;
@@ -342,8 +382,7 @@ private:
   Stroke::Pt m_first;
   Stroke::Pt m_center;
   double m_angle;
-  int m_lastCornerRadius = 0;
-  int m_cornerRadius = 0;
+  CornerRadius m_cornerRadius;
 };
 
 // Controls clicks for tools like polygon
