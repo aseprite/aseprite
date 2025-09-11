@@ -322,7 +322,7 @@ private:
 
   bool hasAngle() const { return (ABS(m_angle) > 0.001); }
 
-  bool hasCornerRadius() const { return (ABS(m_cornerRadius) > 1); }
+  bool hasCornerRadius() const { return (ABS(m_cornerRadius) > 0); }
 
   void onMoveOrigin(const Point& delta) override
   {

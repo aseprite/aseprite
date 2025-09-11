@@ -197,7 +197,7 @@ public:
         const int cornerRadius = loop->getController()->getCornerRadius();
         if (ABS(angle) < 0.001) {
           int r = 0;
-          if (cornerRadius > 1) {
+          if (cornerRadius > 0) {
             int w = x2 - x1;
             int h = y2 - y1;
             int xm = x1 + w / 2;
@@ -215,7 +215,7 @@ public:
           }
         }
         else {
-          if (cornerRadius <= 1) {
+          if (cornerRadius <= 0) {
             Stroke p = rotateRectangle(x1, y1, x2, y2, angle);
             int n = p.size();
             for (int i = 0; i + 1 < n; ++i) {
@@ -268,7 +268,7 @@ public:
       const int cornerRadius = loop->getController()->getCornerRadius();
       if (ABS(angle) < 0.001) {
         int r = 0;
-        if (cornerRadius > 1) {
+        if (cornerRadius > 0) {
           int w = x2 - x1;
           int h = y2 - y1;
           int xm = x1 + w / 2;
@@ -286,7 +286,7 @@ public:
           doPointshapeLineWithoutDynamics(x1, y, x2, y, loop);
       }
       else {
-        if (cornerRadius <= 1) {
+        if (cornerRadius <= 0) {
           Stroke p = rotateRectangle(x1, y1, x2, y2, angle);
           auto v = p.toXYInts();
           doc::algorithm::polygon(v.size() / 2, &v[0], loop, (AlgoHLine)doPointshapeHline);
