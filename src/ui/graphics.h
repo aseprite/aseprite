@@ -48,6 +48,8 @@ public:
   int height() const;
 
   os::Surface* getInternalSurface() { return m_surface.get(); }
+  os::ColorSpace* colorSpace() { return m_surface->colorSpace().get(); }
+
   int getInternalDeltaX() { return m_dx; }
   int getInternalDeltaY() { return m_dy; }
 

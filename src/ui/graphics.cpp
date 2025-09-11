@@ -155,12 +155,7 @@ void Graphics::drawHLine(gfx::Color color, int x, int y, int w)
 
   os::SurfaceLock lock(m_surface.get());
   os::Paint paint;
-#ifdef LAF_SKIA
-  if (m_surface && m_surface->colorSpace())
-    paint.color(color, m_surface->colorSpace().get());
-  else
-#endif
-    paint.color(color);
+  paint.color(color, colorSpace());
   m_surface->drawRect(gfx::Rect(m_dx + x, m_dy + y, w, 1), paint);
 }
 
@@ -178,12 +173,7 @@ void Graphics::drawVLine(gfx::Color color, int x, int y, int h)
 
   os::SurfaceLock lock(m_surface.get());
   os::Paint paint;
-#ifdef LAF_SKIA
-  if (m_surface && m_surface->colorSpace())
-    paint.color(color, m_surface->colorSpace().get());
-  else
-#endif
-    paint.color(color);
+  paint.color(color, colorSpace());
   m_surface->drawRect(gfx::Rect(m_dx + x, m_dy + y, 1, h), paint);
 }
 
@@ -195,12 +185,7 @@ void Graphics::drawLine(gfx::Color color, const gfx::Point& _a, const gfx::Point
 
   os::SurfaceLock lock(m_surface.get());
   os::Paint paint;
-#ifdef LAF_SKIA
-  if (m_surface && m_surface->colorSpace())
-    paint.color(color, m_surface->colorSpace().get());
-  else
-#endif
-    paint.color(color);
+  paint.color(color, colorSpace());
   m_surface->drawLine(a, b, paint);
 }
 
@@ -257,12 +242,7 @@ void Graphics::drawRect(gfx::Color color, const gfx::Rect& rcOrig)
 
   os::SurfaceLock lock(m_surface.get());
   os::Paint paint;
-#ifdef LAF_SKIA
-  if (m_surface && m_surface->colorSpace())
-    paint.color(color, m_surface->colorSpace().get());
-  else
-#endif
-    paint.color(color);
+  paint.color(color, colorSpace());
   paint.style(os::Paint::Stroke);
   m_surface->drawRect(rc, paint);
 }
@@ -275,12 +255,7 @@ void Graphics::fillRect(gfx::Color color, const gfx::Rect& rcOrig)
 
   os::SurfaceLock lock(m_surface.get());
   os::Paint paint;
-#ifdef LAF_SKIA
-  if (m_surface && m_surface->colorSpace())
-    paint.color(color, m_surface->colorSpace().get());
-  else
-#endif
-    paint.color(color);
+  paint.color(color, colorSpace());
   paint.style(os::Paint::Fill);
   m_surface->drawRect(rc, paint);
 }
@@ -468,21 +443,12 @@ void Graphics::drawUIText(const std::string& str,
   auto textBlob = text::TextBlob::MakeWithShaper(fontMgr, m_font, str);
 
   Paint paint;
-#ifdef LAF_SKIA
   if (gfx::geta(bg) > 0) { // Paint background
-    paint.color(bg, m_surface->colorSpace().get());
+    paint.color(bg, colorSpace());
     paint.style(os::Paint::Fill);
     drawRect(gfx::RectF(textBlob->bounds()).offset(pt), paint);
   }
-  paint.color(fg, m_surface->colorSpace().get());
-#else
-  if (gfx::geta(bg) > 0) { // Paint background
-    paint.color(bg);
-    paint.style(os::Paint::Fill);
-    drawRect(gfx::RectF(textBlob->bounds()).offset(pt), paint);
-  }
-  paint.color(fg);
-#endif
+  paint.color(fg, colorSpace());
 
   drawTextBlob(textBlob, gfx::PointF(pt), paint);
 
@@ -636,19 +602,11 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str,
 
         Paint paint;
         paint.style(os::Paint::Fill);
-#ifdef LAF_SKIA
         if (!gfx::is_transparent(bg)) {
-          paint.color(bg, m_surface->colorSpace().get());
+          paint.color(bg, colorSpace());
           drawRect(gfx::RectF(xout, pt.y, rc.w, lineSize.h), paint);
         }
-        paint.color(fg, m_surface->colorSpace().get());
-#else
-        if (!gfx::is_transparent(bg)) {
-          paint.color(bg);
-          drawRect(gfx::RectF(xout, pt.y, rc.w, lineSize.h), paint);
-        }
-        paint.color(fg);
-#endif
+        paint.color(fg, colorSpace());
 
         float baselineDelta = -metrics.ascent - lineBlob->baseline();
         drawTextBlob(lineBlob, gfx::PointF(xout, pt.y + baselineDelta), paint);

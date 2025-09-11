@@ -16,10 +16,6 @@
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
 
-#ifdef LAF_SKIA
-  #include "os/skia/skia_color_space.h"
-#endif
-
 namespace app { namespace script {
 
 // static
@@ -50,14 +46,8 @@ void Canvas::callPaint()
     return;
 
   os::Paint p;
-#ifdef LAF_SKIA
-  if (m_surface && m_surface->colorSpace())
-    p.color(bgColor(), m_surface->colorSpace().get());
-  else
-#else
-  p.color(bgColor());
-#endif
-    m_surface->drawRect(m_surface->bounds(), p);
+  p.color(bgColor(), m_surface->colorSpace().get());
+  m_surface->drawRect(m_surface->bounds(), p);
 
   // Draw only on resize (onPaint we draw the cached m_surface)
   GraphicsContext gc(m_surface, m_autoScaling ? ui::guiscale() : 1);
