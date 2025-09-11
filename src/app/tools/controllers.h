@@ -128,7 +128,12 @@ public:
       snapPointsToGridTiles(loop, stroke);
   }
 
-  bool releaseButton(Stroke& stroke, const Stroke::Pt& pt) override { return false; }
+  bool releaseButton(Stroke& stroke, const Stroke::Pt& pt) override
+  {
+    int maxRadius = std::min(ABS(stroke[1].x - stroke[0].x), ABS(stroke[1].y - stroke[0].y)) / 2;
+    m_cornerRadius = std::min(m_cornerRadius, maxRadius);
+    return false;
+  }
 
   void movement(ToolLoop* loop, Stroke& stroke, const Stroke::Pt& pt) override
   {
