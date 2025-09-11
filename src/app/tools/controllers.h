@@ -294,7 +294,9 @@ public:
     }
 
     if (hasCornerRadius()) {
-      text += fmt::format(" :corner_radius: {}", m_cornerRadius);
+      int maxRadius = std::min(ABS(stroke[1].x - stroke[0].x), ABS(stroke[1].y - stroke[0].y)) / 2;
+      int cornerRadius = std::min(m_cornerRadius, maxRadius);
+      text += fmt::format(" :corner_radius: {}", cornerRadius);
     }
 
     // Aspect ratio at the end
