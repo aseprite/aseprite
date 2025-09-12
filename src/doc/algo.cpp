@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2022 Igara Studio S.A.
+// Copyright (c) 2018-2025 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -186,40 +186,30 @@ void algo_line_continuous_with_fix_for_line_brush(int x0,
 //
 // Adapted for Aseprite by Igara Studio S.A.
 //
-// Draws a circle divided in 4 parts, separated sx pixels horizontally and sy
-// pixels vertically:
-//             |---sx---|
+// Draws a circle of the specified radius divided in 4 slices, adjusting each
+// slice inside the specified rectangle.
+//            |--r --|
 //
-//          OOO          OOO
-//        O                  O
-//       O                    O
-//  T
-//  |
-//  |
-//  sy           xm,xy
-//  |
-//  |
-//  _
-//       O                    O
-//        O                  O
-//          OOO          OOO
+//  x1,y1 --> *   OOO          OOO
+//              O                  O
+//             O                    O
 //
-// If sx and sy are 0, it draws a regular circle.
-void algo_circle(int xm, int ym, int sx, int sy, int r, void* data, AlgoPixel proc)
+//
+//
+//          T  O                    O
+//        r |   O                  O
+//          _     OOO          OOO   * <-- x2,y2
+//
+// If the rectangle is smaller than the circle, it doesn't make any clipping.
+void algo_sliced_circle(int x1, int y1, int x2, int y2, int r, void* data, AlgoPixel proc)
 {
   int x = -r, y = 0, err = 2 - 2 * r; /* II. Quadrant */
-  sx = sx < 0 ? 0 : sx;
-  sy = sy < 0 ? 0 : sy;
-  int offsetx = sx / 2;
-  int offsety = sy / 2;
-  // Fix the position when sx or sy are not even.
-  int fixx = sx - 2 * offsetx;
-  int fixy = sy - 2 * offsety;
+  const int r0 = r;
   do {
-    proc(xm - x + offsetx + fixx, ym + y + offsety + fixy, data); /*   I. Quadrant */
-    proc(xm - y - offsetx, ym - x + offsety + fixy, data);        /*  II. Quadrant */
-    proc(xm + x - offsetx, ym - y - offsety, data);               /* III. Quadrant */
-    proc(xm + y + offsetx + fixx, ym + x - offsety, data);        /*  IV. Quadrant */
+    proc(x2 - r0 - x, y2 - r0 + y, data); /*   I. Quadrant */
+    proc(x1 + r0 - y, y2 - r0 - x, data); /*  II. Quadrant */
+    proc(x1 + r0 + x, y1 + r0 - y, data); /* III. Quadrant */
+    proc(x2 - r0 + y, y1 + r0 + x, data); /*  IV. Quadrant */
     r = err;
     if (r <= y)
       err += ++y * 2 + 1; /* e_xy+e_y < 0 */
@@ -228,22 +218,16 @@ void algo_circle(int xm, int ym, int sx, int sy, int r, void* data, AlgoPixel pr
   } while (x < 0);
 }
 
-// Same as algo_circle but with the parts filled.
-void algo_circlefill(int xm, int ym, int sx, int sy, int r, void* data, AlgoHLine proc)
+// Same as algo_sliced_circle but with the parts filled.
+void algo_sliced_circlefill(int x1, int y1, int x2, int y2, int r, void* data, AlgoHLine proc)
 {
   int x = -r, y = 0, err = 2 - 2 * r; /* II. Quadrant */
-  sx = sx < 0 ? 0 : sx;
-  sy = sy < 0 ? 0 : sy;
-  int offsetx = sx / 2;
-  int offsety = sy / 2;
-  // Fix the position when sx or sy are not even.
-  int fixx = sx - 2 * offsetx;
-  int fixy = sy - 2 * offsety;
+  const int r0 = r;
   do {
-    proc(xm, ym + y + offsety + fixy, xm - x + offsetx + fixx, data); /*   I. Quadrant */
-    proc(xm - y - offsetx, ym - x + offsety + fixy, xm, data);        /*  II. Quadrant */
-    proc(xm + x - offsetx, ym - y - offsety, xm, data);               /* III. Quadrant */
-    proc(xm, ym + x - offsety, xm + y + offsetx + fixx, data);        /*  IV. Quadrant */
+    proc(x2 - r0, y2 - r0 + y, x2 - r0 - x, data); /*   I. Quadrant */
+    proc(x1 + r0 - y, y2 - r0 - x, x1 + r0, data); /*  II. Quadrant */
+    proc(x1 + r0 + x, y1 + r0 - y, x1 + r0, data); /* III. Quadrant */
+    proc(x2 - r0, y1 + r0 + x, x2 - r0 + y, data); /*  IV. Quadrant */
     r = err;
     if (r <= y)
       err += ++y * 2 + 1; /* e_xy+e_y < 0 */
