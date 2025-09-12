@@ -207,7 +207,7 @@ private:
   void onChangeShortcut(int index)
   {
     LockButtons lock(this);
-    Shortcut origShortcut = m_key->shortcuts()[index].shortcut;
+    Shortcut origShortcut = m_key->shortcuts()[index];
     SelectShortcut window(origShortcut, m_key->keycontext(), m_keys);
     window.openWindowInForeground();
 
@@ -225,7 +225,7 @@ private:
     LockButtons lock(this);
     // We need to create a copy of the shortcut because
     // Key::disableShortcut() will modify the shortcuts() collection itself.
-    Shortcut shortcut = m_key->shortcuts()[index].shortcut;
+    Shortcut shortcut = m_key->shortcuts()[index];
 
     if (ui::Alert::show(Strings::alerts_delete_shortcut(shortcut.toString())) != 1)
       return;

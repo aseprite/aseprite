@@ -208,7 +208,7 @@ void erase_shortcut(app::AppShortcuts& kvs,
 {
   for (auto it = kvs.begin(); it != kvs.end();) {
     auto& kv = *it;
-    if (kv.source == source && kv.shortcut == shortcut)
+    if (kv.source() == source && kv.shortcut() == shortcut)
       it = kvs.erase(it);
     else
       ++it;
@@ -219,7 +219,7 @@ void erase_shortcuts(app::AppShortcuts& kvs, const app::KeySource source)
 {
   for (auto it = kvs.begin(); it != kvs.end();) {
     auto& kv = *it;
-    if (kv.source == source)
+    if (kv.source() == source)
       it = kvs.erase(it);
     else
       ++it;
@@ -301,15 +301,15 @@ bool AppShortcut::fitsBetterThan(const KeyContext currentContext,
                                  const AppShortcut& otherShortcut) const
 {
   // Better context in the same source
-  if (otherShortcut.source == this->source && otherShortcutContext != currentContext &&
+  if (otherShortcut.source() == this->source() && otherShortcutContext != currentContext &&
       thisShortcutContext == currentContext)
     return true;
 
   // Better key source/level: User-defined > Extension-defined > App-defined
-  if (int(this->source) > int(otherShortcut.source) && (thisShortcutContext == currentContext ||
-                                                        // User-defined "Any" context overwrites all
-                                                        // app-defined context
-                                                        thisShortcutContext == KeyContext::Any))
+  if (int(source()) > int(otherShortcut.source()) && (thisShortcutContext == currentContext ||
+                                                      // User-defined "Any" context overwrites all
+                                                      // app-defined context
+                                                      thisShortcutContext == KeyContext::Any))
     return true;
 
   // Normal > SelectionTool > Transformation
@@ -420,30 +420,30 @@ const AppShortcuts& Key::shortcuts() const
 
     // Add default keys
     for (const auto& kv : m_adds) {
-      if (kv.source == KeySource::Original)
+      if (kv.source() == KeySource::Original)
         m_shortcuts->add(kv);
     }
 
     // Delete/add extension-defined keys
     for (const auto& kv : m_dels) {
-      if (kv.source == KeySource::ExtensionDefined)
+      if (kv.source() == KeySource::ExtensionDefined)
         m_shortcuts->remove(kv);
       else {
-        ASSERT(kv.source != KeySource::Original);
+        ASSERT(kv.source() != KeySource::Original);
       }
     }
     for (const auto& kv : m_adds) {
-      if (kv.source == KeySource::ExtensionDefined)
+      if (kv.source() == KeySource::ExtensionDefined)
         m_shortcuts->add(kv);
     }
 
     // Delete/add user-defined keys
     for (const auto& kv : m_dels) {
-      if (kv.source == KeySource::UserDefined)
+      if (kv.source() == KeySource::UserDefined)
         m_shortcuts->remove(kv);
     }
     for (const auto& kv : m_adds) {
-      if (kv.source == KeySource::UserDefined)
+      if (kv.source() == KeySource::UserDefined)
         m_shortcuts->add(kv);
     }
   }
@@ -493,9 +493,7 @@ const AppShortcut* Key::isPressed(const Message* msg, const KeyContext keyContex
   if (const auto* keyMsg = dynamic_cast<const KeyMessage*>(msg)) {
     if (fitsContext(keyContext)) {
       for (const AppShortcut& shortcut : shortcuts()) {
-        if (shortcut.shortcut.isPressed(keyMsg->modifiers(),
-                                        keyMsg->scancode(),
-                                        keyMsg->unicodeChar()) &&
+        if (shortcut.isPressed(keyMsg->modifiers(), keyMsg->scancode(), keyMsg->unicodeChar()) &&
             (!best || shortcut.fitsBetterThan(keyContext, keycontext(), keycontext(), *best))) {
           best = &shortcut;
         }
@@ -509,7 +507,7 @@ const AppShortcut* Key::isPressed(const Message* msg, const KeyContext keyContex
         // etc.
         m_keycontext == KeyContext::MouseWheel) {
       for (const AppShortcut& shortcut : shortcuts()) {
-        if (shortcut.shortcut.modifiers() == mouseMsg->modifiers())
+        if (shortcut.modifiers() == mouseMsg->modifiers())
           return &shortcut;
       }
     }
@@ -554,7 +552,7 @@ bool Key::hasShortcut(const ui::Shortcut& shortcut) const
 bool Key::hasUserDefinedShortcuts() const
 {
   return std::any_of(m_adds.begin(), m_adds.end(), [](const auto& kv) {
-    return (kv.source == KeySource::UserDefined);
+    return (kv.source() == KeySource::UserDefined);
   });
 }
 
@@ -587,7 +585,7 @@ void Key::copyOriginalToUser()
   // Then copy all original & extension-defined keys as user-defined
   auto copy = m_adds;
   for (const auto& kv : copy)
-    m_adds.push_back(AppShortcut(KeySource::UserDefined, kv.shortcut));
+    m_adds.push_back(AppShortcut(KeySource::UserDefined, kv));
   m_shortcuts.reset();
 }
 

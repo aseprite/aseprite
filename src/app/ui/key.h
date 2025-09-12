@@ -105,27 +105,19 @@ inline KeyAction operator&(KeyAction a, KeyAction b)
 
 // This is a ui::Shortcut wrapper (just one key shortcut) defined by
 // the app, an extension, or the user (KeySource).
-struct AppShortcut {
-  KeySource source;
-  ui::Shortcut shortcut;
-
+class AppShortcut : public ui::Shortcut {
+public:
   AppShortcut(const KeySource source, const ui::Shortcut& shortcut)
-    : source(source)
-    , shortcut(shortcut)
+    : Shortcut(shortcut)
+    , m_source(source)
   {
   }
 
-  bool isEmpty() const { return shortcut.isEmpty(); }
-  std::string toString() const { return shortcut.toString(); }
-  bool isPressed() const { return shortcut.isPressed(); }
-  bool isLooselyPressed() const { return shortcut.isLooselyPressed(); }
+  KeySource source() const { return m_source; }
+  const ui::Shortcut& shortcut() const { return *this; }
 
-  bool operator==(const AppShortcut& other) const { return shortcut.operator==(other.shortcut); }
-  bool operator!=(const AppShortcut& other) const { return shortcut.operator!=(other.shortcut); }
-
-  ui::KeyModifiers modifiers() const { return shortcut.modifiers(); }
-  ui::KeyScancode scancode() const { return shortcut.scancode(); }
-  int unicodeChar() const { return shortcut.unicodeChar(); }
+  // bool operator==(const AppShortcut& other) const { return shortcut.operator==(other.shortcut); }
+  // bool operator!=(const AppShortcut& other) const { return shortcut.operator!=(other.shortcut); }
 
   // Returns true if this AppShortcut is better for the current
   // context, compared to another shortcut.
@@ -133,6 +125,9 @@ struct AppShortcut {
                       KeyContext thisShortcutContext,
                       KeyContext otherShortcutContext,
                       const AppShortcut& otherShortcut) const;
+
+private:
+  KeySource m_source;
 };
 
 using AppShortcuts = ui::ShortcutsT<AppShortcut>;

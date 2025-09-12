@@ -369,12 +369,12 @@ void KeyboardShortcuts::exportKeys(XMLElement* parent, KeyType type)
       continue;
 
     for (const auto& kv : key->delsKeys())
-      if (kv.source == KeySource::UserDefined)
-        exportShortcut(parent, key.get(), kv.shortcut, true);
+      if (kv.source() == KeySource::UserDefined)
+        exportShortcut(parent, key.get(), kv, true);
 
     for (const auto& kv : key->addsKeys())
-      if (kv.source == KeySource::UserDefined)
-        exportShortcut(parent, key.get(), kv.shortcut, false);
+      if (kv.source() == KeySource::UserDefined)
+        exportShortcut(parent, key.get(), kv, false);
   }
 }
 
