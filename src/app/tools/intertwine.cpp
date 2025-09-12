@@ -160,13 +160,19 @@ doc::AlgoLineWithAlgoPixel Intertwine::getLineAlgo(ToolLoop* loop,
 }
 
 // static
-void Intertwine::doPointshapeCircle(int xm, int ym, int r, int sx, int sy, ToolLoop* loop, bool fill)
+void Intertwine::doPointshapeSlicedCircle(int x1,
+                                          int y1,
+                                          int x2,
+                                          int y2,
+                                          int r,
+                                          ToolLoop* loop,
+                                          bool fill)
 {
   if (fill) {
-    algo_circlefill(xm, ym, sx, sy, r, loop, (AlgoHLine)doPointshapeHline);
+    algo_sliced_circlefill(x1, y1, x2, y2, r, loop, (AlgoHLine)doPointshapeHline);
   }
   else {
-    algo_circle(xm, ym, sx, sy, r, loop, (AlgoPixel)doPointshapePoint);
+    algo_sliced_circle(x1, y1, x2, y2, r, loop, (AlgoPixel)doPointshapePoint);
   }
 }
 
