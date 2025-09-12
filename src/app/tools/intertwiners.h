@@ -198,12 +198,10 @@ public:
         if (ABS(angle) < 0.001) {
           int r = 0;
           if (cornerRadius > 0) {
-            int w = x2 - x1;
-            int h = y2 - y1;
-            int xm = x1 + w / 2;
-            int ym = y1 + h / 2;
+            int w = x2 - x1 + 1;
+            int h = y2 - y1 + 1;
             r = std::min(w, std::min(h, 2 * cornerRadius)) / 2;
-            doPointshapeCircle(xm, ym, r, w - r * 2, h - r * 2, loop);
+            doPointshapeSlicedCircle(x1, y1, x2, y2, r, loop);
           }
 
           doPointshapeLineWithoutDynamics(x1 + r, y1, x2 - r, y1, loop);
@@ -224,8 +222,8 @@ public:
             doPointshapeLine(p[n - 1], p[0], loop);
           }
           else {
-            int w = x2 - x1;
-            int h = y2 - y1;
+            int w = x2 - x1 + 1;
+            int h = y2 - y1 + 1;
             int r = std::min(w, std::min(h, 2 * cornerRadius)) / 2;
             Stroke p = rotateRectangle(x1, y1, x2, y2, angle, r);
             int n = p.size();
@@ -269,12 +267,10 @@ public:
       if (ABS(angle) < 0.001) {
         int r = 0;
         if (cornerRadius > 0) {
-          int w = x2 - x1;
-          int h = y2 - y1;
-          int xm = x1 + w / 2;
-          int ym = y1 + h / 2;
+          int w = x2 - x1 + 1;
+          int h = y2 - y1 + 1;
           r = std::min(w, std::min(h, 2 * cornerRadius)) / 2;
-          doPointshapeCircle(xm, ym, r, w - r * 2, h - r * 2, loop, true);
+          doPointshapeSlicedCircle(x1, y1, x2, y2, r, loop, true);
 
           for (y = y1; y < y1 + r; y++)
             doPointshapeLineWithoutDynamics(x1 + r, y, x2 - r, y, loop);
@@ -292,16 +288,22 @@ public:
           doc::algorithm::polygon(v.size() / 2, &v[0], loop, (AlgoHLine)doPointshapeHline);
         }
         else {
-          int w = x2 - x1;
-          int h = y2 - y1;
+          int w = x2 - x1 + 1;
+          int h = y2 - y1 + 1;
           int r = std::min(w, std::min(h, 2 * cornerRadius)) / 2;
           Stroke p = rotateRectangle(x1, y1, x2, y2, angle, cornerRadius);
           auto v = p.toXYInts();
           doc::algorithm::polygon(v.size() / 2, &v[0], loop, (AlgoHLine)doPointshapeHline);
-          doPointshapeCircle(p[2].x, p[2].y, r, 0, 0, loop, true);
-          doPointshapeCircle(p[5].x, p[5].y, r, 0, 0, loop, true);
-          doPointshapeCircle(p[8].x, p[8].y, r, 0, 0, loop, true);
-          doPointshapeCircle(p[11].x, p[11].y, r, 0, 0, loop, true);
+          doPointshapeSlicedCircle(p[2].x - r, p[2].y - r, p[2].x + r, p[2].y + r, r, loop, true);
+          doPointshapeSlicedCircle(p[5].x - r, p[5].y - r, p[5].x + r, p[5].y + r, r, loop, true);
+          doPointshapeSlicedCircle(p[8].x - r, p[8].y - r, p[8].x + r, p[8].y + r, r, loop, true);
+          doPointshapeSlicedCircle(p[11].x - r,
+                                   p[11].y - r,
+                                   p[11].x + r,
+                                   p[11].y + r,
+                                   r,
+                                   loop,
+                                   true);
         }
       }
     }

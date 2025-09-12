@@ -61,8 +61,13 @@ protected:
                                                 const Stroke::Pt& a,
                                                 const Stroke::Pt& b);
 
-  static void
-  doPointshapeCircle(int xm, int ym, int r, int sx, int sy, ToolLoop* loop, bool fill = false);
+  static void doPointshapeSlicedCircle(int x1,
+                                       int y1,
+                                       int x2,
+                                       int y2,
+                                       int r,
+                                       ToolLoop* loop,
+                                       bool fill = false);
 
   static void doPointshapeArc(int xm, int ym, double sa, double ea, int r, ToolLoop* loop);
 };

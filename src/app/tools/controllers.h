@@ -149,7 +149,7 @@ public:
 private:
   static int maxRadius(const Stroke& stroke)
   {
-    return std::min(ABS(stroke[1].x - stroke[0].x), ABS(stroke[1].y - stroke[0].y)) / 2;
+    return std::min(ABS(stroke[1].x - stroke[0].x + 1), ABS(stroke[1].y - stroke[0].y + 1)) / 2;
   }
 
   bool m_modifying = false;
