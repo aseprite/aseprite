@@ -11,6 +11,7 @@
 #include "app/tools/tool_loop.h"
 #include "app/tools/tool_loop_modifiers.h"
 #include "base/pi.h"
+#include "doc/algo.h"
 #include "doc/algorithm/polygon.h"
 #include "doc/layer_tilemap.h"
 #include "gfx/point.h"
@@ -203,7 +204,7 @@ public:
             int w = x2 - x1 + 1;
             int h = y2 - y1 + 1;
             r = std::min(w, std::min(h, 2 * cornerRadius)) / 2;
-            doPointshapeSlicedCircle(x1, y1, x2, y2, r, loop);
+            algo_sliced_circle(x1, y1, x2, y2, r, loop, (AlgoPixel)doPointshapePoint);
           }
 
           doPointshapeLineWithoutDynamics(x1 + r, y1, x2 - r, y1, loop);
@@ -235,10 +236,22 @@ public:
             const double ang_minus_PI_2 = base::fmod_radians(angle - PI / 2);
             const double ang_plus_PI_2 = base::fmod_radians(angle + PI / 2);
             const double ang_plus_PI = base::fmod_radians(angle + PI);
-            doPointshapeArc(p[2].x, p[2].y, ang_minus_PI_2, angle, r, loop);
-            doPointshapeArc(p[5].x, p[5].y, angle, ang_plus_PI_2, r, loop);
-            doPointshapeArc(p[8].x, p[8].y, ang_plus_PI_2, ang_plus_PI, r, loop);
-            doPointshapeArc(p[11].x, p[11].y, ang_plus_PI, ang_minus_PI_2, r, loop);
+            algo_arc(p[2].x, p[2].y, ang_minus_PI_2, angle, r, loop, (AlgoPixel)doPointshapePoint);
+            algo_arc(p[5].x, p[5].y, angle, ang_plus_PI_2, r, loop, (AlgoPixel)doPointshapePoint);
+            algo_arc(p[8].x,
+                     p[8].y,
+                     ang_plus_PI_2,
+                     ang_plus_PI,
+                     r,
+                     loop,
+                     (AlgoPixel)doPointshapePoint);
+            algo_arc(p[11].x,
+                     p[11].y,
+                     ang_plus_PI,
+                     ang_minus_PI_2,
+                     r,
+                     loop,
+                     (AlgoPixel)doPointshapePoint);
           }
         }
       }
@@ -272,7 +285,7 @@ public:
           int w = x2 - x1 + 1;
           int h = y2 - y1 + 1;
           r = std::min(w, std::min(h, 2 * cornerRadius)) / 2;
-          doPointshapeSlicedCircle(x1, y1, x2, y2, r, loop, true);
+          algo_sliced_circlefill(x1, y1, x2, y2, r, loop, (AlgoHLine)doPointshapeHline);
 
           for (y = y1; y < y1 + r; y++)
             doPointshapeLineWithoutDynamics(x1 + r, y, x2 - r, y, loop);
@@ -296,16 +309,34 @@ public:
           Stroke p = rotateRectangle(x1, y1, x2, y2, angle, cornerRadius);
           auto v = p.toXYInts();
           doc::algorithm::polygon(v.size() / 2, &v[0], loop, (AlgoHLine)doPointshapeHline);
-          doPointshapeSlicedCircle(p[2].x - r, p[2].y - r, p[2].x + r, p[2].y + r, r, loop, true);
-          doPointshapeSlicedCircle(p[5].x - r, p[5].y - r, p[5].x + r, p[5].y + r, r, loop, true);
-          doPointshapeSlicedCircle(p[8].x - r, p[8].y - r, p[8].x + r, p[8].y + r, r, loop, true);
-          doPointshapeSlicedCircle(p[11].x - r,
-                                   p[11].y - r,
-                                   p[11].x + r,
-                                   p[11].y + r,
-                                   r,
-                                   loop,
-                                   true);
+          algo_sliced_circlefill(p[2].x - r,
+                                 p[2].y - r,
+                                 p[2].x + r,
+                                 p[2].y + r,
+                                 r,
+                                 loop,
+                                 (AlgoHLine)doPointshapeHline);
+          algo_sliced_circlefill(p[5].x - r,
+                                 p[5].y - r,
+                                 p[5].x + r,
+                                 p[5].y + r,
+                                 r,
+                                 loop,
+                                 (AlgoHLine)doPointshapeHline);
+          algo_sliced_circlefill(p[8].x - r,
+                                 p[8].y - r,
+                                 p[8].x + r,
+                                 p[8].y + r,
+                                 r,
+                                 loop,
+                                 (AlgoHLine)doPointshapeHline);
+          algo_sliced_circlefill(p[11].x - r,
+                                 p[11].y - r,
+                                 p[11].x + r,
+                                 p[11].y + r,
+                                 r,
+                                 loop,
+                                 (AlgoHLine)doPointshapeHline);
         }
       }
     }
