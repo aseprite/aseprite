@@ -5,6 +5,8 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
+#include "app/app.h"
+#include "app/pref/preferences.h"
 #include "app/snap_to_grid.h"
 #include "app/tools/controller.h"
 #include "app/tools/intertwine.h"
@@ -112,7 +114,19 @@ private:
 
 class CornerRadius {
 public:
-  bool hasRadius() const { return m_radius > 0; }
+  ToolLoop* loop() const { return m_loop; }
+  void loop(ToolLoop* loop) { m_loop = loop; }
+
+  void load()
+  {
+    auto* tool = App::instance()->activeTool();
+    m_pref = &Preferences::instance().tool(tool);
+    m_radius = m_pref->cornerRadius();
+  }
+
+  void save() { m_pref->cornerRadius.setValue(m_radius); }
+
+  bool isModifying() const { return m_modifying; }
 
   void modifyRadius(Stroke& stroke, const Stroke::Pt& pt)
   {
@@ -133,17 +147,21 @@ public:
     capRadius(stroke);
   }
 
-  bool isModifying() const { return m_modifying; }
-
   void stopModifying()
   {
     m_modifying = false;
     m_lastRadius = m_radius;
   }
 
+  bool hasRadius() const { return m_radius > 0; }
+
   int radius() const { return m_radius; }
 
+  // Gets the corner radius limited by the maximum radius allowed by the stroke
+  // points.
   int radius(const Stroke& stroke) const { return std::min(m_radius, maxRadius(stroke)); }
+
+  void radius(int r) { m_radius = r; }
 
   void capRadius(Stroke& stroke) { m_radius = radius(stroke); }
 
@@ -153,6 +171,8 @@ private:
     return std::min(ABS(stroke[1].x - stroke[0].x + 1), ABS(stroke[1].y - stroke[0].y + 1)) / 2;
   }
 
+  ToolLoop* m_loop;
+  ToolPreferences* m_pref;
   bool m_modifying = false;
   int m_lastRadius = 0;
   int m_radius = 0;
@@ -170,6 +190,11 @@ public:
     m_first = m_center = pt;
     m_angle = 0.0;
 
+    m_cornerRadius.loop(loop);
+    if (loop->getIntertwine()->cornerRadiusSupport()) {
+      m_cornerRadius.load();
+    }
+
     stroke.addPoint(pt);
     stroke.addPoint(pt);
 
@@ -179,7 +204,10 @@ public:
 
   bool releaseButton(Stroke& stroke, const Stroke::Pt& pt) override
   {
-    m_cornerRadius.capRadius(stroke);
+    if (m_cornerRadius.loop() && m_cornerRadius.loop()->getIntertwine()->cornerRadiusSupport()) {
+      m_cornerRadius.capRadius(stroke);
+      m_cornerRadius.save();
+    }
     return false;
   }
 
