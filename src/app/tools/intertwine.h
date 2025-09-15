@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,6 +26,8 @@ public:
   virtual ~Intertwine() {}
   virtual bool snapByAngle() { return false; }
   virtual void prepareIntertwine(ToolLoop* loop) {}
+  // Returns true if the implementation supports corner radius modification.
+  virtual bool cornerRadiusSupport() { return false; }
 
   // The given stroke must be relative to the cel origin.
   virtual void joinStroke(ToolLoop* loop, const Stroke& stroke) = 0;

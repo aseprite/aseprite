@@ -8,6 +8,7 @@
 #include "app/snap_to_grid.h"
 #include "app/tools/controller.h"
 #include "app/tools/intertwine.h"
+#include "app/tools/tool.h"
 #include "app/tools/tool_loop.h"
 #include "app/tools/tool_loop_modifiers.h"
 #include "base/gcd.h"
@@ -191,7 +192,8 @@ public:
     if (MoveOriginCapability::isMovingOrigin(loop, stroke, pt))
       return;
 
-    if ((int(loop->getModifiers()) & int(ToolLoopModifiers::kCornerRadius))) {
+    if (loop->getIntertwine()->cornerRadiusSupport() &&
+        (int(loop->getModifiers()) & int(ToolLoopModifiers::kCornerRadius))) {
       m_cornerRadius.modifyRadius(stroke, pt);
       return;
     }
@@ -343,7 +345,7 @@ public:
       text += fmt::format(" :angle: {:.1f}", 180.0 * angle / PI);
     }
 
-    if (m_cornerRadius.hasRadius())
+    if (m_cornerRadius.hasRadius() && loop->getIntertwine()->cornerRadiusSupport())
       text += fmt::format(" :corner_radius: {}", m_cornerRadius.radius(stroke));
 
     // Aspect ratio at the end
