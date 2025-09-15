@@ -171,6 +171,8 @@ public:
 
 class IntertwineAsRectangles : public Intertwine {
 public:
+  bool cornerRadiusSupport() override { return true; }
+
   void joinStroke(ToolLoop* loop, const Stroke& stroke) override
   {
     if (stroke.size() == 0)
