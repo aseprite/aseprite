@@ -62,16 +62,6 @@ protected:
   static doc::AlgoLineWithAlgoPixel getLineAlgo(ToolLoop* loop,
                                                 const Stroke::Pt& a,
                                                 const Stroke::Pt& b);
-
-  static void doPointshapeSlicedCircle(int x1,
-                                       int y1,
-                                       int x2,
-                                       int y2,
-                                       int r,
-                                       ToolLoop* loop,
-                                       bool fill = false);
-
-  static void doPointshapeArc(int xm, int ym, double sa, double ea, int r, ToolLoop* loop);
 };
 
 }} // namespace app::tools
