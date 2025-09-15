@@ -58,9 +58,7 @@ public:
       return;
     }
 
-    // Color space conversion
-    auto convertColor = convert_from_current_to_screen_color_space();
-
+    Paint paint;
     gfx::Color color = gfx::ColorNone;
     int w = std::max(rc.w - 1, 1);
 
@@ -110,7 +108,11 @@ public:
           color = color_utils::color_for_ui(app::Color::fromGray(255 * x / w));
           break;
       }
-      g->drawVLine(convertColor(color), rc.x + x, rc.y, rc.h);
+
+      // Color space conversion
+      paint.color(color, get_current_color_space(slider->display()).get());
+
+      g->drawVLine(rc.x + x, rc.y, rc.h, paint);
     }
   }
 

@@ -155,7 +155,7 @@ void Graphics::drawHLine(gfx::Color color, int x, int y, int w)
 
   os::SurfaceLock lock(m_surface.get());
   os::Paint paint;
-  paint.color(color, colorSpace());
+  paint.color(color);
   m_surface->drawRect(gfx::Rect(m_dx + x, m_dy + y, w, 1), paint);
 }
 
@@ -173,7 +173,7 @@ void Graphics::drawVLine(gfx::Color color, int x, int y, int h)
 
   os::SurfaceLock lock(m_surface.get());
   os::Paint paint;
-  paint.color(color, colorSpace());
+  paint.color(color);
   m_surface->drawRect(gfx::Rect(m_dx + x, m_dy + y, 1, h), paint);
 }
 
@@ -185,7 +185,7 @@ void Graphics::drawLine(gfx::Color color, const gfx::Point& _a, const gfx::Point
 
   os::SurfaceLock lock(m_surface.get());
   os::Paint paint;
-  paint.color(color, colorSpace());
+  paint.color(color);
   m_surface->drawLine(a, b, paint);
 }
 
@@ -242,7 +242,7 @@ void Graphics::drawRect(gfx::Color color, const gfx::Rect& rcOrig)
 
   os::SurfaceLock lock(m_surface.get());
   os::Paint paint;
-  paint.color(color, colorSpace());
+  paint.color(color);
   paint.style(os::Paint::Stroke);
   m_surface->drawRect(rc, paint);
 }
@@ -255,7 +255,7 @@ void Graphics::fillRect(gfx::Color color, const gfx::Rect& rcOrig)
 
   os::SurfaceLock lock(m_surface.get());
   os::Paint paint;
-  paint.color(color, colorSpace());
+  paint.color(color);
   paint.style(os::Paint::Fill);
   m_surface->drawRect(rc, paint);
 }
@@ -444,11 +444,11 @@ void Graphics::drawUIText(const std::string& str,
 
   Paint paint;
   if (gfx::geta(bg) > 0) { // Paint background
-    paint.color(bg, colorSpace());
+    paint.color(bg);
     paint.style(os::Paint::Fill);
     drawRect(gfx::RectF(textBlob->bounds()).offset(pt), paint);
   }
-  paint.color(fg, colorSpace());
+  paint.color(fg);
 
   drawTextBlob(textBlob, gfx::PointF(pt), paint);
 
@@ -603,10 +603,10 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str,
         Paint paint;
         paint.style(os::Paint::Fill);
         if (!gfx::is_transparent(bg)) {
-          paint.color(bg, colorSpace());
+          paint.color(bg);
           drawRect(gfx::RectF(xout, pt.y, rc.w, lineSize.h), paint);
         }
-        paint.color(fg, colorSpace());
+        paint.color(fg);
 
         float baselineDelta = -metrics.ascent - lineBlob->baseline();
         drawTextBlob(lineBlob, gfx::PointF(xout, pt.y + baselineDelta), paint);

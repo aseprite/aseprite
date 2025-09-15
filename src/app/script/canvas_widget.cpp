@@ -190,7 +190,9 @@ void Canvas::onResize(ui::ResizeEvent& ev)
     }
 
     if (!m_surface || m_surface->width() != w || m_surface->height() != h) {
-      m_surface = system->makeSurface(w, h, get_current_color_space());
+      ui::Display* display = this->display();
+      os::ColorSpaceRef cs = (display ? display->colorSpace() : nullptr);
+      m_surface = system->makeSurface(w, h, cs);
       callPaint();
     }
   }

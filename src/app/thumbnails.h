@@ -11,6 +11,7 @@
 
 #include "gfx/size.h"
 #include "os/surface.h"
+#include "ui/display.h"
 
 namespace doc {
 class Cel;
@@ -22,7 +23,8 @@ class Surface;
 
 namespace app { namespace thumb {
 
-os::SurfaceRef get_cel_thumbnail(const doc::Cel* cel,
+os::SurfaceRef get_cel_thumbnail(ui::Display* display,
+                                 const doc::Cel* cel,
                                  const bool scaleUpToFit,
                                  const gfx::Size& fitInSize);
 
