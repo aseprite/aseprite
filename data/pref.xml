@@ -481,6 +481,7 @@
     <option id="filled_preview" type="bool" default="false" />
     <option id="ink" type="app::tools::InkType" default="app::tools::InkType::DEFAULT" />
     <option id="freehand_algorithm" type="app::tools::FreehandAlgorithm" default="app::tools::FreehandAlgorithm::DEFAULT" />
+    <option id="corner_radius" type="int" default="0" />
     <!-- Update app::Preferences::resetToolPreferences() function if you add new sections here  -->
     <section id="brush">
       <option id="type" type="BrushType" default="BrushType::CIRCLE" />
