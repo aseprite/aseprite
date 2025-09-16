@@ -25,6 +25,7 @@
 #include "app/ui/workspace.h"
 #include "app/ui/workspace_tabs.h"
 #include "doc/sprite.h"
+#include "ui/manager.h"
 #include "ui/system.h"
 
 #include <algorithm>
@@ -119,6 +120,10 @@ void UIContext::setActiveView(DocView* docView)
 
   mainWin->getTimeline()->updateUsingEditor(editor);
   mainWin->getPreviewEditor()->updateUsingEditor(editor);
+
+  // Update mouse widgets immediately after changing views rather
+  // than waiting for mouse movement.
+  mainWin->manager()->_updateMouseWidgets();
 
   // Change the image-type of color bar.
   ColorBar::instance()->setPixelFormat(app_get_current_pixel_format());
