@@ -1,0 +1,37 @@
+GIMP Palette
+#
+# by Joseph White
+# http://www.pico-8.com/
+#
+  0   0   0	black
+ 29  43  83	dark_blue
+126  37  83	dark_purple
+  0 135  81	dark_green
+171  82  54	brown
+ 95  87  79	dark_gray
+194 195 199	light_gray
+255 241 232	white
+255   0  77	red
+255 163   0	orange
+255 236  39	yellow
+  0 228  54	green
+ 41 173 255	blue
+131 118 156	indigo
+255 119 168	pink
+255 204 170	light_peach
+ 41  24  20	brownish_black
+ 17  29  53	darker_blue
+ 66  33  54	darker_purple
+ 18  83  89	blue_green
+116  47  41	dark_brown
+ 73  51  59	darker_grey
+162 136 121	medium_grey
+243 239 125	light_yellow
+190  18  80	dark_red
+255 108  36	dark_orange
+168 231  46	lime_green
+  0 181  67	medium_green
+  6  90 181	true_blue
+117  70 101	mauve
+255 110  89	dark_peach
+255 157 129	peach 
