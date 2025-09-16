@@ -11,6 +11,7 @@
 
 #include "app/ui/tabs.h"
 
+#include "app/color_spaces.h"
 #include "app/color_utils.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
@@ -970,7 +971,10 @@ void Tabs::createFloatingUILayer(Tab* tab)
   ASSERT(!m_floatingUILayer);
 
   ui::Display* display = this->display();
-  os::SurfaceRef surface = os::System::instance()->makeRgbaSurface(tab->width, m_tabsHeight);
+  os::SurfaceRef surface = os::System::instance()->makeRgbaSurface(
+    tab->width,
+    m_tabsHeight,
+    get_current_color_space(display));
 
   // Fill the surface with pink color
   {

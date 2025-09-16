@@ -12,6 +12,8 @@
 #include "app/ui/key.h"
 #include "obs/signal.h"
 
+#include <optional>
+
 namespace tinyxml2 {
 class XMLElement;
 }
@@ -59,7 +61,18 @@ public:
                        const Key* newKey);
 
   static KeyContext getCurrentKeyContext();
-  bool getCommandFromKeyMessage(const ui::Message* msg, Command** command, Params* params);
+
+  KeyPtr findBestKeyFromMessage(
+    const ui::Message* msg,
+    KeyContext currentKeyContext = KeyboardShortcuts::getCurrentKeyContext(),
+    std::optional<KeyType> filterByType = std::nullopt) const;
+
+  bool getCommandFromKeyMessage(
+    const ui::Message* msg,
+    Command** command,
+    Params* params,
+    KeyContext currentKeyContext = KeyboardShortcuts::getCurrentKeyContext());
+
   tools::Tool* getCurrentQuicktool(tools::Tool* currentTool);
   KeyAction getCurrentActionModifiers(KeyContext context);
   WheelAction getWheelActionFromMouseMessage(KeyContext context, const ui::Message* msg);

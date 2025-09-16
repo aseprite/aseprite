@@ -10,6 +10,7 @@
   #include "config.h"
 #endif
 
+#include "app/color_spaces.h"
 #include "app/util/conversion_to_surface.h"
 #include "doc/blend_mode.h"
 #include "doc/cel.h"
@@ -21,7 +22,8 @@
 
 namespace app { namespace thumb {
 
-os::SurfaceRef get_cel_thumbnail(const doc::Cel* cel,
+os::SurfaceRef get_cel_thumbnail(ui::Display* display,
+                                 const doc::Cel* cel,
                                  const bool scaleUpToFit,
                                  const gfx::Size& fitInSize)
 {
@@ -55,7 +57,8 @@ os::SurfaceRef get_cel_thumbnail(const doc::Cel* cel,
 
   if (os::SurfaceRef thumbnail = os::System::instance()->makeRgbaSurface(
         thumbnailImage->width(),
-        thumbnailImage->height())) {
+        thumbnailImage->height(),
+        get_current_color_space(display))) {
     convert_image_to_surface(thumbnailImage.get(),
                              palette,
                              thumbnail.get(),

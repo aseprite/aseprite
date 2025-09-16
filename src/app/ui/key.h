@@ -103,12 +103,42 @@ inline KeyAction operator&(KeyAction a, KeyAction b)
   return KeyAction(int(a) & int(b));
 }
 
+// This is a ui::Shortcut wrapper (just one key shortcut) defined by
+// the app, an extension, or the user (KeySource).
+class AppShortcut : public ui::Shortcut {
+public:
+  AppShortcut(const KeySource source, const ui::Shortcut& shortcut)
+    : Shortcut(shortcut)
+    , m_source(source)
+  {
+  }
+
+  KeySource source() const { return m_source; }
+  const ui::Shortcut& shortcut() const { return *this; }
+
+  // bool operator==(const AppShortcut& other) const { return shortcut.operator==(other.shortcut); }
+  // bool operator!=(const AppShortcut& other) const { return shortcut.operator!=(other.shortcut); }
+
+  // Returns true if this AppShortcut is better for the current
+  // context, compared to another shortcut.
+  bool fitsBetterThan(KeyContext currentContext,
+                      KeyContext thisShortcutContext,
+                      KeyContext otherShortcutContext,
+                      const AppShortcut& otherShortcut) const;
+
+private:
+  KeySource m_source;
+};
+
+using AppShortcuts = ui::ShortcutsT<AppShortcut>;
+
 class Key;
 using KeyPtr = std::shared_ptr<Key>;
 using Keys = std::vector<KeyPtr>;
-using KeySourceShortcutList = std::vector<std::pair<KeySource, ui::Shortcut>>;
 using DragVector = base::Vector2d<double>;
 
+// A set of key shortcuts (AppShortcuts) associated to one command,
+// tool, or specific action.
 class Key {
 public:
   Key(const Key& key);
@@ -119,13 +149,15 @@ public:
   static KeyPtr MakeDragAction(WheelAction dragAction);
 
   KeyType type() const { return m_type; }
-  const ui::Shortcuts& shortcuts() const;
-  const KeySourceShortcutList& addsKeys() const { return m_adds; }
-  const KeySourceShortcutList& delsKeys() const { return m_dels; }
+  const AppShortcuts& shortcuts() const;
+  const AppShortcuts& addsKeys() const { return m_adds; }
+  const AppShortcuts& delsKeys() const { return m_dels; }
 
   void add(const ui::Shortcut& shortcut, KeySource source, KeyboardShortcuts& globalKeys);
-  const ui::Shortcut* isPressed(const ui::Message* msg, KeyContext keyContext) const;
-  const ui::Shortcut* isPressed(const ui::Message* msg) const;
+
+  bool fitsContext(KeyContext keyContext) const;
+  const AppShortcut* isPressed(const ui::Message* msg, KeyContext keyContext) const;
+  const AppShortcut* isPressed(const ui::Message* msg) const;
   bool isPressed() const;
   bool isLooselyPressed() const;
   bool isCommandListed() const;
@@ -161,11 +193,11 @@ public:
 
 private:
   KeyType m_type;
-  KeySourceShortcutList m_adds;
-  KeySourceShortcutList m_dels;
+  AppShortcuts m_adds;
+  AppShortcuts m_dels;
   // Final list of shortcuts after processing the
   // addition/deletion of extension-defined & user-defined keys.
-  mutable std::unique_ptr<ui::Shortcuts> m_shortcuts;
+  mutable std::unique_ptr<AppShortcuts> m_shortcuts;
   KeyContext m_keycontext;
 
   // for KeyType::Command

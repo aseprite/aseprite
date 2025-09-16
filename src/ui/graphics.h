@@ -39,6 +39,11 @@ namespace ui {
 class Display;
 
 // Class to render a widget in the screen.
+//
+// The gfx::Color parameter is a color in the sRGB color space
+// (e.g. used to paint theme elements on widgets). If you want to
+// paint a color from other color space, use the Paint version of each
+// function.
 class Graphics {
 public:
   Graphics(Display* display, const os::SurfaceRef& surface, int dx, int dy);
@@ -47,7 +52,10 @@ public:
   int width() const;
   int height() const;
 
+  Display* display() const { return m_display; }
   os::Surface* getInternalSurface() { return m_surface.get(); }
+  os::ColorSpace* colorSpace() { return m_surface->colorSpace().get(); }
+
   int getInternalDeltaX() { return m_dx; }
   int getInternalDeltaY() { return m_dy; }
 

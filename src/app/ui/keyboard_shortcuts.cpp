@@ -89,8 +89,10 @@ void KeyboardShortcuts::destroyInstance()
 
 KeyboardShortcuts::KeyboardShortcuts()
 {
-  ASSERT(Strings::instance());
-  Strings::instance()->LanguageChange.connect([] { reset_key_tables_that_depends_on_language(); });
+  // Strings instance can be nullptr in tests.
+  if (auto* strings = Strings::instance()) {
+    strings->LanguageChange.connect([] { reset_key_tables_that_depends_on_language(); });
+  }
 }
 
 KeyboardShortcuts::~KeyboardShortcuts()
@@ -367,12 +369,12 @@ void KeyboardShortcuts::exportKeys(XMLElement* parent, KeyType type)
       continue;
 
     for (const auto& kv : key->delsKeys())
-      if (kv.first == KeySource::UserDefined)
-        exportShortcut(parent, key.get(), kv.second, true);
+      if (kv.source() == KeySource::UserDefined)
+        exportShortcut(parent, key.get(), kv, true);
 
     for (const auto& kv : key->addsKeys())
-      if (kv.first == KeySource::UserDefined)
-        exportShortcut(parent, key.get(), kv.second, false);
+      if (kv.source() == KeySource::UserDefined)
+        exportShortcut(parent, key.get(), kv, false);
   }
 }
 
@@ -574,22 +576,46 @@ KeyContext KeyboardShortcuts::getCurrentKeyContext()
   return KeyContext::Normal;
 }
 
-bool KeyboardShortcuts::getCommandFromKeyMessage(const Message* msg,
-                                                 Command** command,
-                                                 Params* params)
+KeyPtr KeyboardShortcuts::findBestKeyFromMessage(const ui::Message* msg,
+                                                 KeyContext currentKeyContext,
+                                                 std::optional<KeyType> filterByType) const
 {
-  const KeyContext contexts[] = { getCurrentKeyContext(), KeyContext::Normal };
+  const KeyContext contexts[] = { currentKeyContext, KeyContext::Normal };
   int n = (contexts[0] != contexts[1] ? 2 : 1);
+  KeyPtr bestKey = nullptr;
+  const AppShortcut* bestShortcut = nullptr;
   for (int i = 0; i < n; ++i) {
-    for (KeyPtr& key : m_keys) {
-      if (key->type() == KeyType::Command && key->isPressed(msg, contexts[i])) {
-        if (command)
-          *command = key->command();
-        if (params)
-          *params = key->params();
-        return true;
+    for (const KeyPtr& key : m_keys) {
+      // Skip keys that are not for the specific KeyType (e.g. only for commands).
+      if (filterByType.has_value() && key->type() != *filterByType)
+        continue;
+
+      const AppShortcut* shortcut = key->isPressed(msg, contexts[i]);
+      if (shortcut && (!bestKey || shortcut->fitsBetterThan(currentKeyContext,
+                                                            key->keycontext(),
+                                                            bestKey->keycontext(),
+                                                            *bestShortcut))) {
+        bestKey = key;
+        bestShortcut = shortcut;
       }
     }
+  }
+  return bestKey;
+}
+
+bool KeyboardShortcuts::getCommandFromKeyMessage(const ui::Message* msg,
+                                                 Command** command,
+                                                 Params* params,
+                                                 KeyContext currentKeyContext)
+{
+  KeyPtr key = findBestKeyFromMessage(msg, currentKeyContext, std::make_optional(KeyType::Command));
+  if (key) {
+    ASSERT(key->type() == KeyType::Command);
+    if (command)
+      *command = key->command();
+    if (params)
+      *params = key->params();
+    return true;
   }
   return false;
 }
@@ -634,10 +660,10 @@ WheelAction KeyboardShortcuts::getWheelActionFromMouseMessage(const KeyContext c
                                                               const ui::Message* msg)
 {
   WheelAction wheelAction = WheelAction::None;
-  const ui::Shortcut* bestShortcut = nullptr;
+  const AppShortcut* bestShortcut = nullptr;
   for (const KeyPtr& key : m_keys) {
     if (key->type() == KeyType::WheelAction && key->keycontext() == context) {
-      const ui::Shortcut* shortcut = key->isPressed(msg);
+      const AppShortcut* shortcut = key->isPressed(msg);
       if ((shortcut) && (!bestShortcut || bestShortcut->modifiers() < shortcut->modifiers())) {
         bestShortcut = shortcut;
         wheelAction = key->wheelAction();
@@ -653,7 +679,7 @@ Keys KeyboardShortcuts::getDragActionsFromKeyMessage(const ui::Message* msg)
   Keys keys;
   for (const KeyPtr& key : m_keys) {
     if (key->type() == KeyType::DragAction) {
-      const ui::Shortcut* shortcut = key->isPressed(msg);
+      const AppShortcut* shortcut = key->isPressed(msg);
       if (shortcut) {
         keys.push_back(key);
       }

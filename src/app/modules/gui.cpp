@@ -680,27 +680,13 @@ void CustomizedGuiManager::onNewDisplayConfiguration(Display* display)
 
 bool CustomizedGuiManager::processKey(Message* msg)
 {
-  App* app = App::instance();
-  const KeyContext currentCtx = KeyboardShortcuts::getCurrentKeyContext();
   const KeyboardShortcuts* keys = KeyboardShortcuts::instance();
-  const KeyContext contexts[] = { currentCtx, KeyContext::Normal };
-  int n = (contexts[0] != contexts[1] ? 2 : 1);
-
-  // Find best match (prefer the shortcut that matches the context first)
-  KeyPtr key = nullptr;
-  for (int i = 0; i < n; ++i) {
-    for (const KeyPtr& k : *keys) {
-      if (k->isPressed(msg, contexts[i]) &&
-          (!key ||
-           (key->keycontext() != currentCtx && match_key_context(k->keycontext(), currentCtx)))) {
-        key = k;
-      }
-    }
-  }
+  const KeyPtr key = keys->findBestKeyFromMessage(msg);
   if (!key)
     return false;
 
   // Cancel menu-bar loops (to close any popup menu)
+  App* app = App::instance();
   app->mainWindow()->getMenuBar()->cancelMenuLoop();
 
   switch (key->type()) {
