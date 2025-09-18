@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2015  David Capello
+ * Copyright (C) 2001-2025  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,20 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
+#include "app/color.h"
 #include "app/context.h"
+#include "app/pref/preferences.h"
+#include "app/ui/color_bar.h"
+#include "app/ui/status_bar.h"
+#include "ui/manager.h"
+#include "ui/system.h"
+#include "ui/view.h"
+
+#include <iostream>
+
+#ifdef _WIN32
+  #include <windows.h>
+#endif
 
 namespace app {
 
@@ -37,24 +50,48 @@ protected:
 };
 
 OffCanvasSelectCommand::OffCanvasSelectCommand()
-  : Command("OffCanvasSelect",
-            CmdUIOnlyFlag)
+  : Command("OffCanvasSelect",CmdUIOnlyFlag)
 {
 }
 
 bool OffCanvasSelectCommand::onEnabled(Context* context)
 {
-  return true;
+  return context->isUIAvailable();
 }
 
 bool OffCanvasSelectCommand::onChecked(Context* context)
 {
- return true;
+  return false;
 }
 
 void OffCanvasSelectCommand::onExecute(Context* context)
 {
-    abort();
+  // Get current mouse position in screen coordinates
+  gfx::Point mousePos = ui::get_mouse_position();
+  app::Color color;
+
+#ifdef _WIN32
+  // Windows implementation
+  HDC hdc = GetDC(NULL);
+  if (hdc) {
+    COLORREF c = GetPixel(hdc, mousePos.x, mousePos.y);
+    color = app::Color::fromRgb(
+      GetRValue(c),
+      GetGValue(c),
+      GetBValue(c),
+      255); // Fully opaque
+    ReleaseDC(NULL, hdc);
+  }
+#else
+  // For non-Windows platforms, you would need a different implementation
+  // This is a placeholder that could be expanded later
+  color = app::Color::fromRgb(255, 0, 255); // Magenta as a placeholder
+#endif
+
+  // Set the foreground color in Aseprite's color bar
+  if (color != app::Color::fromMask()) {
+    ColorBar::instance()->setFgColor(color);
+    }
 }
 
 Command* CommandFactory::createOffCanvasSelectCommand()
