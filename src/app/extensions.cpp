@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -555,7 +555,13 @@ static void serialize_table(lua_State* L, int idx, std::string& result)
     // Save key
     if (lua_type(L, -2) == LUA_TSTRING) {
       if (const char* k = lua_tostring(L, -2)) {
+        // Enclose the key name in brackets and double quotes to avoid syntax
+        // errors when the name has unicode characters.
+        result.push_back('[');
+        result.push_back('"');
         result += k;
+        result.push_back('"');
+        result.push_back(']');
         result.push_back('=');
       }
     }
