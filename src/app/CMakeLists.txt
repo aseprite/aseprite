@@ -522,6 +522,7 @@ target_sources(app-lib PRIVATE
   commands/tileset_mode.cpp
   commands/toggle_other_layers_opacity.cpp
   commands/toggle_play_option.cpp
+  commands/cmd_off_canvas_select.cpp
   console.cpp
   context.cpp
   context_flags.cpp

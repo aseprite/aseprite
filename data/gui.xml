@@ -139,6 +139,8 @@
       <key command="DeselectMask" shortcut="Ctrl+D" mac="Cmd+D" />
       <key command="ReselectMask" shortcut="Ctrl+Shift+D" mac="Cmd+Shift+D" />
       <key command="InvertMask" shortcut="Ctrl+Shift+I" mac="Cmd+Shift+I" />
+      <key command="OffCanvasSelect" shortcut="Alt+O" mac="Alt+O" />
+
       <!-- View -->
       <key command="Refresh" shortcut="F5" />
       <key command="TogglePreview" shortcut="F7" />
@@ -989,6 +991,9 @@
         <item command="DeselectMask" text="@.select_deselect" />
         <item command="ReselectMask" text="@.select_reselect" />
         <item command="InvertMask" text="@.select_inverse" group="select_simple" />
+        <item command="OffCanvasSelect" text="OffCanvasSelect" />
+
+
         <separator />
         <item command="MaskByColor" text="@.select_color_range" />
         <menu text="@.select_modify" group="select_complex">
