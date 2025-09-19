@@ -36,6 +36,10 @@
 #ifdef _WIN32
   #include <windows.h>
 #endif
+#ifdef __linux__
+    #include <X11/Xlib.h>
+#endif
+
 
 namespace app {
 
@@ -82,10 +86,35 @@ void OffCanvasSelectCommand::onExecute(Context* context)
       255); // Fully opaque
     ReleaseDC(NULL, hdc);
   }
+#elif __linux__
+    // ---- Linux/X11 code starts here ----
+    Display* disp = XOpenDisplay(nullptr);
+    if (!disp) {
+        //std::cerr << "Could not open X display\n";
+        return;
+    }
+    gfx::Point mousePos = ui::get_mouse_position();
+    app::Color color;
+    Window root = DefaultRootWindow(disp);
+
+
+
+    XImage* img = XGetImage(disp, root, mousePos.x, mousePos.y, 1, 1, AllPlanes, ZPixmap);
+    if (!img) 
+    {
+        //std::cerr << "XGetImage failed\n";
+        XCloseDisplay(disp);
+        return;
+    }
+
+    unsigned long pixel = XGetPixel(img, 0, 0);
+    color = app::Color::fromRgb((pixel >> 16) & 0xFF, (pixel >>  8) & 0xFF, pixel & 0xFF); 
+    XDestroyImage(img);
+    XCloseDisplay(disp);
+
+
 #else
-  // For non-Windows platforms, you would need a different implementation
-  // This is a placeholder that could be expanded later
-  color = app::Color::fromRgb(255, 0, 255); // Magenta as a placeholder
+  color = app::Color::fromRgb(255,0,255);  //placeholder incase there are any isusues
 #endif
 
   // Set the foreground color in Aseprite's color bar
