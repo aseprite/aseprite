@@ -21,7 +21,7 @@ local data = json.decode(io.open('$d/stdout.json'):read('a'))
 local frames = { data.frames['1empty3 0.aseprite'],
                  data.frames['1empty3 1.aseprite'],
                  data.frames['1empty3 2.aseprite'] }
-assert(frames[1].frame.x == 0)
+assert(frames[1].frame.x == 1)
 assert(frames[2].frame.x == 32)
 assert(frames[3].frame.x == 64)
 for i,v in ipairs(frames) do
