@@ -88,29 +88,10 @@ void OffCanvasSelectCommand::onExecute(Context* context)
   }
 #elif __linux__
     // ---- Linux/X11 code starts here ----
-    Display* disp = XOpenDisplay(nullptr);
-    if (!disp) {
-        //std::cerr << "Could not open X display\n";
-        return;
-    }
-    gfx::Point mousePos = ui::get_mouse_position();
-    app::Color color;
-    Window root = DefaultRootWindow(disp);
+    //I don't use linux, and I can't find a inbuilt library that will always exist for getting
+    //the mouse location adn the screen pixel. If you know one, please tell em and I'll add it
+    color = app::Color::fromRgb(255,0,255);  //placeholder 
 
-
-
-    XImage* img = XGetImage(disp, root, mousePos.x, mousePos.y, 1, 1, AllPlanes, ZPixmap);
-    if (!img) 
-    {
-        //std::cerr << "XGetImage failed\n";
-        XCloseDisplay(disp);
-        return;
-    }
-
-    unsigned long pixel = XGetPixel(img, 0, 0);
-    color = app::Color::fromRgb((pixel >> 16) & 0xFF, (pixel >>  8) & 0xFF, pixel & 0xFF); 
-    XDestroyImage(img);
-    XCloseDisplay(disp);
 
 
 #else
