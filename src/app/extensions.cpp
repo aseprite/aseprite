@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -42,6 +42,7 @@
 #include "archive_entry.h"
 #include "json11.hpp"
 
+#include <cctype>
 #include <fstream>
 #include <queue>
 #include <sstream>
@@ -535,6 +536,19 @@ void Extension::updateCategory(const Category newCategory)
 
 #ifdef ENABLE_SCRIPTING
 
+static bool is_simple_id(const char* k)
+{
+  if (!*k)
+    return false;
+  if (!std::isalpha(*k) && *k != '_')
+    return false;
+  for (const char* p = k + 1; *p; ++p) {
+    if (!std::isalnum(*p) && *p != '_')
+      return false;
+  }
+  return true;
+}
+
 // TODO move this to app/script/tableutils.h
 static void serialize_table(lua_State* L, int idx, std::string& result)
 {
@@ -555,7 +569,21 @@ static void serialize_table(lua_State* L, int idx, std::string& result)
     // Save key
     if (lua_type(L, -2) == LUA_TSTRING) {
       if (const char* k = lua_tostring(L, -2)) {
-        result += k;
+        // If this is a simple identifier we can avoid using ["..."] to enclose
+        // the key name.
+        if (is_simple_id(k)) {
+          result += k;
+        }
+        // In other cases, we enclose the key name in brackets and
+        // double quotes ["..."]  to avoid syntax errors when the name
+        // has unicode characters.
+        else {
+          result.push_back('[');
+          result.push_back('"');
+          result += k;
+          result.push_back('"');
+          result.push_back(']');
+        }
         result.push_back('=');
       }
     }

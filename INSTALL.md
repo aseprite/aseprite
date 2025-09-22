@@ -74,7 +74,7 @@ On macOS you will need macOS 15.4 SDK and Xcode 16.3 (older versions might work)
 
 You will need the following dependencies on Ubuntu/Debian:
 
-    sudo apt-get install -y g++ clang cmake ninja-build libx11-dev libxcursor-dev libxi-dev libgl1-mesa-dev libfontconfig1-dev
+    sudo apt-get install -y g++ clang cmake ninja-build libx11-dev libxcursor-dev libxi-dev libxrandr-dev libgl1-mesa-dev libfontconfig1-dev
 
 Or use clang-12 packages (or newer) in case that clang in your distribution is older than clang 12.0:
 
@@ -82,15 +82,15 @@ Or use clang-12 packages (or newer) in case that clang in your distribution is o
 
 On Fedora:
 
-    sudo dnf install -y gcc-c++ clang libcxx-devel cmake ninja-build libX11-devel libXcursor-devel libXi-devel mesa-libGL-devel fontconfig-devel
+    sudo dnf install -y gcc-c++ clang libcxx-devel cmake ninja-build libX11-devel libXcursor-devel libXi-devel libXrandr-devel mesa-libGL-devel fontconfig-devel
 
 On Arch:
 
-    sudo pacman -S gcc clang cmake ninja libx11 libxcursor mesa-libgl fontconfig libwebp
+    sudo pacman -S gcc clang cmake ninja libx11 libxcursor libxi libxrandr mesa-libgl fontconfig libwebp
 
 On SUSE:
 
-    sudo zypper install gcc-c++ clang cmake ninja libX11-devel libXcursor-devel libXi-devel Mesa-libGL-devel fontconfig-devel
+    sudo zypper install gcc-c++ clang cmake ninja libX11-devel libXcursor-devel libXi-devel libXrandr-devel Mesa-libGL-devel fontconfig-devel
 
 # Automatic Building
 
