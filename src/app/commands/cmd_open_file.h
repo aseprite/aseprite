@@ -32,6 +32,10 @@ protected:
   std::string onGetFriendlyName() const override;
 
 private:
+#ifdef ENABLE_SCRIPTING
+  bool loadCustomFormat(const std::string& filename);
+#endif
+
   std::string m_filename;
   std::string m_folder;
   bool m_ui;
