@@ -124,6 +124,11 @@ Doc::LockResult Doc::upgradeToWrite(int timeout)
   return res;
 }
 
+void Doc::updateWriterThread()
+{
+  m_rwLock.updateWriterThread();
+}
+
 void Doc::downgradeToRead(LockResult lockResult)
 {
   DOC_TRACE("DOC: downgradeToRead", this, (int)lockResult);

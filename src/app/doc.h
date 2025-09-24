@@ -82,6 +82,7 @@ public:
   LockResult readLock(int timeout);
   LockResult writeLock(int timeout);
   LockResult upgradeToWrite(int timeout);
+  void updateWriterThread();
   void downgradeToRead(LockResult lockResult);
   void unlock(LockResult lockResult);
 
