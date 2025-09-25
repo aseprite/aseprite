@@ -249,6 +249,28 @@ int LayerImage::getMemSize() const
   return size;
 }
 
+void LayerImage::suspendObject()
+{
+  CelIterator it = getCelBegin();
+  CelIterator end = getCelEnd();
+  for (; it != end; ++it) {
+    Cel* cel = *it;
+    cel->suspendObject();
+  }
+  Layer::suspendObject();
+}
+
+void LayerImage::restoreObject()
+{
+  Layer::restoreObject();
+  CelIterator it = getCelBegin();
+  CelIterator end = getCelEnd();
+  for (; it != end; ++it) {
+    Cel* cel = *it;
+    cel->restoreObject();
+  }
+}
+
 void LayerImage::destroyAllCels()
 {
   CelIterator it = getCelBegin();
@@ -428,6 +450,20 @@ int LayerGroup::getMemSize() const
   }
 
   return size;
+}
+
+void LayerGroup::suspendObject()
+{
+  for (Layer* child : m_layers)
+    child->suspendObject();
+  Layer::suspendObject();
+}
+
+void LayerGroup::restoreObject()
+{
+  Layer::restoreObject();
+  for (Layer* child : m_layers)
+    child->restoreObject();
 }
 
 Layer* LayerGroup::firstLayerInWholeHierarchy() const
