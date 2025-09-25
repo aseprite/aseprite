@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -79,11 +79,13 @@ public:
 
   bool hasBoundsF() const { return m_boundsF != nullptr; }
 
-  virtual int getMemSize() const override
+  int getMemSize() const override
   {
     ASSERT(m_image);
     return sizeof(CelData) + m_image->getMemSize();
   }
+  void suspendObject() override;
+  void restoreObject() override;
 
   void adjustBounds(Layer* layer);
 

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2022 Igara Studio S.A.
+// Copyright (c) 2019-2025 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -55,6 +55,20 @@ void CelData::setPosition(const gfx::Point& pos)
   m_bounds.setOrigin(pos);
   if (m_boundsF)
     m_boundsF->setOrigin(gfx::PointF(pos));
+}
+
+void CelData::suspendObject()
+{
+  if (m_image)
+    m_image->suspendObject();
+  WithUserData::suspendObject();
+}
+
+void CelData::restoreObject()
+{
+  WithUserData::restoreObject();
+  if (m_image)
+    m_image->restoreObject();
 }
 
 void CelData::adjustBounds(Layer* layer)

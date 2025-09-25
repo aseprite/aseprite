@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2025 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -12,9 +13,9 @@
 
 namespace doc {
 
-typedef uint32_t ObjectId;
+using ObjectId = uint32_t;
 
-const ObjectId NullId = 0;
+constexpr const ObjectId NullId = 0;
 
 } // namespace doc
 

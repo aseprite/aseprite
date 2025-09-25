@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -15,13 +15,12 @@
 #include "app/doc_event.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
-#include "doc/tag_io.h"
 
 namespace app { namespace cmd {
 
 using namespace doc;
 
-AddTag::AddTag(Sprite* sprite, Tag* tag) : WithSprite(sprite), WithTag(tag), m_size(0)
+AddTag::AddTag(Sprite* sprite, Tag* tag) : WithSprite(sprite), WithTag(tag)
 {
 }
 
@@ -45,8 +44,6 @@ void AddTag::onUndo()
 {
   Sprite* sprite = this->sprite();
   Tag* tag = this->tag();
-  write_tag(m_stream, tag);
-  m_size = size_t(m_stream.tellp());
 
   // Notify observers about the new frame.
   {
@@ -59,20 +56,17 @@ void AddTag::onUndo()
 
   sprite->tags().remove(tag);
   sprite->incrementVersion();
-  delete tag;
+
+  m_suspendedTag.suspend(tag);
 }
 
 void AddTag::onRedo()
 {
   Sprite* sprite = this->sprite();
-  Tag* tag = read_tag(m_stream);
+  Tag* tag = m_suspendedTag.restore();
 
   sprite->tags().add(tag);
   sprite->incrementVersion();
-
-  m_stream.str(std::string());
-  m_stream.clear();
-  m_size = 0;
 
   // Notify observers about the new frame.
   Doc* doc = static_cast<Doc*>(sprite->document());

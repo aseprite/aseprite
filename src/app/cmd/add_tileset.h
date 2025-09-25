@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,10 +10,10 @@
 
 #include "app/cmd.h"
 #include "app/cmd/with_sprite.h"
+#include "app/cmd/with_suspended.h"
 #include "app/cmd/with_tileset.h"
 #include "doc/tile.h"
-
-#include <sstream>
+#include "doc/tileset.h"
 
 namespace doc {
 class Tileset;
@@ -34,13 +34,12 @@ protected:
   void onExecute() override;
   void onUndo() override;
   void onRedo() override;
-  size_t onMemSize() const override { return sizeof(*this) + m_size; }
+  size_t onMemSize() const override { return sizeof(*this) + m_suspendedTileset.size(); }
 
 private:
   void addTileset(doc::Tileset* tileset);
 
-  size_t m_size;
-  std::stringstream m_stream;
+  WithSuspended<doc::Tileset*> m_suspendedTileset;
   doc::tileset_index m_tilesetIndex;
 };
 

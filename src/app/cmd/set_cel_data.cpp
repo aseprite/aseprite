@@ -12,11 +12,9 @@
 
 #include "doc/cel.h"
 #include "doc/image.h"
-#include "doc/image_io.h"
 #include "doc/image_ref.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
-#include "doc/subobjects_io.h"
 
 namespace app { namespace cmd {
 

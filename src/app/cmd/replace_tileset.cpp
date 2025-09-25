@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -14,7 +14,6 @@
 #include "doc/layer_tilemap.h"
 #include "doc/sprite.h"
 #include "doc/tileset.h"
-#include "doc/tileset_io.h"
 #include "doc/tilesets.h"
 
 namespace app { namespace cmd {
@@ -40,16 +39,11 @@ void ReplaceTileset::onExecute()
     m_newTileset = nullptr;
   }
   else {
-    restoreTileset = doc::read_tileset(m_stream, spr, true);
+    restoreTileset = m_suspendedTileset.restore();
   }
 
-  m_stream.str(std::string());
-  m_stream.clear();
-  doc::write_tileset(m_stream, actualTileset);
-  m_size = size_t(m_stream.tellp());
-
   replaceTileset(restoreTileset);
-  delete actualTileset;
+  m_suspendedTileset.suspend(actualTileset);
 }
 
 void ReplaceTileset::replaceTileset(Tileset* newTileset)
