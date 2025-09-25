@@ -281,12 +281,12 @@ void NewLayerCommand::onExecute(Context* context)
     }
   }
 
-  LayerGroup* parent = sprite->root();
+  Layer* parent = sprite->root();
   Layer* activeLayer = reader.layer();
   SelectedLayers selLayers = site.selectedLayers();
   if (activeLayer) {
     if (activeLayer->isGroup() && activeLayer->isExpanded() && m_type != Type::Group) {
-      parent = static_cast<LayerGroup*>(activeLayer);
+      parent = activeLayer;
       activeLayer = nullptr;
     }
     else {
@@ -417,7 +417,7 @@ void NewLayerCommand::onExecute(Context* context)
 
     // Put all selected layers inside the group
     if (m_type == Type::Group && site.inTimeline()) {
-      LayerGroup* commonParent = nullptr;
+      Layer* commonParent = nullptr;
       layer_t sameParents = 0;
       for (Layer* l : selLayers) {
         if (!commonParent || commonParent == l->parent()) {
@@ -428,7 +428,7 @@ void NewLayerCommand::onExecute(Context* context)
 
       if (sameParents == selLayers.size()) {
         for (Layer* newChild : selLayers.toBrowsableLayerList()) {
-          tx(new cmd::MoveLayer(newChild, layer, static_cast<LayerGroup*>(layer)->lastLayer()));
+          tx(new cmd::MoveLayer(newChild, layer, layer->lastLayer()));
         }
       }
     }
@@ -611,7 +611,7 @@ int NewLayerCommand::getMaxLayerNum(const Layer* layer) const
     max = std::strtol(layer->name().c_str() + prefix.size(), NULL, 10);
 
   if (layer->isGroup()) {
-    for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers()) {
+    for (const Layer* child : layer->layers()) {
       int tmp = getMaxLayerNum(child);
       max = std::max(tmp, max);
     }

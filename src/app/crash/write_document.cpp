@@ -230,14 +230,14 @@ private:
     return true;
   }
 
-  void writeAllLayersID(std::ofstream& s, ObjectId parentId, const LayerGroup* group)
+  void writeAllLayersID(std::ofstream& s, ObjectId parentId, const Layer* group)
   {
     for (const Layer* lay : group->layers()) {
       write32(s, lay->id());
       write32(s, parentId);
 
       if (lay->isGroup())
-        writeAllLayersID(s, lay->id(), static_cast<const LayerGroup*>(lay));
+        writeAllLayersID(s, lay->id(), lay);
     }
   }
 

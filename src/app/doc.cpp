@@ -515,9 +515,9 @@ void Doc::resetTransformation()
 //////////////////////////////////////////////////////////////////////
 // Copying
 
-void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destLayer0) const
+void Doc::copyLayerContent(const Layer* sourceLayer, Doc* destDoc, Layer* destLayer) const
 {
-  LayerFlags dstFlags = sourceLayer0->flags();
+  LayerFlags dstFlags = sourceLayer->flags();
 
   // Remove the "background" flag if the destDoc already has a background layer.
   if (((int)dstFlags & (int)LayerFlags::Background) == (int)LayerFlags::Background &&
@@ -526,14 +526,15 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
   }
 
   // Copy the layer name/flags/user data
-  destLayer0->setName(sourceLayer0->name());
-  destLayer0->setFlags(dstFlags);
-  destLayer0->setUserData(sourceLayer0->userData());
+  destLayer->setName(sourceLayer->name());
+  destLayer->setFlags(dstFlags);
+  destLayer->setUserData(sourceLayer->userData());
 
-  if (sourceLayer0->isGroup() && destLayer0->isGroup()) {
-    const LayerGroup* sourceLayer = static_cast<const LayerGroup*>(sourceLayer0);
-    LayerGroup* destLayer = static_cast<LayerGroup*>(destLayer0);
+  // Copy blend mode and opacity
+  destLayer->setBlendMode(sourceLayer->blendMode());
+  destLayer->setOpacity(sourceLayer->opacity());
 
+  if (sourceLayer->isGroup() && destLayer->isGroup()) {
     for (Layer* sourceChild : sourceLayer->layers()) {
       std::unique_ptr<Layer> destChild(nullptr);
 
@@ -569,14 +570,7 @@ void Doc::copyLayerContent(const Layer* sourceLayer0, Doc* destDoc, Layer* destL
       destLayer->stackLayer(newLayer, afterThis);
     }
   }
-  else if (sourceLayer0->type() == destLayer0->type()) {
-    const Layer* sourceLayer = sourceLayer0;
-    Layer* destLayer = destLayer0;
-
-    // Copy blend mode and opacity
-    destLayer->setBlendMode(sourceLayer->blendMode());
-    destLayer->setOpacity(sourceLayer->opacity());
-
+  else if (sourceLayer->type() == destLayer->type()) {
     // Copy cels
     CelConstIterator it = sourceLayer->getCelBegin();
     const CelConstIterator end = sourceLayer->getCelEnd();

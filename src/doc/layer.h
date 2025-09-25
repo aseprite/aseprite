@@ -74,8 +74,8 @@ public:
   void setName(const std::string& name) { m_name = name; }
 
   Sprite* sprite() const { return m_sprite; }
-  LayerGroup* parent() const { return m_parent; }
-  void setParent(LayerGroup* group) { m_parent = group; }
+  Layer* parent() const { return m_parent; }
+  void setParent(Layer* parent) { m_parent = parent; }
 
   // Gets the previous sibling of this layer.
   Layer* getPrevious() const;
@@ -91,9 +91,22 @@ public:
   {
     return (type() == ObjectType::LayerImage || type() == ObjectType::LayerTilemap);
   }
+  bool hasSublayers() const { return !m_layers.empty(); }
   bool isGroup() const { return type() == ObjectType::LayerGroup; }
   bool isTilemap() const { return type() == ObjectType::LayerTilemap; }
-  virtual bool isBrowsable() const { return false; }
+  bool isBrowsable() const { return isExpanded() && !m_layers.empty(); }
+  // If this layer is a Mask or FX
+  bool isMaskOrFx() const
+  {
+    return type() == ObjectType::LayerMask || type() == ObjectType::LayerFx;
+  }
+  // In case we can drop a Mask or FX inside this kind of layer
+  bool acceptMaskOrFx() const
+  {
+    return type() == ObjectType::LayerImage || type() == ObjectType::LayerTilemap ||
+           type() == ObjectType::LayerText || type() == ObjectType::LayerVector ||
+           type() == ObjectType::LayerSubsprite;
+  }
 
   bool isBackground() const { return hasFlags(LayerFlags::Background); }
   bool isTransparent() const { return !hasFlags(LayerFlags::Background); }
@@ -174,51 +187,6 @@ public:
   CelConstIterator getCelEnd() const { return m_cels.end(); }
   int getCelsCount() const { return (int)m_cels.size(); }
 
-private:
-  void destroyAllCels();
-
-  std::string m_name;        // layer name
-  Sprite* m_sprite;          // owner of the layer
-  LayerGroup* m_parent;      // parent layer
-  LayerFlags m_flags;        // stack order cannot be changed
-  mutable base::Uuid m_uuid; // lazily generated layer's UUID
-
-  // Some of these fields might not be used depending on the layer
-  // kind (e.g. the blend mode and opacity don't make sense for audio
-  // layers).
-  BlendMode m_blendmode;
-  int m_opacity;
-
-  // List of all cels inside this layer used by frames.
-  CelList m_cels;
-};
-
-//////////////////////////////////////////////////////////////////////
-// LayerImage class
-
-class LayerImage : public Layer {
-public:
-  LayerImage(ObjectType type, Sprite* sprite);
-  explicit LayerImage(Sprite* sprite);
-  virtual ~LayerImage();
-
-  int getMemSize() const override;
-
-  void configureAsBackground();
-};
-
-//////////////////////////////////////////////////////////////////////
-// LayerGroup class
-
-class LayerGroup final : public Layer {
-public:
-  explicit LayerGroup(Sprite* sprite);
-  virtual ~LayerGroup();
-
-  int getMemSize() const override;
-  void suspendObject() override;
-  void restoreObject() override;
-
   const LayerList& layers() const { return m_layers; }
   int layersCount() const { return (int)m_layers.size(); }
 
@@ -241,19 +209,53 @@ public:
   void allTilemaps(LayerList& list) const;
   std::string visibleLayerHierarchyAsString(const std::string& indent) const;
 
-  void getCels(CelList& cels) const override;
-  void displaceFrames(frame_t fromThis, frame_t delta) override;
-
-  bool isBrowsable() const override { return isGroup() && isExpanded() && !m_layers.empty(); }
-
   layer_t getLayerIndex(const Layer* layer) const;
 
 private:
+  layer_t getLayerIndex(const Layer* layer, layer_t& index) const;
+  void destroyAllCels();
   void destroyAllLayers();
 
-  layer_t getLayerIndex(const Layer* layer, layer_t& index) const;
+  std::string m_name;        // layer name
+  Sprite* m_sprite;          // owner of the layer
+  Layer* m_parent;           // parent layer
+  LayerFlags m_flags;        // stack order cannot be changed
+  mutable base::Uuid m_uuid; // lazily generated layer's UUID
 
+  // Some of these fields might not be used depending on the layer
+  // kind (e.g. the blend mode and opacity don't make sense for audio
+  // layers).
+  BlendMode m_blendmode;
+  int m_opacity;
+
+  // List of all cels inside this layer used by frames.
+  CelList m_cels;
+
+  // List of all layers inside this layer. For a group, this can be a
+  // list of any kind. For other layers, they might be limited to
+  // Masks and FXs.
   LayerList m_layers;
+};
+
+//////////////////////////////////////////////////////////////////////
+// LayerImage class
+
+class LayerImage : public Layer {
+public:
+  LayerImage(ObjectType type, Sprite* sprite);
+  explicit LayerImage(Sprite* sprite);
+  virtual ~LayerImage();
+
+  void configureAsBackground();
+};
+
+//////////////////////////////////////////////////////////////////////
+// LayerGroup class
+
+class LayerGroup final : public Layer {
+public:
+  explicit LayerGroup(Sprite* sprite);
+  virtual ~LayerGroup();
 };
 
 } // namespace doc

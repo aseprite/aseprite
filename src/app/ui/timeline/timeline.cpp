@@ -118,7 +118,7 @@ struct Timeline::DrawCelData {
 namespace {
 
 template<typename Pred>
-void for_each_expanded_layer(LayerGroup* group,
+void for_each_expanded_layer(Layer* group,
                              Pred&& pred,
                              int level = 0,
                              LayerFlags flags = LayerFlags(int(LayerFlags::Visible) |
@@ -131,11 +131,8 @@ void for_each_expanded_layer(LayerGroup* group,
     flags = static_cast<LayerFlags>(int(flags) & ~int(LayerFlags::Editable));
 
   for (Layer* child : group->layers()) {
-    if (child->isGroup() && !child->isCollapsed())
-      for_each_expanded_layer<Pred>(static_cast<LayerGroup*>(child),
-                                    std::forward<Pred>(pred),
-                                    level + 1,
-                                    flags);
+    if (child->isExpanded())
+      for_each_expanded_layer<Pred>(child, std::forward<Pred>(pred), level + 1, flags);
 
     pred(child, level, flags);
   }
@@ -453,7 +450,7 @@ void Timeline::setLayer(Layer* layer)
 
   // Expand all parents
   if (m_layer) {
-    LayerGroup* group = m_layer->parent();
+    Layer* group = m_layer->parent();
     while (group != m_layer->sprite()->root()) {
       // Expand this group
       group->setCollapsed(false);
@@ -4265,10 +4262,13 @@ void Timeline::updateDropRange(const gfx::Point& pt)
     m_dropTarget.vhit = DropTarget::VeryBottom;
   else if (pt.y < bounds.y + bounds.h / 2)
     m_dropTarget.vhit = DropTarget::Top;
-  // Special drop target for expanded groups
   else if (m_range.type() == Range::kLayers && m_hot.layer >= 0 &&
-           m_hot.layer < int(m_rows.size()) && m_rows[m_hot.layer].layer()->isGroup() &&
-           static_cast<LayerGroup*>(m_rows[m_hot.layer].layer())->isExpanded()) {
+           m_hot.layer < int(m_rows.size()) &&
+           // Special drop target for expanded groups
+           ((m_rows[m_hot.layer].layer()->isGroup() && m_rows[m_hot.layer].layer()->isExpanded()) ||
+            // Special drop for mask/fx inside layers
+            (m_rows[m_clk.layer].layer()->isMaskOrFx() &&
+             m_rows[m_hot.layer].layer()->acceptMaskOrFx()))) {
     m_dropTarget.vhit = DropTarget::FirstChild;
   }
   else {

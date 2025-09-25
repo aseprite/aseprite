@@ -107,24 +107,24 @@ public:
   void swapCel(Layer* layer, frame_t frame1, frame_t frame2);
 
   // Layers API
-  LayerImage* newLayer(LayerGroup* parent, const std::string& name);
-  LayerImage* newLayerAfter(LayerGroup* parent, const std::string& name, Layer* afterThis);
-  LayerGroup* newGroup(LayerGroup* parent, const std::string& name);
-  LayerGroup* newGroupAfter(LayerGroup* parent, const std::string& name, Layer* afterThis);
-  LayerTilemap* newTilemapAfter(LayerGroup* parent,
+  LayerImage* newLayer(Layer* parent, const std::string& name);
+  LayerImage* newLayerAfter(Layer* parent, const std::string& name, Layer* afterThis);
+  LayerGroup* newGroup(Layer* parent, const std::string& name);
+  LayerGroup* newGroupAfter(Layer* parent, const std::string& name, Layer* afterThis);
+  LayerTilemap* newTilemapAfter(Layer* parent,
                                 const std::string& name,
                                 tileset_index tsi,
                                 Layer* afterThis);
-  void addLayer(LayerGroup* parent, Layer* newLayer, Layer* afterThis);
+  void addLayer(Layer* parent, Layer* newLayer, Layer* afterThis);
   void removeLayer(Layer* layer);
-  void restackLayerAfter(Layer* layer, LayerGroup* parent, Layer* afterThis);
-  void restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeThis);
+  void restackLayerAfter(Layer* layer, Layer* parent, Layer* afterThis);
+  void restackLayerBefore(Layer* layer, Layer* parent, Layer* beforeThis);
   Layer* duplicateLayerAfter(Layer* sourceLayer,
-                             LayerGroup* parent,
+                             Layer* parent,
                              Layer* afterLayer,
                              const std::string& nameSuffix = std::string());
   Layer* duplicateLayerBefore(Layer* sourceLayer,
-                              LayerGroup* parent,
+                              Layer* parent,
                               Layer* beforeLayer,
                               const std::string& nameSuffix = std::string());
 

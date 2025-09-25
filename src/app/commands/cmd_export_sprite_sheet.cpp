@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -146,8 +146,8 @@ void destroy_doc(Context* ctx, Doc* doc)
 void insert_layers_to_selected_layers(Layer* layer, SelectedLayers& selectedLayers)
 {
   if (layer->isGroup()) {
-    auto children = static_cast<LayerGroup*>(layer)->layers();
-    for (auto child : children)
+    auto children = layer->layers();
+    for (Layer* child : children)
       insert_layers_to_selected_layers(child, selectedLayers);
   }
   else
