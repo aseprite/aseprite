@@ -680,7 +680,7 @@
       <!-- Modifiers for two-points tool controller -->
       <key action="SquareAspect" shortcut="Shift" />
       <key action="DrawFromCenter" shortcut="Ctrl" />
-      <key action="CornerRadius" shortcut="J" />
+      <key action="CornerRadius" shortcut="C" />
 
       <!-- Modifiers for two-or-more-points tools -->
       <key action="MoveOrigin" shortcut="Space" />
