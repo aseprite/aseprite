@@ -478,7 +478,7 @@ void DocApi::moveFrameLayer(Layer* layer, frame_t frame, frame_t beforeFrame)
     }
 
     case ObjectType::LayerGroup: {
-      for (Layer* child : static_cast<LayerGroup*>(layer)->layers())
+      for (Layer* child : layer->layers())
         moveFrameLayer(child, frame, beforeFrame);
       break;
     }
@@ -602,7 +602,7 @@ void DocApi::swapCel(Layer* layer, frame_t frame1, frame_t frame2)
     setCelFramePosition(cel2, frame1);
 }
 
-LayerImage* DocApi::newLayer(LayerGroup* parent, const std::string& name)
+LayerImage* DocApi::newLayer(Layer* parent, const std::string& name)
 {
   LayerImage* newLayer = new LayerImage(parent->sprite());
   newLayer->setName(name);
@@ -611,7 +611,7 @@ LayerImage* DocApi::newLayer(LayerGroup* parent, const std::string& name)
   return newLayer;
 }
 
-LayerImage* DocApi::newLayerAfter(LayerGroup* parent, const std::string& name, Layer* afterThis)
+LayerImage* DocApi::newLayerAfter(Layer* parent, const std::string& name, Layer* afterThis)
 {
   LayerImage* newLayer = new LayerImage(parent->sprite());
   newLayer->setName(name);
@@ -623,7 +623,7 @@ LayerImage* DocApi::newLayerAfter(LayerGroup* parent, const std::string& name, L
   return newLayer;
 }
 
-LayerGroup* DocApi::newGroup(LayerGroup* parent, const std::string& name)
+LayerGroup* DocApi::newGroup(Layer* parent, const std::string& name)
 {
   LayerGroup* newLayerGroup = new LayerGroup(parent->sprite());
   newLayerGroup->setName(name);
@@ -632,7 +632,7 @@ LayerGroup* DocApi::newGroup(LayerGroup* parent, const std::string& name)
   return newLayerGroup;
 }
 
-LayerGroup* DocApi::newGroupAfter(LayerGroup* parent, const std::string& name, Layer* afterThis)
+LayerGroup* DocApi::newGroupAfter(Layer* parent, const std::string& name, Layer* afterThis)
 {
   LayerGroup* newLayerGroup = new LayerGroup(parent->sprite());
   newLayerGroup->setName(name);
@@ -644,7 +644,7 @@ LayerGroup* DocApi::newGroupAfter(LayerGroup* parent, const std::string& name, L
   return newLayerGroup;
 }
 
-LayerTilemap* DocApi::newTilemapAfter(LayerGroup* parent,
+LayerTilemap* DocApi::newTilemapAfter(Layer* parent,
                                       const std::string& name,
                                       tileset_index tsi,
                                       Layer* afterThis)
@@ -659,7 +659,7 @@ LayerTilemap* DocApi::newTilemapAfter(LayerGroup* parent,
   return newTilemap;
 }
 
-void DocApi::addLayer(LayerGroup* parent, Layer* newLayer, Layer* afterThis)
+void DocApi::addLayer(Layer* parent, Layer* newLayer, Layer* afterThis)
 {
   m_transaction.execute(new cmd::AddLayer(parent, newLayer, afterThis));
 }
@@ -671,7 +671,7 @@ void DocApi::removeLayer(Layer* layer)
   m_transaction.execute(new cmd::RemoveLayer(layer));
 }
 
-void DocApi::restackLayerAfter(Layer* layer, LayerGroup* parent, Layer* afterThis)
+void DocApi::restackLayerAfter(Layer* layer, Layer* parent, Layer* afterThis)
 {
   ASSERT(parent);
 
@@ -681,7 +681,7 @@ void DocApi::restackLayerAfter(Layer* layer, LayerGroup* parent, Layer* afterThi
   m_transaction.execute(new cmd::MoveLayer(layer, parent, afterThis));
 }
 
-void DocApi::restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeThis)
+void DocApi::restackLayerBefore(Layer* layer, Layer* parent, Layer* beforeThis)
 {
   ASSERT(parent);
 
@@ -743,7 +743,7 @@ Layer* DocApi::copyLayerWithSprite(doc::Layer* layer, doc::Sprite* sprite)
 }
 
 Layer* DocApi::duplicateLayerAfter(Layer* sourceLayer,
-                                   LayerGroup* parent,
+                                   Layer* parent,
                                    Layer* afterLayer,
                                    const std::string& nameSuffix)
 {
@@ -758,7 +758,7 @@ Layer* DocApi::duplicateLayerAfter(Layer* sourceLayer,
 }
 
 Layer* DocApi::duplicateLayerBefore(Layer* sourceLayer,
-                                    LayerGroup* parent,
+                                    Layer* parent,
                                     Layer* beforeLayer,
                                     const std::string& nameSuffix)
 {

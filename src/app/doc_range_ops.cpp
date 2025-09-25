@@ -186,12 +186,12 @@ static DocRange move_or_copy_frames(DocApi& api,
   return result;
 }
 
-static bool has_child(LayerGroup* parent, Layer* child)
+static bool has_child(Layer* parent, Layer* child)
 {
   for (auto c : parent->layers()) {
     if (c == child)
       return true;
-    else if (c->isGroup() && has_child(static_cast<LayerGroup*>(c), child))
+    else if (c->isGroup() && has_child(c, child))
       return true;
   }
   return false;
@@ -205,11 +205,11 @@ static DocRange drop_range_op(Doc* doc,
                               DocRange to)
 {
   // Convert "first child" operation into a insert after last child.
-  LayerGroup* parent = nullptr;
+  Layer* parent = nullptr;
   if (to.type() == DocRange::kLayers && !to.selectedLayers().empty()) {
-    if (place == kDocRangeFirstChild && (*to.selectedLayers().begin())->isGroup()) {
+    if (place == kDocRangeFirstChild) {
       place = kDocRangeAfter;
-      parent = static_cast<LayerGroup*>((*to.selectedLayers().begin()));
+      parent = *to.selectedLayers().begin();
 
       to.clearRange();
       to.startRange(parent->lastLayer(), -1, DocRange::kLayers);
@@ -221,8 +221,7 @@ static DocRange drop_range_op(Doc* doc,
 
     // Check that we're not moving a group inside itself
     for (auto moveThis : from.selectedLayers()) {
-      if (moveThis == parent ||
-          (moveThis->isGroup() && has_child(static_cast<LayerGroup*>(moveThis), parent)))
+      if (moveThis == parent || (moveThis->isGroup() && has_child(moveThis, parent)))
         return from;
     }
   }

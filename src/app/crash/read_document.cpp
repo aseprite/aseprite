@@ -296,7 +296,7 @@ private:
     // Read layers
     int nlayers = read32(s);
     if (nlayers >= 1 && nlayers < 0xfffff) {
-      std::map<ObjectId, LayerGroup*> layersMap;
+      std::map<ObjectId, Layer*> layersMap;
       layersMap[0] = spr->root(); // parentId = 0 is the root level
 
       for (int i = 0; i < nlayers; ++i) {
@@ -315,7 +315,7 @@ private:
         Layer* lay = loadObject<Layer*>("lay", layId, &Reader::readLayer);
         if (lay) {
           if (lay->isGroup())
-            layersMap[layId] = static_cast<LayerGroup*>(lay);
+            layersMap[layId] = lay;
 
           layersMap[parentId]->addLayer(lay);
         }

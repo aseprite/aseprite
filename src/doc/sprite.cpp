@@ -303,7 +303,7 @@ Layer* Sprite::firstLayer() const
 {
   Layer* layer = root()->firstLayer();
   while (layer && layer->isGroup())
-    layer = static_cast<LayerGroup*>(layer)->firstLayer();
+    layer = layer->firstLayer();
   return layer;
 }
 
@@ -311,7 +311,7 @@ Layer* Sprite::firstBrowsableLayer() const
 {
   Layer* layer = root()->firstLayer();
   while (layer->isBrowsable())
-    layer = static_cast<LayerGroup*>(layer)->firstLayer();
+    layer = layer->firstLayer();
   return layer;
 }
 
