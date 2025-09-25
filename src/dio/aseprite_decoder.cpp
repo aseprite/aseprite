@@ -605,7 +605,7 @@ Layer* AsepriteDecoder::readLayerChunk(AsepriteHeader* header,
   else if (child_level > *current_level)
     static_cast<LayerGroup*>(*previous_layer)->addLayer(layer);
   else if (child_level < *current_level) {
-    LayerGroup* parent = (*previous_layer)->parent();
+    Layer* parent = (*previous_layer)->parent();
     ASSERT(parent);
     if (parent) {
       int levels = (*current_level - child_level);

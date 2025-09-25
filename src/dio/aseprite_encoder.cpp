@@ -264,7 +264,7 @@ void AsepriteEncoder::writeLayers(const AsepriteHeader* header,
     writeUserDataChunk(frame_header, ext_files, &layer->userData());
 
   if (layer->isGroup()) {
-    for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers())
+    for (const Layer* child : layer->layers())
       writeLayers(header, frame_header, ext_files, child, child_index + 1);
   }
 }
@@ -294,7 +294,7 @@ layer_t AsepriteEncoder::writeCels(AsepriteFrameHeader* frame_header,
     ++layer_index;
 
   if (layer->isGroup()) {
-    for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers()) {
+    for (const Layer* child : layer->layers()) {
       layer_index = writeCels(frame_header, ext_files, sprite, child, layer_index, frame);
     }
   }
@@ -1023,7 +1023,7 @@ void AsepriteEncoder::writeExternalFilesChunk(AsepriteFrameHeader* frame_header,
 
     putExtentionIds(layer->userData().propertiesMaps(), ext_files);
     if (layer->isGroup()) {
-      auto childLayers = static_cast<const LayerGroup*>(layer)->layers();
+      auto childLayers = layer->layers();
       layers.insert(layers.end(), childLayers.begin(), childLayers.end());
     }
     else if (layer->isImage()) {
