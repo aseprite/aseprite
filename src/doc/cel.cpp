@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2024 Igara Studio S.A.
+// Copyright (c) 2019-2025 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -145,6 +145,27 @@ std::size_t Cel::links() const
   }
 
   return links;
+}
+
+void Cel::suspendObject()
+{
+  // Save the CelData only if the cel isn't linked.
+  if (links() == 0) {
+    m_data->suspendObject();
+    m_suspendedData = true;
+  }
+  else
+    m_suspendedData = false;
+
+  Object::suspendObject();
+}
+
+void Cel::restoreObject()
+{
+  Object::restoreObject();
+
+  if (m_suspendedData)
+    m_data->restoreObject();
 }
 
 void Cel::setParentLayer(LayerImage* layer)
