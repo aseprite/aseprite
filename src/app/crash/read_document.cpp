@@ -28,7 +28,15 @@
 #include "doc/frame.h"
 #include "doc/image_io.h"
 #include "doc/layer.h"
+#include "doc/layer_audio.h"
+#include "doc/layer_fill.h"
+#include "doc/layer_fx.h"
+#include "doc/layer_hitbox.h"
+#include "doc/layer_mask.h"
+#include "doc/layer_subsprite.h"
+#include "doc/layer_text.h"
 #include "doc/layer_tilemap.h"
+#include "doc/layer_vector.h"
 #include "doc/palette.h"
 #include "doc/palette_io.h"
 #include "doc/serial_format.h"
@@ -289,7 +297,7 @@ private:
     // Read layers
     int nlayers = read32(s);
     if (nlayers >= 1 && nlayers < 0xfffff) {
-      std::map<ObjectId, LayerGroup*> layersMap;
+      std::map<ObjectId, Layer*> layersMap;
       layersMap[0] = spr->root(); // parentId = 0 is the root level
 
       for (int i = 0; i < nlayers; ++i) {
@@ -308,7 +316,7 @@ private:
         Layer* lay = loadObject<Layer*>("lay", layId, &Reader::readLayer);
         if (lay) {
           if (lay->isGroup())
-            layersMap[layId] = static_cast<LayerGroup*>(lay);
+            layersMap[layId] = lay;
 
           layersMap[parentId]->addLayer(lay);
         }
@@ -324,7 +332,7 @@ private:
         return nullptr;
 
       const auto& pair = m_celsToLoad[i];
-      LayerImage* lay = doc::get<LayerImage>(pair.first);
+      Layer* lay = doc::get<Layer>(pair.first);
       if (!lay)
         continue;
 
@@ -447,58 +455,67 @@ private:
   {
     LayerFlags flags = (LayerFlags)read32(s);
     ObjectType type = (ObjectType)read16(s);
-    ASSERT(type == ObjectType::LayerImage || type == ObjectType::LayerGroup ||
-           type == ObjectType::LayerTilemap);
-
     std::string name = read_string(s);
 
     std::unique_ptr<Layer> lay;
-
     switch (type) {
       case ObjectType::LayerImage:
       case ObjectType::LayerTilemap: {
         switch (type) {
-          case ObjectType::LayerImage:   lay.reset(new LayerImage(m_sprite)); break;
+          case ObjectType::LayerImage:   lay = std::make_unique<LayerImage>(m_sprite); break;
           case ObjectType::LayerTilemap: {
             tileset_index tilesetIndex = read32(s);
-            lay.reset(new LayerTilemap(m_sprite, tilesetIndex));
+            lay = std::make_unique<LayerTilemap>(m_sprite, tilesetIndex);
             break;
           }
         }
 
-        lay->setName(name);
-        lay->setFlags(flags);
-
         // Blend mode & opacity
-        static_cast<LayerImage*>(lay.get())->setBlendMode((BlendMode)read16(s));
-        static_cast<LayerImage*>(lay.get())->setOpacity(read8(s));
-
-        // Cels
-        int ncels = read32(s);
-        for (int i = 0; i < ncels; ++i) {
-          if (canceled())
-            return nullptr;
-
-          // Add a new cel to load in the future after we load all layers
-          ObjectId celId = read32(s);
-          m_celsToLoad.push_back(std::make_pair(lay->id(), celId));
-        }
+        lay->setBlendMode((BlendMode)read16(s));
+        lay->setOpacity(read8(s));
         break;
       }
 
-      case ObjectType::LayerGroup:
-        lay.reset(new LayerGroup(m_sprite));
-        lay->setName(name);
-        lay->setFlags(flags);
-        break;
+      case ObjectType::LayerGroup:     lay = std::make_unique<LayerGroup>(m_sprite); break;
+
+      case ObjectType::LayerFill:      lay = std::make_unique<LayerFill>(m_sprite); break;
+
+      case ObjectType::LayerMask:      lay = std::make_unique<LayerMask>(m_sprite); break;
+
+      case ObjectType::LayerFx:        lay = std::make_unique<LayerFx>(m_sprite); break;
+
+      case ObjectType::LayerText:      lay = std::make_unique<LayerText>(m_sprite); break;
+
+      case ObjectType::LayerVector:    lay = std::make_unique<LayerVector>(m_sprite); break;
+
+      case ObjectType::LayerAudio:     lay = std::make_unique<LayerAudio>(m_sprite); break;
+
+      case ObjectType::LayerSubsprite: lay = std::make_unique<LayerSubsprite>(m_sprite); break;
+
+      case ObjectType::LayerHitbox:    lay = std::make_unique<LayerHitbox>(m_sprite); break;
 
       default:
         Console().printf("Unable to load layer named '%s', type #%d\n", name.c_str(), (int)type);
         break;
     }
-
     if (!lay)
       return nullptr;
+
+    lay->setName(name);
+    lay->setFlags(flags);
+
+    // LayerGroup doesn't contain cels
+    if (type != ObjectType::LayerGroup) {
+      const int ncels = read32(s);
+      for (int i = 0; i < ncels; ++i) {
+        if (canceled())
+          return nullptr;
+
+        // Add a new cel to load in the future after we load all layers
+        ObjectId celId = read32(s);
+        m_celsToLoad.push_back(std::make_pair(lay->id(), celId));
+      }
+    }
 
     UserData userData = read_user_data(s, m_serial);
     lay->setUserData(userData);
