@@ -265,6 +265,7 @@ private:
         // writeSprite/writeAllLayersID() functions)
         break;
 
+      case ObjectType::LayerFill:
       case ObjectType::LayerMask:
       case ObjectType::LayerFx:
       case ObjectType::LayerText:

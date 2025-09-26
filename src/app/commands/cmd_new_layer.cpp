@@ -34,6 +34,7 @@
 #include "app/util/new_image_from_mask.h"
 #include "doc/layer.h"
 #include "doc/layer_audio.h"
+#include "doc/layer_fill.h"
 #include "doc/layer_fx.h"
 #include "doc/layer_hitbox.h"
 #include "doc/layer_mask.h"
@@ -88,6 +89,7 @@ public:
     Group,
     ReferenceLayer,
     TilemapLayer,
+    FillLayer,
     MaskLayer,
     FxLayer,
     TextLayer,
@@ -133,6 +135,8 @@ void NewLayerCommand::onLoadParams(const Params& commandParams)
   else if (params().tilemap() || params().type() == "tilemap")
     m_type = Type::TilemapLayer;
 #ifdef ENABLE_DEVMODE // TODO not yet production-ready
+  else if (params().type() == "fill")
+    m_type = Type::FillLayer;
   else if (params().type() == "mask")
     m_type = Type::MaskLayer;
   else if (params().type() == "fx")
@@ -328,6 +332,14 @@ void NewLayerCommand::onExecute(Context* context)
         }
 
         layer = api.newTilemapAfter(parent, name, tsi, activeLayer);
+        break;
+      }
+
+      case Type::FillLayer: {
+        layer = new LayerFill(parent->sprite());
+        layer->setName(name);
+
+        api.addLayer(parent, layer, parent->lastLayer());
         break;
       }
 
@@ -627,8 +639,9 @@ std::string NewLayerCommand::layerPrefix() const
     case Type::Group:          return Strings::commands_NewLayer_Group();
     case Type::ReferenceLayer: return Strings::commands_NewLayer_ReferenceLayer();
     case Type::TilemapLayer:   return Strings::commands_NewLayer_TilemapLayer();
-    case Type::FxLayer:        return Strings::commands_NewLayer_FxLayer();
+    case Type::FillLayer:      return Strings::commands_NewLayer_FillLayer();
     case Type::MaskLayer:      return Strings::commands_NewLayer_MaskLayer();
+    case Type::FxLayer:        return Strings::commands_NewLayer_FxLayer();
     case Type::TextLayer:      return Strings::commands_NewLayer_TextLayer();
     case Type::VectorLayer:    return Strings::commands_NewLayer_VectorLayer();
     case Type::AudioLayer:     return Strings::commands_NewLayer_AudioLayer();

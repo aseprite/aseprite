@@ -54,6 +54,7 @@
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
 #include "doc/layer_audio.h"
+#include "doc/layer_fill.h"
 #include "doc/layer_fx.h"
 #include "doc/layer_hitbox.h"
 #include "doc/layer_mask.h"
@@ -724,6 +725,7 @@ Layer* DocApi::copyLayerWithSprite(doc::Layer* layer, doc::Sprite* sprite)
       break;
     }
 
+    case ObjectType::LayerFill:      clone = std::make_unique<LayerFill>(sprite); break;
     case ObjectType::LayerMask:      clone = std::make_unique<LayerMask>(sprite); break;
     case ObjectType::LayerFx:        clone = std::make_unique<LayerFx>(sprite); break;
     case ObjectType::LayerText:      clone = std::make_unique<LayerText>(sprite); break;
