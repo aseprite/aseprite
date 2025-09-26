@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -108,7 +108,7 @@ void ColorPicker::pickColor(const Site& site,
       plan.addLayer(sprite->root(), site.frame());
 
       doc::CelList cels;
-      sprite->pickCels(pos, kOpacityThreshold, plan, cels);
+      sprite->pickCels(pos, plan, cels, kOpacityThreshold);
       if (!cels.empty())
         m_layer = cels.front()->layer();
 
@@ -181,7 +181,7 @@ void ColorPicker::pickColor(const Site& site,
         plan.addLayer(refLayer, site.frame());
 
       doc::CelList cels;
-      sprite->pickCels(pos, kOpacityThreshold, plan, cels);
+      sprite->pickCels(pos, plan, cels, kOpacityThreshold);
 
       for (const Cel* cel : cels) {
         doc::color_t imageColor;
