@@ -23,7 +23,6 @@ namespace doc {
 CelData::CelData(const ImageRef& image)
   : WithUserData(ObjectType::CelData)
   , m_image(image)
-  , m_opacity(255)
   , m_bounds(0, 0, image ? image->width() : 0, image ? image->height() : 0)
   , m_boundsF(nullptr)
 {

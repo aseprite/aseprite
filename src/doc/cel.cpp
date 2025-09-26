@@ -27,6 +27,7 @@ Cel::Cel(frame_t frame, const ImageRef& image)
   , m_frame(frame)
   , m_data(new CelData(image))
 {
+  ++m_data->m_refs;
 }
 
 Cel::Cel(frame_t frame, const CelDataRef& celData)
@@ -35,6 +36,13 @@ Cel::Cel(frame_t frame, const CelDataRef& celData)
   , m_frame(frame)
   , m_data(celData)
 {
+  ++m_data->m_refs;
+}
+
+Cel::~Cel()
+{
+  if (m_data)
+    --m_data->m_refs;
 }
 
 // static
@@ -65,7 +73,11 @@ void Cel::setFrame(frame_t frame)
 void Cel::setDataRef(const CelDataRef& celData)
 {
   ASSERT(celData);
+  if (m_data)
+    --m_data->m_refs;
   m_data = celData;
+  if (m_data)
+    ++m_data->m_refs;
 }
 
 void Cel::setPosition(int x, int y)
@@ -119,10 +131,10 @@ Sprite* Cel::sprite() const
 Cel* Cel::link() const
 {
   ASSERT(m_data);
-  if (m_data.get() == NULL)
-    return NULL;
+  if (!m_data)
+    return nullptr;
 
-  if (!m_data.unique()) {
+  if (links() > 0) {
     for (frame_t fr = 0; fr < m_frame; ++fr) {
       Cel* possible = m_layer->cel(fr);
       if (possible && possible->dataRef().get() == m_data.get())
@@ -135,27 +147,19 @@ Cel* Cel::link() const
 
 std::size_t Cel::links() const
 {
-  std::size_t links = 0;
-
-  Sprite* sprite = this->sprite();
-  for (frame_t fr = 0; fr < sprite->totalFrames(); ++fr) {
-    Cel* cel = m_layer->cel(fr);
-    if (cel && cel != this && cel->dataRef().get() == m_data.get())
-      ++links;
-  }
-
-  return links;
+  if (m_data)
+    return std::max<std::size_t>(0, m_data->refs() - 1);
+  return 0;
 }
 
 void Cel::suspendObject()
 {
-  // Save the CelData only if the cel isn't linked.
-  if (links() == 0) {
-    m_data->suspendObject();
-    m_suspendedData = true;
+  if (m_data) {
+    if (--m_data->m_refs == 0) {
+      // Suspend the CelData only if this was the latest cel referencing it.
+      m_data->suspendObject();
+    }
   }
-  else
-    m_suspendedData = false;
 
   Object::suspendObject();
 }
@@ -164,8 +168,11 @@ void Cel::restoreObject()
 {
   Object::restoreObject();
 
-  if (m_suspendedData)
-    m_data->restoreObject();
+  if (m_data) {
+    if (++m_data->m_refs == 1) {
+      m_data->restoreObject();
+    }
+  }
 }
 
 void Cel::setParentLayer(LayerImage* layer)
