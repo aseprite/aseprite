@@ -44,10 +44,10 @@ void AddCel::onUndo()
   ASSERT(layer);
   ASSERT(cel);
 
-  // TODO we must suspend the cel after removing the cel, we cannot trigger onBeforeRemoveCel() with
-  // a cel without ID
-  m_suspendedCel.suspend(cel);
+  // We must suspend the cel after removing the cel, we cannot trigger
+  // onBeforeRemoveCel() with a cel without ID.
   removeCel(layer, cel);
+  m_suspendedCel.suspend(cel);
 }
 
 void AddCel::onRedo()
