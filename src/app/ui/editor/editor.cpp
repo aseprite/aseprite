@@ -61,6 +61,7 @@
 #include "base/scoped_value.h"
 #include "doc/doc.h"
 #include "doc/mask_boundaries.h"
+#include "doc/render_plan.h"
 #include "doc/slice.h"
 #include "fmt/format.h"
 #include "os/color_space.h"
@@ -3097,13 +3098,16 @@ void Editor::updateAutoCelGuides(ui::Message* msg)
   // tool to show automatic guides.
   if (m_showAutoCelGuides && m_state->allowLayerEdges()) {
     auto mouseMsg = dynamic_cast<ui::MouseMessage*>(msg);
-
-    ColorPicker picker;
-    picker.pickColor(getSite(),
-                     screenToEditorF(mouseMsg ? mouseMsg->position() : mousePosInDisplay()),
-                     m_proj,
-                     ColorPicker::FromComposition);
-    m_showGuidesThisCel = (picker.layer() ? picker.layer()->cel(m_frame) : nullptr);
+    doc::RenderPlan plan;
+    Sprite* sprite = getSite().sprite();
+    plan.addLayer(sprite->root(), getSite().frame());
+    doc::CelList cels;
+    sprite->pickCels(screenToEditorF(mouseMsg ? mouseMsg->position() : mousePosInDisplay()),
+                     1,
+                     plan,
+                     cels);
+    m_showGuidesThisCel =
+      ((!cels.empty() && cels.front()->layer()) ? cels.front()->layer()->cel(m_frame) : nullptr);
   }
   else {
     m_showGuidesThisCel = nullptr;

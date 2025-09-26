@@ -60,6 +60,7 @@
 #include "doc/layer.h"
 #include "doc/layer_tilemap.h"
 #include "doc/mask.h"
+#include "doc/render_plan.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
 #include "fmt/format.h"
@@ -153,16 +154,15 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     // Handle "Auto Select Layer"
     if (editor->isAutoSelectLayer()) {
       gfx::PointF cursor = editor->screenToEditorF(msg->position());
-      ColorPicker picker;
-      picker.pickColor(site, cursor, editor->projection(), ColorPicker::FromComposition);
+      RenderPlan plan;
+      plan.addLayer(site.sprite()->root(), site.frame());
+      doc::CelList cels;
+      site.sprite()->pickCels(cursor, 1, plan, cels);
 
       const view::RealRange& range = context->range();
-      if (picker.layer() && !range.contains(picker.layer())) {
-        layer = picker.layer();
-        if (layer) {
-          editor->setLayer(layer);
-          editor->flashCurrentLayer();
-        }
+      if (!cels.empty() && cels.front()->layer() && !range.contains(cels.front()->layer())) {
+        editor->setLayer(cels.front()->layer());
+        editor->flashCurrentLayer();
       }
     }
 
