@@ -131,6 +131,7 @@ protected:
 private:
   void onBrushSizeChange();
   void onBrushAngleChange();
+  void onCornerRadiusChange(int value);
   void onSymmetryModeChange();
   void onFgOrBgColorChange(doc::Brush::ImageColor imageColor);
   void onOpacityRangeChange();
@@ -168,6 +169,7 @@ private:
   class DynamicsField;
   class FreehandAlgorithmField;
   class BrushPatternField;
+  class CornerRadiusField;
   class EyedropperField;
   class DropPixelsField;
   class AutoSelectLayerField;
@@ -181,6 +183,7 @@ private:
   BrushTypeField* m_brushType;
   BrushAngleField* m_brushAngle;
   BrushSizeField* m_brushSize;
+  CornerRadiusField* m_cornerRadius;
   ui::Label* m_toleranceLabel;
   ToleranceField* m_tolerance;
   ContiguousField* m_contiguous;
@@ -224,6 +227,7 @@ private:
   obs::scoped_connection m_opacityConn;
   obs::scoped_connection m_freehandAlgoConn;
   obs::scoped_connection m_contiguousConn;
+  obs::scoped_connection m_cornerRadiusConn;
 };
 
 } // namespace app

@@ -27,6 +27,10 @@ public:
   virtual int getValue() const;
   virtual void setValue(int value);
 
+  // If useSlider is false, then it won't show the slider popup to change its
+  // value.
+  void useSlider(bool useSlider) { m_useSlider = useSlider; }
+
 protected:
   bool onProcessMessage(Message* msg) override;
   void onInitTheme(InitThemeEvent& ev) override;
@@ -42,6 +46,8 @@ protected:
   int m_max;
   std::unique_ptr<PopupWindow> m_popupWindow;
   bool m_changeFromSlider;
+  // If true a slider can be used to modify the value.
+  bool m_useSlider = true;
   std::unique_ptr<Slider> m_slider;
 
 private:
