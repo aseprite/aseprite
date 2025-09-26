@@ -18,10 +18,13 @@
 
 namespace doc {
 
+class Cel;
 class Layer;
 class Tileset;
 
 class CelData : public WithUserData {
+  friend class Cel;
+
 public:
   CelData(const ImageRef& image);
   CelData(const CelData& celData);
@@ -30,7 +33,8 @@ public:
   gfx::Point position() const { return m_bounds.origin(); }
   const gfx::Rect& bounds() const { return m_bounds; }
   int opacity() const { return m_opacity; }
-  Image* image() const { return const_cast<Image*>(m_image.get()); };
+  std::size_t refs() const { return m_refs; }
+  Image* image() const { return const_cast<Image*>(m_image.get()); }
   ImageRef imageRef() const { return m_image; }
 
   // Returns a rectangle with the bounds of the image (width/height
@@ -91,7 +95,8 @@ public:
 
 private:
   ImageRef m_image;
-  int m_opacity;
+  int m_opacity = 255;
+  std::size_t m_refs = 0;
   gfx::Rect m_bounds;
 
   // Special bounds for reference layers that can have subpixel

@@ -28,6 +28,7 @@ class Cel : public Object {
 public:
   Cel(frame_t frame, const ImageRef& image);
   Cel(frame_t frame, const CelDataRef& celData);
+  ~Cel();
 
   static Cel* MakeCopy(const frame_t newFrame, const Cel* other);
   static Cel* MakeLink(const frame_t newFrame, const Cel* other);
@@ -83,7 +84,6 @@ private:
   frame_t m_frame; // Frame position
   CelDataRef m_data;
   int m_zIndex = 0;
-  bool m_suspendedData = false;
 
   Cel();
   DISABLE_COPYING(Cel);
