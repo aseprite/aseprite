@@ -212,9 +212,9 @@ public:
   void remapImages(const Remap& remap);
   void remapTilemaps(const Tileset* tileset, const Remap& remap);
   void pickCels(const gfx::PointF& pos,
-                const int opacityThreshold,
                 const RenderPlan& plan,
-                CelList& cels) const;
+                CelList& cels,
+                const int opacityThreshold = 1) const;
 
   ////////////////////////////////////////
   // Iterators
