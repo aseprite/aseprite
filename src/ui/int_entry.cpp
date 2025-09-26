@@ -175,43 +175,45 @@ void IntEntry::openPopup()
 {
   m_slider->setValue(getValue());
 
-  // We weren't able to reproduce it, but there are crash reports
-  // where this openPopup() function is called and the popup is still
-  // alive, with the slider inside (we have to remove it before
-  // resetting m_popupWindow pointer to avoid deleting the slider
-  // pointer).
-  removeSlider();
+  if (m_useSlider) {
+    // We weren't able to reproduce it, but there are crash reports
+    // where this openPopup() function is called and the popup is still
+    // alive, with the slider inside (we have to remove it before
+    // resetting m_popupWindow pointer to avoid deleting the slider
+    // pointer).
+    removeSlider();
 
-  m_popupWindow = std::make_unique<TransparentPopupWindow>(
-    PopupWindow::ClickBehavior::CloseOnClickInOtherWindow);
-  m_popupWindow->setAutoRemap(false);
-  m_popupWindow->addChild(m_slider.get());
-  m_popupWindow->Close.connect(&IntEntry::onPopupClose, this);
+    m_popupWindow = std::make_unique<TransparentPopupWindow>(
+      PopupWindow::ClickBehavior::CloseOnClickInOtherWindow);
+    m_popupWindow->setAutoRemap(false);
+    m_popupWindow->addChild(m_slider.get());
+    m_popupWindow->Close.connect(&IntEntry::onPopupClose, this);
 
-  fit_bounds(display(),
-             m_popupWindow.get(),
-             gfx::Rect(0, 0, 128 * guiscale(), m_popupWindow->sizeHint().h),
-             [this](const gfx::Rect& workarea,
-                    gfx::Rect& rc,
-                    std::function<gfx::Rect(Widget*)> getWidgetBounds) {
-               Rect entryBounds = getWidgetBounds(this);
+    fit_bounds(display(),
+               m_popupWindow.get(),
+               gfx::Rect(0, 0, 128 * guiscale(), m_popupWindow->sizeHint().h),
+               [this](const gfx::Rect& workarea,
+                      gfx::Rect& rc,
+                      std::function<gfx::Rect(Widget*)> getWidgetBounds) {
+                 Rect entryBounds = getWidgetBounds(this);
 
-               rc.x = entryBounds.x;
-               rc.y = entryBounds.y2();
+                 rc.x = entryBounds.x;
+                 rc.y = entryBounds.y2();
 
-               if (rc.x2() > workarea.x2())
-                 rc.x = rc.x - rc.w + entryBounds.w;
+                 if (rc.x2() > workarea.x2())
+                   rc.x = rc.x - rc.w + entryBounds.w;
 
-               if (rc.y2() > workarea.y2())
-                 rc.y = entryBounds.y - entryBounds.h;
+                 if (rc.y2() > workarea.y2())
+                   rc.y = entryBounds.y - entryBounds.h;
 
-               m_popupWindow->setBounds(rc);
-             });
+                 m_popupWindow->setBounds(rc);
+               });
 
-  Region rgn(m_popupWindow->boundsOnScreen().createUnion(boundsOnScreen()));
-  m_popupWindow->setHotRegion(rgn);
+    Region rgn(m_popupWindow->boundsOnScreen().createUnion(boundsOnScreen()));
+    m_popupWindow->setHotRegion(rgn);
 
-  m_popupWindow->openWindow();
+    m_popupWindow->openWindow();
+  }
 }
 
 void IntEntry::closePopup()
