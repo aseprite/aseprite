@@ -223,6 +223,7 @@ public:
     if (loop->getIntertwine()->cornerRadiusSupport() &&
         (int(loop->getModifiers()) & int(ToolLoopModifiers::kCornerRadius))) {
       m_cornerRadius.modifyRadius(stroke, pt);
+      m_cornerRadius.save();
       return;
     }
 
