@@ -19,6 +19,7 @@
 #include "doc/image_io.h"
 #include "doc/layer.h"
 #include "doc/layer_audio.h"
+#include "doc/layer_fill.h"
 #include "doc/layer_fx.h"
 #include "doc/layer_hitbox.h"
 #include "doc/layer_io.h"
@@ -132,6 +133,7 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const Seri
   switch (static_cast<ObjectType>(layer_type)) {
     case ObjectType::LayerImage:
     case ObjectType::LayerTilemap:
+    case ObjectType::LayerFill:
     case ObjectType::LayerMask:
     case ObjectType::LayerFx:
     case ObjectType::LayerText:
@@ -146,6 +148,9 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const Seri
           break;
         case ObjectType::LayerTilemap:
           layer = std::make_unique<LayerTilemap>(subObjects->sprite(), 0);
+          break;
+        case ObjectType::LayerFill:
+          layer = std::make_unique<LayerFill>(subObjects->sprite());
           break;
         case ObjectType::LayerMask:
           layer = std::make_unique<LayerMask>(subObjects->sprite());

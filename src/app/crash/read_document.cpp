@@ -29,6 +29,7 @@
 #include "doc/image_io.h"
 #include "doc/layer.h"
 #include "doc/layer_audio.h"
+#include "doc/layer_fill.h"
 #include "doc/layer_fx.h"
 #include "doc/layer_hitbox.h"
 #include "doc/layer_mask.h"
@@ -476,6 +477,8 @@ private:
       }
 
       case ObjectType::LayerGroup:     lay = std::make_unique<LayerGroup>(m_sprite); break;
+
+      case ObjectType::LayerFill:      lay = std::make_unique<LayerFill>(m_sprite); break;
 
       case ObjectType::LayerMask:      lay = std::make_unique<LayerMask>(m_sprite); break;
 
