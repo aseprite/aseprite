@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,9 +11,7 @@
 #include "app/cmd/add_tileset.h"
 
 #include "doc/sprite.h"
-#include "doc/subobjects_io.h"
 #include "doc/tileset.h"
-#include "doc/tileset_io.h"
 #include "doc/tilesets.h"
 
 namespace app { namespace cmd {
@@ -23,7 +21,6 @@ using namespace doc;
 AddTileset::AddTileset(doc::Sprite* sprite, doc::Tileset* tileset)
   : WithSprite(sprite)
   , WithTileset(tileset)
-  , m_size(0)
   , m_tilesetIndex(-1)
 {
 }
@@ -31,7 +28,6 @@ AddTileset::AddTileset(doc::Sprite* sprite, doc::Tileset* tileset)
 AddTileset::AddTileset(doc::Sprite* sprite, const doc::tileset_index tsi)
   : WithSprite(sprite)
   , WithTileset(sprite->tilesets()->get(tsi))
-  , m_size(0)
   , m_tilesetIndex(tsi)
 {
 }
@@ -46,28 +42,20 @@ void AddTileset::onExecute()
 void AddTileset::onUndo()
 {
   doc::Tileset* tileset = this->tileset();
-  write_tileset(m_stream, tileset);
-  m_size = size_t(m_stream.tellp());
+  m_suspendedTileset.suspend(tileset);
 
   doc::Sprite* sprite = this->sprite();
   sprite->tilesets()->erase(m_tilesetIndex);
 
   sprite->incrementVersion();
   sprite->tilesets()->incrementVersion();
-
-  delete tileset;
 }
 
 void AddTileset::onRedo()
 {
-  auto sprite = this->sprite();
-  doc::Tileset* tileset = read_tileset(m_stream, sprite);
+  doc::Tileset* tileset = m_suspendedTileset.restore();
 
   addTileset(tileset);
-
-  m_stream.str(std::string());
-  m_stream.clear();
-  m_size = 0;
 }
 
 void AddTileset::addTileset(doc::Tileset* tileset)
