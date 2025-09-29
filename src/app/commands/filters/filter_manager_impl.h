@@ -93,6 +93,7 @@ public:
   void applyToTarget();
 
   void initTransaction();
+  void updateWriterThread();
   bool isTransaction() const;
   void commitTransaction();
 

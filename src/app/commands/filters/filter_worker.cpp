@@ -118,7 +118,13 @@ FilterWorker::~FilterWorker()
 
 void FilterWorker::run()
 {
-  // Initialize writting transaction
+  // Initialize writing transaction from the main thread. This is
+  // required to get the activeSite() from the UIContext from
+  // CmdTransaction::calcSpritePosition().
+  //
+  // The document will keep the UI thread associated as the "writer"
+  // thread, but that will be updated later in
+  // applyFilterInBackground() with the worker thread ID.
   m_filterMgr->initTransaction();
 
   std::thread thread;
@@ -182,6 +188,11 @@ bool FilterWorker::isCancelled()
 void FilterWorker::applyFilterInBackground()
 {
   try {
+    // This background thread is the new writer. This is required to
+    // avoid read-locking from the UI thread from Editor and Timeline
+    // onPaint() events.
+    m_filterMgr->updateWriterThread();
+
     // Apply the filter
     m_filterMgr->applyToTarget();
 

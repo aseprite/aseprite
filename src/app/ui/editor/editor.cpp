@@ -2810,7 +2810,7 @@ void Editor::pasteImage(const Image* image, const Mask* mask, const gfx::Point* 
   ASSERT(image);
 
   std::unique_ptr<Mask> temp_mask;
-  if (!mask) {
+  if (!mask || mask->bounds().isEmpty()) {
     gfx::Rect visibleBounds = getVisibleSpriteBounds();
     gfx::Rect imageBounds = image->bounds();
 

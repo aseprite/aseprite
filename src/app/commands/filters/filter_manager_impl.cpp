@@ -325,8 +325,13 @@ void FilterManagerImpl::applyToTarget()
 void FilterManagerImpl::initTransaction()
 {
   ASSERT(!m_tx);
-  m_writer.reset(new ContextWriter(m_reader));
+  m_writer = std::make_unique<ContextWriter>(m_reader);
   m_tx.reset(new Tx(*m_writer, m_filter->getName(), ModifyDocument));
+}
+
+void FilterManagerImpl::updateWriterThread()
+{
+  document()->updateWriterThread();
 }
 
 bool FilterManagerImpl::isTransaction() const
