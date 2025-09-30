@@ -4631,13 +4631,13 @@ void Timeline::onDrop(ui::DragEvent& e)
       std::string txmsg;
       std::unique_ptr<docapi::DocProvider> docProvider = nullptr;
       if (droppedImage) {
-        txmsg = "Dropped image on timeline";
+        txmsg = "Drop Image";
         doc::ImageRef image = nullptr;
         convert_surface_to_image(surface.get(), 0, 0, surface->width(), surface->height(), image);
         docProvider = std::make_unique<DocProviderFromImage>(image);
       }
       else {
-        txmsg = "Dropped paths on timeline";
+        txmsg = "Drop File";
         docProvider = std::make_unique<DocProviderFromPaths>(m_document->context(), paths);
       }
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2024  Igara Studio S.A.
+// Copyright (c) 2024-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -26,7 +26,7 @@ uint32_t convert_color_to_image(gfx::Color c, const os::SurfaceFormatData* fd)
   uint8_t b = ((c & fd->blueMask) >> fd->blueShift);
   uint8_t a = ((c & fd->alphaMask) >> fd->alphaShift);
 
-  if (fd->pixelAlpha == os::PixelAlpha::kPremultiplied) {
+  if (a > 0 && fd->pixelAlpha == os::PixelAlpha::kPremultiplied) {
     r = r * 255 / a;
     g = g * 255 / a;
     b = b * 255 / a;
