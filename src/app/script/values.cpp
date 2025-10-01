@@ -34,7 +34,6 @@ namespace app { namespace script {
 template<>
 void push_value_to_lua(lua_State* L, const std::nullptr_t&)
 {
-  TRACEARGS("push_value_to_lua nullptr_t");
   lua_pushnil(L);
 }
 
