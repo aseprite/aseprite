@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,29 +9,45 @@
 #define DOC_IMAGE_IMPL_H_INCLUDED
 #pragma once
 
-#include <algorithm>
-#include <cstdlib>
-#include <cstring>
-
+#include "base/buffer.h"
 #include "doc/blend_funcs.h"
 #include "doc/image.h"
 #include "doc/image_traits.h"
 #include "doc/palette.h"
+
+#include <algorithm>
+#include <cstdlib>
+#include <cstring>
+#include <memory>
+#include <sstream>
 
 namespace doc {
 
 template<typename ImageTraits>
 class LockImageBits;
 
+class ImageImplBase : public Image {
+protected:
+  ImageBufferPtr m_buffer;
+  std::unique_ptr<std::stringstream> m_stream;
+
+  ImageImplBase(const ImageSpec& spec, const ImageBufferPtr& buffer);
+  virtual void initialize() = 0;
+
+public:
+  int getMemSize() const override;
+  void suspendObject() override;
+  void restoreObject() override;
+};
+
 template<class Traits>
-class ImageImpl final : public Image {
+class ImageImpl final : public ImageImplBase {
 public:
   using traits_t = Traits;
   using address_t = typename traits_t::address_t;
   using const_address_t = typename traits_t::const_address_t;
 
 private:
-  ImageBufferPtr m_buffer;
   address_t* m_rows;
   address_t m_bits;
 
@@ -58,31 +74,14 @@ public:
     }
   }
 
-  ImageImpl(const ImageSpec& spec, const ImageBufferPtr& buffer) : Image(spec), m_buffer(buffer)
+  ImageImpl(const ImageSpec& spec, const ImageBufferPtr& buffer) : ImageImplBase(spec, buffer)
   {
-    ASSERT(Traits::color_mode == spec.colorMode());
+    initialize();
+  }
 
-    m_rowBytes = Traits::rowstride_bytes(width());
-
-    const std::size_t for_rows = doc_align_size(sizeof(address_t) * height());
-    const std::size_t for_pixels = m_rowBytes * height();
-    const std::size_t required_size = for_pixels + for_rows;
-
-    if (!m_buffer)
-      m_buffer = std::make_shared<ImageBuffer>(required_size);
-    else
-      m_buffer->resizeIfNecessary(required_size);
-
-    std::fill(m_buffer->buffer(), m_buffer->buffer() + required_size, 0);
-
-    m_rows = (address_t*)m_buffer->buffer();
-    m_bits = (address_t)(m_buffer->buffer() + for_rows);
-
-    auto addr = (uint8_t*)m_bits;
-    for (int y = 0; y < height(); ++y) {
-      m_rows[y] = (address_t)addr;
-      addr += m_rowBytes;
-    }
+  int getMemSize() const override
+  {
+    return ImageImplBase::getMemSize() - sizeof(ImageImplBase) + sizeof(ImageImpl);
   }
 
   uint8_t* getPixelAddress(int x, int y) const override
@@ -164,6 +163,33 @@ public:
   }
 
 private:
+  void initialize() override
+  {
+    ASSERT(Traits::color_mode == colorMode());
+
+    m_rowBytes = Traits::rowstride_bytes(width());
+
+    const std::size_t for_rows = doc_align_size(sizeof(address_t) * height());
+    const std::size_t for_pixels = m_rowBytes * height();
+    const std::size_t required_size = for_pixels + for_rows;
+
+    if (!m_buffer)
+      m_buffer = std::make_shared<ImageBuffer>(required_size);
+    else
+      m_buffer->resizeIfNecessary(required_size);
+
+    std::fill(m_buffer->buffer(), m_buffer->buffer() + required_size, 0);
+
+    m_rows = (address_t*)m_buffer->buffer();
+    m_bits = (address_t)(m_buffer->buffer() + for_rows);
+
+    auto addr = (uint8_t*)m_bits;
+    for (int y = 0; y < height(); ++y) {
+      m_rows[y] = (address_t)addr;
+      addr += m_rowBytes;
+    }
+  }
+
   bool clip_rects(const Image* src, int& dst_x, int& dst_y, int& src_x, int& src_y, int& w, int& h)
     const
   {
