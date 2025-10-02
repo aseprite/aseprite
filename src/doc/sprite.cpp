@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -656,9 +656,9 @@ void Sprite::remapTilemaps(const Tileset* tileset, const Remap& remap)
 // Drawing
 
 void Sprite::pickCels(const gfx::PointF& pos,
-                      const int opacityThreshold,
                       const RenderPlan& plan,
-                      CelList& cels) const
+                      CelList& cels,
+                      const int opacityThreshold) const
 {
   // Iterate cels in reversed order (from the front-most to the
   // bottom-most) so we pick first visible cel in the given position.
