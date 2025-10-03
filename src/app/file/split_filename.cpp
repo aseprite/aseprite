@@ -26,11 +26,44 @@ int split_filename(const std::string& filename, std::string& left, std::string& 
   if (!right.empty())
     right.insert(right.begin(), '.');
 
-  // Remove all trailing numbers in the "left" side.
-  std::string result_str;
   width = 0;
   int num = -1;
   int order = 1;
+
+  // Case 1: Parenthesis or square brackets
+  if (left.size() >= 3 && (left.back() == ')' || left.back() == ']')) {
+    char closing = left.back();
+    char opening = (closing == ')') ? '(' : '[';
+
+    auto it = left.rbegin();
+    auto end = left.rend();
+    ++it;
+
+    while (it != end) {
+      const int chr = *it;
+      if (chr >= '0' && chr <= '9') {
+        if (num < 0)
+          num = 0;
+        num += order * (chr - '0');
+        order *= 10;
+        ++width;
+        ++it;
+      }
+      else
+        break;
+    }
+
+    if (width > 0 && it != end && *it == opening) {
+      left.erase(it.base(), left.end());
+      right.insert(right.begin(), closing);
+    }
+
+    return num;
+  }
+
+  // Case 2: Default behavior
+  num = -1;
+  order = 1;
 
   auto it = left.rbegin();
   auto end = left.rend();
