@@ -830,3 +830,9 @@ if(ENABLE_SENTRY)
 else()
   target_sources(app-lib PRIVATE send_crash.cpp)
 endif()
+
+# When we use the laf-dlgs-proc, aseprite depends on it to show the
+# native file dialog.
+if(LAF_WITH_DLGS_PROC)
+  add_dependencies(app-lib laf-dlgs-proc)
+endif()
