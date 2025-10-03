@@ -33,7 +33,7 @@ int split_filename(const std::string& filename, std::string& left, std::string& 
   // Case 1: Parenthesis or square brackets
   if (left.size() >= 3 && (left.back() == ')' || left.back() == ']')) {
     char const closing = left.back();
-    char opening = (closing == ')') ? '(' : '[';
+    char const opening = (closing == ')') ? '(' : '[';
 
     auto it = left.rbegin();
     auto end = left.rend();
