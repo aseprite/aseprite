@@ -155,22 +155,15 @@ bool TextEdit::onProcessMessage(Message* msg)
         requestFocus();
 
       const auto* mouseMessage = static_cast<MouseMessage*>(msg);
-      Caret leftCaret = caretFromPosition(mouseMessage->position());
-      if (!leftCaret.isValid())
+      Caret caret = caretFromPosition(mouseMessage->position());
+      if (!caret.isValid())
         return false;
 
-      Caret rightCaret = leftCaret;
-      leftCaret.leftWord();
-      rightCaret.rightWord();
-
-      if (leftCaret != rightCaret) {
-        m_selection.set(leftCaret, rightCaret);
-        m_caret = rightCaret;
-        invalidate();
-        captureMouse();
-        return true;
-      }
-      break;
+      m_selection = m_selectionWords = Selection::SelectWords(caret);
+      m_caret = m_selection.end();
+      invalidate();
+      captureMouse();
+      return true;
     }
     case kMouseDownMessage:
       if (msg->shiftPressed())
@@ -198,6 +191,9 @@ bool TextEdit::onProcessMessage(Message* msg)
       if (hasCapture()) {
         releaseMouse();
         startTimer();
+
+        if (!m_selectionWords.isEmpty())
+          m_selectionWords.clear();
 
         const auto* mouseMsg = static_cast<MouseMessage*>(msg);
         if (mouseMsg->right()) {
@@ -351,7 +347,17 @@ bool TextEdit::onMouseMove(const MouseMessage* mouseMessage)
     return true;
   }
 
-  m_selection.set(m_lockedSelectionStart, m_caret);
+  if (!m_selectionWords.isEmpty()) {
+    m_selection = m_selectionWords;
+    m_selection |= Selection::SelectWords(m_caret);
+    if (m_caret < m_selectionWords.start())
+      m_caret = m_selection.start();
+    else
+      m_caret = m_selection.end();
+  }
+  else
+    m_selection.set(m_lockedSelectionStart, m_caret);
+
   return true;
 }
 
@@ -904,10 +910,10 @@ bool TextEdit::Caret::leftWord()
 {
   auto startPos = m_pos;
   while (left()) {
-    if (isWordPart(m_pos))
+    if (isWordPart())
       break;
   }
-  while (isWordPart(m_pos)) {
+  while (isWordPart()) {
     if (!left())
       return m_pos != startPos;
   }
@@ -935,10 +941,10 @@ bool TextEdit::Caret::rightWord()
 {
   auto startPos = m_pos;
   while (right()) {
-    if (isWordPart(m_pos))
+    if (isWordPart())
       break;
   }
-  while (isWordPart(m_pos)) {
+  while (isWordPart()) {
     if (!right())
       return m_pos != startPos;
   }
@@ -993,12 +999,12 @@ int TextEdit::Caret::absolutePos() const
   return apos;
 }
 
-bool TextEdit::Caret::isWordPart(int pos) const
+bool TextEdit::Caret::isWordPart() const
 {
-  if (!lineObj().glyphCount || lineObj().utfSize.size() <= pos)
+  if (!lineObj().glyphCount || lineObj().utfSize.size() <= m_pos)
     return false;
 
-  const auto& utfPos = lineObj().utfSize[pos];
+  const auto& utfPos = lineObj().utfSize[m_pos];
   const std::string_view word = text().substr(utfPos.begin, utfPos.end - utfPos.begin);
   return (!word.empty() && std::isspace(word[0]) == 0 && std::ispunct(word[0]) == 0);
 }
@@ -1045,9 +1051,44 @@ void TextEdit::Caret::clear()
   m_pos = 0;
 }
 
+TextEdit::Selection TextEdit::Selection::SelectWords(const Caret& from)
+{
+  Caret left = from;
+  Caret right = from;
+
+  // Select word space
+  if (left.isWordPart()) {
+    while (left.left()) {
+      if (!left.isWordPart()) {
+        left.right();
+        break;
+      }
+    }
+    while (right.right()) {
+      if (!right.isWordPart())
+        break;
+    }
+  }
+  // Select punctuation space
+  else {
+    while (left.left()) {
+      if (left.isWordPart()) {
+        left.right();
+        break;
+      }
+    }
+    while (right.right()) {
+      if (right.isWordPart())
+        break;
+    }
+  }
+
+  return Selection(left, right);
+}
+
 void TextEdit::Selection::set(const Caret& startCaret, const Caret& endCaret)
 {
-  if (startCaret > endCaret) {
+  if (endCaret < startCaret) {
     m_start = endCaret;
     m_end = startCaret;
   }

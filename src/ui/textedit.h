@@ -15,6 +15,8 @@
 #include "ui/theme.h"
 #include "ui/view.h"
 
+#include <algorithm>
+
 namespace ui {
 using namespace text;
 
@@ -99,7 +101,7 @@ private:
     // Returns the absolute position of the caret, aka the position in the main string that has all
     // the newlines.
     int absolutePos() const;
-    bool isWordPart(int pos) const;
+    bool isWordPart() const;
     void advanceBy(int characters);
     bool isValid() const;
     void clear();
@@ -114,10 +116,13 @@ private:
       return m_line != other.m_line || m_pos != other.m_pos;
     }
 
-    bool operator>(const Caret& other) const
+    bool operator<(const Caret& other) const
     {
-      return (m_line == other.m_line) ? m_pos > other.m_pos :
-                                        (m_line + m_pos) > (other.m_line + m_pos);
+      if (m_line < other.m_line)
+        return true;
+      if (m_line > other.m_line)
+        return false;
+      return m_pos < other.m_pos;
     }
 
   private:
@@ -131,6 +136,8 @@ private:
   struct Selection {
     Selection() = default;
     Selection(const Caret& startCaret, const Caret& endCaret) { set(startCaret, endCaret); }
+
+    static Selection SelectWords(const Caret& from);
 
     bool isEmpty() const
     {
@@ -146,6 +153,13 @@ private:
     bool isValid() const { return m_start.isValid() && m_end.isValid(); }
 
     void clear();
+
+    Selection& operator|=(const Selection& other)
+    {
+      m_start = std::min(m_start, other.start());
+      m_end = std::max(m_end, other.end());
+      return *this;
+    }
 
   private:
     Caret m_start;
@@ -164,6 +178,7 @@ private:
   void stopTimer();
 
   Selection m_selection;
+  Selection m_selectionWords;
   Caret m_caret;
   Caret m_lockedSelectionStart;
 
