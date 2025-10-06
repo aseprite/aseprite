@@ -228,13 +228,14 @@ bool TextEdit::onKeyDown(const KeyMessage* keyMessage)
   const Caret prevCaret(m_caret);
 
   switch (scancode) {
-    case kKeyLeft:  m_caret.left(byWord); break;
-    case kKeyRight: m_caret.right(byWord); break;
-    case kKeyHome:  m_caret.setPos(0); break;
-    case kKeyEnd:   m_caret.set(m_lines.back().i, m_lines.back().glyphCount); break;
-    case kKeyUp:    m_caret.up(); break;
-    case kKeyDown:  m_caret.down(); break;
-    case kKeyEnter: {
+    case kKeyLeft:     m_caret.left(byWord); break;
+    case kKeyRight:    m_caret.right(byWord); break;
+    case kKeyHome:     m_caret.setPos(0); break;
+    case kKeyEnd:      m_caret.set(m_lines.back().i, m_lines.back().glyphCount); break;
+    case kKeyUp:       m_caret.up(); break;
+    case kKeyDown:     m_caret.down(); break;
+    case kKeyEnter:
+    case kKeyEnterPad: {
       deleteSelection();
 
       std::string newText = text();
