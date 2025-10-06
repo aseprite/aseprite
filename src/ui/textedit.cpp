@@ -42,18 +42,6 @@ TextEdit::TextEdit() : Widget(kTextEditWidget), m_caret(&m_lines)
 {
   enableFlags(CTRL_RIGHT_CLICK);
   setFocusStop(true);
-  InitTheme.connect([this] {
-    ASSERT(style()->layers().size() == 4);
-    m_colorBG = style()->layers()[0].color();
-
-    m_textPaint.color(style()->layers()[1].color());
-    m_textPaint.style(os::Paint::Fill);
-
-    m_colorSelected = style()->layers()[2].color();
-
-    m_selectedTextPaint.color(style()->layers()[3].color());
-    m_selectedTextPaint.style(os::Paint::Fill);
-  });
   initTheme();
 }
 
@@ -426,6 +414,26 @@ void TextEdit::onPaint(PaintEvent& ev)
     g->drawRect(m_caretRect, m_textPaint);
 
   m_caretRect.offset(gfx::Point(g->getInternalDeltaX(), g->getInternalDeltaY()));
+}
+
+void TextEdit::onInitTheme(InitThemeEvent& ev)
+{
+  Widget::onInitTheme(ev);
+
+  // TODO we cannot expect a specific number of layers in the theme style
+  ASSERT(style()->layers().size() == 4);
+  m_colorBG = style()->layers()[0].color();
+
+  m_textPaint.color(style()->layers()[1].color());
+  m_textPaint.style(os::Paint::Fill);
+
+  m_colorSelected = style()->layers()[2].color();
+
+  m_selectedTextPaint.color(style()->layers()[3].color());
+  m_selectedTextPaint.style(os::Paint::Fill);
+
+  // Invalidate all blobs
+  onSetText();
 }
 
 void TextEdit::onSizeHint(SizeHintEvent& ev)

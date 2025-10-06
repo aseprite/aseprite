@@ -35,6 +35,7 @@ public:
 protected:
   bool onProcessMessage(Message* msg) override;
   void onPaint(PaintEvent& ev) override;
+  void onInitTheme(InitThemeEvent& ev) override;
   void onSizeHint(SizeHintEvent& ev) override;
   void onScrollRegion(ScrollRegionEvent& ev) override;
   void onSetText() override;
