@@ -914,14 +914,16 @@ bool TextEdit::Caret::left(bool byWord)
 
 bool TextEdit::Caret::leftWord()
 {
-  if (m_pos == 0)
-    return false;
-
   auto startPos = m_pos;
+  while (left()) {
+    if (isWordPart(m_pos))
+      break;
+  }
   while (isWordPart(m_pos)) {
     if (!left())
       return m_pos != startPos;
   }
+  right();
   return true;
 }
 
@@ -943,10 +945,11 @@ bool TextEdit::Caret::right(bool byWord)
 
 bool TextEdit::Caret::rightWord()
 {
-  if (m_pos == lineObj().glyphCount)
-    return false;
-
   auto startPos = m_pos;
+  while (right()) {
+    if (isWordPart(m_pos))
+      break;
+  }
   while (isWordPart(m_pos)) {
     if (!right())
       return m_pos != startPos;
