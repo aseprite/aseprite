@@ -829,16 +829,14 @@ void TextEdit::Line::insertText(int pos, const std::string& str)
     text.insert(utfSize[pos - 1].end, str);
 }
 
-gfx::Rect TextEdit::Line::getBounds(int glyph) const
+gfx::Rect TextEdit::Line::getBounds(const int glyph) const
 {
   int advance = 0;
   gfx::Rect result;
-  blob->visitRuns([&](const text::TextBlob::RunInfo& run) {
+  blob->visitRuns([&advance, &result, glyph](const text::TextBlob::RunInfo& run) {
     for (int i = 0; i < run.glyphCount; ++i) {
-      if (advance == glyph) {
+      if (advance == glyph)
         result = run.getGlyphBounds(i);
-        return;
-      }
       ++advance;
     }
   });
