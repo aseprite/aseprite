@@ -174,6 +174,7 @@ private:
   void insertCharacter(base::codepoint_t character);
   void deleteSelection();
   void ensureCaretVisible();
+  int maxHeight() const;
 
   void startTimer();
   void stopTimer();

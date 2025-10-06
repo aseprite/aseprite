@@ -533,10 +533,9 @@ TextEdit::Caret TextEdit::caretFromPosition(const gfx::Point& position)
   offsetPosition += View::getView(this)->viewScroll();
 
   Caret caret(&m_lines);
-  const int lineHeight = font()->lineHeight();
 
   // First check if the offset position is blank (below all the lines)
-  if (offsetPosition.y > m_lines.size() * lineHeight) {
+  if (offsetPosition.y >= maxHeight()) {
     // Get the last character in the last line.
     caret.setLine(m_lines.size() - 1);
 
@@ -547,12 +546,13 @@ TextEdit::Caret TextEdit::caretFromPosition(const gfx::Point& position)
     return caret;
   }
 
+  int lineStartY = 0;
   for (const Line& line : m_lines) {
-    const int lineStartY = line.i * lineHeight;
-    const int lineEndY = (line.i + 1) * lineHeight;
-
-    if (offsetPosition.y > lineEndY || offsetPosition.y < lineStartY)
+    const int lineEndY = lineStartY + line.height;
+    if (offsetPosition.y < lineStartY || offsetPosition.y >= lineEndY) {
+      lineStartY = lineEndY;
       continue; // We're not in this line
+    }
 
     caret.setLine(line.i);
 
@@ -582,7 +582,9 @@ TextEdit::Caret TextEdit::caretFromPosition(const gfx::Point& position)
       }
     });
 
+    // Done, we've found the clicked caret position
     caret.setPos(best);
+    break;
   }
 
   return caret;
@@ -765,6 +767,14 @@ void TextEdit::onSetFont()
 
   // Invalidate all blobs
   onSetText();
+}
+
+int TextEdit::maxHeight() const
+{
+  int h = 0;
+  for (const auto& line : m_lines)
+    h += line.height;
+  return h;
 }
 
 void TextEdit::startTimer()
