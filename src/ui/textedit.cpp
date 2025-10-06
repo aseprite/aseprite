@@ -71,7 +71,7 @@ void TextEdit::copy()
   if (m_selection.isEmpty())
     return;
 
-  const size_t startPos = m_selection.start().absolutePos();
+  const int startPos = m_selection.start().absolutePos();
   set_clipboard_text(text().substr(startPos, m_selection.end().absolutePos() - startPos));
 }
 
@@ -533,8 +533,8 @@ TextEdit::Caret TextEdit::caretFromPosition(const gfx::Point& position)
   }
 
   for (const Line& line : m_lines) {
-    const size_t lineStartY = line.i * lineHeight;
-    const size_t lineEndY = (line.i + 1) * lineHeight;
+    const int lineStartY = line.i * lineHeight;
+    const int lineEndY = (line.i + 1) * lineHeight;
 
     if (offsetPosition.y > lineEndY || offsetPosition.y < lineStartY)
       continue; // We're not in this line
@@ -552,7 +552,7 @@ TextEdit::Caret TextEdit::caretFromPosition(const gfx::Point& position)
 
     // Find the exact character we're standing on, with a slight bias to the left or right
     // depending on where we click wrt the glyph bounds
-    size_t advance = 0;
+    int advance = 0;
     bool found = false;
 
     line.blob->visitRuns([&](const text::TextBlob::RunInfo& run) {
@@ -653,7 +653,7 @@ void TextEdit::deleteSelection()
 
   if (m_selection.start().line() == m_selection.end().line()) {
     auto& line = m_lines[m_selection.start().line()];
-    size_t end;
+    int end;
     if (m_selection.end().isLastInLine())
       end = line.utfSize.back().end;
     else
@@ -692,7 +692,7 @@ void TextEdit::ensureCaretVisible()
 
   if (view->verticalBar()->isVisible()) {
     const int heightLimit = (visibleBounds.h + scroll.y - lineHeight) / 2;
-    const size_t currentLine = (m_caret.line() * lineHeight) / 2;
+    const int currentLine = (m_caret.line() * lineHeight) / 2;
 
     if (currentLine <= scroll.y)
       scroll.y = currentLine;
@@ -780,12 +780,12 @@ void TextEdit::stopTimer()
 }
 
 struct Utf8RangeBuilder : public text::TextBlob::RunHandler {
-  explicit Utf8RangeBuilder(size_t minSize) { ranges.reserve(minSize); }
+  explicit Utf8RangeBuilder(int minSize) { ranges.reserve(minSize); }
 
   void commitRunBuffer(TextBlob::RunInfo& info) override
   {
     ASSERT(info.clusters == nullptr || *info.clusters == 0);
-    for (size_t i = 0; i < info.glyphCount; ++i) {
+    for (int i = 0; i < info.glyphCount; ++i) {
       ranges.push_back(info.getGlyphUtf8Range(i));
     }
   }
@@ -819,7 +819,7 @@ void TextEdit::Line::buildBlob(const Widget* forWidget)
 }
 
 // Insert text into this line based on a caret position, taking into account utf8 size.
-void TextEdit::Line::insertText(size_t pos, const std::string& str)
+void TextEdit::Line::insertText(int pos, const std::string& str)
 {
   if (pos == 0)
     text.insert(0, str);
@@ -829,12 +829,12 @@ void TextEdit::Line::insertText(size_t pos, const std::string& str)
     text.insert(utfSize[pos - 1].end, str);
 }
 
-gfx::Rect TextEdit::Line::getBounds(size_t glyph) const
+gfx::Rect TextEdit::Line::getBounds(int glyph) const
 {
-  size_t advance = 0;
+  int advance = 0;
   gfx::Rect result;
   blob->visitRuns([&](const text::TextBlob::RunInfo& run) {
-    for (size_t i = 0; i < run.glyphCount; ++i) {
+    for (int i = 0; i < run.glyphCount; ++i) {
       if (advance == glyph) {
         result = run.getGlyphBounds(i);
         return;
@@ -845,14 +845,14 @@ gfx::Rect TextEdit::Line::getBounds(size_t glyph) const
   return result;
 }
 
-gfx::Rect TextEdit::Line::getBounds(size_t startGlyph, size_t endGlyph) const
+gfx::Rect TextEdit::Line::getBounds(int startGlyph, int endGlyph) const
 {
   if (startGlyph == endGlyph)
     return getBounds(startGlyph);
 
   ASSERT(endGlyph > startGlyph);
 
-  size_t advance = 0; // The amount of glyphs we've advanced through.
+  int advance = 0; // The amount of glyphs we've advanced through.
   gfx::Rect resultBounds;
 
   blob->visitRuns([&](text::TextBlob::RunInfo& run) {
@@ -864,7 +864,7 @@ gfx::Rect TextEdit::Line::getBounds(size_t startGlyph, size_t endGlyph) const
       return; // Skip this run
     }
 
-    size_t j = 0;
+    int j = 0;
     if (advance < startGlyph) {
       j = startGlyph - advance;
       advance += j;
@@ -884,13 +884,13 @@ gfx::Rect TextEdit::Line::getBounds(size_t startGlyph, size_t endGlyph) const
   return resultBounds;
 }
 
-void TextEdit::Caret::setPos(size_t pos)
+void TextEdit::Caret::setPos(int pos)
 {
   ASSERT(pos >= 0 && pos <= lineObj().glyphCount);
   m_pos = pos;
 }
 
-void TextEdit::Caret::set(size_t line, size_t pos)
+void TextEdit::Caret::set(int line, int pos)
 {
   m_line = line;
   m_pos = pos;
@@ -901,18 +901,14 @@ bool TextEdit::Caret::left(bool byWord)
   if (byWord)
     return leftWord();
 
-  m_pos -= 1;
-
-  if (((int64_t)(m_pos)-1) < 0) {
+  if (--m_pos < 0) {
     if (m_line == 0) {
       m_pos = 0;
       return false;
     }
-
-    m_line -= 1;
-    m_pos = lineObj().glyphCount;
+    --m_line;
+    eol();
   }
-
   return true;
 }
 
@@ -934,18 +930,14 @@ bool TextEdit::Caret::right(bool byWord)
   if (byWord)
     return rightWord();
 
-  m_pos += 1;
-
-  if (m_pos > lineObj().glyphCount) {
-    if (m_line == m_lines->size() - 1) {
-      m_pos -= 1; // Undo movement, we've reached the end of the text.
+  if (++m_pos > lineObj().glyphCount) {
+    if (m_line == int(m_lines->size()) - 1) {
+      --m_pos; // Undo movement, we've reached the end of the text.
       return false;
     }
-
-    m_line += 1;
+    ++m_line;
     m_pos = 0;
   }
-
   return true;
 }
 
@@ -964,14 +956,14 @@ bool TextEdit::Caret::rightWord()
 
 void TextEdit::Caret::up()
 {
-  m_line = std::clamp(m_line - 1, size_t(0), m_lines->size() - 1);
-  m_pos = std::clamp(m_pos, size_t(0), lineObj().glyphCount);
+  m_line = std::clamp(m_line - 1, 0, int(m_lines->size()) - 1);
+  m_pos = std::clamp(m_pos, 0, lineObj().glyphCount);
 }
 
 void TextEdit::Caret::down()
 {
-  m_line = std::clamp(m_line + 1, size_t(0), m_lines->size() - 1);
-  m_pos = std::clamp(m_pos, size_t(0), lineObj().glyphCount);
+  m_line = std::clamp(m_line + 1, 0, int(m_lines->size()) - 1);
+  m_pos = std::clamp(m_pos, 0, lineObj().glyphCount);
 }
 
 void TextEdit::Caret::eol()
@@ -979,12 +971,12 @@ void TextEdit::Caret::eol()
   m_pos = lineObj().glyphCount;
 }
 
-size_t TextEdit::Caret::absolutePos() const
+int TextEdit::Caret::absolutePos() const
 {
   if (m_pos == 0 && m_line == 0)
     return 0;
 
-  size_t apos = 0;
+  int apos = 0;
   for (const auto& l : *m_lines) {
     const bool hasNextLine = l.i < (m_lines->size() - 1);
 
@@ -1010,7 +1002,7 @@ size_t TextEdit::Caret::absolutePos() const
   return apos;
 }
 
-bool TextEdit::Caret::isWordPart(size_t pos) const
+bool TextEdit::Caret::isWordPart(int pos) const
 {
   if (!lineObj().glyphCount || lineObj().utfSize.size() <= pos)
     return false;
@@ -1020,13 +1012,13 @@ bool TextEdit::Caret::isWordPart(size_t pos) const
   return (!word.empty() && std::isspace(word[0]) == 0 && std::ispunct(word[0]) == 0);
 }
 
-void TextEdit::Caret::advanceBy(size_t characters)
+void TextEdit::Caret::advanceBy(int characters)
 {
-  size_t remaining = characters;
-  size_t activeLine = m_line;
-  for (size_t i = m_line; i < m_lines->size(); ++i) {
+  int remaining = characters;
+  int activeLine = m_line;
+  for (int i = m_line; i < m_lines->size(); ++i) {
     const auto& line = (*m_lines)[i];
-    for (size_t j = m_pos; j < line.glyphCount; ++j) {
+    for (int j = m_pos; j < line.glyphCount; ++j) {
       remaining -= line.utfSize[j].end - line.utfSize[j].begin;
       right();
 

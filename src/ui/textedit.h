@@ -45,29 +45,29 @@ private:
   struct Line {
     std::string text;
     std::vector<TextBlob::Utf8Range> utfSize;
-    size_t glyphCount = 0;
+    int glyphCount = 0;
     text::TextBlobRef blob;
 
     int width = 0;
     int height = 0;
 
     // Line index for more convenient loops
-    size_t i = 0;
+    int i = 0;
 
     void buildBlob(const Widget* forWidget);
 
     // Insert text into this line based on a caret position, taking into account utf8 size.
-    void insertText(size_t pos, const std::string& str);
+    void insertText(int pos, const std::string& str);
 
-    gfx::Rect getBounds(size_t glyph) const;
+    gfx::Rect getBounds(int glyph) const;
 
     // Get the screen size between the start and end glyph positions.
-    gfx::Rect getBounds(size_t startGlyph, size_t endGlyph) const;
+    gfx::Rect getBounds(int startGlyph, int endGlyph) const;
   };
 
   struct Caret {
     explicit Caret(std::vector<Line>* lines = nullptr) : m_lines(lines) {}
-    explicit Caret(std::vector<Line>* lines, size_t line, size_t pos)
+    explicit Caret(std::vector<Line>* lines, int line, int pos)
       : m_line(line)
       , m_pos(pos)
       , m_lines(lines)
@@ -75,12 +75,12 @@ private:
     }
     Caret(const Caret& caret) : m_line(caret.m_line), m_pos(caret.m_pos), m_lines(caret.m_lines) {}
 
-    size_t line() const { return m_line; }
-    size_t pos() const { return m_pos; }
+    int line() const { return m_line; }
+    int pos() const { return m_pos; }
 
-    void setPos(size_t pos);
-    void setLine(size_t line) { m_line = line; }
-    void set(size_t line, size_t pos);
+    void setPos(int pos);
+    void setLine(int line) { m_line = line; }
+    void set(int line, int pos);
 
     bool left(bool byWord = false);
     // Moves the position to the next word on the left, doesn't wrap around lines.
@@ -98,9 +98,9 @@ private:
 
     // Returns the absolute position of the caret, aka the position in the main string that has all
     // the newlines.
-    size_t absolutePos() const;
-    bool isWordPart(size_t pos) const;
-    void advanceBy(size_t characters);
+    int absolutePos() const;
+    bool isWordPart(int pos) const;
+    void advanceBy(int characters);
     bool isValid() const;
     void clear();
 
@@ -121,8 +121,8 @@ private:
     }
 
   private:
-    size_t m_line = 0;
-    size_t m_pos = 0;
+    int m_line = 0;
+    int m_pos = 0;
     std::string_view text() const { return (*m_lines)[m_line].text; }
     Line& lineObj() const { return (*m_lines)[m_line]; }
     std::vector<Line>* m_lines;
