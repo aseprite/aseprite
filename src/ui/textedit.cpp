@@ -31,6 +31,7 @@
 #include "ui/view.h"
 
 #include <algorithm>
+#include <limits>
 
 namespace ui {
 
@@ -553,32 +554,21 @@ TextEdit::Caret TextEdit::caretFromPosition(const gfx::Point& position)
     // Find the exact character we're standing on, with a slight bias to the left or right
     // depending on where we click wrt the glyph bounds
     int advance = 0;
-    bool found = false;
+    int best = 0;
+    float bestDiff = std::numeric_limits<float>::max();
 
     line.blob->visitRuns([&](const text::TextBlob::RunInfo& run) {
-      if (found) {
-        return;
-      }
-
       for (int i = 0; i < run.glyphCount; ++i) {
-        gfx::RectF glyphBounds = run.getGlyphBounds(i).offset(gfx::PointF(0, lineStartY));
-
-        if (glyphBounds.contains(offsetPosition)) {
-          found = true;
-
-          if (offsetPosition.x > glyphBounds.center().x && advance != line.glyphCount)
-            ++advance; // If the mouse is to the right of the glyph, prefer the next position.
-
-          return;
+        const float diff = std::fabs(run.getGlyphBounds(i).center().x - offsetPosition.x);
+        if (diff < bestDiff) {
+          best = advance;
+          bestDiff = diff;
         }
-
         ++advance;
       }
     });
 
-    if (found) {
-      caret.setPos(advance);
-    }
+    caret.setPos(best);
   }
 
   return caret;
