@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2024  Igara Studio S.A.
+// Copyright (C) 2024-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -92,6 +92,9 @@ private:
     void down();
     bool isLastInLine() const { return m_pos == lineObj().glyphCount; }
     bool isLastLine() const { return m_line == m_lines->size() - 1; }
+
+    // Go to the end of line.
+    void eol();
 
     // Returns the absolute position of the caret, aka the position in the main string that has all
     // the newlines.

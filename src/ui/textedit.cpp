@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2024  Igara Studio S.A.
+// Copyright (C) 2024-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -228,10 +228,28 @@ bool TextEdit::onKeyDown(const KeyMessage* keyMessage)
   const Caret prevCaret(m_caret);
 
   switch (scancode) {
-    case kKeyLeft:     m_caret.left(byWord); break;
-    case kKeyRight:    m_caret.right(byWord); break;
-    case kKeyHome:     m_caret.setPos(0); break;
-    case kKeyEnd:      m_caret.set(m_lines.back().i, m_lines.back().glyphCount); break;
+    case kKeyLeft:  m_caret.left(byWord); break;
+    case kKeyRight: m_caret.right(byWord); break;
+    case kKeyHome:
+      // Beginning of text
+      if (keyMessage->ctrlPressed()) {
+        m_caret.set(0, 0);
+      }
+      // Beginning of line
+      else {
+        m_caret.setPos(0);
+      }
+      break;
+    case kKeyEnd:
+      // End of text
+      if (keyMessage->ctrlPressed()) {
+        m_caret.set(m_lines.back().i, m_lines.back().glyphCount);
+      }
+      // End of line
+      else {
+        m_caret.eol();
+      }
+      break;
     case kKeyUp:       m_caret.up(); break;
     case kKeyDown:     m_caret.down(); break;
     case kKeyEnter:
@@ -954,6 +972,11 @@ void TextEdit::Caret::down()
 {
   m_line = std::clamp(m_line + 1, size_t(0), m_lines->size() - 1);
   m_pos = std::clamp(m_pos, size_t(0), lineObj().glyphCount);
+}
+
+void TextEdit::Caret::eol()
+{
+  m_pos = lineObj().glyphCount;
 }
 
 size_t TextEdit::Caret::absolutePos() const
