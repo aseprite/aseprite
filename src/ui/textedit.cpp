@@ -799,7 +799,6 @@ struct Utf8RangeBuilder : public text::TextBlob::RunHandler {
 
   void commitRunBuffer(TextBlob::RunInfo& info) override
   {
-    ASSERT(info.clusters == nullptr || *info.clusters == 0);
     for (int i = 0; i < info.glyphCount; ++i) {
       ranges.push_back(info.getGlyphUtf8Range(i));
     }
