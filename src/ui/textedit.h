@@ -62,10 +62,10 @@ private:
     // Insert text into this line based on a caret position, taking into account utf8 size.
     void insertText(int pos, const std::string& str);
 
-    gfx::Rect getBounds(int glyph) const;
+    gfx::RectF getBounds(int glyph) const;
 
     // Get the screen size between the start and end glyph positions.
-    gfx::Rect getBounds(int startGlyph, int endGlyph) const;
+    gfx::RectF getBounds(int startGlyph, int endGlyph) const;
   };
 
   struct Caret {

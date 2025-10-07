@@ -843,7 +843,7 @@ void TextEdit::Line::insertText(int pos, const std::string& str)
     text.insert(utfSize[pos - 1].end, str);
 }
 
-gfx::Rect TextEdit::Line::getBounds(const int glyph) const
+gfx::RectF TextEdit::Line::getBounds(const int glyph) const
 {
   int advance = 0;
   gfx::Rect result;
@@ -857,7 +857,7 @@ gfx::Rect TextEdit::Line::getBounds(const int glyph) const
   return result;
 }
 
-gfx::Rect TextEdit::Line::getBounds(int startGlyph, int endGlyph) const
+gfx::RectF TextEdit::Line::getBounds(const int startGlyph, const int endGlyph) const
 {
   if (startGlyph == endGlyph)
     return {};
