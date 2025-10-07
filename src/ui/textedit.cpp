@@ -860,7 +860,7 @@ gfx::Rect TextEdit::Line::getBounds(const int glyph) const
 gfx::Rect TextEdit::Line::getBounds(int startGlyph, int endGlyph) const
 {
   if (startGlyph == endGlyph)
-    return getBounds(startGlyph);
+    return {};
 
   ASSERT(endGlyph > startGlyph);
 
