@@ -1296,12 +1296,22 @@ int SkinTheme::getScrollbarSize()
   return dimensions.scrollbarSize();
 }
 
-gfx::Size SkinTheme::getEntryCaretSize(Widget* widget)
+gfx::Size SkinTheme::getCaretSize(Widget* widget)
 {
+  int caretHeight;
+  if (widget->type() == kTextEditWidget) {
+    // We cannot use the height of the widget text, because it
+    // includes the line height of every single line in the widget.
+    caretHeight = widget->font()->lineHeight();
+  }
+  else {
+    caretHeight = widget->textHeight();
+  }
+
   if (widget->font()->type() == text::FontType::FreeType)
-    return gfx::Size(2 * guiscale(), widget->textHeight());
+    return gfx::Size(2 * guiscale(), caretHeight);
   else
-    return gfx::Size(2 * guiscale(), widget->textHeight() + 2 * guiscale());
+    return gfx::Size(2 * guiscale(), caretHeight + 2 * guiscale());
 }
 
 void SkinTheme::paintEntry(PaintEvent& ev)
@@ -1866,7 +1876,7 @@ void SkinTheme::drawEntryCaret(ui::Graphics* g, Entry* widget, int x, int y)
 {
   gfx::Color color = colors.text();
   int textHeight = widget->textHeight();
-  gfx::Size caretSize = getEntryCaretSize(widget);
+  gfx::Size caretSize = getCaretSize(widget);
 
   for (int u = x; u < x + caretSize.w; ++u)
     g->drawVLine(color, u, y + textHeight / 2 - caretSize.h / 2, caretSize.h);

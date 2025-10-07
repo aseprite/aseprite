@@ -139,7 +139,7 @@ gfx::Point Entry::caretPosOnScreen() const
 
 void Entry::setCaretPos(const int pos)
 {
-  gfx::Size caretSize = theme()->getEntryCaretSize(this);
+  gfx::Size caretSize = theme()->getCaretSize(this);
   int textlen = lastCaretPos();
   m_caret = std::clamp(pos, 0, textlen);
   m_scroll = std::clamp(m_scroll, 0, textlen);
@@ -521,7 +521,7 @@ gfx::Size Entry::sizeHintWithText(Entry* entry, const std::string& text)
 {
   const auto& font = entry->font();
 
-  int w = font->textLength(text) + +2 * entry->theme()->getEntryCaretSize(entry).w +
+  int w = font->textLength(text) + +2 * entry->theme()->getCaretSize(entry).w +
           entry->border().width();
 
   w = std::min(w, guiscale() * kMaxWidthHintForEntry);
@@ -546,7 +546,7 @@ void Entry::onSizeHint(SizeHintEvent& ev)
   const auto& font = this->font();
 
   int trailing = font->textLength(getSuffix());
-  trailing = std::max(trailing, 2 * theme()->getEntryCaretSize(this).w);
+  trailing = std::max(trailing, 2 * theme()->getCaretSize(this).w);
 
   int w = font->textLength("w") * std::min(m_maxsize, 6) + +trailing + border().width();
 
@@ -1012,7 +1012,7 @@ void Entry::recalcCharBoxes(const std::string& text)
   box.codepoint = 0;
   box.from = box.to = lastTextIndex;
   box.x = lastX;
-  box.width = theme()->getEntryCaretSize(this).w;
+  box.width = theme()->getCaretSize(this).w;
   m_boxes.push_back(box);
 }
 

@@ -74,7 +74,7 @@ public:
   virtual void getWindowMask(Widget* widget, gfx::Region& region) {}
   virtual void setDecorativeWidgetBounds(Widget* widget);
   virtual int getScrollbarSize() { return kDefaultFontHeight; }
-  virtual gfx::Size getEntryCaretSize(Widget* widget) { return gfx::Size(kDefaultFontHeight, 1); }
+  virtual gfx::Size getCaretSize(Widget* widget) { return gfx::Size(kDefaultFontHeight, 1); }
 
   virtual void paintEntry(PaintEvent& ev) {}
   virtual void paintTextEdit(PaintEvent& ev) {}

@@ -364,8 +364,8 @@ void TextEdit::onPaint(PaintEvent& ev)
   gfx::PointF point(border().left(), border().top());
   point -= scroll;
 
-  m_caretRect =
-    gfx::Rect(border().left() - scroll.x, border().top() - scroll.y, 2, font()->lineHeight());
+  m_caretRect = gfx::Rect(gfx::Point(border().left() - scroll.x, border().top() - scroll.y),
+                          theme()->getCaretSize(this));
 
   const gfx::Rect clipBounds = g->getClipBounds();
 
@@ -403,8 +403,9 @@ void TextEdit::onPaint(PaintEvent& ev)
         m_caretRect.x += line.getBounds(m_caret.pos()).x;
       }
 
-      m_caretRect.y = point.y;
-      m_caretRect.h = line.height; // Ensure the caret height corresponds with the tallest glyph
+      // Ensure the caret height corresponds with the tallest glyph
+      m_caretRect.h = std::max(m_caretRect.h, line.height);
+      m_caretRect.y = point.y + line.height / 2 - m_caretRect.h / 2;
     }
 
     point.y += line.height;

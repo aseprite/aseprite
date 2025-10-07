@@ -80,7 +80,7 @@ public:
   void initWidget(ui::Widget* widget) override;
   void getWindowMask(ui::Widget* widget, gfx::Region& region) override;
   int getScrollbarSize() override;
-  gfx::Size getEntryCaretSize(ui::Widget* widget) override;
+  gfx::Size getCaretSize(ui::Widget* widget) override;
 
   void paintEntry(ui::PaintEvent& ev) override;
   void paintListBox(ui::PaintEvent& ev) override;
