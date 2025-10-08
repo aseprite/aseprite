@@ -986,12 +986,20 @@ bool TextEdit::Caret::rightWord()
 
 void TextEdit::Caret::up()
 {
+  if (m_line == 0) {
+    m_pos = 0;
+    return;
+  }
   m_line = std::clamp(m_line - 1, 0, int(m_lines->size()) - 1);
   m_pos = std::clamp(m_pos, 0, lineObj().glyphCount);
 }
 
 void TextEdit::Caret::down()
 {
+  if (m_line == int(m_lines->size()) - 1) {
+    eol();
+    return;
+  }
   m_line = std::clamp(m_line + 1, 0, int(m_lines->size()) - 1);
   m_pos = std::clamp(m_pos, 0, lineObj().glyphCount);
 }
