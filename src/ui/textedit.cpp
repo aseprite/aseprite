@@ -773,8 +773,12 @@ void TextEdit::onSetText()
   Change();
   Widget::onSetText();
 
-  if (hasFocus())
-    os::System::instance()->setTextInput(true, caretPosOnScreen());
+  // Keep the caret in a valid position.
+  if (!m_caret.isValid()) {
+    int line = std::clamp(m_caret.line(), 0, int(m_lines.size()) - 1);
+    m_caret = Caret(&m_lines, line, std::clamp(m_caret.pos(), 0, m_lines[line].glyphCount));
+  }
+  onCaretPosChange();
 }
 
 void TextEdit::onSetFont()
