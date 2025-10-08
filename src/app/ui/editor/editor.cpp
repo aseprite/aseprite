@@ -1834,7 +1834,7 @@ void Editor::updateToolLoopModifiersIndicators(const bool firstFromMouseDown)
         // square-aspect/rotation/etc. only when the user presses the
         // modifier key again in the ToolLoop (and not before starting
         // the loop). So Alt+selection will add a selection, but
-        // willn't start the square-aspect until we press Alt key
+        // won't start the square-aspect until we press Alt key
         // again, or Alt+Shift+selection tool will subtract the
         // selection but will not start the rotation until we release
         // and press the Alt key again.
@@ -1847,6 +1847,8 @@ void Editor::updateToolLoopModifiersIndicators(const bool firstFromMouseDown)
             modifiers |= int(tools::ToolLoopModifiers::kFromCenter);
           if (int(action & KeyAction::RotateShape))
             modifiers |= int(tools::ToolLoopModifiers::kRotateShape);
+          if (int(action & KeyAction::CornerRadius))
+            modifiers |= int(tools::ToolLoopModifiers::kCornerRadius);
         }
       }
 
