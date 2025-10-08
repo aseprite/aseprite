@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2024 Igara Studio S.A.
+// Copyright (c) 2019-2025 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -28,6 +28,7 @@ class Cel : public Object {
 public:
   Cel(frame_t frame, const ImageRef& image);
   Cel(frame_t frame, const CelDataRef& celData);
+  ~Cel();
 
   static Cel* MakeCopy(const frame_t newFrame, const Cel* other);
   static Cel* MakeLink(const frame_t newFrame, const Cel* other);
@@ -65,7 +66,9 @@ public:
   void setOpacity(int opacity);
   void setZIndex(int zindex);
 
-  virtual int getMemSize() const override { return sizeof(Cel) + m_data->getMemSize(); }
+  int getMemSize() const override { return sizeof(Cel) + m_data->getMemSize(); }
+  void suspendObject() override;
+  void restoreObject() override;
 
   void setParentLayer(LayerImage* layer);
   Grid grid() const;
