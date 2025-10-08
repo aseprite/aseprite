@@ -31,6 +31,9 @@
 # readability-named-parameter: We prefer misc-unused-parameters to
 # remove a parameter name that is not used.
 #
+# readability-simplify-boolean-expr: Avoid showing comments about
+# boolean expressions inside ASSERTs().
+#
 # misc-use-anonymous-namespace: We use anonymous namespaces or static
 # functions indifferently.
 #
@@ -63,6 +66,8 @@ CheckOptions:
   - key: readability-implicit-bool-conversion.AllowIntegerConditions
     value: true
   - key: readability-implicit-bool-conversion.AllowPointerConditions
+    value: true
+  - key: readability-simplify-boolean-expr.IgnoreMacros
     value: true
   - key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
     value: true
