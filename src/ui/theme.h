@@ -62,6 +62,13 @@ class Theme {
 public:
   static constexpr int kDefaultFontHeight = 16;
 
+  struct TextColors {
+    Paint text;
+    Paint background;
+    Paint selectedText;
+    Paint selectedBackground;
+  };
+
   Theme();
   virtual ~Theme();
 
@@ -74,7 +81,9 @@ public:
   virtual void getWindowMask(Widget* widget, gfx::Region& region) {}
   virtual void setDecorativeWidgetBounds(Widget* widget);
   virtual int getScrollbarSize() { return kDefaultFontHeight; }
+
   virtual gfx::Size getCaretSize(Widget* widget) { return gfx::Size(kDefaultFontHeight, 1); }
+  virtual TextColors getTextColors(Widget* widget);
 
   virtual void paintEntry(PaintEvent& ev) {}
   virtual void paintTextEdit(PaintEvent& ev) {}

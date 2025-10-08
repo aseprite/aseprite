@@ -1314,6 +1314,39 @@ gfx::Size SkinTheme::getCaretSize(Widget* widget)
     return gfx::Size(2 * guiscale(), caretHeight + 2 * guiscale());
 }
 
+Theme::TextColors SkinTheme::getTextColors(Widget* widget)
+{
+  Theme::TextColors c;
+
+  // Default colors
+  c.text = Paint(colors.textboxText());
+  c.background = Paint(colors.textboxFace());
+  c.selectedText = Paint(colors.selectedText());
+  c.selectedBackground = Paint(colors.selected());
+
+  // Try to get colors from the widget style
+  if (ui::Style* style = widget->style()) {
+    for (auto& layer : style->layers()) {
+      switch (layer.type()) {
+        case ui::Style::Layer::Type::kBackground:
+          if (layer.flags() & ui::Style::Layer::kSelected)
+            c.selectedBackground.color(layer.color());
+          else
+            c.background.color(layer.color());
+          break;
+        case ui::Style::Layer::Type::kText:
+          if (layer.flags() & ui::Style::Layer::kSelected)
+            c.selectedText.color(layer.color());
+          else
+            c.text.color(layer.color());
+          break;
+      }
+    }
+  }
+
+  return c;
+}
+
 void SkinTheme::paintEntry(PaintEvent& ev)
 {
   Graphics* g = ev.graphics();

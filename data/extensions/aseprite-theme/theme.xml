@@ -1048,8 +1048,8 @@
         </style>
         <style id="textedit" border="2">
             <background color="textbox_face" />
+            <background color="selected" align="left" state="selected" />
             <text color="textbox_text" align="left" />
-            <text color="selected" align="left" state="selected" />
             <text color="selected_text" align="left" state="selected" />
         </style>
         <style id="mini_slider" extends="slider" font="mini">

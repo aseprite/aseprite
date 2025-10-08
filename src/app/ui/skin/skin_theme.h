@@ -81,6 +81,7 @@ public:
   void getWindowMask(ui::Widget* widget, gfx::Region& region) override;
   int getScrollbarSize() override;
   gfx::Size getCaretSize(ui::Widget* widget) override;
+  TextColors getTextColors(ui::Widget* widget) override;
 
   void paintEntry(ui::PaintEvent& ev) override;
   void paintListBox(ui::PaintEvent& ev) override;

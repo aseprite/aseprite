@@ -359,7 +359,7 @@ void TextEdit::onPaint(PaintEvent& ev)
     return;
 
   const gfx::Rect rect = view->viewportBounds().offset(-bounds().origin());
-  g->fillRect(m_colorBG, rect);
+  g->drawRect(rect, m_colors.background);
 
   const auto& scroll = view->viewScroll();
   gfx::PointF point(border().left(), border().top());
@@ -378,17 +378,17 @@ void TextEdit::onPaint(PaintEvent& ev)
       (!clipBounds.intersects(gfx::Rect(point.x, point.y, line.width, line.height)) && !caretLine);
 
     if (!skip) {
-      g->drawTextBlob(line.blob, point, m_textPaint);
+      g->drawTextBlob(line.blob, point, m_colors.text);
 
       // Drawing the selection rect and any selected text.
       // We're technically drawing over the old text, so ideally we want to clip that off as well?
       const gfx::RectF selectionRect = getSelectionRect(line, point);
       if (!selectionRect.isEmpty()) {
-        g->fillRect(m_colorSelected, selectionRect);
+        g->drawRect(selectionRect, m_colors.selectedBackground);
 
         const IntersectClip clip(g, selectionRect);
         if (clip)
-          g->drawTextBlob(line.blob, point, m_selectedTextPaint);
+          g->drawTextBlob(line.blob, point, m_colors.selectedText);
       }
     }
 
@@ -397,24 +397,14 @@ void TextEdit::onPaint(PaintEvent& ev)
 
   m_caretRect = caretBounds();
   if (m_drawCaret && !m_caretRect.isEmpty())
-    g->drawRect(m_caretRect, m_textPaint);
+    g->drawRect(m_caretRect, m_colors.text);
 }
 
 void TextEdit::onInitTheme(InitThemeEvent& ev)
 {
   Widget::onInitTheme(ev);
 
-  // TODO we cannot expect a specific number of layers in the theme style
-  ASSERT(style()->layers().size() == 4);
-  m_colorBG = style()->layers()[0].color();
-
-  m_textPaint.color(style()->layers()[1].color());
-  m_textPaint.style(os::Paint::Fill);
-
-  m_colorSelected = style()->layers()[2].color();
-
-  m_selectedTextPaint.color(style()->layers()[3].color());
-  m_selectedTextPaint.style(os::Paint::Fill);
+  m_colors = theme()->getTextColors(this);
 
   // Invalidate all blobs
   onSetText();

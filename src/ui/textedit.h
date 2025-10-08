@@ -201,10 +201,7 @@ private:
   gfx::Size m_textSize;
 
   // Color cache
-  gfx::Color m_colorBG;
-  gfx::Color m_colorSelected;
-  os::Paint m_textPaint;
-  os::Paint m_selectedTextPaint;
+  Theme::TextColors m_colors;
 };
 
 } // namespace ui
