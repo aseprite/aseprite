@@ -81,7 +81,7 @@ void TextEdit::paste()
   newText.insert(m_caret.absolutePos(), clipboard);
 
   if (!m_lines.empty() && clipboard.find('\n') == std::string::npos) {
-    auto& line = m_lines[m_caret.line()];
+    Line& line = m_caret.lineObj();
     line.insertText(m_caret.pos(), clipboard);
     line.buildBlob(this);
     setTextQuiet(newText);
@@ -432,7 +432,7 @@ void TextEdit::onScrollRegion(ScrollRegionEvent& ev)
 
 gfx::Rect TextEdit::caretBounds() const
 {
-  auto& line = m_lines[m_caret.line()];
+  Line& line = m_caret.lineObj();
 
   gfx::Point scroll;
   if (const auto* view = View::getView(this))
@@ -441,7 +441,7 @@ gfx::Rect TextEdit::caretBounds() const
   gfx::Rect rc(gfx::Point(border().left() - scroll.x, border().top() - scroll.y),
                theme()->getCaretSize(const_cast<TextEdit*>(this)));
 
-  if (m_caret.isLastInLine()) {
+  if (m_caret.inEol()) {
     rc.x += line.width;
   }
   else if (m_caret.pos() > 0) {
@@ -520,7 +520,7 @@ gfx::RectF TextEdit::getSelectionRect(const Line& line, const gfx::PointF& offse
   else if (m_selection.start().line() == line.i) {
     // The selection starts in this line at an offset position, and ends at the end of the run
     const auto& lineBounds = line.getBounds(m_selection.start().pos(),
-                                            m_lines[m_selection.start().line()].glyphCount);
+                                            m_selection.start().lineObj().glyphCount);
     selectionRect.x += lineBounds.x;
     selectionRect.w = lineBounds.w;
   }
@@ -572,8 +572,7 @@ TextEdit::Caret TextEdit::caretFromPosition(const gfx::Point& position)
 
     // Check the line width and if we're more than halfway past the line, we can set the caret to
     // the full line.
-    caret.setPos(
-      (offsetPosition.x > m_lines[caret.line()].width / 2) ? m_lines[caret.line()].glyphCount : 0);
+    caret.setPos((offsetPosition.x > caret.lineObj().width / 2) ? caret.lineObj().glyphCount : 0);
     return caret;
   }
 
@@ -667,7 +666,7 @@ void TextEdit::insertCharacter(base::codepoint_t character)
     return;
   }
 
-  auto& line = m_lines[m_caret.line()];
+  Line& line = m_caret.lineObj();
   line.insertText(m_caret.pos(), unicodeStr);
   line.buildBlob(this);
 
@@ -690,9 +689,9 @@ void TextEdit::deleteSelection()
                 newText.begin() + m_selection.end().absolutePos());
 
   if (m_selection.start().line() == m_selection.end().line()) {
-    auto& line = m_lines[m_selection.start().line()];
+    Line& line = m_selection.start().lineObj();
     int end;
-    if (m_selection.end().isLastInLine())
+    if (m_selection.end().inEol())
       end = line.utfSize.back().end;
     else
       end = line.utfSize[m_selection.end().pos()].begin;

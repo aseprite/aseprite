@@ -93,8 +93,7 @@ private:
     bool rightWord();
     void up();
     void down();
-    bool isLastInLine() const { return m_pos == lineObj().glyphCount; }
-    bool isLastLine() const { return m_line == m_lines->size() - 1; }
+    bool inEol() const { return m_pos == lineObj().glyphCount; }
 
     // Go to the end of line.
     void eol();
@@ -126,11 +125,12 @@ private:
       return m_pos < other.m_pos;
     }
 
+    Line& lineObj() const { return (*m_lines)[m_line]; }
+
   private:
     int m_line = 0;
     int m_pos = 0;
     std::string_view text() const { return (*m_lines)[m_line].text; }
-    Line& lineObj() const { return (*m_lines)[m_line]; }
     std::vector<Line>* m_lines;
   };
 
