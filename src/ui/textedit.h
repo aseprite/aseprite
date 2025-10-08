@@ -167,6 +167,10 @@ private:
     Caret m_end;
   };
 
+  gfx::Rect caretBounds() const;
+  gfx::Point caretPosOnScreen() const;
+  void onCaretPosChange();
+
   // Get the selection rect for the given line, if any
   gfx::RectF getSelectionRect(const Line& line, const gfx::PointF& offset) const;
   Caret caretFromPosition(const gfx::Point& position);

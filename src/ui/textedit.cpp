@@ -17,6 +17,7 @@
 #include "text/font_metrics.h"
 #include "text/font_mgr.h"
 #include "text/text_blob.h"
+#include "ui/display.h"
 #include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
@@ -119,14 +120,14 @@ bool TextEdit::onProcessMessage(Message* msg)
       startTimer();
       m_drawCaret = true; // Immediately draw the caret for fast UI feedback.
       invalidate();
-      os::System::instance()->setTextInput(true, m_caretRect.center());
+      onCaretPosChange();
       break;
     }
     case kFocusLeaveMessage: {
       stopTimer();
       m_drawCaret = false;
       invalidateRect(m_caretRect);
-      os::System::instance()->setTextInput(false);
+      onCaretPosChange();
       break;
     }
     case kKeyDownMessage: {
@@ -364,9 +365,6 @@ void TextEdit::onPaint(PaintEvent& ev)
   gfx::PointF point(border().left(), border().top());
   point -= scroll;
 
-  m_caretRect = gfx::Rect(gfx::Point(border().left() - scroll.x, border().top() - scroll.y),
-                          theme()->getCaretSize(this));
-
   const gfx::Rect clipBounds = g->getClipBounds();
 
   for (const auto& line : m_lines) {
@@ -394,27 +392,12 @@ void TextEdit::onPaint(PaintEvent& ev)
       }
     }
 
-    // If we're in the caret's line, run this blob to grab where we should position it.
-    if (caretLine) {
-      if (m_caret.isLastInLine()) {
-        m_caretRect.x += line.width;
-      }
-      else if (m_caret.pos() > 0) {
-        m_caretRect.x += line.getBounds(m_caret.pos()).x;
-      }
-
-      // Ensure the caret height corresponds with the tallest glyph
-      m_caretRect.h = std::max(m_caretRect.h, line.height);
-      m_caretRect.y = point.y + line.height / 2 - m_caretRect.h / 2;
-    }
-
     point.y += line.height;
   }
 
-  if (m_drawCaret)
+  m_caretRect = caretBounds();
+  if (m_drawCaret && !m_caretRect.isEmpty())
     g->drawRect(m_caretRect, m_textPaint);
-
-  m_caretRect.offset(gfx::Point(g->getInternalDeltaX(), g->getInternalDeltaY()));
 }
 
 void TextEdit::onInitTheme(InitThemeEvent& ev)
@@ -445,6 +428,53 @@ void TextEdit::onSizeHint(SizeHintEvent& ev)
 void TextEdit::onScrollRegion(ScrollRegionEvent& ev)
 {
   invalidateRegion(ev.region());
+}
+
+gfx::Rect TextEdit::caretBounds() const
+{
+  auto& line = m_lines[m_caret.line()];
+
+  gfx::Point scroll;
+  if (const auto* view = View::getView(this))
+    scroll = view->viewScroll();
+
+  gfx::Rect rc(gfx::Point(border().left() - scroll.x, border().top() - scroll.y),
+               theme()->getCaretSize(const_cast<TextEdit*>(this)));
+
+  if (m_caret.isLastInLine()) {
+    rc.x += line.width;
+  }
+  else if (m_caret.pos() > 0) {
+    rc.x += line.getBounds(m_caret.pos()).x;
+  }
+
+  gfx::PointF point(border().left(), border().top());
+  point -= scroll;
+  for (const auto& line : m_lines) {
+    if (line.i >= m_caret.line())
+      break;
+    point.y += line.height;
+  }
+
+  rc.h = std::max(rc.h, line.height);
+  rc.y = point.y + line.height / 2 - rc.h / 2;
+  return rc;
+}
+
+gfx::Point TextEdit::caretPosOnScreen() const
+{
+  const os::Window* nativeWindow = display()->nativeWindow();
+  if (!nativeWindow)
+    return {};
+  return nativeWindow->pointToScreen(caretBounds().point2() + bounds().origin());
+}
+
+void TextEdit::onCaretPosChange()
+{
+  if (hasFocus())
+    os::System::instance()->setTextInput(true, caretPosOnScreen());
+  else
+    os::System::instance()->setTextInput(false);
 }
 
 gfx::RectF TextEdit::getSelectionRect(const Line& line, const gfx::PointF& offset) const
@@ -647,6 +677,7 @@ void TextEdit::insertCharacter(base::codepoint_t character)
   Change();
 
   m_caret.setPos(m_caret.pos() + 1);
+  onCaretPosChange();
 }
 
 void TextEdit::deleteSelection()
@@ -680,6 +711,7 @@ void TextEdit::deleteSelection()
 
   m_caret = m_selection.start();
   m_selection.clear();
+  onCaretPosChange();
 }
 
 void TextEdit::ensureCaretVisible()
@@ -688,39 +720,23 @@ void TextEdit::ensureCaretVisible()
   if (!view || !view->hasScrollBars() || !m_caret.isValid())
     return;
 
-  const int scrollBarWidth = theme()->getScrollbarSize();
-
-  if (view->viewportBounds().shrink(scrollBarWidth).intersects(m_caretRect))
-    return; // We are visible and don't need to do anything.
-
-  const int lineHeight = font()->lineHeight();
   gfx::Point scroll = view->viewScroll();
-  const gfx::Size visibleBounds = view->viewportBounds().size();
+  gfx::Rect vp = view->viewportBounds();
+  gfx::Rect caret = caretBounds();
+  caret.offset(origin());
 
-  if (view->verticalBar()->isVisible()) {
-    const int heightLimit = (visibleBounds.h + scroll.y - lineHeight) / 2;
-    const int currentLine = (m_caret.line() * lineHeight) / 2;
+  if (caret.x < vp.x)
+    scroll.x = caret.x - bounds().x;
+  else if (caret.x > vp.x + vp.w - caret.w)
+    scroll.x = (caret.x - bounds().x - vp.w + caret.w);
 
-    if (currentLine <= scroll.y)
-      scroll.y = currentLine;
-    else if (currentLine >= heightLimit) // TODO: I do not like this
-      scroll.y = currentLine - ((visibleBounds.h - (lineHeight * 2)) / 2);
-  }
-
-  const auto& line = m_lines[m_caret.line()];
-  if (view->horizontalBar()->isVisible() && line.blob && line.width > visibleBounds.w) {
-    const int caretX = line.getBounds(0, m_caret.pos()).w;
-    const int horizontalLimit = scroll.x + visibleBounds.w - view->horizontalBar()->getBarWidth();
-
-    if (m_caret.pos() == 0)
-      scroll.x = 0;
-    else if (caretX > horizontalLimit)
-      scroll.x = caretX - horizontalLimit;
-    else if (scroll.x > caretX / 2) // TODO: Something's a bit bouncy here (in a bad way)
-      scroll.x = caretX / 2;
-  }
+  if (caret.y < vp.y)
+    scroll.y = caret.y - bounds().y;
+  else if (caret.y > vp.y + vp.h - caret.h)
+    scroll.y = (caret.y - bounds().y - vp.h + caret.h);
 
   view->setViewScroll(scroll);
+  onCaretPosChange();
 }
 
 void TextEdit::onSetText()
@@ -758,8 +774,8 @@ void TextEdit::onSetText()
   Change();
   Widget::onSetText();
 
-  // TODO: Test with IMEs? Is this function made to be called a bunch?
-  os::System::instance()->setTextInput(true, m_drawCaret ? m_caretRect.center() : gfx::Point{});
+  if (hasFocus())
+    os::System::instance()->setTextInput(true, caretPosOnScreen());
 }
 
 void TextEdit::onSetFont()
