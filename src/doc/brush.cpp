@@ -440,8 +440,8 @@ void Brush::regenerate()
   ASSERT(m_size > 0);
 
   int size = m_size;
-  if (m_type == kSquareBrushType && m_angle != 0 && m_size > 2)
-    size = (int)std::sqrt((double)2 * m_size * m_size) + 2;
+  if (m_type == kSquareBrushType && m_angle != 0 && m_size > 3)
+    size = (int)std::ceil(std::sqrt((double)2 * m_size * m_size));
 
   m_image.reset(Image::create(IMAGE_BITMAP, size, size));
   m_maskBitmap.reset();
@@ -464,18 +464,55 @@ void Brush::regenerate()
           clear_image(m_image.get(), BitmapTraits::max_value);
         }
         else {
-          double a = PI * m_angle / 180;
-          int c = size / 2;
-          int r = m_size / 2;
-          int d = m_size;
-          int x1 = int(c + r * cos(a - PI / 2) + r * cos(a - PI));
-          int y1 = int(c - r * sin(a - PI / 2) - r * sin(a - PI));
-          int x2 = int(x1 + d * cos(a));
-          int y2 = int(y1 - d * sin(a));
-          int x3 = int(x2 + d * cos(a + PI / 2));
-          int y3 = int(y2 - d * sin(a + PI / 2));
-          int x4 = int(x3 + d * cos(a + PI));
-          int y4 = int(y3 - d * sin(a + PI));
+          double angle = PI * m_angle / 180;
+          double sin = -std::sin(angle);
+          double cos = std::cos(angle);
+
+          int x1, y1, x2, y2, x3, y3, x4, y4;
+          if (size == 3) {
+            // When angle between [-22.5, 22.5] or [-157.5, 157.5] or
+            // [67.5, 112.5] or [-67.5, -112.5], draw a 3x3 rect.
+            if (ABS(cos) >= 0.92387953 || ABS(cos) <= 0.38268343) {
+              x1 = 0;
+              y1 = 0;
+              x2 = 2;
+              y2 = 0;
+              x3 = 2;
+              y3 = 2;
+              x4 = 0;
+              y4 = 2;
+            }
+            // Draw a 3x3 cross
+            else {
+              x1 = 1;
+              y1 = 0;
+              x2 = 2;
+              y2 = 1;
+              x3 = 1;
+              y3 = 2;
+              x4 = 0;
+              y4 = 1;
+            }
+          }
+          else {
+            // Based in code of IntertwineAsRectangles::rotateRectangle function.
+            int c = size / 2;
+            int a = m_size / 2;
+            int b = a;
+            int ac = a * cos;
+            int bs = b * sin;
+            int as = bs;
+            int bc = ac;
+
+            x1 = c - ac - bs;
+            y1 = c + as - bc;
+            x2 = c + ac - bs;
+            y2 = c - as - bc;
+            x3 = c + ac + bs;
+            y3 = c - as + bc;
+            x4 = c - ac + bs;
+            y4 = c + as + bc;
+          }
           int points[8] = { x1, y1, x2, y2, x3, y3, x4, y4 };
 
           doc::algorithm::polygon(4, points, m_image.get(), algo_hline);
