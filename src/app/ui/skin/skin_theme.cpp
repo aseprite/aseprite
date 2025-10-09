@@ -1233,6 +1233,8 @@ void SkinTheme::initWidget(Widget* widget)
       widget->setStyle(styles.textboxText());
       break;
 
+    case kTextEditWidget: widget->setStyle(styles.textedit()); break;
+
     case kViewWidget:
       widget->setChildSpacing(0);
       widget->setBgColor(colors.windowFace());
@@ -1294,12 +1296,55 @@ int SkinTheme::getScrollbarSize()
   return dimensions.scrollbarSize();
 }
 
-gfx::Size SkinTheme::getEntryCaretSize(Widget* widget)
+gfx::Size SkinTheme::getCaretSize(Widget* widget)
 {
+  int caretHeight;
+  if (widget->type() == kTextEditWidget) {
+    // We cannot use the height of the widget text, because it
+    // includes the line height of every single line in the widget.
+    caretHeight = widget->font()->lineHeight();
+  }
+  else {
+    caretHeight = widget->textHeight();
+  }
+
   if (widget->font()->type() == text::FontType::FreeType)
-    return gfx::Size(2 * guiscale(), widget->textHeight());
+    return gfx::Size(2 * guiscale(), caretHeight);
   else
-    return gfx::Size(2 * guiscale(), widget->textHeight() + 2 * guiscale());
+    return gfx::Size(2 * guiscale(), caretHeight + 2 * guiscale());
+}
+
+Theme::TextColors SkinTheme::getTextColors(Widget* widget)
+{
+  Theme::TextColors c;
+
+  // Default colors
+  c.text = Paint(colors.textboxText());
+  c.background = Paint(colors.textboxFace());
+  c.selectedText = Paint(colors.selectedText());
+  c.selectedBackground = Paint(colors.selected());
+
+  // Try to get colors from the widget style
+  if (ui::Style* style = widget->style()) {
+    for (auto& layer : style->layers()) {
+      switch (layer.type()) {
+        case ui::Style::Layer::Type::kBackground:
+          if (layer.flags() & ui::Style::Layer::kSelected)
+            c.selectedBackground.color(layer.color());
+          else
+            c.background.color(layer.color());
+          break;
+        case ui::Style::Layer::Type::kText:
+          if (layer.flags() & ui::Style::Layer::kSelected)
+            c.selectedText.color(layer.color());
+          else
+            c.text.color(layer.color());
+          break;
+      }
+    }
+  }
+
+  return c;
 }
 
 void SkinTheme::paintEntry(PaintEvent& ev)
@@ -1864,7 +1909,7 @@ void SkinTheme::drawEntryCaret(ui::Graphics* g, Entry* widget, int x, int y)
 {
   gfx::Color color = colors.text();
   int textHeight = widget->textHeight();
-  gfx::Size caretSize = getEntryCaretSize(widget);
+  gfx::Size caretSize = getCaretSize(widget);
 
   for (int u = x; u < x + caretSize.w; ++u)
     g->drawVLine(color, u, y + textHeight / 2 - caretSize.h / 2, caretSize.h);

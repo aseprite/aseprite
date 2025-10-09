@@ -1056,6 +1056,12 @@
             <text color="slider_empty_text" align="center middle"/>
             <text color="slider_empty_text" align="center middle" state="focus" y="1"/>
         </style>
+        <style id="textedit" border="2">
+            <background color="textbox_face" />
+            <background color="selected" align="left" state="selected" />
+            <text color="textbox_text" align="left" />
+            <text color="selected_text" align="left" state="selected" />
+        </style>
         <style id="mini_slider" extends="slider" font="mini">
             <background part="mini_slider_empty"/>
             <text color="slider_empty_text" align="center middle"/>

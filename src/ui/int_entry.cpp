@@ -141,7 +141,7 @@ void IntEntry::onSizeHint(SizeHintEvent& ev)
 {
   const text::FontRef& font = this->font();
   int trailing = font->textLength(getSuffix());
-  trailing = std::max(trailing, 2 * theme()->getEntryCaretSize(this).w);
+  trailing = std::max(trailing, 2 * theme()->getCaretSize(this).w);
 
   int min_w = font->textLength(m_slider->convertValueToText(m_min));
   int max_w = font->textLength(m_slider->convertValueToText(m_max)) + trailing;
