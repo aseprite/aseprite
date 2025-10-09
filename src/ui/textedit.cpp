@@ -656,6 +656,11 @@ void TextEdit::insertCharacter(base::codepoint_t character)
     return;
   }
 
+  // Get the absolute position before modifying the line
+  // text/glyphs/UTF-8 information. This position must be used to
+  // modify the whole Widget::text()
+  const int absPos = m_caret.absolutePos();
+
   Line& line = m_caret.lineObj();
   const int oldglyphs = line.glyphCount;
   line.insertText(m_caret.pos(), unicodeStr);
@@ -663,7 +668,7 @@ void TextEdit::insertCharacter(base::codepoint_t character)
   const int delta = line.glyphCount - oldglyphs;
 
   std::string newText = text();
-  newText.insert(m_caret.absolutePos(), unicodeStr);
+  newText.insert(absPos, unicodeStr);
   setTextQuiet(newText);
   Change();
 
@@ -851,7 +856,7 @@ void TextEdit::Line::insertText(int pos, const std::string& str)
   else if (pos == glyphCount)
     text.append(str);
   else
-    text.insert(utfSize[pos - 1].end, str);
+    text.insert(utfSize[pos].begin, str);
 }
 
 gfx::RectF TextEdit::Line::getBounds(const int glyph) const
@@ -1010,29 +1015,26 @@ int TextEdit::Caret::absolutePos() const
   if (m_pos == 0 && m_line == 0)
     return 0;
 
+  // Accumulate UTF-8 offsets from all previous lines.
   int apos = 0;
-  for (const auto& l : *m_lines) {
-    const bool hasNextLine = l.i < (m_lines->size() - 1);
+  for (int i = 0; i < m_line; ++i) {
+    const Line& line = (*m_lines)[i];
 
-    if (l.i == m_line) {
-      if (l.text.empty() || m_pos == 0)
-        return apos;
+    if (!line.text.empty() && !line.utfSize.empty())
+      apos += line.utfSize.back().end;
 
-      if (m_pos >= l.utfSize.size())
-        apos += l.utfSize.back().end;
-      else if (m_pos > l.utfSize.size())
-        apos += l.utfSize.back().end + (hasNextLine ? 1 : 0);
-      else
-        apos += l.utfSize[m_pos].begin;
-      return apos;
-    }
-
-    if (!l.text.empty() && !l.utfSize.empty())
-      apos += l.utfSize.back().end;
-
-    if (hasNextLine)
-      apos += 1; // Newline glyph.
+    apos += 1; // Newline glyph.
   }
+
+  const Line& line = lineObj();
+  if (line.text.empty() || m_pos == 0)
+    return apos;
+
+  if (m_pos >= line.utfSize.size())
+    apos += line.utfSize.back().end;
+  else
+    apos += line.utfSize[m_pos].begin;
+
   return apos;
 }
 
