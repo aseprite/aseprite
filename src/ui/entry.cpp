@@ -673,11 +673,16 @@ void Entry::executeCmd(const EntryCmd cmd,
       if (lastCaretPos() < m_maxsize) {
         ASSERT(m_caret <= lastCaretPos());
 
+        const int oldnboxes = int(m_boxes.size());
         const std::string unicodeStr = base::codepoint_to_utf8(unicodeChar);
-
         text.insert(m_boxes[m_caret].from, unicodeStr);
         recalcCharBoxes(text);
-        ++m_caret;
+        const int delta = int(m_boxes.size()) - oldnboxes;
+
+        // Move caret forward the number of new added "boxes" (this
+        // can be 0 if "unicodeChar" is just a hidden char, e.g. a
+        // emoji variant).
+        m_caret += delta;
       }
 
       m_select = -1;

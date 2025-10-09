@@ -657,15 +657,17 @@ void TextEdit::insertCharacter(base::codepoint_t character)
   }
 
   Line& line = m_caret.lineObj();
+  const int oldglyphs = line.glyphCount;
   line.insertText(m_caret.pos(), unicodeStr);
   line.buildBlob(this);
+  const int delta = line.glyphCount - oldglyphs;
 
   std::string newText = text();
   newText.insert(m_caret.absolutePos(), unicodeStr);
   setTextQuiet(newText);
   Change();
 
-  m_caret.setPos(m_caret.pos() + 1);
+  m_caret.setPos(m_caret.pos() + delta);
   onCaretPosChange();
 }
 
