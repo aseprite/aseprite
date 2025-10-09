@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -44,7 +44,6 @@ namespace doc {
 class Cel;
 class Image;
 class Layer;
-class LayerGroup;
 class Mask;
 class Palette;
 class Sprite;
@@ -151,7 +150,7 @@ void push_cels(lua_State* L, doc::Sprite* sprite);
 void push_color_space(lua_State* L, const gfx::ColorSpace& cs);
 void push_doc_range(lua_State* L, Site& site);
 void push_editor(lua_State* L, Editor* editor);
-void push_group_layers(lua_State* L, doc::LayerGroup* group);
+void push_group_layers(lua_State* L, doc::Layer* group);
 void push_image(lua_State* L, doc::Image* image);
 void push_layers(lua_State* L, const doc::ObjectIds& layers);
 void push_palette(lua_State* L, doc::Palette* palette);

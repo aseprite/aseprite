@@ -688,10 +688,7 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
               Cel* srcCel = srcLayer->cel(srcFrame);
 
               if (srcCel && srcCel->image()) {
-                api.copyCel(static_cast<LayerImage*>(srcLayer),
-                            srcFrame,
-                            static_cast<LayerImage*>(dstLayer),
-                            dstFrame);
+                api.copyCel(srcLayer, srcFrame, dstLayer, dstFrame);
               }
               else {
                 if (Cel* dstCel = dstLayer->cel(dstFrame))
@@ -741,15 +738,8 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
               auto srcLayer = *srcIt;
               auto dstLayer = *dstIt;
 
-              if (!srcLayer->isImage() || !dstLayer->isImage())
-                continue;
-
-              Cel* cel = static_cast<LayerImage*>(srcLayer)->cel(srcFrame);
-              if (cel && cel->image()) {
-                api.copyCel(static_cast<LayerImage*>(srcLayer),
-                            srcFrame,
-                            static_cast<LayerImage*>(dstLayer),
-                            dstFrame);
+              if (Cel* cel = srcLayer->cel(srcFrame)) {
+                api.copyCel(srcLayer, srcFrame, dstLayer, dstFrame);
               }
             }
 

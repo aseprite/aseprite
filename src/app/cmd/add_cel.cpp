@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -49,10 +49,12 @@ void AddCel::onUndo()
   ASSERT(cel);
 
   // Save the CelData only if the cel isn't linked
-  bool has_data = (cel->links() == 0);
-  write8(m_stream, has_data ? 1 : 0);
+  const bool has_data = (cel->links() == 0);
+  const bool has_image = (cel->imageId() != NullId);
+  write8(m_stream, (has_data ? 1 : 0) | (has_image ? 2 : 0));
   if (has_data) {
-    write_image(m_stream, cel->image());
+    if (has_image)
+      write_image(m_stream, cel->image());
     write_celdata(m_stream, cel->data());
   }
   write_cel(m_stream, cel);
@@ -67,10 +69,14 @@ void AddCel::onRedo()
   ASSERT(layer);
 
   SubObjectsFromSprite io(layer->sprite());
-  bool has_data = (read8(m_stream) != 0);
+  const uint8_t flags = read8(m_stream);
+  const bool has_data = (flags & 1 ? true : false);
+  const bool has_image = (flags & 2 ? true : false);
   if (has_data) {
-    ImageRef image(read_image(m_stream));
-    io.addImageRef(image);
+    if (has_image) {
+      ImageRef image(read_image(m_stream));
+      io.addImageRef(image);
+    }
 
     CelDataRef celdata(read_celdata(m_stream, &io));
     io.addCelDataRef(celdata);
@@ -87,7 +93,7 @@ void AddCel::onRedo()
 
 void AddCel::addCel(Layer* layer, Cel* cel)
 {
-  static_cast<LayerImage*>(layer)->addCel(cel);
+  layer->addCel(cel);
   layer->incrementVersion();
 
   Doc* doc = static_cast<Doc*>(cel->document());
@@ -107,7 +113,7 @@ void AddCel::removeCel(Layer* layer, Cel* cel)
   ev.cel(cel);
   doc->notify_observers<DocEvent&>(&DocObserver::onBeforeRemoveCel, ev);
 
-  static_cast<LayerImage*>(layer)->removeCel(cel);
+  layer->removeCel(cel);
   layer->incrementVersion();
 
   doc->notify_observers<DocEvent&>(&DocObserver::onAfterRemoveCel, ev);

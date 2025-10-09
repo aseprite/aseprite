@@ -455,16 +455,13 @@ int Sprite_deleteFrame(lua_State* L)
 int Sprite_newCel(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
-  auto layerBase = get_docobj<Layer>(L, 2);
-  if (!layerBase->isImage())
-    return luaL_error(L, "unexpected kind of layer in Sprite:newCel()");
+  auto layer = get_docobj<Layer>(L, 2);
 
   frame_t frame = get_frame_number_from_arg(L, 3);
   if (frame < 0 || frame > sprite->lastFrame())
     return luaL_error(L, "frame index out of bounds %d", frame + 1);
 
   Doc* doc = static_cast<Doc*>(sprite->document());
-  LayerImage* layer = static_cast<LayerImage*>(layerBase);
   ImageRef image(nullptr);
 
   Image* srcImage = may_get_image_from_arg(L, 4);
@@ -488,8 +485,11 @@ int Sprite_newCel(lua_State* L)
   else {
     if (srcImage)
       image.reset(Image::createCopy(srcImage));
-    else
+    else if (layer->isImage())
       image.reset(Image::create(sprite->spec()));
+    else {
+      // TODO copy any other kind of cel data
+    }
 
     cel = new Cel(frame, image);
     cel->setPosition(pos);
