@@ -749,9 +749,9 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
                                                         document->mask(),
                                                         "Transformation"));
 
-    // If the Ctrl key is pressed start dragging a copy of the selection
+    // If the Ctrl key is pressed and there is a handle, start dragging a copy of the selection
     EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
-    if ((customization) &&
+    if (handle != NoHandle && customization &&
         int(customization->getPressedKeyAction(KeyContext::TranslatingSelection) &
             KeyAction::CopySelection))
       pixelsMovement->copyMask();
