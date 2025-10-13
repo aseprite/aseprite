@@ -27,6 +27,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 namespace ui {
 
@@ -54,14 +55,20 @@ IntEntry::~IntEntry()
 int IntEntry::getValue() const
 {
   int value = m_slider->convertTextToValue(text());
-  return std::clamp(value, m_min, m_max);
+  return std::clamp(value, m_min, (m_maxValueUnbounded ? std::numeric_limits<int>::max() : m_max));
 }
 
 void IntEntry::setValue(int value)
 {
-  value = std::clamp(value, m_min, m_max);
+  value = std::clamp(value, m_min, (m_maxValueUnbounded ? std::numeric_limits<int>::max() : m_max));
 
   setText(m_slider->convertValueToText(value));
+
+  // Value is out of slider's range, then close the popup.
+  if (m_popupWindow && ((m_maxValueUnbounded && value > m_max) || value < m_min)) {
+    closePopup();
+    requestFocus();
+  }
 
   if (m_popupWindow && !m_changeFromSlider)
     m_slider->setValue(value);
@@ -74,7 +81,7 @@ bool IntEntry::onProcessMessage(Message* msg)
   switch (msg->type()) {
     // Reset value if it's out of bounds when focus is lost
     case kFocusLeaveMessage:
-      setValue(std::clamp(getValue(), m_min, m_max));
+      setValue(getValue());
       deselectText();
       break;
 
