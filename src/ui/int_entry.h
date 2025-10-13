@@ -31,6 +31,10 @@ public:
   // value.
   void useSlider(bool useSlider) { m_useSlider = useSlider; }
 
+  // If set to true, the max value allowed by the IntEntry won't be bounded by the
+  // current slider's max range.
+  void maxValueUnbounded(bool mvu) { m_maxValueUnbounded = mvu; }
+
 protected:
   bool onProcessMessage(Message* msg) override;
   void onInitTheme(InitThemeEvent& ev) override;
@@ -48,6 +52,7 @@ protected:
   bool m_changeFromSlider;
   // If true a slider can be used to modify the value.
   bool m_useSlider = true;
+  bool m_maxValueUnbounded = false;
   std::unique_ptr<Slider> m_slider;
 
 private:
