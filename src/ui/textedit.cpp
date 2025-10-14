@@ -398,6 +398,7 @@ void TextEdit::onPaint(PaintEvent& ev)
   m_caretRect = caretBounds();
   if (m_drawCaret && !m_caretRect.isEmpty())
     g->drawRect(m_caretRect, m_colors.text);
+  m_caretRect.offset(origin());
 }
 
 void TextEdit::onInitTheme(InitThemeEvent& ev)
