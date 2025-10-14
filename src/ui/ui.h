@@ -63,6 +63,8 @@
 #include "ui/style.h"
 #include "ui/system.h"
 #include "ui/textbox.h"
+#include "ui/textcmd.h"
+#include "ui/textedit.h"
 #include "ui/theme.h"
 #include "ui/timer.h"
 #include "ui/tooltips.h"

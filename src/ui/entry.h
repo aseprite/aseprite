@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,8 +9,8 @@
 #define UI_ENTRY_H_INCLUDED
 #pragma once
 
-#include "base/codepoint.h"
 #include "obs/signal.h"
+#include "ui/textcmd.h"
 #include "ui/widget.h"
 
 #include <memory>
@@ -19,7 +19,8 @@ namespace ui {
 
 class MouseMessage;
 
-class Entry : public Widget {
+class Entry : public Widget,
+              public TextCmdProcessor {
 public:
   struct Range {
     int from = -1, to = -1;
@@ -95,32 +96,17 @@ protected:
   virtual gfx::Rect onGetEntryTextBounds() const;
 
 private:
-  enum class EntryCmd {
-    NoOp,
-    InsertChar,
-    ForwardChar,
-    ForwardWord,
-    BackwardChar,
-    BackwardWord,
-    BeginningOfLine,
-    EndOfLine,
-    DeleteForward,
-    DeleteBackward,
-    DeleteBackwardWord,
-    DeleteForwardToEndOfLine,
-    Cut,
-    Copy,
-    Paste,
-    SelectAll,
-  };
-
   int getCaretFromMouse(MouseMessage* mousemsg);
-  void executeCmd(EntryCmd cmd, base::codepoint_t unicodeChar, bool shift_pressed);
+
+  // TextCmdProcessor impl
+  bool onHasValidSelection() override { return m_select >= 0; }
+  bool onCanModify() override { return !isReadOnly(); }
+  void onExecuteCmd(Cmd cmd, base::codepoint_t unicodeChar, bool expandSelection) override;
+
   void forwardWord();
   void backwardWord();
   Range wordRange(int pos);
   bool isPosInSelection(int pos);
-  void showEditPopupMenu(const gfx::Point& pt);
   void recalcCharBoxes(const std::string& text);
   bool shouldStartTimer(const bool hasFocus);
   void deleteRange(const Range& range, std::string& text);

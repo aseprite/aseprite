@@ -10,6 +10,7 @@
 #pragma once
 
 #include "text/text_blob.h"
+#include "ui/textcmd.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
 
@@ -18,7 +19,8 @@
 namespace ui {
 using namespace text;
 
-class TextEdit : public Widget {
+class TextEdit : public Widget,
+                 public TextCmdProcessor {
 public:
   TextEdit();
 
@@ -37,7 +39,7 @@ protected:
   void onSetText() override;
   void onSetFont() override;
 
-  bool onKeyDown(const KeyMessage* keyMessage);
+  bool onKeyDown(const KeyMessage* keymsg);
   bool onMouseMove(const MouseMessage* mouseMessage);
 
 private:
@@ -81,10 +83,10 @@ private:
     void setLine(int line) { m_line = line; }
     void set(int line, int pos);
 
-    bool left(bool byWord = false);
+    bool left();
     // Moves the position to the next word on the left, doesn't wrap around lines.
     bool leftWord();
-    bool right(bool byWord = false);
+    bool right();
     // Moves the position to the next word on the right, doesn't wrap around lines.
     bool rightWord();
     void up();
@@ -163,6 +165,11 @@ private:
     Caret m_end;
   };
 
+  // TextCmdProcessor impl
+  bool onHasValidSelection() override { return !m_selection.isEmpty(); }
+  bool onCanModify() override { return true; }
+  void onExecuteCmd(Cmd cmd, base::codepoint_t unicodeChar, bool expandSelection) override;
+
   gfx::Rect caretBounds() const;
   gfx::Point caretPosOnScreen() const;
   void onCaretPosChange();
@@ -170,7 +177,6 @@ private:
   // Get the selection rect for the given line, if any
   gfx::RectF getSelectionRect(const Line& line, const gfx::PointF& offset) const;
   Caret caretFromPosition(const gfx::Point& position);
-  void showEditPopupMenu(const gfx::Point& position);
   void insertCharacter(base::codepoint_t character);
   void deleteSelection();
   void ensureCaretVisible();

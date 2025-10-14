@@ -184,7 +184,7 @@ bool TextEdit::onProcessMessage(Message* msg)
 
         const auto* mouseMsg = static_cast<MouseMessage*>(msg);
         if (mouseMsg->right()) {
-          showEditPopupMenu(mouseMsg->position());
+          showEditPopupMenu(display(), mouseMsg->position());
           requestFocus();
           return true;
         }
@@ -205,120 +205,42 @@ bool TextEdit::onProcessMessage(Message* msg)
   return Widget::onProcessMessage(msg);
 }
 
-bool TextEdit::onKeyDown(const KeyMessage* keyMessage)
+bool TextEdit::onKeyDown(const KeyMessage* keymsg)
 {
-  const KeyScancode scancode = keyMessage->scancode();
-  const bool byWord = keyMessage->ctrlPressed();
-  const Caret prevCaret(m_caret);
-
-  switch (scancode) {
-    case kKeyLeft:  m_caret.left(byWord); break;
-    case kKeyRight: m_caret.right(byWord); break;
-    case kKeyHome:
-      // Beginning of text
-      if (keyMessage->ctrlPressed()) {
-        m_caret.set(0, 0);
-      }
-      // Beginning of line
-      else {
-        m_caret.setPos(0);
-      }
-      break;
-    case kKeyEnd:
-      // End of text
-      if (keyMessage->ctrlPressed()) {
-        m_caret.set(m_lines.back().i, m_lines.back().glyphCount);
-      }
-      // End of line
-      else {
-        m_caret.eol();
-      }
-      break;
-    case kKeyUp:       m_caret.up(); break;
-    case kKeyDown:     m_caret.down(); break;
-    case kKeyEnter:
-    case kKeyEnterPad: {
-      deleteSelection();
-
-      std::string newText = text();
-      newText.insert(m_caret.absolutePos(), "\n");
-      setText(newText);
-
-      m_caret.set(m_caret.line() + 1, 0);
-      return true;
-    }
-    case kKeyBackspace: [[fallthrough]];
-    case kKeyDel:       {
-      if (m_selection.isEmpty() || !m_selection.isValid()) {
-        Caret startCaret = m_caret;
-        Caret endCaret = startCaret;
-
-        if (scancode == kKeyBackspace) {
-          startCaret.left(byWord);
-        }
-        else {
-          endCaret.right(byWord);
-        }
-
-        m_selection.set(startCaret, endCaret);
-      }
-
-      deleteSelection();
-      return true;
-    }
-    default:
-      if (keyMessage->unicodeChar() >= 32) {
-        deleteSelection();
-        if (keyMessage->isDeadKey()) {
-          return true;
-        }
-
-        insertCharacter(keyMessage->unicodeChar());
-        return true;
-      }
-      if (scancode >= kKeyFirstModifierScancode) {
-        return true;
-      }
-#if defined __APPLE__
-      if (keyMessage->onlyCmdPressed())
-#else
-      if (keyMessage->onlyCtrlPressed())
-#endif
-      {
-        switch (scancode) {
-          case kKeyX: {
-            cut();
-            return true;
-          }
-          case kKeyC: {
-            copy();
-            return true;
-          }
-          case kKeyV: {
-            paste();
-            return true;
-          }
-          case kKeyA: {
-            selectAll();
-            return true;
-          }
-        }
-      }
-      return false;
+  const Cmd cmd = cmdFromKeyMessage(keymsg);
+  if (cmd != Cmd::NoOp) {
+    executeCmd(cmd, keymsg->unicodeChar(), keymsg->shiftPressed());
+    return true;
   }
 
-  // Selection modification
-  if (keyMessage->shiftPressed()) {
-    if (!m_selection.isValid() || m_selection.isEmpty()) {
-      m_lockedSelectionStart = prevCaret;
+  const KeyScancode scancode = keymsg->scancode();
+  if (scancode == kKeyEnter || scancode == kKeyEnterPad) {
+    deleteSelection();
+
+    std::string newText = text();
+    newText.insert(m_caret.absolutePos(), "\n");
+    setText(newText);
+
+    m_caret.set(m_caret.line() + 1, 0);
+    return true;
+  }
+
+  if (keymsg->unicodeChar() >= 32) {
+    deleteSelection();
+    if (keymsg->isDeadKey()) {
+      return true;
     }
 
-    m_selection.set(m_lockedSelectionStart, m_caret);
+    executeCmd(Cmd::InsertChar, keymsg->unicodeChar());
+    return true;
   }
-  else
-    m_selection.clear();
 
-  return true;
+  // Consume all key down of modifiers only, e.g. so the user can
+  // press first "Ctrl" key, and then "Ctrl+C" combination.
+  if (scancode >= kKeyFirstModifierScancode)
+    return true;
+
+  return false;
 }
 
 bool TextEdit::onMouseMove(const MouseMessage* mouseMessage)
@@ -408,6 +330,69 @@ void TextEdit::onInitTheme(InitThemeEvent& ev)
 void TextEdit::onSizeHint(SizeHintEvent& ev)
 {
   ev.setSizeHint(m_textSize + border());
+}
+
+void TextEdit::onExecuteCmd(const Cmd cmd,
+                            const base::codepoint_t unicodeChar,
+                            const bool expandSelection)
+{
+  const Caret prevCaret = m_caret;
+
+  switch (cmd) {
+    case Cmd::NoOp:       break;
+
+    case Cmd::InsertChar: insertCharacter(unicodeChar); break;
+
+    case Cmd::PrevChar:   m_caret.left(); break;
+    case Cmd::PrevWord:   m_caret.leftWord(); break;
+    case Cmd::PrevLine:   m_caret.up(); break;
+
+    case Cmd::NextChar:   m_caret.right(); break;
+    case Cmd::NextWord:   m_caret.rightWord(); break;
+    case Cmd::NextLine:   m_caret.down(); break;
+
+    case Cmd::BegOfLine:  m_caret.setPos(0); break;
+    case Cmd::EndOfLine:  m_caret.eol(); break;
+
+    case Cmd::BegOfFile:  m_caret.set(0, 0); break;
+    case Cmd::EndOfFile:  m_caret.set(m_lines.back().i, m_lines.back().glyphCount); break;
+
+    case Cmd::DeletePrevChar:
+    case Cmd::DeleteNextChar:
+    case Cmd::DeletePrevWord:
+    case Cmd::DeleteNextWord:
+    case Cmd::DeleteToEndOfLine:
+      if (m_selection.isEmpty() || !m_selection.isValid()) {
+        Caret startCaret = m_caret;
+        Caret endCaret = m_caret;
+        switch (cmd) {
+          case Cmd::DeletePrevChar:    startCaret.left(); break;
+          case Cmd::DeletePrevWord:    startCaret.leftWord(); break;
+          case Cmd::DeleteNextChar:    endCaret.right(); break;
+          case Cmd::DeleteNextWord:    endCaret.rightWord(); break;
+          case Cmd::DeleteToEndOfLine: endCaret.eol(); break;
+        }
+        m_selection.set(startCaret, endCaret);
+      }
+      deleteSelection();
+      return;
+
+    case Cmd::Cut:       cut(); return;
+    case Cmd::Copy:      copy(); return;
+    case Cmd::Paste:     paste(); return;
+    case Cmd::SelectAll: selectAll(); return;
+  }
+
+  // Selection modification
+  if (expandSelection) {
+    if (!m_selection.isValid() || m_selection.isEmpty()) {
+      m_lockedSelectionStart = prevCaret;
+    }
+
+    m_selection.set(m_lockedSelectionStart, m_caret);
+  }
+  else
+    m_selection.clear();
 }
 
 gfx::Rect TextEdit::caretBounds() const
@@ -589,41 +574,6 @@ TextEdit::Caret TextEdit::caretFromPosition(const gfx::Point& position)
   }
 
   return caret;
-}
-
-void TextEdit::showEditPopupMenu(const gfx::Point& position)
-{
-  auto* translate = UISystem::instance()->translationDelegate();
-  ASSERT(translate); // We provide UISystem as default translation delegate
-  if (!translate)
-    return;
-
-  Menu menu;
-  MenuItem cut(translate->cut());
-  MenuItem copy(translate->copy());
-  MenuItem paste(translate->paste());
-  MenuItem selectAll(translate->selectAll());
-
-  cut.processMnemonicFromText();
-  copy.processMnemonicFromText();
-  paste.processMnemonicFromText();
-  selectAll.processMnemonicFromText();
-
-  menu.addChild(&cut);
-  menu.addChild(&copy);
-  menu.addChild(&paste);
-  menu.addChild(new MenuSeparator);
-  menu.addChild(&selectAll);
-
-  cut.setEnabled(!m_selection.isEmpty());
-  copy.setEnabled(!m_selection.isEmpty());
-
-  cut.Click.connect(&TextEdit::cut, this);
-  copy.Click.connect(&TextEdit::copy, this);
-  paste.Click.connect(&TextEdit::paste, this);
-  selectAll.Click.connect(&TextEdit::selectAll, this);
-
-  menu.showPopup(position, display());
 }
 
 void TextEdit::insertCharacter(base::codepoint_t character)
@@ -923,11 +873,8 @@ void TextEdit::Caret::set(int line, int pos)
   m_pos = pos;
 }
 
-bool TextEdit::Caret::left(bool byWord)
+bool TextEdit::Caret::left()
 {
-  if (byWord)
-    return leftWord();
-
   if (--m_pos < 0) {
     if (m_line == 0) {
       m_pos = 0;
@@ -954,11 +901,8 @@ bool TextEdit::Caret::leftWord()
   return true;
 }
 
-bool TextEdit::Caret::right(bool byWord)
+bool TextEdit::Caret::right()
 {
-  if (byWord)
-    return rightWord();
-
   if (++m_pos > lineObj().glyphCount) {
     if (m_line == int(m_lines->size()) - 1) {
       --m_pos; // Undo movement, we've reached the end of the text.
