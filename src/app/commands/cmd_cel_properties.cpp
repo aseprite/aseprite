@@ -344,7 +344,7 @@ private:
         color_t c = m_cel->data()->userData().color();
         m_userDataView.color()->setColor(
           Color::fromRgb(rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c)));
-        m_userDataView.entry()->setText(m_cel->data()->userData().text());
+        m_userDataView.textEdit()->setText(m_cel->data()->userData().text());
         // Set last filled values in CelPropertiesWindow
         m_lastValues.opacity = m_cel->opacity();
         m_lastValues.zIndex = m_cel->zIndex();
