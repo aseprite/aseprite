@@ -22,9 +22,6 @@
 #include "ui/message.h"
 #include "ui/paint_event.h"
 #include "ui/resize_event.h"
-#include "ui/scale.h"
-#include "ui/scroll_helper.h"
-#include "ui/scroll_region_event.h"
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -362,10 +359,7 @@ void TextEdit::onPaint(PaintEvent& ev)
   const gfx::Rect rect = view->viewportBounds().offset(-bounds().origin());
   g->drawRect(rect, m_colors.background);
 
-  const auto& scroll = view->viewScroll();
-  gfx::PointF point(border().left(), border().top());
-  point -= scroll;
-
+  gfx::PointF point(clientChildrenBounds().origin());
   const gfx::Rect clipBounds = g->getClipBounds();
 
   for (const auto& line : m_lines) {
@@ -375,7 +369,6 @@ void TextEdit::onPaint(PaintEvent& ev)
     // unless we're in the caret line, in which case we need to draw the text to avoid blank
     // characters.
     const bool skip =
-      (point.y + line.height < scroll.y || point.y > scroll.y + rect.h) ||
       (!clipBounds.intersects(gfx::Rect(point.x, point.y, line.width, line.height)) && !caretLine);
 
     if (!skip) {
@@ -414,24 +407,15 @@ void TextEdit::onInitTheme(InitThemeEvent& ev)
 
 void TextEdit::onSizeHint(SizeHintEvent& ev)
 {
-  ev.setSizeHint(m_textSize);
-}
-
-void TextEdit::onScrollRegion(ScrollRegionEvent& ev)
-{
-  invalidateRegion(ev.region());
+  ev.setSizeHint(m_textSize + border());
 }
 
 gfx::Rect TextEdit::caretBounds() const
 {
   Line& line = m_caret.lineObj();
 
-  gfx::Point scroll;
-  if (const auto* view = View::getView(this))
-    scroll = view->viewScroll();
-
-  gfx::Rect rc(gfx::Point(border().left() - scroll.x, border().top() - scroll.y),
-               theme()->getCaretSize(const_cast<TextEdit*>(this)));
+  gfx::Point origin = clientChildrenBounds().origin();
+  gfx::Rect rc(origin, theme()->getCaretSize(const_cast<TextEdit*>(this)));
 
   if (m_caret.inEol()) {
     rc.x += line.width;
@@ -440,8 +424,7 @@ gfx::Rect TextEdit::caretBounds() const
     rc.x += line.getBounds(m_caret.pos()).x;
   }
 
-  gfx::PointF point(border().left(), border().top());
-  point -= scroll;
+  gfx::PointF point(origin);
   for (const auto& line : m_lines) {
     if (line.i >= m_caret.line())
       break;
@@ -550,11 +533,7 @@ TextEdit::Caret TextEdit::caretFromPosition(const gfx::Point& position)
   }
 
   // Normalize the mouse position to the internal coordinates of the widget
-  gfx::PointF offsetPosition(position.x - (bounds().x + border().left()),
-                             position.y - (bounds().y + border().top()));
-
-  offsetPosition += View::getView(this)->viewScroll();
-
+  gfx::PointF offsetPosition(position - childrenBounds().origin());
   Caret caret(&m_lines);
 
   // First check if the offset position is blank (below all the lines)
@@ -727,6 +706,13 @@ void TextEdit::ensureCaretVisible()
   gfx::Point scroll = view->viewScroll();
   gfx::Rect vp = view->viewportBounds();
   gfx::Rect caret = caretBounds();
+
+  // Try to show the top or left paddings when we are in line or position 0
+  if (m_caret.line() == 0)
+    caret.y = 0;
+  if (m_caret.pos() == 0)
+    caret.x = 0;
+
   caret.offset(origin());
 
   if (caret.x < vp.x)

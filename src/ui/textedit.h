@@ -9,19 +9,16 @@
 #define UI_TEXT_EDIT_H_INCLUDED
 #pragma once
 
-#include "text/font_mgr.h"
 #include "text/text_blob.h"
-#include "ui/box.h"
 #include "ui/theme.h"
-#include "ui/view.h"
+#include "ui/widget.h"
 
 #include <algorithm>
 
 namespace ui {
 using namespace text;
 
-class TextEdit : public Widget,
-                 public ViewableWidget {
+class TextEdit : public Widget {
 public:
   TextEdit();
 
@@ -37,7 +34,6 @@ protected:
   void onPaint(PaintEvent& ev) override;
   void onInitTheme(InitThemeEvent& ev) override;
   void onSizeHint(SizeHintEvent& ev) override;
-  void onScrollRegion(ScrollRegionEvent& ev) override;
   void onSetText() override;
   void onSetFont() override;
 
