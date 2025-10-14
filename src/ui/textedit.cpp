@@ -92,6 +92,7 @@ void TextEdit::paste()
   }
 
   m_caret.advanceBy(clipboard.size());
+  ensureCaretVisible();
 }
 
 void TextEdit::selectAll()
@@ -698,6 +699,8 @@ void TextEdit::deleteSelection()
                     line.text.begin() + end);
     line.buildBlob(this);
 
+    updateViewSize();
+
     // Only rebuilds the one line
     setTextQuiet(newText);
     Change();
@@ -714,7 +717,11 @@ void TextEdit::deleteSelection()
 void TextEdit::ensureCaretVisible()
 {
   auto* view = View::getView(this);
-  if (!view || !view->hasScrollBars() || !m_caret.isValid())
+  if (!view || !m_caret.isValid())
+    return;
+
+  updateViewSize();
+  if (!view->hasScrollBars())
     return;
 
   gfx::Point scroll = view->viewScroll();
@@ -747,26 +754,15 @@ void TextEdit::onSetText()
   base::split_string(text(), newLines, "\n");
   m_lines.reserve(newLines.size());
 
-  int longestWidth = 0;
-  int totalHeight = 0;
-
   for (const auto& lineString : newLines) {
     Line newLine;
     newLine.text = lineString;
     newLine.buildBlob(this);
-
-    longestWidth = std::max(newLine.width, longestWidth);
-    totalHeight += newLine.height;
-
     newLine.i = m_lines.size();
     m_lines.push_back(newLine);
   }
 
-  m_textSize.w = longestWidth;
-  m_textSize.h = totalHeight;
-
-  if (auto* view = View::getView(this))
-    view->updateView();
+  updateViewSize();
 
   Change();
   Widget::onSetText();
@@ -808,6 +804,22 @@ void TextEdit::stopTimer()
   if (s_timer) {
     s_timer->stop();
     s_timer.reset();
+  }
+}
+
+void TextEdit::updateViewSize()
+{
+  gfx::Size reqSize(0, 0);
+
+  for (const auto& line : m_lines) {
+    reqSize.w = std::max(reqSize.w, line.width);
+    reqSize.h += line.height;
+  }
+
+  if (m_textSize != reqSize) {
+    m_textSize = reqSize;
+    if (auto* view = View::getView(this))
+      view->updateView();
   }
 }
 

@@ -183,6 +183,8 @@ private:
   void startTimer();
   void stopTimer();
 
+  void updateViewSize();
+
   Selection m_selection;
   Selection m_selectionWords;
   Caret m_caret;
