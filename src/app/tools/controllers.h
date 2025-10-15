@@ -202,14 +202,7 @@ public:
       snapPointsToGridTiles(loop, stroke);
   }
 
-  bool releaseButton(Stroke& stroke, const Stroke::Pt& pt) override
-  {
-    if (m_cornerRadius.loop() && m_cornerRadius.loop()->getIntertwine()->cornerRadiusSupport()) {
-      m_cornerRadius.capRadius(stroke);
-      m_cornerRadius.save();
-    }
-    return false;
-  }
+  bool releaseButton(Stroke& stroke, const Stroke::Pt& pt) override { return false; }
 
   void movement(ToolLoop* loop, Stroke& stroke, const Stroke::Pt& pt) override
   {
@@ -223,7 +216,6 @@ public:
     if (loop->getIntertwine()->cornerRadiusSupport() &&
         (int(loop->getModifiers()) & int(ToolLoopModifiers::kCornerRadius))) {
       m_cornerRadius.modifyRadius(stroke, pt);
-      m_cornerRadius.save();
       return;
     }
 
