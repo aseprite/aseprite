@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2018-2024  Igara Studio S.A.
+# Copyright (C) 2018-2025  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 cmake_minimum_required(VERSION 3.16)
@@ -244,12 +244,7 @@ if(USE_SHARED_LIBPNG)
 else()
   set(PNG_FOUND ON)
 
-  # Skia on Linux includes libpng symbols
-  if(UNIX AND NOT APPLE AND LAF_BACKEND STREQUAL "skia")
-    set(PNG_LIBRARY skia)
-  else()
-    set(PNG_LIBRARY png_static)
-  endif()
+  set(PNG_LIBRARY png_static)
   set(PNG_LIBRARIES ${PNG_LIBRARY})
   set(PNG_INCLUDE_DIRS
     ${LIBPNG_DIR}
