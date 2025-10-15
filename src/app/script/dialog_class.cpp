@@ -1188,6 +1188,12 @@ static void fill_message_values(lua_State* L, const ui::Message* msg)
 
   lua_pushboolean(L, msg->modifiers() & ui::kKeySpaceModifier);
   lua_setfield(L, -2, "spaceKey");
+
+  lua_pushboolean(L, msg->modifiers() & ui::kKeyDoubleClickModifier);
+  lua_setfield(L, -2, "doubleClickKey");
+
+  lua_pushboolean(L, msg->modifiers() & ui::kKeyTripleClickModifier);
+  lua_setfield(L, -2, "tripleClickKey");
 }
 
 static void fill_keymessage_values(lua_State* L, const ui::KeyMessage* msg)
