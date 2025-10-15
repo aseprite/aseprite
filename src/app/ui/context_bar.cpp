@@ -352,7 +352,7 @@ protected:
 
 class ContextBar::CornerRadiusField : public IntEntry {
 public:
-  CornerRadiusField() : IntEntry(0, 999) { setSuffix("px"); }
+  CornerRadiusField() : IntEntry(0, 32) { setSuffix("px"); }
 
 private:
   void onValueChange() override
@@ -1954,7 +1954,9 @@ ContextBar::ContextBar(TooltipManager* tooltipManager, ColorBar* colorBar)
   addChild(m_brushType = new BrushTypeField(this));
   addChild(m_brushSize = new BrushSizeField());
   addChild(m_cornerRadius = new CornerRadiusField());
-  m_cornerRadius->useSlider(false);
+  m_cornerRadius->setPersistSelection(true);
+  m_cornerRadius->setMaxTextLength(4);
+  m_cornerRadius->maxValueUnbounded(true);
   addChild(m_brushAngle = new BrushAngleField(m_brushType));
   addChild(m_brushPatternField = new BrushPatternField());
 
