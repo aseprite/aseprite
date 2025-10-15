@@ -489,10 +489,50 @@ void Manager::generateMessagesFromOSEvents()
 
       case os::Event::KeyDown:
       case os::Event::KeyUp:   {
+        KeyModifiers modifiers = osEvent.modifiers();
+        
+        // Detect double/triple keyboard clicks (only for KeyDown events)
+        // and inject them as modifiers
+        if (osEvent.type() == os::Event::KeyDown) {
+          const base::tick_t currentTime = base::current_tick();
+          const base::tick_t doubleClickInterval = 300; // 300ms for double-click
+          const base::tick_t timeDiff = currentTime - m_lastKeyTime;
+          
+          // Check if same key pressed within double-click interval
+          // (excluding the click modifiers themselves from comparison)
+          KeyModifiers baseModifiers = KeyModifiers(osEvent.modifiers() & ~(kKeyDoubleClickModifier | kKeyTripleClickModifier));
+          KeyModifiers lastBaseModifiers = KeyModifiers(m_lastKeyModifiers & ~(kKeyDoubleClickModifier | kKeyTripleClickModifier));
+          
+          if (osEvent.scancode() == m_lastKeyScancode &&
+              osEvent.unicodeChar() == m_lastKeyUnicode &&
+              baseModifiers == lastBaseModifiers &&
+              timeDiff < doubleClickInterval) {
+            m_keyClickCount++;
+            if (m_keyClickCount > 3)
+              m_keyClickCount = 1; // Reset after triple-click
+          }
+          else {
+            // Different key or too much time passed, reset
+            m_keyClickCount = 1;
+          }
+          
+          // Inject click modifiers based on click count
+          if (m_keyClickCount == 2)
+            modifiers = KeyModifiers(modifiers | kKeyDoubleClickModifier);
+          else if (m_keyClickCount == 3)
+            modifiers = KeyModifiers(modifiers | kKeyTripleClickModifier);
+          
+          // Update tracking state
+          m_lastKeyScancode = osEvent.scancode();
+          m_lastKeyUnicode = osEvent.unicodeChar();
+          m_lastKeyModifiers = modifiers;
+          m_lastKeyTime = currentTime;
+        }
+        
         Message* msg = new KeyMessage(
           (osEvent.type() == os::Event::KeyDown ? kKeyDownMessage : kKeyUpMessage),
           osEvent.scancode(),
-          osEvent.modifiers(),
+          modifiers,
           osEvent.unicodeChar(),
           osEvent.repeat());
 

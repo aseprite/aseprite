@@ -56,8 +56,10 @@ protected:
           if (keymsg->scancode() == kKeySpace)
             modifiers = (KeyModifiers)(modifiers & ~kKeySpaceModifier);
 
+          // Preserve click modifiers when capturing key
+          KeyModifiers clickMods = KeyModifiers(m_shortcut.modifiers() & (kKeyDoubleClickModifier | kKeyTripleClickModifier));
           m_shortcut = Shortcut(
-            modifiers,
+            KeyModifiers(modifiers | clickMods),
             keymsg->scancode(),
             keymsg->unicodeChar() > 32 ? std::tolower(keymsg->unicodeChar()) : 0);
 
@@ -106,6 +108,8 @@ SelectShortcut::SelectShortcut(const ui::Shortcut& shortcut,
   shift()->Click.connect([this] { onModifierChange(kKeyShiftModifier, shift()); });
   space()->Click.connect([this] { onModifierChange(kKeySpaceModifier, space()); });
   win()->Click.connect([this] { onModifierChange(kKeyWinModifier, win()); });
+  doubleClick()->Click.connect([this] { onModifierChange(kKeyDoubleClickModifier, doubleClick()); });
+  tripleClick()->Click.connect([this] { onModifierChange(kKeyTripleClickModifier, tripleClick()); });
 
   m_keyField->ShortcutChange.connect(&SelectShortcut::onShortcutChange, this);
   clearButton()->Click.connect([this] { onClear(); });
@@ -122,6 +126,14 @@ void SelectShortcut::onModifierChange(KeyModifiers modifier, CheckBox* checkbox)
   KeyScancode scancode = m_shortcut.scancode();
   int unicodeChar = m_shortcut.unicodeChar();
 
+  // Handle mutually exclusive click modifiers
+  if (modifier == kKeyDoubleClickModifier && state) {
+    modifiers = (KeyModifiers)(modifiers & ~kKeyTripleClickModifier);
+  }
+  else if (modifier == kKeyTripleClickModifier && state) {
+    modifiers = (KeyModifiers)(modifiers & ~kKeyDoubleClickModifier);
+  }
+
   modifiers = (KeyModifiers)((modifiers & ~modifier) | (state ? modifier : 0));
   if (modifiers == kKeySpaceModifier && scancode == kKeySpace)
     modifiers = kKeyNoneModifier;
@@ -130,6 +142,7 @@ void SelectShortcut::onModifierChange(KeyModifiers modifier, CheckBox* checkbox)
 
   m_keyField->setShortcut(m_shortcut);
   m_keyField->requestFocus();
+  updateModifiers();
   updateAssignedTo();
 }
 
@@ -169,6 +182,8 @@ void SelectShortcut::updateModifiers()
   ctrl()->setSelected((m_shortcut.modifiers() & kKeyCtrlModifier) == kKeyCtrlModifier);
   shift()->setSelected((m_shortcut.modifiers() & kKeyShiftModifier) == kKeyShiftModifier);
   space()->setSelected((m_shortcut.modifiers() & kKeySpaceModifier) == kKeySpaceModifier);
+  doubleClick()->setSelected((m_shortcut.modifiers() & kKeyDoubleClickModifier) == kKeyDoubleClickModifier);
+  tripleClick()->setSelected((m_shortcut.modifiers() & kKeyTripleClickModifier) == kKeyTripleClickModifier);
 #if __APPLE__
   win()->setVisible(false);
   cmd()->setSelected((m_shortcut.modifiers() & kKeyCmdModifier) == kKeyCmdModifier);

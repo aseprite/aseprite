@@ -9,6 +9,7 @@
 #define UI_MANAGER_H_INCLUDED
 #pragma once
 
+#include "base/time.h"
 #include "gfx/region.h"
 #include "os/dnd.h"
 #include "ui/display.h"
@@ -232,6 +233,13 @@ private:
 
   // Widget over which the drag is being hovered in a drag & drop operation.
   Widget* m_dragOverWidget = nullptr;
+
+  // Keyboard double/triple-click detection
+  KeyScancode m_lastKeyScancode = kKeyNil;
+  int m_lastKeyUnicode = 0;
+  KeyModifiers m_lastKeyModifiers = kKeyNoneModifier;
+  base::tick_t m_lastKeyTime = 0;
+  int m_keyClickCount = 1;
 
   // False if we want to continue in case that there is no user
   // event in the OS queue. Useful when there is no need to wait for

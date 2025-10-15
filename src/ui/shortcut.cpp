@@ -164,12 +164,25 @@ Shortcut::Shortcut(const std::string& str)
     return;
   }
 
+  // Check for click count prefix (e.g., "2x+Ctrl+Q" for double-click)
+  std::string workStr = str;
+  if (str.size() >= 3 && str[1] == 'x' && str[2] == '+') {
+    if (str[0] == '2') {
+      m_modifiers = (KeyModifiers)(m_modifiers | kKeyDoubleClickModifier);
+      workStr = str.substr(3);
+    }
+    else if (str[0] == '3') {
+      m_modifiers = (KeyModifiers)(m_modifiers | kKeyTripleClickModifier);
+      workStr = str.substr(3);
+    }
+  }
+
   std::size_t i, j;
-  for (i = 0; i < str.size(); i = j + 1) {
+  for (i = 0; i < workStr.size(); i = j + 1) {
     // i+1 because the first character can be '+' sign
-    for (j = i + 1; j < str.size() && str[j] != '+'; ++j)
+    for (j = i + 1; j < workStr.size() && workStr[j] != '+'; ++j)
       ;
-    std::string tok = base::string_to_lower(str.substr(i, j - i));
+    std::string tok = base::string_to_lower(workStr.substr(i, j - i));
 
     if (m_scancode == kKeySpace) {
       m_modifiers = (KeyModifiers)((int)m_modifiers | (int)kKeySpaceModifier);
@@ -288,7 +301,13 @@ std::string Shortcut::toString() const
 {
   std::string buf;
 
-  // Shifts
+  // Click count prefix (must come first)
+  if (m_modifiers & kKeyTripleClickModifier)
+    buf += "3x+";
+  else if (m_modifiers & kKeyDoubleClickModifier)
+    buf += "2x+";
+
+  // Modifiers
   if (m_modifiers & kKeyCtrlModifier)
     buf += "Ctrl+";
   if (m_modifiers & kKeyCmdModifier)

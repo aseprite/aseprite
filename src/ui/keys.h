@@ -24,6 +24,11 @@ using os::kKeySpaceModifier;
 using os::kKeyUninitializedModifier;
 using os::kKeyWinModifier;
 
+// Custom app-level modifiers for keyboard click detection
+// Using higher bits that don't conflict with OS modifiers
+constexpr KeyModifiers kKeyDoubleClickModifier = (KeyModifiers)0x0100;
+constexpr KeyModifiers kKeyTripleClickModifier = (KeyModifiers)0x0200;
+
 using os::kKey0;
 using os::kKey0Pad;
 using os::kKey1;
