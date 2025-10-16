@@ -488,11 +488,11 @@
       </key>
       <key command="PixelPerfectMode" />
       <key command="ContiguousFill" />
-      <key command="SetInkType"><param name="type" value="simple" /></key>
+      <key command="SetInkType" shortcut="3x+X"><param name="type" value="simple" /></key>
       <key command="SetInkType"><param name="type" value="alpha-compositing" /></key>
       <key command="SetInkType"><param name="type" value="copy-color" /></key>
       <key command="SetInkType"><param name="type" value="lock-alpha" /></key>
-      <key command="SetInkType"><param name="type" value="shading" /></key>
+      <key command="SetInkType" shortcut="2x+X"><param name="type" value="shading" /></key>
       <key command="SetSameInk" />
       <key command="SetColorSelector">
         <param name="type" value="tint-shade-tone" />
