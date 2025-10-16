@@ -350,22 +350,83 @@ protected:
   bool m_lock;
 };
 
-class ContextBar::CornerRadiusField : public IntEntry {
+class ContextBar::CornerRadiusField : public ButtonSet {
 public:
-  CornerRadiusField() : IntEntry(0, 32) { setSuffix("px"); }
+  class CornerRadiusEntry : public IntEntry {
+  public:
+    CornerRadiusEntry() : IntEntry(0, 32) { setSuffix("px"); }
+
+  private:
+    void onPopupOpen(Event&) override
+    {
+      auto* parentPopup = static_cast<PopupWindow*>(parent());
+      auto hotRegion = parentPopup->getHotRegion();
+      hotRegion |= gfx::Region(m_popupWindow->boundsOnScreen());
+      parentPopup->setHotRegion(hotRegion);
+    }
+
+    void onValueChange() override
+    {
+      if (g_updatingFromCode)
+        return;
+
+      IntEntry::onValueChange();
+      base::ScopedValue lockFlag(g_updatingFromCode, true);
+
+      Tool* tool = App::instance()->activeTool();
+      Preferences::instance().tool(tool).cornerRadius.setValue(getValue());
+    }
+  };
+
+  CornerRadiusField() : ButtonSet(1)
+  {
+    auto* theme = SkinTheme::get(this);
+    addItem(theme->parts.cornerRadiusField(), theme->styles.cornerRadiusField());
+
+    m_popup = std::make_unique<ui::PopupWindow>(
+      "",
+      PopupWindow::ClickBehavior::CloseOnClickOutsideHotRegion,
+      PopupWindow::EnterBehavior::DoNothingOnEnter);
+
+    m_cornerRadius = new CornerRadiusEntry();
+    m_cornerRadius->setPersistSelection(true);
+    m_cornerRadius->setMaxTextLength(4);
+    m_cornerRadius->maxValueUnbounded(true);
+
+    m_popup->addChild(m_cornerRadius);
+    m_popup->Close.connect([this] { deselectItems(); });
+  }
+
+  void setValue(int value) { m_cornerRadius->setValue(value); }
+
+protected:
+  virtual void onItemChange(Item* item) override
+  {
+    ButtonSet::onItemChange(item);
+
+    if (m_popup->isVisible()) {
+      m_popup->closeWindow(this);
+      return;
+    }
+
+    auto bounds = this->bounds();
+    auto pos = gfx::Point(bounds.x, bounds.y2());
+    m_popup->remapWindow();
+    fit_bounds(display(), m_popup.get(), gfx::Rect(pos, m_popup->size()));
+
+    auto hotRegion = gfx::Region(boundsOnScreen());
+    hotRegion |= gfx::Region(m_popup->boundsOnScreen());
+    m_popup->setHotRegion(hotRegion);
+
+    m_popup->disableFlags(IGNORE_MOUSE);
+    m_popup->captureMouse();
+    m_popup->openWindow();
+    m_cornerRadius->requestFocus();
+  }
 
 private:
-  void onValueChange() override
-  {
-    if (g_updatingFromCode)
-      return;
-
-    IntEntry::onValueChange();
-    base::ScopedValue lockFlag(g_updatingFromCode, true);
-
-    Tool* tool = App::instance()->activeTool();
-    Preferences::instance().tool(tool).cornerRadius.setValue(getValue());
-  }
+  std::unique_ptr<ui::PopupWindow> m_popup;
+  CornerRadiusEntry* m_cornerRadius = nullptr;
 };
 
 class ContextBar::ToleranceField : public IntEntry {
@@ -1953,10 +2014,6 @@ ContextBar::ContextBar(TooltipManager* tooltipManager, ColorBar* colorBar)
   addChild(m_brushBack = new BrushBackField);
   addChild(m_brushType = new BrushTypeField(this));
   addChild(m_brushSize = new BrushSizeField());
-  addChild(m_cornerRadius = new CornerRadiusField());
-  m_cornerRadius->setPersistSelection(true);
-  m_cornerRadius->setMaxTextLength(4);
-  m_cornerRadius->maxValueUnbounded(true);
   addChild(m_brushAngle = new BrushAngleField(m_brushType));
   addChild(m_brushPatternField = new BrushPatternField());
 
@@ -1968,6 +2025,8 @@ ContextBar::ContextBar(TooltipManager* tooltipManager, ColorBar* colorBar)
   addChild(m_ditheringSelector = new DitheringSelector(DitheringSelector::SelectMatrix));
   m_ditheringSelector->setUseCustomWidget(false); // Disable custom widget because the context bar
                                                   // is too small
+
+  addChild(m_cornerRadius = new CornerRadiusField());
 
   addChild(m_inkType = new InkTypeField(this));
   addChild(m_inkOpacityLabel = new Label(Strings::general_opacity()));
@@ -2687,7 +2746,9 @@ void ContextBar::setupTooltips(TooltipManager* tooltipManager)
   tooltipManager->addTooltipFor(m_brushType->at(0), Strings::context_bar_brush_type(), BOTTOM);
   tooltipManager->addTooltipFor(m_brushSize, Strings::context_bar_brush_size(), BOTTOM);
   tooltipManager->addTooltipFor(m_brushAngle, Strings::context_bar_brush_angle(), BOTTOM);
-  tooltipManager->addTooltipFor(m_cornerRadius, Strings::context_bar_corner_radius(), BOTTOM);
+  tooltipManager->addTooltipFor(m_cornerRadius->at(0),
+                                Strings::context_bar_corner_radius(),
+                                BOTTOM);
   tooltipManager->addTooltipFor(m_inkType->at(0), Strings::context_bar_ink(), BOTTOM);
   tooltipManager->addTooltipFor(m_inkOpacity, Strings::context_bar_opacity(), BOTTOM);
   tooltipManager->addTooltipFor(m_inkShades->at(0), Strings::context_bar_shades(), BOTTOM);
