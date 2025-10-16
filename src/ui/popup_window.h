@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -37,6 +37,7 @@ public:
   //
   // The screenRegion must be specified in native screen coordinates.
   void setHotRegion(const gfx::Region& screenRegion);
+  const gfx::Region& getHotRegion() const { return m_hotRegion; }
 
   void setClickBehavior(ClickBehavior behavior);
   void setEnterBehavior(EnterBehavior behavior);

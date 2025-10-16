@@ -30,6 +30,7 @@
 #include "app/tools/controller.h"
 #include "app/tools/ink.h"
 #include "app/tools/ink_type.h"
+#include "app/tools/intertwine.h"
 #include "app/tools/point_shape.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
@@ -347,6 +348,85 @@ protected:
   }
 
   bool m_lock;
+};
+
+class ContextBar::CornerRadiusField : public ButtonSet {
+public:
+  class CornerRadiusEntry : public IntEntry {
+  public:
+    CornerRadiusEntry() : IntEntry(0, 32) { setSuffix("px"); }
+
+  private:
+    void onPopupOpen(Event&) override
+    {
+      auto* parentPopup = static_cast<PopupWindow*>(parent());
+      auto hotRegion = parentPopup->getHotRegion();
+      hotRegion |= gfx::Region(m_popupWindow->boundsOnScreen());
+      parentPopup->setHotRegion(hotRegion);
+    }
+
+    void onValueChange() override
+    {
+      if (g_updatingFromCode)
+        return;
+
+      IntEntry::onValueChange();
+      base::ScopedValue lockFlag(g_updatingFromCode, true);
+
+      Tool* tool = App::instance()->activeTool();
+      Preferences::instance().tool(tool).cornerRadius.setValue(getValue());
+    }
+  };
+
+  CornerRadiusField() : ButtonSet(1)
+  {
+    auto* theme = SkinTheme::get(this);
+    addItem(theme->parts.cornerRadiusField(), theme->styles.cornerRadiusField());
+
+    m_popup = std::make_unique<ui::PopupWindow>(
+      "",
+      PopupWindow::ClickBehavior::CloseOnClickOutsideHotRegion,
+      PopupWindow::EnterBehavior::DoNothingOnEnter);
+
+    m_cornerRadius = new CornerRadiusEntry();
+    m_cornerRadius->setPersistSelection(true);
+    m_cornerRadius->setMaxTextLength(4);
+    m_cornerRadius->maxValueUnbounded(true);
+
+    m_popup->addChild(m_cornerRadius);
+    m_popup->Close.connect([this] { deselectItems(); });
+  }
+
+  void setValue(int value) { m_cornerRadius->setValue(value); }
+
+protected:
+  virtual void onItemChange(Item* item) override
+  {
+    ButtonSet::onItemChange(item);
+
+    if (m_popup->isVisible()) {
+      m_popup->closeWindow(this);
+      return;
+    }
+
+    auto bounds = this->bounds();
+    auto pos = gfx::Point(bounds.x, bounds.y2());
+    m_popup->remapWindow();
+    fit_bounds(display(), m_popup.get(), gfx::Rect(pos, m_popup->size()));
+
+    auto hotRegion = gfx::Region(boundsOnScreen());
+    hotRegion |= gfx::Region(m_popup->boundsOnScreen());
+    m_popup->setHotRegion(hotRegion);
+
+    m_popup->disableFlags(IGNORE_MOUSE);
+    m_popup->captureMouse();
+    m_popup->openWindow();
+    m_cornerRadius->requestFocus();
+  }
+
+private:
+  std::unique_ptr<ui::PopupWindow> m_popup;
+  CornerRadiusEntry* m_cornerRadius = nullptr;
 };
 
 class ContextBar::ToleranceField : public IntEntry {
@@ -1931,6 +2011,8 @@ ContextBar::ContextBar(TooltipManager* tooltipManager, ColorBar* colorBar)
   m_ditheringSelector->setUseCustomWidget(false); // Disable custom widget because the context bar
                                                   // is too small
 
+  addChild(m_cornerRadius = new CornerRadiusField());
+
   addChild(m_inkType = new InkTypeField(this));
   addChild(m_inkOpacityLabel = new Label(Strings::general_opacity()));
   addChild(m_inkOpacity = new InkOpacityField());
@@ -2074,6 +2156,11 @@ void ContextBar::onBrushSizeChange()
   updateForActiveTool();
 }
 
+void ContextBar::onCornerRadiusChange(int value)
+{
+  m_cornerRadius->setValue(value);
+}
+
 void ContextBar::onBrushAngleChange()
 {
   if (m_activeBrush->type() != kImageBrushType)
@@ -2164,6 +2251,9 @@ void ContextBar::updateForTool(tools::Tool* tool)
     m_freehandAlgoConn = toolPref->freehandAlgorithm.AfterChange.connect(
       [this] { onToolSetFreehandAlgorithm(); });
     m_contiguousConn = toolPref->contiguous.AfterChange.connect([this] { onToolSetContiguous(); });
+    m_cornerRadius->setValue(toolPref->cornerRadius());
+    m_cornerRadiusConn = toolPref->cornerRadius.AfterChange.connect(
+      [this](const int value) { onCornerRadiusChange(value); });
   }
 
   if (tool)
@@ -2241,6 +2331,9 @@ void ContextBar::updateForTool(tools::Tool* tool)
   const bool isFloodfill = tool && (tool->getPointShape(0)->isFloodFill() ||
                                     tool->getPointShape(1)->isFloodFill());
 
+  const bool hasCornerRadius = tool && (tool->getIntertwine(0)->cornerRadiusSupport() ||
+                                        tool->getIntertwine(1)->cornerRadiusSupport());
+
   // True if the current tool needs tolerance options
   const bool hasTolerance = tool && (tool->getPointShape(0)->isFloodFill() ||
                                      tool->getPointShape(1)->isFloodFill());
@@ -2276,6 +2369,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_brushSize->setVisible(supportOpacity && !isFloodfill && !hasImageBrush);
   m_brushAngle->setVisible(supportOpacity && !isFloodfill && !hasImageBrush && hasBrushWithAngle);
   m_brushPatternField->setVisible(supportOpacity && hasImageBrush && !withDithering);
+  m_cornerRadius->setVisible(hasCornerRadius);
   m_inkType->setVisible(hasInk);
   m_inkOpacityLabel->setVisible(showOpacity);
   m_inkOpacity->setVisible(showOpacity);
@@ -2637,6 +2731,9 @@ void ContextBar::setupTooltips(TooltipManager* tooltipManager)
   tooltipManager->addTooltipFor(m_brushType->at(0), Strings::context_bar_brush_type(), BOTTOM);
   tooltipManager->addTooltipFor(m_brushSize, Strings::context_bar_brush_size(), BOTTOM);
   tooltipManager->addTooltipFor(m_brushAngle, Strings::context_bar_brush_angle(), BOTTOM);
+  tooltipManager->addTooltipFor(m_cornerRadius->at(0),
+                                Strings::context_bar_corner_radius(),
+                                BOTTOM);
   tooltipManager->addTooltipFor(m_inkType->at(0), Strings::context_bar_ink(), BOTTOM);
   tooltipManager->addTooltipFor(m_inkOpacity, Strings::context_bar_opacity(), BOTTOM);
   tooltipManager->addTooltipFor(m_inkShades->at(0), Strings::context_bar_shades(), BOTTOM);

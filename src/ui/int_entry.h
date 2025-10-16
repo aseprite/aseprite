@@ -16,6 +16,7 @@
 
 namespace ui {
 
+class Event;
 class CloseEvent;
 class PopupWindow;
 
@@ -27,6 +28,14 @@ public:
   virtual int getValue() const;
   virtual void setValue(int value);
 
+  // If useSlider is false, then it won't show the slider popup to change its
+  // value.
+  void useSlider(bool useSlider) { m_useSlider = useSlider; }
+
+  // If set to true, the max value allowed by the IntEntry won't be bounded by the
+  // current slider's max range.
+  void maxValueUnbounded(bool mvu) { m_maxValueUnbounded = mvu; }
+
 protected:
   bool onProcessMessage(Message* msg) override;
   void onInitTheme(InitThemeEvent& ev) override;
@@ -37,11 +46,15 @@ protected:
   // New events
   virtual void onValueChange();
   virtual bool onAcceptUnicodeChar(int unicodeChar);
+  virtual void onPopupOpen(Event& ev) { /* do nothing */ }
 
   int m_min;
   int m_max;
   std::unique_ptr<PopupWindow> m_popupWindow;
   bool m_changeFromSlider;
+  // If true a slider can be used to modify the value.
+  bool m_useSlider = true;
+  bool m_maxValueUnbounded = false;
   std::unique_ptr<Slider> m_slider;
 
 private:
