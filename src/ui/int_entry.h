@@ -16,6 +16,7 @@
 
 namespace ui {
 
+class Event;
 class CloseEvent;
 class PopupWindow;
 
@@ -45,6 +46,7 @@ protected:
   // New events
   virtual void onValueChange();
   virtual bool onAcceptUnicodeChar(int unicodeChar);
+  virtual void onPopupOpen(Event& ev) { /* do nothing */ }
 
   int m_min;
   int m_max;
