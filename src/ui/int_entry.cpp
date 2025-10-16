@@ -194,6 +194,7 @@ void IntEntry::openPopup()
       PopupWindow::ClickBehavior::CloseOnClickInOtherWindow);
     m_popupWindow->setAutoRemap(false);
     m_popupWindow->addChild(m_slider.get());
+    m_popupWindow->Open.connect(&IntEntry::onPopupOpen, this);
     m_popupWindow->Close.connect(&IntEntry::onPopupClose, this);
 
     fit_bounds(display(),
