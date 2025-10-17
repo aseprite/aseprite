@@ -5,7 +5,7 @@
         <key>CFBundleExecutable</key>
         <string>AsepriteThumbnailer</string>
         <key>CFBundleIdentifier</key>
-        <string>org.aseprite.Aseprite.AsepriteThumbnailer</string>
+        <string>org.aseprite.AsepriteThumbnailer</string>
         <key>CFBundleName</key>
         <string>AsepriteThumbnailer</string>
         <key>CFBundleShortVersionString</key>

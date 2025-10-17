@@ -95,13 +95,10 @@ add_subdirectory(app)
 ######################################################################
 # Output bin/data/ directory where we are going to copy data files
 
-set(DATA_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin/data)
-
-if(ENABLE_ASEPRITE_EXE)
-  set(main_target aseprite)
-  if(APPLE)
-    set(DATA_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin/${main_target}.app/Contents/Resources/data)
-  endif()
+if(ENABLE_ASEPRITE_EXE AND APPLE)
+  set(DATA_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin/Aseprite.app/Contents/Resources/data)
+else()
+  set(DATA_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin/data)
 endif()
 
 ######################################################################
@@ -196,28 +193,28 @@ if(ENABLE_ASEPRITE_EXE)
     set(INSTALL_OPT BUNDLE)
   endif()
 
-  add_executable(${main_target} ${BUNDLE_PARAM}
+  add_executable(aseprite ${BUNDLE_PARAM}
     main/main.cpp
     ${main_resources})
   if(LAF_BACKEND STREQUAL "skia")
     if(WIN32)
-      set_target_properties(${main_target} PROPERTIES WIN32_EXECUTABLE true)
+      set_target_properties(aseprite PROPERTIES WIN32_EXECUTABLE true)
     endif()
   endif()
-  set_target_properties(${main_target} PROPERTIES LINK_FLAGS "${LAF_BACKEND_LINK_FLAGS}")
+  set_target_properties(aseprite PROPERTIES LINK_FLAGS "${LAF_BACKEND_LINK_FLAGS}")
   if(APPLE)
-    set_target_properties(${main_target} PROPERTIES
+    set_target_properties(aseprite PROPERTIES
       MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_LIST_DIR}/main/osx/Info.plist")
   endif()
-  target_link_libraries(${main_target} app-lib)
-  add_dependencies(${main_target} copy_data)
+  target_link_libraries(aseprite app-lib)
+  add_dependencies(aseprite copy_data)
 
   if(LAF_BACKEND_LINK_FLAGS)
-    set_target_properties(${main_target} PROPERTIES LINK_FLAGS
+    set_target_properties(aseprite PROPERTIES LINK_FLAGS
       ${LAF_BACKEND_LINK_FLAGS})
   endif()
 
-  install(TARGETS ${main_target}
+  install(TARGETS aseprite
     ${INSTALL_OPT} DESTINATION bin)
 
   install(DIRECTORY ../data
