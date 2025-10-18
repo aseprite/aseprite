@@ -406,6 +406,16 @@ public:
     newRenderEngine()->Click.connect(
       [this] { m_samplingSelector->setEnabled(newRenderEngine()->isSelected()); });
 
+    // Keyboard multi-click
+    keyboardMulticlick()->Click.connect([this] { onKeyboardMulticlickChange(); });
+    keyboardDoubleClickInterval()->Change.connect([this] {
+      m_pref.experimental.keyboardDoubleClickInterval(keyboardDoubleClickInterval()->textInt());
+    });
+    keyboardTripleClickInterval()->Change.connect([this] {
+      m_pref.experimental.keyboardTripleClickInterval(keyboardTripleClickInterval()->textInt());
+    });
+    onKeyboardMulticlickChange(); // Initialize visibility
+
     // Right-click
     static_assert(int(app::gen::RightClickMode::PAINT_BGCOLOR) == 0, "");
     static_assert(int(app::gen::RightClickMode::PICK_FGCOLOR) == 1, "");
@@ -657,6 +667,10 @@ public:
 
     flashLayer()->setSelected(m_pref.experimental.flashLayer());
     nonactiveLayersOpacity()->setValue(m_pref.experimental.nonactiveLayersOpacity());
+
+    // Keyboard multi-click intervals
+    keyboardDoubleClickInterval()->setTextf("%d", m_pref.experimental.keyboardDoubleClickInterval());
+    keyboardTripleClickInterval()->setTextf("%d", m_pref.experimental.keyboardTripleClickInterval());
 
     m_rgbmapAlgorithmSelector.algorithm(m_pref.quantization.rgbmapAlgorithm());
     m_bestFitCriteriaSelector.criteria(m_pref.quantization.fitCriteria());
@@ -986,6 +1000,15 @@ public:
 
     // Probably it's safe to switch this flag in runtime
     ui::set_multiple_displays(m_pref.experimental.multipleWindows());
+    
+    // Update keyboard multi-click configuration in the Manager
+    auto manager = ui::Manager::getDefault();
+    if (manager) {
+      manager->setKeyboardMultiClick(
+        m_pref.experimental.keyboardMulticlick(),
+        m_pref.experimental.keyboardDoubleClickInterval(),
+        m_pref.experimental.keyboardTripleClickInterval());
+    }
 
     if (reset_screen)
       updateScreenScaling();
@@ -2032,6 +2055,26 @@ private:
     auto format = gen::CelContentFormat(celFormat()->getSelectedItemIndex());
     celFormatWarning()->setVisible(format == gen::CelContentFormat::RAW_IMAGE);
     layout();
+  }
+
+  void onKeyboardMulticlickChange()
+  {
+    const bool enabled = keyboardMulticlick()->isSelected();
+    
+    // If user is enabling the feature, show a warning alert
+    if (enabled && !m_pref.experimental.keyboardMulticlick()) {
+      if (ui::Alert::show(Strings::alerts_enable_keyboard_multiclick()) != 1) {
+        // User clicked Cancel, uncheck the box
+        keyboardMulticlick()->setSelected(false);
+        keyboardDoubleClickInterval()->setEnabled(false);
+        keyboardTripleClickInterval()->setEnabled(false);
+        return;
+      }
+    }
+    
+    // Enable/disable the interval configuration options
+    keyboardDoubleClickInterval()->setEnabled(enabled);
+    keyboardTripleClickInterval()->setEnabled(enabled);
   }
 
   void onCursorColorType()

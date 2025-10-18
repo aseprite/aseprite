@@ -257,6 +257,9 @@
       <option id="flash_layer" type="bool" default="false" />
       <option id="nonactive_layers_opacity" type="int" default="255" />
       <option id="nonactive_layers_opacity_preview" type="int" default="255" />
+      <option id="keyboard_multiclick" type="bool" default="false" />
+      <option id="keyboard_double_click_interval" type="int" default="180" />
+      <option id="keyboard_triple_click_interval" type="int" default="250" />
     </section>
     <section id="news">
       <option id="cache_file" type="std::string" />

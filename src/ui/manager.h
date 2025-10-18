@@ -142,6 +142,11 @@ public:
   void _updateMouseWidgets();
   void _closingAppWithException();
 
+  // Configure keyboard multi-click detection
+  void setKeyboardMultiClick(bool enabled,
+                             int doubleClickInterval = 180,
+                             int tripleClickInterval = 250);
+
 protected:
   bool onProcessMessage(Message* msg) override;
   void onInvalidateRegion(const gfx::Region& region) override;
@@ -245,6 +250,11 @@ private:
   // Pending key message for double-click detection
   Message* m_pendingKeyMessage = nullptr;
   base::tick_t m_pendingKeyDeadline = 0;
+  
+  // Keyboard multi-click configuration
+  bool m_keyboardMultiClickEnabled = false;
+  base::tick_t m_doubleClickInterval = 180;
+  base::tick_t m_tripleClickInterval = 250;
 
   // False if we want to continue in case that there is no user
   // event in the OS queue. Useful when there is no need to wait for

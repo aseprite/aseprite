@@ -645,6 +645,23 @@
           <check id="cache_compressed_tilesets"
                  text="@.cache_compressed_tilesets"
                  pref="tileset.cache_compressed_tilesets" />
+          <separator text="@.keyboard" horizontal="true" />
+          <check id="keyboard_multiclick"
+                 text="@.keyboard_multiclick"
+                 tooltip="@.keyboard_multiclick_tooltip"
+                 pref="experimental.keyboard_multiclick" />
+          <grid columns="2" id="keyboard_multiclick_options">
+            <label text="@.keyboard_double_click_interval" />
+            <hbox>
+              <expr id="keyboard_double_click_interval" min="50" max="500" enabled="false" />
+              <label text="@.milliseconds" />
+            </hbox>
+            <label text="@.keyboard_triple_click_interval" />
+            <hbox>
+              <expr id="keyboard_triple_click_interval" min="100" max="1000" enabled="false" />
+              <label text="@.milliseconds" />
+            </hbox>
+          </grid>
         </vbox>
 
         <!-- Reset -->

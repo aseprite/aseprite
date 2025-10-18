@@ -411,6 +411,19 @@ static MouseButton mouse_button_from_os_to_ui(const os::Event& osEvent)
   return (MouseButton)osEvent.button();
 }
 
+void Manager::setKeyboardMultiClick(bool enabled,
+                                    int doubleClickInterval,
+                                    int tripleClickInterval)
+{
+  m_keyboardMultiClickEnabled = enabled;
+  m_doubleClickInterval = doubleClickInterval;
+  m_tripleClickInterval = tripleClickInterval;
+  
+  // If disabling, flush any pending message
+  if (!enabled)
+    flushPendingKeyMessage();
+}
+
 void Manager::flushPendingKeyMessage()
 {
   if (m_pendingKeyMessage) {
@@ -440,6 +453,7 @@ void Manager::generateMessagesFromOSEvents()
           timeout = os::EventQueue::kWithoutTimeout;
         
         // If we have a pending key message, limit timeout to its deadline
+        // (only matters when keyboard multi-click feature is enabled)
         if (m_pendingKeyMessage && m_pendingKeyDeadline > 0) {
           const base::tick_t now = base::current_tick();
           if (m_pendingKeyDeadline <= now) {
@@ -515,12 +529,12 @@ void Manager::generateMessagesFromOSEvents()
       case os::Event::KeyDown:
       case os::Event::KeyUp: {
         KeyModifiers modifiers = osEvent.modifiers();
-        const base::tick_t currentTime = base::current_tick();
-        const base::tick_t doubleClickInterval = 180; // 180ms for double-click detection
-        const base::tick_t tripleClickInterval = 250; // 250ms for triple-click detection
         
-        // Handle double/triple-click detection for KeyDown events
-        if (osEvent.type() == os::Event::KeyDown) {
+        // Handle double/triple-click detection for KeyDown events (only if feature is enabled)
+        if (m_keyboardMultiClickEnabled && osEvent.type() == os::Event::KeyDown) {
+          const base::tick_t currentTime = base::current_tick();
+          const base::tick_t doubleClickInterval = m_doubleClickInterval;
+          const base::tick_t tripleClickInterval = m_tripleClickInterval;
           KeyModifiers baseModifiers = KeyModifiers(osEvent.modifiers() & ~(kKeyDoubleClickModifier | kKeyTripleClickModifier));
           KeyModifiers lastBaseModifiers = KeyModifiers(m_lastKeyModifiers & ~(kKeyDoubleClickModifier | kKeyTripleClickModifier));
           const base::tick_t timeDiff = currentTime - m_lastKeyTime;
@@ -625,7 +639,7 @@ void Manager::generateMessagesFromOSEvents()
             m_lastKeyTime = currentTime;
           }
         }
-        else {
+        else if (m_keyboardMultiClickEnabled) {
           // KeyUp events: process normally without flushing pending KeyDown
           // (the KeyDown might be part of a double/triple-click sequence)
           Message* msg = new KeyMessage(kKeyUpMessage,
@@ -637,6 +651,23 @@ void Manager::generateMessagesFromOSEvents()
           if (osEvent.isDeadKey())
             static_cast<KeyMessage*>(msg)->setDeadKey(true);
           
+          broadcastKeyMsg(msg);
+          enqueueMessage(msg);
+        }
+        else {
+          // Old behavior: process key events immediately without delay
+          Message* msg = new KeyMessage(
+            (osEvent.type() == os::Event::KeyDown ? kKeyDownMessage : kKeyUpMessage),
+            osEvent.scancode(),
+            modifiers,
+            osEvent.unicodeChar(),
+            osEvent.repeat());
+
+          msg->setDisplay(display);
+
+          if (osEvent.isDeadKey())
+            static_cast<KeyMessage*>(msg)->setDeadKey(true);
+
           broadcastKeyMsg(msg);
           enqueueMessage(msg);
         }

@@ -365,6 +365,12 @@ int App::initialize(const AppOptions& options)
 
     auto manager = ui::Manager::getDefault();
     manager->invalidate();
+    
+    // Configure keyboard multi-click detection from preferences
+    manager->setKeyboardMultiClick(
+      pref.experimental.keyboardMulticlick(),
+      pref.experimental.keyboardDoubleClickInterval(),
+      pref.experimental.keyboardTripleClickInterval());
 
     // Create the main window.
     m_mainWindow.reset(new MainWindow);
