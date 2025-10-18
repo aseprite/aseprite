@@ -28,6 +28,9 @@ public:
   void copy();
   void paste();
   void selectAll();
+  void setReadOnly(bool readOnly);
+  bool isReadOnly() const;
+  void setPlaceholder(const std::string& placeholder);
 
   obs::signal<void()> Change;
 
@@ -167,7 +170,7 @@ private:
 
   // TextCmdProcessor impl
   bool onHasValidSelection() override { return !m_selection.isEmpty(); }
-  bool onCanModify() override { return true; }
+  bool onCanModify() override { return isEnabled() && !m_readOnly; }
   void onExecuteCmd(Cmd cmd, base::codepoint_t unicodeChar, bool expandSelection) override;
 
   gfx::Rect caretBounds() const;
@@ -193,6 +196,10 @@ private:
   Caret m_lockedSelectionStart;
 
   std::vector<Line> m_lines;
+  std::string m_placeholder;
+
+  // Whether or not we're currently in read only mode
+  bool m_readOnly = false;
 
   // Whether or not we're currently drawing the caret, driven by a timer.
   bool m_drawCaret = false;

@@ -647,7 +647,7 @@
             <icon part="radio_selected" align="left middle" x="2" state="selected"/>
             <icon part="radio_disabled" align="left middle" x="2" state="disabled"/>
         </style>
-        <style id="mini_button" padding-top="1" border="3" border-bottom="5">
+        <style id="mini_button" extends="button" padding-top="1" border="3" border-bottom="5">
             <background-border part="buttonset_item_normal"/>
             <background-border part="buttonset_item_hot" state="mouse"/>
             <background-border part="buttonset_item_hot" state="focus"/>
