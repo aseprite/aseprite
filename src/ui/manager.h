@@ -158,6 +158,7 @@ private:
                                 KeyModifiers modifiers,
                                 PointerType pointerType);
   void generateMessagesFromOSEvents();
+  void flushPendingKeyMessage();
 
   void handleMouseMove(Display* display,
                        const gfx::Point& mousePos,
@@ -240,6 +241,10 @@ private:
   KeyModifiers m_lastKeyModifiers = kKeyNoneModifier;
   base::tick_t m_lastKeyTime = 0;
   int m_keyClickCount = 1;
+  
+  // Pending key message for double-click detection
+  Message* m_pendingKeyMessage = nullptr;
+  base::tick_t m_pendingKeyDeadline = 0;
 
   // False if we want to continue in case that there is no user
   // event in the OS queue. Useful when there is no need to wait for

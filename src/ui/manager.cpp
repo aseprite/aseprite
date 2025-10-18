@@ -254,6 +254,9 @@ Manager::~Manager()
 {
   ASSERT(manager_thread == std::this_thread::get_id());
 
+  // Flush any pending key message
+  flushPendingKeyMessage();
+
   // There are some messages in queue? Dispatch everything.
   dispatchMessages();
   collectGarbage();
@@ -408,6 +411,15 @@ static MouseButton mouse_button_from_os_to_ui(const os::Event& osEvent)
   return (MouseButton)osEvent.button();
 }
 
+void Manager::flushPendingKeyMessage()
+{
+  if (m_pendingKeyMessage) {
+    enqueueMessage(m_pendingKeyMessage);
+    m_pendingKeyMessage = nullptr;
+    m_pendingKeyDeadline = 0;
+  }
+}
+
 void Manager::generateMessagesFromOSEvents()
 {
   ASSERT(manager_thread == std::this_thread::get_id());
@@ -426,6 +438,19 @@ void Manager::generateMessagesFromOSEvents()
       if (msg_queue.empty() && redrawState == RedrawState::Normal) {
         if (!Timer::getNextTimeout(timeout))
           timeout = os::EventQueue::kWithoutTimeout;
+        
+        // If we have a pending key message, limit timeout to its deadline
+        if (m_pendingKeyMessage && m_pendingKeyDeadline > 0) {
+          const base::tick_t now = base::current_tick();
+          if (m_pendingKeyDeadline <= now) {
+            timeout = 0.0; // Flush immediately
+          }
+          else {
+            double pendingTimeout = double(m_pendingKeyDeadline - now) / 1000.0;
+            if (timeout == os::EventQueue::kWithoutTimeout || pendingTimeout < timeout)
+              timeout = pendingTimeout;
+          }
+        }
       }
 
       if (timeout == os::EventQueue::kWithoutTimeout && used_msg_queue.empty())
@@ -488,61 +513,133 @@ void Manager::generateMessagesFromOSEvents()
       }
 
       case os::Event::KeyDown:
-      case os::Event::KeyUp:   {
+      case os::Event::KeyUp: {
         KeyModifiers modifiers = osEvent.modifiers();
+        const base::tick_t currentTime = base::current_tick();
+        const base::tick_t doubleClickInterval = 180; // 180ms for double-click detection
+        const base::tick_t tripleClickInterval = 250; // 250ms for triple-click detection
         
-        // Detect double/triple keyboard clicks (only for KeyDown events)
-        // and inject them as modifiers
+        // Handle double/triple-click detection for KeyDown events
         if (osEvent.type() == os::Event::KeyDown) {
-          const base::tick_t currentTime = base::current_tick();
-          const base::tick_t doubleClickInterval = 300; // 300ms for double-click
-          const base::tick_t timeDiff = currentTime - m_lastKeyTime;
-          
-          // Check if same key pressed within double-click interval
-          // (excluding the click modifiers themselves from comparison)
           KeyModifiers baseModifiers = KeyModifiers(osEvent.modifiers() & ~(kKeyDoubleClickModifier | kKeyTripleClickModifier));
           KeyModifiers lastBaseModifiers = KeyModifiers(m_lastKeyModifiers & ~(kKeyDoubleClickModifier | kKeyTripleClickModifier));
+          const base::tick_t timeDiff = currentTime - m_lastKeyTime;
           
-          if (osEvent.scancode() == m_lastKeyScancode &&
-              osEvent.unicodeChar() == m_lastKeyUnicode &&
-              baseModifiers == lastBaseModifiers &&
-              timeDiff < doubleClickInterval) {
-            m_keyClickCount++;
-            if (m_keyClickCount > 3)
-              m_keyClickCount = 1; // Reset after triple-click
-          }
-          else {
-            // Different key or too much time passed, reset
-            m_keyClickCount = 1;
-          }
+          // Check if this is a repeated press of the same key
+          bool isSameKey = (osEvent.scancode() == m_lastKeyScancode &&
+                           osEvent.unicodeChar() == m_lastKeyUnicode &&
+                           baseModifiers == lastBaseModifiers);
           
-          // Inject click modifiers based on click count
-          if (m_keyClickCount == 2)
-            modifiers = KeyModifiers(modifiers | kKeyDoubleClickModifier);
-          else if (m_keyClickCount == 3)
+          // Triple-click: third press within 250ms
+          if (isSameKey && timeDiff < tripleClickInterval && m_keyClickCount == 2) {
+            // This is a triple-click! Discard pending double-click and send triple-click immediately
+            if (m_pendingKeyMessage) {
+              delete m_pendingKeyMessage;
+              m_pendingKeyMessage = nullptr;
+              m_pendingKeyDeadline = 0;
+            }
+            
+            m_keyClickCount = 0; // Set to 0 to indicate triple-click just fired (next press starts fresh)
             modifiers = KeyModifiers(modifiers | kKeyTripleClickModifier);
-          
-          // Update tracking state
-          m_lastKeyScancode = osEvent.scancode();
-          m_lastKeyUnicode = osEvent.unicodeChar();
-          m_lastKeyModifiers = modifiers;
-          m_lastKeyTime = currentTime;
+            
+            // Create and enqueue the triple-click message immediately
+            Message* msg = new KeyMessage(kKeyDownMessage,
+                                         osEvent.scancode(),
+                                         modifiers,
+                                         osEvent.unicodeChar(),
+                                         osEvent.repeat());
+            msg->setDisplay(display);
+            if (osEvent.isDeadKey())
+              static_cast<KeyMessage*>(msg)->setDeadKey(true);
+            
+            broadcastKeyMsg(msg);
+            enqueueMessage(msg);
+            
+            m_lastKeyScancode = osEvent.scancode();
+            m_lastKeyUnicode = osEvent.unicodeChar();
+            m_lastKeyModifiers = modifiers;
+            m_lastKeyTime = currentTime;
+          }
+          // Double-click: second press within 180ms
+          else if (isSameKey && timeDiff < doubleClickInterval && m_keyClickCount == 1) {
+            // This is a double-click! Discard pending single-click
+            if (m_pendingKeyMessage) {
+              delete m_pendingKeyMessage;
+              m_pendingKeyMessage = nullptr;
+              m_pendingKeyDeadline = 0;
+            }
+            
+            m_keyClickCount = 2;
+            modifiers = KeyModifiers(modifiers | kKeyDoubleClickModifier);
+            
+            // Create the double-click message and hold it pending for triple-click detection
+            Message* msg = new KeyMessage(kKeyDownMessage,
+                                         osEvent.scancode(),
+                                         modifiers,
+                                         osEvent.unicodeChar(),
+                                         osEvent.repeat());
+            msg->setDisplay(display);
+            if (osEvent.isDeadKey())
+              static_cast<KeyMessage*>(msg)->setDeadKey(true);
+            
+            broadcastKeyMsg(msg);
+            
+            // Store as pending for triple-click detection (longer timeout)
+            m_pendingKeyMessage = msg;
+            m_pendingKeyDeadline = currentTime + tripleClickInterval;
+            
+            m_lastKeyScancode = osEvent.scancode();
+            m_lastKeyUnicode = osEvent.unicodeChar();
+            m_lastKeyModifiers = modifiers;
+            m_lastKeyTime = currentTime;
+          }
+          // First press or timeout/different key
+          else {
+            // Flush any pending message first
+            flushPendingKeyMessage();
+            
+            // Reset click count to 1 for new sequence (handles different key, timeout, or post-triple-click)
+            if (!isSameKey || timeDiff >= tripleClickInterval || m_keyClickCount != 1) {
+              m_keyClickCount = 1;
+            }
+            
+            // Create the message and hold it pending for double-click detection
+            Message* msg = new KeyMessage(kKeyDownMessage,
+                                         osEvent.scancode(),
+                                         modifiers,
+                                         osEvent.unicodeChar(),
+                                         osEvent.repeat());
+            msg->setDisplay(display);
+            if (osEvent.isDeadKey())
+              static_cast<KeyMessage*>(msg)->setDeadKey(true);
+            
+            broadcastKeyMsg(msg);
+            
+            // Store as pending for double-click detection
+            m_pendingKeyMessage = msg;
+            m_pendingKeyDeadline = currentTime + doubleClickInterval;
+            
+            m_lastKeyScancode = osEvent.scancode();
+            m_lastKeyUnicode = osEvent.unicodeChar();
+            m_lastKeyModifiers = modifiers;
+            m_lastKeyTime = currentTime;
+          }
         }
-        
-        Message* msg = new KeyMessage(
-          (osEvent.type() == os::Event::KeyDown ? kKeyDownMessage : kKeyUpMessage),
-          osEvent.scancode(),
-          modifiers,
-          osEvent.unicodeChar(),
-          osEvent.repeat());
-
-        msg->setDisplay(display);
-
-        if (osEvent.isDeadKey())
-          static_cast<KeyMessage*>(msg)->setDeadKey(true);
-
-        broadcastKeyMsg(msg);
-        enqueueMessage(msg);
+        else {
+          // KeyUp events: process normally without flushing pending KeyDown
+          // (the KeyDown might be part of a double/triple-click sequence)
+          Message* msg = new KeyMessage(kKeyUpMessage,
+                                       osEvent.scancode(),
+                                       modifiers,
+                                       osEvent.unicodeChar(),
+                                       osEvent.repeat());
+          msg->setDisplay(display);
+          if (osEvent.isDeadKey())
+            static_cast<KeyMessage*>(msg)->setDeadKey(true);
+          
+          broadcastKeyMsg(msg);
+          enqueueMessage(msg);
+        }
         break;
       }
 
@@ -588,6 +685,9 @@ void Manager::generateMessagesFromOSEvents()
       }
 
       case os::Event::MouseDown: {
+        // Flush pending key message when mouse activity occurs
+        flushPendingKeyMessage();
+        
         handleMouseDown(display,
                         osEvent.position(),
                         m_mouseButton = mouse_button_from_os_to_ui(osEvent),
@@ -641,6 +741,11 @@ void Manager::generateMessagesFromOSEvents()
         break;
       }
     }
+  }
+
+  // After processing all OS events, check if pending key message should be flushed
+  if (m_pendingKeyMessage && base::current_tick() >= m_pendingKeyDeadline) {
+    flushPendingKeyMessage();
   }
 
   // Generate just one kSetCursorMessage for the last mouse position
@@ -1186,6 +1291,9 @@ void Manager::freeWidget(Widget* widget)
 {
   ASSERT(manager_thread == std::this_thread::get_id());
 
+  // Flush any pending key message to avoid dangling references
+  flushPendingKeyMessage();
+
   if (widget->hasFocus() || (widget == focus_widget))
     freeFocus();
 
@@ -1567,6 +1675,9 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
 {
   if (!hasChild(window))
     return;
+
+  // Flush any pending key message before closing window
+  flushPendingKeyMessage();
 
   gfx::Region reg1;
   if (!window->ownDisplay()) {
