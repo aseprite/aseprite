@@ -28,24 +28,7 @@ namespace app {
 
 class WidgetLoader {
 public:
-  // Interface used to create customized widgets.
-  class IWidgetTypeCreator {
-  public:
-    virtual ~IWidgetTypeCreator() {}
-    virtual void dispose() = 0;
-    virtual ui::Widget* createWidgetFromXml(const tinyxml2::XMLElement* xmlElem) = 0;
-  };
-
   WidgetLoader();
-  ~WidgetLoader();
-
-  // Adds a new widget type that can be referenced in the .xml file
-  // with an XML element. The "tagName" is the same name as in the
-  // .xml should appear as <tagName>...</tagName>
-  //
-  // The "creator" will not be deleted automatically at the
-  // WidgetLoader dtor.
-  void addWidgetType(const char* tagName, IWidgetTypeCreator* creator);
 
   // Loads the specified widget from an .xml file.
   ui::Widget* loadWidget(const char* fileName, const char* widgetId, ui::Widget* widget = NULL);
@@ -76,9 +59,6 @@ private:
                                                       ui::Widget* root,
                                                       ui::Widget* widget);
 
-  typedef std::map<std::string, IWidgetTypeCreator*> TypeCreatorsMap;
-
-  TypeCreatorsMap m_typeCreators;
   ui::TooltipManager* m_tooltipManager;
   XmlTranslator m_xmlTranslator;
 };

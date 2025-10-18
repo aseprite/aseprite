@@ -59,18 +59,6 @@ WidgetLoader::WidgetLoader() : m_tooltipManager(NULL)
 {
 }
 
-WidgetLoader::~WidgetLoader()
-{
-  for (TypeCreatorsMap::iterator it = m_typeCreators.begin(), end = m_typeCreators.end(); it != end;
-       ++it)
-    it->second->dispose();
-}
-
-void WidgetLoader::addWidgetType(const char* tagName, IWidgetTypeCreator* creator)
-{
-  m_typeCreators[tagName] = creator;
-}
-
 Widget* WidgetLoader::loadWidget(const char* fileName, const char* widgetId, ui::Widget* widget)
 {
   std::string buf;
@@ -126,16 +114,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
 {
   const std::string elem_name = elem->Value();
 
-  // TODO error handling: add a message if the widget is bad specified
-
-  // Try to use one of the creators.
-  TypeCreatorsMap::iterator it = m_typeCreators.find(elem_name);
-
-  if (it != m_typeCreators.end()) {
-    if (!widget)
-      widget = it->second->createWidgetFromXml(elem);
-  }
-  else if (elem_name == "panel") {
+  if (elem_name == "panel") {
     if (!widget)
       widget = new Panel();
   }
@@ -192,28 +171,19 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
     }
   }
   else if (elem_name == "check") {
-    const char* looklike = elem->Attribute("looklike");
     const char* pref = elem->Attribute("pref");
 
     ASSERT(!widget || !pref); // widget && pref is not supported
 
-    if (looklike != NULL && strcmp(looklike, "button") == 0) {
-      ASSERT(!pref); // not supported yet
-
-      if (!widget)
-        widget = new CheckBox("", kButtonWidget);
-    }
-    else {
-      if (!widget) {
-        // Automatic bind <check> widget with bool preference option
-        if (pref) {
-          std::unique_ptr<BoolPrefWidget<CheckBox>> prefWidget(new BoolPrefWidget<CheckBox>(""));
-          prefWidget->setPref(pref);
-          widget = prefWidget.release();
-        }
-        else {
-          widget = new CheckBox("");
-        }
+    if (!widget) {
+      // Automatic bind <check> widget with bool preference option
+      if (pref) {
+        std::unique_ptr<BoolPrefWidget<CheckBox>> prefWidget(new BoolPrefWidget<CheckBox>(""));
+        prefWidget->setPref(pref);
+        widget = prefWidget.release();
+      }
+      else {
+        widget = new CheckBox("");
       }
     }
 
@@ -269,6 +239,9 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
   }
   else if (elem_name == "textedit") {
     widget = new TextEdit();
+
+    if (elem->Attribute("placeholder"))
+      ((TextEdit*)widget)->setPlaceholder(m_xmlTranslator(elem, "placeholder"));
   }
   else if (elem_name == "grid") {
     const char* columns = elem->Attribute("columns");
@@ -354,17 +327,11 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
   }
   else if (elem_name == "radio") {
     const char* group = elem->Attribute("group");
-    const char* looklike = elem->Attribute("looklike");
 
     int radio_group = (group ? strtol(group, NULL, 10) : 1);
 
     if (!widget) {
-      if (looklike != NULL && strcmp(looklike, "button") == 0) {
-        widget = new RadioButton("", radio_group, kButtonWidget);
-      }
-      else {
-        widget = new RadioButton("", radio_group);
-      }
+      widget = new RadioButton("", radio_group);
     }
     else {
       RadioButton* radio = dynamic_cast<RadioButton*>(widget);
@@ -473,8 +440,12 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
   else if (elem_name == "buttonset") {
     const char* columns = elem->Attribute("columns");
 
-    if (!widget && columns)
-      widget = new ButtonSet(strtol(columns, NULL, 10));
+    if (!widget) {
+      if (columns)
+        widget = new ButtonSet(strtol(columns, nullptr, 10));
+      else
+        throw std::runtime_error("<buttonset> without columns");
+    }
 
     if (ButtonSet* buttonset = dynamic_cast<ButtonSet*>(widget)) {
       if (bool_attr(elem, "multiple", false))
@@ -550,6 +521,9 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
   else if (elem_name == "font") {
     if (!widget)
       widget = new FontEntry(false);
+  }
+  else {
+    throw base::Exception("Invalid widget specified");
   }
 
   // Was the widget created?
