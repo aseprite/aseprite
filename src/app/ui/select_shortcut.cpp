@@ -11,6 +11,7 @@
 
 #include "app/ui/select_shortcut.h"
 
+#include "app/pref/preferences.h"
 #include "app/ui/key.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "obs/signal.h"
@@ -117,6 +118,11 @@ SelectShortcut::SelectShortcut(const ui::Shortcut& shortcut,
   cancelButton()->Click.connect([this] { onCancel(); });
 
   addChild(&m_tooltipManager);
+  
+  // Enable double/triple-click checkboxes only if experimental feature is enabled
+  const bool multiClickEnabled = Preferences::instance().experimental.keyboardMulticlick();
+  doubleClick()->setEnabled(multiClickEnabled);
+  tripleClick()->setEnabled(multiClickEnabled);
 }
 
 void SelectShortcut::onModifierChange(KeyModifiers modifier, CheckBox* checkbox)

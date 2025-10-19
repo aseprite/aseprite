@@ -17,8 +17,8 @@
           <check text="@.shift" id="shift" />
           <check text="@.space" id="space" />
           <check text="@.win" id="win" />
-          <check text="@.double_click" id="double_click" />
-          <check text="@.triple_click" id="triple_click" />
+          <check text="@.double_click" id="double_click" tooltip="@.double_click_tooltip" enabled="false" />
+          <check text="@.triple_click" id="triple_click" tooltip="@.triple_click_tooltip" enabled="false" />
         </hbox>
 
         <label text="@.assigned_to" />
