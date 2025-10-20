@@ -208,18 +208,11 @@ if(ENABLE_ASEPRITE_EXE)
       MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_LIST_DIR}/main/osx/Info.plist")
 
     # As the output now is inside the Aseprite.app bundle, we generate
-    # a script to replace the old bin/aseprite binary and run the
-    # binary inside the .app bundle. We're not calling "open
-    # Aseprite.app" here because we don't want to lose the CLI-like
-    # capability to run aseprite directly. Anyway just double-clicking
-    # the Aseprite.app bundle should work as any regular app on macOS.
-    file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/bin/aseprite"
-      CONTENT
-      "#!/usr/bin/env bash
-script_dir=$(cd \"$(dirname \"$\{BASH_SOURCE\[0\]\}\")\" && pwd)
-\"$script_dir/Aseprite.app/Contents/MacOS/aseprite\" \$@
-"
-      FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ)
+    # a symlink to replace the old bin/aseprite binary and run the
+    # binary inside the .app bundle.
+    add_custom_command(
+      TARGET aseprite POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E create_symlink "${CMAKE_BINARY_DIR}/bin/Aseprite.app/Contents/MacOS/aseprite" "${CMAKE_BINARY_DIR}/bin/aseprite")
 
     # Create a bin/data link to bin/Aseprite.app/Contents/Resources/data
     # so tests can load the data too (as tests aren't linked inside the
