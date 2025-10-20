@@ -45,7 +45,7 @@ public:
   enum class ImageColor { MainColor, BackgroundColor, BothColors };
 
   Brush();
-  Brush(BrushType type, int size, int angle);
+  Brush(BrushType type, int size, int angle, int thick = 1);
   ~Brush();
 
   // Don't offer copy constructor/operator, use clone*() functions
@@ -64,6 +64,7 @@ public:
   BrushType type() const { return m_type; }
   int size() const { return m_size; }
   int angle() const { return m_angle; }
+  int thick() const { return m_thick; }
   Image* image() const { return m_image.get(); }
   Image* maskBitmap() const { return m_maskBitmap.get(); }
   int gen() const { return m_gen; }
@@ -77,6 +78,7 @@ public:
 
   void setSize(int size);
   void setAngle(int angle);
+  void setThick(int thick);
   void setImage(const Image* image, const Image* maskBitmap);
 
   // Special functions to change the colors of the image or restore
@@ -113,6 +115,7 @@ private:
   BrushType m_type; // Type of brush
   int m_size;       // Size (diameter)
   int m_angle;      // Angle in degrees 0-360
+  int m_thick;      // Thickness (used only if supported, as in LineBrush)
   ImageRef m_image; // Image of the brush
   ImageRef m_maskBitmap;
   gfx::Rect m_bounds;
