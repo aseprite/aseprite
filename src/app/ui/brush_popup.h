@@ -24,7 +24,8 @@ public:
   void regenerate(ui::Display* display, const gfx::Point& pos);
 
   static os::SurfaceRef createSurfaceForBrush(const doc::BrushRef& brush,
-                                              const bool useOriginalImage = false);
+                                              int maxSize,
+                                              bool useOriginalImage = false);
 
 private:
   void onStandardBrush();
