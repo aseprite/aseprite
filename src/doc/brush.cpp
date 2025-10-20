@@ -38,11 +38,12 @@ Brush::Brush()
   regenerate();
 }
 
-Brush::Brush(BrushType type, int size, int angle)
+Brush::Brush(BrushType type, int size, int angle, int thick)
 {
   m_type = type;
   m_size = size;
   m_angle = angle;
+  m_thick = thick;
   m_pattern = BrushPattern::DEFAULT_FOR_UI;
   m_gen = 0;
 
@@ -96,6 +97,12 @@ void Brush::setSize(int size)
 void Brush::setAngle(int angle)
 {
   m_angle = angle;
+  regenerate();
+}
+
+void Brush::setThick(int thick)
+{
+  m_thick = thick;
   regenerate();
 }
 
@@ -443,6 +450,9 @@ void Brush::regenerate()
   if (m_type == kSquareBrushType && m_angle != 0 && m_size > 3)
     size = (int)std::ceil(std::sqrt((double)2 * m_size * m_size));
 
+  if (m_type == kLineBrushType)
+    size += m_thick;
+
   m_image.reset(Image::create(IMAGE_BITMAP, size, size));
   m_maskBitmap.reset();
 
@@ -565,14 +575,14 @@ void Brush::regenerate()
             dx = 1, dy = 1;
           }
 
-          draw_line(m_image.get(), cx, cy, cx + dx, cy + dy, BitmapTraits::max_value);
+          draw_line(m_image.get(), cx, cy, cx + dx, cy + dy, m_thick, BitmapTraits::max_value);
         }
         else {
           dx = int(r * cos(-a));
           dy = int(r * sin(-a));
 
-          draw_line(m_image.get(), cx, cy, cx + dx, cy + dy, BitmapTraits::max_value);
-          draw_line(m_image.get(), cx, cy, cx - dx, cy - dy, BitmapTraits::max_value);
+          draw_line(m_image.get(), cx, cy, cx + dx, cy + dy, m_thick, BitmapTraits::max_value);
+          draw_line(m_image.get(), cx, cy, cx - dx, cy - dy, m_thick, BitmapTraits::max_value);
         }
         break;
       }
@@ -607,6 +617,7 @@ void Brush::copyFieldsFromBrush(const Brush& brush)
   m_type = brush.m_type;
   m_size = brush.m_size;
   m_angle = brush.m_angle;
+  m_thick = brush.m_thick;
   m_image = brush.m_image;
   m_maskBitmap = brush.m_maskBitmap;
   m_bounds = brush.m_bounds;

@@ -213,7 +213,8 @@ void BrushPreview::show(const gfx::Point& screenPos)
       brush.reset(new Brush(
         brush->type(),
         (dynamics.size != tools::DynamicSensor::Static ? dynamics.minSize : brush->size()),
-        (dynamics.angle != tools::DynamicSensor::Static ? dynamics.minAngle : brush->angle())));
+        (dynamics.angle != tools::DynamicSensor::Static ? dynamics.minAngle : brush->angle()),
+        brush->thick()));
     }
   }
 
