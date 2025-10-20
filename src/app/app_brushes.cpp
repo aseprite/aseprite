@@ -299,10 +299,31 @@ static const int kBrushFlags = int(BrushSlot::Flags::BrushType) | int(BrushSlot:
 
 void AppBrushes::init()
 {
-  m_standard.resize(3);
-  m_standard[0] = BrushRef(new Brush(kCircleBrushType, 7, 0));
-  m_standard[1] = BrushRef(new Brush(kSquareBrushType, 7, 0));
-  m_standard[2] = BrushRef(new Brush(kLineBrushType, 7, 44));
+  m_standard.resize(22);
+  m_standard[0] = BrushRef(new Brush(kSquareBrushType, 1, 0));
+  m_standard[1] = BrushRef(new Brush(kSquareBrushType, 2, 0));
+  m_standard[2] = BrushRef(new Brush(kSquareBrushType, 3, 0));
+  m_standard[3] = BrushRef(new Brush(kSquareBrushType, 4, 0));
+  m_standard[4] = BrushRef(new Brush(kSquareBrushType, 5, 0));
+  m_standard[5] = BrushRef(new Brush(kSquareBrushType, 7, 0));
+  m_standard[6] = BrushRef(new Brush(kSquareBrushType, 8, 0));
+  m_standard[7] = BrushRef(new Brush(kSquareBrushType, 12, 0));
+
+  m_standard[8] = BrushRef(new Brush(kCircleBrushType, 3, 0));
+  m_standard[9] = BrushRef(new Brush(kCircleBrushType, 4, 0));
+  m_standard[10] = BrushRef(new Brush(kCircleBrushType, 5, 0));
+  m_standard[11] = BrushRef(new Brush(kCircleBrushType, 6, 0));
+  m_standard[12] = BrushRef(new Brush(kCircleBrushType, 8, 0));
+  m_standard[13] = BrushRef(new Brush(kCircleBrushType, 10, 0));
+  m_standard[14] = BrushRef(new Brush(kCircleBrushType, 12, 0));
+  m_standard[15] = BrushRef(new Brush(kCircleBrushType, 14, 0));
+
+  m_standard[16] = BrushRef(new Brush(kLineBrushType, 2, 45));
+  m_standard[17] = BrushRef(new Brush(kLineBrushType, 2, -45));
+  m_standard[18] = BrushRef(new Brush(kLineBrushType, 2, 45, 2));
+  m_standard[19] = BrushRef(new Brush(kLineBrushType, 2, -45, 2));
+  m_standard[20] = BrushRef(new Brush(kSquareBrushType, 5, 45));
+  m_standard[21] = BrushRef(new Brush(kCrossBrushType, 3, 45));
 
   const std::string fn = userBrushesFilename();
   if (base::is_file(fn)) {

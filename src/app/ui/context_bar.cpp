@@ -161,9 +161,13 @@ public:
     , m_owner(owner)
     , m_brushes(App::instance()->brushes())
   {
-    SkinPartPtr part(new SkinPart);
-    part->setBitmap(0, BrushPopup::createSurfaceForBrush(BrushRef(nullptr)));
     auto* theme = SkinTheme::get(this);
+    SkinPartPtr part(new SkinPart);
+    part->setBitmap(
+      0,
+      BrushPopup::createSurfaceForBrush(
+        BrushRef(nullptr),
+        theme->dimensions.brushTypeWidth() - theme->styles.brushType()->border().width()));
     addItem(part, theme->styles.brushType());
 
     m_popupWindow.Open.connect([this] {
@@ -177,9 +181,14 @@ public:
 
   void updateBrush(tools::Tool* tool = nullptr)
   {
+    auto* theme = SkinTheme::get(this);
     BrushRef brush = m_owner->activeBrush(tool);
     SkinPartPtr part(new SkinPart);
-    part->setBitmap(0, BrushPopup::createSurfaceForBrush(brush));
+    part->setBitmap(
+      0,
+      BrushPopup::createSurfaceForBrush(
+        brush,
+        theme->dimensions.brushTypeWidth() - theme->styles.brushType()->border().width()));
 
     const bool mono = (brush->type() != kImageBrushType);
     getItem(0)->setIcon(part);
@@ -2483,6 +2492,15 @@ void ContextBar::setActiveBrush(const doc::BrushRef& brush)
     if (brushPref.type() != newBrushType)
       brushPref.type(newBrushType);
 
+    if (brushPref.size() != brush->size())
+      brushPref.size(brush->size());
+
+    if (brushPref.angle() != brush->angle())
+      brushPref.angle(brush->angle());
+
+    if (brushPref.thick() != brush->thick())
+      brushPref.thick(brush->thick());
+
     m_activeBrush = brush;
   }
 
@@ -2528,7 +2546,8 @@ doc::BrushRef ContextBar::createBrushFromPreferences(ToolPreferences::Brush* bru
   doc::BrushRef brush;
   brush.reset(new Brush(static_cast<doc::BrushType>(brushPref->type()),
                         brushPref->size(),
-                        brushPref->angle()));
+                        brushPref->angle(),
+                        brushPref->thick()));
   return brush;
 }
 

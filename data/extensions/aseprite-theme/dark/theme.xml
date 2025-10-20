@@ -1162,7 +1162,7 @@
             <newlayer/>
             <icon color="button_selected_text"/>
         </style>
-        <style id="standard_brush" extends="buttonset_item_icon_mono" width="17" height="19"/>
+        <style id="standard_brush" extends="buttonset_item_icon_mono" width="20" height="22"/>
         <style id="outline_cell" extends="buttonset_item_icon" width="17" height="19"/>
         <style id="ani_button" extends="buttonset_item_icon" width="17"/>
         <style id="multi_window_item" extends="buttonset_item_icon" width="17" height="17"/>
