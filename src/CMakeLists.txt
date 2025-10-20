@@ -95,10 +95,11 @@ add_subdirectory(app)
 ######################################################################
 # Output bin/data/ directory where we are going to copy data files
 
+set(ORIGINAL_DATA_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin/data)
 if(ENABLE_ASEPRITE_EXE AND APPLE)
   set(DATA_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin/Aseprite.app/Contents/Resources/data)
 else()
-  set(DATA_OUTPUT_DIR ${CMAKE_BINARY_DIR}/bin/data)
+  set(DATA_OUTPUT_DIR ${ORIGINAL_DATA_OUTPUT_DIR})
 endif()
 
 ######################################################################
@@ -219,6 +220,16 @@ script_dir=$(cd \"$(dirname \"$\{BASH_SOURCE\[0\]\}\")\" && pwd)
 \"$script_dir/Aseprite.app/Contents/MacOS/aseprite\" \$@
 "
       FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ)
+
+    # Create a bin/data link to bin/Aseprite.app/Contents/Resources/data
+    # so tests can load the data too (as tests aren't linked inside the
+    # app bundle)
+    if(IS_DIRECTORY "${ORIGINAL_DATA_OUTPUT_DIR}" AND
+       NOT IS_SYMLINK "${ORIGINAL_DATA_OUTPUT_DIR}")
+      file(RENAME "${ORIGINAL_DATA_OUTPUT_DIR}" "${ORIGINAL_DATA_OUTPUT_DIR}-deprecated")
+    endif()
+    file(MAKE_DIRECTORY "${DATA_OUTPUT_DIR}")
+    file(CREATE_LINK "${DATA_OUTPUT_DIR}" "${ORIGINAL_DATA_OUTPUT_DIR}" SYMBOLIC)
   endif()
   target_link_libraries(aseprite app-lib)
   add_dependencies(aseprite copy_data)
