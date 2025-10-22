@@ -395,6 +395,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
     }
 
     win.remapWindow();
+    win.centerWindow();
     load_window_pos(&win, "ExportFile");
   again:;
     const bool result = win.show();
