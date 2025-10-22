@@ -127,7 +127,8 @@ doc::AlgoLineWithAlgoPixel Intertwine::getLineAlgo(ToolLoop* loop,
                                                    const Stroke::Pt& b)
 {
   bool needsFixForLineBrush = false;
-  if ((loop->getBrush()->type() == kLineBrushType) && (a.size > 1.0 || b.size > 1.0)) {
+  if ((loop->getBrush()->type() == kLineBrushType || loop->getBrush()->type() == kCrossBrushType) &&
+      (a.size > 1.0 || b.size > 1.0)) {
     if ((a.angle != 0.0f || b.angle != 0.0f) && (a.angle != b.angle)) {
       needsFixForLineBrush = true;
     }
@@ -140,6 +141,14 @@ doc::AlgoLineWithAlgoPixel Intertwine::getLineAlgo(ToolLoop* loop,
       int r = SGN(rF);
       int s = SGN(sF);
       needsFixForLineBrush = ((p == q && r != s) || (p != q && r == s));
+
+      if (loop->getBrush()->type() == kCrossBrushType) {
+        rF = std::cos(PI * (angle + 90) / 180);
+        sF = std::sin(PI * (angle + 90) / 180);
+        r = SGN(rF);
+        s = SGN(sF);
+        needsFixForLineBrush = needsFixForLineBrush || ((p == q && r != s) || (p != q && r == s));
+      }
     }
   }
 

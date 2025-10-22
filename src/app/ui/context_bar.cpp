@@ -2221,7 +2221,8 @@ void ContextBar::updateForTool(tools::Tool* tool)
   // True if the brush type supports angle.
   const bool hasBrushWithAngle = (activeBrush()->size() > 1) &&
                                  (activeBrush()->type() == kSquareBrushType ||
-                                  activeBrush()->type() == kLineBrushType);
+                                  activeBrush()->type() == kLineBrushType ||
+                                  activeBrush()->type() == kCrossBrushType);
 
   // True if the current tool is eyedropper.
   const bool isEyedropper = tool &&

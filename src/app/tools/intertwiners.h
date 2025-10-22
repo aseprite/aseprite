@@ -540,9 +540,10 @@ public:
       }
     }
 
-    // For line brush type, the pixel-perfect will create gaps so we
+    // For line and cross brush types, the pixel-perfect will create gaps so we
     // avoid removing points
-    if (loop->getBrush()->type() != kLineBrushType ||
+    if ((loop->getBrush()->type() != kLineBrushType &&
+         loop->getBrush()->type() != kCrossBrushType) ||
         (loop->getDynamics().angle == tools::DynamicSensor::Static &&
          (loop->getBrush()->angle() == 0.0f || loop->getBrush()->angle() == 90.0f ||
           loop->getBrush()->angle() == 180.0f))) {
