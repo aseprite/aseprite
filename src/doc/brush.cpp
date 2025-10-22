@@ -450,7 +450,7 @@ void Brush::regenerate()
   if (m_type == kSquareBrushType && m_angle != 0 && m_size > 3)
     size = (int)std::ceil(std::sqrt((double)2 * m_size * m_size));
 
-  if (m_type == kLineBrushType)
+  if (m_type == kLineBrushType || m_type == kCrossBrushType)
     size += m_thick;
 
   m_image.reset(Image::create(IMAGE_BITMAP, size, size));
@@ -584,6 +584,24 @@ void Brush::regenerate()
           draw_line(m_image.get(), cx, cy, cx + dx, cy + dy, m_thick, BitmapTraits::max_value);
           draw_line(m_image.get(), cx, cy, cx - dx, cy - dy, m_thick, BitmapTraits::max_value);
         }
+        break;
+      }
+      case kCrossBrushType: {
+        const double a = PI * m_angle / 180;
+        const double r = m_size / 2.0;
+        int cx = m_center.x;
+        int cy = m_center.y;
+        int dx1, dx2;
+        int dy1, dy2;
+        dx1 = int(r * cos(-a));
+        dy1 = int(r * sin(-a));
+        dx2 = int(r * cos(-a + (PI / 2.0)));
+        dy2 = int(r * sin(-a + (PI / 2.0)));
+
+        draw_line(m_image.get(), cx, cy, cx + dx1, cy + dy1, m_thick, BitmapTraits::max_value);
+        draw_line(m_image.get(), cx, cy, cx - dx1, cy - dy1, m_thick, BitmapTraits::max_value);
+        draw_line(m_image.get(), cx, cy, cx + dx2, cy + dy2, m_thick, BitmapTraits::max_value);
+        draw_line(m_image.get(), cx, cy, cx - dx2, cy - dy2, m_thick, BitmapTraits::max_value);
         break;
       }
     }
