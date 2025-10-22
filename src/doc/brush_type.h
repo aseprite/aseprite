@@ -17,9 +17,10 @@ enum BrushType {
   kSquareBrushType = 1,
   kLineBrushType = 2,
   kImageBrushType = 3,
+  kCrossBrushType = 4,
 
   kFirstBrushType = kCircleBrushType,
-  kLastBrushType = kImageBrushType,
+  kLastBrushType = kCrossBrushType,
 };
 
 std::string brush_type_to_string_id(BrushType brushType);
