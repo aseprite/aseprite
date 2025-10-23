@@ -273,7 +273,7 @@ public:
   };
 
   void getRegion(gfx::Region& region);
-  void getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags);
+  virtual void getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags);
 
   gfx::Point toClient(const gfx::Point& pt) const { return pt - m_bounds.origin(); }
   gfx::Rect toClient(const gfx::Rect& rc) const

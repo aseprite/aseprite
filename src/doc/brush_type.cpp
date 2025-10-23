@@ -19,6 +19,7 @@ std::string brush_type_to_string_id(BrushType brushType)
     case kSquareBrushType: return "square";
     case kLineBrushType:   return "line";
     case kImageBrushType:  return "image";
+    case kCrossBrushType:  return "cross";
   }
   return "unknown";
 }
@@ -33,6 +34,8 @@ BrushType string_id_to_brush_type(const std::string& s)
     return kLineBrushType;
   if (s == "image")
     return kImageBrushType;
+  if (s == "cross")
+    return kCrossBrushType;
   return kFirstBrushType;
 }
 

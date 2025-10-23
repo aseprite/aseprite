@@ -88,10 +88,12 @@ public:
   {
     ButtonSet::Item::onInitTheme(ev);
     if (m_brush.hasBrush()) {
+      Style* s = SkinTheme::instance()->styles.standardBrush();
       SkinPartPtr icon(new SkinPart);
       icon->setBitmap(
         0,
         BrushPopup::createSurfaceForBrush(m_brush.brush(),
+                                          s->maxSize().w - s->border().width(),
                                           m_brush.hasFlag(BrushSlot::Flags::ImageColor)));
       setIcon(icon);
     }
@@ -108,12 +110,12 @@ private:
     if (m_slot >= 0)
       contextBar->setActiveBrushBySlot(tool, m_slot);
     else if (m_brush.hasBrush()) {
-      auto& brushPref = Preferences::instance().tool(tool).brush;
       BrushRef brush;
 
       brush.reset(new Brush(static_cast<doc::BrushType>(m_brush.brush()->type()),
-                            brushPref.size(),
-                            brushPref.angle()));
+                            m_brush.brush()->size(),
+                            m_brush.brush()->angle(),
+                            m_brush.brush()->thick()));
 
       contextBar->setActiveBrush(brush);
     }
@@ -354,7 +356,7 @@ private:
 
 BrushPopup::BrushPopup()
   : PopupWindow("", ClickBehavior::CloseOnClickOutsideHotRegion)
-  , m_standardBrushes(3)
+  , m_standardBrushes(8)
   , m_customBrushes(nullptr)
 {
   auto& brushes = App::instance()->brushes();
@@ -367,13 +369,17 @@ BrushPopup::BrushPopup()
 
   HBox* top = new HBox;
   top->addChild(&m_standardBrushes);
-  top->addChild(new BoxFiller);
+  // top->addChild(new BoxFiller);
+  auto* lblPattern = new Label("Pattern");
+  // lblPattern->setTheme(theme);
+  // lblPattern->setStyle(theme->styles.miniLabel());
 
   m_box.addChild(top);
+  m_box.addChild(lblPattern);
   m_box.addChild(new Separator("", HORIZONTAL));
 
+  auto* theme = SkinTheme::get(this);
   for (const auto& brush : brushes.getStandardBrushes()) {
-    auto* theme = SkinTheme::get(this);
     m_standardBrushes.addItem(new SelectBrushItem(BrushSlot(BrushSlot::Flags::BrushType, brush)),
                               theme->styles.standardBrush());
   }
@@ -381,11 +387,12 @@ BrushPopup::BrushPopup()
 
   brushes.ItemsChange.connect(&BrushPopup::onBrushChanges, this);
 
-  InitTheme.connect([this] {
+  InitTheme.connect([this, lblPattern, theme] {
     setBorder(gfx::Border(2) * guiscale());
     setChildSpacing(0);
     m_box.noBorderNoChildSpacing();
     m_standardBrushes.setBgColor(gfx::ColorNone);
+    lblPattern->setStyle(theme->styles.miniLabel());
   });
   initTheme();
 }
@@ -395,13 +402,17 @@ void BrushPopup::setBrush(Brush* brush)
   for (auto child : m_standardBrushes.children()) {
     SelectBrushItem* item = static_cast<SelectBrushItem*>(child);
 
-    // Same type and same image
+    // Same type, size, angle, thick and image
     if (item->brush().hasBrush() && item->brush().brush()->type() == brush->type() &&
+        item->brush().brush()->size() == brush->size() &&
+        item->brush().brush()->angle() == brush->angle() &&
+        item->brush().brush()->thick() == brush->thick() &&
         (brush->type() != kImageBrushType || item->brush().brush()->image() == brush->image())) {
       m_standardBrushes.setSelectedItem(item);
       return;
     }
   }
+  m_standardBrushes.deselectItems();
 }
 
 void BrushPopup::regenerate(ui::Display* display, const gfx::Point& pos)
@@ -468,18 +479,18 @@ void BrushPopup::onBrushChanges()
 
 // static
 os::SurfaceRef BrushPopup::createSurfaceForBrush(const BrushRef& origBrush,
+                                                 int maxSize,
                                                  const bool useOriginalImage)
 {
-  constexpr int kMaxSize = 9;
-
   Image* image = nullptr;
   BrushRef brush = origBrush;
+  maxSize = maxSize / guiscale();
   if (brush) {
-    if (brush->type() != kImageBrushType && brush->size() > kMaxSize) {
+    if (brush->type() != kImageBrushType && brush->size() > maxSize) {
       // Clone with shared images, as setSize() will re-create the
       // images and the brush is no kImageBrushType anyway.
       brush = brush->cloneWithSharedImages();
-      brush->setSize(kMaxSize);
+      brush->setSize(maxSize);
     }
     // Show the original image in the popup (without the image colors
     // modified if there were some modification).
@@ -490,8 +501,8 @@ os::SurfaceRef BrushPopup::createSurfaceForBrush(const BrushRef& origBrush,
   }
 
   os::SurfaceRef surface = os::System::instance()->makeRgbaSurface(
-    std::min(kMaxSize, (image ? image->width() : 4)),
-    std::min(kMaxSize, (image ? image->height() : 4)));
+    std::min(maxSize, (image ? image->width() : 4)),
+    std::min(maxSize, (image ? image->height() : 4)));
 
   if (image) {
     Palette* palette = get_current_palette();
@@ -506,8 +517,8 @@ os::SurfaceRef BrushPopup::createSurfaceForBrush(const BrushRef& origBrush,
                              surface.get(),
                              0,
                              0,
-                             0,
-                             0,
+                             (surface->width() - image->width() - 1) / 2,
+                             (surface->height() - image->height() - 1) / 2,
                              image->width(),
                              image->height());
 

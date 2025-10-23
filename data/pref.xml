@@ -486,6 +486,7 @@
       <option id="type" type="BrushType" default="BrushType::CIRCLE" />
       <option id="size" type="int" default="1" />
       <option id="angle" type="int" default="0" />
+      <option id="thick" type="int" default="1" />
     </section>
     <section id="spray">
       <option id="width" type="int" default="16" />

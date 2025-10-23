@@ -5,8 +5,15 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
+#include "app/tools/controller.h"
+#include "app/tools/intertwine.h"
+#include "app/tools/point_shape.h"
+#include "app/tools/tool_loop.h"
+#include "app/tools/tool_loop_modifiers.h"
 #include "base/pi.h"
+#include "doc/algorithm/polygon.h"
 #include "doc/layer_tilemap.h"
+#include "gfx/point.h"
 
 namespace app { namespace tools {
 
@@ -249,6 +256,12 @@ public:
           int y1 = stroke[c].y;
           int x2 = stroke[c + 1].x;
           int y2 = stroke[c + 1].y;
+
+          if (x1 > x2)
+            std::swap(x1, x2);
+          if (y1 > y2)
+            std::swap(y1, y2);
+
           bounds |= rotateRectangle(x1, y1, x2, y2, angle).bounds();
         }
       }
@@ -262,16 +275,22 @@ private:
   {
     int cx = (x1 + x2) / 2;
     int cy = (y1 + y2) / 2;
-    int a = (x2 - x1) / 2;
-    int b = (y2 - y1) / 2;
+    int a = (x2 - x1 + 1) / 2;
+    int b = (y2 - y1 + 1) / 2;
+
     double s = -std::sin(angle);
     double c = std::cos(angle);
 
+    int ac = a * c;
+    int bs = b * s;
+    int as = a * s;
+    int bc = b * c;
+
     Stroke stroke;
-    stroke.addPoint(Point(cx - a * c - b * s, cy + a * s - b * c));
-    stroke.addPoint(Point(cx + a * c - b * s, cy - a * s - b * c));
-    stroke.addPoint(Point(cx + a * c + b * s, cy - a * s + b * c));
-    stroke.addPoint(Point(cx - a * c + b * s, cy + a * s + b * c));
+    stroke.addPoint(gfx::Point(cx - ac - bs, cy + as - bc));
+    stroke.addPoint(gfx::Point(cx + ac - bs, cy - as - bc));
+    stroke.addPoint(gfx::Point(cx + ac + bs, cy - as + bc));
+    stroke.addPoint(gfx::Point(cx - ac + bs, cy + as + bc));
     return stroke;
   }
 };
@@ -355,7 +374,7 @@ public:
     const double angle = loop->getController()->getShapeAngle();
 
     if (ABS(angle) > 0.001) {
-      Point center = bounds.center();
+      gfx::Point center = bounds.center();
       int a = bounds.w / 2.0 + 0.5;
       int b = bounds.h / 2.0 + 0.5;
       double xd = a * a;
@@ -521,9 +540,10 @@ public:
       }
     }
 
-    // For line brush type, the pixel-perfect will create gaps so we
+    // For line and cross brush types, the pixel-perfect will create gaps so we
     // avoid removing points
-    if (loop->getBrush()->type() != kLineBrushType ||
+    if ((loop->getBrush()->type() != kLineBrushType &&
+         loop->getBrush()->type() != kCrossBrushType) ||
         (loop->getDynamics().angle == tools::DynamicSensor::Static &&
          (loop->getBrush()->angle() == 0.0f || loop->getBrush()->angle() == 90.0f ||
           loop->getBrush()->angle() == 180.0f))) {
