@@ -32,6 +32,7 @@
 #include "base/fs.h"
 #include "base/paths.h"
 #include "base/remove_from_container.h"
+#include "ui/app_state.h"
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/combobox.h"
@@ -234,6 +235,10 @@ struct Dialog {
 
   void setWindowBounds(const gfx::Rect& rc)
   {
+    // Avoid accessing parent displays and windows while the app is closing.
+    if (ui::get_app_state() != ui::AppState::kNormal)
+      return;
+
     if (window.ownDisplay()) {
       window.expandWindow(rc.size());
 
