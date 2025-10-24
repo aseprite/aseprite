@@ -114,7 +114,7 @@ We have some rules for the changes and commits that are contributed:
   the subject line.
 * Check the spelling of your code, comments and commit messages.
 * Follow our [coding style guide](docs/CODING_STYLE.md). We're using
-  some C++17 features, targeting macOS 10.9 mainly as the oldest
+  some C++17 features, targeting macOS 10.14 mainly as the oldest
   platform (and the one limiting us to newer C++ standards),
 
 You can also take a look at the [src/README.md](https://github.com/aseprite/aseprite/tree/main/src/#aseprite-source-code)

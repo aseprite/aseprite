@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -169,6 +169,7 @@ void push_sprite_selection(lua_State* L, doc::Sprite* sprite);
 void push_sprite_slices(lua_State* L, doc::Sprite* sprite);
 void push_sprite_tags(lua_State* L, doc::Sprite* sprite);
 void push_sprites(lua_State* L);
+void push_standalone_selection(lua_State* L, doc::Mask* mask);
 void push_tile(lua_State* L, const doc::Tileset* tileset, doc::tile_index ti);
 void push_tile_properties(lua_State* L,
                           const doc::Tileset* tileset,

@@ -88,13 +88,15 @@ int WebSocket_new(lua_State* L)
       ws->setOnMessageCallback([L, ws, onreceiveRef](const ix::WebSocketMessagePtr& msg) {
         int msgType = (msg->binary ? MESSAGE_TYPE_BINARY : static_cast<int>(msg->type));
         std::string msgData = msg->str;
+        std::string msgError = msg->errorInfo.reason;
 
         ui::execute_from_ui_thread([=]() {
           lua_rawgeti(L, LUA_REGISTRYINDEX, onreceiveRef);
           lua_pushinteger(L, msgType);
           lua_pushlstring(L, msgData.c_str(), msgData.length());
+          lua_pushlstring(L, msgError.c_str(), msgError.length());
 
-          if (lua_pcall(L, 2, 0, 0)) {
+          if (lua_pcall(L, 3, 0, 0)) {
             if (const char* s = lua_tostring(L, -1)) {
               App::instance()->scriptEngine()->consolePrint(s);
               ws->stop();

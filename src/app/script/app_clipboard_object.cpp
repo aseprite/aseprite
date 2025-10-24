@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2022-2024  Igara Studio S.A.
+// Copyright (c) 2022-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -149,7 +149,7 @@ int Clipboard_get_content(lua_State* L)
   lua_setfield(L, -2, "image");
 
   if (bitmapResult && mask)
-    push_docobj<Mask>(L, mask);
+    push_standalone_selection(L, mask);
   else
     lua_pushnil(L);
   lua_setfield(L, -2, "selection");
