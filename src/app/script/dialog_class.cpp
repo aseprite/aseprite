@@ -260,62 +260,11 @@ struct Dialog {
     }
   }
 
-  // TODO merge this code with add_scrollbars_if_needed() from
-  //      ui/menu.cpp (creating a new function in the ui library)
-  void addScrollbarsIfNeeded(const gfx::Rect& workarea, gfx::Rect& bounds)
+  void addAutoScrollbars()
   {
-    gfx::Rect rc = bounds;
-
-    if (rc.x < workarea.x) {
-      rc.w -= (workarea.x - rc.x);
-      rc.x = workarea.x;
-    }
-    if (rc.x2() > workarea.x2()) {
-      rc.w = workarea.x2() - rc.x;
-    }
-
-    bool vscrollbarsAdded = false;
-    if (rc.y < workarea.y) {
-      rc.h -= (workarea.y - rc.y);
-      rc.y = workarea.y;
-      vscrollbarsAdded = true;
-    }
-    if (rc.y2() > workarea.y2()) {
-      rc.h = workarea.y2() - rc.y;
-      vscrollbarsAdded = true;
-    }
-
-    gfx::Rect newRc = rc;
-    if (get_multiple_displays() && window.shouldCreateNativeWindow()) {
-      const os::Window* nativeWindow = const_cast<ui::Display*>(parentDisplay())->nativeWindow();
-      newRc.setOrigin(nativeWindow->pointFromScreen(rc.origin()));
-      newRc.setSize(rc.size() / nativeWindow->scale());
-    }
-    if (newRc == window.bounds())
-      return;
-
     View* view = new View();
     view->InitTheme.connect([view] { view->noBorderNoChildSpacing(); });
     view->initTheme();
-
-    if (vscrollbarsAdded) {
-      int barWidth = view->verticalBar()->getBarWidth();
-      ;
-      if (get_multiple_displays())
-        barWidth *= window.display()->scale();
-
-      rc.w += 2 * barWidth;
-      if (rc.x2() > workarea.x2()) {
-        rc.x = workarea.x2() - rc.w;
-        if (rc.x < workarea.x) {
-          rc.x = workarea.x;
-          rc.w = workarea.w;
-        }
-      }
-    }
-
-    // New bounds
-    bounds = rc;
 
     window.removeChild(&grid);
     view->attachToView(&grid);
@@ -485,6 +434,17 @@ int Dialog_show(lua_State* L)
       dlg->window.setHandTool(false);
     lua_pop(L, 1);
 
+    type = lua_getfield(L, 2, "autoscrollbars");
+    if (type == LUA_TBOOLEAN) {
+      autoScrollbars = lua_toboolean(L, -1);
+      if (autoScrollbars) {
+        dlg->window.remapWindow();
+        dlg->window.centerWindow();
+        dlg->addAutoScrollbars();
+      }
+    }
+    lua_pop(L, 1);
+
     type = lua_getfield(L, 2, "bounds");
     if (VALID_LUATYPE(type)) {
       const auto rc = convert_args_into_rect(L, -1);
@@ -496,24 +456,6 @@ int Dialog_show(lua_State* L)
       }
     }
     lua_pop(L, 1);
-
-    type = lua_getfield(L, 2, "autoscrollbars");
-    if (type == LUA_TBOOLEAN)
-      autoScrollbars = lua_toboolean(L, -1);
-    lua_pop(L, 1);
-  }
-
-  if (autoScrollbars) {
-    dlg->window.remapWindow();
-    dlg->window.centerWindow();
-    fit_bounds(dlg->parentDisplay(),
-               &dlg->window,
-               dlg->window.bounds(),
-               [dlg](const gfx::Rect& workarea,
-                     gfx::Rect& bounds,
-                     std::function<gfx::Rect(Widget*)> getWidgetBounds) {
-                 dlg->addScrollbarsIfNeeded(workarea, bounds);
-               });
   }
 
   if (wait)
