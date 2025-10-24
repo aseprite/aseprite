@@ -188,7 +188,7 @@ Run `cmake` with the following parameters and then `ninja`:
     cmake \
       -DCMAKE_BUILD_TYPE=RelWithDebInfo \
       -DCMAKE_OSX_ARCHITECTURES=x86_64 \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=10.14 \
       -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk \
       -DLAF_BACKEND=skia \
       -DSKIA_DIR=$HOME/deps/skia \

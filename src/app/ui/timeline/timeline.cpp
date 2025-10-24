@@ -2886,7 +2886,8 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
   switch (m_dropRange.type()) {
     case Range::kCels: {
       gfx::Rect outlineBounds(dropBounds);
-      outlineBounds.enlarge(outlineWidth());
+      const int s = outlineWidth();
+      outlineBounds.enlarge(gfx::Border(s - guiscale(), s - guiscale(), s, s));
       info.styleFlags = ui::Style::Layer::kFocus;
       theme()->paintWidgetPart(g, styles.timelineRangeOutline(), outlineBounds, info);
 
