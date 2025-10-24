@@ -1691,23 +1691,62 @@ int Dialog_modify(lua_State* L)
       dlg->window.layout();
 
       if (dlg->autofit > 0) {
-        gfx::Rect oldBounds = dlg->window.bounds();
-        gfx::Size resize(oldBounds.size());
+        gfx::Rect oldBounds;
+        gfx::Rect workarea;
+        gfx::Rect mainWindowBounds;
+        if (get_multiple_displays()) {
+          auto* nativeWindow = dlg->parentDisplay()->nativeWindow();
+          mainWindowBounds = nativeWindow->contentRect() / nativeWindow->scale();
+          oldBounds = dlg->getWindowBounds().offset(mainWindowBounds.origin());
+          workarea = nativeWindow->screen()->workarea() / nativeWindow->scale();
+        }
+        else {
+          oldBounds = dlg->window.bounds();
+          workarea = App::instance()->mainWindow()->bounds();
+          mainWindowBounds = workarea;
+        }
+        const bool allowVResize = bool(dlg->autofit & ui::TOP) ^ bool(dlg->autofit & ui::BOTTOM);
+        const bool allowHResize = bool(dlg->autofit & ui::LEFT) ^ bool(dlg->autofit & ui::RIGHT);
 
-        if (dlg->autofit & ui::TOP || dlg->autofit & ui::BOTTOM)
-          resize.h = dlg->window.sizeHint().h;
-        if (dlg->autofit & ui::LEFT || dlg->autofit & ui::RIGHT)
-          resize.w = dlg->window.sizeHint().w;
+        gfx::Rect newBounds(oldBounds.x,
+                            oldBounds.y,
+                            allowHResize ? dlg->window.sizeHint().w : oldBounds.w,
+                            allowVResize ? dlg->window.sizeHint().h : oldBounds.h);
 
-        gfx::Size difference = resize - oldBounds.size();
-        const auto& bounds = dlg->getWindowBounds();
-        gfx::Rect newBounds(bounds.x, bounds.y, resize.w, resize.h);
+        if (auto* view = dynamic_cast<View*>(View::getView(&dlg->grid))) {
+          if (newBounds.size().w > workarea.w && allowHResize) {
+            newBounds.w = std::min(newBounds.size().w, workarea.w);
+            if (newBounds.size().h < workarea.h && view->horizontalBar() && allowVResize)
+              newBounds.h += view->horizontalBar()->getBarWidth();
+          }
+          if (newBounds.size().h > workarea.h && allowVResize) {
+            newBounds.h = std::min(newBounds.size().h, workarea.h);
+            if (newBounds.size().w < workarea.w && view->verticalBar() && allowHResize)
+              newBounds.w += view->verticalBar()->getBarWidth();
+          }
+          if ((dlg->autofit & ui::BOTTOM) && allowVResize)
+            newBounds.y = oldBounds.y2() - newBounds.h;
+          if ((dlg->autofit & ui::RIGHT) && allowHResize)
+            newBounds.x = oldBounds.x2() - newBounds.w;
 
-        if (dlg->autofit & ui::BOTTOM)
-          newBounds.y = bounds.y - difference.h;
-        if (dlg->autofit & ui::RIGHT)
-          newBounds.x = bounds.x - difference.w;
+          // Trim of dialog areas outside the workarea
+          if (newBounds.x2() > workarea.x2())
+            newBounds.w -= (newBounds.x2() - workarea.x2());
+          if (newBounds.y2() > workarea.y2())
+            newBounds.h -= (newBounds.y2() - workarea.y2());
+          if (newBounds.x < workarea.x) {
+            newBounds.w = oldBounds.x2() - workarea.x;
+            newBounds.x = workarea.x;
+          }
+          if (newBounds.y < workarea.y) {
+            newBounds.h = oldBounds.y2() - workarea.y;
+            newBounds.y = workarea.y;
+          }
 
+          // Restore newBounds refered to the mainWindows
+          if (get_multiple_displays())
+            newBounds.offset(-mainWindowBounds.origin());
+        }
         dlg->setWindowBounds(newBounds);
       }
     }

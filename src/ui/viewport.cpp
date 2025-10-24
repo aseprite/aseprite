@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -59,6 +59,11 @@ void Viewport::onResize(ResizeEvent& ev)
 void Viewport::onSizeHint(SizeHintEvent& ev)
 {
   ev.setSizeHint(gfx::Size(1 + border().width(), 1 + border().height()));
+  gfx::Size sz = ev.sizeHint();
+  for (auto child : children()) {
+    sz += child->sizeHint();
+    ev.setSizeHint(sz);
+  }
 }
 
 void Viewport::onPaint(PaintEvent& ev)
