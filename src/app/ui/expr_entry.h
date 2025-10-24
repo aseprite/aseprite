@@ -19,6 +19,7 @@ public:
 
   int decimals() const { return m_decimals; }
   void setDecimals(int decimals) { m_decimals = decimals; }
+  void validateText();
 
   // Signals
   obs::signal<void()> Leave;
@@ -28,10 +29,15 @@ protected:
   void onChange() override;
   int onGetTextInt() const override;
   double onGetTextDouble() const override;
+  void onSetText() override;
 
   virtual void onFormatExprFocusLeave(std::string& buf);
 
+private:
   int m_decimals;
+
+  // Used to validate the text on widget creation
+  bool m_firstText = false;
 };
 
 } // namespace app
