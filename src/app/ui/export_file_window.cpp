@@ -78,6 +78,7 @@ ExportFileWindow::ExportFileWindow(const Doc* doc)
   forTwitter()->setSelected(m_docPref.saveCopy.forTwitter());
   adjustResize()->setVisible(false);
   playSubtags()->setSelected(m_docPref.saveCopy.playSubtags());
+  ignoreEmpty()->setSelected(m_docPref.saveCopy.ignoreEmpty());
   // Here we don't call updateAniDir() because it's already filled and
   // set by the function fill_anidir_combobox(). So if the user
   // exported a tag with a specific AniDir, we want to keep the option
@@ -114,6 +115,7 @@ void ExportFileWindow::savePref()
   m_docPref.saveCopy.applyPixelRatio(applyPixelRatio());
   m_docPref.saveCopy.forTwitter(isForTwitter());
   m_docPref.saveCopy.playSubtags(isPlaySubtags());
+  m_docPref.saveCopy.ignoreEmpty(isIgnoreEmpty());
 }
 
 double ExportFileWindow::resizeValue() const
@@ -161,6 +163,11 @@ bool ExportFileWindow::applyPixelRatio() const
 bool ExportFileWindow::isForTwitter() const
 {
   return forTwitter()->isSelected();
+}
+
+bool ExportFileWindow::isIgnoreEmpty() const
+{
+  return ignoreEmpty()->isSelected();
 }
 
 void ExportFileWindow::setResizeScale(double scale)
