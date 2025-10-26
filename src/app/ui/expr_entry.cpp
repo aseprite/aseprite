@@ -25,15 +25,19 @@ ExprEntry::ExprEntry() : ui::Entry(1024, ""), m_decimals(0)
 {
 }
 
+void ExprEntry::validateText()
+{
+  std::string buf;
+  onFormatExprFocusLeave(buf);
+  if (text() != buf)
+    setTextQuiet(buf);
+}
+
 bool ExprEntry::onProcessMessage(ui::Message* msg)
 {
   switch (msg->type()) {
     case ui::kFocusLeaveMessage: {
-      std::string buf;
-      onFormatExprFocusLeave(buf);
-      if (text() != buf)
-        setText(buf);
-
+      validateText();
       Leave();
       break;
     }
@@ -65,6 +69,16 @@ double ExprEntry::onGetTextDouble() const
     return Entry::onGetTextDouble();
   else
     return v;
+}
+
+void ExprEntry::onSetText()
+{
+  if (!m_firstText) {
+    validateText();
+    m_firstText = true;
+  }
+
+  Entry::onSetText();
 }
 
 void ExprEntry::onFormatExprFocusLeave(std::string& buf)

@@ -9,6 +9,7 @@
   #include "config.h"
 #endif
 
+#include "base/exception.h"
 #include "base/memory.h"
 #include "gfx/size.h"
 #include "ui/grid.h"
@@ -381,8 +382,11 @@ void Grid::expandStrip(std::vector<Strip>& colstrip,
           if (cell_span == current_span) {
             // Calculate the maximum (expand_count) in cell's columns.
             int max_expand_count = 0;
-            for (i = col; i < col + cell_span; ++i)
+            for (i = col; i < col + cell_span; ++i) {
+              if (colstrip.size() - 1 < i)
+                throw base::Exception("Grid cell failed to span correctly");
               max_expand_count = std::max(max_expand_count, colstrip[i].expand_count);
+            }
 
             int expand = 0;      // How many columns have the maximum value of "expand_count"
             int last_expand = 0; // This variable is used to add the remainder space to the last
