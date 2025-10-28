@@ -213,6 +213,7 @@ AppBrushes::slot_id AppBrushes::addBrushSlot(const BrushSlot& brush)
   for (size_t i = 0; i < m_slots.size(); ++i) {
     if (!m_slots[i].locked() || m_slots[i].isEmpty()) {
       m_slots[i] = brush;
+      ItemsChange();
       return i + 1;
     }
   }

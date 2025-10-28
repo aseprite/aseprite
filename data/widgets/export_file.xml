@@ -44,6 +44,8 @@
         <button id="adjust_resize" text="@.adjust_resize" style="mini_button" />
       </hbox>
 
+      <check id="ignore_empty" text="@.ignore_empty" cell_hspan="3" />
+
       <hbox cell_hspan="3">
         <boxfiller />
         <hbox homogeneous="true">

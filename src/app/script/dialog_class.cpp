@@ -470,7 +470,6 @@ int Dialog_show(lua_State* L)
   dlg->refShow(L);
 
   bool wait = true;
-  bool autoScrollbars = false;
   obs::scoped_connection conn;
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "wait");
@@ -498,22 +497,31 @@ int Dialog_show(lua_State* L)
     lua_pop(L, 1);
 
     type = lua_getfield(L, 2, "autoscrollbars");
-    if (type == LUA_TBOOLEAN)
-      autoScrollbars = lua_toboolean(L, -1);
+    if (type == LUA_TBOOLEAN) {
+      bool autoScrollbars = lua_toboolean(L, -1);
+      if (autoScrollbars) {
+        dlg->window.remapWindow();
+        dlg->window.centerWindow();
+        auto dlgBounds = dlg->window.bounds();
+        // When multiple displays are used the dialog bounds origin is set to (0,0)
+        // so we need to get the origin from the last native frame.
+        if (get_multiple_displays()) {
+          auto dlgScreenBounds = dlg->window.lastNativeFrame();
+          auto* nativeWindow = dlg->window.display()->nativeWindow();
+          dlgBounds = gfx::Rect(nativeWindow->pointFromScreen(dlgScreenBounds.origin()),
+                                nativeWindow->pointFromScreen(dlgScreenBounds.point2()));
+        }
+        fit_bounds(dlg->parentDisplay(),
+                   &dlg->window,
+                   dlgBounds,
+                   [dlg](const gfx::Rect& workarea,
+                         gfx::Rect& bounds,
+                         std::function<gfx::Rect(Widget*)> getWidgetBounds) {
+                     dlg->addScrollbarsIfNeeded(workarea, bounds);
+                   });
+      }
+    }
     lua_pop(L, 1);
-  }
-
-  if (autoScrollbars) {
-    dlg->window.remapWindow();
-    dlg->window.centerWindow();
-    fit_bounds(dlg->parentDisplay(),
-               &dlg->window,
-               dlg->window.bounds(),
-               [dlg](const gfx::Rect& workarea,
-                     gfx::Rect& bounds,
-                     std::function<gfx::Rect(Widget*)> getWidgetBounds) {
-                 dlg->addScrollbarsIfNeeded(workarea, bounds);
-               });
   }
 
   if (wait)
