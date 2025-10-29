@@ -15,6 +15,7 @@
 #include "app/i18n/strings.h"
 #include "app/tools/tool.h"
 #include "app/ui/keyboard_shortcuts.h"
+#include "base/time.h"
 #include "ui/message.h"
 #include "ui/shortcut.h"
 
@@ -492,11 +493,60 @@ const AppShortcut* Key::isPressed(const Message* msg, const KeyContext keyContex
 
   if (const auto* keyMsg = dynamic_cast<const KeyMessage*>(msg)) {
     if (fitsContext(keyContext)) {
+      // Get the global keyboard shortcuts instance for sequence tracking
+      KeyboardShortcuts* globalKeys = KeyboardShortcuts::instance();
+      
+      // Check if we need to reset the sequence (timeout)
+      globalKeys->checkSequenceTimeout();
+      
+      const AppShortcut* singleKeyMatch = nullptr;
+      bool hasMultiKeyPartialMatch = false;
+      
       for (const AppShortcut& shortcut : shortcuts()) {
-        if (shortcut.isPressed(keyMsg->modifiers(), keyMsg->scancode(), keyMsg->unicodeChar()) &&
-            (!best || shortcut.fitsBetterThan(keyContext, keycontext(), keycontext(), *best))) {
-          best = &shortcut;
+        // Handle sequence shortcuts
+        if (shortcut.isSequence()) {
+          std::size_t sequencePos = globalKeys->getSequencePosition();
+          const ui::Shortcut& expectedKey = shortcut.getKeyAt(sequencePos);
+          
+          // Check if the current key matches the expected key in the sequence
+          if (expectedKey.isPressed(keyMsg->modifiers(), keyMsg->scancode(), keyMsg->unicodeChar())) {
+            // Advance the sequence
+            globalKeys->advanceSequenceState(ui::Shortcut(
+              keyMsg->modifiers(),
+              keyMsg->scancode(),
+              keyMsg->unicodeChar()));
+            
+            // Check if we've completed the sequence
+            if (globalKeys->getSequencePosition() == shortcut.sequenceSize()) {
+              // Sequence complete! Reset and return this shortcut
+              globalKeys->resetSequenceState();
+              if (!best || shortcut.fitsBetterThan(keyContext, keycontext(), keycontext(), *best)) {
+                best = &shortcut;
+              }
+            }
+            // Partial match - flag it so we don't execute single-key shortcuts
+            else {
+              hasMultiKeyPartialMatch = true;
+            }
+          }
         }
+        // Handle single-key shortcuts
+        else {
+          if (shortcut.isPressed(keyMsg->modifiers(), keyMsg->scancode(), keyMsg->unicodeChar()) &&
+              (!singleKeyMatch || shortcut.fitsBetterThan(keyContext, keycontext(), keycontext(), *singleKeyMatch))) {
+            singleKeyMatch = &shortcut;
+          }
+        }
+      }
+      
+      // If we have a multi-key partial match, don't execute single-key shortcuts yet
+      if (hasMultiKeyPartialMatch) {
+        return nullptr; // Wait for next key
+      }
+      
+      // If we have a single-key match, use it (sequences are prioritized above)
+      if (singleKeyMatch) {
+        best = singleKeyMatch;
       }
     }
   }

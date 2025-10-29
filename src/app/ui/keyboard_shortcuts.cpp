@@ -28,6 +28,7 @@
 #include "app/ui_context.h"
 #include "app/xml_document.h"
 #include "app/xml_exception.h"
+#include "base/time.h"
 #include "fmt/format.h"
 #include "ui/message.h"
 #include "ui/shortcut.h"
@@ -88,6 +89,8 @@ void KeyboardShortcuts::destroyInstance()
 }
 
 KeyboardShortcuts::KeyboardShortcuts()
+  : m_sequencePosition(0)
+  , m_lastSequenceKeyTime(0.0)
 {
   // Strings instance can be nullptr in tests.
   if (auto* strings = Strings::instance()) {
@@ -98,6 +101,67 @@ KeyboardShortcuts::KeyboardShortcuts()
 KeyboardShortcuts::~KeyboardShortcuts()
 {
   clear();
+}
+
+void KeyboardShortcuts::resetSequenceState() const
+{
+  m_sequencePosition = 0;
+  m_currentSequence.clear();
+  m_lastSequenceKeyTime = 0.0;
+  m_pendingSingleKeyCommand = nullptr;
+  m_pendingSingleKeyShortcut = nullptr;
+}
+
+bool KeyboardShortcuts::advanceSequenceState(const ui::Shortcut& key) const
+{
+  m_currentSequence.push_back(key);
+  m_sequencePosition = m_currentSequence.size();
+  m_lastSequenceKeyTime = base::current_tick() / 1000.0;
+  return true;
+}
+
+bool KeyboardShortcuts::checkSequenceTimeout(double timeoutSeconds) const
+{
+  if (!isTrackingSequence())
+    return false;
+    
+  double currentTime = base::current_tick() / 1000.0;
+  if (currentTime - m_lastSequenceKeyTime > timeoutSeconds) {
+    // Timeout occurred - keep pending command if we have one, then reset
+    bool hadPending = (m_pendingSingleKeyCommand != nullptr);
+    
+    // Don't clear pending in resetSequenceState - we need to return it
+    m_sequencePosition = 0;
+    m_currentSequence.clear();
+    m_lastSequenceKeyTime = 0.0;
+    
+    return hadPending; // Return true if we had a pending command to execute
+  }
+  return false; // No timeout
+}
+
+KeyPtr KeyboardShortcuts::getPendingCommand() const
+{
+  // Check if timeout expired
+  if (checkSequenceTimeout()) {
+    KeyPtr pending = m_pendingSingleKeyCommand;
+    m_pendingSingleKeyCommand = nullptr;
+    m_pendingSingleKeyShortcut = nullptr;
+    return pending;
+  }
+  return nullptr;
+}
+
+KeyPtr KeyboardShortcuts::executePendingCommand() const
+{
+  // Force execute pending command without timeout check
+  // Used when modifier is released
+  if (m_pendingSingleKeyCommand) {
+    KeyPtr pending = m_pendingSingleKeyCommand;
+    resetSequenceState();
+    return pending;
+  }
+  return nullptr;
 }
 
 void KeyboardShortcuts::setKeys(const KeyboardShortcuts& keys, const bool cloneKeys)
@@ -582,8 +646,22 @@ KeyPtr KeyboardShortcuts::findBestKeyFromMessage(const ui::Message* msg,
 {
   const KeyContext contexts[] = { currentKeyContext, KeyContext::Normal };
   int n = (contexts[0] != contexts[1] ? 2 : 1);
+  
+  // Check if timeout occurred - if so and we have a pending command, execute it
+  if (checkSequenceTimeout()) {
+    KeyPtr pending = m_pendingSingleKeyCommand;
+    m_pendingSingleKeyCommand = nullptr;
+    m_pendingSingleKeyShortcut = nullptr;
+    if (pending)
+      return pending;
+  }
+  
+  // Track state before checking keys
+  bool wasTrackingBefore = isTrackingSequence();
+  
   KeyPtr bestKey = nullptr;
   const AppShortcut* bestShortcut = nullptr;
+  
   for (int i = 0; i < n; ++i) {
     for (const KeyPtr& key : m_keys) {
       // Skip keys that are not for the specific KeyType (e.g. only for commands).
@@ -600,6 +678,29 @@ KeyPtr KeyboardShortcuts::findBestKeyFromMessage(const ui::Message* msg,
       }
     }
   }
+  
+  bool isTrackingAfter = isTrackingSequence();
+  
+  // If we just started tracking, store the single-key match as pending
+  if (!wasTrackingBefore && isTrackingAfter) {
+    if (bestKey && bestShortcut && !bestShortcut->isSequence()) {
+      m_pendingSingleKeyCommand = bestKey;
+      m_pendingSingleKeyShortcut = bestShortcut;
+      return nullptr; // Suppress for now, will execute after timeout
+    }
+  }
+  
+  // If we're in the middle of a sequence, suppress single-key shortcuts
+  if (wasTrackingBefore && isTrackingAfter && bestKey && bestShortcut && !bestShortcut->isSequence()) {
+    return nullptr;
+  }
+  
+  // Clear pending if we got a different match
+  if (bestKey) {
+    m_pendingSingleKeyCommand = nullptr;
+    m_pendingSingleKeyShortcut = nullptr;
+  }
+  
   return bestKey;
 }
 

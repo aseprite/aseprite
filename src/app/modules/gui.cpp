@@ -565,6 +565,27 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       break;
     }
 
+    case kKeyUpMessage: {
+      // When a modifier key is released, execute any pending single-key command
+      KeyMessage* keyMsg = static_cast<KeyMessage*>(msg);
+      if (keyMsg->scancode() >= kKeyFirstModifierScancode) {
+        KeyboardShortcuts* keys = const_cast<KeyboardShortcuts*>(KeyboardShortcuts::instance());
+        KeyPtr pendingKey = keys->executePendingCommand();
+        if (pendingKey) {
+          // Execute the pending command immediately
+          App* app = App::instance();
+          if (pendingKey->type() == KeyType::Command) {
+            Command* command = pendingKey->command();
+            if (getForegroundWindow() == app->mainWindow()) {
+              UIContext::instance()->executeCommandFromMenuOrShortcut(command, pendingKey->params());
+              return true;
+            }
+          }
+        }
+      }
+      break;
+    }
+
     case kTimerMessage:
       if (static_cast<TimerMessage*>(msg)->timer() == defered_invalid_timer) {
         invalidateRegion(defered_invalid_region);
@@ -681,7 +702,15 @@ void CustomizedGuiManager::onNewDisplayConfiguration(Display* display)
 bool CustomizedGuiManager::processKey(Message* msg)
 {
   const KeyboardShortcuts* keys = KeyboardShortcuts::instance();
-  const KeyPtr key = keys->findBestKeyFromMessage(msg);
+  
+  // First check if we have a pending command from timeout
+  KeyPtr key = keys->getPendingCommand();
+  
+  // If no pending, check for current message
+  if (!key) {
+    key = keys->findBestKeyFromMessage(msg);
+  }
+  
   if (!key)
     return false;
 
