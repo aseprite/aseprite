@@ -305,6 +305,9 @@ private:
   // the m_floatingUILayer precisely).
   gfx::Point m_floatingOffset;
 
+  // Holds the connection to Context::BeforeCommandExecution
+  obs::scoped_connection m_ctxConn1;
+
   ////////////////////////////////////////
   // Drop new tabs
 
