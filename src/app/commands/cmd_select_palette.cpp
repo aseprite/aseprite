@@ -132,7 +132,8 @@ void SelectPaletteColorsCommand::onExecute(Context* context)
 
         case IMAGE_INDEXED:
           doc::for_each_pixel<IndexedTraits>(image, [&usedEntries](const color_t p) {
-            usedEntries[p] = true;
+            if (p >= 0 && p < usedEntries.size())
+              usedEntries[p] = true;
           });
           break;
       }
@@ -148,12 +149,13 @@ void SelectPaletteColorsCommand::onExecute(Context* context)
           // Tilemap layer case
           if (layer->isTilemap()) {
             Tileset* tileset = static_cast<LayerTilemap*>(layer)->tileset();
-            tile_index ti;
             PalettePicks usedTiles(tileset->size());
 
             // Looking for tiles (available in tileset) used in the tilemap image:
-            doc::for_each_pixel<TilemapTraits>(image, [&usedTiles, &tileset, &ti](const tile_t t) {
-              if (tileset->findTileIndex(tileset->get(t), ti))
+            doc::for_each_pixel<TilemapTraits>(image, [&usedTiles, tileset](const tile_t t) {
+              tile_index ti = notile;
+              tileset->findTileIndex(tileset->get(t), ti);
+              if (ti >= 0 && ti < usedTiles.size())
                 usedTiles[ti] = true;
             });
 
