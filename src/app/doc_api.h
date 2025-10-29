@@ -91,40 +91,40 @@ public:
                  const TagsHandling tagsHandling);
 
   // Cels API
-  void addCel(LayerImage* layer, Cel* cel);
+  void addCel(Layer* layer, Cel* cel);
   Cel* addCel(LayerImage* layer, frame_t frameNumber, const ImageRef& image);
   void clearCel(Layer* layer, frame_t frame);
   void clearCel(Cel* cel);
   void clearCelAndAllLinks(Cel* cel);
   void setCelPosition(Sprite* sprite, Cel* cel, int x, int y);
   void setCelOpacity(Sprite* sprite, Cel* cel, int newOpacity);
-  void moveCel(LayerImage* srcLayer, frame_t srcFrame, LayerImage* dstLayer, frame_t dstFrame);
-  void copyCel(LayerImage* srcLayer,
+  void moveCel(Layer* srcLayer, frame_t srcFrame, Layer* dstLayer, frame_t dstFrame);
+  void copyCel(Layer* srcLayer,
                frame_t srcFrame,
-               LayerImage* dstLayer,
+               Layer* dstLayer,
                frame_t dstFrame,
                const bool* forceContinuous = nullptr);
-  void swapCel(LayerImage* layer, frame_t frame1, frame_t frame2);
+  void swapCel(Layer* layer, frame_t frame1, frame_t frame2);
 
   // Layers API
-  LayerImage* newLayer(LayerGroup* parent, const std::string& name);
-  LayerImage* newLayerAfter(LayerGroup* parent, const std::string& name, Layer* afterThis);
-  LayerGroup* newGroup(LayerGroup* parent, const std::string& name);
-  LayerGroup* newGroupAfter(LayerGroup* parent, const std::string& name, Layer* afterThis);
-  LayerTilemap* newTilemapAfter(LayerGroup* parent,
+  LayerImage* newLayer(Layer* parent, const std::string& name);
+  LayerImage* newLayerAfter(Layer* parent, const std::string& name, Layer* afterThis);
+  LayerGroup* newGroup(Layer* parent, const std::string& name);
+  LayerGroup* newGroupAfter(Layer* parent, const std::string& name, Layer* afterThis);
+  LayerTilemap* newTilemapAfter(Layer* parent,
                                 const std::string& name,
                                 tileset_index tsi,
                                 Layer* afterThis);
-  void addLayer(LayerGroup* parent, Layer* newLayer, Layer* afterThis);
+  void addLayer(Layer* parent, Layer* newLayer, Layer* afterThis);
   void removeLayer(Layer* layer);
-  void restackLayerAfter(Layer* layer, LayerGroup* parent, Layer* afterThis);
-  void restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeThis);
+  void restackLayerAfter(Layer* layer, Layer* parent, Layer* afterThis);
+  void restackLayerBefore(Layer* layer, Layer* parent, Layer* beforeThis);
   Layer* duplicateLayerAfter(Layer* sourceLayer,
-                             LayerGroup* parent,
+                             Layer* parent,
                              Layer* afterLayer,
                              const std::string& nameSuffix = std::string());
   Layer* duplicateLayerBefore(Layer* sourceLayer,
-                              LayerGroup* parent,
+                              Layer* parent,
                               Layer* beforeLayer,
                               const std::string& nameSuffix = std::string());
 
@@ -166,9 +166,9 @@ private:
   class HandleLinkedCels {
   public:
     HandleLinkedCels(DocApi& api,
-                     doc::LayerImage* srcLayer,
+                     doc::Layer* srcLayer,
                      const doc::frame_t srcFrame,
-                     doc::LayerImage* dstLayer,
+                     doc::Layer* dstLayer,
                      const doc::frame_t dstFrame);
     ~HandleLinkedCels();
     bool linkWasCreated() { return m_created; }
