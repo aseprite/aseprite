@@ -339,40 +339,45 @@ ButtonSet::ButtonSet(const int columns, const bool same_width_columns)
   initTheme();
 }
 
-ButtonSet::Item* ButtonSet::addItem(const std::string& text, ui::Style* style)
+ButtonSet::Item* ButtonSet::addItem(const std::string& text, ui::Style* style, int align)
 {
-  return addItem(text, 1, 1, style);
+  return addItem(text, 1, 1, style, align);
 }
 
-ButtonSet::Item* ButtonSet::addItem(const std::string& text, int hspan, int vspan, ui::Style* style)
+ButtonSet::Item* ButtonSet::addItem(const std::string& text,
+                                    int hspan,
+                                    int vspan,
+                                    ui::Style* style,
+                                    int align)
 {
   Item* item = new Item();
   item->setText(text);
-  addItem(item, hspan, vspan, style);
+  addItem(item, hspan, vspan, style, align);
   return item;
 }
 
-ButtonSet::Item* ButtonSet::addItem(const skin::SkinPartPtr& icon, ui::Style* style)
+ButtonSet::Item* ButtonSet::addItem(const skin::SkinPartPtr& icon, ui::Style* style, int align)
 {
-  return addItem(icon, 1, 1, style);
+  return addItem(icon, 1, 1, style, align);
 }
 
 ButtonSet::Item* ButtonSet::addItem(const skin::SkinPartPtr& icon,
                                     int hspan,
                                     int vspan,
-                                    ui::Style* style)
+                                    ui::Style* style,
+                                    int align)
 {
   Item* item = new Item();
   item->setIcon(icon);
-  addItem(item, hspan, vspan, style);
+  addItem(item, hspan, vspan, style, align);
   return item;
 }
-ButtonSet::Item* ButtonSet::addItem(Item* item, ui::Style* style)
+ButtonSet::Item* ButtonSet::addItem(Item* item, ui::Style* style, int align)
 {
-  return addItem(item, 1, 1, style);
+  return addItem(item, 1, 1, style, align);
 }
 
-ButtonSet::Item* ButtonSet::addItem(Item* item, int hspan, int vspan, ui::Style* style)
+ButtonSet::Item* ButtonSet::addItem(Item* item, int hspan, int vspan, ui::Style* style, int align)
 {
   item->InitTheme.connect([item, style] {
     ui::Style* s = style;
@@ -386,7 +391,7 @@ ButtonSet::Item* ButtonSet::addItem(Item* item, int hspan, int vspan, ui::Style*
     }
     item->setStyle(s);
   });
-  addChildInCell(item, hspan, vspan, HORIZONTAL | VERTICAL);
+  addChildInCell(item, hspan, vspan, align);
   return item;
 }
 
