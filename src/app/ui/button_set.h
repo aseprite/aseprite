@@ -55,15 +55,28 @@ public:
 
   ButtonSet(int columns, bool same_width_columns = false);
 
-  Item* addItem(const std::string& text, ui::Style* style);
-  Item* addItem(const std::string& text, int hspan = 1, int vspan = 1, ui::Style* style = nullptr);
-  Item* addItem(const skin::SkinPartPtr& icon, ui::Style* style);
+  Item* addItem(const std::string& text,
+                ui::Style* style,
+                int align = ui::HORIZONTAL | ui::VERTICAL);
+  Item* addItem(const std::string& text,
+                int hspan = 1,
+                int vspan = 1,
+                ui::Style* style = nullptr,
+                int align = ui::HORIZONTAL | ui::VERTICAL);
+  Item* addItem(const skin::SkinPartPtr& icon,
+                ui::Style* style,
+                int align = ui::HORIZONTAL | ui::VERTICAL);
   Item* addItem(const skin::SkinPartPtr& icon,
                 int hspan = 1,
                 int vspan = 1,
-                ui::Style* style = nullptr);
-  Item* addItem(Item* item, ui::Style* style);
-  Item* addItem(Item* item, int hspan = 1, int vspan = 1, ui::Style* style = nullptr);
+                ui::Style* style = nullptr,
+                int align = ui::HORIZONTAL | ui::VERTICAL);
+  Item* addItem(Item* item, ui::Style* style, int align = ui::HORIZONTAL | ui::VERTICAL);
+  Item* addItem(Item* item,
+                int hspan = 1,
+                int vspan = 1,
+                ui::Style* style = nullptr,
+                int align = ui::HORIZONTAL | ui::VERTICAL);
   Item* getItem(int index);
   int getItemIndex(const Item* item) const;
 
