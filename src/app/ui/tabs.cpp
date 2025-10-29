@@ -17,6 +17,7 @@
 #include "app/modules/gui.h"
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui_context.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "text/font.h"
@@ -66,6 +67,19 @@ Tabs::Tabs(TabsDelegate* delegate)
 {
   enableFlags(CTRL_RIGHT_CLICK);
   setDoubleBuffered(true);
+  m_ctxConn1 = UIContext::instance()->BeforeCommandExecution.connect([&] {
+    if (m_isDragging) {
+      if (m_delegate) {
+        // Restores the workarea view size if we dragged on top of it
+        m_delegate->onDockingTab(this, m_selected ? m_selected->view : nullptr);
+      }
+
+      // Cancel the copy
+      m_dragCopy = false;
+
+      stopDrag(DropTabResult::NOT_HANDLED);
+    }
+  });
   initTheme();
 }
 
