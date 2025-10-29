@@ -1642,7 +1642,10 @@ class ContextBar::SliceFields : public HBox {
     SliceFields* m_sliceFields;
 
   public:
-    Combo(SliceFields* sliceFields) : m_sliceFields(sliceFields) {}
+    Combo(SliceFields* sliceFields) : m_sliceFields(sliceFields)
+    {
+      getEntryWidget()->setPlaceholder(Strings::general_search());
+    }
 
   protected:
     void onChange() override
@@ -1704,6 +1707,7 @@ public:
         editor->slicesTransforms(m_transform.isSelected());
     });
 
+    m_action.setEnabled(false);
     m_action.addItem(theme->parts.iconUserData(), theme->styles.buttonsetItemIconMono());
     m_action.addItem(theme->parts.iconClose(), theme->styles.buttonsetItemIconMono());
     m_action.ItemChange.connect(
@@ -1812,8 +1816,17 @@ private:
     if (auto* editor = Editor::activeEditor())
       m_transform.setSelected(editor->slicesTransforms());
 
+    updateState();
+
     if (relayout)
       parent()->layout();
+  }
+
+  void updateState()
+  {
+    if (auto editor = Editor::activeEditor()) {
+      m_action.setEnabled(editor->hasSelectedSlices());
+    }
   }
 
   void onSelAction(const int item)
@@ -1829,6 +1842,7 @@ private:
           editor->clearSlicesSelection();
         break;
     }
+    updateState();
   }
 
   void onSelectSliceFromComboBox()
@@ -1845,6 +1859,7 @@ private:
         editor->selectSlice(slice);
       }
     }
+    updateState();
   }
 
   void onComboBoxEntryChange()
