@@ -2903,7 +2903,7 @@ void Editor::pasteImage(const Image* image, const Mask* mask, const gfx::Point* 
   position ? mask2.setOrigin(position->x, position->y) : mask2.setOrigin(x, y);
 
   PixelsMovementPtr pixelsMovement(
-    new PixelsMovement(UIContext::instance(), site, image, &mask2, "Paste"));
+    new PixelsMovement(UIContext::instance(), site, image, &mask2, "Paste", &m_tiledModeHelper));
 
   setState(EditorStatePtr(new MovingPixelsState(this, NULL, pixelsMovement, NoHandle)));
 }
