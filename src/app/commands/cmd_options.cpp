@@ -49,6 +49,10 @@
 #include "render/render.h"
 #include "ui/ui.h"
 
+#if LAF_WINDOWS
+  #include "app/win/thumbnails.h"
+#endif
+
 #if ENABLE_SENTRY
   #include "app/sentry_wrapper.h"
 #endif
@@ -488,6 +492,33 @@ public:
     // Aseprite Format preferences
     celFormat()->Change.connect([this] { onCelFormatChange(); });
 
+    // File Explorer preferences
+    {
+#if LAF_WINDOWS
+      std::string dll_name = win::get_thumbnailer_dll();
+      if (dll_name.empty()) {
+        winDisplayThumbnail()->setEnabled(false);
+        winDisplayThumbnail()->setText(
+          Strings::options_thumbnailer_dll_not_found(win::kAsepriteThumbnailerDllName));
+        winDisplayLittleIcon()->setVisible(false);
+      }
+      else {
+        win::ThumbnailsOption opts = windowsFileExplorerThumbnailsOptionsFromRegistry();
+        winDisplayThumbnail()->setSelected(opts.enabled);
+        winDisplayLittleIcon()->setVisible(opts.enabled);
+        winDisplayLittleIcon()->setSelected(opts.overlay);
+        winDisplayThumbnail()->Click.connect([this] {
+          winDisplayLittleIcon()->setVisible(winDisplayThumbnail()->isSelected());
+          checkIfExplorerProcNeedsRestart();
+        });
+        winDisplayLittleIcon()->Click.connect([this] { checkIfExplorerProcNeedsRestart(); });
+      }
+#else
+      winFileExplorerSeparator()->setVisible(false);
+      winFileExplorerBox()->setVisible(false);
+#endif
+    }
+
     // Reset checkboxes
 
     // Prevent the user from clicking "Reset" if they don't have anything selected.
@@ -892,6 +923,7 @@ public:
     m_pref.quantization.fitCriteria(m_bestFitCriteriaSelector.criteria());
 
 #ifdef LAF_WINDOWS
+    // Windows API tablet settings
     {
       os::TabletAPI tabletAPI = os::TabletAPI::Default;
       std::string tabletStr;
@@ -922,6 +954,11 @@ public:
       options.api = tabletAPI;
       options.setCursorFix = m_pref.tablet.setCursorFix();
       m_system->setTabletOptions(options);
+    }
+    // File Explorer Thumbnails
+    {
+      if (win::set_thumbnail_options("aseprite", windowsFileExplorerThumbnailsOptionsFromUI()))
+        m_restartExplorerProc = true;
     }
 #endif
 
@@ -2141,6 +2178,29 @@ private:
     windowsPointerOptions()->setVisible(pointerApi);
     sectionTablet()->layout();
   }
+
+  void checkIfExplorerProcNeedsRestart()
+  {
+    const bool changed = m_restartExplorerProc ||
+                         (windowsFileExplorerThumbnailsOptionsFromRegistry() !=
+                          windowsFileExplorerThumbnailsOptionsFromUI());
+
+    winRestartExplorerProc()->setVisible(changed);
+    sectionAsepriteFormat()->layout();
+  }
+
+  win::ThumbnailsOption windowsFileExplorerThumbnailsOptionsFromRegistry() const
+  {
+    return win::get_thumbnail_options("aseprite");
+  }
+
+  win::ThumbnailsOption windowsFileExplorerThumbnailsOptionsFromUI() const
+  {
+    win::ThumbnailsOption opts = windowsFileExplorerThumbnailsOptionsFromRegistry();
+    opts.enabled = winDisplayThumbnail()->isSelected();
+    opts.overlay = winDisplayLittleIcon()->isSelected();
+    return opts;
+  }
 #endif // LAF_WINDOWS
 
   os::SystemRef m_system;
@@ -2163,6 +2223,9 @@ private:
   SamplingSelector* m_samplingSelector = nullptr;
   text::FontRef m_font;
   text::FontRef m_miniFont;
+#if LAF_WINDOWS
+  bool m_restartExplorerProc = false;
+#endif // LAF_WINDOWS
 };
 
 class OptionsCommand : public Command {

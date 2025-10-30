@@ -593,6 +593,15 @@
             <label id="cel_format_warning"
                    text="@.cel_format_raw_warning" style="warning_label" />
           </grid>
+
+          <separator id="win_file_explorer_separator" text="@.file_explorer" horizontal="true" />
+          <vbox id="win_file_explorer_box">
+            <check id="win_display_thumbnail" text="@.display_thumbnail" />
+            <check id="win_display_little_icon" text="@.display_little_icon" />
+            <label id="win_restart_explorer_proc" text="@.restart_explorer_proc"
+                   tooltip="@.restart_explorer_proc_tooltip"
+                   tooltip_dir="top" visible="false" style="warning_label" />
+          </vbox>
         </vbox>
 
         <!-- Experimental -->
