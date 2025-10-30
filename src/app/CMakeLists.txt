@@ -730,6 +730,11 @@ if(TARGET generated_version)
   add_dependencies(app-lib generated_version)
 endif()
 
+if(WIN32)
+  target_sources(app-lib PRIVATE
+    win/thumbnails.cpp)
+endif()
+
 if(ENABLE_NEWS)
   target_compile_definitions(app-lib PUBLIC -DENABLE_NEWS)
   target_sources(app-lib PRIVATE

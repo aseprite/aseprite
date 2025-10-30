@@ -51,7 +51,11 @@ TooltipManager::~TooltipManager()
 
 void TooltipManager::addTooltipFor(Widget* widget, const std::string& text, int arrowAlign)
 {
-  ASSERT(!widget->hasFlags(IGNORE_MOUSE));
+  ASSERT(widget);
+
+  // This can happen if we add a tooltip to a label, we have to start listening mouse events.
+  if (widget->hasFlags(IGNORE_MOUSE))
+    widget->disableFlags(IGNORE_MOUSE);
 
   m_tips[widget] = TipInfo(text, arrowAlign);
 }

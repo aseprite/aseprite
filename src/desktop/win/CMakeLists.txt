@@ -1,4 +1,5 @@
 # Desktop Integration
+# Copyright (C) 2025 Igara Studio S.A.
 # Copyright (C) 2017-2018 David Capello
 
 add_library(aseprite-thumbnailer SHARED
