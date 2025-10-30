@@ -32,6 +32,8 @@
 #include "base/fs.h"
 #include "base/paths.h"
 #include "base/remove_from_container.h"
+#include "os/screen.h"
+#include "os/system.h"
 #include "ui/app_state.h"
 #include "ui/box.h"
 #include "ui/button.h"
@@ -100,6 +102,8 @@ std::vector<Dialog*> all_dialogs;
 
 struct Dialog {
   DialogWindow window;
+  // Main view that holds the grid and the scrollbars
+  ui::View* view = nullptr;
   // Main grid that holds the dialog content.
   ui::Grid grid;
   // Pointer to current grid (might be the main grid or a tab's grid).
@@ -260,6 +264,20 @@ struct Dialog {
     }
   }
 
+  // Workarea of the screen which contains the dialog bounds
+  gfx::Rect getCurrentWorkarea()
+  {
+    os::Window* nativeWindow = parentDisplay()->nativeWindow();
+    const gfx::Point mainOrigin = (nativeWindow->contentRect() / nativeWindow->scale()).origin();
+    const gfx::Rect bounds = getWindowBounds().offset(mainOrigin);
+    const int scale = nativeWindow->scale();
+    os::ScreenList screens;
+    os::System::instance()->listScreens(screens);
+    for (const auto& screen : screens)
+      if ((screen->bounds() / scale).contains(bounds))
+        return screen->workarea() / scale;
+  }
+
   // TODO merge this code with add_scrollbars_if_needed() from
   //      ui/menu.cpp (creating a new function in the ui library)
   void addScrollbarsIfNeeded(const gfx::Rect& workarea, gfx::Rect& bounds)
@@ -294,13 +312,13 @@ struct Dialog {
     if (newRc == window.bounds())
       return;
 
-    View* view = new View();
-    view->InitTheme.connect([view] { view->noBorderNoChildSpacing(); });
+    if (!view)
+      view = new View();
+    view->InitTheme.connect([this] { this->view->noBorderNoChildSpacing(); });
     view->initTheme();
 
     if (vscrollbarsAdded) {
       int barWidth = view->verticalBar()->getBarWidth();
-      ;
       if (get_multiple_displays())
         barWidth *= window.display()->scale();
 
@@ -1699,23 +1717,55 @@ int Dialog_modify(lua_State* L)
       dlg->window.layout();
 
       if (dlg->autofit > 0) {
-        gfx::Rect oldBounds = dlg->window.bounds();
-        gfx::Size resize(oldBounds.size());
+        gfx::Rect oldBounds(dlg->window.bounds());
+        gfx::Rect workarea(App::instance()->mainWindow()->bounds());
+        gfx::Point mainOrigin;
+        if (get_multiple_displays()) {
+          // Get the absolute dialog bounds and workarea along multiple screens
+          os::Window* nativeWindow = dlg->parentDisplay()->nativeWindow();
+          mainOrigin = (nativeWindow->contentRect() / nativeWindow->scale()).origin();
+          oldBounds = dlg->getWindowBounds().offset(mainOrigin);
+          workarea = dlg->getCurrentWorkarea();
+        }
 
-        if (dlg->autofit & ui::TOP || dlg->autofit & ui::BOTTOM)
-          resize.h = dlg->window.sizeHint().h;
-        if (dlg->autofit & ui::LEFT || dlg->autofit & ui::RIGHT)
-          resize.w = dlg->window.sizeHint().w;
+        // There is a ^ (XOR) logical operator because if TOP and BOTTOM (for example) are "true"
+        // the meaning is "both sides are fixed", so no resize is required.
+        const bool allowVResize = bool(dlg->autofit & ui::TOP) ^ bool(dlg->autofit & ui::BOTTOM);
+        const bool allowHResize = bool(dlg->autofit & ui::LEFT) ^ bool(dlg->autofit & ui::RIGHT);
 
-        gfx::Size difference = resize - oldBounds.size();
-        const auto& bounds = dlg->getWindowBounds();
-        gfx::Rect newBounds(bounds.x, bounds.y, resize.w, resize.h);
+        // Calculate the grid size and set it on the view of the window as size hint.
+        dlg->view->setMinSize(dlg->grid.sizeHint());
 
-        if (dlg->autofit & ui::BOTTOM)
-          newBounds.y = bounds.y - difference.h;
-        if (dlg->autofit & ui::RIGHT)
-          newBounds.x = bounds.x - difference.w;
+        gfx::Rect newBounds(oldBounds.x,
+                            oldBounds.y,
+                            allowHResize ? dlg->window.sizeHint().w : oldBounds.w,
+                            allowVResize ? dlg->window.sizeHint().h : oldBounds.h);
 
+        // Limit the new bounds of the dialog to workarea and
+        // consider the width of the scroll bar if there is one.
+        if (newBounds.w > workarea.w && allowHResize) {
+          newBounds.w = std::min(newBounds.w, workarea.w);
+          if (newBounds.h < workarea.h && dlg->view->horizontalBar() && allowVResize)
+            newBounds.h += dlg->view->horizontalBar()->getBarWidth();
+        }
+        if (newBounds.h > workarea.h && allowVResize) {
+          newBounds.h = std::min(newBounds.h, workarea.h);
+          if (newBounds.w < workarea.w && dlg->view->verticalBar() && allowHResize)
+            newBounds.w += dlg->view->verticalBar()->getBarWidth();
+        }
+
+        // Adjust the dialog origin according to its new size with the configured anchor.
+        if ((dlg->autofit & ui::BOTTOM) && allowVResize)
+          newBounds.y = oldBounds.y2() - newBounds.h;
+        if ((dlg->autofit & ui::RIGHT) && allowHResize)
+          newBounds.x = oldBounds.x2() - newBounds.w;
+
+        // Trim of dialog areas outside the workarea
+        limit_with_workarea(workarea, newBounds);
+
+        // Restore newBounds refered to the mainWindows
+        if (get_multiple_displays())
+          newBounds.offset(-mainOrigin);
         dlg->setWindowBounds(newBounds);
       }
     }
