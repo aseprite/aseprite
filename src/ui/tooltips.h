@@ -26,10 +26,12 @@ class TipWindow;
 class TooltipManager : public Widget {
 public:
   TooltipManager();
+  TooltipManager(int delay);
   ~TooltipManager();
 
   void addTooltipFor(Widget* widget, const std::string& text, int arrowAlign = 0);
   void removeTooltipFor(Widget* widget);
+  void setDelay(int delay);
 
 protected:
   bool onProcessMessage(Message* msg) override;
@@ -46,6 +48,7 @@ private:
     TipInfo(const std::string& text, int arrowAlign) : text(text), arrowAlign(arrowAlign) {}
   };
 
+  int m_delay;
   typedef std::map<Widget*, TipInfo> Tips;
   Tips m_tips;                            // All tips.
   std::unique_ptr<TipWindow> m_tipWindow; // Frame to show tooltips.

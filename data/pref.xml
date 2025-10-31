@@ -201,6 +201,7 @@
            zoom levels -->
       <option id="auto_fit" type="bool" default="false" />
       <option id="downsampling" type="Downsampling" default="Downsampling::BILINEAR_MIPMAP" />
+      <option id="tooltip_delay" type="int" default="300" />
     </section>
     <section id="cels">
       <option id="user_data_visibility" type="bool" default="false" />

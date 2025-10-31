@@ -586,6 +586,9 @@ public:
     // Slices default color
     defaultSliceColor()->setColor(m_pref.slices.defaultColor());
 
+    // Tooltip Delay
+    tooltipDelay()->setTextf("%d", m_pref.editor.tooltipDelay());
+
     // Timeline
     firstFrame()->setTextf("%d", m_globPref.timeline.firstFrame());
 
@@ -779,6 +782,7 @@ public:
     m_pref.editor.showScrollbars(showScrollbars()->isSelected());
     m_pref.editor.autoScroll(autoScroll()->isSelected());
     m_pref.editor.straightLinePreview(straightLinePreview()->isSelected());
+    m_pref.editor.tooltipDelay(tooltipDelay()->textInt());
     m_pref.eyedropper.discardBrush(discardBrush()->isSelected());
     m_pref.editor.rightClickMode(
       static_cast<app::gen::RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));
