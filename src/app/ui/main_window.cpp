@@ -20,6 +20,7 @@
 #include "app/ini_file.h"
 #include "app/notification_delegate.h"
 #include "app/pref/preferences.h"
+#include "app/ui/app_tooltips.h"
 #include "app/ui/browser_view.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
@@ -49,7 +50,6 @@
 #include "ui/message.h"
 #include "ui/splitter.h"
 #include "ui/system.h"
-#include "ui/tooltips.h"
 #include "ui/view.h"
 
 #ifdef ENABLE_SCRIPTING
@@ -91,7 +91,7 @@ public:
 
 MainWindow::MainWindow()
   : ui::Window(ui::Window::DesktopWindow)
-  , m_tooltipManager(new TooltipManager)
+  , m_tooltipManager(new AppTooltipManager)
   , m_dock(new Dock)
   , m_customizableDock(new Dock)
   , m_mode(NormalMode)

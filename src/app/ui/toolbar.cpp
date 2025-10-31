@@ -89,6 +89,12 @@ ToolBar::ToolBar() : Widget(kGenericWidget), m_openedRecently(false), m_tipTimer
 {
   m_instance = this;
 
+  auto tooltipDelay = [this] {
+    m_tipTimer.setInterval(App::instance()->preferences().experimental.tooltipDelay());
+  };
+  App::instance()->preferences().experimental.tooltipDelay.AfterChange.connect(tooltipDelay);
+  tooltipDelay();
+
   setBorder(gfx::Border(1 * guiscale(), 0, 1 * guiscale(), 0));
 
   m_hotTool = NULL;
@@ -560,6 +566,9 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
 {
   if (m_tipWindow)
     closeTipWindow();
+
+  if (m_tipTimer.interval() == 0)
+    return;
 
   int hidden = getHiddenGroups();
   int groups = App::instance()->toolBox()->getGroupsCount() - hidden;
