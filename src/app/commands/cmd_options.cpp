@@ -621,6 +621,9 @@ public:
     // Slices default color
     defaultSliceColor()->setColor(m_pref.slices.defaultColor());
 
+    // Tooltip Delay
+    tooltipDelay()->setTextf("%d", m_pref.experimental.tooltipDelay());
+
     // Timeline
     firstFrame()->setTextf("%d", m_globPref.timeline.firstFrame());
 
@@ -926,6 +929,7 @@ public:
     m_pref.experimental.nonactiveLayersOpacity(nonactiveLayersOpacity()->getValue());
     m_pref.quantization.rgbmapAlgorithm(m_rgbmapAlgorithmSelector.algorithm());
     m_pref.quantization.fitCriteria(m_bestFitCriteriaSelector.criteria());
+    m_pref.experimental.tooltipDelay(tooltipDelay()->textInt());
 
 #if LAF_WINDOWS
     // Windows API tablet settings
