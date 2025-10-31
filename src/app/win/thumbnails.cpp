@@ -10,6 +10,7 @@
 
 #include "app/win/thumbnails.h"
 
+#include "app/win/notify_shell.h"
 #include "base/fs.h"
 
 // Helpers functions/constants to register/unregister the thumbnailer directly.
@@ -93,6 +94,7 @@ bool set_thumbnail_options(const std::string& extension_name, const ThumbnailsOp
   }
   desktop::win::set_user_preferences(flags);
 
+  notify_shell_about_association_change_regen_thumbnails();
   return true;
 }
 

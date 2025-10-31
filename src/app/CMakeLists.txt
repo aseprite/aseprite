@@ -732,6 +732,7 @@ endif()
 
 if(WIN32)
   target_sources(app-lib PRIVATE
+    win/file_associations.cpp
     win/thumbnails.cpp)
 endif()
 
