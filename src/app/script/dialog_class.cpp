@@ -32,6 +32,8 @@
 #include "base/fs.h"
 #include "base/paths.h"
 #include "base/remove_from_container.h"
+#include "os/screen.h"
+#include "os/system.h"
 #include "ui/app_state.h"
 #include "ui/box.h"
 #include "ui/button.h"
@@ -100,6 +102,8 @@ std::vector<Dialog*> all_dialogs;
 
 struct Dialog {
   DialogWindow window;
+  // Main view that holds the grid and the scrollbars
+  ui::View* view = nullptr;
   // Main grid that holds the dialog content.
   ui::Grid grid;
   // Pointer to current grid (might be the main grid or a tab's grid).
@@ -294,13 +298,13 @@ struct Dialog {
     if (newRc == window.bounds())
       return;
 
-    View* view = new View();
-    view->InitTheme.connect([view] { view->noBorderNoChildSpacing(); });
+    if (!view)
+      view = new View();
+    view->InitTheme.connect([this] { this->view->noBorderNoChildSpacing(); });
     view->initTheme();
 
     if (vscrollbarsAdded) {
       int barWidth = view->verticalBar()->getBarWidth();
-      ;
       if (get_multiple_displays())
         barWidth *= window.display()->scale();
 
@@ -1699,23 +1703,62 @@ int Dialog_modify(lua_State* L)
       dlg->window.layout();
 
       if (dlg->autofit > 0) {
-        gfx::Rect oldBounds = dlg->window.bounds();
-        gfx::Size resize(oldBounds.size());
+        gfx::Rect oldBounds(dlg->window.bounds());
+        gfx::Rect workarea(App::instance()->mainWindow()->bounds());
+        gfx::Rect mainWindowBounds(workarea);
+        if (get_multiple_displays()) {
+          os::Window* nativeWindow = dlg->parentDisplay()->nativeWindow();
+          mainWindowBounds = nativeWindow->contentRect() / nativeWindow->scale();
+          oldBounds = dlg->getWindowBounds().offset(mainWindowBounds.origin());
+          os::ScreenList screens;
+          os::System::instance()->listScreens(screens);
+          for (const auto& screen : screens)
+            if ((screen->bounds() / nativeWindow->scale()).contains(oldBounds))
+              workarea = screen->workarea() / nativeWindow->scale();
+        }
 
-        if (dlg->autofit & ui::TOP || dlg->autofit & ui::BOTTOM)
-          resize.h = dlg->window.sizeHint().h;
-        if (dlg->autofit & ui::LEFT || dlg->autofit & ui::RIGHT)
-          resize.w = dlg->window.sizeHint().w;
+        const bool allowVResize = bool(dlg->autofit & ui::TOP) ^ bool(dlg->autofit & ui::BOTTOM);
+        const bool allowHResize = bool(dlg->autofit & ui::LEFT) ^ bool(dlg->autofit & ui::RIGHT);
 
-        gfx::Size difference = resize - oldBounds.size();
-        const auto& bounds = dlg->getWindowBounds();
-        gfx::Rect newBounds(bounds.x, bounds.y, resize.w, resize.h);
+        dlg->view->setMinSize(dlg->grid.sizeHint());
 
-        if (dlg->autofit & ui::BOTTOM)
-          newBounds.y = bounds.y - difference.h;
-        if (dlg->autofit & ui::RIGHT)
-          newBounds.x = bounds.x - difference.w;
+        gfx::Rect newBounds(oldBounds.x,
+                            oldBounds.y,
+                            allowHResize ? dlg->window.sizeHint().w : oldBounds.w,
+                            allowVResize ? dlg->window.sizeHint().h : oldBounds.h);
 
+        if (newBounds.size().w > workarea.w && allowHResize) {
+          newBounds.w = std::min(newBounds.size().w, workarea.w);
+          if (newBounds.size().h < workarea.h && dlg->view->horizontalBar() && allowVResize)
+            newBounds.h += dlg->view->horizontalBar()->getBarWidth();
+        }
+        if (newBounds.size().h > workarea.h && allowVResize) {
+          newBounds.h = std::min(newBounds.size().h, workarea.h);
+          if (newBounds.size().w < workarea.w && dlg->view->verticalBar() && allowHResize)
+            newBounds.w += dlg->view->verticalBar()->getBarWidth();
+        }
+        if ((dlg->autofit & ui::BOTTOM) && allowVResize)
+          newBounds.y = oldBounds.y2() - newBounds.h;
+        if ((dlg->autofit & ui::RIGHT) && allowHResize)
+          newBounds.x = oldBounds.x2() - newBounds.w;
+
+        // Trim of dialog areas outside the workarea
+        if (newBounds.x2() > workarea.x2())
+          newBounds.w -= (newBounds.x2() - workarea.x2());
+        if (newBounds.y2() > workarea.y2())
+          newBounds.h -= (newBounds.y2() - workarea.y2());
+        if (newBounds.x < workarea.x) {
+          newBounds.w = oldBounds.x2() - workarea.x;
+          newBounds.x = workarea.x;
+        }
+        if (newBounds.y < workarea.y) {
+          newBounds.h = oldBounds.y2() - workarea.y;
+          newBounds.y = workarea.y;
+        }
+
+        // Restore newBounds refered to the mainWindows
+        if (get_multiple_displays())
+          newBounds.offset(-mainWindowBounds.origin());
         dlg->setWindowBounds(newBounds);
       }
     }
