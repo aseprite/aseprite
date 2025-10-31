@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -47,8 +47,18 @@ void Separator::onSizeHint(SizeHintEvent& ev)
     maxSize.h = std::max(maxSize.h, textHeight());
   }
 
-  int w = maxSize.w + border().width();
-  int h = maxSize.h + border().height();
+  gfx::Border border = this->border();
+  gfx::Border styleBorder;
+  if (style()) {
+    styleBorder = style()->margin() + style()->border() + style()->padding();
+    if (hasText()) {
+      styleBorder.left(2 * styleBorder.left());
+      styleBorder.right(2 * styleBorder.right());
+    }
+  }
+
+  int w = maxSize.w + std::max(border.width(), styleBorder.width());
+  int h = maxSize.h + std::max(border.height(), styleBorder.height());
 
   ev.setSizeHint(Size(w, h));
 }

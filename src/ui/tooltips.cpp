@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -51,14 +51,18 @@ TooltipManager::~TooltipManager()
 
 void TooltipManager::addTooltipFor(Widget* widget, const std::string& text, int arrowAlign)
 {
-  ASSERT(!widget->hasFlags(IGNORE_MOUSE));
+  ASSERT(widget);
+
+  // This can happen if we add a tooltip to a label, we have to start listening mouse events.
+  if (widget->hasFlags(IGNORE_MOUSE))
+    widget->disableFlags(IGNORE_MOUSE);
 
   m_tips[widget] = TipInfo(text, arrowAlign);
 }
 
 void TooltipManager::removeTooltipFor(Widget* widget)
 {
-  auto it = m_tips.find(widget);
+  const auto it = m_tips.find(widget);
   if (it != m_tips.end())
     m_tips.erase(it);
 }
@@ -70,13 +74,13 @@ bool TooltipManager::onProcessMessage(Message* msg)
       // Tooltips are only for widgets that can directly get the mouse
       // (get the kMouseEnterMessage directly).
       if (Widget* widget = msg->recipient()) {
-        Tips::iterator it = m_tips.find(widget);
+        const auto it = m_tips.find(widget);
         if (it != m_tips.end()) {
           m_target.widget = it->first;
           m_target.tipInfo = it->second;
 
           if (m_timer == nullptr) {
-            m_timer.reset(new Timer(kTooltipDelayMsecs, this));
+            m_timer = std::make_unique<Timer>(kTooltipDelayMsecs, this);
             m_timer->Tick.connect(&TooltipManager::onTick, this);
           }
 
@@ -113,7 +117,7 @@ void TooltipManager::onInitTheme(InitThemeEvent& ev)
 void TooltipManager::onTick()
 {
   if (!m_tipWindow) {
-    m_tipWindow.reset(new TipWindow(m_target.tipInfo.text));
+    m_tipWindow = std::make_unique<TipWindow>(m_target.tipInfo.text);
 
     int arrowAlign = m_target.tipInfo.arrowAlign;
     gfx::Rect target = m_target.widget->bounds();
