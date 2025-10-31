@@ -64,11 +64,12 @@ namespace app {
 namespace {
 
 const char* kSectionGeneralId = "section_general";
-const char* kSectionTabletId = "section_tablet";
 const char* kSectionBgId = "section_bg";
 const char* kSectionGridId = "section_grid";
 const char* kSectionThemeId = "section_theme";
 const char* kSectionExtensionsId = "section_extensions";
+const char* kSectionTabletId = "section_tablet";
+const char* kSectionFileExplorerId = "section_file_explorer";
 
 const char* kInfiniteSymbol = "\xE2\x88\x9E"; // Infinite symbol (UTF-8)
 
@@ -348,23 +349,6 @@ public:
       keepEditedSpriteDataFor()->setEnabled(state);
     });
 
-#ifdef LAF_WINDOWS // Show Tablet section on Windows
-    tabletApiWindowsPointer()->Click.connect([this]() { onTabletAPIChange(); });
-    tabletApiWintabSystem()->Click.connect([this]() { onTabletAPIChange(); });
-    tabletApiWintabDirect()->Click.connect([this]() { onTabletAPIChange(); });
-#else // For macOS and Linux
-    {
-      // Hide the "section_tablet" item (which is only for Windows at the moment)
-      for (auto item : sectionListbox()->children()) {
-        if (static_cast<ListItem*>(item)->getValue() == kSectionTabletId) {
-          item->setVisible(false);
-          break;
-        }
-      }
-      sectionTablet()->setVisible(false);
-    }
-#endif
-
     rgbmapAlgorithmPlaceholder()->addChild(&m_rgbmapAlgorithmSelector);
     m_rgbmapAlgorithmSelector.setExpansive(true);
 
@@ -492,32 +476,48 @@ public:
     // Aseprite Format preferences
     celFormat()->Change.connect([this] { onCelFormatChange(); });
 
-    // File Explorer preferences
-    {
 #if LAF_WINDOWS
-      std::string dll_name = win::get_thumbnailer_dll();
-      if (dll_name.empty()) {
-        winDisplayThumbnail()->setEnabled(false);
-        winDisplayThumbnail()->setText(
-          Strings::options_thumbnailer_dll_not_found(win::kAsepriteThumbnailerDllName));
-        winDisplayLittleIcon()->setVisible(false);
-      }
-      else {
-        win::ThumbnailsOption opts = windowsFileExplorerThumbnailsOptionsFromRegistry();
-        winDisplayThumbnail()->setSelected(opts.enabled);
-        winDisplayLittleIcon()->setVisible(opts.enabled);
-        winDisplayLittleIcon()->setSelected(opts.overlay);
-        winDisplayThumbnail()->Click.connect([this] {
-          winDisplayLittleIcon()->setVisible(winDisplayThumbnail()->isSelected());
-          checkIfExplorerProcNeedsRestart();
-        });
-        winDisplayLittleIcon()->Click.connect([this] { checkIfExplorerProcNeedsRestart(); });
-      }
-#else
-      winFileExplorerSeparator()->setVisible(false);
-      winFileExplorerBox()->setVisible(false);
-#endif
+    // Show Tablet section on Windows
+    tabletApiWindowsPointer()->Click.connect([this] { onTabletAPIChange(); });
+    tabletApiWintabSystem()->Click.connect([this] { onTabletAPIChange(); });
+    tabletApiWintabDirect()->Click.connect([this] { onTabletAPIChange(); });
+
+    // File Explorer preferences
+    std::string dll_name = win::get_thumbnailer_dll();
+    if (dll_name.empty()) {
+      winDisplayThumbnail()->setEnabled(false);
+      winDisplayThumbnail()->setText(
+        Strings::options_thumbnailer_dll_not_found(win::kAsepriteThumbnailerDllName));
+      winDisplayLittleIcon()->setVisible(false);
     }
+    else {
+      win::ThumbnailsOption opts = windowsFileExplorerThumbnailsOptionsFromRegistry();
+      winDisplayThumbnail()->setSelected(opts.enabled);
+      winDisplayLittleIcon()->setVisible(opts.enabled);
+      winDisplayLittleIcon()->setSelected(opts.overlay);
+      winDisplayThumbnail()->Click.connect([this] {
+        winDisplayLittleIcon()->setVisible(winDisplayThumbnail()->isSelected());
+        checkIfExplorerProcNeedsRestart();
+      });
+      winDisplayLittleIcon()->Click.connect([this] { checkIfExplorerProcNeedsRestart(); });
+    }
+#else // For macOS and Linux
+    {
+      // Hide the "section_tablet" and "section_file_explorer" items
+      // which are only for Windows at the moment.
+      for (auto item : sectionListbox()->children()) {
+        if (auto* listItem = dynamic_cast<ListItem*>(item)) {
+          if (listItem->getValue() == kSectionTabletId ||
+              listItem->getValue() == kSectionFileExplorerId) {
+            listItem->setVisible(false);
+          }
+        }
+      }
+      sectionWindowsSpecificSeparator()->setVisible(false);
+      sectionTablet()->setVisible(false);
+      sectionFileExplorer()->setVisible(false);
+    }
+#endif
 
     // Reset checkboxes
 
@@ -672,7 +672,7 @@ public:
     // experimental "use native file dialog" option
     showAsepriteFileDialog()->setSelected(!m_pref.experimental.useNativeFileDialog());
 
-#ifdef LAF_WINDOWS // Show Tablet section on Windows
+#if LAF_WINDOWS // Show Tablet section on Windows
     {
       const os::TabletAPI tabletAPI = m_system->tabletOptions().api;
       if (tabletAPI == os::TabletAPI::Wintab)
@@ -922,7 +922,7 @@ public:
     m_pref.quantization.rgbmapAlgorithm(m_rgbmapAlgorithmSelector.algorithm());
     m_pref.quantization.fitCriteria(m_bestFitCriteriaSelector.criteria());
 
-#ifdef LAF_WINDOWS
+#if LAF_WINDOWS
     // Windows API tablet settings
     {
       os::TabletAPI tabletAPI = os::TabletAPI::Default;
@@ -2171,7 +2171,7 @@ private:
     return false;
   }
 
-#ifdef LAF_WINDOWS
+#if LAF_WINDOWS
   void onTabletAPIChange()
   {
     const bool pointerApi = tabletApiWindowsPointer()->isSelected();
@@ -2186,7 +2186,7 @@ private:
                           windowsFileExplorerThumbnailsOptionsFromUI());
 
     winRestartExplorerProc()->setVisible(changed);
-    sectionAsepriteFormat()->layout();
+    sectionFileExplorer()->layout();
   }
 
   win::ThumbnailsOption windowsFileExplorerThumbnailsOptionsFromRegistry() const
