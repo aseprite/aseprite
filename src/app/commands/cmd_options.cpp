@@ -50,6 +50,7 @@
 #include "ui/ui.h"
 
 #if LAF_WINDOWS
+  #include "app/win/file_associations.h"
   #include "app/win/thumbnails.h"
 #endif
 
@@ -501,6 +502,9 @@ public:
       });
       winDisplayLittleIcon()->Click.connect([this] { checkIfExplorerProcNeedsRestart(); });
     }
+    // File Explorer file type associations
+    fillExtensionsCombobox(winFileTypeToAssociate(), "aseprite");
+    winAssociateFileType()->Click.connect([this] { onAssociateFileType(); });
 #else // For macOS and Linux
     {
       // Hide the "section_tablet" and "section_file_explorer" items
@@ -2200,6 +2204,18 @@ private:
     opts.enabled = winDisplayThumbnail()->isSelected();
     opts.overlay = winDisplayLittleIcon()->isSelected();
     return opts;
+  }
+
+  void onAssociateFileType()
+  {
+    const std::string& ext = getExtension(winFileTypeToAssociate());
+    // .ase and .aseprite files will be associated with "AsepriteFile"
+    if (ext == "ase" || ext == "aseprite") {
+      win::associate_file_type_with_asepritefile_class(ext);
+    }
+    else {
+      win::add_aseprite_to_open_with_file_type(ext);
+    }
   }
 #endif // LAF_WINDOWS
 

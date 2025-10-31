@@ -659,6 +659,13 @@
                    tooltip="@.restart_explorer_proc_tooltip"
                    tooltip_dir="top" visible="false" style="warning_label" />
           </vbox>
+
+          <separator text="@.file_associations" horizontal="true" />
+          <hbox>
+            <label text="@.file_type" />
+            <combobox id="win_file_type_to_associate" />
+            <button text="@.associate_file_type" id="win_associate_file_type" />
+          </hbox>
         </vbox>
 
         <!-- Reset -->
