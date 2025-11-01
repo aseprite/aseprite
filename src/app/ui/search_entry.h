@@ -17,6 +17,9 @@ class SearchEntry : public ui::Entry {
 public:
   SearchEntry();
 
+  void setCloseOnEsc(bool closeOnEsc) { m_closeOnEsc = closeOnEsc; }
+  bool closeOnEsc() const { return m_closeOnEsc; }
+
 protected:
   bool onProcessMessage(ui::Message* msg) override;
   void onPaint(ui::PaintEvent& ev) override;
@@ -28,6 +31,7 @@ protected:
 
 private:
   gfx::Rect getCloseIconBounds() const;
+  bool m_closeOnEsc;
 };
 
 } // namespace app
