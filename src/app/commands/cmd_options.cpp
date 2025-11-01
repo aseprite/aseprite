@@ -23,6 +23,7 @@
 #include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/launcher.h"
+#include "app/match_words.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/recent_files.h"
@@ -569,6 +570,8 @@ public:
     // Reload themes when extensions are enabled/disabled
     m_extThemesChanges = App::instance()->extensions().ThemesChange.connect(
       [this] { reloadThemes(); });
+
+    search()->Change.connect(&OptionsWindow::onSearch, this);
 
     loadFromPreferences();
   }
@@ -2101,6 +2104,147 @@ private:
     dragAndDropFromEdges()->setSelected(m_pref.timeline.dragAndDropFromEdges.defaultValue());
   }
 
+  void allWidgetsIn(Widget* root, WidgetsList& list)
+  {
+    const auto& children = root->children();
+    for (auto i = children.rbegin(); i != children.rend(); ++i) {
+      list.push_back(*i);
+      allWidgetsIn(*i, list);
+    }
+  }
+
+  void savePreSearchState()
+  {
+    // Do all the actions that would happen when switching sections to ensure the state is correct.
+    loadLanguages();
+    onChangeBgScope();
+    onChangeGridScope();
+    loadThemes();
+    loadExtensions();
+
+    WidgetsList allWidgets;
+    allWidgetsIn(this, allWidgets);
+    m_sectionEnabledState.reserve(allWidgets.size());
+
+    for (auto* widget : allWidgets)
+      m_sectionEnabledState.emplace(widget, widget->isEnabled());
+  }
+
+  void loadPreSearchState()
+  {
+    if (m_sectionEnabledState.empty())
+      return;
+
+    WidgetsList allWidgets;
+    allWidgetsIn(this, allWidgets);
+
+    for (auto* widget : allWidgets)
+      widget->setEnabled(m_sectionEnabledState[widget]);
+
+    for (auto* item : sectionListbox()->children())
+      item->setEnabled(true);
+
+    m_sectionEnabledState.clear();
+  }
+
+  void onSearch()
+  {
+    const std::string& lowerText = base::string_to_lower(search()->text());
+
+    if (lowerText.empty()) {
+      loadPreSearchState();
+      return;
+    }
+
+    if (m_sectionEnabledState.empty())
+      savePreSearchState();
+
+    // Always disable this buttonset since it's only icons and can't be highlighted except by
+    // its buddy.
+    // TODO: Add a way to search through tooltips.
+    uiWindows()->setEnabled(false);
+
+    const MatchWords match(lowerText);
+    int newIndex = -1;
+    for (int i = 0; i < sectionListbox()->getItemsCount(); i++) {
+      auto* item = dynamic_cast<ListItem*>(sectionListbox()->at(i));
+      if (!item || item->type() == kSeparatorWidget)
+        continue;
+
+      auto* section = findChild(item->getValue().c_str());
+      if (!section)
+        continue;
+
+      WidgetsList sectionWidgets;
+      allWidgetsIn(section, sectionWidgets);
+
+      std::vector<Widget*> labelsWithBuddies;
+      bool activeSection = false;
+      for (auto* widget : sectionWidgets) {
+        // Ignore combo box items
+        if (widget->parent()->type() == kComboBoxWidget)
+          continue;
+
+        // Do not search things that were previously disabled.
+        if (!m_sectionEnabledState[widget])
+          continue;
+
+        std::string text = widget->text();
+
+        if (widget->type() == kComboBoxWidget) {
+          auto* comboBox = static_cast<ComboBox*>(widget);
+          for (int i = 0; i < comboBox->getItemCount(); i++)
+            text += " " + comboBox->getItemText(i);
+        }
+
+        if (text.empty())
+          continue;
+
+        bool highlight = match(text);
+        widget->setEnabled(highlight);
+
+        if (widget->type() == kLabelWidget || widget->type() == kLinkLabelWidget) {
+          if (auto* buddy = (static_cast<Label*>(widget))->buddy())
+            labelsWithBuddies.push_back(widget);
+        }
+
+        if (highlight)
+          activeSection = true;
+      }
+
+      if (activeSection) {
+        for (auto* widget : labelsWithBuddies) {
+          auto* label = (static_cast<Label*>(widget));
+
+          if (label->isEnabled()) {
+            label->buddy()->setEnabled(true);
+
+            // Special case to handle buttonsets
+            if (label->buddy()->type() == kGridWidget) {
+              for (auto* child : label->buddy()->children())
+                child->setEnabled(true);
+            }
+          }
+          else if (label->buddy()->isEnabled() && !label->buddy()->text().empty()) {
+            label->setEnabled(true);
+          }
+        }
+      }
+      else {
+        // For matching the section exactly even when we have no matches inside eg. "Experimental"
+        activeSection = match(item->text());
+      }
+
+      item->setEnabled(activeSection);
+
+      if (activeSection && newIndex == -1)
+        newIndex = i;
+    }
+
+    if (newIndex >= 0 && !sectionListbox()->getSelectedChild()->isEnabled())
+      sectionListbox()->selectChild(sectionListbox()->at(newIndex));
+  }
+
   gfx::Rect gridBounds() const
   {
     return gfx::Rect(gridX()->textInt(), gridY()->textInt(), gridW()->textInt(), gridH()->textInt());
@@ -2241,6 +2385,7 @@ private:
   SamplingSelector* m_samplingSelector = nullptr;
   text::FontRef m_font;
   text::FontRef m_miniFont;
+  std::unordered_map<Widget*, bool> m_sectionEnabledState;
 #if LAF_WINDOWS
   bool m_restartExplorerProc = false;
 #endif // LAF_WINDOWS

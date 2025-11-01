@@ -314,6 +314,11 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
 
     widget->setAlign((center ? CENTER : (right ? RIGHT : LEFT)) |
                      (top ? TOP : (bottom ? BOTTOM : MIDDLE)));
+
+    const char* buddy = elem->Attribute("for");
+    if (buddy != NULL) {
+      ((LinkLabel*)widget)->setBuddy(buddy);
+    }
   }
   else if (elem_name == "listbox") {
     if (!widget)
@@ -542,10 +547,14 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
     if (!widget)
       widget = new SearchEntry;
 
+    auto* searchEntry = static_cast<SearchEntry*>(widget);
+
     if (elem->Attribute("placeholder"))
-      ((SearchEntry*)widget)->setPlaceholder(m_xmlTranslator(elem, "placeholder"));
+      searchEntry->setPlaceholder(m_xmlTranslator(elem, "placeholder"));
     else
-      ((SearchEntry*)widget)->setPlaceholder(Strings::general_search());
+      searchEntry->setPlaceholder(Strings::general_search());
+
+    searchEntry->setCloseOnEsc(bool_attr(elem, "closeonesc", false));
   }
   else if (elem_name == "font") {
     if (!widget)

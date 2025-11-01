@@ -6,31 +6,35 @@
   <window id="options" text="@.title" help="preferences">
   <vbox>
     <hbox expansive="true">
-      <view maxsize="true">
-        <listbox id="section_listbox">
-          <listitem text="@.section_general" value="section_general" />
-          <listitem text="@.section_files" value="section_files" />
-          <listitem text="@.section_color" value="section_color" />
-          <listitem text="@.section_alerts" value="section_alerts" />
-          <listitem text="@.section_editor" value="section_editor" />
-          <listitem text="@.section_selection" value="section_selection" />
-          <listitem text="@.section_timeline" value="section_timeline" />
-          <listitem text="@.section_cursors" value="section_cursors" />
-          <listitem text="@.section_background" value="section_bg" />
-          <listitem text="@.section_grid" value="section_grid" />
-          <listitem text="@.section_guides_and_slices" value="section_guides_and_slices" />
-          <listitem text="@.section_undo" value="section_undo" />
-          <listitem text="@.section_theme" value="section_theme" />
-          <listitem text="@.section_extensions" value="section_extensions" />
-          <listitem text="@.section_aseprite_format" value="section_aseprite_format" />
-          <listitem text="@.section_experimental" value="section_experimental" />
-          <separator text="@.section_windows_specific" horizontal="true" style="separator_in_view" id="section_windows_specific_separator" />
-          <listitem text="@.section_tablet" value="section_tablet" />
-          <listitem text="@.section_file_explorer" value="section_file_explorer" />
-          <separator horizontal="true" style="separator_in_view" />
-          <listitem text="@general.reset" value="section_reset" />
-        </listbox>
-      </view>
+
+      <vbox expansive="true">
+        <search id="search" magnet="true" closeonesc="true" />
+        <view maxsize="true" expansive="true">
+          <listbox id="section_listbox">
+            <listitem text="@.section_general" value="section_general" />
+            <listitem text="@.section_files" value="section_files" />
+            <listitem text="@.section_color" value="section_color" />
+            <listitem text="@.section_alerts" value="section_alerts" />
+            <listitem text="@.section_editor" value="section_editor" />
+            <listitem text="@.section_selection" value="section_selection" />
+            <listitem text="@.section_timeline" value="section_timeline" />
+            <listitem text="@.section_cursors" value="section_cursors" />
+            <listitem text="@.section_background" value="section_bg" />
+            <listitem text="@.section_grid" value="section_grid" />
+            <listitem text="@.section_guides_and_slices" value="section_guides_and_slices" />
+            <listitem text="@.section_undo" value="section_undo" />
+            <listitem text="@.section_theme" value="section_theme" />
+            <listitem text="@.section_extensions" value="section_extensions" />
+            <listitem text="@.section_aseprite_format" value="section_aseprite_format" />
+            <listitem text="@.section_experimental" value="section_experimental" />
+            <separator text="@.section_windows_specific" horizontal="true" style="separator_in_view" id="section_windows_specific_separator" />
+            <listitem text="@.section_tablet" value="section_tablet" />
+            <listitem text="@.section_file_explorer" value="section_file_explorer" />
+            <separator horizontal="true" style="separator_in_view" />
+            <listitem text="@general.reset" value="section_reset" />
+          </listbox>
+        </view>
+      </vbox>
 
       <panel id="panel" expansive="true">
 
@@ -65,7 +69,7 @@
               <listitem text="400%" value="4" />
             </combobox>
 
-            <link text="@.language" url="https://www.aseprite.org/languages/" />
+            <link text="@.language" url="https://www.aseprite.org/languages/" for="language" />
             <combobox id="language" />
 
             <boxfiller id="font_warning_filler" visible="false" />
