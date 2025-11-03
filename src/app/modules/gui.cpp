@@ -566,19 +566,25 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
     }
 
     case kKeyUpMessage: {
-      // When a modifier key is released, execute any pending single-key command
+      // When the LAST modifier key is released (all modifiers released), 
+      // execute any pending single-key command
       KeyMessage* keyMsg = static_cast<KeyMessage*>(msg);
       if (keyMsg->scancode() >= kKeyFirstModifierScancode) {
         KeyboardShortcuts* keys = const_cast<KeyboardShortcuts*>(KeyboardShortcuts::instance());
-        KeyPtr pendingKey = keys->executePendingCommand();
-        if (pendingKey) {
-          // Execute the pending command immediately
-          App* app = App::instance();
-          if (pendingKey->type() == KeyType::Command) {
-            Command* command = pendingKey->command();
-            if (getForegroundWindow() == app->mainWindow()) {
-              UIContext::instance()->executeCommandFromMenuOrShortcut(command, pendingKey->params());
-              return true;
+        
+        // Only execute pending if NO modifiers are currently pressed
+        // This allows holding Ctrl through Ctrl+K Ctrl+O sequences
+        if (keyMsg->modifiers() == kKeyNoneModifier) {
+          KeyPtr pendingKey = keys->executePendingCommand();
+          if (pendingKey) {
+            // Execute the pending command immediately
+            App* app = App::instance();
+            if (pendingKey->type() == KeyType::Command) {
+              Command* command = pendingKey->command();
+              if (getForegroundWindow() == app->mainWindow()) {
+                UIContext::instance()->executeCommandFromMenuOrShortcut(command, pendingKey->params());
+                return true;
+              }
             }
           }
         }

@@ -91,6 +91,7 @@ void KeyboardShortcuts::destroyInstance()
 KeyboardShortcuts::KeyboardShortcuts()
   : m_sequencePosition(0)
   , m_lastSequenceKeyTime(0.0)
+  , m_sequenceJustCompleted(false)
 {
   // Strings instance can be nullptr in tests.
   if (auto* strings = Strings::instance()) {
@@ -110,6 +111,7 @@ void KeyboardShortcuts::resetSequenceState() const
   m_lastSequenceKeyTime = 0.0;
   m_pendingSingleKeyCommand = nullptr;
   m_pendingSingleKeyShortcut = nullptr;
+  m_sequenceJustCompleted = false;
 }
 
 bool KeyboardShortcuts::advanceSequenceState(const ui::Shortcut& key) const
@@ -647,6 +649,9 @@ KeyPtr KeyboardShortcuts::findBestKeyFromMessage(const ui::Message* msg,
   const KeyContext contexts[] = { currentKeyContext, KeyContext::Normal };
   int n = (contexts[0] != contexts[1] ? 2 : 1);
   
+  // Clear the completion flag for this new message
+  m_sequenceJustCompleted = false;
+  
   // Check if timeout occurred - if so and we have a pending command, execute it
   if (checkSequenceTimeout()) {
     KeyPtr pending = m_pendingSingleKeyCommand;
@@ -661,6 +666,8 @@ KeyPtr KeyboardShortcuts::findBestKeyFromMessage(const ui::Message* msg,
   
   KeyPtr bestKey = nullptr;
   const AppShortcut* bestShortcut = nullptr;
+  KeyPtr bestSingleKey = nullptr;
+  const AppShortcut* bestSingleShortcut = nullptr;
   
   for (int i = 0; i < n; ++i) {
     for (const KeyPtr& key : m_keys) {
@@ -669,29 +676,50 @@ KeyPtr KeyboardShortcuts::findBestKeyFromMessage(const ui::Message* msg,
         continue;
 
       const AppShortcut* shortcut = key->isPressed(msg, contexts[i]);
-      if (shortcut && (!bestKey || shortcut->fitsBetterThan(currentKeyContext,
-                                                            key->keycontext(),
-                                                            bestKey->keycontext(),
-                                                            *bestShortcut))) {
-        bestKey = key;
-        bestShortcut = shortcut;
+      if (shortcut) {
+        // Remember best single-key separately
+        if (!shortcut->isSequence()) {
+          if (!bestSingleKey || shortcut->fitsBetterThan(currentKeyContext,
+                                                         key->keycontext(),
+                                                         bestSingleKey->keycontext(),
+                                                         *bestSingleShortcut)) {
+            bestSingleKey = key;
+            bestSingleShortcut = shortcut;
+          }
+        }
+        
+        // Track overall best
+        if (!bestKey || shortcut->fitsBetterThan(currentKeyContext,
+                                                  key->keycontext(),
+                                                  bestKey->keycontext(),
+                                                  *bestShortcut)) {
+          bestKey = key;
+          bestShortcut = shortcut;
+        }
       }
     }
   }
   
   bool isTrackingAfter = isTrackingSequence();
   
+  // If a sequence just completed, suppress single-key matches for this keypress
+  if (m_sequenceJustCompleted && bestSingleKey) {
+    // Return only the sequence match, ignore single-key matches
+    m_sequenceJustCompleted = false;
+    return bestKey && bestShortcut && bestShortcut->isSequence() ? bestKey : nullptr;
+  }
+  
   // If we just started tracking, store the single-key match as pending
   if (!wasTrackingBefore && isTrackingAfter) {
-    if (bestKey && bestShortcut && !bestShortcut->isSequence()) {
-      m_pendingSingleKeyCommand = bestKey;
-      m_pendingSingleKeyShortcut = bestShortcut;
-      return nullptr; // Suppress for now, will execute after timeout
+    if (bestSingleKey) {
+      m_pendingSingleKeyCommand = bestSingleKey;
+      m_pendingSingleKeyShortcut = bestSingleShortcut;
+      return nullptr; // Suppress for now, will execute after timeout or modifier release
     }
   }
   
   // If we're in the middle of a sequence, suppress single-key shortcuts
-  if (wasTrackingBefore && isTrackingAfter && bestKey && bestShortcut && !bestShortcut->isSequence()) {
+  if (wasTrackingBefore && isTrackingAfter && bestSingleKey && (!bestKey || !bestShortcut->isSequence())) {
     return nullptr;
   }
   

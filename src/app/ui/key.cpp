@@ -518,7 +518,8 @@ const AppShortcut* Key::isPressed(const Message* msg, const KeyContext keyContex
             
             // Check if we've completed the sequence
             if (globalKeys->getSequencePosition() == shortcut.sequenceSize()) {
-              // Sequence complete! Reset and return this shortcut
+              // Sequence complete! Mark it so we suppress single-key matches
+              globalKeys->markSequenceCompleted();
               globalKeys->resetSequenceState();
               if (!best || shortcut.fitsBetterThan(keyContext, keycontext(), keycontext(), *best)) {
                 best = &shortcut;

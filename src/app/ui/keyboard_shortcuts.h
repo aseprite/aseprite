@@ -114,6 +114,9 @@ private:
   // Pending single-key command when a multi-key sequence is being tracked
   mutable KeyPtr m_pendingSingleKeyCommand;
   mutable const AppShortcut* m_pendingSingleKeyShortcut;
+  
+  // Flag to suppress single-key matches when a sequence just completed
+  mutable bool m_sequenceJustCompleted;
 };
 
 inline std::string key_tooltip(const char* str,
