@@ -96,6 +96,7 @@ public:
   bool checkSequenceTimeout(double timeoutSeconds = 0.5) const;
   KeyPtr getPendingCommand() const;
   KeyPtr executePendingCommand() const; // Force execute pending without timeout check
+  void markSequenceCompleted() const { m_sequenceJustCompleted = true; }
 
 private:
   void exportKeys(tinyxml2::XMLElement* parent, KeyType type);

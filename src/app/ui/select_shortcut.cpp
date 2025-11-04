@@ -85,14 +85,6 @@ protected:
 
           KeyModifiers modifiers = keymsg->modifiers();
 
-          // Special handling for Space key:
-          // If Space scancode with Space modifier, it means Space was just pressed as a modifier key
-          // We should ignore it (user is holding Space to use as modifier for next key)
-          if (keymsg->scancode() == kKeySpace && (modifiers & kKeySpaceModifier)) {
-            // Ignore Space when pressed as a modifier key
-            break;
-          }
-
           // Get current time
           double currentTime = base::current_tick();
           
@@ -100,6 +92,16 @@ protected:
           bool isNewSequence = false;
           if (m_isFirstKeypress || m_lastKeyTime == 0 || (currentTime - m_lastKeyTime) > m_sequenceTimeout) {
             isNewSequence = true;
+          }
+
+          // Special handling for Space key:
+          // If Space is pressed at the start of a new sequence, ignore it (it's likely being used as a modifier)
+          // If Space is pressed with Space modifier already active, also ignore it (OS key repeat)
+          if (keymsg->scancode() == kKeySpace) {
+            if (isNewSequence || (modifiers & kKeySpaceModifier)) {
+              // Ignore Space when being used as a modifier key
+              break;
+            }
           }
 
           Shortcut newKey(
