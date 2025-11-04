@@ -639,7 +639,6 @@ private:
     int sectionIdx = 0; // index 0 is menus
     for (auto listBox : m_listBoxes) {
       Separator* group = nullptr;
-      ui::Shortcut searchShortcut;
 
       for (auto item : listBox->children()) {
         if (KeyItem* keyItem = dynamic_cast<KeyItem*>(item)) {
