@@ -29,7 +29,13 @@ class SelectShortcut::KeyField : public ui::Entry {
 public:
   static constexpr int kMaxSequenceKeys = 4;
   
-  KeyField(const Shortcut& shortcut) : ui::Entry(256, ""), m_sequenceKeys(), m_isFirstKeypress(true), m_lastKeyTime(0), m_sequenceTimeout(500.0)
+  KeyField(SelectShortcut* parent, const Shortcut& shortcut) 
+    : ui::Entry(256, "")
+    , m_parent(parent)
+    , m_sequenceKeys()
+    , m_isFirstKeypress(true)
+    , m_lastKeyTime(0)
+    , m_sequenceTimeout(500.0)
   {
     setTranslateDeadKeys(false);
     setExpansive(true);
@@ -77,11 +83,7 @@ protected:
         if (hasFocus() && !isReadOnly()) {
           KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
           if (!keymsg->scancode() && keymsg->unicodeChar() < 32)
-            break;
-
-          // Ignore pure modifier keys (Alt, Ctrl, Shift, Win, etc.)
-          if (keymsg->scancode() >= kKeyFirstModifierScancode)
-            break;
+            return true; // Consume control characters
 
           KeyModifiers modifiers = keymsg->modifiers();
 
@@ -99,15 +101,38 @@ protected:
           // If Space is pressed with Space modifier already active, also ignore it (OS key repeat)
           if (keymsg->scancode() == kKeySpace) {
             if (isNewSequence || (modifiers & kKeySpaceModifier)) {
-              // Ignore Space when being used as a modifier key
+              // Ignore Space when being used as a modifier key, but consume the event
               break;
             }
           }
 
+          KeyScancode scancode = keymsg->scancode();
+          
+          // Filter out modifier-only keypresses
+          // Don't add keys to the sequence if they're just modifier keys being pressed
+          // (kKeyLShift, kKeyRShift, kKeyLControl, kKeyRControl, kKeyAlt, kKeyAltGr, 
+          //  kKeyLWin, kKeyRWin, kKeyMenu, kKeyCommand, etc.)
+          if (scancode == kKeyLShift || scancode == kKeyRShift ||
+              scancode == kKeyLControl || scancode == kKeyRControl ||
+              scancode == kKeyAlt || scancode == kKeyAltGr ||
+              scancode == kKeyLWin || scancode == kKeyRWin ||
+              scancode == kKeyMenu || scancode == kKeyCommand) {
+            // This is just a modifier key being pressed
+            // Update visual feedback (checkboxes) but don't add to sequence
+            m_parent->updateModifiersFromValue(modifiers);
+            return true;
+          }
+
           Shortcut newKey(
             modifiers,
-            keymsg->scancode(),
+            scancode,
             keymsg->unicodeChar() > 32 ? std::tolower(keymsg->unicodeChar()) : 0);
+
+          // Validate the key has actual content (not just an empty key)
+          if (scancode == kKeyNil && keymsg->unicodeChar() <= 32) {
+            // Invalid key - ignore it
+            return true;
+          }
 
           // Start new sequence or continue existing one
           if (isNewSequence) {
@@ -115,6 +140,41 @@ protected:
             m_sequenceKeys.push_back(newKey);
             m_isFirstKeypress = false;
           } else {
+            // Protection: Don't allow sequences without modifiers
+            // Check if we're about to create a multi-key sequence (going from 1 to 2+ keys)
+            // Require that at least one key in the sequence has modifiers
+            if (m_sequenceKeys.size() >= 1) {
+              bool hasModifiers = false;
+              
+              // Check if any existing key has modifiers
+              for (const auto& existingKey : m_sequenceKeys) {
+                if (existingKey.modifiers() != kKeyNoneModifier) {
+                  hasModifiers = true;
+                  break;
+                }
+              }
+              
+              // Check if the new key has modifiers
+              if (newKey.modifiers() != kKeyNoneModifier) {
+                hasModifiers = true;
+              }
+              
+              // If no modifiers at all, ignore this key and start a new sequence instead
+              if (!hasModifiers) {
+                m_sequenceKeys.clear();
+                m_sequenceKeys.push_back(newKey);
+                m_isFirstKeypress = false;
+                m_lastKeyTime = currentTime;
+                
+                // Build single key shortcut
+                Shortcut normalized(m_sequenceKeys[0].toString());
+                m_shortcut = normalized;
+                updateText();
+                ShortcutChange(&m_shortcut);
+                return true;
+              }
+            }
+            
             // Add to sequence (up to max keys)
             if (m_sequenceKeys.size() < kMaxSequenceKeys) {
               m_sequenceKeys.push_back(newKey);
@@ -169,6 +229,7 @@ protected:
   }
 
 private:
+  SelectShortcut* m_parent;
   Shortcut m_shortcut;
   std::vector<Shortcut> m_sequenceKeys;
   bool m_isFirstKeypress;
@@ -179,7 +240,7 @@ private:
 SelectShortcut::SelectShortcut(const ui::Shortcut& shortcut,
                                const KeyContext keyContext,
                                const KeyboardShortcuts& currentKeys)
-  : m_keyField(new KeyField(shortcut))
+  : m_keyField(new KeyField(this, shortcut))
   , m_keyContext(keyContext)
   , m_currentKeys(currentKeys)
   , m_origShortcut(shortcut)
@@ -294,6 +355,11 @@ void SelectShortcut::updateModifiers()
     modifiers = m_shortcut.modifiers();
   }
   
+  updateModifiersFromValue(modifiers);
+}
+
+void SelectShortcut::updateModifiersFromValue(KeyModifiers modifiers)
+{
   alt()->setSelected((modifiers & kKeyAltModifier) == kKeyAltModifier);
   ctrl()->setSelected((modifiers & kKeyCtrlModifier) == kKeyCtrlModifier);
   shift()->setSelected((modifiers & kKeyShiftModifier) == kKeyShiftModifier);

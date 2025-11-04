@@ -36,6 +36,7 @@ private:
   void onOK();
   void onCancel();
   void updateModifiers();
+  void updateModifiersFromValue(ui::KeyModifiers modifiers);
   void updateAssignedTo();
   void updateSequenceInfo();
 
