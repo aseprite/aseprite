@@ -791,53 +791,23 @@ bool Timeline::onProcessMessage(Message* msg)
           if (validLayer(m_clk.layer)) {
             Row& row = m_rows[m_clk.layer];
             Layer* layer = row.layer();
-            ASSERT(layer)
+            ASSERT(layer);
 
-            // Hide everything or restore alternative state
-            bool oneWithInternalState = false;
             if (msg->altPressed()) {
-              for (const Row& row : m_rows) {
-                const Layer* l = row.layer();
-                if (l->hasFlags(LayerFlags::Internal_WasVisible)) {
-                  oneWithInternalState = true;
-                  break;
-                }
-              }
-
-              // If there is one layer with the internal state, restore the previous visible state
-              if (oneWithInternalState) {
-                for (Row& row : m_rows) {
-                  Layer* l = row.layer();
-                  if (l->hasFlags(LayerFlags::Internal_WasVisible)) {
-                    m_document->setLayerVisibilityWithNotifications(l, true);
-                    l->switchFlags(LayerFlags::Internal_WasVisible, false);
-                  }
-                  else {
-                    m_document->setLayerVisibilityWithNotifications(l, false);
-                  }
-                }
-              }
-              // In other case, hide everything
-              else {
-                for (Row& row : m_rows) {
-                  Layer* l = row.layer();
-                  l->switchFlags(LayerFlags::Internal_WasVisible, l->isVisible());
-                  m_document->setLayerVisibilityWithNotifications(l, false);
-                }
-              }
-
-              regenerateRows();
-              invalidate();
-
-              m_document->notifyGeneralUpdate();
+              Command* command = Commands::instance()->byId(
+                CommandId::ToggleOtherLayersVisibility());
+              Params params;
+              params.set("layerId", base::convert_to<std::string>(layer->id()).c_str());
+              m_context->executeCommand(command, params);
             }
+            else {
+              if (layer->isVisible())
+                m_state = STATE_HIDING_LAYERS;
+              else
+                m_state = STATE_SHOWING_LAYERS;
 
-            if (layer->isVisible() && !oneWithInternalState)
-              m_state = STATE_HIDING_LAYERS;
-            else
-              m_state = STATE_SHOWING_LAYERS;
-
-            setLayerVisibleFlag(m_clk.layer, m_state == STATE_SHOWING_LAYERS);
+              setLayerVisibleFlag(m_clk.layer, m_state == STATE_SHOWING_LAYERS);
+            }
           }
           break;
 
