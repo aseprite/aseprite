@@ -49,6 +49,7 @@ struct PaintWidgetPartInfo {
   float baseline = 0.0f;
   int mnemonic = 0;
   os::Surface* icon = nullptr;
+  text::FontRef font = nullptr;
 
   PaintWidgetPartInfo();
   PaintWidgetPartInfo(const Widget* widget);
@@ -163,11 +164,7 @@ private:
   void paintLayer(Graphics* g,
                   const Style* style,
                   const Style::Layer& layer,
-                  const std::string& text,
-                  text::TextBlobRef textBlob,
-                  const float baseline,
-                  const int mnemonic,
-                  os::Surface* icon,
+                  const PaintWidgetPartInfo& info,
                   gfx::Rect& rc,
                   gfx::Color& bgColor);
   void measureLayer(const Widget* widget,

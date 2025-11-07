@@ -36,6 +36,8 @@ public:
   ComboBox();
   ~ComboBox();
 
+  virtual void setFont(const text::FontRef& font) override;
+
   Items::iterator begin() { return m_items.begin(); }
   Items::iterator end() { return m_items.end(); }
 

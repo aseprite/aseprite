@@ -116,6 +116,8 @@ PaintWidgetPartInfo::PaintWidgetPartInfo(const Widget* widget)
         dynamic_cast<const Style::Layer::IconSurfaceProvider*>(widget)) {
     icon = iconProvider->iconSurface();
   }
+  if (widget->font() != widget->theme()->getDefaultFont())
+    font = widget->font();
 }
 
 // static
@@ -253,16 +255,7 @@ void Theme::paintWidgetPart(Graphics* g,
   for_each_layer(info.styleFlags,
                  style,
                  [this, g, style, &info, &rc, &outBgColor](const Style::Layer& layer) {
-                   paintLayer(g,
-                              style,
-                              layer,
-                              (info.text ? *info.text : std::string()),
-                              info.textBlob,
-                              info.baseline,
-                              info.mnemonic,
-                              info.icon,
-                              rc,
-                              outBgColor);
+                   paintLayer(g, style, layer, info, rc, outBgColor);
                  });
 }
 
@@ -373,17 +366,19 @@ void Theme::paintTextBoxWithStyle(Graphics* g, const Widget* widget)
 void Theme::paintLayer(Graphics* g,
                        const Style* style,
                        const Style::Layer& layer,
-                       const std::string& text,
-                       text::TextBlobRef textBlob,
-                       const float baseline,
-                       const int mnemonic,
-                       os::Surface* providedIcon,
+                       const PaintWidgetPartInfo& info,
                        gfx::Rect& rc,
                        gfx::Color& bgColor)
 {
   ASSERT(style);
   if (!style)
     return;
+
+  std::string text;
+  if (info.text)
+    text = *info.text;
+
+  text::TextBlobRef textBlob = info.textBlob;
 
   switch (layer.type()) {
     case Style::Layer::Type::kBackground:
@@ -502,8 +497,10 @@ void Theme::paintLayer(Graphics* g,
 
       if (layer.color() != gfx::ColorNone) {
         text::FontRef oldFont = g->font();
-        if (style->font())
-          g->setFont(style->font());
+        text::FontRef font = info.font ? info.font : style->font();
+
+        if (font)
+          g->setFont(font);
 
         if (layer.align() & WORDWRAP) {
           gfx::Rect textBounds = rc;
@@ -512,12 +509,13 @@ void Theme::paintLayer(Graphics* g,
           g->drawAlignedUIText(text, layer.color(), bgColor, textBounds, layer.align());
         }
         else {
-          if (!textBlob || style->font() != nullptr)
+          if (!textBlob || font != nullptr)
             textBlob = text::TextBlob::MakeWithShaper(m_fontMgr, g->font(), text);
 
           if (textBlob) {
             const gfx::RectF blobSize = textBlob->bounds();
             const gfx::Border padding = style->padding();
+            const gfx::Border border = style->border();
             gfx::PointF pt;
 
             if (layer.align() & LEFT)
@@ -525,14 +523,16 @@ void Theme::paintLayer(Graphics* g,
             else if (layer.align() & RIGHT)
               pt.x = rc.x + rc.w - blobSize.w - padding.right();
             else
-              pt.x = guiscaled_center(rc.x + padding.left(), rc.w - padding.width(), blobSize.w);
+              pt.x = guiscaled_center(rc.x + padding.left() + border.left(),
+                                      rc.w - padding.width() - border.width(),
+                                      blobSize.w);
 
             if (layer.align() & TOP)
               pt.y = rc.y + padding.top();
             else if (layer.align() & BOTTOM)
               pt.y = rc.y + rc.h - blobSize.h - padding.bottom();
             else
-              pt.y = baseline - textBlob->baseline();
+              pt.y = info.baseline - textBlob->baseline();
 
             pt += layer.offset();
 
@@ -540,23 +540,23 @@ void Theme::paintLayer(Graphics* g,
             if (gfx::geta(bgColor) > 0) { // Paint background
               paint.color(bgColor);
               paint.style(os::Paint::Fill);
-              g->drawRect(gfx::RectF(textBlob->bounds()).offset(pt), paint);
+              g->drawRect(gfx::RectF(pt, textBlob->bounds().size()), paint);
             }
             paint.color(layer.color());
             g->drawTextBlob(textBlob, gfx::PointF(pt), paint);
 
-            if (style->mnemonics() && mnemonic != 0)
-              drawMnemonicUnderline(g, text, textBlob, pt, mnemonic, paint);
+            if (style->mnemonics() && info.mnemonic != 0)
+              drawMnemonicUnderline(g, text, textBlob, pt, info.mnemonic, paint);
           }
         }
 
-        if (style->font())
+        if (font)
           g->setFont(oldFont);
       }
       break;
 
     case Style::Layer::Type::kIcon: {
-      os::Surface* icon = providedIcon ? providedIcon : layer.icon();
+      os::Surface* icon = info.icon ? info.icon : layer.icon();
       if (icon) {
         const gfx::Size iconSize(icon->width(), icon->height());
         const gfx::Border padding = style->padding();
