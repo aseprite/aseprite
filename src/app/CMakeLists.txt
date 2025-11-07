@@ -521,6 +521,7 @@ target_sources(app-lib PRIVATE
   commands/show_menu.cpp
   commands/tileset_mode.cpp
   commands/toggle_other_layers_opacity.cpp
+  commands/toggle_other_layers_visibility.cpp
   commands/toggle_play_option.cpp
   console.cpp
   context.cpp
