@@ -18,4 +18,5 @@ endif()
 target_link_libraries(gen
   laf-base
   cfg-lib
-  ${TINYXML_LIBRARY})
+  tinyxml2::tinyxml2
+)
