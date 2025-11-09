@@ -1,0 +1,106 @@
+name: build-vcpkg
+on: [push, pull_request]
+jobs:
+  build:
+    name: "${{ matrix.os.runner }}, ${{ matrix.build_type }}, laf_backend: ${{ matrix.laf_backend }}, scripting: ${{ matrix.scripting }}"
+    runs-on: ${{ matrix.os.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - runner: windows-latest
+            preset: "windows-vcpkg"
+            enable_ccache: "OFF"
+            skia_arch: "x64"
+          - runner: macos-latest
+            preset: "macos-vcpkg"
+            enable_ccache: "ON"
+            skia_arch: "arm64"
+          - runner: ubuntu-latest
+            preset: "linux-vcpkg"
+            enable_ccache: "ON"
+            skia_arch: "x64"
+        build_type:
+          - RelWithDebInfo
+          - Debug
+        laf_backend:
+          - "skia"
+          - "none"
+        scripting:
+          - "ON"    # enable lua
+          - "OFF"
+        exclude:
+          - build_type: Debug
+            laf_backend: "skia"
+          - build_type: RelWithDebInfo
+            laf_backend: "none"
+          - build_type: RelWithDebInfo
+            scripting: "OFF"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      - uses: lukka/get-cmake@v3.28.4
+      - uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgJsonGlob: vcpkg.json
+      - name: Install Dependencies
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y \
+          libpixman-1-dev libfreetype6-dev libharfbuzz-dev zlib1g-dev \
+          libx11-dev libxcursor-dev libxi-dev libxrandr-dev libgl1-mesa-dev \
+          libfontconfig1-dev
+      - name: Install Skia
+        if: ${{ matrix.laf_backend == 'skia' }}
+        shell: bash
+        run: |
+          if [[ "${{ runner.os }}" == "Windows" ]] ; then
+            this_dir=$(cygpath "${{ github.workspace }}")
+          else
+            this_dir="${{ github.workspace }}"
+          fi
+          skia_url=$(source $this_dir/laf/misc/skia-url.sh | xargs)
+          skia_file=$(basename $skia_url)
+          curl --ssl-revoke-best-effort -L -o "$skia_file" "$skia_url"
+          unzip "$skia_file" -d skia
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2.17
+        if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
+        with:
+          key: ${{ matrix.os.runner }}-${{ matrix.laf_backend }}-${{ matrix.scripting }}-${{ matrix.build_type }}
+      - name: Build ${{ matrix.build_type }}
+        uses: lukka/run-cmake@v10
+        with:
+          configurePreset: "${{ matrix.os.preset }}"
+          configurePresetAdditionalArgs: "[
+           '-DUSE_VCPKG=ON',
+           '-DENABLE_TESTS=ON',
+           '-DENABLE_SCRIPTING=${{ matrix.scripting }}',
+           '-DENABLE_CCACHE=${{ matrix.os.enable_ccache }}',
+           '-DLAF_BACKEND=${{ matrix.laf_backend }}',
+           String.raw`-DSKIA_DIR=${{ github.workspace }}/skia`,
+           String.raw`-DSKIA_LIBRARY_DIR=${{ github.workspace }}/skia/out/Release-${{ matrix.os.skia_arch }}`,
+          ]"
+          buildPreset: "${{ matrix.os.preset }}"
+          buildPresetAdditionalArgs: "[ '--config ${{ matrix.build_type }}' ]"
+
+      - name: Running C++ Tests
+        shell: bash
+        run: |
+          if [[ "${{ runner.os }}" == "Linux" ]] ; then
+            export XVFB=xvfb-run
+          fi
+          $XVFB ctest --preset ${{ matrix.os.preset }} -C ${{ matrix.build_type }} --output-on-failure
+      - name: Running CLI Tests
+        if: ${{ matrix.scripting == 'ON' }}
+        shell: bash
+        run: |
+          if [[ "${{ runner.os }}" == "Linux" ]] ; then
+            export XVFB=xvfb-run
+          fi
+          export ASEPRITE=$PWD/builds/${{ matrix.os.preset }}/bin/aseprite
+          cd tests
+          $XVFB bash run-tests.sh

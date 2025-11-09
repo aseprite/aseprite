@@ -1,0 +1,17 @@
+{
+  "name": "aseprite",
+  "version-string": "1.3.16",
+  "builtin-baseline": "74e6536215718009aae747d86d84b78376bf9e09",
+  "dependencies": [
+    {
+      "name": "tinyxml2",
+      "version>=": "3.2.6"
+    }
+  ],
+  "overrides": [
+    {
+      "name": "tinyxml2",
+      "version": "10.1.0"
+    }
+  ]
+}
