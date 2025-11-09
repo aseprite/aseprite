@@ -56,7 +56,7 @@ if(NOT USE_VCPKG)
   add_subdirectory(tinyxml2)
 endif()
 
-if(NOT USE_SHARED_TINYEXIF)
+if(NOT USE_VCPKG)
   set(BUILD_SHARED_LIBS OFF CACHE BOOL "build as shared library")
   set(BUILD_STATIC_LIBS ON CACHE BOOL "build as static library")
   set(LINK_CRT_STATIC_LIBS OFF CACHE BOOL "link CRT static library")
