@@ -4,11 +4,17 @@
   "builtin-baseline": "74e6536215718009aae747d86d84b78376bf9e09",
   "dependencies": [
     {
-      "name": "tinyxml2",
-      "version>=": "3.2.6"
+      "name": "tinyexif"
+    },
+    {
+      "name": "tinyxml2"
     }
   ],
   "overrides": [
+    {
+      "name": "tinyexif",
+      "version": "1.0.3"
+    },
     {
       "name": "tinyxml2",
       "version": "10.1.0"
