@@ -1,0 +1,150 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 20,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "defaults-system-libs",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/builds/${presetName}",
+      "generator": "Ninja Multi-Config"
+    },
+    {
+      "name": "defaults-vcpkg",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/builds/${presetName}",
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "USE_VCPKG": "ON",
+        "CMAKE_TOOLCHAIN_FILE": {
+          "type": "FILEPATH",
+          "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        }
+      }
+    },
+
+    {
+      "name": "windows-system-libs",
+      "inherits": "defaults-vcpkg",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "architecture": {
+        "strategy": "external",
+        "value": "x64"
+      }
+    },
+    {
+      "name": "windows-vcpkg",
+      "inherits": "defaults-vcpkg",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static"
+      },
+      "architecture": {
+        "strategy": "external",
+        "value": "x64"
+      }
+    },
+
+    {
+      "name": "macos-system-libs",
+      "inherits": "defaults-system-libs",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "macos-vcpkg",
+      "inherits": "defaults-vcpkg",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+
+    {
+      "name": "linux-system-libs",
+      "inherits": "defaults-system-libs",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-vcpkg",
+      "inherits": "defaults-vcpkg",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "windows-vcpkg",
+      "configurePreset": "windows-vcpkg"
+    },
+    {
+      "name": "macos-vcpkg",
+      "configurePreset": "macos-vcpkg"
+    },
+    {
+      "name": "linux-vcpkg",
+      "configurePreset": "linux-vcpkg"
+    },
+    {
+      "name": "windows-system-libs",
+      "configurePreset": "windows-system-libs"
+    },
+    {
+      "name": "macos-system-libs",
+      "configurePreset": "macos-system-libs"
+    },
+    {
+      "name": "linux-system-libs",
+      "configurePreset": "linux-system-libs"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "defaults",
+      "hidden": true,
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "windows-vcpkg",
+      "inherits": "defaults",
+      "description": "Testing under Windows",
+      "configurePreset": "windows-vcpkg"
+    },
+    {
+      "name": "macos-vcpkg",
+      "inherits": "defaults",
+      "description": "Testing under macOS",
+      "configurePreset": "macos-vcpkg"
+    },
+    {
+      "name": "linux-vcpkg",
+      "inherits": "defaults",
+      "description": "Testing under Linux",
+      "configurePreset": "linux-vcpkg"
+    }
+  ]
+}
