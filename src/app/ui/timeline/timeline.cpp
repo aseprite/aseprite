@@ -4629,25 +4629,35 @@ void Timeline::onDrop(ui::DragEvent& e)
     auto surface = e.getImage();
 
     execute_from_ui_thread([=] {
-      std::string txmsg;
-      std::unique_ptr<docapi::DocProvider> docProvider = nullptr;
-      if (droppedImage) {
-        txmsg = "Drop Image";
-        doc::ImageRef image = nullptr;
-        convert_surface_to_image(surface.get(), 0, 0, surface->width(), surface->height(), image);
-        docProvider = std::make_unique<DocProviderFromImage>(image);
-      }
-      else {
-        txmsg = "Drop File";
-        docProvider = std::make_unique<DocProviderFromPaths>(m_document->context(), paths);
-      }
+      try {
+        std::string txmsg;
+        std::unique_ptr<docapi::DocProvider> docProvider = nullptr;
+        if (droppedImage) {
+          if (!surface)
+            throw std::runtime_error("Invalid format");
 
-      Tx tx(m_document, txmsg);
-      DocApi docApi(m_document, tx);
-      docApi.dropDocumentsOnTimeline(m_document, frame, layerIndex, insert, droppedOn, *docProvider);
-      tx.commit();
-      m_document->notifyGeneralUpdate();
+          txmsg = "Drop Image";
+          doc::ImageRef image = nullptr;
+          convert_surface_to_image(surface.get(), 0, 0, surface->width(), surface->height(), image);
+          docProvider = std::make_unique<DocProviderFromImage>(image);
+        }
+        else {
+          txmsg = "Drop File";
+          docProvider = std::make_unique<DocProviderFromPaths>(m_document->context(), paths);
+        }
+
+        Tx tx(m_document, txmsg);
+        DocApi docApi(m_document, tx);
+        docApi
+          .dropDocumentsOnTimeline(m_document, frame, layerIndex, insert, droppedOn, *docProvider);
+        tx.commit();
+        m_document->notifyGeneralUpdate();
+      }
+      catch (const std::exception& e) {
+        Console::showException(e);
+      }
     });
+
     e.handled(true);
   }
 
