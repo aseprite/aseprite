@@ -280,7 +280,7 @@ void update_windows_color_profile_from_preferences()
 static bool load_gui_config(os::WindowSpec& spec, bool& maximized)
 {
   const os::SystemRef system = os::System::instance();
-  os::ScreenRef screen = system->mainScreen();
+  os::ScreenRef screen = system->primaryScreen();
 #ifdef LAF_SKIA
   ASSERT(screen);
 #else
