@@ -47,6 +47,7 @@
 #include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/scale.h"
+#include "ui/scroll_window.h"
 #include "ui/separator.h"
 #include "ui/slider.h"
 #include "ui/system.h"
@@ -277,68 +278,6 @@ struct Dialog {
       if ((screen->bounds() / scale).contains(bounds))
         return screen->workarea() / scale;
   }
-
-  // TODO merge this code with add_scrollbars_if_needed() from
-  //      ui/menu.cpp (creating a new function in the ui library)
-  void addScrollbarsIfNeeded(const gfx::Rect& workarea, gfx::Rect& bounds)
-  {
-    gfx::Rect rc = bounds;
-
-    if (rc.x < workarea.x) {
-      rc.w -= (workarea.x - rc.x);
-      rc.x = workarea.x;
-    }
-    if (rc.x2() > workarea.x2()) {
-      rc.w = workarea.x2() - rc.x;
-    }
-
-    bool vscrollbarsAdded = false;
-    if (rc.y < workarea.y) {
-      rc.h -= (workarea.y - rc.y);
-      rc.y = workarea.y;
-      vscrollbarsAdded = true;
-    }
-    if (rc.y2() > workarea.y2()) {
-      rc.h = workarea.y2() - rc.y;
-      vscrollbarsAdded = true;
-    }
-
-    gfx::Rect newRc = rc;
-    if (get_multiple_displays() && window.shouldCreateNativeWindow()) {
-      const os::Window* nativeWindow = const_cast<ui::Display*>(parentDisplay())->nativeWindow();
-      newRc.setOrigin(nativeWindow->pointFromScreen(rc.origin()));
-      newRc.setSize(rc.size() / nativeWindow->scale());
-    }
-    if (newRc == window.bounds())
-      return;
-
-    if (!view)
-      view = new View();
-    view->InitTheme.connect([this] { this->view->noBorderNoChildSpacing(); });
-    view->initTheme();
-
-    if (vscrollbarsAdded) {
-      int barWidth = view->verticalBar()->getBarWidth();
-      if (get_multiple_displays())
-        barWidth *= window.display()->scale();
-
-      rc.w += 2 * barWidth;
-      if (rc.x2() > workarea.x2()) {
-        rc.x = workarea.x2() - rc.w;
-        if (rc.x < workarea.x) {
-          rc.x = workarea.x;
-          rc.w = workarea.w;
-        }
-      }
-    }
-
-    // New bounds
-    bounds = rc;
-
-    window.removeChild(&grid);
-    view->attachToView(&grid);
-    window.addChild(view);
-  }
 };
 
 template<typename... Args, typename Callback>
@@ -506,10 +445,7 @@ int Dialog_show(lua_State* L)
     if (VALID_LUATYPE(type)) {
       const auto rc = convert_args_into_rect(L, -1);
       if (!rc.isEmpty()) {
-        conn = dlg->window.Open.connect([dlg, rc] {
-          dlg->setWindowBounds(rc);
-          dlg->window.setAutoRemap(false);
-        });
+        conn = dlg->window.Open.connect([dlg, rc] { dlg->setWindowBounds(rc); });
       }
     }
     lua_pop(L, 1);
@@ -535,7 +471,12 @@ int Dialog_show(lua_State* L)
                    [dlg](const gfx::Rect& workarea,
                          gfx::Rect& bounds,
                          std::function<gfx::Rect(Widget*)> getWidgetBounds) {
-                     dlg->addScrollbarsIfNeeded(workarea, bounds);
+                     if (dlg->view)
+                       return;
+                     dlg->view = ui::add_scrollbars(&dlg->window,
+                                                    workarea,
+                                                    bounds,
+                                                    AddScrollBarsOption::Always);
                    });
       }
     }

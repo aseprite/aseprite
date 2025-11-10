@@ -15,8 +15,18 @@
 #include "gfx/size.h"
 #include "text/font.h"
 #include "ui/display.h"
+#include "ui/fit_bounds.h"
 #include "ui/intern.h"
-#include "ui/ui.h"
+#include "ui/manager.h"
+#include "ui/message.h"
+#include "ui/resize_event.h"
+#include "ui/scale.h"
+#include "ui/scroll_window.h"
+#include "ui/size_hint_event.h"
+#include "ui/system.h"
+#include "ui/theme.h"
+#include "ui/timer.h"
+#include "ui/view.h"
 
 #include <algorithm>
 #include <cctype>
@@ -133,63 +143,6 @@ static void choose_side(gfx::Rect& bounds, const gfx::Rect& workarea, const gfx:
 
   bounds.x = x;
   bounds.y = y;
-}
-
-static void add_scrollbars_if_needed(MenuBoxWindow* window,
-                                     const gfx::Rect& workarea,
-                                     gfx::Rect& bounds)
-{
-  gfx::Rect rc = bounds;
-
-  if (rc.x < workarea.x) {
-    rc.w -= (workarea.x - rc.x);
-    rc.x = workarea.x;
-  }
-  if (rc.x2() > workarea.x2()) {
-    rc.w = workarea.x2() - rc.x;
-  }
-
-  bool vscrollbarsAdded = false;
-  if (rc.y < workarea.y) {
-    rc.h -= (workarea.y - rc.y);
-    rc.y = workarea.y;
-    vscrollbarsAdded = true;
-  }
-  if (rc.y2() > workarea.y2()) {
-    rc.h = workarea.y2() - rc.y;
-    vscrollbarsAdded = true;
-  }
-
-  if (rc == bounds)
-    return;
-
-  MenuBox* menubox = window->menubox();
-  View* view = new View;
-  view->InitTheme.connect([view] { view->noBorderNoChildSpacing(); });
-  view->initTheme();
-
-  if (vscrollbarsAdded) {
-    int barWidth = view->verticalBar()->getBarWidth();
-    ;
-    if (get_multiple_displays())
-      barWidth *= window->display()->scale();
-
-    rc.w += 2 * barWidth;
-    if (rc.x2() > workarea.x2()) {
-      rc.x = workarea.x2() - rc.w;
-      if (rc.x < workarea.x) {
-        rc.x = workarea.x;
-        rc.w = workarea.w;
-      }
-    }
-  }
-
-  // New bounds
-  bounds = rc;
-
-  window->removeChild(menubox);
-  view->attachToView(menubox);
-  window->addChild(view);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -387,7 +340,7 @@ void Menu::showPopup(const gfx::Point& pos, Display* parentDisplay)
                        gfx::Rect& bounds,
                        std::function<gfx::Rect(Widget*)> getWidgetBounds) {
                choose_side(bounds, workarea, gfx::Rect(bounds.x - 1, bounds.y, 1, 1));
-               add_scrollbars_if_needed(&window, workarea, bounds);
+               add_scrollbars(&window, workarea, bounds, AddScrollBarsOption::IfNeeded);
              });
 
   // Set the focus to the new menubox
@@ -965,7 +918,7 @@ bool MenuItem::onProcessMessage(Message* msg)
               choose_side(bounds, workarea, parentBounds);
             }
 
-            add_scrollbars_if_needed(window, workarea, bounds);
+            add_scrollbars(window, workarea, bounds, AddScrollBarsOption::IfNeeded);
           });
 
         // Setup the highlight of the new menubox
