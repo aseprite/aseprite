@@ -269,6 +269,8 @@ void Console::printf(const char* format, ...)
 
   // Update the textbox
   m_console->addMessage(msg);
+  m_console->invalidate();
+  m_console->flushRedraw();
 }
 
 // static
