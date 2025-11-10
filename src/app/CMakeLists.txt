@@ -146,6 +146,7 @@ target_sources(app-lib PRIVATE
   file/ico_format.cpp
   file/jpeg_format.cpp
   file/pcx_format.cpp
+  file/pnm_format.cpp
   file/png_format.cpp
   file/qoi_format.cpp
   file/svg_format.cpp
