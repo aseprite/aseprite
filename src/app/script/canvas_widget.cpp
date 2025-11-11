@@ -154,14 +154,16 @@ bool Canvas::onProcessMessage(ui::Message* msg)
       break;
     }
 
-    case ui::kMouseWheelMessage: {
-      auto mouseMsg = *static_cast<ui::MouseMessage*>(msg);
-      if (m_autoScaling) {
-        mouseMsg = makeScaled(&mouseMsg, bounds().origin());
+    case ui::kMouseWheelMessage:
+      if (Wheel) {
+        auto mouseMsg = *static_cast<ui::MouseMessage*>(msg);
+        if (m_autoScaling) {
+          mouseMsg = makeScaled(&mouseMsg, bounds().origin());
+        }
+        Wheel(&mouseMsg);
+        return true;
       }
-      Wheel(&mouseMsg);
       break;
-    }
 
     case ui::kTouchMagnifyMessage: {
       auto touchMsg = *static_cast<ui::TouchMessage*>(msg);

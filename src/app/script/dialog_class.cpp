@@ -70,14 +70,20 @@ namespace {
 
 class DialogWindow : public WindowWithHand {
 public:
-  DialogWindow(Type type, const std::string& text) : WindowWithHand(type, text), m_handTool(false)
+  DialogWindow(Type type, const std::string& text) : WindowWithHand(type, text), m_grid(2, false)
   {
+    addChild(&m_grid);
+
     // As scripts can receive the "pressure" information.
     setNeedsTabletPressure(true);
   }
 
   // Enables the Hand tool in the active editor.
   void setHandTool(const bool flag) { m_handTool = flag; }
+
+  ui::Grid* grid() { return &m_grid; }
+  ui::View* view() { return m_view; }
+  void setView(ui::View* view) { m_view = view; }
 
 protected:
   void onOpen(Event& ev) override
@@ -94,8 +100,23 @@ protected:
       enableHandTool(false);
   }
 
+  bool onProcessMessage(Message* msg) override
+  {
+    switch (msg->type()) {
+      // Enable scroll with mouse wheel if the view is available.
+      case kMouseWheelMessage: {
+        if (m_view)
+          View::scrollByMessage(&m_grid, msg);
+        break;
+      }
+    }
+    return WindowWithHand::onProcessMessage(msg);
+  }
+
 private:
-  bool m_handTool;
+  ui::View* m_view = nullptr; // Main view that holds the grid and the scrollbars
+  ui::Grid m_grid;            // Main grid that holds the dialog content
+  bool m_handTool = false;
 };
 
 struct Dialog;
@@ -103,10 +124,6 @@ std::vector<Dialog*> all_dialogs;
 
 struct Dialog {
   DialogWindow window;
-  // Main view that holds the grid and the scrollbars
-  ui::View* view = nullptr;
-  // Main grid that holds the dialog content.
-  ui::Grid grid;
   // Pointer to current grid (might be the main grid or a tab's grid).
   ui::Grid* currentGrid;
   ui::HBox* hbox = nullptr;
@@ -138,15 +155,15 @@ struct Dialog {
 
   Dialog(const ui::Window::Type windowType, const std::string& title, bool sizeable)
     : window(windowType, title)
-    , grid(2, false)
-    , currentGrid(&grid)
+    , currentGrid(window.grid())
   {
-    window.addChild(&grid);
     window.setSizeable(sizeable);
     all_dialogs.push_back(this);
   }
 
   ~Dialog() { base::remove_from_container(all_dialogs, this); }
+
+  ui::View* view() { return window.view(); }
 
   void unrefShowOnClose()
   {
@@ -451,19 +468,18 @@ int Dialog_show(lua_State* L)
           dlgBounds = gfx::Rect(nativeWindow->pointFromScreen(dlgScreenBounds.origin()),
                                 nativeWindow->pointFromScreen(dlgScreenBounds.point2()));
         }
-        fit_bounds(dlg->parentDisplay(),
-                   &dlg->window,
-                   dlgBounds,
-                   [dlg](const gfx::Rect& workarea,
-                         gfx::Rect& bounds,
-                         std::function<gfx::Rect(Widget*)> getWidgetBounds) {
-                     if (dlg->view)
-                       return;
-                     dlg->view = ui::add_scrollbars(&dlg->window,
-                                                    workarea,
-                                                    bounds,
-                                                    AddScrollBarsOption::Always);
-                   });
+        fit_bounds(
+          dlg->parentDisplay(),
+          &dlg->window,
+          dlgBounds,
+          [dlg](const gfx::Rect& workarea,
+                gfx::Rect& bounds,
+                std::function<gfx::Rect(Widget*)> getWidgetBounds) {
+            if (dlg->view())
+              return;
+            dlg->window.setView(
+              ui::add_scrollbars(&dlg->window, workarea, bounds, AddScrollBarsOption::Always));
+          });
       }
     }
     lua_pop(L, 1);
@@ -1438,7 +1454,7 @@ int Dialog_endtabs(lua_State* L)
   dlg->wipTab->selectTab(selectedTab);
 
   auto newTab = dlg->wipTab;
-  dlg->currentGrid = &dlg->grid;
+  dlg->currentGrid = dlg->window.grid();
   dlg->wipTab = nullptr;
 
   return Dialog_add_widget(L, newTab);
@@ -1653,11 +1669,11 @@ int Dialog_modify(lua_State* L)
 
         // Calculate the grid size and set it on the view of the window as size hint.
         gfx::Size sizeHint = dlg->window.sizeHint();
-        if (dlg->view) {
-          const gfx::Size oldViewSizeHint = dlg->view->minSize();
-          dlg->view->makeVisibleAllScrollableArea();
+        if (dlg->view()) {
+          const gfx::Size oldViewSizeHint = dlg->view()->minSize();
+          dlg->view()->makeVisibleAllScrollableArea();
           sizeHint = dlg->window.sizeHint();
-          dlg->view->setMinSize(oldViewSizeHint);
+          dlg->view()->setMinSize(oldViewSizeHint);
         }
 
         gfx::Rect newBounds = oldBounds;
@@ -1674,40 +1690,40 @@ int Dialog_modify(lua_State* L)
           newBounds.x = oldBounds.x2() - newBounds.w;
 
         // Fit the dialog bounds to the workarea.
-        fit_bounds(
-          dlg->window.display(),
-          &dlg->window,
-          newBounds,
-          [=](const gfx::Rect& workarea,
-              gfx::Rect& bounds,
-              std::function<gfx::Rect(Widget*)> getWidgetBounds) {
-            int scale = guiscale();
-            if (dlg->window.ownDisplay())
-              scale = dlg->window.display()->scale();
+        fit_bounds(dlg->window.display(),
+                   &dlg->window,
+                   newBounds,
+                   [=](const gfx::Rect& workarea,
+                       gfx::Rect& bounds,
+                       std::function<gfx::Rect(Widget*)> getWidgetBounds) {
+                     int scale = guiscale();
+                     if (dlg->window.ownDisplay())
+                       scale = dlg->window.display()->scale();
 
-            // Limit the new bounds of the dialog to workarea
-            // and consider the width of the scroll bar if
-            // there is one.
-            if (bounds.w > workarea.w && allowHResize) {
-              bounds.w = workarea.w;
-              if (bounds.h < workarea.h && dlg->view && dlg->view->horizontalBar() &&
-                  allowVResize) {
-                int newHeight = (bounds.h + scale * dlg->view->horizontalBar()->getBarWidth());
-                if (dlg->autofit & ui::BOTTOM)
-                  bounds.y = bounds.y2() - newHeight;
-                bounds.h = newHeight;
-              }
-            }
-            if (bounds.h > workarea.h && allowVResize) {
-              bounds.h = workarea.h;
-              if (bounds.w < workarea.w && dlg->view && dlg->view->verticalBar() && allowHResize) {
-                int newWidth = (bounds.w + scale * dlg->view->verticalBar()->getBarWidth());
-                if (dlg->autofit & ui::RIGHT)
-                  bounds.x = bounds.x2() - newWidth;
-                bounds.w = newWidth;
-              }
-            }
-          });
+                     View* view = dlg->view();
+
+                     // Limit the new bounds of the dialog to workarea
+                     // and consider the width of the scroll bar if
+                     // there is one.
+                     if (bounds.w > workarea.w && allowHResize) {
+                       bounds.w = workarea.w;
+                       if (bounds.h < workarea.h && view && view->horizontalBar() && allowVResize) {
+                         int newHeight = (bounds.h + scale * view->horizontalBar()->getBarWidth());
+                         if (dlg->autofit & ui::BOTTOM)
+                           bounds.y = bounds.y2() - newHeight;
+                         bounds.h = newHeight;
+                       }
+                     }
+                     if (bounds.h > workarea.h && allowVResize) {
+                       bounds.h = workarea.h;
+                       if (bounds.w < workarea.w && view && view->verticalBar() && allowHResize) {
+                         int newWidth = (bounds.w + scale * view->verticalBar()->getBarWidth());
+                         if (dlg->autofit & ui::RIGHT)
+                           bounds.x = bounds.x2() - newWidth;
+                         bounds.w = newWidth;
+                       }
+                     }
+                   });
       }
     }
   }
@@ -1719,7 +1735,7 @@ int Dialog_repaint(lua_State* L)
 {
   auto dlg = get_obj<Dialog>(L, 1);
   std::stack<ui::Widget*> widgets;
-  widgets.push(&dlg->grid);
+  widgets.push(dlg->window.grid());
 
   while (!widgets.empty()) {
     auto child = widgets.top();
