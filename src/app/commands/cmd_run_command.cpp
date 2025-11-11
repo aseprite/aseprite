@@ -19,8 +19,10 @@
 #include "app/ui/app_menuitem.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
+#include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
+#include "app/ui/workspace_tabs.h"
 #include "base/chrono.h"
 #include "commands.h"
 #include "tinyexpr.h"
@@ -458,11 +460,19 @@ void RunCommandCommand::onExecute(Context* context)
   if (!m_db)
     loadDatabase();
 
+  Display* display = Manager::getDefault()->display();
   RunnerWindow window(context, m_db.get());
-  window.centerWindow();
-  fit_bounds(window.display(),
-             &window,
-             gfx::Rect(window.bounds().x, 23 * guiscale(), window.bounds().w, window.bounds().h));
+  window.centerWindow(display);
+
+  // Position the window centered in X-axis and aligned to the workspace.
+  {
+    MainWindow* mainWindow = App::instance()->mainWindow();
+    gfx::Rect rc = window.bounds();
+    rc.x = mainWindow->bounds().center().x - rc.w / 2;
+    rc.y = mainWindow->getTabsBar()->bounds().y2();
+    fit_bounds(display, &window, rc);
+  }
+
   window.openWindowInForeground();
 }
 
