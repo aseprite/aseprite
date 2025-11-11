@@ -55,6 +55,7 @@
 #include "ui/scale.h"
 #include "ui/scroll_bar.h"
 #include "ui/scroll_helper.h"
+#include "ui/scroll_window.h"
 #include "ui/separator.h"
 #include "ui/shortcut.h"
 #include "ui/size_hint_event.h"
