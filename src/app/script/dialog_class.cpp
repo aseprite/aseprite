@@ -429,8 +429,14 @@ int Dialog_show(lua_State* L)
   auto dlg = get_obj<Dialog>(L, 1);
   dlg->refShow(L);
 
+  gfx::Rect initialBounds;
+
+  // If the user has set the dialog.bounds before, we have
+  // initialBounds.
+  if (!dlg->window.isAutoRemap())
+    initialBounds = dlg->window.bounds();
+
   bool wait = true;
-  obs::scoped_connection conn;
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "wait");
     if (type == LUA_TBOOLEAN)
@@ -447,9 +453,8 @@ int Dialog_show(lua_State* L)
     type = lua_getfield(L, 2, "bounds");
     if (VALID_LUATYPE(type)) {
       const auto rc = convert_args_into_rect(L, -1);
-      if (!rc.isEmpty()) {
-        conn = dlg->window.Open.connect([dlg, rc] { dlg->setWindowBounds(rc); });
-      }
+      if (!rc.isEmpty())
+        initialBounds = rc;
     }
     lua_pop(L, 1);
 
@@ -484,6 +489,10 @@ int Dialog_show(lua_State* L)
     }
     lua_pop(L, 1);
   }
+
+  obs::scoped_connection conn;
+  if (!initialBounds.isEmpty())
+    conn = dlg->window.Open.connect([dlg, initialBounds] { dlg->setWindowBounds(initialBounds); });
 
   if (wait)
     dlg->window.openWindowInForeground();
@@ -1938,9 +1947,14 @@ int Dialog_set_data(lua_State* L)
 int Dialog_get_bounds(lua_State* L)
 {
   auto dlg = get_obj<Dialog>(L, 1);
-  if (!dlg->window.isVisible() && dlg->window.bounds().isEmpty()) {
+  if (!dlg->window.isVisible() && dlg->window.bounds().isEmpty() && dlg->window.isAutoRemap()) {
     dlg->window.remapWindow();
     dlg->window.centerWindow(dlg->parentDisplay());
+
+    // Re-enable the autoremap flag so the dialog is re-centered when
+    // it's displayed for the first time in a new display (if multiple
+    // windows option is enabled).
+    dlg->window.setAutoRemap(true);
   }
   push_new<gfx::Rect>(L, dlg->getWindowBounds());
   return 1;
