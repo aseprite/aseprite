@@ -42,6 +42,7 @@ add_library(ui-lib
   resize_event.cpp
   scroll_bar.cpp
   scroll_helper.cpp
+  scroll_window.cpp
   separator.cpp
   shortcut.cpp
   size_hint_event.cpp
