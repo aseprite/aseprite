@@ -75,6 +75,7 @@ public:
   virtual void setDecorativeWidgetBounds(Widget* widget);
   virtual int getScrollbarSize() { return kDefaultFontHeight; }
   virtual gfx::Size getEntryCaretSize(Widget* widget) { return gfx::Size(kDefaultFontHeight, 1); }
+  virtual ui::Style* viewBaseStyle() { return &m_simpleStyle; }
 
   virtual void paintEntry(PaintEvent& ev) {}
   virtual void paintListBox(PaintEvent& ev);

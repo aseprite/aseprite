@@ -81,6 +81,7 @@ public:
   void getWindowMask(ui::Widget* widget, gfx::Region& region) override;
   int getScrollbarSize() override;
   gfx::Size getEntryCaretSize(ui::Widget* widget) override;
+  ui::Style* viewBaseStyle() override { return styles.viewBase(); }
 
   void paintEntry(ui::PaintEvent& ev) override;
   void paintListBox(ui::PaintEvent& ev) override;

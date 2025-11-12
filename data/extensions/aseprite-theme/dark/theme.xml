@@ -579,6 +579,9 @@
             <text color="button_hot_text" align="left" state="mouse"/>
             <text color="button_selected_text" align="left" state="selected"/>
         </style>
+        <style id="view_base">
+            <background color="window_face"/>
+        </style>
         <style id="view" border="3" border-top="4">
             <background color="window_face"/>
             <border part="sunken_normal"/>

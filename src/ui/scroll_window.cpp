@@ -12,6 +12,7 @@
 
 #include "ui/display.h"
 #include "ui/system.h"
+#include "ui/theme.h"
 #include "ui/view.h"
 #include "ui/window.h"
 
@@ -49,7 +50,10 @@ View* add_scrollbars(Window* window,
     return nullptr;
 
   View* view = new View;
-  view->InitTheme.connect([view] { view->noBorderNoChildSpacing(); });
+  view->InitTheme.connect([view, window] {
+    view->noBorderNoChildSpacing();
+    view->setStyle(window->theme()->viewBaseStyle());
+  });
   view->initTheme();
 
   if (vscrollbarsAdded) {
