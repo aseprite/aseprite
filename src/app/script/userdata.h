@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -107,14 +107,28 @@ int UserData_set_properties(lua_State* L)
 {
   auto obj = get_docobj<T>(L, 1);
   auto wud = get_WithUserData<T>(obj);
-  auto newProperties = get_value_from_lua<doc::UserData::Properties>(L, 2);
+  auto& properties = wud->userData().properties();
+  doc::UserData::Properties newProperties;
+
+  if (lua_istable(L, 2)) {
+    newProperties = get_value_from_lua<doc::UserData::Properties>(L, 2);
+  }
+  else if (auto* argProperties = may_get_properties(L, 2)) {
+    // Do nothing, assigning the same properties
+    if (&properties == argProperties)
+      return 0;
+
+    newProperties = *argProperties;
+  }
+  else
+    return luaL_error(L, "table or properties expected to set the 'properties' field");
+
   if (auto spr = obj->sprite()) {
     Tx tx(spr);
     tx(new cmd::SetUserDataProperties(wud, std::string(), std::move(newProperties)));
     tx.commit();
   }
   else {
-    auto& properties = wud->userData().properties();
     properties = std::move(newProperties);
   }
   return 0;

@@ -1,4 +1,4 @@
--- Copyright (C) 2022-2023  Igara Studio S.A.
+-- Copyright (C) 2022-2025  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
@@ -141,4 +141,22 @@ end
 do
   local spr = Sprite(1, 1)
   spr.data = nil
+end
+
+-- Test crash setting the same properties
+-- https://github.com/aseprite/aseprite/issues/5519
+do
+  local spr = Sprite(1, 1)
+  local cel = app.cel
+  spr.properties = { a=2 }
+  cel.properties = spr.properties
+  assert(spr.properties.a == 2)
+  assert(cel.properties.a == 2)
+
+  -- Do nothing (doesn't add an undo action)
+  local oldSteps = spr.undoHistory.undoSteps
+  cel.properties = cel.properties
+  assert(oldSteps == spr.undoHistory.undoSteps)
+  app.undo()
+  assert(0 == #cel.properties)
 end

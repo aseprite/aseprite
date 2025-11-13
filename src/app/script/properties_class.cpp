@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2023  Igara Studio S.A.
+// Copyright (C) 2022-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -254,6 +254,15 @@ void push_tile_properties(lua_State* L,
                           const std::string& extID)
 {
   push_new<Properties>(L, ts, ti, extID);
+}
+
+doc::UserData::Properties* may_get_properties(lua_State* L, int index)
+{
+  auto propObj = may_get_obj<Properties>(L, index);
+  if (!propObj)
+    return nullptr;
+
+  return &propObj->properties(L);
 }
 
 }} // namespace app::script

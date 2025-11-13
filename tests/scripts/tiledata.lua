@@ -1,4 +1,4 @@
--- Copyright (C) 2023  Igara Studio S.A.
+-- Copyright (C) 2023-2025  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
@@ -82,4 +82,7 @@ do
   assert(tile1.properties("ext").x == 2)
   assert(tile1.properties("ext").y == 3)
 
+  -- Test crash setting the same properties
+  -- https://github.com/aseprite/aseprite/issues/5519
+  tile1.properties = tile1.properties
 end

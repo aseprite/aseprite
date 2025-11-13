@@ -22,6 +22,7 @@
 #include "doc/object_ids.h"
 #include "doc/pixel_format.h"
 #include "doc/tile.h"
+#include "doc/user_data.h"
 #include "gfx/fwd.h"
 
 #include <cstdio>
@@ -200,6 +201,7 @@ doc::Mask* get_mask_from_arg(lua_State* L, int index);
 app::tools::Tool* get_tool_from_arg(lua_State* L, int index);
 doc::BrushRef get_brush_from_arg(lua_State* L, int index);
 doc::Tileset* get_tile_index_from_arg(lua_State* L, int index, doc::tile_index& ts);
+doc::UserData::Properties* may_get_properties(lua_State* L, int index);
 
 // Used by App.open(), Sprite{ fromFile }, and Image{ fromFile }
 enum class LoadSpriteFromFileParam { FullAniAsSprite, OneFrameAsSprite, OneFrameAsImage };
