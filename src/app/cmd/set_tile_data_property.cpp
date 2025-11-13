@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -31,34 +31,14 @@ SetTileDataProperty::SetTileDataProperty(doc::Tileset* ts,
 void SetTileDataProperty::onExecute()
 {
   auto ts = tileset();
-  auto& properties = ts->getTileData(m_ti).properties(m_group);
-
-  if (m_newValue.type() == USER_DATA_PROPERTY_TYPE_NULLPTR) {
-    auto it = properties.find(m_field);
-    if (it != properties.end())
-      properties.erase(it);
-  }
-  else {
-    properties[m_field] = m_newValue;
-  }
-
+  doc::set_property_value(ts->getTileData(m_ti).properties(m_group), m_field, m_newValue);
   ts->incrementVersion();
 }
 
 void SetTileDataProperty::onUndo()
 {
   auto ts = tileset();
-  auto& properties = ts->getTileData(m_ti).properties(m_group);
-
-  if (m_oldValue.type() == USER_DATA_PROPERTY_TYPE_NULLPTR) {
-    auto it = properties.find(m_field);
-    if (it != properties.end())
-      properties.erase(it);
-  }
-  else {
-    properties[m_field] = m_oldValue;
-  }
-
+  doc::set_property_value(ts->getTileData(m_ti).properties(m_group), m_field, m_oldValue);
   ts->incrementVersion();
 }
 

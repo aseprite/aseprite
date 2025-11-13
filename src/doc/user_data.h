@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2022-2023 Igara Studio S.A.
+// Copyright (c) 2022-2025 Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -177,6 +177,10 @@ size_t count_nonempty_properties_maps(const UserData::PropertiesMaps& properties
 uint16_t all_elements_of_same_type(const UserData::Vector& vector);
 UserData::Variant cast_to_smaller_int_type(const UserData::Variant& value, uint16_t type);
 UserData::Variant reduce_int_type_size(const UserData::Variant& value);
+
+void set_property_value(UserData::Properties& properties,
+                        const std::string& field,
+                        const UserData::Variant& value);
 
 } // namespace doc
 

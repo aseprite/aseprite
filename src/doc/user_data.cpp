@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2023  Igara Studio S.A.
+// Copyright (c) 2023-2025  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -240,6 +240,20 @@ UserData::Variant reduce_int_type_size(const UserData::Variant& value)
       return v;
     }
     default: return value;
+  }
+}
+
+void set_property_value(UserData::Properties& properties,
+                        const std::string& field,
+                        const UserData::Variant& value)
+{
+  if (value.type() == USER_DATA_PROPERTY_TYPE_NULLPTR) {
+    auto it = properties.find(field);
+    if (it != properties.end())
+      properties.erase(it);
+  }
+  else {
+    properties[field] = value;
   }
 }
 
