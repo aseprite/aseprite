@@ -34,7 +34,9 @@ do
   assert(spr.properties.b == nil)
   assert(#spr.properties == 3)
   -- We set an unexistent property now, undo it, the property shouldn't exist
-  spr.properties.b = 5
+  app.transaction(function()
+    spr.properties.b = 5
+  end)
   assert(spr.properties.b == 5)
   assert(#spr.properties == 4)
   app.undo()
@@ -81,7 +83,9 @@ do
   assert(m.g.height == 8)
 
   -- Set all properties
-  spr.properties = { a=1000 }
+  app.transaction(function()
+    spr.properties = { a=1000 }
+  end)
   assert(spr.properties.a == 1000)
   assert(#spr.properties == 1)
   app.undo()                    -- Test undo/redo
@@ -97,7 +101,9 @@ do
   assert(spr.properties.a == 10)
   assert(spr.properties("ext1").a == 20)
 
-  spr.properties("ext1", { a=30, b=35 })
+  app.transaction(function()
+    spr.properties("ext1", { a=30, b=35 })
+  end)
   assert(spr.properties("ext1").a == 30)
   assert(spr.properties("ext1").b == 35)
   app.undo()                    -- Test undo/redo
@@ -116,7 +122,9 @@ do
   assert(spr.properties.b == 60)
 
   -- Test undo/redo setting/removing one property at a time
-  spr.properties.a = "hi"
+  app.transaction(function()
+    spr.properties.a = "hi"
+  end)
   assert(spr.properties.a == "hi")
   assert(spr.properties.b == 60)
   app.undo()
@@ -126,7 +134,9 @@ do
   assert(spr.properties.a == "hi")
   assert(spr.properties.b == 60)
   assert(#spr.properties == 2)
-  spr.properties.a = nil
+  app.transaction(function()
+    spr.properties.a = nil
+  end)
   assert(#spr.properties == 1)
   assert(spr.properties.a == nil)
   assert(spr.properties.b == 60)
@@ -153,10 +163,47 @@ do
   assert(spr.properties.a == 2)
   assert(cel.properties.a == 2)
 
-  -- Do nothing (doesn't add an undo action)
-  local oldSteps = spr.undoHistory.undoSteps
+  -- Do nothing (doesn't add an undo action, doesn't crash)
   cel.properties = cel.properties
-  assert(oldSteps == spr.undoHistory.undoSteps)
+  assert(0 == spr.undoHistory.undoSteps)
+  assert(1 == #cel.properties)
+end
+
+-- Test mixing property changes with undo and without undo
+do
+  local spr = Sprite(1, 1)
+  spr.properties.a = 1
+  assert(spr.properties.a == 1)
+
+  app.transaction(function()
+    spr.properties.a = 2
+  end)
+  assert(spr.properties.a == 2)
+
+  spr.properties.a = 3
+  assert(spr.properties.a == 3)
+
   app.undo()
-  assert(0 == #cel.properties)
+  assert(spr.properties.a == 1)
+  app.redo()
+  assert(spr.properties.a == 3)
+
+  -- Change all properties
+  assert(#spr.properties == 1)
+  assert(spr.properties.a == 3)
+  app.transaction(function()
+    spr.properties = { x=1, y=2 }
+  end)
+  assert(#spr.properties == 2)
+  assert(spr.properties.x == 1)
+  assert(spr.properties.y == 2)
+  app.undo()
+  assert(#spr.properties == 1)
+  assert(spr.properties.a == 3)
+  spr.properties = { b=2 }
+  app.redo()
+  assert(#spr.properties == 2)
+  app.undo()
+  assert(#spr.properties == 1)
+  assert(spr.properties.b == 2)
 end

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -19,23 +19,25 @@ SetUserDataProperties::SetUserDataProperties(doc::WithUserData* obj,
                                              doc::UserData::Properties&& newProperties)
   : m_objId(obj->id())
   , m_group(group)
-  , m_oldProperties(obj->userData().properties(group))
-  , m_newProperties(std::move(newProperties))
+  , m_properties(std::move(newProperties))
 {
 }
 
 void SetUserDataProperties::onExecute()
 {
   auto obj = doc::get<doc::WithUserData>(m_objId);
-  obj->userData().properties(m_group) = m_newProperties;
+  auto& properties = obj->userData().properties(m_group);
+
+  auto old = properties;
+  properties = m_properties;
+  std::swap(m_properties, old);
+
   obj->incrementVersion();
 }
 
 void SetUserDataProperties::onUndo()
 {
-  auto obj = doc::get<doc::WithUserData>(m_objId);
-  obj->userData().properties(m_group) = m_oldProperties;
-  obj->incrementVersion();
+  onExecute();
 }
 
 }} // namespace app::cmd

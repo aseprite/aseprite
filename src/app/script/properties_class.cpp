@@ -119,9 +119,10 @@ int Properties_newindex(lua_State* L)
   auto& properties = propObj->properties(L, obj);
   auto newValue = get_value_from_lua<doc::UserData::Variant>(L, 3);
 
+  // Set property value with undo info
   // TODO add Object::sprite() member function
   // if (obj->sprite()) {
-  if (auto doc = App::instance()->context()->activeDocument()) {
+  if (Doc* doc = App::instance()->context()->activeDocument(); doc && doc->transaction()) {
     Tx tx(doc); // TODO propObj might not be member of "doc"
     if (propObj->ti != doc::notile) {
       tx(new cmd::SetTileDataProperty(static_cast<doc::Tileset*>(obj),
@@ -135,8 +136,9 @@ int Properties_newindex(lua_State* L)
     }
     tx.commit();
   }
+  // Set property value without undo
   else {
-    properties[field] = std::move(newValue);
+    doc::set_property_value(properties, field, std::move(newValue));
   }
   return 0;
 }
@@ -152,32 +154,43 @@ int Properties_call(lua_State* L)
   //
   //   object.property("extension", { ...})
   //
+  doc::UserData::Properties newProperties;
   if (lua_istable(L, 3)) {
-    auto newProperties = get_value_from_lua<doc::UserData::Properties>(L, 3);
+    newProperties = get_value_from_lua<doc::UserData::Properties>(L, 3);
+  }
+  else if (auto* argProperties = may_get_properties(L, 3)) {
+    newProperties = *argProperties;
+  }
+  else {
+    // Just return the properties
+    push_new<Properties>(L, *propObj, extID);
+    return 1;
+  }
 
-    auto obj = static_cast<doc::WithUserData*>(get_object(propObj->id));
-    if (!obj)
-      return luaL_error(L, "the object with these properties was destroyed");
+  auto obj = static_cast<doc::WithUserData*>(get_object(propObj->id));
+  if (!obj)
+    return luaL_error(L, "the object with these properties was destroyed");
 
-    // TODO add Object::sprite() member function
-    // if (obj->sprite()) {
-    if (auto doc = App::instance()->context()->activeDocument()) {
-      Tx tx(doc); // TODO propObj might not be member of "doc"
-      if (propObj->ti != doc::notile) {
-        tx(new cmd::SetTileDataProperties(static_cast<doc::Tileset*>(obj),
-                                          propObj->ti,
-                                          extID,
-                                          std::move(newProperties)));
-      }
-      else {
-        tx(new cmd::SetUserDataProperties(obj, extID, std::move(newProperties)));
-      }
-      tx.commit();
+  // TODO add Object::sprite() member function
+  // if (obj->sprite()) {
+  if (Doc* doc = App::instance()->context()->activeDocument(); doc && doc->transaction()) {
+    Tx tx(doc); // TODO propObj might not be member of "doc"
+    if (propObj->ti != doc::notile) {
+      tx(new cmd::SetTileDataProperties(static_cast<doc::Tileset*>(obj),
+                                        propObj->ti,
+                                        extID,
+                                        std::move(newProperties)));
     }
     else {
-      auto& properties = obj->userData().properties(extID);
-      properties = std::move(newProperties);
+      tx(new cmd::SetUserDataProperties(obj, extID, std::move(newProperties)));
     }
+    tx.commit();
+  }
+  // Copy the newProperties into properties(extID)
+  else {
+    Properties propObjExt(*propObj, extID);
+    auto& properties = propObjExt.properties(L);
+    properties = std::move(newProperties);
   }
 
   push_new<Properties>(L, *propObj, extID);

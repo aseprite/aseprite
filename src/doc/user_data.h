@@ -180,7 +180,7 @@ UserData::Variant reduce_int_type_size(const UserData::Variant& value);
 
 void set_property_value(UserData::Properties& properties,
                         const std::string& field,
-                        const UserData::Variant& value);
+                        UserData::Variant&& value);
 
 } // namespace doc
 

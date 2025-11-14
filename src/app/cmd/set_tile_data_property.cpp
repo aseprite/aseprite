@@ -23,23 +23,25 @@ SetTileDataProperty::SetTileDataProperty(doc::Tileset* ts,
   , m_ti(ti)
   , m_group(group)
   , m_field(field)
-  , m_oldValue(ts->getTileData(m_ti).properties(m_group)[m_field])
-  , m_newValue(std::move(newValue))
+  , m_value(std::move(newValue))
 {
 }
 
 void SetTileDataProperty::onExecute()
 {
   auto ts = tileset();
-  doc::set_property_value(ts->getTileData(m_ti).properties(m_group), m_field, m_newValue);
+  auto& properties = ts->getTileData(m_ti).properties(m_group);
+
+  auto old = properties[m_field];
+  doc::set_property_value(properties, m_field, std::move(m_value));
+  std::swap(m_value, old);
+
   ts->incrementVersion();
 }
 
 void SetTileDataProperty::onUndo()
 {
-  auto ts = tileset();
-  doc::set_property_value(ts->getTileData(m_ti).properties(m_group), m_field, m_oldValue);
-  ts->incrementVersion();
+  onExecute();
 }
 
 }} // namespace app::cmd

@@ -245,7 +245,7 @@ UserData::Variant reduce_int_type_size(const UserData::Variant& value)
 
 void set_property_value(UserData::Properties& properties,
                         const std::string& field,
-                        const UserData::Variant& value)
+                        UserData::Variant&& value)
 {
   if (value.type() == USER_DATA_PROPERTY_TYPE_NULLPTR) {
     auto it = properties.find(field);
@@ -253,7 +253,7 @@ void set_property_value(UserData::Properties& properties,
       properties.erase(it);
   }
   else {
-    properties[field] = value;
+    properties[field] = std::move(value);
   }
 }
 

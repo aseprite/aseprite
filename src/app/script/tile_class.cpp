@@ -175,14 +175,18 @@ int Tile_set_properties(lua_State* L)
   else
     return luaL_error(L, "table or properties expected to set the 'properties' field");
 
-  if (ts->sprite()) {
-    Tx tx(ts->sprite());
-    tx(new cmd::SetTileDataProperties(ts, tile->ti, std::string(), std::move(newProperties)));
-    tx.commit();
+  // Set properties with undo information
+  if (auto spr = ts->sprite()) {
+    if (Doc* doc = static_cast<Doc*>(spr->document()); doc && doc->transaction()) {
+      Tx tx(doc);
+      tx(new cmd::SetTileDataProperties(ts, tile->ti, std::string(), std::move(newProperties)));
+      tx.commit();
+      return 0;
+    }
   }
-  else {
-    properties = std::move(newProperties);
-  }
+
+  // Set properties without undo information
+  properties = std::move(newProperties);
   return 0;
 }
 
