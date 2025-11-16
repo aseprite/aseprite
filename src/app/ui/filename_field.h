@@ -38,6 +38,12 @@ public:
   void setFilenameQuiet(const std::string& fn) { m_file = fn; }
   void setDocFilename(const std::string& fn) { m_docFilename = fn; }
   void setAskOverwrite(const bool on) { m_askOverwrite = on; }
+  void setReadOnly(bool readOnly)
+  {
+    m_entry->setReadOnly(readOnly);
+    m_button.setEnabled(!readOnly);
+  }
+  bool isReadOnly() const { return m_entry->isReadOnly(); }
   void onUpdateText();
 
   obs::signal<std::string()> SelectOutputFile;

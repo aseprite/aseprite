@@ -104,6 +104,22 @@ void TextEdit::selectAll()
   m_selection.set(startCaret, endCaret);
 }
 
+void TextEdit::setReadOnly(bool readOnly)
+{
+  m_readOnly = readOnly;
+}
+
+bool TextEdit::isReadOnly() const
+{
+  return m_readOnly;
+}
+
+void TextEdit::setPlaceholder(const std::string& placeholder)
+{
+  m_placeholder = placeholder;
+  invalidate();
+}
+
 bool TextEdit::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
@@ -123,8 +139,10 @@ bool TextEdit::onProcessMessage(Message* msg)
     }
     case kFocusLeaveMessage: {
       stopTimer();
+      m_lockedSelectionStart.clear();
+      m_selection.clear();
       m_drawCaret = false;
-      invalidateRect(m_caretRect);
+      invalidate();
       onCaretPosChange();
       break;
     }
@@ -207,6 +225,9 @@ bool TextEdit::onProcessMessage(Message* msg)
 
 bool TextEdit::onKeyDown(const KeyMessage* keymsg)
 {
+  if (!onCanModify())
+    return false;
+
   const Cmd cmd = cmdFromKeyMessage(keymsg);
   if (cmd != Cmd::NoOp) {
     executeCmd(cmd, keymsg->unicodeChar(), keymsg->shiftPressed());
@@ -278,8 +299,16 @@ void TextEdit::onPaint(PaintEvent& ev)
   if (!view)
     return;
 
+  os::Paint textPaint = isEnabled() && !m_readOnly ? m_colors.text : m_colors.disabledText;
+  os::Paint backgroundPaint = m_colors.background;
+
+  if (isEnabled() && isReadOnly()) {
+    textPaint = m_colors.text;
+    backgroundPaint = m_colors.disabledBackground;
+  }
+
   const gfx::Rect rect = view->viewportBounds().offset(-bounds().origin());
-  g->drawRect(rect, m_colors.background);
+  g->drawRect(rect, backgroundPaint);
 
   gfx::PointF point(clientChildrenBounds().origin());
   const gfx::Rect clipBounds = g->getClipBounds();
@@ -294,7 +323,7 @@ void TextEdit::onPaint(PaintEvent& ev)
       (!clipBounds.intersects(gfx::Rect(point.x, point.y, line.width, line.height)) && !caretLine);
 
     if (!skip) {
-      g->drawTextBlob(line.blob, point, m_colors.text);
+      g->drawTextBlob(line.blob, point, textPaint);
 
       // Drawing the selection rect and any selected text.
       // We're technically drawing over the old text, so ideally we want to clip that off as well?
@@ -311,9 +340,18 @@ void TextEdit::onPaint(PaintEvent& ev)
     point.y += line.height;
   }
 
+  // TODO: Placeholder text should basically be normal text wrapped in proper lines
+  // and there should be flag.
+  if (text().empty() && !m_placeholder.empty() && isEnabled() && !isReadOnly()) {
+    g->drawText(m_placeholder,
+                m_colors.placeholderText.color(),
+                backgroundPaint.color(),
+                clientChildrenBounds().origin());
+  }
+
   m_caretRect = caretBounds();
   if (m_drawCaret && !m_caretRect.isEmpty())
-    g->drawRect(m_caretRect, m_colors.text);
+    g->drawRect(m_caretRect, textPaint);
   m_caretRect.offset(origin());
 }
 
