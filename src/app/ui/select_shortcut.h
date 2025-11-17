@@ -26,7 +26,8 @@ public:
 
   bool isOK() const { return m_ok; }
   bool isModified() const { return m_modified; }
-  const ui::Shortcut& shortcut() const { return m_shortcut; }
+  const ui::Shortcut& shortcut() const;
+  const std::vector<ui::Shortcut>& shortcutSequence() const;
 
 private:
   void onModifierChange(ui::KeyModifiers modifier, ui::CheckBox* checkbox);
@@ -35,7 +36,9 @@ private:
   void onOK();
   void onCancel();
   void updateModifiers();
+  void updateModifiersFromValue(ui::KeyModifiers modifiers);
   void updateAssignedTo();
+  void updateSequenceInfo();
 
   class KeyField;
 

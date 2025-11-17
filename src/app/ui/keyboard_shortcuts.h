@@ -88,6 +88,16 @@ public:
   // Useful to regenerate tooltips with shortcuts.
   obs::signal<void()> UserChange;
 
+  // Sequence tracking for multi-key shortcuts
+  void resetSequenceState() const;
+  bool advanceSequenceState(const ui::Shortcut& key) const;
+  std::size_t getSequencePosition() const { return m_sequencePosition; }
+  bool isTrackingSequence() const { return m_sequencePosition > 0; }
+  bool checkSequenceTimeout(double timeoutSeconds = 0.5) const;
+  KeyPtr getPendingCommand() const;
+  KeyPtr executePendingCommand() const; // Force execute pending without timeout check
+  void markSequenceCompleted() const { m_sequenceJustCompleted = true; }
+
 private:
   void exportKeys(tinyxml2::XMLElement* parent, KeyType type);
   static void exportShortcut(tinyxml2::XMLElement* parent,
@@ -96,6 +106,18 @@ private:
                              bool removed);
 
   mutable Keys m_keys;
+  
+  // Sequence matching state (mutable because modified during const key matching)
+  mutable std::size_t m_sequencePosition;
+  mutable std::vector<ui::Shortcut> m_currentSequence;
+  mutable double m_lastSequenceKeyTime;
+  
+  // Pending single-key command when a multi-key sequence is being tracked
+  mutable KeyPtr m_pendingSingleKeyCommand;
+  mutable const AppShortcut* m_pendingSingleKeyShortcut;
+  
+  // Flag to suppress single-key matches when a sequence just completed
+  mutable bool m_sequenceJustCompleted;
 };
 
 inline std::string key_tooltip(const char* str,

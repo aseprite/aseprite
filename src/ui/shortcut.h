@@ -23,7 +23,7 @@ class Shortcut {
 public:
   Shortcut();
   Shortcut(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar);
-  // Convert string like "Ctrl+Q" or "Alt+X" into an shortcut.
+  // Convert string like "Ctrl+Q" or "Alt+X" or multi-key "Ctrl+K,Ctrl+O" into a shortcut.
   explicit Shortcut(const std::string& str);
 
   bool isEmpty() const;
@@ -46,10 +46,26 @@ public:
   KeyScancode scancode() const { return m_scancode; }
   int unicodeChar() const { return m_unicodeChar; }
 
+  // Multi-key sequence support
+  bool isSequence() const { return !m_sequence.empty(); }
+  const std::vector<Shortcut>& sequence() const { return m_sequence; }
+  std::size_t sequenceSize() const { return m_sequence.empty() ? 1 : m_sequence.size(); }
+  
+  // Get a specific key in the sequence (0 for single key or first in sequence)
+  const Shortcut& getKeyAt(std::size_t index) const;
+  
+  // Create a shortcut sequence from multiple shortcuts
+  static Shortcut MakeSequence(const std::vector<Shortcut>& keys);
+
 private:
   KeyModifiers m_modifiers;
   KeyScancode m_scancode;
   int m_unicodeChar;
+  
+  // For multi-key sequences like "Ctrl+K Ctrl+O"
+  // If empty, this is a single-key shortcut (using m_modifiers, m_scancode, m_unicodeChar)
+  // If non-empty, this is a sequence and the individual fields are ignored
+  std::vector<Shortcut> m_sequence;
 };
 
 template<typename T>

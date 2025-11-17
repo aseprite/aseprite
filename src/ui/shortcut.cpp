@@ -15,6 +15,7 @@
 #include "base/replace_string.h"
 #include "base/split_string.h"
 #include "base/string.h"
+#include "base/trim_string.h"
 #include "os/system.h"
 
 #include <cctype>
@@ -142,7 +143,7 @@ int scancode_to_string_size = sizeof(scancode_to_string) / sizeof(scancode_to_st
 
 } // anonymous namespace
 
-Shortcut::Shortcut() : m_modifiers(kKeyNoneModifier), m_scancode(kKeyNil), m_unicodeChar(0)
+Shortcut::Shortcut() : m_modifiers(kKeyNoneModifier), m_scancode(kKeyNil), m_unicodeChar(0), m_sequence()
 {
 }
 
@@ -150,6 +151,7 @@ Shortcut::Shortcut(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar
   : m_modifiers(modifiers)
   , m_scancode(scancode)
   , m_unicodeChar(unicodeChar)
+  , m_sequence()
 {
 }
 
@@ -157,7 +159,60 @@ Shortcut::Shortcut(const std::string& str)
   : m_modifiers(kKeyNoneModifier)
   , m_scancode(kKeyNil)
   , m_unicodeChar(0)
+  , m_sequence()
 {
+  // Check if this is a sequence (contains space separator between keys)
+  // Format: "Ctrl+K Ctrl+O"
+  std::vector<std::string> parts;
+  std::size_t pos = 0, lastPos = 0;
+  
+  // Look for space separators that aren't part of "Space" keyword
+  while (pos < str.size()) {
+    // Check if we found a space that's not part of a key name
+    if (str[pos] == ' ') {
+      // Check if this space is not part of "Space", "Page Up", "Page Down", etc.
+      std::string beforeSpaceLower = base::string_to_lower(str.substr(lastPos, pos - lastPos));
+      std::string beforeSpace;
+      base::trim_string(beforeSpaceLower, beforeSpace);
+      
+      // If the last token ends with a valid key, this is a sequence separator
+      bool isSequenceSeparator = false;
+      if (!beforeSpace.empty()) {
+        // Check if it ends with a complete key (not "page" or "delete" alone)
+        if (beforeSpace.back() == '+' || 
+            beforeSpace.find("page ") == std::string::npos) {
+          isSequenceSeparator = true;
+        }
+      }
+      
+      if (isSequenceSeparator) {
+        std::string part;
+        base::trim_string(str.substr(lastPos, pos - lastPos), part);
+        if (!part.empty())
+          parts.push_back(part);
+        lastPos = pos + 1;
+      }
+    }
+    ++pos;
+  }
+  
+  // Add the last part
+  if (lastPos < str.size()) {
+    std::string part;
+    base::trim_string(str.substr(lastPos), part);
+    if (!part.empty())
+      parts.push_back(part);
+  }
+  
+  // If we found multiple parts, create a sequence
+  if (parts.size() > 1) {
+    for (const std::string& part : parts) {
+      m_sequence.push_back(Shortcut(part));
+    }
+    return;
+  }
+  
+  // Otherwise, parse as a single shortcut
   // Special case: plus sign
   if (str == "+") {
     m_unicodeChar = '+';
@@ -273,19 +328,74 @@ Shortcut::Shortcut(const std::string& str)
   }
 }
 
+const Shortcut& Shortcut::getKeyAt(std::size_t index) const
+{
+  if (!m_sequence.empty()) {
+    ASSERT(index < m_sequence.size());
+    return m_sequence[index];
+  }
+  ASSERT(index == 0);
+  return *this;
+}
+
+// static
+Shortcut Shortcut::MakeSequence(const std::vector<Shortcut>& keys)
+{
+  Shortcut result;
+  if (keys.empty())
+    return result;
+  
+  if (keys.size() == 1)
+    return keys[0];
+  
+  // Store sequence
+  result.m_sequence = keys;
+  return result;
+}
+
 bool Shortcut::operator==(const Shortcut& other) const
 {
+  // If both are sequences, compare sequences
+  if (isSequence() && other.isSequence()) {
+    if (m_sequence.size() != other.m_sequence.size())
+      return false;
+    for (std::size_t i = 0; i < m_sequence.size(); ++i) {
+      if (m_sequence[i] != other.m_sequence[i])
+        return false;
+    }
+    return true;
+  }
+  
+  // If one is sequence and other is not, they're different
+  if (isSequence() != other.isSequence())
+    return false;
+  
+  // Both are single shortcuts
   // TODO improve this, avoid conversion to std::string
   return toString() == other.toString();
 }
 
 bool Shortcut::isEmpty() const
 {
+  if (isSequence())
+    return m_sequence.empty();
   return (m_modifiers == kKeyNoneModifier && m_scancode == kKeyNil && m_unicodeChar == 0);
 }
 
 std::string Shortcut::toString() const
 {
+  // If this is a sequence, concatenate all parts
+  if (isSequence()) {
+    std::string result;
+    for (std::size_t i = 0; i < m_sequence.size(); ++i) {
+      if (i > 0)
+        result += " ";
+      result += m_sequence[i].toString();
+    }
+    return result;
+  }
+  
+  // Single shortcut
   std::string buf;
 
   // Shifts
