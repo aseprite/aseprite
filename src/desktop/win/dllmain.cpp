@@ -1,4 +1,5 @@
 // Desktop Integration
+// Copyright (C) 2025  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -10,15 +11,9 @@
 #include "desktop/win/class_factory.h"
 #include "desktop/win/thumbnail_handler.h"
 
+#include "desktop/win/helpers.h"
+
 #include <new>
-
-// This CLSID is defined by Windows for IThumbnailProvider implementations.
-#define THUMBNAILHANDLER_SHELL_EXTENSION_CLSID "{E357FCCD-A995-4576-B01F-234630154E96}"
-
-// This CLSID is defined by us, and can be used to create class factory for ThumbnailHandler
-// instances.
-#define THUMBNAILHANDLER_CLSID_STRING "{A5E9417E-6E7A-4B2D-85A4-84E114D7A960}"
-#define THUMBNAILHANDLER_NAME_STRING  "Aseprite Thumbnail Handler"
 
 using namespace desktop;
 
@@ -94,42 +89,24 @@ STDAPI DllRegisterServer()
   if (!GetModuleFileNameW(Global::hInstance, dllPath, sizeof(dllPath) / sizeof(dllPath[0])))
     return HRESULT_FROM_WIN32(GetLastError());
 
-  auto hkcu = base::hkey::current_user();
-  auto k = hkcu.create("Software\\Classes\\CLSID\\" THUMBNAILHANDLER_CLSID_STRING);
-  k.string("", THUMBNAILHANDLER_NAME_STRING);
-  k = k.create("InProcServer32");
-  k.string("", base::to_utf8(dllPath));
-  k.string("ThreadingModel", "Apartment");
+  bool enabled = true;
+  bool overlay = true; // Enable overlay by default
 
-  k = hkcu.create("Software\\Classes\\AsepriteFile");
-  k.create("ShellEx\\" THUMBNAILHANDLER_SHELL_EXTENSION_CLSID)
-    .string("", THUMBNAILHANDLER_CLSID_STRING);
+  // Read user preferences to avoid enabling thumbnails if the user
+  // doesn't want  them.
+  DWORD flags = 0;
+  if (win::get_user_preferences(flags)) {
+    enabled = (flags & THUMBNAILER_FLAG_ENABLED ? true : false);
+    overlay = (flags & THUMBNAILER_FLAG_OVERLAY ? true : false);
+  }
 
-  // TypeOverlay = empty string = don't show the app icon overlay in the thumbnail
-  k.string("TypeOverlay", "");
-
-  // Treatment = 2 = photo border
-  k.dword("Treatment", 2);
-
-  return S_OK;
+  if (enabled)
+    return win::register_thumbnailer(base::to_utf8(dllPath), overlay);
+  else
+    return win::unregister_thumbnailer();
 }
 
 STDAPI DllUnregisterServer()
 {
-  HRESULT hr = S_OK;
-  auto hkcu = base::hkey::current_user();
-  try {
-    hkcu.delete_tree(
-      "Software\\Classes\\AsepriteFile\\ShellEx\\" THUMBNAILHANDLER_SHELL_EXTENSION_CLSID);
-  }
-  catch (const base::Win32Exception& ex) {
-    hr = HRESULT_FROM_WIN32(ex.errorCode());
-  }
-  try {
-    hkcu.delete_tree("Software\\Classes\\CLSID\\" THUMBNAILHANDLER_CLSID_STRING);
-  }
-  catch (const base::Win32Exception& ex) {
-    hr = HRESULT_FROM_WIN32(ex.errorCode());
-  }
-  return hr;
+  return win::unregister_thumbnailer();
 }

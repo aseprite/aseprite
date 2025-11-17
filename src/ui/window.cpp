@@ -635,6 +635,12 @@ void Window::onResize(ResizeEvent& ev)
   windowSetPosition(ev.bounds());
   // Fire Resize signal
   Resize(ev);
+
+  // After resizing/positioning a window, we have to update the active
+  // mouse widget, because the mouse might have been above a widget of
+  // this window that now has moved to other place.
+  if (auto* mgr = this->manager())
+    mgr->_updateMouseWidgets();
 }
 
 void Window::onSizeHint(SizeHintEvent& ev)

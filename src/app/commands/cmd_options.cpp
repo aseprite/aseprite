@@ -48,6 +48,11 @@
 #include "render/render.h"
 #include "ui/ui.h"
 
+#if LAF_WINDOWS
+  #include "app/win/file_associations.h"
+  #include "app/win/thumbnails.h"
+#endif
+
 #if ENABLE_SENTRY
   #include "app/sentry_wrapper.h"
 #endif
@@ -59,11 +64,12 @@ namespace app {
 namespace {
 
 const char* kSectionGeneralId = "section_general";
-const char* kSectionTabletId = "section_tablet";
 const char* kSectionBgId = "section_bg";
 const char* kSectionGridId = "section_grid";
 const char* kSectionThemeId = "section_theme";
 const char* kSectionExtensionsId = "section_extensions";
+const char* kSectionTabletId = "section_tablet";
+const char* kSectionFileExplorerId = "section_file_explorer";
 
 const char* kInfiniteSymbol = "\xE2\x88\x9E"; // Infinite symbol (UTF-8)
 
@@ -343,23 +349,6 @@ public:
       keepEditedSpriteDataFor()->setEnabled(state);
     });
 
-#ifdef LAF_WINDOWS // Show Tablet section on Windows
-    tabletApiWindowsPointer()->Click.connect([this]() { onTabletAPIChange(); });
-    tabletApiWintabSystem()->Click.connect([this]() { onTabletAPIChange(); });
-    tabletApiWintabDirect()->Click.connect([this]() { onTabletAPIChange(); });
-#else // For macOS and Linux
-    {
-      // Hide the "section_tablet" item (which is only for Windows at the moment)
-      for (auto item : sectionListbox()->children()) {
-        if (static_cast<ListItem*>(item)->getValue() == kSectionTabletId) {
-          item->setVisible(false);
-          break;
-        }
-      }
-      sectionTablet()->setVisible(false);
-    }
-#endif
-
     rgbmapAlgorithmPlaceholder()->addChild(&m_rgbmapAlgorithmSelector);
     m_rgbmapAlgorithmSelector.setExpansive(true);
 
@@ -486,6 +475,52 @@ public:
 
     // Aseprite Format preferences
     celFormat()->Change.connect([this] { onCelFormatChange(); });
+
+#if LAF_WINDOWS
+    // Show Tablet section on Windows
+    tabletApiWindowsPointer()->Click.connect([this] { onTabletAPIChange(); });
+    tabletApiWintabSystem()->Click.connect([this] { onTabletAPIChange(); });
+    tabletApiWintabDirect()->Click.connect([this] { onTabletAPIChange(); });
+
+    // File Explorer preferences
+    std::string dll_name = win::get_thumbnailer_dll();
+    if (dll_name.empty()) {
+      winDisplayThumbnail()->setEnabled(false);
+      winDisplayThumbnail()->setText(
+        Strings::options_thumbnailer_dll_not_found(win::kAsepriteThumbnailerDllName));
+      winDisplayLittleIcon()->setVisible(false);
+    }
+    else {
+      win::ThumbnailsOption opts = windowsFileExplorerThumbnailsOptionsFromRegistry();
+      winDisplayThumbnail()->setSelected(opts.enabled);
+      winDisplayLittleIcon()->setVisible(opts.enabled);
+      winDisplayLittleIcon()->setSelected(opts.overlay);
+      winDisplayThumbnail()->Click.connect([this] {
+        winDisplayLittleIcon()->setVisible(winDisplayThumbnail()->isSelected());
+        checkIfExplorerProcNeedsRestart();
+      });
+      winDisplayLittleIcon()->Click.connect([this] { checkIfExplorerProcNeedsRestart(); });
+    }
+    // File Explorer file type associations
+    fillExtensionsCombobox(winFileTypeToAssociate(), "aseprite");
+    winAssociateFileType()->Click.connect([this] { onAssociateFileType(); });
+#else // For macOS and Linux
+    {
+      // Hide the "section_tablet" and "section_file_explorer" items
+      // which are only for Windows at the moment.
+      for (auto item : sectionListbox()->children()) {
+        if (auto* listItem = dynamic_cast<ListItem*>(item)) {
+          if (listItem->getValue() == kSectionTabletId ||
+              listItem->getValue() == kSectionFileExplorerId) {
+            listItem->setVisible(false);
+          }
+        }
+      }
+      sectionWindowsSpecificSeparator()->setVisible(false);
+      sectionTablet()->setVisible(false);
+      sectionFileExplorer()->setVisible(false);
+    }
+#endif
 
     // Reset checkboxes
 
@@ -640,7 +675,7 @@ public:
     // experimental "use native file dialog" option
     showAsepriteFileDialog()->setSelected(!m_pref.experimental.useNativeFileDialog());
 
-#ifdef LAF_WINDOWS // Show Tablet section on Windows
+#if LAF_WINDOWS // Show Tablet section on Windows
     {
       const os::TabletAPI tabletAPI = m_system->tabletOptions().api;
       if (tabletAPI == os::TabletAPI::Wintab)
@@ -892,7 +927,8 @@ public:
     m_pref.quantization.rgbmapAlgorithm(m_rgbmapAlgorithmSelector.algorithm());
     m_pref.quantization.fitCriteria(m_bestFitCriteriaSelector.criteria());
 
-#ifdef LAF_WINDOWS
+#if LAF_WINDOWS
+    // Windows API tablet settings
     {
       os::TabletAPI tabletAPI = os::TabletAPI::Default;
       std::string tabletStr;
@@ -923,6 +959,11 @@ public:
       options.api = tabletAPI;
       options.setCursorFix = m_pref.tablet.setCursorFix();
       m_system->setTabletOptions(options);
+    }
+    // File Explorer Thumbnails
+    {
+      if (win::set_thumbnail_options("aseprite", windowsFileExplorerThumbnailsOptionsFromUI()))
+        m_restartExplorerProc = true;
     }
 #endif
 
@@ -2136,12 +2177,47 @@ private:
     return false;
   }
 
-#ifdef LAF_WINDOWS
+#if LAF_WINDOWS
   void onTabletAPIChange()
   {
     const bool pointerApi = tabletApiWindowsPointer()->isSelected();
     windowsPointerOptions()->setVisible(pointerApi);
     sectionTablet()->layout();
+  }
+
+  void checkIfExplorerProcNeedsRestart()
+  {
+    const bool changed = m_restartExplorerProc ||
+                         (windowsFileExplorerThumbnailsOptionsFromRegistry() !=
+                          windowsFileExplorerThumbnailsOptionsFromUI());
+
+    winRestartExplorerProc()->setVisible(changed);
+    sectionFileExplorer()->layout();
+  }
+
+  win::ThumbnailsOption windowsFileExplorerThumbnailsOptionsFromRegistry() const
+  {
+    return win::get_thumbnail_options("aseprite");
+  }
+
+  win::ThumbnailsOption windowsFileExplorerThumbnailsOptionsFromUI() const
+  {
+    win::ThumbnailsOption opts = windowsFileExplorerThumbnailsOptionsFromRegistry();
+    opts.enabled = winDisplayThumbnail()->isSelected();
+    opts.overlay = winDisplayLittleIcon()->isSelected();
+    return opts;
+  }
+
+  void onAssociateFileType()
+  {
+    const std::string& ext = getExtension(winFileTypeToAssociate());
+    // .ase and .aseprite files will be associated with "AsepriteFile"
+    if (ext == "ase" || ext == "aseprite") {
+      win::associate_file_type_with_asepritefile_class(ext);
+    }
+    else {
+      win::add_aseprite_to_open_with_file_type(ext);
+    }
   }
 #endif // LAF_WINDOWS
 
@@ -2165,6 +2241,9 @@ private:
   SamplingSelector* m_samplingSelector = nullptr;
   text::FontRef m_font;
   text::FontRef m_miniFont;
+#if LAF_WINDOWS
+  bool m_restartExplorerProc = false;
+#endif // LAF_WINDOWS
 };
 
 class OptionsCommand : public Command {

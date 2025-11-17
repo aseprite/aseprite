@@ -84,6 +84,7 @@ public:
 
   virtual gfx::Size getCaretSize(Widget* widget) { return gfx::Size(kDefaultFontHeight, 1); }
   virtual TextColors getTextColors(Widget* widget);
+  virtual ui::Style* viewBaseStyle() { return &m_simpleStyle; }
 
   virtual void paintEntry(PaintEvent& ev) {}
   virtual void paintTextEdit(PaintEvent& ev) {}

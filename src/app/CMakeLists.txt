@@ -520,6 +520,7 @@ target_sources(app-lib PRIVATE
   commands/screenshot.cpp
   commands/set_playback_speed.cpp
   commands/show_menu.cpp
+  commands/solo_layer.cpp
   commands/tileset_mode.cpp
   commands/toggle_other_layers_opacity.cpp
   commands/toggle_play_option.cpp
@@ -734,6 +735,12 @@ target_sources(app-lib PRIVATE
 
 if(TARGET generated_version)
   add_dependencies(app-lib generated_version)
+endif()
+
+if(WIN32)
+  target_sources(app-lib PRIVATE
+    win/file_associations.cpp
+    win/thumbnails.cpp)
 endif()
 
 if(ENABLE_NEWS)

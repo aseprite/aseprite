@@ -1402,17 +1402,36 @@ public:
   bool caretDrawn() const { return m_caretDrawn; }
   const gfx::Rect& textBounds() const { return m_textBounds; }
 
+  bool isSelectedChar(const int index) override
+  {
+    return ((index >= m_range.from) && (index < m_range.to));
+  }
+
+  void drawSelectionBg(const gfx::RectF& bounds) override
+  {
+    auto* theme = SkinTheme::get(m_widget);
+    auto& colors = theme->colors;
+    gfx::Color bg = ColorNone;
+
+    if (m_widget->hasFocus())
+      bg = colors.selected();
+    else
+      bg = colors.disabled();
+
+    if (bg != ColorNone)
+      m_graphics->fillRect(bg, gfx::Rect(bounds.x - m_widget->bounds().x, m_y, bounds.w, m_h));
+  }
+
   void preProcessChar(const int index,
                       const base::codepoint_t codepoint,
                       gfx::Color& fg,
                       gfx::Color& bg,
                       const gfx::Rect& charBounds) override
   {
-    auto theme = SkinTheme::get(m_widget);
+    auto* theme = SkinTheme::get(m_widget);
 
     // Normal text
     auto& colors = theme->colors;
-    bg = ColorNone;
     fg = colors.text();
 
     // Suffix text
@@ -1421,21 +1440,14 @@ public:
     }
 
     // Selected
-    if ((m_index >= m_range.from) && (m_index < m_range.to)) {
-      if (m_widget->hasFocus())
-        bg = colors.selected();
-      else
-        bg = colors.disabled();
+    if (isSelectedChar(m_index)) {
       fg = colors.selectedText();
     }
 
     // Disabled
     if (!m_widget->isEnabled()) {
-      bg = ColorNone;
       fg = colors.disabled();
     }
-
-    m_bg = bg;
   }
 
   bool preDrawChar(const gfx::Rect& charBounds) override
@@ -1444,14 +1456,6 @@ public:
     m_charStartX = charBounds.x;
 
     if (charBounds.x2() - m_widget->bounds().x < m_widget->clientBounds().x2()) {
-      if (m_bg != ColorNone) {
-        // Fill background e.g. needed for selected/highlighted
-        // regions with TTF fonts where the char is smaller than the
-        // text bounds [m_y,m_y+m_h)
-        gfx::Rect fillThisRect(m_lastX - m_widget->bounds().x, m_y, charBounds.x2() - m_lastX, m_h);
-        if (charBounds != fillThisRect)
-          m_graphics->fillRect(m_bg, fillThisRect);
-      }
       m_lastX = charBounds.x2();
       return true;
     }
@@ -1480,7 +1484,6 @@ private:
   Entry::Range m_range;
   gfx::Rect m_textBounds;
   bool m_caretDrawn;
-  gfx::Color m_bg;
   int m_lastX; // Last position used to fill the background
   int m_y, m_h;
   int m_charStartX;
