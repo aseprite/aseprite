@@ -793,20 +793,33 @@ bool Timeline::onProcessMessage(Message* msg)
             Layer* layer = row.layer();
             ASSERT(layer);
 
+            // Hide everything or restore alternative state
+            bool oneWithInternalState = false;
             if (msg->altPressed()) {
+              oneWithInternalState =
+                std::any_of(m_rows.begin(), m_rows.end(), [](const Row& row) -> bool {
+                  return row.layer()->hasFlags(LayerFlags::Internal_WasVisible);
+                });
+
               Command* command = Commands::instance()->byId(CommandId::SoloLayer());
               Params params;
               params.set("layerId", base::convert_to<std::string>(layer->id()).c_str());
               m_context->executeCommand(command, params);
+
+              regenerateRows();
+              invalidate();
             }
             else {
-              if (layer->isVisible())
-                m_state = STATE_HIDING_LAYERS;
-              else
-                m_state = STATE_SHOWING_LAYERS;
-
-              setLayerVisibleFlag(m_clk.layer, m_state == STATE_SHOWING_LAYERS);
+              setLayerVisibleFlag(m_clk.layer, !layer->isVisible());
             }
+
+            // Set the internal m_state to continue with this action
+            // (hiding layers or showing layers) if we drag the mouse
+            // over other eye icons.
+            if (!layer->isVisible() && !oneWithInternalState)
+              m_state = STATE_HIDING_LAYERS;
+            else
+              m_state = STATE_SHOWING_LAYERS;
           }
           break;
 
