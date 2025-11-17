@@ -794,8 +794,7 @@ bool Timeline::onProcessMessage(Message* msg)
             ASSERT(layer);
 
             if (msg->altPressed()) {
-              Command* command = Commands::instance()->byId(
-                CommandId::ToggleOtherLayersVisibility());
+              Command* command = Commands::instance()->byId(CommandId::SoloLayer());
               Params params;
               params.set("layerId", base::convert_to<std::string>(layer->id()).c_str());
               m_context->executeCommand(command, params);

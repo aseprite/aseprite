@@ -13,24 +13,21 @@
 
 namespace app {
 
-struct ToggleOtherLayersVisibilityParams : public NewParams {
+struct SoloLayerParams : public NewParams {
   Param<int> layerId{ this, 0, "layerId" };
 };
 
-class ToggleOtherLayersVisibilityCommand
-  : public CommandWithNewParams<ToggleOtherLayersVisibilityParams> {
+class SoloLayerCommand : public CommandWithNewParams<SoloLayerParams> {
 public:
-  ToggleOtherLayersVisibilityCommand();
+  SoloLayerCommand();
 
 private:
   void onExecute(Context* ctx) override;
   std::string onGetFriendlyName() const override;
 };
 
-ToggleOtherLayersVisibilityCommand::ToggleOtherLayersVisibilityCommand()
-  : CommandWithNewParams<ToggleOtherLayersVisibilityParams>(
-      CommandId::ToggleOtherLayersVisibility(),
-      CmdUIOnlyFlag)
+SoloLayerCommand::SoloLayerCommand()
+  : CommandWithNewParams<SoloLayerParams>(CommandId::SoloLayer(), CmdUIOnlyFlag)
 {
 }
 
@@ -43,7 +40,7 @@ static void show_children_layers(const LayerGroup* layerGroup, Doc* doc)
   }
 }
 
-void ToggleOtherLayersVisibilityCommand::onExecute(Context* ctx)
+void SoloLayerCommand::onExecute(Context* ctx)
 {
   ContextReader reader(ctx);
   if (!reader.document() || !reader.document()->sprite())
@@ -122,14 +119,14 @@ void ToggleOtherLayersVisibilityCommand::onExecute(Context* ctx)
   }
 }
 
-std::string ToggleOtherLayersVisibilityCommand::onGetFriendlyName() const
+std::string SoloLayerCommand::onGetFriendlyName() const
 {
-  return Strings::commands_ToggleOtherLayersVisibility();
+  return Strings::commands_SoloLayer();
 }
 
-Command* CommandFactory::createToggleOtherLayersVisibilityCommand()
+Command* CommandFactory::createSoloLayerCommand()
 {
-  return new ToggleOtherLayersVisibilityCommand;
+  return new SoloLayerCommand;
 }
 
 } // namespace app

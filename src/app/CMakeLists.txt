@@ -519,9 +519,9 @@ target_sources(app-lib PRIVATE
   commands/screenshot.cpp
   commands/set_playback_speed.cpp
   commands/show_menu.cpp
+  commands/solo_layer.cpp
   commands/tileset_mode.cpp
   commands/toggle_other_layers_opacity.cpp
-  commands/toggle_other_layers_visibility.cpp
   commands/toggle_play_option.cpp
   console.cpp
   context.cpp

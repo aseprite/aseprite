@@ -318,7 +318,7 @@
       <key command="LayerOpacity"><param name="opacity" value="224" /></key>
       <key command="LayerOpacity" shortcut="Shift+4"><param name="opacity" value="255" /></key>
 
-      <key command="ToggleOtherLayersVisibility" />
+      <key command="SoloLayer" />
 
       <key command="ToggleOtherLayersOpacity" />
       <key command="ToggleOtherLayersOpacity" shortcut="Shift+F7">
