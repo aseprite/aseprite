@@ -11,6 +11,8 @@
 #include "app/i18n/strings.h"
 #include "doc/layer.h"
 
+#include <algorithm>
+
 namespace app {
 
 struct SoloLayerParams : public NewParams {
@@ -22,6 +24,7 @@ public:
   SoloLayerCommand();
 
 private:
+  bool onEnabled(Context* ctx) override;
   void onExecute(Context* ctx) override;
   std::string onGetFriendlyName() const override;
 };
@@ -29,6 +32,11 @@ private:
 SoloLayerCommand::SoloLayerCommand()
   : CommandWithNewParams<SoloLayerParams>(CommandId::SoloLayer(), CmdUIOnlyFlag)
 {
+}
+
+bool SoloLayerCommand::onEnabled(Context* ctx)
+{
+  return ctx->checkFlags(ContextFlags::ActiveDocumentIsReadable);
 }
 
 static void show_children_layers(const LayerGroup* layerGroup, Doc* doc)
@@ -43,17 +51,21 @@ static void show_children_layers(const LayerGroup* layerGroup, Doc* doc)
 void SoloLayerCommand::onExecute(Context* ctx)
 {
   ContextReader reader(ctx);
+  ASSERT(reader.document() && reader.document()->sprite());
   if (!reader.document() || !reader.document()->sprite())
     return;
+
   Doc* doc = reader.document();
   const Sprite* sprite = doc->sprite();
+  auto allLayers = sprite->allLayers();
   SelectedLayers selLayers;
   auto range = ctx->range();
+
   // Case of Alt+Click eye pick. In this case just one layer is referred by object id via
   // command parmameter.
   int layerId = params().layerId();
   if (layerId > 0) {
-    for (Layer* layer : sprite->allLayers())
+    for (Layer* layer : allLayers)
       if (layer->id() == layerId) {
         selLayers.insert(layer);
         break;
@@ -68,16 +80,14 @@ void SoloLayerCommand::onExecute(Context* ctx)
   }
 
   // Hide everything or restore alternative state
-  bool oneWithInternalState = false;
-  for (Layer* layer : sprite->allLayers()) {
-    if (layer->hasFlags(LayerFlags::Internal_WasVisible)) {
-      oneWithInternalState = true;
-      break;
-    }
-  }
+  bool oneWithInternalState = std::any_of(
+    allLayers.begin(),
+    allLayers.end(),
+    [](const Layer* layer) -> bool { return layer->hasFlags(LayerFlags::Internal_WasVisible); });
+
   // If there is one layer with the internal state, restore the previous visible state
   if (oneWithInternalState) {
-    for (Layer* layer : sprite->allLayers()) {
+    for (Layer* layer : allLayers) {
       if (layer->hasFlags(LayerFlags::Internal_WasVisible)) {
         doc->setLayerVisibilityWithNotifications(layer, true);
         layer->switchFlags(LayerFlags::Internal_WasVisible, false);
@@ -86,15 +96,12 @@ void SoloLayerCommand::onExecute(Context* ctx)
         doc->setLayerVisibilityWithNotifications(layer, false);
     }
     // Keep the layer clicked with Alt+click, or the selected layers visible.
-    if (layerId > 0)
-      doc->setLayerVisibilityWithNotifications(*(selLayers.begin()), true);
-    else
-      for (Layer* layer : selLayers)
-        doc->setLayerVisibilityWithNotifications(layer, true);
+    for (Layer* layer : selLayers)
+      doc->setLayerVisibilityWithNotifications(layer, true);
   }
   // In other case, hide everything
   else {
-    for (Layer* layer : sprite->allLayers()) {
+    for (Layer* layer : allLayers) {
       layer->switchFlags(LayerFlags::Internal_WasVisible, layer->isVisible());
       doc->setLayerVisibilityWithNotifications(layer, false);
     }
