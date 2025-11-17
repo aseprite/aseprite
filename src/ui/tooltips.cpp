@@ -26,21 +26,25 @@
 
 #include <string>
 
-static const int kTooltipDelayMsecs = 300;
+static const int kDefaultTooltipDelayMsecs = 300;
 
 namespace ui {
 
 using namespace gfx;
 
-TooltipManager::TooltipManager() : Widget(kGenericWidget)
+TooltipManager::TooltipManager() : m_delay(kDefaultTooltipDelayMsecs)
 {
   Manager* manager = Manager::getDefault();
   manager->addMessageFilter(kMouseEnterMessage, this);
   manager->addMessageFilter(kKeyDownMessage, this);
   manager->addMessageFilter(kMouseDownMessage, this);
   manager->addMessageFilter(kMouseLeaveMessage, this);
-
   setVisible(false);
+}
+
+TooltipManager::TooltipManager(int delay) : Widget(kGenericWidget), m_delay(delay)
+{
+  TooltipManager();
 }
 
 TooltipManager::~TooltipManager()
@@ -63,6 +67,13 @@ void TooltipManager::removeTooltipFor(Widget* widget)
     m_tips.erase(it);
 }
 
+void TooltipManager::setDelay(int delay)
+{
+  m_delay = delay;
+  if (m_timer)
+    m_timer->setInterval(m_delay);
+}
+
 bool TooltipManager::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
@@ -70,13 +81,16 @@ bool TooltipManager::onProcessMessage(Message* msg)
       // Tooltips are only for widgets that can directly get the mouse
       // (get the kMouseEnterMessage directly).
       if (Widget* widget = msg->recipient()) {
+        if (m_delay <= 0)
+          return false;
+
         Tips::iterator it = m_tips.find(widget);
         if (it != m_tips.end()) {
           m_target.widget = it->first;
           m_target.tipInfo = it->second;
 
           if (m_timer == nullptr) {
-            m_timer.reset(new Timer(kTooltipDelayMsecs, this));
+            m_timer.reset(new Timer(m_delay, this));
             m_timer->Tick.connect(&TooltipManager::onTick, this);
           }
 

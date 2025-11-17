@@ -18,6 +18,7 @@
 #include "app/modules/gui.h"
 #include "app/resource_finder.h"
 #include "app/ui/alpha_slider.h"
+#include "app/ui/app_tooltips.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/drop_down_button.h"
@@ -235,7 +236,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
 
     const char* suffix = elem->Attribute("suffix");
     if (suffix)
-      ((ComboBox*)widget)->getEntryWidget()->setSuffix(suffix);
+      ((ComboBox*)widget)->getEntryWidget()->setSuffix(m_xmlTranslator(elem, "suffix"));
   }
   else if (elem_name == "entry" || elem_name == "expr") {
     const char* maxsize = elem->Attribute("maxsize");
@@ -252,7 +253,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
       ((Entry*)widget)->setReadOnly(true);
 
     if (suffix)
-      ((Entry*)widget)->setSuffix(suffix);
+      ((Entry*)widget)->setSuffix(m_xmlTranslator(elem, "suffix"));
 
     if (elem->Attribute("placeholder"))
       ((Entry*)widget)->setPlaceholder(m_xmlTranslator(elem, "placeholder"));
@@ -605,7 +606,7 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const XMLElement* elem,
 
   if (elem->Attribute("tooltip") && root) {
     if (!m_tooltipManager) {
-      m_tooltipManager = new ui::TooltipManager();
+      m_tooltipManager = new app::AppTooltipManager();
       root->addChild(m_tooltipManager);
     }
 
