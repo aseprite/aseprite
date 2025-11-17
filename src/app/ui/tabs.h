@@ -306,7 +306,7 @@ private:
   gfx::Point m_floatingOffset;
 
   // Holds the connection to Context::BeforeCommandExecution
-  obs::scoped_connection m_ctxConn1;
+  obs::scoped_connection m_beforeCmdConn;
 
   ////////////////////////////////////////
   // Drop new tabs

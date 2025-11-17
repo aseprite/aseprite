@@ -67,12 +67,12 @@ Tabs::Tabs(TabsDelegate* delegate)
 {
   enableFlags(CTRL_RIGHT_CLICK);
   setDoubleBuffered(true);
-  m_ctxConn1 = UIContext::instance()->BeforeCommandExecution.connect([&] {
+
+  m_beforeCmdConn = UIContext::instance()->BeforeCommandExecution.connect([this] {
     if (m_isDragging) {
-      if (m_delegate) {
-        // Restores the workarea view size if we dragged on top of it
+      // Restores the workarea view size if we dragged on top of it
+      if (m_delegate)
         m_delegate->onDockingTab(this, m_selected ? m_selected->view : nullptr);
-      }
 
       // Cancel the copy
       m_dragCopy = false;
@@ -80,6 +80,7 @@ Tabs::Tabs(TabsDelegate* delegate)
       stopDrag(DropTabResult::NOT_HANDLED);
     }
   });
+
   initTheme();
 }
 
