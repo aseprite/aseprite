@@ -92,7 +92,7 @@ SliceWindow::SliceWindow(const doc::Sprite* sprite,
 
     ui::TextEdit* userDataEntry = m_userDataView.textEdit();
     // userDataEntry->setSuffix("*");
-    userDataEntry->Change.connect([this, userDataEntry] { onModifyField(nullptr, kUserData); });
+    userDataEntry->Change.connect([this] { onModifyField(nullptr, kUserData); });
 
     ColorButton* colorButton = m_userDataView.color();
     colorButton->Click.connect([this] { onPossibleColorChange(); });
