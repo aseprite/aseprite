@@ -781,7 +781,7 @@ target_link_libraries(app-lib
   updater-lib
   undo
   ${CMARK_LIBRARIES}
-  ${TINYXML_LIBRARY}
+  tinyxml2::tinyxml2
   ${TINYEXIF_LIBRARY}
   ${GIF_LIBRARIES}
   ${PNG_LIBRARIES}
