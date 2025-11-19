@@ -432,6 +432,8 @@ public:
   void addSelectionToolPoint(const gfx::Rect& rc) override {};
   void clearSelectionToolMask(const bool finalStep) override {};
 
+  ExpandCelCanvas* expandCelCanvas() const override { return nullptr; }
+
 protected:
   void updateAllVisibleRegion()
   {
@@ -754,6 +756,8 @@ public:
   bool getPreviewFilled() override { return m_previewFilled; }
   int getSprayWidth() override { return m_sprayWidth; }
   int getSpraySpeed() override { return m_spraySpeed; }
+
+  ExpandCelCanvas* expandCelCanvas() const override { return m_expandCelCanvas.get(); }
 
 private:
   bool m_filled;

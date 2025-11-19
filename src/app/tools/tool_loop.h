@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -48,6 +48,7 @@ class DitheringMatrix;
 namespace app {
 class Context;
 class Doc;
+class ExpandCelCanvas;
 
 namespace tools {
 class Controller;
@@ -269,6 +270,10 @@ public:
   virtual bool isSelectionToolLoop() const = 0;
   virtual void addSelectionToolPoint(const gfx::Rect& rc) = 0;
   virtual void clearSelectionToolMask(const bool finalStep) = 0;
+
+  // Used to restore the sprite status temporarily in case we want to
+  // access its original state in the middle of a ToolLoop.
+  virtual ExpandCelCanvas* expandCelCanvas() const = 0;
 };
 
 } // namespace tools

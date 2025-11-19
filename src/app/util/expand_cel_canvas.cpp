@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -110,18 +110,16 @@ ExpandCelCanvas::ExpandCelCanvas(Site site,
   // Create a new cel
   if (!m_cel) {
     m_celCreated = true;
-    m_cel = new Cel(site.frame(), ImageRef(NULL));
+    m_cel = new Cel(site.frame(), ImageRef(nullptr));
   }
 
   m_origCelPos = m_cel->position();
 
   // Region to draw
   gfx::Rect celBounds = (m_celCreated ? m_sprite->bounds() : m_cel->bounds());
-
   gfx::Rect spriteBounds(0, 0, m_sprite->width(), m_sprite->height());
-
   if (tiledMode == TiledMode::NONE) { // Non-tiled
-    m_bounds = celBounds.createUnion(spriteBounds);
+    m_bounds = (celBounds | spriteBounds);
   }
   else { // Tiled
     m_bounds = spriteBounds;
@@ -150,12 +148,6 @@ ExpandCelCanvas::ExpandCelCanvas(Site site,
     }
   }
 
-  // We have to adjust the cel position to match the m_dstImage
-  // position (the new m_dstImage will be used in RenderEngine to
-  // draw this cel).
-  if (!isTilesetPreview())
-    m_cel->setPosition(m_bounds.origin());
-
   EXP_TRACE("ExpandCelCanvas",
             "m_cel->bounds()=",
             m_cel->bounds(),
@@ -165,27 +157,24 @@ ExpandCelCanvas::ExpandCelCanvas(Site site,
             m_grid.origin(),
             m_grid.tileSize());
 
-  if (m_celCreated) {
+  if (isTilesetPreview()) {
+    getDestTileset();
+  }
+  else if (m_celCreated || (m_layer && m_layer->isTilemap())) {
     // Calling "getDestCanvas()" we create the m_dstImage
     getDestCanvas();
 
+    // We have to adjust the cel position to match the m_dstImage
+    // position (the new m_dstImage will be used in RenderEngine to
+    // draw this cel).
+    m_cel->setPosition(m_bounds.origin());
     m_cel->data()->setImage(m_dstImage, m_layer);
 
-    if (previewSpecificLayerChanges())
+    if (m_celCreated && previewSpecificLayerChanges())
       static_cast<LayerImage*>(m_layer)->addCel(m_cel);
   }
-  else if (m_layer->isTilemap() && m_tilemapMode == TilemapMode::Tiles) {
-    getDestCanvas();
-    m_cel->data()->setImage(m_dstImage, m_layer);
-  }
-  // If we are in a tilemap, we use m_dstImage to draw pixels (instead
-  // of the tilemap image).
-  else if (m_layer->isTilemap() && m_tilemapMode == TilemapMode::Pixels && !isTilesetPreview()) {
-    getDestCanvas();
-    m_cel->data()->setImage(m_dstImage, m_layer);
-  }
-  else if (isTilesetPreview()) {
-    getDestTileset();
+  else {
+    m_cel->setPosition(m_bounds.origin());
   }
 }
 
@@ -727,6 +716,38 @@ void ExpandCelCanvas::copySourceTilestToDestTileset()
     // To rehash the tileset
     m_dstTileset->notifyTileContentChange(i);
   }
+}
+
+void ExpandCelCanvas::prepareSpriteForScript()
+{
+  // If is tileset preview or a selection tool (so m_dstImage is being
+  // used as a top layer preview only, not as part of the sprite):
+  // there is nothing we have to fix for the script Image:drawSprite()
+  // call.
+  if (isTilesetPreview() || !previewSpecificLayerChanges())
+    return;
+
+  m_cel->setPosition(m_origCelPos);
+
+  if (m_celCreated)
+    static_cast<LayerImage*>(m_layer)->removeCel(m_cel);
+  else if (m_layer->isTilemap())
+    m_cel->data()->setImage(m_celImage, m_layer);
+}
+
+void ExpandCelCanvas::restoreSpriteForToolLoop()
+{
+  if (isTilesetPreview() || !previewSpecificLayerChanges())
+    return;
+
+  ASSERT(m_layer); // previewSpecificLayerChanges() filters the nullptr case
+
+  m_cel->setPosition(m_bounds.origin());
+
+  if (m_celCreated)
+    static_cast<LayerImage*>(m_layer)->addCel(m_cel);
+  else if (m_layer->isTilemap())
+    m_cel->data()->setImage(m_dstImage, m_layer);
 }
 
 } // namespace app

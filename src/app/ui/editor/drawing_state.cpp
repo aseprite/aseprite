@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -428,6 +428,11 @@ void DrawingState::destroyLoop(Editor* editor)
   m_toolLoop.reset(nullptr);
 
   app_rebuild_documents_tabs();
+}
+
+ExpandCelCanvas* DrawingState::expandCelCanvas() const
+{
+  return m_toolLoop->expandCelCanvas();
 }
 
 } // namespace app
