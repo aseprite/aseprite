@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2024  Igara Studio S.A.
+// Copyright (c) 2019-2025  Igara Studio S.A.
 // Copyright (c) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -35,7 +35,11 @@ bool write_image(std::ostream& os, const Image* image, CancelIO* cancel)
   write16(os, image->width());      // Width
   write16(os, image->height());     // Height
   write32(os, image->maskColor());  // Mask color
+  return write_image_pixels(os, image, cancel);
+}
 
+bool write_image_pixels(std::ostream& os, const Image* image, CancelIO* cancel)
+{
   // Number of bytes for visible pixels on each row
   const int widthBytes = image->widthBytes();
 
@@ -117,6 +121,16 @@ Image* read_image(std::istream& is, const bool setId)
 
   std::unique_ptr<Image> image(Image::create(static_cast<PixelFormat>(pixelFormat), width, height));
 
+  read_image_pixels(is, image.get());
+
+  image->setMaskColor(maskColor);
+  if (setId)
+    image->setId(id);
+  return image.release();
+}
+
+void read_image_pixels(std::istream& is, Image* image)
+{
   const int widthBytes = image->widthBytes();
 
 #if 0
@@ -202,11 +216,6 @@ Image* read_image(std::istream& is, const bool setId)
       throw base::Exception("ZLib error %d in inflateEnd().", err);
   }
 #endif
-
-  image->setMaskColor(maskColor);
-  if (setId)
-    image->setId(id);
-  return image.release();
 }
 
 } // namespace doc

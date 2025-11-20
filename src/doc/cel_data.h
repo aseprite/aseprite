@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -18,10 +18,13 @@
 
 namespace doc {
 
+class Cel;
 class Layer;
 class Tileset;
 
 class CelData : public WithUserData {
+  friend class Cel;
+
 public:
   CelData(const ImageRef& image);
   CelData(const CelData& celData);
@@ -30,7 +33,8 @@ public:
   gfx::Point position() const { return m_bounds.origin(); }
   const gfx::Rect& bounds() const { return m_bounds; }
   int opacity() const { return m_opacity; }
-  Image* image() const { return const_cast<Image*>(m_image.get()); };
+  std::size_t refs() const { return m_refs; }
+  Image* image() const { return const_cast<Image*>(m_image.get()); }
   ImageRef imageRef() const { return m_image; }
 
   // Returns a rectangle with the bounds of the image (width/height
@@ -79,17 +83,20 @@ public:
 
   bool hasBoundsF() const { return m_boundsF != nullptr; }
 
-  virtual int getMemSize() const override
+  int getMemSize() const override
   {
     ASSERT(m_image);
     return sizeof(CelData) + m_image->getMemSize();
   }
+  void suspendObject() override;
+  void restoreObject() override;
 
   void adjustBounds(Layer* layer);
 
 private:
   ImageRef m_image;
-  int m_opacity;
+  int m_opacity = 255;
+  std::size_t m_refs = 0;
   gfx::Rect m_bounds;
 
   // Special bounds for reference layers that can have subpixel
