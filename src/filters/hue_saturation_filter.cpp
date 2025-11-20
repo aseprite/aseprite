@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -201,7 +201,7 @@ void HueSaturationFilter::applyFilterToRgbT(const Target target, doc::color_t& c
     a = std::clamp(a, 0, 255);
   }
 
-  c = rgba(r, g, b, a);
+  c = (a != 0 ? rgba(r, g, b, a) : 0);
 }
 
 void HueSaturationFilter::applyFilterToRgb(const Target target, doc::color_t& color)
