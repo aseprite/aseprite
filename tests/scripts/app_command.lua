@@ -1,4 +1,4 @@
--- Copyright (C) 2019-2024  Igara Studio S.A.
+-- Copyright (C) 2019-2025  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -539,6 +539,19 @@ do -- HueSaturation
   b = Color(0, 255, 0, 127).rgbaPixel
   expect_img(i, { b })
 
+  -- Test HueSaturation filter in Add mode with mask color
+  -- do not result in colors with 'Alpha = 0' and 'RGB != 0'
+  -- https://github.com/aseprite/aseprite/issues/5548
+  i:drawPixel(0, 0, Color(0, 0, 0, 0).rgbaPixel)
+  app.command.HueSaturation{ mode="hsv_add",
+                             value=3 }
+  b = Color(0, 0, 0, 0).rgbaPixel
+  expect_img(i, { b })
+
+  app.undo()
+  app.command.HueSaturation{ mode="hsl_add",
+                             lightness=3 }
+  expect_img(i, { b })
 end
 
 do -- ColorCurve
