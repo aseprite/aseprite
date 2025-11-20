@@ -394,6 +394,12 @@ public:
     m_cornerRadius->maxValueUnbounded(true);
 
     m_popup->addChild(m_cornerRadius);
+    m_popup->Open.connect([this] {
+      auto hotRegion = gfx::Region(boundsOnScreen());
+      hotRegion |= gfx::Region(m_popup->boundsOnScreen());
+      m_popup->setHotRegion(hotRegion);
+      m_cornerRadius->requestFocus();
+    });
     m_popup->Close.connect([this] { deselectItems(); });
   }
 
@@ -413,15 +419,9 @@ protected:
     auto pos = gfx::Point(bounds.x, bounds.y2());
     m_popup->remapWindow();
     fit_bounds(display(), m_popup.get(), gfx::Rect(pos, m_popup->size()));
-
-    auto hotRegion = gfx::Region(boundsOnScreen());
-    hotRegion |= gfx::Region(m_popup->boundsOnScreen());
-    m_popup->setHotRegion(hotRegion);
-
     m_popup->disableFlags(IGNORE_MOUSE);
     m_popup->captureMouse();
     m_popup->openWindow();
-    m_cornerRadius->requestFocus();
   }
 
 private:
