@@ -908,6 +908,11 @@
             <param name="tilemap" value="true" />
             <param name="ask" value="true" />
           </item>
+          <separator />
+          <item command="NewLayer" text="@.layer_new_audio_layer">
+            <param name="type" value="audio" />
+            <param name="ask" value="true" />
+          </item>
         </menu>
         <item command="RemoveLayer" text="@.layer_delete_layer" group="layer_remove" />
         <menu text="@.layer_convert_to">

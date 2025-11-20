@@ -57,9 +57,13 @@ LAF_ENUM_FLAGS(LayerFlags);
 
 class Layer : public WithUserData {
 protected:
+  // Only constructured by derived classes
   Layer(ObjectType type, Sprite* sprite);
 
 public:
+  // Disable assigment
+  Layer& operator=(const Layer& other) = delete;
+
   virtual ~Layer();
 
   virtual int getMemSize() const override;
@@ -68,8 +72,8 @@ public:
   void setName(const std::string& name) { m_name = name; }
 
   Sprite* sprite() const { return m_sprite; }
-  LayerGroup* parent() const { return m_parent; }
-  void setParent(LayerGroup* group) { m_parent = group; }
+  Layer* parent() const { return m_parent; }
+  void setParent(Layer* parent) { m_parent = parent; }
 
   // Gets the previous sibling of this layer.
   Layer* getPrevious() const;
@@ -85,9 +89,22 @@ public:
   {
     return (type() == ObjectType::LayerImage || type() == ObjectType::LayerTilemap);
   }
+  bool hasSublayers() const { return !m_layers.empty(); }
   bool isGroup() const { return type() == ObjectType::LayerGroup; }
   bool isTilemap() const { return type() == ObjectType::LayerTilemap; }
-  virtual bool isBrowsable() const { return false; }
+  bool isBrowsable() const { return isExpanded() && !m_layers.empty(); }
+  // If this layer is a Mask or FX
+  bool isMaskOrFx() const
+  {
+    return type() == ObjectType::LayerMask || type() == ObjectType::LayerFx;
+  }
+  // In case we can drop a Mask or FX inside this kind of layer
+  bool acceptMaskOrFx() const
+  {
+    return type() == ObjectType::LayerImage || type() == ObjectType::LayerTilemap ||
+           type() == ObjectType::LayerText || type() == ObjectType::LayerVector ||
+           type() == ObjectType::LayerSubsprite;
+  }
 
   bool isBackground() const { return hasFlags(LayerFlags::Background); }
   bool isTransparent() const { return !hasFlags(LayerFlags::Background); }
@@ -145,49 +162,22 @@ public:
   }
 
   virtual Grid grid() const;
-  virtual Cel* cel(frame_t frame) const;
-  virtual void getCels(CelList& cels) const = 0;
-  virtual void displaceFrames(frame_t fromThis, frame_t delta) = 0;
 
-private:
-  std::string m_name;        // layer name
-  Sprite* m_sprite;          // owner of the layer
-  LayerGroup* m_parent;      // parent layer
-  LayerFlags m_flags;        // stack order cannot be changed
-  mutable base::Uuid m_uuid; // lazily generated layer's UUID
-
-  BlendMode m_blendmode;
-  int m_opacity;
-
-  // Disable assigment
-  Layer& operator=(const Layer& other);
-};
-
-//////////////////////////////////////////////////////////////////////
-// LayerImage class
-
-class LayerImage : public Layer {
-public:
-  LayerImage(ObjectType type, Sprite* sprite);
-  explicit LayerImage(Sprite* sprite);
-  virtual ~LayerImage();
-
-  virtual int getMemSize() const override;
+  // Cels management
 
   void addCel(Cel* cel);
   void removeCel(Cel* cel);
   void moveCel(Cel* cel, frame_t frame);
 
-  Cel* cel(frame_t frame) const override;
-  void getCels(CelList& cels) const override;
-  void displaceFrames(frame_t fromThis, frame_t delta) override;
+  Cel* cel(frame_t frame) const;
+  const CelList& cels() const { return m_cels; }
+  virtual void getCels(CelList& cels) const;
+  virtual void displaceFrames(frame_t fromThis, frame_t delta);
 
   Cel* getLastCel() const;
   CelConstIterator findCelIterator(frame_t frame) const;
   CelIterator findCelIterator(frame_t frame);
   CelIterator findFirstCelIteratorAfter(frame_t firstAfterFrame);
-
-  void configureAsBackground();
 
   CelIterator getCelBegin() { return m_cels.begin(); }
   CelIterator getCelEnd() { return m_cels.end(); }
@@ -195,21 +185,8 @@ public:
   CelConstIterator getCelEnd() const { return m_cels.end(); }
   int getCelsCount() const { return (int)m_cels.size(); }
 
-private:
-  void destroyAllCels();
-
-  CelList m_cels; // List of all cels inside this layer used by frames.
-};
-
-//////////////////////////////////////////////////////////////////////
-// LayerGroup class
-
-class LayerGroup : public Layer {
-public:
-  explicit LayerGroup(Sprite* sprite);
-  virtual ~LayerGroup();
-
-  virtual int getMemSize() const override;
+  // Sublayers management. Groups accept any kind of
+  // children. Image/rendered layers accept Mask or FXs.
 
   const LayerList& layers() const { return m_layers; }
   int layersCount() const { return (int)m_layers.size(); }
@@ -233,19 +210,53 @@ public:
   void allTilemaps(LayerList& list) const;
   std::string visibleLayerHierarchyAsString(const std::string& indent) const;
 
-  void getCels(CelList& cels) const override;
-  void displaceFrames(frame_t fromThis, frame_t delta) override;
-
-  bool isBrowsable() const override { return isGroup() && isExpanded() && !m_layers.empty(); }
-
   layer_t getLayerIndex(const Layer* layer) const;
 
 private:
+  layer_t getLayerIndex(const Layer* layer, layer_t& index) const;
+  void destroyAllCels();
   void destroyAllLayers();
 
-  layer_t getLayerIndex(const Layer* layer, layer_t& index) const;
+  std::string m_name;        // layer name
+  Sprite* m_sprite;          // owner of the layer
+  Layer* m_parent;           // parent layer
+  LayerFlags m_flags;        // stack order cannot be changed
+  mutable base::Uuid m_uuid; // lazily generated layer's UUID
 
+  // Some of these fields might not be used depending on the layer
+  // kind (e.g. the blend mode and opacity don't make sense for audio
+  // layers).
+  BlendMode m_blendmode;
+  int m_opacity;
+
+  // List of all cels inside this layer used by frames.
+  CelList m_cels;
+
+  // List of all layers inside this layer. For a group, this can be a
+  // list of any kind. For other layers, they might be limited to
+  // Masks and FXs.
   LayerList m_layers;
+};
+
+//////////////////////////////////////////////////////////////////////
+// LayerImage class
+
+class LayerImage : public Layer {
+public:
+  LayerImage(ObjectType type, Sprite* sprite);
+  explicit LayerImage(Sprite* sprite);
+  virtual ~LayerImage();
+
+  void configureAsBackground();
+};
+
+//////////////////////////////////////////////////////////////////////
+// LayerGroup class
+
+class LayerGroup final : public Layer {
+public:
+  explicit LayerGroup(Sprite* sprite);
+  virtual ~LayerGroup();
 };
 
 } // namespace doc

@@ -644,7 +644,7 @@ static void ase_file_write_layers(FILE* f,
     ase_file_write_user_data_chunk(f, fop, frame_header, ext_files, &layer->userData());
 
   if (layer->isGroup()) {
-    for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers())
+    for (const Layer* child : layer->layers())
       ase_file_write_layers(f, fop, header, frame_header, ext_files, child, child_index + 1);
   }
 }
@@ -683,7 +683,7 @@ static layer_t ase_file_write_cels(FILE* f,
     ++layer_index;
 
   if (layer->isGroup()) {
-    for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers()) {
+    for (const Layer* child : layer->layers()) {
       layer_index =
         ase_file_write_cels(f, fop, frame_header, ext_files, sprite, child, layer_index, frame);
     }
@@ -1449,7 +1449,7 @@ static void ase_file_write_external_files_chunk(FILE* f,
 
     putExtentionIds(layer->userData().propertiesMaps(), ext_files);
     if (layer->isGroup()) {
-      auto childLayers = static_cast<const LayerGroup*>(layer)->layers();
+      auto childLayers = layer->layers();
       layers.insert(layers.end(), childLayers.begin(), childLayers.end());
     }
     else if (layer->isImage()) {
