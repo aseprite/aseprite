@@ -406,6 +406,25 @@ public:
   void setValue(int value) { m_cornerRadius->setValue(value); }
 
 protected:
+  bool onProcessMessage(ui::Message* msg) override
+  {
+    switch (msg->type()) {
+      case ui::kMouseMoveMessage:
+        if (children()[0]->hasCapture()) {
+          MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+          Manager* mgr = manager();
+          Widget* pick = mgr->pickFromScreenPos(
+            display()->nativeWindow()->pointToScreen(mouseMsg->position()));
+          if (pick == m_cornerRadius) {
+            mgr->transferAsMouseDownMessage(children()[0], m_cornerRadius, mouseMsg);
+          }
+        }
+        break;
+    }
+
+    return ButtonSet::onProcessMessage(msg);
+  }
+
   virtual void onItemChange(Item* item) override
   {
     ButtonSet::onItemChange(item);
