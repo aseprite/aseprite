@@ -54,7 +54,7 @@ void Slider::enforceValidRange(int min, int max)
 
   m_min = min;
   m_max = max;
-  m_value = std::clamp(m_value, min, max);
+  setValue(std::clamp(m_value, min, max));
 }
 
 void Slider::setValue(int value)
@@ -63,8 +63,10 @@ void Slider::setValue(int value)
 
   m_value = std::clamp(value, m_min, m_max);
 
-  if (m_value != old_value)
+  if (m_value != old_value) {
     invalidate();
+    setTextQuiet(convertValueToText(m_value));
+  }
 
   // It DOES NOT emit CHANGE signal! to avoid recursive calls.
 }

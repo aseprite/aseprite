@@ -26,7 +26,7 @@ using namespace app::skin;
 using namespace gfx;
 using namespace ui;
 
-SearchEntry::SearchEntry() : Entry(256, "")
+SearchEntry::SearchEntry() : Entry(256, ""), m_closeOnEsc(false)
 {
 }
 
@@ -38,6 +38,13 @@ bool SearchEntry::onProcessMessage(ui::Message* msg)
       Point mousePos = static_cast<MouseMessage*>(msg)->position() - bounds().origin();
 
       if (closeBounds.contains(mousePos)) {
+        onCloseIconPressed();
+        return true;
+      }
+      break;
+    }
+    case kKeyDownMessage: {
+      if (m_closeOnEsc && !text().empty() && static_cast<KeyMessage*>(msg)->scancode() == kKeyEsc) {
         onCloseIconPressed();
         return true;
       }
@@ -103,6 +110,8 @@ void SearchEntry::onCloseIconPressed()
 {
   setText("");
   onChange();
+  // Prevents a broken caret when clearing a scrolled entry
+  setCaretPos(0);
 }
 
 Rect SearchEntry::getCloseIconBounds() const
