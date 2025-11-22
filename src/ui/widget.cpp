@@ -1859,7 +1859,7 @@ void Widget::onVisible(bool visible)
 
 void Widget::onEnable(bool enabled)
 {
-  // Do nothing
+  EnabledChange(enabled);
 }
 
 void Widget::onSelect(bool selected)
