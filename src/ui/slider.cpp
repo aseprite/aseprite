@@ -209,8 +209,9 @@ bool Slider::onProcessMessage(Message* msg)
             // the min can go beyond that, we backspace once more to go to the actual minimum.
             auto valueString = std::to_string(value);
 
-            if (valueString.length() == 1 || value < 0 && valueString.length() == 2 || value == min)
-              value = value > 0 && min < 0 ? 0 : min;
+            if (valueString.length() == 1 || (value < 0 && valueString.length() == 2) ||
+                value == min)
+              value = (value > 0 && min < 0) ? 0 : min;
             else
               value = std::stoi(valueString.substr(0, valueString.size() - 1));
           } break;
