@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2019-2022  Igara Studio S.A.
+// Copyright (c) 2019-2025  Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -12,7 +12,6 @@
 #include "render/ordered_dither.h"
 
 #include "render/dithering.h"
-#include "render/dithering_matrix.h"
 
 #include <algorithm>
 #include <limits>
@@ -216,12 +215,105 @@ doc::color_t OrderedDither2::ditherRgbPixelToIndex(const DitheringMatrix& matrix
     return index;
 }
 
+void dither_two_color_case(DitheringAlgorithmBase& algorithm,
+                           const Dithering& dithering,
+                           const doc::Image* srcImage,
+                           doc::Image* dstImage,
+                           const doc::Palette* palette,
+                           const int color1Index,
+                           const int color2Index,
+                           const int maskIndex,
+                           TaskDelegate* delegate)
+{
+  const int luma1 = doc::rgba_luma(palette->getEntry(color1Index));
+  const int luma2 = doc::rgba_luma(palette->getEntry(color2Index));
+  const int lightIndex = (luma1 > luma2 ? color1Index : color2Index);
+  const int darkIndex = (luma1 > luma2 ? color2Index : color1Index);
+
+  const doc::LockImageBits<doc::RgbTraits> srcBits(srcImage);
+  doc::LockImageBits<doc::IndexedTraits> dstBits(dstImage);
+  auto srcIt = srcBits.begin();
+  auto dstIt = dstBits.begin();
+  const int w = srcImage->width();
+  const int h = srcImage->height();
+  for (int y = 0; y < h; ++y) {
+    for (int x = 0; x < w; ++x, ++srcIt, ++dstIt) {
+      ASSERT(srcIt != srcBits.end());
+      ASSERT(dstIt != dstBits.end());
+      *dstIt = algorithm.ditherRgbPixelToIndexForTwoColors(dithering.matrix(),
+                                                           *srcIt,
+                                                           x,
+                                                           y,
+                                                           lightIndex,
+                                                           darkIndex,
+                                                           maskIndex);
+
+      if (delegate) {
+        if (!delegate->continueTask())
+          return;
+      }
+    }
+
+    if (delegate) {
+      delegate->notifyTaskProgress(double(y + 1) / double(h));
+    }
+  }
+}
+
+// Check if we have only two different colors in the palette
+bool two_color_case_confirmation(const doc::RgbMap* rgbmap,
+                                 const doc::Palette* palette,
+                                 const bool is_background,
+                                 int& color1Index,
+                                 int& color2Index,
+                                 int& maskIndex)
+{
+  if (!is_background && rgbmap && rgbmap->maskIndex() != -1)
+    maskIndex = rgbmap->maskIndex();
+  else
+    maskIndex = palette->findMaskColor();
+  int i1 = -1;
+  int i2 = -1;
+  int i = 0;
+  for (; i < palette->size(); i++) {
+    if (i != maskIndex) {
+      i1 = i;
+      i++;
+      break;
+    }
+  }
+  for (; i < palette->size(); i++) {
+    if (i != maskIndex && palette->getEntry(i1) != palette->getEntry(i)) {
+      i2 = i;
+      i++;
+      break;
+    }
+  }
+  for (; i < palette->size(); i++) {
+    const doc::color_t c = palette->getEntry(i);
+    if (i != maskIndex && palette->getEntry(i1) != c && palette->getEntry(i2) != c) {
+      color1Index = -1;
+      color2Index = -1;
+      return false;
+    }
+  }
+  if (i1 == -1 || i2 == -1) {
+    color1Index = -1;
+    color2Index = -1;
+    return false;
+  }
+  color1Index = i1;
+  color2Index = i2;
+  return true;
+}
+
 void dither_rgb_image_to_indexed(DitheringAlgorithmBase& algorithm,
                                  const Dithering& dithering,
                                  const doc::Image* srcImage,
                                  doc::Image* dstImage,
                                  const doc::RgbMap* rgbmap,
                                  const doc::Palette* palette,
+                                 const bool is_background,
                                  TaskDelegate* delegate)
 {
   const int w = srcImage->width();
@@ -230,25 +322,47 @@ void dither_rgb_image_to_indexed(DitheringAlgorithmBase& algorithm,
   algorithm.start(srcImage, dstImage, dithering.factor());
 
   if (algorithm.dimensions() == 1) {
-    const doc::LockImageBits<doc::RgbTraits> srcBits(srcImage);
-    doc::LockImageBits<doc::IndexedTraits> dstBits(dstImage);
-    auto srcIt = srcBits.begin();
-    auto dstIt = dstBits.begin();
+    int color1Index = -1;
+    int color2Index = -1;
+    int maskIndex = -1;
+    if (two_color_case_confirmation(rgbmap,
+                                    palette,
+                                    is_background,
+                                    color1Index,
+                                    color2Index,
+                                    maskIndex)) {
+      dither_two_color_case(algorithm,
+                            dithering,
+                            srcImage,
+                            dstImage,
+                            palette,
+                            color1Index,
+                            color2Index,
+                            maskIndex,
+                            delegate);
+    }
+    else {
+      const doc::LockImageBits<doc::RgbTraits> srcBits(srcImage);
+      doc::LockImageBits<doc::IndexedTraits> dstBits(dstImage);
+      auto srcIt = srcBits.begin();
+      auto dstIt = dstBits.begin();
 
-    for (int y = 0; y < h; ++y) {
-      for (int x = 0; x < w; ++x, ++srcIt, ++dstIt) {
-        ASSERT(srcIt != srcBits.end());
-        ASSERT(dstIt != dstBits.end());
-        *dstIt = algorithm.ditherRgbPixelToIndex(dithering.matrix(), *srcIt, x, y, rgbmap, palette);
+      for (int y = 0; y < h; ++y) {
+        for (int x = 0; x < w; ++x, ++srcIt, ++dstIt) {
+          ASSERT(srcIt != srcBits.end());
+          ASSERT(dstIt != dstBits.end());
+          *dstIt =
+            algorithm.ditherRgbPixelToIndex(dithering.matrix(), *srcIt, x, y, rgbmap, palette);
+
+          if (delegate) {
+            if (!delegate->continueTask())
+              return;
+          }
+        }
 
         if (delegate) {
-          if (!delegate->continueTask())
-            return;
+          delegate->notifyTaskProgress(double(y + 1) / double(h));
         }
-      }
-
-      if (delegate) {
-        delegate->notifyTaskProgress(double(y + 1) / double(h));
       }
     }
   }
