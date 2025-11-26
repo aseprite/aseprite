@@ -48,8 +48,7 @@ private:
   ObjectId m_sliceId;
 };
 
-DuplicateSliceCommand::DuplicateSliceCommand()
-  : Command(CommandId::DuplicateSlice(), CmdRecordableFlag)
+DuplicateSliceCommand::DuplicateSliceCommand() : Command(CommandId::DuplicateSlice())
 {
 }
 

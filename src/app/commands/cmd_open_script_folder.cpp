@@ -33,8 +33,7 @@ protected:
   void onExecute(Context* context);
 };
 
-OpenScriptFolderCommand::OpenScriptFolderCommand()
-  : Command(CommandId::OpenScriptFolder(), CmdUIOnlyFlag)
+OpenScriptFolderCommand::OpenScriptFolderCommand() : Command(CommandId::OpenScriptFolder())
 {
 }
 

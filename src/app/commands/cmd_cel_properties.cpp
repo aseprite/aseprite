@@ -23,7 +23,6 @@
 #include "app/ui/timeline/timeline.h"
 #include "app/ui/user_data_view.h"
 #include "app/ui_context.h"
-#include "base/mem_utils.h"
 #include "base/scoped_value.h"
 #include "doc/cel.h"
 #include "doc/cels_range.h"
@@ -345,7 +344,7 @@ private:
         color_t c = m_cel->data()->userData().color();
         m_userDataView.color()->setColor(
           Color::fromRgb(rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c)));
-        m_userDataView.entry()->setText(m_cel->data()->userData().text());
+        m_userDataView.textEdit()->setText(m_cel->data()->userData().text());
         // Set last filled values in CelPropertiesWindow
         m_lastValues.opacity = m_cel->opacity();
         m_lastValues.zIndex = m_cel->zIndex();
@@ -385,14 +384,14 @@ protected:
   void onExecute(Context* context) override;
 };
 
-CelPropertiesCommand::CelPropertiesCommand() : Command(CommandId::CelProperties(), CmdUIOnlyFlag)
+CelPropertiesCommand::CelPropertiesCommand() : Command(CommandId::CelProperties())
 {
 }
 
 bool CelPropertiesCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::ActiveLayerIsImage);
+  return context->isUIAvailable() && context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                                                         ContextFlags::ActiveLayerIsImage);
 }
 
 void CelPropertiesCommand::onExecute(Context* context)

@@ -144,7 +144,8 @@ void FilenameField::addFoldersToMenu(ui::Menu* menu,
   menu->addChild(new ui::Separator(separatorTitle, ui::HORIZONTAL));
   for (const std::string& folder : folders) {
     MenuItem* folderItem = new MenuItem(folder);
-    folderItem->Click.connect([this, folder] { setFilename(base::join_path(folder, m_file)); });
+    folderItem->Click.connect(
+      [this, folder] { setFilename(base::join_path(folder, base::get_file_name(m_file))); });
     menu->addChild(folderItem);
   }
 }

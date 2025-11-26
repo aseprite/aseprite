@@ -427,6 +427,11 @@ public:
 
   const app::TiledModeHelper& getTiledModeHelper() override { return m_tiledModeHelper; }
 
+  // Used by selection tools
+  bool isSelectionToolLoop() const override { return false; }
+  void addSelectionToolPoint(const gfx::Rect& rc) override {};
+  void clearSelectionToolMask(const bool finalStep) override {};
+
 protected:
   void updateAllVisibleRegion()
   {
@@ -445,31 +450,26 @@ protected:
 };
 
 //////////////////////////////////////////////////////////////////////
-// For drawing
+// Common properties between drawing/selection ToolLoop impl
 
-class ToolLoopImpl final : public ToolLoopBase,
-                           public EditorObserver {
+class PaintToolLoopBase : public ToolLoopBase,
+                          public EditorObserver {
+protected:
   Context* m_context;
-  bool m_filled;
-  bool m_previewFilled;
-  int m_sprayWidth;
-  int m_spraySpeed;
-  bool m_useMask;
   Mask* m_mask;
   gfx::Point m_maskOrigin;
   bool m_internalCancel = false;
   Tx m_tx;
-  std::unique_ptr<ExpandCelCanvas> m_expandCelCanvas;
   Image* m_floodfillSrcImage;
   bool m_saveLastPoint;
 
 public:
-  ToolLoopImpl(Editor* editor,
-               Site& site,
-               const doc::Grid& grid,
-               Context* context,
-               ToolLoopParams& params,
-               const bool saveLastPoint)
+  PaintToolLoopBase(Editor* editor,
+                    Site& site,
+                    const doc::Grid& grid,
+                    Context* context,
+                    ToolLoopParams& params,
+                    const bool saveLastPoint)
     : ToolLoopBase(editor, site, grid, params)
     , m_context(context)
     , m_tx(Tx::DontLockDoc,
@@ -483,8 +483,18 @@ public:
     , m_floodfillSrcImage(nullptr)
     , m_saveLastPoint(saveLastPoint)
   {
+  }
+
+  ~PaintToolLoopBase()
+  {
+    if (m_editor)
+      m_editor->remove_observer(this);
+  }
+
+  void constructor_prologue()
+  {
     if (m_pointShape->isFloodFill()) {
-      if (m_tilesMode) {
+      if (m_tilesMode && !isSelectionToolLoop()) {
         // This will be set later to getSrcImage()
         m_floodfillSrcImage = nullptr;
       }
@@ -503,7 +513,92 @@ public:
       else if (Cel* cel = m_layer->cel(m_frame)) {
         m_floodfillSrcImage = render::rasterize_with_sprite_bounds(cel);
       }
+      else if (isSelectionToolLoop() && !m_layer->cel(m_frame)) {
+        m_floodfillSrcImage =
+          Image::create(m_sprite->pixelFormat(), m_sprite->width(), m_sprite->height());
+
+        m_floodfillSrcImage->clear(m_sprite->transparentColor());
+      }
     }
+  }
+
+  void constructor_epilogue()
+  {
+    m_mask = m_document->mask();
+    m_maskOrigin = (!m_mask->isEmpty() ? gfx::Point(m_mask->bounds().x - m_celOrigin.x,
+                                                    m_mask->bounds().y - m_celOrigin.y) :
+                                         gfx::Point(0, 0));
+
+    if (m_editor)
+      m_editor->add_observer(this);
+  }
+
+  // IToolLoop interface
+  bool needsCelCoordinates() override
+  {
+    if (m_tilesMode) {
+      // When we are painting with tiles, we don't need to adjust the
+      // coordinates by the cel position in PointShape (points will be
+      // in tiles position relative to the tilemap origin already).
+      return false;
+    }
+    else
+      return ToolLoopBase::needsCelCoordinates();
+  }
+
+  const Image* getFloodFillSrcImage() override { return m_floodfillSrcImage; }
+  Mask* getMask() override { return m_mask; }
+  void setMask(Mask* newMask) override { m_tx(new cmd::SetMask(m_document, newMask)); }
+  gfx::Point getMaskOrigin() override { return m_maskOrigin; }
+
+  void onSliceRect(const gfx::Rect& bounds) override
+  {
+    // TODO add support for slice tool from batch scripts without UI?
+    if (m_editor && getMouseButton() == ToolLoop::Left) {
+      // Try to select slices, but if it returns false, it means that
+      // there are no slices in the box to be selected, so we show a
+      // popup menu to create a new one.
+      if (!m_editor->selectSliceBox(bounds) && (bounds.w > 1 || bounds.h > 1)) {
+        Slice* slice = new Slice;
+        slice->setName(get_unique_slice_name(m_sprite));
+
+        SliceKey key(bounds);
+        slice->insert(getFrame(), key);
+
+        auto color = Preferences::instance().slices.defaultColor();
+        slice->userData().setColor(
+          doc::rgba(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()));
+
+        m_tx(new cmd::AddSlice(m_sprite, slice));
+        return;
+      }
+    }
+
+    // Cancel the operation (do not create a new transaction for this
+    // no-op, e.g. just change the set of selected slices).
+    m_internalCancel = true;
+  }
+
+private:
+  // EditorObserver impl
+  void onScrollChanged(Editor* editor) override { updateAllVisibleRegion(); }
+  void onZoomChanged(Editor* editor) override { updateAllVisibleRegion(); }
+};
+
+//////////////////////////////////////////////////////////////////////
+// For drawing
+
+class ToolLoopImpl final : public PaintToolLoopBase {
+public:
+  ToolLoopImpl(Editor* editor,
+               Site& site,
+               const doc::Grid& grid,
+               Context* context,
+               ToolLoopParams& params,
+               const bool saveLastPoint)
+    : PaintToolLoopBase(editor, site, grid, context, params, saveLastPoint)
+  {
+    constructor_prologue();
 
     // 'isSelectionPreview = true' if the intention is to show a preview
     // of Selection tools or Slice tool.
@@ -548,7 +643,7 @@ public:
     // Start with an empty mask if the user is selecting with "default selection mode"
     if (isSelectionPreview &&
         (!m_document->isMaskVisible() ||
-         (int(getModifiers()) & int(tools::ToolLoopModifiers::kReplaceSelection)))) {
+         (int(getModifiers()) & int(tools::ToolLoopModifiers::kReplaceSelection)) != 0)) {
       Mask emptyMask;
       m_tx(new cmd::SetMask(m_document, &emptyMask));
     }
@@ -558,20 +653,11 @@ public:
     m_grid = m_expandCelCanvas->getGrid();
     m_celOrigin = m_expandCelCanvas->getCelOrigin();
 
-    m_mask = m_document->mask();
-    m_maskOrigin = (!m_mask->isEmpty() ? gfx::Point(m_mask->bounds().x - m_celOrigin.x,
-                                                    m_mask->bounds().y - m_celOrigin.y) :
-                                         gfx::Point(0, 0));
-
-    if (m_editor)
-      m_editor->add_observer(this);
+    constructor_epilogue();
   }
 
   ~ToolLoopImpl()
   {
-    if (m_editor)
-      m_editor->remove_observer(this);
-
     // getSrcImage() is a virtual member function but ToolLoopImpl is
     // marked as final to avoid not calling a derived version from
     // this destructor.
@@ -580,18 +666,6 @@ public:
   }
 
   // IToolLoop interface
-  bool needsCelCoordinates() override
-  {
-    if (m_tilesMode) {
-      // When we are painting with tiles, we don't need to adjust the
-      // coordinates by the cel position in PointShape (points will be
-      // in tiles position relative to the tilemap origin already).
-      return false;
-    }
-    else
-      return ToolLoopBase::needsCelCoordinates();
-  }
-
   void commit() override
   {
     bool redraw = false;
@@ -651,7 +725,6 @@ public:
 
   const Cel* getCel() override { return m_expandCelCanvas->getCel(); }
   const Image* getSrcImage() override { return m_expandCelCanvas->getSourceCanvas(); }
-  const Image* getFloodFillSrcImage() override { return m_floodfillSrcImage; }
   Image* getDstImage() override { return m_expandCelCanvas->getDestCanvas(); }
   Tileset* getDstTileset() override { return m_expandCelCanvas->getDestTileset(); }
   void validateSrcImage(const gfx::Region& rgn) override
@@ -677,46 +750,110 @@ public:
   }
 
   bool useMask() override { return m_useMask; }
-  Mask* getMask() override { return m_mask; }
-  void setMask(Mask* newMask) override { m_tx(new cmd::SetMask(m_document, newMask)); }
-  gfx::Point getMaskOrigin() override { return m_maskOrigin; }
   bool getFilled() override { return m_filled; }
   bool getPreviewFilled() override { return m_previewFilled; }
   int getSprayWidth() override { return m_sprayWidth; }
   int getSpraySpeed() override { return m_spraySpeed; }
 
-  void onSliceRect(const gfx::Rect& bounds) override
+private:
+  bool m_filled;
+  bool m_previewFilled;
+  int m_sprayWidth;
+  int m_spraySpeed;
+  bool m_useMask;
+  std::unique_ptr<ExpandCelCanvas> m_expandCelCanvas;
+};
+
+//////////////////////////////////////////////////////////////////////
+// For selection tools
+
+class SelectionToolLoopImpl final : public PaintToolLoopBase {
+public:
+  SelectionToolLoopImpl(Editor* editor,
+                        Site& site,
+                        const doc::Grid& grid,
+                        Context* context,
+                        ToolLoopParams& params,
+                        const bool saveLastPoint)
+    : PaintToolLoopBase(editor, site, grid, context, params, saveLastPoint)
   {
-    // TODO add support for slice tool from batch scripts without UI?
-    if (m_editor && getMouseButton() == ToolLoop::Left) {
-      // Try to select slices, but if it returns false, it means that
-      // there are no slices in the box to be selected, so we show a
-      // popup menu to create a new one.
-      if (!m_editor->selectSliceBox(bounds) && (bounds.w > 1 || bounds.h > 1)) {
-        Slice* slice = new Slice;
-        slice->setName(get_unique_slice_name(m_sprite));
+    constructor_prologue();
 
-        SliceKey key(bounds);
-        slice->insert(getFrame(), key);
-
-        auto color = Preferences::instance().slices.defaultColor();
-        slice->userData().setColor(
-          doc::rgba(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()));
-
-        m_tx(new cmd::AddSlice(m_sprite, slice));
-        return;
-      }
+    // Start with an empty mask if the user is selecting with "default selection mode"
+    if (!m_document->isMaskVisible() ||
+        (int(getModifiers()) & int(tools::ToolLoopModifiers::kReplaceSelection)) != 0) {
+      Mask emptyMask;
+      m_tx(new cmd::SetMask(m_document, &emptyMask));
     }
 
-    // Cancel the operation (do not create a new transaction for this
-    // no-op, e.g. just change the set of selected slices).
-    m_internalCancel = true;
+    m_editor->makeSelectionToolMask();
+    constructor_epilogue();
   }
 
-private:
-  // EditorObserver impl
-  void onScrollChanged(Editor* editor) override { updateAllVisibleRegion(); }
-  void onZoomChanged(Editor* editor) override { updateAllVisibleRegion(); }
+  ~SelectionToolLoopImpl()
+  {
+    m_editor->deleteSelectionToolMask();
+    delete m_floodfillSrcImage;
+  }
+
+  // For drawing the selection to second mask
+  bool isSelectionToolLoop() const override { return true; }
+  void addSelectionToolPoint(const gfx::Rect& rc) override
+  {
+    if (rc.w >= 1 && rc.h >= 1)
+      m_editor->getSelectionToolMask()->add(rc);
+  }
+
+  void clearSelectionToolMask(const bool finalStep) override
+  {
+    if (finalStep || getTracePolicy() == tools::TracePolicy::Last)
+      m_editor->getSelectionToolMask()->clear();
+  }
+
+  // IToolLoop interface
+  void commit() override
+  {
+    bool redraw = false;
+
+    if (!m_internalCancel) {
+      // Freehand changes the last point
+      if (m_saveLastPoint) {
+        m_tx(new cmd::SetLastPoint(m_document, getController()->getLastPoint().toPoint()));
+      }
+
+      // Selection ink
+      redraw = true;
+      if (m_ink->isSelection() && Preferences::instance().selection.autoShowSelectionEdges()) {
+        // Show selection edges
+        m_docPref.show.selectionEdges(true);
+      }
+
+      m_tx.commit();
+    }
+    else {
+      rollback();
+    }
+
+    if (redraw)
+      update_screen_for_document(m_document);
+  }
+  void rollback() override {}
+
+  const Image* getSrcImage() override { return m_floodfillSrcImage; }
+  Image* getDstImage() override { return nullptr; }
+  Tileset* getDstTileset() override { return nullptr; }
+  void validateSrcImage(const gfx::Region& rgn) override {}
+  void validateDstImage(const gfx::Region& rgn) override {}
+  void validateDstTileset(const gfx::Region& rgn) override {}
+  void invalidateDstImage() override {}
+  void invalidateDstImage(const gfx::Region& rgn) override {}
+  void copyValidDstToSrcImage(const gfx::Region& rgn) override {}
+
+  bool useMask() override { return false; }
+  bool getFilled() override { return true; }
+  bool getPreviewFilled() override { return getTracePolicy() == tools::TracePolicy::Last; }
+  int getSprayWidth() override { return 0; }
+  int getSpraySpeed() override { return 0; }
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -839,8 +976,16 @@ tools::ToolLoop* create_tool_loop(Editor* editor,
     fill_toolloop_params_from_tool_preferences(params);
 
     ASSERT(context->activeDocument() == editor->document());
-    auto toolLoop = new ToolLoopImpl(editor, site, grid, context, params, saveLastPoint);
+    if (Preferences::instance().experimental.useSelectionToolLoop() &&
+        (params.ink->isSelection() || params.ink->isSlice())) {
+      auto* toolLoop =
+        new SelectionToolLoopImpl(editor, site, grid, context, params, saveLastPoint);
+      if (selectTiles)
+        toolLoop->forceSnapToTiles();
 
+      return toolLoop;
+    }
+    auto* toolLoop = new ToolLoopImpl(editor, site, grid, context, params, saveLastPoint);
     if (selectTiles)
       toolLoop->forceSnapToTiles();
 

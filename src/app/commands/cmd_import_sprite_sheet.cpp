@@ -20,20 +20,14 @@
 #include "app/doc_api.h"
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
-#include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
 #include "app/tx.h"
-#include "app/ui/drop_down_button.h"
 #include "app/ui/editor/editor.h"
-#include "app/ui/editor/editor_decorator.h"
 #include "app/ui/editor/select_box_state.h"
-#include "app/ui/editor/standby_state.h"
 #include "app/ui/workspace.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
-#include "doc/palette.h"
-#include "doc/primitives.h"
 #include "doc/sprite.h"
 #include "render/render.h"
 #include "ui/ui.h"
@@ -518,7 +512,7 @@ protected:
 };
 
 ImportSpriteSheetCommand::ImportSpriteSheetCommand()
-  : CommandWithNewParams(CommandId::ImportSpriteSheet(), CmdRecordableFlag)
+  : CommandWithNewParams(CommandId::ImportSpriteSheet())
 {
 }
 

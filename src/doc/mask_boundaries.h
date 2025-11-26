@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2020 Igara Studio S.A.
+// Copyright (c) 2020-2025 Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -16,6 +16,7 @@
 
 namespace doc {
 class Image;
+class Mask;
 
 class MaskBoundaries {
 public:
@@ -44,6 +45,7 @@ public:
 
   bool isEmpty() const { return m_segs.empty(); }
   void reset();
+  void regen(const Mask* mask);
   void regen(const Image* bitmap);
 
   const_iterator begin() const { return m_segs.begin(); }

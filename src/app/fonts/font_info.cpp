@@ -10,9 +10,12 @@
 
 #include "app/fonts/font_info.h"
 
+#include "app/app.h"
 #include "app/fonts/font_data.h"
 #include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
+#include "app/ui/main_window.h"
+#include "app/ui/skin/skin_theme.h"
 #include "base/fs.h"
 #include "base/split_string.h"
 #include "fmt/format.h"
@@ -33,7 +36,7 @@ FontInfo::FontInfo(Type type,
                    const text::FontHinting hinting)
   : m_type(type)
   , m_name(name)
-  , m_size(size)
+  , m_size(std::clamp(size, kMinSize, kMaxSize))
   , m_style(style)
   , m_flags(flags)
   , m_hinting(hinting)
@@ -47,7 +50,7 @@ FontInfo::FontInfo(const FontInfo& other,
                    text::FontHinting hinting)
   : m_type(other.type())
   , m_name(other.name())
-  , m_size(size)
+  , m_size(std::clamp(size, kMinSize, kMaxSize))
   , m_style(style)
   , m_flags(flags)
   , m_hinting(hinting)
@@ -57,7 +60,7 @@ FontInfo::FontInfo(const FontInfo& other,
 FontInfo::FontInfo(const FontData* data, const float size)
   : m_type(Type::Unknown)
   , m_name(data->name())
-  , m_size(size != 0.0f ? size : data->defaultSize())
+  , m_size(size != 0.0f ? std::clamp(size, kMinSize, kMaxSize) : data->defaultSize())
   , m_flags(data->antialias() ? Flags::Antialias : Flags::None)
   , m_hinting(data->hinting())
 {
@@ -115,6 +118,12 @@ FontInfo FontInfo::getFromPreferences()
   // New configuration
   if (!pref.textTool.fontInfo().empty()) {
     fontInfo = base::convert_to<FontInfo>(pref.textTool.fontInfo());
+  }
+
+  if (!fontInfo.isValid()) {
+    // No valid settings found, use the default widget font
+    fontInfo = static_cast<app::skin::SkinTheme*>(App::instance()->mainWindow()->theme())
+                 ->getDefaultFontInfo();
   }
 
   return fontInfo;

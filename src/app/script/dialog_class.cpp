@@ -32,6 +32,8 @@
 #include "base/fs.h"
 #include "base/paths.h"
 #include "base/remove_from_container.h"
+#include "os/screen.h"
+#include "os/system.h"
 #include "ui/app_state.h"
 #include "ui/box.h"
 #include "ui/button.h"
@@ -45,6 +47,7 @@
 #include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/scale.h"
+#include "ui/scroll_window.h"
 #include "ui/separator.h"
 #include "ui/slider.h"
 #include "ui/system.h"
@@ -67,14 +70,20 @@ namespace {
 
 class DialogWindow : public WindowWithHand {
 public:
-  DialogWindow(Type type, const std::string& text) : WindowWithHand(type, text), m_handTool(false)
+  DialogWindow(Type type, const std::string& text) : WindowWithHand(type, text), m_grid(2, false)
   {
+    addChild(&m_grid);
+
     // As scripts can receive the "pressure" information.
     setNeedsTabletPressure(true);
   }
 
   // Enables the Hand tool in the active editor.
   void setHandTool(const bool flag) { m_handTool = flag; }
+
+  ui::Grid* grid() { return &m_grid; }
+  ui::View* view() { return m_view; }
+  void setView(ui::View* view) { m_view = view; }
 
 protected:
   void onOpen(Event& ev) override
@@ -91,8 +100,23 @@ protected:
       enableHandTool(false);
   }
 
+  bool onProcessMessage(Message* msg) override
+  {
+    switch (msg->type()) {
+      // Enable scroll with mouse wheel if the view is available.
+      case kMouseWheelMessage: {
+        if (m_view)
+          View::scrollByMessage(&m_grid, msg);
+        break;
+      }
+    }
+    return WindowWithHand::onProcessMessage(msg);
+  }
+
 private:
-  bool m_handTool;
+  ui::View* m_view = nullptr; // Main view that holds the grid and the scrollbars
+  ui::Grid m_grid;            // Main grid that holds the dialog content
+  bool m_handTool = false;
 };
 
 struct Dialog;
@@ -100,8 +124,6 @@ std::vector<Dialog*> all_dialogs;
 
 struct Dialog {
   DialogWindow window;
-  // Main grid that holds the dialog content.
-  ui::Grid grid;
   // Pointer to current grid (might be the main grid or a tab's grid).
   ui::Grid* currentGrid;
   ui::HBox* hbox = nullptr;
@@ -133,15 +155,15 @@ struct Dialog {
 
   Dialog(const ui::Window::Type windowType, const std::string& title, bool sizeable)
     : window(windowType, title)
-    , grid(2, false)
-    , currentGrid(&grid)
+    , currentGrid(window.grid())
   {
-    window.addChild(&grid);
     window.setSizeable(sizeable);
     all_dialogs.push_back(this);
   }
 
   ~Dialog() { base::remove_from_container(all_dialogs, this); }
+
+  ui::View* view() { return window.view(); }
 
   void unrefShowOnClose()
   {
@@ -258,68 +280,6 @@ struct Dialog {
       window.invalidate();
       parentDisplay()->invalidateRect(oldBounds);
     }
-  }
-
-  // TODO merge this code with add_scrollbars_if_needed() from
-  //      ui/menu.cpp (creating a new function in the ui library)
-  void addScrollbarsIfNeeded(const gfx::Rect& workarea, gfx::Rect& bounds)
-  {
-    gfx::Rect rc = bounds;
-
-    if (rc.x < workarea.x) {
-      rc.w -= (workarea.x - rc.x);
-      rc.x = workarea.x;
-    }
-    if (rc.x2() > workarea.x2()) {
-      rc.w = workarea.x2() - rc.x;
-    }
-
-    bool vscrollbarsAdded = false;
-    if (rc.y < workarea.y) {
-      rc.h -= (workarea.y - rc.y);
-      rc.y = workarea.y;
-      vscrollbarsAdded = true;
-    }
-    if (rc.y2() > workarea.y2()) {
-      rc.h = workarea.y2() - rc.y;
-      vscrollbarsAdded = true;
-    }
-
-    gfx::Rect newRc = rc;
-    if (get_multiple_displays() && window.shouldCreateNativeWindow()) {
-      const os::Window* nativeWindow = const_cast<ui::Display*>(parentDisplay())->nativeWindow();
-      newRc.setOrigin(nativeWindow->pointFromScreen(rc.origin()));
-      newRc.setSize(rc.size() / nativeWindow->scale());
-    }
-    if (newRc == window.bounds())
-      return;
-
-    View* view = new View();
-    view->InitTheme.connect([view] { view->noBorderNoChildSpacing(); });
-    view->initTheme();
-
-    if (vscrollbarsAdded) {
-      int barWidth = view->verticalBar()->getBarWidth();
-      ;
-      if (get_multiple_displays())
-        barWidth *= window.display()->scale();
-
-      rc.w += 2 * barWidth;
-      if (rc.x2() > workarea.x2()) {
-        rc.x = workarea.x2() - rc.w;
-        if (rc.x < workarea.x) {
-          rc.x = workarea.x;
-          rc.w = workarea.w;
-        }
-      }
-    }
-
-    // New bounds
-    bounds = rc;
-
-    window.removeChild(&grid);
-    view->attachToView(&grid);
-    window.addChild(view);
   }
 };
 
@@ -469,9 +429,14 @@ int Dialog_show(lua_State* L)
   auto dlg = get_obj<Dialog>(L, 1);
   dlg->refShow(L);
 
+  gfx::Rect initialBounds;
+
+  // If the user has set the dialog.bounds before, we have
+  // initialBounds.
+  if (!dlg->window.isAutoRemap())
+    initialBounds = dlg->window.bounds();
+
   bool wait = true;
-  bool autoScrollbars = false;
-  obs::scoped_connection conn;
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "wait");
     if (type == LUA_TBOOLEAN)
@@ -488,33 +453,46 @@ int Dialog_show(lua_State* L)
     type = lua_getfield(L, 2, "bounds");
     if (VALID_LUATYPE(type)) {
       const auto rc = convert_args_into_rect(L, -1);
-      if (!rc.isEmpty()) {
-        conn = dlg->window.Open.connect([dlg, rc] {
-          dlg->setWindowBounds(rc);
-          dlg->window.setAutoRemap(false);
-        });
-      }
+      if (!rc.isEmpty())
+        initialBounds = rc;
     }
     lua_pop(L, 1);
 
     type = lua_getfield(L, 2, "autoscrollbars");
-    if (type == LUA_TBOOLEAN)
-      autoScrollbars = lua_toboolean(L, -1);
+    if (type == LUA_TBOOLEAN) {
+      bool autoScrollbars = lua_toboolean(L, -1);
+      if (autoScrollbars) {
+        dlg->window.remapWindow();
+        dlg->window.centerWindow();
+        auto dlgBounds = dlg->window.bounds();
+        // When multiple displays are used the dialog bounds origin is set to (0,0)
+        // so we need to get the origin from the last native frame.
+        if (get_multiple_displays()) {
+          auto dlgScreenBounds = dlg->window.lastNativeFrame();
+          auto* nativeWindow = dlg->window.display()->nativeWindow();
+          dlgBounds = gfx::Rect(nativeWindow->pointFromScreen(dlgScreenBounds.origin()),
+                                nativeWindow->pointFromScreen(dlgScreenBounds.point2()));
+        }
+        fit_bounds(
+          dlg->parentDisplay(),
+          &dlg->window,
+          dlgBounds,
+          [dlg](const gfx::Rect& workarea,
+                gfx::Rect& bounds,
+                std::function<gfx::Rect(Widget*)> getWidgetBounds) {
+            if (dlg->view())
+              return;
+            dlg->window.setView(
+              ui::add_scrollbars(&dlg->window, workarea, bounds, AddScrollBarsOption::Always));
+          });
+      }
+    }
     lua_pop(L, 1);
   }
 
-  if (autoScrollbars) {
-    dlg->window.remapWindow();
-    dlg->window.centerWindow();
-    fit_bounds(dlg->parentDisplay(),
-               &dlg->window,
-               dlg->window.bounds(),
-               [dlg](const gfx::Rect& workarea,
-                     gfx::Rect& bounds,
-                     std::function<gfx::Rect(Widget*)> getWidgetBounds) {
-                 dlg->addScrollbarsIfNeeded(workarea, bounds);
-               });
-  }
+  obs::scoped_connection conn;
+  if (!initialBounds.isEmpty())
+    conn = dlg->window.Open.connect([dlg, initialBounds] { dlg->setWindowBounds(initialBounds); });
 
   if (wait)
     dlg->window.openWindowInForeground();
@@ -663,6 +641,8 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
   if (label || !dlg->hbox) {
     if (label) {
       auto labelWidget = new ui::Label(label);
+      labelWidget->setBuddy(widget);
+
       if (!visible)
         labelWidget->setVisible(false);
 
@@ -1485,7 +1465,7 @@ int Dialog_endtabs(lua_State* L)
   dlg->wipTab->selectTab(selectedTab);
 
   auto newTab = dlg->wipTab;
-  dlg->currentGrid = &dlg->grid;
+  dlg->currentGrid = dlg->window.grid();
   dlg->wipTab = nullptr;
 
   return Dialog_add_widget(L, newTab);
@@ -1691,24 +1671,70 @@ int Dialog_modify(lua_State* L)
       dlg->window.layout();
 
       if (dlg->autofit > 0) {
-        gfx::Rect oldBounds = dlg->window.bounds();
-        gfx::Size resize(oldBounds.size());
+        const gfx::Rect oldBounds = dlg->window.bounds();
 
-        if (dlg->autofit & ui::TOP || dlg->autofit & ui::BOTTOM)
-          resize.h = dlg->window.sizeHint().h;
-        if (dlg->autofit & ui::LEFT || dlg->autofit & ui::RIGHT)
-          resize.w = dlg->window.sizeHint().w;
+        // There is a ^ (XOR) logical operator because if TOP and BOTTOM (for example) are "true"
+        // the meaning is "both sides are fixed", so no resize is required.
+        const bool allowVResize = bool(dlg->autofit & ui::TOP) ^ bool(dlg->autofit & ui::BOTTOM);
+        const bool allowHResize = bool(dlg->autofit & ui::LEFT) ^ bool(dlg->autofit & ui::RIGHT);
 
-        gfx::Size difference = resize - oldBounds.size();
-        const auto& bounds = dlg->getWindowBounds();
-        gfx::Rect newBounds(bounds.x, bounds.y, resize.w, resize.h);
+        // Calculate the grid size and set it on the view of the window as size hint.
+        gfx::Size sizeHint = dlg->window.sizeHint();
+        if (dlg->view()) {
+          const gfx::Size oldViewSizeHint = dlg->view()->minSize();
+          dlg->view()->makeVisibleAllScrollableArea();
+          sizeHint = dlg->window.sizeHint();
+          dlg->view()->setMinSize(oldViewSizeHint);
+        }
 
-        if (dlg->autofit & ui::BOTTOM)
-          newBounds.y = bounds.y - difference.h;
-        if (dlg->autofit & ui::RIGHT)
-          newBounds.x = bounds.x - difference.w;
+        gfx::Rect newBounds = oldBounds;
+        if (allowHResize)
+          newBounds.w = sizeHint.w;
+        if (allowVResize)
+          newBounds.h = sizeHint.h;
 
-        dlg->setWindowBounds(newBounds);
+        // Adjust the dialog origin according to its new size with the
+        // configured anchor.
+        if ((dlg->autofit & ui::BOTTOM) && allowVResize)
+          newBounds.y = oldBounds.y2() - newBounds.h;
+        if ((dlg->autofit & ui::RIGHT) && allowHResize)
+          newBounds.x = oldBounds.x2() - newBounds.w;
+
+        // Fit the dialog bounds to the workarea.
+        fit_bounds(dlg->window.display(),
+                   &dlg->window,
+                   newBounds,
+                   [=](const gfx::Rect& workarea,
+                       gfx::Rect& bounds,
+                       std::function<gfx::Rect(Widget*)> getWidgetBounds) {
+                     int scale = guiscale();
+                     if (dlg->window.ownDisplay())
+                       scale = dlg->window.display()->scale();
+
+                     View* view = dlg->view();
+
+                     // Limit the new bounds of the dialog to workarea
+                     // and consider the width of the scroll bar if
+                     // there is one.
+                     if (bounds.w > workarea.w && allowHResize) {
+                       bounds.w = workarea.w;
+                       if (bounds.h < workarea.h && view && view->horizontalBar() && allowVResize) {
+                         int newHeight = (bounds.h + scale * view->horizontalBar()->getBarWidth());
+                         if (dlg->autofit & ui::BOTTOM)
+                           bounds.y = bounds.y2() - newHeight;
+                         bounds.h = newHeight;
+                       }
+                     }
+                     if (bounds.h > workarea.h && allowVResize) {
+                       bounds.h = workarea.h;
+                       if (bounds.w < workarea.w && view && view->verticalBar() && allowHResize) {
+                         int newWidth = (bounds.w + scale * view->verticalBar()->getBarWidth());
+                         if (dlg->autofit & ui::RIGHT)
+                           bounds.x = bounds.x2() - newWidth;
+                         bounds.w = newWidth;
+                       }
+                     }
+                   });
       }
     }
   }
@@ -1720,7 +1746,7 @@ int Dialog_repaint(lua_State* L)
 {
   auto dlg = get_obj<Dialog>(L, 1);
   std::stack<ui::Widget*> widgets;
-  widgets.push(&dlg->grid);
+  widgets.push(dlg->window.grid());
 
   while (!widgets.empty()) {
     auto child = widgets.top();
@@ -1923,9 +1949,14 @@ int Dialog_set_data(lua_State* L)
 int Dialog_get_bounds(lua_State* L)
 {
   auto dlg = get_obj<Dialog>(L, 1);
-  if (!dlg->window.isVisible() && dlg->window.bounds().isEmpty()) {
+  if (!dlg->window.isVisible() && dlg->window.bounds().isEmpty() && dlg->window.isAutoRemap()) {
     dlg->window.remapWindow();
     dlg->window.centerWindow(dlg->parentDisplay());
+
+    // Re-enable the autoremap flag so the dialog is re-centered when
+    // it's displayed for the first time in a new display (if multiple
+    // windows option is enabled).
+    dlg->window.setAutoRemap(true);
   }
   push_new<gfx::Rect>(L, dlg->getWindowBounds());
   return 1;

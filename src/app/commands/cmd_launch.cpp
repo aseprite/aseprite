@@ -23,6 +23,7 @@ public:
 
 protected:
   void onLoadParams(const Params& params) override;
+  bool onNeedsParams() const override { return true; };
   void onExecute(Context* context) override;
   std::string onGetFriendlyName() const override;
   bool isListed(const Params& params) const override { return !params.get("path").empty(); }
@@ -34,10 +35,7 @@ private:
   std::string m_path;
 };
 
-LaunchCommand::LaunchCommand()
-  : Command(CommandId::Launch(), CmdUIOnlyFlag)
-  , m_type(Url)
-  , m_path("")
+LaunchCommand::LaunchCommand() : Command(CommandId::Launch()), m_type(Url), m_path("")
 {
 }
 

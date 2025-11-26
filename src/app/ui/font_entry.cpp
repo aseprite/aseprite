@@ -386,6 +386,11 @@ void FontEntry::setInfo(const FontInfo& info, const From fromField)
 {
   m_info = info;
 
+  if (fromField == From::Init && !info.findTypeface(theme()->fontMgr())) {
+    // Revert to default if we are initialized with an invalid/non-existent font
+    m_info = skin::SkinTheme::get(this)->getDefaultFontInfo();
+  }
+
   auto family = theme()->fontMgr()->matchFamily(m_info.name());
   bool hasBold = false;
   m_availableWeights.clear();
@@ -431,6 +436,7 @@ void FontEntry::setInfo(const FontInfo& info, const From fromField)
 
   if (fromField != From::Face) {
     m_face.setText(m_info.title());
+    m_face.setPlaceholder(m_info.title());
   }
 
   if (fromField != From::Size) {

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -20,6 +20,7 @@
 
 namespace app {
 
+using namespace app::skin;
 using namespace ui;
 
 class NotificationItem : public MenuItem {
@@ -39,10 +40,7 @@ private:
   INotificationDelegate* m_delegate;
 };
 
-Notifications::Notifications()
-  : Button("")
-  , m_flagStyle(skin::SkinTheme::get(this)->styles.flag())
-  , m_red(false)
+Notifications::Notifications() : Button(""), m_red(false)
 {
 }
 
@@ -52,13 +50,22 @@ void Notifications::addLink(INotificationDelegate* del)
   m_red = true;
 }
 
+void Notifications::onInitTheme(InitThemeEvent& ev)
+{
+  Button::onInitTheme(ev);
+  m_popup.initTheme();
+}
+
 void Notifications::onSizeHint(SizeHintEvent& ev)
 {
-  ev.setSizeHint(gfx::Size(16, 10) * guiscale()); // TODO hard-coded flag size
+  auto* theme = SkinTheme::get(this);
+  auto hint = theme->calcSizeHint(this, theme->styles.flag());
+  ev.setSizeHint(hint);
 }
 
 void Notifications::onPaint(PaintEvent& ev)
 {
+  auto* theme = SkinTheme::get(this);
   Graphics* g = ev.graphics();
 
   PaintWidgetPartInfo info;
@@ -69,7 +76,7 @@ void Notifications::onPaint(PaintEvent& ev)
   if (isSelected())
     info.styleFlags |= ui::Style::Layer::kSelected;
 
-  theme()->paintWidgetPart(g, m_flagStyle, clientBounds(), info);
+  theme->paintWidgetPart(g, theme->styles.flag(), clientBounds(), info);
 }
 
 void Notifications::onClick()

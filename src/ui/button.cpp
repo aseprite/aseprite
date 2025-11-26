@@ -73,6 +73,12 @@ bool ButtonBase::onProcessMessage(Message* msg)
           if (isSelected())
             setSelected(false);
         }
+        else if (m_behaviorType == kCheckWidget) {
+          // Focus from a label buddy also toggles the checkbox
+          auto* focusMsg = static_cast<FocusMessage*>(msg);
+          if (focusMsg->source() == FocusMessage::Source::Buddy)
+            setSelected(!isSelected());
+        }
 
         // TODO theme specific stuff
         invalidate();
@@ -100,7 +106,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
             mnemonicPressed ||
             // Magnetic widget catches ENTERs
             (isFocusMagnet() && ((scancode == kKeyEnter) || (scancode == kKeyEnterPad)))) {
-            manager()->setFocus(this);
+            manager()->setFocus(this, FocusMessage::Source::Keyboard);
 
             // Dispatch focus movement messages (because the buttons
             // process them)

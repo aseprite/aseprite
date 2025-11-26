@@ -1,0 +1,23 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2025  Igara Studio S.A. -->
+<gui>
+<window id="run_command" minwidth="256" maxwidth="256" text="@.title" help="run-command">
+  <vbox>
+    <search id="search" placeholder="@.command_placeholder" />
+
+    <label id="expression_result" visible="false" />
+
+    <vbox id="help" visible="false">
+      <label text="@.help_search" />
+      <label text="@.help_expressions" />
+      <label id="help_lua" text="@.help_lua" />
+    </vbox>
+
+    <vbox id="command_list" visible="false" />
+    <vbox id="more_results" visible="false">
+      <separator horizontal="true" />
+      <label id="more_count" />
+    </vbox>
+  </vbox>
+</window>
+</gui>

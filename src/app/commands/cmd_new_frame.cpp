@@ -10,28 +10,18 @@
 #endif
 
 #include "app/app.h"
-#include "app/color.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
-#include "app/console.h"
 #include "app/context_access.h"
 #include "app/doc_api.h"
 #include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/tx.h"
-#include "app/ui/doc_view.h"
-#include "app/ui/editor/editor.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/timeline/timeline.h"
-#include "app/ui_context.h"
-#include "doc/cel.h"
-#include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
-#include "ui/ui.h"
-
-#include <stdexcept>
 
 namespace app {
 
@@ -57,7 +47,7 @@ private:
   Content m_content;
 };
 
-NewFrameCommand::NewFrameCommand() : Command(CommandId::NewFrame(), CmdRecordableFlag)
+NewFrameCommand::NewFrameCommand() : Command(CommandId::NewFrame())
 {
 }
 

@@ -372,6 +372,7 @@
         <part id="icon_close" x="152" y="256" w="7" h="7"/>
         <part id="icon_search" x="160" y="256" w="8" h="8"/>
         <part id="icon_user_data" x="168" y="256" w="8" h="8"/>
+        <part id="icon_layout" x="176" y="256" w="5" h="6"/>
         <part id="icon_pos" x="144" y="264" w="8" h="8"/>
         <part id="icon_size" x="152" y="264" w="8" h="8"/>
         <part id="icon_selsize" x="160" y="264" w="8" h="8"/>
@@ -572,6 +573,9 @@
             <text color="button_hot_text" align="left" state="mouse"/>
             <text color="button_selected_text" align="left" state="selected"/>
         </style>
+        <style id="view_base">
+            <background color="window_face"/>
+        </style>
         <style id="view" border="3" border-top="4">
             <background color="window_face"/>
             <border part="sunken_normal"/>
@@ -609,6 +613,7 @@
             <text color="disabled" state="disabled"/>
         </style>
         <style id="check_box" border="2">
+            <background color="face" state="disabled"/>
             <background color="check_hot_face" state="mouse focus"/>
             <background color="check_focus_face" state="focus"/>
             <background color="check_hot_face" state="mouse"/>
@@ -1045,6 +1050,12 @@
             <text color="slider_empty_text" align="center middle"/>
             <text color="slider_empty_text" align="center middle" state="focus" y="1"/>
         </style>
+        <style id="textedit" border="2">
+            <background color="textbox_face" />
+            <background color="selected" align="left" state="selected" />
+            <text color="textbox_text" align="left" />
+            <text color="selected_text" align="left" state="selected" />
+        </style>
         <style id="mini_slider" extends="slider" font="mini">
             <background part="mini_slider_empty"/>
             <text color="slider_empty_text" align="center middle"/>
@@ -1149,5 +1160,18 @@
         <style id="outline_cell" extends="buttonset_item_icon" width="17" height="19"/>
         <style id="ani_button" extends="buttonset_item_icon" width="17"/>
         <style id="multi_window_item" extends="buttonset_item_icon" width="17" height="17"/>
+        <style id="runner_command_item" height="15" border="3">
+          <background color="menuitem_hot_face" state="selected" />
+          <text color="text" x="3" align="left" />
+          <text color="disabled" x="3" align="left" state="disabled" />
+          <text color="menuitem_hot_text" x="3" align="left" state="selected" />
+        </style>
+        <style id="runner_extension_tag" font="mini">
+          <background color="menuitem_highlight_face" />
+          <text color="menuitem_highlight_text" align="center" />
+        </style>
+        <style id="runner_command_checked" width="8" height="8">
+            <icon part="check_selected" align="center middle" />
+        </style>
     </styles>
 </theme>

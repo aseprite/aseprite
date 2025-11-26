@@ -173,6 +173,8 @@ private:
 
 DitheringSelector::DitheringSelector(Type type) : m_type(type)
 {
+  setId("dithering_selector"); // Used for label buddies.
+
   Extensions& extensions = App::instance()->extensions();
 
   // If an extension with "ditheringMatrices" is disable/enable, we

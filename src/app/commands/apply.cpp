@@ -24,7 +24,7 @@ protected:
   void onExecute(Context* ctx) override;
 };
 
-ApplyCommand::ApplyCommand() : Command(CommandId::Apply(), CmdUIOnlyFlag)
+ApplyCommand::ApplyCommand() : Command(CommandId::Apply())
 {
 }
 

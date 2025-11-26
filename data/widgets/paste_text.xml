@@ -4,13 +4,13 @@
 <gui>
 <window id="paste_text" text="@.title">
   <grid columns="2">
-    <label text="@.text" />
+    <label text="@.text" for="user_text" />
     <entry expansive="true" maxsize="256" minwidth="256" id="user_text" magnet="true" cell_align="horizontal" />
 
-    <label text="@.font" />
+    <label text="@.font" for="font_face" />
     <font id="font_face" cell_align="horizontal" />
 
-    <label text="@.color" />
+    <label text="@.color" for="font_color" />
     <hbox>
       <colorpicker id="font_color" />
     </hbox>

@@ -1,0 +1,19 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2025 by Igara Studio S.A. -->
+<gui>
+<window id="new_layout" text="@.title">
+  <vbox>
+    <hbox>
+      <label text="@.name" for="name" />
+      <entry maxsize="128" id="name" magnet="true" expansive="true" />
+    </hbox>
+
+    <separator horizontal="true" />
+
+    <hbox homogeneous="true" cell_align="right">
+      <button text="@general.ok" closewindow="true" id="ok" disabled="true" minwidth="60" magnet="true" />
+      <button text="@general.cancel" closewindow="true" />
+    </hbox>
+  </vbox>
+</window>
+</gui>

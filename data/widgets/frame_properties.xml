@@ -8,7 +8,7 @@
     <label text="" id="frame" />
     <box cell_align="horizontal" />
 
-    <label text="@.duration" />
+    <label text="@.duration" for="frlen" />
     <expr id="frlen" magnet="true" />
     <box cell_align="horizontal" />
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -159,16 +159,34 @@ int Tile_set_properties(lua_State* L)
   if (!ts)
     return 0;
 
-  auto newProperties = get_value_from_lua<doc::UserData::Properties>(L, 2);
-  if (ts->sprite()) {
-    Tx tx(ts->sprite());
-    tx(new cmd::SetTileDataProperties(ts, tile->ti, std::string(), std::move(newProperties)));
-    tx.commit();
+  auto& properties = ts->getTileData(tile->ti).properties();
+  doc::UserData::Properties newProperties;
+
+  if (lua_istable(L, 2)) {
+    newProperties = get_value_from_lua<doc::UserData::Properties>(L, 2);
   }
-  else {
-    auto& properties = ts->getTileData(tile->ti).properties();
-    properties = std::move(newProperties);
+  else if (auto* argProperties = may_get_properties(L, 2)) {
+    // Do nothing, assigning the same properties
+    if (&properties == argProperties)
+      return 0;
+
+    newProperties = *argProperties;
   }
+  else
+    return luaL_error(L, "table or properties expected to set the 'properties' field");
+
+  // Set properties with undo information
+  if (auto spr = ts->sprite()) {
+    if (Doc* doc = static_cast<Doc*>(spr->document()); doc && doc->transaction()) {
+      Tx tx(doc);
+      tx(new cmd::SetTileDataProperties(ts, tile->ti, std::string(), std::move(newProperties)));
+      tx.commit();
+      return 0;
+    }
+  }
+
+  // Set properties without undo information
+  properties = std::move(newProperties);
   return 0;
 }
 

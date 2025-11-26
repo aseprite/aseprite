@@ -24,7 +24,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-ContiguousFillCommand::ContiguousFillCommand() : Command(CommandId::ContiguousFill(), CmdUIOnlyFlag)
+ContiguousFillCommand::ContiguousFillCommand() : Command(CommandId::ContiguousFill())
 {
 }
 

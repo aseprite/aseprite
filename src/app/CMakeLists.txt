@@ -462,6 +462,7 @@ target_sources(app-lib PRIVATE
   commands/cmd_reselect_mask.cpp
   commands/cmd_reverse_frames.cpp
   commands/cmd_rotate.cpp
+  commands/cmd_run_command.cpp
   commands/cmd_save_file.cpp
   commands/cmd_save_mask.cpp
   commands/cmd_save_palette.cpp
@@ -519,9 +520,11 @@ target_sources(app-lib PRIVATE
   commands/screenshot.cpp
   commands/set_playback_speed.cpp
   commands/show_menu.cpp
+  commands/solo_layer.cpp
   commands/tileset_mode.cpp
   commands/toggle_other_layers_opacity.cpp
   commands/toggle_play_option.cpp
+  commands/toggle_workspace_layout.cpp
   console.cpp
   context.cpp
   context_flags.cpp
@@ -611,6 +614,7 @@ target_sources(app-lib PRIVATE
   ui/context_bar.cpp
   ui/dithering_selector.cpp
   ui/doc_view.cpp
+  ui/dock.cpp
   ui/drop_down_button.cpp
   ui/dynamics_popup.cpp
   ui/editor/brush_preview.cpp
@@ -656,6 +660,9 @@ target_sources(app-lib PRIVATE
   ui/key.cpp
   ui/keyboard_shortcuts.cpp
   ui/layer_frame_comboboxes.cpp
+  ui/layout.cpp
+  ui/layouts.cpp
+  ui/layout_selector.cpp
   ui/main_menu_bar.cpp
   ui/main_window.cpp
   ui/mini_help_button.cpp
@@ -728,6 +735,12 @@ target_sources(app-lib PRIVATE
 
 if(TARGET generated_version)
   add_dependencies(app-lib generated_version)
+endif()
+
+if(WIN32)
+  target_sources(app-lib PRIVATE
+    win/file_associations.cpp
+    win/thumbnails.cpp)
 endif()
 
 if(ENABLE_NEWS)
@@ -823,4 +836,10 @@ if(ENABLE_SENTRY)
   target_sources(app-lib PRIVATE sentry_wrapper.cpp)
 else()
   target_sources(app-lib PRIVATE send_crash.cpp)
+endif()
+
+# When we use the laf-dlgs-proc, aseprite depends on it to show the
+# native file dialog.
+if(LAF_WITH_DLGS_PROC)
+  add_dependencies(app-lib laf-dlgs-proc)
 endif()

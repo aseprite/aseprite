@@ -17,6 +17,7 @@
 #include "app/modules/gui.h"
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui_context.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "text/font.h"
@@ -66,6 +67,20 @@ Tabs::Tabs(TabsDelegate* delegate)
 {
   enableFlags(CTRL_RIGHT_CLICK);
   setDoubleBuffered(true);
+
+  m_beforeCmdConn = UIContext::instance()->BeforeCommandExecution.connect([this] {
+    if (m_isDragging) {
+      // Restores the workarea view size if we dragged on top of it
+      if (m_delegate)
+        m_delegate->onDockingTab(this, m_selected ? m_selected->view : nullptr);
+
+      // Cancel the copy
+      m_dragCopy = false;
+
+      stopDrag(DropTabResult::NOT_HANDLED);
+    }
+  });
+
   initTheme();
 }
 
@@ -74,8 +89,9 @@ Tabs::~Tabs()
   m_addedTab.reset();
   m_removedTab.reset();
 
-  // Stop animation
-  stopAnimation();
+  // Stop animation, can cause issues with docks when stopping during close.
+  if (!is_app_state_closing())
+    stopAnimation();
 
   // Remove all tabs
   m_list.clear();

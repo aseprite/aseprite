@@ -167,6 +167,7 @@
       <option id="keep_closed_sprite_on_memory_for" type="double" default="15.0" />
       <option id="show_full_path" type="bool" default="true" />
       <option id="edit_full_path" type="bool" default="false" />
+      <option id="workspace_layout" type="std::string" />
       <option id="timeline_position" type="TimelinePosition" default="TimelinePosition::BOTTOM" />
       <option id="timeline_layer_panel_width" type="int" default="100" />
       <option id="show_menu_bar" type="bool" default="true" />
@@ -255,6 +256,7 @@
       <option id="one_finger_as_mouse_movement" type="bool" default="true" />
       <option id="load_wintab_driver" type="bool" default="false" />
       <option id="flash_layer" type="bool" default="false" />
+      <option id="use_selection_tool_loop" type="bool" default="false" />
       <option id="nonactive_layers_opacity" type="int" default="255" />
       <option id="nonactive_layers_opacity_preview" type="int" default="255" />
     </section>
@@ -575,6 +577,7 @@
       <option id="apply_pixel_ratio" type="bool" default="false" />
       <option id="for_twitter" type="bool" default="false" />
       <option id="play_subtags" type="bool" default="true" />
+      <option id="ignore_empty" type="bool" default="false" />
     </section>
     <section id="sprite_sheet">
       <option id="defined" type="bool" default="false" />

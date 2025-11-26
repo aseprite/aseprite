@@ -21,9 +21,7 @@
 #include "app/console.h"
 #include "app/context_access.h"
 #include "app/doc_api.h"
-#include "app/find_widget.h"
 #include "app/i18n/strings.h"
-#include "app/load_widget.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/restore_visible_layers.h"
@@ -48,7 +46,6 @@
 #include "new_layer.xml.h"
 
 #include <algorithm>
-#include <cstdlib>
 #include <cstring>
 #include <string>
 
@@ -99,7 +96,7 @@ private:
   Place m_place;
 };
 
-NewLayerCommand::NewLayerCommand() : CommandWithNewParams(CommandId::NewLayer(), CmdRecordableFlag)
+NewLayerCommand::NewLayerCommand() : CommandWithNewParams(CommandId::NewLayer())
 {
 }
 
@@ -230,6 +227,7 @@ void NewLayerCommand::onExecute(Context* context)
     if (isTilemap) {
       tilesetSelector = new TilesetSelector(sprite, tilesetInfo);
       window.tilesetOptions()->addChild(tilesetSelector);
+      window.tilesetLabel()->setBuddy(tilesetSelector->tilesets());
     }
 
     window.openWindowInForeground();

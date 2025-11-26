@@ -7,9 +7,9 @@
     <separator text="@.size" left="true" horizontal="true" />
     <hbox>
       <grid columns="2">
-        <label text="@.width" />
+        <label text="@.width" for="width" />
         <expr text="0" id="width" suffix="px" magnet="true" />
-        <label text="@.height" />
+        <label text="@.height" for="height" />
         <expr text="0" id="height" suffix="px" />
         <hbox filler="true" cell_hspan="2" />
       </grid>
@@ -28,16 +28,16 @@
 
     <separator text="@.borders" left="true" horizontal="true" />
     <grid columns="4">
-      <label text="@.left" />
+      <label text="@.left" for="left" />
       <expr text="0" id="left" suffix="px" tooltip="@.left_tooltip" />
 
-      <label text="@.top" />
+      <label text="@.top" for="top" />
       <expr text="0" id="top" suffix="px" tooltip="@.top_tooltip" />
 
-      <label text="@.right" />
+      <label text="@.right" for="right" />
       <expr text="0" id="right" suffix="px" tooltip="@.right_tooltip" />
 
-      <label text="@.bottom" />
+      <label text="@.bottom" for="bottom" />
       <expr text="0" id="bottom" suffix="px" tooltip="@.bottom_tooltip" />
     </grid>
 

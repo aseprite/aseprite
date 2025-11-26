@@ -9,11 +9,9 @@
   #include "config.h"
 #endif
 
-#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/modules/gui.h"
-#include "doc/image.h"
 #include "doc/layer.h"
 
 namespace app {
@@ -30,7 +28,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-LayerLockCommand::LayerLockCommand() : Command(CommandId::LayerLock(), CmdRecordableFlag)
+LayerLockCommand::LayerLockCommand() : Command(CommandId::LayerLock())
 {
 }
 

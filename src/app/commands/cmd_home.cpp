@@ -10,6 +10,7 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
+#include "app/context.h"
 #include "app/ui/main_window.h"
 
 namespace app {
@@ -26,7 +27,7 @@ protected:
   bool onEnabled(Context* context) override;
 };
 
-HomeCommand::HomeCommand() : Command(CommandId::Home(), CmdUIOnlyFlag)
+HomeCommand::HomeCommand() : Command(CommandId::Home())
 {
 }
 
@@ -41,7 +42,7 @@ void HomeCommand::onExecute(Context* context)
 
 bool HomeCommand::onEnabled(Context* context)
 {
-  return !App::instance()->mainWindow()->isHomeSelected();
+  return context->isUIAvailable() && !App::instance()->mainWindow()->isHomeSelected();
 }
 
 Command* CommandFactory::createHomeCommand()

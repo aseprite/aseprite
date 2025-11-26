@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2020-2023, 2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -34,7 +34,7 @@ public:
                 int onclickRef,
                 int onenabledRef,
                 int oncheckedRef)
-    : Command(id.c_str(), CmdUIOnlyFlag)
+    : Command(id.c_str())
     , m_title(title)
     , m_onclickRef(onclickRef)
     , m_onenabledRef(onenabledRef)
@@ -54,6 +54,8 @@ public:
       luaL_unref(L, LUA_REGISTRYINDEX, m_onclickRef);
     }
   }
+
+  bool isPlugin() override { return true; }
 
 protected:
   std::string onGetFriendlyName() const override { return m_title; }

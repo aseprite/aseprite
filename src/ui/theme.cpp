@@ -224,6 +224,16 @@ void Theme::setDecorativeWidgetBounds(Widget* widget)
   }
 }
 
+Theme::TextColors Theme::getTextColors(Widget* widget)
+{
+  Theme::TextColors c;
+  c.text = Paint(kFgColor);
+  c.background = Paint(kBgColor);
+  c.selectedText = Paint(kBgColor);
+  c.selectedBackground = Paint(kFgColor);
+  return c;
+}
+
 void Theme::paintListBox(PaintEvent& ev)
 {
   Graphics* g = ev.graphics();

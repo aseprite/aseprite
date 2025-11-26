@@ -36,8 +36,6 @@
 #include "app/ui/status_bar.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
-#include "base/scoped_value.h"
-#include "base/thread.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
@@ -86,8 +84,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////
 
-SaveFileBaseCommand::SaveFileBaseCommand(const char* id, CommandFlags flags)
-  : CommandWithNewParams<SaveFileParams>(id, flags)
+SaveFileBaseCommand::SaveFileBaseCommand(const char* id) : CommandWithNewParams<SaveFileParams>(id)
 {
 }
 
@@ -269,7 +266,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-SaveFileCommand::SaveFileCommand() : SaveFileBaseCommand(CommandId::SaveFile(), CmdRecordableFlag)
+SaveFileCommand::SaveFileCommand() : SaveFileBaseCommand(CommandId::SaveFile())
 {
 }
 
@@ -310,8 +307,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-SaveFileAsCommand::SaveFileAsCommand()
-  : SaveFileBaseCommand(CommandId::SaveFileAs(), CmdRecordableFlag)
+SaveFileAsCommand::SaveFileAsCommand() : SaveFileBaseCommand(CommandId::SaveFileAs())
 {
 }
 
@@ -335,8 +331,7 @@ private:
   void moveToUndoState(Doc* doc, const undo::UndoState* state);
 };
 
-SaveFileCopyAsCommand::SaveFileCopyAsCommand()
-  : SaveFileBaseCommand(CommandId::SaveFileCopyAs(), CmdRecordableFlag)
+SaveFileCopyAsCommand::SaveFileCopyAsCommand() : SaveFileBaseCommand(CommandId::SaveFileCopyAs())
 {
 }
 
@@ -353,6 +348,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
   doc::AniDir aniDirValue = params().aniDir();
   bool isPlaySubtags = params().playSubtags();
   bool isForTwitter = false;
+  bool isIgnoreEmpty = params().ignoreEmpty();
 
   if (params().ui() && context->isUIAvailable()) {
     ExportFileWindow win(doc);
@@ -429,6 +425,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
     aniDirValue = win.aniDirValue();
     isForTwitter = win.isForTwitter();
     isPlaySubtags = win.isPlaySubtags();
+    isIgnoreEmpty = win.isIgnoreEmpty();
   }
 
   gfx::PointF scaleXY(scale, scale);
@@ -497,6 +494,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
     if (!bounds.isEmpty())
       params().bounds(bounds);
     params().playSubtags(isPlaySubtags);
+    params().ignoreEmpty(isIgnoreEmpty);
 
     // TODO This should be set as options for the specific encoder
     GifEncoderDurationFix fixGif(isForTwitter);

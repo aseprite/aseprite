@@ -7,19 +7,19 @@
   </combobox>
 
   <grid columns="4" expansive="true">
-    <label text="@.name" />
+    <label text="@.name" for="name" />
     <entry maxsize="256" id="name" text="" cell_hspan="3" />
 
-    <label text="@.grid_width" />
+    <label text="@.grid_width" for="grid_width" />
     <expr id="grid_width" text="" />
-    <label text="@.grid_height" />
+    <label text="@.grid_height" for="grid_height" />
     <expr id="grid_height" text="" />
 
-    <label id="base_index_label" text="@.base_index" />
+    <label id="base_index_label" text="@.base_index" for="base_index" />
     <expr id="base_index" text="1" tooltip="@.base_tooltip" />
     <boxfiller id="base_index_filler" cell_hspan="2" />
 
-    <label id="flips_label" text="@.allowed_flips" />
+    <label id="flips_label" text="@.allowed_flips" for="flips" />
     <buttonset id="flips" columns="3" multiple="true">
       <item id="xflip" text="X" minwidth="20" tooltip="@.allowed_flips_tooltip" tooltip_dir="bottom" />
       <item id="yflip" text="Y" minwidth="20" tooltip="@.allowed_flips_tooltip" tooltip_dir="bottom" />

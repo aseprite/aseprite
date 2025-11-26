@@ -3,7 +3,7 @@
 <gui>
 <window id="svg_options" text="@.title">
   <grid columns="2">
-    <label text="@.pixel_scale" />
+    <label text="@.pixel_scale" for="pxsc" />
     <expr id="pxsc" magnet="true" cell_align="horizontal"/>
 
     <separator horizontal="true" cell_hspan="2" />

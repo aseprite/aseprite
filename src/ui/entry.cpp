@@ -16,7 +16,6 @@
 #include "text/draw_text.h"
 #include "text/font.h"
 #include "text/font_metrics.h"
-#include "ui/clipboard_delegate.h"
 #include "ui/display.h"
 #include "ui/menu.h"
 #include "ui/message.h"
@@ -25,7 +24,6 @@
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/timer.h"
-#include "ui/translation_delegate.h"
 #include "ui/widget.h"
 
 #include <algorithm>
@@ -139,7 +137,7 @@ gfx::Point Entry::caretPosOnScreen() const
 
 void Entry::setCaretPos(const int pos)
 {
-  gfx::Size caretSize = theme()->getEntryCaretSize(this);
+  gfx::Size caretSize = theme()->getCaretSize(this);
   int textlen = lastCaretPos();
   m_caret = std::clamp(pos, 0, textlen);
   m_scroll = std::clamp(m_scroll, 0, textlen);
@@ -322,100 +320,37 @@ bool Entry::onProcessMessage(Message* msg)
     case kKeyDownMessage:
       if (hasFocus() && !isReadOnly()) {
         // Command to execute
-        EntryCmd cmd = EntryCmd::NoOp;
         KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
-        KeyScancode scancode = keymsg->scancode();
+        const Cmd cmd = cmdFromKeyMessage(keymsg);
 
-        switch (scancode) {
-          case kKeyLeft:
-            if (msg->ctrlPressed() || msg->altPressed())
-              cmd = EntryCmd::BackwardWord;
-            else if (msg->cmdPressed())
-              cmd = EntryCmd::BeginningOfLine;
-            else
-              cmd = EntryCmd::BackwardChar;
-            break;
+        // Ignore Up/Down keys for ui::Entry, we can use those keys
+        // for focus movement between widgets.
+        if (cmd == Cmd::PrevLine || cmd == Cmd::NextLine)
+          break;
 
-          case kKeyRight:
-            if (msg->ctrlPressed() || msg->altPressed())
-              cmd = EntryCmd::ForwardWord;
-            else if (msg->cmdPressed())
-              cmd = EntryCmd::EndOfLine;
-            else
-              cmd = EntryCmd::ForwardChar;
-            break;
-
-          case kKeyHome: cmd = EntryCmd::BeginningOfLine; break;
-
-          case kKeyEnd:  cmd = EntryCmd::EndOfLine; break;
-
-          case kKeyDel:
-            if (msg->shiftPressed())
-              cmd = EntryCmd::Cut;
-            else if (msg->ctrlPressed())
-              cmd = EntryCmd::DeleteForwardToEndOfLine;
-            else
-              cmd = EntryCmd::DeleteForward;
-            break;
-
-          case kKeyInsert:
-            if (msg->shiftPressed())
-              cmd = EntryCmd::Paste;
-            else if (msg->ctrlPressed())
-              cmd = EntryCmd::Copy;
-            break;
-
-          case kKeyBackspace:
-            if (msg->ctrlPressed() || msg->altPressed())
-              cmd = EntryCmd::DeleteBackwardWord;
-            else
-              cmd = EntryCmd::DeleteBackward;
-            break;
-
-          default:
-            // Map common macOS/Windows shortcuts for Cut/Copy/Paste/Select all
-#if defined __APPLE__
-            if (msg->onlyCmdPressed())
-#else
-            if (msg->onlyCtrlPressed())
-#endif
-            {
-              switch (scancode) {
-                case kKeyX: cmd = EntryCmd::Cut; break;
-                case kKeyC: cmd = EntryCmd::Copy; break;
-                case kKeyV: cmd = EntryCmd::Paste; break;
-                case kKeyA: cmd = EntryCmd::SelectAll; break;
-              }
-            }
-            break;
+        if (cmd != Cmd::NoOp) {
+          executeCmd(cmd, keymsg->unicodeChar(), msg->shiftPressed());
+          return true;
         }
 
-        if (cmd == EntryCmd::NoOp) {
-          if (keymsg->unicodeChar() >= 32) {
-            executeCmd(EntryCmd::InsertChar,
-                       keymsg->unicodeChar(),
-                       (msg->shiftPressed()) ? true : false);
+        if (keymsg->unicodeChar() >= 32) {
+          executeCmd(Cmd::InsertChar, keymsg->unicodeChar());
 
-            // Select dead-key
-            if (keymsg->isDeadKey()) {
-              if (lastCaretPos() < m_maxsize)
-                selectText(m_caret - 1, m_caret);
-            }
-            return true;
+          // Select dead-key
+          if (keymsg->isDeadKey()) {
+            if (lastCaretPos() < m_maxsize)
+              selectText(m_caret - 1, m_caret);
           }
-          // Consume all key down of modifiers only, e.g. so the user
-          // can press first "Ctrl" key, and then "Ctrl+C"
-          // combination.
-          else if (keymsg->scancode() >= kKeyFirstModifierScancode) {
-            return true;
-          }
-          else {
-            break; // Propagate to manager
-          }
+          return true;
+        }
+        // Consume all key down of modifiers only, e.g. so the user
+        // can press first "Ctrl" key, and then "Ctrl+C"
+        // combination.
+        else if (keymsg->scancode() >= kKeyFirstModifierScancode) {
+          return true;
         }
 
-        executeCmd(cmd, keymsg->unicodeChar(), (msg->shiftPressed()) ? true : false);
-        return true;
+        // Propagate to manager...
       }
       break;
 
@@ -488,7 +423,7 @@ bool Entry::onProcessMessage(Message* msg)
           // This flag is disabled in kFocusEnterMessage message handler.
           m_lock_selection = true;
 
-          showEditPopupMenu(mouseMsg->position());
+          showEditPopupMenu(display(), mouseMsg->position());
           requestFocus();
         }
       }
@@ -521,7 +456,7 @@ gfx::Size Entry::sizeHintWithText(Entry* entry, const std::string& text)
 {
   const auto& font = entry->font();
 
-  int w = font->textLength(text) + +2 * entry->theme()->getEntryCaretSize(entry).w +
+  int w = font->textLength(text) + +2 * entry->theme()->getCaretSize(entry).w +
           entry->border().width();
 
   w = std::min(w, guiscale() * kMaxWidthHintForEntry);
@@ -531,12 +466,22 @@ gfx::Size Entry::sizeHintWithText(Entry* entry, const std::string& text)
   return gfx::Size(w, h);
 }
 
+void Entry::setPlaceholder(const std::string& placeholder)
+{
+  m_placeholder = placeholder;
+}
+
+const std::string& Entry::placeholder()
+{
+  return m_placeholder;
+}
+
 void Entry::onSizeHint(SizeHintEvent& ev)
 {
   const auto& font = this->font();
 
   int trailing = font->textLength(getSuffix());
-  trailing = std::max(trailing, 2 * theme()->getEntryCaretSize(this).w);
+  trailing = std::max(trailing, 2 * theme()->getCaretSize(this).w);
 
   int w = font->textLength("w") * std::min(m_maxsize, 6) + +trailing + border().width();
 
@@ -632,17 +577,17 @@ int Entry::getCaretFromMouse(MouseMessage* mouseMsg)
   return std::clamp(i, 0, lastPos);
 }
 
-void Entry::executeCmd(const EntryCmd cmd,
-                       const base::codepoint_t unicodeChar,
-                       const bool shift_pressed)
+void Entry::onExecuteCmd(const Cmd cmd,
+                         const base::codepoint_t unicodeChar,
+                         const bool expandSelection)
 {
   std::string text = this->text();
   const Range range = selectedRange();
 
   switch (cmd) {
-    case EntryCmd::NoOp: break;
+    case Cmd::NoOp: break;
 
-    case EntryCmd::InsertChar:
+    case Cmd::InsertChar:
       // delete the entire selection
       if (!range.isEmpty()) {
         deleteRange(range, text);
@@ -663,20 +608,25 @@ void Entry::executeCmd(const EntryCmd cmd,
       if (lastCaretPos() < m_maxsize) {
         ASSERT(m_caret <= lastCaretPos());
 
+        const int oldnboxes = int(m_boxes.size());
         const std::string unicodeStr = base::codepoint_to_utf8(unicodeChar);
-
         text.insert(m_boxes[m_caret].from, unicodeStr);
         recalcCharBoxes(text);
-        ++m_caret;
+        const int delta = int(m_boxes.size()) - oldnboxes;
+
+        // Move caret forward the number of new added "boxes" (this
+        // can be 0 if "unicodeChar" is just a hidden char, e.g. a
+        // emoji variant).
+        m_caret += delta;
       }
 
       m_select = -1;
       break;
 
-    case EntryCmd::BackwardChar:
-    case EntryCmd::BackwardWord:
+    case Cmd::PrevChar:
+    case Cmd::PrevWord:
       // selection
-      if (shift_pressed) {
+      if (expandSelection) {
         if (m_select < 0)
           m_select = m_caret;
       }
@@ -684,7 +634,7 @@ void Entry::executeCmd(const EntryCmd cmd,
         m_select = -1;
 
       // backward word
-      if (cmd == EntryCmd::BackwardWord) {
+      if (cmd == Cmd::PrevWord) {
         backwardWord();
       }
       // backward char
@@ -693,10 +643,10 @@ void Entry::executeCmd(const EntryCmd cmd,
       }
       break;
 
-    case EntryCmd::ForwardChar:
-    case EntryCmd::ForwardWord:
+    case Cmd::NextChar:
+    case Cmd::NextWord:
       // selection
-      if (shift_pressed) {
+      if (expandSelection) {
         if (m_select < 0)
           m_select = m_caret;
       }
@@ -704,7 +654,7 @@ void Entry::executeCmd(const EntryCmd cmd,
         m_select = -1;
 
       // forward word
-      if (cmd == EntryCmd::ForwardWord) {
+      if (cmd == Cmd::NextWord) {
         forwardWord();
       }
       // forward char
@@ -713,9 +663,10 @@ void Entry::executeCmd(const EntryCmd cmd,
       }
       break;
 
-    case EntryCmd::BeginningOfLine:
+    case Cmd::BegOfLine:
+    case Cmd::BegOfFile:
       // selection
-      if (shift_pressed) {
+      if (expandSelection) {
         if (m_select < 0)
           m_select = m_caret;
       }
@@ -725,9 +676,10 @@ void Entry::executeCmd(const EntryCmd cmd,
       m_caret = 0;
       break;
 
-    case EntryCmd::EndOfLine:
+    case Cmd::EndOfLine:
+    case Cmd::EndOfFile:
       // selection
-      if (shift_pressed) {
+      if (expandSelection) {
         if (m_select < 0)
           m_select = m_caret;
       }
@@ -737,12 +689,12 @@ void Entry::executeCmd(const EntryCmd cmd,
       m_caret = lastCaretPos();
       break;
 
-    case EntryCmd::DeleteForward:
-    case EntryCmd::Cut:
+    case Cmd::DeleteNextChar:
+    case Cmd::Cut:
       // delete the entire selection
       if (!range.isEmpty()) {
         // *cut* text!
-        if (cmd == EntryCmd::Cut)
+        if (cmd == Cmd::Cut)
           set_clipboard_text(selectedText());
 
         // remove text
@@ -757,7 +709,7 @@ void Entry::executeCmd(const EntryCmd cmd,
       m_select = -1;
       break;
 
-    case EntryCmd::Paste: {
+    case Cmd::Paste: {
       std::string clipboard;
       if (get_clipboard_text(clipboard)) {
         // delete the entire selection
@@ -785,12 +737,12 @@ void Entry::executeCmd(const EntryCmd cmd,
       break;
     }
 
-    case EntryCmd::Copy:
+    case Cmd::Copy:
       if (!range.isEmpty())
         set_clipboard_text(selectedText());
       break;
 
-    case EntryCmd::DeleteBackward:
+    case Cmd::DeletePrevChar:
       // delete the entire selection
       if (!range.isEmpty()) {
         deleteRange(range, text);
@@ -806,7 +758,7 @@ void Entry::executeCmd(const EntryCmd cmd,
       m_select = -1;
       break;
 
-    case EntryCmd::DeleteBackwardWord:
+    case Cmd::DeletePrevWord:
       m_select = m_caret;
       backwardWord();
       if (m_caret < m_select) {
@@ -815,9 +767,19 @@ void Entry::executeCmd(const EntryCmd cmd,
       m_select = -1;
       break;
 
-    case EntryCmd::DeleteForwardToEndOfLine: text.erase(m_boxes[m_caret].from); break;
+    case Cmd::DeleteNextWord:
+      m_select = m_caret;
+      forwardWord();
+      if (m_caret > m_select) {
+        text.erase(m_boxes[m_select].from, m_boxes[m_caret].to - m_boxes[m_select].from);
+        m_caret = m_select;
+      }
+      m_select = -1;
+      break;
 
-    case EntryCmd::SelectAll:                selectAllText(); break;
+    case Cmd::DeleteToEndOfLine: text.erase(m_boxes[m_caret].from); break;
+
+    case Cmd::SelectAll:         selectAllText(); break;
   }
 
   if (text != this->text()) {
@@ -902,44 +864,6 @@ bool Entry::isPosInSelection(int pos)
   return (pos >= std::min(m_caret, m_select) && pos <= std::max(m_caret, m_select));
 }
 
-void Entry::showEditPopupMenu(const gfx::Point& pt)
-{
-  Menu menu;
-
-  auto* clipboard = UISystem::instance()->clipboardDelegate();
-  if (!clipboard)
-    return;
-
-  auto* translate = UISystem::instance()->translationDelegate();
-  ASSERT(translate); // We provide UISystem as default translation delegate
-  if (!translate)
-    return;
-
-  MenuItem cut(translate->cut());
-  MenuItem copy(translate->copy());
-  MenuItem paste(translate->paste());
-  MenuItem selectAll(translate->selectAll());
-  menu.addChild(&cut);
-  menu.addChild(&copy);
-  menu.addChild(&paste);
-  menu.addChild(new MenuSeparator);
-  menu.addChild(&selectAll);
-
-  for (auto* item : menu.children())
-    item->processMnemonicFromText();
-
-  cut.Click.connect([this] { executeCmd(EntryCmd::Cut, 0, false); });
-  copy.Click.connect([this] { executeCmd(EntryCmd::Copy, 0, false); });
-  paste.Click.connect([this] { executeCmd(EntryCmd::Paste, 0, false); });
-  selectAll.Click.connect([this] { executeCmd(EntryCmd::SelectAll, 0, false); });
-
-  copy.setEnabled(m_select >= 0);
-  cut.setEnabled(m_select >= 0 && !isReadOnly());
-  paste.setEnabled(clipboard->hasClipboardText() && !isReadOnly());
-
-  menu.showPopup(pt, display());
-}
-
 class Entry::CalcBoxesTextDelegate : public text::DrawTextDelegate {
 public:
   CalcBoxesTextDelegate(const int end) : m_end(end) {}
@@ -1002,7 +926,7 @@ void Entry::recalcCharBoxes(const std::string& text)
   box.codepoint = 0;
   box.from = box.to = lastTextIndex;
   box.x = lastX;
-  box.width = theme()->getEntryCaretSize(this).w;
+  box.width = theme()->getCaretSize(this).w;
   m_boxes.push_back(box);
 }
 

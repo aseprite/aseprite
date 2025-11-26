@@ -1992,6 +1992,12 @@ void ContextBar::onInitTheme(ui::InitThemeEvent& ev)
   auto theme = SkinTheme::get(this);
   gfx::Border border = this->border();
   border.bottom(2 * guiscale());
+
+  // Docked at the left side
+  // TODO improve this how this is calculated
+  if (bounds().x == 0)
+    border.left(border.left() + 2 * guiscale());
+
   setBorder(border);
   setBgColor(theme->colors.workspace());
   m_sprayLabel->setStyle(theme->styles.miniLabel());

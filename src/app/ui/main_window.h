@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,9 +10,10 @@
 #pragma once
 
 #include "app/ui/tabs.h"
+#include "obs/connection.h"
 #include "ui/window.h"
 
-#include "main_window.xml.h"
+#include <memory>
 
 namespace ui {
 class Splitter;
@@ -30,13 +31,17 @@ class ColorBar;
 class ContextBar;
 class DevConsoleView;
 class DocView;
+class Dock;
 class HomeView;
 class INotificationDelegate;
+class Layout;
+class LayoutSelector;
 class MainMenuBar;
 class Notifications;
 class PreviewEditorWindow;
 class StatusBar;
 class Timeline;
+class ToolBar;
 class Workspace;
 class WorkspaceTabs;
 
@@ -44,7 +49,7 @@ namespace crash {
 class DataRecovery;
 }
 
-class MainWindow : public app::gen::MainWindow,
+class MainWindow : public ui::Window,
                    public TabsDelegate {
 public:
   enum Mode { NormalMode, ContextBarAndTimelineMode, EditorOnlyMode };
@@ -52,13 +57,17 @@ public:
   MainWindow();
   ~MainWindow();
 
-  MainMenuBar* getMenuBar() { return m_menuBar; }
-  ContextBar* getContextBar() { return m_contextBar; }
-  StatusBar* statusBar() { return m_statusBar; }
-  WorkspaceTabs* getTabsBar() { return m_tabsBar; }
-  Timeline* getTimeline() { return m_timeline; }
-  Workspace* getWorkspace() { return m_workspace; }
-  PreviewEditorWindow* getPreviewEditor() { return m_previewEditor; }
+  // TODO refactor: remove the get prefix from these functions
+  MainMenuBar* getMenuBar() { return m_menuBar.get(); }
+  LayoutSelector* layoutSelector() { return m_layoutSelector.get(); }
+  ContextBar* getContextBar() { return m_contextBar.get(); }
+  StatusBar* statusBar() { return m_statusBar.get(); }
+  WorkspaceTabs* getTabsBar() { return m_tabsBar.get(); }
+  Timeline* getTimeline() { return m_timeline.get(); }
+  Workspace* getWorkspace() { return m_workspace.get(); }
+  ColorBar* colorBar() { return m_colorBar.get(); }
+  ToolBar* toolBar() { return m_toolBar.get(); }
+  PreviewEditorWindow* getPreviewEditor() { return m_previewEditor.get(); }
 #ifdef ENABLE_UPDATER
   CheckUpdateDelegate* getCheckUpdateDelegate();
 #endif
@@ -82,6 +91,12 @@ public:
   bool getTimelineVisibility() const;
   void setTimelineVisibility(bool visible);
   void popTimeline();
+
+  void setDefaultLayout();
+  void setMirroredDefaultLayout();
+  void loadUserLayout(const Layout* layout);
+  Dock* customizableDock() { return m_customizableDock; }
+  void setCustomizeDock(bool enable);
 
   // When crash::DataRecovery finish to search for sessions, this
   // function is called.
@@ -109,7 +124,6 @@ public:
 protected:
   bool onProcessMessage(ui::Message* msg) override;
   void onInitTheme(ui::InitThemeEvent& ev) override;
-  void onSaveLayout(ui::SaveLayoutEvent& ev) override;
   void onResize(ui::ResizeEvent& ev) override;
   void onBeforeViewChange();
   void onActiveViewChange();
@@ -121,25 +135,36 @@ private:
   DocView* getDocView();
   HomeView* getHomeView();
   void configureWorkspaceLayout();
+  void saveTimelineConfiguration();
+  void saveColorBarConfiguration();
+  void saveActiveLayout();
 
   ui::TooltipManager* m_tooltipManager;
-  MainMenuBar* m_menuBar;
-  StatusBar* m_statusBar;
-  ColorBar* m_colorBar;
-  ContextBar* m_contextBar;
-  ui::Widget* m_toolBar;
-  WorkspaceTabs* m_tabsBar;
+  Dock* m_dock;
+  Dock* m_customizableDock;
+  std::unique_ptr<Widget> m_customizableDockPlaceholder;
+  std::unique_ptr<MainMenuBar> m_menuBar;
+  std::unique_ptr<Notifications> m_notifications;
+  std::unique_ptr<LayoutSelector> m_layoutSelector;
+  std::unique_ptr<StatusBar> m_statusBar;
+  std::unique_ptr<ColorBar> m_colorBar;
+  std::unique_ptr<ContextBar> m_contextBar;
+  std::unique_ptr<ToolBar> m_toolBar;
+  std::unique_ptr<WorkspaceTabs> m_tabsBar;
   Mode m_mode;
-  Timeline* m_timeline;
-  Workspace* m_workspace;
-  PreviewEditorWindow* m_previewEditor;
-  HomeView* m_homeView;
-  Notifications* m_notifications;
-  INotificationDelegate* m_scalePanic;
-  BrowserView* m_browserView;
+  std::unique_ptr<Timeline> m_timeline;
+  std::unique_ptr<Workspace> m_workspace;
+  std::unique_ptr<PreviewEditorWindow> m_previewEditor;
+  std::unique_ptr<HomeView> m_homeView;
+  std::unique_ptr<INotificationDelegate> m_scalePanic;
+  std::unique_ptr<BrowserView> m_browserView;
 #ifdef ENABLE_SCRIPTING
-  DevConsoleView* m_devConsoleView;
+  std::unique_ptr<DevConsoleView> m_devConsoleView;
 #endif
+  obs::scoped_connection m_timelineResizeConn;
+  obs::scoped_connection m_colorBarResizeConn;
+  obs::scoped_connection m_saveDockLayoutConn;
+  bool m_firstResize = true;
 };
 
 } // namespace app

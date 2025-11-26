@@ -13,6 +13,7 @@
 #include "app/docs_observer.h"
 #include "app/loop_tag.h"
 #include "app/pref/preferences.h"
+#include "app/ui/dockable.h"
 #include "app/ui/editor/editor_observer.h"
 #include "app/ui/input_chain_element.h"
 #include "app/ui/timeline/ani_controls.h"
@@ -73,7 +74,8 @@ class Timeline : public ui::Widget,
                  public DocObserver,
                  public EditorObserver,
                  public InputChainElement,
-                 public TagProvider {
+                 public TagProvider,
+                 public Dockable {
 public:
   using Range = view::Range;
   using RealRange = view::RealRange;
@@ -156,6 +158,12 @@ public:
   void clearAndInvalidateRange();
 
   void refresh();
+
+  // Dockable impl
+  int dockableAt() const override
+  {
+    return ui::TOP | ui::BOTTOM | ui::LEFT | ui::RIGHT | ui::EXPANSIVE;
+  }
 
 protected:
   bool onProcessMessage(ui::Message* msg) override;

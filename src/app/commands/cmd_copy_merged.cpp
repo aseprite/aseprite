@@ -24,7 +24,7 @@ protected:
   void onExecute(Context* ctx) override;
 };
 
-CopyMergedCommand::CopyMergedCommand() : Command(CommandId::CopyMerged(), CmdUIOnlyFlag)
+CopyMergedCommand::CopyMergedCommand() : Command(CommandId::CopyMerged())
 {
 }
 

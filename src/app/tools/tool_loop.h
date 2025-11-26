@@ -264,6 +264,11 @@ public:
   virtual void onSliceRect(const gfx::Rect& bounds) = 0;
 
   virtual const app::TiledModeHelper& getTiledModeHelper() = 0;
+
+  // Used by selection tools
+  virtual bool isSelectionToolLoop() const = 0;
+  virtual void addSelectionToolPoint(const gfx::Rect& rc) = 0;
+  virtual void clearSelectionToolMask(const bool finalStep) = 0;
 };
 
 } // namespace tools

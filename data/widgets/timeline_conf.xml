@@ -6,18 +6,12 @@
   <hbox>
     <vbox>
       <separator cell_hspan="2" text="@.position" left="true" horizontal="true" />
-      <hbox>
-        <buttonset columns="2" id="position">
-          <item text="@.left" />
-          <item text="@.right" />
-          <item text="@.bottom" hspan="2" />
-        </buttonset>
-      </hbox>
+      <button id="layout" icon="icon_layout" />
     </vbox>
     <vbox>
       <separator text="@.frame_header" left="true" horizontal="true" />
       <hbox>
-        <label text="@.first_frame" />
+        <label text="@.first_frame" for="first_frame" />
         <expr id="first_frame" />
       </hbox>
 
@@ -26,7 +20,7 @@
         <separator id="thumb_h_separator" horizontal="true" expansive="true" />
       </hbox>
       <grid columns="2" id="thumb_box">
-        <label text="@.thumbnail_size" />
+        <label text="@.thumbnail_size" for="zoom" />
         <slider min="1" max="10" id="zoom" cell_align="horizontal" width="128" />
 
         <check id="thumb_overlay_enabled" text="@.overlay_size"/>
@@ -44,10 +38,10 @@
       <button id="reset_onionskin" text="@.reset" minwidth="60" />
     </hbox>
 
-    <label text="@.opacity" />
+    <label text="@.opacity" for="opacity" />
     <opacityslider id="opacity" cell_align="horizontal" width="128" />
 
-    <label text="@.opacity_step" />
+    <label text="@.opacity_step" for="opacity_step" />
     <opacityslider id="opacity_step" cell_align="horizontal" width="128" />
 
     <check id="loop_tag" text="@.loop_tags" cell_hspan="2" />

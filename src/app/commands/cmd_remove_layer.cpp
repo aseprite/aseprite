@@ -105,7 +105,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-RemoveLayerCommand::RemoveLayerCommand() : Command(CommandId::RemoveLayer(), CmdRecordableFlag)
+RemoveLayerCommand::RemoveLayerCommand() : Command(CommandId::RemoveLayer())
 {
 }
 

@@ -58,7 +58,7 @@ protected:
 };
 
 ScreenshotCommand::ScreenshotCommand()
-  : CommandWithNewParams<ScreenshotParams>(CommandId::Screenshot(), CmdUIOnlyFlag)
+  : CommandWithNewParams<ScreenshotParams>(CommandId::Screenshot())
 {
 }
 

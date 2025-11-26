@@ -31,7 +31,7 @@ using namespace doc;
 
 class GotoCommand : public Command {
 protected:
-  GotoCommand(const char* id) : Command(id, CmdRecordableFlag) {}
+  GotoCommand(const char* id) : Command(id) {}
 
   bool onEnabled(Context* context) override { return (Editor::activeEditor() != nullptr); }
 
@@ -212,7 +212,7 @@ private:
     if (m_showUI) {
       app::gen::GotoFrame window;
       TagsEntry combobox(editor->sprite()->tags());
-
+      combobox.setId("frame");
       window.framePlaceholder()->addChild(&combobox);
 
       combobox.setFocusMagnet(true);

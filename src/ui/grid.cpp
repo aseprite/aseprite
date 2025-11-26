@@ -261,12 +261,13 @@ void Grid::sumStripSize(const std::vector<Strip>& strip, int& size)
 
 void Grid::calculateCellSize(int start, int span, const std::vector<Strip>& strip, int& size)
 {
+  const int limit = std::min(start + span, int(strip.size()));
   int i, j;
   int gap = (&strip == &m_colstrip ? m_colgap : m_rowgap);
 
   size = 0;
 
-  for (i = start, j = 0; i < start + span; ++i) {
+  for (i = start, j = 0; i < limit; ++i) {
     if (strip[i].size > 0) {
       size += strip[i].size;
       if (++j > 1)
@@ -379,15 +380,18 @@ void Grid::expandStrip(std::vector<Strip>& colstrip,
           ASSERT(cell_span > 0);
 
           if (cell_span == current_span) {
+            const int limit = std::min(col + cell_span, int(colstrip.size()));
+
             // Calculate the maximum (expand_count) in cell's columns.
             int max_expand_count = 0;
-            for (i = col; i < col + cell_span; ++i)
+            for (i = col; i < limit; ++i) {
               max_expand_count = std::max(max_expand_count, colstrip[i].expand_count);
+            }
 
             int expand = 0;      // How many columns have the maximum value of "expand_count"
             int last_expand = 0; // This variable is used to add the remainder space to the last
                                  // column
-            for (i = col; i < col + cell_span; ++i) {
+            for (i = col; i < limit; ++i) {
               if (colstrip[i].expand_count == max_expand_count) {
                 ++expand;
                 last_expand = i;
@@ -396,7 +400,7 @@ void Grid::expandStrip(std::vector<Strip>& colstrip,
 
             // Divide the available size of the cell in the number of columns which are expandible
             int size = guiscaled_div(cell_size, expand);
-            for (i = col; i < col + cell_span; ++i) {
+            for (i = col; i < limit; ++i) {
               if (colstrip[i].expand_count == max_expand_count) {
                 // For the last column, use all the available space in the column
                 if (last_expand == i) {

@@ -42,6 +42,7 @@ add_library(ui-lib
   resize_event.cpp
   scroll_bar.cpp
   scroll_helper.cpp
+  scroll_window.cpp
   separator.cpp
   shortcut.cpp
   size_hint_event.cpp
@@ -50,6 +51,8 @@ add_library(ui-lib
   style.cpp
   system.cpp
   textbox.cpp
+  textcmd.cpp
+  textedit.cpp
   theme.cpp
   timer.cpp
   tooltips.cpp

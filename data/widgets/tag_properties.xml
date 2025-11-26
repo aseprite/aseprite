@@ -7,17 +7,17 @@
   <vbox>
     <grid id="properties_grid" columns="3">
 
-      <label text="@.name" />
+      <label text="@.name" for="name" />
       <entry maxsize="256" id="name" magnet="true" cell_align="horizontal" expansive="true" />
       <button id="user_data" icon="icon_user_data" maxsize="32" tooltip="@general.user_data" />
 
-      <label text="@.from" />
+      <label text="@.from" for="from" />
       <expr id="from" cell_hspan="2" />
 
-      <label text="@.to" />
+      <label text="@.to" for="to" />
       <expr id="to" cell_hspan="2" />
 
-      <label text="@.ani_dir" />
+      <label text="@.ani_dir" for="anidir" />
       <combobox id="anidir" cell_hspan="2" />
 
       <check text="@.repeat" id="limit_repeat" />

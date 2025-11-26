@@ -23,8 +23,6 @@
 #include "doc/sprite.h"
 #include "fmt/format.h"
 
-#include <cstdio>
-
 namespace app {
 
 using namespace doc;
@@ -39,7 +37,7 @@ protected:
 };
 
 NewSpriteFromSelectionCommand::NewSpriteFromSelectionCommand()
-  : Command(CommandId::NewSpriteFromSelection(), CmdUIOnlyFlag)
+  : Command(CommandId::NewSpriteFromSelection())
 {
 }
 

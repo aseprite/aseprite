@@ -47,6 +47,8 @@ public:
   };
 
   static constexpr const float kDefaultSize = 0.0f;
+  static constexpr const float kMinSize = 0.0f;
+  static constexpr const float kMaxSize = 1000.0f;
 
   FontInfo(Type type = Type::Unknown,
            const std::string& name = {},
