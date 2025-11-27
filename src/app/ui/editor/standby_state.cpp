@@ -999,7 +999,7 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
   if (StandbyState::Decorator::getSymmetryHandles(editor, handles)) {
     auto theme = skin::SkinTheme::get(editor);
     os::Surface* part = theme->parts.transformationHandle()->bitmap(0);
-    ui::Graphics g(editor->display(), editor->display()->backLayer()->surface(), 0, 0);
+    ui::Graphics g(editor->display());
     for (const auto& handle : handles)
       g.drawRgbaSurface(part, handle.bounds.x, handle.bounds.y);
   }

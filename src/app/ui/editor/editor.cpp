@@ -1076,7 +1076,7 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
 
   Display* display = this->display();
   // TODO clip the editorGraphics directly
-  Graphics backGraphics(display, display->backLayer()->surface(), 0, 0);
+  Graphics backGraphics(display);
   GraphicsPtr editorGraphics = getGraphics(clientBounds());
 
   for (const Rect& updateRect : updateRegion) {
