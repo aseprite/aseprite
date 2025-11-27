@@ -1076,7 +1076,7 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
 
   Display* display = this->display();
   // TODO clip the editorGraphics directly
-  Graphics backGraphics(display, display->backLayer()->surface(), 0, 0);
+  Graphics backGraphics(display);
   GraphicsPtr editorGraphics = getGraphics(clientBounds());
 
   for (const Rect& updateRect : updateRegion) {
@@ -2426,7 +2426,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
       // Draw the sprite in the editor
       renderChrono.reset();
       drawBackground(g);
-      drawSpriteUnclippedRect(g, gfx::Rect(0, 0, m_sprite->width(), m_sprite->height()));
+      drawSpriteUnclippedRect(g, m_sprite->bounds());
       renderElapsed = renderChrono.elapsed();
 
 #if ENABLE_DEVMODE

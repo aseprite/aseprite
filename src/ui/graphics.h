@@ -47,6 +47,8 @@ class Display;
 class Graphics {
 public:
   Graphics(Display* display, const os::SurfaceRef& surface, int dx, int dy);
+  Graphics(Display* display);
+  Graphics(const os::SurfaceRef& surface);
   ~Graphics();
 
   int width() const;

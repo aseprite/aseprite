@@ -420,7 +420,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
     if (!(m_type & NATIVE_CROSSHAIR)) {
       // We use the Display back layer to get pixels in createCrosshairCursor().
-      ui::Graphics g(display, display->backLayer()->surface(), 0, 0);
+      ui::Graphics g(display);
       createCrosshairCursor(&g, uiCursorColor);
     }
 
@@ -460,7 +460,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
         m_uiLayer->surface()->clear();
 
         gfx::Rect layerBounds = m_uiLayer->surface()->bounds();
-        ui::Graphics g(display, m_uiLayer->surface(), 0, 0);
+        ui::Graphics g(m_uiLayer->surface());
 
         os::Paint paint;
         paint.style(os::Paint::Stroke);

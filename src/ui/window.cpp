@@ -888,7 +888,7 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
 
     // Move the window's graphics
     Display* display = this->display();
-    Graphics g(display, display->backLayer()->surface(), 0, 0);
+    Graphics g(display);
     {
       IntersectClip clip(&g, man_pos);
       if (clip) {

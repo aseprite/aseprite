@@ -991,16 +991,16 @@ void Tabs::createFloatingUILayer(Tab* tab)
     m_tabsHeight,
     get_current_color_space(display));
 
-  // Fill the surface with pink color
+  // Fill the surface with the transparent color
   {
     os::SurfaceLock lock(surface.get());
     os::Paint paint;
     paint.color(gfx::rgba(0, 0, 0, 0));
     paint.style(os::Paint::Fill);
-    surface->drawRect(gfx::Rect(0, 0, surface->width(), surface->height()), paint);
+    surface->drawRect(surface->bounds(), paint);
   }
   {
-    Graphics g(display, surface, 0, 0);
+    Graphics g(surface);
     g.setFont(font());
     drawTab(&g, g.getClipBounds(), tab, 0, true, true);
   }

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -298,7 +298,7 @@ void CanvasSizeCommand::onExecute(Context* context)
   const Sprite* sprite(reader.sprite());
   auto& params = this->params();
 
-  gfx::Rect bounds(0, 0, sprite->width(), sprite->height());
+  gfx::Rect bounds = sprite->bounds();
   if (params.bounds.isSet()) {
     bounds = params.bounds();
   }
