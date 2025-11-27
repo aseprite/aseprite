@@ -77,8 +77,10 @@ bool LinkLabel::onProcessMessage(Message* msg)
         setSelected(false);
         invalidate(); // TODO theme specific
 
-        if (hasMouse())
+        if (hasMouse()) {
           onClick();
+          return true;
+        }
       }
       break;
   }
