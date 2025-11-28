@@ -1193,15 +1193,16 @@ void Widget::flushMessages() const
   manager->flushMessages();
 }
 
-void Widget::paint(Graphics* graphics, const gfx::Region& drawRegion, const bool isBg)
+void Widget::paint(Graphics* graphics,
+                   const gfx::Region& drawRegion,
+                   const bool isBg,
+                   const DrawableRegionFlags flags)
 {
   if (drawRegion.isEmpty())
     return;
 
   std::queue<Widget*> processing;
   processing.push(this);
-
-  Display* display = this->display();
 
   while (!processing.empty()) {
     Widget* widget = processing.front();
@@ -1216,15 +1217,18 @@ void Widget::paint(Graphics* graphics, const gfx::Region& drawRegion, const bool
     for (auto child : widget->children())
       processing.push(child);
 
-    // Intersect drawRegion with widget's drawable region.
+    // Intersect "drawRegion" with widget's drawable region. Both
+    // regions are in the bounds() coordinates.
     Region region;
-    widget->getDrawableRegion(region, kCutTopWindows);
-    region.createIntersection(region, drawRegion);
+    widget->getDrawableRegion(region, flags);
+    region &= drawRegion;
 
-    Graphics graphics2(display,
-                       base::AddRef(graphics->getInternalSurface()),
-                       widget->bounds().x,
-                       widget->bounds().y);
+    // Create a Graphics to paint the widget relative to the same
+    // widget coordinate (bounds.x/bounds.y as origin = position 0,0).
+    Graphics graphics2(graphics->display(),
+                       AddRef(graphics->getInternalSurface()),
+                       graphics->getInternalDeltaX() + widget->bounds().x - bounds().x,
+                       graphics->getInternalDeltaY() + widget->bounds().y - bounds().y);
     graphics2.setFont(widget->font());
 
     for (const gfx::Rect& rc : region) {
@@ -1271,9 +1275,16 @@ bool Widget::paintEvent(Graphics* graphics, const bool isBg)
     }
     if (parentWidget) {
       gfx::Region rgn(parentWidget->bounds());
+      Graphics graphics2(parentWidget->display(),
+                         AddRef(graphics->getInternalSurface()),
+                         graphics->getInternalDeltaX() + parentWidget->bounds().x - bounds().x,
+                         graphics->getInternalDeltaY() + parentWidget->bounds().y - bounds().y);
+      graphics2.setFont(parentWidget->font());
+
       rgn &= gfx::Region(graphics->getClipBounds().offset(graphics->getInternalDeltaX(),
                                                           graphics->getInternalDeltaY()));
-      parentWidget->paint(graphics, rgn, true);
+
+      parentWidget->paint(&graphics2, rgn, true, kCutTopWindows);
     }
     else {
       // Clear surface with transparent color

@@ -26,22 +26,6 @@ class Dock : public ui::Widget {
 public:
   static constexpr const int kSides = 5;
 
-  class DropzonePlaceholder final : public Widget,
-                                    public Dockable {
-  public:
-    DropzonePlaceholder(Widget* dragWidget, const gfx::Point& mousePosition);
-    ~DropzonePlaceholder() override;
-
-    void setGhostPosition(const gfx::Point& position) const;
-
-  private:
-    void onPaint(ui::PaintEvent& ev) override;
-    int dockHandleSide() const override { return 0; }
-
-    gfx::Point m_mouseOffset;
-    ui::UILayerRef m_floatingUILayer;
-  };
-
   Dock();
 
   bool isCustomizing() const { return m_customizing; }
@@ -83,6 +67,43 @@ protected:
   void onUserResizedDock();
 
 private:
+  struct Hit {
+    ui::Widget* widget = nullptr;
+    Dockable* dockable = nullptr;
+    Dock* dock = nullptr;
+    int sideIndex = -1;
+    int targetSide = 0;
+
+    gfx::Rect bounds() const;
+
+    bool operator==(const Hit& other) const
+    {
+      return (widget == other.widget && dockable == other.dockable && dock == other.dock &&
+              sideIndex == other.sideIndex && targetSide == other.targetSide);
+    }
+    bool operator!=(const Hit& other) const { return !operator==(other); }
+  };
+
+  class DraggingFeedback final {
+  public:
+    DraggingFeedback(ui::Display* display, const Hit& hit, const gfx::Point& mousePosition);
+    ~DraggingFeedback();
+
+    const Hit& hit() const { return m_hit; }
+
+    void setHit(const Hit& hit);
+    void setFloatingPosition(const gfx::Point& position) const;
+    void paint(ui::Graphics* g, gfx::Rect bounds) const;
+
+  private:
+    Hit m_hit;
+    ui::Display* m_display;
+    ui::Widget* m_dragWidget;
+    gfx::Point m_mouseOffset;
+    ui::UILayerRef m_floatingUILayer;
+    ui::UILayerRef m_dropUILayer;
+  };
+
   void setSide(int i, ui::Widget* newWidget);
   int calcAlign(int i);
   void updateDockVisibility();
@@ -93,14 +114,8 @@ private:
                                       const int index)> f);
 
   bool hasVisibleSide(const int i) const { return (m_sides[i] && m_sides[i]->isVisible()); }
-  void redockWidget(app::Dock* widgetDock, ui::Widget* dockableWidget, const int side);
-
-  struct Hit {
-    ui::Widget* widget = nullptr;
-    Dockable* dockable = nullptr;
-    int sideIndex = -1;
-    int targetSide = -1;
-  };
+  void redockWidget(app::Dock* newDock, ui::Widget* dockableWidget, int side);
+  Dock* rootDock();
 
   Hit calcHit(const gfx::Point& pos);
 
@@ -121,7 +136,7 @@ private:
 
   // True when we're dragging a widget to attempt to dock it somewhere else.
   bool m_dragging = false;
-  std::unique_ptr<DropzonePlaceholder> m_dropzonePlaceholder;
+  std::unique_ptr<DraggingFeedback> m_draggingFeedback;
 };
 
 } // namespace app
