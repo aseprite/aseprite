@@ -109,8 +109,6 @@ void Param<doc::algorithm::ResizeMethod>::fromString(const std::string& value)
     setValue(doc::algorithm::RESIZE_METHOD_LANCZOS3);
   else if (base::utf8_icmp(value, "gaussian") == 0)
     setValue(doc::algorithm::RESIZE_METHOD_GAUSSIAN);
-  else if (base::utf8_icmp(value, "mitchell") == 0)
-    setValue(doc::algorithm::RESIZE_METHOD_MITCHELL);
   else if (base::utf8_icmp(value, "rotsprite") == 0)
     setValue(doc::algorithm::RESIZE_METHOD_ROTSPRITE);
   else

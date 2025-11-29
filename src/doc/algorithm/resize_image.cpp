@@ -205,8 +205,7 @@ void resize_image(Image* src,
 
     case RESIZE_METHOD_BICUBIC:
     case RESIZE_METHOD_LANCZOS3:
-    case RESIZE_METHOD_GAUSSIAN:
-    case RESIZE_METHOD_MITCHELL: {
+    case RESIZE_METHOD_GAUSSIAN: {
       if (dst->pixelFormat() == IMAGE_RGB && src->pixelFormat() == IMAGE_RGB) {
         pixman_format_code_t format = PIXMAN_a8b8g8r8;
         pixman_image_t* src_pix = pixman_image_create_bits(
@@ -221,7 +220,6 @@ void resize_image(Image* src,
         pixman_kernel_t kernel;
         switch (method) {
           case RESIZE_METHOD_BICUBIC:
-          case RESIZE_METHOD_MITCHELL:
             kernel = PIXMAN_KERNEL_CUBIC;
             break;
           case RESIZE_METHOD_LANCZOS3:
