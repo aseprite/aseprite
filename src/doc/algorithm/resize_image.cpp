@@ -12,6 +12,7 @@
 #include "doc/algorithm/resize_image.h"
 
 #include "doc/algorithm/rotsprite.h"
+#include <pixman.h>
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/primitives_fast.h"
@@ -54,7 +55,6 @@ void resize_image(Image* src,
     fixup_image_transparent_colors(src);
 
   switch (method) {
-    // TODO optimize this
     case RESIZE_METHOD_NEAREST_NEIGHBOR: {
       ASSERT(src->pixelFormat() == dst->pixelFormat());
 
@@ -69,6 +69,37 @@ void resize_image(Image* src,
 
     // TODO optimize this
     case RESIZE_METHOD_BILINEAR: {
+      if (dst->pixelFormat() == IMAGE_RGB && src->pixelFormat() == IMAGE_RGB) {
+        pixman_format_code_t format = PIXMAN_a8b8g8r8;
+        pixman_image_t* src_pix = pixman_image_create_bits(
+          format, src->width(), src->height(),
+          (uint32_t*)src->getPixelAddress(0, 0),
+          src->rowBytes());
+        pixman_image_t* dst_pix = pixman_image_create_bits(
+          format, dst->width(), dst->height(),
+          (uint32_t*)dst->getPixelAddress(0, 0),
+          dst->rowBytes());
+
+        pixman_transform_t transform;
+        pixman_transform_init_scale(&transform,
+          pixman_double_to_fixed((double)src->width() / dst->width()),
+          pixman_double_to_fixed((double)src->height() / dst->height()));
+
+        pixman_image_set_transform(src_pix, &transform);
+        pixman_image_set_filter(src_pix, PIXMAN_FILTER_BILINEAR, nullptr, 0);
+        pixman_image_set_repeat(src_pix, PIXMAN_REPEAT_PAD);
+
+        pixman_image_composite32(
+          PIXMAN_OP_SRC,
+          src_pix, nullptr, dst_pix,
+          0, 0, 0, 0, 0, 0,
+          dst->width(), dst->height());
+
+        pixman_image_unref(src_pix);
+        pixman_image_unref(dst_pix);
+        break;
+      }
+
       uint32_t color[4], dst_color = 0;
       double u, v, du, dv;
       int u_floor, u_floor2;
