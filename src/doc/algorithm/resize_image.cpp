@@ -203,6 +203,78 @@ void resize_image(Image* src,
       break;
     }
 
+    case RESIZE_METHOD_BICUBIC:
+    case RESIZE_METHOD_LANCZOS3:
+    case RESIZE_METHOD_GAUSSIAN:
+    case RESIZE_METHOD_MITCHELL: {
+      if (dst->pixelFormat() == IMAGE_RGB && src->pixelFormat() == IMAGE_RGB) {
+        pixman_format_code_t format = PIXMAN_a8b8g8r8;
+        pixman_image_t* src_pix = pixman_image_create_bits(
+          format, src->width(), src->height(),
+          (uint32_t*)src->getPixelAddress(0, 0),
+          src->rowBytes());
+        pixman_image_t* dst_pix = pixman_image_create_bits(
+          format, dst->width(), dst->height(),
+          (uint32_t*)dst->getPixelAddress(0, 0),
+          dst->rowBytes());
+
+        pixman_kernel_t kernel;
+        switch (method) {
+          case RESIZE_METHOD_BICUBIC:
+          case RESIZE_METHOD_MITCHELL:
+            kernel = PIXMAN_KERNEL_CUBIC;
+            break;
+          case RESIZE_METHOD_LANCZOS3:
+            kernel = PIXMAN_KERNEL_LANCZOS3;
+            break;
+          case RESIZE_METHOD_GAUSSIAN:
+            kernel = PIXMAN_KERNEL_GAUSSIAN;
+            break;
+          default:
+            kernel = PIXMAN_KERNEL_CUBIC;
+            break;
+        }
+
+        int n_params;
+        pixman_fixed_t* params = pixman_filter_create_separable_convolution(
+          &n_params,
+          pixman_double_to_fixed((double)src->width() / dst->width()),
+          pixman_double_to_fixed((double)src->height() / dst->height()),
+          kernel, kernel,
+          PIXMAN_KERNEL_IMPULSE, PIXMAN_KERNEL_IMPULSE,
+          4, 4);
+
+        if (params) {
+          pixman_transform_t transform;
+          pixman_transform_init_scale(&transform,
+            pixman_double_to_fixed((double)src->width() / dst->width()),
+            pixman_double_to_fixed((double)src->height() / dst->height()));
+
+          pixman_image_set_transform(src_pix, &transform);
+          pixman_image_set_filter(src_pix, PIXMAN_FILTER_SEPARABLE_CONVOLUTION, params, n_params);
+          pixman_image_set_repeat(src_pix, PIXMAN_REPEAT_PAD);
+
+          pixman_image_composite32(
+            PIXMAN_OP_SRC,
+            src_pix, nullptr, dst_pix,
+            0, 0, 0, 0, 0, 0,
+            dst->width(), dst->height());
+
+          free(params);
+          pixman_image_unref(src_pix);
+          pixman_image_unref(dst_pix);
+          break;
+        }
+
+        pixman_image_unref(src_pix);
+        pixman_image_unref(dst_pix);
+      }
+
+      // Fallback to bilinear for non-RGB or if params creation failed
+      resize_image(src, dst, RESIZE_METHOD_BILINEAR, pal, rgbmap, maskColor);
+      break;
+    }
+
     case RESIZE_METHOD_ROTSPRITE: {
       rotsprite_image(dst,
                       src,
