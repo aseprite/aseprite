@@ -412,7 +412,7 @@ private:
             m_addButton->setStyle(theme->styles.miniButton());
             addChild(m_addButton.get());
 
-            itemBounds.w = 8 * guiscale() + font()->textLength("Add");
+            itemBounds.w = 8 * guiscale() + font()->textLength(Strings::keyboard_shortcuts_add());
             itemBounds.x -= itemBounds.w + 2 * guiscale();
 
             m_addButton->setBgColor(gfx::ColorNone);
