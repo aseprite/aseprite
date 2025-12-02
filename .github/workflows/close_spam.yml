@@ -4,10 +4,13 @@ on:
     types: [opened, reopened]
     paths:
       - '.github/workflows/**'
+    branches-ignore:
+      - 'ci'
 jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-    - uses: superbrothers/close-pull-request@v3
-      with:
-        comment: "We do not accept PRs to modify GitHub actions. Contact david@igara.com directly with patches for this."
+    - name: Close Pull
+      run: gh pr close --comment "We do not accept PRs to modify GitHub actions. Contact david@igara.com directly with patches for this."
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
