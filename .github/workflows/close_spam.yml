@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Close Pull
-      run: gh pr close --comment "We do not accept PRs to modify GitHub actions. Contact david@igara.com directly with patches for this."
+      run: gh pr close $PR --comment "We do not accept PRs to modify GitHub actions. Contact david@igara.com directly with patches for this."
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PR: ${{ github.event.pull_request.number }}
