@@ -10,6 +10,9 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - name: Close Pull
       run: gh pr close $PR --comment "We do not accept PRs to modify GitHub actions. Contact david@igara.com directly with patches for this."
       env:
