@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2022 Igara Studio S.A.
+// Copyright (c) 2018-2025 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -14,17 +14,19 @@
 #include "base/debug.h"
 
 #include <algorithm>
-#include <climits>
 #include <cmath>
 #include <utility>
 #include <vector>
 
 namespace doc {
 
+void setFixedStepTilt(const int value)
+{
+  fixed_step_tilt = std::clamp(value, 2, 256);
+}
+
 int algo_line_snap_endpoint(int* x_out, int* y_out, int x1, int y1, int x2, int y2)
 {
-  constexpr int MAX_M = 8;
-
   int dx = x2 - x1;
   int dy = y2 - y1;
   const bool swapxy = std::abs(dy) > std::abs(dx);
@@ -32,10 +34,11 @@ int algo_line_snap_endpoint(int* x_out, int* y_out, int x1, int y1, int x2, int 
     std::swap(dx, dy);
   }
 
-  const int m_limit = std::min(MAX_M, std::max(1, std::abs(dx) / 2));
-  int m = dy != 0 ? (std::abs(dx) + std::abs(dy) / 2) / std::abs(dy) : INT_MAX;
+  const int m_limit = std::min(fixed_step_tilt, std::max(1, std::abs(dx) / 2));
+  int m = dy != 0 ? (std::abs(dx) + std::abs(dy) / 2) / std::abs(dy) :
+                    std::numeric_limits<int>::max();
   if (m > 2 * m_limit)
-    m = INT_MAX;
+    m = std::numeric_limits<int>::max();
   else if (m > m_limit)
     m = m_limit;
 
@@ -43,7 +46,7 @@ int algo_line_snap_endpoint(int* x_out, int* y_out, int x1, int y1, int x2, int 
     return m;
   }
 
-  if (m != INT_MAX) {
+  if (m != std::numeric_limits<int>::max()) {
     const int v2 = m * m + 1;
     dx = SGN(dx) * (m * (std::abs(dx * m) + std::abs(dy)) + v2 / 2) / v2;
     dy = SGN(dy) * std::abs(dx) / m;

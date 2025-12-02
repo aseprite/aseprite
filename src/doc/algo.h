@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,6 +11,12 @@
 
 #include "doc/algorithm/hline.h"
 #include "gfx/fwd.h"
+
+// Available fixed step tilts (constant integer pixel runs throughout the line)
+// into the angular interval between 0° < tilt angle <= 45°
+// This value is used in 'algo_line_snap_endpoint' function when a
+// constant step tilt is required
+static int fixed_step_tilt = 2;
 
 namespace doc {
 
@@ -33,6 +39,8 @@ void algo_line_perfect_with_fix_for_line_brush(int x1,
                                                void* data,
                                                AlgoPixel proc);
 
+// Set the maximum constant integer pixel runs throughout the line.
+void setFixedStepTilt(const int rsc);
 // For lines with constant integer pixel runs throughout the line.
 void algo_line_snap(int x1, int y1, int x2, int y2, void* data, AlgoPixel proc);
 int algo_line_snap_endpoint(int* x_out, int* y_out, int x1, int y1, int x2, int y2);
