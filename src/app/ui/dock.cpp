@@ -39,26 +39,24 @@ using namespace ui;
 
 namespace {
 
-enum { kTopIndex, kBottomIndex, kLeftIndex, kRightIndex, kCenterIndex };
-
-int side_index(int side)
+Dock::SideIndex side_index(int sideFlag)
 {
-  switch (side) {
-    case ui::TOP:    return kTopIndex;
-    case ui::BOTTOM: return kBottomIndex;
-    case ui::LEFT:   return kLeftIndex;
-    case ui::RIGHT:  return kRightIndex;
+  switch (sideFlag) {
+    case ui::TOP:    return Dock::kTopIndex;
+    case ui::BOTTOM: return Dock::kBottomIndex;
+    case ui::LEFT:   return Dock::kLeftIndex;
+    case ui::RIGHT:  return Dock::kRightIndex;
   }
-  return kCenterIndex; // ui::CENTER
+  return Dock::kCenterIndex; // ui::CENTER
 }
 
-int side_from_index(int index)
+int side_from_index(const Dock::SideIndex sideIndex)
 {
-  switch (index) {
-    case kTopIndex:    return ui::TOP;
-    case kBottomIndex: return ui::BOTTOM;
-    case kLeftIndex:   return ui::LEFT;
-    case kRightIndex:  return ui::RIGHT;
+  switch (sideIndex) {
+    case Dock::kTopIndex:    return ui::TOP;
+    case Dock::kBottomIndex: return ui::BOTTOM;
+    case Dock::kLeftIndex:   return ui::LEFT;
+    case Dock::kRightIndex:  return ui::RIGHT;
   }
   return ui::CENTER; // kCenterIndex
 }
@@ -271,11 +269,11 @@ void Dock::resetDocks()
   removeAllChildren();
 }
 
-void Dock::dock(int side, ui::Widget* widget, const gfx::Size& prefSize)
+void Dock::dock(const int sideFlag, ui::Widget* widget, const gfx::Size& prefSize)
 {
   ASSERT(widget);
 
-  const int i = side_index(side);
+  const SideIndex i = side_index(sideFlag);
   if (!m_sides[i]) {
     setSide(i, widget);
     addChild(widget);
@@ -283,8 +281,8 @@ void Dock::dock(int side, ui::Widget* widget, const gfx::Size& prefSize)
     if (prefSize != gfx::Size(0, 0))
       m_sizes[i] = prefSize;
   }
-  else if (Dock* subdock = this->subdock(side)) {
-    subdock->dock(side, widget, prefSize);
+  else if (Dock* subdock = this->subdock(sideFlag)) {
+    subdock->dock(sideFlag, widget, prefSize);
   }
   else {
     ASSERT(false); // Docking failure!
@@ -352,13 +350,13 @@ int Dock::whichSideChildIsDocked(const ui::Widget* widget) const
 {
   for (int i = 0; i < kSides; ++i)
     if (m_sides[i] == widget)
-      return side_from_index(i);
+      return side_from_index(SideIndex(i));
   return 0;
 }
 
-const gfx::Size Dock::getUserDefinedSizeAtSide(int side) const
+const gfx::Size Dock::getUserDefinedSizeAtSide(const int sideFlag) const
 {
-  int i = side_index(side);
+  SideIndex i = side_index(sideFlag);
   // Only EXPANSIVE sides can be user-defined (has a splitter so the
   // user can expand or shrink it)
   if (m_aligns[i] & EXPANSIVE)
@@ -820,7 +818,7 @@ void Dock::forEachSide(gfx::Rect bounds,
                        std::function<void(ui::Widget* widget,
                                           const gfx::Rect& widgetBounds,
                                           const gfx::Rect& separator,
-                                          const int index)> f)
+                                          const SideIndex index)> f)
 {
   for (int i = 0; i < kSides; ++i) {
     auto* widget = m_sides[i];
@@ -832,7 +830,7 @@ void Dock::forEachSide(gfx::Rect bounds,
     const gfx::Size sz = (m_aligns[i] & EXPANSIVE ? m_sizes[i] : widget->sizeHint(bounds.size()));
 
     gfx::Rect rc, separator;
-    switch (i) {
+    switch (SideIndex(i)) {
       case kTopIndex:
         rc = gfx::Rect(bounds.x, bounds.y, bounds.w, sz.h);
         bounds.y += rc.h;
@@ -876,7 +874,7 @@ void Dock::forEachSide(gfx::Rect bounds,
       case kCenterIndex: rc = bounds; break;
     }
 
-    f(widget, rc, separator, i);
+    f(widget, rc, separator, SideIndex(i));
   }
 }
 

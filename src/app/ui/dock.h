@@ -24,7 +24,7 @@ class Dockable;
 
 class Dock : public ui::Widget {
 public:
-  static constexpr const int kSides = 5;
+  enum SideIndex { kTopIndex, kBottomIndex, kLeftIndex, kRightIndex, kCenterIndex, kSides };
 
   Dock();
 
@@ -34,7 +34,7 @@ public:
   void resetDocks();
 
   // side = ui::LEFT, or ui::RIGHT, etc.
-  void dock(int side, ui::Widget* widget, const gfx::Size& prefSize = gfx::Size());
+  void dock(int sideFlag, ui::Widget* widget, const gfx::Size& prefSize = gfx::Size());
 
   void dockRelativeTo(ui::Widget* relative,
                       int side,
@@ -53,7 +53,7 @@ public:
 
   // Functions useful to query/save the dock layout.
   int whichSideChildIsDocked(const ui::Widget* widget) const;
-  const gfx::Size getUserDefinedSizeAtSide(int side) const;
+  const gfx::Size getUserDefinedSizeAtSide(int sideFlag) const;
 
   obs::signal<void()> Resize;
   obs::signal<void()> UserResizedDock;
@@ -111,7 +111,7 @@ private:
                    std::function<void(ui::Widget* widget,
                                       const gfx::Rect& widgetBounds,
                                       const gfx::Rect& separator,
-                                      const int index)> f);
+                                      const SideIndex index)> f);
 
   bool hasVisibleSide(const int i) const { return (m_sides[i] && m_sides[i]->isVisible()); }
   void redockWidget(app::Dock* newDock, ui::Widget* dockableWidget, int side);
