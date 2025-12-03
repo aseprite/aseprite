@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -247,6 +247,10 @@ int CliProcessor::process(Context* ctx)
         // --sheet-pack
         else if (opt == &m_options.sheetPack()) {
           sheetType = SpriteSheetType::Packed;
+        }
+        // --power-of-two-size
+        else if (opt == &m_options.powerOfTwoSize()) {
+          m_exporter->setPowerOfTwoSize(true);
         }
         // --split-layers
         else if (opt == &m_options.splitLayers()) {
