@@ -1,0 +1,160 @@
+# .github/workflows/release-linux-aseprite.yml
+name: "Release: Aseprite Linux (Portable + .deb)"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * 1'      # Every Monday
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/release-linux-aseprite.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set.outputs.version }}
+      tag: ${{ steps.set.outputs.tag }}
+    steps:
+      - name: Get latest Aseprite version
+        id: set
+        run: |
+          VERSION=$(curl -s https://www.aseprite.org/downloads/ | grep -o 'Aseprite v[0-9.]\+' | head -1 | cut -d'v' -f2)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+
+  create-release:
+    needs: get-version
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create.outputs.upload_url }}
+    steps:
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          name: Aseprite ${{ needs.get-version.outputs.version }} (Linux)
+          tag: ${{ needs.get-version.outputs.tag }}
+          body: |
+            Unofficial high-quality build (Skia + libc++)
+            • Portable ZIP – extract and run
+            • .deb package – install with `sudo dpkg -i`
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
+
+  build-and-package:
+    needs: [get-version, create-release]
+    runs-on: ubuntu-24.04
+    container: ubuntu:24.04
+
+    steps:
+      - name: Install dependencies
+        run: |
+          apt-get update -qq
+          apt-get install -y --no-install-recommends \
+            ca-certificates curl unzip sudo \
+            g++ clang libc++-dev libc++abi-dev \
+            cmake ninja-build \
+            libx11-dev libxcursor-dev libxi-dev libgl1-mesa-dev libfontconfig1-dev \
+            dpkg-dev build-essential
+
+      - name: Run your compile script
+        env:
+          FILE_VERSION: ${{ needs.get-version.outputs.version }}
+        run: |
+          curl -L https://raw.githubusercontent.com/AndreM222/aseprite-compile-script/main/install-aseprite.sh -o build.sh
+          chmod +x build.sh
+          # Skip desktop file and /opt install — we want clean build only
+          sed -i '/move_linux_aseprite/d' build.sh
+          sed -i '/create_desktop_file/d' build.sh
+          sed -i '/chmod +x.*desktop/d' build.sh
+          bash build.sh < /dev/null
+
+      - name: Package Portable ZIP
+        run: |
+          VERSION="${{ needs.get-version.outputs.version }}"
+          mkdir -p /tmp/portable
+          cp -r /tmp/aseprite/build/bin/* /tmp/portable/
+          echo "# Portable mode" > /tmp/portable/aseprite.ini
+          cd /tmp/portable
+          zip -r9 "/tmp/Aseprite-${VERSION}-Linux-x64-portable.zip" .
+
+      - name: Package .deb
+        run: |
+          VERSION="${{ needs.get-version.outputs.version }}"
+          mkdir -p deb-pkg/opt/aseprite
+          mkdir -p deb-pkg/usr/bin
+          mkdir -p deb-pkg/usr/share/applications
+          mkdir -p deb-pkg/usr/share/icons/hicolor/256x256/apps
+          mkdir -p deb-pkg/DEBIAN
+
+          cp -r /tmp/aseprite/build/bin/* deb-pkg/opt/aseprite/
+          ln -s /opt/aseprite/aseprite deb-pkg/usr/bin/aseprite
+          cp deb-pkg/opt/aseprite/data/icons/ase256.png \
+             deb-pkg/usr/share/icons/hicolor/256x256/apps/aseprite.png
+
+          cat > deb-pkg/usr/share/applications/aseprite.desktop << EOF
+          [Desktop Entry]
+          Name=Aseprite
+          Exec=aseprite %F
+          Icon=aseprite
+          Type=Application
+          Categories=Graphics;2DGraphics;RasterGraphics;
+          Terminal=false
+          MimeType=image/x-aseprite;image/png;image/gif;image/jpeg;
+          EOF
+
+          cat > deb-pkg/DEBIAN/control << EOF
+          Package: aseprite
+          Version: $VERSION
+          Architecture: amd64
+          Maintainer: Community Build <none>
+          Depends: libstdc++6, libc6, libgl1, libx11-6, libxcursor1, libxi6, libfontconfig1
+          Section: graphics
+          Priority: optional
+          Homepage: https://www.aseprite.org
+          Description: Animated sprite editor & pixel art tool
+           Powerful pixel art and animation program.
+           This is an unofficial build compiled from source with Skia backend.
+          EOF
+
+          dpkg-deb --build --root-owner-group deb-pkg \
+            "/tmp/Aseprite_${VERSION}_amd64.deb"
+
+      - name: Generate SHA256
+        run: |
+          cd /tmp
+          sha256sum Aseprite-*.zip Aseprite_*.deb > SHA256SUMS.txt
+
+      - name: Upload Portable ZIP
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: /tmp/Aseprite-${{ needs.get-version.outputs.version }}-Linux-x64-portable.zip
+          asset_name: Aseprite-${{ needs.get-version.outputs.version }}-Linux-x64-portable.zip
+          asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload .deb
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: /tmp/Aseprite_${{ needs.get-version.outputs.version }}_amd64.deb
+          asset_name: Aseprite_${{ needs.get-version.outputs.version }}_amd64.deb
+          asset_content_type: application/vnd.debian.binary-package
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload SHA256
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: /tmp/SHA256SUMS.txt
+          asset_name: SHA256SUMS.txt
+          asset_content_type: text/plain
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
