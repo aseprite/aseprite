@@ -1772,7 +1772,7 @@ void Editor::updateStatusBar()
   m_state->onUpdateStatusBar(this);
 }
 
-void Editor::updateQuicktool()
+void Editor::updateQuicktool(ui::Message* msg)
 {
   if (m_customizationDelegate && !hasCapture()) {
     auto atm = App::instance()->activeToolManager();
@@ -1787,7 +1787,7 @@ void Editor::updateQuicktool()
       return;
     }
 
-    tools::Tool* newQuicktool = m_customizationDelegate->getQuickTool(selectedTool);
+    tools::Tool* newQuicktool = m_customizationDelegate->getQuickTool(msg, selectedTool);
 
     // Check if the current state accept the given quicktool.
     if (newQuicktool && !m_state->acceptQuickTool(newQuicktool))
@@ -2111,7 +2111,7 @@ bool Editor::onProcessMessage(Message* msg)
       // editor edge (MouseLeave/Enter)
       if (!hasCapture()) {
         updateToolLoopModifiersIndicators();
-        updateQuicktool();
+        updateQuicktool(msg);
       }
       break;
 
@@ -2148,7 +2148,7 @@ bool Editor::onProcessMessage(Message* msg)
         }
 
         updateToolLoopModifiersIndicators();
-        updateQuicktool();
+        updateQuicktool(msg);
         setCursor(mouseMsg->position());
 
         App::instance()->activeToolManager()->pressButton(pointer_from_msg(this, mouseMsg));
@@ -2193,7 +2193,7 @@ bool Editor::onProcessMessage(Message* msg)
           m_secondaryButton = false;
 
           updateToolLoopModifiersIndicators();
-          updateQuicktool();
+          updateQuicktool(msg);
           setCursor(mouseMsg->position());
 
           // In case we didn't hide the BrushPreview on the
@@ -2284,7 +2284,7 @@ bool Editor::onProcessMessage(Message* msg)
         if (hasMouse()) {
           updateToolLoopModifiersIndicators();
           updateAutoCelGuides(msg);
-          updateQuicktool();
+          updateQuicktool(msg);
           setCursor(mousePosInDisplay());
         }
 
@@ -2301,7 +2301,7 @@ bool Editor::onProcessMessage(Message* msg)
         if (hasMouse()) {
           updateToolLoopModifiersIndicators();
           updateAutoCelGuides(msg);
-          updateQuicktool();
+          updateQuicktool(msg);
           setCursor(mousePosInDisplay());
         }
 

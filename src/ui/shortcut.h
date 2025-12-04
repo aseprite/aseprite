@@ -51,6 +51,9 @@ public:
 
   void removeModifiers() { m_modifiers = kKeyNoneModifier; }
 
+  // Converts "Space" shortcut as modifier only.
+  void preferSpaceKeyAsModifier();
+
 private:
   KeyModifiers m_modifiers = kKeyNoneModifier;
   KeyScancode m_scancode = kKeyNil;

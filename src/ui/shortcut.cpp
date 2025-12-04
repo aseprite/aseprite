@@ -401,4 +401,13 @@ bool Shortcut::isLooselyPressed() const
   return false;
 }
 
+void Shortcut::preferSpaceKeyAsModifier()
+{
+  // Convert "Space" to modifier.
+  if (m_modifiers == 0 && m_scancode == kKeySpace) {
+    m_modifiers = (KeyModifiers)((int)m_modifiers | (int)kKeySpaceModifier);
+    m_scancode = kKeyNil;
+  }
+}
+
 } // namespace ui

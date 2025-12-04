@@ -126,9 +126,9 @@ public:
   }
 
   // EditorCustomizationDelegate implementation
-  tools::Tool* getQuickTool(tools::Tool* currentTool) override
+  tools::Tool* getQuickTool(ui::Message* msg, tools::Tool* currentTool) override
   {
-    return KeyboardShortcuts::instance()->getCurrentQuicktool(currentTool);
+    return KeyboardShortcuts::instance()->getCurrentQuicktool(msg, currentTool);
   }
 
   KeyAction getPressedKeyAction(KeyContext context) override
@@ -205,7 +205,7 @@ public:
     // Do nothing
   }
 
-  tools::Tool* getQuickTool(tools::Tool* currentTool) override { return nullptr; }
+  tools::Tool* getQuickTool(ui::Message*, tools::Tool*) override { return nullptr; }
 
   KeyAction getPressedKeyAction(KeyContext context) override { return KeyAction::None; }
 

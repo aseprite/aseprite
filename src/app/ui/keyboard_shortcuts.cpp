@@ -620,12 +620,13 @@ bool KeyboardShortcuts::getCommandFromKeyMessage(const ui::Message* msg,
   return false;
 }
 
-tools::Tool* KeyboardShortcuts::getCurrentQuicktool(tools::Tool* currentTool)
+tools::Tool* KeyboardShortcuts::getCurrentQuicktool(ui::Message* msg,
+                                                    tools::Tool* currentTool) const
 {
   if (currentTool && currentTool->getInk(0)->isSelection()) {
     KeyPtr key = action(KeyAction::CopySelection, KeyContext::TranslatingSelection);
-    if (key && key->isPressed())
-      return NULL;
+    if (key && key->isPressed(msg))
+      return nullptr;
   }
 
   tools::ToolBox* toolbox = App::instance()->toolBox();
@@ -635,12 +636,12 @@ tools::Tool* KeyboardShortcuts::getCurrentQuicktool(tools::Tool* currentTool)
     KeyPtr key = quicktool(tool);
 
     // Collect all tools with the pressed keyboard-shortcut
-    if (key && key->isPressed()) {
+    if (key && key->isPressed(msg)) {
       return tool;
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 KeyAction KeyboardShortcuts::getCurrentActionModifiers(KeyContext context)
