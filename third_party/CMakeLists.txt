@@ -23,6 +23,7 @@ if(NOT USE_SHARED_LIBPNG)
   set(PNG_SHARED OFF CACHE BOOL "Build shared lib")
   set(PNG_STATIC ON CACHE BOOL "Build static lib")
   set(PNG_TESTS OFF CACHE BOOL "Build libpng tests")
+  set(PNG_PREFIX "ase_" CACHE STRING "Prefix to prepend to the API function names")
   add_subdirectory(libpng)
 endif()
 
