@@ -576,7 +576,8 @@ public:
       // The previous behavior isn't required for LineFreehand controller and
       // the trace policy is "Last" (i.e. the user is drawing a line while
       // he is holding the SHIFT key)
-      m_saveStrokeArea = ((c == m_pts.size() - 1) && loop->getTracePolicy() != TracePolicy::Last);
+      m_saveStrokeArea = (loop->getDstImage() &&
+                          ((c == m_pts.size() - 1) && loop->getTracePolicy() != TracePolicy::Last));
       if (m_saveStrokeArea) {
         clearPointshapeStrokePtAreas();
         setLastPtIndex(c);
