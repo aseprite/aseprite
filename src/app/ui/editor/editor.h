@@ -361,7 +361,7 @@ private:
   enum class Flashing { None, WithFlashExtraCel, WaitingDeferedPaint };
 
   void setStateInternal(const EditorStatePtr& newState);
-  void updateQuicktool();
+  void updateQuicktool(ui::Message* msg);
   void updateToolByTipProximity(ui::PointerType pointerType);
 
   // firstFromMouseDown=true when we call this function from the

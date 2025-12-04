@@ -457,7 +457,17 @@ const AppShortcuts& Key::shortcuts() const
 
 void Key::add(const ui::Shortcut& shortcut, const KeySource source, KeyboardShortcuts& globalKeys)
 {
-  m_adds.push_back(AppShortcut(source, shortcut));
+  AppShortcut appShortcut(source, shortcut);
+
+  // For tools and mouse actions, we prefer "Space" as a modifier
+  // instead of a "trigger action". Without this, "Space+mouse down"
+  // doesn't start the Hand tool operation correctly (instead of
+  // scrolling with the Han dtool it will start painting with the
+  // Pencil tool).
+  if (!m_command)
+    appShortcut.preferSpaceKeyAsModifier();
+
+  m_adds.push_back(appShortcut);
   m_shortcuts.reset();
 
   // Remove the shortcut from other commands
@@ -497,8 +507,12 @@ const AppShortcut* Key::isPressed(const Message* msg, const KeyContext keyContex
 
   if (const auto* keyMsg = dynamic_cast<const KeyMessage*>(msg)) {
     if (fitsContext(keyContext)) {
+      const bool pressed = (msg->type() != kKeyUpMessage);
+      const auto pressedScancode = (pressed ? keyMsg->scancode() : kKeyNil);
+      const auto pressedUnicodeChar = (pressed ? keyMsg->unicodeChar() : 0);
+
       for (const AppShortcut& shortcut : shortcuts()) {
-        if (shortcut.isPressed(keyMsg->modifiers(), keyMsg->scancode(), keyMsg->unicodeChar()) &&
+        if (shortcut.isPressed(keyMsg->modifiers(), pressedScancode, pressedUnicodeChar) &&
             (!best || shortcut.fitsBetterThan(keyContext, keycontext(), keycontext(), *best))) {
           best = &shortcut;
         }
@@ -511,9 +525,16 @@ const AppShortcut* Key::isPressed(const Message* msg, const KeyContext keyContex
         // like "sprite editor" context, or "timeline" context,
         // etc.
         m_keycontext == KeyContext::MouseWheel) {
+      const bool pressed = (msg->type() != kMouseUpMessage);
+      const auto pressedMouseButton = (pressed ? mouseMsg->button() : kButtonNone);
+
       for (const AppShortcut& shortcut : shortcuts()) {
         if ((shortcut.modifiers() == mouseMsg->modifiers()) &&
-            (shortcut.mouseButton() == mouseMsg->button()) &&
+            ((shortcut.scancode() == kKeyNil && shortcut.unicodeChar() == 0) ||
+             (shortcut.modifiers() == kKeySpaceModifier && shortcut.scancode() == kKeySpace &&
+              shortcut.unicodeChar() == ' ')) &&
+            (shortcut.mouseButton() == kButtonNone ||
+             (pressedMouseButton != kButtonNone && shortcut.mouseButton() == mouseMsg->button())) &&
             (!best || shortcut.fitsBetterThan(keyContext, keycontext(), keycontext(), *best))) {
           best = &shortcut;
         }

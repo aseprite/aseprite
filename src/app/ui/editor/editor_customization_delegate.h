@@ -26,7 +26,7 @@ public:
   // Called to know if the user is pressing a keyboard shortcut to
   // select another tool temporarily (a "quick tool"). The given
   // "currentTool" is the current tool selected in the toolbox.
-  virtual tools::Tool* getQuickTool(tools::Tool* currentTool) = 0;
+  virtual tools::Tool* getQuickTool(ui::Message* msg, tools::Tool* currentTool) = 0;
 
   // Returns what action is pressed at this moment.
   virtual KeyAction getPressedKeyAction(KeyContext context) = 0;
