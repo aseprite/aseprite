@@ -12,6 +12,12 @@
 #include "doc/algorithm/hline.h"
 #include "gfx/fwd.h"
 
+// Available fixed step tilts (constant integer pixel runs throughout the line)
+// into the angular interval between 0° < tilt angle <= 45°
+// This value is used in 'algo_line_snap_endpoint' function when a
+// constant step tilt is required
+static int fixed_step_tilt = 2;
+
 namespace doc {
 
 class Image;
@@ -32,6 +38,12 @@ void algo_line_perfect_with_fix_for_line_brush(int x1,
                                                int y2,
                                                void* data,
                                                AlgoPixel proc);
+
+// Set the maximum constant integer pixel runs throughout the line.
+void setFixedStepTilt(const int rsc);
+// For lines with constant integer pixel runs throughout the line.
+void algo_line_snap(int x1, int y1, int x2, int y2, void* data, AlgoPixel proc);
+int algo_line_snap_endpoint(int* x_out, int* y_out, int x1, int y1, int x2, int y2);
 
 // Useful to create continuous lines (you can draw from one point to
 // another, and continue from that point to another in the same
