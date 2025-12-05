@@ -19,6 +19,9 @@
 #include <string>
 
 namespace app {
+class FileOpROI;
+}
+namespace app {
 class Doc;
 
 struct SaveFileParams : public NewParams {
@@ -85,6 +88,12 @@ protected:
                                 const MarkAsSaved markAsSaved,
                                 const ResizeOnTheFly resizeOnTheFly = ResizeOnTheFly::Off,
                                 const gfx::PointF& scale = gfx::PointF(1.0, 1.0));
+#ifdef ENABLE_SCRIPTING
+  bool saveCustomFormat(const Context* context,
+                        const FileOpROI& roi,
+                        const std::string& filename,
+                        bool ignoreEmptyFrames);
+#endif
 
   doc::FramesSequence m_framesSeq;
   bool m_adjustFramesByTag;

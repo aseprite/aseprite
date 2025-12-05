@@ -81,6 +81,7 @@ public:
   doc::Tag* tag() const { return m_tag; }
   doc::frame_t fromFrame() const { return m_framesSeq.firstFrame(); }
   doc::frame_t toFrame() const { return m_framesSeq.lastFrame(); }
+  gfx::Rect bounds() const { return m_bounds; }
   const doc::FramesSequence& framesSequence() const { return m_framesSeq; }
 
   doc::frame_t frames() const { return (doc::frame_t)m_framesSeq.size(); }
@@ -259,6 +260,8 @@ public:
   bool hasError() const { return !m_error.empty(); }
   void setIncompatibilityError(const std::string& msg);
   bool hasIncompatibilityError() const { return !m_incompatibilityError.empty(); }
+  void setUnknownFormatError(bool unknownFormatError) { m_unknownFormatError = unknownFormatError; }
+  bool hasUnknownFormatError() const { return m_unknownFormatError; }
 
   double progress() const;
   void setProgress(double progress);
@@ -305,6 +308,7 @@ private:
   bool m_createPaletteFromRgba;
   bool m_ignoreEmpty;
   bool m_avoidBackgroundLayer;
+  bool m_unknownFormatError;
 
   // True if the file contained a color profile when it was loaded.
   bool m_embeddedColorProfile;
