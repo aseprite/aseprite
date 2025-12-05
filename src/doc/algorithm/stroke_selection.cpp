@@ -13,9 +13,9 @@
 #include "doc/algorithm/fill_selection.h"
 #include "doc/algorithm/modify_selection.h"
 #include "doc/mask.h"
+#include "ui/alert.h"
 
 namespace doc { namespace algorithm {
-
 
 void stroke_selection(Image* image,
                       const gfx::Rect& imageBounds,
@@ -47,15 +47,58 @@ void stroke_selection(Image* image,
   mask.reserve(bounds);
   mask.freeze();
   // width 参数用于描边宽度
-  modify_selection(SelectionModifier::Border, origMask, &mask, width, BrushType::kCircleBrushType);
+  if (location == "center") {
+    // 四边各向内外扩展 width/2，最少1px
+    int half = std::max(width / 2, 1);
+    Mask tempMask;
+    tempMask.reserve(bounds);
+    tempMask.freeze();
+
+    // 向外扩展
+    modify_selection(SelectionModifier::Expand,
+                     origMask,
+                     &tempMask,
+                     half,
+                     BrushType::kCircleBrushType);
+    modify_selection(SelectionModifier::Border, &mask, &mask, width, BrushType::kCircleBrushType);
+  }
+  else if (location == "outside") {
+    int imgW = imageBounds.w;
+    int imgH = imageBounds.h;
+    int rectW = mask.bounds().w + (2 * width);
+    int rectH = mask.bounds().h + (2 * width);
+    int startX = imageBounds.x + ((imgW - rectW) / 2);
+    int startY = imageBounds.y + ((imgH - rectH) / 2);
+
+    mask.reserve(imageBounds);
+    mask.freeze();
+    auto* bmp = mask.bitmap();
+    for (int y = startY; y < startY + rectH; ++y) {
+      for (int x = startX; x < startX + rectW; ++x) {
+        bmp->putPixel(x, y, 1);
+      }
+    }
+    mask.unfreeze();
+
+    // 调试输出
+    std::string msg3 = "rect mask bounds: " + std::to_string(mask.bounds().x) + "," +
+                       std::to_string(mask.bounds().y) + "," + std::to_string(mask.bounds().w) +
+                       "," + std::to_string(mask.bounds().h) + "\n" +
+                       "rect mask empty: " + (mask.bounds().isEmpty() ? "true" : "false");
+    ui::AlertPtr alert3 = ui::Alert::create("title");
+    alert3->addLabel(msg3, ui::LEFT);
+    alert3->show();
+  }
+  else {
+    // inside
+    modify_selection(SelectionModifier::Border, origMask, &mask, width, BrushType::kCircleBrushType);
+  }
   mask.unfreeze();
 
-  // TODO: location 参数可用于后续算法扩展（目前未实现偏移逻辑）
-
-  ASSERT(mask.bounds() == origMask->bounds());
-
-  if (mask.bitmap())
+  if (mask.bitmap()) {
+    ui::Alert::show("is bitmap");
     fill_selection(image, imageBounds, &mask, color, grid);
+  }
 }
 
 }} // namespace doc::algorithm
