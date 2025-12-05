@@ -620,8 +620,8 @@ bool KeyboardShortcuts::getCommandFromKeyMessage(const ui::Message* msg,
   return false;
 }
 
-tools::Tool* KeyboardShortcuts::getCurrentQuicktool(ui::Message* msg,
-                                                    tools::Tool* currentTool) const
+tools::Tool* KeyboardShortcuts::getCurrentQuicktool(const ui::Message* msg,
+                                                    const tools::Tool* currentTool) const
 {
   if (currentTool && currentTool->getInk(0)->isSelection()) {
     KeyPtr key = action(KeyAction::CopySelection, KeyContext::TranslatingSelection);
