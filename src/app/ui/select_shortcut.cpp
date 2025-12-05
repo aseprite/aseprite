@@ -108,6 +108,7 @@ SelectShortcut::SelectShortcut(const ui::Shortcut& shortcut,
   : m_keyField(new KeyField(shortcut))
   , m_keyContext(keyContext)
   , m_currentKeys(currentKeys)
+  , m_origShortcut(shortcut)
   , m_shortcut(shortcut)
   , m_ok(false)
   , m_modified(false)
