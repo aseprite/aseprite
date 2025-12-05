@@ -1,0 +1,30 @@
+<!-- Aseprite -->
+<gui>
+  <window id="stroke_dialog" text="Stroke">
+    <vbox>
+      <grid columns="2" rows="4" pad="8">
+        <label text="Width:" />
+        <entry id="width" type="number" maxsize="256" minwidth="64" value="1" />
+
+        <label text="Color:" />
+        <colorpicker id="color" />
+
+
+        <label text="Location:" />
+        <hbox colspan="2">
+          <radio id="inside" text="Inside" group="1" selected="true" />
+          <radio id="center" text="Center" group="1" />
+          <radio id="outside" text="Outside" group="1" />
+        </hbox>
+      </grid>
+
+      <hbox>
+        <boxfiller />
+        <hbox homogeneous="true">
+          <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
+          <button text="@general.cancel" closewindow="true" id="cancel" />
+        </hbox>
+      </hbox>
+    </vbox>
+  </window>
+</gui>

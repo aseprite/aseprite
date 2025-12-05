@@ -22,6 +22,7 @@
 #include "doc/algorithm/fill_selection.h"
 #include "doc/algorithm/stroke_selection.h"
 #include "doc/mask.h"
+#include "stroke_dialog.xml.h"
 
 namespace app {
 
@@ -90,6 +91,8 @@ void FillCommand::onExecute(Context* ctx)
         imageBounds = grid.tileToCanvas(imageBounds);
 
       if (m_type == Stroke) {
+        gen::StrokeDialog strokeDialog;
+        strokeDialog.openWindowInForeground();
         doc::algorithm::stroke_selection(
           expand.getDestCanvas(),
           imageBounds,
