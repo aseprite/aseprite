@@ -22,9 +22,16 @@ namespace algorithm {
 void stroke_selection(Image* image,
                       const gfx::Rect& imageBounds,
                       const Mask* mask,
-                      // This can be a color_t or a tile_t if the image is a tilemap
                       const color_t color,
-                      // Optional grid for tilemaps
+                      const Grid* grid = nullptr);
+
+// 新重载，支持 width/location
+void stroke_selection(Image* image,
+                      const gfx::Rect& imageBounds,
+                      const Mask* mask,
+                      const color_t color,
+                      int width,
+                      const std::string& location,
                       const Grid* grid = nullptr);
 
 } // namespace algorithm

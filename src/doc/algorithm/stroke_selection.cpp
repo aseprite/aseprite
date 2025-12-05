@@ -16,10 +16,22 @@
 
 namespace doc { namespace algorithm {
 
+
 void stroke_selection(Image* image,
                       const gfx::Rect& imageBounds,
                       const Mask* origMask,
                       const color_t color,
+                      const Grid* grid)
+{
+  stroke_selection(image, imageBounds, origMask, color, 1, "inside", grid);
+}
+
+void stroke_selection(Image* image,
+                      const gfx::Rect& imageBounds,
+                      const Mask* origMask,
+                      const color_t color,
+                      int width,
+                      const std::string& location,
                       const Grid* grid)
 {
   ASSERT(origMask);
@@ -34,10 +46,12 @@ void stroke_selection(Image* image,
   Mask mask;
   mask.reserve(bounds);
   mask.freeze();
-  modify_selection(SelectionModifier::Border, origMask, &mask, 1, BrushType::kCircleBrushType);
+  // width 参数用于描边宽度
+  modify_selection(SelectionModifier::Border, origMask, &mask, width, BrushType::kCircleBrushType);
   mask.unfreeze();
 
-  // Both mask must have the same bounds.
+  // TODO: location 参数可用于后续算法扩展（目前未实现偏移逻辑）
+
   ASSERT(mask.bounds() == origMask->bounds());
 
   if (mask.bitmap())

@@ -91,14 +91,33 @@ void FillCommand::onExecute(Context* ctx)
         imageBounds = grid.tileToCanvas(imageBounds);
 
       if (m_type == Stroke) {
-        gen::StrokeDialog strokeDialog;
-        strokeDialog.openWindowInForeground();
-        doc::algorithm::stroke_selection(
-          expand.getDestCanvas(),
-          imageBounds,
-          mask,
-          color,
-          (site.tilemapMode() == TilemapMode::Tiles ? &grid : nullptr));
+        gen::StrokeDialog window;
+        window.width()->setTextf("%dpx", 1);               // Default width 1px
+        window.color()->setColor(pref.colorBar.fgColor()); // Default color is foreground color
+        window.inside()->setSelected(true);                // Default select inside
+
+        window.openWindowInForeground();
+        if (window.closer() == window.ok()) {
+          int userWidth = window.width()->textInt();
+          doc::color_t userColor = app::color_utils::color_for_layer(window.color()->getColor(),
+                                                                     layer);
+          std::string location;
+          if (window.inside()->isSelected())
+            location = "inside";
+          else if (window.center()->isSelected())
+            location = "center";
+          else if (window.outside()->isSelected())
+            location = "outside";
+
+          doc::algorithm::stroke_selection(
+            expand.getDestCanvas(),
+            imageBounds,
+            mask,
+            userColor,
+            userWidth,
+            location,
+            (site.tilemapMode() == TilemapMode::Tiles ? &grid : nullptr));
+        }
       }
       else {
         doc::algorithm::fill_selection(
