@@ -674,7 +674,7 @@ WheelAction KeyboardShortcuts::getWheelActionFromMouseMessage(const KeyContext c
   return wheelAction;
 }
 
-Keys KeyboardShortcuts::getDragActionsFromKeyMessage(const ui::Message* msg)
+Keys KeyboardShortcuts::getDragActionsFromMessage(const ui::Message* msg)
 {
   KeyPtr bestKey = nullptr;
   Keys keys;
