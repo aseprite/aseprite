@@ -1,20 +1,20 @@
 <!-- Aseprite -->
 <gui>
-  <window id="stroke_dialog" text="Stroke">
+  <window id="stroke_dialog" text="@stroke_dialog.title">
     <vbox>
       <grid columns="2" rows="4" pad="8">
-        <label text="Width:" />
-        <entry id="width" type="number" maxsize="256" minwidth="64" value="1" />
+        <label text="@stroke_dialog.width" />
+        <entry id="width" type="number" maxsize="256" minwidth="64" value="1" minValue="1" />
 
-        <label text="Color:" />
+        <label text="@stroke_dialog.color" />
         <colorpicker id="color" />
 
 
-        <label text="Location:" />
+        <label text="@stroke_dialog.location" />
         <hbox colspan="2">
-          <radio id="inside" text="Inside" group="1" selected="true" />
-          <radio id="center" text="Center" group="1" />
-          <radio id="outside" text="Outside" group="1" />
+          <radio id="inside" text="@stroke_dialog.inside" group="1" selected="true" />
+          <radio id="center" text="@stroke_dialog.center" group="1" />
+          <radio id="outside" text="@stroke_dialog.outside" group="1" />
         </hbox>
       </grid>
 

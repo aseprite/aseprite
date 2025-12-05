@@ -5,6 +5,7 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
+#include "app/tools/tool.h"
 #ifdef HAVE_CONFIG_H
   #include "config.h"
 #endif
@@ -109,6 +110,16 @@ void FillCommand::onExecute(Context* ctx)
           else if (window.outside()->isSelected())
             location = "outside";
 
+          // Auto brushType: according to current tool type
+          doc::BrushType brushType = doc::BrushType::kCircleBrushType;
+          app::tools::Tool* tool = App::instance()->activeTool();
+          if (tool) {
+            std::string id = tool->getId();
+            if (id == "rectangular_marquee")
+              brushType = doc::BrushType::kSquareBrushType;
+            else if (id == "elliptical_marquee")
+              brushType = doc::BrushType::kCircleBrushType;
+          }
           doc::algorithm::stroke_selection(
             expand.getDestCanvas(),
             imageBounds,
@@ -116,7 +127,9 @@ void FillCommand::onExecute(Context* ctx)
             userColor,
             userWidth,
             location,
-            (site.tilemapMode() == TilemapMode::Tiles ? &grid : nullptr));
+            brushType,
+            (site.tilemapMode() == TilemapMode::Tiles ? &grid : nullptr)
+          );
         }
       }
       else {

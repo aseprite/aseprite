@@ -11,6 +11,7 @@
 
 #include "doc/color.h"
 #include "gfx/rect.h"
+#include "doc/brush_type.h"
 
 namespace doc {
 class Grid;
@@ -19,19 +20,21 @@ class Mask;
 
 namespace algorithm {
 
+
 void stroke_selection(Image* image,
                       const gfx::Rect& imageBounds,
                       const Mask* mask,
                       const color_t color,
                       const Grid* grid = nullptr);
 
-// 新重载，支持 width/location
+// 新重载，支持 width/location/brushType
 void stroke_selection(Image* image,
                       const gfx::Rect& imageBounds,
                       const Mask* mask,
                       const color_t color,
                       int width,
                       const std::string& location,
+                      doc::BrushType brushType,
                       const Grid* grid = nullptr);
 
 } // namespace algorithm
