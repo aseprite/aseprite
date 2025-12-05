@@ -6,6 +6,7 @@
 // the End-User License Agreement for Aseprite.
 
 #include "app/tools/tool.h"
+#include "ui/alert.h"
 #ifdef HAVE_CONFIG_H
   #include "config.h"
 #endif
@@ -18,12 +19,14 @@
 #include "app/context_access.h"
 #include "app/pref/preferences.h"
 #include "app/tx.h"
+#include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/util/expand_cel_canvas.h"
 #include "doc/algorithm/fill_selection.h"
 #include "doc/algorithm/stroke_selection.h"
 #include "doc/mask.h"
 #include "stroke_dialog.xml.h"
+#include "ui/alert.h"
 
 namespace app {
 
@@ -93,7 +96,19 @@ void FillCommand::onExecute(Context* ctx)
 
       if (m_type == Stroke) {
         gen::StrokeDialog window;
-        window.width()->setTextf("%dpx", 1);               // Default width 1px
+        // The default width follows the current brush size (from ContextBar)
+        app::tools::Tool* tool = App::instance()->activeTool();
+        int defaultBrushSize = 1;
+        if (tool) {
+          app::ContextBar* contextBar = App::instance()->contextBar();
+          if (contextBar) {
+            doc::BrushRef brush = contextBar->activeBrush(tool);
+            if (brush){
+              defaultBrushSize = brush->size();
+            }
+          }
+        }
+        window.width()->setTextf("%dpx", defaultBrushSize);
         window.color()->setColor(pref.colorBar.fgColor()); // Default color is foreground color
         window.inside()->setSelected(true);                // Default select inside
 
@@ -128,8 +143,7 @@ void FillCommand::onExecute(Context* ctx)
             userWidth,
             location,
             brushType,
-            (site.tilemapMode() == TilemapMode::Tiles ? &grid : nullptr)
-          );
+            (site.tilemapMode() == TilemapMode::Tiles ? &grid : nullptr));
         }
       }
       else {

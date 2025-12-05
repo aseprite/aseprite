@@ -54,6 +54,13 @@ void stroke_selection(Image* image,
   Mask mask;
   // width and location handling
   std::string effectiveLocation = location;
+
+  // Validate width
+  ASSERT(width >= 1);
+  if (width < 1){
+    return;
+  }
+
   if (width == 1 && effectiveLocation == "center") {
     // For 1px, directly draw outside
     effectiveLocation = "outside";
