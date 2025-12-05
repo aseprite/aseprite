@@ -302,7 +302,7 @@ void Console::showException(const std::exception& e)
 // static
 void Console::notifyNewDisplayConfiguration()
 {
-  if (m_console)
+  if (m_console && !m_console->hasConsoleText())
     m_console->centerConsole();
 }
 
