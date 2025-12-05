@@ -1772,11 +1772,11 @@ void Editor::updateStatusBar()
   m_state->onUpdateStatusBar(this);
 }
 
-void Editor::updateQuicktool(ui::Message* msg)
+void Editor::updateQuicktool(const ui::Message* msg)
 {
   if (m_customizationDelegate && !hasCapture()) {
     auto atm = App::instance()->activeToolManager();
-    tools::Tool* selectedTool = atm->selectedTool();
+    const tools::Tool* selectedTool = atm->selectedTool();
 
     // Don't change quicktools if we are in a selection tool and using
     // the selection modifiers.
