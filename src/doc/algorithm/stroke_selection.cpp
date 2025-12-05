@@ -44,8 +44,6 @@ void stroke_selection(Image* image,
     return;
 
   Mask mask;
-  mask.reserve(bounds);
-  mask.freeze();
   // width 参数用于描边宽度
   if (location == "center") {
     // 四边各向内外扩展 width/2，最少1px
@@ -63,22 +61,37 @@ void stroke_selection(Image* image,
     modify_selection(SelectionModifier::Border, &mask, &mask, width, BrushType::kCircleBrushType);
   }
   else if (location == "outside") {
-    int imgW = imageBounds.w;
-    int imgH = imageBounds.h;
-    int rectW = mask.bounds().w + (2 * width);
-    int rectH = mask.bounds().h + (2 * width);
-    int startX = imageBounds.x + ((imgW - rectW) / 2);
-    int startY = imageBounds.y + ((imgH - rectH) / 2);
+    // 以选区为基准，扩展选区，取边缘，扣除选区本身
+    // 四向各扩展width，保证border算法不被裁剪，拐角像素保留
+    gfx::Rect extBounds = bounds;
+    extBounds.inflate(width * 2, width * 2);
+    extBounds.offset(-width, -width);
+    if (extBounds.w <= 0 || extBounds.h <= 0)
+      return;
 
-    mask.reserve(imageBounds);
-    mask.freeze();
-    auto* bmp = mask.bitmap();
-    for (int y = startY; y < startY + rectH; ++y) {
-      for (int x = startX; x < startX + rectW; ++x) {
-        bmp->putPixel(x, y, 1);
-      }
-    }
-    mask.unfreeze();
+    Mask expandedMask;
+    expandedMask.reserve(extBounds);
+    expandedMask.freeze();
+    modify_selection(SelectionModifier::Expand,
+                     origMask,
+                     &expandedMask,
+                     width,
+                     BrushType::kCircleBrushType);
+    expandedMask.unfreeze();
+
+    Mask borderMask;
+    borderMask.reserve(extBounds);
+    borderMask.freeze();
+    modify_selection(SelectionModifier::Border,
+                     &expandedMask,
+                     &borderMask,
+                     width,
+                     BrushType::kCircleBrushType);
+    borderMask.unfreeze();
+
+    borderMask.subtract(*origMask);
+    mask.reserve(extBounds);
+    mask.copyFrom(&borderMask);
 
     // 调试输出
     std::string msg3 = "rect mask bounds: " + std::to_string(mask.bounds().x) + "," +
