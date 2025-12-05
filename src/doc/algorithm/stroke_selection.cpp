@@ -45,22 +45,97 @@ void stroke_selection(Image* image,
 
   Mask mask;
   // width 参数用于描边宽度
-  if (location == "center") {
-    // 四边各向内外扩展 width/2，最少1px
-    int half = std::max(width / 2, 1);
-    Mask tempMask;
-    tempMask.reserve(bounds);
-    tempMask.freeze();
-
-    // 向外扩展
-    modify_selection(SelectionModifier::Expand,
-                     origMask,
-                     &tempMask,
-                     half,
-                     BrushType::kCircleBrushType);
-    modify_selection(SelectionModifier::Border, &mask, &mask, width, BrushType::kCircleBrushType);
+  std::string effectiveLocation = location;
+  if (width == 1) {
+    // 1px时直接画outside
+    effectiveLocation = "outside";
   }
-  else if (location == "outside") {
+  if (effectiveLocation == "center") {
+    // center: 先画一次outside，再画一次inside，合并mask
+    // 优先分配更多像素给outside
+    int halfOut = (width + 1) / 2; // outside多1
+    int halfIn = width - halfOut;
+    Mask outsideMask, insideMask;
+    // outside
+    if (halfOut > 0) {
+      gfx::Rect extBounds = bounds;
+      extBounds.inflate(halfOut * 2, halfOut * 2);
+      extBounds.offset(-halfOut, -halfOut);
+      if (extBounds.w > 0 && extBounds.h > 0) {
+        Mask expandedMask;
+        expandedMask.reserve(extBounds);
+        expandedMask.freeze();
+        modify_selection(SelectionModifier::Expand,
+                         origMask,
+                         &expandedMask,
+                         halfOut,
+                         BrushType::kCircleBrushType);
+        expandedMask.unfreeze();
+        if (expandedMask.bitmap()) {
+          Mask borderMask;
+          borderMask.reserve(extBounds);
+          borderMask.freeze();
+          modify_selection(SelectionModifier::Border,
+                           &expandedMask,
+                           &borderMask,
+                           width,
+                           BrushType::kCircleBrushType);
+          borderMask.unfreeze();
+          if (borderMask.bitmap()) {
+            borderMask.subtract(*origMask);
+            outsideMask.reserve(extBounds);
+            outsideMask.copyFrom(&borderMask);
+          }
+        }
+      }
+    }
+    // inside
+    if (halfIn > 0 && bounds.w > 1 && bounds.h > 1) {
+      // 只有选区足够大时才生成 insideMask，防止崩溃
+      Mask borderMask;
+      borderMask.reserve(bounds);
+      borderMask.freeze();
+      modify_selection(SelectionModifier::Border,
+                       origMask,
+                       &borderMask,
+                       halfIn,
+                       BrushType::kCircleBrushType);
+      borderMask.unfreeze();
+      if (borderMask.bitmap()) {
+        insideMask.reserve(bounds);
+        insideMask.copyFrom(&borderMask);
+      }
+    }
+    // 合并mask，先统一区域
+    if (outsideMask.bitmap() && insideMask.bitmap()) {
+      gfx::Rect unionBounds = outsideMask.bounds().createUnion(insideMask.bounds());
+      Mask out2, in2;
+      out2.reserve(unionBounds);
+      in2.reserve(unionBounds);
+      out2.copyFrom(&outsideMask);
+      in2.copyFrom(&insideMask);
+      out2.unfreeze();
+      out2.add(in2);
+      mask.reserve(unionBounds);
+      mask.copyFrom(&out2);
+    } else if (outsideMask.bitmap()) {
+      mask.reserve(outsideMask.bounds());
+      mask.copyFrom(&outsideMask);
+    } else if (insideMask.bitmap()) {
+      mask.reserve(insideMask.bounds());
+      mask.copyFrom(&insideMask);
+    } else {
+      return;
+    }
+    // 调试输出
+    std::string msg3 = "rect mask bounds: " + std::to_string(mask.bounds().x) + "," +
+                       std::to_string(mask.bounds().y) + "," + std::to_string(mask.bounds().w) +
+                       "," + std::to_string(mask.bounds().h) + "\n" +
+                       "rect mask empty: " + (mask.bounds().isEmpty() ? "true" : "false");
+    ui::AlertPtr alert3 = ui::Alert::create("title");
+    alert3->addLabel(msg3, ui::LEFT);
+  }
+  else if (effectiveLocation == "outside") {
     // 以选区为基准，扩展选区，取边缘，扣除选区本身
     // 四向各扩展width，保证border算法不被裁剪，拐角像素保留
     gfx::Rect extBounds = bounds;
