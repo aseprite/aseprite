@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -262,7 +262,7 @@ void OutlineCommand::onExecute(Context* context)
     }
   }
   else {
-    filterMgr.startWorker();
+    filterMgr.startWorker(false);
   }
 }
 
