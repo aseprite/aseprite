@@ -294,7 +294,8 @@ bool Shortcut::operator==(const Shortcut& other) const
 
 bool Shortcut::isEmpty() const
 {
-  return (m_modifiers == kKeyNoneModifier && m_scancode == kKeyNil && m_unicodeChar == 0);
+  return (m_modifiers == kKeyNoneModifier && m_scancode == kKeyNil && m_unicodeChar == 0 &&
+          m_mouseButton == kButtonNone);
 }
 
 std::string Shortcut::toString() const
