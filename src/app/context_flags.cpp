@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -96,16 +96,15 @@ void ContextFlags::updateFlagsFromSite(const Site& site)
   if (layer->isTilemap())
     m_flags |= ActiveLayerIsTilemap;
 
-  if (layer->isImage()) {
+  if (layer->isImage())
     m_flags |= ActiveLayerIsImage;
 
-    Cel* cel = layer->cel(frame);
-    if (cel) {
-      m_flags |= HasActiveCel;
+  Cel* cel = layer->cel(frame);
+  if (cel) {
+    m_flags |= HasActiveCel;
 
-      if (cel->image())
-        m_flags |= HasActiveImage;
-    }
+    if (cel->image())
+      m_flags |= HasActiveImage;
   }
 
   if (site.selectedColors().picks() > 0)

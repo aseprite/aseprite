@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2025  Igara Studio S.A.
 // Copyright (C) 2016  David Capello
 //
 // This program is distributed under the terms of
@@ -39,7 +40,7 @@ void RestoreVisibleLayers::showSelectedLayers(Sprite* sprite, const SelectedLaye
   setLayerVisiblity(sprite->root(), selLayers);
 }
 
-void RestoreVisibleLayers::setLayerVisiblity(LayerGroup* group, const SelectedLayers& selLayers)
+void RestoreVisibleLayers::setLayerVisiblity(Layer* group, const SelectedLayers& selLayers)
 {
   for (Layer* layer : group->layers()) {
     bool selected = (selLayers.contains(layer));
@@ -48,7 +49,7 @@ void RestoreVisibleLayers::setLayerVisiblity(LayerGroup* group, const SelectedLa
       layer->setVisible(selected);
     }
     if (selected && layer->isGroup())
-      setLayerVisiblity(static_cast<LayerGroup*>(layer), selLayers);
+      setLayerVisiblity(layer, selLayers);
   }
 }
 
