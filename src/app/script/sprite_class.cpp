@@ -341,6 +341,18 @@ int Sprite_flatten(lua_State* L)
   return 0;
 }
 
+int Sprite_isValid(lua_State* L)
+{
+  const auto* id = static_cast<ObjectId*>(luaL_testudata(L, 1, "doc::Sprite"));
+  if (id && get_object(*id)) {
+    lua_pushboolean(L, true);
+    return 1;
+  }
+
+  lua_pushboolean(L, false);
+  return 1;
+}
+
 int Sprite_newLayer(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -1078,6 +1090,7 @@ const luaL_Reg Sprite_methods[] = {
   { "assignColorSpace",  Sprite_assignColorSpace  },
   { "convertColorSpace", Sprite_convertColorSpace },
   { "flatten",           Sprite_flatten           },
+  { "isValid",           Sprite_isValid           },
   // Layers
   { "newLayer",          Sprite_newLayer          },
   { "newGroup",          Sprite_newGroup          },
