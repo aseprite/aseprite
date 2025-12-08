@@ -151,6 +151,13 @@ void FilterWorker::run()
   if (thread.joinable())
     thread.join();
 
+  // Update the writer thread again to the UI thread so if we are
+  // inside a sub-transaction we can readLock() again the document in
+  // future commands inside the same parent transaction. This allows
+  // us to call several filters with UI inside an app.transaction()
+  // from a script.
+  m_filterMgr->updateWriterThread();
+
   if (!m_error.empty()) {
     Console console;
     console.printf("A problem has occurred.\n\nDetails:\n%s", m_error.c_str());
