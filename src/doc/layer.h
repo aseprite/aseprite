@@ -62,7 +62,7 @@ protected:
 public:
   virtual ~Layer();
 
-  virtual int getMemSize() const override;
+  int getMemSize() const override;
 
   const std::string& name() const { return m_name; }
   void setName(const std::string& name) { m_name = name; }
@@ -172,7 +172,9 @@ public:
   explicit LayerImage(Sprite* sprite);
   virtual ~LayerImage();
 
-  virtual int getMemSize() const override;
+  int getMemSize() const override;
+  void suspendObject() override;
+  void restoreObject() override;
 
   void addCel(Cel* cel);
   void removeCel(Cel* cel);
@@ -209,7 +211,9 @@ public:
   explicit LayerGroup(Sprite* sprite);
   virtual ~LayerGroup();
 
-  virtual int getMemSize() const override;
+  int getMemSize() const override;
+  void suspendObject() override;
+  void restoreObject() override;
 
   const LayerList& layers() const { return m_layers; }
   int layersCount() const { return (int)m_layers.size(); }
