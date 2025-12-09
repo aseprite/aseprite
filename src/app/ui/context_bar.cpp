@@ -2365,7 +2365,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   const bool isFloodfill = tool && (tool->getPointShape(0)->isFloodFill() ||
                                     tool->getPointShape(1)->isFloodFill());
 
-  const bool hasCornerRadius = tool && !isText &&
+  const bool hasCornerRadius = tool && !isText && !isSlice &&
                                (tool->getIntertwine(0)->cornerRadiusSupport() ||
                                 tool->getIntertwine(1)->cornerRadiusSupport());
 
