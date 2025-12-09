@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -38,6 +38,7 @@ MovingSliceState::MovingSliceState(Editor* editor,
                                    const EditorHit& hit,
                                    const doc::SelectedObjects& selectedSlices)
   : m_frame(editor->frame())
+  , m_keyFrame(Preferences::instance().slices.useKeys() ? m_frame : 0)
   , m_hit(hit)
   , m_items(std::max<std::size_t>(1, selectedSlices.size()))
   , m_tx(Tx::DontLockDoc,
@@ -51,6 +52,15 @@ MovingSliceState::MovingSliceState(Editor* editor,
     m_items[0] = getItemForSlice(m_hit.slice());
   }
   else {
+    // If there is one selected slice with multiple keys, we will
+    // modify the key in from the current frame.
+    for (Slice* slice : selectedSlices.iterateAs<Slice>()) {
+      if (slice->size() > 1) {
+        m_keyFrame = m_frame;
+        break;
+      }
+    }
+
     int i = 0;
     for (Slice* slice : selectedSlices.iterateAs<Slice>()) {
       ASSERT(slice);
@@ -142,8 +152,9 @@ bool MovingSliceState::onMouseUp(Editor* editor, MouseMessage* msg)
     ContextWriter writer(UIContext::instance(), 1000);
     CmdTransaction* cmds = m_tx;
     for (const auto& item : m_items) {
-      item.slice->insert(m_frame, item.oldKey);
-      cmds->addAndExecute(writer.context(), new cmd::SetSliceKey(item.slice, m_frame, item.newKey));
+      item.slice->insert(m_keyFrame, item.oldKey);
+      cmds->addAndExecute(writer.context(),
+                          new cmd::SetSliceKey(item.slice, m_keyFrame, item.newKey));
 
       if (editor->slicesTransforms()) {
         for (int i = 0; i < m_selectedLayers.size(); ++i) {
@@ -422,7 +433,7 @@ bool MovingSliceState::onMouseMove(Editor* editor, MouseMessage* msg)
     }
 
     // Update the slice key
-    item.slice->insert(m_frame, key);
+    item.slice->insert(m_keyFrame, key);
   }
 
   if (editor->slicesTransforms())

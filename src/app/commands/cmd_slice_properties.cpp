@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -64,7 +64,6 @@ void SlicePropertiesCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
   const Sprite* sprite = reader.sprite();
-  frame_t frame = reader.frame();
   SelectedObjects slices;
 
   {
@@ -83,6 +82,19 @@ void SlicePropertiesCommand::onExecute(Context* context)
   // Nothing to delete
   if (slices.empty())
     return;
+
+  const bool useKeys = Preferences::instance().slices.useKeys();
+  frame_t frame = (useKeys ? reader.frame() : 0);
+  if (!useKeys) {
+    // If there is one selected slice with multiple keys, we will
+    // modify the key in from the current frame.
+    for (Slice* slice : slices.iterateAs<Slice>()) {
+      if (slice->size() > 1) {
+        frame = reader.frame();
+        break;
+      }
+    }
+  }
 
   SliceWindow window(sprite, slices, frame);
   if (!window.show())

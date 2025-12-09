@@ -447,6 +447,9 @@
             <label text="@.default_slice_color" for="default_slice_color" />
             <colorpicker id="default_slice_color" rgba="true" />
           </hbox>
+          <check id="use_slice_keys"
+                 text="@.use_slice_keys"
+                 pref="slices.use_keys" />
         </vbox>
 
         <!-- Undo -->

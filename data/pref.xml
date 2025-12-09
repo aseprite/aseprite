@@ -379,6 +379,7 @@
     <section id="slices">
       <option id="default_color" type="app::Color" default="app::Color::fromRgb(0, 0, 255)" />
       <option id="user_data_visibility" type="bool" default="false" />
+      <option id="use_keys" type="bool" default="false" />
     </section>
     <section id="advanced_mode">
       <option id="show_alert" type="bool" default="true" />

@@ -564,8 +564,10 @@ public:
         Slice* slice = new Slice;
         slice->setName(get_unique_slice_name(m_sprite));
 
+        const frame_t keyFrame = (Preferences::instance().slices.useKeys() ? getFrame() : 0);
+
         SliceKey key(bounds);
-        slice->insert(getFrame(), key);
+        slice->insert(keyFrame, key);
 
         auto color = Preferences::instance().slices.defaultColor();
         slice->userData().setColor(
