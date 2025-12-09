@@ -33,7 +33,7 @@ public:
 
 protected:
   bool onProcessMessage(ui::Message* msg) override;
-  void onWorkspaceLayout();
+  void onChangeTimelinePosition(int option);
   void onChangeFirstFrame();
   void onChangeType();
   void onOpacity();
