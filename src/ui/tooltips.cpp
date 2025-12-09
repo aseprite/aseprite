@@ -67,6 +67,15 @@ void TooltipManager::removeTooltipFor(Widget* widget)
     m_tips.erase(it);
 }
 
+std::string TooltipManager::getTooltipFor(Widget* widget)
+{
+  const auto it = m_tips.find(widget);
+  if (it != m_tips.end())
+    return m_tips[widget].text;
+
+  return "";
+}
+
 bool TooltipManager::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {

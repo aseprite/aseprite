@@ -3,7 +3,7 @@
 <gui>
 <window id="run_command" minwidth="256" maxwidth="256" text="@.title" help="run-command">
   <vbox>
-    <search id="search" placeholder="@.command_placeholder" />
+    <search id="search" placeholder="@.command_placeholder" clearonesc="true" />
 
     <label id="expression_result" visible="false" />
 

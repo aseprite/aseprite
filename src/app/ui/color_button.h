@@ -71,6 +71,8 @@ private:
   void onWindowColorChange(const app::Color& color);
   bool canPin() const { return m_options.canPinSelector; }
 
+  void updateText();
+
   // Used to convert saved bounds (m_window/hiddenDefaultBounds,
   // which can be relative to the display or relative to the screen)
   // to the current system of coordinates.

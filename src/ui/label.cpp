@@ -34,10 +34,16 @@ Widget* Label::buddy()
   if (m_buddy || m_buddyId.empty())
     return m_buddy;
 
-  if (parent()) {
-    // This can miss some cases where the hierarchy is not direct
-    setBuddy(parent()->findChild(m_buddyId.c_str()));
-  }
+  // This can miss some cases where the hierarchy is not direct
+  Widget* search = parent();
+  do {
+    ASSERT(search);
+    if (!search)
+      break;
+
+    setBuddy(search->findChild(m_buddyId.c_str()));
+    search = search->parent();
+  } while (!m_buddy);
 
   return m_buddy;
 }

@@ -30,6 +30,7 @@ public:
 
   void addTooltipFor(Widget* widget, const std::string& text, int arrowAlign = 0);
   void removeTooltipFor(Widget* widget);
+  std::string getTooltipFor(Widget* widget);
 
 protected:
   bool onProcessMessage(Message* msg) override;
