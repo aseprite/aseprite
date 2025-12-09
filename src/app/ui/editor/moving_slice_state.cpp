@@ -148,7 +148,11 @@ void MovingSliceState::onEnterState(Editor* editor)
 
 bool MovingSliceState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
-  {
+  const bool somethingChanged = std::any_of(m_items.begin(), m_items.end(), [](const Item& item) {
+    return (item.oldKey != item.newKey);
+  });
+
+  if (somethingChanged) {
     ContextWriter writer(UIContext::instance(), 1000);
     CmdTransaction* cmds = m_tx;
     for (const auto& item : m_items) {
@@ -167,7 +171,6 @@ bool MovingSliceState::onMouseUp(Editor* editor, MouseMessage* msg)
         m_site.document()->setExtraCel(ExtraCelRef(nullptr));
       }
     }
-
     m_tx.commit();
   }
 
