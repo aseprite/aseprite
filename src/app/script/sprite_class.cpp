@@ -1066,6 +1066,12 @@ int Sprite_get_undoHistory(lua_State* L)
   return 1;
 }
 
+int Sprite_get_isValid(lua_State* L)
+{
+  lua_pushboolean(L, may_get_docobj<Sprite>(L, 1) ? true : false);
+  return 1;
+}
+
 const luaL_Reg Sprite_methods[] = {
   { "__eq",              Sprite_eq                },
   { "resize",            Sprite_resize            },
@@ -1132,6 +1138,7 @@ const Property Sprite_properties[] = {
   { "tileManagementPlugin", Sprite_get_tileManagementPlugin, Sprite_set_tileManagementPlugin },
   { "useLayerUuids",        Sprite_get_useLayerUuids,        Sprite_set_useLayerUuids        },
   { "undoHistory",          Sprite_get_undoHistory,          nullptr                         },
+  { "isValid",              Sprite_get_isValid,              nullptr                         },
   { nullptr,                nullptr,                         nullptr                         }
 };
 

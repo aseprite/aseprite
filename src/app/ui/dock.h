@@ -71,6 +71,9 @@ public:
   int whichSideChildIsDocked(const ui::Widget* widget) const;
   const gfx::Size getUserDefinedSizeAtSide(int side) const;
 
+  static int GetSide(Widget* widget);
+  static void SetSide(Widget* widget, int side);
+
   obs::signal<void()> Resize;
   obs::signal<void()> UserResizedDock;
 

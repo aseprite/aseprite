@@ -638,7 +638,19 @@ private:
       for (auto item : listBox->children()) {
         if (KeyItem* keyItem = dynamic_cast<KeyItem*>(item)) {
           std::string itemText = keyItem->searchableText();
-          if (!match(itemText))
+          bool matches = match(itemText);
+
+          if (!matches && keyItem->key()) {
+            for (const AppShortcut& sc : keyItem->key()->shortcuts()) {
+              std::string shortcutText = base::string_to_lower(sc.toString());
+              if (shortcutText.find(base::string_to_lower(search)) != std::string::npos) {
+                matches = true;
+                break;
+              }
+            }
+          }
+
+          if (!matches)
             continue;
 
           if (!group) {

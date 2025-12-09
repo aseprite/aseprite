@@ -294,3 +294,14 @@ do
   test_undo_history()
   app.preferences.undo.allow_nonlinear_history = prevSetting
 end
+
+-- isValid
+
+do
+  local a = Sprite(32, 32)
+  assert(a.isValid == true)
+
+  a:close()
+
+  assert(a.isValid == false)
+end

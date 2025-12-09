@@ -200,7 +200,7 @@ void ReplaceColorCommand::onExecute(Context* context)
       set_config_int(ConfigSection, "Tolerance", filter.getTolerance());
   }
   else {
-    filterMgr.startWorker();
+    filterMgr.startWorker(false);
   }
 }
 

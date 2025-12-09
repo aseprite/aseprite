@@ -20,6 +20,7 @@
 #include "app/load_widget.h"
 #include "app/loop_tag.h"
 #include "app/transaction.h"
+#include "app/ui/dock.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline/timeline.h"
 #include "app/ui_context.h"
@@ -53,7 +54,8 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_box = new app::gen::TimelineConf();
   addChild(m_box);
 
-  m_box->layout()->Click.connect([this] { onWorkspaceLayout(); });
+  m_box->position()->ItemChange.connect(
+    [this] { onChangeTimelinePosition(m_box->position()->selectedItem()); });
   m_box->firstFrame()->Change.connect([this] { onChangeFirstFrame(); });
   m_box->merge()->Click.connect([this] { onChangeType(); });
   m_box->tint()->Click.connect([this] { onChangeType(); });
@@ -92,6 +94,15 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
 {
   DocumentPreferences& docPref = this->docPref();
   base::ScopedValue lockUpdates(m_lockUpdates, true);
+
+  int selItem = 3;
+  switch (Dock::GetSide(App::instance()->mainWindow()->getTimeline())) {
+    case ui::TOP:    selItem = 0; break;
+    case ui::LEFT:   selItem = 1; break;
+    case ui::RIGHT:  selItem = 2; break;
+    case ui::BOTTOM: selItem = 3; break;
+  }
+  m_box->position()->setSelectedItem(selItem, false);
 
   m_box->firstFrame()->setTextf("%d", docPref.timeline.firstFrame());
 
@@ -138,10 +149,16 @@ bool ConfigureTimelinePopup::onProcessMessage(ui::Message* msg)
   return PopupWindow::onProcessMessage(msg);
 }
 
-void ConfigureTimelinePopup::onWorkspaceLayout()
+void ConfigureTimelinePopup::onChangeTimelinePosition(const int option)
 {
-  UIContext::instance()->executeCommand(
-    Commands::instance()->byId(CommandId::ToggleWorkspaceLayout()));
+  int align = ui::BOTTOM;
+  switch (option) {
+    case 0: align = ui::TOP; break;
+    case 1: align = ui::LEFT; break;
+    case 2: align = ui::RIGHT; break;
+    case 3: align = ui::BOTTOM; break;
+  }
+  Dock::SetSide(App::instance()->mainWindow()->getTimeline(), align);
 }
 
 void ConfigureTimelinePopup::onChangeFirstFrame()

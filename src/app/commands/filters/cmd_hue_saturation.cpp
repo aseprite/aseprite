@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -176,7 +176,7 @@ void HueSaturationCommand::onExecute(Context* ctx)
     window.doModal();
   }
   else {
-    filterMgr.startWorker();
+    filterMgr.startWorker(false);
   }
 }
 

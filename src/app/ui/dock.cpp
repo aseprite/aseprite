@@ -285,6 +285,25 @@ const gfx::Size Dock::getUserDefinedSizeAtSide(int side) const
   return gfx::Size();
 }
 
+// static
+int Dock::GetSide(Widget* widget)
+{
+  if (auto* dock = dynamic_cast<Dock*>(widget->parent()))
+    return dock->whichSideChildIsDocked(widget);
+  return 0;
+}
+
+// static
+void Dock::SetSide(Widget* widget, int side)
+{
+  if (auto* dock = dynamic_cast<Dock*>(widget->parent())) {
+    auto* root = dock;
+    while (auto* parent = dynamic_cast<Dock*>(root->parent()))
+      root = parent;
+    root->redockWidget(dock, widget, side);
+  }
+}
+
 Dock* Dock::subdock(int side)
 {
   int i = side_index(side);
