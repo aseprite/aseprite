@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -135,26 +135,26 @@ bool Slider::onProcessMessage(Message* msg)
 
     case kMouseMoveMessage:
       if (hasCapture()) {
-        int min, max, value, range;
-        gfx::Rect rc = childrenBounds();
-        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->positionForDisplay(display());
-
+        const gfx::Rect rc = childrenBounds();
+        const gfx::Point mousePos = static_cast<MouseMessage*>(msg)->positionForDisplay(display());
+        int min, max, value;
         getSliderThemeInfo(&min, &max, &value);
 
-        range = max - min + 1;
+        int range = max - min + 1;
+        int w = rc.w;
 
         // With left click
         if (slider_press_left) {
-          value = min + range * (mousePos.x - rc.x) / rc.w;
+          if (w == 0)
+            w = 1;
+          value = min + range * (mousePos.x - rc.x) / w;
         }
         // With right click
         else {
-          int w = rc.w;
-          if (rc.w == 0 || range > rc.w) {
+          if (w == 0 || range > w) {
             w = 1;
             range = 1;
           }
-
           value = slider_press_value + (mousePos.x - slider_press_x) * range / w;
         }
 
