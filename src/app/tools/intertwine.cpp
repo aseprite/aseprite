@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +11,7 @@
 
 #include "app/tools/intertwine.h"
 
+#include "app/pref/preferences.h"
 #include "app/tools/controller.h"
 #include "app/tools/point_shape.h"
 #include "app/tools/stroke.h"
@@ -150,7 +151,11 @@ doc::AlgoLineWithAlgoPixel Intertwine::getLineAlgo(ToolLoop* loop,
   }
   else if (int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect)) {
     // When "Snap Angle" in being used.
-    return (needsFixForLineBrush ? algo_line_perfect_with_fix_for_line_brush : algo_line_snap);
+    if (needsFixForLineBrush)
+      return algo_line_perfect_with_fix_for_line_brush;
+    else {
+      return algo_line_snap_using_step(Preferences::instance().editor.fixedStepTilt());
+    }
   }
   else {
     // Otherwise use the regular algorithm that is useful to

@@ -12,13 +12,16 @@
 #include "doc/algorithm/hline.h"
 #include "gfx/fwd.h"
 
+#include <functional>
+
 namespace doc {
 
 class Image;
 
 typedef void (*AlgoPixel)(int x, int y, void* data);
 typedef void (*AlgoLine)(int x1, int y1, int x2, int y2, void* data);
-typedef void (*AlgoLineWithAlgoPixel)(int x1, int y1, int x2, int y2, void* data, AlgoPixel proc);
+typedef std::function<void(int x1, int y1, int x2, int y2, void* data, AlgoPixel proc)>
+  AlgoLineWithAlgoPixel;
 
 // Useful to create lines with more predictable behavior and perfect
 // pixel block of lines where we'll have a number of lines/rows that
@@ -33,9 +36,16 @@ void algo_line_perfect_with_fix_for_line_brush(int x1,
                                                void* data,
                                                AlgoPixel proc);
 
+AlgoLineWithAlgoPixel algo_line_snap_using_step(int fixedStepTilts);
 // For lines with constant integer pixel runs throughout the line.
-void algo_line_snap(int x1, int y1, int x2, int y2, void* data, AlgoPixel proc);
-int algo_line_snap_endpoint(int* x_out, int* y_out, int x1, int y1, int x2, int y2);
+void algo_line_snap(int x1, int y1, int x2, int y2, int fixedStepTilts, void* data, AlgoPixel proc);
+int algo_line_snap_endpoint(int* x_out,
+                            int* y_out,
+                            int x1,
+                            int y1,
+                            int x2,
+                            int y2,
+                            int fixedStepTilts);
 
 // Useful to create continuous lines (you can draw from one point to
 // another, and continue from that point to another in the same

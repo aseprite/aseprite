@@ -15,17 +15,32 @@
 #include "base/pi.h"
 
 #include <algorithm>
-#include <climits>
 #include <cmath>
 #include <utility>
 #include <vector>
 
 namespace doc {
 
-int algo_line_snap_endpoint(int* x_out, int* y_out, int x1, int y1, int x2, int y2)
+// fixedStepTilts: Available fixed step tilts into
+// the angular interval between 0° < tilt angle <= 45°
+// This value is used in 'algo_line_snap_using_step',
+// 'algo_line_snap' and 'algo_line_snap_endpoint'.
+AlgoLineWithAlgoPixel algo_line_snap_using_step(int fixedStepTilts)
 {
-  constexpr int MAX_M = 8;
+  fixedStepTilts = std::clamp(fixedStepTilts, 2, 256);
+  return [fixedStepTilts](int x1, int y1, int x2, int y2, void* data, AlgoPixel proc) {
+    algo_line_snap(x1, y1, x2, y2, fixedStepTilts, data, proc);
+  };
+}
 
+int algo_line_snap_endpoint(int* x_out,
+                            int* y_out,
+                            int x1,
+                            int y1,
+                            int x2,
+                            int y2,
+                            int fixedStepTilts)
+{
   int dx = x2 - x1;
   int dy = y2 - y1;
   const bool swapxy = std::abs(dy) > std::abs(dx);
@@ -33,10 +48,11 @@ int algo_line_snap_endpoint(int* x_out, int* y_out, int x1, int y1, int x2, int 
     std::swap(dx, dy);
   }
 
-  const int m_limit = std::min(MAX_M, std::max(1, std::abs(dx) / 2));
-  int m = dy != 0 ? (std::abs(dx) + std::abs(dy) / 2) / std::abs(dy) : INT_MAX;
+  const int m_limit = std::min(fixedStepTilts, std::max(1, std::abs(dx) / 2));
+  int m = dy != 0 ? (std::abs(dx) + std::abs(dy) / 2) / std::abs(dy) :
+                    std::numeric_limits<int>::max();
   if (m > 2 * m_limit)
-    m = INT_MAX;
+    m = std::numeric_limits<int>::max();
   else if (m > m_limit)
     m = m_limit;
 
@@ -44,7 +60,7 @@ int algo_line_snap_endpoint(int* x_out, int* y_out, int x1, int y1, int x2, int 
     return m;
   }
 
-  if (m != INT_MAX) {
+  if (m != std::numeric_limits<int>::max()) {
     const int v2 = m * m + 1;
     dx = SGN(dx) * (m * (std::abs(dx * m) + std::abs(dy)) + v2 / 2) / v2;
     dy = SGN(dy) * std::abs(dx) / m;
@@ -69,9 +85,9 @@ int algo_line_snap_endpoint(int* x_out, int* y_out, int x1, int y1, int x2, int 
   return m;
 }
 
-void algo_line_snap(int x1, int y1, int x2, int y2, void* data, AlgoPixel proc)
+void algo_line_snap(int x1, int y1, int x2, int y2, int fixedStepTilts, void* data, AlgoPixel proc)
 {
-  const int m = algo_line_snap_endpoint(nullptr, nullptr, x1, y1, x2, y2);
+  const int m = algo_line_snap_endpoint(nullptr, nullptr, x1, y1, x2, y2, fixedStepTilts);
 
   const bool swapxy = std::abs(y2 - y1) > std::abs(x2 - x1);
   if (swapxy) {

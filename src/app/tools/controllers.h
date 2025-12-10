@@ -256,7 +256,8 @@ public:
                                              m_first.x,
                                              m_first.y,
                                              stroke[1].x,
-                                             stroke[1].y);
+                                             stroke[1].y,
+                                             Preferences::instance().editor.fixedStepTilt());
       }
       // Rectangles and ellipses
       else {
