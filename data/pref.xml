@@ -263,6 +263,9 @@
     <section id="news">
       <option id="cache_file" type="std::string" />
     </section>
+    <section id="context_bar">
+      <option id="show_corner_radius" type="bool" default="false" />
+    </section>
     <section id="status_bar">
       <option id="focus_frame_field_on_mouseover" type="bool" default="false" />
     </section>
