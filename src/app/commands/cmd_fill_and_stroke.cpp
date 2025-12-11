@@ -5,6 +5,8 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
+#include "app/tools/tool.h"
+#include "ui/alert.h"
 #ifdef HAVE_CONFIG_H
   #include "config.h"
 #endif
@@ -17,11 +19,14 @@
 #include "app/context_access.h"
 #include "app/pref/preferences.h"
 #include "app/tx.h"
+#include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/util/expand_cel_canvas.h"
 #include "doc/algorithm/fill_selection.h"
 #include "doc/algorithm/stroke_selection.h"
 #include "doc/mask.h"
+#include "stroke_dialog.xml.h"
+#include "ui/alert.h"
 
 namespace app {
 
@@ -90,12 +95,56 @@ void FillCommand::onExecute(Context* ctx)
         imageBounds = grid.tileToCanvas(imageBounds);
 
       if (m_type == Stroke) {
-        doc::algorithm::stroke_selection(
-          expand.getDestCanvas(),
-          imageBounds,
-          mask,
-          color,
-          (site.tilemapMode() == TilemapMode::Tiles ? &grid : nullptr));
+        gen::StrokeDialog window;
+        // The default width follows the current brush size (from ContextBar)
+        app::tools::Tool* tool = App::instance()->activeTool();
+        int defaultBrushSize = 1;
+        if (tool) {
+          app::ContextBar* contextBar = App::instance()->contextBar();
+          if (contextBar) {
+            doc::BrushRef brush = contextBar->activeBrush(tool);
+            if (brush){
+              defaultBrushSize = brush->size();
+            }
+          }
+        }
+        window.width()->setTextf("%dpx", defaultBrushSize);
+        window.color()->setColor(pref.colorBar.fgColor()); // Default color is foreground color
+        window.inside()->setSelected(true);                // Default select inside
+
+        window.openWindowInForeground();
+        if (window.closer() == window.ok()) {
+          int userWidth = window.width()->textInt();
+          doc::color_t userColor = app::color_utils::color_for_layer(window.color()->getColor(),
+                                                                     layer);
+          std::string location;
+          if (window.inside()->isSelected())
+            location = "inside";
+          else if (window.center()->isSelected())
+            location = "center";
+          else if (window.outside()->isSelected())
+            location = "outside";
+
+          // Auto brushType: according to current tool type
+          doc::BrushType brushType = doc::BrushType::kCircleBrushType;
+          app::tools::Tool* tool = App::instance()->activeTool();
+          if (tool) {
+            std::string id = tool->getId();
+            if (id == "rectangular_marquee")
+              brushType = doc::BrushType::kSquareBrushType;
+            else if (id == "elliptical_marquee")
+              brushType = doc::BrushType::kCircleBrushType;
+          }
+          doc::algorithm::stroke_selection(
+            expand.getDestCanvas(),
+            imageBounds,
+            mask,
+            userColor,
+            userWidth,
+            location,
+            brushType,
+            (site.tilemapMode() == TilemapMode::Tiles ? &grid : nullptr));
+        }
       }
       else {
         doc::algorithm::fill_selection(
