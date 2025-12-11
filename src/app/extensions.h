@@ -10,17 +10,24 @@
 #pragma once
 
 #include "app/i18n/lang_info.h"
+#include "doc/frame.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
 #include "obs/signal.h"
 #include "render/dithering_matrix.h"
 
 #include <map>
+#include <optional>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 namespace ui {
 class Widget;
 }
-
+namespace doc {
+class Sprite;
+}
 namespace app {
 
 // Key=id
@@ -28,6 +35,7 @@ namespace app {
 using ExtensionItems = std::map<std::string, std::string>;
 
 class Extensions;
+class Doc;
 
 struct ExtensionInfo {
   std::string name;
@@ -83,6 +91,34 @@ public:
     ThemeInfo(const std::string& path, const std::string& variant) : path(path), variant(variant) {}
   };
 
+#ifdef ENABLE_SCRIPTING
+  struct FileFormat {
+    enum Support : uint8_t { Invalid = 0, Full, Save, Load };
+    std::string id;
+    std::unordered_set<std::string> extensions;
+    bool binary = true;
+    int onloadRef = -1;
+    int onsaveRef = -1;
+
+    bool supports(const Support support) const
+    {
+      if (support == Load && onloadRef > -1)
+        return true;
+      if (support == Save && onsaveRef > -1)
+        return true;
+      return support == Full && onloadRef > -1 && onsaveRef > -1;
+    }
+  };
+  struct FileFormatSaveOptions {
+    gfx::Size canvasSize;
+    gfx::Rect bounds;
+    doc::frame_t frames = 0;
+    doc::frame_t fromFrame = 0;
+    doc::frame_t toFrame = 0;
+    bool ignoreEmptyFrames = false;
+  };
+#endif
+
   using Languages = std::map<std::string, LangInfo>;
   using Themes = std::map<std::string, ThemeInfo>;
   using DitheringMatrices = std::map<std::string, DitheringMatrixInfo>;
@@ -122,6 +158,7 @@ public:
   void removeMenuGroup(const std::string& id);
 
   void addMenuSeparator(ui::Widget* widget);
+  void addFileFormat(const FileFormat& format);
 #endif
 
   bool isEnabled() const { return m_isEnabled; }
@@ -137,6 +174,15 @@ public:
 #ifdef ENABLE_SCRIPTING
   bool hasScripts() const { return !m_plugin.scripts.empty(); }
   void addScript(const std::string& fn);
+  bool hasFileFormats() const { return !m_fileFormats.empty(); }
+
+  std::optional<std::string> getCustomFormatIdForExtension(const std::string& ext,
+                                                           FileFormat::Support support) const;
+  doc::Sprite* loadCustomFormat(const std::string& formatId, const std::string& filename) const;
+  bool saveCustomFormat(const std::string& formatId,
+                        const std::string& filename,
+                        const doc::Sprite* sprite,
+                        const FileFormatSaveOptions& saveOptions) const;
 #endif
 
   bool isCurrentTheme() const;
@@ -174,6 +220,7 @@ private:
     std::vector<ScriptItem> scripts;
     std::vector<PluginItem> items;
   } m_plugin;
+  std::unordered_map<std::string, FileFormat> m_fileFormats;
 #endif
 
   std::string m_path;
@@ -217,6 +264,12 @@ public:
   // needed to cache the matrix because it is lazy loaded from an
   // image file. These pointers cannot be deleted.
   std::vector<Extension::DitheringMatrixInfo*> ditheringMatrices();
+
+#ifdef ENABLE_SCRIPTING
+  // Returns a list of the available custom formats (by extension).
+  std::vector<std::string> customFormatList(
+    Extension::FileFormat::Support support = Extension::FileFormat::Support::Full) const;
+#endif
 
   obs::signal<void(Extension*)> NewExtension;
   obs::signal<void(Extension*)> KeysChange;
