@@ -620,6 +620,11 @@ bool Timeline::onProcessMessage(Message* msg)
   switch (msg->type()) {
     case kFocusEnterMessage: App::instance()->inputChain().prioritize(this, msg); break;
 
+    case kMouseEnterMessage:
+      if (!hasCapture())
+        m_scroll = ((msg->modifiers() & kKeySpaceModifier) != 0);
+      break;
+
     case kTimerMessage:
       if (static_cast<TimerMessage*>(msg)->timer() == &m_clipboard_timer) {
         Doc* clipboard_document;
@@ -1453,23 +1458,26 @@ bool Timeline::onProcessMessage(Message* msg)
       break;
     }
 
-    case kKeyUpMessage: {
-      bool used = false;
+    case kKeyUpMessage:
+      // Use KeyUp only if the mouse is above the timeline. Without
+      // this we might be consuming a Space modifer that should go the
+      // the active sprite editor.
+      if (hasMouse() && !hasCapture()) {
+        bool used = false;
 
-      switch (static_cast<KeyMessage*>(msg)->scancode()) {
-        case kKeySpace: {
-          m_scroll = false;
-          used = true;
-          break;
+        switch (static_cast<KeyMessage*>(msg)->scancode()) {
+          case kKeySpace: {
+            m_scroll = false;
+            used = true;
+            break;
+          }
         }
+
+        updateByMousePos(msg, mousePosInClientBounds());
+        if (used)
+          return true;
       }
-
-      updateByMousePos(msg, mousePosInClientBounds());
-      if (used)
-        return true;
-
       break;
-    }
 
     case kMouseWheelMessage:
       if (m_document) {
