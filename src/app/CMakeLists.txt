@@ -491,6 +491,7 @@ target_sources(app-lib PRIVATE
   commands/cmd_undo.cpp
   commands/cmd_undo_history.cpp
   commands/cmd_unlink_cel.cpp
+  commands/cmd_widget_zoo.cpp
   commands/cmd_zoom.cpp
   commands/command.cpp
   commands/commands.cpp
