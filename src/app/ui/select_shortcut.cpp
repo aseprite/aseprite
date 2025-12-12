@@ -17,8 +17,6 @@
 #include "ui/entry.h"
 #include "ui/message.h"
 
-#include <cctype>
-
 namespace app {
 
 using namespace ui;
@@ -48,30 +46,18 @@ protected:
     switch (msg->type()) {
       case kKeyDownMessage:
         if (hasFocus() && !isReadOnly()) {
-          KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
-          if (!keymsg->scancode() && keymsg->unicodeChar() < 32)
+          Shortcut shortcut = msg->shortcut();
+          if (shortcut.scancode() == kKeyNil && shortcut.unicodeChar() < 32)
             break;
 
-          KeyModifiers modifiers = keymsg->modifiers();
-
-          if (keymsg->scancode() == kKeySpace)
-            modifiers = (KeyModifiers)(modifiers & ~kKeySpaceModifier);
-
-          setAndParseShortcut(
-            Shortcut(modifiers,
-                     keymsg->scancode(),
-                     keymsg->unicodeChar() > 32 ? std::tolower(keymsg->unicodeChar()) : 0));
-
+          setAndParseShortcut(shortcut);
           return true;
         }
         break;
 
       case kMouseDownMessage:
         if (!isReadOnly()) {
-          auto* mouseMsg = static_cast<MouseMessage*>(msg);
-          const KeyModifiers modifiers = mouseMsg->modifiers();
-
-          setAndParseShortcut(Shortcut(modifiers, mouseMsg->button()));
+          setAndParseShortcut(msg->shortcut());
           return true;
         }
         break;

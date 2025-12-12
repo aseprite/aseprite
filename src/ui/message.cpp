@@ -14,8 +14,10 @@
 #include "base/memory.h"
 #include "os/system.h"
 #include "ui/display.h"
+#include "ui/shortcut.h"
 #include "ui/widget.h"
 
+#include <cctype>
 #include <cstring>
 
 namespace ui {
@@ -64,6 +66,11 @@ void Message::removeRecipient(Widget* widget)
     m_recipient = nullptr;
 }
 
+Shortcut Message::shortcut() const
+{
+  return {};
+}
+
 KeyMessage::KeyMessage(const MessageType type,
                        const KeyScancode scancode,
                        const KeyModifiers modifiers,
@@ -76,6 +83,11 @@ KeyMessage::KeyMessage(const MessageType type,
   , m_isDead(false)
 {
   setPropagateToParent(true);
+}
+
+Shortcut KeyMessage::shortcut() const
+{
+  return Shortcut(modifiers(), scancode(), (unicodeChar() > 32 ? std::tolower(unicodeChar()) : 0));
 }
 
 gfx::Point MouseMessage::positionForDisplay(Display* anotherDisplay) const
@@ -93,6 +105,11 @@ gfx::Point MouseMessage::positionForDisplay(Display* anotherDisplay) const
 gfx::Point MouseMessage::screenPosition() const
 {
   return display()->nativeWindow()->pointToScreen(position());
+}
+
+Shortcut MouseMessage::shortcut() const
+{
+  return Shortcut(modifiers(), button());
 }
 
 } // namespace ui
