@@ -259,6 +259,7 @@
       <option id="use_selection_tool_loop" type="bool" default="false" />
       <option id="nonactive_layers_opacity" type="int" default="255" />
       <option id="nonactive_layers_opacity_preview" type="int" default="255" />
+      <option id="tooltip_delay" type="int" default="300" />
     </section>
     <section id="news">
       <option id="cache_file" type="std::string" />
