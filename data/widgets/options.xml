@@ -250,6 +250,11 @@
             <label text="@.right_click" for="right_click_behavior" />
             <combobox id="right_click_behavior" expansive="true" />
           </hbox>
+          <hbox>
+            <label text="@.fixed_step_tilt" />
+            <link text="(#1641)" url="https://github.com/aseprite/aseprite/issues/1641" />
+            <expr id="fixed_step_tilt" tooltip="@.fixed_step_tilt_tooltip" />
+          </hbox>
         </vbox>
 
         <!-- Selection -->
