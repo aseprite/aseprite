@@ -145,8 +145,10 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
   }
 
   // Drag value.
-  if (handleDragActionsFromMessage(editor, msg))
+  if (auto dragState = handleDragActionsFromMessage(editor, msg)) {
+    editor->setState(dragState);
     return true;
+  }
 
   // Start scroll loop
   if (editor->checkForScroll(msg) || editor->checkForZoom(msg))
@@ -468,8 +470,10 @@ bool StandbyState::onKeyDown(Editor* editor, KeyMessage* msg)
       checkStartDrawingStraightLine(editor, nullptr, nullptr))
     return false;
 
-  if (handleDragActionsFromMessage(editor, msg))
+  if (auto dragState = handleDragActionsFromMessage(editor, msg)) {
+    editor->setState(dragState);
     return true;
+  }
 
   return false;
 }
@@ -767,22 +771,20 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
   }
 }
 
-bool StandbyState::handleDragActionsFromMessage(Editor* editor, const ui::Message* msg)
+EditorStatePtr StandbyState::handleDragActionsFromMessage(Editor* editor, const ui::Message* msg)
 {
   Keys keys = KeyboardShortcuts::instance()->getDragActionsFromMessage(msg);
   if (!editor->hasMouse() || keys.empty())
-    return false;
+    return nullptr;
 
   // Don't enter DraggingValueState to change brush size if we are
   // in a selection-like tool
   if (keys.size() == 1 && keys[0]->wheelAction() == WheelAction::BrushSize &&
       editor->getCurrentEditorInk()->isSelection()) {
-    return false;
+    return nullptr;
   }
 
-  EditorStatePtr newState(new DraggingValueState(editor, keys));
-  editor->setState(newState);
-  return true;
+  return EditorStatePtr(new DraggingValueState(editor, keys));
 }
 
 void StandbyState::callEyedropper(Editor* editor, const ui::MouseMessage* msg)

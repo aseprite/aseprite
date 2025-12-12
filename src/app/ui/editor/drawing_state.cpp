@@ -165,6 +165,16 @@ bool DrawingState::onMouseDown(Editor* editor, MouseMessage* msg)
   // line with the background color.
   bool recreateLoop = false;
   if (m_type == DrawingType::LineFreehand && !m_mousePressedReceived) {
+    // The Shift+a custom mouse button could start a drag action
+    // (e.g. Shift+X1 button), here we check if this is the case.
+    if (auto dragState = handleDragActionsFromMessage(editor, msg)) {
+      // Cancel the whole tool loop for the drag action.
+      m_toolLoopManager->cancel();
+      destroyLoopIfCanceled(editor);
+      editor->setState(dragState);
+      return true;
+    }
+
     recreateLoop = true;
   }
 

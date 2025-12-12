@@ -56,7 +56,7 @@ public:
   void startFlipTransformation(Editor* editor, doc::algorithm::FlipType flipType);
 
 protected:
-  bool handleDragActionsFromMessage(Editor* editor, const ui::Message* msg);
+  EditorStatePtr handleDragActionsFromMessage(Editor* editor, const ui::Message* msg);
   void callEyedropper(Editor* editor, const ui::MouseMessage* msg);
   bool checkStartDrawingStraightLine(Editor* editor,
                                      const ui::MouseMessage* msg,
