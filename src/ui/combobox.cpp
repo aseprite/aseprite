@@ -112,6 +112,19 @@ ComboBox::~ComboBox()
   deleteAllItems();
 }
 
+void ComboBox::setFont(const text::FontRef& font)
+{
+  Widget::setFont(font);
+  if (m_listbox)
+    m_listbox->setFont(font);
+  if (m_entry)
+    m_entry->setFont(font);
+  for (auto* i : m_items) {
+    if (auto* li = dynamic_cast<ListItem*>(i))
+      li->setFont(font);
+  }
+}
+
 void ComboBox::setEditable(bool state)
 {
   m_editable = state;
@@ -155,7 +168,11 @@ int ComboBox::addItem(Widget* item)
 
 int ComboBox::addItem(const std::string& text)
 {
-  return addItem(new ListItem(text));
+  auto* item = new ListItem(text);
+
+  if (!isCachedFont())
+    item->setFont(font());
+  return addItem(item);
 }
 
 void ComboBox::insertItem(int itemIndex, Widget* item)
@@ -170,7 +187,10 @@ void ComboBox::insertItem(int itemIndex, Widget* item)
 
 void ComboBox::insertItem(int itemIndex, const std::string& text)
 {
-  insertItem(itemIndex, new ListItem(text));
+  auto* item = new ListItem(text);
+  if (!isCachedFont())
+    item->setFont(font());
+  insertItem(itemIndex, item);
 }
 
 void ComboBox::removeItem(Widget* item)
