@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -77,6 +77,8 @@ AppOptions::AppOptions(int argc, const char* argv[])
       m_po.add("sheet-width").requiresValue("<pixels>").description("Sprite sheet width"))
   , m_sheetHeight(
       m_po.add("sheet-height").requiresValue("<pixels>").description("Sprite sheet height"))
+  , m_powerOfTwoSize(m_po.add("power-of-two-size")
+                       .description("Round up the size of the sprite sheet to a power of 2"))
   , m_sheetColumns(m_po.add("sheet-columns")
                      .requiresValue("<columns>")
                      .description("Fixed # of columns for -sheet-type rows"))

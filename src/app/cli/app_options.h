@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -58,6 +58,7 @@ public:
   const Option& sheetPack() const { return m_sheetPack; }
   const Option& sheetWidth() const { return m_sheetWidth; }
   const Option& sheetHeight() const { return m_sheetHeight; }
+  const Option& powerOfTwoSize() const { return m_powerOfTwoSize; }
   const Option& sheetColumns() const { return m_sheetColumns; }
   const Option& sheetRows() const { return m_sheetRows; }
   const Option& splitLayers() const { return m_splitLayers; }
@@ -133,6 +134,7 @@ private:
   Option& m_sheetPack;
   Option& m_sheetWidth;
   Option& m_sheetHeight;
+  Option& m_powerOfTwoSize;
   Option& m_sheetColumns;
   Option& m_sheetRows;
   Option& m_splitLayers;
