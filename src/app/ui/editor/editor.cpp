@@ -1779,12 +1779,16 @@ void Editor::updateQuicktool(const ui::Message* msg)
     const tools::Tool* selectedTool = atm->selectedTool();
 
     // Don't change quicktools if we are in a selection tool and using
-    // the selection modifiers.
-    if (selectedTool->getInk(0)->isSelection() &&
-        int(m_customizationDelegate->getPressedKeyAction(KeyContext::SelectionTool)) != 0) {
-      if (atm->quickTool())
-        atm->newQuickToolSelectedFromEditor(nullptr);
-      return;
+    // the selection modifiers (or Ctrl key to start a copy of the
+    // selection).
+    if (selectedTool->getInk(0)->isSelection()) {
+      if ((int(m_customizationDelegate->getPressedKeyAction(KeyContext::SelectionTool)) != 0) ||
+          (int(m_customizationDelegate->getPressedKeyAction(KeyContext::TranslatingSelection)) &
+           int(KeyAction::CopySelection))) {
+        if (atm->quickTool())
+          atm->newQuickToolSelectedFromEditor(nullptr);
+        return;
+      }
     }
 
     ui::Shortcut newShortcut;
