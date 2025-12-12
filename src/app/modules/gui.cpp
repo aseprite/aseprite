@@ -703,9 +703,8 @@ bool CustomizedGuiManager::processKey(Message* msg)
   if (!key)
     return false;
 
-  // Cancel menu-bar loops (to close any popup menu)
   App* app = App::instance();
-  app->mainWindow()->getMenuBar()->cancelMenuLoop();
+  bool result = false;
 
   switch (key->type()) {
     case KeyType::Tool: {
@@ -745,7 +744,8 @@ bool CustomizedGuiManager::processKey(Message* msg)
       }
 
       ToolBar::instance()->selectTool(select_this_tool);
-      return true;
+      result = true;
+      break;
     }
 
     case KeyType::Command: {
@@ -757,7 +757,7 @@ bool CustomizedGuiManager::processKey(Message* msg)
         // OK, so we can execute the command represented
         // by the pressed-key in the message...
         UIContext::instance()->executeCommandFromMenuOrShortcut(command, key->params());
-        return true;
+        result = true;
       }
       break;
     }
@@ -769,7 +769,11 @@ bool CustomizedGuiManager::processKey(Message* msg)
     }
   }
 
-  return false;
+  // Cancel menu-bar loops (to close any popup menu)
+  if (result)
+    app->mainWindow()->getMenuBar()->cancelMenuLoop();
+
+  return result;
 }
 
 std::string CustomizedGuiManager::loadLayout(Widget* widget)
