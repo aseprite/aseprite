@@ -81,6 +81,18 @@ FileFormat detect_format_by_file_content_bytes(const uint8_t* buf, const int n)
 
     if (IS_MAGIC_WORD(0, JPG_MAGIC_NUMBER))
       return FileFormat::JPEG_IMAGE;
+
+    if (buf[0] == 'P') {
+      switch (buf[1]) {
+        case '1':
+        case '4': return FileFormat::PBM_IMAGE;
+        case '2':
+        case '5': return FileFormat::PGM_IMAGE;
+        case '3':
+        case '6': return FileFormat::PPM_IMAGE;
+        case '7': return FileFormat::PAM_IMAGE;
+      }
+    }
   }
 
   return FileFormat::UNKNOWN;
@@ -160,6 +172,18 @@ FileFormat detect_format_by_file_extension(const std::string& filename)
 
   if (ext == "qoi")
     return FileFormat::QOI_IMAGE;
+
+  if (ext == "pbm")
+    return FileFormat::PBM_IMAGE;
+
+  if (ext == "pgm")
+    return FileFormat::PGM_IMAGE;
+
+  if (ext == "ppm")
+    return FileFormat::PPM_IMAGE;
+
+  if (ext == "pam")
+    return FileFormat::PAM_IMAGE;
 
   return FileFormat::UNKNOWN;
 }
