@@ -621,7 +621,8 @@ bool KeyboardShortcuts::getCommandFromKeyMessage(const ui::Message* msg,
 }
 
 tools::Tool* KeyboardShortcuts::getCurrentQuicktool(const ui::Message* msg,
-                                                    const tools::Tool* currentTool) const
+                                                    const tools::Tool* currentTool,
+                                                    ui::Shortcut& pressedShortcut) const
 {
   if (currentTool && currentTool->getInk(0)->isSelection()) {
     KeyPtr key = action(KeyAction::CopySelection, KeyContext::TranslatingSelection);
@@ -636,8 +637,12 @@ tools::Tool* KeyboardShortcuts::getCurrentQuicktool(const ui::Message* msg,
     KeyPtr key = quicktool(tool);
 
     // Collect all tools with the pressed keyboard-shortcut
-    if (key && key->isPressed(msg)) {
-      return tool;
+    if (key) {
+      const AppShortcut* s = key->isPressed(msg);
+      if (s) {
+        pressedShortcut = *s;
+        return tool;
+      }
     }
   }
 
@@ -661,12 +666,12 @@ WheelAction KeyboardShortcuts::getWheelActionFromMouseMessage(const KeyContext c
                                                               const ui::Message* msg)
 {
   WheelAction wheelAction = WheelAction::None;
-  const AppShortcut* bestShortcut = nullptr;
+  const AppShortcut* best = nullptr;
   for (const KeyPtr& key : m_keys) {
     if (key->type() == KeyType::WheelAction && key->keycontext() == context) {
       const AppShortcut* shortcut = key->isPressed(msg);
-      if ((shortcut) && (!bestShortcut || bestShortcut->modifiers() < shortcut->modifiers())) {
-        bestShortcut = shortcut;
+      if (shortcut && (!best || best->lessModifiersThan(*shortcut))) {
+        best = shortcut;
         wheelAction = key->wheelAction();
       }
     }

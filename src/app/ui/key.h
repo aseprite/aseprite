@@ -159,7 +159,7 @@ public:
   bool fitsContext(KeyContext keyContext) const;
   const AppShortcut* isPressed(const ui::Message* msg, KeyContext keyContext) const;
   const AppShortcut* isPressed(const ui::Message* msg) const;
-  bool isPressed() const;
+  const AppShortcut* isPressed() const;
   bool isLooselyPressed() const;
   bool isCommandListed() const;
 

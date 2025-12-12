@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -26,7 +27,9 @@ public:
   // Called to know if the user is pressing a keyboard shortcut to
   // select another tool temporarily (a "quick tool"). The given
   // "currentTool" is the current tool selected in the toolbox.
-  virtual tools::Tool* getQuickTool(const ui::Message* msg, const tools::Tool* currentTool) = 0;
+  virtual tools::Tool* getQuickTool(const ui::Message* msg,
+                                    const tools::Tool* currentTool,
+                                    ui::Shortcut& pressedShortcut) = 0;
 
   // Returns what action is pressed at this moment.
   virtual KeyAction getPressedKeyAction(KeyContext context) = 0;

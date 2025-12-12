@@ -1787,13 +1787,35 @@ void Editor::updateQuicktool(const ui::Message* msg)
       return;
     }
 
-    tools::Tool* newQuicktool = m_customizationDelegate->getQuickTool(msg, selectedTool);
+    ui::Shortcut newShortcut;
+    tools::Tool* newQuicktool =
+      m_customizationDelegate->getQuickTool(msg, selectedTool, newShortcut);
 
     // Check if the current state accept the given quicktool.
     if (newQuicktool && !m_state->acceptQuickTool(newQuicktool))
       return;
 
-    atm->newQuickToolSelectedFromEditor(newQuicktool);
+    tools::Tool* prevQuicktool = atm->quickTool();
+    ui::Shortcut prevShortcut = atm->quickToolFromShortcut();
+
+    // Problems appear when the previous shortcut to select the
+    // current quick tool is still pressed, so we have to disambiguate
+    // the new pressed shortcut (newShortcut) with the previous
+    // shortcut (prevQuicktool).
+    if (prevQuicktool && prevShortcut != newShortcut && prevShortcut.isPressed()) {
+      if (!newQuicktool)
+        return;
+      if (newShortcut.lessModifiersThan(prevShortcut))
+        return;
+      if (prevShortcut.scancode() != kKeyNil && newShortcut.unicodeChar() == kKeyNil)
+        return;
+      if (prevShortcut.unicodeChar() != 0 && newShortcut.unicodeChar() == 0)
+        return;
+      if (prevShortcut.mouseButton() != kButtonNone && newShortcut.mouseButton() == kButtonNone)
+        return;
+    }
+
+    atm->newQuickToolSelectedFromEditor(newQuicktool, newShortcut);
   }
 }
 

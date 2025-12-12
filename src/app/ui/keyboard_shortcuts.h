@@ -73,7 +73,9 @@ public:
     Params* params,
     KeyContext currentKeyContext = KeyboardShortcuts::getCurrentKeyContext());
 
-  tools::Tool* getCurrentQuicktool(const ui::Message* msg, const tools::Tool* currentTool) const;
+  tools::Tool* getCurrentQuicktool(const ui::Message* msg,
+                                   const tools::Tool* currentTool,
+                                   ui::Shortcut& pressedShortcut) const;
   KeyAction getCurrentActionModifiers(KeyContext context);
   WheelAction getWheelActionFromMouseMessage(KeyContext context, const ui::Message* msg);
   Keys getDragActionsFromMessage(const ui::Message* msg);

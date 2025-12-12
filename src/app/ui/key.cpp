@@ -465,7 +465,7 @@ void Key::add(const ui::Shortcut& shortcut, const KeySource source, KeyboardShor
   // scrolling with the Han dtool it will start painting with the
   // Pencil tool).
   if (!m_command)
-    appShortcut.preferSpaceKeyAsModifier();
+    appShortcut.preferAsModifierOnly();
 
   m_adds.push_back(appShortcut);
   m_shortcuts.reset();
@@ -546,15 +546,24 @@ const AppShortcut* Key::isPressed(const Message* msg, const KeyContext keyContex
 
 const AppShortcut* Key::isPressed(const Message* msg) const
 {
+  if (!msg)
+    return isPressed();
   return isPressed(msg, KeyboardShortcuts::getCurrentKeyContext());
 }
 
-bool Key::isPressed() const
+const AppShortcut* Key::isPressed() const
 {
-  const auto& ss = this->shortcuts();
-  return std::any_of(ss.begin(), ss.end(), [](const AppShortcut& shortcut) {
-    return shortcut.isPressed();
-  });
+  const KeyContext keyContext = KeyboardShortcuts::getCurrentKeyContext();
+  const AppShortcut* best = nullptr;
+  if (fitsContext(keyContext)) {
+    for (const AppShortcut& shortcut : shortcuts()) {
+      if (shortcut.isPressed() &&
+          (!best || shortcut.fitsBetterThan(keyContext, keycontext(), keycontext(), *best))) {
+        best = &shortcut;
+      }
+    }
+  }
+  return best;
 }
 
 bool Key::isLooselyPressed() const

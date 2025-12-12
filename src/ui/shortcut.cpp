@@ -402,13 +402,56 @@ bool Shortcut::isLooselyPressed() const
   return false;
 }
 
-void Shortcut::preferSpaceKeyAsModifier()
+void Shortcut::preferAsModifierOnly()
 {
-  // Convert "Space" to modifier.
-  if (m_modifiers == 0 && m_scancode == kKeySpace) {
-    m_modifiers = (KeyModifiers)((int)m_modifiers | (int)kKeySpaceModifier);
+  KeyModifiers newModifier = kKeyUninitializedModifier;
+
+  switch (m_scancode) {
+    case kKeyLShift:
+    case kKeyRShift:   newModifier = kKeyShiftModifier; break;
+    case kKeyLControl:
+    case kKeyRControl: newModifier = kKeyCtrlModifier; break;
+    case kKeyAlt:      newModifier = kKeyAltModifier; break;
+    case kKeyAltGr:
+      newModifier = (KeyModifiers)((int)kKeyAltModifier | (int)kKeyCtrlModifier);
+      break;
+    case kKeySpace:   newModifier = kKeySpaceModifier; break;
+    case kKeyCommand: newModifier = kKeyShiftModifier; break;
+    case kKeyLWin:
+    case kKeyRWin:    newModifier = kKeyWinModifier; break;
+  }
+  if (newModifier != kKeyUninitializedModifier) {
+    m_modifiers = (KeyModifiers)((int)m_modifiers | (int)newModifier);
     m_scancode = kKeyNil;
   }
+}
+
+// TODO change to std::popcount() in C++20
+static size_t popcount(const ui::KeyModifiers mods)
+{
+  size_t c = 0;
+  if (mods & ui::kKeyAltModifier)
+    ++c;
+  if (mods & ui::kKeyCmdModifier)
+    ++c;
+  if (mods & ui::kKeyCtrlModifier)
+    ++c;
+  if (mods & ui::kKeyNoneModifier)
+    ++c;
+  if (mods & ui::kKeyShiftModifier)
+    ++c;
+  if (mods & ui::kKeySpaceModifier)
+    ++c;
+  if (mods & ui::kKeyUninitializedModifier)
+    ++c;
+  if (mods & ui::kKeyWinModifier)
+    ++c;
+  return c;
+}
+
+bool Shortcut::lessModifiersThan(const Shortcut& other) const
+{
+  return popcount(modifiers()) < popcount(other.modifiers());
 }
 
 } // namespace ui

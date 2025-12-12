@@ -51,8 +51,12 @@ public:
 
   void removeModifiers() { m_modifiers = kKeyNoneModifier; }
 
-  // Converts "Space" shortcut as modifier only.
-  void preferSpaceKeyAsModifier();
+  // Tries to remove the scancode of the shortcut if the modifier
+  // matches it.
+  void preferAsModifierOnly();
+
+  // Returns true if this shortcut has less modifiers than "other".
+  bool lessModifiersThan(const Shortcut& other) const;
 
 private:
   KeyModifiers m_modifiers = kKeyNoneModifier;
