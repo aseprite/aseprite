@@ -28,6 +28,7 @@
 #include "app/ui_context.h"
 #include "app/xml_document.h"
 #include "app/xml_exception.h"
+#include "base/fs.h"
 #include "fmt/format.h"
 #include "ui/message.h"
 #include "ui/shortcut.h"
@@ -329,6 +330,9 @@ void KeyboardShortcuts::importFile(XMLElement* rootElement, KeySource source)
 
 void KeyboardShortcuts::importFile(const std::string& filename, KeySource source)
 {
+  if (!base::is_file(filename))
+    return;
+
   XMLDocumentRef doc = app::open_xml(filename);
   XMLHandle handle(doc.get());
   XMLElement* xmlKey = handle.FirstChildElement("keyboard").ToElement();

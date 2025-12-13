@@ -274,6 +274,9 @@ void Extension::executeExitActions()
 
 void Extension::addKeys(const std::string& id, const std::string& path)
 {
+  if (!m_isBuiltinExtension && !base::is_file(path))
+    return;
+
   m_keys[id] = path;
   updateCategory(Category::Keys);
 }
@@ -282,6 +285,9 @@ void Extension::addLanguage(const std::string& id,
                             const std::string& path,
                             const std::string& displayName)
 {
+  if (!m_isBuiltinExtension && !base::is_file(path))
+    return;
+
   m_languages[id] = LangInfo(id, path, displayName);
   updateCategory(Category::Languages);
 }
@@ -296,6 +302,9 @@ void Extension::addTheme(const std::string& id, const std::string& path, const s
 
 void Extension::addPalette(const std::string& id, const std::string& path)
 {
+  if (!m_isBuiltinExtension && !base::is_file(path))
+    return;
+
   m_palettes[id] = path;
   updateCategory(Category::Palettes);
 }
@@ -304,6 +313,9 @@ void Extension::addDitheringMatrix(const std::string& id,
                                    const std::string& path,
                                    const std::string& name)
 {
+  if (!m_isBuiltinExtension && !base::is_file(path))
+    return;
+
   DitheringMatrixInfo info(path, name);
   m_ditheringMatrices[id] = std::move(info);
   updateCategory(Category::DitheringMatrices);
