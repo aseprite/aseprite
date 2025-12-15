@@ -465,7 +465,7 @@ void Brush::regenerate()
         }
         else {
           double angle = PI * m_angle / 180;
-          double sin = -std::sin(angle);
+          double sin = std::sin(angle);
           double cos = std::cos(angle);
 
           int x1, y1, x2, y2, x3, y3, x4, y4;
