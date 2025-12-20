@@ -15,6 +15,9 @@ function(find_tests dir dependencies)
   foreach(testsourcefile ${tests})
     get_filename_component(testname ${testsourcefile} NAME_WE)
 
+    # Necessary for Extensions tests on Windows
+    add_definitions(-DLIBARCHIVE_STATIC)
+
     add_executable(${testname} ${testsourcefile})
     add_test(NAME ${testname} COMMAND ${testname})
 

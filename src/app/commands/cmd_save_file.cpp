@@ -20,6 +20,7 @@
 #include "app/doc.h"
 #include "app/doc_undo.h"
 #include "app/file/file.h"
+#include "app/file/file_format.h"
 #include "app/file/gif_format.h"
 #include "app/file/png_format.h"
 #include "app/file_selector.h"
@@ -36,6 +37,7 @@
 #include "app/ui/status_bar.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
+#include "dio/file_format.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
 #include "doc/tag.h"
@@ -222,8 +224,14 @@ void SaveFileBaseCommand::saveDocumentInBackground(const Context* context,
   if (!fop->hasError() && resizeOnTheFly == ResizeOnTheFly::On)
     fop->setOnTheFlyScale(scale);
 
-  SaveFileJob job(fop.get(), params().ui());
-  job.showProgressWindow();
+  if (fop->fileFormat()->dioFormat() >= dio::FileFormat::FIRST_CUSTOM) {
+    // Custom formats must run on the main thread
+    fop->operate();
+  }
+  else {
+    SaveFileJob job(fop.get(), params().ui());
+    job.showProgressWindow();
+  }
 
   if (fop->hasError()) {
     Console console;
