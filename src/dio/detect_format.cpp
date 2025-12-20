@@ -26,7 +26,26 @@
 #define PSD_STAMP        "8BPS"
 #define QOI_STAMP        "qoif"
 
+#include <unordered_map>
+
+static std::unordered_map<std::string, dio::FileFormat> g_customFormats;
+
 namespace dio {
+
+bool register_custom_format_extension(const std::string& ext, const FileFormat format)
+{
+  if (detect_format_by_file_extension("file." + ext) != FileFormat::UNKNOWN)
+    return false;
+
+  g_customFormats.try_emplace(ext, format);
+  return true;
+}
+
+void unregister_custom_format_extension(const std::string& ext, const FileFormat format)
+{
+  if (g_customFormats[ext] == format)
+    g_customFormats.erase(ext);
+}
 
 FileFormat detect_format(const std::string& filename)
 {
@@ -160,6 +179,10 @@ FileFormat detect_format_by_file_extension(const std::string& filename)
 
   if (ext == "qoi")
     return FileFormat::QOI_IMAGE;
+
+  const auto it = g_customFormats.find(ext);
+  if (it != g_customFormats.end())
+    return it->second;
 
   return FileFormat::UNKNOWN;
 }
