@@ -331,6 +331,88 @@ int Plugin_newMenuSeparator(lua_State* L)
   return 0;
 }
 
+int Plugin_newFileFormat(lua_State* L)
+{
+  auto* plugin = get_obj<Plugin>(L, 1);
+  if (!lua_istable(L, 2))
+    return luaL_error(L,
+                      "plugin:newFileFormat() must be called with a table as its first argument");
+
+  Extension::CustomFormatDefinition format;
+
+  int type = lua_getfield(L, 2, "binary");
+  if (type != LUA_TNIL)
+    format.binary = lua_toboolean(L, -1);
+  lua_pop(L, 1);
+
+  type = lua_getfield(L, 2, "supports");
+  if (type != LUA_TNIL)
+    format.flags = lua_tointeger(L, -1);
+  lua_pop(L, 1);
+
+  for (const char* field : { "extensions", "extension" }) {
+    type = lua_getfield(L, 2, field);
+    if (type == LUA_TTABLE) {
+      lua_pushnil(L);
+      while (lua_next(L, -2) != 0) {
+        format.extensions.push_back(base::string_to_lower(luaL_tolstring(L, -1, nullptr)));
+        lua_pop(L, 2);
+      }
+    }
+    else if (type == LUA_TSTRING) {
+      format.extensions.push_back(base::string_to_lower(lua_tostring(L, -1)));
+    }
+    else if (type != LUA_TNIL) {
+      lua_pop(L, 2);
+      return luaL_error(L, "format parameter \"%s\" must be a list or string", field);
+    }
+    lua_pop(L, 1);
+  }
+
+  if (format.extensions.empty()) {
+    lua_pop(L, 1);
+    return luaL_error(L, "format extension list is empty");
+  }
+
+  for (const auto& ext : format.extensions) {
+    if (ext.empty()) {
+      lua_pop(L, 1);
+      return luaL_error(L, "format extension is empty");
+    }
+  }
+
+  std::sort(format.extensions.begin(), format.extensions.end());
+  format.extensions.erase(std::unique(format.extensions.begin(), format.extensions.end()),
+                          format.extensions.end());
+
+  type = lua_getfield(L, 2, "name");
+  if (type != LUA_TNIL)
+    format.name = lua_tostring(L, -1);
+  else
+    format.name = format.extensions.front();
+  lua_pop(L, 1);
+
+  type = lua_getfield(L, 2, "onload");
+  if (type == LUA_TFUNCTION)
+    format.onloadRef = luaL_ref(L, LUA_REGISTRYINDEX);
+  else
+    lua_pop(L, 1);
+
+  type = lua_getfield(L, 2, "onsave");
+  if (type == LUA_TFUNCTION)
+    format.onsaveRef = luaL_ref(L, LUA_REGISTRYINDEX);
+  else
+    lua_pop(L, 1);
+
+  if (format.onloadRef == -1 && format.onsaveRef == -1) {
+    lua_pop(L, 1);
+    return luaL_error(L, "format must have an onload or onsave function");
+  }
+
+  plugin->ext->addFileFormat(format);
+  return 0;
+}
+
 int Plugin_get_name(lua_State* L)
 {
   auto* plugin = get_obj<Plugin>(L, 1);
@@ -384,6 +466,7 @@ const luaL_Reg Plugin_methods[] = {
   { "newMenuGroup",     Plugin_newMenuGroup     },
   { "deleteMenuGroup",  Plugin_deleteMenuGroup  },
   { "newMenuSeparator", Plugin_newMenuSeparator },
+  { "newFileFormat",    Plugin_newFileFormat    },
   { nullptr,            nullptr                 }
 };
 
