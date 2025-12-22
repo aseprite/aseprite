@@ -2101,6 +2101,27 @@ bool Editor::onProcessMessage(Message* msg)
       break;
     }
 
+    case kAppLostFocusMessage: {
+      ui::Manager* manager = ui::Manager::getDefault();
+      if (manager && m_state) {
+        ui::MouseMessage* msg = new ui::MouseMessage(ui::MessageType::kMouseUpMessage,
+                                                     os::PointerType::Mouse,
+                                                     ui::MouseButton::kButtonLeft,
+                                                     os::KeyModifiers::kKeyNoneModifier,
+                                                     manager->getMouse()->mousePosInDisplay());
+        m_state->onMouseUp(this, msg);
+        ui::MouseMessage* msg2 = new ui::MouseMessage(ui::MessageType::kMouseUpMessage,
+                                                      os::PointerType::Mouse,
+                                                      ui::MouseButton::kButtonMiddle,
+                                                      os::KeyModifiers::kKeyNoneModifier,
+                                                      manager->getMouse()->mousePosInDisplay());
+        m_state->onMouseUp(this, msg2);
+        os::SystemRef sys = os::System::instance();
+        sys->resetKeyPressed();
+      }
+      break;
+    }
+
     case kMouseEnterMessage:
       // Do not update tool loop modifiers when the mouse exits and/re-enters
       // the editor area while we are inside the same tool loop (hasCapture()).
