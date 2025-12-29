@@ -1,5 +1,5 @@
 if (Test-Path "$env:ProgramFiles\Git\bin") {
-    $env:Path = "$env:ProgramFiles\Git\bin;$env:ProgramFiles\Git\mingw64\bin" + $env:Path
+    $env:Path = "$env:ProgramFiles\Git\bin;$env:ProgramFiles\Git\mingw64\bin;" + $env:Path
 }
 elseif (Test-Path "$env:ProgramFiles(x86)\Git\bin") {
     $env:Path = "$env:ProgramFiles(x86)\Git\bin;$env:ProgramFiles(x86)\Git\mingw64\bin;" + $env:Path
