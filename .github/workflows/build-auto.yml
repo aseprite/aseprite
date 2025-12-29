@@ -3,6 +3,8 @@ on:
   push:
     paths:
     - '.github/workflows/build-auto.yml'
+    - 'build.cmd'
+    - 'build.ps1'
     - 'build.sh'
     - 'laf'
 jobs:
