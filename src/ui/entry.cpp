@@ -60,7 +60,8 @@ Entry::Entry(const int maxsize, const char* format, ...)
   , m_recent_focused(false)
   , m_lock_selection(false)
   , m_persist_selection(false)
-  , m_translate_dead_keys(true)
+  , m_translate_dead_keys(false)
+  , m_lastDeadKey(0)
   , m_scale(1.0f, 1.0f)
 {
   enableFlags(CTRL_RIGHT_CLICK);
@@ -311,6 +312,7 @@ bool Entry::onProcessMessage(Message* msg)
         deselectText();
 
       m_recent_focused = false;
+      m_lastDeadKey = 0;
 
       // Stop processing dead keys
       if (m_translate_dead_keys)
@@ -334,12 +336,24 @@ bool Entry::onProcessMessage(Message* msg)
         }
 
         if (keymsg->unicodeChar() >= 32) {
-          executeCmd(Cmd::InsertChar, keymsg->unicodeChar());
+          base::codepoint_t unicodeChar = keymsg->unicodeChar();
 
-          // Select dead-key
-          if (keymsg->isDeadKey()) {
+          // Check if we have a pending dead key to compose
+          if (m_lastDeadKey != 0) {
+            base::codepoint_t composed = base::compose_dead_key(m_lastDeadKey, unicodeChar);
+            if (composed != 0) {
+              executeCmd(Cmd::InsertChar, composed);
+              m_lastDeadKey = 0;
+              return true;
+            }
+            m_lastDeadKey = 0;
+          }
+
+          executeCmd(Cmd::InsertChar, unicodeChar);
+          if (base::is_dead_key(unicodeChar)) {
             if (lastCaretPos() < m_maxsize)
               selectText(m_caret - 1, m_caret);
+            m_lastDeadKey = unicodeChar;
           }
           return true;
         }
