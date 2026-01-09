@@ -169,6 +169,9 @@
               <listitem text="@.1_hour" value="60" />
               <listitem text="@.4_hours" value="240" />
               <listitem text="@.8_hours" value="480" />
+              <listitem text="@.16_hours" value="960" />
+              <listitem text="@.24_hours" value="1440" />
+              <listitem text="@.inf_hours" value="-1" />
             </combobox>
           </grid>
 
