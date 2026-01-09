@@ -18,3 +18,5 @@ build
 .build
 .deps
 CMakeSettings.json
+.cache/clangd
+compile_commands.json
