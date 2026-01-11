@@ -1,0 +1,60 @@
+name: Build Aseprite Windows x64
+
+on:
+  workflow_dispatch:   # allows manual trigger
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          choco install -y cmake ninja
+          choco install -y python3
+          choco install -y git
+          choco install -y 7zip
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Clone Skia (dependency)
+        run: |
+          git clone https://github.com/aseprite/skia.git --branch aseprite-m102 skia
+
+      - name: Build Skia
+        run: |
+          cd skia
+          python3 tools/git-sync-deps
+          bin/gn gen out/Release-x64 --args="is_official_build=true is_debug=false skia_use_system_expat=false skia_use_system_icu=false skia_use_system_libjpeg=false skia_use_system_libpng=false skia_use_system_zlib=false skia_use_system_freetype=false skia_use_system_harfbuzz=false skia_use_system_webp=false target_cpu=\"x64\""
+          ninja -C out/Release-x64
+
+      - name: Configure Aseprite
+        run: |
+          mkdir build
+          cd build
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DLAF_BACKEND=skia -DSKIA_DIR=../skia -DSKIA_LIBRARY_DIR=../skia/out/Release-x64 -DSKIA_LIBRARY=../skia/out/Release-x64/skia.lib ..
+
+      - name: Build Aseprite
+        run: |
+          cd build
+          ninja aseprite
+
+      - name: Package ZIP
+        run: |
+          cd build/bin
+          7z a ../../aseprite-windows-x64.zip *
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aseprite-windows-x64
+          path: aseprite-windows-x64.zip
