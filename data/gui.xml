@@ -610,6 +610,7 @@
 
       <key tool="line" shortcut="L" />
       <key tool="curve" shortcut="Shift+L" />
+      <key tool="pixel_pen" shortcut="N" />
 
       <key tool="rectangle" shortcut="U" />
       <key tool="filled_rectangle" shortcut="U" />
@@ -1446,6 +1447,14 @@
             controller="four_points"
             pointshape="brush"
             intertwine="as_bezier"
+            tracepolicy="last" />
+      <tool id="pixel_pen"
+            text="@.pixel_pen"
+            tooltip="@.pixel_pen_tooltip"
+            ink="pixel_pen"
+            controller="point_by_point"
+            pointshape="pixel"
+            intertwine="as_lines"
             tracepolicy="last" />
     </group>
 

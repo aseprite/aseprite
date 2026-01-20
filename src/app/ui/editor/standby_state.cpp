@@ -39,6 +39,7 @@
 #include "app/ui/editor/moving_slice_state.h"
 #include "app/ui/editor/moving_symmetry_state.h"
 #include "app/ui/editor/pivot_helpers.h"
+#include "app/ui/editor/pixel_pen_state.h"
 #include "app/ui/editor/pixels_movement.h"
 #include "app/ui/editor/scrolling_state.h"
 #include "app/ui/editor/select_text_box_state.h"
@@ -255,6 +256,15 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
   if (clickedInk->isText()) {
     EditorStatePtr newState(new SelectTextBoxState(editor, msg));
     editor->setState(newState);
+    return true;
+  }
+
+  // Handle Pixel Pen tool
+  if (clickedInk->isPixelPen()) {
+    EditorStatePtr newState(new PixelPenState(editor));
+    editor->setState(newState);
+    // Forward the mouse down event to the new state
+    newState->onMouseDown(editor, msg);
     return true;
   }
 

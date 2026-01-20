@@ -585,6 +585,9 @@ target_sources(app-lib PRIVATE
   tools/ink_type.cpp
   tools/intertwine.cpp
   tools/pick_ink.cpp
+  tools/pixel_pen/pen_path.cpp
+  tools/pixel_pen/pixel_line_calculator.cpp
+  tools/pixel_pen/pixel_pen_tool.cpp
   tools/point_shape.cpp
   tools/stroke.cpp
   tools/symmetry.cpp
@@ -633,6 +636,7 @@ target_sources(app-lib PRIVATE
   ui/editor/moving_symmetry_state.cpp
   ui/editor/navigate_state.cpp
   ui/editor/pivot_helpers.cpp
+  ui/editor/pixel_pen_state.cpp
   ui/editor/pixels_movement.cpp
   ui/editor/play_state.cpp
   ui/editor/scrolling_state.cpp

@@ -42,6 +42,7 @@
 #include "app/ui/dithering_selector.h"
 #include "app/ui/dynamics_popup.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/editor/pixel_pen_state.h"
 #include "app/ui/expr_entry.h"
 #include "app/ui/font_entry.h"
 #include "app/ui/icon_button.h"
@@ -1900,6 +1901,134 @@ public:
   ~FontSelector() { info().updatePreferences(); }
 };
 
+//------------------------------------------------------------------------------
+// Pixel Pen Tool Fields
+//------------------------------------------------------------------------------
+
+class ContextBar::PixelPenEditModeField : public CheckBox {
+public:
+  PixelPenEditModeField() : CheckBox("Edit Mode") { initTheme(); }
+
+  void updateFromPreferences()
+  {
+    setSelected(Preferences::instance().pixelPen.editMode());
+  }
+
+protected:
+  void onInitTheme(InitThemeEvent& ev) override
+  {
+    CheckBox::onInitTheme(ev);
+    setStyle(SkinTheme::get(this)->styles.miniCheckBox());
+  }
+
+  void onClick() override
+  {
+    CheckBox::onClick();
+    Preferences::instance().pixelPen.editMode(isSelected());
+    releaseFocus();
+  }
+};
+
+class ContextBar::PixelPenAngleSnapField : public CheckBox {
+public:
+  PixelPenAngleSnapField() : CheckBox("45\xc2\xb0 Snap") { initTheme(); }
+
+  void updateFromPreferences()
+  {
+    setSelected(Preferences::instance().pixelPen.angleSnap());
+  }
+
+protected:
+  void onInitTheme(InitThemeEvent& ev) override
+  {
+    CheckBox::onInitTheme(ev);
+    setStyle(SkinTheme::get(this)->styles.miniCheckBox());
+  }
+
+  void onClick() override
+  {
+    CheckBox::onClick();
+    Preferences::instance().pixelPen.angleSnap(isSelected());
+    releaseFocus();
+  }
+};
+
+class ContextBar::PixelPenAnchorTypeField : public ButtonSet {
+public:
+  PixelPenAnchorTypeField() : ButtonSet(3)
+  {
+    addItem("Corner");
+    addItem("Smooth");
+    addItem("Symmetric");
+    setSelectedItem(0);
+    initTheme();
+  }
+
+  void updateFromPreferences()
+  {
+    int type = Preferences::instance().pixelPen.anchorType();
+    if (type >= 0 && type < 3)
+      setSelectedItem(type);
+  }
+
+protected:
+  void onItemChange(Item* item) override
+  {
+    ButtonSet::onItemChange(item);
+    Preferences::instance().pixelPen.anchorType(selectedItem());
+  }
+};
+
+class ContextBar::PixelPenRestorePathField : public Button {
+public:
+  PixelPenRestorePathField() : Button("Restore Path") { initTheme(); }
+
+protected:
+  void onInitTheme(InitThemeEvent& ev) override
+  {
+    Button::onInitTheme(ev);
+    setStyle(SkinTheme::get(this)->styles.miniButton());
+  }
+
+  void onClick() override
+  {
+    Button::onClick();
+    if (auto* editor = Editor::activeEditor()) {
+      if (auto* state = dynamic_cast<PixelPenState*>(editor->getState().get())) {
+        if (state->hasLastPath()) {
+          state->restoreLastPath(editor);
+        }
+      }
+    }
+    releaseFocus();
+  }
+};
+
+class ContextBar::PixelPenAddHandlesField : public Button {
+public:
+  PixelPenAddHandlesField() : Button("Add Handles") { initTheme(); }
+
+protected:
+  void onInitTheme(InitThemeEvent& ev) override
+  {
+    Button::onInitTheme(ev);
+    setStyle(SkinTheme::get(this)->styles.miniButton());
+  }
+
+  void onClick() override
+  {
+    Button::onClick();
+    if (auto* editor = Editor::activeEditor()) {
+      if (auto* state = dynamic_cast<PixelPenState*>(editor->getState().get())) {
+        if (state->canAddHandles()) {
+          state->addHandlesToSelectedAnchor(editor);
+        }
+      }
+    }
+    releaseFocus();
+  }
+};
+
 ContextBar::ContextBar(TooltipManager* tooltipManager, ColorBar* colorBar)
 {
   auto& pref = Preferences::instance();
@@ -1956,6 +2085,14 @@ ContextBar::ContextBar(TooltipManager* tooltipManager, ColorBar* colorBar)
 
   addChild(m_sliceFields = new SliceFields);
   addChild(m_fontSelector = new FontSelector(this));
+
+  // Pixel Pen Tool options
+  addChild(m_pixelPenBox = new HBox());
+  m_pixelPenBox->addChild(m_pixelPenEditMode = new PixelPenEditModeField());
+  m_pixelPenBox->addChild(m_pixelPenAngleSnap = new PixelPenAngleSnapField());
+  m_pixelPenBox->addChild(m_pixelPenAnchorType = new PixelPenAnchorTypeField());
+  m_pixelPenBox->addChild(m_pixelPenAddHandles = new PixelPenAddHandlesField());
+  m_pixelPenBox->addChild(m_pixelPenRestorePath = new PixelPenRestorePathField());
 
   setupTooltips(tooltipManager);
 
@@ -2237,6 +2374,9 @@ void ContextBar::updateForTool(tools::Tool* tool)
   // True if the current tool is text tool.
   const bool isText = tool && (tool->getInk(0)->isText() || tool->getInk(1)->isText());
 
+  // True if the current tool is pixel_pen tool.
+  const bool isPixelPen = tool && (tool->getId() == "pixel_pen");
+
   // True if the current tool is floodfill
   const bool isFloodfill = tool && (tool->getPointShape(0)->isFloodFill() ||
                                     tool->getPointShape(1)->isFloodFill());
@@ -2311,6 +2451,14 @@ void ContextBar::updateForTool(tools::Tool* tool)
     updateSliceFields(UIContext::instance()->activeSite());
 
   m_fontSelector->setVisible(isText);
+
+  // Pixel Pen options
+  m_pixelPenBox->setVisible(isPixelPen);
+  if (isPixelPen) {
+    m_pixelPenEditMode->updateFromPreferences();
+    m_pixelPenAngleSnap->updateFromPreferences();
+    m_pixelPenAnchorType->updateFromPreferences();
+  }
 
   // Update ink shades with the current selected palette entries
   if (updateShade)

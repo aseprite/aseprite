@@ -174,6 +174,11 @@ private:
   class SymmetryField;
   class SliceFields;
   class FontSelector;
+  class PixelPenEditModeField;
+  class PixelPenAngleSnapField;
+  class PixelPenAnchorTypeField;
+  class PixelPenRestorePathField;
+  class PixelPenAddHandlesField;
 
   ZoomButtons* m_zoomButtons;
   SamplingSelector* m_samplingSelector;
@@ -213,6 +218,12 @@ private:
   SymmetryField* m_symmetry;
   SliceFields* m_sliceFields;
   FontSelector* m_fontSelector = nullptr;
+  ui::Box* m_pixelPenBox = nullptr;
+  PixelPenEditModeField* m_pixelPenEditMode = nullptr;
+  PixelPenAngleSnapField* m_pixelPenAngleSnap = nullptr;
+  PixelPenAnchorTypeField* m_pixelPenAnchorType = nullptr;
+  PixelPenRestorePathField* m_pixelPenRestorePath = nullptr;
+  PixelPenAddHandlesField* m_pixelPenAddHandles = nullptr;
   obs::scoped_connection m_symmModeConn;
   obs::scoped_connection m_fgColorConn;
   obs::scoped_connection m_bgColorConn;
