@@ -1445,12 +1445,11 @@ public:
 
     if (charBounds.x2() - m_widget->bounds().x < m_widget->clientBounds().x2()) {
       if (m_bg != ColorNone) {
-        // Fill background e.g. needed for selected/highlighted
-        // regions with TTF fonts where the char is smaller than the
-        // text bounds [m_y,m_y+m_h)
-        gfx::Rect fillThisRect(m_lastX - m_widget->bounds().x, m_y, charBounds.x2() - m_lastX, m_h);
-        if (charBounds != fillThisRect)
-          m_graphics->fillRect(m_bg, fillThisRect);
+        // Fill the background here, accounts for regions with TTF fonts where the char is smaller
+        // than the text bounds [m_y,m_y+m_h)
+        m_graphics->fillRect(
+          m_bg,
+          gfx::Rect(m_lastX - m_widget->bounds().x, m_y, charBounds.x2() - m_lastX, m_h));
       }
       m_lastX = charBounds.x2();
       return true;
