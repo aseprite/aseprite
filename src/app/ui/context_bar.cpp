@@ -39,10 +39,13 @@
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/color_shades.h"
+#include "app/ui/color_source.h"
 #include "app/ui/dithering_selector.h"
 #include "app/ui/dynamics_popup.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/pixel_pen_state.h"
+#include "app/ui/editor/auto_shade_state.h"
+#include "app/ui/auto_shade_popup.h"
 #include "app/ui/expr_entry.h"
 #include "app/ui/font_entry.h"
 #include "app/ui/icon_button.h"
@@ -2029,6 +2032,550 @@ protected:
   }
 };
 
+//------------------------------------------------------------------------------
+// Auto-Shade Tool Fields
+//------------------------------------------------------------------------------
+
+class ContextBar::AutoShadeLightAngleField : public IntEntry {
+public:
+  AutoShadeLightAngleField() : IntEntry(0, 360) {
+    setSuffix("\xc2\xb0");  // degree symbol
+    initTheme();
+  }
+
+  void updateFromState() {
+    if (auto* editor = Editor::activeEditor()) {
+      if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
+        setTextf("%d", static_cast<int>(state->config().lightAngle));
+      }
+    }
+  }
+
+protected:
+  void onInitTheme(InitThemeEvent& ev) override {
+    IntEntry::onInitTheme(ev);
+    setStyle(SkinTheme::get(this)->styles.miniButton());
+  }
+
+  void onValueChange() override {
+    IntEntry::onValueChange();
+    if (auto* editor = Editor::activeEditor()) {
+      if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
+        state->config().lightAngle = getValue();
+        state->updatePreview(editor);
+      }
+    }
+  }
+};
+
+class ContextBar::AutoShadeAmbientField : public IntEntry {
+public:
+  AutoShadeAmbientField() : IntEntry(0, 100) {
+    setSuffix("%");
+    initTheme();
+  }
+
+  void updateFromState() {
+    if (auto* editor = Editor::activeEditor()) {
+      if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
+        setTextf("%d", static_cast<int>(state->config().ambientLevel * 100));
+      }
+    }
+  }
+
+protected:
+  void onInitTheme(InitThemeEvent& ev) override {
+    IntEntry::onInitTheme(ev);
+    setStyle(SkinTheme::get(this)->styles.miniButton());
+  }
+
+  void onValueChange() override {
+    IntEntry::onValueChange();
+    if (auto* editor = Editor::activeEditor()) {
+      if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
+        state->config().ambientLevel = getValue() / 100.0;
+        state->updatePreview(editor);
+      }
+    }
+  }
+};
+
+class ContextBar::AutoShadeToleranceField : public IntEntry {
+public:
+  AutoShadeToleranceField() : IntEntry(0, 255) {
+    setValue(32);  // Default tolerance
+    initTheme();
+  }
+
+  void updateFromState() {
+    if (auto* editor = Editor::activeEditor()) {
+      if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
+        setValue(state->config().colorTolerance);
+      }
+    }
+  }
+
+protected:
+  void onInitTheme(InitThemeEvent& ev) override {
+    IntEntry::onInitTheme(ev);
+    setStyle(SkinTheme::get(this)->styles.miniButton());
+  }
+
+  void onValueChange() override {
+    IntEntry::onValueChange();
+    if (auto* editor = Editor::activeEditor()) {
+      if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
+        state->config().colorTolerance = getValue();
+        // No need to update preview - tolerance affects region detection on next click
+      }
+    }
+  }
+};
+
+class ContextBar::AutoShadeFillModeField : public ButtonSet {
+public:
+  AutoShadeFillModeField() : ButtonSet(3) {
+    addItem("Color");     // FillMode::SameColor
+    addItem("Shape");     // FillMode::AllNonTransparent
+    addItem("Bounded");   // FillMode::BoundedArea
+    setSelectedItem(1);   // Default to AllNonTransparent (Shape)
+    initTheme();
+  }
+
+  void updateFromState() {
+    if (auto* editor = Editor::activeEditor()) {
+      if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
+        setSelectedItem(static_cast<int>(state->config().fillMode));
+      }
+    }
+  }
+
+protected:
+  void onItemChange(Item* item) override {
+    ButtonSet::onItemChange(item);
+    if (auto* editor = Editor::activeEditor()) {
+      if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
+        state->config().fillMode = static_cast<tools::FillMode>(selectedItem());
+        // No need to update preview - fill mode affects region detection on next click
+      }
+    }
+  }
+};
+
+class ContextBar::AutoShadeModeField : public ButtonSet {
+public:
+  AutoShadeModeField() : ButtonSet(3) {
+    addItem("3-Shade");
+    addItem("5-Shade");
+    addItem("Gradient");
+    setSelectedItem(0);
+    initTheme();
+  }
+
+  void updateFromState() {
+    if (auto* editor = Editor::activeEditor()) {
+      if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
+        setSelectedItem(static_cast<int>(state->config().shadingMode));
+      }
+    }
+  }
+
+protected:
+  void onItemChange(Item* item) override {
+    ButtonSet::onItemChange(item);
+    if (auto* editor = Editor::activeEditor()) {
+      if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
+        state->config().shadingMode = static_cast<tools::ShadingMode>(selectedItem());
+        state->updatePreview(editor);
+      }
+    }
+  }
+};
+
+class ContextBar::AutoShadeOutlineField : public CheckBox {
+public:
+  AutoShadeOutlineField() : CheckBox("Outline") {
+    setSelected(true);  // Default to showing outline
+    initTheme();
+  }
+
+  void updateFromState() {
+    if (auto* editor = Editor::activeEditor()) {
+      if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
+        setSelected(state->config().showOutline);
+      }
+    }
+  }
+
+protected:
+  void onInitTheme(InitThemeEvent& ev) override {
+    CheckBox::onInitTheme(ev);
+    setStyle(SkinTheme::get(this)->styles.miniCheckBox());
+  }
+
+  void onClick() override {
+    CheckBox::onClick();
+    if (auto* editor = Editor::activeEditor()) {
+      if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
+        state->config().showOutline = isSelected();
+        state->updatePreview(editor);
+      }
+    }
+  }
+};
+
+class ContextBar::AutoShadeColorsField : public HBox {
+public:
+  // Small button for eyedropper picking
+  class EyedropperBtn : public Button {
+  public:
+    EyedropperBtn(ColorButton* targetBtn)
+      : Button("")
+      , m_targetBtn(targetBtn)
+      , m_picking(false) {
+      setFocusStop(false);
+      initTheme();
+    }
+
+  protected:
+    void onInitTheme(InitThemeEvent& ev) override {
+      Button::onInitTheme(ev);
+      auto theme = SkinTheme::get(this);
+      setStyle(theme->styles.miniButton());
+      setMinSize(gfx::Size(16, 16));
+      setText("\xF0\x9F\x91\x81");  // Eye emoji as placeholder
+    }
+
+    void onClick() override {
+      Button::onClick();
+      m_picking = true;
+      captureMouse();
+      // Change cursor to indicate picking mode
+      if (auto* manager = this->manager()) {
+        manager->setMouse(this);
+      }
+    }
+
+    bool onProcessMessage(Message* msg) override {
+      if (m_picking) {
+        switch (msg->type()) {
+          case kMouseMoveMessage:
+          case kMouseDownMessage: {
+            auto mouseMsg = static_cast<MouseMessage*>(msg);
+            gfx::Point mousePos = mouseMsg->position();
+            app::Color color;
+            bool colorPicked = false;
+
+            // Get screen position for picking
+            os::Window* nativeWindow = msg->display()->nativeWindow();
+            gfx::Point screenPos = nativeWindow->pointToScreen(mousePos);
+
+            // Try to pick from an IColorSource widget (palette, color bar, etc.)
+            Widget* picked = manager()->pickFromScreenPos(screenPos);
+            IColorSource* colorSource = dynamic_cast<IColorSource*>(picked);
+
+            if (colorSource) {
+              // Get position relative to the picked widget's window
+              os::Window* pickedWindow = picked->display()->nativeWindow();
+              gfx::Point localPos = pickedWindow->pointFromScreen(screenPos);
+              color = colorSource->getColorByPosition(localPos);
+              colorPicked = true;
+            }
+            else {
+              // Fall back to picking from editor canvas
+              if (auto* editor = Editor::activeEditor()) {
+                gfx::Rect editorBounds = editor->boundsOnScreen();
+                if (editorBounds.contains(screenPos)) {
+                  color = editor->getColorByPosition(screenPos);
+                  colorPicked = true;
+                }
+              }
+            }
+
+            // Update the target color button if we picked a valid color
+            if (colorPicked && color.getType() != app::Color::MaskType) {
+              m_targetBtn->setColor(color);
+            }
+
+            if (msg->type() == kMouseDownMessage) {
+              m_picking = false;
+              releaseMouse();
+            }
+            return true;
+          }
+          case kKeyDownMessage: {
+            auto keyMsg = static_cast<KeyMessage*>(msg);
+            if (keyMsg->scancode() == kKeyEsc) {
+              m_picking = false;
+              releaseMouse();
+              return true;
+            }
+            break;
+          }
+          case kMouseUpMessage:
+            m_picking = false;
+            releaseMouse();
+            return true;
+          case kSetCursorMessage:
+            if (m_picking) {
+              auto theme = SkinTheme::get(this);
+              ui::set_mouse_cursor(kCustomCursor, theme->cursors.eyedropper());
+              return true;
+            }
+            break;
+        }
+      }
+      return Button::onProcessMessage(msg);
+    }
+
+  private:
+    ColorButton* m_targetBtn;
+    bool m_picking;
+  };
+
+  AutoShadeColorsField() {
+    // Create color buttons for shadow, base, highlight
+    ColorButtonOptions options;
+    options.canPinSelector = false;
+    options.showSimpleColors = false;
+    options.showIndexTab = true;  // Show palette index tab
+
+    m_shadowBtn = new ColorButton(
+      app::Color::fromRgb(64, 64, 64),
+      doc::IMAGE_RGB,
+      options);
+    m_baseBtn = new ColorButton(
+      app::Color::fromRgb(128, 128, 128),
+      doc::IMAGE_RGB,
+      options);
+    m_highlightBtn = new ColorButton(
+      app::Color::fromRgb(200, 200, 200),
+      doc::IMAGE_RGB,
+      options);
+
+    // Create eyedropper buttons
+    m_shadowEye = new EyedropperBtn(m_shadowBtn);
+    m_baseEye = new EyedropperBtn(m_baseBtn);
+    m_highlightEye = new EyedropperBtn(m_highlightBtn);
+
+    // Add labels, color buttons, and eyedropper buttons
+    addChild(new Label("S:"));
+    addChild(m_shadowBtn);
+    addChild(m_shadowEye);
+    addChild(new Label("B:"));
+    addChild(m_baseBtn);
+    addChild(m_baseEye);
+    addChild(new Label("H:"));
+    addChild(m_highlightBtn);
+    addChild(m_highlightEye);
+
+    // Connect change signals
+    m_shadowBtn->Change.connect([this](const app::Color&) { updateStateColors(); });
+    m_baseBtn->Change.connect([this](const app::Color&) { updateStateColors(); });
+    m_highlightBtn->Change.connect([this](const app::Color&) { updateStateColors(); });
+
+    initTheme();
+  }
+
+  void updateFromState() {
+    if (auto* editor = Editor::activeEditor()) {
+      if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
+        const auto& config = state->config();
+
+        m_shadowBtn->setColor(app::Color::fromRgb(
+          doc::rgba_getr(config.shadowColor),
+          doc::rgba_getg(config.shadowColor),
+          doc::rgba_getb(config.shadowColor)));
+        m_baseBtn->setColor(app::Color::fromRgb(
+          doc::rgba_getr(config.baseColor),
+          doc::rgba_getg(config.baseColor),
+          doc::rgba_getb(config.baseColor)));
+        m_highlightBtn->setColor(app::Color::fromRgb(
+          doc::rgba_getr(config.highlightColor),
+          doc::rgba_getg(config.highlightColor),
+          doc::rgba_getb(config.highlightColor)));
+      }
+    }
+  }
+
+  Shade getShade() const {
+    Shade shade;
+    shade.push_back(m_shadowBtn->getColor());
+    shade.push_back(m_baseBtn->getColor());
+    shade.push_back(m_highlightBtn->getColor());
+    return shade;
+  }
+
+  void setShade(const Shade& shade) {
+    if (shade.size() >= 3) {
+      m_shadowBtn->setColor(shade[0]);
+      m_baseBtn->setColor(shade[1]);
+      m_highlightBtn->setColor(shade[2]);
+      updateStateColors();
+    }
+  }
+
+protected:
+  void onInitTheme(InitThemeEvent& ev) override {
+    HBox::onInitTheme(ev);
+    noBorderNoChildSpacing();
+  }
+
+private:
+  void updateStateColors() {
+    if (auto* editor = Editor::activeEditor()) {
+      if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
+        auto& config = state->config();
+
+        app::Color shadow = m_shadowBtn->getColor();
+        app::Color base = m_baseBtn->getColor();
+        app::Color highlight = m_highlightBtn->getColor();
+
+        config.shadowColor = doc::rgba(
+          shadow.getRed(), shadow.getGreen(), shadow.getBlue(), 255);
+        config.baseColor = doc::rgba(
+          base.getRed(), base.getGreen(), base.getBlue(), 255);
+        config.highlightColor = doc::rgba(
+          highlight.getRed(), highlight.getGreen(), highlight.getBlue(), 255);
+
+        state->updatePreview(editor);
+      }
+    }
+  }
+
+  ColorButton* m_shadowBtn;
+  ColorButton* m_baseBtn;
+  ColorButton* m_highlightBtn;
+  EyedropperBtn* m_shadowEye;
+  EyedropperBtn* m_baseEye;
+  EyedropperBtn* m_highlightEye;
+};
+
+class ContextBar::AutoShadeApplyField : public Button {
+public:
+  AutoShadeApplyField() : Button("Apply") { initTheme(); }
+
+protected:
+  void onInitTheme(InitThemeEvent& ev) override {
+    Button::onInitTheme(ev);
+    setStyle(SkinTheme::get(this)->styles.miniButton());
+  }
+
+  void onClick() override {
+    Button::onClick();
+    if (auto* editor = Editor::activeEditor()) {
+      if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
+        if (state->hasPreview()) {
+          state->applyShading(editor);
+        }
+      }
+    }
+    releaseFocus();
+  }
+};
+
+class ContextBar::AutoShadeCancelField : public Button {
+public:
+  AutoShadeCancelField() : Button("Cancel") { initTheme(); }
+
+protected:
+  void onInitTheme(InitThemeEvent& ev) override {
+    Button::onInitTheme(ev);
+    setStyle(SkinTheme::get(this)->styles.miniButton());
+  }
+
+  void onClick() override {
+    Button::onClick();
+    if (auto* editor = Editor::activeEditor()) {
+      if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
+        state->cancelPreview(editor);
+        editor->backToPreviousState();
+      }
+    }
+    releaseFocus();
+  }
+};
+
+class ContextBar::AutoShadeOptionsField : public Button {
+public:
+  AutoShadeOptionsField() : Button("Options..."), m_colorsField(nullptr) {
+    initTheme();
+  }
+
+  ~AutoShadeOptionsField() {
+    closePopup();
+  }
+
+  // Set the colors field reference for bidirectional sync
+  void setColorsField(AutoShadeColorsField* colorsField) {
+    m_colorsField = colorsField;
+  }
+
+  void closePopup() {
+    if (m_popup && m_popup->isVisible()) {
+      m_popup->closeWindow(nullptr);
+    }
+    m_popup.reset();
+  }
+
+  void showPopup() {
+    if (!m_popup) {
+      m_popup.reset(new AutoShadePopup());
+      m_popup->ConfigChange.connect([this](const tools::ShadeConfig& config) {
+        onConfigChange(config);
+      });
+    }
+
+    // Sync current state to popup (colors come from state, which is updated by top bar)
+    if (auto* editor = Editor::activeEditor()) {
+      if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
+        m_popup->setConfig(state->config());
+      }
+    }
+
+    if (!m_popup->isVisible()) {
+      gfx::Rect bounds = this->bounds();
+      m_popup->openWindowInForeground();
+      m_popup->remapWindow();
+
+      // Position below the button
+      ui::fit_bounds(display(), m_popup.get(),
+                     gfx::Rect(bounds.x, bounds.y2(), 250, 400));
+      m_popup->openWindow();
+    }
+  }
+
+protected:
+  void onInitTheme(InitThemeEvent& ev) override {
+    Button::onInitTheme(ev);
+    setStyle(SkinTheme::get(this)->styles.miniButton());
+  }
+
+  void onClick() override {
+    Button::onClick();
+    showPopup();
+    releaseFocus();
+  }
+
+private:
+  void onConfigChange(const tools::ShadeConfig& config) {
+    if (auto* editor = Editor::activeEditor()) {
+      if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
+        state->config() = config;
+        state->updatePreview(editor);
+
+        // Sync colors back to the top bar
+        if (m_colorsField) {
+          m_colorsField->updateFromState();
+        }
+      }
+    }
+  }
+
+  std::unique_ptr<AutoShadePopup> m_popup;
+  AutoShadeColorsField* m_colorsField;
+};
+
 ContextBar::ContextBar(TooltipManager* tooltipManager, ColorBar* colorBar)
 {
   auto& pref = Preferences::instance();
@@ -2093,6 +2640,29 @@ ContextBar::ContextBar(TooltipManager* tooltipManager, ColorBar* colorBar)
   m_pixelPenBox->addChild(m_pixelPenAnchorType = new PixelPenAnchorTypeField());
   m_pixelPenBox->addChild(m_pixelPenAddHandles = new PixelPenAddHandlesField());
   m_pixelPenBox->addChild(m_pixelPenRestorePath = new PixelPenRestorePathField());
+
+  // Auto-Shade Tool options - simplified top bar
+  // Colors, Tolerance, Apply, Cancel, Options button
+  // Other settings are in the floating Options popup
+  addChild(m_autoShadeBox = new HBox());
+  m_autoShadeBox->addChild(m_autoShadeLabel = new Label("Auto-Shade:"));
+  m_autoShadeBox->addChild(m_autoShadeColors = new AutoShadeColorsField());
+  m_autoShadeBox->addChild(new Label("Tol:"));
+  m_autoShadeBox->addChild(m_autoShadeTolerance = new AutoShadeToleranceField());
+  m_autoShadeBox->addChild(m_autoShadeApply = new AutoShadeApplyField());
+  m_autoShadeBox->addChild(m_autoShadeCancel = new AutoShadeCancelField());
+  m_autoShadeBox->addChild(m_autoShadeOptions = new AutoShadeOptionsField());
+
+  // Wire up bidirectional color sync between top bar and options popup
+  m_autoShadeOptions->setColorsField(m_autoShadeColors);
+
+  // These are still created but not added to the context bar
+  // They are used internally and their state is managed via the Options popup
+  m_autoShadeLightAngle = new AutoShadeLightAngleField();
+  m_autoShadeAmbient = new AutoShadeAmbientField();
+  m_autoShadeFillMode = new AutoShadeFillModeField();
+  m_autoShadeMode = new AutoShadeModeField();
+  m_autoShadeOutline = new AutoShadeOutlineField();
 
   setupTooltips(tooltipManager);
 
@@ -2458,6 +3028,16 @@ void ContextBar::updateForTool(tools::Tool* tool)
     m_pixelPenEditMode->updateFromPreferences();
     m_pixelPenAngleSnap->updateFromPreferences();
     m_pixelPenAnchorType->updateFromPreferences();
+  }
+
+  // Auto-Shade options
+  const bool isAutoShade = tool && (tool->getId() == "auto_shade");
+  m_autoShadeBox->setVisible(isAutoShade);
+  if (isAutoShade) {
+    m_autoShadeColors->updateFromState();
+    m_autoShadeLightAngle->updateFromState();
+    m_autoShadeAmbient->updateFromState();
+    m_autoShadeMode->updateFromState();
   }
 
   // Update ink shades with the current selected palette entries

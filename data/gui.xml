@@ -611,6 +611,7 @@
       <key tool="line" shortcut="L" />
       <key tool="curve" shortcut="Shift+L" />
       <key tool="pixel_pen" shortcut="N" />
+      <key tool="auto_shade" shortcut="Shift+N" />
 
       <key tool="rectangle" shortcut="U" />
       <key tool="filled_rectangle" shortcut="U" />
@@ -1455,6 +1456,14 @@
             controller="point_by_point"
             pointshape="pixel"
             intertwine="as_lines"
+            tracepolicy="last" />
+      <tool id="auto_shade"
+            text="@.auto_shade"
+            tooltip="@.auto_shade_tooltip"
+            ink="auto_shade"
+            controller="one_point"
+            pointshape="pixel"
+            intertwine="none"
             tracepolicy="last" />
     </group>
 

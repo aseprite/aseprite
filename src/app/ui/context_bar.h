@@ -179,6 +179,16 @@ private:
   class PixelPenAnchorTypeField;
   class PixelPenRestorePathField;
   class PixelPenAddHandlesField;
+  class AutoShadeLightAngleField;
+  class AutoShadeAmbientField;
+  class AutoShadeToleranceField;
+  class AutoShadeFillModeField;
+  class AutoShadeModeField;
+  class AutoShadeOutlineField;
+  class AutoShadeColorsField;
+  class AutoShadeApplyField;
+  class AutoShadeCancelField;
+  class AutoShadeOptionsField;
 
   ZoomButtons* m_zoomButtons;
   SamplingSelector* m_samplingSelector;
@@ -224,6 +234,18 @@ private:
   PixelPenAnchorTypeField* m_pixelPenAnchorType = nullptr;
   PixelPenRestorePathField* m_pixelPenRestorePath = nullptr;
   PixelPenAddHandlesField* m_pixelPenAddHandles = nullptr;
+  ui::Box* m_autoShadeBox = nullptr;
+  ui::Label* m_autoShadeLabel = nullptr;
+  AutoShadeLightAngleField* m_autoShadeLightAngle = nullptr;
+  AutoShadeAmbientField* m_autoShadeAmbient = nullptr;
+  AutoShadeToleranceField* m_autoShadeTolerance = nullptr;
+  AutoShadeFillModeField* m_autoShadeFillMode = nullptr;
+  AutoShadeModeField* m_autoShadeMode = nullptr;
+  AutoShadeOutlineField* m_autoShadeOutline = nullptr;
+  AutoShadeColorsField* m_autoShadeColors = nullptr;
+  AutoShadeApplyField* m_autoShadeApply = nullptr;
+  AutoShadeCancelField* m_autoShadeCancel = nullptr;
+  AutoShadeOptionsField* m_autoShadeOptions = nullptr;
   obs::scoped_connection m_symmModeConn;
   obs::scoped_connection m_fgColorConn;
   obs::scoped_connection m_bgColorConn;
