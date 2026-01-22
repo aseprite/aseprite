@@ -36,15 +36,20 @@ private:
     void onAmbientChange();
     void onLightElevationChange();
     void onRoundnessChange();
+    void onHighlightFocusChange();
     void onShadingModeChange();
     void onNormalMethodChange();
     void onFillModeChange();
     void onColorChange();
+    void onOutlineColorChange();
     void onShowOutlineChange();
+    void onSelectiveOutlineChange();
+    void onAntiAliasingChange();
+    void onDitheringChange();
 
     void notifyChange();
 
-    // UI widgets
+    // UI widgets - Light settings
     ui::Slider* m_lightAngleSlider;
     ui::Label* m_lightAngleLabel;
     ui::Slider* m_ambientSlider;
@@ -53,13 +58,30 @@ private:
     ui::Label* m_lightElevationLabel;
     ui::Slider* m_roundnessSlider;
     ui::Label* m_roundnessLabel;
+
+    // UI widgets - Shading options
     ui::ComboBox* m_shadingModeCombo;
     ui::ComboBox* m_normalMethodCombo;
     ui::ComboBox* m_fillModeCombo;
+
+    // UI widgets - Colors
     ColorButton* m_shadowColorBtn;
     ColorButton* m_baseColorBtn;
     ColorButton* m_highlightColorBtn;
+
+    // UI widgets - Outline
     ui::CheckBox* m_showOutlineCheck;
+    ui::CheckBox* m_selectiveOutlineCheck;
+    ColorButton* m_lightOutlineColorBtn;
+    ColorButton* m_shadowOutlineColorBtn;
+
+    // UI widgets - Highlight focus
+    ui::Slider* m_highlightFocusSlider;
+    ui::Label* m_highlightFocusLabel;
+
+    // UI widgets - Advanced options
+    ui::CheckBox* m_antiAliasingCheck;
+    ui::CheckBox* m_ditheringCheck;
 
     // Current config (to avoid unnecessary updates)
     tools::ShadeConfig m_config;

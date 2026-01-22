@@ -83,10 +83,67 @@ public:
         // Draw region outline (if enabled)
         if (m_state->m_tool.config().showOutline && !m_state->m_tool.lastShape().isEmpty()) {
             const ShapeData& shape = m_state->m_tool.lastShape();
-            gfx::Color outlineColor = gfx::rgba(255, 255, 0, 180);
+            const ShadeConfig& config = m_state->m_tool.config();
 
-            // Draw edge pixels outline
+            // Calculate light direction for selective outlining
+            double angleRad = config.lightAngle * (3.14159265358979323846 / 180.0);
+            double lightX = std::cos(angleRad);
+            double lightY = -std::sin(angleRad);
+
+            // Draw edge pixels outline with selective coloring
             for (const auto& edge : shape.edgePixels) {
+                gfx::Color outlineColor;
+
+                if (config.enableSelectiveOutline) {
+                    // Calculate direction from center to this edge pixel
+                    double dx = edge.x - shape.centerX;
+                    double dy = edge.y - shape.centerY;
+                    double len = std::sqrt(dx * dx + dy * dy);
+                    if (len > 0.001) {
+                        dx /= len;
+                        dy /= len;
+                    }
+
+                    // Dot product with light direction
+                    // Positive = facing light, Negative = facing away
+                    double dotLight = dx * lightX + dy * lightY;
+
+                    if (dotLight > 0.1) {
+                        // Light side - use light outline color
+                        outlineColor = gfx::rgba(
+                            doc::rgba_getr(config.lightOutlineColor),
+                            doc::rgba_getg(config.lightOutlineColor),
+                            doc::rgba_getb(config.lightOutlineColor),
+                            180);
+                    }
+                    else if (dotLight < -0.1) {
+                        // Shadow side - use shadow outline color
+                        outlineColor = gfx::rgba(
+                            doc::rgba_getr(config.shadowOutlineColor),
+                            doc::rgba_getg(config.shadowOutlineColor),
+                            doc::rgba_getb(config.shadowOutlineColor),
+                            180);
+                    }
+                    else {
+                        // Transition zone - blend between colors
+                        double t = (dotLight + 0.1) / 0.2;  // 0 to 1
+                        int r = static_cast<int>(
+                            doc::rgba_getr(config.shadowOutlineColor) * (1.0 - t) +
+                            doc::rgba_getr(config.lightOutlineColor) * t);
+                        int g = static_cast<int>(
+                            doc::rgba_getg(config.shadowOutlineColor) * (1.0 - t) +
+                            doc::rgba_getg(config.lightOutlineColor) * t);
+                        int b = static_cast<int>(
+                            doc::rgba_getb(config.shadowOutlineColor) * (1.0 - t) +
+                            doc::rgba_getb(config.lightOutlineColor) * t);
+                        outlineColor = gfx::rgba(r, g, b, 180);
+                    }
+                }
+                else {
+                    // Default yellow outline
+                    outlineColor = gfx::rgba(255, 255, 0, 180);
+                }
+
                 render->drawRect(outlineColor, gfx::Rect(edge.x, edge.y, 1, 1));
             }
         }
@@ -576,6 +633,44 @@ void AutoShadeState::generateShadedPreview()
             adjustedIntensity = intensity + thresholdAdjust;
         }
 
+        // -----------------------------------------------------------------
+        // STEP 2e: Apply highlight focus - make highlight more concentrated
+        // Higher focus = higher threshold needed for highlight
+        // -----------------------------------------------------------------
+        // Calculate dynamic thresholds based on highlight focus
+        // focus 0.0 = default thresholds, focus 1.0 = very concentrated highlight
+        double highlightBoost = config.highlightFocus * 0.25;  // Max 0.25 boost
+        double threeShadeHighThreshold = 0.67 + highlightBoost;
+        double fiveShadeHighThreshold = 0.8 + (highlightBoost * 0.6);
+        double fiveShadeMidHighThreshold = 0.6 + (highlightBoost * 0.4);
+
+        // Dithering zone width (in intensity units)
+        double ditherZone = config.enableDithering ? (0.03 * config.ditheringWidth) : 0.0;
+
+        // Checkerboard pattern for dithering based on pixel position
+        bool ditherPattern = ((pixel.x + pixel.y) % 2) == 0;
+
+        // Helper lambda to check if we're in a dithering zone and should use alternate color
+        auto shouldDitherToNext = [&](double threshold) -> bool {
+            if (!config.enableDithering) return false;
+            double distFromThreshold = adjustedIntensity - threshold;
+            // In the zone just below threshold
+            if (distFromThreshold > -ditherZone && distFromThreshold < 0) {
+                return ditherPattern;
+            }
+            return false;
+        };
+
+        auto shouldDitherToPrev = [&](double threshold) -> bool {
+            if (!config.enableDithering) return false;
+            double distFromThreshold = adjustedIntensity - threshold;
+            // In the zone just above threshold
+            if (distFromThreshold >= 0 && distFromThreshold < ditherZone) {
+                return !ditherPattern;
+            }
+            return false;
+        };
+
         if (useReflectedLight) {
             // Reflected light: use base color (mid-tone)
             r = doc::rgba_getr(config.baseColor);
@@ -587,47 +682,114 @@ void AutoShadeState::generateShadedPreview()
             switch (config.shadingMode) {
                 case ShadingMode::ThreeShade:
                     if (adjustedIntensity < 0.33) {
-                        r = doc::rgba_getr(config.shadowColor);
-                        g = doc::rgba_getg(config.shadowColor);
-                        b = doc::rgba_getb(config.shadowColor);
+                        // Shadow zone - check if dithering to base
+                        if (shouldDitherToNext(0.33)) {
+                            r = doc::rgba_getr(config.baseColor);
+                            g = doc::rgba_getg(config.baseColor);
+                            b = doc::rgba_getb(config.baseColor);
+                        } else {
+                            r = doc::rgba_getr(config.shadowColor);
+                            g = doc::rgba_getg(config.shadowColor);
+                            b = doc::rgba_getb(config.shadowColor);
+                        }
                     }
-                    else if (adjustedIntensity < 0.67) {
-                        r = doc::rgba_getr(config.baseColor);
-                        g = doc::rgba_getg(config.baseColor);
-                        b = doc::rgba_getb(config.baseColor);
+                    else if (adjustedIntensity < threeShadeHighThreshold) {
+                        // Base zone - check if dithering to shadow or highlight
+                        if (shouldDitherToPrev(0.33)) {
+                            r = doc::rgba_getr(config.shadowColor);
+                            g = doc::rgba_getg(config.shadowColor);
+                            b = doc::rgba_getb(config.shadowColor);
+                        } else if (shouldDitherToNext(threeShadeHighThreshold)) {
+                            r = doc::rgba_getr(config.highlightColor);
+                            g = doc::rgba_getg(config.highlightColor);
+                            b = doc::rgba_getb(config.highlightColor);
+                        } else {
+                            r = doc::rgba_getr(config.baseColor);
+                            g = doc::rgba_getg(config.baseColor);
+                            b = doc::rgba_getb(config.baseColor);
+                        }
                     }
                     else {
-                        r = doc::rgba_getr(config.highlightColor);
-                        g = doc::rgba_getg(config.highlightColor);
-                        b = doc::rgba_getb(config.highlightColor);
+                        // Highlight zone - check if dithering to base
+                        if (shouldDitherToPrev(threeShadeHighThreshold)) {
+                            r = doc::rgba_getr(config.baseColor);
+                            g = doc::rgba_getg(config.baseColor);
+                            b = doc::rgba_getb(config.baseColor);
+                        } else {
+                            r = doc::rgba_getr(config.highlightColor);
+                            g = doc::rgba_getg(config.highlightColor);
+                            b = doc::rgba_getb(config.highlightColor);
+                        }
                     }
                     break;
 
                 case ShadingMode::FiveShade:
                     if (adjustedIntensity < 0.2) {
-                        r = doc::rgba_getr(config.shadowColor);
-                        g = doc::rgba_getg(config.shadowColor);
-                        b = doc::rgba_getb(config.shadowColor);
+                        if (shouldDitherToNext(0.2)) {
+                            r = doc::rgba_getr(config.midShadowColor);
+                            g = doc::rgba_getg(config.midShadowColor);
+                            b = doc::rgba_getb(config.midShadowColor);
+                        } else {
+                            r = doc::rgba_getr(config.shadowColor);
+                            g = doc::rgba_getg(config.shadowColor);
+                            b = doc::rgba_getb(config.shadowColor);
+                        }
                     }
                     else if (adjustedIntensity < 0.4) {
-                        r = doc::rgba_getr(config.midShadowColor);
-                        g = doc::rgba_getg(config.midShadowColor);
-                        b = doc::rgba_getb(config.midShadowColor);
+                        if (shouldDitherToPrev(0.2)) {
+                            r = doc::rgba_getr(config.shadowColor);
+                            g = doc::rgba_getg(config.shadowColor);
+                            b = doc::rgba_getb(config.shadowColor);
+                        } else if (shouldDitherToNext(0.4)) {
+                            r = doc::rgba_getr(config.baseColor);
+                            g = doc::rgba_getg(config.baseColor);
+                            b = doc::rgba_getb(config.baseColor);
+                        } else {
+                            r = doc::rgba_getr(config.midShadowColor);
+                            g = doc::rgba_getg(config.midShadowColor);
+                            b = doc::rgba_getb(config.midShadowColor);
+                        }
                     }
-                    else if (adjustedIntensity < 0.6) {
-                        r = doc::rgba_getr(config.baseColor);
-                        g = doc::rgba_getg(config.baseColor);
-                        b = doc::rgba_getb(config.baseColor);
+                    else if (adjustedIntensity < fiveShadeMidHighThreshold) {
+                        if (shouldDitherToPrev(0.4)) {
+                            r = doc::rgba_getr(config.midShadowColor);
+                            g = doc::rgba_getg(config.midShadowColor);
+                            b = doc::rgba_getb(config.midShadowColor);
+                        } else if (shouldDitherToNext(fiveShadeMidHighThreshold)) {
+                            r = doc::rgba_getr(config.midHighlightColor);
+                            g = doc::rgba_getg(config.midHighlightColor);
+                            b = doc::rgba_getb(config.midHighlightColor);
+                        } else {
+                            r = doc::rgba_getr(config.baseColor);
+                            g = doc::rgba_getg(config.baseColor);
+                            b = doc::rgba_getb(config.baseColor);
+                        }
                     }
-                    else if (adjustedIntensity < 0.8) {
-                        r = doc::rgba_getr(config.midHighlightColor);
-                        g = doc::rgba_getg(config.midHighlightColor);
-                        b = doc::rgba_getb(config.midHighlightColor);
+                    else if (adjustedIntensity < fiveShadeHighThreshold) {
+                        if (shouldDitherToPrev(fiveShadeMidHighThreshold)) {
+                            r = doc::rgba_getr(config.baseColor);
+                            g = doc::rgba_getg(config.baseColor);
+                            b = doc::rgba_getb(config.baseColor);
+                        } else if (shouldDitherToNext(fiveShadeHighThreshold)) {
+                            r = doc::rgba_getr(config.highlightColor);
+                            g = doc::rgba_getg(config.highlightColor);
+                            b = doc::rgba_getb(config.highlightColor);
+                        } else {
+                            r = doc::rgba_getr(config.midHighlightColor);
+                            g = doc::rgba_getg(config.midHighlightColor);
+                            b = doc::rgba_getb(config.midHighlightColor);
+                        }
                     }
                     else {
-                        r = doc::rgba_getr(config.highlightColor);
-                        g = doc::rgba_getg(config.highlightColor);
-                        b = doc::rgba_getb(config.highlightColor);
+                        if (shouldDitherToPrev(fiveShadeHighThreshold)) {
+                            r = doc::rgba_getr(config.midHighlightColor);
+                            g = doc::rgba_getg(config.midHighlightColor);
+                            b = doc::rgba_getb(config.midHighlightColor);
+                        } else {
+                            r = doc::rgba_getr(config.highlightColor);
+                            g = doc::rgba_getg(config.highlightColor);
+                            b = doc::rgba_getb(config.highlightColor);
+                        }
                     }
                     break;
 
@@ -664,7 +826,82 @@ void AutoShadeState::generateShadedPreview()
         m_previewColors[pixel] = doc::rgba(r, g, b, outputAlpha);
     }
 
-    SHADE_LOG("generateShadedPreview: generated %zu colors", m_previewColors.size());
+    // =========================================================================
+    // STEP 3: Apply anti-aliasing around edges (optional)
+    // Adds semi-transparent pixels outside the shape for smoother silhouette
+    // =========================================================================
+    if (config.enableAntiAliasing && !shape.edgePixels.empty()) {
+        // Direction offsets for neighbor checking
+        const int dx8[] = {-1, 0, 1, -1, 1, -1, 0, 1};
+        const int dy8[] = {-1, -1, -1, 0, 0, 1, 1, 1};
+
+        // Calculate light direction for AA color selection
+        double angleRad = config.lightAngle * (3.14159265358979323846 / 180.0);
+        double aaLightX = std::cos(angleRad);
+        double aaLightY = -std::sin(angleRad);
+
+        for (const auto& edge : shape.edgePixels) {
+            // Get the shaded color of this edge pixel
+            auto edgeColorIt = m_previewColors.find(edge);
+            if (edgeColorIt == m_previewColors.end()) continue;
+
+            doc::color_t edgeColor = edgeColorIt->second;
+
+            // Check all 8 neighbors
+            for (int i = 0; i < 8; ++i) {
+                gfx::Point neighbor(edge.x + dx8[i], edge.y + dy8[i]);
+
+                // Skip if neighbor is inside the shape
+                if (shape.contains(neighbor)) continue;
+
+                // Skip if we already have an AA pixel here
+                if (m_previewColors.find(neighbor) != m_previewColors.end()) continue;
+
+                // Calculate direction from center to this AA pixel
+                double ndx = neighbor.x - shape.centerX;
+                double ndy = neighbor.y - shape.centerY;
+                double nlen = std::sqrt(ndx * ndx + ndy * ndy);
+                if (nlen > 0.001) {
+                    ndx /= nlen;
+                    ndy /= nlen;
+                }
+
+                // Determine AA alpha based on position (corners get lower alpha)
+                // Cardinal directions (0, 2, 5, 7) = stronger AA
+                // Diagonal directions (1, 3, 4, 6) = weaker AA
+                int baseAlpha = (i == 1 || i == 3 || i == 4 || i == 6) ? 96 : 128;
+
+                // Adjust alpha based on AA levels setting
+                baseAlpha = baseAlpha * config.aaLevels / 2;
+                if (baseAlpha > 200) baseAlpha = 200;
+
+                // Blend outline color based on light direction for selective outline AA
+                doc::color_t aaColor;
+                if (config.enableSelectiveOutline) {
+                    double dotLight = ndx * aaLightX + ndy * aaLightY;
+                    if (dotLight > 0) {
+                        // Light side - use lighter outline
+                        aaColor = config.lightOutlineColor;
+                    } else {
+                        // Shadow side - use darker outline
+                        aaColor = config.shadowOutlineColor;
+                    }
+                } else {
+                    // Default: blend edge color with transparency
+                    aaColor = edgeColor;
+                }
+
+                // Create AA pixel with calculated alpha
+                m_previewColors[neighbor] = doc::rgba(
+                    doc::rgba_getr(aaColor),
+                    doc::rgba_getg(aaColor),
+                    doc::rgba_getb(aaColor),
+                    baseAlpha);
+            }
+        }
+    }
+
+    SHADE_LOG("generateShadedPreview: generated %zu colors (with AA)", m_previewColors.size());
 }
 
 void AutoShadeState::applyShading(Editor* editor)

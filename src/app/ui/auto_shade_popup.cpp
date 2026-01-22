@@ -87,6 +87,17 @@ AutoShadePopup::AutoShadePopup()
     roundnessBox->addChild(m_roundnessLabel);
     lightSection->addChild(roundnessBox);
 
+    // Highlight focus (how concentrated the highlight is)
+    auto highlightFocusBox = new HBox();
+    highlightFocusBox->addChild(new Label("Hi Focus:"));
+    m_highlightFocusSlider = new Slider(0, 100, static_cast<int>(m_config.highlightFocus * 100));
+    m_highlightFocusSlider->setExpansive(true);
+    m_highlightFocusLabel = new Label(fmt::format("{:.0f}%", m_config.highlightFocus * 100));
+    m_highlightFocusLabel->setMinSize(gfx::Size(35, 0));
+    highlightFocusBox->addChild(m_highlightFocusSlider);
+    highlightFocusBox->addChild(m_highlightFocusLabel);
+    lightSection->addChild(highlightFocusBox);
+
     mainBox->addChild(lightSection);
 
     // ---- Colors Section ----
@@ -179,7 +190,54 @@ AutoShadePopup::AutoShadePopup()
     m_showOutlineCheck->setSelected(m_config.showOutline);
     optionsSection->addChild(m_showOutlineCheck);
 
+    // Selective outline checkbox
+    m_selectiveOutlineCheck = new CheckBox("Selective outline (light/shadow)");
+    m_selectiveOutlineCheck->setSelected(m_config.enableSelectiveOutline);
+    optionsSection->addChild(m_selectiveOutlineCheck);
+
+    // Outline colors grid
+    auto outlineColorsGrid = new Grid(2, false);
+
+    outlineColorsGrid->addChildInCell(new Label("Light outline:"), 1, 1, 0);
+    m_lightOutlineColorBtn = new ColorButton(
+        app::Color::fromRgb(
+            doc::rgba_getr(m_config.lightOutlineColor),
+            doc::rgba_getg(m_config.lightOutlineColor),
+            doc::rgba_getb(m_config.lightOutlineColor)),
+        doc::IMAGE_RGB, colorOpts);
+    m_lightOutlineColorBtn->setExpansive(true);
+    outlineColorsGrid->addChildInCell(m_lightOutlineColorBtn, 1, 1, 0);
+
+    outlineColorsGrid->addChildInCell(new Label("Shadow outline:"), 1, 1, 0);
+    m_shadowOutlineColorBtn = new ColorButton(
+        app::Color::fromRgb(
+            doc::rgba_getr(m_config.shadowOutlineColor),
+            doc::rgba_getg(m_config.shadowOutlineColor),
+            doc::rgba_getb(m_config.shadowOutlineColor)),
+        doc::IMAGE_RGB, colorOpts);
+    m_shadowOutlineColorBtn->setExpansive(true);
+    outlineColorsGrid->addChildInCell(m_shadowOutlineColorBtn, 1, 1, 0);
+
+    optionsSection->addChild(outlineColorsGrid);
+
     mainBox->addChild(optionsSection);
+
+    // ---- Advanced Options Section ----
+    auto advancedSection = new VBox();
+    advancedSection->addChild(new Label("Advanced"));
+    advancedSection->addChild(new Separator("", HORIZONTAL));
+
+    // Anti-aliasing checkbox
+    m_antiAliasingCheck = new CheckBox("Anti-aliasing (silhouette)");
+    m_antiAliasingCheck->setSelected(m_config.enableAntiAliasing);
+    advancedSection->addChild(m_antiAliasingCheck);
+
+    // Dithering checkbox
+    m_ditheringCheck = new CheckBox("Dithering (band transitions)");
+    m_ditheringCheck->setSelected(m_config.enableDithering);
+    advancedSection->addChild(m_ditheringCheck);
+
+    mainBox->addChild(advancedSection);
 
     addChild(mainBox);
 
@@ -188,6 +246,7 @@ AutoShadePopup::AutoShadePopup()
     m_ambientSlider->Change.connect([this]() { onAmbientChange(); });
     m_lightElevationSlider->Change.connect([this]() { onLightElevationChange(); });
     m_roundnessSlider->Change.connect([this]() { onRoundnessChange(); });
+    m_highlightFocusSlider->Change.connect([this]() { onHighlightFocusChange(); });
     m_shadingModeCombo->Change.connect([this]() { onShadingModeChange(); });
     m_normalMethodCombo->Change.connect([this]() { onNormalMethodChange(); });
     m_fillModeCombo->Change.connect([this]() { onFillModeChange(); });
@@ -195,10 +254,15 @@ AutoShadePopup::AutoShadePopup()
     m_baseColorBtn->Change.connect([this]() { onColorChange(); });
     m_highlightColorBtn->Change.connect([this]() { onColorChange(); });
     m_showOutlineCheck->Click.connect([this]() { onShowOutlineChange(); });
+    m_selectiveOutlineCheck->Click.connect([this]() { onSelectiveOutlineChange(); });
+    m_lightOutlineColorBtn->Change.connect([this]() { onOutlineColorChange(); });
+    m_shadowOutlineColorBtn->Change.connect([this]() { onOutlineColorChange(); });
+    m_antiAliasingCheck->Click.connect([this]() { onAntiAliasingChange(); });
+    m_ditheringCheck->Click.connect([this]() { onDitheringChange(); });
 
     // Set initial size (increased for new controls)
     setAutoRemap(false);
-    setBounds(gfx::Rect(0, 0, 260, 420));
+    setBounds(gfx::Rect(0, 0, 280, 580));
 }
 
 tools::ShadeConfig AutoShadePopup::getConfig() const
@@ -246,6 +310,24 @@ void AutoShadePopup::setConfig(const tools::ShadeConfig& config)
         doc::rgba_getb(config.highlightColor)));
 
     m_showOutlineCheck->setSelected(config.showOutline);
+
+    m_highlightFocusSlider->setValue(static_cast<int>(config.highlightFocus * 100));
+    m_highlightFocusLabel->setText(fmt::format("{:.0f}%", config.highlightFocus * 100));
+
+    m_selectiveOutlineCheck->setSelected(config.enableSelectiveOutline);
+
+    m_lightOutlineColorBtn->setColor(app::Color::fromRgb(
+        doc::rgba_getr(config.lightOutlineColor),
+        doc::rgba_getg(config.lightOutlineColor),
+        doc::rgba_getb(config.lightOutlineColor)));
+
+    m_shadowOutlineColorBtn->setColor(app::Color::fromRgb(
+        doc::rgba_getr(config.shadowOutlineColor),
+        doc::rgba_getg(config.shadowOutlineColor),
+        doc::rgba_getb(config.shadowOutlineColor)));
+
+    m_antiAliasingCheck->setSelected(config.enableAntiAliasing);
+    m_ditheringCheck->setSelected(config.enableDithering);
 
     m_updatingFromCode = false;
 }
@@ -318,6 +400,44 @@ void AutoShadePopup::onColorChange()
 void AutoShadePopup::onShowOutlineChange()
 {
     m_config.showOutline = m_showOutlineCheck->isSelected();
+    notifyChange();
+}
+
+void AutoShadePopup::onHighlightFocusChange()
+{
+    m_config.highlightFocus = m_highlightFocusSlider->getValue() / 100.0;
+    m_highlightFocusLabel->setText(fmt::format("{:.0f}%", m_config.highlightFocus * 100));
+    notifyChange();
+}
+
+void AutoShadePopup::onSelectiveOutlineChange()
+{
+    m_config.enableSelectiveOutline = m_selectiveOutlineCheck->isSelected();
+    notifyChange();
+}
+
+void AutoShadePopup::onOutlineColorChange()
+{
+    app::Color lightColor = m_lightOutlineColorBtn->getColor();
+    app::Color shadowColor = m_shadowOutlineColorBtn->getColor();
+
+    m_config.lightOutlineColor = doc::rgba(
+        lightColor.getRed(), lightColor.getGreen(), lightColor.getBlue(), 255);
+    m_config.shadowOutlineColor = doc::rgba(
+        shadowColor.getRed(), shadowColor.getGreen(), shadowColor.getBlue(), 255);
+
+    notifyChange();
+}
+
+void AutoShadePopup::onAntiAliasingChange()
+{
+    m_config.enableAntiAliasing = m_antiAliasingCheck->isSelected();
+    notifyChange();
+}
+
+void AutoShadePopup::onDitheringChange()
+{
+    m_config.enableDithering = m_ditheringCheck->isSelected();
     notifyChange();
 }
 

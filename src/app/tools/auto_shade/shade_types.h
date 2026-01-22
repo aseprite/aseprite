@@ -152,6 +152,23 @@ struct ShadeConfig {
     double specularThreshold;
     int reflectedLightWidth;    // Width in pixels for reflected light strip (1-5)
 
+    // Selective outlining - different outline colors for light/shadow sides
+    bool enableSelectiveOutline;     // Use different outline colors based on light
+    doc::color_t lightOutlineColor;  // Outline color on light-facing side
+    doc::color_t shadowOutlineColor; // Outline color on shadow-facing side
+
+    // Highlight control
+    double highlightFocus;  // 0.0-1.0: how concentrated/small the highlight is
+                            // 0.0 = spread out, 1.0 = very focused/small
+
+    // Anti-aliasing
+    bool enableAntiAliasing;    // Add AA around silhouette edges
+    int aaLevels;               // Number of AA levels (1-3)
+
+    // Band transition smoothing
+    bool enableDithering;       // Add dithering at band boundaries for smoother transitions
+    int ditheringWidth;         // Width of dithering zone in pixels (1-3)
+
     // Default constructor with sensible defaults
     ShadeConfig()
         : baseColor(doc::rgba(128, 128, 128, 255))      // Grey base
@@ -178,6 +195,14 @@ struct ShadeConfig {
         , specularShininess(32.0)
         , specularThreshold(0.8)
         , reflectedLightWidth(2)      // 2 pixels wide by default
+        , enableSelectiveOutline(true) // Selective outline enabled by default
+        , lightOutlineColor(doc::rgba(255, 165, 0, 255))   // Bright orange for light side
+        , shadowOutlineColor(doc::rgba(139, 0, 0, 255))    // Dark red for shadow side
+        , highlightFocus(0.5)         // Medium focus by default
+        , enableAntiAliasing(false)   // AA disabled by default (optional feature)
+        , aaLevels(2)                 // 2 levels of AA
+        , enableDithering(false)      // Dithering disabled by default
+        , ditheringWidth(1)           // 1 pixel dithering zone
     {}
 };
 
