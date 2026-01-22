@@ -63,6 +63,9 @@ private:
 
     // Current config (to avoid unnecessary updates)
     tools::ShadeConfig m_config;
+
+    // Guard flag to prevent feedback loops during setConfig
+    bool m_updatingFromCode = false;
 };
 
 } // namespace app

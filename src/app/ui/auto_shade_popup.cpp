@@ -208,6 +208,9 @@ tools::ShadeConfig AutoShadePopup::getConfig() const
 
 void AutoShadePopup::setConfig(const tools::ShadeConfig& config)
 {
+    // Guard against feedback loops
+    m_updatingFromCode = true;
+
     m_config = config;
 
     // Update UI from config
@@ -243,6 +246,8 @@ void AutoShadePopup::setConfig(const tools::ShadeConfig& config)
         doc::rgba_getb(config.highlightColor)));
 
     m_showOutlineCheck->setSelected(config.showOutline);
+
+    m_updatingFromCode = false;
 }
 
 void AutoShadePopup::onLightAngleChange()
@@ -318,6 +323,10 @@ void AutoShadePopup::onShowOutlineChange()
 
 void AutoShadePopup::notifyChange()
 {
+    // Don't emit signal if we're updating from code (prevents feedback loop)
+    if (m_updatingFromCode)
+        return;
+
     ConfigChange(m_config);
 }
 
