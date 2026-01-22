@@ -57,6 +57,7 @@ extern const char* Blur;
 extern const char* Jumble;
 extern const char* Text;
 extern const char* PixelPen;
+extern const char* AutoShade;
 }; // namespace WellKnownInks
 
 namespace WellKnownControllers {

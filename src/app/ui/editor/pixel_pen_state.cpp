@@ -266,9 +266,13 @@ void PixelPenState::onBeforePopState(Editor* editor)
 
 void PixelPenState::onActiveToolChange(Editor* editor, tools::Tool* tool)
 {
-    // If switching to a different tool, commit or cancel the path
-    if (!m_tool.path().isEmpty()) {
-        cancelPath(editor);
+    // If switching to a different tool, cancel and exit
+    if (tool && tool->getId() != "pixel_pen") {
+        if (!m_tool.path().isEmpty()) {
+            cancelPath(editor);
+        }
+        editor->backToPreviousState();
+        return;
     }
 
     // Let the standby state handle the tool change
