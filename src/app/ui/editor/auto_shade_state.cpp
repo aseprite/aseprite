@@ -18,8 +18,10 @@
 #include "app/tools/tool_box.h"
 #include "app/tx.h"
 #include "app/ui/color_bar.h"
+#include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_decorator.h"
+#include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/expand_cel_canvas.h"
@@ -165,6 +167,13 @@ void AutoShadeState::onEnterState(Editor* editor)
             std::min(255, g + 50),
             std::min(255, b + 30),
             255);
+    }
+
+    // Notify context bar to update colors from this state
+    if (auto* mainWindow = App::instance()->mainWindow()) {
+        if (auto* contextBar = mainWindow->getContextBar()) {
+            contextBar->updateForActiveTool();
+        }
     }
 
     editor->invalidate();

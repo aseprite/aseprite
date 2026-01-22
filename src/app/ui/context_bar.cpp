@@ -2335,21 +2335,33 @@ public:
 
   AutoShadeColorsField() {
     // Create color buttons for shadow, base, highlight
+    // Use same defaults as ShadeConfig for consistency
     ColorButtonOptions options;
     options.canPinSelector = false;
     options.showSimpleColors = false;
     options.showIndexTab = true;  // Show palette index tab
 
+    // Default colors from ShadeConfig for consistency with popup
+    tools::ShadeConfig defaultConfig;
     m_shadowBtn = new ColorButton(
-      app::Color::fromRgb(64, 64, 64),
+      app::Color::fromRgb(
+        doc::rgba_getr(defaultConfig.shadowColor),
+        doc::rgba_getg(defaultConfig.shadowColor),
+        doc::rgba_getb(defaultConfig.shadowColor)),
       doc::IMAGE_RGB,
       options);
     m_baseBtn = new ColorButton(
-      app::Color::fromRgb(128, 128, 128),
+      app::Color::fromRgb(
+        doc::rgba_getr(defaultConfig.baseColor),
+        doc::rgba_getg(defaultConfig.baseColor),
+        doc::rgba_getb(defaultConfig.baseColor)),
       doc::IMAGE_RGB,
       options);
     m_highlightBtn = new ColorButton(
-      app::Color::fromRgb(200, 200, 200),
+      app::Color::fromRgb(
+        doc::rgba_getr(defaultConfig.highlightColor),
+        doc::rgba_getg(defaultConfig.highlightColor),
+        doc::rgba_getb(defaultConfig.highlightColor)),
       doc::IMAGE_RGB,
       options);
 
