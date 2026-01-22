@@ -15,6 +15,7 @@
 #include "ui/label.h"
 #include "ui/popup_window.h"
 #include "ui/slider.h"
+#include "ui/view.h"
 
 #include "obs/signal.h"
 
@@ -33,13 +34,17 @@ public:
 
 private:
     void onLightAngleChange();
+    void onFlipHorizontal();
+    void onFlipVertical();
     void onAmbientChange();
     void onLightElevationChange();
     void onRoundnessChange();
     void onHighlightFocusChange();
     void onShadingModeChange();
     void onNormalMethodChange();
+    void onShapeTypeChange();
     void onFillModeChange();
+    void onColorSourceChange();
     void onColorChange();
     void onOutlineColorChange();
     void onShowOutlineChange();
@@ -52,6 +57,8 @@ private:
     // UI widgets - Light settings
     ui::Slider* m_lightAngleSlider;
     ui::Label* m_lightAngleLabel;
+    ui::Button* m_flipHButton;
+    ui::Button* m_flipVButton;
     ui::Slider* m_ambientSlider;
     ui::Label* m_ambientLabel;
     ui::Slider* m_lightElevationSlider;
@@ -62,7 +69,9 @@ private:
     // UI widgets - Shading options
     ui::ComboBox* m_shadingModeCombo;
     ui::ComboBox* m_normalMethodCombo;
+    ui::ComboBox* m_shapeTypeCombo;
     ui::ComboBox* m_fillModeCombo;
+    ui::ComboBox* m_colorSourceCombo;
 
     // UI widgets - Colors
     ColorButton* m_shadowColorBtn;
@@ -82,6 +91,9 @@ private:
     // UI widgets - Advanced options
     ui::CheckBox* m_antiAliasingCheck;
     ui::CheckBox* m_ditheringCheck;
+
+    // Scrollable view container
+    ui::View* m_view;
 
     // Current config (to avoid unnecessary updates)
     tools::ShadeConfig m_config;

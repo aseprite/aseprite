@@ -13,8 +13,10 @@
 #include "app/color.h"
 #include "app/ui/skin/skin_theme.h"
 #include "doc/image.h"
+#include "ui/box.h"
 #include "ui/grid.h"
 #include "ui/separator.h"
+#include "ui/view.h"
 
 #include "fmt/format.h"
 
@@ -43,7 +45,7 @@ AutoShadePopup::AutoShadePopup()
     lightSection->addChild(new Label("Light Settings"));
     lightSection->addChild(new Separator("", HORIZONTAL));
 
-    // Light angle
+    // Light angle with flip buttons
     auto lightAngleBox = new HBox();
     lightAngleBox->addChild(new Label("Angle:"));
     m_lightAngleSlider = new Slider(0, 360, static_cast<int>(m_config.lightAngle));
@@ -53,6 +55,18 @@ AutoShadePopup::AutoShadePopup()
     lightAngleBox->addChild(m_lightAngleSlider);
     lightAngleBox->addChild(m_lightAngleLabel);
     lightSection->addChild(lightAngleBox);
+
+    // Flip buttons for quick light direction control
+    auto flipButtonsBox = new HBox();
+    flipButtonsBox->addChild(new Label("Flip:"));
+    m_flipHButton = new Button("H");
+    m_flipHButton->setMinSize(gfx::Size(28, 0));
+    m_flipVButton = new Button("V");
+    m_flipVButton->setMinSize(gfx::Size(28, 0));
+    flipButtonsBox->addChild(m_flipHButton);
+    flipButtonsBox->addChild(m_flipVButton);
+    flipButtonsBox->addChild(new BoxFiller());  // Push buttons to left
+    lightSection->addChild(flipButtonsBox);
 
     // Ambient level
     auto ambientBox = new HBox();
@@ -65,12 +79,12 @@ AutoShadePopup::AutoShadePopup()
     ambientBox->addChild(m_ambientLabel);
     lightSection->addChild(ambientBox);
 
-    // Light elevation (Z component - how much from above)
+    // Light elevation (angle from horizontal: 0=front, 90=top, 180=back)
     auto elevationBox = new HBox();
     elevationBox->addChild(new Label("Elevation:"));
-    m_lightElevationSlider = new Slider(0, 100, static_cast<int>(m_config.lightElevation * 100));
+    m_lightElevationSlider = new Slider(0, 180, static_cast<int>(m_config.lightElevation));
     m_lightElevationSlider->setExpansive(true);
-    m_lightElevationLabel = new Label(fmt::format("{:.0f}%", m_config.lightElevation * 100));
+    m_lightElevationLabel = new Label(fmt::format("{:.0f}", m_config.lightElevation));
     m_lightElevationLabel->setMinSize(gfx::Size(35, 0));
     elevationBox->addChild(m_lightElevationSlider);
     elevationBox->addChild(m_lightElevationLabel);
@@ -173,6 +187,17 @@ AutoShadePopup::AutoShadePopup()
     m_normalMethodCombo->setExpansive(true);
     optionsGrid->addChildInCell(m_normalMethodCombo, 1, 1, 0);
 
+    // Shape type (for normal calculation)
+    optionsGrid->addChildInCell(new Label("Shape:"), 1, 1, 0);
+    m_shapeTypeCombo = new ComboBox();
+    m_shapeTypeCombo->addItem("Sphere");         // Smooth spherical
+    m_shapeTypeCombo->addItem("Adaptive");       // Follow shape silhouette
+    m_shapeTypeCombo->addItem("Cylinder");       // Cylindrical (vertical axis)
+    m_shapeTypeCombo->addItem("Flat");           // Uniform flat
+    m_shapeTypeCombo->setSelectedItemIndex(static_cast<int>(m_config.shapeType));
+    m_shapeTypeCombo->setExpansive(true);
+    optionsGrid->addChildInCell(m_shapeTypeCombo, 1, 1, 0);
+
     // Fill mode
     optionsGrid->addChildInCell(new Label("Fill:"), 1, 1, 0);
     m_fillModeCombo = new ComboBox();
@@ -182,6 +207,15 @@ AutoShadePopup::AutoShadePopup()
     m_fillModeCombo->setSelectedItemIndex(static_cast<int>(m_config.fillMode));
     m_fillModeCombo->setExpansive(true);
     optionsGrid->addChildInCell(m_fillModeCombo, 1, 1, 0);
+
+    // Color source (foreground/background)
+    optionsGrid->addChildInCell(new Label("Color from:"), 1, 1, 0);
+    m_colorSourceCombo = new ComboBox();
+    m_colorSourceCombo->addItem("Foreground");
+    m_colorSourceCombo->addItem("Background");
+    m_colorSourceCombo->setSelectedItemIndex(static_cast<int>(m_config.colorSource));
+    m_colorSourceCombo->setExpansive(true);
+    optionsGrid->addChildInCell(m_colorSourceCombo, 1, 1, 0);
 
     optionsSection->addChild(optionsGrid);
 
@@ -239,17 +273,25 @@ AutoShadePopup::AutoShadePopup()
 
     mainBox->addChild(advancedSection);
 
-    addChild(mainBox);
+    // Wrap mainBox in a scrollable view
+    m_view = new View();
+    m_view->attachToView(mainBox);
+    m_view->setExpansive(true);
+    addChild(m_view);
 
     // Connect signals
     m_lightAngleSlider->Change.connect([this]() { onLightAngleChange(); });
+    m_flipHButton->Click.connect([this]() { onFlipHorizontal(); });
+    m_flipVButton->Click.connect([this]() { onFlipVertical(); });
     m_ambientSlider->Change.connect([this]() { onAmbientChange(); });
     m_lightElevationSlider->Change.connect([this]() { onLightElevationChange(); });
     m_roundnessSlider->Change.connect([this]() { onRoundnessChange(); });
     m_highlightFocusSlider->Change.connect([this]() { onHighlightFocusChange(); });
     m_shadingModeCombo->Change.connect([this]() { onShadingModeChange(); });
     m_normalMethodCombo->Change.connect([this]() { onNormalMethodChange(); });
+    m_shapeTypeCombo->Change.connect([this]() { onShapeTypeChange(); });
     m_fillModeCombo->Change.connect([this]() { onFillModeChange(); });
+    m_colorSourceCombo->Change.connect([this]() { onColorSourceChange(); });
     m_shadowColorBtn->Change.connect([this]() { onColorChange(); });
     m_baseColorBtn->Change.connect([this]() { onColorChange(); });
     m_highlightColorBtn->Change.connect([this]() { onColorChange(); });
@@ -260,9 +302,9 @@ AutoShadePopup::AutoShadePopup()
     m_antiAliasingCheck->Click.connect([this]() { onAntiAliasingChange(); });
     m_ditheringCheck->Click.connect([this]() { onDitheringChange(); });
 
-    // Set initial size (increased for new controls)
+    // Set initial size (scrollable, so can be smaller)
     setAutoRemap(false);
-    setBounds(gfx::Rect(0, 0, 280, 580));
+    setBounds(gfx::Rect(0, 0, 280, 450));
 }
 
 tools::ShadeConfig AutoShadePopup::getConfig() const
@@ -284,15 +326,17 @@ void AutoShadePopup::setConfig(const tools::ShadeConfig& config)
     m_ambientSlider->setValue(static_cast<int>(config.ambientLevel * 100));
     m_ambientLabel->setText(fmt::format("{:.0f}%", config.ambientLevel * 100));
 
-    m_lightElevationSlider->setValue(static_cast<int>(config.lightElevation * 100));
-    m_lightElevationLabel->setText(fmt::format("{:.0f}%", config.lightElevation * 100));
+    m_lightElevationSlider->setValue(static_cast<int>(config.lightElevation));
+    m_lightElevationLabel->setText(fmt::format("{:.0f}", config.lightElevation));
 
     m_roundnessSlider->setValue(static_cast<int>(config.roundness * 100));
     m_roundnessLabel->setText(fmt::format("{:.1f}", config.roundness));
 
     m_shadingModeCombo->setSelectedItemIndex(static_cast<int>(config.shadingMode));
     m_normalMethodCombo->setSelectedItemIndex(static_cast<int>(config.normalMethod));
+    m_shapeTypeCombo->setSelectedItemIndex(static_cast<int>(config.shapeType));
     m_fillModeCombo->setSelectedItemIndex(static_cast<int>(config.fillMode));
+    m_colorSourceCombo->setSelectedItemIndex(static_cast<int>(config.colorSource));
 
     m_shadowColorBtn->setColor(app::Color::fromRgb(
         doc::rgba_getr(config.shadowColor),
@@ -339,6 +383,29 @@ void AutoShadePopup::onLightAngleChange()
     notifyChange();
 }
 
+void AutoShadePopup::onFlipHorizontal()
+{
+    // Flip horizontally: mirror across vertical axis (180 - angle)
+    double newAngle = 180.0 - m_config.lightAngle;
+    if (newAngle < 0) newAngle += 360.0;
+    if (newAngle >= 360) newAngle -= 360.0;
+    m_config.lightAngle = newAngle;
+    m_lightAngleSlider->setValue(static_cast<int>(newAngle));
+    m_lightAngleLabel->setText(fmt::format("{:.0f}", newAngle));
+    notifyChange();
+}
+
+void AutoShadePopup::onFlipVertical()
+{
+    // Flip vertically: mirror across horizontal axis (360 - angle or -angle)
+    double newAngle = 360.0 - m_config.lightAngle;
+    if (newAngle >= 360) newAngle -= 360.0;
+    m_config.lightAngle = newAngle;
+    m_lightAngleSlider->setValue(static_cast<int>(newAngle));
+    m_lightAngleLabel->setText(fmt::format("{:.0f}", newAngle));
+    notifyChange();
+}
+
 void AutoShadePopup::onAmbientChange()
 {
     m_config.ambientLevel = m_ambientSlider->getValue() / 100.0;
@@ -348,8 +415,8 @@ void AutoShadePopup::onAmbientChange()
 
 void AutoShadePopup::onLightElevationChange()
 {
-    m_config.lightElevation = m_lightElevationSlider->getValue() / 100.0;
-    m_lightElevationLabel->setText(fmt::format("{:.0f}%", m_config.lightElevation * 100));
+    m_config.lightElevation = static_cast<double>(m_lightElevationSlider->getValue());
+    m_lightElevationLabel->setText(fmt::format("{:.0f}", m_config.lightElevation));
     notifyChange();
 }
 
@@ -374,10 +441,24 @@ void AutoShadePopup::onNormalMethodChange()
     notifyChange();
 }
 
+void AutoShadePopup::onShapeTypeChange()
+{
+    m_config.shapeType = static_cast<tools::ShapeType>(
+        m_shapeTypeCombo->getSelectedItemIndex());
+    notifyChange();
+}
+
 void AutoShadePopup::onFillModeChange()
 {
     m_config.fillMode = static_cast<tools::FillMode>(
         m_fillModeCombo->getSelectedItemIndex());
+    notifyChange();
+}
+
+void AutoShadePopup::onColorSourceChange()
+{
+    m_config.colorSource = static_cast<tools::ColorSource>(
+        m_colorSourceCombo->getSelectedItemIndex());
     notifyChange();
 }
 

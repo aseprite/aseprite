@@ -101,6 +101,17 @@ enum class MaterialType {
 };
 
 //------------------------------------------------------------------------------
+// Shape type for normal calculation
+//------------------------------------------------------------------------------
+
+enum class ShapeType {
+    Sphere,      // Perfectly smooth spherical normals (radial from center)
+    Adaptive,    // Follow actual shape silhouette (uses distance map)
+    Cylinder,    // Cylindrical shading (horizontal or vertical axis)
+    Flat         // Flat plane facing viewer (uniform lighting)
+};
+
+//------------------------------------------------------------------------------
 // Fill mode for region detection
 //------------------------------------------------------------------------------
 
@@ -108,6 +119,15 @@ enum class FillMode {
     SameColor,        // Fill pixels matching the clicked color (bucket tool behavior)
     AllNonTransparent, // Fill all connected non-transparent pixels regardless of color
     BoundedArea       // Fill entire bounded area (interior + boundary)
+};
+
+//------------------------------------------------------------------------------
+// Color source for shading
+//------------------------------------------------------------------------------
+
+enum class ColorSource {
+    Foreground,   // Derive colors from foreground color (default)
+    Background    // Derive colors from background color
 };
 
 //------------------------------------------------------------------------------
@@ -124,9 +144,10 @@ struct ShadeConfig {
     doc::color_t specularColor;      // For glossy materials
 
     // Light settings
-    double lightAngle;      // 0-360 degrees
+    double lightAngle;      // 0-360 degrees (horizontal direction)
     double ambientLevel;    // 0.0-1.0 (typically 0.1-0.3)
-    double lightElevation;  // 0.0-1.0: how much light comes from "above" (Z component)
+    double lightElevation;  // 0-180 degrees: angle of light from horizontal plane
+                            // 0° = front (horizontal), 90° = top, 180° = back
 
     // Shape curvature
     double roundness;       // 0.0-2.0: controls spherical vs flat shading
@@ -138,7 +159,9 @@ struct ShadeConfig {
     ShadingMode shadingMode;
     NormalMethod normalMethod;
     MaterialType materialType;
+    ShapeType shapeType;    // Shape assumption for normal calculation
     FillMode fillMode;      // How to detect the region to shade
+    ColorSource colorSource; // Where to get base color from (foreground/background)
 
     // Advanced options
     int colorTolerance;     // For flood fill (0-255)
@@ -179,12 +202,14 @@ struct ShadeConfig {
         , specularColor(doc::rgba(255, 255, 255, 255))
         , lightAngle(135.0)           // Top-left light (classic pixel art)
         , ambientLevel(0.15)          // Low ambient for more contrast
-        , lightElevation(0.5)         // Light partially from above
+        , lightElevation(45.0)        // 45° elevation (between front and top)
         , roundness(1.0)              // Default hemisphere (sphere-like)
         , shadingMode(ShadingMode::ThreeShade)
         , normalMethod(NormalMethod::Gradient)
         , materialType(MaterialType::Matte)
+        , shapeType(ShapeType::Sphere)        // Default: smooth sphere (best for most pixel art)
         , fillMode(FillMode::AllNonTransparent)
+        , colorSource(ColorSource::Foreground)  // Default: use foreground color
         , colorTolerance(32)
         , preventPillowShading(true)
         , enableRimLight(false)

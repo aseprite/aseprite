@@ -115,6 +115,26 @@ private:
     void invalidateEditor(Editor* editor);
 
     //--------------------------------------------------------------------------
+    // Light handle helpers
+    //--------------------------------------------------------------------------
+
+    // Get light handle position in sprite coordinates
+    gfx::Point getLightHandlePosition() const;
+
+    // Check if a screen position hits the light handle
+    bool hitTestLightHandle(Editor* editor, const gfx::Point& screenPos) const;
+
+    //--------------------------------------------------------------------------
+    // Highlight point helpers (incidence point - where light hits the shape)
+    //--------------------------------------------------------------------------
+
+    // Get highlight point position in sprite coordinates
+    gfx::Point getHighlightPosition() const;
+
+    // Check if a screen position hits the highlight point
+    bool hitTestHighlightPoint(Editor* editor, const gfx::Point& screenPos) const;
+
+    //--------------------------------------------------------------------------
     // State
     //--------------------------------------------------------------------------
 
@@ -123,6 +143,10 @@ private:
     gfx::Point m_clickPos;          // Position where region was selected
     bool m_hasPreview;              // True if preview is currently active
     bool m_mouseDown;
+    bool m_draggingLightHandle;     // True when dragging the light direction handle
+    bool m_draggingHighlightPoint;  // True when dragging the highlight/incidence point
+    double m_highlightDistanceRatio; // 0.0 = center, 1.0 = edge (where highlight appears)
+    double m_highlightAngle;        // Angle in degrees (independent of light angle)
 
     // Preview color map (pixel position -> shaded color)
     std::unordered_map<gfx::Point, doc::color_t, tools::PointHash> m_previewColors;

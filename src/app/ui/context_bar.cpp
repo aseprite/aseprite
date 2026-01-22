@@ -2604,7 +2604,39 @@ private:
   void onConfigChange(const tools::ShadeConfig& config) {
     if (auto* editor = Editor::activeEditor()) {
       if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
+        // Check if color source changed - need to re-derive colors
+        bool colorSourceChanged = (state->config().colorSource != config.colorSource);
+
         state->config() = config;
+
+        // If color source changed, re-derive colors from the new source
+        if (colorSourceChanged) {
+          ColorBar* colorBar = ColorBar::instance();
+          if (colorBar) {
+            app::Color sourceColor;
+            if (config.colorSource == tools::ColorSource::Background) {
+              sourceColor = colorBar->getBgColor();
+            } else {
+              sourceColor = colorBar->getFgColor();
+            }
+
+            int r = sourceColor.getRed();
+            int g = sourceColor.getGreen();
+            int b = sourceColor.getBlue();
+
+            state->config().baseColor = doc::rgba(r, g, b, 255);
+            state->config().shadowColor = doc::rgba(
+                std::max(0, r - 60), std::max(0, g - 60), std::max(0, b - 40), 255);
+            state->config().highlightColor = doc::rgba(
+                std::min(255, r + 60), std::min(255, g + 50), std::min(255, b + 30), 255);
+
+            // Update popup with new colors
+            if (m_popup && m_popup->isVisible()) {
+              m_popup->setConfig(state->config());
+            }
+          }
+        }
+
         state->updatePreview(editor);
 
         // Sync colors back to the top bar

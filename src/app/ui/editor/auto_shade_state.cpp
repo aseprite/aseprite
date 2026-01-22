@@ -147,6 +147,108 @@ public:
                 render->drawRect(outlineColor, gfx::Rect(edge.x, edge.y, 1, 1));
             }
         }
+
+        // Draw light direction handle and highlight point
+        if (!m_state->m_tool.lastShape().isEmpty()) {
+            const ShapeData& shape = m_state->m_tool.lastShape();
+            const ShadeConfig& config = m_state->m_tool.config();
+
+            const double PI = 3.14159265358979323846;
+            double angleRad = config.lightAngle * (PI / 180.0);
+
+            // Calculate sun handle distance based on elevation
+            // elevation 0° = at edge (minDist), elevation 90° = far away (maxDist)
+            double minDist = shape.maxDistance;
+            double maxDist = shape.maxDistance * 3.0;
+            double elevationFactor = config.lightElevation / 90.0;
+            if (elevationFactor > 1.0) elevationFactor = 1.0;
+            double handleDist = minDist + (maxDist - minDist) * elevationFactor;
+
+            // Light source position (where light comes FROM)
+            int handleX = static_cast<int>(shape.centerX + std::cos(angleRad) * handleDist);
+            int handleY = static_cast<int>(shape.centerY - std::sin(angleRad) * handleDist);
+
+            int centerX = static_cast<int>(shape.centerX);
+            int centerY = static_cast<int>(shape.centerY);
+
+            // --- Draw highlight point (where light hits the shape) ---
+            // This is freely movable on the shape surface (independent of light direction)
+            // It's draggable to control where the brightest area appears
+            double highlightAngleRad = m_state->m_highlightAngle * (PI / 180.0);
+            double highlightDist = shape.maxDistance * m_state->m_highlightDistanceRatio;
+            int highlightX = static_cast<int>(shape.centerX + std::cos(highlightAngleRad) * highlightDist);
+            int highlightY = static_cast<int>(shape.centerY - std::sin(highlightAngleRad) * highlightDist);
+
+            // Draw highlight point as a small bright circle with outline
+            // Changes color when dragging to show it's interactive
+            gfx::Color highlightColor = m_state->m_draggingHighlightPoint ?
+                gfx::rgba(255, 255, 150, 255) :  // Bright yellow when dragging
+                gfx::rgba(255, 255, 255, 240);   // White normally
+            gfx::Color highlightOutline = gfx::rgba(0, 0, 0, 180);  // Dark outline
+
+            // Draw outer ring (outline) - radius 2
+            for (int dy = -2; dy <= 2; ++dy) {
+                for (int dx = -2; dx <= 2; ++dx) {
+                    int distSq = dx * dx + dy * dy;
+                    if (distSq > 1 && distSq <= 4) {
+                        render->fillRect(highlightOutline,
+                            gfx::Rect(highlightX + dx, highlightY + dy, 1, 1));
+                    }
+                }
+            }
+            // Draw inner circle - radius 1
+            for (int dy = -1; dy <= 1; ++dy) {
+                for (int dx = -1; dx <= 1; ++dx) {
+                    if (dx * dx + dy * dy <= 1) {
+                        render->fillRect(highlightColor,
+                            gfx::Rect(highlightX + dx, highlightY + dy, 1, 1));
+                    }
+                }
+            }
+
+            // --- Draw line from highlight to sun handle ---
+            gfx::Color lineColor = gfx::rgba(255, 200, 0, 180);  // Golden yellow
+
+            // Draw dashed line from highlight point to sun
+            int segments = 12;
+            for (int i = 0; i < segments; i += 2) {
+                double t1 = static_cast<double>(i) / segments;
+                double t2 = static_cast<double>(i + 1) / segments;
+                int x1 = highlightX + static_cast<int>((handleX - highlightX) * t1);
+                int y1 = highlightY + static_cast<int>((handleY - highlightY) * t1);
+                int x2 = highlightX + static_cast<int>((handleX - highlightX) * t2);
+                int y2 = highlightY + static_cast<int>((handleY - highlightY) * t2);
+
+                render->fillRect(lineColor, gfx::Rect(x1, y1, 1, 1));
+                render->fillRect(lineColor, gfx::Rect(x2, y2, 1, 1));
+            }
+
+            // --- Draw the sun handle ---
+            gfx::Color handleColor = m_state->m_draggingLightHandle ?
+                gfx::rgba(255, 255, 100, 255) :  // Bright when dragging
+                gfx::rgba(255, 200, 0, 255);     // Golden yellow normally
+
+            // Draw a small sun/circle at handle position
+            for (int dy = -2; dy <= 2; ++dy) {
+                for (int dx = -2; dx <= 2; ++dx) {
+                    if (dx * dx + dy * dy <= 4) {
+                        render->fillRect(handleColor, gfx::Rect(handleX + dx, handleY + dy, 1, 1));
+                    }
+                }
+            }
+
+            // Draw rays extending from the sun
+            gfx::Color rayColor = gfx::rgba(255, 220, 50, 180);
+            for (int i = 0; i < 8; ++i) {
+                double rayAngle = i * (PI / 4);
+                int rayX = handleX + static_cast<int>(std::cos(rayAngle) * 4);
+                int rayY = handleY + static_cast<int>(std::sin(rayAngle) * 4);
+                render->fillRect(rayColor, gfx::Rect(rayX, rayY, 1, 1));
+            }
+
+            // Draw elevation indicator text near sun (show angle)
+            // (Visual feedback - the distance represents elevation)
+        }
     }
 
     void getInvalidDecoratoredRegion(Editor* editor, gfx::Region& region) override {
@@ -158,8 +260,9 @@ public:
         const ShapeData& shape = m_state->m_tool.lastShape();
         gfx::Rect bounds = shape.bounds;
 
-        // Expand slightly to include outline
-        bounds.enlarge(1);
+        // Expand to include light handle (1.5x max radius + handle size)
+        int handleMargin = static_cast<int>(shape.maxDistance * 0.6) + 10;
+        bounds.enlarge(handleMargin);
 
         // Convert to screen coordinates
         gfx::Rect screenBounds = editor->editorToScreen(bounds);
@@ -177,6 +280,10 @@ private:
 AutoShadeState::AutoShadeState(Editor* editor)
     : m_hasPreview(false)
     , m_mouseDown(false)
+    , m_draggingLightHandle(false)
+    , m_draggingHighlightPoint(false)
+    , m_highlightDistanceRatio(0.3)  // Default: 30% from center toward edge
+    , m_highlightAngle(135.0)        // Default: match default light angle
     , m_decorator(nullptr)
 {
     // Initialize with default config
@@ -200,14 +307,20 @@ void AutoShadeState::onEnterState(Editor* editor)
     m_decorator = new Decorator(this);
     editor->setDecorator(m_decorator);
 
-    // Load colors from color bar
+    // Load colors from color bar based on color source setting
     ColorBar* colorBar = ColorBar::instance();
     if (colorBar) {
-        app::Color fg = colorBar->getFgColor();
-        // Use foreground as base color (always opaque for shading)
-        int r = fg.getRed();
-        int g = fg.getGreen();
-        int b = fg.getBlue();
+        app::Color sourceColor;
+        if (m_tool.config().colorSource == tools::ColorSource::Background) {
+            sourceColor = colorBar->getBgColor();
+        } else {
+            sourceColor = colorBar->getFgColor();
+        }
+
+        // Use selected color as base color (always opaque for shading)
+        int r = sourceColor.getRed();
+        int g = sourceColor.getGreen();
+        int b = sourceColor.getBlue();
 
         m_tool.config().baseColor = doc::rgba(r, g, b, 255);
 
@@ -280,6 +393,18 @@ bool AutoShadeState::onMouseDown(Editor* editor, ui::MouseMessage* msg)
         m_mouseDown = true;
         m_lastMousePos = msg->position();
 
+        // Check if clicking on the highlight point (incidence point)
+        if (m_hasPreview && hitTestHighlightPoint(editor, msg->position())) {
+            m_draggingHighlightPoint = true;
+            return true;
+        }
+
+        // Check if clicking on the light handle (sun)
+        if (m_hasPreview && hitTestLightHandle(editor, msg->position())) {
+            m_draggingLightHandle = true;
+            return true;
+        }
+
         // Convert screen position to sprite coordinates
         gfx::Point spritePos = editor->screenToEditor(msg->position());
         m_clickPos = spritePos;
@@ -297,6 +422,81 @@ bool AutoShadeState::onMouseMove(Editor* editor, ui::MouseMessage* msg)
 {
     m_lastMousePos = msg->position();
 
+    // Handle dragging the highlight/incidence point
+    // This allows free 2D movement - both angle and distance can change
+    if (m_draggingHighlightPoint && m_hasPreview && !m_tool.lastShape().isEmpty()) {
+        const ShapeData& shape = m_tool.lastShape();
+
+        // Convert mouse position to sprite coordinates
+        gfx::Point spritePos = editor->screenToEditor(msg->position());
+
+        // Calculate vector from center to mouse
+        double dx = spritePos.x - shape.centerX;
+        double dy = spritePos.y - shape.centerY;
+        double distance = std::sqrt(dx * dx + dy * dy);
+
+        // Calculate angle (atan2 gives -PI to PI, we want 0 to 360)
+        // Note: Y is inverted in screen coords, so negate dy
+        const double PI = 3.14159265358979323846;
+        double angle = std::atan2(-dy, dx) * (180.0 / PI);
+        if (angle < 0) angle += 360.0;
+
+        // Update the highlight angle (independent of light angle)
+        m_highlightAngle = angle;
+
+        // Update the distance ratio (0.0 = center, 1.0 = edge)
+        // Clamp to 0.05-0.95 to keep highlight visible and within shape
+        double maxDist = shape.maxDistance;
+        if (maxDist > 0.001) {
+            m_highlightDistanceRatio = distance / maxDist;
+            m_highlightDistanceRatio = std::max(0.05, std::min(0.95, m_highlightDistanceRatio));
+        }
+
+        // Regenerate the preview
+        updatePreview(editor);
+
+        return true;
+    }
+
+    // Handle dragging the light handle (sun)
+    if (m_draggingLightHandle && m_hasPreview && !m_tool.lastShape().isEmpty()) {
+        const ShapeData& shape = m_tool.lastShape();
+
+        // Convert mouse position to sprite coordinates
+        gfx::Point spritePos = editor->screenToEditor(msg->position());
+
+        // Calculate angle and distance from shape center to mouse position
+        double dx = spritePos.x - shape.centerX;
+        double dy = spritePos.y - shape.centerY;
+        double distance = std::sqrt(dx * dx + dy * dy);
+
+        // Calculate angle (atan2 gives -PI to PI, we want 0 to 360)
+        // Note: Y is inverted in screen coords, so negate dy
+        double angle = std::atan2(-dy, dx) * (180.0 / 3.14159265358979323846);
+        if (angle < 0) angle += 360.0;
+
+        // Update the light angle
+        m_tool.config().lightAngle = angle;
+
+        // Calculate elevation from distance:
+        // - At shape edge (distance = maxRadius): elevation = 0° (frontal)
+        // - At 3x maxRadius: elevation = 90° (from above)
+        // This gives intuitive control: pull sun away = light from above
+        double minDist = shape.maxDistance;  // Minimum: at edge
+        double maxDist = shape.maxDistance * 3.0;  // Maximum: 3x the radius
+        double normalizedDist = (distance - minDist) / (maxDist - minDist);
+        normalizedDist = std::max(0.0, std::min(1.0, normalizedDist));
+
+        // Map to elevation angle (0-90 degrees, clamped)
+        double elevation = normalizedDist * 90.0;
+        m_tool.config().lightElevation = elevation;
+
+        // Regenerate the preview
+        updatePreview(editor);
+
+        return true;
+    }
+
     // Update status bar with position
     editor->updateStatusBar();
 
@@ -307,6 +507,8 @@ bool AutoShadeState::onMouseUp(Editor* editor, ui::MouseMessage* msg)
 {
     if (msg->left() && m_mouseDown) {
         m_mouseDown = false;
+        m_draggingLightHandle = false;
+        m_draggingHighlightPoint = false;
         return true;
     }
 
@@ -389,6 +591,18 @@ bool AutoShadeState::onKeyUp(Editor* editor, ui::KeyMessage* msg)
 
 bool AutoShadeState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 {
+    // Show move cursor when hovering over the highlight/incidence point
+    if (m_hasPreview && hitTestHighlightPoint(editor, mouseScreenPos)) {
+        editor->showMouseCursor(kMoveCursor);
+        return true;
+    }
+
+    // Show move cursor when hovering over the light handle (sun)
+    if (m_hasPreview && hitTestLightHandle(editor, mouseScreenPos)) {
+        editor->showMouseCursor(kMoveCursor);
+        return true;
+    }
+
     // Use crosshair cursor for region selection
     editor->showMouseCursor(kCrosshairCursor);
     return true;
@@ -405,9 +619,9 @@ bool AutoShadeState::onUpdateStatusBar(Editor* editor)
     std::string statusText;
     if (m_hasPreview) {
         statusText = fmt::format(
-            "Auto-Shade: Light angle: {:.0f}° | Ambient: {:.0f}% | Press Enter to apply, Esc to cancel",
+            "Auto-Shade: Light: {:.0f}° Elev: {:.0f}° | Drag highlight or sun | Enter=apply, Esc=cancel",
             m_tool.config().lightAngle,
-            m_tool.config().ambientLevel * 100.0f);
+            m_tool.config().lightElevation);
     }
     else {
         statusText = fmt::format(
@@ -459,14 +673,22 @@ void AutoShadeState::generateShadedPreview()
     // =========================================================================
     // STEP 1: Calculate light direction from angle (3D light vector)
     // Angle convention: 0° = right, 90° = up, 180° = left, 270° = down
+    // Elevation: 0° = front (horizontal), 90° = top, 180° = back
     // Light points FROM the light source TOWARD the shape
     // =========================================================================
-    double angleRad = config.lightAngle * (3.14159265358979323846 / 180.0);
-    // 2D light direction (XY plane)
-    double lightX = std::cos(angleRad);
-    double lightY = -std::sin(angleRad);  // Negate for screen coords (Y down)
-    // Z component: how much light comes from "above" (toward viewer)
-    double lightZ = config.lightElevation;
+    const double PI = 3.14159265358979323846;
+    double angleRad = config.lightAngle * (PI / 180.0);
+    double elevationRad = config.lightElevation * (PI / 180.0);
+
+    // Calculate 3D light direction using spherical coordinates
+    // Z component: how much light comes from "above" (peaks at 90°)
+    double lightZ = std::sin(elevationRad);
+    // Horizontal scale: 1 at 0°, 0 at 90°, -1 at 180° (behind)
+    double horizontalScale = std::cos(elevationRad);
+
+    // 2D light direction (XY plane), scaled by horizontal component
+    double lightX = std::cos(angleRad) * horizontalScale;
+    double lightY = -std::sin(angleRad) * horizontalScale;  // Negate for screen coords (Y down)
 
     // Calculate max radius for normalizing distances
     double maxRadius = shape.maxDistance;
@@ -495,14 +717,16 @@ void AutoShadeState::generateShadedPreview()
         int outputAlpha = (origAlpha == 0) ? 255 : origAlpha;
 
         // -----------------------------------------------------------------
-        // STEP 2a: Calculate 3D normal using RADIAL SPHERICAL PROJECTION
-        // Uses distance from center for direction and spherical math for depth
+        // STEP 2a: Calculate 3D normal based on ShapeType
         // -----------------------------------------------------------------
 
         // Calculate radial direction from center to pixel
         double dx = pixel.x - shape.centerX;
         double dy = pixel.y - shape.centerY;
         double distFromCenter = std::sqrt(dx * dx + dy * dy);
+
+        // Get distance from edge (used for Adaptive shading and reflected light)
+        float distFromEdge = shape.getDistance(pixel);
 
         // Normalize to get radial direction (outward from center)
         double dirX = 0, dirY = -1;  // Default: up
@@ -511,28 +735,92 @@ void AutoShadeState::generateShadedPreview()
             dirY = dy / distFromCenter;
         }
 
-        // Calculate normalized radius (0 at center, 1 at edge)
-        double maxRadius = shape.maxDistance;
-        if (maxRadius < 1.0) maxRadius = 1.0;
-        double normDist = distFromCenter / maxRadius;
-        if (normDist > 1.0) normDist = 1.0;
+        double normalX = 0, normalY = 0, normalZ = 1;
 
-        // Apply roundness to control curvature
-        double curvedDist = normDist;
-        if (config.roundness > 0.001) {
-            // Power function: higher roundness = more pronounced sphere effect
-            curvedDist = std::pow(normDist, 1.0 / (config.roundness + 0.5));
+        switch (config.shapeType) {
+            case ShapeType::Sphere: {
+                // SPHERE: Perfect spherical normals using radial distance from center
+                // This creates smooth, perfectly round shading regardless of actual shape
+                // Uses the bounding box diagonal as the "radius" for normalization
+                double boundsRadius = std::max(shape.bounds.w, shape.bounds.h) / 2.0;
+                if (boundsRadius < 1.0) boundsRadius = maxRadius;
+
+                // Normalized distance from center (0 at center, 1 at edge of bounding circle)
+                double normDist = distFromCenter / boundsRadius;
+                if (normDist > 1.0) normDist = 1.0;
+
+                // True sphere formula: height = sqrt(1 - r²)
+                // At center (r=0): height=1, at edge (r=1): height=0
+                double sphereHeight = std::sqrt(std::max(0.0, 1.0 - normDist * normDist));
+
+                // Apply roundness to adjust curvature
+                double curvedHeight = sphereHeight;
+                if (config.roundness != 1.0 && config.roundness > 0.001) {
+                    curvedHeight = std::pow(sphereHeight, 1.0 / config.roundness);
+                }
+
+                normalZ = curvedHeight;
+                double radialScale = std::sqrt(std::max(0.0, 1.0 - normalZ * normalZ));
+                normalX = dirX * radialScale;
+                normalY = dirY * radialScale;
+                break;
+            }
+
+            case ShapeType::Adaptive: {
+                // ADAPTIVE: Follow actual shape silhouette using distance map
+                // Creates normals that respect the shape's actual edges
+                double normHeight = distFromEdge / maxRadius;
+                if (normHeight > 1.0) normHeight = 1.0;
+
+                double curvedHeight = normHeight;
+                if (config.roundness > 0.001) {
+                    curvedHeight = std::pow(normHeight, 1.0 / config.roundness);
+                }
+
+                normalZ = curvedHeight;
+                double radialScale = std::sqrt(std::max(0.0, 1.0 - normalZ * normalZ));
+                normalX = dirX * radialScale;
+                normalY = dirY * radialScale;
+                break;
+            }
+
+            case ShapeType::Cylinder: {
+                // CYLINDER: Normals vary only horizontally (vertical axis cylinder)
+                // Good for arms, legs, trunks, poles
+                double halfWidth = shape.bounds.w / 2.0;
+                if (halfWidth < 1.0) halfWidth = 1.0;
+
+                // Normalized horizontal position (-1 to 1)
+                double normX = dx / halfWidth;
+                if (normX > 1.0) normX = 1.0;
+                if (normX < -1.0) normX = -1.0;
+
+                // Cylinder formula: Z = sqrt(1 - x²), normal points outward in X
+                normalZ = std::sqrt(std::max(0.0, 1.0 - normX * normX));
+                normalX = normX;
+                normalY = 0;  // No Y component for vertical cylinder
+
+                // Apply roundness
+                if (config.roundness != 1.0 && config.roundness > 0.001) {
+                    normalZ = std::pow(normalZ, 1.0 / config.roundness);
+                    double len = std::sqrt(normalX * normalX + normalZ * normalZ);
+                    if (len > 0.001) {
+                        normalX /= len;
+                        normalZ /= len;
+                    }
+                }
+                break;
+            }
+
+            case ShapeType::Flat: {
+                // FLAT: All normals point straight toward viewer
+                // Creates uniform lighting across the entire shape
+                normalX = 0;
+                normalY = 0;
+                normalZ = 1;
+                break;
+            }
         }
-
-        // 3D normal for hemisphere projection:
-        // - At center (r=0): normal points straight up (0, 0, 1)
-        // - At edge (r=1): normal points outward (dirX, dirY, 0)
-        // Using spherical formula: normalZ = sqrt(1 - r^2)
-        double normalZ = std::sqrt(std::max(0.0, 1.0 - curvedDist * curvedDist));
-
-        // XY normal follows radial direction, scaled by distance from center
-        double normalX = dirX * curvedDist;
-        double normalY = dirY * curvedDist;
 
         // -----------------------------------------------------------------
         // STEP 2b: Calculate lighting intensity using 3D dot product
@@ -547,11 +835,40 @@ void AutoShadeState::generateShadedPreview()
         double intensity = config.ambientLevel + (1.0 - config.ambientLevel) * diffuse;
 
         // -----------------------------------------------------------------
+        // STEP 2b2: Apply highlight position offset
+        // The user-controlled highlight point shifts where the brightest area appears
+        // The highlight position is independent of light angle (freely movable)
+        // -----------------------------------------------------------------
+        // Calculate highlight target position using independent highlight angle
+        double highlightAngleRad = m_highlightAngle * (PI / 180.0);
+        double highlightTargetDist = maxRadius * m_highlightDistanceRatio;
+        double highlightTargetX = shape.centerX + std::cos(highlightAngleRad) * highlightTargetDist;
+        double highlightTargetY = shape.centerY - std::sin(highlightAngleRad) * highlightTargetDist;
+
+        // Calculate distance from this pixel to the highlight target
+        double toHighlightX = pixel.x - highlightTargetX;
+        double toHighlightY = pixel.y - highlightTargetY;
+        double distToHighlight = std::sqrt(toHighlightX * toHighlightX + toHighlightY * toHighlightY);
+
+        // Create a position boost based on proximity to target
+        // Uses Gaussian falloff: closer to target = more boost
+        double positionRadius = maxRadius * 0.5;  // Influence radius
+        double positionBoost = std::exp(-(distToHighlight * distToHighlight) / (2.0 * positionRadius * positionRadius));
+
+        // Blend the position boost with the lighting intensity
+        // This shifts the brightest point toward the user-specified position
+        double positionInfluence = 0.4;  // How much the highlight position affects shading
+        intensity = intensity * (1.0 - positionInfluence) +
+                   (intensity + positionBoost * (1.0 - config.ambientLevel)) * positionInfluence;
+
+        // Clamp intensity to valid range
+        intensity = std::min(1.0, std::max(0.0, intensity));
+
+        // -----------------------------------------------------------------
         // STEP 2c: Check for reflected light on shadow-side edges
         // "Never let shadow extend all the way to the edge"
         // -----------------------------------------------------------------
-        // Get distance from edge for reflected light calculation
-        float distFromEdge = shape.getDistance(pixel);
+        // distFromEdge already calculated above for normal projection
         bool useReflectedLight = false;
 
         if (config.enableReflectedLight) {
@@ -576,61 +893,56 @@ void AutoShadeState::generateShadedPreview()
         if (config.shadingMode == ShadingMode::ThreeShade ||
             config.shadingMode == ShadingMode::FiveShade) {
             // Project pixel position along the light direction axis
-            // This gives us a "distance along light ray" value
             double lightDist = dx * lightX + dy * lightY;
 
-            // The key insight: band boundaries should be perpendicular to light
-            // We quantize the light distance to create clean stepped lines
-
-            // Calculate the slope of the light direction for Bresenham stepping
-            // For angles near 45°, we want 1:1 stepping
-            // For angles near horizontal/vertical, we want longer runs
-            double absLightX = std::abs(lightX);
-            double absLightY = std::abs(lightY);
-
-            // Determine the major axis and calculate step ratio
-            double stepRatio;
-            int majorCoord, minorCoord;
-            if (absLightX > absLightY) {
-                // More horizontal - major axis is X
-                stepRatio = absLightY / (absLightX + 0.001);
-                majorCoord = static_cast<int>(pixel.x);
-                minorCoord = static_cast<int>(pixel.y);
-            } else {
-                // More vertical - major axis is Y
-                stepRatio = absLightX / (absLightY + 0.001);
-                majorCoord = static_cast<int>(pixel.y);
-                minorCoord = static_cast<int>(pixel.x);
-            }
-
-            // Bresenham error accumulation for clean line stepping
-            // This creates the classic pixel-perfect diagonal pattern
-            double error = (majorCoord * stepRatio) - std::floor(majorCoord * stepRatio);
-
-            // Adjust threshold based on accumulated error
-            // This snaps the band boundary to the nearest clean pixel line
-            double thresholdAdjust = 0.0;
-            if (error < 0.33) {
-                thresholdAdjust = -0.015;
-            } else if (error > 0.67) {
-                thresholdAdjust = 0.015;
-            }
-
-            // Also consider the perpendicular position for sub-pixel accuracy
+            // Calculate perpendicular distance (bands run perpendicular to light)
             double perpX = -lightY;
             double perpY = lightX;
             double perpDist = dx * perpX + dy * perpY;
-            int perpInt = static_cast<int>(std::round(perpDist));
 
-            // Alternate adjustment based on perpendicular position
-            // This creates consistent stepping across parallel boundary lines
-            if (perpInt % 2 == 0) {
-                thresholdAdjust *= 1.0;
-            } else {
-                thresholdAdjust *= -1.0;
+            // Bresenham-style stepping for pixel-perfect diagonal boundaries
+            // Key insight: use perpendicular row index to determine stepping pattern
+            double absLightX = std::abs(lightX);
+            double absLightY = std::abs(lightY);
+
+            // Slope determines the stepping pattern (0 = axis-aligned, 1 = 45 degrees)
+            double slope = std::min(absLightX, absLightY) /
+                          (std::max(absLightX, absLightY) + 0.001);
+
+            // Row index along the perpendicular axis
+            int perpRow = static_cast<int>(std::floor(perpDist));
+
+            // Bresenham error accumulation: fractional part of (row * slope)
+            // This determines when the boundary should "step" by one pixel
+            double accumError = std::abs(perpRow) * slope;
+            double fractionalError = accumError - std::floor(accumError);
+
+            // Calculate step width based on shape size (approx pixels per band)
+            double stepWidth = maxRadius * 0.12;
+            if (stepWidth < 1.5) stepWidth = 1.5;
+
+            // Quantize light distance to band index
+            double shiftedLightDist = lightDist + maxRadius; // Shift to positive range
+            int bandIndex = static_cast<int>(std::floor(shiftedLightDist / stepWidth));
+
+            // Apply Bresenham stepping: shift band boundary based on error
+            // When fractional error crosses threshold, step the boundary
+            if (fractionalError > 0.5) {
+                // Step the boundary by adjusting which band this pixel belongs to
+                bandIndex += (perpRow % 2 == 0) ? 1 : -1;
             }
 
-            adjustedIntensity = intensity + thresholdAdjust;
+            // Convert quantized band back to intensity
+            // This snaps the band boundary to pixel-perfect diagonal lines
+            double quantizedDist = (bandIndex * stepWidth) - maxRadius;
+            double normalizedQuantized = quantizedDist / (maxRadius + 0.001);
+
+            // Blend quantized with original intensity for smooth but clean boundaries
+            // Higher blend = sharper stepping, lower = softer
+            double blendFactor = 0.35;
+            double quantizedIntensity = 0.5 + normalizedQuantized * 0.4;
+            adjustedIntensity = intensity * (1.0 - blendFactor) +
+                               quantizedIntensity * blendFactor;
         }
 
         // -----------------------------------------------------------------
@@ -1096,6 +1408,10 @@ void AutoShadeState::analyzeRegion(Editor* editor, const gfx::Point& spritePos)
         shape.centerX += cel->x();
         shape.centerY += cel->y();
 
+        // Reset highlight position to match current light direction
+        m_highlightAngle = m_tool.config().lightAngle;
+        m_highlightDistanceRatio = 0.3;  // Default: 30% from center
+
         // Generate preview using original colors
         generateShadedPreview();
         m_hasPreview = true;
@@ -1111,15 +1427,112 @@ void AutoShadeState::analyzeRegion(Editor* editor, const gfx::Point& spritePos)
 void AutoShadeState::invalidateEditor(Editor* editor)
 {
     if (m_hasPreview && !m_tool.lastShape().isEmpty()) {
-        // Invalidate the shape bounds
+        // Invalidate the shape bounds plus light handle area
         gfx::Rect bounds = m_tool.lastShape().bounds;
-        bounds.enlarge(2);
+        // Expand to include light handle (1.5x max radius + handle size)
+        int handleMargin = static_cast<int>(m_tool.lastShape().maxDistance * 0.6) + 10;
+        bounds.enlarge(handleMargin);
         editor->invalidateRect(editor->editorToScreen(bounds));
     }
     else {
         // Invalidate entire editor
         editor->invalidate();
     }
+}
+
+//------------------------------------------------------------------------------
+// Light handle helpers
+//------------------------------------------------------------------------------
+
+gfx::Point AutoShadeState::getLightHandlePosition() const
+{
+    if (m_tool.lastShape().isEmpty()) {
+        return gfx::Point(0, 0);
+    }
+
+    const ShapeData& shape = m_tool.lastShape();
+    const ShadeConfig& config = m_tool.config();
+
+    const double PI = 3.14159265358979323846;
+    double angleRad = config.lightAngle * (PI / 180.0);
+
+    // Calculate sun handle distance based on elevation
+    // elevation 0° = at edge (minDist), elevation 90° = far away (maxDist)
+    double minDist = shape.maxDistance;
+    double maxDist = shape.maxDistance * 3.0;
+    double elevationFactor = config.lightElevation / 90.0;
+    if (elevationFactor > 1.0) elevationFactor = 1.0;
+    double handleDist = minDist + (maxDist - minDist) * elevationFactor;
+
+    // Light source position (where light comes FROM)
+    int handleX = static_cast<int>(shape.centerX + std::cos(angleRad) * handleDist);
+    int handleY = static_cast<int>(shape.centerY - std::sin(angleRad) * handleDist);
+
+    return gfx::Point(handleX, handleY);
+}
+
+bool AutoShadeState::hitTestLightHandle(Editor* editor, const gfx::Point& screenPos) const
+{
+    if (!m_hasPreview || m_tool.lastShape().isEmpty()) {
+        return false;
+    }
+
+    // Get handle position in sprite coordinates
+    gfx::Point handlePos = getLightHandlePosition();
+
+    // Convert handle position to screen coordinates
+    gfx::Point handleScreen = editor->editorToScreen(handlePos);
+
+    // Hit test with a generous radius (10 pixels in screen space)
+    int dx = screenPos.x - handleScreen.x;
+    int dy = screenPos.y - handleScreen.y;
+    int hitRadius = 10;
+
+    return (dx * dx + dy * dy) <= (hitRadius * hitRadius);
+}
+
+//------------------------------------------------------------------------------
+// Highlight point helpers (incidence point - where light hits the shape)
+//------------------------------------------------------------------------------
+
+gfx::Point AutoShadeState::getHighlightPosition() const
+{
+    if (m_tool.lastShape().isEmpty()) {
+        return gfx::Point(0, 0);
+    }
+
+    const ShapeData& shape = m_tool.lastShape();
+
+    const double PI = 3.14159265358979323846;
+    // Use independent highlight angle (not tied to light angle)
+    double angleRad = m_highlightAngle * (PI / 180.0);
+
+    // Highlight point is at m_highlightDistanceRatio of maxDistance from center
+    double highlightDist = shape.maxDistance * m_highlightDistanceRatio;
+    int highlightX = static_cast<int>(shape.centerX + std::cos(angleRad) * highlightDist);
+    int highlightY = static_cast<int>(shape.centerY - std::sin(angleRad) * highlightDist);
+
+    return gfx::Point(highlightX, highlightY);
+}
+
+bool AutoShadeState::hitTestHighlightPoint(Editor* editor, const gfx::Point& screenPos) const
+{
+    if (!m_hasPreview || m_tool.lastShape().isEmpty()) {
+        return false;
+    }
+
+    // Get highlight position in sprite coordinates
+    gfx::Point highlightPos = getHighlightPosition();
+
+    // Convert to screen coordinates
+    gfx::Point highlightScreen = editor->editorToScreen(highlightPos);
+
+    // Hit test with a generous radius (8 pixels in screen space)
+    int dx = screenPos.x - highlightScreen.x;
+    int dy = screenPos.y - highlightScreen.y;
+    int hitRadius = 8;
+
+    return (dx * dx + dy * dy) <= (hitRadius * hitRadius);
 }
 
 } // namespace app
