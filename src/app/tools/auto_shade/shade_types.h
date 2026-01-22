@@ -112,6 +112,29 @@ enum class ShapeType {
 };
 
 //------------------------------------------------------------------------------
+// Shading style - how colors are arranged/applied
+//------------------------------------------------------------------------------
+
+enum class ShadingStyle {
+    ClassicCartoon,    // Hard edges, solid color zones
+    SoftCartoon,       // Softer edges, light AA transitions
+    OilSoft,           // Painterly, irregular texture
+    RawPaint,          // Smooth dithered gradients
+    Dotted,            // Screen-tone dot pattern
+    StrokeSphere,      // Concentric circular strokes
+    StrokeVertical,    // Vertical hatching lines
+    StrokeHorizontal,  // Horizontal hatching lines
+    SmallGrain,        // Fine noise texture
+    LargeGrain,        // Chunky noise clusters
+    TrickyShading,     // Complex mixed patterns
+    SoftPattern,       // Perlin noise overlay
+    Wrinkled,          // Flow-based wrinkle lines
+    Patterned,         // Regular geometric patterns (scales, cells)
+    Wood,              // Wood grain rings/lines
+    HardBrush          // Visible brush strokes
+};
+
+//------------------------------------------------------------------------------
 // Fill mode for region detection
 //------------------------------------------------------------------------------
 
@@ -162,6 +185,7 @@ struct ShadeConfig {
     ShapeType shapeType;    // Shape assumption for normal calculation
     FillMode fillMode;      // How to detect the region to shade
     ColorSource colorSource; // Where to get base color from (foreground/background)
+    ShadingStyle shadingStyle; // How colors are arranged/applied (style effect)
 
     // Advanced options
     int colorTolerance;     // For flood fill (0-255)
@@ -210,6 +234,7 @@ struct ShadeConfig {
         , shapeType(ShapeType::Sphere)        // Default: smooth sphere (best for most pixel art)
         , fillMode(FillMode::AllNonTransparent)
         , colorSource(ColorSource::Foreground)  // Default: use foreground color
+        , shadingStyle(ShadingStyle::ClassicCartoon) // Default: clean solid zones
         , colorTolerance(32)
         , preventPillowShading(true)
         , enableRimLight(false)

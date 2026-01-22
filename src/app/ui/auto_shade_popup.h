@@ -45,6 +45,7 @@ private:
     void onShapeTypeChange();
     void onFillModeChange();
     void onColorSourceChange();
+    void onShadingStyleChange();
     void onColorChange();
     void onOutlineColorChange();
     void onShowOutlineChange();
@@ -72,6 +73,7 @@ private:
     ui::ComboBox* m_shapeTypeCombo;
     ui::ComboBox* m_fillModeCombo;
     ui::ComboBox* m_colorSourceCombo;
+    ui::ComboBox* m_shadingStyleCombo;
 
     // UI widgets - Colors
     ColorButton* m_shadowColorBtn;

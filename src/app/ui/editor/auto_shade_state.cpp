@@ -838,28 +838,31 @@ void AutoShadeState::generateShadedPreview()
         // STEP 2b2: Apply highlight position offset
         // The user-controlled highlight point shifts where the brightest area appears
         // The highlight position is independent of light angle (freely movable)
+        // Skip for ClassicCartoon - it needs pure, clean intensity bands
         // -----------------------------------------------------------------
-        // Calculate highlight target position using independent highlight angle
-        double highlightAngleRad = m_highlightAngle * (PI / 180.0);
-        double highlightTargetDist = maxRadius * m_highlightDistanceRatio;
-        double highlightTargetX = shape.centerX + std::cos(highlightAngleRad) * highlightTargetDist;
-        double highlightTargetY = shape.centerY - std::sin(highlightAngleRad) * highlightTargetDist;
+        if (config.shadingStyle != ShadingStyle::ClassicCartoon) {
+            // Calculate highlight target position using independent highlight angle
+            double highlightAngleRad = m_highlightAngle * (PI / 180.0);
+            double highlightTargetDist = maxRadius * m_highlightDistanceRatio;
+            double highlightTargetX = shape.centerX + std::cos(highlightAngleRad) * highlightTargetDist;
+            double highlightTargetY = shape.centerY - std::sin(highlightAngleRad) * highlightTargetDist;
 
-        // Calculate distance from this pixel to the highlight target
-        double toHighlightX = pixel.x - highlightTargetX;
-        double toHighlightY = pixel.y - highlightTargetY;
-        double distToHighlight = std::sqrt(toHighlightX * toHighlightX + toHighlightY * toHighlightY);
+            // Calculate distance from this pixel to the highlight target
+            double toHighlightX = pixel.x - highlightTargetX;
+            double toHighlightY = pixel.y - highlightTargetY;
+            double distToHighlight = std::sqrt(toHighlightX * toHighlightX + toHighlightY * toHighlightY);
 
-        // Create a position boost based on proximity to target
-        // Uses Gaussian falloff: closer to target = more boost
-        double positionRadius = maxRadius * 0.5;  // Influence radius
-        double positionBoost = std::exp(-(distToHighlight * distToHighlight) / (2.0 * positionRadius * positionRadius));
+            // Create a position boost based on proximity to target
+            // Uses Gaussian falloff: closer to target = more boost
+            double positionRadius = maxRadius * 0.5;  // Influence radius
+            double positionBoost = std::exp(-(distToHighlight * distToHighlight) / (2.0 * positionRadius * positionRadius));
 
-        // Blend the position boost with the lighting intensity
-        // This shifts the brightest point toward the user-specified position
-        double positionInfluence = 0.4;  // How much the highlight position affects shading
-        intensity = intensity * (1.0 - positionInfluence) +
-                   (intensity + positionBoost * (1.0 - config.ambientLevel)) * positionInfluence;
+            // Blend the position boost with the lighting intensity
+            // This shifts the brightest point toward the user-specified position
+            double positionInfluence = 0.4;  // How much the highlight position affects shading
+            intensity = intensity * (1.0 - positionInfluence) +
+                       (intensity + positionBoost * (1.0 - config.ambientLevel)) * positionInfluence;
+        }
 
         // Clamp intensity to valid range
         intensity = std::min(1.0, std::max(0.0, intensity));
@@ -867,11 +870,13 @@ void AutoShadeState::generateShadedPreview()
         // -----------------------------------------------------------------
         // STEP 2c: Check for reflected light on shadow-side edges
         // "Never let shadow extend all the way to the edge"
+        // Skip for ClassicCartoon - it needs pure, clean bands without extra effects
         // -----------------------------------------------------------------
         // distFromEdge already calculated above for normal projection
         bool useReflectedLight = false;
 
-        if (config.enableReflectedLight) {
+        if (config.enableReflectedLight &&
+            config.shadingStyle != ShadingStyle::ClassicCartoon) {
             // Shadow region: intensity below threshold
             bool isInShadow = intensity < 0.4;
             // Near edge: within reflected light width
@@ -888,10 +893,12 @@ void AutoShadeState::generateShadedPreview()
 
         // Apply pixel-perfect line snapping for band boundaries
         // Uses Bresenham-style quantization to create clean diagonal lines
+        // Skip for ClassicCartoon - use pure intensity for cleanest bands
         double adjustedIntensity = intensity;
 
-        if (config.shadingMode == ShadingMode::ThreeShade ||
-            config.shadingMode == ShadingMode::FiveShade) {
+        if ((config.shadingMode == ShadingMode::ThreeShade ||
+             config.shadingMode == ShadingMode::FiveShade) &&
+            config.shadingStyle != ShadingStyle::ClassicCartoon) {
             // Project pixel position along the light direction axis
             double lightDist = dx * lightX + dy * lightY;
 
@@ -1127,6 +1134,453 @@ void AutoShadeState::generateShadedPreview()
                                              doc::rgba_getb(config.highlightColor) * t);
                     }
                     break;
+            }
+        }
+
+        // -----------------------------------------------------------------
+        // STEP 2f: Apply shading style effects
+        // These modify the color placement/pattern based on selected style
+        // -----------------------------------------------------------------
+        bool skipPixel = false;  // For pattern styles that skip certain pixels
+
+        switch (config.shadingStyle) {
+            case ShadingStyle::ClassicCartoon:
+                // Clean solid color zones with hard edges - no extra effects
+                // This is the simplest, cleanest shading style
+                break;
+
+            case ShadingStyle::SoftCartoon: {
+                // Add soft transition at band boundaries using dithering
+                // Creates softer appearance while keeping limited palette
+                double bandWidth = 0.08;  // Transition zone width
+                bool nearBoundary = false;
+                double boundaryDist = 0;
+
+                // Check distance from band boundaries
+                if (config.shadingMode == ShadingMode::ThreeShade) {
+                    double dist1 = std::abs(adjustedIntensity - 0.33);
+                    double dist2 = std::abs(adjustedIntensity - threeShadeHighThreshold);
+                    boundaryDist = std::min(dist1, dist2);
+                    nearBoundary = boundaryDist < bandWidth;
+                }
+                else if (config.shadingMode == ShadingMode::FiveShade) {
+                    double dist1 = std::abs(adjustedIntensity - 0.2);
+                    double dist2 = std::abs(adjustedIntensity - 0.4);
+                    double dist3 = std::abs(adjustedIntensity - fiveShadeMidHighThreshold);
+                    double dist4 = std::abs(adjustedIntensity - fiveShadeHighThreshold);
+                    boundaryDist = std::min({dist1, dist2, dist3, dist4});
+                    nearBoundary = boundaryDist < bandWidth;
+                }
+
+                // Apply soft dithering near boundaries
+                if (nearBoundary) {
+                    double ditherProb = 1.0 - (boundaryDist / bandWidth);
+                    // Use position-based pseudo-random for consistent pattern
+                    unsigned int seed = static_cast<unsigned int>(pixel.x * 73856093 ^ pixel.y * 19349663);
+                    double randVal = (seed % 1000) / 1000.0;
+                    if (randVal < ditherProb * 0.3) {
+                        // Slight color variation at boundaries
+                        int variation = static_cast<int>((randVal - 0.15) * 30);
+                        r = std::max(0, std::min(255, r + variation));
+                        g = std::max(0, std::min(255, g + variation));
+                        b = std::max(0, std::min(255, b + variation));
+                    }
+                }
+                break;
+            }
+
+            case ShadingStyle::OilSoft: {
+                // Painterly, irregular texture using Perlin-like noise
+                // Add controlled randomness for organic feeling
+                double noiseScale = 0.15;
+                unsigned int seed = static_cast<unsigned int>(
+                    pixel.x * 12345 + pixel.y * 67890 +
+                    static_cast<int>(pixel.x * 0.1) * 111 +
+                    static_cast<int>(pixel.y * 0.1) * 222);
+                double noise = ((seed % 1000) / 1000.0 - 0.5) * 2.0;
+
+                // Vary intensity based on noise
+                int variation = static_cast<int>(noise * noiseScale * 60 * (1.0 - intensity * 0.5));
+                r = std::max(0, std::min(255, r + variation));
+                g = std::max(0, std::min(255, g + variation));
+                b = std::max(0, std::min(255, b + variation));
+                break;
+            }
+
+            case ShadingStyle::RawPaint: {
+                // Smooth dithered gradients using ordered dithering
+                // Bayer 2x2 matrix pattern
+                int bayerMatrix[2][2] = {{0, 2}, {3, 1}};
+                int bx = pixel.x % 2;
+                int by = pixel.y % 2;
+                double threshold = (bayerMatrix[by][bx] + 0.5) / 4.0;
+
+                // Apply dithering between adjacent colors for smoother gradients
+                double fractIntensity = adjustedIntensity * 3.0;  // Scale to color bands
+                double fract = fractIntensity - std::floor(fractIntensity);
+
+                if (fract > threshold && adjustedIntensity < 0.9) {
+                    // Bump to next lighter color occasionally
+                    int bump = 15;
+                    r = std::min(255, r + bump);
+                    g = std::min(255, g + bump);
+                    b = std::min(255, b + bump);
+                }
+                break;
+            }
+
+            case ShadingStyle::Dotted: {
+                // Screen-tone dot pattern - dots denser in shadows
+                int gridSize = 3;  // Dot grid spacing
+                int gx = pixel.x % gridSize;
+                int gy = pixel.y % gridSize;
+
+                // Dot size varies with intensity (bigger dots in shadows)
+                double dotRadius = (1.0 - adjustedIntensity) * 1.5;
+                double centerDist = std::sqrt((gx - gridSize/2.0) * (gx - gridSize/2.0) +
+                                              (gy - gridSize/2.0) * (gy - gridSize/2.0));
+
+                if (centerDist <= dotRadius && adjustedIntensity < 0.8) {
+                    // Inside a dot - use shadow color
+                    r = doc::rgba_getr(config.shadowColor);
+                    g = doc::rgba_getg(config.shadowColor);
+                    b = doc::rgba_getb(config.shadowColor);
+                }
+                break;
+            }
+
+            case ShadingStyle::StrokeSphere: {
+                // Concentric strokes - pattern follows shape type
+                double strokeDist = 0;
+                int ringSpacing = 4;
+
+                switch (config.shapeType) {
+                    case ShapeType::Sphere:
+                        // Concentric circles from center
+                        strokeDist = distFromCenter;
+                        break;
+                    case ShapeType::Adaptive:
+                        // Contour lines following shape edge (inverted distance)
+                        strokeDist = maxRadius - distFromEdge;
+                        break;
+                    case ShapeType::Cylinder:
+                        // Horizontal bands for cylinder
+                        strokeDist = std::abs(dy);
+                        break;
+                    case ShapeType::Flat:
+                        // Horizontal bands for flat
+                        strokeDist = pixel.y - shape.bounds.y;
+                        break;
+                }
+
+                int ringIndex = static_cast<int>(strokeDist) % ringSpacing;
+
+                // Stroke thickness varies with intensity
+                int strokeWidth = static_cast<int>((1.0 - adjustedIntensity) * 2 + 0.5);
+
+                if (ringIndex < strokeWidth && adjustedIntensity < 0.85) {
+                    // On a stroke - darken
+                    r = static_cast<int>(r * 0.7);
+                    g = static_cast<int>(g * 0.7);
+                    b = static_cast<int>(b * 0.7);
+                }
+                break;
+            }
+
+            case ShadingStyle::StrokeVertical: {
+                // Vertical hatching lines - denser in shadows
+                int baseSpacing = 3;
+                // Spacing increases with intensity (more lines in shadows)
+                int spacing = baseSpacing + static_cast<int>(adjustedIntensity * 3);
+                int linePos = pixel.x % spacing;
+
+                // Line thickness varies with intensity
+                int lineWidth = (adjustedIntensity < 0.5) ? 2 : 1;
+
+                if (linePos < lineWidth && adjustedIntensity < 0.85) {
+                    // On a line - use shadow color
+                    r = doc::rgba_getr(config.shadowColor);
+                    g = doc::rgba_getg(config.shadowColor);
+                    b = doc::rgba_getb(config.shadowColor);
+                }
+                break;
+            }
+
+            case ShadingStyle::StrokeHorizontal: {
+                // Horizontal hatching lines - same as vertical but on Y axis
+                int baseSpacing = 3;
+                int spacing = baseSpacing + static_cast<int>(adjustedIntensity * 3);
+                int linePos = pixel.y % spacing;
+
+                int lineWidth = (adjustedIntensity < 0.5) ? 2 : 1;
+
+                if (linePos < lineWidth && adjustedIntensity < 0.85) {
+                    r = doc::rgba_getr(config.shadowColor);
+                    g = doc::rgba_getg(config.shadowColor);
+                    b = doc::rgba_getb(config.shadowColor);
+                }
+                break;
+            }
+
+            case ShadingStyle::SmallGrain: {
+                // Fine noise texture - subtle random variation
+                unsigned int seed = static_cast<unsigned int>(pixel.x * 73856093 ^ pixel.y * 19349663);
+                double noise = ((seed % 1000) / 1000.0 - 0.5);
+
+                // Noise intensity varies with shading (more in shadows)
+                double noiseStrength = (1.0 - adjustedIntensity * 0.7) * 25;
+                int variation = static_cast<int>(noise * noiseStrength);
+
+                r = std::max(0, std::min(255, r + variation));
+                g = std::max(0, std::min(255, g + variation));
+                b = std::max(0, std::min(255, b + variation));
+                break;
+            }
+
+            case ShadingStyle::LargeGrain: {
+                // Chunky noise clusters (2x2 or 3x3 pixel groups)
+                int clusterSize = 2;
+                int cx = (pixel.x / clusterSize) * clusterSize;
+                int cy = (pixel.y / clusterSize) * clusterSize;
+
+                unsigned int seed = static_cast<unsigned int>(cx * 73856093 ^ cy * 19349663);
+                double noise = ((seed % 1000) / 1000.0 - 0.5);
+
+                double noiseStrength = (1.0 - adjustedIntensity * 0.6) * 40;
+                int variation = static_cast<int>(noise * noiseStrength);
+
+                r = std::max(0, std::min(255, r + variation));
+                g = std::max(0, std::min(255, g + variation));
+                b = std::max(0, std::min(255, b + variation));
+                break;
+            }
+
+            case ShadingStyle::TrickyShading: {
+                // Complex mixed patterns - combine multiple noise types
+                // Layer 1: Large splotches
+                int cx = (pixel.x / 4) * 4;
+                int cy = (pixel.y / 4) * 4;
+                unsigned int seed1 = static_cast<unsigned int>(cx * 12345 ^ cy * 67890);
+                double splotch = ((seed1 % 1000) / 1000.0);
+
+                // Layer 2: Fine grain
+                unsigned int seed2 = static_cast<unsigned int>(pixel.x * 73856 ^ pixel.y * 19349);
+                double grain = ((seed2 % 1000) / 1000.0 - 0.5);
+
+                if (splotch > (0.6 + adjustedIntensity * 0.3)) {
+                    // Splotch area - darken
+                    r = static_cast<int>(r * 0.8);
+                    g = static_cast<int>(g * 0.8);
+                    b = static_cast<int>(b * 0.8);
+                }
+
+                // Add fine grain on top
+                int grainVar = static_cast<int>(grain * 20 * (1.0 - adjustedIntensity * 0.5));
+                r = std::max(0, std::min(255, r + grainVar));
+                g = std::max(0, std::min(255, g + grainVar));
+                b = std::max(0, std::min(255, b + grainVar));
+                break;
+            }
+
+            case ShadingStyle::SoftPattern: {
+                // Gentle Perlin-like noise overlay
+                // Use multiple octaves of noise for smoother pattern
+                double freq1 = 0.1, freq2 = 0.2;
+                unsigned int seed1 = static_cast<unsigned int>(
+                    static_cast<int>(pixel.x * freq1) * 12345 +
+                    static_cast<int>(pixel.y * freq1) * 67890);
+                unsigned int seed2 = static_cast<unsigned int>(
+                    static_cast<int>(pixel.x * freq2) * 54321 +
+                    static_cast<int>(pixel.y * freq2) * 98765);
+
+                double noise1 = ((seed1 % 1000) / 1000.0 - 0.5);
+                double noise2 = ((seed2 % 1000) / 1000.0 - 0.5) * 0.5;
+                double combined = (noise1 + noise2) * 0.67;
+
+                double strength = (1.0 - adjustedIntensity * 0.5) * 20;
+                int variation = static_cast<int>(combined * strength);
+
+                r = std::max(0, std::min(255, r + variation));
+                g = std::max(0, std::min(255, g + variation));
+                b = std::max(0, std::min(255, b + variation));
+                break;
+            }
+
+            case ShadingStyle::Wrinkled: {
+                // Flow-based wrinkle lines following surface direction
+                // Flow direction depends on shape type
+                double flowDist = 0;
+                int wrinkleSpacing = 5;
+
+                switch (config.shapeType) {
+                    case ShapeType::Sphere: {
+                        // Radial wrinkles from center
+                        double flowAngle = std::atan2(dy, dx);
+                        flowDist = pixel.x * std::cos(flowAngle) + pixel.y * std::sin(flowAngle);
+                        break;
+                    }
+                    case ShapeType::Adaptive: {
+                        // Wrinkles follow contour lines (perpendicular to edge)
+                        flowDist = distFromEdge * 2.0;
+                        break;
+                    }
+                    case ShapeType::Cylinder: {
+                        // Horizontal wrinkles for cylinder
+                        flowDist = pixel.y;
+                        wrinkleSpacing = 4;
+                        break;
+                    }
+                    case ShapeType::Flat: {
+                        // Diagonal wrinkles for flat
+                        flowDist = (pixel.x + pixel.y) * 0.7;
+                        break;
+                    }
+                }
+
+                double wrinklePos = std::fmod(std::abs(flowDist), wrinkleSpacing);
+
+                // Wrinkle intensity based on position and shading
+                double wrinkleWidth = (1.0 - adjustedIntensity) * 1.5;
+
+                if (wrinklePos < wrinkleWidth && adjustedIntensity < 0.8) {
+                    r = static_cast<int>(r * 0.75);
+                    g = static_cast<int>(g * 0.75);
+                    b = static_cast<int>(b * 0.75);
+                }
+                break;
+            }
+
+            case ShadingStyle::Patterned: {
+                // Regular geometric pattern - adapts to shape type
+                int patternSize = 6;
+                double px, py;
+                bool onOutline = false;
+
+                switch (config.shapeType) {
+                    case ShapeType::Sphere: {
+                        // Scale pattern with perspective distortion toward edges
+                        double perspScale = 1.0 + (distFromCenter / maxRadius) * 0.5;
+                        px = std::fmod(pixel.x * perspScale, patternSize);
+                        py = std::fmod(pixel.y * perspScale, patternSize);
+                        // Offset every other row
+                        if (static_cast<int>(pixel.y * perspScale / patternSize) % 2 == 1) {
+                            px = std::fmod(px + patternSize / 2.0, patternSize);
+                        }
+                        break;
+                    }
+                    case ShapeType::Adaptive: {
+                        // Pattern follows contour with edge-based distortion
+                        double contourScale = 1.0 + (1.0 - distFromEdge / maxRadius) * 0.3;
+                        px = std::fmod(pixel.x * contourScale, patternSize);
+                        py = std::fmod(pixel.y * contourScale, patternSize);
+                        if (static_cast<int>(pixel.y * contourScale / patternSize) % 2 == 1) {
+                            px = std::fmod(px + patternSize / 2.0, patternSize);
+                        }
+                        break;
+                    }
+                    case ShapeType::Cylinder: {
+                        // Stretched pattern horizontally for cylinder
+                        px = std::fmod(pixel.x * 0.7, patternSize);
+                        py = std::fmod(pixel.y, patternSize);
+                        if ((pixel.y / patternSize) % 2 == 1) {
+                            px = std::fmod(px + patternSize / 2.0, patternSize);
+                        }
+                        break;
+                    }
+                    case ShapeType::Flat:
+                    default: {
+                        // Regular grid pattern
+                        px = pixel.x % patternSize;
+                        py = pixel.y % patternSize;
+                        if ((pixel.y / patternSize) % 2 == 1) {
+                            px = (pixel.x + patternSize / 2) % patternSize;
+                        }
+                        break;
+                    }
+                }
+
+                // Distance from pattern cell center
+                double pcx = px - patternSize / 2.0;
+                double pcy = py - patternSize / 2.0;
+                double pDist = std::sqrt(pcx * pcx + pcy * pcy);
+
+                // Create scale/cell outline
+                double outlineWidth = 1.0 + (1.0 - adjustedIntensity) * 0.5;
+                if (pDist > patternSize / 2.0 - outlineWidth) {
+                    // On outline
+                    r = static_cast<int>(r * (0.6 + adjustedIntensity * 0.3));
+                    g = static_cast<int>(g * (0.6 + adjustedIntensity * 0.3));
+                    b = static_cast<int>(b * (0.6 + adjustedIntensity * 0.3));
+                }
+                break;
+            }
+
+            case ShadingStyle::Wood: {
+                // Wood grain - pattern follows shape type
+                double ringFreq = 0.3;
+                double grainDist = 0;
+
+                // Add noise to grain position for organic look
+                unsigned int seed = static_cast<unsigned int>(
+                    static_cast<int>(pixel.x * 0.1) * 12345 +
+                    static_cast<int>(pixel.y * 0.1) * 67890);
+                double noise = ((seed % 1000) / 1000.0 - 0.5) * 3;
+
+                switch (config.shapeType) {
+                    case ShapeType::Sphere:
+                        // Concentric rings from center (cross-section of log)
+                        grainDist = distFromCenter;
+                        break;
+                    case ShapeType::Adaptive:
+                        // Rings following shape contour
+                        grainDist = maxRadius - distFromEdge;
+                        break;
+                    case ShapeType::Cylinder:
+                        // Vertical grain lines (along the cylinder)
+                        grainDist = std::abs(dx) * 1.5;
+                        ringFreq = 0.5;
+                        break;
+                    case ShapeType::Flat:
+                        // Horizontal wood grain
+                        grainDist = pixel.y - shape.bounds.y;
+                        ringFreq = 0.4;
+                        break;
+                }
+
+                double ringValue = std::sin((grainDist + noise) * ringFreq);
+
+                // Create grain lines
+                if (ringValue > 0.3) {
+                    // Darker grain line
+                    double grainStrength = (ringValue - 0.3) * (1.0 - adjustedIntensity * 0.5);
+                    r = static_cast<int>(r * (1.0 - grainStrength * 0.3));
+                    g = static_cast<int>(g * (1.0 - grainStrength * 0.3));
+                    b = static_cast<int>(b * (1.0 - grainStrength * 0.3));
+                }
+                break;
+            }
+
+            case ShadingStyle::HardBrush: {
+                // Visible brush stroke marks following light direction
+                double strokeAngle = config.lightAngle * (PI / 180.0);
+                double strokeDist = pixel.x * std::cos(strokeAngle) + pixel.y * std::sin(strokeAngle);
+
+                int strokeSpacing = 4;
+                int strokePos = static_cast<int>(std::abs(strokeDist)) % strokeSpacing;
+
+                // Stroke width varies with intensity
+                int strokeWidth = 1 + static_cast<int>((1.0 - adjustedIntensity) * 1.5);
+
+                // Add slight variation for brush texture
+                unsigned int seed = static_cast<unsigned int>(pixel.x * 111 ^ pixel.y * 222);
+                int texVar = (seed % 3) - 1;
+
+                if (strokePos < strokeWidth && adjustedIntensity < 0.9) {
+                    r = std::max(0, std::min(255, static_cast<int>(r * 0.8) + texVar * 5));
+                    g = std::max(0, std::min(255, static_cast<int>(g * 0.8) + texVar * 5));
+                    b = std::max(0, std::min(255, static_cast<int>(b * 0.8) + texVar * 5));
+                }
+                break;
             }
         }
 

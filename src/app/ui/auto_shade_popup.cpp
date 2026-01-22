@@ -217,6 +217,29 @@ AutoShadePopup::AutoShadePopup()
     m_colorSourceCombo->setExpansive(true);
     optionsGrid->addChildInCell(m_colorSourceCombo, 1, 1, 0);
 
+    // Shading style (how colors are arranged/applied)
+    optionsGrid->addChildInCell(new Label("Style:"), 1, 1, 0);
+    m_shadingStyleCombo = new ComboBox();
+    m_shadingStyleCombo->addItem("Classic Cartoon");   // Hard edges, solid zones
+    m_shadingStyleCombo->addItem("Soft Cartoon");      // Softer edges, AA transitions
+    m_shadingStyleCombo->addItem("Oil Soft");          // Painterly, irregular texture
+    m_shadingStyleCombo->addItem("Raw Paint");         // Smooth dithered gradients
+    m_shadingStyleCombo->addItem("Dotted");            // Screen-tone dot pattern
+    m_shadingStyleCombo->addItem("Stroke Sphere");     // Concentric circular strokes
+    m_shadingStyleCombo->addItem("Stroke Vertical");   // Vertical hatching lines
+    m_shadingStyleCombo->addItem("Stroke Horizontal"); // Horizontal hatching lines
+    m_shadingStyleCombo->addItem("Small Grain");       // Fine noise texture
+    m_shadingStyleCombo->addItem("Large Grain");       // Chunky noise clusters
+    m_shadingStyleCombo->addItem("Tricky Shading");    // Complex mixed patterns
+    m_shadingStyleCombo->addItem("Soft Pattern");      // Perlin noise overlay
+    m_shadingStyleCombo->addItem("Wrinkled");          // Flow-based wrinkle lines
+    m_shadingStyleCombo->addItem("Patterned");         // Regular geometric patterns
+    m_shadingStyleCombo->addItem("Wood");              // Wood grain rings/lines
+    m_shadingStyleCombo->addItem("Hard Brush");        // Visible brush strokes
+    m_shadingStyleCombo->setSelectedItemIndex(static_cast<int>(m_config.shadingStyle));
+    m_shadingStyleCombo->setExpansive(true);
+    optionsGrid->addChildInCell(m_shadingStyleCombo, 1, 1, 0);
+
     optionsSection->addChild(optionsGrid);
 
     // Show outline checkbox
@@ -292,6 +315,7 @@ AutoShadePopup::AutoShadePopup()
     m_shapeTypeCombo->Change.connect([this]() { onShapeTypeChange(); });
     m_fillModeCombo->Change.connect([this]() { onFillModeChange(); });
     m_colorSourceCombo->Change.connect([this]() { onColorSourceChange(); });
+    m_shadingStyleCombo->Change.connect([this]() { onShadingStyleChange(); });
     m_shadowColorBtn->Change.connect([this]() { onColorChange(); });
     m_baseColorBtn->Change.connect([this]() { onColorChange(); });
     m_highlightColorBtn->Change.connect([this]() { onColorChange(); });
@@ -337,6 +361,7 @@ void AutoShadePopup::setConfig(const tools::ShadeConfig& config)
     m_shapeTypeCombo->setSelectedItemIndex(static_cast<int>(config.shapeType));
     m_fillModeCombo->setSelectedItemIndex(static_cast<int>(config.fillMode));
     m_colorSourceCombo->setSelectedItemIndex(static_cast<int>(config.colorSource));
+    m_shadingStyleCombo->setSelectedItemIndex(static_cast<int>(config.shadingStyle));
 
     m_shadowColorBtn->setColor(app::Color::fromRgb(
         doc::rgba_getr(config.shadowColor),
@@ -459,6 +484,13 @@ void AutoShadePopup::onColorSourceChange()
 {
     m_config.colorSource = static_cast<tools::ColorSource>(
         m_colorSourceCombo->getSelectedItemIndex());
+    notifyChange();
+}
+
+void AutoShadePopup::onShadingStyleChange()
+{
+    m_config.shadingStyle = static_cast<tools::ShadingStyle>(
+        m_shadingStyleCombo->getSelectedItemIndex());
     notifyChange();
 }
 
