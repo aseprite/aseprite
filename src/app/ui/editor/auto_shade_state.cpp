@@ -504,50 +504,67 @@ void AutoShadeState::generateShadedPreview()
         int r, g, b;
 
         // Apply pixel-perfect line snapping for band boundaries
-        // This creates clean diagonal lines similar to Bresenham algorithm
-        // by adjusting thresholds based on pixel position along the light axis
+        // Uses Bresenham-style quantization to create clean diagonal lines
         double adjustedIntensity = intensity;
 
         if (config.shadingMode == ShadingMode::ThreeShade ||
             config.shadingMode == ShadingMode::FiveShade) {
-            // Calculate perpendicular axis to light direction
-            double perpX = -lightY;
-            double perpY = lightX;
+            // Project pixel position along the light direction axis
+            // This gives us a "distance along light ray" value
+            double lightDist = dx * lightX + dy * lightY;
 
-            // Project pixel position onto the perpendicular axis
-            // This determines which "row" of the band boundary we're on
-            double perpDist = dx * perpX + dy * perpY;
+            // The key insight: band boundaries should be perpendicular to light
+            // We quantize the light distance to create clean stepped lines
 
-            // Also consider the parallel axis for more accurate stepping
-            double paraDist = dx * lightX + dy * lightY;
+            // Calculate the slope of the light direction for Bresenham stepping
+            // For angles near 45°, we want 1:1 stepping
+            // For angles near horizontal/vertical, we want longer runs
+            double absLightX = std::abs(lightX);
+            double absLightY = std::abs(lightY);
 
-            // Create a Bresenham-like sub-pixel adjustment
-            // The key is to use consistent rounding based on position
-            // This creates clean diagonal lines at band boundaries
-            int perpInt = static_cast<int>(std::floor(perpDist + 0.5));
-            int paraInt = static_cast<int>(std::floor(paraDist + 0.5));
-
-            // Calculate a fractional offset that creates consistent stepping
-            // Uses the error accumulation principle from Bresenham's algorithm
-            double fracPerp = perpDist - perpInt;
-            double fracPara = paraDist - paraInt;
-
-            // Small adjustment to snap boundaries to clean pixel lines
-            // The adjustment depends on position to create consistent stepping
-            double snapAdjust = 0.0;
-
-            // Use modular arithmetic for consistent stepping pattern
-            // This creates 1:1, 2:1, or other clean diagonal ratios
-            int stepPattern = (std::abs(perpInt) + std::abs(paraInt)) % 3;
-            if (stepPattern == 0) {
-                snapAdjust = 0.02;
-            } else if (stepPattern == 1) {
-                snapAdjust = 0.0;
+            // Determine the major axis and calculate step ratio
+            double stepRatio;
+            int majorCoord, minorCoord;
+            if (absLightX > absLightY) {
+                // More horizontal - major axis is X
+                stepRatio = absLightY / (absLightX + 0.001);
+                majorCoord = static_cast<int>(pixel.x);
+                minorCoord = static_cast<int>(pixel.y);
             } else {
-                snapAdjust = -0.02;
+                // More vertical - major axis is Y
+                stepRatio = absLightX / (absLightY + 0.001);
+                majorCoord = static_cast<int>(pixel.y);
+                minorCoord = static_cast<int>(pixel.x);
             }
 
-            adjustedIntensity = intensity + snapAdjust;
+            // Bresenham error accumulation for clean line stepping
+            // This creates the classic pixel-perfect diagonal pattern
+            double error = (majorCoord * stepRatio) - std::floor(majorCoord * stepRatio);
+
+            // Adjust threshold based on accumulated error
+            // This snaps the band boundary to the nearest clean pixel line
+            double thresholdAdjust = 0.0;
+            if (error < 0.33) {
+                thresholdAdjust = -0.015;
+            } else if (error > 0.67) {
+                thresholdAdjust = 0.015;
+            }
+
+            // Also consider the perpendicular position for sub-pixel accuracy
+            double perpX = -lightY;
+            double perpY = lightX;
+            double perpDist = dx * perpX + dy * perpY;
+            int perpInt = static_cast<int>(std::round(perpDist));
+
+            // Alternate adjustment based on perpendicular position
+            // This creates consistent stepping across parallel boundary lines
+            if (perpInt % 2 == 0) {
+                thresholdAdjust *= 1.0;
+            } else {
+                thresholdAdjust *= -1.0;
+            }
+
+            adjustedIntensity = intensity + thresholdAdjust;
         }
 
         if (useReflectedLight) {

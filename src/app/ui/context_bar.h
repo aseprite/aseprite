@@ -235,7 +235,7 @@ private:
   PixelPenRestorePathField* m_pixelPenRestorePath = nullptr;
   PixelPenAddHandlesField* m_pixelPenAddHandles = nullptr;
   ui::Box* m_autoShadeBox = nullptr;
-  ui::Label* m_autoShadeLabel = nullptr;
+  ui::Label* m_autoShadeTolLabel = nullptr;
   AutoShadeLightAngleField* m_autoShadeLightAngle = nullptr;
   AutoShadeAmbientField* m_autoShadeAmbient = nullptr;
   AutoShadeToleranceField* m_autoShadeTolerance = nullptr;

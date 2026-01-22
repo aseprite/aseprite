@@ -2415,6 +2415,9 @@ public:
     }
   }
 
+  // Signal emitted when colors change (for sync with popup)
+  obs::signal<void()> ColorsChanged;
+
 protected:
   void onInitTheme(InitThemeEvent& ev) override {
     HBox::onInitTheme(ev);
@@ -2439,6 +2442,9 @@ private:
           highlight.getRed(), highlight.getGreen(), highlight.getBlue(), 255);
 
         state->updatePreview(editor);
+
+        // Notify listeners (popup sync)
+        ColorsChanged();
       }
     }
   }
@@ -2511,6 +2517,17 @@ public:
     m_colorsField = colorsField;
   }
 
+  // Update the popup with current state (called when context bar colors change)
+  void syncPopupFromState() {
+    if (m_popup && m_popup->isVisible()) {
+      if (auto* editor = Editor::activeEditor()) {
+        if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
+          m_popup->setConfig(state->config());
+        }
+      }
+    }
+  }
+
   void closePopup() {
     if (m_popup && m_popup->isVisible()) {
       m_popup->closeWindow(nullptr);
@@ -2519,6 +2536,12 @@ public:
   }
 
   void showPopup() {
+    // If popup already exists and visible, do nothing
+    if (m_popup && m_popup->isVisible()) {
+      return;
+    }
+
+    // Create popup if needed
     if (!m_popup) {
       m_popup.reset(new AutoShadePopup());
       m_popup->ConfigChange.connect([this](const tools::ShadeConfig& config) {
@@ -2526,23 +2549,21 @@ public:
       });
     }
 
-    // Sync current state to popup (colors come from state, which is updated by top bar)
+    // Sync current state to popup
     if (auto* editor = Editor::activeEditor()) {
       if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
         m_popup->setConfig(state->config());
       }
     }
 
-    if (!m_popup->isVisible()) {
-      gfx::Rect bounds = this->bounds();
-      m_popup->openWindowInForeground();
-      m_popup->remapWindow();
+    // Position and show the popup
+    gfx::Rect bounds = this->bounds();
+    m_popup->remapWindow();
 
-      // Position below the button
-      ui::fit_bounds(display(), m_popup.get(),
-                     gfx::Rect(bounds.x, bounds.y2(), 250, 400));
-      m_popup->openWindow();
-    }
+    // Position below the button
+    ui::fit_bounds(display(), m_popup.get(),
+                   gfx::Rect(bounds.x, bounds.y2(), 260, 420));
+    m_popup->openWindow();
   }
 
 protected:
@@ -2645,16 +2666,18 @@ ContextBar::ContextBar(TooltipManager* tooltipManager, ColorBar* colorBar)
   // Colors, Tolerance, Apply, Cancel, Options button
   // Other settings are in the floating Options popup
   addChild(m_autoShadeBox = new HBox());
-  m_autoShadeBox->addChild(m_autoShadeLabel = new Label("Auto-Shade:"));
   m_autoShadeBox->addChild(m_autoShadeColors = new AutoShadeColorsField());
-  m_autoShadeBox->addChild(new Label("Tol:"));
+  m_autoShadeBox->addChild(m_autoShadeTolLabel = new Label(Strings::general_tolerance()));
   m_autoShadeBox->addChild(m_autoShadeTolerance = new AutoShadeToleranceField());
+  m_autoShadeBox->addChild(m_autoShadeOptions = new AutoShadeOptionsField());
   m_autoShadeBox->addChild(m_autoShadeApply = new AutoShadeApplyField());
   m_autoShadeBox->addChild(m_autoShadeCancel = new AutoShadeCancelField());
-  m_autoShadeBox->addChild(m_autoShadeOptions = new AutoShadeOptionsField());
 
   // Wire up bidirectional color sync between top bar and options popup
   m_autoShadeOptions->setColorsField(m_autoShadeColors);
+  m_autoShadeColors->ColorsChanged.connect([this]() {
+    m_autoShadeOptions->syncPopupFromState();
+  });
 
   // These are still created but not added to the context bar
   // They are used internally and their state is managed via the Options popup
@@ -2710,6 +2733,7 @@ void ContextBar::onInitTheme(ui::InitThemeEvent& ev)
   m_sprayLabel->setStyle(theme->styles.miniLabel());
   m_toleranceLabel->setStyle(theme->styles.miniLabel());
   m_inkOpacityLabel->setStyle(theme->styles.miniLabel());
+  m_autoShadeTolLabel->setStyle(theme->styles.miniLabel());
 }
 
 void ContextBar::onSizeHint(SizeHintEvent& ev)
