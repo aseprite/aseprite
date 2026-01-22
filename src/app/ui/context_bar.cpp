@@ -2382,6 +2382,9 @@ public:
       if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
         const auto& config = state->config();
 
+        // Guard against feedback loop when setting colors
+        m_updatingFromCode = true;
+
         m_shadowBtn->setColor(app::Color::fromRgb(
           doc::rgba_getr(config.shadowColor),
           doc::rgba_getg(config.shadowColor),
@@ -2394,6 +2397,8 @@ public:
           doc::rgba_getr(config.highlightColor),
           doc::rgba_getg(config.highlightColor),
           doc::rgba_getb(config.highlightColor)));
+
+        m_updatingFromCode = false;
       }
     }
   }
@@ -2426,6 +2431,10 @@ protected:
 
 private:
   void updateStateColors() {
+    // Don't update state if we're programmatically setting colors
+    if (m_updatingFromCode)
+      return;
+
     if (auto* editor = Editor::activeEditor()) {
       if (auto* state = dynamic_cast<AutoShadeState*>(editor->getState().get())) {
         auto& config = state->config();
@@ -2455,6 +2464,7 @@ private:
   EyedropperBtn* m_shadowEye;
   EyedropperBtn* m_baseEye;
   EyedropperBtn* m_highlightEye;
+  bool m_updatingFromCode = false;
 };
 
 class ContextBar::AutoShadeApplyField : public Button {
