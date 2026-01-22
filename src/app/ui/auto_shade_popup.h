@@ -13,14 +13,14 @@
 #include "ui/button.h"
 #include "ui/combobox.h"
 #include "ui/label.h"
-#include "ui/window.h"
+#include "ui/popup_window.h"
 #include "ui/slider.h"
 
 #include "obs/signal.h"
 
 namespace app {
 
-class AutoShadePopup : public ui::Window {
+class AutoShadePopup : public ui::PopupWindow {
 public:
     AutoShadePopup();
 

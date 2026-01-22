@@ -24,10 +24,14 @@ using namespace ui;
 using namespace skin;
 
 AutoShadePopup::AutoShadePopup()
-    : Window(Window::WithTitleBar, "Auto-Shade Options")
+    : PopupWindow("Auto-Shade Options",
+                  ClickBehavior::DoNothingOnClick,
+                  EnterBehavior::DoNothingOnEnter,
+                  true)  // withCloseButton
 {
-    // Make window non-desktop (floating) and closable
-    setMoveable(true);
+    // Make the window floating (movable)
+    makeFloating();
+
     auto theme = SkinTheme::get(this);
 
     // Main vertical box
