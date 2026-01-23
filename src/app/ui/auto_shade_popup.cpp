@@ -11,6 +11,8 @@
 
 #include "app/app.h"
 #include "app/color.h"
+#include "app/pref/preferences.h"
+#include "app/tools/auto_shade/palette_generator.h"
 #include "app/ui/skin/skin_theme.h"
 #include "doc/image.h"
 #include "ui/box.h"
@@ -124,7 +126,7 @@ AutoShadePopup::AutoShadePopup()
     colorOpts.showSimpleColors = false;
     colorOpts.showIndexTab = true;
 
-    auto colorsGrid = new Grid(2, false);
+    auto colorsGrid = new ui::Grid(2, false);
 
     colorsGrid->addChildInCell(new Label("Shadow:"), 1, 1, 0);
     m_shadowColorBtn = new ColorButton(
@@ -157,6 +159,39 @@ AutoShadePopup::AutoShadePopup()
     colorsGrid->addChildInCell(m_highlightColorBtn, 1, 1, 0);
 
     colorsSection->addChild(colorsGrid);
+
+    // Auto-palette generation section (within Colors)
+    colorsSection->addChild(new Separator("Auto-Palette", HORIZONTAL));
+
+    auto paletteGrid = new ui::Grid(2, false);
+
+    paletteGrid->addChildInCell(new Label("Material:"), 1, 1, 0);
+    m_paletteMaterialCombo = new ComboBox();
+    m_paletteMaterialCombo->addItem("Matte");
+    m_paletteMaterialCombo->addItem("Glossy");
+    m_paletteMaterialCombo->addItem("Metallic");
+    m_paletteMaterialCombo->addItem("Skin");
+    m_paletteMaterialCombo->setSelectedItemIndex(static_cast<int>(m_config.paletteMaterial));
+    m_paletteMaterialCombo->setExpansive(true);
+    paletteGrid->addChildInCell(m_paletteMaterialCombo, 1, 1, 0);
+
+    paletteGrid->addChildInCell(new Label("Palette:"), 1, 1, 0);
+    m_paletteStyleCombo = new ComboBox();
+    m_paletteStyleCombo->addItem("Natural");
+    m_paletteStyleCombo->addItem("Vibrant");
+    m_paletteStyleCombo->addItem("Muted");
+    m_paletteStyleCombo->addItem("Dramatic");
+    m_paletteStyleCombo->setSelectedItemIndex(static_cast<int>(m_config.paletteStyle));
+    m_paletteStyleCombo->setExpansive(true);
+    paletteGrid->addChildInCell(m_paletteStyleCombo, 1, 1, 0);
+
+    colorsSection->addChild(paletteGrid);
+
+    // Auto-generate button
+    m_autoGenerateBtn = new Button("Auto-Generate from FG");
+    m_autoGenerateBtn->setExpansive(true);
+    colorsSection->addChild(m_autoGenerateBtn);
+
     mainBox->addChild(colorsSection);
 
     // ---- Shading Options Section ----
@@ -164,7 +199,7 @@ AutoShadePopup::AutoShadePopup()
     optionsSection->addChild(new Label("Shading Options"));
     optionsSection->addChild(new Separator("", HORIZONTAL));
 
-    auto optionsGrid = new Grid(2, false);
+    auto optionsGrid = new ui::Grid(2, false);
 
     // Shading mode
     optionsGrid->addChildInCell(new Label("Mode:"), 1, 1, 0);
@@ -253,7 +288,7 @@ AutoShadePopup::AutoShadePopup()
     optionsSection->addChild(m_selectiveOutlineCheck);
 
     // Outline colors grid
-    auto outlineColorsGrid = new Grid(2, false);
+    auto outlineColorsGrid = new ui::Grid(2, false);
 
     outlineColorsGrid->addChildInCell(new Label("Light outline:"), 1, 1, 0);
     m_lightOutlineColorBtn = new ColorButton(
@@ -294,6 +329,17 @@ AutoShadePopup::AutoShadePopup()
     m_ditheringCheck->setSelected(m_config.enableDithering);
     advancedSection->addChild(m_ditheringCheck);
 
+    // Advanced normals checkbox
+    m_advancedNormalsCheck = new CheckBox("Use advanced normals (experimental)");
+    m_advancedNormalsCheck->setSelected(m_config.useAdvancedNormals);
+    advancedSection->addChild(m_advancedNormalsCheck);
+
+    // Reset button
+    advancedSection->addChild(new Separator("", HORIZONTAL));
+    m_resetBtn = new Button("Reset to Defaults");
+    m_resetBtn->setExpansive(true);
+    advancedSection->addChild(m_resetBtn);
+
     mainBox->addChild(advancedSection);
 
     // Wrap mainBox in a scrollable view
@@ -325,6 +371,11 @@ AutoShadePopup::AutoShadePopup()
     m_shadowOutlineColorBtn->Change.connect([this]() { onOutlineColorChange(); });
     m_antiAliasingCheck->Click.connect([this]() { onAntiAliasingChange(); });
     m_ditheringCheck->Click.connect([this]() { onDitheringChange(); });
+    m_paletteMaterialCombo->Change.connect([this]() { onPaletteMaterialChange(); });
+    m_paletteStyleCombo->Change.connect([this]() { onPaletteStyleChange(); });
+    m_autoGenerateBtn->Click.connect([this]() { onAutoGeneratePalette(); });
+    m_advancedNormalsCheck->Click.connect([this]() { onAdvancedNormalsChange(); });
+    m_resetBtn->Click.connect([this]() { onResetClick(); });
 
     // Set initial size (scrollable, so can be smaller)
     setAutoRemap(false);
@@ -397,6 +448,10 @@ void AutoShadePopup::setConfig(const tools::ShadeConfig& config)
 
     m_antiAliasingCheck->setSelected(config.enableAntiAliasing);
     m_ditheringCheck->setSelected(config.enableDithering);
+
+    m_paletteMaterialCombo->setSelectedItemIndex(static_cast<int>(config.paletteMaterial));
+    m_paletteStyleCombo->setSelectedItemIndex(static_cast<int>(config.paletteStyle));
+    m_advancedNormalsCheck->setSelected(config.useAdvancedNormals);
 
     m_updatingFromCode = false;
 }
@@ -551,6 +606,80 @@ void AutoShadePopup::onAntiAliasingChange()
 void AutoShadePopup::onDitheringChange()
 {
     m_config.enableDithering = m_ditheringCheck->isSelected();
+    notifyChange();
+}
+
+void AutoShadePopup::onPaletteMaterialChange()
+{
+    m_config.paletteMaterial = static_cast<tools::PaletteMaterial>(
+        m_paletteMaterialCombo->getSelectedItemIndex());
+    notifyChange();
+}
+
+void AutoShadePopup::onPaletteStyleChange()
+{
+    m_config.paletteStyle = static_cast<tools::PaletteStyle>(
+        m_paletteStyleCombo->getSelectedItemIndex());
+    notifyChange();
+}
+
+void AutoShadePopup::onAdvancedNormalsChange()
+{
+    m_config.useAdvancedNormals = m_advancedNormalsCheck->isSelected();
+    notifyChange();
+}
+
+void AutoShadePopup::onResetClick()
+{
+    // Create a default config
+    tools::ShadeConfig defaultConfig;
+
+    // Apply it using setConfig (which updates all UI elements)
+    setConfig(defaultConfig);
+
+    // Notify listeners of the change
+    notifyChange();
+}
+
+void AutoShadePopup::onAutoGeneratePalette()
+{
+    // Get foreground color from preferences
+    app::Color fgColor = Preferences::instance().colorBar.fgColor();
+
+    // Convert to doc::color_t
+    doc::color_t baseColor = doc::rgba(
+        fgColor.getRed(), fgColor.getGreen(), fgColor.getBlue(), 255);
+
+    // Generate palette using current settings
+    tools::GeneratedPalette palette = tools::PaletteGenerator::generate(
+        baseColor,
+        m_config.lightAngle,
+        m_config.paletteMaterial,
+        m_config.paletteStyle);
+
+    // Update config with generated colors
+    m_config.shadowColor = palette.shadow;
+    m_config.baseColor = palette.base;
+    m_config.highlightColor = palette.highlight;
+    m_config.midShadowColor = palette.midShadow;
+    m_config.midHighlightColor = palette.midHighlight;
+
+    // Update UI color buttons
+    m_shadowColorBtn->setColor(app::Color::fromRgb(
+        doc::rgba_getr(palette.shadow),
+        doc::rgba_getg(palette.shadow),
+        doc::rgba_getb(palette.shadow)));
+
+    m_baseColorBtn->setColor(app::Color::fromRgb(
+        doc::rgba_getr(palette.base),
+        doc::rgba_getg(palette.base),
+        doc::rgba_getb(palette.base)));
+
+    m_highlightColorBtn->setColor(app::Color::fromRgb(
+        doc::rgba_getr(palette.highlight),
+        doc::rgba_getg(palette.highlight),
+        doc::rgba_getb(palette.highlight)));
+
     notifyChange();
 }
 

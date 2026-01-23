@@ -1224,6 +1224,7 @@
     <menu id="palette_popup_menu" text="@.title">
       <item command="PaletteEditor" text="@.edit_palette" />
       <item command="PaletteSize" text="@.palette_size" group="palette_main" />
+      <item command="PaletteGenerator" text="@.generate_palette" group="palette_main" />
       <separator />
       <menu id="select_palette_colors" text="@.select_palette_colors">
         <item command="SelectPaletteColors" text="@.used_colors">

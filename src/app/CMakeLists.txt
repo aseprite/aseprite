@@ -447,6 +447,7 @@ target_sources(app-lib PRIVATE
   commands/cmd_open_with_app.cpp
   commands/cmd_options.cpp
   commands/cmd_palette_editor.cpp
+  commands/cmd_palette_generator.cpp
   commands/cmd_palette_size.cpp
   commands/cmd_paste.cpp
   commands/cmd_paste_text.cpp
@@ -591,6 +592,7 @@ target_sources(app-lib PRIVATE
   tools/auto_shade/auto_shade_tool.cpp
   tools/auto_shade/flood_fill.cpp
   tools/auto_shade/normal_calculator.cpp
+  tools/auto_shade/palette_generator.cpp
   tools/auto_shade/shading_calculator.cpp
   tools/auto_shade/shape_analyzer.cpp
   tools/point_shape.cpp
@@ -626,6 +628,7 @@ target_sources(app-lib PRIVATE
   ui/drop_down_button.cpp
   ui/dynamics_popup.cpp
   ui/auto_shade_popup.cpp
+  ui/palette_generator_popup.cpp
   ui/editor/brush_preview.cpp
   ui/editor/delayed_mouse_move.cpp
   ui/editor/dragging_value_state.cpp
@@ -853,4 +856,12 @@ endif()
 # native file dialog.
 if(LAF_WITH_DLGS_PROC)
   add_dependencies(app-lib laf-dlgs-proc)
+endif()
+
+# Auto-Shade Palette Generator Tests
+if(ENABLE_TESTS)
+  add_executable(palette_generator_tests
+    tools/auto_shade/tests/standalone_test.cpp
+  )
+  add_test(NAME palette_generator_tests COMMAND palette_generator_tests)
 endif()

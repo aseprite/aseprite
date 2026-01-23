@@ -135,6 +135,51 @@ enum class ShadingStyle {
 };
 
 //------------------------------------------------------------------------------
+// Palette generation - Material types
+//------------------------------------------------------------------------------
+
+enum class PaletteMaterial {
+    Matte,      // Diffuse surfaces, low contrast
+    Glossy,     // Shiny surfaces, higher contrast
+    Metallic,   // Reflective metals, extreme contrast, desaturated shadows
+    Skin        // Organic skin tones, warm midtones, subsurface scattering
+};
+
+//------------------------------------------------------------------------------
+// Palette generation - Style presets
+//------------------------------------------------------------------------------
+
+enum class PaletteStyle {
+    Natural,    // Subtle, realistic hue shifts (15-20°)
+    Vibrant,    // Strong color shifts for stylized art (25-30°)
+    Muted,      // Minimal shifts, low saturation (10-15°)
+    Dramatic    // High contrast, deep shadows (20-25°)
+};
+
+//------------------------------------------------------------------------------
+// Color Harmony modes for palette generation
+//------------------------------------------------------------------------------
+
+enum class ColorHarmony {
+    Monochromatic,      // Single hue, varying saturation/brightness
+    Analogous,          // Adjacent colors on the wheel (±30°)
+    Complementary,      // Opposite colors (180° apart)
+    SplitComplementary, // Base + two colors adjacent to complement
+    Triadic,            // Three evenly spaced colors (120° apart)
+    Tetradic            // Four colors forming a rectangle
+};
+
+//------------------------------------------------------------------------------
+// Temperature shift direction
+//------------------------------------------------------------------------------
+
+enum class TemperatureShift {
+    WarmHighlights,     // Warm highlights, cool shadows (default, natural)
+    CoolHighlights,     // Cool highlights, warm shadows (artificial light)
+    Neutral             // No temperature shift (straight ramp)
+};
+
+//------------------------------------------------------------------------------
 // Fill mode for region detection
 //------------------------------------------------------------------------------
 
@@ -187,6 +232,10 @@ struct ShadeConfig {
     ColorSource colorSource; // Where to get base color from (foreground/background)
     ShadingStyle shadingStyle; // How colors are arranged/applied (style effect)
 
+    // Palette generation settings
+    PaletteMaterial paletteMaterial;  // Material type for auto-palette generation
+    PaletteStyle paletteStyle;        // Style preset for auto-palette generation
+
     // Advanced options
     int colorTolerance;     // For flood fill (0-255)
     bool preventPillowShading;
@@ -216,6 +265,9 @@ struct ShadeConfig {
     bool enableDithering;       // Add dithering at band boundaries for smoother transitions
     int ditheringWidth;         // Width of dithering zone in pixels (1-3)
 
+    // Advanced normal calculation
+    bool useAdvancedNormals;    // Use NormalCalculator for 2D normals (can cause artifacts)
+
     // Default constructor with sensible defaults
     ShadeConfig()
         : baseColor(doc::rgba(128, 128, 128, 255))      // Grey base
@@ -235,6 +287,8 @@ struct ShadeConfig {
         , fillMode(FillMode::AllNonTransparent)
         , colorSource(ColorSource::Foreground)  // Default: use foreground color
         , shadingStyle(ShadingStyle::ClassicCartoon) // Default: clean solid zones
+        , paletteMaterial(PaletteMaterial::Matte)    // Default: matte material
+        , paletteStyle(PaletteStyle::Natural)        // Default: natural style
         , colorTolerance(32)
         , preventPillowShading(true)
         , enableRimLight(false)
@@ -253,6 +307,7 @@ struct ShadeConfig {
         , aaLevels(2)                 // 2 levels of AA
         , enableDithering(false)      // Dithering disabled by default
         , ditheringWidth(1)           // 1 pixel dithering zone
+        , useAdvancedNormals(false)   // Disabled by default (use simple radial)
     {}
 };
 

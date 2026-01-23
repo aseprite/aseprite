@@ -7,6 +7,7 @@
 #define APP_UI_AUTO_SHADE_POPUP_H_INCLUDED
 #pragma once
 
+#include "app/tools/auto_shade/palette_generator.h"
 #include "app/tools/auto_shade/shade_types.h"
 #include "app/ui/color_button.h"
 #include "ui/box.h"
@@ -52,6 +53,11 @@ private:
     void onSelectiveOutlineChange();
     void onAntiAliasingChange();
     void onDitheringChange();
+    void onPaletteMaterialChange();
+    void onPaletteStyleChange();
+    void onAutoGeneratePalette();
+    void onAdvancedNormalsChange();
+    void onResetClick();
 
     void notifyChange();
 
@@ -80,6 +86,11 @@ private:
     ColorButton* m_baseColorBtn;
     ColorButton* m_highlightColorBtn;
 
+    // UI widgets - Auto-Palette Generation
+    ui::ComboBox* m_paletteMaterialCombo;
+    ui::ComboBox* m_paletteStyleCombo;
+    ui::Button* m_autoGenerateBtn;
+
     // UI widgets - Outline
     ui::CheckBox* m_showOutlineCheck;
     ui::CheckBox* m_selectiveOutlineCheck;
@@ -93,6 +104,8 @@ private:
     // UI widgets - Advanced options
     ui::CheckBox* m_antiAliasingCheck;
     ui::CheckBox* m_ditheringCheck;
+    ui::CheckBox* m_advancedNormalsCheck;
+    ui::Button* m_resetBtn;
 
     // Scrollable view container
     ui::View* m_view;

@@ -16,6 +16,7 @@
 #include "app/pref/preferences.h"
 #include "app/site.h"
 #include "app/tools/tool_box.h"
+#include "app/tools/auto_shade/normal_calculator.h"
 #include "app/tx.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
@@ -698,6 +699,17 @@ void AutoShadeState::generateShadedPreview()
               config.lightAngle, lightX, lightY, lightZ, config.roundness, maxRadius);
 
     // =========================================================================
+    // STEP 1b: Calculate 2D normals using NormalCalculator (optional)
+    // Only used when useAdvancedNormals is enabled
+    // =========================================================================
+    NormalMap normals2D;
+    if (config.useAdvancedNormals) {
+        normals2D = NormalCalculator::calculate(shape, config.normalMethod);
+        SHADE_LOG("generateShadedPreview: calculated %zu 2D normals using method %d",
+                  normals2D.size(), static_cast<int>(config.normalMethod));
+    }
+
+    // =========================================================================
     // STEP 2: Process each pixel
     // =========================================================================
     for (const auto& pixel : shape.pixels) {
@@ -717,10 +729,10 @@ void AutoShadeState::generateShadedPreview()
         int outputAlpha = (origAlpha == 0) ? 255 : origAlpha;
 
         // -----------------------------------------------------------------
-        // STEP 2a: Calculate 3D normal based on ShapeType
+        // STEP 2a: Calculate 3D normal based on ShapeType + NormalMethod
         // -----------------------------------------------------------------
 
-        // Calculate radial direction from center to pixel
+        // Calculate position relative to center
         double dx = pixel.x - shape.centerX;
         double dy = pixel.y - shape.centerY;
         double distFromCenter = std::sqrt(dx * dx + dy * dy);
@@ -728,11 +740,27 @@ void AutoShadeState::generateShadedPreview()
         // Get distance from edge (used for Adaptive shading and reflected light)
         float distFromEdge = shape.getDistance(pixel);
 
-        // Normalize to get radial direction (outward from center)
+        // Get 2D normal direction
+        // When useAdvancedNormals is enabled, use NormalCalculator results
+        // Otherwise, use simple radial direction from center (original behavior)
         double dirX = 0, dirY = -1;  // Default: up
-        if (distFromCenter > 0.001) {
-            dirX = dx / distFromCenter;
-            dirY = dy / distFromCenter;
+        if (config.useAdvancedNormals) {
+            auto normalIt = normals2D.find(pixel);
+            if (normalIt != normals2D.end()) {
+                dirX = normalIt->second.x;
+                dirY = normalIt->second.y;
+            }
+            else if (distFromCenter > 0.001) {
+                dirX = dx / distFromCenter;
+                dirY = dy / distFromCenter;
+            }
+        }
+        else {
+            // Simple radial: direction from center to pixel (original behavior)
+            if (distFromCenter > 0.001) {
+                dirX = dx / distFromCenter;
+                dirY = dy / distFromCenter;
+            }
         }
 
         double normalX = 0, normalY = 0, normalZ = 1;
