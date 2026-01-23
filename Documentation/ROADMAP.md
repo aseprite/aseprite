@@ -30,33 +30,89 @@ This document outlines planned tools and features for the Custom Aseprite build,
 ## Phase 1: Essential Tools (High Priority)
 
 ### 1. Advanced Dithering Tool
-**Purpose:** Create smooth gradients with limited palettes
+**Purpose:** Create smooth gradients with limited palettes using dithering patterns
 
-**Features:**
-- [ ] Dithering patterns library
-  - Checkerboard (2x2)
-  - Bayer matrix (2x2, 4x4, 8x8)
-  - Custom pattern editor
-- [ ] Dithering algorithms
-  - Ordered dithering
-  - Floyd-Steinberg error diffusion
-  - Atkinson dithering
-- [ ] Gradient fill with dithering
-  - Linear and radial gradients
-  - Palette-aware color stops
-  - Preview before applying
-- [ ] Dither brush mode
-  - Paint with dithering patterns
-  - Configurable density
+**Status:** Research Complete - Ready for Implementation
 
-**Technical Notes:**
-- Integrate with existing gradient tool
-- Use current palette colors only
-- Support undo/redo
+#### Existing Aseprite Infrastructure (Reusable)
+Aseprite already has comprehensive dithering support we can build upon:
 
-**References:**
+| Component | Location | Description |
+|-----------|----------|-------------|
+| `DitheringMatrix` | `src/render/dithering_matrix.h` | Matrix storage class |
+| `BayerMatrix::make(n)` | `src/render/dithering_matrix.h` | Generates Bayer 2x2, 4x4, 8x8 |
+| `OrderedDither` | `src/render/ordered_dither.h` | Ordered dithering algorithm |
+| `ErrorDiffusionDither` | `src/render/error_diffusion.h` | Floyd-Steinberg implementation |
+| `DitheringSelector` | `src/app/ui/dithering_selector.h` | UI combobox for selection |
+| `render_rgba_*_gradient` | `src/render/gradient.h` | Gradient with dithering support |
+| Extension matrices | `app/extensions.cpp` | Custom patterns via extensions |
+
+#### New Features to Implement
+
+**1. Dithering Brush/Ink Mode**
+- [ ] Create `DitheringInk` class in `src/app/tools/ink_processing.h`
+- [ ] Paint with dithering pattern between FG/BG colors
+- [ ] Configurable density slider (0-100%)
+- [ ] Pattern selection dropdown
+- [ ] Works with pencil, brush, line tools
+
+**2. Dithered Fill Tool**
+- [ ] Modify bucket tool to support dithering mode
+- [ ] Fill regions with dithered pattern
+- [ ] Uses current FG/BG colors
+- [ ] Pattern and density selection in context bar
+
+**3. Enhanced Gradient Tool**
+- [ ] Add palette-aware mode (snaps to palette colors)
+- [ ] Multi-stop gradient with dithering between stops
+- [ ] Preview overlay before applying
+- [ ] Dithering intensity control
+
+**4. Custom Pattern Editor (Optional)**
+- [ ] Visual matrix editor popup
+- [ ] Import/export patterns
+- [ ] Save as extension
+
+#### Implementation Plan
+
+```
+src/app/tools/
+├── inks/
+│   └── dithering_ink.h          # New dithering ink mode
+├── auto_shade/
+│   └── dithering_tool.cpp       # Tool integration (if standalone)
+
+src/app/ui/
+├── dithering_popup.cpp          # Pattern selection popup
+├── dithering_popup.h
+└── context_bar.cpp              # Add dithering controls
+```
+
+#### Algorithm Details
+
+**Ordered Dithering (Bayer):**
+```cpp
+// For each pixel (x, y):
+threshold = matrix(y % rows, x % cols) / maxValue;
+if (colorIntensity > threshold)
+    pixel = color1;
+else
+    pixel = color2;
+```
+
+**Floyd-Steinberg Error Diffusion:**
+```cpp
+// Process left-to-right, serpentine scan
+error = originalColor - quantizedColor;
+// Distribute error: 7/16 right, 3/16 bottom-left, 5/16 bottom, 1/16 bottom-right
+```
+
+#### References
 - [Drububu Dithering Tutorial](https://www.drububu.com/tutorial/pixel-art-and-dithering.html)
 - [Pixel Parmesan Dithering Guide](https://pixelparmesan.com/blog/dithering-for-pixel-artists)
+- [Wikipedia: Ordered Dithering](https://en.wikipedia.org/wiki/Ordered_dithering)
+- [Wikipedia: Floyd-Steinberg](https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering)
+- [Tanner Helland: 11 Dithering Algorithms](https://tannerhelland.com/2012/12/28/dithering-eleven-algorithms-source-code.html)
 
 ---
 
