@@ -62,7 +62,7 @@ To compile Aseprite you will need:
 ## Windows dependencies
 
 * Windows 11 (we don't support cross-compiling)
-* [Visual Studio Community 2022](https://visualstudio.microsoft.com/downloads/) (we don't support [MinGW](#mingw))
+* [Visual Studio Community 2022/2026](https://visualstudio.microsoft.com/downloads/) (we don't support [MinGW](#mingw))
 * The [Desktop development with C++ item + Windows 10.0.26100.0 SDK](https://imgur.com/a/7zs51IT)
   from Visual Studio installer
 
@@ -145,6 +145,10 @@ menu, or open a `cmd.exe` terminal and run:
 
     call "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat" -arch=x64
 
+If you are using Microsoft Visual Studio community 2026 run this in `cmd.exe`:
+
+`call "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\VsDevCmd.bat" -arch=x64`
+
 The command above is required while using the 64-bit version of
 Skia. When compiling with the 32-bit version, it is possible to open a
 [developer command prompt](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs)
@@ -160,6 +164,7 @@ And then
 
 In this case, `C:\deps\skia` is the directory where Skia was compiled
 or uncompressed.
+
 
 ### MinGW
 
