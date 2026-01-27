@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2025  Igara Studio S.A.
+// Copyright (C) 2022-2026  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -32,11 +32,12 @@
 #include "render/dithering.h"
 #include "render/quantization.h"
 #include "render/render.h"
+#include "text/draw_text.h"
 #include "text/font_metrics.h"
-#include "ui/entry.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
 #include "ui/system.h"
+#include "ui/textedit.h"
 
 #ifdef LAF_SKIA
   #include "app/util/shader_helpers.h"
@@ -45,6 +46,7 @@
 #endif
 
 #include <cmath>
+#include <limits>
 
 namespace app {
 
@@ -73,7 +75,7 @@ static gfx::RectF calc_blob_bounds(const text::TextBlobRef& blob)
   return bounds;
 }
 
-class WritingTextState::TextEditor : public Entry {
+class WritingTextState::TextEditor : public TextEdit {
 public:
   enum TextPreview {
     Intermediate, // With selection preview / user interface
@@ -81,15 +83,12 @@ public:
   };
 
   TextEditor(Editor* editor, const Site& site, const gfx::Rect& bounds)
-    : Entry(4096, "")
-    , m_editor(editor)
+    : m_editor(editor)
     , m_doc(site.document())
     , m_extraCel(new ExtraCel)
   {
-    // We have to draw the editor as background of this ui::Entry.
+    // We have to draw the editor as background of this ui::TextEdit.
     setTransparent(true);
-
-    setPersistSelection(true);
 
     createExtraCel(site, bounds);
     renderExtraCel(TextPreview::Intermediate);
@@ -129,6 +128,8 @@ public:
 
   obs::signal<void(const gfx::RectF&)> NewRequiredBounds;
 
+  void invalidateTextCache() { m_textDirty = true; }
+
 private:
   void createExtraCel(const Site& site, const gfx::Rect& bounds)
   {
@@ -164,7 +165,7 @@ private:
         break;
       }
     }
-    return Entry::onProcessMessage(msg);
+    return TextEdit::onProcessMessage(msg);
   }
 
   float onGetTextBaseline() const override
@@ -176,19 +177,28 @@ private:
 
   void onInitTheme(InitThemeEvent& ev) override
   {
-    Entry::onInitTheme(ev);
+    TextEdit::onInitTheme(ev);
     setBgColor(gfx::ColorNone);
   }
 
   void onSetText() override
   {
-    Entry::onSetText();
+    TextEdit::onSetText();
+    invalidateTextCache();
     onNewTextBlob();
   }
 
   void onSetFont() override
   {
-    Entry::onSetFont();
+    TextEdit::onSetFont();
+    invalidateTextCache();
+    onNewTextBlob();
+  }
+
+  void onTextChanged() override
+  {
+    TextEdit::onTextChanged();
+    invalidateTextCache();
     onNewTextBlob();
   }
 
@@ -202,21 +212,92 @@ private:
 
   void onNewTextBlob()
   {
-    text::TextBlobRef blob = textBlob();
-    if (!blob)
+    if (lines().empty())
       return;
 
     // Notify that we could make the text editor bigger to show this
-    // text blob.
-    NewRequiredBounds(calc_blob_bounds(blob));
+    // multi-line text.
+    const gfx::RectF bounds = calcMultiLineBounds();
+    if (!bounds.isEmpty())
+      NewRequiredBounds(bounds);
+  }
+
+  Caret caretFromPosition(const gfx::Point& position) override
+  {
+    if (lines().empty())
+      return Caret(&lines(), 0, 0);
+
+    // Check if position is within widget bounds (screen coordinates)
+    if (!bounds().contains(position)) {
+      if (position.y < bounds().y)
+        return Caret(&lines(), 0, 0);
+      if (position.y > bounds().y2())
+        return Caret(&lines(), lines().size() - 1, lines().back().glyphCount);
+      return Caret();
+    }
+
+    gfx::PointF localPos(position - bounds().origin());
+    gfx::PointF offsetPosition(localPos.x / scale().x, localPos.y / scale().y);
+    Caret newCaret(&lines());
+
+    // Check if the position is below all lines
+    if (offsetPosition.y >= maxHeight()) {
+      newCaret.setLine(lines().size() - 1);
+      newCaret.setPos(
+        (offsetPosition.x > newCaret.lineObj().width / 2) ? newCaret.lineObj().glyphCount : 0);
+      return newCaret;
+    }
+
+    int lineStartY = 0;
+    for (const Line& line : lines()) {
+      const int lineEndY = lineStartY + line.height;
+      if (offsetPosition.y < lineStartY || offsetPosition.y >= lineEndY) {
+        lineStartY = lineEndY;
+        continue;
+      }
+      newCaret.setLine(line.i);
+      if (!line.blob)
+        break;
+      if (offsetPosition.x > line.width) {
+        newCaret.setPos(line.glyphCount);
+        break;
+      }
+
+      int advance = 0;
+      int best = 0;
+      float bestDiff = std::numeric_limits<float>::max();
+      float bestGlyphCenterX = 0;
+      line.blob->visitRuns([&](text::TextBlob::RunInfo& run) {
+        for (size_t i = 0; i < run.glyphCount; ++i) {
+          gfx::RectF glyphBounds = run.getGlyphBounds(i);
+          const float centerX = glyphBounds.center().x;
+          const float diff = std::fabs(centerX - offsetPosition.x);
+          if (diff < bestDiff) {
+            best = advance;
+            bestDiff = diff;
+            bestGlyphCenterX = centerX;
+          }
+          ++advance;
+        }
+      });
+
+      // Round the caret position according the glyph center
+      if (offsetPosition.x > bestGlyphCenterX)
+        newCaret.setPos(best + 1);
+      else
+        newCaret.setPos(best);
+      break;
+    }
+
+    return newCaret;
   }
 
   void onPaint(PaintEvent& ev) override
   {
     Graphics* g = ev.graphics();
 
-    // Don't paint the base Entry borders
-    // Entry::onPaint(ev);
+    // Don't paint the base TextEdit
+    // TextEdit::onPaint(ev);
 
     if (!hasText())
       return;
@@ -242,10 +323,7 @@ private:
 
       // Paint caret
       if (isCaretVisible()) {
-        int scroll, caret;
-        getEntryThemeInfo(&scroll, &caret, nullptr, nullptr);
-
-        gfx::RectF caretBounds = getCharBoxBounds(caret);
+        gfx::RectF caretBounds = getCaretBoundsForPaint();
         caretBounds *= gfx::SizeF(scale());
         caretBounds.w = 1;
         g->fillRect(gfx::rgba(0, 0, 0), caretBounds);
@@ -258,6 +336,69 @@ private:
     }
   }
 
+  gfx::RectF getCaretBoundsForPaint() const
+  {
+    if (lines().empty())
+      return gfx::RectF();
+
+    const Line& line = caret().lineObj();
+    float x = 0;
+
+    if (caret().inEol())
+      x = line.width;
+    else if (caret().pos() > 0)
+      x = line.getBounds(caret().pos()).x;
+
+    // Calculate y position by summing heights of previous lines
+    float y = 0;
+    for (const auto& l : lines()) {
+      if (l.i >= caret().line())
+        break;
+      y += l.height;
+    }
+
+    return gfx::RectF(x, y, 1, line.height);
+  }
+
+  void drawSelectionRects(os::Surface* surface, const os::Paint& paint) const
+  {
+    if (selection().isEmpty() || lines().empty())
+      return;
+
+    const Caret& start = selection().start();
+    const Caret& end = selection().end();
+    float yOffset = 0;
+    for (const auto& l : lines()) {
+      if (l.i >= start.line())
+        break;
+      yOffset += l.height;
+    }
+    for (int lineIdx = start.line(); lineIdx <= end.line(); ++lineIdx) {
+      const Line& line = lines()[lineIdx];
+
+      float startX = 0;
+      float endX = line.width;
+
+      if (lineIdx == start.line() && start.pos() > 0)
+        startX = line.getBounds(start.pos()).x;
+
+      if (lineIdx == end.line()) {
+        if (end.inEol())
+          endX = line.width;
+        else if (end.pos() > 0)
+          endX = line.getBounds(end.pos()).x;
+        else
+          endX = 0;
+      }
+
+      const gfx::RectF lineRect(startX, yOffset, endX - startX, line.height);
+      if (!lineRect.isEmpty())
+        surface->drawRect(lineRect, paint);
+
+      yOffset += line.height;
+    }
+  }
+
   void renderExtraCel(const TextPreview textPreview)
   {
     doc::Image* extraImg = m_extraCel->image();
@@ -267,46 +408,22 @@ private:
 
     extraImg->clear(extraImg->maskColor());
 
-    text::TextBlobRef blob = textBlob();
-    doc::ImageRef blobImage;
-    gfx::RectF bounds;
-    if (blob) {
-      const ui::Paint paint = get_paint_for_text();
-      bounds = calc_blob_bounds(blob);
-      blobImage = render_text_blob(blob, bounds, get_paint_for_text());
-      if (!blobImage)
-        return;
-
-      // Invert selected range in the image
-      if (textPreview == TextPreview::Intermediate) {
-        Range range;
-        getEntryThemeInfo(nullptr, nullptr, nullptr, &range);
-        if (!range.isEmpty()) {
-          gfx::RectF selectedBounds = getCharBoxBounds(range.from) | getCharBoxBounds(range.to - 1);
-
-          if (!selectedBounds.isEmpty()) {
-            selectedBounds.offset(-bounds.origin());
-
-#ifdef LAF_SKIA
-            sk_sp<SkSurface> skSurface = wrap_docimage_in_sksurface(blobImage.get());
-            os::SurfaceRef surface = base::make_ref<os::SkiaSurface>(skSurface);
-
-            os::Paint paint2 = paint;
-            paint2.blendMode(os::BlendMode::Xor);
-            paint2.style(os::Paint::Style::Fill);
-            surface->drawRect(selectedBounds, paint2);
-#endif // LAF_SKIA
-          }
-        }
-      }
+    if (lines().empty() || !hasText()) {
+      m_cachedTextImage.reset();
+      return;
     }
+    if (m_textDirty || !m_cachedTextImage)
+      renderTextToCache();
+    if (!m_cachedTextImage)
+      return;
 
     doc::Cel* extraCel = m_extraCel->cel();
     ASSERT(extraCel);
     if (!extraCel)
       return;
 
-    extraCel->setPosition(m_baseBounds.x + bounds.x, m_baseBounds.y + bounds.y);
+    extraCel->setPosition(m_baseBounds.x + m_cachedTextBounds.x,
+                          m_baseBounds.y + m_cachedTextBounds.y);
 
     render::Render().renderLayer(extraImg,
                                  m_editor->layer(),
@@ -314,14 +431,104 @@ private:
                                  gfx::Clip(0, 0, extraCel->bounds()),
                                  doc::BlendMode::SRC);
 
-    if (blobImage) {
+    if (textPreview == TextPreview::Intermediate && !selection().isEmpty()) {
+      doc::ImageRef finalImage(doc::Image::createCopy(m_cachedTextImage.get()));
+#ifdef LAF_SKIA
+      sk_sp<SkSurface> skSurface = wrap_docimage_in_sksurface(finalImage.get());
+      os::SurfaceRef surface = base::make_ref<os::SkiaSurface>(skSurface);
+
+      os::Paint paint2 = get_paint_for_text();
+      paint2.blendMode(os::BlendMode::Xor);
+      paint2.style(os::Paint::Style::Fill);
+      drawSelectionRects(surface.get(), paint2);
+#endif
       doc::blend_image(extraImg,
-                       blobImage.get(),
-                       gfx::Clip(blobImage->bounds().size()),
+                       finalImage.get(),
+                       gfx::Clip(finalImage->bounds().size()),
                        m_doc->sprite()->palette(m_editor->frame()),
                        255,
                        doc::BlendMode::NORMAL);
     }
+    else {
+      doc::blend_image(extraImg,
+                       m_cachedTextImage.get(),
+                       gfx::Clip(m_cachedTextImage->bounds().size()),
+                       m_doc->sprite()->palette(m_editor->frame()),
+                       255,
+                       doc::BlendMode::NORMAL);
+    }
+  }
+
+  // Render text to cached image (called only when text content changes)
+  void renderTextToCache()
+  {
+    m_cachedTextBounds = calcMultiLineBounds();
+    if (m_cachedTextBounds.isEmpty()) {
+      m_cachedTextImage.reset();
+      return;
+    }
+
+    m_cachedTextImage.reset(doc::Image::create(doc::IMAGE_RGB,
+                                               std::ceil(m_cachedTextBounds.w),
+                                               std::ceil(m_cachedTextBounds.h)));
+    m_cachedTextImage->clear(m_cachedTextImage->maskColor());
+
+#ifdef LAF_SKIA
+    sk_sp<SkSurface> skSurface = wrap_docimage_in_sksurface(m_cachedTextImage.get());
+    os::SurfaceRef surface = base::make_ref<os::SkiaSurface>(skSurface);
+
+    const ui::Paint paint = get_paint_for_text();
+
+    float yOffset = 0;
+    for (const auto& line : lines()) {
+      if (line.blob) {
+        gfx::RectF lineBlobBounds = calc_blob_bounds(line.blob);
+        gfx::PointF drawPos(-lineBlobBounds.x, yOffset - lineBlobBounds.y);
+        text::draw_text(surface.get(), line.blob, drawPos, &paint);
+      }
+      yOffset += line.height;
+    }
+#endif // LAF_SKIA
+
+    m_textDirty = false;
+  }
+
+  gfx::RectF calcMultiLineBounds() const
+  {
+    if (lines().empty())
+      return gfx::RectF();
+
+    float maxWidth = 0;
+    float totalHeight = 0;
+    float minX = 0;
+    float minY = 0;
+    bool first = true;
+
+    for (const auto& line : lines()) {
+      if (line.blob) {
+        gfx::RectF lineBounds = calc_blob_bounds(line.blob);
+        if (first) {
+          minX = lineBounds.x;
+          minY = lineBounds.y;
+          first = false;
+        }
+        else {
+          minX = std::min(minX, lineBounds.x);
+        }
+        maxWidth = std::max(maxWidth, lineBounds.w);
+      }
+      else {
+        maxWidth = std::max(maxWidth, 1.0f);
+      }
+      totalHeight += line.height;
+    }
+
+    if (maxWidth < 1)
+      maxWidth = 1;
+    if (totalHeight < 1)
+      totalHeight = 1;
+
+    return gfx::RectF(minX, minY, maxWidth, totalHeight);
   }
 
   Editor* m_editor;
@@ -332,13 +539,18 @@ private:
   // render the text in case some initial letter/glyph needs some
   // extra room at the left side.
   gfx::Rect m_baseBounds;
+
+  // Cached rendered text image to avoid re-rendering on position changes
+  doc::ImageRef m_cachedTextImage;
+  gfx::RectF m_cachedTextBounds;
+  bool m_textDirty = true;
 };
 
 WritingTextState::WritingTextState(Editor* editor, const gfx::Rect& bounds)
   : m_delayedMouseMove(this, editor, 5)
   , m_editor(editor)
   , m_bounds(bounds)
-  , m_entry(new TextEditor(editor, editor->getSite(), bounds))
+  , m_textEdit(new TextEditor(editor, editor->getSite(), bounds))
 {
   m_beforeCmdConn = UIContext::instance()->BeforeCommandExecution.connect(
     &WritingTextState::onBeforeCommandExecution,
@@ -347,12 +559,18 @@ WritingTextState::WritingTextState(Editor* editor, const gfx::Rect& bounds)
   m_fontChangeConn =
     App::instance()->contextBar()->FontChange.connect(&WritingTextState::onFontChange, this);
 
-  m_entry->NewRequiredBounds.connect([this](const gfx::RectF& blobBounds) {
+  m_fgColorConn = Preferences::instance().colorBar.fgColor.AfterChange.connect([this] {
+    m_textEdit->invalidateTextCache();
+    m_textEdit->invalidate();
+    m_editor->invalidate();
+  });
+
+  m_textEdit->NewRequiredBounds.connect([this](const gfx::RectF& blobBounds) {
     if (m_bounds.w < blobBounds.w || m_bounds.h < blobBounds.h) {
       m_bounds.w = std::max(m_bounds.w, blobBounds.w);
       m_bounds.h = std::max(m_bounds.h, blobBounds.h);
-      m_entry->setExtraCelBounds(m_bounds);
-      m_entry->setBounds(calcEntryBounds());
+      m_textEdit->setExtraCelBounds(m_bounds);
+      m_textEdit->setBounds(calcEntryBounds());
     }
   });
 
@@ -380,6 +598,8 @@ bool WritingTextState::onMouseDown(Editor* editor, MouseMessage* msg)
       editor->captureMouse();
       return true;
     }
+    if (m_hit == Hit::Inside)
+      return false;
 
     // On mouse down with the left button, we just drop the text
     // directly when we click outside the edges.
@@ -402,8 +622,9 @@ bool WritingTextState::onMouseUp(Editor* editor, MouseMessage* msg)
   if (m_movingBounds)
     m_movingBounds = false;
 
-  // Drop if the user just clicked (so other text box is created)
-  if (m_delayedMouseMove.canInterpretMouseMovementAsJustOneClick()) {
+  // Drop if the user just clicked outside the text area (so other text box is created)
+  // Don't drop if clicked inside - that's for caret positioning
+  if (m_hit != Hit::Inside && m_delayedMouseMove.canInterpretMouseMovementAsJustOneClick()) {
     drop();
   }
 
@@ -428,8 +649,8 @@ void WritingTextState::onCommitMouseMove(Editor* editor, const gfx::PointF& spri
     return;
 
   m_bounds.setOrigin(delta + m_boundsOrigin);
-  m_entry->setExtraCelBounds(m_bounds);
-  m_entry->setBounds(calcEntryBounds());
+  m_textEdit->setExtraCelBounds(m_bounds);
+  m_textEdit->setBounds(calcEntryBounds());
 }
 
 bool WritingTextState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
@@ -448,10 +669,6 @@ bool WritingTextState::onKeyDown(Editor*, KeyMessage* msg)
   // Cancel loop pressing Esc key
   if (msg->scancode() == ui::kKeyEsc) {
     cancel();
-  }
-  // Drop text pressing Enter key
-  else if (msg->scancode() == ui::kKeyEnter) {
-    drop();
     return true;
   }
   return false;
@@ -471,15 +688,15 @@ void WritingTextState::onEditorGotFocus(Editor* editor)
   // Focus the entry when we focus the editor, it happens when we
   // change the font settings, so we keep the focus in the entry
   // field.
-  if (m_entry)
-    m_entry->requestFocus();
+  if (m_textEdit)
+    m_textEdit->requestFocus();
 }
 
 void WritingTextState::onEditorResize(Editor* editor)
 {
   const gfx::PointF scale(editor->projection().scaleX(), editor->projection().scaleY());
-  m_entry->setScale(scale);
-  m_entry->setBounds(calcEntryBounds());
+  m_textEdit->setScale(scale);
+  m_textEdit->setBounds(calcEntryBounds());
 }
 
 gfx::Rect WritingTextState::calcEntryBounds()
@@ -504,8 +721,8 @@ void WritingTextState::onEnterState(Editor* editor)
 
   editor->invalidate();
 
-  editor->addChild(m_entry.get());
-  m_entry->requestFocus();
+  editor->addChild(m_textEdit.get());
+  m_textEdit->requestFocus();
 }
 
 EditorState::LeaveAction WritingTextState::onLeaveState(Editor* editor, EditorState* newState)
@@ -515,7 +732,7 @@ EditorState::LeaveAction WritingTextState::onLeaveState(Editor* editor, EditorSt
       // Paints the text in the active layer/sprite creating an
       // undoable transaction.
       Site site = m_editor->getSite();
-      ExtraCelRef extraCel = m_entry->extraCel(TextEditor::Final);
+      ExtraCelRef extraCel = m_textEdit->extraCel(TextEditor::Final);
       Tx tx(site.document(), Strings::tools_text());
       ExpandCelCanvas expand(site, site.layer(), TiledMode::NONE, tx, ExpandCelCanvas::None);
 
@@ -539,7 +756,7 @@ EditorState::LeaveAction WritingTextState::onLeaveState(Editor* editor, EditorSt
 
 void WritingTextState::onBeforePopState(Editor* editor)
 {
-  editor->removeChild(m_entry.get());
+  editor->removeChild(m_textEdit.get());
   m_beforeCmdConn.disconnect();
   m_fontChangeConn.disconnect();
 
@@ -561,17 +778,17 @@ void WritingTextState::onBeforeCommandExecution(CommandExecutionEvent& ev)
 void WritingTextState::onFontChange(const FontInfo& fontInfo, FontEntry::From fromField)
 {
   if (auto font = Fonts::instance()->fontFromInfo(fontInfo)) {
-    m_entry->setFont(font);
-    m_entry->invalidate();
+    m_textEdit->setFont(font);
+    m_textEdit->invalidate();
     m_editor->invalidate();
 
     // This is useful to show changes to the anti-alias option
     // immediately.
-    auto dummy = m_entry->extraCel(TextEditor::Intermediate);
+    auto dummy = m_textEdit->extraCel(TextEditor::Intermediate);
 
     if (fromField == FontEntry::From::Popup) {
-      if (m_entry)
-        m_entry->requestFocus();
+      if (m_textEdit)
+        m_textEdit->requestFocus();
     }
   }
 }
@@ -593,11 +810,11 @@ void WritingTextState::drop()
 WritingTextState::Hit WritingTextState::calcHit(Editor* editor, const gfx::Point& mouseScreenPos)
 {
   auto edges = editor->editorToScreen(m_bounds);
-  if (!edges.contains(mouseScreenPos) && edges.enlarge(32 * guiscale()).contains(mouseScreenPos)) {
+  if (edges.contains(mouseScreenPos))
+    return Hit::Inside;
+  if (edges.enlarge(32 * guiscale()).contains(mouseScreenPos))
     return Hit::Edges;
-  }
-
-  return Hit::Normal;
+  return Hit::Outside;
 }
 
 } // namespace app

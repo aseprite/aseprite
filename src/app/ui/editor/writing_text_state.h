@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2022-2025  Igara Studio S.A.
+// Copyright (c) 2022-2026  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -38,7 +38,8 @@ public:
 
 private:
   enum class Hit {
-    Normal,
+    Outside,
+    Inside,
     Edges,
   };
 
@@ -60,14 +61,14 @@ private:
   DelayedMouseMove m_delayedMouseMove;
   Editor* m_editor;
   gfx::RectF m_bounds;
-  std::unique_ptr<TextEditor> m_entry;
+  std::unique_ptr<TextEditor> m_textEdit;
 
   // True if the text was discarded.
   bool m_discarded = false;
 
   // To move text entry bounds when we drag the mouse from the edges
   // of the TextEditor.
-  Hit m_hit = Hit::Normal;
+  Hit m_hit = Hit::Outside;
   bool m_mouseMoveReceived = false;
   bool m_movingBounds = false;
   gfx::PointF m_cursorStart;
@@ -75,6 +76,7 @@ private:
 
   obs::scoped_connection m_beforeCmdConn;
   obs::scoped_connection m_fontChangeConn;
+  obs::scoped_connection m_fgColorConn;
 };
 
 } // namespace app
