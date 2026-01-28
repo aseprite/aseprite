@@ -13,6 +13,7 @@
 #include "app/ui/font_entry.h"
 
 #include <memory>
+#include <string>
 
 namespace app {
 class CommandExecutionEvent;
@@ -21,7 +22,9 @@ class FontInfo;
 class WritingTextState : public StandbyState,
                          DelayedMouseMoveDelegate {
 public:
-  WritingTextState(Editor* editor, const gfx::Rect& bounds);
+  WritingTextState(Editor* editor,
+                   const gfx::Rect& bounds,
+                   const std::string& initialText = std::string());
   ~WritingTextState();
 
   LeaveAction onLeaveState(Editor* editor, EditorState* newState) override;
