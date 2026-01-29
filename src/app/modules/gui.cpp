@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -704,7 +704,9 @@ bool CustomizedGuiManager::processKey(Message* msg)
     return false;
 
   App* app = App::instance();
-  bool result = false;
+  if (key->type() == KeyType::Tool || key->type() == KeyType::Command)
+    // Cancel menu-bar loops (to close any popup menu)
+    app->mainWindow()->getMenuBar()->cancelMenuLoop();
 
   switch (key->type()) {
     case KeyType::Tool: {
@@ -744,8 +746,7 @@ bool CustomizedGuiManager::processKey(Message* msg)
       }
 
       ToolBar::instance()->selectTool(select_this_tool);
-      result = true;
-      break;
+      return true;
     }
 
     case KeyType::Command: {
@@ -757,7 +758,7 @@ bool CustomizedGuiManager::processKey(Message* msg)
         // OK, so we can execute the command represented
         // by the pressed-key in the message...
         UIContext::instance()->executeCommandFromMenuOrShortcut(command, key->params());
-        result = true;
+        return true;
       }
       break;
     }
@@ -769,11 +770,7 @@ bool CustomizedGuiManager::processKey(Message* msg)
     }
   }
 
-  // Cancel menu-bar loops (to close any popup menu)
-  if (result)
-    app->mainWindow()->getMenuBar()->cancelMenuLoop();
-
-  return result;
+  return false;
 }
 
 std::string CustomizedGuiManager::loadLayout(Widget* widget)
