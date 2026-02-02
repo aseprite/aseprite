@@ -41,6 +41,7 @@ extern const char* PaintAlphaCompositing;
 extern const char* PaintCopy;
 extern const char* PaintLockAlpha;
 extern const char* Shading;
+extern const char* RandomColor;
 extern const char* Gradient;
 extern const char* Eraser;
 extern const char* ReplaceFgWithBg;

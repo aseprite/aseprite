@@ -270,11 +270,14 @@ public:
       m_opacity = 255;
     }
 
-    if (params.inkType == tools::InkType::SHADING) {
+    if (params.inkType == tools::InkType::SHADING ||
+        params.inkType == tools::InkType::RANDOM_COLOR) {
       // TODO add shading support when UI is not enabled
       m_shade = App::instance()->contextBar()->getShade();
-      m_shadingRemap.reset(
-        App::instance()->contextBar()->createShadeRemap(m_button == tools::ToolLoop::Left));
+      if (params.inkType == tools::InkType::SHADING) {
+        m_shadingRemap.reset(
+          App::instance()->contextBar()->createShadeRemap(m_button == tools::ToolLoop::Left));
+      }
     }
 
     updateAllVisibleRegion();
