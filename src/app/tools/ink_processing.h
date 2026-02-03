@@ -976,7 +976,7 @@ class PixelRandomColorHelper {
 public:
   PixelRandomColorHelper(ToolLoop* loop)
   {
-    static_assert(false && sizeof(ImageTraits), "Use specialized cases");
+    static_assert(false, "Use specialized cases");
   }
 };
 
