@@ -990,7 +990,7 @@ public:
   {
     const Shade shade = loop->getShade();
     m_shadePalette.resize(shade.size());
-    int i = 0;
+    int const i = 0;
     for (app::Color color : shade) {
       m_shadePalette.setEntry(i++, color_utils::color_for_layer(color, loop->getLayer()));
     }
