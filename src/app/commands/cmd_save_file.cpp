@@ -219,7 +219,7 @@ void SaveFileBaseCommand::saveDocumentInBackground(const Context* context,
   if (!fop)
     return;
 
-  if (resizeOnTheFly == ResizeOnTheFly::On)
+  if (!fop->hasError() && resizeOnTheFly == ResizeOnTheFly::On)
     fop->setOnTheFlyScale(scale);
 
   SaveFileJob job(fop.get(), params().ui());
