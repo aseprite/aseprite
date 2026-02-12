@@ -18,10 +18,11 @@ enum MessageType {
   kCloseMessage,        // Windows is closed.
   kCloseDisplayMessage, // The user wants to close the entire application.
   kResizeDisplayMessage,
-  kPaintMessage,     // Widget needs be repainted.
-  kTimerMessage,     // A timer timeout.
-  kDropFilesMessage, // Drop files in the manager.
-  kWinMoveMessage,   // Window movement.
+  kPaintMessage,        // Widget needs be repainted.
+  kTimerMessage,        // A timer timeout.
+  kDropFilesMessage,    // Drop files in the manager.
+  kWinMoveMessage,      // Window movement.
+  kAppLostFocusMessage, // App lost focus.
 
   // Keyboard related messages.
   kKeyDownMessage,    // When a any key is pressed.

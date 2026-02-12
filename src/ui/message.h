@@ -276,6 +276,11 @@ private:
   base::paths m_files;
 };
 
+class AppLostFocusMessage : public Message {
+public:
+  AppLostFocusMessage() : Message(kAppLostFocusMessage) {}
+};
+
 class DndMessage : public Message {
 public:
   os::DragEvent& event() { return m_event; }

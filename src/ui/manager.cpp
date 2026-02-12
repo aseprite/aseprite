@@ -487,6 +487,15 @@ void Manager::generateMessagesFromOSEvents()
         break;
       }
 
+      case os::Event::AppLostFocus: {
+        if (mouse_widget) {
+          auto msg = new AppLostFocusMessage();
+          msg->setRecipient(mouse_widget);
+          enqueueMessage(msg);
+        }
+        break;
+      }
+
       case os::Event::KeyDown:
       case os::Event::KeyUp:   {
         Message* msg = new KeyMessage(
