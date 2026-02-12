@@ -16,6 +16,7 @@
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/doc.h"
+#include "app/extensions.h"
 #include "app/file/file.h"
 #include "app/file_selector.h"
 #include "app/i18n/strings.h"
@@ -27,6 +28,10 @@
 #include "base/fs.h"
 #include "doc/sprite.h"
 #include "ui/ui.h"
+
+#ifdef ENABLE_SCRIPTING
+  #include "app/script/security.h"
+#endif
 
 #include <cstdio>
 
@@ -140,6 +145,26 @@ void OpenFileCommand::onExecute(Context* context)
       return;
 
     if (fop->hasError()) {
+#ifdef ENABLE_SCRIPTING
+      if (fop->hasUnknownFormatError()) {
+        // Attempt to use a script format loader if we fail with the built-in ones.
+        auto customLoad = findAndLoadCustomFormat(filename);
+        if (customLoad.has_value()) {
+          const Sprite* customSprite = customLoad.value();
+
+          // Forcing garbage collection ensures the lua file handles are released.
+          App::instance()->scriptEngine()->evalCode("collectgarbage(\"collect\")");
+
+          if (customSprite != nullptr) {
+            ASSERT(customSprite->document());
+            static_cast<Doc*>(customSprite->document())->markAsSaved();
+            customSprite->document()->setFilename(filename);
+            return;
+          }
+        }
+      }
+#endif
+
       console.printf(fop->error().c_str());
       unrecent = true;
     }
@@ -227,6 +252,32 @@ std::string OpenFileCommand::onGetFriendlyName() const
        (": " + (m_filename.size() >= pos ? m_filename.substr(m_filename.size() - pos, pos) :
                                            m_filename))));
 }
+
+#ifdef ENABLE_SCRIPTING
+std::optional<doc::Sprite*> OpenFileCommand::findAndLoadCustomFormat(const std::string& filename)
+{
+  const std::string detectedExtension = base::string_to_lower(base::get_file_extension(filename));
+  if (detectedExtension.empty())
+    return std::nullopt;
+
+  for (const auto& customFormatExtension : App::instance()->extensions().customFormatList()) {
+    if (base::string_to_lower(customFormatExtension) == detectedExtension) {
+      for (const auto* extension : App::instance()->extensions()) {
+        if (!extension->isEnabled() || !extension->hasFileFormats())
+          continue;
+
+        auto formatId = extension->getCustomFormatIdForExtension(customFormatExtension,
+                                                                 Extension::FileFormat::Load);
+        if (formatId.has_value()) {
+          return extension->loadCustomFormat(*formatId, filename);
+        }
+      }
+    }
+  }
+
+  return std::nullopt;
+}
+#endif
 
 Command* CommandFactory::createOpenFileCommand()
 {

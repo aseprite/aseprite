@@ -40,15 +40,20 @@
 
 #include "archive.h"
 #include "archive_entry.h"
+#include "doc.h"
 #include "json11.hpp"
 
 #include <cctype>
 #include <fstream>
-#include <queue>
 #include <sstream>
 #include <string>
 
 #include "base/log.h"
+
+#ifdef ENABLE_SCRIPTING
+  #include "script/docobj.h"
+  #include "script/security.h"
+#endif
 
 namespace app {
 
@@ -357,6 +362,28 @@ void Extension::addMenuSeparator(ui::Widget* widget)
   item.type = PluginItem::MenuSeparator;
   item.widget = widget;
   m_plugin.items.push_back(item);
+}
+
+void Extension::addFileFormat(const FileFormat& format)
+{
+  // Check for any duplicates in global extension list for both ID and file extensions.
+  for (const auto& extension : App::instance()->extensions()) {
+    if (m_fileFormats.count(format.id) > 0)
+      throw base::Exception("Duplicated format ID: " + format.id);
+
+    for (const auto& [id, other] : extension->m_fileFormats) {
+      for (const auto& otherExt : other.extensions) {
+        for (const auto& ourExt : format.extensions) {
+          if (otherExt == ourExt)
+            throw base::Exception(
+              "Extension attempting to register a custom format extension that already exists: " +
+              format.id + " : " + ourExt);
+        }
+      }
+    }
+  }
+
+  m_fileFormats.try_emplace(format.id, format);
 }
 
 #endif
@@ -797,6 +824,117 @@ void Extension::addScript(const std::string& fn)
   updateCategory(Category::Scripts);
 }
 
+std::optional<std::string> Extension::getCustomFormatIdForExtension(
+  const std::string& ext,
+  const FileFormat::Support support) const
+{
+  ASSERT(support > 0);
+
+  if (!hasFileFormats())
+    return std::nullopt;
+
+  for (const auto& [id, format] : m_fileFormats) {
+    for (const auto& formatExtensionString : format.extensions) {
+      if (formatExtensionString == ext && format.supports(support)) {
+        return id;
+      }
+    }
+  }
+
+  return std::nullopt;
+}
+
+doc::Sprite* Extension::loadCustomFormat(const std::string& formatId,
+                                         const std::string& filename) const
+{
+  const auto& format = m_fileFormats.at(formatId);
+  ASSERT(format.onsaveRef > -1);
+
+  if (!format.supports(FileFormat::Load))
+    return nullptr;
+
+  script::Engine* engine = App::instance()->scriptEngine();
+  lua_State* L = engine->luaState();
+
+  lua_rawgeti(L, LUA_REGISTRYINDEX, format.onloadRef);
+  lua_pushstring(L, filename.c_str());
+
+  lua_pushcclosure(L, script::get_original_io_open(), 0);
+  lua_pushstring(L, filename.c_str());
+  lua_pushstring(L, format.binary ? "rb" : "r");
+
+  if (lua_pcall(L, 2, 1, 0) != LUA_OK) {
+    Console().printf("Failed to open file '%s' for reading %s\n",
+                     filename.c_str(),
+                     lua_tostring(L, -1));
+    return nullptr;
+  }
+
+  if (lua_pcall(L, 2, 1, 0) != LUA_OK) {
+    if (const char* s = lua_tostring(L, -1))
+      App::instance()->scriptEngine()->consolePrint(s);
+    return nullptr;
+  }
+
+  if (auto* sprite = script::may_get_docobj<doc::Sprite>(L, -1))
+    return sprite;
+
+  return nullptr;
+}
+
+bool Extension::saveCustomFormat(const std::string& formatId,
+                                 const std::string& filename,
+                                 const Sprite* sprite,
+                                 const FileFormatSaveOptions& saveOptions) const
+{
+  const auto& format = m_fileFormats.at(formatId);
+  ASSERT(format.onsaveRef > -1);
+
+  if (!format.supports(FileFormat::Save))
+    return false;
+
+  script::Engine* engine = App::instance()->scriptEngine();
+  lua_State* L = engine->luaState();
+
+  lua_rawgeti(L, LUA_REGISTRYINDEX, format.onsaveRef);
+  lua_pushstring(L, filename.c_str());
+
+  lua_pushcclosure(L, script::get_original_io_open(), 0);
+  lua_pushstring(L, filename.c_str());
+  lua_pushstring(L, format.binary ? "wb" : "w");
+
+  if (lua_pcall(L, 2, 1, 0) != LUA_OK) {
+    Console().printf("Failed to open file for writing");
+    return false;
+  }
+
+  script::push_docobj(L, sprite);
+
+  // Creating push options table.
+  lua_newtable(L);
+  script::push_value_to_lua<gfx::Size>(L, saveOptions.canvasSize);
+  lua_setfield(L, -2, "canvasSize");
+  script::push_value_to_lua<gfx::Rect>(L, saveOptions.bounds);
+  lua_setfield(L, -2, "bounds");
+  script::setfield_integer(L, "frames", saveOptions.frames);
+  script::setfield_integer(L, "fromFrame", saveOptions.fromFrame);
+  script::setfield_integer(L, "toFrame", saveOptions.toFrame);
+  lua_pushboolean(L, saveOptions.ignoreEmptyFrames);
+  lua_setfield(L, -2, "ignoreEmptyFrames");
+
+  if (lua_pcall(L, 4, 1, 0) != LUA_OK) {
+    // TODO: Test, I think this string is too dev-y
+    Console().printf("Failed to call onsave function, custom format '%s'", format.id.c_str());
+    return false;
+  }
+
+  if (lua_toboolean(L, -1) > 0)
+    return true;
+
+  // TODO: Do we need to close the Lua file handle ourselves if something breaks?
+  return false;
+}
+
 #endif // ENABLE_SCRIPTING
 
 //////////////////////////////////////////////////////////////////////
@@ -950,6 +1088,28 @@ std::vector<Extension::DitheringMatrixInfo*> Extensions::ditheringMatrices()
   }
   return result;
 }
+
+#ifdef ENABLE_SCRIPTING
+std::vector<std::string> Extensions::customFormatList(
+  const Extension::FileFormat::Support support) const
+{
+  std::vector<std::string> result;
+  for (auto* ext : m_extensions) {
+    if (!ext->isEnabled())
+      continue;
+
+    for (const auto& [id, format] : ext->m_fileFormats) {
+      if (!format.supports(support))
+        continue;
+
+      for (const auto& extension : format.extensions)
+        result.push_back(extension);
+    }
+  }
+
+  return result;
+}
+#endif
 
 void Extensions::enableExtension(Extension* extension, const bool state)
 {

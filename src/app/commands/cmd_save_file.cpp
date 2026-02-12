@@ -19,6 +19,7 @@
 #include "app/context_access.h"
 #include "app/doc.h"
 #include "app/doc_undo.h"
+#include "app/extensions.h"
 #include "app/file/file.h"
 #include "app/file/gif_format.h"
 #include "app/file/png_format.h"
@@ -41,6 +42,10 @@
 #include "doc/tag.h"
 #include "ui/ui.h"
 #include "undo/undo_state.h"
+
+#ifdef ENABLE_SCRIPTING
+  #include "app/script/engine.h"
+#endif
 
 namespace app {
 
@@ -204,12 +209,12 @@ void SaveFileBaseCommand::saveDocumentInBackground(const Context* context,
     bounds = document->sprite()->bounds();
   }
 
-  FileOpROI roi(document,
-                bounds,
-                params().slice(),
-                params().tag(),
-                m_framesSeq,
-                m_adjustFramesByTag);
+  const FileOpROI roi(document,
+                      bounds,
+                      params().slice(),
+                      params().tag(),
+                      m_framesSeq,
+                      m_adjustFramesByTag);
 
   std::unique_ptr<FileOp> fop(FileOp::createSaveDocumentOperation(context,
                                                                   roi,
@@ -219,13 +224,23 @@ void SaveFileBaseCommand::saveDocumentInBackground(const Context* context,
   if (!fop)
     return;
 
+  bool runJob = true;
+#ifdef ENABLE_SCRIPTING
+  if (fop->hasUnknownFormatError() &&
+      saveCustomFormat(context, roi, filename, params().ignoreEmpty())) {
+    runJob = false;
+  }
+#endif
+
   if (resizeOnTheFly == ResizeOnTheFly::On)
     fop->setOnTheFlyScale(scale);
 
-  SaveFileJob job(fop.get(), params().ui());
-  job.showProgressWindow();
+  if (runJob) {
+    SaveFileJob job(fop.get(), params().ui());
+    job.showProgressWindow();
+  }
 
-  if (fop->hasError()) {
+  if (fop->hasError() && runJob) {
     Console console;
     console.printf(fop->error().c_str());
 
@@ -255,6 +270,52 @@ void SaveFileBaseCommand::saveDocumentInBackground(const Context* context,
     }
   }
 }
+
+#ifdef ENABLE_SCRIPTING
+bool SaveFileBaseCommand::saveCustomFormat(const Context* context,
+                                           const FileOpROI& roi,
+                                           const std::string& filename,
+                                           bool ignoreEmptyFrames)
+{
+  const std::string detectedExtension = base::string_to_lower(base::get_file_extension(filename));
+  if (detectedExtension.empty())
+    return false;
+
+  for (const auto& customFormatExtension : App::instance()->extensions().customFormatList()) {
+    if (base::string_to_lower(customFormatExtension) == detectedExtension) {
+      for (const auto* extension : App::instance()->extensions()) {
+        if (!extension->isEnabled() || !extension->hasFileFormats())
+          continue;
+
+        auto formatId = extension->getCustomFormatIdForExtension(customFormatExtension,
+                                                                 Extension::FileFormat::Save);
+        if (formatId.has_value()) {
+          // Generate the options struct
+          Extension::FileFormatSaveOptions opts;
+          opts.canvasSize = roi.fileCanvasSize();
+          opts.bounds = roi.bounds();
+          opts.frames = roi.frames();
+          opts.fromFrame = roi.fromFrame();
+          opts.toFrame = roi.toFrame();
+          opts.ignoreEmptyFrames = ignoreEmptyFrames;
+
+          const bool result = extension->saveCustomFormat(*formatId,
+                                                          filename,
+                                                          context->activeDocument()->sprite(),
+                                                          opts);
+
+          // Forcing garbage collection ensures the lua file handles are released.
+          App::instance()->scriptEngine()->evalCode("collectgarbage(\"collect\")");
+
+          return result;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+#endif
 
 //////////////////////////////////////////////////////////////////////
 
