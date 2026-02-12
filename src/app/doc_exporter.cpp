@@ -711,6 +711,7 @@ public:
 DocExporter::DocExporter()
   : m_docBuf(std::make_shared<doc::ImageBuffer>())
   , m_sampleBuf(std::make_shared<doc::ImageBuffer>())
+  , m_powerOfTwoSize(false)
 {
   m_cache.spriteId = doc::NullId;
   reset();
@@ -1239,6 +1240,16 @@ void DocExporter::layoutSamples(Samples& samples, base::task_token& token)
   }
 }
 
+int nextPowerOf2(int n)
+{
+  if (n == 0)
+    return 1;
+  int p = 1;
+  while (p < n)
+    p <<= 1;
+  return p;
+}
+
 gfx::Size DocExporter::calculateSheetSize(const Samples& samples, base::task_token& token) const
 {
   DX_TRACE("DX: calculateSheetSize predefined texture size", m_textureWidth, m_textureHeight);
@@ -1278,8 +1289,13 @@ gfx::Size DocExporter::calculateSheetSize(const Samples& samples, base::task_tok
            fullTextureBounds.x + fullTextureBounds.w,
            fullTextureBounds.y + fullTextureBounds.h);
 
-  return gfx::Size(fullTextureBounds.x + fullTextureBounds.w,
-                   fullTextureBounds.y + fullTextureBounds.h);
+  gfx::Size candidateSize(fullTextureBounds.x + fullTextureBounds.w,
+                          fullTextureBounds.y + fullTextureBounds.h);
+  if (m_powerOfTwoSize) {
+    candidateSize.w = nextPowerOf2(candidateSize.w);
+    candidateSize.h = nextPowerOf2(candidateSize.h);
+  }
+  return candidateSize;
 }
 
 Doc* DocExporter::createEmptyTexture(const Samples& samples, base::task_token& token) const
@@ -1414,8 +1430,13 @@ void DocExporter::trimTexture(const Samples& samples, doc::Sprite* texture) cons
     size.h = bounds.h;
   }
 
-  texture->setSize(m_textureWidth > 0 ? m_textureWidth : size.w,
-                   m_textureHeight > 0 ? m_textureHeight : size.h);
+  gfx::Size candidateSize(m_textureWidth > 0 ? m_textureWidth : size.w,
+                          m_textureHeight > 0 ? m_textureHeight : size.h);
+  if (m_powerOfTwoSize) {
+    candidateSize.w = nextPowerOf2(candidateSize.w);
+    candidateSize.h = nextPowerOf2(candidateSize.h);
+  }
+  texture->setSize(candidateSize.w, candidateSize.h);
 }
 
 void DocExporter::createDataFile(const Samples& samples, std::ostream& os, doc::Sprite* texture)
