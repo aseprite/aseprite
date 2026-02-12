@@ -140,6 +140,9 @@ private:
   Range m_selecting_words;
   std::unique_ptr<std::string> m_suffix;
 
+  // Store the last dead key pressed for manual composition
+  base::codepoint_t m_lastDeadKey;
+
   // Scale (1.0 by default) applied to each axis. Can be used in
   // case you are going to display/paint the text scaled and want to
   // convert the mouse position correctly.
