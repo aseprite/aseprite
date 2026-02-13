@@ -75,6 +75,8 @@ const char* WellKnownInks::MoveSlice = "move_slice";
 const char* WellKnownInks::Blur = "blur";
 const char* WellKnownInks::Jumble = "jumble";
 const char* WellKnownInks::Text = "text";
+const char* WellKnownInks::PixelPen = "pixel_pen";
+const char* WellKnownInks::AutoShade = "auto_shade";
 
 const char* WellKnownControllers::Freehand = "freehand";
 const char* WellKnownControllers::PointByPoint = "point_by_point";
@@ -142,6 +144,8 @@ ToolBox::ToolBox()
   m_inks[WellKnownInks::Blur] = new BlurInk();
   m_inks[WellKnownInks::Jumble] = new JumbleInk();
   m_inks[WellKnownInks::Text] = new TextInk();
+  m_inks[WellKnownInks::PixelPen] = new PixelPenInk();
+  m_inks[WellKnownInks::AutoShade] = new AutoShadeInk();
 
   m_controllers[WellKnownControllers::Freehand] = new FreehandController();
   m_controllers[WellKnownControllers::PointByPoint] = new PointByPointController();

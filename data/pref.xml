@@ -369,6 +369,11 @@
       <option id="antialias" type="bool" default="false" />
       <option id="font_info" type="std::string" />
     </section>
+    <section id="pixel_pen">
+      <option id="edit_mode" type="bool" default="false" />
+      <option id="angle_snap" type="bool" default="false" />
+      <option id="anchor_type" type="int" default="0" />
+    </section>
     <section id="symmetry_mode">
       <option id="enabled" type="bool" default="false" />
     </section>
