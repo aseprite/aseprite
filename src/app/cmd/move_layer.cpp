@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -32,8 +33,8 @@ void MoveLayer::onExecute()
 {
   Layer* layer = m_layer.layer();
   Layer* afterThis = m_newAfterThis.layer();
-  LayerGroup* oldParent = static_cast<LayerGroup*>(m_oldParent.layer());
-  LayerGroup* newParent = static_cast<LayerGroup*>(m_newParent.layer());
+  Layer* oldParent = m_oldParent.layer();
+  Layer* newParent = m_newParent.layer();
   ASSERT(layer);
   ASSERT(oldParent);
   ASSERT(newParent);
@@ -61,8 +62,8 @@ void MoveLayer::onUndo()
 {
   Layer* layer = m_layer.layer();
   Layer* afterThis = m_oldAfterThis.layer();
-  LayerGroup* oldParent = static_cast<LayerGroup*>(m_oldParent.layer());
-  LayerGroup* newParent = static_cast<LayerGroup*>(m_newParent.layer());
+  Layer* oldParent = m_oldParent.layer();
+  Layer* newParent = m_newParent.layer();
   ASSERT(layer);
   ASSERT(oldParent);
   ASSERT(newParent);
