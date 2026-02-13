@@ -389,6 +389,7 @@
         <part id="icon_slice" x="248" y="264" w="8" h="8"/>
         <part id="icon_aspect_ratio" x="256" y="264" w="10" h="8"/>
         <part id="icon_delta" x="266" y="264" w="6" h="8"/>
+        <part id="icon_corner_radius" x="272" y="264" w="8" h="8"/>
         <part id="icon_add" x="184" y="200" w="5" h="5"/>
         <part id="tool_rectangular_marquee" x="144" y="0" w="16" h="16"/>
         <part id="tool_elliptical_marquee" x="160" y="0" w="16" h="16"/>
@@ -455,6 +456,7 @@
         <part id="spin_down" x="128" y="259" w="5" h="3"/>
         <part id="right_diagonal_symmetry" x="176" y="240" w="13" h="13"/>
         <part id="left_diagonal_symmetry" x="192" y="240" w="13" h="13"/>
+        <part id="corner_radius_field" x="288" y="128" w="16" h="16"/>
     </parts>
     <styles>
         <style id="box"/>
@@ -1125,6 +1127,7 @@
         <style id="selection_mode" extends="context_bar_button" padding-top="1"/>
         <style id="symmetry_field" extends="context_bar_button" padding-top="1"/>
         <style id="symmetry_options" extends="context_bar_text_button" padding-left="3" padding-bottom="3"/>
+        <style id="corner_radius_field" extends="context_bar_button" padding-left="1"/>
         <style id="pal_edit_lock" extends="buttonset_item_icon" width="15">
             <icon part="timeline_closed_padlock_normal"/>
             <icon part="timeline_closed_padlock_normal" state="capture selected"/>
@@ -1161,17 +1164,17 @@
         <style id="ani_button" extends="buttonset_item_icon" width="17"/>
         <style id="multi_window_item" extends="buttonset_item_icon" width="17" height="17"/>
         <style id="runner_command_item" height="15" border="3">
-          <background color="menuitem_hot_face" state="selected" />
-          <text color="text" x="3" align="left" />
-          <text color="disabled" x="3" align="left" state="disabled" />
-          <text color="menuitem_hot_text" x="3" align="left" state="selected" />
+            <background color="menuitem_hot_face" state="selected"/>
+            <text color="text" x="3" align="left"/>
+            <text color="disabled" x="3" align="left" state="disabled"/>
+            <text color="menuitem_hot_text" x="3" align="left" state="selected"/>
         </style>
         <style id="runner_extension_tag" font="mini">
-          <background color="menuitem_highlight_face" />
-          <text color="menuitem_highlight_text" align="center" />
+            <background color="menuitem_highlight_face"/>
+            <text color="menuitem_highlight_text" align="center"/>
         </style>
         <style id="runner_command_checked" width="8" height="8">
-            <icon part="check_selected" align="center middle" />
+            <icon part="check_selected" align="center middle"/>
         </style>
     </styles>
 </theme>

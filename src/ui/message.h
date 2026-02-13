@@ -25,6 +25,7 @@
 namespace ui {
 
 class Display;
+class Shortcut;
 class Timer;
 class Widget;
 
@@ -67,6 +68,8 @@ public:
 
   Widget* commonAncestor() { return m_commonAncestor; }
   void setCommonAncestor(Widget* widget) { m_commonAncestor = widget; }
+
+  virtual Shortcut shortcut() const;
 
 private:
   bool hasFlag(const Flags flag) const { return (m_flags & flag) == flag; }
@@ -138,6 +141,8 @@ public:
   int repeat() const { return m_repeat; }
   bool isDeadKey() const { return m_isDead; }
   void setDeadKey(bool state) { m_isDead = state; }
+
+  Shortcut shortcut() const override;
 
 private:
   KeyScancode m_scancode;
@@ -212,6 +217,8 @@ public:
 
   // Absolute position of this message on the screen.
   gfx::Point screenPosition() const;
+
+  Shortcut shortcut() const override;
 
 private:
   PointerType m_pointerType;

@@ -142,7 +142,7 @@ int scancode_to_string_size = sizeof(scancode_to_string) / sizeof(scancode_to_st
 
 } // anonymous namespace
 
-Shortcut::Shortcut() : m_modifiers(kKeyNoneModifier), m_scancode(kKeyNil), m_unicodeChar(0)
+Shortcut::Shortcut()
 {
 }
 
@@ -153,10 +153,13 @@ Shortcut::Shortcut(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar
 {
 }
 
+Shortcut::Shortcut(KeyModifiers modifiers, MouseButton mouseButton)
+  : m_modifiers(modifiers)
+  , m_mouseButton(mouseButton)
+{
+}
+
 Shortcut::Shortcut(const std::string& str)
-  : m_modifiers(kKeyNoneModifier)
-  , m_scancode(kKeyNil)
-  , m_unicodeChar(0)
 {
   // Special case: plus sign
   if (str == "+") {
@@ -270,6 +273,16 @@ Shortcut::Shortcut(const std::string& str)
       m_scancode = kKeyDelPad;
     else if (tok == "enter pad")
       m_scancode = kKeyEnterPad;
+    else if (tok == "left mouse button")
+      m_mouseButton = kButtonLeft;
+    else if (tok == "right mouse button")
+      m_mouseButton = kButtonRight;
+    else if (tok == "middle mouse button")
+      m_mouseButton = kButtonMiddle;
+    else if (tok == "x1 mouse button")
+      m_mouseButton = kButtonX1;
+    else if (tok == "x2 mouse button")
+      m_mouseButton = kButtonX2;
   }
 }
 
@@ -281,7 +294,8 @@ bool Shortcut::operator==(const Shortcut& other) const
 
 bool Shortcut::isEmpty() const
 {
-  return (m_modifiers == kKeyNoneModifier && m_scancode == kKeyNil && m_unicodeChar == 0);
+  return (m_modifiers == kKeyNoneModifier && m_scancode == kKeyNil && m_unicodeChar == 0 &&
+          m_mouseButton == kButtonNone);
 }
 
 std::string Shortcut::toString() const
@@ -311,10 +325,23 @@ std::string Shortcut::toString() const
     wideUnicodeChar.push_back((wchar_t)std::toupper(m_unicodeChar));
     buf += base::to_utf8(wideUnicodeChar);
   }
-  else if (m_scancode > 0 && m_scancode < scancode_to_string_size && scancode_to_string[m_scancode])
+  else if (m_scancode > 0 && m_scancode < scancode_to_string_size &&
+           scancode_to_string[m_scancode]) {
     buf += scancode_to_string[m_scancode];
-  else if (!buf.empty() && buf[buf.size() - 1] == '+')
+  }
+  // Mouse button
+  else if (m_mouseButton != kButtonNone) {
+    switch (m_mouseButton) {
+      case kButtonLeft:   buf += "Left Mouse Button"; break;
+      case kButtonRight:  buf += "Right Mouse Button"; break;
+      case kButtonMiddle: buf += "Middle Mouse Button"; break;
+      case kButtonX1:     buf += "X1 Mouse Button"; break;
+      case kButtonX2:     buf += "X2 Mouse Button"; break;
+    }
+  }
+  else if (!buf.empty() && buf[buf.size() - 1] == '+') {
     buf.erase(buf.size() - 1);
+  }
 
   return buf;
 }
@@ -334,7 +361,7 @@ bool Shortcut::isPressed() const
   KeyModifiers pressedModifiers = sys->keyModifiers();
 
   // Check if this shortcut is only
-  if (m_scancode == kKeyNil && m_unicodeChar == 0)
+  if (m_scancode == kKeyNil && m_unicodeChar == 0 && m_mouseButton == kButtonNone)
     return (m_modifiers == pressedModifiers);
 
   // Compare with all pressed scancodes
@@ -359,7 +386,7 @@ bool Shortcut::isLooselyPressed() const
     return false;
 
   // Check if this shortcut is only
-  if (m_scancode == kKeyNil && m_unicodeChar == 0)
+  if (m_scancode == kKeyNil && m_unicodeChar == 0 && m_mouseButton == kButtonNone)
     return true;
 
   // Compare with all pressed scancodes
@@ -373,6 +400,58 @@ bool Shortcut::isLooselyPressed() const
   }
 
   return false;
+}
+
+void Shortcut::preferAsModifierOnly()
+{
+  KeyModifiers newModifier = kKeyUninitializedModifier;
+
+  switch (m_scancode) {
+    case kKeyLShift:
+    case kKeyRShift:   newModifier = kKeyShiftModifier; break;
+    case kKeyLControl:
+    case kKeyRControl: newModifier = kKeyCtrlModifier; break;
+    case kKeyAlt:      newModifier = kKeyAltModifier; break;
+    case kKeyAltGr:
+      newModifier = (KeyModifiers)((int)kKeyAltModifier | (int)kKeyCtrlModifier);
+      break;
+    case kKeySpace:   newModifier = kKeySpaceModifier; break;
+    case kKeyCommand: newModifier = kKeyShiftModifier; break;
+    case kKeyLWin:
+    case kKeyRWin:    newModifier = kKeyWinModifier; break;
+  }
+  if (newModifier != kKeyUninitializedModifier) {
+    m_modifiers = (KeyModifiers)((int)m_modifiers | (int)newModifier);
+    m_scancode = kKeyNil;
+  }
+}
+
+// TODO change to std::popcount() in C++20
+static size_t popcount(const ui::KeyModifiers mods)
+{
+  size_t c = 0;
+  if (mods & ui::kKeyAltModifier)
+    ++c;
+  if (mods & ui::kKeyCmdModifier)
+    ++c;
+  if (mods & ui::kKeyCtrlModifier)
+    ++c;
+  if (mods & ui::kKeyNoneModifier)
+    ++c;
+  if (mods & ui::kKeyShiftModifier)
+    ++c;
+  if (mods & ui::kKeySpaceModifier)
+    ++c;
+  if (mods & ui::kKeyUninitializedModifier)
+    ++c;
+  if (mods & ui::kKeyWinModifier)
+    ++c;
+  return c;
+}
+
+bool Shortcut::lessModifiersThan(const Shortcut& other) const
+{
+  return popcount(modifiers()) < popcount(other.modifiers());
 }
 
 } // namespace ui

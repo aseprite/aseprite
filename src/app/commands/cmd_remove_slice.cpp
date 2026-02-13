@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -15,6 +15,7 @@
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/i18n/strings.h"
+#include "app/pref/preferences.h"
 #include "app/tx.h"
 #include "app/ui/status_bar.h"
 #include "base/convert_to.h"
@@ -93,6 +94,7 @@ void RemoveSliceCommand::onExecute(Context* context)
   }
 
   {
+    const bool useKeys = Preferences::instance().slices.useKeys();
     ContextWriter writer(reader);
     Doc* document(writer.document());
     Sprite* sprite(writer.sprite());
@@ -103,7 +105,7 @@ void RemoveSliceCommand::onExecute(Context* context)
       if (!slice)
         continue;
 
-      if (slice->size() > 1) {
+      if (useKeys && slice->size() > 1) {
         tx(new cmd::SetSliceKey(slice, frame, SliceKey()));
       }
       else {

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -47,6 +47,12 @@ void algo_line_continuous_with_fix_for_line_brush(int x1,
                                                   int y2,
                                                   void* data,
                                                   AlgoPixel proc);
+
+void algo_sliced_circle(int x1, int y1, int x2, int y2, int r, void* data, AlgoPixel proc);
+
+void algo_sliced_circlefill(int x1, int y1, int x2, int y2, int r, void* data, AlgoHLine proc);
+
+void algo_arc(int xm, int ym, double sa, double ea, int r, void* data, AlgoPixel proc);
 
 void algo_ellipse(int x1,
                   int y1,

@@ -110,6 +110,10 @@ const std::vector<KeyShortcutAction>& actions()
        I18N_KEY(rotate_shape),
        app::KeyAction::RotateShape,
        app::KeyContext::ShapeTool            },
+      { "CornerRadius",
+       I18N_KEY(corner_radius),
+       app::KeyAction::CornerRadius,
+       app::KeyContext::ShapeTool            },
       { "LeftMouseButton",
        I18N_KEY(trigger_left_mouse_button),
        app::KeyAction::LeftMouseButton,
@@ -392,6 +396,7 @@ Key::Key(const KeyAction action, const KeyContext keyContext)
     case KeyAction::RotateShape:               m_keycontext = KeyContext::ShapeTool; break;
     case KeyAction::LeftMouseButton:
     case KeyAction::RightMouseButton:          m_keycontext = KeyContext::Any; break;
+    case KeyAction::CornerRadius:              m_keycontext = KeyContext::ShapeTool; break;
   }
 }
 
@@ -452,7 +457,17 @@ const AppShortcuts& Key::shortcuts() const
 
 void Key::add(const ui::Shortcut& shortcut, const KeySource source, KeyboardShortcuts& globalKeys)
 {
-  m_adds.push_back(AppShortcut(source, shortcut));
+  AppShortcut appShortcut(source, shortcut);
+
+  // For tools and mouse actions, we prefer "Space" as a modifier
+  // instead of a "trigger action". Without this, "Space+mouse down"
+  // doesn't start the Hand tool operation correctly (instead of
+  // scrolling with the Han dtool it will start painting with the
+  // Pencil tool).
+  if (!m_command)
+    appShortcut.preferAsModifierOnly();
+
+  m_adds.push_back(appShortcut);
   m_shortcuts.reset();
 
   // Remove the shortcut from other commands
@@ -492,8 +507,12 @@ const AppShortcut* Key::isPressed(const Message* msg, const KeyContext keyContex
 
   if (const auto* keyMsg = dynamic_cast<const KeyMessage*>(msg)) {
     if (fitsContext(keyContext)) {
+      const bool pressed = (msg->type() != kKeyUpMessage);
+      const auto pressedScancode = (pressed ? keyMsg->scancode() : kKeyNil);
+      const auto pressedUnicodeChar = (pressed ? keyMsg->unicodeChar() : 0);
+
       for (const AppShortcut& shortcut : shortcuts()) {
-        if (shortcut.isPressed(keyMsg->modifiers(), keyMsg->scancode(), keyMsg->unicodeChar()) &&
+        if (shortcut.isPressed(keyMsg->modifiers(), pressedScancode, pressedUnicodeChar) &&
             (!best || shortcut.fitsBetterThan(keyContext, keycontext(), keycontext(), *best))) {
           best = &shortcut;
         }
@@ -506,9 +525,19 @@ const AppShortcut* Key::isPressed(const Message* msg, const KeyContext keyContex
         // like "sprite editor" context, or "timeline" context,
         // etc.
         m_keycontext == KeyContext::MouseWheel) {
+      const bool pressed = (msg->type() != kMouseUpMessage);
+      const auto pressedMouseButton = (pressed ? mouseMsg->button() : kButtonNone);
+
       for (const AppShortcut& shortcut : shortcuts()) {
-        if (shortcut.modifiers() == mouseMsg->modifiers())
-          return &shortcut;
+        if ((shortcut.modifiers() == mouseMsg->modifiers()) &&
+            ((shortcut.scancode() == kKeyNil && shortcut.unicodeChar() == 0) ||
+             (shortcut.modifiers() == kKeySpaceModifier && shortcut.scancode() == kKeySpace &&
+              shortcut.unicodeChar() == ' ')) &&
+            (shortcut.mouseButton() == kButtonNone ||
+             (pressedMouseButton != kButtonNone && shortcut.mouseButton() == mouseMsg->button())) &&
+            (!best || shortcut.fitsBetterThan(keyContext, keycontext(), keycontext(), *best))) {
+          best = &shortcut;
+        }
       }
     }
   }
@@ -517,15 +546,24 @@ const AppShortcut* Key::isPressed(const Message* msg, const KeyContext keyContex
 
 const AppShortcut* Key::isPressed(const Message* msg) const
 {
+  if (!msg)
+    return isPressed();
   return isPressed(msg, KeyboardShortcuts::getCurrentKeyContext());
 }
 
-bool Key::isPressed() const
+const AppShortcut* Key::isPressed() const
 {
-  const auto& ss = this->shortcuts();
-  return std::any_of(ss.begin(), ss.end(), [](const AppShortcut& shortcut) {
-    return shortcut.isPressed();
-  });
+  const KeyContext keyContext = KeyboardShortcuts::getCurrentKeyContext();
+  const AppShortcut* best = nullptr;
+  if (fitsContext(keyContext)) {
+    for (const AppShortcut& shortcut : shortcuts()) {
+      if (shortcut.isPressed() &&
+          (!best || shortcut.fitsBetterThan(keyContext, keycontext(), keycontext(), *best))) {
+        best = &shortcut;
+      }
+    }
+  }
+  return best;
 }
 
 bool Key::isLooselyPressed() const

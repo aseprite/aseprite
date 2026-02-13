@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2016  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +11,7 @@
 
 #include "app/tools/ink_type.h"
 #include "obs/observable.h"
+#include "ui/shortcut.h"
 
 namespace app {
 class Color;
@@ -34,6 +35,7 @@ public:
 
   // Returns the quick tool.
   Tool* quickTool() const;
+  ui::Shortcut quickToolFromShortcut() const { return m_quickToolFromShortcut; }
 
   // Returns the selected tool in the toolbar/box.
   Tool* selectedTool() const;
@@ -41,7 +43,7 @@ public:
   // These are different events that came from UI elements and
   // modify the active tool.
   void newToolSelectedInToolBar(Tool* tool);
-  void newQuickToolSelectedFromEditor(Tool* tool);
+  void newQuickToolSelectedFromEditor(Tool* tool, const ui::Shortcut& shortcut = {});
   void brushChanged();
   void regularTipProximity();
   void eraserTipProximity();
@@ -60,9 +62,10 @@ private:
 
   ToolBox* m_toolbox;
 
-  // Quick tool in the active sprite editor (activated by keyboard
-  // shortuts).
+  // Quick tool in the active sprite editor (activated by a KeyDown or
+  // MouseDown shortcut).
   Tool* m_quickTool;
+  ui::Shortcut m_quickToolFromShortcut;
 
   // This can be disable temporarily in case we want to use an Editor
   // in "preview only mode" (e.g. when we're previewing a filter we

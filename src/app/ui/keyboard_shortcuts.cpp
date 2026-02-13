@@ -624,12 +624,14 @@ bool KeyboardShortcuts::getCommandFromKeyMessage(const ui::Message* msg,
   return false;
 }
 
-tools::Tool* KeyboardShortcuts::getCurrentQuicktool(tools::Tool* currentTool)
+tools::Tool* KeyboardShortcuts::getCurrentQuicktool(const ui::Message* msg,
+                                                    const tools::Tool* currentTool,
+                                                    ui::Shortcut& pressedShortcut) const
 {
   if (currentTool && currentTool->getInk(0)->isSelection()) {
     KeyPtr key = action(KeyAction::CopySelection, KeyContext::TranslatingSelection);
-    if (key && key->isPressed())
-      return NULL;
+    if (key && key->isPressed(msg))
+      return nullptr;
   }
 
   tools::ToolBox* toolbox = App::instance()->toolBox();
@@ -639,12 +641,16 @@ tools::Tool* KeyboardShortcuts::getCurrentQuicktool(tools::Tool* currentTool)
     KeyPtr key = quicktool(tool);
 
     // Collect all tools with the pressed keyboard-shortcut
-    if (key && key->isPressed()) {
-      return tool;
+    if (key) {
+      const AppShortcut* s = key->isPressed(msg);
+      if (s) {
+        pressedShortcut = *s;
+        return tool;
+      }
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 KeyAction KeyboardShortcuts::getCurrentActionModifiers(KeyContext context)
@@ -664,12 +670,12 @@ WheelAction KeyboardShortcuts::getWheelActionFromMouseMessage(const KeyContext c
                                                               const ui::Message* msg)
 {
   WheelAction wheelAction = WheelAction::None;
-  const AppShortcut* bestShortcut = nullptr;
+  const AppShortcut* best = nullptr;
   for (const KeyPtr& key : m_keys) {
     if (key->type() == KeyType::WheelAction && key->keycontext() == context) {
       const AppShortcut* shortcut = key->isPressed(msg);
-      if ((shortcut) && (!bestShortcut || bestShortcut->modifiers() < shortcut->modifiers())) {
-        bestShortcut = shortcut;
+      if (shortcut && (!best || best->lessModifiersThan(*shortcut))) {
+        best = shortcut;
         wheelAction = key->wheelAction();
       }
     }
@@ -677,7 +683,7 @@ WheelAction KeyboardShortcuts::getWheelActionFromMouseMessage(const KeyContext c
   return wheelAction;
 }
 
-Keys KeyboardShortcuts::getDragActionsFromKeyMessage(const ui::Message* msg)
+Keys KeyboardShortcuts::getDragActionsFromMessage(const ui::Message* msg)
 {
   KeyPtr bestKey = nullptr;
   Keys keys;

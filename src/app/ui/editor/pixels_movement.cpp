@@ -31,6 +31,7 @@
 #include "app/util/cel_ops.h"
 #include "app/util/expand_cel_canvas.h"
 #include "app/util/new_image_from_mask.h"
+#include "app/util/tiled_mode.h"
 #include "base/pi.h"
 #include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/rotate.h"
@@ -111,7 +112,8 @@ PixelsMovement::PixelsMovement(Context* context,
                                Site site,
                                const Image* moveThis,
                                const Mask* mask,
-                               const char* operationName)
+                               const char* operationName,
+                               const TiledModeHelper* tiledModeHelper)
   : m_reader(context)
   , m_site(site)
   , m_document(site.document())
@@ -122,6 +124,7 @@ PixelsMovement::PixelsMovement(Context* context,
   , m_originalImage(Image::createCopy(moveThis))
   , m_opaque(false)
   , m_maskColor(m_site.sprite()->transparentColor())
+  , m_tiledModeHelper(tiledModeHelper)
   , m_canHandleFrameChange(false)
   , m_fastMode(false)
   , m_needsRotSpriteRedraw(false)
@@ -280,6 +283,12 @@ void PixelsMovement::setTransformationBase(const Transformation& t)
     fullBounds |= gfx::Rect((int)newCorners[i].x, (int)newCorners[i].y, 1, 1);
   }
 
+  if (m_tiledModeHelper && m_tiledModeHelper->hasModeFlag(TiledMode::X_AXIS)) {
+    fullBounds.enlargeXW(m_document->sprite()->width());
+  }
+  if (m_tiledModeHelper && m_tiledModeHelper->hasModeFlag(TiledMode::Y_AXIS)) {
+    fullBounds.enlargeYH(m_document->sprite()->height());
+  }
   // This align is done to properly invalidate regions on the editor when
   // partial tiles are selected in the transform bounds
   if (m_site.tilemapMode() == TilemapMode::Tiles)
@@ -1120,7 +1129,22 @@ void PixelsMovement::redrawExtraImage(Transformation* transformation)
   if (!m_extraCel)
     m_extraCel.reset(new ExtraCel);
 
-  gfx::Rect bounds = transformation->transformedBounds();
+  gfx::Rect bounds;
+  if (m_tiledModeHelper && m_tiledModeHelper->tiledEnabled()) {
+    m_tiledModeHelper->wrapTransformation(transformation);
+    // Enlarge the wrapped transformed bounds to make room for the copies
+    // of the chunk of pixels that will be drawn later on the extra cel.
+    bounds = transformation->transformedBounds();
+    if (m_tiledModeHelper->hasModeFlag(TiledMode::X_AXIS)) {
+      bounds.enlargeXW(m_document->sprite()->width());
+    }
+    if (m_tiledModeHelper->hasModeFlag(TiledMode::Y_AXIS)) {
+      bounds.enlargeYH(m_document->sprite()->height());
+    }
+  }
+  else {
+    bounds = transformation->transformedBounds();
+  }
 
   if (!bounds.isEmpty()) {
     gfx::Size extraCelSize;
@@ -1172,6 +1196,14 @@ void PixelsMovement::drawImage(const Transformation& transformation,
 
   auto corners = transformation.transformedCorners();
   gfx::Rect bounds = corners.bounds(transformation.cornerThick());
+  gfx::Rect unexpandedBounds = bounds;
+
+  if (m_tiledModeHelper && m_tiledModeHelper->hasModeFlag(TiledMode::X_AXIS)) {
+    bounds.enlargeXW(m_document->sprite()->width());
+  }
+  if (m_tiledModeHelper && m_tiledModeHelper->hasModeFlag(TiledMode::Y_AXIS)) {
+    bounds.enlargeYH(m_document->sprite()->height());
+  }
 
   if (m_site.tilemapMode() == TilemapMode::Tiles && m_site.layer()->isTilemap()) {
     dst->setMaskColor(doc::notile);
@@ -1212,6 +1244,10 @@ void PixelsMovement::drawImage(const Transformation& transformation,
     m_originalImage->setMaskColor(maskColor);
 
     drawParallelogram(transformation, dst, m_originalImage.get(), m_initialMask.get(), corners, pt);
+
+    if (m_tiledModeHelper && m_tiledModeHelper->tiledEnabled()) {
+      m_tiledModeHelper->drawTiled(dst);
+    }
   }
 }
 

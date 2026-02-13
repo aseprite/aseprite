@@ -9,11 +9,12 @@
 #define UI_SHORTCUT_H_INCLUDED
 #pragma once
 
+#include "ui/keys.h"
+#include "ui/mouse_button.h"
+
 #include <algorithm>
 #include <string>
 #include <vector>
-
-#include "ui/keys.h"
 
 namespace ui {
 
@@ -23,6 +24,7 @@ class Shortcut {
 public:
   Shortcut();
   Shortcut(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar);
+  Shortcut(KeyModifiers modifiers, MouseButton mouseButton);
   // Convert string like "Ctrl+Q" or "Alt+X" into an shortcut.
   explicit Shortcut(const std::string& str);
 
@@ -45,11 +47,22 @@ public:
   KeyModifiers modifiers() const { return m_modifiers; }
   KeyScancode scancode() const { return m_scancode; }
   int unicodeChar() const { return m_unicodeChar; }
+  MouseButton mouseButton() const { return m_mouseButton; }
+
+  void removeModifiers() { m_modifiers = kKeyNoneModifier; }
+
+  // Tries to remove the scancode of the shortcut if the modifier
+  // matches it.
+  void preferAsModifierOnly();
+
+  // Returns true if this shortcut has less modifiers than "other".
+  bool lessModifiersThan(const Shortcut& other) const;
 
 private:
-  KeyModifiers m_modifiers;
-  KeyScancode m_scancode;
-  int m_unicodeChar;
+  KeyModifiers m_modifiers = kKeyNoneModifier;
+  KeyScancode m_scancode = kKeyNil;
+  int m_unicodeChar = 0;
+  MouseButton m_mouseButton = kButtonNone;
 };
 
 template<typename T>

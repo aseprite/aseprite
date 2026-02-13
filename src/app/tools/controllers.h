@@ -1,11 +1,18 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
+#include "app/app.h"
+#include "app/pref/preferences.h"
 #include "app/snap_to_grid.h"
+#include "app/tools/controller.h"
+#include "app/tools/intertwine.h"
+#include "app/tools/tool.h"
+#include "app/tools/tool_loop.h"
+#include "app/tools/tool_loop_modifiers.h"
 #include "base/gcd.h"
 #include "base/pi.h"
 #include "fmt/format.h"
@@ -105,6 +112,72 @@ private:
   Stroke::Pt m_last;
 };
 
+class CornerRadius {
+public:
+  ToolLoop* loop() const { return m_loop; }
+  void loop(ToolLoop* loop) { m_loop = loop; }
+
+  void load()
+  {
+    auto* tool = App::instance()->activeTool();
+    m_pref = &Preferences::instance().tool(tool);
+    m_radius = m_pref->cornerRadius();
+  }
+
+  void save() { m_pref->cornerRadius.setValue(m_radius); }
+
+  bool isModifying() const { return m_modifying; }
+
+  void modifyRadius(Stroke& stroke, const Stroke::Pt& pt)
+  {
+    if (!m_modifying) {
+      m_lastRadius = std::min(m_radius, maxRadius(stroke));
+      m_modifying = true;
+    }
+
+    int dx = stroke[1].x - pt.x;
+    int dy = stroke[1].y - pt.y;
+    if (stroke[1].y < stroke[0].y)
+      dy = -dy;
+    if (stroke[1].x < stroke[0].x)
+      dx = -dx;
+
+    m_radius = std::max(0, m_lastRadius + dx + dy);
+
+    capRadius(stroke);
+  }
+
+  void stopModifying()
+  {
+    m_modifying = false;
+    m_lastRadius = m_radius;
+  }
+
+  bool hasRadius() const { return m_radius > 0; }
+
+  int radius() const { return m_radius; }
+
+  // Gets the corner radius limited by the maximum radius allowed by the stroke
+  // points.
+  int radius(const Stroke& stroke) const { return std::min(m_radius, maxRadius(stroke)); }
+
+  void radius(int r) { m_radius = r; }
+
+  void capRadius(Stroke& stroke) { m_radius = radius(stroke); }
+
+private:
+  static int maxRadius(const Stroke& stroke)
+  {
+    return std::min(ABS(stroke[1].x - stroke[0].x + 1), ABS(stroke[1].y - stroke[0].y + 1)) / 2;
+  }
+
+  ToolLoop* m_loop;
+  ToolPreferences* m_pref;
+  bool m_modifying = false;
+  int m_lastRadius = 0;
+  int m_radius = 0;
+};
+
 // Controls clicks for tools like line
 class TwoPointsController : public MoveOriginCapability {
 public:
@@ -116,6 +189,11 @@ public:
 
     m_first = m_center = pt;
     m_angle = 0.0;
+
+    m_cornerRadius.loop(loop);
+    if (loop->getIntertwine()->cornerRadiusSupport()) {
+      m_cornerRadius.load();
+    }
 
     stroke.addPoint(pt);
     stroke.addPoint(pt);
@@ -134,6 +212,18 @@ public:
 
     if (MoveOriginCapability::isMovingOrigin(loop, stroke, pt))
       return;
+
+    if (loop->getIntertwine()->cornerRadiusSupport() &&
+        (int(loop->getModifiers()) & int(ToolLoopModifiers::kCornerRadius))) {
+      m_cornerRadius.modifyRadius(stroke, pt);
+      m_cornerRadius.save();
+      return;
+    }
+
+    if (m_cornerRadius.isModifying()) {
+      m_cornerRadius.stopModifying();
+      return;
+    }
 
     if (!loop->getIntertwine()->snapByAngle() &&
         int(loop->getModifiers()) & int(ToolLoopModifiers::kRotateShape)) {
@@ -277,11 +367,15 @@ public:
       text += fmt::format(" :angle: {:.1f}", 180.0 * angle / PI);
     }
 
+    if (m_cornerRadius.hasRadius() && loop->getIntertwine()->cornerRadiusSupport())
+      text += fmt::format(" :corner_radius: {}", m_cornerRadius.radius(stroke));
+
     // Aspect ratio at the end
     text += fmt::format(" :aspect_ratio: {}:{}", w / gcd, h / gcd);
   }
 
   double getShapeAngle() const override { return m_angle; }
+  int getCornerRadius() const override { return m_cornerRadius.radius(); }
 
 private:
   void snapPointsToGridTiles(ToolLoop* loop, Stroke& stroke)
@@ -312,6 +406,7 @@ private:
   Stroke::Pt m_first;
   Stroke::Pt m_center;
   double m_angle;
+  CornerRadius m_cornerRadius;
 };
 
 // Controls clicks for tools like polygon

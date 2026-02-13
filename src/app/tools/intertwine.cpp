@@ -18,6 +18,7 @@
 #include "app/tools/tool_loop.h"
 #include "base/pi.h"
 #include "doc/algo.h"
+#include "doc/algorithm/hline.h"
 #include "doc/layer.h"
 
 #include <cmath>

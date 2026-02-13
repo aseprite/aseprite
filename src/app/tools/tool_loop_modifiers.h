@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -21,6 +21,7 @@ enum class ToolLoopModifiers {
   kSquareAspect = 0x00000020,
   kFromCenter = 0x00000040,
   kRotateShape = 0x00000080,
+  kCornerRadius = 0x00000100,
 };
 
 }} // namespace app::tools

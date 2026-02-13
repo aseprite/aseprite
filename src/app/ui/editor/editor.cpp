@@ -1772,28 +1772,54 @@ void Editor::updateStatusBar()
   m_state->onUpdateStatusBar(this);
 }
 
-void Editor::updateQuicktool()
+void Editor::updateQuicktool(const ui::Message* msg)
 {
   if (m_customizationDelegate && !hasCapture()) {
     auto atm = App::instance()->activeToolManager();
-    tools::Tool* selectedTool = atm->selectedTool();
+    const tools::Tool* selectedTool = atm->selectedTool();
 
     // Don't change quicktools if we are in a selection tool and using
-    // the selection modifiers.
-    if (selectedTool->getInk(0)->isSelection() &&
-        int(m_customizationDelegate->getPressedKeyAction(KeyContext::SelectionTool)) != 0) {
-      if (atm->quickTool())
-        atm->newQuickToolSelectedFromEditor(nullptr);
-      return;
+    // the selection modifiers (or Ctrl key to start a copy of the
+    // selection).
+    if (selectedTool->getInk(0)->isSelection()) {
+      if ((int(m_customizationDelegate->getPressedKeyAction(KeyContext::SelectionTool)) != 0) ||
+          (int(m_customizationDelegate->getPressedKeyAction(KeyContext::TranslatingSelection)) &
+           int(KeyAction::CopySelection))) {
+        if (atm->quickTool())
+          atm->newQuickToolSelectedFromEditor(nullptr);
+        return;
+      }
     }
 
-    tools::Tool* newQuicktool = m_customizationDelegate->getQuickTool(selectedTool);
+    ui::Shortcut newShortcut;
+    tools::Tool* newQuicktool =
+      m_customizationDelegate->getQuickTool(msg, selectedTool, newShortcut);
 
     // Check if the current state accept the given quicktool.
     if (newQuicktool && !m_state->acceptQuickTool(newQuicktool))
       return;
 
-    atm->newQuickToolSelectedFromEditor(newQuicktool);
+    tools::Tool* prevQuicktool = atm->quickTool();
+    ui::Shortcut prevShortcut = atm->quickToolFromShortcut();
+
+    // Problems appear when the previous shortcut to select the
+    // current quick tool is still pressed, so we have to disambiguate
+    // the new pressed shortcut (newShortcut) with the previous
+    // shortcut (prevQuicktool).
+    if (prevQuicktool && prevShortcut != newShortcut && prevShortcut.isPressed()) {
+      if (!newQuicktool)
+        return;
+      if (newShortcut.lessModifiersThan(prevShortcut))
+        return;
+      if (prevShortcut.scancode() != kKeyNil && newShortcut.unicodeChar() == kKeyNil)
+        return;
+      if (prevShortcut.unicodeChar() != 0 && newShortcut.unicodeChar() == 0)
+        return;
+      if (prevShortcut.mouseButton() != kButtonNone && newShortcut.mouseButton() == kButtonNone)
+        return;
+    }
+
+    atm->newQuickToolSelectedFromEditor(newQuicktool, newShortcut);
   }
 }
 
@@ -1842,7 +1868,7 @@ void Editor::updateToolLoopModifiersIndicators(const bool firstFromMouseDown)
         // square-aspect/rotation/etc. only when the user presses the
         // modifier key again in the ToolLoop (and not before starting
         // the loop). So Alt+selection will add a selection, but
-        // willn't start the square-aspect until we press Alt key
+        // won't start the square-aspect until we press Alt key
         // again, or Alt+Shift+selection tool will subtract the
         // selection but will not start the rotation until we release
         // and press the Alt key again.
@@ -1855,6 +1881,8 @@ void Editor::updateToolLoopModifiersIndicators(const bool firstFromMouseDown)
             modifiers |= int(tools::ToolLoopModifiers::kFromCenter);
           if (int(action & KeyAction::RotateShape))
             modifiers |= int(tools::ToolLoopModifiers::kRotateShape);
+          if (int(action & KeyAction::CornerRadius))
+            modifiers |= int(tools::ToolLoopModifiers::kCornerRadius);
         }
       }
 
@@ -2109,7 +2137,7 @@ bool Editor::onProcessMessage(Message* msg)
       // editor edge (MouseLeave/Enter)
       if (!hasCapture()) {
         updateToolLoopModifiersIndicators();
-        updateQuicktool();
+        updateQuicktool(msg);
       }
       break;
 
@@ -2146,7 +2174,7 @@ bool Editor::onProcessMessage(Message* msg)
         }
 
         updateToolLoopModifiersIndicators();
-        updateQuicktool();
+        updateQuicktool(msg);
         setCursor(mouseMsg->position());
 
         App::instance()->activeToolManager()->pressButton(pointer_from_msg(this, mouseMsg));
@@ -2191,7 +2219,7 @@ bool Editor::onProcessMessage(Message* msg)
           m_secondaryButton = false;
 
           updateToolLoopModifiersIndicators();
-          updateQuicktool();
+          updateQuicktool(msg);
           setCursor(mouseMsg->position());
 
           // In case we didn't hide the BrushPreview on the
@@ -2282,7 +2310,7 @@ bool Editor::onProcessMessage(Message* msg)
         if (hasMouse()) {
           updateToolLoopModifiersIndicators();
           updateAutoCelGuides(msg);
-          updateQuicktool();
+          updateQuicktool(msg);
           setCursor(mousePosInDisplay());
         }
 
@@ -2299,7 +2327,7 @@ bool Editor::onProcessMessage(Message* msg)
         if (hasMouse()) {
           updateToolLoopModifiersIndicators();
           updateAutoCelGuides(msg);
-          updateQuicktool();
+          updateQuicktool(msg);
           setCursor(mousePosInDisplay());
         }
 
@@ -2903,7 +2931,7 @@ void Editor::pasteImage(const Image* image, const Mask* mask, const gfx::Point* 
   position ? mask2.setOrigin(position->x, position->y) : mask2.setOrigin(x, y);
 
   PixelsMovementPtr pixelsMovement(
-    new PixelsMovement(UIContext::instance(), site, image, &mask2, "Paste"));
+    new PixelsMovement(UIContext::instance(), site, image, &mask2, "Paste", &m_tiledModeHelper));
 
   setState(EditorStatePtr(new MovingPixelsState(this, NULL, pixelsMovement, NoHandle)));
 }

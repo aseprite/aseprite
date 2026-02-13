@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -94,6 +94,7 @@ protected:
   void onInitTheme(InitThemeEvent& ev) override;
   LayoutIO* onGetLayoutIO() override { return this; }
   void onNewDisplayConfiguration(Display* display) override;
+  bool onEnqueueMouseDown(MouseMessage* mouseMsg) override;
 
   // LayoutIO implementation
   std::string loadLayout(Widget* widget) override;
@@ -678,6 +679,23 @@ void CustomizedGuiManager::onNewDisplayConfiguration(Display* display)
   }
 }
 
+bool CustomizedGuiManager::onEnqueueMouseDown(MouseMessage* mouseMsg)
+{
+  ASSERT(mouseMsg->type() == kMouseDownMessage);
+
+  // If there is no modal window running...
+  App* app = App::instance();
+  if (app && getForegroundWindow() == app->mainWindow()) {
+    // Process a mouse button as a shortcut.
+    if (processKey(mouseMsg)) {
+      // Don't enqueue this message
+      return false;
+    }
+  }
+
+  return true;
+}
+
 bool CustomizedGuiManager::processKey(Message* msg)
 {
   const KeyboardShortcuts* keys = KeyboardShortcuts::instance();
@@ -685,9 +703,10 @@ bool CustomizedGuiManager::processKey(Message* msg)
   if (!key)
     return false;
 
-  // Cancel menu-bar loops (to close any popup menu)
   App* app = App::instance();
-  app->mainWindow()->getMenuBar()->cancelMenuLoop();
+  if (key->type() == KeyType::Tool || key->type() == KeyType::Command)
+    // Cancel menu-bar loops (to close any popup menu)
+    app->mainWindow()->getMenuBar()->cancelMenuLoop();
 
   switch (key->type()) {
     case KeyType::Tool: {

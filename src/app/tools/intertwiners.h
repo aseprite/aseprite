@@ -11,9 +11,14 @@
 #include "app/tools/tool_loop.h"
 #include "app/tools/tool_loop_modifiers.h"
 #include "base/pi.h"
+#include "doc/algo.h"
 #include "doc/algorithm/polygon.h"
 #include "doc/layer_tilemap.h"
 #include "gfx/point.h"
+
+#include <algorithm>
+
+using namespace gfx;
 
 namespace app { namespace tools {
 
@@ -167,6 +172,8 @@ public:
 
 class IntertwineAsRectangles : public Intertwine {
 public:
+  bool cornerRadiusSupport() override { return true; }
+
   void joinStroke(ToolLoop* loop, const Stroke& stroke) override
   {
     if (stroke.size() == 0)
@@ -190,22 +197,62 @@ public:
           std::swap(y1, y2);
 
         const double angle = loop->getController()->getShapeAngle();
+        const int cornerRadius = loop->getController()->getCornerRadius();
         if (ABS(angle) < 0.001) {
-          doPointshapeLineWithoutDynamics(x1, y1, x2, y1, loop);
-          doPointshapeLineWithoutDynamics(x1, y2, x2, y2, loop);
+          int r = 0;
+          if (cornerRadius > 0) {
+            int w = x2 - x1 + 1;
+            int h = y2 - y1 + 1;
+            r = std::min(w, std::min(h, 2 * cornerRadius)) / 2;
+            algo_sliced_circle(x1, y1, x2, y2, r, loop, (AlgoPixel)doPointshapePoint);
+          }
 
-          for (y = y1; y <= y2; y++) {
+          doPointshapeLineWithoutDynamics(x1 + r, y1, x2 - r, y1, loop);
+          doPointshapeLineWithoutDynamics(x1 + r, y2, x2 - r, y2, loop);
+
+          for (y = y1 + r; y <= y2 - r; y++) {
             doPointshapePoint(x1, y, loop);
             doPointshapePoint(x2, y, loop);
           }
         }
         else {
-          Stroke p = rotateRectangle(x1, y1, x2, y2, angle);
-          int n = p.size();
-          for (int i = 0; i + 1 < n; ++i) {
-            doPointshapeLine(p[i], p[i + 1], loop);
+          if (cornerRadius <= 0) {
+            Stroke p = rotateRectangle(x1, y1, x2, y2, angle);
+            int n = p.size();
+            for (int i = 0; i + 1 < n; ++i) {
+              doPointshapeLine(p[i], p[i + 1], loop);
+            }
+            doPointshapeLine(p[n - 1], p[0], loop);
           }
-          doPointshapeLine(p[n - 1], p[0], loop);
+          else {
+            int w = x2 - x1 + 1;
+            int h = y2 - y1 + 1;
+            int r = std::min(w, std::min(h, 2 * cornerRadius)) / 2;
+            Stroke p = rotateRectangle(x1, y1, x2, y2, angle, r);
+            int n = p.size();
+            for (int i = 0; i + 1 < n; i += 3) {
+              doPointshapeLine(p[i], p[i + 1], loop);
+            }
+            const double ang_minus_PI_2 = base::fmod_radians(angle - PI / 2);
+            const double ang_plus_PI_2 = base::fmod_radians(angle + PI / 2);
+            const double ang_plus_PI = base::fmod_radians(angle + PI);
+            algo_arc(p[2].x, p[2].y, ang_minus_PI_2, angle, r, loop, (AlgoPixel)doPointshapePoint);
+            algo_arc(p[5].x, p[5].y, angle, ang_plus_PI_2, r, loop, (AlgoPixel)doPointshapePoint);
+            algo_arc(p[8].x,
+                     p[8].y,
+                     ang_plus_PI_2,
+                     ang_plus_PI,
+                     r,
+                     loop,
+                     (AlgoPixel)doPointshapePoint);
+            algo_arc(p[11].x,
+                     p[11].y,
+                     ang_plus_PI,
+                     ang_minus_PI_2,
+                     r,
+                     loop,
+                     (AlgoPixel)doPointshapePoint);
+          }
         }
       }
     }
@@ -231,14 +278,66 @@ public:
         std::swap(y1, y2);
 
       const double angle = loop->getController()->getShapeAngle();
+      const int cornerRadius = loop->getController()->getCornerRadius();
       if (ABS(angle) < 0.001) {
-        for (y = y1; y <= y2; y++)
+        int r = 0;
+        if (cornerRadius > 0) {
+          int w = x2 - x1 + 1;
+          int h = y2 - y1 + 1;
+          r = std::min(w, std::min(h, 2 * cornerRadius)) / 2;
+          algo_sliced_circlefill(x1, y1, x2, y2, r, loop, (AlgoHLine)doPointshapeHline);
+
+          for (y = y1; y < y1 + r; y++)
+            doPointshapeLineWithoutDynamics(x1 + r, y, x2 - r, y, loop);
+          for (y = y2 - r + 1; y <= y2; y++)
+            doPointshapeLineWithoutDynamics(x1 + r, y, x2 - r, y, loop);
+        }
+
+        for (y = y1 + r; y <= y2 - r; y++)
           doPointshapeLineWithoutDynamics(x1, y, x2, y, loop);
       }
       else {
-        Stroke p = rotateRectangle(x1, y1, x2, y2, angle);
-        auto v = p.toXYInts();
-        doc::algorithm::polygon(v.size() / 2, &v[0], loop, (AlgoHLine)doPointshapeHline);
+        if (cornerRadius <= 0) {
+          Stroke p = rotateRectangle(x1, y1, x2, y2, angle);
+          auto v = p.toXYInts();
+          doc::algorithm::polygon(v.size() / 2, &v[0], loop, (AlgoHLine)doPointshapeHline);
+        }
+        else {
+          int w = x2 - x1 + 1;
+          int h = y2 - y1 + 1;
+          int r = std::min(w, std::min(h, 2 * cornerRadius)) / 2;
+          Stroke p = rotateRectangle(x1, y1, x2, y2, angle, cornerRadius);
+          auto v = p.toXYInts();
+          doc::algorithm::polygon(v.size() / 2, &v[0], loop, (AlgoHLine)doPointshapeHline);
+          algo_sliced_circlefill(p[2].x - r,
+                                 p[2].y - r,
+                                 p[2].x + r,
+                                 p[2].y + r,
+                                 r,
+                                 loop,
+                                 (AlgoHLine)doPointshapeHline);
+          algo_sliced_circlefill(p[5].x - r,
+                                 p[5].y - r,
+                                 p[5].x + r,
+                                 p[5].y + r,
+                                 r,
+                                 loop,
+                                 (AlgoHLine)doPointshapeHline);
+          algo_sliced_circlefill(p[8].x - r,
+                                 p[8].y - r,
+                                 p[8].x + r,
+                                 p[8].y + r,
+                                 r,
+                                 loop,
+                                 (AlgoHLine)doPointshapeHline);
+          algo_sliced_circlefill(p[11].x - r,
+                                 p[11].y - r,
+                                 p[11].x + r,
+                                 p[11].y + r,
+                                 r,
+                                 loop,
+                                 (AlgoHLine)doPointshapeHline);
+        }
       }
     }
   }
@@ -291,6 +390,54 @@ private:
     stroke.addPoint(gfx::Point(cx + ac - bs, cy - as - bc));
     stroke.addPoint(gfx::Point(cx + ac + bs, cy - as + bc));
     stroke.addPoint(gfx::Point(cx - ac + bs, cy + as + bc));
+    return stroke;
+  }
+
+  // Returns a stroke with the rotated points of a rectangle making room for a
+  // rounded corner of the specified radius, and with points where the center of
+  // each corner must be.
+  static Stroke rotateRectangle(int x1, int y1, int x2, int y2, double angle, int cornerRadius)
+  {
+    cornerRadius = std::max(cornerRadius, 0);
+
+    int cx = (x1 + x2) / 2;
+    int cy = (y1 + y2) / 2;
+    int a = ((x2 - x1) / 2);
+    int b = ((y2 - y1) / 2);
+    int ai = a - cornerRadius;
+    int bi = b - cornerRadius;
+
+    double s = -std::sin(angle);
+    double c = std::cos(angle);
+
+    Stroke stroke;
+    // Top segment
+    stroke.addPoint(Point(cx - ai * c - b * s, cy + ai * s - b * c));
+    stroke.addPoint(Point(cx + ai * c - b * s, cy - ai * s - b * c));
+
+    // Center for top-right corner
+    stroke.addPoint(Point(cx + ai * c - bi * s, cy - ai * s - bi * c));
+
+    // Right segment
+    stroke.addPoint(Point(cx + a * c - bi * s, cy - a * s - bi * c));
+    stroke.addPoint(Point(cx + a * c + bi * s, cy - a * s + bi * c));
+
+    // Center for bottom-right corner
+    stroke.addPoint(Point(cx + ai * c + bi * s, cy - ai * s + bi * c));
+
+    // Bottom segment
+    stroke.addPoint(Point(cx + ai * c + b * s, cy - ai * s + b * c));
+    stroke.addPoint(Point(cx - ai * c + b * s, cy + ai * s + b * c));
+
+    // Center for bottom-left corner
+    stroke.addPoint(Point(cx - ai * c + bi * s, cy + ai * s + bi * c));
+
+    // Left segment
+    stroke.addPoint(Point(cx - a * c + bi * s, cy + a * s + bi * c));
+    stroke.addPoint(Point(cx - a * c - bi * s, cy + a * s - bi * c));
+
+    // Center for top-left corner
+    stroke.addPoint(Point(cx - ai * c - bi * s, cy + ai * s - bi * c));
     return stroke;
   }
 };

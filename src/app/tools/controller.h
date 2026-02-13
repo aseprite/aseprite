@@ -62,6 +62,10 @@ public:
   // Returns the angle for a shape-like intertwiner (rectangles,
   // ellipses, etc.).
   virtual double getShapeAngle() const { return 0.0; }
+
+  // Returns the radius for each corner for a rectangle intertwiner when drawing
+  // rounded rectangles.
+  virtual int getCornerRadius() const { return 0; }
 };
 
 }} // namespace app::tools

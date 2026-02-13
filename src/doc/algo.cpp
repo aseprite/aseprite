@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2022 Igara Studio S.A.
+// Copyright (c) 2018-2025 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -12,6 +12,7 @@
 #include "doc/algo.h"
 
 #include "base/debug.h"
+#include "base/pi.h"
 
 #include <algorithm>
 #include <cmath>
@@ -178,6 +179,167 @@ void algo_line_continuous_with_fix_for_line_brush(int x0,
       y0 += sy;
     }
   }
+}
+
+// Circle code based on Alois Zingl work released under the MIT
+// license http://members.chello.at/easyfilter/bresenham.html
+//
+// Adapted for Aseprite by Igara Studio S.A.
+//
+// Draws a circle of the specified radius divided in 4 slices, adjusting each
+// slice inside the specified rectangle.
+//            |--r --|
+//
+//  x1,y1 --> *   OOO          OOO
+//              O                  O
+//             O                    O
+//
+//
+//
+//          T  O                    O
+//        r |   O                  O
+//          _     OOO          OOO   * <-- x2,y2
+//
+// If the rectangle is smaller than the circle, it doesn't make any clipping.
+void algo_sliced_circle(int x1, int y1, int x2, int y2, int r, void* data, AlgoPixel proc)
+{
+  int x = -r, y = 0, err = 2 - 2 * r; /* II. Quadrant */
+  const int r0 = r;
+  do {
+    proc(x2 - r0 - x, y2 - r0 + y, data); /*   I. Quadrant */
+    proc(x1 + r0 - y, y2 - r0 - x, data); /*  II. Quadrant */
+    proc(x1 + r0 + x, y1 + r0 - y, data); /* III. Quadrant */
+    proc(x2 - r0 + y, y1 + r0 + x, data); /*  IV. Quadrant */
+    r = err;
+    if (r <= y)
+      err += ++y * 2 + 1; /* e_xy+e_y < 0 */
+    if (r > x || err > y)
+      err += ++x * 2 + 1; /* e_xy+e_x > 0 or no 2nd y-step */
+  } while (x < 0);
+}
+
+// Same as algo_sliced_circle but with the parts filled.
+void algo_sliced_circlefill(int x1, int y1, int x2, int y2, int r, void* data, AlgoHLine proc)
+{
+  int x = -r, y = 0, err = 2 - 2 * r; /* II. Quadrant */
+  const int r0 = r;
+  do {
+    proc(x2 - r0, y2 - r0 + y, x2 - r0 - x, data); /*   I. Quadrant */
+    proc(x1 + r0 - y, y2 - r0 - x, x1 + r0, data); /*  II. Quadrant */
+    proc(x1 + r0 + x, y1 + r0 - y, x1 + r0, data); /* III. Quadrant */
+    proc(x2 - r0, y1 + r0 + x, x2 - r0 + y, data); /*  IV. Quadrant */
+    r = err;
+    if (r <= y)
+      err += ++y * 2 + 1; /* e_xy+e_y < 0 */
+    if (r > x || err > y)
+      err += ++x * 2 + 1; /* e_xy+e_x > 0 or no 2nd y-step */
+  } while (x < 0);
+}
+
+void algo_arc(int xm, int ym, double sa, double ea, int r, void* data, AlgoPixel proc)
+{
+  int sx = std::cos(sa) * r;
+  int ex = std::cos(ea) * r;
+
+  int startQuadrant;
+  if (sa <= 0 && sa > -PI / 2) {
+    startQuadrant = 4;
+  }
+  else if (sa <= -PI / 2 && sa >= -PI) {
+    startQuadrant = 3;
+  }
+  else if (sa > 0 && sa < PI / 2) {
+    startQuadrant = 1;
+  }
+  else {
+    startQuadrant = 2;
+  }
+
+  int endQuadrant;
+  if (ea <= 0 && ea > -PI / 2) {
+    endQuadrant = 4;
+  }
+  else if (ea <= -PI / 2 && ea >= -PI) {
+    endQuadrant = 3;
+  }
+  else if (ea > 0 && ea < PI / 2) {
+    endQuadrant = 1;
+  }
+  else {
+    endQuadrant = 2;
+  }
+
+  // If start angle and end angle falls in the same quadrant we have to determine
+  // if we have to include the other quadrants or not since the arc is determined
+  // from start angle to end angle in clockwise direction.
+  bool includeQuadrant[4] = { false, false, false, false };
+  if (startQuadrant == endQuadrant) {
+    // If start angle is greater than end angle, include all quadrants for drawing
+    if (sa > ea) {
+      includeQuadrant[0] = true;
+      includeQuadrant[1] = true;
+      includeQuadrant[2] = true;
+      includeQuadrant[3] = true;
+    }
+    else {
+      // start angle is less to or equal to end angle then only include one quadrant
+      // for drawing.
+      includeQuadrant[startQuadrant - 1] = true;
+    }
+  }
+  else {
+    for (int i = startQuadrant - 1; i < startQuadrant - 1 + 4; ++i) {
+      int q = i % 4;
+      includeQuadrant[q] = true;
+      if (q == endQuadrant - 1)
+        break;
+    }
+  }
+
+  int x = -r, y = 0, err = 2 - 2 * r; /* II. Quadrant */
+  do {
+    if (includeQuadrant[0]) {
+      if ((startQuadrant != 1 && endQuadrant != 1) ||
+          (startQuadrant == 1 && endQuadrant != 1 && -x <= sx) ||
+          (startQuadrant != 1 && endQuadrant == 1 && -x >= ex) ||
+          (startQuadrant == 1 && endQuadrant == 1 &&
+           ((sa <= ea && -x <= sx && -x >= ex) || (sa > ea && (-x <= sx || -x >= ex)))))
+        proc(xm - x, ym + y, data); /*   I. Quadrant */
+    }
+
+    if (includeQuadrant[1]) {
+      if ((startQuadrant != 2 && endQuadrant != 2) ||
+          (startQuadrant == 2 && endQuadrant != 2 && -y <= sx) ||
+          (startQuadrant != 2 && endQuadrant == 2 && -y >= ex) ||
+          (startQuadrant == 2 && endQuadrant == 2 &&
+           ((sa <= ea && -y <= sx && -y >= ex) || (sa > ea && (-y <= sx || -y >= ex)))))
+        proc(xm - y, ym - x, data); /*  II. Quadrant */
+    }
+
+    if (includeQuadrant[2]) {
+      if ((startQuadrant != 3 && endQuadrant != 3) ||
+          (startQuadrant == 3 && endQuadrant != 3 && x >= sx) ||
+          (startQuadrant != 3 && endQuadrant == 3 && x <= ex) ||
+          (startQuadrant == 3 && endQuadrant == 3 &&
+           ((sa <= ea && -x <= -sx && -x >= -ex) || (sa > ea && (-x <= -sx || -x >= -ex)))))
+        proc(xm + x, ym - y, data); /* III. Quadrant */
+    }
+
+    if (includeQuadrant[3]) {
+      if ((startQuadrant != 4 && endQuadrant != 4) ||
+          (startQuadrant == 4 && endQuadrant != 4 && y >= sx) ||
+          (startQuadrant != 4 && endQuadrant == 4 && y <= ex) ||
+          (startQuadrant == 4 && endQuadrant == 4 &&
+           ((sa <= ea && y >= sx && y <= ex) || (sa > ea && (y >= sx || y <= ex)))))
+        proc(xm + y, ym + x, data); /*  IV. Quadrant */
+    }
+
+    r = err;
+    if (r <= y)
+      err += ++y * 2 + 1; /* e_xy+e_y < 0 */
+    if (r > x || err > y)
+      err += ++x * 2 + 1; /* e_xy+e_x > 0 or no 2nd y-step */
+  } while (x < 0);
 }
 
 static int adjust_ellipse_args(int& x0, int& y0, int& x1, int& y1, int& hPixels, int& vPixels)

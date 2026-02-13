@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -24,6 +24,7 @@ class ToolLoopManager;
 } // namespace tools
 
 class CommandExecutionEvent;
+class ExpandCelCanvas;
 
 class DrawingState : public StandbyState,
                      DelayedMouseMoveDelegate {
@@ -65,6 +66,8 @@ public:
   void sendMovementToToolLoop(const tools::Pointer& pointer);
 
   void notifyToolLoopModifiersChange(Editor* editor);
+
+  ExpandCelCanvas* expandCelCanvas() const;
 
 private:
   void handleMouseMovement();

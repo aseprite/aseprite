@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -56,6 +56,7 @@ public:
   void startFlipTransformation(Editor* editor, doc::algorithm::FlipType flipType);
 
 protected:
+  EditorStatePtr handleDragActionsFromMessage(Editor* editor, const ui::Message* msg);
   void callEyedropper(Editor* editor, const ui::MouseMessage* msg);
   bool checkStartDrawingStraightLine(Editor* editor,
                                      const ui::MouseMessage* msg,

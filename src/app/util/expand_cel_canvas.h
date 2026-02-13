@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -93,6 +93,11 @@ public:
 
   const Cel* getCel() const { return m_cel; }
   const doc::Grid& getGrid() const { return m_grid; }
+
+  // Functions used by ScopedToolLoopFix to temporarily fix the sprite
+  // to being used in Image:drawSprite() function call.
+  void prepareSpriteForScript();
+  void restoreSpriteForToolLoop();
 
 private:
   gfx::Rect getTrimDstImageBounds() const;

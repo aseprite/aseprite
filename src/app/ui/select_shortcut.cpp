@@ -17,8 +17,6 @@
 #include "ui/entry.h"
 #include "ui/message.h"
 
-#include <cctype>
-
 namespace app {
 
 using namespace ui;
@@ -48,28 +46,18 @@ protected:
     switch (msg->type()) {
       case kKeyDownMessage:
         if (hasFocus() && !isReadOnly()) {
-          KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
-          if (!keymsg->scancode() && keymsg->unicodeChar() < 32)
+          Shortcut shortcut = msg->shortcut();
+          if (shortcut.scancode() == kKeyNil && shortcut.unicodeChar() < 32)
             break;
 
-          KeyModifiers modifiers = keymsg->modifiers();
+          setAndParseShortcut(shortcut);
+          return true;
+        }
+        break;
 
-          if (keymsg->scancode() == kKeySpace)
-            modifiers = (KeyModifiers)(modifiers & ~kKeySpaceModifier);
-
-          m_shortcut = Shortcut(
-            modifiers,
-            keymsg->scancode(),
-            keymsg->unicodeChar() > 32 ? std::tolower(keymsg->unicodeChar()) : 0);
-
-          // Convert the shortcut to a string, and parse it
-          // again. Just to obtain the exact shortcut we'll read
-          // when we import the gui.xml file or an .aseprite-keys file.
-          m_shortcut = Shortcut(m_shortcut.toString());
-
-          updateText();
-
-          ShortcutChange(&m_shortcut);
+      case kMouseDownMessage:
+        if (!isReadOnly()) {
+          setAndParseShortcut(msg->shortcut());
           return true;
         }
         break;
@@ -77,9 +65,23 @@ protected:
     return Entry::onProcessMessage(msg);
   }
 
+  void setAndParseShortcut(const Shortcut& shortcut)
+  {
+    // Convert the shortcut to a string, and parse it
+    // again. Just to obtain the exact shortcut we'll read
+    // when we import the gui.xml file or an .aseprite-keys file.
+    m_shortcut = Shortcut(shortcut.toString());
+
+    updateText();
+
+    ShortcutChange(&m_shortcut);
+  }
+
   void updateText()
   {
-    setText(Shortcut(kKeyNoneModifier, m_shortcut.scancode(), m_shortcut.unicodeChar()).toString());
+    Shortcut tmp = m_shortcut;
+    tmp.removeModifiers();
+    setText(tmp.toString());
   }
 
 private:
@@ -92,6 +94,7 @@ SelectShortcut::SelectShortcut(const ui::Shortcut& shortcut,
   : m_keyField(new KeyField(shortcut))
   , m_keyContext(keyContext)
   , m_currentKeys(currentKeys)
+  , m_origShortcut(shortcut)
   , m_shortcut(shortcut)
   , m_ok(false)
   , m_modified(false)
@@ -122,12 +125,16 @@ void SelectShortcut::onModifierChange(KeyModifiers modifier, CheckBox* checkbox)
   KeyModifiers modifiers = m_shortcut.modifiers();
   KeyScancode scancode = m_shortcut.scancode();
   int unicodeChar = m_shortcut.unicodeChar();
+  MouseButton mouseButton = m_shortcut.mouseButton();
 
   modifiers = (KeyModifiers)((modifiers & ~modifier) | (state ? modifier : 0));
   if (modifiers == kKeySpaceModifier && scancode == kKeySpace)
     modifiers = kKeyNoneModifier;
 
-  m_shortcut = Shortcut(modifiers, scancode, unicodeChar);
+  if (mouseButton != kButtonNone)
+    m_shortcut = Shortcut(modifiers, mouseButton);
+  else
+    m_shortcut = Shortcut(modifiers, scancode, unicodeChar);
 
   m_keyField->setShortcut(m_shortcut);
   m_keyField->requestFocus();

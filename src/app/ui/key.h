@@ -64,6 +64,7 @@ enum class KeyAction {
   AngleSnapFromLastPoint = 0x00010000,
   RotateShape = 0x00020000,
   FineControl = 0x00040000,
+  CornerRadius = 0x00080000,
 };
 
 enum class WheelAction {
@@ -158,7 +159,7 @@ public:
   bool fitsContext(KeyContext keyContext) const;
   const AppShortcut* isPressed(const ui::Message* msg, KeyContext keyContext) const;
   const AppShortcut* isPressed(const ui::Message* msg) const;
-  bool isPressed() const;
+  const AppShortcut* isPressed() const;
   bool isLooselyPressed() const;
   bool isCommandListed() const;
 

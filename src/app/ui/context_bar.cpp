@@ -30,6 +30,7 @@
 #include "app/tools/controller.h"
 #include "app/tools/ink.h"
 #include "app/tools/ink_type.h"
+#include "app/tools/intertwine.h"
 #include "app/tools/point_shape.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
@@ -347,6 +348,117 @@ protected:
   }
 
   bool m_lock;
+};
+
+class ContextBar::CornerRadiusField : public HBox {
+public:
+  class CornerRadiusButtonItem : public ButtonSet::Item {
+  public:
+    CornerRadiusButtonItem()
+    {
+      auto* theme = SkinTheme::get(this);
+      setIcon(theme->parts.cornerRadiusField());
+      setSelected(Preferences::instance().contextBar.showCornerRadius());
+    }
+
+  protected:
+    CornerRadiusField* field()
+    {
+      return static_cast<CornerRadiusField*>(ButtonSet::Item::parent()->parent());
+    }
+
+    bool onProcessMessage(ui::Message* msg) override
+    {
+      switch (msg->type()) {
+        case ui::kMouseMoveMessage:
+          if (hasCapture()) {
+            MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+            Manager* mgr = manager();
+            Widget* pick = mgr->pickFromScreenPos(
+              display()->nativeWindow()->pointToScreen(mouseMsg->position()));
+
+            if (pick == &field()->m_radius) {
+              mgr->transferAsMouseDownMessage(this, pick, mouseMsg);
+              return true;
+            }
+          }
+          break;
+      }
+      return ButtonSet::Item::onProcessMessage(msg);
+    }
+  };
+
+  class CornerRadiusButton : public ButtonSet {
+  public:
+    CornerRadiusButton() : ButtonSet(1)
+    {
+      setMultiMode(ButtonSet::MultiMode::Set);
+
+      auto* theme = SkinTheme::get(this);
+      addItem(new CornerRadiusButtonItem, theme->styles.cornerRadiusField());
+    }
+
+  protected:
+    CornerRadiusField* field() { return static_cast<CornerRadiusField*>(ButtonSet::parent()); }
+
+    void onItemChange(ButtonSet::Item* item) override
+    {
+      ButtonSet::onItemChange(item);
+
+      const bool status = item->isSelected();
+      Preferences::instance().contextBar.showCornerRadius(status);
+      if (status) {
+        field()->m_radius.setVisible(true);
+        field()->parent()->layout();
+      }
+      else
+        field()->setValue(0);
+    }
+  };
+
+  class CornerRadiusEntry : public IntEntry {
+  public:
+    CornerRadiusEntry() : IntEntry(0, 32)
+    {
+      setSuffix("px");
+      setPersistSelection(true);
+      setMaxTextLength(4);
+      maxValueUnbounded(true);
+    }
+
+  private:
+    void onValueChange() override
+    {
+      if (g_updatingFromCode)
+        return;
+
+      IntEntry::onValueChange();
+      base::ScopedValue lockFlag(g_updatingFromCode, true);
+
+      Tool* tool = App::instance()->activeTool();
+      Preferences::instance().tool(tool).cornerRadius.setValue(getValue());
+    }
+  };
+
+  CornerRadiusField(TooltipManager* tooltipManager)
+  {
+    addChild(&m_button);
+    addChild(&m_radius);
+
+    tooltipManager->addTooltipFor(m_button.at(0), Strings::context_bar_corner_radius(), BOTTOM);
+    tooltipManager->addTooltipFor(&m_radius, Strings::context_bar_corner_radius(), BOTTOM);
+  }
+
+  void setValue(const int value)
+  {
+    m_radius.setValue(value);
+    m_radius.setVisible(value > 0 || Preferences::instance().contextBar.showCornerRadius());
+    parent()->layout();
+  }
+
+private:
+  CornerRadiusButton m_button;
+  CornerRadiusEntry m_radius;
 };
 
 class ContextBar::ToleranceField : public IntEntry {
@@ -1642,7 +1754,10 @@ class ContextBar::SliceFields : public HBox {
     SliceFields* m_sliceFields;
 
   public:
-    Combo(SliceFields* sliceFields) : m_sliceFields(sliceFields) {}
+    Combo(SliceFields* sliceFields) : m_sliceFields(sliceFields)
+    {
+      getEntryWidget()->setPlaceholder(Strings::general_search());
+    }
 
   protected:
     void onChange() override
@@ -1704,6 +1819,7 @@ public:
         editor->slicesTransforms(m_transform.isSelected());
     });
 
+    m_action.setEnabled(false);
     m_action.addItem(theme->parts.iconUserData(), theme->styles.buttonsetItemIconMono());
     m_action.addItem(theme->parts.iconClose(), theme->styles.buttonsetItemIconMono());
     m_action.ItemChange.connect(
@@ -1812,8 +1928,17 @@ private:
     if (auto* editor = Editor::activeEditor())
       m_transform.setSelected(editor->slicesTransforms());
 
+    updateState();
+
     if (relayout)
       parent()->layout();
+  }
+
+  void updateState()
+  {
+    if (auto editor = Editor::activeEditor()) {
+      m_action.setEnabled(editor->hasSelectedSlices());
+    }
   }
 
   void onSelAction(const int item)
@@ -1829,6 +1954,7 @@ private:
           editor->clearSlicesSelection();
         break;
     }
+    updateState();
   }
 
   void onSelectSliceFromComboBox()
@@ -1845,6 +1971,7 @@ private:
         editor->selectSlice(slice);
       }
     }
+    updateState();
   }
 
   void onComboBoxEntryChange()
@@ -1930,6 +2057,8 @@ ContextBar::ContextBar(TooltipManager* tooltipManager, ColorBar* colorBar)
   addChild(m_ditheringSelector = new DitheringSelector(DitheringSelector::SelectMatrix));
   m_ditheringSelector->setUseCustomWidget(false); // Disable custom widget because the context bar
                                                   // is too small
+
+  addChild(m_cornerRadius = new CornerRadiusField(tooltipManager));
 
   addChild(m_inkType = new InkTypeField(this));
   addChild(m_inkOpacityLabel = new Label(Strings::general_opacity()));
@@ -2074,6 +2203,11 @@ void ContextBar::onBrushSizeChange()
   updateForActiveTool();
 }
 
+void ContextBar::onCornerRadiusChange(int value)
+{
+  m_cornerRadius->setValue(value);
+}
+
 void ContextBar::onBrushAngleChange()
 {
   if (m_activeBrush->type() != kImageBrushType)
@@ -2164,6 +2298,9 @@ void ContextBar::updateForTool(tools::Tool* tool)
     m_freehandAlgoConn = toolPref->freehandAlgorithm.AfterChange.connect(
       [this] { onToolSetFreehandAlgorithm(); });
     m_contiguousConn = toolPref->contiguous.AfterChange.connect([this] { onToolSetContiguous(); });
+    m_cornerRadius->setValue(toolPref->cornerRadius());
+    m_cornerRadiusConn = toolPref->cornerRadius.AfterChange.connect(
+      [this](const int value) { onCornerRadiusChange(value); });
   }
 
   if (tool)
@@ -2241,6 +2378,10 @@ void ContextBar::updateForTool(tools::Tool* tool)
   const bool isFloodfill = tool && (tool->getPointShape(0)->isFloodFill() ||
                                     tool->getPointShape(1)->isFloodFill());
 
+  const bool hasCornerRadius = tool && !isText && !isSlice &&
+                               (tool->getIntertwine(0)->cornerRadiusSupport() ||
+                                tool->getIntertwine(1)->cornerRadiusSupport());
+
   // True if the current tool needs tolerance options
   const bool hasTolerance = tool && (tool->getPointShape(0)->isFloodFill() ||
                                      tool->getPointShape(1)->isFloodFill());
@@ -2276,6 +2417,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_brushSize->setVisible(supportOpacity && !isFloodfill && !hasImageBrush);
   m_brushAngle->setVisible(supportOpacity && !isFloodfill && !hasImageBrush && hasBrushWithAngle);
   m_brushPatternField->setVisible(supportOpacity && hasImageBrush && !withDithering);
+  m_cornerRadius->setVisible(hasCornerRadius);
   m_inkType->setVisible(hasInk);
   m_inkOpacityLabel->setVisible(showOpacity);
   m_inkOpacity->setVisible(showOpacity);

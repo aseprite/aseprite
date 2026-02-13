@@ -727,6 +727,7 @@ target_sources(app-lib PRIVATE
   util/shader_helpers.cpp
   util/slice_utils.cpp
   util/tile_flags_utils.cpp
+  util/tiled_mode.cpp
   util/tileset_utils.cpp
   util/wrap_point.cpp
   widget_loader.cpp
