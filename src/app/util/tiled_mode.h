@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016-2025  Igara Studio S.A.
+// Copyright (C) 2016-2026  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -98,7 +98,7 @@ public:
   // |  copy |      |  copy |      |  copy |          |  copy |
   // |       |      |       |      |       |          |       |
   // +-------+------+-------+------+-------+          +-------+
-  void drawTiled(doc::Image* dst) const;
+  void drawTiled(doc::Image* dst, const gfx::Rect& unexpandedBounds) const;
 
 private:
   filters::TiledMode m_mode;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2016-2025  Igara Studio S.A.
+// Copyright (C) 2016-2026  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -142,100 +142,69 @@ void TiledModeHelper::wrapTransformation(Transformation* transformation) const
   transformation->pivot(p);
 }
 
-void TiledModeHelper::drawTiled(doc::Image* dst) const
+void TiledModeHelper::drawTiled(doc::Image* dst, const gfx::Rect& cornerBounds) const
 {
-  if (!tiledEnabled()) {
+  if (!tiledEnabled())
     return;
-  }
 
   doc::ImageRef tmp;
   Mask tmpMask;
   tmpMask.freeze();
-  int x = (hasModeFlag(TiledMode::X_AXIS) ? m_canvas->width() : 0);
-  int y = (hasModeFlag(TiledMode::Y_AXIS) ? m_canvas->height() : 0);
-  int w = dst->width() - 2 * x;
-  int h = dst->height() - 2 * y;
+  const int x = (hasModeFlag(TiledMode::X_AXIS) ? m_canvas->width() : 0);
+  const int y = (hasModeFlag(TiledMode::Y_AXIS) ? m_canvas->height() : 0);
+  const int w = cornerBounds.w;
+  const int h = cornerBounds.h;
 
   tmp.reset(Image::create(dst->pixelFormat(), w, h));
-  tmp->copy(dst, gfx::Clip(0, 0, x, y, tmp->width(), tmp->height()));
+  tmp->copy(dst, gfx::Clip(0, 0, x, y, w, h));
   tmpMask.fromImage(tmp.get(), {});
 
   if (hasModeFlag(TiledMode::X_AXIS)) {
     // Draw at the left side
-    doc::algorithm::parallelogram(dst,
-                                  tmp.get(),
-                                  tmpMask.bitmap(),
-                                  0,
-                                  y,
-                                  tmp->width(),
-                                  y,
-                                  tmp->width(),
-                                  y + tmp->height(),
-                                  0,
-                                  y + tmp->height());
+    doc::algorithm::parallelogram(dst, tmp.get(), tmpMask.bitmap(), 0, y, w, y, w, y + h, 0, y + h);
 
     // Draw at the right side
     doc::algorithm::parallelogram(dst,
                                   tmp.get(),
                                   tmpMask.bitmap(),
-                                  dst->width() - tmp->width(),
+                                  dst->width() - w,
                                   y,
                                   dst->width(),
                                   y,
                                   dst->width(),
-                                  y + tmp->height(),
-                                  dst->width() - tmp->width(),
-                                  y + tmp->height());
+                                  y + h,
+                                  dst->width() - w,
+                                  y + h);
   }
   if (hasModeFlag(TiledMode::Y_AXIS)) {
     // Draw at the top.
-    doc::algorithm::parallelogram(dst,
-                                  tmp.get(),
-                                  tmpMask.bitmap(),
-                                  x,
-                                  0,
-                                  x + tmp->width(),
-                                  0,
-                                  x + tmp->width(),
-                                  tmp->height(),
-                                  x,
-                                  tmp->height());
+    doc::algorithm::parallelogram(dst, tmp.get(), tmpMask.bitmap(), x, 0, x + w, 0, x + w, h, x, h);
 
     // Draw at the bottom.
     doc::algorithm::parallelogram(dst,
                                   tmp.get(),
                                   tmpMask.bitmap(),
                                   x,
-                                  dst->height() - tmp->height(),
-                                  x + tmp->width(),
-                                  dst->height() - tmp->height(),
-                                  x + tmp->width(),
+                                  dst->height() - h,
+                                  x + w,
+                                  dst->height() - h,
+                                  x + w,
                                   dst->height(),
                                   x,
                                   dst->height());
   }
   if (hasModeFlag(TiledMode::BOTH)) {
     // Draw at the top-left corner.
-    doc::algorithm::parallelogram(dst,
-                                  tmp.get(),
-                                  tmpMask.bitmap(),
-                                  0,
-                                  0,
-                                  tmp->width(),
-                                  0,
-                                  tmp->width(),
-                                  tmp->height(),
-                                  0,
-                                  tmp->height());
+    doc::algorithm::parallelogram(dst, tmp.get(), tmpMask.bitmap(), 0, 0, w, 0, w, h, 0, h);
     // Draw at the bottom-left corner.
     doc::algorithm::parallelogram(dst,
                                   tmp.get(),
                                   tmpMask.bitmap(),
                                   0,
-                                  dst->height() - tmp->height(),
-                                  tmp->width(),
-                                  dst->height() - tmp->height(),
-                                  tmp->width(),
+                                  dst->height() - h,
+                                  w,
+                                  dst->height() - h,
+                                  w,
                                   dst->height(),
                                   0,
                                   dst->height());
@@ -244,26 +213,26 @@ void TiledModeHelper::drawTiled(doc::Image* dst) const
     doc::algorithm::parallelogram(dst,
                                   tmp.get(),
                                   tmpMask.bitmap(),
-                                  dst->width() - tmp->width(),
+                                  dst->width() - w,
                                   0,
                                   dst->width(),
                                   0,
                                   dst->width(),
-                                  tmp->height(),
-                                  dst->width() - tmp->width(),
-                                  tmp->height());
+                                  h,
+                                  dst->width() - w,
+                                  h);
 
     // Draw at the bottom-right corner.
     doc::algorithm::parallelogram(dst,
                                   tmp.get(),
                                   tmpMask.bitmap(),
-                                  dst->width() - tmp->width(),
-                                  dst->height() - tmp->height(),
+                                  dst->width() - w,
+                                  dst->height() - h,
                                   dst->width(),
-                                  dst->height() - tmp->height(),
+                                  dst->height() - h,
                                   dst->width(),
                                   dst->height(),
-                                  dst->width() - tmp->width(),
+                                  dst->width() - w,
                                   dst->height());
   }
   tmpMask.unfreeze();

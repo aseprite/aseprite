@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1196,7 +1196,7 @@ void PixelsMovement::drawImage(const Transformation& transformation,
 
   auto corners = transformation.transformedCorners();
   gfx::Rect bounds = corners.bounds(transformation.cornerThick());
-  gfx::Rect unexpandedBounds = bounds;
+  const gfx::Rect cornerBounds = bounds;
 
   if (m_tiledModeHelper && m_tiledModeHelper->hasModeFlag(TiledMode::X_AXIS)) {
     bounds.enlargeXW(m_document->sprite()->width());
@@ -1246,7 +1246,7 @@ void PixelsMovement::drawImage(const Transformation& transformation,
     drawParallelogram(transformation, dst, m_originalImage.get(), m_initialMask.get(), corners, pt);
 
     if (m_tiledModeHelper && m_tiledModeHelper->tiledEnabled()) {
-      m_tiledModeHelper->drawTiled(dst);
+      m_tiledModeHelper->drawTiled(dst, cornerBounds);
     }
   }
 }
