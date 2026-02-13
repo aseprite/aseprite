@@ -1,6 +1,5 @@
-
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2025  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2026  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <window id="options" text="@.title" help="preferences">
@@ -171,6 +170,7 @@
               <listitem text="@.8_hours" value="480" />
               <listitem text="@.16_hours" value="960" />
               <listitem text="@.24_hours" value="1440" />
+              <listitem text="@.48_hours" value="2880" />
               <listitem text="@.inf_hours" value="-1" />
             </combobox>
           </grid>
