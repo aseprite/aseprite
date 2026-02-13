@@ -4,7 +4,7 @@
 <gui>
   <vbox id="palette_popup">
     <hbox>
-      <search id="search" magnet="true" expansive="true" />
+      <search id="search" magnet="true" expansive="true" debounce="250" />
       <button text="" id="refresh" style="refresh_button" />
     </hbox>
     <view id="view" expansive="true" />
