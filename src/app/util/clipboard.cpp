@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -305,6 +305,10 @@ ClipboardFormat Clipboard::format() const
   // Check if the native clipboard has an image
   if (use_native_clipboard() && hasNativeBitmap()) {
     return ClipboardFormat::Image;
+  }
+  // Check if the native clipboard has text
+  else if (use_native_clipboard() && clip::has(clip::text_format())) {
+    return ClipboardFormat::Text;
   }
   else {
     return m_data->format();
