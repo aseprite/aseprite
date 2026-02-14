@@ -54,6 +54,9 @@ if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/laf/CMakeLists.txt" OR
     "  https://github.com/aseprite/aseprite/blob/main/INSTALL.md#get-the-source-code")
 endif()
 
+set(CPM_SOURCE_CACHE third_party)
+include(cmake/CPM.cmake)
+
 # This is required for KDE/Qt destop integration, which sets
 # BUILD_SHARED_LIBS to TRUE by default
 set(BUILD_SHARED_LIBS off)
@@ -262,23 +265,25 @@ add_definitions(-DPNG_NO_MMX_CODE) # Do not use MMX optimizations in PNG code
 
 # tinyxml2
 if(USE_SHARED_TINYXML)
-  find_library(TINYXML_LIBRARY NAMES tinyxml2)
-  find_path(TINYXML_INCLUDE_DIR NAMES tinyxml2.h)
+  find_package(tinyxml2 REQUIRED)
 else()
-  set(TINYXML_LIBRARY tinyxml2)
-  set(TINYXML_INCLUDE_DIR ${TINYXML_DIR})
+  CPMAddPackage(
+    URI "gh:aseprite/tinyxml2#312a8092245df393db14a0b2427457ed2ba75e1b"
+    OPTIONS "tinyxml2_BUILD_TESTING OFF"
+  )
 endif()
-include_directories(${TINYXML_INCLUDE_DIR})
 
 # TinyEXIF
 if(USE_SHARED_TINYEXIF)
-  find_library(TINYEXIF_LIBRARY NAMES TinyEXIF)
-  find_path(TINYEXIF_INCLUDE_DIR NAMES TinyEXIF.h)
+  find_package(TinyEXIF REQUIRED)
+  set(TINYEXIF_LIBRARY TinyEXIF)
 else()
+  CPMAddPackage(
+    URI "gh:aseprite/TinyEXIF#21d6cf762724260f8e5bcee4abdee5411ae47813"
+    OPTIONS "BUILD_SHARED_LIBS OFF" "BUILD_STATIC_LIBS ON" "LINK_CRT_STATIC_LIBS OFF" "BUILD_DEMO OFF"
+  )
   set(TINYEXIF_LIBRARY TinyEXIFstatic)
-  set(TINYEXIF_INCLUDE_DIR ${TINYEXIF_DIR})
 endif()
-include_directories(${TINYEXIF_INCLUDE_DIR})
 
 # pixman
 if(USE_SHARED_PIXMAN)
