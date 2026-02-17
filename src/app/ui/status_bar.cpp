@@ -549,7 +549,10 @@ private:
 
 class StatusBar::CustomizedTipWindow : public ui::TipWindow {
 public:
-  CustomizedTipWindow(const std::string& text) : ui::TipWindow(text) {}
+  CustomizedTipWindow(const std::string& text) : ui::TipWindow(text)
+  {
+    setClickBehavior(ClickBehavior::CloseOnClick);
+  }
 
   void setInterval(int msecs)
   {
@@ -557,9 +560,11 @@ public:
       m_timer.reset(new ui::Timer(msecs, this));
     else
       m_timer->setInterval(msecs);
+    m_originalInterval = msecs;
   }
 
-  void startTimer() { m_timer->start(); }
+  void startTimer() const { m_timer->start(); }
+  int originalInterval() const { return m_originalInterval; }
 
 protected:
   bool onProcessMessage(Message* msg) override
@@ -569,12 +574,18 @@ protected:
         closeWindow(nullptr);
         m_timer->stop();
         break;
+      case kMouseEnterMessage: m_timer->stop(); break;
+      case kMouseLeaveMessage:
+        m_timer->setInterval(m_originalInterval);
+        m_timer->start();
+        return true; // Avoid PopupWindow closing us.
     }
     return ui::TipWindow::onProcessMessage(msg);
   }
 
 private:
   std::unique_ptr<ui::Timer> m_timer;
+  int m_originalInterval = 0;
 };
 
 // TODO Use a ui::TipWindow with rounded borders, when we add support

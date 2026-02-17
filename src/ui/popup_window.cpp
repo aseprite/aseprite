@@ -157,6 +157,13 @@ bool PopupWindow::onProcessMessage(Message* msg)
             }
             break;
           }
+
+          case ClickBehavior::CloseOnClick: {
+            if (bounds().contains(mouseMsg->position())) {
+              closeWindow(nullptr);
+            }
+            break;
+          }
         }
       }
       break;
