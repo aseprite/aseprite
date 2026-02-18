@@ -15,6 +15,7 @@
 #include "app/context.h"
 #include "app/doc.h"
 #include "app/file_selector.h"
+#include "app/fonts/font_info.h"
 #include "app/script/canvas_widget.h"
 #include "app/script/engine.h"
 #include "app/script/graphics_context.h"
@@ -28,6 +29,7 @@
 #include "app/ui/expr_entry.h"
 #include "app/ui/filename_field.h"
 #include "app/ui/main_window.h"
+#include "app/ui/skin/skin_theme.h"
 #include "app/ui/window_with_hand.h"
 #include "base/fs.h"
 #include "base/paths.h"
@@ -133,6 +135,7 @@ struct Dialog {
   std::map<std::string, ui::Widget*> labelWidgets;
   int currentRadioGroup = 0;
   int autofit = kDefaultAutofit;
+  text::FontRef font = nullptr;
 
   // Member used to hold current state about the creation of a tabs
   // widget. After creation it is reset to null to be ready for the
@@ -226,6 +229,12 @@ struct Dialog {
       autofit = align;
   }
 
+  void setFont(const text::FontRef& font)
+  {
+    this->font = font;
+    window.setFont(font);
+  }
+
   Display* parentDisplay() const
   {
     Display* parentDisplay = window.parentDisplay();
@@ -282,6 +291,37 @@ struct Dialog {
     }
   }
 };
+
+text::FontRef resolve_font(const ui::Widget* widget,
+                           const std::string& font,
+                           const text::FontRef& defaultFont = nullptr)
+{
+  text::FontRef fontRef = nullptr;
+  auto& pref = Preferences::instance();
+  if (font == "default") {
+    auto fontInfo = base::convert_to<FontInfo>(pref.theme.font());
+    fontRef = Fonts::instance()->fontFromInfo(fontInfo);
+    if (!fontRef)
+      fontRef = skin::SkinTheme::get(widget)->getDefaultFont();
+  }
+  else if (font == "mini") {
+    auto miniFontInfo = base::convert_to<FontInfo>(pref.theme.miniFont());
+    fontRef = Fonts::instance()->fontFromInfo(miniFontInfo);
+    if (!fontRef)
+      fontRef = skin::SkinTheme::get(widget)->getMiniFont();
+  }
+  else if (!font.empty()) {
+    auto fontInfo = base::convert_to<FontInfo>(font);
+    fontRef = Fonts::instance()->fontFromInfo(fontInfo);
+    if (fontRef && fontRef->size() == 0.0f && fontRef->type() != text::FontType::SpriteSheet)
+      fontRef->setSize(10.0);
+  }
+
+  if (!fontRef && defaultFont)
+    fontRef = defaultFont;
+
+  return fontRef;
+}
 
 template<typename... Args, typename Callback>
 void Dialog_connect_signal(lua_State* L,
@@ -350,6 +390,7 @@ int Dialog_new(lua_State* L)
   // Get the title and the type of window (with or without title bar)
   ui::Window::Type windowType = ui::Window::WithTitleBar;
   std::string title = "Script";
+  std::string font;
   bool sizeable = true;
   int autofit = kDefaultAutofit;
   if (lua_isstring(L, 1)) {
@@ -376,10 +417,20 @@ int Dialog_new(lua_State* L)
       autofit = lua_tointeger(L, -1);
     }
     lua_pop(L, 1);
+
+    type = lua_getfield(L, 1, "font");
+    if (type == LUA_TSTRING)
+      font = lua_tostring(L, -1);
+    lua_pop(L, 1);
   }
 
   auto dlg = push_new<Dialog>(L, windowType, title, sizeable);
   dlg->setAutofit(autofit);
+
+  if (!font.empty()) {
+    if (auto newFont = resolve_font(&dlg->window, font))
+      dlg->setFont(newFont);
+  }
 
   // The uservalue of the dialog userdata will contain a table that
   // stores all the callbacks to handle events. As these callbacks can
@@ -589,7 +640,7 @@ void set_widget_flags(lua_State* L, int idx, Widget* widget)
   lua_pop(L, 1);
 }
 
-int Dialog_add_widget(lua_State* L, Widget* widget)
+int Dialog_add_widget(lua_State* L, Widget* widget, const std::string& font = std::string())
 {
   auto dlg = get_obj<Dialog>(L, 1);
   const char* label = nullptr;
@@ -598,6 +649,12 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
   bool hexpand = true;
   // Canvas is vertically expansive by default too
   bool vexpand = (widget->type() == Canvas::Type());
+  bool useWidgetFontForLabel = false;
+
+  if (auto newFont = resolve_font(widget, font, dlg->font)) {
+    widget->setFont(newFont);
+    useWidgetFontForLabel = true;
+  }
 
   // This is to separate different kind of widgets without label in
   // different rows. Separator widgets will always create a new row.
@@ -653,6 +710,9 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
 
       if (!visible)
         labelWidget->setVisible(false);
+
+      if (useWidgetFontForLabel)
+        labelWidget->setFont(widget->font());
 
       dlg->currentGrid->addChildInCell(labelWidget, 1, 1, ui::LEFT | ui::TOP);
       if (!id.empty())
@@ -710,7 +770,7 @@ int Dialog_separator(lua_State* L)
 {
   auto dlg = get_obj<Dialog>(L, 1);
 
-  std::string id, text;
+  std::string id, text, font;
 
   if (lua_isstring(L, 2)) {
     if (auto p = lua_tostring(L, 2))
@@ -722,6 +782,11 @@ int Dialog_separator(lua_State* L)
       if (auto p = lua_tostring(L, -1))
         text = p;
     }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "font");
+    if (type == LUA_TSTRING)
+      font = lua_tostring(L, -1);
     lua_pop(L, 1);
 
     type = lua_getfield(L, 2, "id");
@@ -738,12 +803,13 @@ int Dialog_separator(lua_State* L)
     dlg->dataWidgets[id] = widget;
   }
 
-  return Dialog_add_widget(L, widget);
+  return Dialog_add_widget(L, widget, font);
 }
 
 int Dialog_label(lua_State* L)
 {
-  std::string text;
+  std::string text, font;
+
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "text");
     if (type != LUA_TNIL) {
@@ -751,10 +817,15 @@ int Dialog_label(lua_State* L)
         text = p;
     }
     lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "font");
+    if (type == LUA_TSTRING)
+      font = lua_tostring(L, -1);
+    lua_pop(L, 1);
   }
 
   auto widget = new ui::Label(text.c_str());
-  return Dialog_add_widget(L, widget);
+  return Dialog_add_widget(L, widget, font);
 }
 
 template<typename T>
@@ -762,13 +833,18 @@ int Dialog_button_base(lua_State* L, T** outputWidget = nullptr)
 {
   auto dlg = get_obj<Dialog>(L, 1);
 
-  std::string text;
+  std::string text, font;
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "text");
     if (type != LUA_TNIL) {
       if (auto p = lua_tostring(L, -1))
         text = p;
     }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "font");
+    if (type == LUA_TSTRING)
+      font = lua_tostring(L, -1);
     lua_pop(L, 1);
   }
 
@@ -803,7 +879,7 @@ int Dialog_button_base(lua_State* L, T** outputWidget = nullptr)
     widget->Click.connect([dlg, widget]() { dlg->lastButton = widget; });
   }
 
-  return Dialog_add_widget(L, widget);
+  return Dialog_add_widget(L, widget, font);
 }
 
 int Dialog_button(lua_State* L)
@@ -847,13 +923,18 @@ int Dialog_menuItem(lua_State* L)
 
 int Dialog_entry(lua_State* L)
 {
-  std::string text;
+  std::string text, font;
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "text");
     if (type == LUA_TSTRING) {
       if (auto p = lua_tostring(L, -1))
         text = p;
     }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "font");
+    if (type == LUA_TSTRING)
+      font = lua_tostring(L, -1);
     lua_pop(L, 1);
   }
 
@@ -869,12 +950,13 @@ int Dialog_entry(lua_State* L)
     lua_pop(L, 1);
   }
 
-  return Dialog_add_widget(L, widget);
+  return Dialog_add_widget(L, widget, font);
 }
 
 int Dialog_number(lua_State* L)
 {
   auto widget = new ExprEntry;
+  std::string font;
 
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "text");
@@ -882,6 +964,11 @@ int Dialog_number(lua_State* L)
       if (auto p = lua_tostring(L, -1))
         widget->setText(p);
     }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "font");
+    if (type == LUA_TSTRING)
+      font = lua_tostring(L, -1);
     lua_pop(L, 1);
 
     type = lua_getfield(L, 2, "decimals");
@@ -899,7 +986,7 @@ int Dialog_number(lua_State* L)
     lua_pop(L, 1);
   }
 
-  return Dialog_add_widget(L, widget);
+  return Dialog_add_widget(L, widget, font);
 }
 
 int Dialog_slider(lua_State* L)
@@ -907,6 +994,7 @@ int Dialog_slider(lua_State* L)
   int min = 0;
   int max = 100;
   int value = 100;
+  std::string font;
 
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "min");
@@ -925,6 +1013,11 @@ int Dialog_slider(lua_State* L)
     if (type != LUA_TNIL) {
       value = lua_tointegerx(L, -1, nullptr);
     }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "font");
+    if (type == LUA_TSTRING)
+      font = lua_tostring(L, -1);
     lua_pop(L, 1);
   }
 
@@ -948,12 +1041,13 @@ int Dialog_slider(lua_State* L)
     lua_pop(L, 1);
   }
 
-  return Dialog_add_widget(L, widget);
+  return Dialog_add_widget(L, widget, font);
 }
 
 int Dialog_combobox(lua_State* L)
 {
   auto widget = new ui::ComboBox;
+  std::string font;
 
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "options");
@@ -977,6 +1071,11 @@ int Dialog_combobox(lua_State* L)
     }
     lua_pop(L, 1);
 
+    type = lua_getfield(L, 2, "font");
+    if (type == LUA_TSTRING)
+      font = lua_tostring(L, -1);
+    lua_pop(L, 1);
+
     type = lua_getfield(L, 2, "onchange");
     if (type == LUA_TFUNCTION) {
       Dialog_connect_signal(L, 1, widget->Change, [](lua_State* L) {
@@ -986,15 +1085,21 @@ int Dialog_combobox(lua_State* L)
     lua_pop(L, 1);
   }
 
-  return Dialog_add_widget(L, widget);
+  return Dialog_add_widget(L, widget, font);
 }
 
 int Dialog_color(lua_State* L)
 {
   app::Color color;
+  std::string font;
   if (lua_istable(L, 2)) {
     lua_getfield(L, 2, "color");
     color = convert_args_into_color(L, -1);
+    lua_pop(L, 1);
+
+    int type = lua_getfield(L, 2, "font");
+    if (type == LUA_TSTRING)
+      font = lua_tostring(L, -1);
     lua_pop(L, 1);
   }
 
@@ -1010,7 +1115,7 @@ int Dialog_color(lua_State* L)
     }
   }
 
-  return Dialog_add_widget(L, widget);
+  return Dialog_add_widget(L, widget, font);
 }
 
 int Dialog_shades(lua_State* L)
@@ -1018,6 +1123,7 @@ int Dialog_shades(lua_State* L)
   Shade colors;
   // 'pick' is the default mode anyway
   ColorShades::ClickType mode = ColorShades::ClickEntries;
+  std::string font;
 
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "mode");
@@ -1040,6 +1146,11 @@ int Dialog_shades(lua_State* L)
         lua_pop(L, 1);
       }
     }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "font");
+    if (type == LUA_TSTRING)
+      font = lua_tostring(L, -1);
     lua_pop(L, 1);
   }
 
@@ -1066,7 +1177,7 @@ int Dialog_shades(lua_State* L)
     lua_pop(L, 1);
   }
 
-  return Dialog_add_widget(L, widget);
+  return Dialog_add_widget(L, widget, font);
 }
 
 int Dialog_file(lua_State* L)
@@ -1074,6 +1185,7 @@ int Dialog_file(lua_State* L)
   std::string title = "Open File";
   std::string path;
   std::string fn;
+  std::string font;
   base::paths exts;
   auto dlgType = FileSelectorType::Open;
   auto fnFieldType = FilenameField::ButtonOnly;
@@ -1118,6 +1230,11 @@ int Dialog_file(lua_State* L)
       path = lua_tostring(L, -1);
     }
     lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "font");
+    if (type == LUA_TSTRING)
+      font = lua_tostring(L, -1);
+    lua_pop(L, 1);
   }
 
   auto widget = new FilenameField(fnFieldType, fn);
@@ -1160,7 +1277,7 @@ int Dialog_file(lua_State* L)
     else
       return widget->fullFilename();
   });
-  return Dialog_add_widget(L, widget);
+  return Dialog_add_widget(L, widget, font);
 }
 
 // Auxiliary callbacks used in Canvas events
@@ -1263,6 +1380,7 @@ static void fill_touchmessage_values(lua_State* L, const ui::TouchMessage* msg)
 int Dialog_canvas(lua_State* L)
 {
   auto widget = new Canvas;
+  std::string font;
 
   if (lua_istable(L, 2)) {
     gfx::Size sz(0, 0);
@@ -1277,6 +1395,11 @@ int Dialog_canvas(lua_State* L)
     if (type != LUA_TNIL) {
       sz.h = lua_tointegerx(L, -1, nullptr);
     }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "font");
+    if (type == LUA_TSTRING)
+      font = lua_tostring(L, -1);
     lua_pop(L, 1);
 
     type = lua_getfield(L, 2, "autoscaling");
@@ -1367,7 +1490,7 @@ int Dialog_canvas(lua_State* L)
       widget->setFocusStop(true);
   }
 
-  return Dialog_add_widget(L, widget);
+  return Dialog_add_widget(L, widget, font);
 }
 
 int Dialog_tab(lua_State* L)
@@ -1376,6 +1499,7 @@ int Dialog_tab(lua_State* L)
 
   std::string text;
   std::string id;
+  std::string font;
   bool hasId = false;
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "id");
@@ -1391,6 +1515,11 @@ int Dialog_tab(lua_State* L)
     }
     lua_pop(L, 1);
 
+    type = lua_getfield(L, 2, "font");
+    if (type == LUA_TSTRING)
+      font = lua_tostring(L, -1);
+    lua_pop(L, 1);
+
     // If there was no id set, then use the tab text as the tab id.
     if (!hasId)
       id = text;
@@ -1398,6 +1527,9 @@ int Dialog_tab(lua_State* L)
 
   if (!dlg->wipTab) {
     dlg->wipTab = new app::script::Tabs(ui::CENTER);
+
+    if (auto fontRef = resolve_font(dlg->wipTab, font, dlg->font))
+      dlg->wipTab->setFont(fontRef);
   }
 
   auto tab = dlg->wipTab->addTab(id, text);

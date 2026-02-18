@@ -134,7 +134,7 @@ public:
   // ===============================================================
 
   const text::FontRef& font() const;
-  void setFont(const text::FontRef& font);
+  virtual void setFont(const text::FontRef& font);
 
   // Gets the background color of the widget.
   gfx::Color bgColor() const
@@ -414,6 +414,8 @@ public:
   obs::signal<void()> InitTheme;
 
 protected:
+  bool isCachedFont() const { return m_isCachedFont; }
+
   // ===============================================================
   // MESSAGE PROCESSING
   // ===============================================================
@@ -461,8 +463,15 @@ private:
   int m_flags;       // Special boolean properties (see flags in ui/base.h)
   Theme* m_theme;    // Widget's theme
   Style* m_style;
-  std::string m_text;               // Widget text
-  mutable text::FontRef m_font;     // Cached font returned by the theme
+  std::string m_text; // Widget text
+
+  // Cached font returned by the theme OR custom font. Use field m_isCachedFont to
+  // determine how is being used this field.
+  mutable text::FontRef m_font;
+  // Determines how the m_font field is used. If true, it is being used as a cache
+  // for a font provided by the theme. If false, the font is a custom font provided
+  // by the user and must override the theme's font.
+  mutable bool m_isCachedFont = false;
   mutable text::TextBlobRef m_blob; // Cached TextBlob
   gfx::Color m_bgColor;             // Background color
   gfx::Rect m_bounds;

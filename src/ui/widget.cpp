@@ -184,14 +184,17 @@ void Widget::setTextQuiet(const std::string& text)
 
 const text::FontRef& Widget::font() const
 {
-  if (!m_font && m_theme)
+  if (!m_font && m_theme) {
     m_font = m_theme->getWidgetFont(this);
+    m_isCachedFont = true;
+  }
   return m_font;
 }
 
 void Widget::setFont(const text::FontRef& font)
 {
   if (m_font != font) {
+    m_isCachedFont = false;
     m_font = font;
     m_blob.reset();
     onSetFont();
@@ -220,7 +223,8 @@ void Widget::setTheme(Theme* theme)
   assert_ui_thread();
 
   m_theme = theme;
-  m_font = nullptr;
+  if (m_isCachedFont)
+    m_font = nullptr;
 
   for (auto child : children())
     child->setTheme(theme);
@@ -1825,7 +1829,8 @@ void Widget::onBroadcastMouseMessage(const gfx::Point& screenPos, WidgetsList& t
 void Widget::onInitTheme(InitThemeEvent& ev)
 {
   // Reset cached font and TextBlob
-  m_font.reset();
+  if (m_isCachedFont)
+    m_font.reset();
   m_blob.reset();
 
   // Create a copy of the children list and iterate it, just in case a
