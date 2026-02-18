@@ -319,6 +319,13 @@ public:
 
   GraphicsPtr getGraphics(const gfx::Rect& clip);
 
+  // Paint the widget in the give graphics. The "drawRegion" must be
+  // in the same coordinates as the bounds() field.
+  void paint(Graphics* graphics,
+             const gfx::Region& drawRegion,
+             bool isBg,
+             DrawableRegionFlags flags);
+
   // ===============================================================
   // GUI MANAGER
   // ===============================================================
@@ -452,7 +459,6 @@ protected:
 
 private:
   void removeChild(const WidgetsList::iterator& it);
-  void paint(Graphics* graphics, const gfx::Region& drawRegion, const bool isBg);
   bool paintEvent(Graphics* graphics, const bool isBg);
   void setDirtyFlag();
 
