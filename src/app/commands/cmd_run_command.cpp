@@ -337,7 +337,7 @@ private:
     std::multimap<double, const RunnerDB::Item*> results;
 
     for (RunnerDB::Item& item : m_db->items) {
-      if (match(item.searchableText) || match.fuzzyWords(item.labelWords)) {
+      if (match.word(item.searchableText) || match.fuzzyWords(item.labelWords)) {
         // Crude "score" to affect ordering in the multimap of results.
         // Lower is better.
         double score = 0;

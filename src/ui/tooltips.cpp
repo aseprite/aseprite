@@ -73,6 +73,15 @@ void TooltipManager::setDelay(int delay)
     m_timer->setInterval(m_delay);
 }
 
+std::string TooltipManager::getTooltipFor(Widget* widget)
+{
+  const auto it = m_tips.find(widget);
+  if (it != m_tips.end())
+    return m_tips[widget].text;
+
+  return {};
+}
+
 bool TooltipManager::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {

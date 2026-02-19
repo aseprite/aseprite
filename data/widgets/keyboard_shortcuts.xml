@@ -7,7 +7,7 @@
       <splitter horizontal="true" expansive="true" noborders="true" childspacing="2"
                 by="pixel" position="80" id="section_splitter">
         <vbox expansive="true">
-          <search id="search" magnet="true" />
+          <search id="search" magnet="true" clearonesc="true" debounce="250" />
           <view expansive="true">
             <listbox id="section" expansive="true">
               <listitem text="@.section_menus" />

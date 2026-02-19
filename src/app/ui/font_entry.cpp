@@ -463,6 +463,7 @@ void FontEntry::setInfo(const FontInfo& info, const From fromField)
     m_style.getItem(1)->setSelected(m_info.style().slant() != text::FontStyle::Slant::Upright);
   }
 
+  setTextQuiet(m_info.humanString());
   FontChange(m_info, fromField);
 }
 

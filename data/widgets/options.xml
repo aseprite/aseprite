@@ -5,31 +5,35 @@
   <window id="options" text="@.title" help="preferences">
   <vbox>
     <hbox expansive="true">
-      <view maxsize="true">
-        <listbox id="section_listbox">
-          <listitem text="@.section_general" value="section_general" />
-          <listitem text="@.section_files" value="section_files" />
-          <listitem text="@.section_color" value="section_color" />
-          <listitem text="@.section_alerts" value="section_alerts" />
-          <listitem text="@.section_editor" value="section_editor" />
-          <listitem text="@.section_selection" value="section_selection" />
-          <listitem text="@.section_timeline" value="section_timeline" />
-          <listitem text="@.section_cursors" value="section_cursors" />
-          <listitem text="@.section_background" value="section_bg" />
-          <listitem text="@.section_grid" value="section_grid" />
-          <listitem text="@.section_guides_and_slices" value="section_guides_and_slices" />
-          <listitem text="@.section_undo" value="section_undo" />
-          <listitem text="@.section_theme" value="section_theme" />
-          <listitem text="@.section_extensions" value="section_extensions" />
-          <listitem text="@.section_aseprite_format" value="section_aseprite_format" />
-          <listitem text="@.section_experimental" value="section_experimental" />
-          <separator text="@.section_windows_specific" horizontal="true" style="separator_in_view" id="section_windows_specific_separator" />
-          <listitem text="@.section_tablet" value="section_tablet" />
-          <listitem text="@.section_file_explorer" value="section_file_explorer" />
-          <separator horizontal="true" style="separator_in_view" />
-          <listitem text="@general.reset" value="section_reset" />
-        </listbox>
-      </view>
+
+      <vbox expansive="true">
+        <search id="search" magnet="true" clearonesc="true" debounce="250" />
+        <view maxsize="true" expansive="true">
+          <listbox id="section_listbox">
+            <listitem text="@.section_general" value="section_general" />
+            <listitem text="@.section_files" value="section_files" />
+            <listitem text="@.section_color" value="section_color" />
+            <listitem text="@.section_alerts" value="section_alerts" />
+            <listitem text="@.section_editor" value="section_editor" />
+            <listitem text="@.section_selection" value="section_selection" />
+            <listitem text="@.section_timeline" value="section_timeline" />
+            <listitem text="@.section_cursors" value="section_cursors" />
+            <listitem text="@.section_background" value="section_bg" />
+            <listitem text="@.section_grid" value="section_grid" />
+            <listitem text="@.section_guides_and_slices" value="section_guides_and_slices" />
+            <listitem text="@.section_undo" value="section_undo" />
+            <listitem text="@.section_theme" value="section_theme" />
+            <listitem text="@.section_extensions" value="section_extensions" />
+            <listitem text="@.section_aseprite_format" value="section_aseprite_format" />
+            <listitem text="@.section_experimental" value="section_experimental" />
+            <separator text="@.section_windows_specific" horizontal="true" style="separator_in_view" id="section_windows_specific_separator" />
+            <listitem text="@.section_tablet" value="section_tablet" />
+            <listitem text="@.section_file_explorer" value="section_file_explorer" />
+            <separator horizontal="true" style="separator_in_view" />
+            <listitem text="@general.reset" value="section_reset" />
+          </listbox>
+        </view>
+      </vbox>
 
       <panel id="panel" expansive="true">
 
@@ -64,7 +68,7 @@
               <listitem text="400%" value="4" />
             </combobox>
 
-            <link text="@.language" url="https://www.aseprite.org/languages/" />
+            <link text="@.language" url="https://www.aseprite.org/languages/" for="language" />
             <combobox id="language" />
 
             <boxfiller id="font_warning_filler" visible="false" />
@@ -99,8 +103,8 @@
         <!-- Files -->
         <vbox id="section_files">
           <separator text="@.section_files" horizontal="true" />
-          <label text="@.default_extension_for" />
-          <grid columns="2">
+          <label text="@.default_extension_for" for="default_extensions_row" />
+          <grid columns="2" id="default_extensions_row">
             <label text="@.save_default_extension" for="default_extension" />
             <combobox id="default_extension" />
 
@@ -132,7 +136,7 @@
             <check id="enable_data_recovery"
                    text="@.auto_save_recovery_data"
                    tooltip="@.auto_save_recovery_data_tooltip" />
-            <combobox id="data_recovery_period">
+            <combobox id="data_recovery_period" tooltip="@.auto_save_recovery_data">
               <listitem text="@.10_seconds" value="0.1667" />
               <listitem text="@.30_seconds" value="0.5" />
               <listitem text="@.1_minute" value="1" />
@@ -145,7 +149,7 @@
             <check id="keep_edited_sprite_data"
                    text="@.keep_edited_sprite_data"
                    tooltip="@.keep_edited_sprite_data_tooltip" />
-            <combobox id="keep_edited_sprite_data_for">
+            <combobox id="keep_edited_sprite_data_for" tooltip="@.keep_edited_sprite_data">
               <listitem text="@.1_day" value="1" />
               <listitem text="@.2_days" value="2" />
               <listitem text="@.3_days" value="3" />
@@ -156,7 +160,7 @@
             <check id="keep_closed_sprite_on_memory"
                    text="@.keep_closed_sprite_on_memory"
                    tooltip="@.keep_closed_sprite_on_memory_tooltip" />
-            <combobox id="keep_closed_sprite_on_memory_for">
+            <combobox id="keep_closed_sprite_on_memory_for" tooltip="@.keep_closed_sprite_on_memory">
               <listitem text="@.10_seconds" value="0.1667" />
               <listitem text="@.30_seconds" value="0.5" />
               <listitem text="@.1_minute" value="1" />
@@ -344,14 +348,18 @@
               <listitem text="@.brush_preview_fullnedges" value="4" />
             </combobox>
 
-            <label text="@.cursor_color_type" for="cursor_color_type" />
-            <combobox id="cursor_color_type">
-              <listitem text="@.cursor_neg_bw" value="0" />
-              <listitem text="@.cursor_specific_color" value="1" />
-            </combobox>
+            <vbox cell_align="top">
+              <boxfiller /> <!-- Things get misaligned without this -->
+              <label text="@.cursor_color_type" for="cursor_color_type_row" />
+            </vbox>
 
-            <boxfiller />
-            <colorpicker id="cursor_color" rgba="true" />
+            <vbox id="cursor_color_type_row">
+              <combobox id="cursor_color_type">
+                <listitem text="@.cursor_neg_bw" value="0" />
+                <listitem text="@.cursor_specific_color" value="1" />
+              </combobox>
+              <colorpicker id="cursor_color" rgba="true" />
+            </vbox>
 
             <check text="@.snap_cursor_to_grid"
                    pref="cursor.snap_to_grid" cell_hspan="2" />
@@ -364,16 +372,16 @@
 
           <separator text="@.bg_checkered" horizontal="true" />
           <grid columns="2">
-            <label text="@.bg_size" for="checkered_bg_size" />
-            <hbox>
+            <label text="@.bg_size" for="checkered_row" />
+            <hbox id="checkered_row">
               <combobox id="checkered_bg_size" />
               <expr id="checkered_bg_custom_w" />
               <expr id="checkered_bg_custom_h" />
               <check text="@.bg_apply_zoom" id="checkered_bg_zoom" />
             </hbox>
 
-            <label text="@.bg_colors" />
-            <hbox>
+            <label text="@.bg_colors" for="colors_row" />
+            <hbox id="colors_row">
               <colorpicker id="checkered_bg_color1" rgba="true" />
               <colorpicker id="checkered_bg_color2" rgba="true" />
             </hbox>
@@ -410,9 +418,11 @@
             <colorpicker id="grid_color" rgba="true" cell_hspan="3" />
             <hbox />
 
-            <label text="@.grid_opacity" for="grid_opacity" />
-            <slider id="grid_opacity" cell_hspan="3" min="1" max="255" width="128" />
-            <check id="grid_auto_opacity" text="@.grid_auto" />
+            <label text="@.grid_opacity" for="grid_opacity_row" />
+            <hbox id="grid_opacity_row">
+              <slider id="grid_opacity" cell_hspan="3" min="1" max="255" width="128" />
+              <check id="grid_auto_opacity" text="@.grid_auto" />
+            </hbox>
           </grid>
 
           <hbox>
@@ -424,9 +434,11 @@
             <colorpicker id="pixel_grid_color" rgba="true" />
             <hbox />
 
-            <label text="@.grid_opacity" for="pixel_grid_opacity" />
-            <slider id="pixel_grid_opacity" min="1" max="255" width="128" />
-            <check id="pixel_grid_auto_opacity" text="@.grid_auto" />
+            <label text="@.grid_opacity" for="pixel_grid_opacity_row" />
+            <hbox id="pixel_grid_opacity_row">
+              <slider id="pixel_grid_opacity" min="1" max="255" width="128" />
+              <check id="pixel_grid_auto_opacity" text="@.grid_auto" />
+            </hbox>
           </grid>
 
           <hbox>
@@ -502,16 +514,20 @@
                  pref="color_bar.show_invalid_fg_bg_color_alert" />
           <check id="run_script_alert" text="@.run_script_alert"
                  pref="scripts.show_run_script_alert" />
-          <grid columns="4">
-            <label text="@.image_format_alerts" />
-            <check id="css_options_alert" text="!css" pref="css.show_alert" />
-            <check id="gif_options_alert" text="!gif" pref="gif.show_alert" />
-            <check id="jpeg_options_alert" text="!jpeg" pref="jpeg.show_alert" />
-            <boxfiller />
-            <check id="svg_options_alert" text="!svg" pref="svg.show_alert" />
-            <check id="tga_options_alert" text="!tga" pref="tga.show_alert" />
-            <check id="webp_options_alert" text="!webp" pref="webp.show_alert" />
-          </grid>
+          <hbox>
+            <vbox>
+              <label text="@.image_format_alerts" for="image_format_alerts_row" />
+              <boxfiller />
+            </vbox>
+            <grid columns="3" id="image_format_alerts_row">
+              <check id="css_options_alert" text="!css" pref="css.show_alert" />
+              <check id="gif_options_alert" text="!gif" pref="gif.show_alert" />
+              <check id="jpeg_options_alert" text="!jpeg" pref="jpeg.show_alert" />
+              <check id="svg_options_alert" text="!svg" pref="svg.show_alert" />
+              <check id="tga_options_alert" text="!tga" pref="tga.show_alert" />
+              <check id="webp_options_alert" text="!webp" pref="webp.show_alert" />
+            </grid>
+          </hbox>
           <separator horizontal="true" />
           <hbox>
             <hbox expansive="true" />
@@ -552,7 +568,7 @@
           <view expansive="true" maxsize="true">
             <listbox id="extensions_list" />
           </view>
-          <hbox>
+          <hbox id="extension_buttons">
             <button id="add_extension" text="@.add_extension" minwidth="60" />
             <boxfiller />
             <button id="disable_extension" text="@.disable_extension" minwidth="60" />
@@ -587,17 +603,19 @@
             <check id="new_render_engine"
                    text="@.new_render_engine"
                    pref="experimental.new_render_engine" />
-            <link text="(#1671)" url="https://github.com/aseprite/aseprite/issues/1671" />
+            <link text="(#1671)" for="new_render_engine" url="https://github.com/aseprite/aseprite/issues/1671" />
           </hbox>
           <hbox>
-            <check text="@.new_blend"
+            <check id="new_blend"
+                   text="@.new_blend"
                    pref="experimental.new_blend" />
-            <link text="(#1096)" url="https://github.com/aseprite/aseprite/issues/1096" />
+            <link text="(#1096)" for="new_blend" url="https://github.com/aseprite/aseprite/issues/1096" />
           </hbox>
           <hbox>
-            <check text="@.compose_groups"
+            <check id="compose_groups"
+                   text="@.compose_groups"
                    pref="experimental.compose_groups" />
-            <link text="(#3225)" url="https://github.com/aseprite/aseprite/issues/3225" />
+            <link text="(#3225)" for="compose_groups" url="https://github.com/aseprite/aseprite/issues/3225" />
           </hbox>
           <check id="native_clipboard" text="@.native_clipboard"
                  pref="experimental.use_native_clipboard" />
@@ -628,7 +646,7 @@
             <check id="shaders_for_color_selectors"
                    text="@.shaders_for_color_selectors"
                    pref="experimental.use_shaders_for_color_selectors" />
-            <link text="(#960)" url="https://github.com/aseprite/aseprite/issues/960" />
+            <link text="(#960)" for="shaders_for_color_selectors" url="https://github.com/aseprite/aseprite/issues/960" />
           </hbox>
           <check id="cache_compressed_tilesets"
                  text="@.cache_compressed_tilesets"
@@ -655,7 +673,7 @@
                      text="@.set_cursor_fix"
                      tooltip="@.set_cursor_fix_tooltip"
                      pref="tablet.set_cursor_fix" />
-              <link text="(#4539)" url="https://github.com/aseprite/aseprite/issues/4539" />
+              <link text="(#4539)" for="set_cursor_fix" url="https://github.com/aseprite/aseprite/issues/4539" />
             </hbox>
           </vbox>
         </vbox>
@@ -673,9 +691,11 @@
 
           <separator text="@.file_associations" horizontal="true" />
           <hbox>
-            <label text="@.file_type" />
-            <combobox id="win_file_type_to_associate" />
-            <button text="@.associate_file_type" id="win_associate_file_type" />
+            <label text="@.file_type" for="win_file_type_row" />
+            <hbox id="win_file_type_row">
+              <combobox id="win_file_type_to_associate" />
+              <button text="@.associate_file_type" id="win_associate_file_type" />
+            </hbox>
           </hbox>
         </vbox>
 

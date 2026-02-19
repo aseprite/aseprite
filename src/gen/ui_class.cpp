@@ -169,6 +169,7 @@ void gen_ui_class(XMLDocument* doc, const std::string& inputFn, const std::strin
     return;
   }
 
+  bool hasTooltips = false;
   std::vector<Item> items;
   {
     XmlElements xmlWidgets;
@@ -178,8 +179,14 @@ void gen_ui_class(XMLDocument* doc, const std::string& inputFn, const std::strin
       if (!id)
         continue;
       items.push_back(convert_to_item(elem));
+
+      if (!hasTooltips && elem->Attribute("tooltip"))
+        hasTooltips = true;
     }
   }
+
+  if (hasTooltips)
+    items.push_back({ "tooltip_manager", "tooltipManager", "ui::TooltipManager", "ui/tooltips.h" });
 
   std::string className = convert_xmlid_to_cppid(widgetId, true);
   std::string fnUpper = base::string_to_upper(base::get_file_title(inputFn));
