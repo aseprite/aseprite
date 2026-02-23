@@ -40,6 +40,7 @@
 #include "app/cmd/set_tag_range.h"
 #include "app/cmd/set_total_frames.h"
 #include "app/cmd/set_transparent_color.h"
+#include "app/cmd/move_slices.h"
 #include "app/color_target.h"
 #include "app/color_utils.h"
 #include "app/context.h"
@@ -329,6 +330,7 @@ void DocApi::addEmptyFrame(Sprite* sprite, frame_t newFrame)
 {
   m_transaction.execute(new cmd::AddFrame(sprite, newFrame));
   adjustTags(sprite, newFrame, +1, kDropBeforeFrame, kDefaultTagsAdjustment);
+  m_transaction.execute(new cmd::MoveSlices(sprite, +1, newFrame, newFrame));
 }
 
 void DocApi::addEmptyFramesTo(Sprite* sprite, frame_t newFrame)
@@ -356,6 +358,7 @@ void DocApi::copyFrame(Sprite* sprite,
     copyCel(layer, fromFrame, layer, newFrame);
 
   adjustTags(sprite, newFrame0, +1, dropFramePlace, tagsHandling);
+  m_transaction.execute(new cmd::MoveSlices(sprite, +1, newFrame0, newFrame0));
 }
 
 void DocApi::removeFrame(Sprite* sprite, frame_t frame)
@@ -363,6 +366,7 @@ void DocApi::removeFrame(Sprite* sprite, frame_t frame)
   ASSERT(frame >= 0);
   m_transaction.execute(new cmd::RemoveFrame(sprite, frame));
   adjustTags(sprite, frame, -1, kDropBeforeFrame, kDefaultTagsAdjustment);
+  m_transaction.execute(new cmd::MoveSlices(sprite, -1, frame, frame));
 }
 
 void DocApi::setTotalFrames(Sprite* sprite, frame_t frames)
@@ -413,6 +417,14 @@ void DocApi::moveFrame(Sprite* sprite,
       setFrameDuration(sprite, beforeFrame, frlen_aux);
     }
 
+    int sliceFrame = targetFrame;
+    if (sliceFrame > frame)
+      --sliceFrame;
+    if (dropFramePlace == kDropAfterFrame)
+      ++sliceFrame;
+
+    m_transaction.execute(new cmd::MoveSlices(sprite, 0, frame, sliceFrame));
+      
     if (tagsHandling != kDontAdjustTags) {
       adjustTags(sprite, frame, -1, dropFramePlace, tagsHandling);
       if (targetFrame >= frame)
