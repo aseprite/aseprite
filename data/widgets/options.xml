@@ -419,8 +419,8 @@
             <hbox />
 
             <label text="@.grid_opacity" for="grid_opacity_row" />
-            <hbox id="grid_opacity_row">
-              <slider id="grid_opacity" cell_hspan="3" min="1" max="255" width="128" />
+            <hbox id="grid_opacity_row" cell_hspan="3">
+              <slider id="grid_opacity" min="1" max="255" width="128" />
               <check id="grid_auto_opacity" text="@.grid_auto" />
             </hbox>
           </grid>
@@ -429,10 +429,9 @@
             <check id="pixel_grid_visible" text="@.grid_pixel_grid_visible" />
             <separator horizontal="true" expansive="true" />
           </hbox>
-          <grid columns="3">
+          <grid columns="2">
             <label text="@.grid_color" for="pixel_grid_color" />
             <colorpicker id="pixel_grid_color" rgba="true" />
-            <hbox />
 
             <label text="@.grid_opacity" for="pixel_grid_opacity_row" />
             <hbox id="pixel_grid_opacity_row">
