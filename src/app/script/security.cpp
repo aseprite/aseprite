@@ -87,23 +87,18 @@ std::string get_key(const std::string& source)
 
 std::string get_script_filename(lua_State* L, int stackLevel)
 {
-  // Get script name
-  lua_getglobal(L, "debug");
-  lua_getfield(L, -1, "getinfo");
-  lua_remove(L, -2);
-  lua_pushinteger(L, stackLevel);
-  lua_pushstring(L, "S");
-  lua_call(L, 2, 1);
-  lua_getfield(L, -1, "source");
-  const char* source = lua_tostring(L, -1);
   std::string script;
-  if (source && *source) {
-    script = source;
+  lua_Debug ar;
+  if (!lua_getstack(L, stackLevel - 1, &ar))
+    return script;
 
-    if (!script.empty() && script[0] == '@')
-      script = source + 1;
-  }
-  lua_pop(L, 2);
+  if (!lua_getinfo(L, "S", &ar))
+    return script;
+
+  script = ar.source;
+  if (!script.empty() && script[0] == '@')
+    script = ar.source + 1;
+
   return script;
 }
 
