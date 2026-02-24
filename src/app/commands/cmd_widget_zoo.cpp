@@ -82,7 +82,9 @@ public:
       if (extension->themes().empty())
         continue;
 
-      for (const auto& [id, info] : extension->themes()) {
+      for (const auto& it : extension->themes()) {
+        const std::string id = it.first;
+
         auto* item = new MenuItem(id);
         item->Click.connect([theme, id] {
           App::instance()->preferences().theme.selected(id);
