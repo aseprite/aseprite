@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -59,6 +59,7 @@ public:
   void setTextureFilename(const std::string& filename) { m_textureFilename = filename; }
   void setTextureWidth(int width) { m_textureWidth = width; }
   void setTextureHeight(int height) { m_textureHeight = height; }
+  void setPowerOfTwoSize(bool power2Size) { m_powerOfTwoSize = power2Size; }
   void setTextureColumns(int columns) { m_textureColumns = columns; }
   void setTextureRows(int rows) { m_textureRows = rows; }
   void setSpriteSheetType(SpriteSheetType type) { m_sheetType = type; }
@@ -172,6 +173,7 @@ private:
   bool m_listLayers;
   bool m_listLayerHierarchy;
   bool m_listSlices;
+  bool m_powerOfTwoSize;
   Items m_documents;
 
   // Buffers used
