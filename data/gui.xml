@@ -610,6 +610,8 @@
 
       <key tool="line" shortcut="L" />
       <key tool="curve" shortcut="Shift+L" />
+      <key tool="pixel_pen" shortcut="N" />
+      <key tool="auto_shade" shortcut="Shift+N" />
 
       <key tool="rectangle" shortcut="U" />
       <key tool="filled_rectangle" shortcut="U" />
@@ -1224,6 +1226,7 @@
     <menu id="palette_popup_menu" text="@.title">
       <item command="PaletteEditor" text="@.edit_palette" />
       <item command="PaletteSize" text="@.palette_size" group="palette_main" />
+      <item command="PaletteGenerator" text="@.generate_palette" group="palette_main" />
       <separator />
       <menu id="select_palette_colors" text="@.select_palette_colors">
         <item command="SelectPaletteColors" text="@.used_colors">
@@ -1448,6 +1451,22 @@
             controller="four_points"
             pointshape="brush"
             intertwine="as_bezier"
+            tracepolicy="last" />
+      <tool id="pixel_pen"
+            text="@.pixel_pen"
+            tooltip="@.pixel_pen_tooltip"
+            ink="pixel_pen"
+            controller="point_by_point"
+            pointshape="pixel"
+            intertwine="as_lines"
+            tracepolicy="last" />
+      <tool id="auto_shade"
+            text="@.auto_shade"
+            tooltip="@.auto_shade_tooltip"
+            ink="auto_shade"
+            controller="one_point"
+            pointshape="pixel"
+            intertwine="none"
             tracepolicy="last" />
     </group>
 

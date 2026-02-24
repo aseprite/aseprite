@@ -523,4 +523,22 @@ public:
   void prepareInk(ToolLoop* loop) override { setProc(get_ink_proc<XorInkProcessing>(loop)); }
 };
 
+class PixelPenInk : public BaseInk {
+public:
+  Ink* clone() override { return new PixelPenInk(*this); }
+
+  bool isPixelPen() const override { return true; }
+
+  void prepareInk(ToolLoop* loop) override { setProc(get_ink_proc<XorInkProcessing>(loop)); }
+};
+
+class AutoShadeInk : public BaseInk {
+public:
+  Ink* clone() override { return new AutoShadeInk(*this); }
+
+  bool isAutoShade() const override { return true; }
+
+  void prepareInk(ToolLoop* loop) override { setProc(get_ink_proc<XorInkProcessing>(loop)); }
+};
+
 }} // namespace app::tools

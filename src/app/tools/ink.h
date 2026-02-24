@@ -70,6 +70,12 @@ public:
   // Returns true if this ink acts like the text tool
   virtual bool isText() const { return false; }
 
+  // Returns true if this ink is for the pixel pen tool
+  virtual bool isPixelPen() const { return false; }
+
+  // Returns true if this ink is for the auto shade tool
+  virtual bool isAutoShade() const { return false; }
+
   // Returns true if this tool uses the dithering options
   virtual bool withDitheringOptions() const { return false; }
 
