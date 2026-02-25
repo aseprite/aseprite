@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018-2025 Igara Studio S.A.
+// Copyright (c) 2018-2026 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -98,7 +98,7 @@ bool AsepriteDecoder::decode()
   // Read frame by frame to end-of-file
   for (doc::frame_t frame = 0; frame < nframes; ++frame) {
     // Start frame position
-    size_t frame_pos = f()->tell();
+    size_t frame_pos = tell();
     delegate()->progress((float)frame_pos / (float)header.size);
 
     // Read frame header
@@ -114,7 +114,7 @@ bool AsepriteDecoder::decode()
       // Read chunks
       for (uint32_t c = 0; c < frame_header.chunks; c++) {
         // Start chunk position
-        size_t chunk_pos = f()->tell();
+        size_t chunk_pos = tell();
         delegate()->progress((float)chunk_pos / (float)header.size);
 
         // Read chunk information
@@ -292,12 +292,12 @@ bool AsepriteDecoder::decode()
         }
 
         // Skip chunk size
-        f()->seek(chunk_pos + chunk_size);
+        seek(chunk_pos + chunk_size);
       }
     }
 
     // Skip frame size
-    f()->seek(frame_pos + frame_header.size);
+    seek(frame_pos + frame_header.size);
 
     if (delegate()->isCanceled())
       break;
@@ -309,7 +309,7 @@ bool AsepriteDecoder::decode()
 
 bool AsepriteDecoder::readHeader(AsepriteHeader* header)
 {
-  size_t headerPos = f()->tell();
+  size_t headerPos = tell();
 
   header->size = read32();
   header->magic = read16();
@@ -360,7 +360,7 @@ bool AsepriteDecoder::readHeader(AsepriteHeader* header)
   }
 #endif
 
-  f()->seek(headerPos + 128);
+  seek(headerPos + 128);
   return true;
 }
 
@@ -1271,21 +1271,21 @@ doc::Tileset* AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
   if (flags & ASE_TILESET_FLAG_EMBEDDED) {
     if (ntiles > 0) {
       const size_t dataSize = read32(); // Size of compressed data
-      const size_t dataBeg = f()->tell();
+      const size_t dataBeg = tell();
       const size_t dataEnd = dataBeg + dataSize;
 
       base::buffer compressed;
       if (delegate()->cacheCompressedTilesets() && dataSize > 0) {
         compressed.resize(dataSize);
         f()->readBytes(&compressed[0], dataSize);
-        f()->seek(dataBeg);
+        seek(dataBeg);
       }
 
       doc::ImageRef alltiles(doc::Image::create(sprite->pixelFormat(), w, h * ntiles));
       alltiles->setMaskColor(sprite->transparentColor());
 
       read_compressed_image(f(), delegate(), alltiles.get(), header, dataEnd);
-      f()->seek(dataEnd);
+      seek(dataEnd);
 
       for (doc::tile_index i = 0; i < ntiles; ++i) {
         doc::ImageRef tile(doc::crop_image(alltiles.get(), 0, i * h, w, h, alltiles->maskColor()));
@@ -1316,7 +1316,7 @@ doc::Tileset* AsepriteDecoder::readTilesetChunk(doc::Sprite* sprite,
 void AsepriteDecoder::readPropertiesMaps(doc::UserData::PropertiesMaps& propertiesMaps,
                                          const AsepriteExternalFiles& extFiles)
 {
-  auto startPos = f()->tell();
+  auto startPos = tell();
   auto size = read32();
   auto numMaps = read32();
   try {
@@ -1337,7 +1337,7 @@ void AsepriteDecoder::readPropertiesMaps(doc::UserData::PropertiesMaps& properti
     delegate()->incompatibilityError(fmt::format("Error reading custom properties: {0}", e.what()));
   }
 
-  f()->seek(startPos + size);
+  seek(startPos + size);
 }
 
 const doc::UserData::Variant AsepriteDecoder::readPropertyValue(uint16_t type)
@@ -1445,7 +1445,7 @@ const doc::UserData::Variant AsepriteDecoder::readPropertyValue(uint16_t type)
     }
     default: {
       throw base::Exception(
-        fmt::format("Unexpected property type '{0}' at file position {1}", type, f()->tell()));
+        fmt::format("Unexpected property type '{0}' at file position {1}", type, tell()));
     }
   }
 
@@ -1456,7 +1456,7 @@ void AsepriteDecoder::readTilesData(doc::Tileset* tileset, const AsepriteExterna
 {
   // Read as many user data chunks as tiles are in the tileset
   for (doc::tile_index i = 0; i < tileset->size(); i++) {
-    size_t chunk_pos = f()->tell();
+    size_t chunk_pos = tell();
     // Read chunk information
     int chunk_size = read32();
     int chunk_type = read16();
@@ -1466,14 +1466,14 @@ void AsepriteDecoder::readTilesData(doc::Tileset* tileset, const AsepriteExterna
         fmt::format("Warning: Unexpected chunk type {0} when reading tileset index {1}",
                     chunk_type,
                     i));
-      f()->seek(chunk_pos);
+      seek(chunk_pos);
       return;
     }
 
     doc::UserData tileData;
     readUserDataChunk(&tileData, extFiles);
     tileset->setTileData(i, tileData);
-    f()->seek(chunk_pos + chunk_size);
+    seek(chunk_pos + chunk_size);
   }
 }
 
