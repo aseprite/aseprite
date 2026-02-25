@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -163,6 +163,16 @@ void EditorRender::setExtraImage(render::ExtraType type,
 void EditorRender::removeExtraImage()
 {
   m_renderer->removeExtraImage();
+}
+
+void EditorRender::setExtraCelCallback(const render::GetExtraCelCallback callback)
+{
+  m_renderer->setExtraCelCallback(std::move(callback));
+}
+
+void EditorRender::removeExtraCelCallback()
+{
+  m_renderer->removeExtraCelCallback();
 }
 
 void EditorRender::setOnionskin(const render::OnionskinOptions& options)

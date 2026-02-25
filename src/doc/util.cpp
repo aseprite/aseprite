@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2020-2024 Igara Studio S.A.
+// Copyright (c) 2020-2026 Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -93,6 +93,33 @@ Mask make_aligned_mask(const Grid* grid, const Mask* mask)
   }
   maskOutput.unfreeze();
   return maskOutput;
+}
+
+template<typename ImageTraits>
+void mask_image_templ(Image* image, const Image* bitmap)
+{
+  LockImageBits<ImageTraits> bits1(image);
+  const LockImageBits<BitmapTraits> bits2(bitmap);
+  typename LockImageBits<ImageTraits>::iterator it1, end1;
+  LockImageBits<BitmapTraits>::const_iterator it2, end2;
+  for (it1 = bits1.begin(), end1 = bits1.end(), it2 = bits2.begin(), end2 = bits2.end();
+       it1 != end1 && it2 != end2;
+       ++it1, ++it2) {
+    if (!*it2)
+      *it1 = image->maskColor();
+  }
+  ASSERT(it1 == end1);
+  ASSERT(it2 == end2);
+}
+
+void mask_image(Image* image, const Image* bitmap)
+{
+  ASSERT(image->bounds() == bitmap->bounds());
+  switch (image->pixelFormat()) {
+    case IMAGE_RGB:       mask_image_templ<RgbTraits>(image, bitmap); break;
+    case IMAGE_GRAYSCALE: mask_image_templ<GrayscaleTraits>(image, bitmap); break;
+    case IMAGE_INDEXED:   mask_image_templ<IndexedTraits>(image, bitmap); break;
+  }
 }
 
 } // namespace doc
