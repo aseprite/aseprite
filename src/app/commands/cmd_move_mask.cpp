@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,7 +10,6 @@
 #endif
 
 #include "app/app.h"
-#include "app/cmd/shift_masked_cel.h"
 #include "app/commands/cmd_move_mask.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
@@ -52,17 +51,12 @@ bool MoveMaskCommand::onEnabled(Context* context)
     case Boundaries:
       return context->checkFlags(ContextFlags::HasActiveDocument | ContextFlags::HasVisibleMask);
 
-    case Content:
-      if (m_wrap)
-        return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                                   ContextFlags::HasVisibleMask | ContextFlags::HasActiveImage |
-                                   ContextFlags::ActiveLayerIsEditable);
-      else {
-        auto editor = Editor::activeEditor();
-        return (editor != nullptr) &&
-               context->checkFlags(ContextFlags::HasActiveDocument | ContextFlags::HasVisibleMask |
-                                   ContextFlags::HasActiveImage);
-      }
+    case Content: {
+      auto* editor = Editor::activeEditor();
+      return (editor != nullptr) &&
+             context->checkFlags(ContextFlags::HasActiveDocument | ContextFlags::HasVisibleMask |
+                                 ContextFlags::HasActiveImage);
+    }
   }
 
   return false;
@@ -87,22 +81,14 @@ void MoveMaskCommand::onExecute(Context* context)
       break;
     }
 
-    case Content:
-      if (m_wrap) {
-        ContextWriter writer(context);
-        if (writer.cel()) {
-          // Rotate content
-          Tx tx(writer, "Shift Pixels");
-          tx(new cmd::ShiftMaskedCel(writer.cel(), delta.x, delta.y));
-          tx.commit();
-        }
-        update_screen_for_document(writer.document());
-      }
-      else {
-        auto editor = Editor::activeEditor();
+    case Content: {
+      auto* editor = Editor::activeEditor();
+      if (m_wrap)
+        editor->startShiftTransformation(delta.x, delta.y);
+      else
         editor->startSelectionTransformation(delta, 0.0);
-      }
       break;
+    }
   }
 }
 
