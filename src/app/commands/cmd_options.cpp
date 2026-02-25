@@ -725,6 +725,7 @@ public:
 
     zoomFromCenterWithWheel()->setSelected(m_pref.editor.zoomFromCenterWithWheel());
     zoomFromCenterWithKeys()->setSelected(m_pref.editor.zoomFromCenterWithKeys());
+    fixedStepTilt()->setTextf("%d", std::clamp(m_pref.editor.fixedStepTilt(), 2, 256));
     autoOpaque()->setSelected(m_pref.selection.autoOpaque());
     keepSelectionAfterClear()->setSelected(m_pref.selection.keepSelectionAfterClear());
     autoShowSelectionEdges()->setSelected(m_pref.selection.autoShowSelectionEdges());
@@ -891,6 +892,7 @@ public:
     m_pref.eyedropper.discardBrush(discardBrush()->isSelected());
     m_pref.editor.rightClickMode(
       static_cast<app::gen::RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));
+    m_pref.editor.fixedStepTilt(std::clamp(fixedStepTilt()->textInt(), 2, 256));
     if (m_samplingSelector)
       m_samplingSelector->save();
     m_pref.cursor.paintingCursorType(
