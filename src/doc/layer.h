@@ -122,6 +122,7 @@ public:
   bool isEditableHierarchy() const;
   bool canEditPixels() const;
   bool hasAncestor(const Layer* ancestor) const;
+  bool acceptCels() const { return !isGroup(); }
 
   void setBackground(bool state) { switchFlags(LayerFlags::Background, state); }
   void setVisible(bool state) { switchFlags(LayerFlags::Visible, state); }

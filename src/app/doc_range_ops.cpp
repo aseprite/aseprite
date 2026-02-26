@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -49,10 +49,10 @@ static void move_or_copy_cels(DocApi& api,
     auto dstFrameEnd = dstFrames.end();
 
     for (; srcFrame != srcFrameEnd && dstFrame != dstFrameEnd; ++srcFrame, ++dstFrame) {
-      if (i >= 0 && i < srcLayers.size()) {
+      if (i >= 0 && i < srcLayers.size() && srcLayers[i]->acceptCels()) {
         Layer* srcLayer = srcLayers[i];
 
-        if (i < dstLayers.size()) {
+        if (i < dstLayers.size() && dstLayers[i]->acceptCels()) {
           Layer* dstLayer = dstLayers[i];
 
 #ifdef TRACE_RANGE_OPS
