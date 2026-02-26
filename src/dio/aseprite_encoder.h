@@ -12,27 +12,17 @@
 #include "base/uuid.h"
 #include "dio/aseprite_common.h"
 #include "dio/encoder.h"
-// #include "doc/frame.h"
-// #include "doc/layer_list.h"
-// #include "doc/pixel_format.h"
-// #include "doc/slices.h"
-// #include "doc/tags.h"
 #include "doc/layer.h"
 #include "doc/tileset.h"
-// #include "doc/user_data.h"
 
 #include <string>
-// #include <vector>
 
 namespace doc {
-// class Cel;
-// class Layer;
 class Mask;
 class Palette;
 class Slice;
 class Slices;
 class Sprite;
-// class UserData;
 class Tags;
 class Tilesets;
 } // namespace doc
