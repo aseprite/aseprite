@@ -5,6 +5,7 @@
 add_library(dio-lib
   aseprite_common.cpp
   aseprite_decoder.cpp
+  aseprite_encoder.cpp
   decode_file.cpp
   detect_format.cpp
   stdio.cpp)
