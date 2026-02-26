@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-2026  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -456,6 +456,8 @@ int Sprite_newCel(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   auto layer = get_docobj<Layer>(L, 2);
+  if (!layer->acceptCels())
+    return luaL_error(L, "unexpected kind of layer in Sprite:newCel()");
 
   frame_t frame = get_frame_number_from_arg(L, 3);
   if (frame < 0 || frame > sprite->lastFrame())
