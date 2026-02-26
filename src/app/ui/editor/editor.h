@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -249,6 +249,7 @@ public:
 
   void startSelectionTransformation(const gfx::Point& move, double angle);
   void startFlipTransformation(doc::algorithm::FlipType flipType);
+  void startShiftTransformation(int dx, int dy);
   void updateTransformation(const Transformation& transform);
 
   // Used by EditorView to notify changes in the view's scroll

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,6 +20,7 @@
 #include "render/extra_type.h"
 #include "render/onionskin_options.h"
 #include "render/projection.h"
+#include "render/render.h"
 
 namespace doc {
 class Cel;
@@ -79,6 +80,8 @@ public:
                      const doc::Layer* currentLayer,
                      doc::frame_t currentFrame);
   void removeExtraImage();
+  void setExtraCelCallback(const render::GetExtraCelCallback callback);
+  void removeExtraCelCallback();
 
   void setOnionskin(const render::OnionskinOptions& options);
   void disableOnionskin();

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -62,6 +62,7 @@
 #include "doc/mask.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
+#include "doc/util.h"
 #include "fmt/format.h"
 #include "gfx/rect.h"
 #include "os/surface.h"
@@ -689,6 +690,14 @@ void StandbyState::startFlipTransformation(Editor* editor, doc::algorithm::FlipT
     movingPixels->flip(flipType);
 }
 
+void StandbyState::startShiftTransformation(Editor* editor, int dx, int dy)
+{
+  transformSelection(editor, NULL, NoHandle);
+
+  if (auto movingPixels = dynamic_cast<MovingPixelsState*>(editor->getState().get()))
+    movingPixels->shift(dx, dy);
+}
+
 void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleType handle)
 {
   Doc* document = editor->document();
@@ -721,8 +730,18 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
     Site site = editor->getSite();
     ImageRef tmpImage;
 
-    if (site.layer() && site.layer()->isTilemap() && site.tilemapMode() == TilemapMode::Tiles) {
-      tmpImage.reset(new_tilemap_from_mask(site, site.document()->mask()));
+    // When in TilemapMode::Tiles, align the mask to the grid so we select
+    // complete tiles
+    const bool isTilemapTilesMode = site.layer() && site.layer()->isTilemap() &&
+                                    site.tilemapMode() == TilemapMode::Tiles;
+    std::unique_ptr<doc::Mask> alignedMask;
+    const doc::Mask* effectiveMask = document->mask();
+
+    if (isTilemapTilesMode) {
+      doc::Grid grid = site.grid();
+      alignedMask.reset(new doc::Mask(doc::make_aligned_mask(&grid, document->mask())));
+      effectiveMask = alignedMask.get();
+      tmpImage.reset(new_tilemap_from_mask(site, effectiveMask));
     }
     else {
       tmpImage.reset(new_image_from_mask(site, Preferences::instance().experimental.newBlend()));
@@ -743,7 +762,7 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
     PixelsMovementPtr pixelsMovement(new PixelsMovement(UIContext::instance(),
                                                         site,
                                                         tmpImage.get(),
-                                                        document->mask(),
+                                                        effectiveMask,
                                                         "Transformation",
                                                         &editor->getTiledModeHelper()));
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -59,6 +59,7 @@
 #include "base/chrono.h"
 #include "base/convert_to.h"
 #include "base/scoped_value.h"
+#include "doc/blend_internals.h"
 #include "doc/doc.h"
 #include "doc/mask_boundaries.h"
 #include "doc/slice.h"
@@ -728,6 +729,26 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
                                     extraCel->blendMode(),
                                     m_layer,
                                     m_frame);
+
+      // Set callback for per-cel extra rendering (multi-cel transformations)
+      if (!extraCel->celMap().empty()) {
+        m_renderEngine->setExtraCelCallback(
+          [extraCel](const doc::Cel* cel) -> const render::ExtraCelInfo* {
+            const ExtraCelData* data = extraCel->getExtraCelData(cel);
+            if (data && data->transformedImage) {
+              // We use a thread-local static to return the info
+              // (the callback must return a pointer that remains valid)
+              thread_local render::ExtraCelInfo info;
+              info.bounds = data->transformedBounds;
+              info.image = data->transformedImage.get();
+              int t;
+              info.opacity = MUL_UN8(cel->opacity(), cel->layer()->opacity(), t);
+              info.blendMode = cel->layer()->blendMode();
+              return &info;
+            }
+            return nullptr;
+          });
+      }
     }
 
     // Render background first (e.g. new ShaderRenderer will paint the
@@ -2955,6 +2976,14 @@ void Editor::startFlipTransformation(doc::algorithm::FlipType flipType)
     movingPixels->flip(flipType);
   else if (auto standby = dynamic_cast<StandbyState*>(m_state.get()))
     standby->startFlipTransformation(this, flipType);
+}
+
+void Editor::startShiftTransformation(int dx, int dy)
+{
+  if (auto movingPixels = dynamic_cast<MovingPixelsState*>(m_state.get()))
+    movingPixels->shift(dx, dy);
+  else if (auto standby = dynamic_cast<StandbyState*>(m_state.get()))
+    standby->startShiftTransformation(this, dx, dy);
 }
 
 void Editor::updateTransformation(const Transformation& transform)

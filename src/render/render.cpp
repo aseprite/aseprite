@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -631,6 +631,16 @@ void Render::removeExtraImage()
   m_extraCel = nullptr;
 }
 
+void Render::setExtraCelCallback(const GetExtraCelCallback callback)
+{
+  m_extraCelCallback = std::move(callback);
+}
+
+void Render::removeExtraCelCallback()
+{
+  m_extraCelCallback = nullptr;
+}
+
 void Render::setOnionskin(const OnionskinOptions& options)
 {
   m_onionskin = options;
@@ -1020,6 +1030,9 @@ void Render::renderPlan(RenderPlan& plan,
         extraArea.h = 1;
     }
 
+    // Extra cel info from callback (for multi-cel transformations)
+    const ExtraCelInfo* extraCelInfo = nullptr;
+
     switch (layer->type()) {
       case ObjectType::LayerImage:
       case ObjectType::LayerTilemap: {
@@ -1073,13 +1086,28 @@ void Render::renderPlan(RenderPlan& plan,
             if (!isSelected && m_nonactiveLayersOpacity != 255)
               opacity = MUL_UN8(opacity, m_nonactiveLayersOpacity, t);
 
+            // Check if there's an extra cel callback for this cel
+            if (m_extraCelCallback)
+              extraCelInfo = m_extraCelCallback(cel);
+
             // Generally this is just one pass, but if we are using
             // OVER_COMPOSITE extra cel, this will be two passes.
             for (int pass = 0; pass < 2; ++pass) {
-              // Draw parts outside the "m_extraCel" area
-              if (drawExtra && m_extraType == ExtraType::PATCH) {
+              // Draw parts outside the "m_extraCel" area and/or extra cel callback area
+              const bool hasExtraCelPatch = (drawExtra && m_extraType == ExtraType::PATCH);
+              const bool hasExtraCelCallback = (extraCelInfo && extraCelInfo->image);
+
+              if (hasExtraCelPatch || hasExtraCelCallback) {
                 gfx::Region originalAreas(area.srcBounds());
-                originalAreas.createSubtraction(originalAreas, gfx::Region(extraArea));
+
+                // Exclude the main extra cel area
+                if (hasExtraCelPatch)
+                  originalAreas.createSubtraction(originalAreas, gfx::Region(extraArea));
+
+                // Exclude the extra cel callback area
+                if (hasExtraCelCallback)
+                  originalAreas.createSubtraction(originalAreas,
+                                                  gfx::Region(m_proj.apply(extraCelInfo->bounds)));
 
                 for (auto rc : originalAreas) {
                   renderCel(
@@ -1180,6 +1208,23 @@ void Render::renderPlan(RenderPlan& plan,
                   m_extraCel->opacity(),
                   m_extraBlendMode);
       }
+    }
+
+    // Draw per-cel extra images using callback (for multi-cel transformations)
+    if (extraCelInfo && extraCelInfo->image && extraCelInfo->opacity > 0) {
+      const gfx::Rect extraBounds = m_proj.apply(extraCelInfo->bounds);
+      renderCel(image,
+                cel,
+                m_sprite,
+                extraCelInfo->image,
+                layer,
+                m_sprite->palette(frame),
+                extraCelInfo->bounds,
+                gfx::Clip(area.dst.x + extraBounds.x - area.src.x,
+                          area.dst.y + extraBounds.y - area.src.y,
+                          extraBounds),
+                extraCelInfo->opacity,
+                extraCelInfo->blendMode);
     }
   }
 }

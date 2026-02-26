@@ -41,8 +41,10 @@
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
+#include "doc/tileset.h"
 #include "doc/util.h"
 #include "gfx/region.h"
 #include "render/render.h"
@@ -133,18 +135,35 @@ PixelsMovement::PixelsMovement(Context* context,
   // TODO: enable TilemapMode exchanges during PixelMovement.
   if (m_site.layer()->isTilemap() && ColorBar::instance())
     ColorBar::instance()->lockTilemapMode();
-  const float cornerThick = (m_site.tilemapMode() == TilemapMode::Tiles ?
-                               CORNER_THICK_FOR_TILEMAP_MODE :
-                               CORNER_THICK_FOR_PIXELS_MODE);
-  Transformation transform(mask->bounds(), cornerThick);
+
+  const bool isTilemapTilesMode = m_site.layer()->isTilemap() &&
+                                  m_site.tilemapMode() == TilemapMode::Tiles;
+  // When the TilemapMode::Pixels it's need to force TilesetMode::Stack to generate
+  // new tiles during the transformation.
+  if (!isTilemapTilesMode)
+    m_site.tilesetMode(TilesetMode::Stack);
+  const float cornerThick = (isTilemapTilesMode ? CORNER_THICK_FOR_TILEMAP_MODE :
+                                                  CORNER_THICK_FOR_PIXELS_MODE);
+
+  // When in TilemapMode::Tiles, align the mask to the grid so we select
+  // complete tiles
+  std::unique_ptr<Mask> alignedMask;
+  const Mask* effectiveMask = mask;
+  if (isTilemapTilesMode) {
+    const doc::Grid grid = m_site.grid();
+    alignedMask.reset(new Mask(make_aligned_mask(&grid, mask)));
+    effectiveMask = alignedMask.get();
+  }
+
+  Transformation transform(effectiveMask->bounds(), cornerThick);
   set_pivot_from_preferences(transform);
 
   m_initialData = transform;
   m_currentData = transform;
 
-  m_initialMask.reset(new Mask(*mask));
-  m_initialMask0.reset(new Mask(*mask));
-  m_currentMask.reset(new Mask(*mask));
+  m_initialMask.reset(new Mask(*effectiveMask));
+  m_initialMask0.reset(new Mask(*effectiveMask));
+  m_currentMask.reset(new Mask(*effectiveMask));
 
   m_pivotVisConn = Preferences::instance().selection.pivotVisibility.AfterChange.connect(
     [this] { onPivotChange(); });
@@ -157,7 +176,40 @@ PixelsMovement::PixelsMovement(Context* context,
   // that someone else is using it (e.g. the editor brush preview),
   // and its owner could destroy our new "extra cel".
   ASSERT(!m_document->extraCel());
-  redrawExtraImage();
+
+  // Fill the selected cels vector and initialize the ExtraCelMap
+  // with the original clipped images for each cel.
+  // In TilemapMode::Tiles, filter out tilemap cels with different
+  // tileSizes and offset.
+  m_selectedCels = getEditableCels(isTilemapTilesMode);
+  if (!m_extraCel)
+    m_extraCel.reset(new ExtraCel);
+
+  for (Cel* cel : m_selectedCels) {
+    if (!cel)
+      continue;
+
+    ExtraCelData data;
+    data.originalBounds = m_initialMask->bounds();
+
+    if (cel->layer()->isTilemap() && m_site.tilemapMode() == TilemapMode::Tiles) {
+      Site celSite = m_site;
+      celSite.layer(cel->layer());
+      celSite.frame(cel->frame());
+      data.originalImage.reset(new_tilemap_from_mask(celSite, m_initialMask.get()));
+    }
+    else {
+      data.originalImage.reset(
+        new_image_from_mask(*cel->layer(),
+                            cel->frame(),
+                            m_initialMask.get(),
+                            Preferences::instance().experimental.newBlend()));
+    }
+
+    m_extraCel->celMap()[cel] = std::move(data);
+  }
+
+  redrawExtraImages();
   redrawCurrentMask();
 
   // If the mask is different than the mask from the document
@@ -194,7 +246,7 @@ void PixelsMovement::setFastMode(const bool fastMode)
   bool redraw = (m_fastMode && !fastMode);
   m_fastMode = fastMode;
   if (m_needsRotSpriteRedraw && redraw) {
-    redrawExtraImage();
+    redrawExtraImages();
     update_screen_for_document(m_document);
     m_needsRotSpriteRedraw = false;
   }
@@ -205,13 +257,14 @@ void PixelsMovement::flipImage(doc::algorithm::FlipType flipType)
   m_innerCmds.push_back(InnerCmd::MakeFlip(flipType));
 
   flipOriginalImage(flipType);
+  flipOriginalImages(flipType);
 
   {
     ContextWriter writer(m_reader, 1000);
 
     // Regenerate the transformed (rotated, scaled, etc.) image and
     // mask.
-    redrawExtraImage();
+    redrawExtraImages();
     redrawCurrentMask();
     updateDocumentMask();
 
@@ -226,7 +279,7 @@ void PixelsMovement::rotate(double angle)
 
   m_document->setTransformation(m_currentData);
 
-  redrawExtraImage();
+  redrawExtraImages();
   redrawCurrentMask();
   updateDocumentMask();
 
@@ -238,11 +291,12 @@ void PixelsMovement::shift(int dx, int dy)
   const double angle = m_currentData.angle();
   m_innerCmds.push_back(InnerCmd::MakeShift(dx, dy, angle));
   shiftOriginalImage(dx, dy, angle);
+  shiftOriginalImages(dx, dy, angle);
 
   {
     ContextWriter writer(m_reader, 1000);
 
-    redrawExtraImage();
+    redrawExtraImages();
     redrawCurrentMask();
     updateDocumentMask();
 
@@ -271,7 +325,7 @@ void PixelsMovement::setTransformationBase(const Transformation& t)
   m_currentData = t;
   auto newCorners = m_currentData.transformedCorners();
 
-  redrawExtraImage();
+  redrawExtraImages();
 
   m_document->setTransformation(m_currentData);
 
@@ -311,7 +365,7 @@ void PixelsMovement::trim()
 
   // TODO this is similar to clear_mask_from_cels()
 
-  for (Cel* cel : getEditableCels()) {
+  for (Cel* cel : m_selectedCels) {
     if (cel != activeCel) {
       if (!restoreMask) {
         m_document->setMask(m_initialMask0.get());
@@ -336,11 +390,12 @@ void PixelsMovement::cutMask()
 
   {
     ContextWriter writer(m_reader, 1000);
-    if (writer.cel()) {
-      clear_mask_from_cel(m_tx, writer.cel(), m_site.tilemapMode(), m_site.tilesetMode());
 
-      // Do not trim here so we don't lost the information about all
-      // linked cels related to "writer.cel()"
+    // Cut from all selected cels, not just the current one
+    for (Cel* cel : m_selectedCels) {
+      if (cel) {
+        clear_mask_from_cel(m_tx, cel, m_site.tilemapMode(), m_site.tilesetMode());
+      }
     }
   }
 
@@ -808,38 +863,6 @@ void PixelsMovement::getDraggedImageCopy(std::unique_ptr<Image>& outputImage,
   outputMask.reset(mask.release());
 }
 
-void PixelsMovement::alignMasksAndTransformData(const Mask* initialMask0,
-                                                const Mask* initialMask,
-                                                const Mask* currentMask,
-                                                const Transformation* initialData,
-                                                const Transformation* currentData,
-                                                const doc::Grid& grid,
-                                                const gfx::Size& deltaA,
-                                                const gfx::Size& deltaB)
-{
-  m_initialMask0->replace(make_aligned_mask(&grid, initialMask0));
-  m_initialMask->replace(make_aligned_mask(&grid, initialMask));
-  m_currentMask->replace(make_aligned_mask(&grid, currentMask));
-  m_initialData = *initialData;
-  m_initialData.bounds(m_initialMask0->bounds());
-  m_currentData = *currentData;
-  // Raw grid alignment of currentData can result in unintentional scaling.
-  // That's why we need to know if the artist's intention was just to move
-  // the selection and/or scaling via 'initialDeltaA' and 'initialDeltaB'.
-  const gfx::Point currentDataAlignedOrigin =
-    grid
-      .alignBounds(
-        gfx::Rect(m_initialData.bounds().x + deltaA.w, m_initialData.bounds().y + deltaA.h, 1, 1))
-      .origin();
-  int deltaH = deltaB.w - deltaA.w;
-  int deltaV = deltaB.h - deltaA.h;
-  const gfx::RectF currentDataBounds(currentDataAlignedOrigin.x,
-                                     currentDataAlignedOrigin.y,
-                                     m_initialData.bounds().w + deltaH,
-                                     m_initialData.bounds().h + deltaV);
-  m_currentData.bounds(currentDataBounds);
-}
-
 void PixelsMovement::stampImage()
 {
   stampImage(false);
@@ -854,113 +877,23 @@ void PixelsMovement::stampImage(bool finalStamp)
   ContextWriter writer(m_reader, 1000);
   Cel* currentCel = m_site.cel();
 
-  CelList cels;
-  if (finalStamp) {
-    cels = getEditableCels();
-  }
   // Current cel (m_site.cel()) can be nullptr when we paste in an
   // empty cel (Ctrl+V) and cut (Ctrl+X) the floating pixels.
-  else {
-    cels.push_back(currentCel);
-  }
+  if (!currentCel)
+    return;
 
-  if (currentCel && currentCel->layer() && currentCel->layer()->isImage() &&
+  if (currentCel->layer() && currentCel->layer()->isImage() &&
       !currentCel->layer()->canEditPixels()) {
     Transformation initialCelPos(gfx::Rect(m_initialMask0->bounds()), m_currentData.cornerThick());
-    redrawExtraImage(&initialCelPos);
+    redrawExtraImages(&initialCelPos);
     stampExtraCelImage();
+    return;
   }
-
-  // Saving original values before the 'for' loop and the
-  // 'reproduceAllTransformationsWithInnerCmds' function for restoring later.
-  // All values of m_initialXX, m_currentXX will be recalculated
-  // to align their original selection bounds with each cel's grid.
-  const TilemapMode originalSiteTilemapMode = (m_site.tilemapMode() == TilemapMode::Tiles &&
-                                                   m_site.layer()->isTilemap() ?
-                                                 TilemapMode::Tiles :
-                                                 TilemapMode::Pixels);
-  const TilesetMode originalSiteTilesetMode = m_site.tilesetMode();
-  const Mask initialMask0(*m_initialMask0);
-  const Mask initialMask(*m_initialMask);
-  const Mask currentMask(*m_currentMask);
-  auto initialData = m_initialData;
-  auto currentData = m_currentData;
-
-  // We need a way to know if 'a' or 'b' corners has changed
-  // as result of a scaling or moving command to replicate the intention on
-  // the other layers according the original mask (which can be aligned or
-  // not to the tilemap grid)
-  //
-  //   a ----
-  //   |     |
-  //   |     |
-  //    ---- b
-  const gfx::Rect currentAlignedBounds(m_site.grid().alignBounds(currentData.bounds()));
-  const gfx::Rect initialAlignedBounds(m_site.grid().alignBounds(initialMask.bounds()));
-  const gfx::Size deltaA(currentAlignedBounds.origin().x - initialAlignedBounds.origin().x,
-                         currentAlignedBounds.origin().y - initialAlignedBounds.origin().y);
-  const gfx::Size deltaB(currentAlignedBounds.x2() - initialAlignedBounds.x2(),
-                         currentAlignedBounds.y2() - initialAlignedBounds.y2());
-
-  for (Cel* target : cels) {
-    // We'll re-create the transformation for the other cels
-    if (target != currentCel) {
-      ASSERT(target);
-      m_site.layer(target->layer());
-      m_site.frame(target->frame());
-      ASSERT(m_site.cel() == target);
-      Grid targetGrid(m_site.grid());
-      // Align masks and transformData before to 'reproduceAllTransformationsWithInnerCmds'
-      // Note: this alignement is needed only when the editor is on 'TilemapMode::Tiles',
-      // on the other hand 'TilemapMode::Pixels' do not require any additional
-      // mask/transformData adjustments.
-      if (originalSiteTilemapMode == TilemapMode::Tiles) {
-        if (target->layer()->isTilemap()) {
-          alignMasksAndTransformData(&initialMask0,
-                                     &initialMask,
-                                     &currentMask,
-                                     &initialData,
-                                     &currentData,
-                                     targetGrid,
-                                     deltaA,
-                                     deltaB);
-          m_site.tilemapMode(TilemapMode::Tiles);
-        }
-        else {
-          m_initialMask0->replace(initialMask0);
-          m_initialMask->replace(initialMask);
-          m_currentMask->replace(currentMask);
-          m_initialData.bounds(initialData.bounds());
-          m_currentData.bounds(currentData.bounds());
-          m_site.tilemapMode(TilemapMode::Pixels);
-        }
-      }
-      else {
-        m_site.tilemapMode(TilemapMode::Pixels);
-        m_site.tilesetMode(TilesetMode::Auto);
-      }
-      reproduceAllTransformationsWithInnerCmds();
-    }
-
-    redrawExtraImage();
-    stampExtraCelImage();
-  }
-
-  m_initialMask0->replace(initialMask0);
-  m_initialMask->replace(initialMask);
-  m_currentMask->replace(currentMask);
-  m_initialData.bounds(initialData.bounds());
-  m_currentData.bounds(currentData.bounds());
-  m_site.tilesetMode(originalSiteTilesetMode);
-  currentCel = m_site.cel();
-  if (currentCel &&
-      (m_site.layer() != currentCel->layer() || m_site.frame() != currentCel->frame())) {
-    m_site.layer(currentCel->layer());
-    m_site.frame(currentCel->frame());
-    m_site.tilemapMode(originalSiteTilemapMode);
-    m_site.tilesetMode(originalSiteTilesetMode);
-    redrawExtraImage();
-  }
+  // Stamp the current cel. Other cels in m_selectedCels will be
+  // stamped by stampExtraCelImages() using their pre-transformed
+  // images from the ExtraCelMap.
+  redrawExtraImages();
+  stampExtraCelImage();
 }
 
 void PixelsMovement::stampExtraCelImage()
@@ -992,6 +925,78 @@ void PixelsMovement::stampExtraCelImage()
   expand.getDestCanvas()->copy(image, gfx::Clip(dstPt, image->bounds()));
 
   expand.commit();
+}
+
+static void merge_tilemaps(Image* dst, const Image* src, gfx::Clip area)
+{
+  if (!area.clip(dst->width(), dst->height(), src->width(), src->height()))
+    return;
+
+  ImageConstIterator<TilemapTraits> src_it(src, area.srcBounds(), area.src.x, area.src.y);
+  ImageIterator<TilemapTraits> dst_it(dst, area.dstBounds(), area.dst.x, area.dst.y);
+  for (int y = 0; y < area.size.h; ++y) {
+    for (int x = 0; x < area.size.w; ++x) {
+      if (*src_it != doc::notile)
+        *dst_it = *src_it;
+      ++src_it;
+      ++dst_it;
+    }
+  }
+}
+
+void PixelsMovement::stampExtraCelImages()
+{
+  if (!m_extraCel)
+    return;
+
+  Layer* originalLayer = m_site.layer();
+  const frame_t originalFrame = m_site.frame();
+  const TilemapMode originalTilemapMode = m_site.tilemapMode();
+
+  // Stamp each transformed image from the map into its corresponding cel
+  for (auto& [cel, data] : m_extraCel->celMap()) {
+    if (!cel || !data.transformedImage)
+      continue;
+
+    m_site.layer(cel->layer());
+    m_site.frame(cel->frame());
+    const bool isTilemap = cel->layer()->isTilemap() && originalTilemapMode == TilemapMode::Tiles;
+    m_site.tilemapMode(isTilemap ? TilemapMode::Tiles : TilemapMode::Pixels);
+
+    ExpandCelCanvas expand(m_site, cel->layer(), TiledMode::NONE, m_tx, ExpandCelCanvas::None);
+
+    gfx::Point dstPt;
+    gfx::Size canvasImageSize = data.transformedImage->size();
+    gfx::Rect validateRegion = data.transformedBounds;
+    if (isTilemap) {
+      doc::Grid grid = m_site.grid();
+      dstPt = grid.canvasToTile(data.transformedBounds.origin());
+      canvasImageSize = grid.tileToCanvas(gfx::Rect(dstPt, canvasImageSize)).size();
+      validateRegion = gfx::Rect(data.transformedBounds.origin(), canvasImageSize);
+    }
+    else
+      dstPt = data.transformedBounds.origin() - expand.getCel()->position();
+
+    expand.validateDestCanvas(gfx::Region(validateRegion));
+
+    if (isTilemap)
+      merge_tilemaps(expand.getDestCanvas(),
+                     data.transformedImage.get(),
+                     gfx::Clip(dstPt, data.transformedImage->bounds()));
+    else
+      render::composite_image(expand.getDestCanvas(),
+                              data.transformedImage.get(),
+                              m_site.sprite()->palette(m_site.frame()),
+                              dstPt.x,
+                              dstPt.y,
+                              255,
+                              BlendMode::NORMAL);
+    expand.commit();
+  }
+
+  m_site.layer(originalLayer);
+  m_site.frame(originalFrame);
+  m_site.tilemapMode(originalTilemapMode);
 }
 
 void PixelsMovement::dropImageTemporarily()
@@ -1048,6 +1053,9 @@ void PixelsMovement::dropImage()
   // Stamp the image in the current layer.
   stampImage(true);
 
+  // Stamp the transformed images from the extra cel map into their cels
+  stampExtraCelImages();
+
   // Put the new mask
   m_document->setMask(m_initialMask0.get());
   m_tx(new cmd::SetMask(m_document, m_currentMask.get()));
@@ -1055,9 +1063,10 @@ void PixelsMovement::dropImage()
   // This is the end of the whole undo transaction.
   m_tx.commit();
 
-  // Destroy the extra cel (this cel will be used by the drawing
-  // cursor surely).
+  // Clear the extra cel map and destroy the extra cel
   ContextWriter writer(m_reader, 1000);
+  if (m_extraCel)
+    m_extraCel->clearCelMap();
   m_document->setExtraCel(ExtraCelRef(nullptr));
 }
 
@@ -1077,9 +1086,11 @@ void PixelsMovement::discardImage(const CommitChangesOption commit, const KeepMa
   if (commit == CommitChanges)
     m_tx.commit();
 
-  // Destroy the extra cel and regenerate the mask boundaries (we've
-  // just deselect the mask).
+  // Clear the extra cel map and destroy the extra cel, regenerate
+  // the mask boundaries (we've just deselect the mask).
   ContextWriter writer(m_reader, 1000);
+  if (m_extraCel)
+    m_extraCel->clearCelMap();
   m_document->setExtraCel(ExtraCelRef(nullptr));
   m_document->generateMaskBoundaries();
 }
@@ -1110,7 +1121,7 @@ void PixelsMovement::setMaskColor(bool opaque, color_t mask_color)
   ContextWriter writer(m_reader, 1000);
   m_opaque = opaque;
   m_maskColor = mask_color;
-  redrawExtraImage();
+  redrawExtraImages();
 
   update_screen_for_document(m_document);
 }
@@ -1182,6 +1193,21 @@ void PixelsMovement::redrawExtraImage(Transformation* transformation)
   }
 }
 
+void PixelsMovement::redrawExtraImages(Transformation* transformation)
+{
+  if (!transformation)
+    transformation = &m_currentData;
+  if (!m_extraCel)
+    return;
+  gfx::Rect bounds = transformation->transformedBounds();
+  if (bounds.isEmpty())
+    return;
+
+  m_extraCel->setType(render::ExtraType::PATCH);
+  m_document->setExtraCel(m_extraCel);
+  drawImages(*transformation);
+}
+
 void PixelsMovement::redrawCurrentMask()
 {
   drawMask(m_currentMask.get(), true);
@@ -1247,6 +1273,96 @@ void PixelsMovement::drawImage(const Transformation& transformation,
 
     if (m_tiledModeHelper && m_tiledModeHelper->tiledEnabled()) {
       m_tiledModeHelper->drawTiled(dst, cornerBounds);
+    }
+  }
+}
+
+void PixelsMovement::drawImages(const Transformation& transformation)
+{
+  if (!m_extraCel)
+    return;
+
+  auto corners = transformation.transformedCorners();
+  gfx::Rect bounds = corners.bounds(transformation.cornerThick());
+  if (bounds.isEmpty())
+    return;
+
+  for (auto& [cel, data] : m_extraCel->celMap()) {
+    if (!cel || !data.originalImage)
+      continue;
+
+    const bool isTilemap = cel->layer()->isTilemap() && m_site.tilemapMode() == TilemapMode::Tiles;
+    gfx::Size transformedSize = bounds.size();
+    if (isTilemap) {
+      doc::Grid grid = m_site.grid();
+      gfx::Rect tileBounds = grid.canvasToTile(bounds);
+      transformedSize = tileBounds.size();
+    }
+
+    doc::PixelFormat pixelFormat = data.originalImage->pixelFormat();
+    if (!data.transformedImage || data.transformedImage->width() != transformedSize.w ||
+        data.transformedImage->height() != transformedSize.h ||
+        data.transformedImage->pixelFormat() != pixelFormat) {
+      data.transformedImage.reset(Image::create(pixelFormat, transformedSize.w, transformedSize.h));
+    }
+
+    data.transformedBounds = bounds;
+
+    if (isTilemap) {
+      data.transformedImage->setMaskColor(doc::notile);
+      data.transformedImage->clear(data.transformedImage->maskColor());
+      // First, copy the original tiles from the cel that fall within the
+      // transformed bounds area. This ensures that when the extra cel area
+      // is excluded from the original cel render, we still see the original
+      // tiles for positions where the selection has notile values.
+      if (cel->image()) {
+        doc::Grid grid = m_site.grid();
+        gfx::Rect tileBounds = grid.canvasToTile(bounds);
+        for (int ty = 0; ty < tileBounds.h && ty < data.transformedImage->height(); ++ty) {
+          for (int tx = 0; tx < tileBounds.w && tx < data.transformedImage->width(); ++tx) {
+            gfx::Point srcTilePt(tileBounds.x + tx, tileBounds.y + ty);
+            if (cel->image()->bounds().contains(srcTilePt)) {
+              doc::tile_t tileValue = cel->image()->getPixel(srcTilePt.x, srcTilePt.y);
+              data.transformedImage->putPixel(tx, ty, tileValue);
+            }
+          }
+        }
+      }
+      // Then apply the transformed selection tiles on top (notile won't overwrite)
+      drawTransformedTilemap(transformation,
+                             data.transformedImage.get(),
+                             data.originalImage.get(),
+                             m_initialMask.get());
+    }
+    else {
+      data.transformedImage->setMaskColor(m_site.sprite()->transparentColor());
+      data.transformedImage->clear(data.transformedImage->maskColor());
+      // First render the original layer pixels within the bounds area
+      // (pixels outside the selection that are within the extra cel bounds).
+      // This ensures that when the extra cel area is excluded from the
+      // original cel render, we still see the original pixels outside the selection.
+      {
+        render::Render render;
+        render.renderLayer(data.transformedImage.get(),
+                           cel->layer(),
+                           cel->frame(),
+                           gfx::Clip(0, 0, bounds),
+                           BlendMode::SRC);
+      }
+      color_t maskColor = m_maskColor;
+      if (m_opaque) {
+        if (data.originalImage->pixelFormat() == IMAGE_INDEXED)
+          maskColor = -1;
+        else
+          maskColor = 0;
+      }
+      data.originalImage->setMaskColor(maskColor);
+      drawParallelogram(transformation,
+                        data.transformedImage.get(),
+                        data.originalImage.get(),
+                        m_initialMask.get(),
+                        corners,
+                        gfx::PointF(bounds.origin()));
     }
   }
 }
@@ -1343,24 +1459,6 @@ retry:; // In case that we don't have enough memory for RotSprite
   }
 }
 
-static void merge_tilemaps(Image* dst, const Image* src, gfx::Clip area)
-{
-  if (!area.clip(dst->width(), dst->height(), src->width(), src->height()))
-    return;
-
-  ImageConstIterator<TilemapTraits> src_it(src, area.srcBounds(), area.src.x, area.src.y);
-  ImageIterator<TilemapTraits> dst_it(dst, area.dstBounds(), area.dst.x, area.dst.y);
-
-  for (int y = 0; y < area.size.h; ++y) {
-    for (int x = 0; x < area.size.w; ++x) {
-      if (*src_it != doc::notile)
-        *dst_it = *src_it;
-      ++src_it;
-      ++dst_it;
-    }
-  }
-}
-
 void PixelsMovement::drawTransformedTilemap(const Transformation& transformation,
                                             doc::Image* dst,
                                             const doc::Image* src,
@@ -1404,7 +1502,7 @@ void PixelsMovement::onPivotChange()
 void PixelsMovement::onRotationAlgorithmChange()
 {
   try {
-    redrawExtraImage();
+    redrawExtraImages();
     redrawCurrentMask();
     updateDocumentMask();
 
@@ -1446,10 +1544,30 @@ void PixelsMovement::shiftOriginalImage(const int dx, const int dy, const double
   doc::algorithm::shift_image(m_originalImage.get(), dx, dy, angle);
 }
 
+void PixelsMovement::flipOriginalImages(const doc::algorithm::FlipType flipType)
+{
+  if (!m_extraCel)
+    return;
+  for (auto& [cel, data] : m_extraCel->celMap())
+    if (data.originalImage)
+      doc::algorithm::flip_image(data.originalImage.get(),
+                                 gfx::Rect(gfx::Point(0, 0), data.originalImage->size()),
+                                 flipType);
+}
+
+void PixelsMovement::shiftOriginalImages(const int dx, const int dy, const double angle)
+{
+  if (!m_extraCel)
+    return;
+  for (auto& [cel, data] : m_extraCel->celMap())
+    if (data.originalImage)
+      doc::algorithm::shift_image(data.originalImage.get(), dx, dy, angle);
+}
+
 // Returns the list of cels that will be transformed (the first item
 // in the list must be the current cel that was transformed if the cel
 // wasn't nullptr).
-CelList PixelsMovement::getEditableCels()
+CelList PixelsMovement::getEditableCels(const bool filterTilemapsByTileSize)
 {
   CelList cels;
 
@@ -1485,6 +1603,26 @@ CelList PixelsMovement::getEditableCels()
     if (it != cels.end())
       cels.erase(it);
     cels.insert(cels.begin(), m_site.cel());
+  }
+
+  // Filter out tilemap cels with different tileSize and origin than the reference cel
+  if (filterTilemapsByTileSize && m_site.cel() && m_site.cel()->layer()->isTilemap()) {
+    const auto refTilemapLayer = static_cast<const LayerTilemap*>(m_site.cel()->layer());
+    gfx::Size refTileSize = refTilemapLayer->tileset()->grid().tileSize();
+    gfx::Point refOffset(m_site.cel()->position().x % refTileSize.w,
+                         m_site.cel()->position().y % refTileSize.h);
+    cels.erase(std::remove_if(cels.begin(),
+                              cels.end(),
+                              [&refTileSize, &refOffset](const Cel* cel) {
+                                if (!cel || !cel->layer()->isTilemap())
+                                  return false;
+                                auto tilemapLayer = static_cast<const LayerTilemap*>(cel->layer());
+                                gfx::Size celTileSize = tilemapLayer->tileset()->grid().tileSize();
+                                gfx::Point celOffset(cel->position().x % celTileSize.w,
+                                                     cel->position().y % refTileSize.h);
+                                return (refTileSize != celTileSize || refOffset != celOffset);
+                              }),
+               cels.end());
   }
 
   return cels;
@@ -1571,13 +1709,13 @@ void PixelsMovement::reproduceAllTransformationsWithInnerCmds()
         shiftOriginalImage(c.data.shift.dx, c.data.shift.dy, c.data.shift.angle);
         break;
       case InnerCmd::Stamp:
-        redrawExtraImage(c.data.stamp.transformation);
+        redrawExtraImages(c.data.stamp.transformation);
         stampExtraCelImage();
         break;
     }
   }
 
-  redrawExtraImage();
+  redrawExtraImages();
   redrawCurrentMask();
   updateDocumentMask();
 }
