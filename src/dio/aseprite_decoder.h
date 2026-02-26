@@ -54,8 +54,7 @@ private:
                              doc::Sprite* sprite,
                              doc::Layer** previous_layer,
                              int* current_level);
-  doc::Cel* readCelChunk(doc::Sprite* sprite,
-                         doc::frame_t frame,
+  doc::Cel* readCelChunk(doc::frame_t frame,
                          doc::PixelFormat pixelFormat,
                          const AsepriteHeader* header,
                          const size_t chunk_end);
@@ -72,7 +71,7 @@ private:
                                  const AsepriteExternalFiles& extFiles);
   void readPropertiesMaps(doc::UserData::PropertiesMaps& propertiesMaps,
                           const AsepriteExternalFiles& extFiles);
-  const doc::UserData::Variant readPropertyValue(uint16_t type);
+  doc::UserData::Variant readPropertyValue(uint16_t type);
   void readTilesData(doc::Tileset* tileset, const AsepriteExternalFiles& extFiles);
   base::Uuid readUuid();
 
