@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -450,13 +450,24 @@ public:
     mergeDups()->Click.connect([this] { generatePreview(); });
     ignoreEmpty()->Click.connect([this] { generatePreview(); });
 
-    imageEnabled()->Click.connect(
-      [this] { onOutputFieldEnabledChange(imageFilename(), imageEnabled()->isSelected()); });
+    imageEnabled()->Click.connect([this] {
+      dataEnabled()->setSelected(imageEnabled()->isSelected() ? dataEnabled()->isSelected() :
+                                                                false);
+      onOutputFieldEnabledChange(imageFilename(), imageEnabled()->isSelected());
+      onOutputFieldEnabledChange(
+        dataFilename(),
+        imageEnabled()->isSelected() ? dataEnabled()->isSelected() : false);
+    });
     imageFilename()->SelectOutputFile.connect(
       [this]() -> std::string { return onFilenameBrowse(imageFilename()); });
     imageFilename()->Change.connect([this] { resize(); });
-    dataEnabled()->Click.connect(
-      [this] { onOutputFieldEnabledChange(dataFilename(), dataEnabled()->isSelected()); });
+    dataEnabled()->Click.connect([this] {
+      imageEnabled()->setSelected(dataEnabled()->isSelected() ? true :
+                                                                imageEnabled()->isSelected());
+      onOutputFieldEnabledChange(dataFilename(), dataEnabled()->isSelected());
+      onOutputFieldEnabledChange(imageFilename(),
+                                 dataEnabled()->isSelected() ? true : imageEnabled()->isSelected());
+    });
     dataFilename()->SelectOutputFile.connect(
       [this]() -> std::string { return onFilenameBrowse(dataFilename()); });
     dataFilename()->Change.connect([this] { resize(); });
@@ -471,7 +482,6 @@ public:
     frames()->Change.connect([this] { generatePreview(); });
     dataFilenameFormat()->Change.connect([this] { onDataFilenameFormatChange(); });
     dataTagnameFormat()->Change.connect([this] { onDataTagnameFormatChange(); });
-    openGenerated()->Click.connect([this] { onOpenGeneratedChange(); });
     preview()->Click.connect([this] { generatePreview(); });
     m_genTimer.Tick.connect([this] { onGenTimerTick(); });
 
@@ -492,7 +502,6 @@ public:
     onSheetTypeChange();
     imageFilename()->onUpdateText();
     dataFilename()->onUpdateText();
-    updateExportButton();
 
     preview()->setSelected(pref.spriteSheet.preview());
     generatePreview();
@@ -766,10 +775,12 @@ private:
 
   void onExport()
   {
-    if (!ask_overwrite(imageFilename()->askOverwrite(),
-                       filenameValue(),
-                       dataFilename()->askOverwrite(),
-                       dataFilenameValue()))
+    // It is not necessary to ask for overwriting if the filename is empty,
+    // since it'll be requested during the closing process of ExportSpriteSheetWindow.
+    if (!filenameValue().empty() && !ask_overwrite(imageFilename()->askOverwrite(),
+                                                   filenameValue(),
+                                                   dataFilename()->askOverwrite(),
+                                                   dataFilenameValue()))
       return;
 
     closeWindow(exportButton());
@@ -878,10 +889,8 @@ private:
   {
     field->setAskOverwrite(true);
     field->setVisible(visible);
-    if (field == dataFilename())
-      updateDataFields();
+    updateDataFields();
 
-    updateExportButton();
     resize();
   }
 
@@ -913,15 +922,7 @@ private:
       updateDefaultDataTagnameFormat();
   }
 
-  void onOpenGeneratedChange() { updateExportButton(); }
-
   void resize() { expandWindow(sizeHint()); }
-
-  void updateExportButton()
-  {
-    exportButton()->setEnabled(imageEnabled()->isSelected() || dataEnabled()->isSelected() ||
-                               openGenerated()->isSelected());
-  }
 
   void updateDefaultDataFilenameFormat()
   {
@@ -1188,6 +1189,31 @@ ExportSpriteSheetCommand::ExportSpriteSheetCommand(const char* id) : CommandWith
 {
 }
 
+std::string ExportSpriteSheetCommand::askFilename(Context* context,
+                                                  const std::string& initialPath,
+                                                  const ExportSpriteSheetParams& params) const
+{
+  Document* document = context->activeDocument();
+  if (!document)
+    return std::string();
+  if (params.textureFilename().empty() || params.ui()) {
+    base::paths exts = get_writable_extensions();
+
+    if (context->isUIAvailable()) {
+      base::paths newfilename;
+      if (!params.ui() || !app::show_file_selector(Strings::export_sprite_sheet_save_title(),
+                                                   initialPath,
+                                                   exts,
+                                                   FileSelectorType::Save,
+                                                   newfilename)) {
+        return std::string();
+      }
+      return newfilename.front();
+    }
+  }
+  return document->filename();
+}
+
 bool ExportSpriteSheetCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
@@ -1294,7 +1320,6 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.rows(params.rows());
     docPref.spriteSheet.width(params.width());
     docPref.spriteSheet.height(params.height());
-    docPref.spriteSheet.textureFilename(params.textureFilename());
     docPref.spriteSheet.dataFilename(params.dataFilename());
     docPref.spriteSheet.dataFormat(params.dataFormat());
     docPref.spriteSheet.filenameFormat(params.filenameFormat());
@@ -1318,6 +1343,18 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.listLayers(params.listLayers());
     docPref.spriteSheet.listFrameTags(params.listTags());
     docPref.spriteSheet.listSlices(params.listSlices());
+
+    if (params.textureFilename().empty()) {
+      auto newFilename = askFilename(
+        context,
+        base::get_file_title_with_path(window.imageFilename()->fullFilename()) + "-Sheet.png",
+        params);
+      if (newFilename.empty())
+        return;
+      params.textureFilename(newFilename);
+    }
+
+    docPref.spriteSheet.textureFilename(params.textureFilename());
 
     // Default preferences for future sprites
     DocumentPreferences& defPref(Preferences::instance().document(nullptr));
