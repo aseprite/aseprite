@@ -61,7 +61,7 @@ doc::Image* new_image_from_mask(const Site& site,
       render.renderSprite(dst.get(), srcSprite, site.frame(), gfx::Clip(0, 0, srcBounds));
     else {
       ASSERT(site.layer()->isTilemap());
-      if (auto cel = site.cel()) {
+      if (auto cel = site.cel(); cel && cel->image()) {
         render.renderCel(dst.get(),
                          cel,
                          srcSprite,
@@ -117,7 +117,7 @@ doc::Image* new_image_from_mask(const Layer& layer,
     render::Render render;
     render.setNewBlend(newBlend);
     ASSERT(layer.isTilemap());
-    if (cel) {
+    if (cel && cel->image()) {
       render.renderCel(dst.get(),
                        cel,
                        srcSprite,
@@ -131,17 +131,16 @@ doc::Image* new_image_from_mask(const Layer& layer,
     }
     src = dst.get();
   }
-  else {
-    if (cel) {
-      src = cel->image();
-      x = cel->x();
-      y = cel->y();
-    }
+  else if (cel) {
+    src = cel->image();
+    x = cel->x();
+    y = cel->y();
   }
 
-  if (src)
+  if (src) {
     // Copy the masked zones
     copy_masked_zones(dst.get(), src, srcMask, x, y);
+  }
 
   return dst.release();
 }

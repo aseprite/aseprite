@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -493,7 +493,7 @@ public:
       m_editor->remove_observer(this);
   }
 
-  void constructor_prologue()
+  void initialize()
   {
     if (m_pointShape->isFloodFill()) {
       if (m_tilesMode && !isSelectionToolLoop()) {
@@ -512,7 +512,7 @@ public:
         render.setNewBlend(Preferences::instance().experimental.newBlend());
         render.renderSprite(m_floodfillSrcImage, m_sprite, m_frame, gfx::Clip(m_sprite->bounds()));
       }
-      else if (Cel* cel = m_layer->cel(m_frame)) {
+      else if (Cel* cel = m_layer->cel(m_frame); cel && cel->image()) {
         m_floodfillSrcImage = render::rasterize_with_sprite_bounds(cel);
       }
       else if (isSelectionToolLoop() && !m_layer->cel(m_frame)) {
@@ -602,7 +602,7 @@ public:
                const bool saveLastPoint)
     : PaintToolLoopBase(editor, site, grid, context, params, saveLastPoint)
   {
-    constructor_prologue();
+    initialize();
 
     // 'isSelectionPreview = true' if the intention is to show a preview
     // of Selection tools or Slice tool.
@@ -690,6 +690,9 @@ public:
         catch (const LockedDocException& ex) {
           Console::showException(ex);
         }
+
+        // TODO in case the cel had no image and now it does, or viceversa
+        redraw = true;
       }
       // Selection ink
       else if (m_ink->isSelection()) {
@@ -783,7 +786,7 @@ public:
                         const bool saveLastPoint)
     : PaintToolLoopBase(editor, site, grid, context, params, saveLastPoint)
   {
-    constructor_prologue();
+    initialize();
 
     // Start with an empty mask if the user is selecting with "default selection mode"
     if (!m_document->isMaskVisible() ||
