@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -754,7 +754,7 @@ void modify_tilemap_cel_region(CmdSequence* cmds,
         newTilemap->height() != cel->image()->height()) {
       gfx::Point newPos = grid.tileToCanvas(newTilemapBounds.origin());
       if (cel->position() != newPos) {
-        cmds->executeAndAdd(new cmd::SetCelPosition(cel, newPos.x, newPos.y));
+        cmds->executeAndAdd(new cmd::SetCelPosition(cel, newPos));
       }
       cmds->executeAndAdd(new cmd::ReplaceImage(cel->sprite(), cel->imageRef(), newTilemap));
     }

@@ -258,7 +258,7 @@ void ExpandCelCanvas::commit()
           }
           else {
             m_cmds->executeAndAdd(new cmd::SetCelImage(m_cel, newImage));
-            m_cmds->executeAndAdd(new cmd::SetCelPosition(m_cel, newPosition.x, newPosition.y));
+            m_cmds->executeAndAdd(new cmd::SetCelPosition(m_cel, newPosition));
           }
         }
 
