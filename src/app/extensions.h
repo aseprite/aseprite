@@ -15,19 +15,26 @@
 
 #include <map>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 namespace ui {
 class Widget;
 }
 
+namespace doc {
+class Sprite;
+}
 namespace app {
+class FileFormat;
+class Command;
 
 // Key=id
 // Value=path
 using ExtensionItems = std::map<std::string, std::string>;
 
 class Extensions;
+class Doc;
 
 struct ExtensionInfo {
   std::string name;
@@ -37,7 +44,7 @@ struct ExtensionInfo {
   bool defaultTheme = false;
 };
 
-enum DeletePluginPref { kNo, kYes };
+enum class DeletePluginPref : uint8_t { No, Yes };
 
 class Extension {
   friend class Extensions;
@@ -46,7 +53,7 @@ public:
   static const char* kAsepriteDefaultThemeExtensionName;
   static const char* kAsepriteDefaultThemeId;
 
-  enum class Category {
+  enum class Category : uint8_t {
     None,
     Keys,
     Languages,
@@ -62,7 +69,7 @@ public:
 
   class DitheringMatrixInfo {
   public:
-    DitheringMatrixInfo();
+    DitheringMatrixInfo() = default;
     DitheringMatrixInfo(const std::string& path, const std::string& name);
 
     const std::string& name() const { return m_name; }
@@ -83,6 +90,17 @@ public:
     ThemeInfo(const std::string& path, const std::string& variant) : path(path), variant(variant) {}
   };
 
+#ifdef ENABLE_SCRIPTING
+  struct CustomFormatDefinition {
+    std::string name;
+    std::unordered_set<std::string> extensions;
+    bool binary = true;
+    int flags = 0;
+    int onloadRef = -1;
+    int onsaveRef = -1;
+  };
+#endif
+
   using Languages = std::map<std::string, LangInfo>;
   using Themes = std::map<std::string, ThemeInfo>;
   using DitheringMatrices = std::map<std::string, DitheringMatrixInfo>;
@@ -91,9 +109,9 @@ public:
             const std::string& name,
             const std::string& version,
             const std::string& displayName,
-            const bool isEnabled,
-            const bool isBuiltinExtension);
-  ~Extension();
+            bool isEnabled,
+            bool isBuiltinExtension);
+  ~Extension() = default;
 
   void executeInitActions();
   void executeExitActions();
@@ -102,7 +120,7 @@ public:
   const std::string& name() const { return m_name; }
   const std::string& version() const { return m_version; }
   const std::string& displayName() const { return m_displayName; }
-  const Category category() const { return m_category; }
+  Category category() const { return m_category; }
 
   const ExtensionItems& keys() const { return m_keys; }
   const Languages& languages() const { return m_languages; }
@@ -122,6 +140,7 @@ public:
   void removeMenuGroup(const std::string& id);
 
   void addMenuSeparator(ui::Widget* widget);
+  void addFileFormat(const CustomFormatDefinition& definition);
 #endif
 
   bool isEnabled() const { return m_isEnabled; }
@@ -135,17 +154,22 @@ public:
   bool hasPalettes() const { return !m_palettes.empty(); }
   bool hasDitheringMatrices() const { return !m_ditheringMatrices.empty(); }
 #ifdef ENABLE_SCRIPTING
+  bool hasFileFormats() const { return !m_fileFormats.empty(); }
   bool hasScripts() const { return !m_plugin.scripts.empty(); }
   void addScript(const std::string& fn);
 #endif
 
   bool isCurrentTheme() const;
 
+  obs::signal<void(ui::Widget*)> MenuItemRemoveWidget;
+  obs::signal<void(Command*)> MenuItemRemoveCommand;
+  obs::signal<void(const std::string&)> MenuGroupRemove;
+
 private:
-  void enable(const bool state);
-  void uninstall(const DeletePluginPref delPref);
-  void uninstallFiles(const std::string& path, const DeletePluginPref delPref);
-  void updateCategory(const Category newCategory);
+  void enable(bool state);
+  void uninstall(DeletePluginPref delPref);
+  void uninstallFiles(const std::string& path, DeletePluginPref delPref) const;
+  void updateCategory(Category newCategory);
 #ifdef ENABLE_SCRIPTING
   void initScripts();
   void exitScripts();
@@ -161,7 +185,7 @@ private:
   struct ScriptItem {
     std::string fn;
     int exitFunctionRef;
-    ScriptItem(const std::string& fn);
+    explicit ScriptItem(const std::string& fn);
   };
   struct PluginItem {
     enum Type { Command, MenuGroup, MenuSeparator };
@@ -174,6 +198,7 @@ private:
     std::vector<ScriptItem> scripts;
     std::vector<PluginItem> items;
   } m_plugin;
+  std::vector<FileFormat*> m_fileFormats;
 #endif
 
   std::string m_path;
@@ -200,16 +225,16 @@ public:
   iterator begin() { return m_extensions.begin(); }
   iterator end() { return m_extensions.end(); }
 
-  void enableExtension(Extension* extension, const bool state);
-  void uninstallExtension(Extension* extension, const DeletePluginPref delPref);
-  ExtensionInfo getCompressedExtensionInfo(const std::string& zipFn);
+  void enableExtension(Extension* extension, bool state);
+  void uninstallExtension(Extension* extension, DeletePluginPref delPref);
+  ExtensionInfo getCompressedExtensionInfo(const std::string& zipFn) const;
   Extension* installCompressedExtension(const std::string& zipFn, const ExtensionInfo& info);
 
-  std::string languagePath(const std::string& langId);
-  std::string themePath(const std::string& themeId);
-  std::string palettePath(const std::string& palId);
+  std::string languagePath(const std::string& langId) const;
+  std::string themePath(const std::string& themeId) const;
+  std::string palettePath(const std::string& palId) const;
   ExtensionItems palettes() const;
-  const render::DitheringMatrix* ditheringMatrix(const std::string& matrixId);
+  const render::DitheringMatrix* ditheringMatrix(const std::string& matrixId) const;
 
   // The returned collection can be used temporarily while
   // extensions are not installed/uninstalled. Each element is
@@ -218,7 +243,6 @@ public:
   // image file. These pointers cannot be deleted.
   std::vector<Extension::DitheringMatrixInfo*> ditheringMatrices();
 
-  obs::signal<void(Extension*)> NewExtension;
   obs::signal<void(Extension*)> KeysChange;
   obs::signal<void(Extension*)> LanguagesChange;
   obs::signal<void(Extension*)> ThemesChange;
@@ -229,7 +253,7 @@ public:
 private:
   Extension* loadExtension(const std::string& path,
                            const std::string& fullPackageFilename,
-                           const bool isBuiltinExtension);
+                           bool isBuiltinExtension);
   void generateExtensionSignals(Extension* extension);
 
   List m_extensions;

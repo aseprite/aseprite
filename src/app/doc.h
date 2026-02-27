@@ -101,6 +101,7 @@ public:
 
   const DocUndo* undoHistory() const { return m_undo.get(); }
   DocUndo* undoHistory() { return m_undo.get(); }
+  void resetUndoHistory();
 
   bool isUndoing() const;
 

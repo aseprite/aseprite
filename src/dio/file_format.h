@@ -12,30 +12,39 @@
 namespace dio {
 
 enum class FileFormat {
-  ERROR = -1,
-  UNKNOWN = 0,
+  ERROR = 0,
+  UNKNOWN = 1,
 
-  ASE_ANIMATION, // Aseprite File Format
-  ASE_PALETTE,   // Adobe Swatch Exchange
-  ACT_PALETTE,
-  BMP_IMAGE,
-  COL_PALETTE,
-  FLIC_ANIMATION,
-  GIF_ANIMATION,
-  GPL_PALETTE,
-  HEX_PALETTE,
-  ICO_IMAGES,
-  JPEG_IMAGE,
-  PAL_PALETTE,
-  PCX_IMAGE,
-  PNG_IMAGE,
-  SVG_IMAGE,
-  TARGA_IMAGE,
-  WEBP_ANIMATION,
-  CSS_STYLE,
-  PSD_IMAGE,
-  QOI_IMAGE,
+  ASE_ANIMATION = 2, // Aseprite File Format
+  ASE_PALETTE = 3,   // Adobe Swatch Exchange
+  ACT_PALETTE = 4,
+  BMP_IMAGE = 5,
+  COL_PALETTE = 6,
+  FLIC_ANIMATION = 7,
+  GIF_ANIMATION = 8,
+  GPL_PALETTE = 9,
+  HEX_PALETTE = 10,
+  ICO_IMAGES = 11,
+  JPEG_IMAGE = 12,
+  PAL_PALETTE = 13,
+  PCX_IMAGE = 14,
+  PNG_IMAGE = 15,
+  SVG_IMAGE = 16,
+  TARGA_IMAGE = 17,
+  WEBP_ANIMATION = 18,
+  CSS_STYLE = 19,
+  PSD_IMAGE = 20,
+  QOI_IMAGE = 21,
+
+  FIRST_CUSTOM = 22,
+  LAST_CUSTOM = 0x7fffffff
 };
+
+inline FileFormat register_custom_format()
+{
+  static int type = static_cast<int>(FileFormat::FIRST_CUSTOM);
+  return static_cast<FileFormat>(type++);
+}
 
 } // namespace dio
 

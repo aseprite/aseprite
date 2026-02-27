@@ -19,6 +19,7 @@
 
 #include "base/fs.h"
 #include "base/string.h"
+#include "dio/detect_format.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "os/window.h"
@@ -126,7 +127,12 @@ public:
 
   bool needThumbnail() const override
   {
-    return !isBrowsable() && m_thumbnail == nullptr && m_thumbnailProgress < 1.0;
+    bool need = !isBrowsable() && m_thumbnail == nullptr && m_thumbnailProgress < 1.0;
+    if (need && dio::detect_format_by_file_extension(m_filename) >= dio::FileFormat::FIRST_CUSTOM) {
+      // No thumbnails for custom formats
+      return false;
+    }
+    return need;
   }
 
   os::SurfaceRef getThumbnail() override;

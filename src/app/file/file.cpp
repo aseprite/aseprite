@@ -1068,6 +1068,12 @@ void FileOp::createDocument(Sprite* spr)
   m_document = new Doc(spr);
 }
 
+void FileOp::setDocument(Doc* doc)
+{
+  ASSERT(m_document == NULL);
+  m_document = doc;
+}
+
 void FileOp::postLoad()
 {
   if (m_document == NULL)

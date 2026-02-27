@@ -14,6 +14,7 @@
 #endif
 
 #include "app/script/engine.h"
+#include "lua.h"
 
 namespace app { namespace script {
 
@@ -34,6 +35,8 @@ enum class ResourceType {
 };
 
 void overwrite_unsecure_functions(lua_State* L);
+
+lua_CFunction get_original_io_open();
 
 bool ask_access(lua_State* L,
                 const char* filename,

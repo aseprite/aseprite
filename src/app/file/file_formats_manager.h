@@ -34,11 +34,12 @@ public:
   FileFormatsList::iterator begin();
   FileFormatsList::iterator end();
 
-  FileFormat* getFileFormat(const dio::FileFormat dioFormat) const;
+  FileFormat* getFileFormat(dio::FileFormat dioFormat) const;
+  void registerFormat(FileFormat* fileFormat);
+  void unregisterFormat(FileFormat* fileFormat);
 
 private:
   FileFormatsManager();
-  void registerFormat(FileFormat* fileFormat);
 
   FileFormatsList m_formats;
 };
