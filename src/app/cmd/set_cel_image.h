@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2025  Igara Studio S.A.
+// Copyright (C) 2025-2026  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,6 +10,7 @@
 
 #include "app/cmd.h"
 #include "app/cmd/with_cel.h"
+#include "app/cmd/with_suspended.h"
 #include "doc/image_ref.h"
 
 #include <sstream>
@@ -28,14 +29,9 @@ protected:
   size_t onMemSize() const override { return sizeof(*this); }
 
 private:
-  doc::ObjectId m_oldImageId;
-  doc::ObjectId m_newImageId;
-
-  // Reference used only to keep the copy of the new image from the
-  // SetCelImage() ctor until the SetCelImage::onExecute() call.  Then
-  // the reference is not used anymore.
   doc::ImageRef m_newImage;
-  doc::ImageRef m_copy;
+  WithSuspended<doc::ImageRef> m_suspendedImage;
+  gfx::Rect m_bounds;
 };
 
 }} // namespace app::cmd
