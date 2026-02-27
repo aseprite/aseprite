@@ -18,6 +18,8 @@
 #include "app/cmd/copy_rect.h"
 #include "app/cmd/copy_region.h"
 #include "app/cmd/patch_cel.h"
+#include "app/cmd/set_cel_image.h"
+#include "app/cmd/set_cel_position.h"
 #include "app/cmd_sequence.h"
 #include "app/context.h"
 #include "app/doc.h"
@@ -209,7 +211,9 @@ void ExpandCelCanvas::commit()
   }
 
   // Was the cel created in the start of the tool-loop?
-  if (m_celCreated) {
+  if ((m_celCreated) ||
+      // Was the cel without an image when the tool-loop started?
+      (m_dstImage && !m_celImage)) {
     ASSERT(m_cel);
     ASSERT(!m_celImage);
 
@@ -219,7 +223,8 @@ void ExpandCelCanvas::commit()
 
     if (previewSpecificLayerChanges()) {
       // We can temporary remove the cel.
-      static_cast<LayerImage*>(m_layer)->removeCel(m_cel);
+      if (m_celCreated)
+        m_layer->removeCel(m_cel);
 
       gfx::Rect trimBounds = getTrimDstImageBounds();
       if (!trimBounds.isEmpty()) {
@@ -240,16 +245,26 @@ void ExpandCelCanvas::commit()
           ImageRef newImage(trimDstImage(trimBounds));
           ASSERT(newImage);
 
-          m_cel->data()->setImage(newImage, m_layer);
-          m_cel->setPosition(m_cel->position() + (m_layer->isTilemap() ?
-                                                    // TODO we should get the exact coordinate from
-                                                    // getTrimDstImageBounds()
-                                                    m_grid.tileToCanvas(trimBounds.origin()) :
-                                                    trimBounds.origin()));
+          gfx::Point newPosition = (m_cel->position() +
+                                    // TODO we should get the exact coordinate from
+                                    // getTrimDstImageBounds()
+                                    (m_layer->isTilemap() ?
+                                       m_grid.tileToCanvas(trimBounds.origin()) :
+                                       trimBounds.origin()));
+
+          if (m_celCreated) {
+            m_cel->data()->setImage(newImage, m_layer);
+            m_cel->setPosition(newPosition);
+          }
+          else {
+            m_cmds->executeAndAdd(new cmd::SetCelImage(m_cel, newImage));
+            m_cmds->executeAndAdd(new cmd::SetCelPosition(m_cel, newPosition));
+          }
         }
 
         // And add the cel again in the layer.
-        m_cmds->executeAndAdd(new cmd::AddCel(m_layer, m_cel));
+        if (m_celCreated)
+          m_cmds->executeAndAdd(new cmd::AddCel(m_layer, m_cel));
       }
       else {
         // Delete unused cel

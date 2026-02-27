@@ -315,6 +315,7 @@ target_sources(app-lib PRIVATE
   cmd/set_cel_bounds.cpp
   cmd/set_cel_data.cpp
   cmd/set_cel_frame.cpp
+  cmd/set_cel_image.cpp
   cmd/set_cel_opacity.cpp
   cmd/set_cel_position.cpp
   cmd/set_cel_zindex.cpp

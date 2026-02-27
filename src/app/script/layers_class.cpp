@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -31,7 +31,7 @@ struct LayersObj {
     for (const Layer* layer : sprite->root()->layers())
       layers.push_back(layer->id());
   }
-  LayersObj(LayerGroup* group)
+  LayersObj(Layer* group)
   {
     for (const Layer* layer : group->layers())
       layers.push_back(layer->id());
@@ -102,7 +102,7 @@ void push_sprite_layers(lua_State* L, Sprite* sprite)
   push_new<LayersObj>(L, sprite);
 }
 
-void push_group_layers(lua_State* L, LayerGroup* group)
+void push_group_layers(lua_State* L, Layer* group)
 {
   push_new<LayersObj>(L, group);
 }

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -51,9 +51,6 @@ void ClearCelCommand::onExecute(Context* context)
     const Site& site = writer.site();
     if (site.inTimeline() && !site.selectedLayers().empty() && !site.selectedFrames().empty()) {
       for (Layer* layer : site.selectedLayers()) {
-        if (!layer->isImage())
-          continue;
-
         if (!layer->isEditableHierarchy()) {
           nonEditableLayers = true;
           continue;

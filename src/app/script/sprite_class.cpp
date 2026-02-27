@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-2026  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -455,8 +455,8 @@ int Sprite_deleteFrame(lua_State* L)
 int Sprite_newCel(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
-  auto layerBase = get_docobj<Layer>(L, 2);
-  if (!layerBase->isImage())
+  auto layer = get_docobj<Layer>(L, 2);
+  if (!layer->acceptCels())
     return luaL_error(L, "unexpected kind of layer in Sprite:newCel()");
 
   frame_t frame = get_frame_number_from_arg(L, 3);
@@ -464,7 +464,6 @@ int Sprite_newCel(lua_State* L)
     return luaL_error(L, "frame index out of bounds %d", frame + 1);
 
   Doc* doc = static_cast<Doc*>(sprite->document());
-  LayerImage* layer = static_cast<LayerImage*>(layerBase);
   ImageRef image(nullptr);
 
   Image* srcImage = may_get_image_from_arg(L, 4);
@@ -488,8 +487,11 @@ int Sprite_newCel(lua_State* L)
   else {
     if (srcImage)
       image.reset(Image::createCopy(srcImage));
-    else
+    else if (layer->isImage())
       image.reset(Image::create(sprite->spec()));
+    else {
+      // TODO copy any other kind of cel data
+    }
 
     cel = new Cel(frame, image);
     cel->setPosition(pos);

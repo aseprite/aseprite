@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2023 Igara Studio S.A.
+// Copyright (c) 2023-2025 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -27,7 +27,7 @@ void write_cel(std::ostream& os, const Cel* cel)
 {
   write32(os, cel->id());
   write16(os, cel->frame());
-  write32(os, cel->dataRef()->id());
+  write32(os, cel->data() ? cel->data()->id() : 0);
   write16(os, uint16_t(int16_t(cel->zIndex())));
 }
 
@@ -40,9 +40,12 @@ Cel* read_cel(std::istream& is, SubObjectsIO* subObjects, bool setId)
   if (is.eof())
     zIndex = 0;
 
-  CelDataRef celData(subObjects->getCelDataRef(celDataId));
-  if (!celData)
-    return nullptr;
+  CelDataRef celData;
+  if (celDataId) {
+    celData = subObjects->getCelDataRef(celDataId);
+    if (!celData)
+      return nullptr;
+  }
 
   auto cel = std::make_unique<Cel>(frame, celData);
   cel->setZIndex(zIndex);

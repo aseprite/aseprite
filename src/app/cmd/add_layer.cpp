@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -55,7 +56,7 @@ void AddLayer::onRedo()
 
 void AddLayer::addLayer(Layer* group, Layer* newLayer, Layer* afterThis)
 {
-  static_cast<LayerGroup*>(group)->insertLayer(newLayer, afterThis);
+  group->insertLayer(newLayer, afterThis);
   group->incrementVersion();
   group->sprite()->incrementVersion();
 
@@ -74,7 +75,7 @@ void AddLayer::removeLayer(Layer* group, Layer* layer)
   ev.layer(layer);
   doc->notify_observers<DocEvent&>(&DocObserver::onBeforeRemoveLayer, ev);
 
-  static_cast<LayerGroup*>(group)->removeLayer(layer);
+  group->removeLayer(layer);
   group->incrementVersion();
   group->sprite()->incrementVersion();
 

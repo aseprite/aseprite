@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -49,11 +49,11 @@ static void move_or_copy_cels(DocApi& api,
     auto dstFrameEnd = dstFrames.end();
 
     for (; srcFrame != srcFrameEnd && dstFrame != dstFrameEnd; ++srcFrame, ++dstFrame) {
-      if (i >= 0 && i < srcLayers.size() && srcLayers[i]->isImage()) {
-        LayerImage* srcLayer = static_cast<LayerImage*>(srcLayers[i]);
+      if (i >= 0 && i < srcLayers.size() && srcLayers[i]->acceptCels()) {
+        Layer* srcLayer = srcLayers[i];
 
-        if (i < dstLayers.size() && dstLayers[i]->isImage()) {
-          LayerImage* dstLayer = static_cast<LayerImage*>(dstLayers[i]);
+        if (i < dstLayers.size() && dstLayers[i]->acceptCels()) {
+          Layer* dstLayer = dstLayers[i];
 
 #ifdef TRACE_RANGE_OPS
           std::clog << (op == Move ? "Moving" : "Copying") << " cel " << srcLayer->name() << "["
@@ -186,12 +186,12 @@ static DocRange move_or_copy_frames(DocApi& api,
   return result;
 }
 
-static bool has_child(LayerGroup* parent, Layer* child)
+static bool has_child(Layer* parent, Layer* child)
 {
   for (auto c : parent->layers()) {
     if (c == child)
       return true;
-    else if (c->isGroup() && has_child(static_cast<LayerGroup*>(c), child))
+    else if (c->isGroup() && has_child(c, child))
       return true;
   }
   return false;
@@ -205,11 +205,11 @@ static DocRange drop_range_op(Doc* doc,
                               DocRange to)
 {
   // Convert "first child" operation into a insert after last child.
-  LayerGroup* parent = nullptr;
+  Layer* parent = nullptr;
   if (to.type() == DocRange::kLayers && !to.selectedLayers().empty()) {
-    if (place == kDocRangeFirstChild && (*to.selectedLayers().begin())->isGroup()) {
+    if (place == kDocRangeFirstChild) {
       place = kDocRangeAfter;
-      parent = static_cast<LayerGroup*>((*to.selectedLayers().begin()));
+      parent = *to.selectedLayers().begin();
 
       to.clearRange();
       to.startRange(parent->lastLayer(), -1, DocRange::kLayers);
@@ -221,8 +221,7 @@ static DocRange drop_range_op(Doc* doc,
 
     // Check that we're not moving a group inside itself
     for (auto moveThis : from.selectedLayers()) {
-      if (moveThis == parent ||
-          (moveThis->isGroup() && has_child(static_cast<LayerGroup*>(moveThis), parent)))
+      if (moveThis == parent || (moveThis->isGroup() && has_child(moveThis, parent)))
         return from;
     }
   }
@@ -498,17 +497,13 @@ void reverse_frames(Doc* doc, const DocRange& range)
   }
   else if (swapCels) {
     for (Layer* layer : layers) {
-      if (!layer->isImage())
-        continue;
-
       for (frame_t frame = frameBegin, frameRev = frameEnd;
            frame != (frameBegin + frameEnd) / 2 + 1;
            ++frame, --frameRev) {
         if (frame == frameRev)
           continue;
 
-        LayerImage* imageLayer = static_cast<LayerImage*>(layer);
-        api.swapCel(imageLayer, frame, frameRev);
+        api.swapCel(layer, frame, frameRev);
       }
     }
   }

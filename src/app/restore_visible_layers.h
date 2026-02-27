@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2025  Igara Studio S.A.
 // Copyright (C) 2016  David Capello
 //
 // This program is distributed under the terms of
@@ -27,7 +28,7 @@ public:
   void showSelectedLayers(doc::Sprite* sprite, const doc::SelectedLayers& selLayers);
 
 private:
-  void setLayerVisiblity(doc::LayerGroup* group, const doc::SelectedLayers& selLayers);
+  void setLayerVisiblity(doc::Layer* group, const doc::SelectedLayers& selLayers);
 
   std::vector<std::pair<doc::Layer*, bool>> m_restore;
 };

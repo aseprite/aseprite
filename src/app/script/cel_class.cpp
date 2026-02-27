@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2026  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -138,7 +138,7 @@ int Cel_set_position(lua_State* L)
   auto cel = get_docobj<Cel>(L, 1);
   const gfx::Point pos = convert_args_into_point(L, 2);
   Tx tx(cel->sprite());
-  tx(new cmd::SetCelPosition(cel, pos.x, pos.y));
+  tx(new cmd::SetCelPosition(cel, pos));
   tx.commit();
   return 0;
 }

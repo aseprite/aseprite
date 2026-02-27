@@ -18,8 +18,16 @@
 #include "doc/cel_io.h"
 #include "doc/image_io.h"
 #include "doc/layer.h"
+#include "doc/layer_audio.h"
+#include "doc/layer_fill.h"
+#include "doc/layer_fx.h"
+#include "doc/layer_hitbox.h"
 #include "doc/layer_io.h"
+#include "doc/layer_mask.h"
+#include "doc/layer_subsprite.h"
+#include "doc/layer_text.h"
 #include "doc/layer_tilemap.h"
+#include "doc/layer_vector.h"
 #include "doc/sprite.h"
 #include "doc/string_io.h"
 #include "doc/subobjects_io.h"
@@ -46,14 +54,18 @@ void write_layer(std::ostream& os, const Layer* layer)
 
   switch (layer->type()) {
     case ObjectType::LayerImage:
-    case ObjectType::LayerTilemap: {
-      const LayerImage* imgLayer = static_cast<const LayerImage*>(layer);
-      CelConstIterator it, begin = imgLayer->getCelBegin();
-      CelConstIterator end = imgLayer->getCelEnd();
+    case ObjectType::LayerTilemap:
+    case ObjectType::LayerText:
+    case ObjectType::LayerVector:
+    case ObjectType::LayerAudio:
+    case ObjectType::LayerHitbox:  {
+      CelConstIterator it;
+      const CelConstIterator begin = layer->getCelBegin();
+      const CelConstIterator end = layer->getCelEnd();
 
       // Blend mode & opacity
-      write16(os, (int)imgLayer->blendMode());
-      write8(os, imgLayer->opacity());
+      write16(os, (int)layer->blendMode());
+      write8(os, layer->opacity());
 
       // Images
       int images = 0;
@@ -61,7 +73,8 @@ void write_layer(std::ostream& os, const Layer* layer)
       for (it = begin; it != end; ++it) {
         const Cel* cel = *it;
         if (!cel->link()) {
-          ++images;
+          if (cel->image())
+            ++images;
           ++celdatas;
         }
       }
@@ -69,7 +82,7 @@ void write_layer(std::ostream& os, const Layer* layer)
       write16(os, images);
       for (it = begin; it != end; ++it) {
         const Cel* cel = *it;
-        if (!cel->link())
+        if (!cel->link() && cel->image())
           write_image(os, cel->image());
       }
 
@@ -81,7 +94,7 @@ void write_layer(std::ostream& os, const Layer* layer)
       }
 
       // Cels
-      write16(os, imgLayer->getCelsCount());
+      write16(os, layer->getCelsCount());
       for (it = begin; it != end; ++it) {
         const Cel* cel = *it;
         write_cel(os, cel);
@@ -119,60 +132,90 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const Seri
 
   switch (static_cast<ObjectType>(layer_type)) {
     case ObjectType::LayerImage:
-    case ObjectType::LayerTilemap: {
-      LayerImage* imgLayer;
-      if ((static_cast<ObjectType>(layer_type)) == ObjectType::LayerTilemap) {
-        imgLayer = new LayerTilemap(subObjects->sprite(), 0);
-      }
-      else {
-        imgLayer = new LayerImage(subObjects->sprite());
-      }
-
+    case ObjectType::LayerTilemap:
+    case ObjectType::LayerFill:
+    case ObjectType::LayerMask:
+    case ObjectType::LayerFx:
+    case ObjectType::LayerText:
+    case ObjectType::LayerVector:
+    case ObjectType::LayerAudio:
+    case ObjectType::LayerSubsprite:
+    case ObjectType::LayerHitbox:    {
       // Create layer
-      layer.reset(imgLayer);
+      switch ((static_cast<ObjectType>(layer_type))) {
+        case ObjectType::LayerImage:
+          layer = std::make_unique<LayerImage>(subObjects->sprite());
+          break;
+        case ObjectType::LayerTilemap:
+          layer = std::make_unique<LayerTilemap>(subObjects->sprite(), 0);
+          break;
+        case ObjectType::LayerFill:
+          layer = std::make_unique<LayerFill>(subObjects->sprite());
+          break;
+        case ObjectType::LayerMask:
+          layer = std::make_unique<LayerMask>(subObjects->sprite());
+          break;
+        case ObjectType::LayerFx: layer = std::make_unique<LayerFx>(subObjects->sprite()); break;
+        case ObjectType::LayerText:
+          layer = std::make_unique<LayerText>(subObjects->sprite());
+          break;
+        case ObjectType::LayerVector:
+          layer = std::make_unique<LayerVector>(subObjects->sprite());
+          break;
+        case ObjectType::LayerAudio:
+          layer = std::make_unique<LayerAudio>(subObjects->sprite());
+          break;
+        case ObjectType::LayerSubsprite:
+          layer = std::make_unique<LayerSubsprite>(subObjects->sprite());
+          break;
+        case ObjectType::LayerHitbox:
+          layer = std::make_unique<LayerHitbox>(subObjects->sprite());
+          break;
+      }
 
       // Blend mode & opacity
-      imgLayer->setBlendMode((BlendMode)read16(is));
-      imgLayer->setOpacity(read8(is));
+      layer->setBlendMode((BlendMode)read16(is));
+      layer->setOpacity(read8(is));
 
       // Read images
-      int images = read16(is); // Number of images
+      const int images = read16(is); // Number of images
       for (int c = 0; c < images; ++c) {
         ImageRef image(read_image(is));
         subObjects->addImageRef(image);
       }
 
       // Read celdatas
-      int celdatas = read16(is);
+      const int celdatas = read16(is);
       for (int c = 0; c < celdatas; ++c) {
         CelDataRef celdata(read_celdata(is, subObjects, true, serial));
         subObjects->addCelDataRef(celdata);
       }
 
       // Read cels
-      int cels = read16(is); // Number of cels
+      const int cels = read16(is); // Number of cels
       for (int c = 0; c < cels; ++c) {
         // Read the cel
         Cel* cel = read_cel(is, subObjects);
+        ASSERT(cel);
 
         // Add the cel in the layer
-        imgLayer->addCel(cel);
+        layer->addCel(cel);
       }
 
       // Create the layer tilemap
-      if (imgLayer->isTilemap()) {
-        doc::tileset_index tsi = read32(is); // Tileset index
-        static_cast<LayerTilemap*>(imgLayer)->setTilesetIndex(tsi);
+      if (layer->isTilemap()) {
+        const doc::tileset_index tsi = read32(is); // Tileset index
+        static_cast<LayerTilemap*>(layer.get())->setTilesetIndex(tsi);
       }
       break;
     }
 
     case ObjectType::LayerGroup: {
       // Create the layer group
-      layer.reset(new LayerGroup(subObjects->sprite()));
+      layer = std::make_unique<LayerGroup>(subObjects->sprite());
 
       // Number of sub-layers
-      int layers = read16(is);
+      const int layers = read16(is);
       for (int c = 0; c < layers; c++) {
         Layer* child = read_layer(is, subObjects, serial);
         if (child)

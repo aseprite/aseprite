@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -213,8 +213,10 @@ void Sprite::setSize(int width, int height)
 void Sprite::setColorSpace(const gfx::ColorSpaceRef& colorSpace)
 {
   m_spec.setColorSpace(colorSpace);
-  for (auto cel : uniqueCels())
-    cel->image()->setColorSpace(colorSpace);
+  for (Cel* cel : uniqueCels()) {
+    if (Image* img = cel->image())
+      img->setColorSpace(colorSpace);
+  }
 }
 
 bool Sprite::isOpaque() const
@@ -301,7 +303,7 @@ Layer* Sprite::firstLayer() const
 {
   Layer* layer = root()->firstLayer();
   while (layer && layer->isGroup())
-    layer = static_cast<LayerGroup*>(layer)->firstLayer();
+    layer = layer->firstLayer();
   return layer;
 }
 
@@ -309,7 +311,7 @@ Layer* Sprite::firstBrowsableLayer() const
 {
   Layer* layer = root()->firstLayer();
   while (layer->isBrowsable())
-    layer = static_cast<LayerGroup*>(layer)->firstLayer();
+    layer = layer->firstLayer();
   return layer;
 }
 
@@ -532,7 +534,7 @@ void Sprite::setDurationForAllFrames(int msecs)
 ImageRef Sprite::getImageRef(ObjectId imageId)
 {
   for (Cel* cel : cels()) {
-    if (cel->image()->id() == imageId)
+    if (cel->imageId() == imageId)
       return cel->imageRef();
   }
   if (hasTilesets()) {
@@ -565,7 +567,7 @@ CelDataRef Sprite::getCelDataRef(ObjectId celDataId)
 void Sprite::replaceImage(ObjectId curImageId, const ImageRef& newImage)
 {
   for (Cel* cel : cels()) {
-    if (cel->image()->id() == curImageId)
+    if (cel->imageId() == curImageId)
       cel->data()->setImage(newImage, cel->layer());
   }
 
@@ -604,7 +606,7 @@ void Sprite::replaceTileset(tileset_index tsi, Tileset* newTileset)
 void Sprite::getImages(std::vector<ImageRef>& images) const
 {
   for (Cel* cel : uniqueCels())
-    if (cel->image()->pixelFormat() != IMAGE_TILEMAP)
+    if (cel->image() && cel->image()->pixelFormat() != IMAGE_TILEMAP)
       images.push_back(cel->imageRef());
 
   if (hasTilesets()) {
