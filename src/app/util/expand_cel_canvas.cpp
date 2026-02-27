@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -222,10 +222,6 @@ void ExpandCelCanvas::commit()
     validateDestCanvas(gfx::Region(m_bounds));
 
     if (previewSpecificLayerChanges()) {
-      // We can temporary remove the cel.
-      if (m_celCreated)
-        m_layer->removeCel(m_cel);
-
       gfx::Rect trimBounds = getTrimDstImageBounds();
       if (!trimBounds.isEmpty()) {
         // Convert the image to tiles
@@ -262,14 +258,23 @@ void ExpandCelCanvas::commit()
           }
         }
 
-        // And add the cel again in the layer.
-        if (m_celCreated)
+        // Add the cel again into the layer with a transaction.
+        if (m_celCreated) {
+          m_layer->removeCel(m_cel);
           m_cmds->executeAndAdd(new cmd::AddCel(m_layer, m_cel));
+        }
       }
       else {
-        // Delete unused cel
-        delete m_cel;
-        m_cel = nullptr;
+        if (m_celCreated) {
+          m_layer->removeCel(m_cel);
+
+          // Delete unused cel
+          delete m_cel;
+          m_cel = nullptr;
+        }
+        else {
+          m_cmds->executeAndAdd(new cmd::SetCelImage(m_cel, nullptr));
+        }
       }
     }
     // We are selecting...
