@@ -14,6 +14,8 @@
 // program was not well-suited for a rowstride > image width.
 // #define DOC_USE_ALIGNED_PIXELS 1
 
+  #define DOC_USE_ALIGNED_PIXELS 1
+
   #if DOC_USE_ALIGNED_PIXELS
     #define doc_align_size(size)    (base_align_size(size))
     #define doc_aligned_alloc(size) base_aligned_alloc(size)

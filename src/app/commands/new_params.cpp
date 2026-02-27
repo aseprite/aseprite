@@ -103,6 +103,12 @@ void Param<doc::algorithm::ResizeMethod>::fromString(const std::string& value)
 {
   if (base::utf8_icmp(value, "bilinear") == 0)
     setValue(doc::algorithm::RESIZE_METHOD_BILINEAR);
+  else if (base::utf8_icmp(value, "bicubic") == 0)
+    setValue(doc::algorithm::RESIZE_METHOD_BICUBIC);
+  else if (base::utf8_icmp(value, "lanczos3") == 0)
+    setValue(doc::algorithm::RESIZE_METHOD_LANCZOS3);
+  else if (base::utf8_icmp(value, "gaussian") == 0)
+    setValue(doc::algorithm::RESIZE_METHOD_GAUSSIAN);
   else if (base::utf8_icmp(value, "rotsprite") == 0)
     setValue(doc::algorithm::RESIZE_METHOD_ROTSPRITE);
   else
