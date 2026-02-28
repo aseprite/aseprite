@@ -45,6 +45,7 @@
 #include "app/context.h"
 #include "app/doc.h"
 #include "app/doc_undo.h"
+#include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
 #include "app/snap_to_grid.h"
 #include "app/transaction.h"
@@ -725,29 +726,23 @@ Layer* DocApi::copyLayerWithSprite(doc::Layer* layer, doc::Sprite* sprite)
   return clone.release();
 }
 
-Layer* DocApi::duplicateLayerAfter(Layer* sourceLayer,
-                                   LayerGroup* parent,
-                                   Layer* afterLayer,
-                                   const std::string& nameSuffix)
+Layer* DocApi::duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer* afterLayer)
 {
   ASSERT(parent);
   Layer* newLayerPtr = copyLayerWithSprite(sourceLayer, parent->sprite());
 
-  newLayerPtr->setName(newLayerPtr->name() + nameSuffix);
+  newLayerPtr->setName(Strings::general_copy_of(newLayerPtr->name()));
 
   addLayer(parent, newLayerPtr, afterLayer);
 
   return newLayerPtr;
 }
 
-Layer* DocApi::duplicateLayerBefore(Layer* sourceLayer,
-                                    LayerGroup* parent,
-                                    Layer* beforeLayer,
-                                    const std::string& nameSuffix)
+Layer* DocApi::duplicateLayerBefore(Layer* sourceLayer, LayerGroup* parent, Layer* beforeLayer)
 {
   ASSERT(parent);
   Layer* afterThis = (beforeLayer ? beforeLayer->getPreviousBrowsable() : nullptr);
-  Layer* newLayer = duplicateLayerAfter(sourceLayer, parent, afterThis, nameSuffix);
+  Layer* newLayer = duplicateLayerAfter(sourceLayer, parent, afterThis);
   if (newLayer)
     restackLayerBefore(newLayer, parent, beforeLayer);
   return newLayer;
