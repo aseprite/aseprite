@@ -150,7 +150,8 @@ void PasteTextCommand::onExecute(Context* ctx)
 
     if (ui) {
       // TODO: Do we want to make this selectable result available when not using UI?
-      Editor::activeEditor()->pasteImage(image.get(), nullptr, &point);
+      Editor::activeEditor()->pasteImage(
+        image.get(), nullptr, (params().x.isSet() || params().y.isSet()) ? &point : nullptr);
       return;
     }
 
