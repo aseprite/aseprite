@@ -52,6 +52,9 @@ public:
   // Returns true if this ink is shading
   virtual bool isShading() const { return false; }
 
+  // Returns true if this ink picks random colors from a shade
+  virtual bool isRandomColor() const { return false; }
+
   // Returns true if this ink moves the scroll only
   virtual bool isScrollMovement() const { return false; }
 

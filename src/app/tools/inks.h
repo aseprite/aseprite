@@ -204,6 +204,26 @@ public:
   }
 };
 
+class RandomColorInk : public PaintInk {
+public:
+  RandomColorInk() : PaintInk(PaintInk::Simple) {}
+
+  Ink* clone() override { return new RandomColorInk(*this); }
+
+  bool isPaint() const override { return true; }
+  bool isRandomColor() const override { return true; }
+
+  void prepareInk(ToolLoop* loop) override
+  {
+    if (!loop->getShade().empty()) {
+      setProc(get_ink_proc<RandomColorInkProcessing>(loop));
+    }
+    else {
+      PaintInk::prepareInk(loop);
+    }
+  }
+};
+
 class GradientInk : public BaseInk {
 public:
   Ink* clone() override { return new GradientInk(*this); }

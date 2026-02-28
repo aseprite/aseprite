@@ -1298,6 +1298,9 @@
       <item command="SetInkType" text="@inks.shading" group="ink_types">
         <param name="type" value="shading" />
       </item>
+      <item command="SetInkType" text="@inks.random_color" group="ink_types">
+        <param name="type" value="random_color" />
+      </item>
       <separator />
       <item command="SetSameInk" text="@general.same_in_all_tools" group="ink_options" />
     </menu>

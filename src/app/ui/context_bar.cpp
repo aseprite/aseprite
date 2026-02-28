@@ -611,6 +611,7 @@ public:
       case InkType::COPY_COLOR:        part = theme->parts.inkCopyColor(); break;
       case InkType::LOCK_ALPHA:        part = theme->parts.inkLockAlpha(); break;
       case InkType::SHADING:           part = theme->parts.inkShading(); break;
+      case InkType::RANDOM_COLOR:      part = theme->parts.inkShading(); break;
     }
 
     getItem(0)->setIcon(part);
@@ -2339,7 +2340,9 @@ void ContextBar::updateForTool(tools::Tool* tool)
 
     hasInkWithOpacity = ((isPaint && tools::inkHasOpacity(toolPref->ink())) || (isEffect));
 
-    hasInkShades = (isPaint && !isEffect && toolPref->ink() == InkType::SHADING);
+    hasInkShades = (isPaint && !isEffect &&
+                    (toolPref->ink() == InkType::SHADING ||
+                     toolPref->ink() == InkType::RANDOM_COLOR));
 
     m_freehandAlgo->setFreehandAlgorithm(toolPref->freehandAlgorithm());
 

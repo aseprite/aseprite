@@ -7,6 +7,7 @@
 
 #include "app/color_utils.h"
 #include "app/tools/symmetry.h"
+
 #include "app/util/wrap_point.h"
 #include "app/util/wrap_value.h"
 #include "doc/blend_funcs.h"
@@ -22,6 +23,8 @@
 #include "gfx/rgb.h"
 #include "render/dithering.h"
 #include "render/gradient.h"
+#include <cstdlib>
+#include <vector>
 
 namespace app { namespace tools {
 
@@ -962,6 +965,120 @@ public:
 
 private:
   PixelShadingInkHelper<ImageTraits> m_shading;
+};
+
+//////////////////////////////////////////////////////////////////////
+// Random Color Ink Helper
+//////////////////////////////////////////////////////////////////////
+
+template<typename ImageTraits>
+class PixelRandomColorHelper {
+public:
+  PixelRandomColorHelper(ToolLoop* loop) { static_assert(false, "Use specialized cases"); }
+};
+
+template<>
+class PixelRandomColorHelper<RgbTraits> {
+public:
+  using pixel_t = RgbTraits::pixel_t;
+
+  PixelRandomColorHelper(ToolLoop* loop) : m_shadePalette(0, 1)
+  {
+    const Shade shade = loop->getShade();
+    m_shadePalette.resize(shade.size());
+    int i = 0;
+    for (app::Color color : shade) {
+      m_shadePalette.setEntry(i++, color_utils::color_for_layer(color, loop->getLayer()));
+    }
+  }
+
+  pixel_t operator()(const pixel_t src) const
+  {
+    if (m_shadePalette.size() == 0)
+      return src;
+    int i = std::rand() % m_shadePalette.size();
+    return m_shadePalette.getEntry(i);
+  }
+
+private:
+  Palette m_shadePalette;
+};
+
+template<>
+class PixelRandomColorHelper<GrayscaleTraits> {
+public:
+  using pixel_t = GrayscaleTraits::pixel_t;
+
+  PixelRandomColorHelper(ToolLoop* loop) : m_shadePalette(0, 1)
+  {
+    Shade shade = loop->getShade();
+    m_shadePalette.resize(shade.size());
+
+    const ColorTarget target((loop->getLayer()->isBackground() ? ColorTarget::BackgroundLayer :
+                                                                 ColorTarget::TransparentLayer),
+                             IMAGE_RGB,
+                             0);
+
+    int i = 0;
+    for (app::Color color : shade) {
+      m_shadePalette.setEntry(i++, color_utils::color_for_target(color, target));
+    }
+  }
+
+  pixel_t operator()(const pixel_t src) const
+  {
+    if (m_shadePalette.size() == 0)
+      return src;
+    int i = std::rand() % m_shadePalette.size();
+    color_t rgba = m_shadePalette.getEntry(i);
+    return graya(rgba_getr(rgba), rgba_geta(rgba));
+  }
+
+private:
+  Palette m_shadePalette;
+};
+
+template<>
+class PixelRandomColorHelper<IndexedTraits> {
+public:
+  using pixel_t = IndexedTraits::pixel_t;
+
+  PixelRandomColorHelper(ToolLoop* loop)
+  {
+    const Shade shade = loop->getShade();
+    for (app::Color color : shade) {
+      int idx = color.getIndex();
+      if (idx >= 0)
+        m_indices.push_back(idx);
+    }
+  }
+
+  pixel_t operator()(pixel_t i) const
+  {
+    if (m_indices.empty())
+      return i;
+    return m_indices[std::rand() % m_indices.size()];
+  }
+
+private:
+  std::vector<int> m_indices;
+};
+
+//////////////////////////////////////////////////////////////////////
+// Random Color Ink
+//////////////////////////////////////////////////////////////////////
+
+template<typename ImageTraits>
+class RandomColorInkProcessing
+  : public DoubleInkProcessing<RandomColorInkProcessing<ImageTraits>, ImageTraits> {
+public:
+  using Base = DoubleInkProcessing<RandomColorInkProcessing<ImageTraits>, ImageTraits>;
+
+  RandomColorInkProcessing(ToolLoop* loop) : m_random(loop) {}
+  void processPixel(int x, int y) { *Base::m_dstAddress = m_random(*Base::m_srcAddress); }
+
+private:
+  PixelRandomColorHelper<ImageTraits> m_random;
 };
 
 //////////////////////////////////////////////////////////////////////

@@ -370,6 +370,7 @@ Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(fa
   setfield_integer(L, "COPY_COLOR", app::tools::InkType::COPY_COLOR);
   setfield_integer(L, "LOCK_ALPHA", app::tools::InkType::LOCK_ALPHA);
   setfield_integer(L, "SHADING", app::tools::InkType::SHADING);
+  setfield_integer(L, "RANDOM_COLOR", app::tools::InkType::RANDOM_COLOR);
   lua_pop(L, 1);
 
   lua_newtable(L);
