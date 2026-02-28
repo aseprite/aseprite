@@ -270,6 +270,7 @@ Doc* generate_sprite_sheet_from_params(DocExporter& exporter,
   exporter.setSplitTags(splitTags);
   exporter.setIgnoreEmptyCels(ignoreEmpty);
   exporter.setMergeDuplicates(mergeDuplicates);
+  exporter.setSelectedTag(tagName);
   if (listLayers)
     exporter.setListLayers(true);
   if (listTags)
