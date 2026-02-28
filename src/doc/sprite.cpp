@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -221,6 +221,18 @@ bool Sprite::isOpaque() const
 {
   Layer* bg = backgroundLayer();
   return (bg && bg->isVisible());
+}
+
+bool Sprite::isColorUsed(const doc::color_t c) const
+{
+  ASSERT(pixelFormat() == IMAGE_RGB || pixelFormat() == IMAGE_GRAYSCALE);
+  for (Cel* cel : cels()) {
+    if (cel && cel->image()) {
+      if (is_color_used(cel->image(), c))
+        return true;
+    }
+  }
+  return false;
 }
 
 bool Sprite::needAlpha() const
