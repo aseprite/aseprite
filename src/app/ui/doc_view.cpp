@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -21,18 +21,24 @@
 #include "app/context_access.h"
 #include "app/doc_access.h"
 #include "app/doc_event.h"
+#include "app/fonts/font_info.h"
+#include "app/fonts/fonts.h"
 #include "app/i18n/strings.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
+#include "app/tools/tool_box.h"
 #include "app/tx.h"
+#include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/editor/navigate_state.h"
+#include "app/ui/editor/writing_text_state.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/timeline/timeline.h"
+#include "app/ui/toolbar.h"
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
@@ -51,6 +57,7 @@
 #include "ui/system.h"
 #include "ui/view.h"
 
+#include <cmath>
 #include <typeinfo>
 
 namespace app {
@@ -535,7 +542,7 @@ bool DocView::onCanPaste(Context* ctx)
                       ContextFlags::ActiveLayerIsEditable | ContextFlags::ActiveLayerIsImage) &&
       !ctx->checkFlags(ContextFlags::ActiveLayerIsReference)) {
     auto format = ctx->clipboard()->format();
-    if (format == ClipboardFormat::Image) {
+    if (format == ClipboardFormat::Image || format == ClipboardFormat::Text) {
       return true;
     }
     else if (format == ClipboardFormat::Tilemap &&
@@ -597,6 +604,54 @@ bool DocView::onPaste(Context* ctx, const gfx::Point* position)
       clipboard->format() == ClipboardFormat::Tilemap ||
       clipboard->format() == ClipboardFormat::Slices) {
     clipboard->paste(ctx, true, position);
+    return true;
+  }
+  else if (clipboard->format() == ClipboardFormat::Text) {
+    std::string text;
+    if (!clipboard->getClipboardText(text) || text.empty())
+      return false;
+    Editor* editor = m_editor;
+    if (!editor)
+      return false;
+    doc::Sprite* sprite = editor->sprite();
+    if (!sprite)
+      return false;
+    tools::Tool* textTool = App::instance()->toolBox()->getToolById("text");
+    if (textTool)
+      ToolBar::instance()->selectTool(textTool);
+
+    // Calculate text bounds based on font size, considering multiline text
+    FontInfo fontInfo = App::instance()->contextBar()->fontInfo();
+    int textWidth = sprite->width() / 2;
+    int textHeight = 16;
+    if (auto font = Fonts::instance()->fontFromInfo(fontInfo)) {
+      float maxLineWidth = 0;
+      int lineCount = 1;
+      int start = 0;
+      int pos = 0;
+      while ((pos = text.find('\n', start)) != std::string::npos) {
+        std::string line = text.substr(start, pos - start);
+        maxLineWidth = std::max(maxLineWidth, font->textLength(line));
+        ++lineCount;
+        start = pos + 1;
+      }
+      std::string lastLine = text.substr(start);
+      textWidth = int(std::max(maxLineWidth, font->textLength(lastLine)));
+      textHeight = int(font->lineHeight() * lineCount);
+    }
+
+    // Center the text on the visible sprite area
+    gfx::Rect bounds(0, 0, textWidth, textHeight);
+    const gfx::Rect visibleSpriteBounds = editor->getVisibleSpriteBounds();
+    bounds.x = std::max(
+      0,
+      std::min(visibleSpriteBounds.center().x - textWidth / 2, sprite->width() - textWidth));
+    bounds.y = std::max(
+      0,
+      std::min(visibleSpriteBounds.center().y - textHeight / 2, sprite->height() - textHeight));
+
+    EditorStatePtr newState = std::make_shared<WritingTextState>(editor, bounds, text);
+    editor->setState(newState);
     return true;
   }
   else

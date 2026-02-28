@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2024-2025  Igara Studio S.A.
+// Copyright (C) 2024-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,12 +9,17 @@
 #define UI_TEXT_EDIT_H_INCLUDED
 #pragma once
 
+#include "base/codepoint.h"
+#include "gfx/rect.h"
 #include "text/text_blob.h"
 #include "ui/textcmd.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
 
 #include <algorithm>
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace ui {
 using namespace text;
@@ -29,6 +34,11 @@ public:
   void paste();
   void selectAll();
 
+  bool isCaretVisible() const { return m_drawCaret; }
+
+  gfx::PointF scale() const { return m_scale; }
+  void setScale(const gfx::PointF& scale) { m_scale = scale; }
+
   obs::signal<void()> Change;
 
 protected:
@@ -42,7 +52,16 @@ protected:
   bool onKeyDown(const KeyMessage* keymsg);
   bool onMouseMove(const MouseMessage* mouseMessage);
 
-private:
+  virtual void onTextChanged();
+
+  std::string& textContent() { return m_textContent; }
+  const std::string& textContent() const { return m_textContent; }
+  void setTextContent(const std::string& text);
+  std::string selectedText() const;
+  bool insertText(const std::string& str);
+  void rebuildLines();
+  void buildLineBlob(int lineIndex);
+
   struct Line {
     std::string text;
     std::vector<TextBlob::Utf8Range> utfSize;
@@ -54,8 +73,6 @@ private:
 
     // Line index for more convenient loops
     int i = 0;
-
-    void buildBlob(const Widget* forWidget);
 
     // Insert text into this line based on a caret position, taking into account utf8 size.
     void insertText(int pos, const std::string& str);
@@ -128,7 +145,7 @@ private:
   private:
     int m_line = 0;
     int m_pos = 0;
-    std::string_view text() const { return (*m_lines)[m_line].text; }
+    std::string_view textView() const { return (*m_lines)[m_line].text; }
     std::vector<Line>* m_lines;
   };
 
@@ -165,6 +182,13 @@ private:
     Caret m_end;
   };
 
+  std::vector<Line>& lines() { return m_lines; }
+  const std::vector<Line>& lines() const { return m_lines; }
+  const Caret& caret() const { return m_caret; }
+  const Selection& selection() const { return m_selection; }
+  int maxHeight() const;
+
+private:
   // TextCmdProcessor impl
   bool onHasValidSelection() override { return !m_selection.isEmpty(); }
   bool onCanModify() override { return true; }
@@ -172,21 +196,22 @@ private:
 
   gfx::Rect caretBounds() const;
   gfx::Point caretPosOnScreen() const;
-  void onCaretPosChange();
+  void updateCaretPosOnScreen();
 
-  // Get the selection rect for the given line, if any
   gfx::RectF getSelectionRect(const Line& line, const gfx::PointF& offset) const;
-  Caret caretFromPosition(const gfx::Point& position);
+  const Selection& selectionWords() const { return m_selectionWords; }
+  const Caret& lockedSelectionStart() const { return m_lockedSelectionStart; }
+  virtual Caret caretFromPosition(const gfx::Point& position);
   void insertCharacter(base::codepoint_t character);
   void deleteSelection();
   void ensureCaretVisible();
-  int maxHeight() const;
 
   void startTimer();
   void stopTimer();
 
   void updateViewSize();
 
+  std::string m_textContent;
   Selection m_selection;
   Selection m_selectionWords;
   Caret m_caret;
@@ -203,6 +228,7 @@ private:
   // The total size of the complete text, calculated as the longest single line width and the sum of
   // the total line heights
   gfx::Size m_textSize;
+  gfx::PointF m_scale = gfx::PointF(1.0f, 1.0f);
 
   // Color cache
   Theme::TextColors m_colors;
