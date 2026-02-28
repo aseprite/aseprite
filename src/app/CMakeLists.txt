@@ -272,6 +272,7 @@ target_sources(app-lib PRIVATE
   cmd/add_layer.cpp
   cmd/add_palette.cpp
   cmd/add_slice.cpp
+  cmd/adjust_slice_keys.cpp
   cmd/add_tag.cpp
   cmd/add_tile.cpp
   cmd/add_tileset.cpp
