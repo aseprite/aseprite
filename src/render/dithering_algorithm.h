@@ -9,6 +9,8 @@
 #define RENDER_DITHERING_METHOD_H_INCLUDED
 #pragma once
 
+#include <string>
+
 namespace render {
 
 // Dithering algorithms
@@ -16,8 +18,18 @@ enum class DitheringAlgorithm {
   None,
   Ordered,
   Old,
-  ErrorDiffusion,
+  FloydSteinberg,
+  JarvisJudiceNinke,
+  Stucki,
+  Atkinson,
+  Burkes,
+  Sierra,
+  Unknown
 };
+
+bool DitheringAlgorithmIsDiffusion(DitheringAlgorithm algo);
+std::string DitheringAlgorithmToString(DitheringAlgorithm algo);
+DitheringAlgorithm DitheringAlgorithmFromString(const std::string& name);
 
 } // namespace render
 
