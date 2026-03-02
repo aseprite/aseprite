@@ -2978,6 +2978,14 @@ void Editor::startFlipTransformation(doc::algorithm::FlipType flipType)
     standby->startFlipTransformation(this, flipType);
 }
 
+void Editor::startShiftTransformation(int dx, int dy)
+{
+  if (auto movingPixels = dynamic_cast<MovingPixelsState*>(m_state.get()))
+    movingPixels->shift(dx, dy);
+  else if (auto standby = dynamic_cast<StandbyState*>(m_state.get()))
+    standby->startShiftTransformation(this, dx, dy);
+}
+
 void Editor::updateTransformation(const Transformation& transform)
 {
   if (auto movingPixels = dynamic_cast<MovingPixelsState*>(m_state.get()))
