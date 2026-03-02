@@ -749,9 +749,9 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
 
     ASSERT(tmpImage);
     if (!tmpImage) {
-      // We've received a bug report with this case, we're not sure
-      // yet how to reproduce it. Probably new_tilemap_from_mask() can
-      // return nullptr (e.g. when site.cel() is nullptr?)
+      // We've received a bug report with this case.
+      // new_tilemap_from_mask() could return nullptr when site.cel()
+      // was nullptr. This will be left here just in case.
       return;
     }
 
