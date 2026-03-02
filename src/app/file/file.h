@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2023, 2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -238,7 +238,7 @@ public:
   void sequenceGetColor(int index, int* r, int* g, int* b) const;
   void sequenceSetAlpha(int index, int a);
   void sequenceGetAlpha(int index, int* a) const;
-  ImageRef sequenceImageToLoad(PixelFormat pixelFormat, int w, int h);
+  ImageRef sequenceImageToLoad(PixelFormat pixelFormat, int w, int h, int frameDuration = 0);
   const ImageRef sequenceImageToSave() const { return m_seq.image; }
   const Palette* sequenceGetPalette() const { return m_seq.palette; }
   bool sequenceGetHasAlpha() const { return m_seq.has_alpha; }
@@ -279,6 +279,8 @@ public:
 private:
   FileOp(); // Undefined
   FileOp(FileOpType type, Context* context, const FileOpConfig* config);
+
+  void addSeqCelIntoLayer();
 
   FileOpType m_type; // Operation type: 0=load, 1=save.
   FileFormat* m_format;
@@ -326,10 +328,12 @@ private:
     double progress_offset;   // Progress offset from the current frame.
     double progress_fraction; // Progress fraction for one frame.
     // To load sequences.
+    gfx::Size canvasSize;
     frame_t frame;
     bool has_alpha;
     LayerImage* layer;
     Cel* last_cel;
+    Image* prev_image = nullptr;
     int duration;
     // Flags after the user choose what to do with the sequence.
     int flags;
