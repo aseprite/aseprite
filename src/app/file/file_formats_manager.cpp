@@ -29,7 +29,11 @@ extern FileFormat* CreateGifFormat();
 extern FileFormat* CreateIcoFormat();
 extern FileFormat* CreateJpegFormat();
 extern FileFormat* CreatePcxFormat();
+extern FileFormat* CreatePamFormat();
+extern FileFormat* CreatePbmFormat();
+extern FileFormat* CreatePgmFormat();
 extern FileFormat* CreatePngFormat();
+extern FileFormat* CreatePpmFormat();
 extern FileFormat* CreateQoiFormat();
 extern FileFormat* CreateSvgFormat();
 extern FileFormat* CreateTgaFormat();
@@ -70,6 +74,10 @@ FileFormatsManager::FileFormatsManager()
   registerFormat(CreateIcoFormat());
   registerFormat(CreateJpegFormat());
   registerFormat(CreatePcxFormat());
+  registerFormat(CreatePamFormat());
+  registerFormat(CreatePbmFormat());
+  registerFormat(CreatePgmFormat());
+  registerFormat(CreatePpmFormat());
   registerFormat(CreatePngFormat());
 
 #ifdef ENABLE_PSD

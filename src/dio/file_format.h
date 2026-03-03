@@ -35,6 +35,10 @@ enum class FileFormat {
   CSS_STYLE,
   PSD_IMAGE,
   QOI_IMAGE,
+  PBM_IMAGE,
+  PGM_IMAGE,
+  PPM_IMAGE,
+  PAM_IMAGE,
 };
 
 } // namespace dio
