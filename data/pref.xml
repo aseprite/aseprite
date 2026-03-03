@@ -190,6 +190,7 @@
       <option id="show_scrollbars" type="bool" default="true" />
       <option id="auto_scroll" type="bool" default="true" />
       <option id="right_click_mode" type="RightClickMode" default="RightClickMode::PAINT_BGCOLOR" />
+      <option id="fixed_step_tilt" type="int" default="2" />
       <option id="auto_select_layer" type="bool" default="false" />
       <option id="auto_select_layer_quick" type="bool" default="true" />
       <option id="straight_line_preview" type="bool" default="true" />
