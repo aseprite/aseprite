@@ -548,10 +548,11 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
         gfx::Rect resultBounds = gfx::Rect(
           position ? *position : (m_data->mask ? m_data->mask->origin() : gfx::Point()),
           src_image->size());
-        const bool isAnImageOnDstCel = ctx->activeSite().cel() && ctx->activeSite().cel()->image();
-        ASSERT(!ctx->activeSite().cel() || ctx->activeSite().cel()->image());
+
+        Cel* cel = ctx->activeSite().cel();
+        const bool isAnImageOnDstCel = (cel && cel->image());
+
         if (isAnImageOnDstCel) {
-          Cel* cel = ctx->activeSite().cel();
           resultBounds = cel->bounds().createUnion(resultBounds);
           // Create a new image (result) as a blend of the active cel image +
           // the source image (clipboard image).
@@ -574,9 +575,8 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
         ContextWriter writer(ctx);
         Tx tx(writer, "Paste Image");
         DocApi api = dstDoc->getApi(tx);
-        Cel* dstCel;
         if (isAnImageOnDstCel)
-          api.clearCel(ctx->activeSite().cel());
+          api.clearCel(cel);
         else
           result.reset(Image::createCopy(src_image.get()));
 
@@ -594,7 +594,7 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
         resultBounds.y = startOrigin.y + resultBounds.y;
 
         // Set image on the new Cel
-        dstCel = api.addCel(static_cast<LayerImage*>(dstLayer), site.frame(), result);
+        Cel* dstCel = api.addCel(static_cast<LayerImage*>(dstLayer), site.frame(), result);
         // Set cel bounds
         if (dstCel) {
           const Mask emptyMask;

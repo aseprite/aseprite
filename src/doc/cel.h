@@ -63,6 +63,14 @@ public:
   Cel* link() const;
   std::size_t links() const;
 
+  // Returns true if we should keep the empty cel (cel without
+  // image). We prefer to keep empty cels if there is user data
+  // associated to the cel, or if there are links.
+  bool keepEmptyCel() const
+  {
+    return (m_data && (!m_data->userData().isEmpty() || zIndex() != 0 || links() > 0));
+  }
+
   // You should change the frame only if the cel isn't member of a
   // layer. If the cel is already in a layer, you should use
   // Layer::moveCel() member function.

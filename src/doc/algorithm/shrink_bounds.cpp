@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2023 Igara Studio S.A.
+// Copyright (c) 2019-2026 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -358,7 +358,7 @@ bool shrink_bounds(const Image* image, const color_t refpixel, const Layer* laye
 
 bool shrink_cel_bounds(const Cel* cel, const color_t refpixel, gfx::Rect& bounds)
 {
-  if (shrink_bounds(cel->image(), refpixel, cel->layer(), bounds)) {
+  if (cel->image() && shrink_bounds(cel->image(), refpixel, cel->layer(), bounds)) {
     // For tilemaps, we have to convert imgBounds (in tiles
     // coordinates) to canvas coordinates using the Grid specs.
     if (cel->layer()->isTilemap()) {
@@ -373,9 +373,7 @@ bool shrink_cel_bounds(const Cel* cel, const color_t refpixel, gfx::Rect& bounds
     }
     return true;
   }
-  else {
-    return false;
-  }
+  return false;
 }
 
 bool shrink_bounds2(const Image* a, const Image* b, const gfx::Rect& startBounds, gfx::Rect& bounds)

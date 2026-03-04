@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -882,6 +882,8 @@ private:
       return;
 
     const Image* tilemapImage = loop->getCel()->image();
+    if (!tilemapImage)
+      return;
 
     // Offset to convert a tile from dstImage coordinates to tilemap
     // image coordinates (to get the tile from the original tilemap)

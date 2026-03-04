@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-2026  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -64,7 +64,7 @@ struct ImageObj {
 #endif
 
   ImageObj(doc::Image* image) : imageId(image->id()) {}
-  ImageObj(doc::Cel* cel) : imageId(cel->image()->id()), celId(cel->id()) {}
+  ImageObj(doc::Cel* cel) : imageId(cel->imageId()), celId(cel->id()) {}
   ImageObj(doc::Tileset* tileset, doc::tile_index ti, doc::Image* image)
     : imageId(image->id())
     , tilesetId(tileset->id())
@@ -583,7 +583,7 @@ int Image_resize(lua_State* L)
     Tx tx(cel->sprite());
     resize_cel_image(tx, cel, scale, method, gfx::PointF(pivot));
     tx.commit();
-    obj->imageId = cel->image()->id();
+    obj->imageId = cel->imageId();
   }
   else {
     Context* ctx = App::instance()->context();
@@ -810,7 +810,10 @@ void register_image_class(lua_State* L)
 
 void push_cel_image(lua_State* L, doc::Cel* cel)
 {
-  push_new<ImageObj>(L, cel);
+  if (cel->image())
+    push_new<ImageObj>(L, cel);
+  else
+    lua_pushnil(L);
 }
 
 void push_image(lua_State* L, doc::Image* image)

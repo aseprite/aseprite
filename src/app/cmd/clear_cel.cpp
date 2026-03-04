@@ -25,9 +25,7 @@ ClearCel::ClearCel(Cel* cel) : WithCel(cel)
   Doc* doc = static_cast<Doc*>(cel->document());
 
   if (cel->layer()->isBackground()) {
-    Image* image = cel->image();
-    ASSERT(image);
-    if (image)
+    if (Image* image = cel->image())
       m_seq.add(new cmd::ClearImage(image, doc->bgColor(cel->layer())));
   }
   else {
