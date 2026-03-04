@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -42,10 +42,15 @@ void ShiftMaskedCel::shift(int dx, int dy)
   if (!mask->bitmap())
     return;
 
+  ImageRef oldImage = cel->imageRef();
+  if (!oldImage)
+    return; // No-op for empty cels
+
   gfx::Rect newBounds;
   ImageRef newImage = doc::algorithm::shift_image_with_mask(cel, mask, dx, dy, newBounds);
+  if (!newImage)
+    return;
 
-  ImageRef oldImage = cel->imageRef();
   if (!is_same_image(oldImage.get(), newImage.get())) {
     ObjectId id = oldImage->id();
     ObjectVersion ver = oldImage->version();

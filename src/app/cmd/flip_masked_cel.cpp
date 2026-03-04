@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026 Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,6 +27,9 @@ FlipMaskedCel::FlipMaskedCel(Cel* cel, doc::algorithm::FlipType flipType)
   Doc* doc = static_cast<Doc*>(cel->document());
   color_t bgcolor = doc->bgColor(cel->layer());
   Image* image = cel->image();
+  if (!image)
+    return;
+
   Mask* mask = doc->mask();
   ASSERT(mask->bitmap());
   if (!mask->bitmap())

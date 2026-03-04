@@ -27,7 +27,7 @@ TrimCel::TrimCel(Cel* cel)
 {
   gfx::Rect newBounds = cel->bounds();
 
-  if (algorithm::shrink_cel_bounds(cel, cel->image()->maskColor(), newBounds)) {
+  if (cel->image() && algorithm::shrink_cel_bounds(cel, cel->image()->maskColor(), newBounds)) {
     if (cel->bounds() != newBounds)
       add(new cmd::CropCel(cel, newBounds));
   }

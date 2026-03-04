@@ -1,4 +1,4 @@
--- Copyright (C) 2023  Igara Studio S.A.
+-- Copyright (C) 2023-2026  Igara Studio S.A.
 -- Copyright (C) 2018  David Capello
 --
 -- This file is released under the terms of the MIT license.
@@ -36,3 +36,10 @@ assert(c.opacity == 128)
 assert(c.zIndex == 0)
 c.zIndex = -2
 assert(c.zIndex == -2)
+
+-- Test empty cel (cel without an image)
+assert(c.image ~= nil)
+c.image = nil
+assert(c.image == nil)
+c.image = Image(32, 32)
+assert(c.image ~= nil)

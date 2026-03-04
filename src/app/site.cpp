@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -154,8 +154,8 @@ CelList Site::selectedUniqueCelsToEditPixels() const
   if (m_range.enabled()) {
     return view::get_unique_cels_to_edit_pixels(m_sprite, m_range);
   }
-  else if (auto c = cel()) {
-    if (m_layer && m_layer->canEditPixels())
+  else if (Cel* c = cel()) {
+    if (c->image() && m_layer && m_layer->canEditPixels())
       return CelList{ c };
   }
   return CelList();

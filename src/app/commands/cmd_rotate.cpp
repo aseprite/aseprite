@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -105,8 +105,7 @@ protected:
     // 2) Rotate images
     int i = 0;
     for (Cel* cel : m_cels) {
-      Image* image = cel->image();
-      if (image) {
+      if (Image* image = cel->image()) {
         ImageRef new_image(Image::create(image->pixelFormat(),
                                          m_angle == 180 ? image->width() : image->height(),
                                          m_angle == 180 ? image->height() : image->width()));

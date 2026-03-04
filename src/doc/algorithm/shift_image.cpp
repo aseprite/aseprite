@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2020 Igara Studio S.A.
+// Copyright (c) 2019-2026 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -65,6 +65,9 @@ ImageRef shift_image_with_mask(const Cel* cel,
 {
   ASSERT(!cel->bounds().isEmpty());
   ASSERT(!mask->bounds().isEmpty());
+
+  if (!cel->image())
+    return nullptr;
 
   // Making a image which bounds are equal to the UNION of cel->bounds() and mask->bounds()
   gfx::Rect compCelBounds = cel->bounds() | mask->bounds();
