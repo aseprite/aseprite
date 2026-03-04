@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -29,6 +29,7 @@
 #include "app/cmd/replace_image.h"
 #include "app/cmd/set_cel_bounds.h"
 #include "app/cmd/set_cel_frame.h"
+#include "app/cmd/set_cel_image.h"
 #include "app/cmd/set_cel_opacity.h"
 #include "app/cmd/set_cel_position.h"
 #include "app/cmd/set_frame_duration.h"
@@ -492,6 +493,16 @@ void DocApi::setCelFramePosition(Cel* cel, frame_t frame)
   ASSERT(frame >= 0);
 
   m_transaction.execute(new cmd::SetCelFrame(cel, frame));
+}
+
+void DocApi::setCelImage(Sprite* sprite, Cel* cel, const ImageRef& newImage)
+{
+  ASSERT(cel);
+
+  if (cel->image())
+    m_transaction.execute(new cmd::ReplaceImage(sprite, cel->imageRef(), newImage));
+  else
+    m_transaction.execute(new cmd::SetCelImage(cel, newImage));
 }
 
 void DocApi::setCelPosition(Sprite* sprite, Cel* cel, int x, int y)

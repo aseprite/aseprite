@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -626,7 +626,7 @@ void Sprite::getImages(std::vector<ImageRef>& images) const
 void Sprite::getTilemapsByTileset(const Tileset* tileset, std::vector<ImageRef>& images) const
 {
   for (const Cel* cel : uniqueCels()) {
-    if (cel->layer()->isTilemap() &&
+    if (cel->image() && cel->layer()->isTilemap() &&
         static_cast<LayerTilemap*>(cel->layer())->tileset() == tileset) {
       images.push_back(cel->imageRef());
     }
@@ -647,7 +647,7 @@ void Sprite::remapImages(const Remap& remap)
 void Sprite::remapTilemaps(const Tileset* tileset, const Remap& remap)
 {
   for (Cel* cel : uniqueCels()) {
-    if (cel->layer()->isTilemap() &&
+    if (cel->image() && cel->layer()->isTilemap() &&
         static_cast<LayerTilemap*>(cel->layer())->tileset() == tileset) {
       remap_image(cel->image(), remap);
     }

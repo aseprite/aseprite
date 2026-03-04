@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2020-2023, 2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -337,7 +337,7 @@ bool MovingCelState::onUpdateStatusBar(Editor* editor)
 
   if (m_hasReference) {
     buf = fmt::format(":pos: {:.2f} {:.2f}", pos.x, pos.y);
-    if (m_scaled && m_cel) {
+    if (m_scaled && m_cel && m_cel->image()) {
       buf += fmt::format(" :start: {:.2f} {:.2f}"
                          " :size: {:.2f} {:.2f} [{:.2f}% {:.2f}%]",
                          m_cel->boundsF().x,

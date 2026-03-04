@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2026  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -31,10 +31,9 @@ void select_layer_boundaries(Layer* layer, const frame_t frame, const SelectLaye
 {
   Mask newMask;
 
-  const Cel* cel = layer->cel(frame);
-  if (cel) {
-    const Image* image = cel->image();
-    newMask.fromImage(image, cel->bounds().origin(), 128); // TODO configurable alpha threshold
+  if (const Cel* cel = layer->cel(frame)) {
+    if (const Image* image = cel->image())
+      newMask.fromImage(image, cel->bounds().origin(), 128); // TODO configurable alpha threshold
   }
 
   try {

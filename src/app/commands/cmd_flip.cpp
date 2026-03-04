@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -161,6 +161,8 @@ void FlipCommand::onExecute(Context* ctx)
   else {
     for (Cel* cel : cels) {
       Image* image = cel->image();
+      if (!image)
+        continue;
 
       // Flip reference layer cel
       if (cel->layer()->isReference()) {

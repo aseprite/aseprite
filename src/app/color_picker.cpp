@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -48,6 +48,9 @@ bool get_cel_pixel(const Cel* cel,
     celBounds = cel->bounds();
 
   const doc::Image* image = cel->image();
+  if (!image)
+    return false;
+
   gfx::PointF pos(x, y);
   if (!celBounds.contains(pos))
     return false;
@@ -117,7 +120,7 @@ void ColorPicker::pickColor(const Site& site,
           return;
 
         const Cel* cel = cels.front();
-        if (!cel->image()->isTilemap())
+        if (!cel->image() || !cel->image()->isTilemap())
           return;
 
         doc::tile_index ti;
@@ -162,8 +165,9 @@ void ColorPicker::pickColor(const Site& site,
         if (!get_cel_pixel(cel, pos.x, pos.y, site.frame(), imageColor))
           return;
 
-        doc::PixelFormat pixelFormat = (cel->layer()->isTilemap() ? sprite->pixelFormat() :
-                                                                    cel->image()->pixelFormat());
+        doc::PixelFormat pixelFormat = (!cel->image() || cel->layer()->isTilemap() ?
+                                          sprite->pixelFormat() :
+                                          cel->image()->pixelFormat());
         switch (pixelFormat) {
           case IMAGE_RGB:       m_alpha = doc::rgba_geta(imageColor); break;
           case IMAGE_GRAYSCALE: m_alpha = doc::graya_geta(imageColor); break;

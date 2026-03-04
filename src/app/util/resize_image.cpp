@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2019-2025  Igara Studio S.A.
+// Copyright (c) 2019-2026  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -51,41 +51,41 @@ void resize_cel_image(Tx& tx,
 {
   // Get cel's image
   doc::Image* image = cel->image();
-  if (image && !cel->link()) {
-    doc::Sprite* sprite = cel->sprite();
+  if (!image || cel->link())
+    return;
 
-    // Resize the cel bounds only if it's from a reference layer
-    if (cel->layer()->isReference()) {
-      gfx::RectF newBounds = cel->boundsF();
-      newBounds.offset(pivot - gfx::PointF(scale.w * pivot.x, scale.h * pivot.y));
-      newBounds.w *= scale.w;
-      newBounds.h *= scale.h;
-      tx(new cmd::SetCelBoundsF(cel, newBounds));
-    }
-    else {
-      // Change cel location
-      const int x = cel->x() + pivot.x - scale.w * pivot.x;
-      const int y = cel->y() + pivot.y - scale.h * pivot.y;
-      if (cel->x() != x || cel->y() != y)
-        tx(new cmd::SetCelPosition(cel, x, y));
+  doc::Sprite* sprite = cel->sprite();
 
-      // Resize the image
-      const int w = std::max(1, int(scale.w * image->width()));
-      const int h = std::max(1, int(scale.h * image->height()));
-      doc::ImageRef newImage(
-        doc::Image::create(image->pixelFormat(), std::max(1, w), std::max(1, h)));
-      newImage->setMaskColor(image->maskColor());
+  // Resize the cel bounds only if it's from a reference layer
+  if (cel->layer()->isReference()) {
+    gfx::RectF newBounds = cel->boundsF();
+    newBounds.offset(pivot - gfx::PointF(scale.w * pivot.x, scale.h * pivot.y));
+    newBounds.w *= scale.w;
+    newBounds.h *= scale.h;
+    tx(new cmd::SetCelBoundsF(cel, newBounds));
+  }
+  else {
+    // Change cel location
+    const int x = cel->x() + pivot.x - scale.w * pivot.x;
+    const int y = cel->y() + pivot.y - scale.h * pivot.y;
+    if (cel->x() != x || cel->y() != y)
+      tx(new cmd::SetCelPosition(cel, x, y));
 
-      doc::algorithm::resize_image(
-        image,
-        newImage.get(),
-        method,
-        sprite->palette(cel->frame()),
-        sprite->rgbMap(cel->frame()),
-        (cel->layer()->isBackground() ? -1 : sprite->transparentColor()));
+    // Resize the image
+    const int w = std::max(1, int(scale.w * image->width()));
+    const int h = std::max(1, int(scale.h * image->height()));
+    doc::ImageRef newImage(
+      doc::Image::create(image->pixelFormat(), std::max(1, w), std::max(1, h)));
+    newImage->setMaskColor(image->maskColor());
 
-      tx(new cmd::ReplaceImage(sprite, cel->imageRef(), newImage));
-    }
+    doc::algorithm::resize_image(image,
+                                 newImage.get(),
+                                 method,
+                                 sprite->palette(cel->frame()),
+                                 sprite->rgbMap(cel->frame()),
+                                 (cel->layer()->isBackground() ? -1 : sprite->transparentColor()));
+
+    tx(new cmd::ReplaceImage(sprite, cel->imageRef(), newImage));
   }
 }
 

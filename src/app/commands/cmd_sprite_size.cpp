@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -178,11 +178,12 @@ protected:
       // (because tiles are resized automatically when we resize the
       // tileset).
       if (cel->layer()->isTilemap()) {
-        Tileset* tileset = static_cast<LayerTilemap*>(cel->layer())->tileset();
-        gfx::Size canvasSize = tileset->grid().tilemapSizeToCanvas(
-          gfx::Size(cel->image()->width(), cel->image()->height()));
-        gfx::Rect newBounds(cel->x() * scale.w, cel->y() * scale.h, canvasSize.w, canvasSize.h);
-        tx(new cmd::SetCelBoundsF(cel, newBounds));
+        if (cel->image()) {
+          Tileset* tileset = static_cast<LayerTilemap*>(cel->layer())->tileset();
+          gfx::Size canvasSize = tileset->grid().tilemapSizeToCanvas(cel->image()->size());
+          gfx::Rect newBounds(cel->x() * scale.w, cel->y() * scale.h, canvasSize.w, canvasSize.h);
+          tx(new cmd::SetCelBoundsF(cel, newBounds));
+        }
       }
       else {
         resize_cel_image(tx,

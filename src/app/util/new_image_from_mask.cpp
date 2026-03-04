@@ -200,7 +200,7 @@ doc::Image* new_tilemap_from_mask(const Site& site, const doc::Mask* srcMask)
   ASSERT(srcMask);
 
   const Cel* srcCel = site.cel();
-  if (!srcCel)
+  if (!srcCel || !srcCel->image())
     return nullptr;
 
   const doc::Grid grid = site.grid();
