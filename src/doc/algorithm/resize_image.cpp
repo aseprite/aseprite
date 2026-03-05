@@ -187,6 +187,10 @@ void resize_image(Image* src,
       break;
     }
   }
+  if (method != RESIZE_METHOD_NEAREST_NEIGHBOR) {
+    remove_fake_transparent_colors(src);
+    remove_fake_transparent_colors(dst);
+  }
 }
 
 void fixup_image_transparent_colors(Image* image)
@@ -267,6 +271,26 @@ void fixup_image_transparent_colors(Image* image)
           }
         }
       }
+      break;
+    }
+  }
+}
+
+void remove_fake_transparent_colors(Image* image)
+{
+  switch (image->pixelFormat()) {
+    case IMAGE_RGB: {
+      LockImageBits<RgbTraits> bits(image);
+      LockImageBits<RgbTraits>::iterator it = bits.begin();
+      for (; it != bits.end(); ++it)
+        *it = (rgba_geta(*it) == 0 ? 0 : *it);
+      break;
+    }
+    case IMAGE_GRAYSCALE: {
+      LockImageBits<GrayscaleTraits> bits(image);
+      LockImageBits<GrayscaleTraits>::iterator it = bits.begin();
+      for (; it != bits.end(); ++it)
+        *it = (graya_geta(*it) == 0 ? 0 : *it);
       break;
     }
   }
