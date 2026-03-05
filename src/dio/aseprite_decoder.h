@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018-2025 Igara Studio S.A.
+// Copyright (c) 2018-present Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -76,7 +76,7 @@ private:
                                  const AsepriteExternalFiles& extFiles);
   void readPropertiesMaps(doc::UserData::PropertiesMaps& propertiesMaps,
                           const AsepriteExternalFiles& extFiles);
-  const doc::UserData::Variant readPropertyValue(uint16_t type);
+  const doc::UserData::Variant readPropertyValue(uint16_t type, int& depth);
   void readTilesData(doc::Tileset* tileset, const AsepriteExternalFiles& extFiles);
   base::Uuid readUuid();
 
