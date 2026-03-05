@@ -10,6 +10,7 @@
 #endif
 
 #include "app/app_brushes.h"
+#include "app/brush_pattern_slot.h"
 #include "app/resource_finder.h"
 #include "app/tools/ink_type.h"
 #include "app/xml_document.h"
@@ -19,12 +20,15 @@
 #include "base/fs.h"
 #include "base/serialization.h"
 #include "doc/brush.h"
+#include "doc/brush_pattern.h"
 #include "doc/color.h"
 #include "doc/image.h"
 
 #include "tinyxml2.h"
 
+#include <cstdint>
 #include <fstream>
+#include <memory>
 
 namespace app {
 
@@ -336,6 +340,18 @@ void AppBrushes::init()
     }
   }
   m_userBrushesFilename = fn;
+
+  m_stdPatterns.resize(7);
+  m_stdPatterns[0] = std::make_shared<Pattern>((uint8_t[1]){ 1 }, 1, 1);
+  m_stdPatterns[1] = std::make_shared<Pattern>((uint8_t[4]){ 1, 0, 0, 1 }, 2, 2);
+  m_stdPatterns[2] = std::make_shared<Pattern>((uint8_t[2]){ 1, 0 }, 1, 2);
+  m_stdPatterns[3] = std::make_shared<Pattern>((uint8_t[2]){ 1, 0 }, 2, 1);
+  m_stdPatterns[4] = std::make_shared<Pattern>((uint8_t[9]){ 1, 0, 0, 0, 0, 1, 0, 1, 0 }, 3, 3);
+  m_stdPatterns[5] = std::make_shared<Pattern>((uint8_t[9]){ 1, 0, 0, 0, 1, 0, 0, 0, 1 }, 3, 3);
+  m_stdPatterns[6] = std::make_shared<Pattern>(
+    (uint8_t[16]){ 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1 },
+    4,
+    4);
 }
 
 void AppBrushes::load(const std::string& filename)
