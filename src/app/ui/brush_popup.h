@@ -27,12 +27,15 @@ public:
                                               int maxSize,
                                               bool useOriginalImage = false);
 
+  static os::SurfaceRef createSurfaceForPattern(const doc::PatternRef& pattern, int maxSize);
+
 private:
   void onStandardBrush();
   void onBrushChanges();
 
   ui::VBox m_box;
   ButtonSet m_standardBrushes;
+  ButtonSet m_brushPatterns;
   ButtonSet* m_customBrushes;
 };
 
