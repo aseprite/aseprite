@@ -55,6 +55,7 @@
 #include "base/pi.h"
 #include "base/scoped_value.h"
 #include "doc/brush.h"
+#include "doc/brush_pattern.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/remap.h"
@@ -2730,6 +2731,11 @@ BrushSlot ContextBar::createBrushSlotFromPreferences()
                    toolPref.opacity(),
                    getShade(),
                    toolPref.freehandAlgorithm() == tools::FreehandAlgorithm::PIXEL_PERFECT);
+}
+
+void ContextBar::setActivePattern(const doc::PatternRef& pattern)
+{
+  m_activePattern = pattern;
 }
 
 Shade ContextBar::getShade() const
