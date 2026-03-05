@@ -98,6 +98,14 @@ void FileFormatsManager::registerFormat(FileFormat* fileFormat)
   m_formats.push_back(fileFormat);
 }
 
+void FileFormatsManager::unregisterFormat(FileFormat* fileFormat)
+{
+  m_formats.erase(std::remove_if(std::begin(m_formats),
+                                 std::end(m_formats),
+                                 [fileFormat](FileFormat* f) { return f == fileFormat; }),
+                  std::end(m_formats));
+}
+
 FileFormatsList::iterator FileFormatsManager::begin()
 {
   return m_formats.begin();

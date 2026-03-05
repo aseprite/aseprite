@@ -1,3 +1,4 @@
+
 // Aseprite
 // Copyright (C) 2024  Igara Studio S.A.
 //
