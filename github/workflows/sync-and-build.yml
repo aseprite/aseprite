@@ -1,0 +1,166 @@
+name: Sync Fork and Build
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    outputs:
+      has_update: ${{ steps.sync.outputs.has_update }}
+    steps:
+      - name: Checkout Fork
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Add Upstream Remote
+        run: |
+          git remote add upstream https://github.com/aseprite/aseprite.git
+          git fetch upstream
+
+      - name: Sync with Upstream
+        id: sync
+        run: |
+          git checkout main
+          UPSTREAM_HEAD=$(git rev-parse upstream/main)
+          LOCAL_HEAD=$(git rev-parse origin/main)
+          
+          if [ "$UPSTREAM_HEAD" != "$LOCAL_HEAD" ]; then
+            echo "New commits detected, syncing..."
+            git reset --hard upstream/main
+            git push origin main --force
+            echo "has_update=true" >> $GITHUB_OUTPUT
+          else
+            echo "Already up to date"
+            echo "has_update=false" >> $GITHUB_OUTPUT
+          fi
+
+  build:
+    needs: sync
+    if: needs.sync.outputs.has_update == 'true' || github.event_name != 'schedule'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            name: Windows-x64
+            artifact_path: build/bin/aseprite.exe
+            arch: x64
+          - os: macos-latest
+            name: macOS-arm64
+            artifact_path: build/bin/aseprite
+            arch: arm64
+          - os: ubuntu-latest
+            name: Linux-x64
+            artifact_path: build/bin/aseprite
+            arch: x64
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Install Dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y \
+            libpixman-1-dev libfreetype6-dev libharfbuzz-dev zlib1g-dev \
+            libx11-dev libxcursor-dev libxi-dev libxrandr-dev libgl1-mesa-dev \
+            libfontconfig1-dev
+
+      - name: Install Skia
+        shell: bash
+        run: |
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            this_dir=$(cygpath "${{ github.workspace }}")
+          else
+            this_dir="${{ github.workspace }}"
+          fi
+          skia_url=$(source $this_dir/laf/misc/skia-url.sh | xargs)
+          skia_file=$(basename $skia_url)
+          curl --ssl-revoke-best-effort -L -o "$skia_file" "$skia_url"
+          unzip "$skia_file" -d skia
+
+      - uses: aseprite/get-ninja@main
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows'
+
+      - name: Build Aseprite
+        shell: bash
+        run: |
+          if [[ "${{ runner.os }}" == "macOS" ]]; then
+            export osx_target="-DCMAKE_OSX_DEPLOYMENT_TARGET=11.0"
+          else
+            export osx_target=""
+          fi
+
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            $osx_target \
+            -DLAF_BACKEND=skia \
+            -DSKIA_DIR=$(realpath skia) \
+            -DSKIA_LIBRARY_DIR=$(realpath skia/out/Release-${{ matrix.arch }})
+
+          cmake --build build --target aseprite
+
+      - name: Package
+        shell: bash
+        run: |
+          mkdir -p package
+          cp ${{ matrix.artifact_path }} package/
+          cp -r data package/ 2>/dev/null || true
+          
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            cd package && 7z a ../aseprite-${{ matrix.name }}.zip .
+          else
+            tar -czf aseprite-${{ matrix.name }}.tar.gz -C package .
+          fi
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aseprite-${{ matrix.name }}
+          path: aseprite-${{ matrix.name }}.*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: needs.build.result == 'success'
+    permissions:
+      contents: write
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: aseprite-*
+          merge-multiple: true
+
+      - name: Get Date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: auto-build-${{ steps.date.outputs.date }}-${{ github.run_number }}
+          name: Auto Build ${{ steps.date.outputs.date }} (#${{ github.run_number }})
+          files: artifacts/*
+          draft: false
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
