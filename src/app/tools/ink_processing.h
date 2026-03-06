@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -968,7 +968,7 @@ private:
 // Gradient Ink
 //////////////////////////////////////////////////////////////////////
 
-static ImageBufferPtr tmpGradientBuffer; // TODO non-thread safe
+thread_local ImageBufferPtr tmpGradientBuffer; // Thread safe
 
 class GradientRenderer {
 public:
