@@ -274,12 +274,17 @@ public:
     widthPerc()->setTextf(PERC_FORMAT, params.scaleX() * 100.0);
     heightPerc()->setTextf(PERC_FORMAT, params.scaleY() * 100.0);
 
-    static_assert(doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR == 0 &&
-                    doc::algorithm::RESIZE_METHOD_BILINEAR == 1 &&
-                    doc::algorithm::RESIZE_METHOD_ROTSPRITE == 2,
-                  "ResizeMethod enum has changed");
+    static_assert(
+      doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR == 0 &&
+        doc::algorithm::RESIZE_METHOD_BILINEAR == 1 && doc::algorithm::RESIZE_METHOD_BICUBIC == 2 &&
+        doc::algorithm::RESIZE_METHOD_LANCZOS3 == 3 &&
+        doc::algorithm::RESIZE_METHOD_GAUSSIAN == 4 && doc::algorithm::RESIZE_METHOD_ROTSPRITE == 5,
+      "ResizeMethod enum has changed");
     method()->addItem(Strings::sprite_size_method_nearest_neighbor());
     method()->addItem(Strings::sprite_size_method_bilinear());
+    method()->addItem(Strings::sprite_size_method_bicubic());
+    method()->addItem(Strings::sprite_size_method_lanczos3());
+    method()->addItem(Strings::sprite_size_method_gaussian());
     method()->addItem(Strings::sprite_size_method_rotsprite());
     int resize_method;
     if (params.method.isSet())
