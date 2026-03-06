@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +10,7 @@
 #endif
 
 #include "app/app.h"
+#include "app/color_picker.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context.h"
@@ -448,51 +449,73 @@ int App_useTool(lua_State* L)
     }
   }
 
-  // Do the tool loop
+  // Do the tool loop or eyedropper
   type = lua_getfield(L, 1, "points");
   if (type == LUA_TTABLE) {
-    InlineCommandExecution inlineCmd(ctx);
+    // Eyedropper tool: pick color from the first point only
+    if (params.ink->isEyedropper()) {
+      lua_pushnil(L);
+      if (lua_next(L, -2) != 0) {
+        const gfx::Point pt = convert_args_into_point(L, -1);
 
-    std::unique_ptr<tools::ToolLoop> loop(create_tool_loop_for_script(ctx, site, params));
-    if (!loop)
-      return luaL_error(L, "cannot draw in the active site");
+        ColorPicker picker;
+        picker.pickColor(site, gfx::PointF(pt), render::Projection(), ColorPicker::FromComposition);
+        app::Color color = picker.color();
+        if (buttonIdx == 0)
+          Preferences::instance().colorBar.fgColor(color);
+        else
+          Preferences::instance().colorBar.bgColor(color);
 
-    tools::ToolLoopManager manager(loop.get());
-    tools::Pointer lastPointer;
-    bool first = true;
-
-    lua_pushnil(L);
-    tools::ToolBox* toolbox = App::instance()->toolBox();
-    const bool isSelectionInk = (params.ink ==
-                                 toolbox->getInkById(tools::WellKnownInks::Selection));
-    const tools::Pointer::Button button = (!isSelectionInk ?
-                                             (buttonIdx == 0 ? tools::Pointer::Button::Left :
-                                                               tools::Pointer::Button::Right) :
-                                             tools::Pointer::Button::Left);
-    while (lua_next(L, -2) != 0) {
-      gfx::Point pt = convert_args_into_point(L, -1);
-
-      tools::Pointer pointer(pt,
-                             // TODO configurable params
-                             tools::Vec2(0.0f, 0.0f),
-                             button,
-                             tools::Pointer::Type::Unknown,
-                             0.0f);
-      if (first) {
-        first = false;
-        manager.prepareLoop(pointer);
-        manager.pressButton(pointer);
+        lua_pop(L, 3);
+        push_obj<app::Color>(L, color);
+        return 1;
       }
-      else {
-        manager.movement(pointer);
-      }
-      lastPointer = pointer;
-      lua_pop(L, 1);
     }
-    if (!first)
-      manager.releaseButton(lastPointer);
+    // Do the tool loop for other tools
+    else {
+      InlineCommandExecution inlineCmd(ctx);
 
-    manager.end();
+      std::unique_ptr<tools::ToolLoop> loop(create_tool_loop_for_script(ctx, site, params));
+      if (!loop)
+        return luaL_error(L, "cannot draw in the active site");
+
+      tools::ToolLoopManager manager(loop.get());
+      tools::Pointer lastPointer;
+      bool first = true;
+
+      lua_pushnil(L);
+      tools::ToolBox* toolbox = App::instance()->toolBox();
+      const bool isSelectionInk = (params.ink ==
+                                   toolbox->getInkById(tools::WellKnownInks::Selection));
+      const tools::Pointer::Button button = (!isSelectionInk ?
+                                               (buttonIdx == 0 ? tools::Pointer::Button::Left :
+                                                                 tools::Pointer::Button::Right) :
+                                               tools::Pointer::Button::Left);
+      while (lua_next(L, -2) != 0) {
+        const gfx::Point pt = convert_args_into_point(L, -1);
+
+        tools::Pointer pointer(pt,
+                               // TODO configurable params
+                               tools::Vec2(0.0f, 0.0f),
+                               button,
+                               tools::Pointer::Type::Unknown,
+                               0.0f);
+        if (first) {
+          first = false;
+          manager.prepareLoop(pointer);
+          manager.pressButton(pointer);
+        }
+        else {
+          manager.movement(pointer);
+        }
+        lastPointer = pointer;
+        lua_pop(L, 1);
+      }
+      if (!first)
+        manager.releaseButton(lastPointer);
+
+      manager.end();
+    }
   }
   lua_pop(L, 1);
   return 0;
