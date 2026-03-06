@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -460,6 +460,25 @@ void Manager::generateMessagesFromOSEvents()
         enqueueMessage(msg);
         break;
       }
+
+      case os::Event::WindowLeave:
+        if (capture_widget) {
+          const gfx::Point mousePos = display->nativeWindow()->pointFromScreen(
+            get_mouse_position());
+          auto* msg = newMouseMessage(kMouseUpMessage,
+                                      display,
+                                      nullptr,
+                                      mousePos,
+                                      PointerType::Unknown,
+                                      // No button indicates the capture was lost
+                                      kButtonNone,
+                                      kKeyUninitializedModifier);
+          msg->setRecipient(capture_widget);
+          enqueueMessage(msg);
+
+          setMouse(nullptr);
+        }
+        break;
 
       case os::Event::CloseWindow: {
         Message* msg = new Message(kCloseDisplayMessage);
