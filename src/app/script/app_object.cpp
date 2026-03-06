@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +10,7 @@
 #endif
 
 #include "app/app.h"
+#include "app/color_picker.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context.h"
@@ -446,6 +447,32 @@ int App_useTool(lua_State* L)
         params.modifiers = tools::ToolLoopModifiers::kIntersectSelection;
         break;
     }
+  }
+
+  // Eyedropper (pick the color from the first point only)
+  if (params.ink->isEyedropper()) {
+    type = lua_getfield(L, 1, "points");
+    if (type == LUA_TTABLE) {
+      // Get the first point from the points table
+      lua_pushnil(L);
+      if (lua_next(L, -2) != 0) {
+        gfx::Point pt = convert_args_into_point(L, -1);
+
+        ColorPicker picker;
+        picker.pickColor(site, gfx::PointF(pt), render::Projection(), ColorPicker::FromComposition);
+        app::Color color = picker.color();
+        if (buttonIdx == 0)
+          Preferences::instance().colorBar.fgColor(color);
+        else
+          Preferences::instance().colorBar.bgColor(color);
+
+        lua_pop(L, 3);
+        push_obj<app::Color>(L, color);
+        return 1;
+      }
+    }
+    lua_pop(L, 1);
+    return 0;
   }
 
   // Do the tool loop
