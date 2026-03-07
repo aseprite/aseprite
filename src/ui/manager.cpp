@@ -483,6 +483,7 @@ void Manager::generateMessagesFromOSEvents()
         Message* msg = new DropFilesMessage(osEvent.files());
         msg->setDisplay(display);
         msg->setRecipient(this);
+        msg->setPropagateToChildren(true);
         enqueueMessage(msg);
         break;
       }
