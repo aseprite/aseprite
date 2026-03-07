@@ -65,6 +65,7 @@ namespace app { namespace script {
 using namespace ui;
 
 static constexpr const int kDefaultAutofit = ui::LEFT | ui::TOP;
+static constexpr const int kDefaultLabelAlign = ui::LEFT | ui::CENTER;
 
 namespace {
 
@@ -129,8 +130,8 @@ struct Dialog {
   ui::HBox* hbox = nullptr;
   bool autoNewRow = false;
   WidgetsList mainWidgets;
-  std::map<std::string, ui::Widget*> dataWidgets;
-  std::map<std::string, ui::Widget*> labelWidgets;
+  std::map<std::string, ui::Widget*, std::less<>> dataWidgets;
+  std::map<std::string, ui::Widget*, std::less<>> labelWidgets;
   int currentRadioGroup = 0;
   int autofit = kDefaultAutofit;
 
@@ -593,6 +594,7 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
 {
   auto dlg = get_obj<Dialog>(L, 1);
   const char* label = nullptr;
+  int labelAlign = kDefaultLabelAlign;
   std::string id;
   bool visible = true;
   bool hexpand = true;
@@ -625,6 +627,16 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
       label = lua_tostring(L, -1);
     lua_pop(L, 1);
 
+    type = lua_getfield(L, 2, "labelalign");
+    if (type != LUA_TNIL) {
+      // Filter invalid flags.
+      const int v = lua_tointeger(L, -1) &
+                    (ui::CENTER | ui::LEFT | ui::RIGHT | ui::TOP | ui::BOTTOM);
+      if (v)
+        labelAlign = v;
+    }
+    lua_pop(L, 1);
+
     set_widget_flags(L, 2, widget);
 
     type = lua_getfield(L, 2, "visible");
@@ -650,11 +662,12 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
     if (label) {
       auto labelWidget = new ui::Label(label);
       labelWidget->setBuddy(widget);
+      labelWidget->setBuddySyncEnabled(true);
 
       if (!visible)
         labelWidget->setVisible(false);
 
-      dlg->currentGrid->addChildInCell(labelWidget, 1, 1, ui::LEFT | ui::TOP);
+      dlg->currentGrid->addChildInCell(labelWidget, 1, 1, labelAlign);
       if (!id.empty())
         dlg->labelWidgets[id] = labelWidget;
     }
@@ -753,8 +766,7 @@ int Dialog_label(lua_State* L)
     lua_pop(L, 1);
   }
 
-  auto widget = new ui::Label(text.c_str());
-  return Dialog_add_widget(L, widget);
+  return Dialog_add_widget(L, new ui::Label(text));
 }
 
 template<typename T>
@@ -865,6 +877,13 @@ int Dialog_entry(lua_State* L)
       Dialog_connect_signal(L, 1, widget->Change, [](lua_State* L) {
         // Do nothing
       });
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 2, "placeholder");
+    if (type == LUA_TSTRING) {
+      if (const auto* p = lua_tostring(L, -1))
+        widget->setPlaceholder(p);
     }
     lua_pop(L, 1);
   }
