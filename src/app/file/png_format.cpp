@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -34,7 +34,11 @@ using namespace base;
 class PngFormat : public FileFormat {
   const char* onGetName() const override { return "png"; }
 
-  void onGetExtensions(base::paths& exts) const override { exts.push_back("png"); }
+  void onGetExtensions(base::paths& exts) const override
+  {
+    exts.push_back("png");
+    exts.push_back("apng");
+  }
 
   dio::FileFormat onGetDioFormat() const override { return dio::FileFormat::PNG_IMAGE; }
 
@@ -144,7 +148,6 @@ bool PngFormat::onLoad(FileOp* fop)
   int bit_depth, color_type, interlace_type;
   int num_palette;
   png_colorp palette;
-  png_bytepp rows_pointer;
   PixelFormat pixelFormat;
 
   FileHandle handle(open_file_with_exception(fop->filename(), "rb"));
@@ -245,151 +248,191 @@ bool PngFormat::onLoad(FileOp* fop)
     default:                        fop->setError("Color type not supported\n)"); return false;
   }
 
-  int imageWidth = png_get_image_width(png, info);
-  int imageHeight = png_get_image_height(png, info);
-  ImageRef image = fop->sequenceImageToLoad(pixelFormat, imageWidth, imageHeight);
-  if (!image)
-    return false;
-
-  // Transparent color
-  png_color_16p png_trans_color = NULL;
-
-  // Read the palette
-  if (png_get_color_type(png, info) == PNG_COLOR_TYPE_PALETTE &&
-      png_get_PLTE(png, info, &palette, &num_palette)) {
-    fop->sequenceSetNColors(num_palette);
-
-    for (int c = 0; c < num_palette; ++c) {
-      fop->sequenceSetColor(c, palette[c].red, palette[c].green, palette[c].blue);
-    }
-
-    // Read alpha values for palette entries
-    png_bytep trans = NULL; // Transparent palette entries
-    int num_trans = 0;
-    int mask_entry = -1;
-
-    png_get_tRNS(png, info, &trans, &num_trans, nullptr);
-
-    for (int i = 0; i < num_trans; ++i) {
-      fop->sequenceSetAlpha(i, trans[i]);
-
-      if (trans[i] < 255) {
-        fop->sequenceSetHasAlpha(true); // Is a transparent sprite
-        if (trans[i] == 0) {
-          if (mask_entry < 0)
-            mask_entry = i;
-        }
-      }
-    }
-
-    if (mask_entry >= 0)
-      fop->document()->sprite()->setTransparentColor(mask_entry);
-  }
-  else {
-    png_get_tRNS(png, info, nullptr, nullptr, &png_trans_color);
-  }
-
   // Allocate the memory to hold the image using the fields of info.
-  rows_pointer = (png_bytepp)png_malloc(png, sizeof(png_bytep) * height);
+  png_bytepp rows_pointer = (png_bytepp)png_malloc(png, sizeof(png_bytep) * height);
   for (y = 0; y < height; y++)
     rows_pointer[y] = (png_bytep)png_malloc(png, png_get_rowbytes(png, info));
 
-  for (int pass = 0; pass < number_passes; ++pass) {
+#ifdef PNG_READ_APNG_SUPPORTED
+  const bool loadAni = (png_get_valid(png, info, PNG_INFO_acTL));
+#endif
+
+  // For each APNG frame.
+  uint32_t nframes = 1;
+#ifdef PNG_READ_APNG_SUPPORTED
+  if (loadAni)
+    nframes = png_get_num_frames(png, info);
+#endif
+
+  for (uint32_t fr = 0; fr < nframes; ++fr) {
+    int frameDuration = 0;
+#ifdef PNG_READ_APNG_SUPPORTED
+    png_byte dispose_op = PNG_fcTL_DISPOSE_OP_NONE;
+    png_byte blend_op = PNG_fcTL_BLEND_OP_SOURCE;
+
+    if (loadAni) {
+      png_read_frame_head(png, info);
+
+      const int delayNum = png_get_next_frame_delay_num(png, info);
+      const int delayDen = png_get_next_frame_delay_den(png, info);
+      if (delayDen > 0)
+        frameDuration = 1000 * delayNum / delayDen;
+
+      // Is first frame hidden? We just skip it (the first frame can act
+      // like a preview of the animation).
+      if (fr == 0 && png_get_first_frame_is_hidden(png, info))
+        continue;
+
+      dispose_op = png_get_next_frame_dispose_op(png, info);
+      blend_op = png_get_next_frame_blend_op(png, info);
+    }
+#endif
+
+    const int w = png_get_image_width(png, info);
+    const int h = png_get_image_height(png, info);
+    ImageRef image = fop->sequenceImageToLoad(pixelFormat, w, h, frameDuration);
+    if (!image)
+      return false;
+
+    // Transparent color
+    png_color_16p png_trans_color = nullptr;
+
+    // Read the palette
+    if (png_get_color_type(png, info) == PNG_COLOR_TYPE_PALETTE &&
+        png_get_PLTE(png, info, &palette, &num_palette)) {
+      fop->sequenceSetNColors(num_palette);
+
+      for (int c = 0; c < num_palette; ++c) {
+        fop->sequenceSetColor(c, palette[c].red, palette[c].green, palette[c].blue);
+      }
+
+      // Read alpha values for palette entries
+      png_bytep trans = nullptr; // Transparent palette entries
+      int num_trans = 0;
+      int mask_entry = -1;
+
+      png_get_tRNS(png, info, &trans, &num_trans, nullptr);
+
+      for (int i = 0; i < num_trans; ++i) {
+        fop->sequenceSetAlpha(i, trans[i]);
+
+        if (trans[i] < 255) {
+          fop->sequenceSetHasAlpha(true); // Is a transparent sprite
+          if (trans[i] == 0) {
+            if (mask_entry < 0)
+              mask_entry = i;
+          }
+        }
+      }
+
+      if (mask_entry >= 0)
+        fop->document()->sprite()->setTransparentColor(mask_entry);
+    }
+    else {
+      png_get_tRNS(png, info, nullptr, nullptr, &png_trans_color);
+    }
+
+    // Read each row
+    for (int pass = 0; pass < number_passes; ++pass) {
+      for (y = 0; y < height; y++) {
+        png_read_rows(png, rows_pointer + y, nullptr, 1);
+
+        fop->setProgress((double)((double)pass + (double)(y + 1) / (double)(height)) /
+                         (double)number_passes);
+
+        if (fop->isStop())
+          break;
+      }
+    }
+
+    // Convert rows_pointer into the doc::Image
     for (y = 0; y < height; y++) {
-      png_read_rows(png, rows_pointer + y, nullptr, 1);
+      // RGB_ALPHA
+      if (png_get_color_type(png, info) == PNG_COLOR_TYPE_RGB_ALPHA) {
+        uint8_t* src_address = rows_pointer[y];
+        uint32_t* dst_address = (uint32_t*)image->getPixelAddress(0, y);
+        unsigned int x, r, g, b, a;
 
-      fop->setProgress((double)((double)pass + (double)(y + 1) / (double)(height)) /
-                       (double)number_passes);
+        for (x = 0; x < width; x++) {
+          r = *(src_address++);
+          g = *(src_address++);
+          b = *(src_address++);
+          a = *(src_address++);
+          *(dst_address++) = rgba(r, g, b, a);
+        }
+      }
+      // RGB
+      else if (png_get_color_type(png, info) == PNG_COLOR_TYPE_RGB) {
+        uint8_t* src_address = rows_pointer[y];
+        uint32_t* dst_address = (uint32_t*)image->getPixelAddress(0, y);
+        unsigned int x, r, g, b, a;
 
-      if (fop->isStop())
-        break;
+        for (x = 0; x < width; x++) {
+          r = *(src_address++);
+          g = *(src_address++);
+          b = *(src_address++);
+
+          // Transparent color
+          if (png_trans_color && r == png_trans_color->red && g == png_trans_color->green &&
+              b == png_trans_color->blue) {
+            a = 0;
+            if (!fop->sequenceGetHasAlpha())
+              fop->sequenceSetHasAlpha(true);
+          }
+          else
+            a = 255;
+
+          *(dst_address++) = rgba(r, g, b, a);
+        }
+      }
+      // GRAY_ALPHA
+      else if (png_get_color_type(png, info) == PNG_COLOR_TYPE_GRAY_ALPHA) {
+        uint8_t* src_address = rows_pointer[y];
+        uint16_t* dst_address = (uint16_t*)image->getPixelAddress(0, y);
+        unsigned int x, k, a;
+
+        for (x = 0; x < width; x++) {
+          k = *(src_address++);
+          a = *(src_address++);
+          *(dst_address++) = graya(k, a);
+        }
+      }
+      // GRAY
+      else if (png_get_color_type(png, info) == PNG_COLOR_TYPE_GRAY) {
+        uint8_t* src_address = rows_pointer[y];
+        uint16_t* dst_address = (uint16_t*)image->getPixelAddress(0, y);
+        unsigned int x, k, a;
+
+        for (x = 0; x < width; x++) {
+          k = *(src_address++);
+
+          // Transparent color
+          if (png_trans_color && k == png_trans_color->gray) {
+            a = 0;
+            if (!fop->sequenceGetHasAlpha())
+              fop->sequenceSetHasAlpha(true);
+          }
+          else
+            a = 255;
+
+          *(dst_address++) = graya(k, a);
+        }
+      }
+      // PALETTE
+      else if (png_get_color_type(png, info) == PNG_COLOR_TYPE_PALETTE) {
+        uint8_t* src_address = rows_pointer[y];
+        uint8_t* dst_address = (uint8_t*)image->getPixelAddress(0, y);
+        unsigned int x;
+
+        for (x = 0; x < width; x++)
+          *(dst_address++) = *(src_address++);
+      }
     }
   }
 
-  // Convert rows_pointer into the doc::Image
-  for (y = 0; y < height; y++) {
-    // RGB_ALPHA
-    if (png_get_color_type(png, info) == PNG_COLOR_TYPE_RGB_ALPHA) {
-      uint8_t* src_address = rows_pointer[y];
-      uint32_t* dst_address = (uint32_t*)image->getPixelAddress(0, y);
-      unsigned int x, r, g, b, a;
-
-      for (x = 0; x < width; x++) {
-        r = *(src_address++);
-        g = *(src_address++);
-        b = *(src_address++);
-        a = *(src_address++);
-        *(dst_address++) = rgba(r, g, b, a);
-      }
-    }
-    // RGB
-    else if (png_get_color_type(png, info) == PNG_COLOR_TYPE_RGB) {
-      uint8_t* src_address = rows_pointer[y];
-      uint32_t* dst_address = (uint32_t*)image->getPixelAddress(0, y);
-      unsigned int x, r, g, b, a;
-
-      for (x = 0; x < width; x++) {
-        r = *(src_address++);
-        g = *(src_address++);
-        b = *(src_address++);
-
-        // Transparent color
-        if (png_trans_color && r == png_trans_color->red && g == png_trans_color->green &&
-            b == png_trans_color->blue) {
-          a = 0;
-          if (!fop->sequenceGetHasAlpha())
-            fop->sequenceSetHasAlpha(true);
-        }
-        else
-          a = 255;
-
-        *(dst_address++) = rgba(r, g, b, a);
-      }
-    }
-    // GRAY_ALPHA
-    else if (png_get_color_type(png, info) == PNG_COLOR_TYPE_GRAY_ALPHA) {
-      uint8_t* src_address = rows_pointer[y];
-      uint16_t* dst_address = (uint16_t*)image->getPixelAddress(0, y);
-      unsigned int x, k, a;
-
-      for (x = 0; x < width; x++) {
-        k = *(src_address++);
-        a = *(src_address++);
-        *(dst_address++) = graya(k, a);
-      }
-    }
-    // GRAY
-    else if (png_get_color_type(png, info) == PNG_COLOR_TYPE_GRAY) {
-      uint8_t* src_address = rows_pointer[y];
-      uint16_t* dst_address = (uint16_t*)image->getPixelAddress(0, y);
-      unsigned int x, k, a;
-
-      for (x = 0; x < width; x++) {
-        k = *(src_address++);
-
-        // Transparent color
-        if (png_trans_color && k == png_trans_color->gray) {
-          a = 0;
-          if (!fop->sequenceGetHasAlpha())
-            fop->sequenceSetHasAlpha(true);
-        }
-        else
-          a = 255;
-
-        *(dst_address++) = graya(k, a);
-      }
-    }
-    // PALETTE
-    else if (png_get_color_type(png, info) == PNG_COLOR_TYPE_PALETTE) {
-      uint8_t* src_address = rows_pointer[y];
-      uint8_t* dst_address = (uint8_t*)image->getPixelAddress(0, y);
-      unsigned int x;
-
-      for (x = 0; x < width; x++)
-        *(dst_address++) = *(src_address++);
-    }
+  // Free temp memory.
+  for (y = 0; y < height; y++)
     png_free(png, rows_pointer[y]);
-  }
   png_free(png, rows_pointer);
 
   // Setup the color space.
