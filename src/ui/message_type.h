@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -18,26 +18,26 @@ enum MessageType {
   kCloseMessage,        // Windows is closed.
   kCloseDisplayMessage, // The user wants to close the entire application.
   kResizeDisplayMessage,
-  kPaintMessage,     // Widget needs be repainted.
+  kPaintMessage,     // A widget needs to be repainted.
   kTimerMessage,     // A timer timeout.
   kDropFilesMessage, // Drop files in the manager.
   kWinMoveMessage,   // Window movement.
 
   // Keyboard related messages.
-  kKeyDownMessage,    // When a any key is pressed.
-  kKeyUpMessage,      // When a any key is released.
-  kFocusEnterMessage, // Widget gets the focus.
-  kFocusLeaveMessage, // Widget losts the focus.
+  kKeyDownMessage,    // When a key is pressed.
+  kKeyUpMessage,      // When a key is released.
+  kFocusEnterMessage, // A widget gets the focus.
+  kFocusLeaveMessage, // A widget loses the focus.
 
   // Mouse related messages.
-  kMouseDownMessage,   // User makes click inside a widget.
-  kMouseUpMessage,     // User releases mouse button in a widget.
-  kDoubleClickMessage, // User makes double click in some widget.
-  kMouseEnterMessage,  // A widget gets mouse pointer.
-  kMouseLeaveMessage,  // A widget losts mouse pointer.
-  kMouseMoveMessage,   // User moves the mouse on some widget.
-  kSetCursorMessage,   // A widget needs to setup the mouse cursor.
-  kMouseWheelMessage,  // User moves the wheel.
+  kMouseDownMessage,   // The user clicks inside a widget.
+  kMouseUpMessage,     // The user releases a mouse button from a widget.
+  kDoubleClickMessage, // The user double clicks in some widget.
+  kMouseEnterMessage,  // A widget gets the mouse pointer.
+  kMouseLeaveMessage,  // A widget loses the mouse pointer.
+  kMouseMoveMessage,   // The user moves the mouse on some widget.
+  kSetCursorMessage,   // A widget needs to specify its mouse cursor.
+  kMouseWheelMessage,  // The user moves the wheel.
 
   // Touch related messages.
   kTouchMagnifyMessage,
@@ -49,14 +49,14 @@ enum MessageType {
                      // dragging elements.
   kDragMessage, // Mouse pointer is being moved inside of a drop-target widget's bounds while the
                 // user is dragging elements.
-  kDropMessage, // User dropped elements inside a drop-target widget's bounds.
+  kDropMessage, // The user dropped elements inside a drop-target widget's bounds.
 
-  // Call a generic function when we are processing the queue of
+  // Calls a generic function when we are processing the queue of
   // messages. Used to process an laf-os event in the same order
   // they were received in some cases (e.g. mouse leave/enter).
   kCallbackMessage,
 
-  // User widgets.
+  // User-defined messages with ui::RegisterMessage.
   kFirstRegisteredMessage,
   kLastRegisteredMessage = 0x7fffffff
 };

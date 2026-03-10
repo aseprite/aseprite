@@ -45,6 +45,7 @@
 #include "app/context.h"
 #include "app/doc.h"
 #include "app/doc_undo.h"
+#include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
 #include "app/snap_to_grid.h"
 #include "app/transaction.h"
@@ -735,7 +736,7 @@ Layer* DocApi::duplicateLayerAfter(Layer* sourceLayer,
   ASSERT(parent);
   Layer* newLayerPtr = copyLayerWithSprite(sourceLayer, parent->sprite());
 
-  newLayerPtr->setName(newLayerPtr->name() + nameSuffix);
+  newLayerPtr->setName(Strings::general_copy_of(newLayerPtr->name()));
 
   addLayer(parent, newLayerPtr, afterLayer);
 
@@ -749,7 +750,7 @@ Layer* DocApi::duplicateLayerBefore(Layer* sourceLayer,
 {
   ASSERT(parent);
   Layer* afterThis = (beforeLayer ? beforeLayer->getPreviousBrowsable() : nullptr);
-  Layer* newLayer = duplicateLayerAfter(sourceLayer, parent, afterThis, nameSuffix);
+  Layer* newLayer = duplicateLayerAfter(sourceLayer, parent, afterThis);
   if (newLayer)
     restackLayerBefore(newLayer, parent, beforeLayer);
   return newLayer;
