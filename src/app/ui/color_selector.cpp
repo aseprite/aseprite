@@ -273,6 +273,9 @@ app::Color ColorSelector::getColorByPosition(const gfx::Point& pos)
   if (rc.isEmpty())
     return app::Color::fromMask();
 
+  if (!hasCapture() && pos.y >= rc.y2())
+    return app::Color::fromMask();
+
   const int u = pos.x - rc.x;
   const int umax = std::max(1, rc.w - 1);
 
@@ -320,6 +323,12 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
         m_capturedInBottom = bottomBarBounds().contains(pos);
         m_capturedInAlpha = alphaBarBounds().contains(pos);
         m_capturedInMain = (hasCapture() && !m_capturedInMain && !m_capturedInBottom);
+
+        const gfx::Rect rc = childrenBounds();
+        if (!m_capturedInAlpha && pos.y >= rc.y2()) {
+          releaseMouse();
+          m_capturedInMain = false;
+        }
       }
 
       app::Color color = getColorByPosition(pos);
