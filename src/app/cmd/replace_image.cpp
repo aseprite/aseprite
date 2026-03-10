@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023-2025  Igara Studio S.A.
+// Copyright (C) 2023-2026  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -70,7 +70,7 @@ void ReplaceImage::replaceImage(ObjectId oldId, const ImageRef& newImage)
   Sprite* spr = sprite();
 
   for (Cel* cel : spr->uniqueCels()) {
-    if (cel->image()->id() == oldId)
+    if (cel->image() && cel->image()->id() == oldId)
       cel->data()->incrementVersion();
   }
 

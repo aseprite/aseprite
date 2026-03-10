@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -55,7 +55,7 @@ void MaskContentCommand::onExecute(Context* context)
     document = writer.document();
 
     Cel* cel = writer.cel(); // Get current cel (can be NULL)
-    if (!cel)
+    if (!cel || !cel->image())
       return;
 
     gfx::Color color;

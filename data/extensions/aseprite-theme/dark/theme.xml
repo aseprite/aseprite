@@ -313,6 +313,17 @@
         <part id="timeline_left_link_active" x="264" y="84" w1="3" w2="9" w3="0" h1="4" h2="1" h3="7"/>
         <part id="timeline_both_links_active" x="264" y="96" w1="0" w2="12" w3="0" h1="4" h2="1" h3="7"/>
         <part id="timeline_right_link_active" x="264" y="108" w1="0" w2="9" w3="3" h1="4" h2="1" h3="7"/>
+        <part id="timeline_empty_keyframe_normal" x="300" y="72" w1="5" w2="3" w3="4" h1="5" h2="3" h3="4"/>
+        <part id="timeline_empty_keyframe_active" x="312" y="72" w1="5" w2="3" w3="4" h1="5" h2="3" h3="4"/>
+        <part id="timeline_empty_from_left_normal" x="300" y="84" w1="0" w2="8" w3="4" h1="5" h2="3" h3="4"/>
+        <part id="timeline_empty_from_left_active" x="312" y="84" w1="0" w2="8" w3="4" h1="5" h2="3" h3="4"/>
+        <part id="timeline_empty_from_right_normal" x="300" y="96" w1="5" w2="7" w3="0" h1="5" h2="3" h3="4"/>
+        <part id="timeline_empty_from_right_active" x="312" y="96" w1="5" w2="7" w3="0" h1="5" h2="3" h3="4"/>
+        <part id="timeline_empty_from_both_normal" x="300" y="108" w1="0" w2="12" w3="0" h1="5" h2="3" h3="4"/>
+        <part id="timeline_empty_from_both_active" x="312" y="108" w1="0" w2="12" w3="0" h1="5" h2="3" h3="4"/>
+        <part id="timeline_empty_left_link_active" x="324" y="84" w1="3" w2="9" w3="0" h1="4" h2="1" h3="7"/>
+        <part id="timeline_empty_both_links_active" x="324" y="96" w1="0" w2="12" w3="0" h1="4" h2="1" h3="7"/>
+        <part id="timeline_empty_right_link_active" x="324" y="108" w1="0" w2="9" w3="3" h1="4" h2="1" h3="7"/>
         <part id="timeline_gear" x="264" y="12" w="12" h="12"/>
         <part id="timeline_gear_active" x="264" y="24" w="12" h="12"/>
         <part id="timeline_onionskin" x="264" y="36" w="12" h="12"/>
@@ -969,6 +980,31 @@
         <style id="timeline_both_links">
             <background part="timeline_both_links_active"/>
         </style>
+        <style id="timeline_empty_keyframe">
+            <background part="timeline_empty_keyframe_normal"/>
+            <background part="timeline_empty_keyframe_active" state="focus"/>
+        </style>
+        <style id="timeline_empty_from_left">
+            <background part="timeline_empty_from_left_normal"/>
+            <background part="timeline_empty_from_left_active" state="focus"/>
+        </style>
+        <style id="timeline_empty_from_right">
+            <background part="timeline_empty_from_right_normal"/>
+            <background part="timeline_empty_from_right_active" state="focus"/>
+        </style>
+        <style id="timeline_empty_from_both">
+            <background part="timeline_empty_from_both_normal"/>
+            <background part="timeline_empty_from_both_active" state="focus"/>
+        </style>
+        <style id="timeline_empty_left_link">
+            <background part="timeline_empty_left_link_active"/>
+        </style>
+        <style id="timeline_empty_right_link">
+            <background part="timeline_empty_right_link_active"/>
+        </style>
+        <style id="timeline_empty_both_links">
+            <background part="timeline_empty_both_links_active"/>
+        </style>
         <style id="timeline_zindex">
             <icon part="timeline_zindex" align="right bottom" x="0" y="-1"/>
         </style>
@@ -1063,10 +1099,10 @@
             <text color="slider_empty_text" align="center middle" state="focus" y="1"/>
         </style>
         <style id="textedit" border="2">
-            <background color="textbox_face" />
-            <background color="selected" align="left" state="selected" />
-            <text color="textbox_text" align="left" />
-            <text color="selected_text" align="left" state="selected" />
+            <background color="textbox_face"/>
+            <background color="selected" align="left" state="selected"/>
+            <text color="textbox_text" align="left"/>
+            <text color="selected_text" align="left" state="selected"/>
         </style>
         <style id="mini_slider" extends="slider" font="mini">
             <background part="mini_slider_empty"/>

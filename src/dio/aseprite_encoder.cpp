@@ -652,7 +652,7 @@ void AsepriteEncoder::writeCelChunk(AsepriteFrameHeader* frame_header,
     link = nullptr;
     for (frame_t i = firstFrame; i <= cel->frame(); ++i) {
       link = layer->cel(i);
-      if (link && link->image()->id() == cel->image()->id())
+      if (link && link->dataId() == cel->dataId())
         break;
     }
     if (link == cel)
@@ -673,9 +673,7 @@ void AsepriteEncoder::writeCelChunk(AsepriteFrameHeader* frame_header,
 
   switch (cel_type) {
     case ASE_FILE_RAW_CEL: {
-      const Image* image = cel->image();
-
-      if (image) {
+      if (const Image* image = cel->image()) {
         // Width and height
         write16(image->width());
         write16(image->height());
@@ -704,9 +702,7 @@ void AsepriteEncoder::writeCelChunk(AsepriteFrameHeader* frame_header,
       break;
 
     case ASE_FILE_COMPRESSED_CEL: {
-      const Image* image = cel->image();
-      ASSERT(image);
-      if (image) {
+      if (const Image* image = cel->image()) {
         // Width and height
         write16(image->width());
         write16(image->height());
@@ -724,11 +720,12 @@ void AsepriteEncoder::writeCelChunk(AsepriteFrameHeader* frame_header,
 
     case ASE_FILE_COMPRESSED_TILEMAP: {
       const Image* image = cel->image();
-      ASSERT(image);
-      ASSERT(image->pixelFormat() == IMAGE_TILEMAP);
+      if (image) {
+        ASSERT(image->pixelFormat() == IMAGE_TILEMAP);
+      }
 
-      write16(image->width());
-      write16(image->height());
+      write16(image ? image->width() : 0);
+      write16(image ? image->height() : 0);
       write16(32); // TODO use different bpp when possible
       write32(tile_i_mask);
       write32(tile_f_xflip);
@@ -736,8 +733,10 @@ void AsepriteEncoder::writeCelChunk(AsepriteFrameHeader* frame_header,
       write32(tile_f_dflip);
       writePadding(10);
 
-      ImageScanlines scan(image);
-      write_compressed_image(f(), &scan, IMAGE_TILEMAP);
+      if (image) {
+        ImageScanlines scan(image);
+        write_compressed_image(f(), &scan, IMAGE_TILEMAP);
+      }
     }
   }
 }

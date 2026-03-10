@@ -46,7 +46,8 @@ void RemapColors::onUndo()
 void RemapColors::incrementVersions(Sprite* spr)
 {
   for (const Cel* cel : spr->uniqueCels())
-    cel->image()->incrementVersion();
+    if (cel->image())
+      cel->image()->incrementVersion();
 
   if (spr->hasTilesets()) {
     for (Tileset* tileset : *spr->tilesets()) {

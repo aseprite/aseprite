@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -379,7 +379,7 @@ void NewLayerCommand::onExecute(Context* context)
 
         Cel* cel = layer->cel(dstFrame);
         if (cel) {
-          api.replaceImage(sprite, cel->imageRef(), pasteImage);
+          api.setCelImage(sprite, cel, pasteImage);
         }
         else {
           cel = api.addCel(static_cast<LayerImage*>(layer), dstFrame, pasteImage);

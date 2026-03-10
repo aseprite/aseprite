@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-2026  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 // Copyright (C) 2015  Gabriel Rauter
 //
@@ -167,7 +167,7 @@ bool WebPFormat::onLoad(FileOp* fop)
     }
 
     Cel* cel = layer->cel(f);
-    if (cel) {
+    if (cel && cel->image()) {
       const uint32_t* src = (const uint32_t*)frame_rgba;
       for (int y = 0; y < h; ++y, src += w) {
         memcpy(cel->image()->getPixelAddress(0, y), src, w * sizeof(uint32_t));

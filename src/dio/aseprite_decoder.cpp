@@ -851,16 +851,16 @@ Cel* AsepriteDecoder::readCelChunk(frame_t frame,
       int w = read16();
       int h = read16();
 
+      ImageRef image;
       if (w > 0 && h > 0) {
         // Read pixel data
-        const ImageRef image(Image::create(pixelFormat, w, h));
+        image.reset(Image::create(pixelFormat, w, h));
         read_raw_image(f(), delegate(), image.get(), header);
-
-        cel = std::make_unique<Cel>(frame, image);
-        cel->setPosition(x, y);
-        cel->setOpacity(opacity);
-        cel->setZIndex(zIndex);
       }
+      cel = std::make_unique<Cel>(frame, image);
+      cel->setPosition(x, y);
+      cel->setOpacity(opacity);
+      cel->setZIndex(zIndex);
       break;
     }
 
@@ -895,15 +895,16 @@ Cel* AsepriteDecoder::readCelChunk(frame_t frame,
       int w = read16();
       int h = read16();
 
+      ImageRef image;
       if (w > 0 && h > 0) {
-        const ImageRef image(Image::create(pixelFormat, w, h));
+        image.reset(Image::create(pixelFormat, w, h));
         read_compressed_image(f(), delegate(), image.get(), header, chunk_end);
-
-        cel = std::make_unique<Cel>(frame, image);
-        cel->setPosition(x, y);
-        cel->setOpacity(opacity);
-        cel->setZIndex(zIndex);
       }
+
+      cel = std::make_unique<Cel>(frame, image);
+      cel->setPosition(x, y);
+      cel->setOpacity(opacity);
+      cel->setZIndex(zIndex);
       break;
     }
 
@@ -928,8 +929,9 @@ Cel* AsepriteDecoder::readCelChunk(frame_t frame,
         break;
       }
 
+      ImageRef image;
       if (w > 0 && h > 0) {
-        ImageRef image(Image::create(IMAGE_TILEMAP, w, h));
+        image.reset(Image::create(IMAGE_TILEMAP, w, h));
         image->setMaskColor(notile);
         image->clear(notile);
         read_compressed_image(f(), delegate(), image.get(), header, chunk_end);
@@ -974,12 +976,12 @@ Cel* AsepriteDecoder::readCelChunk(frame_t frame,
 
             return tile;
           });
-
-        cel = std::make_unique<Cel>(frame, image);
-        cel->setPosition(x, y);
-        cel->setOpacity(opacity);
-        cel->setZIndex(zIndex);
       }
+
+      cel = std::make_unique<Cel>(frame, image);
+      cel->setPosition(x, y);
+      cel->setOpacity(opacity);
+      cel->setZIndex(zIndex);
       break;
     }
 
