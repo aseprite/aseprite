@@ -273,9 +273,6 @@ app::Color ColorSelector::getColorByPosition(const gfx::Point& pos)
   if (rc.isEmpty())
     return app::Color::fromMask();
 
-  if (!hasCapture() && pos.y >= rc.y2())
-    return app::Color::fromMask();
-
   const int u = pos.x - rc.x;
   const int umax = std::max(1, rc.w - 1);
 
@@ -286,6 +283,12 @@ app::Color ColorSelector::getColorByPosition(const gfx::Point& pos)
   const gfx::Rect alphaBarBounds = this->alphaBarBounds();
   if ((hasCapture() && m_capturedInAlpha) || (!hasCapture() && alphaBarBounds.contains(pos)))
     return getAlphaBarColor(u, umax);
+
+  // border color extends bottom/alpha bar if visible
+  if (!hasCapture() && pos.y >= rc.y2()) {
+    if (!bottomBarBounds.isEmpty())
+      return alphaBarBounds.isEmpty() ? getBottomBarColor(u, umax) : getAlphaBarColor(u, umax);
+  }
 
   const int v = pos.y - rc.y;
   const int vmax = std::max(1, rc.h - bottomBarBounds.h - alphaBarBounds.h - 1);
