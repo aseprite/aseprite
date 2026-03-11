@@ -329,7 +329,8 @@ void DocApi::addEmptyFrame(Sprite* sprite, frame_t newFrame)
 {
   m_transaction.execute(new cmd::AddFrame(sprite, newFrame));
   adjustTags(sprite, newFrame, +1, kDropBeforeFrame, kDefaultTagsAdjustment);
-  m_transaction.execute(new cmd::InsertSliceKeys(sprite, newFrame));
+  if (Preferences::instance().slices.useKeys())
+    m_transaction.execute(new cmd::InsertSliceKeys(sprite, newFrame));
 }
 
 void DocApi::addEmptyFramesTo(Sprite* sprite, frame_t newFrame)
@@ -360,7 +361,8 @@ void DocApi::copyFrame(Sprite* sprite,
   }
 
   adjustTags(sprite, newFrame0, +1, dropFramePlace, tagsHandling);
-  m_transaction.execute(new cmd::InsertSliceKeys(sprite, newFrame0));
+  if (Preferences::instance().slices.useKeys())
+    m_transaction.execute(new cmd::InsertSliceKeys(sprite, newFrame0));
 }
 
 void DocApi::removeFrame(Sprite* sprite, frame_t frame)
@@ -368,7 +370,8 @@ void DocApi::removeFrame(Sprite* sprite, frame_t frame)
   ASSERT(frame >= 0);
   m_transaction.execute(new cmd::RemoveFrame(sprite, frame));
   adjustTags(sprite, frame, -1, kDropBeforeFrame, kDefaultTagsAdjustment);
-  m_transaction.execute(new cmd::DeleteSliceKeys(sprite, frame));
+  if (Preferences::instance().slices.useKeys())
+    m_transaction.execute(new cmd::DeleteSliceKeys(sprite, frame));
 }
 
 void DocApi::setTotalFrames(Sprite* sprite, frame_t frames)
@@ -419,13 +422,15 @@ void DocApi::moveFrame(Sprite* sprite,
       setFrameDuration(sprite, beforeFrame, frlen_aux);
     }
 
-    int sliceFrame = targetFrame;
-    if (sliceFrame > frame)
-      --sliceFrame;
-    if (dropFramePlace == kDropAfterFrame)
-      ++sliceFrame;
+    if (Preferences::instance().slices.useKeys()) {
+      int sliceFrame = targetFrame;
+      if (sliceFrame > frame)
+        --sliceFrame;
+      if (dropFramePlace == kDropAfterFrame)
+        ++sliceFrame;
 
-    m_transaction.execute(new cmd::MoveSliceKeys(sprite, frame, sliceFrame));
+      m_transaction.execute(new cmd::MoveSliceKeys(sprite, frame, sliceFrame));
+    }
       
     if (tagsHandling != kDontAdjustTags) {
       adjustTags(sprite, frame, -1, dropFramePlace, tagsHandling);
