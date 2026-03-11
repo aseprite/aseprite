@@ -273,7 +273,7 @@ class OptionsWindow : public app::gen::Options {
     {
       ASSERT(m_extension);
       ASSERT(canBeUninstalled());
-      App::instance()->extensions().uninstallExtension(m_extension, DeletePluginPref::kYes);
+      App::instance()->extensions().uninstallExtension(m_extension, DeletePluginPref::Yes);
       m_extension = nullptr;
     }
 
@@ -1320,7 +1320,7 @@ private:
 
       for (auto* e : uninstall) {
         try {
-          App::instance()->extensions().uninstallExtension(e, DeletePluginPref::kYes);
+          App::instance()->extensions().uninstallExtension(e, DeletePluginPref::Yes);
         }
         catch (const std::exception& ex) {
           LOG(ERROR,
@@ -2049,7 +2049,7 @@ private:
 
         // Uninstall old version
         if (ext->canBeUninstalled()) {
-          exts.uninstallExtension(ext, DeletePluginPref::kNo);
+          exts.uninstallExtension(ext, DeletePluginPref::No);
 
           ExtensionItem* item = getItemByExtension(ext);
           if (item)

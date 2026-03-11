@@ -175,6 +175,12 @@ DocApi Doc::getApi(Transaction& transaction)
 //////////////////////////////////////////////////////////////////////
 // Main properties
 
+void Doc::resetUndoHistory()
+{
+  m_undo = std::make_unique<DocUndo>();
+  m_undo->setContext(m_ctx);
+}
+
 bool Doc::isUndoing() const
 {
   return m_undo->isUndoing();
