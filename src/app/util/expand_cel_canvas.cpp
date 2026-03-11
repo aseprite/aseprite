@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -720,6 +720,11 @@ void ExpandCelCanvas::copySourceTilestToDestTileset()
 
 void ExpandCelCanvas::prepareSpriteForScript()
 {
+  // If the expanded cel was already committed,
+  // that means it finished stamping on the sprite.
+  if (m_committed)
+    return;
+
   // If is tileset preview or a selection tool (so m_dstImage is being
   // used as a top layer preview only, not as part of the sprite):
   // there is nothing we have to fix for the script Image:drawSprite()
@@ -737,6 +742,10 @@ void ExpandCelCanvas::prepareSpriteForScript()
 
 void ExpandCelCanvas::restoreSpriteForToolLoop()
 {
+  // If already committed, nothing to restore
+  if (m_committed)
+    return;
+
   if (isTilesetPreview() || !previewSpecificLayerChanges())
     return;
 

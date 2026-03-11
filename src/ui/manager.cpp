@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -1461,6 +1461,7 @@ void Manager::_openWindow(Window* window, bool center)
       spec.minimizable(window->isDesktop());
       spec.borderless(!window->isDesktop());
       spec.transparent(window->isTransparent());
+      spec.modal(window->isForeground());
 
       if (!window->isDesktop()) {
         spec.parent(parentDisplay->nativeWindow());
@@ -1962,12 +1963,11 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
     static const char* msg_name[] = {
       "kOpenMessage",         "kCloseMessage",     "kCloseDisplayMessage", "kResizeDisplayMessage",
       "kPaintMessage",        "kTimerMessage",     "kDropFilesMessage",    "kWinMoveMessage",
-
       "kKeyDownMessage",      "kKeyUpMessage",     "kFocusEnterMessage",   "kFocusLeaveMessage",
-
       "kMouseDownMessage",    "kMouseUpMessage",   "kDoubleClickMessage",  "kMouseEnterMessage",
       "kMouseLeaveMessage",   "kMouseMoveMessage", "kSetCursorMessage",    "kMouseWheelMessage",
-      "kTouchMagnifyMessage", "kCallbackMessage",
+      "kTouchMagnifyMessage", "kDragEnterMessage", "kDragLeaveMessage",    "kDragMessage",
+      "kDropMessage",         "kCallbackMessage",
     };
     static_assert(
       kOpenMessage == 0 && kCallbackMessage == sizeof(msg_name) / sizeof(const char*) - 1,
