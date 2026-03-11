@@ -189,12 +189,13 @@ void AdjustSliceKeys::moveSliceKeysBack(Sprite* sprite, frame_t from)
 void AdjustSliceKeys::moveSliceKeysForward(Sprite* sprite, frame_t from)
 {
   for (Slice* slice : sprite->slices()) {
-    
+
     for (auto it = slice->getIteratorByFrame(slice->toFrame()); it->frame() >= from; it--) {
       frame_t f = it->frame();
       it->setFrame(f + 1);
+      if (f == 0)
+        break;
     }
-
     slice->incrementVersion();
   }
 }
