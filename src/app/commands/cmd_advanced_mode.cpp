@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2025  Igara Studio S.A.
+// Copyright (C) 2025-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +11,7 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
+#include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
@@ -63,8 +64,8 @@ void AdvancedModeCommand::onExecute(Context* context)
     if (!key->shortcuts().empty()) {
       app::gen::AdvancedMode window;
 
-      window.warningLabel()->setTextf("You can go back pressing \"%s\" key.",
-                                      key->shortcuts().front().toString().c_str());
+      window.warningLabel()->setText(
+        Strings::advanced_mode_quit(key->shortcuts().front().toString()));
 
       window.openWindowInForeground();
 
