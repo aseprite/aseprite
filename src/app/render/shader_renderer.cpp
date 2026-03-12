@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2026  Igara Studio S.A.
+// Copyright (C) 2022-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -167,14 +167,14 @@ void ShaderRenderer::removeExtraImage()
   // TODO impl
 }
 
-void ShaderRenderer::setExtraCelCallback(render::GetExtraCelCallback callback)
+void ShaderRenderer::setExtraCelInfoMap(const render::ExtraCelInfoMap* map)
 {
-  m_extraCelCallback = std::move(callback);
+  m_extraCelInfoMap = map;
 }
 
-void ShaderRenderer::removeExtraCelCallback()
+void ShaderRenderer::removeExtraCelInfoMap()
 {
-  m_extraCelCallback = nullptr;
+  m_extraCelInfoMap = nullptr;
 }
 
 void ShaderRenderer::setOnionskin(const render::OnionskinOptions& options)

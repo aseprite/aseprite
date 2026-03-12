@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2026  Igara Studio S.A.
+// Copyright (C) 2022-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -87,14 +87,14 @@ void SimpleRenderer::removeExtraImage()
   m_render.removeExtraImage();
 }
 
-void SimpleRenderer::setExtraCelCallback(render::GetExtraCelCallback callback)
+void SimpleRenderer::setExtraCelInfoMap(const render::ExtraCelInfoMap* map)
 {
-  m_render.setExtraCelCallback(std::move(callback));
+  m_render.setExtraCelInfoMap(map);
 }
 
-void SimpleRenderer::removeExtraCelCallback()
+void SimpleRenderer::removeExtraCelInfoMap()
 {
-  m_render.removeExtraCelCallback();
+  m_render.removeExtraCelInfoMap();
 }
 
 void SimpleRenderer::setOnionskin(const render::OnionskinOptions& options)

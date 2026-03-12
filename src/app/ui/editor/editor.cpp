@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2026  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -729,26 +729,22 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
                                     extraCel->blendMode(),
                                     m_layer,
                                     m_frame);
+    }
 
-      // Set callback for per-cel extra rendering (multi-cel transformations)
-      if (!extraCel->celMap().empty()) {
-        m_renderEngine->setExtraCelCallback(
-          [extraCel](const doc::Cel* cel) -> const render::ExtraCelInfo* {
-            const ExtraCelData* data = extraCel->getExtraCelData(cel);
-            if (data && data->transformedImage) {
-              // We use a thread-local static to return the info
-              // (the callback must return a pointer that remains valid)
-              thread_local render::ExtraCelInfo info;
-              info.bounds = data->transformedBounds;
-              info.image = data->transformedImage.get();
-              int t;
-              info.opacity = MUL_UN8(cel->opacity(), cel->layer()->opacity(), t);
-              info.blendMode = cel->layer()->blendMode();
-              return &info;
-            }
-            return nullptr;
-          });
+    // Build map for per-cel extra rendering (multi-cel transformations)
+    render::ExtraCelInfoMap extraCelInfoMap;
+    if (extraCel && !extraCel->celMap().empty()) {
+      for (const auto& [cel, data] : extraCel->celMap()) {
+        if (data.transformedImage) {
+          int t;
+          extraCelInfoMap[cel] = { data.transformedBounds,
+                                   data.transformedImage.get(),
+                                   MUL_UN8(cel->opacity(), cel->layer()->opacity(), t),
+                                   cel->layer()->blendMode() };
+        }
       }
+      if (!extraCelInfoMap.empty())
+        m_renderEngine->setExtraCelInfoMap(&extraCelInfoMap);
     }
 
     // Render background first (e.g. new ShaderRenderer will paint the
@@ -775,6 +771,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
     m_renderEngine->renderSprite(rendered.get(), m_sprite, m_frame, gfx::Clip(0, 0, rc2));
 
     m_renderEngine->removeExtraImage();
+    m_renderEngine->removeExtraCelInfoMap();
 
     // If the checkered background is visible in this sprite, we save
     // all settings of the background for this document.

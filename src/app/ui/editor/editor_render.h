@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -80,8 +80,8 @@ public:
                      const doc::Layer* currentLayer,
                      doc::frame_t currentFrame);
   void removeExtraImage();
-  void setExtraCelCallback(render::GetExtraCelCallback callback);
-  void removeExtraCelCallback();
+  void setExtraCelInfoMap(const render::ExtraCelInfoMap* map);
+  void removeExtraCelInfoMap();
 
   void setOnionskin(const render::OnionskinOptions& options);
   void disableOnionskin();

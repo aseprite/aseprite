@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2026  Igara Studio S.A.
+// Copyright (C) 2022-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -58,8 +58,8 @@ public:
                      const doc::Layer* currentLayer,
                      const doc::frame_t currentFrame) override;
   void removeExtraImage() override;
-  void setExtraCelCallback(render::GetExtraCelCallback callback) override;
-  void removeExtraCelCallback() override;
+  void setExtraCelInfoMap(const render::ExtraCelInfoMap* map) override;
+  void removeExtraCelInfoMap() override;
   void setOnionskin(const render::OnionskinOptions& options) override;
   void disableOnionskin() override;
 
@@ -115,8 +115,8 @@ private:
   // colors outside the valid range as transparent RGBA=0 values)
   doc::Palette m_palette;
 
-  // Callback for per-cel extra rendering (multi-cel transformations)
-  render::GetExtraCelCallback m_extraCelCallback;
+  // Map for per-cel extra rendering (multi-cel transformations)
+  const render::ExtraCelInfoMap* m_extraCelInfoMap = nullptr;
 };
 
 } // namespace app

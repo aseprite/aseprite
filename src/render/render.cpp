@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -631,14 +631,14 @@ void Render::removeExtraImage()
   m_extraCel = nullptr;
 }
 
-void Render::setExtraCelCallback(GetExtraCelCallback callback)
+void Render::setExtraCelInfoMap(const ExtraCelInfoMap* map)
 {
-  m_extraCelCallback = std::move(callback);
+  m_extraCelInfoMap = map;
 }
 
-void Render::removeExtraCelCallback()
+void Render::removeExtraCelInfoMap()
 {
-  m_extraCelCallback = nullptr;
+  m_extraCelInfoMap = nullptr;
 }
 
 void Render::setOnionskin(const OnionskinOptions& options)
@@ -1030,7 +1030,7 @@ void Render::renderPlan(RenderPlan& plan,
         extraArea.h = 1;
     }
 
-    // Extra cel info from callback (for multi-cel transformations)
+    // Extra cel info from map (for multi-cel transformations)
     const ExtraCelInfo* extraCelInfo = nullptr;
 
     switch (layer->type()) {
@@ -1086,26 +1086,29 @@ void Render::renderPlan(RenderPlan& plan,
             if (!isSelected && m_nonactiveLayersOpacity != 255)
               opacity = MUL_UN8(opacity, m_nonactiveLayersOpacity, t);
 
-            // Check if there's an extra cel callback for this cel
-            if (m_extraCelCallback)
-              extraCelInfo = m_extraCelCallback(cel);
+            // Check if there's extra cel info for this cel (multi-cel transformations)
+            if (m_extraCelInfoMap) {
+              auto it = m_extraCelInfoMap->find(cel);
+              if (it != m_extraCelInfoMap->end())
+                extraCelInfo = &it->second;
+            }
 
             // Generally this is just one pass, but if we are using
             // OVER_COMPOSITE extra cel, this will be two passes.
             for (int pass = 0; pass < 2; ++pass) {
-              // Draw parts outside the "m_extraCel" area and/or extra cel callback area
+              // Draw parts outside the "m_extraCel" area and/or extra cel info area
               const bool hasExtraCelPatch = (drawExtra && m_extraType == ExtraType::PATCH);
-              const bool hasExtraCelCallback = (extraCelInfo && extraCelInfo->image);
+              const bool hasExtraCelInfo = (extraCelInfo && extraCelInfo->image);
 
-              if (hasExtraCelPatch || hasExtraCelCallback) {
+              if (hasExtraCelPatch || hasExtraCelInfo) {
                 gfx::Region originalAreas(area.srcBounds());
 
                 // Exclude the main extra cel area
                 if (hasExtraCelPatch)
                   originalAreas.createSubtraction(originalAreas, gfx::Region(extraArea));
 
-                // Exclude the extra cel callback area
-                if (hasExtraCelCallback)
+                // Exclude the extra cel info area
+                if (hasExtraCelInfo)
                   originalAreas.createSubtraction(originalAreas,
                                                   gfx::Region(m_proj.apply(extraCelInfo->bounds)));
 
@@ -1210,7 +1213,7 @@ void Render::renderPlan(RenderPlan& plan,
       }
     }
 
-    // Draw per-cel extra images using callback (for multi-cel transformations)
+    // Draw per-cel extra images (for multi-cel transformations)
     if (extraCelInfo && extraCelInfo->image && extraCelInfo->opacity > 0) {
       const gfx::Rect extraBounds = m_proj.apply(extraCelInfo->bounds);
       renderCel(image,
