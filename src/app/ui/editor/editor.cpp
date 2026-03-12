@@ -732,15 +732,16 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
     }
 
     // Build map for per-cel extra rendering (multi-cel transformations)
+    // We use cel->data() as key to support linked cels
     render::ExtraCelInfoMap extraCelInfoMap;
     if (extraCel && !extraCel->celMap().empty()) {
       for (const auto& [cel, data] : extraCel->celMap()) {
         if (data.transformedImage) {
           int t;
-          extraCelInfoMap[cel] = { data.transformedBounds,
-                                   data.transformedImage.get(),
-                                   MUL_UN8(cel->opacity(), cel->layer()->opacity(), t),
-                                   cel->layer()->blendMode() };
+          extraCelInfoMap[cel->data()] = { data.transformedBounds,
+                                           data.transformedImage.get(),
+                                           MUL_UN8(cel->opacity(), cel->layer()->opacity(), t),
+                                           cel->layer()->blendMode() };
         }
       }
       if (!extraCelInfoMap.empty())

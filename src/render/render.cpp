@@ -1087,8 +1087,9 @@ void Render::renderPlan(RenderPlan& plan,
               opacity = MUL_UN8(opacity, m_nonactiveLayersOpacity, t);
 
             // Check if there's extra cel info for this cel (multi-cel transformations)
+            // We use cel->data() as key to support linked cels
             if (m_extraCelInfoMap) {
-              auto it = m_extraCelInfoMap->find(cel);
+              auto it = m_extraCelInfoMap->find(cel->data());
               if (it != m_extraCelInfoMap->end())
                 extraCelInfo = &it->second;
             }

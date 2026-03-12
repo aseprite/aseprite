@@ -29,6 +29,7 @@
 
 namespace doc {
 class Cel;
+class CelData;
 class Image;
 class Layer;
 class Palette;
@@ -48,8 +49,9 @@ struct ExtraCelInfo {
   BlendMode blendMode = BlendMode::NORMAL;
 };
 
-// Map from Cel* to ExtraCelInfo for multi-cel transformations
-using ExtraCelInfoMap = std::map<const Cel*, ExtraCelInfo>;
+// Map from CelData* to ExtraCelInfo for multi-cel transformations
+// Using CelData* as key allows linked cels to find their entry
+using ExtraCelInfoMap = std::map<const CelData*, ExtraCelInfo>;
 
 typedef void (*CompositeImageFunc)(Image* dst,
                                    const Image* src,
