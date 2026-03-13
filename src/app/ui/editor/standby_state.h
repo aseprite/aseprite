@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -54,6 +54,7 @@ public:
   void startSelectionTransformation(Editor* editor, const gfx::Point& move, double angle);
 
   void startFlipTransformation(Editor* editor, doc::algorithm::FlipType flipType);
+  void startShiftTransformation(Editor* editor, int dx, int dy);
 
 protected:
   EditorStatePtr handleDragActionsFromMessage(Editor* editor, const ui::Message* msg);
