@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -114,6 +114,9 @@ public:
 
   // Called when the editor scroll is changed.
   virtual bool onScrollChange(Editor* editor) { return false; }
+
+  // Used to temporarily ignore scroll changes during auto-scroll on edges timer
+  virtual void setIgnoreScrollChange(bool ignore) {}
 
   // Called when status bar needs to be updated.
   virtual bool onUpdateStatusBar(Editor* editor) { return false; }
