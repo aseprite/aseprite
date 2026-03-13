@@ -408,6 +408,8 @@
         <part id="tool_gradient" x="160" y="48" w="16" h="16"/>
         <part id="tool_line" x="144" y="64" w="16" h="16"/>
         <part id="tool_curve" x="160" y="64" w="16" h="16"/>
+        <part id="tool_pixel_pen" x="160" y="64" w="16" h="16"/>
+        <part id="tool_auto_shade" x="160" y="48" w="16" h="16"/>
         <part id="tool_rectangle" x="144" y="80" w="16" h="16"/>
         <part id="tool_filled_rectangle" x="160" y="80" w="16" h="16"/>
         <part id="tool_ellipse" x="176" y="80" w="16" h="16"/>
