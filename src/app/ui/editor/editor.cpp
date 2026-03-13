@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -156,6 +156,7 @@ Editor::Editor(Doc* document, EditorFlags flags, EditorStatePtr state)
   , m_padding(0, 0)
   , m_antsTimer(100, this)
   , m_antsOffset(0)
+  , m_autoScrollTimer(20, this)
   , m_customizationDelegate(NULL)
   , m_docView(NULL)
   , m_flags(flags)
@@ -232,6 +233,7 @@ Editor::~Editor()
   setCustomizationDelegate(NULL);
 
   m_antsTimer.stop();
+  m_autoScrollTimer.stop();
 }
 
 void Editor::destroyEditorSharedInternals()
@@ -1567,46 +1569,106 @@ void Editor::flashCurrentLayer()
 gfx::Point Editor::autoScroll(const ui::MouseMessage* msg, const AutoScroll dir)
 {
   gfx::Point mousePos = msg->position();
-  if (!Preferences::instance().editor.autoScroll())
+  if (!Preferences::instance().editor.autoScroll()) {
+    stopAutoScrollTimer();
     return mousePos;
+  }
 
-  // Hide the brush preview
-  // HideBrushPreview hide(m_brushPreview);
   View* view = View::getView(this);
   gfx::Rect vp = view->viewportBounds();
 
   if (!vp.contains(mousePos)) {
-    gfx::Point delta = (mousePos - m_oldPos);
-    gfx::Point deltaScroll = delta;
+    // Save state for the timer
+    m_autoScrollDir = dir;
+    m_autoScrollMousePos = mousePos;
+    startAutoScrollTimer();
 
-    if (!((mousePos.x < vp.x && delta.x < 0) || (mousePos.x >= vp.x + vp.w && delta.x > 0))) {
-      delta.x = 0;
-    }
-
-    if (!((mousePos.y < vp.y && delta.y < 0) || (mousePos.y >= vp.y + vp.h && delta.y > 0))) {
-      delta.y = 0;
-    }
-
-    gfx::Point scroll = view->viewScroll();
-    if (dir == AutoScroll::MouseDir) {
-      scroll += delta;
-    }
-    else {
-      scroll -= deltaScroll;
-    }
-    setEditorScroll(scroll);
-
-    mousePos -= delta;
-    ui::set_mouse_position(mousePos, display());
-
-    m_oldPos = mousePos;
-    mousePos = gfx::Point(std::clamp(mousePos.x, vp.x, vp.x2() - 1),
-                          std::clamp(mousePos.y, vp.y, vp.y2() - 1));
+    return gfx::Point(std::clamp(mousePos.x, vp.x, vp.x2() - 1),
+                      std::clamp(mousePos.y, vp.y, vp.y2() - 1));
   }
-  else
-    m_oldPos = mousePos;
+  else {
+    stopAutoScrollTimer();
+    return mousePos;
+  }
+}
 
-  return mousePos;
+void Editor::onAutoScrollTick()
+{
+  if (!m_autoScrollActive)
+    return;
+
+  View* view = View::getView(this);
+  if (!view)
+    return;
+
+  gfx::Point delta = calculateAutoScrollDelta();
+  if (delta.x == 0 && delta.y == 0)
+    return;
+
+  gfx::Point scroll = view->viewScroll();
+  scroll += (m_autoScrollDir == AutoScroll::MouseDir ? delta : -delta);
+
+  // Ignore scroll change events while the scroll is set from the auto-scroll
+  // timer to avoid triggering handleMouseMovement() in DrawingState
+  m_state->setIgnoreScrollChange(true);
+  setEditorScroll(scroll);
+  m_state->setIgnoreScrollChange(false);
+
+  gfx::Point mousePos = m_autoScrollMousePos;
+  mousePos += (m_autoScrollDir == AutoScroll::MouseDir ? -delta : delta);
+  ui::set_mouse_position(mousePos, display());
+  m_autoScrollMousePos = mousePos;
+}
+
+gfx::Point Editor::calculateAutoScrollDelta() const
+{
+  View* view = View::getView(const_cast<Editor*>(this));
+  if (!view)
+    return gfx::Point(0, 0);
+
+  gfx::Rect vp = view->viewportBounds();
+  gfx::Point mousePos = m_autoScrollMousePos;
+  gfx::Point delta(0, 0);
+
+  const double speed = Preferences::instance().editor.autoScrollSpeed() / 100.0;
+
+  // Calculate scroll delta based on distance from viewport edge
+  if (mousePos.x < vp.x) {
+    int dist = vp.x - mousePos.x;
+    delta.x = -int((2.0 + dist * 0.1) * speed); // 2.0 * speed is an arbitrary minimum speed at the
+                                                // edge of the viewport.
+  }
+  else if (mousePos.x >= vp.x2()) {
+    int dist = mousePos.x - vp.x2() + 1;
+    delta.x = int((2.0 + dist * 0.1) * speed);
+  }
+
+  if (mousePos.y < vp.y) {
+    int dist = vp.y - mousePos.y;
+    delta.y = -int((2.0 + dist * 0.1) * speed);
+  }
+  else if (mousePos.y >= vp.y2()) {
+    int dist = mousePos.y - vp.y2() + 1;
+    delta.y = int((2.0 + dist * 0.1) * speed);
+  }
+
+  return delta;
+}
+
+void Editor::startAutoScrollTimer()
+{
+  if (!m_autoScrollActive) {
+    m_autoScrollActive = true;
+    m_autoScrollTimer.start();
+  }
+}
+
+void Editor::stopAutoScrollTimer()
+{
+  if (m_autoScrollActive) {
+    m_autoScrollActive = false;
+    m_autoScrollTimer.stop();
+  }
 }
 
 tools::Tool* Editor::getCurrentEditorTool() const
@@ -2120,6 +2182,8 @@ bool Editor::onProcessMessage(Message* msg)
           m_antsTimer.stop();
         }
       }
+      else if (static_cast<TimerMessage*>(msg)->timer() == &m_autoScrollTimer)
+        onAutoScrollTick();
       break;
 
     case kFocusEnterMessage: {
@@ -2162,7 +2226,6 @@ bool Editor::onProcessMessage(Message* msg)
           invalidateCanvas();
         }
 
-        m_oldPos = mouseMsg->position();
         updateToolByTipProximity(mouseMsg->pointerType());
         updateAutoCelGuides(msg);
 
