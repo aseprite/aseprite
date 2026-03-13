@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -78,11 +78,6 @@ public:
   ExtraCelMap& celMap() { return m_celMap; }
   const ExtraCelMap& celMap() const { return m_celMap; }
   void clearCelMap() { m_celMap.clear(); }
-  const ExtraCelData* getExtraCelData(const doc::Cel* cel) const
-  {
-    auto it = m_celMap.find(cel);
-    return (it != m_celMap.end()) ? &it->second : nullptr;
-  }
 
 private:
   Purpose m_purpose;
