@@ -1103,6 +1103,21 @@ private:
     miniFontPreview()->setFont(m_miniFont);
   }
 
+  bool onProcessMessage(Message* msg) override
+  {
+    switch (msg->type()) {
+      case kDropFilesMessage:
+        base::paths files = static_cast<DropFilesMessage*>(msg)->files();
+        for (const auto& fn : files) {
+          const auto& extension = base::string_to_lower(base::get_file_extension(fn));
+          if (extension == "aseprite-extension" || extension == "zip")
+            showDialogToInstallExtension(fn);
+        }
+        return true;
+    }
+    return Window::onProcessMessage(msg);
+  }
+
   void fillThemeVariants()
   {
     ButtonSet* list = nullptr;
