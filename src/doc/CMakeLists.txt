@@ -90,7 +90,11 @@ target_link_libraries(doc-lib
   laf-gfx
   laf-base
   fixmath-lib
-  cityhash)
+  cityhash
+  pixman)
 
 target_include_directories(doc-lib
-  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/pixman/pixman
+    ${CMAKE_BINARY_DIR})
