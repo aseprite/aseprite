@@ -117,7 +117,9 @@ if(REQUIRE_CURL AND NOT USE_SHARED_CURL)
 
   if(WIN32)
     set(CMAKE_USE_SCHANNEL ON CACHE BOOL "enable Windows native SSL/TLS")
-  elseif(APPLE)
+  elseif(APPLE AND NOT CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    set(CMAKE_USE_SECTRANSP ON CACHE BOOL "enable Apple OS native SSL/TLS")
+  elseif(APPLE AND CMAKE_SYSTEM_NAME STREQUAL "iOS")
     set(CMAKE_USE_SECTRANSP ON CACHE BOOL "enable Apple OS native SSL/TLS")
   else()
     # TODO Linux?

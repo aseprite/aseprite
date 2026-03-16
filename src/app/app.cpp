@@ -293,6 +293,10 @@ int App::initialize(const AppOptions& options)
   }
   tabletOptions.setCursorFix = pref.tablet.setCursorFix();
 
+#elif LAF_IOS
+
+  // No tablet options needed on iOS
+
 #elif LAF_MACOS
 
   if (!pref.general.osxAsyncView())

@@ -53,7 +53,10 @@ Preferences::Preferences() : app::gen::GlobalPref("")
   const bool firstTime = (!base::is_file(fn));
 
   // Don't use native dialogs on Linux or macOS 10.11 by default
-#if LAF_MACOS || LAF_LINUX
+#if LAF_IOS
+  // Use UIDocumentPickerViewController on iOS
+  experimental.useNativeFileDialog.setDefaultValue(true);
+#elif LAF_MACOS || LAF_LINUX
   // We've received several bug reports about macOS 10.11 where the
   // native file selector throws an unknown exception (probably we're
   // using an API that wasn't yet supported in 10.11). So we disable
