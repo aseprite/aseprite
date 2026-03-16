@@ -5,6 +5,8 @@
      as indicated in https://github.com/igarastudio/cla#signing
      and acknowledge it by leaving the statement below. -->
 
+I declare that my contributions are not co-authored using a generative AI technology.
+
 I agree that my contributions are licensed under the Individual Contributor License Agreement V4.0 ("CLA") as stated in https://github.com/igarastudio/cla/blob/main/cla.md
 
 I have signed the CLA following the steps given in https://github.com/igarastudio/cla#signing
