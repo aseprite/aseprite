@@ -461,6 +461,25 @@ void Manager::generateMessagesFromOSEvents()
         break;
       }
 
+      case os::Event::WindowLeave:
+        if (capture_widget) {
+          const gfx::Point mousePos = display->nativeWindow()->pointFromScreen(
+            get_mouse_position());
+          auto* msg = newMouseMessage(kMouseUpMessage,
+                                      display,
+                                      nullptr,
+                                      mousePos,
+                                      PointerType::Unknown,
+                                      // No button indicates the capture was lost
+                                      kButtonNone,
+                                      kKeyUninitializedModifier);
+          msg->setRecipient(capture_widget);
+          enqueueMessage(msg);
+
+          setMouse(nullptr);
+        }
+        break;
+
       case os::Event::CloseWindow: {
         Message* msg = new Message(kCloseDisplayMessage);
         msg->setDisplay(display);
