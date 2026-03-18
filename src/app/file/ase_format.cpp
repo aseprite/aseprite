@@ -417,7 +417,7 @@ bool AseFormat::onSave(FileOp* fop)
     // is the first frame or did the palette change?
     Palette* pal = sprite->palette(frame);
     int palFrom, palTo;
-    
+
     // If palette has no colors, palFrom is set to 1 and palTo to 0, avoiding
     // palTo being -1 when written as a DWORD, which would underflow
     if (pal->size() == 0) {
