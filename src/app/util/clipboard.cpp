@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -840,13 +840,16 @@ ImageRef Clipboard::getImage(Palette* palette)
 {
   // Get the image from the native clipboard.
   if (use_native_clipboard()) {
-    Image* native_image = nullptr;
-    Mask* native_mask = nullptr;
-    Palette* native_palette = nullptr;
-    Tileset* native_tileset = nullptr;
-    getNativeBitmap(&native_image, &native_mask, &native_palette, &native_tileset);
-    if (native_image) {
-      setData(native_image, native_mask, native_palette, native_tileset, nullptr, false, false);
+    NativeData data;
+    getNativeBitmap(data);
+    if (data.image) {
+      setData(data.image.release(),
+              data.mask.release(),
+              data.palette.release(),
+              data.tileset.release(),
+              nullptr,
+              false,
+              false);
     }
   }
   if (m_data->palette && palette)

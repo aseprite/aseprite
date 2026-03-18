@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -51,6 +51,13 @@ enum class ClipboardFormat {
 
 class Clipboard : public ui::ClipboardDelegate {
 public:
+  struct NativeData {
+    std::unique_ptr<doc::Image> image;
+    std::unique_ptr<doc::Mask> mask;
+    std::unique_ptr<doc::Palette> palette;
+    std::unique_ptr<doc::Tileset> tileset;
+  };
+
   static Clipboard* instance();
 
   Clipboard();
@@ -99,10 +106,7 @@ public:
                        const doc::Palette* palette,
                        const doc::Tileset* tileset,
                        const doc::color_t indexMaskColor);
-  bool getNativeBitmap(doc::Image** image,
-                       doc::Mask** mask,
-                       doc::Palette** palette,
-                       doc::Tileset** tileset);
+  bool getNativeBitmap(NativeData& data);
 
 private:
   void setData(doc::Image* image,

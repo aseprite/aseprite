@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2022-2025  Igara Studio S.A.
+// Copyright (c) 2022-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -63,14 +63,10 @@ int Clipboard_get_image(lua_State* L)
 {
   CLIPBOARD_READ_GATE(3);
 
-  doc::Image* image = nullptr;
-  doc::Mask* mask = nullptr;
-  doc::Palette* palette = nullptr;
-  doc::Tileset* tileset = nullptr;
-  const bool result =
-    app::Clipboard::instance()->getNativeBitmap(&image, &mask, &palette, &tileset);
+  app::Clipboard::NativeData data;
+  const bool result = app::Clipboard::instance()->getNativeBitmap(data);
 
-  if (image == nullptr) {
+  if (data.image == nullptr) {
     lua_pushnil(L);
     return 1;
   }
@@ -78,7 +74,7 @@ int Clipboard_get_image(lua_State* L)
   if (!result)
     return luaL_error(L, "failed to get image from clipboard");
 
-  push_image(L, image);
+  push_image(L, data.image.release());
   return 1;
 }
 
@@ -130,38 +126,34 @@ int Clipboard_get_content(lua_State* L)
 {
   CLIPBOARD_READ_GATE(3);
 
-  doc::Image* image = nullptr;
-  doc::Mask* mask = nullptr;
-  doc::Palette* palette = nullptr;
-  doc::Tileset* tileset = nullptr;
-  const bool bitmapResult =
-    app::Clipboard::instance()->getNativeBitmap(&image, &mask, &palette, &tileset);
+  app::Clipboard::NativeData data;
+  const bool bitmapResult = app::Clipboard::instance()->getNativeBitmap(data);
 
   std::string text;
-  const bool clipResult = !bitmapResult ? clip::get_text(text) : false;
+  const bool clipResult = (!bitmapResult ? clip::get_text(text) : false);
 
   lua_createtable(L, 0, 5);
 
-  if (bitmapResult && image)
-    push_image(L, image);
+  if (bitmapResult && data.image)
+    push_image(L, data.image.release());
   else
     lua_pushnil(L);
   lua_setfield(L, -2, "image");
 
-  if (bitmapResult && mask)
-    push_standalone_selection(L, mask);
+  if (bitmapResult && data.mask)
+    push_standalone_selection(L, data.mask.release());
   else
     lua_pushnil(L);
   lua_setfield(L, -2, "selection");
 
-  if (bitmapResult && palette)
-    push_palette(L, palette);
+  if (bitmapResult && data.palette)
+    push_palette(L, data.palette.release());
   else
     lua_pushnil(L);
   lua_setfield(L, -2, "palette");
 
-  if (bitmapResult && tileset)
-    push_docobj<Tileset>(L, tileset);
+  if (bitmapResult && data.tileset)
+    push_docobj<Tileset>(L, data.tileset.release());
   else
     lua_pushnil(L);
   lua_setfield(L, -2, "tileset");
