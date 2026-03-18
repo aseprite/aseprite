@@ -388,7 +388,7 @@ bool AseFormat::onSave(FileOp* fop)
 
   bool require_new_palette_chunk = false;
   for (Palette* pal : sprite->getPalettes()) {
-    if (pal->size() > 256 || pal->hasAlpha()) {
+    if (pal->size() == 0 || pal->size() > 256 || pal->hasAlpha()) {
       require_new_palette_chunk = true;
       break;
     }
@@ -416,7 +416,19 @@ bool AseFormat::onSave(FileOp* fop)
 
     // is the first frame or did the palette change?
     Palette* pal = sprite->palette(frame);
-    int palFrom = 0, palTo = pal->size() - 1;
+    int palFrom, palTo;
+
+    // If palette has no colors, palFrom is set to 1 and palTo to 0, avoiding
+    // palTo being -1 when written as a DWORD, which would underflow
+    if (pal->size() == 0) {
+      palFrom = 1;
+      palTo = 0;
+    }
+    else {
+      palFrom = 0;
+      palTo = pal->size() - 1;
+    }
+
     if ( // First frame or..
       (frame == fop->roi().fromFrame() ||
        // This palette is different from the previous frame palette
