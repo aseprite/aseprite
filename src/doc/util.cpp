@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2020-2024 Igara Studio S.A.
+// Copyright (c) 2020-present Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -93,6 +93,43 @@ Mask make_aligned_mask(const Grid* grid, const Mask* mask)
   }
   maskOutput.unfreeze();
   return maskOutput;
+}
+
+ImageRef make_tile_mask_bitmap(const Grid* grid, const Mask* mask)
+{
+  if (!mask || !mask->bitmap())
+    return nullptr;
+
+  const gfx::Rect& pixelBounds = mask->bounds();
+  const gfx::Rect tileBounds = grid->canvasToTile(pixelBounds);
+
+  if (tileBounds.isEmpty())
+    return nullptr;
+
+  ImageRef tileMask(Image::create(IMAGE_BITMAP, tileBounds.w, tileBounds.h));
+  clear_image(tileMask.get(), 0);
+
+  const LockImageBits<BitmapTraits> maskBits(mask->bitmap());
+  auto mask_it = maskBits.begin();
+  const gfx::Point originTile = grid->canvasToTile(pixelBounds.origin());
+
+  // Iterate over each pixel in the mask and mark the corresponding
+  // tile if any pixel within that tile is selected.
+  for (int y = 0; y < pixelBounds.h; ++y) {
+    for (int x = 0; x < pixelBounds.w; ++x, ++mask_it) {
+      ASSERT(mask_it != maskBits.end());
+      if (*mask_it) {
+        gfx::Point tilePt = grid->canvasToTile(gfx::Point(pixelBounds.x + x, pixelBounds.y + y));
+        gfx::Point dstPt = tilePt - originTile;
+
+        if (tileMask->bounds().contains(dstPt)) {
+          tileMask->putPixel(dstPt.x, dstPt.y, 1);
+        }
+      }
+    }
+  }
+
+  return tileMask;
 }
 
 } // namespace doc
