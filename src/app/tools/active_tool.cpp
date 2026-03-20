@@ -109,9 +109,10 @@ Ink* ActiveToolManager::adjustToolInkDependingOnSelectedInkType(Ink* ink,
       case tools::InkType::ALPHA_COMPOSITING:
         id = tools::WellKnownInks::PaintAlphaCompositing;
         break;
-      case tools::InkType::COPY_COLOR: id = tools::WellKnownInks::PaintCopy; break;
-      case tools::InkType::LOCK_ALPHA: id = tools::WellKnownInks::PaintLockAlpha; break;
-      case tools::InkType::SHADING:    id = tools::WellKnownInks::Shading; break;
+      case tools::InkType::COPY_COLOR:   id = tools::WellKnownInks::PaintCopy; break;
+      case tools::InkType::LOCK_ALPHA:   id = tools::WellKnownInks::PaintLockAlpha; break;
+      case tools::InkType::SHADING:      id = tools::WellKnownInks::Shading; break;
+      case tools::InkType::RANDOM_COLOR: id = tools::WellKnownInks::RandomColor; break;
     }
     if (id)
       ink = m_toolbox->getInkById(id);
