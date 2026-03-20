@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2019-2023 Igara Studio S.A.
+// Copyright (c) 2019-present Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -18,14 +18,18 @@
 #include "doc/tile.h"
 #include "gfx/clip.h"
 #include "gfx/point.h"
+#include "gfx/rect.h"
 #include "gfx/size.h"
 #include "render/bg_options.h"
 #include "render/extra_type.h"
 #include "render/onionskin_options.h"
 #include "render/projection.h"
 
+#include <map>
+
 namespace doc {
 class Cel;
+class CelData;
 class Image;
 class Layer;
 class Palette;
@@ -36,6 +40,18 @@ class Tileset;
 
 namespace render {
 using namespace doc;
+
+// Extra cel info for per-cel rendering (used in multi-cel transformations)
+struct ExtraCelInfo {
+  gfx::Rect bounds;
+  const Image* image = nullptr;
+  int opacity = 255;
+  BlendMode blendMode = BlendMode::NORMAL;
+};
+
+// Map from CelData* to ExtraCelInfo for multi-cel transformations
+// Using CelData* as key allows linked cels to find their entry
+using ExtraCelInfoMap = std::map<const CelData*, ExtraCelInfo>;
 
 typedef void (*CompositeImageFunc)(Image* dst,
                                    const Image* src,
@@ -86,6 +102,11 @@ public:
 
   void setOnionskin(const OnionskinOptions& options);
   void disableOnionskin();
+
+  // Sets a map of extra cel info for per-cel rendering
+  // Used for multi-cel transformations
+  void setExtraCelInfoMap(const ExtraCelInfoMap* map);
+  void removeExtraCelInfoMap();
 
   void renderSprite(Image* dstImage, const Sprite* sprite, frame_t frame);
 
@@ -202,6 +223,7 @@ private:
   OnionskinOptions m_onionskin;
   ImageBufferPtr m_tmpBuf;
   bool m_composeGroups = false;
+  const ExtraCelInfoMap* m_extraCelInfoMap = nullptr;
 };
 
 void composite_image(Image* dst,
