@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,12 +16,14 @@
 #include "app/tx.h"
 #include "app/ui/editor/handle_type.h"
 #include "doc/algorithm/flip_type.h"
+#include "doc/cel_list.h"
 #include "doc/frame.h"
 #include "doc/image_ref.h"
 #include "gfx/size.h"
 #include "obs/connection.h"
 
 #include <memory>
+#include <vector>
 
 namespace doc {
 class Image;
@@ -138,14 +140,17 @@ private:
   bool editMultipleCels() const;
   void stampImage(bool finalStamp);
   void stampExtraCelImage();
+  void stampExtraCelImages();
   void onPivotChange();
   void onRotationAlgorithmChange();
   void redrawExtraImage(Transformation* transformation = nullptr);
+  void redrawExtraImages(Transformation* transformation = nullptr);
   void redrawCurrentMask();
   void drawImage(const Transformation& transformation,
                  doc::Image* dst,
                  const gfx::PointF& pt,
                  const bool renderOriginalLayer);
+  void drawImages(const Transformation& transformation);
   void drawMask(doc::Mask* dst, bool shrink);
   void drawParallelogram(const Transformation& transformation,
                          doc::Image* dst,
@@ -161,18 +166,11 @@ private:
   void hideDocumentMask();
 
   void flipOriginalImage(const doc::algorithm::FlipType flipType);
+  void flipOriginalImages(const doc::algorithm::FlipType flipType);
   void shiftOriginalImage(const int dx, const int dy, const double angle);
-  CelList getEditableCels();
+  void shiftOriginalImages(const int dx, const int dy, const double angle);
+  CelList getEditableCels(const bool filterTilemapsByTileSize = false);
   void reproduceAllTransformationsWithInnerCmds();
-
-  void alignMasksAndTransformData(const Mask* initialMask0,
-                                  const Mask* initialMask,
-                                  const Mask* currentMask,
-                                  const Transformation* initialData,
-                                  const Transformation* currentData,
-                                  const doc::Grid& grid,
-                                  const gfx::Size& deltaA,
-                                  const gfx::Size& deltaB);
 
 #if _DEBUG
   void dumpInnerCmds();
@@ -200,6 +198,9 @@ private:
   obs::scoped_connection m_rotAlgoConn;
   ExtraCelRef m_extraCel;
   bool m_canHandleFrameChange;
+
+  // Vector of selected cels for multi-cel transformation
+  doc::CelList m_selectedCels;
 
   // Fast mode is used to give a faster feedback to the user
   // avoiding RotSprite on each mouse movement.
