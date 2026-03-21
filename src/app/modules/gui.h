@@ -13,6 +13,8 @@
 #include "base/exception.h"
 #include "gfx/rect.h"
 #include "ui/base.h"
+#include "ui/message_type.h"
+#include "ui/mouse_button.h"
 
 namespace ui {
 class ButtonBase;
@@ -49,6 +51,12 @@ ui::Widget* setup_mini_look(ui::Widget* widget);
 // we weren't able to validate it on a onPaint() event. E.g. Because
 // the current document was locked.
 void defer_invalid_rect(const gfx::Rect& rc);
+
+// Returns true when a keyboard-only shortcut should be ignored for a
+// mouse-down message, so the mouse event can continue through the
+// regular editor/event path.
+bool should_ignore_keyboard_only_shortcut_on_mousedown(ui::MessageType msgType,
+                                                       ui::MouseButton shortcutMouseButton);
 
 } // namespace app
 

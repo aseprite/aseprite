@@ -170,6 +170,12 @@ static bool create_main_window(bool gpuAccel, bool& maximized, std::string& last
   return (main_window != nullptr);
 }
 
+bool should_ignore_keyboard_only_shortcut_on_mousedown(const MessageType msgType,
+                                                       const MouseButton shortcutMouseButton)
+{
+  return (msgType == kMouseDownMessage && shortcutMouseButton == kButtonNone);
+}
+
 // Initializes GUI.
 int init_module_gui()
 {
@@ -701,6 +707,16 @@ bool CustomizedGuiManager::processKey(Message* msg)
   const KeyboardShortcuts* keys = KeyboardShortcuts::instance();
   const KeyPtr key = keys->findBestKeyFromMessage(msg);
   if (!key)
+    return false;
+
+  const AppShortcut* shortcut = key->isPressed(msg);
+  if (!shortcut)
+    return false;
+
+  // Ignore keyboard-only shortcuts on mouse down events. Otherwise,
+  // a plain modifier shortcut (e.g. "Shift") can swallow mouse-down
+  // input like Shift+drag selections.
+  if (should_ignore_keyboard_only_shortcut_on_mousedown(msg->type(), shortcut->mouseButton()))
     return false;
 
   App* app = App::instance();
