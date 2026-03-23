@@ -22,8 +22,8 @@ using namespace doc;
 
 SetCelData::SetCelData(Cel* cel, const CelDataRef& newData)
   : WithCel(cel)
-  , m_oldDataId(cel->data()->id())
-  , m_oldImageId(cel->image()->id())
+  , m_oldDataId(cel->dataId())
+  , m_oldImageId(cel->imageId())
   , m_newDataId(newData->id())
   , m_newData(newData)
 {
@@ -47,7 +47,8 @@ void SetCelData::onUndo()
   if (m_dataCopy) {
     ASSERT(!cel->sprite()->getCelDataRef(m_oldDataId));
     m_dataCopy->setId(m_oldDataId);
-    m_dataCopy->image()->setId(m_oldImageId);
+    if (m_dataCopy->image())
+      m_dataCopy->image()->setId(m_oldImageId);
 
     cel->setDataRef(m_dataCopy);
     m_dataCopy.reset();
@@ -79,7 +80,11 @@ void SetCelData::createCopy()
 
   ASSERT(!m_dataCopy);
   m_dataCopy.reset(new CelData(*cel->data()));
-  m_dataCopy->setImage(ImageRef(Image::createCopy(cel->image())), cel->layer());
+
+  ImageRef imageCopy;
+  if (cel->image())
+    imageCopy.reset(Image::createCopy(cel->image()));
+  m_dataCopy->setImage(imageCopy, cel->layer());
 }
 
 }} // namespace app::cmd

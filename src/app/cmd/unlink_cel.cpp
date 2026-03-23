@@ -34,18 +34,22 @@ void UnlinkCel::onExecute()
   CelDataRef oldCelData = cel->sprite()->getCelDataRef(m_oldCelDataId);
   ASSERT(oldCelData);
 
-  ImageRef imgCopy(Image::createCopy(oldCelData->image()));
+  ImageRef imgCopy;
+  if (oldCelData->image())
+    imgCopy.reset(Image::createCopy(oldCelData->image()));
   CelDataRef celDataCopy(new CelData(*oldCelData));
-  celDataCopy->setImage(imgCopy, cel->layer());
   celDataCopy->setUserData(oldCelData->userData());
 
-  if (m_newImageId) {
-    imgCopy->setId(m_newImageId);
-    celDataCopy->setId(m_newCelDataId);
-  }
-  else {
-    m_newImageId = imgCopy->id();
-    m_newCelDataId = celDataCopy->id();
+  if (imgCopy) {
+    celDataCopy->setImage(imgCopy, cel->layer());
+    if (m_newImageId) {
+      imgCopy->setId(m_newImageId);
+      celDataCopy->setId(m_newCelDataId);
+    }
+    else {
+      m_newImageId = imgCopy->id();
+      m_newCelDataId = celDataCopy->id();
+    }
   }
 
   cel->setDataRef(celDataCopy);

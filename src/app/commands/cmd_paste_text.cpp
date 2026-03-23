@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -172,12 +172,14 @@ void PasteTextCommand::onExecute(Context* ctx)
                          0,
                          255,
                          doc::BlendMode::NORMAL);
+      tx(new cmd::CopyRegion(writer.cel()->image(),
+                             finalImage.get(),
+                             gfx::Region(finalImage->bounds()),
+                             point));
     }
-
-    tx(new cmd::CopyRegion(writer.cel()->image(),
-                           finalImage.get(),
-                           gfx::Region(finalImage->bounds()),
-                           point));
+    else {
+      // TODO set cel image with rendered text
+    }
     tx.commit();
   }
   catch (const std::exception& ex) {
