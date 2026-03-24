@@ -247,8 +247,10 @@ public:
     if ((int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect))) {
       int dx = stroke[1].x - m_first.x;
       int dy = stroke[1].y - m_first.y;
-      int minsize = std::min(ABS(dx), ABS(dy));
       int maxsize = std::max(ABS(dx), ABS(dy));
+
+      // Get pixel ratio, for calculations
+      const auto& pixelRatio = loop->sprite()->pixelRatio();
 
       // Lines
       if (loop->getIntertwine()->snapByAngle()) {
@@ -267,8 +269,15 @@ public:
         }
         // Snap at 45
         else if (angle < 54.0) {
-          stroke[1].x = m_first.x + SGN(dx) * minsize;
-          stroke[1].y = m_first.y + SGN(dy) * minsize;
+          const double visualWidth = ABS(dx) * pixelRatio.w;
+          const double visualHeight = ABS(dy) * pixelRatio.h;
+          double minVisualSize = std::min(visualWidth, visualHeight);
+
+          const int pixelDx = (int)(minVisualSize / pixelRatio.w);
+          const int pixelDy = (int)(minVisualSize / pixelRatio.h);
+
+          stroke[1].x = m_first.x + SGN(dx) * pixelDx;
+          stroke[1].y = m_first.y + SGN(dy) * pixelDy;
         }
         // Snap at 63.435
         else if (angle < 72.0) {
@@ -283,8 +292,15 @@ public:
       }
       // Rectangles and ellipses
       else {
-        stroke[1].x = m_first.x + SGN(dx) * minsize;
-        stroke[1].y = m_first.y + SGN(dy) * minsize;
+        const double visualWidth = ABS(dx) * pixelRatio.w;
+        const double visualHeight = ABS(dy) * pixelRatio.h;
+        double minVisualSize = std::min(visualWidth, visualHeight);
+
+        const int pixelDx = (int)(minVisualSize / pixelRatio.w);
+        const int pixelDy = (int)(minVisualSize / pixelRatio.h);
+
+        stroke[1].x = m_first.x + SGN(dx) * pixelDx;
+        stroke[1].y = m_first.y + SGN(dy) * pixelDy;
       }
     }
 

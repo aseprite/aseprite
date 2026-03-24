@@ -448,6 +448,14 @@ int App_useTool(lua_State* L)
     }
   }
 
+  // Square aspect (SHIFT key constraint)
+  type = lua_getfield(L, 1, "squareAspect");
+  if (type != LUA_TNIL && lua_toboolean(L, -1))
+    params.modifiers = static_cast<tools::ToolLoopModifiers>(
+      static_cast<int>(params.modifiers) |
+      static_cast<int>(tools::ToolLoopModifiers::kSquareAspect));
+  lua_pop(L, 1);
+
   // Do the tool loop
   type = lua_getfield(L, 1, "points");
   if (type == LUA_TTABLE) {
