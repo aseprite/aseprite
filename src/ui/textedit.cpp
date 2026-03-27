@@ -18,6 +18,7 @@
 #include "text/font_mgr.h"
 #include "text/text_blob.h"
 #include "ui/display.h"
+#include "ui/manager.h"
 #include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
@@ -138,9 +139,13 @@ bool TextEdit::onProcessMessage(Message* msg)
       break;
     }
     case kFocusLeaveMessage: {
+      // Avoids clearing the selection when using the right click menu
+      Manager* manager = Manager::getDefault();
+      if (manager && manager->getFocus() && manager->getFocus()->type() != kMenuBoxWidget)
+        m_selection.clear();
+
       stopTimer();
       m_lockedSelectionStart.clear();
-      m_selection.clear();
       m_drawCaret = false;
       invalidate();
       onCaretPosChange();
