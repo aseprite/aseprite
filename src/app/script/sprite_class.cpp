@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -779,6 +779,14 @@ int Sprite_get_isModified(lua_State* L)
   return 1;
 }
 
+int Sprite_get_hasAssociatedFile(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+  Doc* doc = static_cast<Doc*>(sprite->document());
+  lua_pushboolean(L, doc->isAssociatedToFile());
+  return 1;
+}
+
 int Sprite_get_width(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -1113,6 +1121,7 @@ const Property Sprite_properties[] = {
   { "id",                   Sprite_get_id,                   nullptr                         },
   { "filename",             Sprite_get_filename,             Sprite_set_filename             },
   { "isModified",           Sprite_get_isModified,           nullptr                         },
+  { "hasAssociatedFile",    Sprite_get_hasAssociatedFile,    nullptr                         },
   { "width",                Sprite_get_width,                Sprite_set_width                },
   { "height",               Sprite_get_height,               Sprite_set_height               },
   { "colorMode",            Sprite_get_colorMode,            nullptr                         },
