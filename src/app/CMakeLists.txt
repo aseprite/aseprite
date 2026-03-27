@@ -259,6 +259,7 @@ target_sources(app-lib PRIVATE
   app.cpp
   app_brushes.cpp
   app_menus.cpp
+  brush_pattern_slot.cpp
   check_update.cpp
   cli/app_options.cpp
   cli/cli_open_file.cpp

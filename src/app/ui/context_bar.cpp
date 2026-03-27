@@ -55,6 +55,7 @@
 #include "base/pi.h"
 #include "base/scoped_value.h"
 #include "doc/brush.h"
+#include "doc/brush_pattern.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/remap.h"
@@ -162,9 +163,13 @@ public:
     , m_owner(owner)
     , m_brushes(App::instance()->brushes())
   {
-    SkinPartPtr part(new SkinPart);
-    part->setBitmap(0, BrushPopup::createSurfaceForBrush(BrushRef(nullptr)));
     auto* theme = SkinTheme::get(this);
+    SkinPartPtr part(new SkinPart);
+    part->setBitmap(
+      0,
+      BrushPopup::createSurfaceForBrush(
+        BrushRef(nullptr),
+        theme->dimensions.brushTypeWidth() - theme->styles.brushType()->border().width()));
     addItem(part, theme->styles.brushType());
 
     m_popupWindow.Open.connect([this] {
@@ -178,9 +183,14 @@ public:
 
   void updateBrush(tools::Tool* tool = nullptr)
   {
+    auto* theme = SkinTheme::get(this);
     BrushRef brush = m_owner->activeBrush(tool);
     SkinPartPtr part(new SkinPart);
-    part->setBitmap(0, BrushPopup::createSurfaceForBrush(brush));
+    part->setBitmap(
+      0,
+      BrushPopup::createSurfaceForBrush(
+        brush,
+        theme->dimensions.brushTypeWidth() - theme->styles.brushType()->border().width()));
 
     const bool mono = (brush->type() != kImageBrushType);
     getItem(0)->setIcon(part);
@@ -2358,7 +2368,8 @@ void ContextBar::updateForTool(tools::Tool* tool)
   // True if the brush type supports angle.
   const bool hasBrushWithAngle = (activeBrush()->size() > 1) &&
                                  (activeBrush()->type() == kSquareBrushType ||
-                                  activeBrush()->type() == kLineBrushType);
+                                  activeBrush()->type() == kLineBrushType ||
+                                  activeBrush()->type() == kCrossBrushType);
 
   // True if the current tool is eyedropper.
   const bool isEyedropper = tool &&
@@ -2624,6 +2635,15 @@ void ContextBar::setActiveBrush(const doc::BrushRef& brush)
     if (brushPref.type() != newBrushType)
       brushPref.type(newBrushType);
 
+    if (brushPref.size() != brush->size())
+      brushPref.size(brush->size());
+
+    if (brushPref.angle() != brush->angle())
+      brushPref.angle(brush->angle());
+
+    if (brushPref.thick() != brush->thick())
+      brushPref.thick(brush->thick());
+
     m_activeBrush = brush;
   }
 
@@ -2669,7 +2689,8 @@ doc::BrushRef ContextBar::createBrushFromPreferences(ToolPreferences::Brush* bru
   doc::BrushRef brush;
   brush.reset(new Brush(static_cast<doc::BrushType>(brushPref->type()),
                         brushPref->size(),
-                        brushPref->angle()));
+                        brushPref->angle(),
+                        brushPref->thick()));
   return brush;
 }
 
@@ -2710,6 +2731,11 @@ BrushSlot ContextBar::createBrushSlotFromPreferences()
                    toolPref.opacity(),
                    getShade(),
                    toolPref.freehandAlgorithm() == tools::FreehandAlgorithm::PIXEL_PERFECT);
+}
+
+void ContextBar::setActivePattern(const doc::PatternRef& pattern)
+{
+  m_activePattern = pattern;
 }
 
 Shade ContextBar::getShade() const
