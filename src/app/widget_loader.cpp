@@ -240,9 +240,12 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
   }
   else if (elem_name == "textedit") {
     widget = new TextEdit();
+    const bool readonly = bool_attr(elem, "readonly", false);
 
     if (elem->Attribute("placeholder"))
       ((TextEdit*)widget)->setPlaceholder(m_xmlTranslator(elem, "placeholder"));
+    if (readonly)
+      ((TextEdit*)widget)->setReadOnly(true);
   }
   else if (elem_name == "grid") {
     const char* columns = elem->Attribute("columns");
