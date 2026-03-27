@@ -370,6 +370,7 @@ public:
       [this] { showAsepriteFileDialog()->setSelected(!nativeFileDialog()->isSelected()); });
 
     // Grid
+    gridVisible()->Click.connect([this] { onGridVisible(); });
     gridW()->Leave.connect([this] {
       // Prevent entering a width lesser than 1
       if (gridW()->textInt() <= 0)
@@ -381,6 +382,9 @@ public:
         gridH()->setText("1");
     });
 
+    // Pixel Grid
+    pixelGridVisible()->Click.connect([this] { onPixelGridVisible(); });
+    
     // Timeline
     resetTimelineSel()->Click.connect([this] { onResetTimelineSel(); });
 
@@ -1678,6 +1682,9 @@ private:
     pixelGridColor()->setColor(m_curPref->pixelGrid.color());
     pixelGridOpacity()->setValue(m_curPref->pixelGrid.opacity());
     pixelGridAutoOpacity()->setSelected(m_curPref->pixelGrid.autoOpacity());
+
+    onGridVisible();
+    onPixelGridVisible();
   }
 
   void onResetBg()
@@ -1700,6 +1707,33 @@ private:
       checkeredBgColor1()->setColor(pref.bg.color1());
       checkeredBgColor2()->setColor(pref.bg.color2());
     }
+  }
+
+  void onGridVisible(){
+    const bool state = gridVisible()->isSelected();
+    gridXLabel()->setEnabled(state);
+    gridX()->setEnabled(state);
+    gridYLabel()->setEnabled(state);
+    gridY()->setEnabled(state);
+    gridWLabel()->setEnabled(state);
+    gridW()->setEnabled(state);
+    gridHLabel()->setEnabled(state);
+    gridH()->setEnabled(state);
+    gridColorLabel()->setEnabled(state);
+    gridColor()->setEnabled(state);
+    gridOpacityLabel()->setEnabled(state);
+    gridOpacity()->setEnabled(state);
+    gridAutoOpacity()->setEnabled(state);
+  }
+
+  void onPixelGridVisible()
+  {
+    const bool state = pixelGridVisible()->isSelected();
+    pixelGridColorLabel()->setEnabled(state);
+    pixelGridColor()->setEnabled(state);
+    pixelGridOpacityLabel()->setEnabled(state);
+    pixelGridOpacity()->setEnabled(state);
+    pixelGridAutoOpacity()->setEnabled(state);
   }
 
   void onResetGrid()
@@ -1742,6 +1776,9 @@ private:
       pixelGridOpacity()->setValue(pref.pixelGrid.opacity());
       pixelGridAutoOpacity()->setSelected(pref.pixelGrid.autoOpacity());
     }
+
+    onGridVisible();
+    onPixelGridVisible();
   }
 
   void onLocateCrashFolder()
