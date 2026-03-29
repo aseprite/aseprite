@@ -340,7 +340,7 @@ public:
     });
 
     pixelGridVisible()->Click.connect([this] { onPixelGridVisible(); });
-    
+
     // Timeline
     resetTimelineSel()->Click.connect([this] { onResetTimelineSel(); });
 
