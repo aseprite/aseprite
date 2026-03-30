@@ -157,7 +157,7 @@ ExpandCelCanvas::ExpandCelCanvas(Site site,
             m_grid.origin(),
             m_grid.tileSize());
 
-  if (isTilesetPreview()) {
+  if (!m_celCreated && isTilesetPreview()) {
     getDestTileset();
   }
   else if (m_celCreated || (m_layer && m_layer->isTilemap())) {
@@ -220,6 +220,15 @@ void ExpandCelCanvas::commit()
     if (previewSpecificLayerChanges()) {
       // We can temporary remove the cel.
       static_cast<LayerImage*>(m_layer)->removeCel(m_cel);
+
+      // Manual mode doesn't create new cels.
+      if (m_layer->isTilemap() && m_tilemapMode == TilemapMode::Pixels &&
+          m_tilesetMode == TilesetMode::Manual) {
+        delete m_cel;
+        m_cel = nullptr;
+        m_committed = true; // Makes sure rollback() isn't called
+        return;
+      }
 
       gfx::Rect trimBounds = getTrimDstImageBounds();
       if (!trimBounds.isEmpty()) {
