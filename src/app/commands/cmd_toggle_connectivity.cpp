@@ -12,14 +12,14 @@ public:
     : Command("ToggleConnectivity") {}
 
 protected:
-  bool onEnabled(Context* context) override {
-    auto tool = App::instance()->activeTool();
+  bool onEnabled(Context* /*context*/) override {
+    auto* tool = App::instance()->activeTool();
     return (tool && (tool->getId() == "paint_bucket" ||
                      tool->getId() == "magic_wand"));
   }
 
-  void onExecute(Context* context) override {
-    auto tool = App::instance()->activeTool();
+  void onExecute(Context* /*context*/) override {
+    auto* tool = App::instance()->activeTool();
     if (!tool) return;
 
     auto& toolPref = Preferences::instance().tool(tool);
@@ -27,7 +27,8 @@ protected:
 
     if (toolPref.floodfill.pixelConnectivity() == PixelConnectivity::FOUR_CONNECTED) {
       toolPref.floodfill.pixelConnectivity(PixelConnectivity::EIGHT_CONNECTED);
-    } else {
+    }
+    else {
       toolPref.floodfill.pixelConnectivity(PixelConnectivity::FOUR_CONNECTED);
     }
   }
