@@ -12,6 +12,7 @@
 #include "app/app.h"
 #include "app/cmd/set_grid_bounds.h"
 #include "app/commands/command.h"
+#include "app/commands/options_behavior.h"
 #include "app/console.h"
 #include "app/context.h"
 #include "app/context_access.h"
@@ -337,6 +338,8 @@ public:
       if (gridH()->textInt() <= 0)
         gridH()->setText("1");
     });
+
+    pixelGridVisible()->Click.connect([this] { onPixelGridVisible(); });
 
     // Timeline
     resetTimelineSel()->Click.connect([this] { onResetTimelineSel(); });
@@ -1600,6 +1603,8 @@ private:
     pixelGridColor()->setColor(m_curPref->pixelGrid.color());
     pixelGridOpacity()->setValue(m_curPref->pixelGrid.opacity());
     pixelGridAutoOpacity()->setSelected(m_curPref->pixelGrid.autoOpacity());
+
+    onPixelGridVisible();
   }
 
   void onResetBg()
@@ -1622,6 +1627,17 @@ private:
       checkeredBgColor1()->setColor(pref.bg.color1());
       checkeredBgColor2()->setColor(pref.bg.color2());
     }
+  }
+
+  void onPixelGridVisible()
+  {
+    const bool state = pixelGridVisible()->isSelected();
+    update_pixel_grid_options_enabled(state,
+                                      pixelGridColorLabel(),
+                                      pixelGridColor(),
+                                      pixelGridOpacityLabel(),
+                                      pixelGridOpacity(),
+                                      pixelGridAutoOpacity());
   }
 
   void onResetGrid()
@@ -1662,6 +1678,8 @@ private:
       pixelGridOpacity()->setValue(pref.pixelGrid.opacity());
       pixelGridAutoOpacity()->setSelected(pref.pixelGrid.autoOpacity());
     }
+
+    onPixelGridVisible();
   }
 
   void onLocateCrashFolder()
