@@ -12,35 +12,28 @@ public:
     : Command("ToggleConnectivity") {}
 
 protected:
-  bool onEnabled(Context* context) override;
-  bool onChecked(Context* context) override;
-  void onExecute(Context* context) override;
+  bool onEnabled(Context* context) override {
+    auto tool = App::instance()->activeTool();
+    return (tool && (tool->getId() == "paint_bucket" ||
+                     tool->getId() == "magic_wand"));
+  }
+
+  void onExecute(Context* context) override {
+    auto tool = App::instance()->activeTool();
+    if (!tool) return;
+
+    auto& toolPref = Preferences::instance().tool(tool);
+    using namespace app::gen;
+
+    if (toolPref.floodfill.pixelConnectivity() == PixelConnectivity::FOUR_CONNECTED) {
+      toolPref.floodfill.pixelConnectivity(PixelConnectivity::EIGHT_CONNECTED);
+    } else {
+      toolPref.floodfill.pixelConnectivity(PixelConnectivity::FOUR_CONNECTED);
+    }
+  }
 };
 
-bool onEnabled(Context* context) override
-{
-  auto tool = App::instance()->activeTool();
-  return (tool && (tool->getId() == "paint_bucket" ||
-                   tool->getId() == "magic_wand"));
-}
-
-void onExecute(Context* context) override
-{
-  auto tool = App::instance()->activeTool();
-  if (!tool) return;
-
-  auto& toolPref = Preferences::instance().tool(tool);
-  using namespace app::gen;
-
-  if (toolPref.floodfill.pixelConnectivity() == PixelConnectivity::FOUR_CONNECTED) {
-    toolPref.floodfill.pixelConnectivity(PixelConnectivity::EIGHT_CONNECTED);
-  } else {
-    toolPref.floodfill.pixelConnectivity(PixelConnectivity::FOUR_CONNECTED);
-  }
-}
-
-Command* CommandFactory::createToggleConnectivityCommand()
-{
+Command* CommandFactory::createToggleConnectivityCommand() {
   return new ToggleConnectivityCommand;
 }
 
