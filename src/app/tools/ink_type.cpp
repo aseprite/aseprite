@@ -22,6 +22,7 @@ std::string ink_type_to_string(InkType inkType)
     case tools::InkType::COPY_COLOR:        return Strings::inks_copy_color();
     case tools::InkType::LOCK_ALPHA:        return Strings::inks_lock_alpha();
     case tools::InkType::SHADING:           return Strings::inks_shading();
+    case tools::InkType::RANDOM_COLOR:      return Strings::inks_random_color();
   }
   return Strings::general_unknown();
 }
@@ -34,6 +35,7 @@ std::string ink_type_to_string_id(InkType inkType)
     case tools::InkType::COPY_COLOR:        return "copy_color";
     case tools::InkType::LOCK_ALPHA:        return "lock_alpha";
     case tools::InkType::SHADING:           return "shading";
+    case tools::InkType::RANDOM_COLOR:      return "random_color";
   }
   return "unknown";
 }
@@ -54,6 +56,9 @@ InkType string_id_to_ink_type(const std::string& s)
 
   if (s == "shading")
     return tools::InkType::SHADING;
+
+  if (s == "random_color" || s == "random-color")
+    return tools::InkType::RANDOM_COLOR;
 
   return tools::InkType::DEFAULT;
 }
