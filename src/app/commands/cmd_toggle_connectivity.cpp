@@ -26,12 +26,9 @@ protected:
     auto& toolPref = Preferences::instance().tool(tool);
     using namespace app::gen;
 
-    if (toolPref.floodfill.pixelConnectivity() == PixelConnectivity::FOUR_CONNECTED) {
-      toolPref.floodfill.pixelConnectivity(PixelConnectivity::EIGHT_CONNECTED);
-    }
-    else {
-      toolPref.floodfill.pixelConnectivity(PixelConnectivity::FOUR_CONNECTED);
-    }
+    auto newConn = (toolPref.floodfill.pixelConnectivity() == PixelConnectivity::FOUR_CONNECTED) ? PixelConnectivity::EIGHT_CONNECTED : PixelConnectivity::FOUR_CONNECTED;
+
+    toolPref.floodfill.pixelConnectivity(newConn);
   }
 };
 
