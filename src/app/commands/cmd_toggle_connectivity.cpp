@@ -1,26 +1,27 @@
+#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/pref/preferences.h"
 #include "app/tools/tool.h"
-#include "app/app.h"
 
 namespace app {
 
 class ToggleConnectivityCommand : public Command {
 public:
-  ToggleConnectivityCommand()
-    : Command("ToggleConnectivity") {}
+  ToggleConnectivityCommand() : Command("ToggleConnectivity") {}
 
 protected:
-  bool onEnabled(Context* /*context*/) override {
+  bool onEnabled(Context* /*context*/) override 
+  {
     auto* tool = App::instance()->activeTool();
-    return (tool && (tool->getId() == "paint_bucket" ||
-                     tool->getId() == "magic_wand"));
+    return (tool && (tool->getId() == "paint_bucket" || tool->getId() == "magic_wand"));
   }
 
-  void onExecute(Context* /*context*/) override {
+  void onExecute(Context* /*context*/) override 
+  {
     auto* tool = App::instance()->activeTool();
-    if (!tool) return;
+    if (!tool) 
+      return;
 
     auto& toolPref = Preferences::instance().tool(tool);
     using namespace app::gen;
@@ -34,7 +35,8 @@ protected:
   }
 };
 
-Command* CommandFactory::createToggleConnectivityCommand() {
+Command* CommandFactory::createToggleConnectivityCommand() 
+{
   return new ToggleConnectivityCommand;
 }
 
