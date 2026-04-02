@@ -74,23 +74,23 @@ std::unique_ptr<Palette> load_gpl_file(const char* filename)
     }
 
     int r, g, b, a = 255;
-    std::string entryName;
     std::istringstream lineIn(line);
     lineIn >> r >> g >> b;
     if (hasAlpha) {
       lineIn >> a;
     }
-    lineIn >> entryName;
 
     if (lineIn.fail())
       continue;
 
+    std::string entryName;
+    std::getline(lineIn, entryName);
+    base::trim_string(entryName, entryName);
+
     pal->addEntry(rgba(r, g, b, a));
-    if (!entryName.empty()) {
-      base::trim_string(entryName, entryName);
-      if (!entryName.empty())
-        pal->setEntryName(pal->size() - 1, entryName);
-    }
+    
+    if (!entryName.empty())
+      pal->setEntryName(pal->size() - 1, entryName);
   }
 
   base::trim_string(comment, comment);
