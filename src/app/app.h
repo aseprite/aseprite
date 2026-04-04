@@ -110,10 +110,6 @@ public:
 
   InputChain& inputChain();
 
-#ifdef ENABLE_SCRIPTING
-  script::Engine* scriptEngine() { return m_engine.get(); }
-#endif
-
   const std::string& memoryDumpFilename() const { return m_memoryDumpFilename; }
   void memoryDumpFilename(const std::string& fn) { m_memoryDumpFilename = fn; }
 
@@ -149,9 +145,6 @@ private:
   base::paths m_files;
   std::unique_ptr<AppBrushes> m_brushes;
   std::unique_ptr<BackupIndicator> m_backupIndicator;
-#ifdef ENABLE_SCRIPTING
-  std::unique_ptr<script::Engine> m_engine;
-#endif
 
   // Set the memory dump filename to show in the Preferences dialog
   // or the "send crash" dialog. It's set by the SendCrash class.

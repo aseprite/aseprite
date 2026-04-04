@@ -8,6 +8,8 @@
 #define APP_SHELL_H_INCLUDED
 #pragma once
 
+#include <memory>
+
 #ifndef ENABLE_SCRIPTING
   #error ENABLE_SCRIPTING must be defined
 #endif
@@ -22,7 +24,10 @@ public:
   Shell();
   ~Shell();
 
-  void run(script::Engine& engine);
+  void run();
+
+private:
+  std::unique_ptr<script::Engine> m_engine;
 };
 
 } // namespace app

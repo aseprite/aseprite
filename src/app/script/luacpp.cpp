@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,41 +11,94 @@
 
 #include "app/script/luacpp.h"
 
-#include <cstdio>
-
 namespace app { namespace script {
 
-static const char mt_index_code[] =
-  "__generic_mt_index = function(t, k) "
-  "  local mt = getmetatable(t) "
-  "  local f = mt[k] "
-  "  if f then return f end "
-  "  f = mt.__getters[k] "
-  "  if f then return f(t) end "
-  "  if type(t) == 'table' then return rawget(t, k) end "
-  "  error(debug.traceback()..': Field '..tostring(k)..' does not exist')"
-  "end "
-  "__generic_mt_newindex = function(t, k, v) "
-  "  local mt = getmetatable(t) "
-  "  local f = mt[k] "
-  "  if f then return f end "
-  "  f = mt.__setters[k] "
-  "  if f then return f(t, v) end "
-  "  if type(t) == 'table' then return rawset(t, k, v) end "
-  "  error(debug.traceback()..': Cannot set field '..tostring(k))"
-  "end";
-
-void run_mt_index_code(lua_State* L)
+int generic_mt_index(lua_State* L)
 {
-  if (luaL_loadbuffer(L, mt_index_code, sizeof(mt_index_code) - 1, "internal") ||
-      lua_pcall(L, 0, 0, 0)) {
-    // Error case
-    const char* s = lua_tostring(L, -1);
-    if (s)
-      std::puts(s);
+  if (lua_getmetatable(L, 1)) {
+    lua_pushvalue(L, 2);
+    lua_gettable(L, 3);
+    if (!lua_isnil(L, -1))
+      return 1;
+    lua_pop(L, 1);
 
+    lua_getfield(L, 3, "__getters");
+    if (lua_istable(L, -1)) {
+      lua_pushvalue(L, 2);
+      lua_gettable(L, -2);
+      if (!lua_isnil(L, -1)) {
+        lua_pushvalue(L, 1);
+        lua_call(L, 1, 1);
+        return 1;
+      }
+      lua_pop(L, 1);
+    }
+    lua_pop(L, 1);
     lua_pop(L, 1);
   }
+
+  if (lua_istable(L, 1)) {
+    lua_pushvalue(L, 2);
+    lua_rawget(L, 1);
+    return 1;
+  }
+
+  lua_getglobal(L, "debug");
+  lua_getfield(L, -1, "traceback");
+  lua_call(L, 0, 1);
+  const char* tb = lua_tostring(L, -1);
+
+  lua_getglobal(L, "tostring");
+  lua_pushvalue(L, 2);
+  lua_call(L, 1, 1);
+  const char* k = lua_tostring(L, -1);
+
+  return luaL_error(L, "%s: Field %s does not exist", tb ? tb : "", k ? k : "nil");
+}
+
+int generic_mt_newindex(lua_State* L)
+{
+  if (lua_getmetatable(L, 1)) {
+    lua_pushvalue(L, 2);
+    lua_gettable(L, 4);
+    if (!lua_isnil(L, -1))
+      return 1;
+    lua_pop(L, 1);
+
+    lua_getfield(L, 4, "__setters");
+    if (lua_istable(L, -1)) {
+      lua_pushvalue(L, 2);
+      lua_gettable(L, -2);
+      if (!lua_isnil(L, -1)) {
+        lua_pushvalue(L, 1);
+        lua_pushvalue(L, 3);
+        lua_call(L, 2, 1);
+        return 1;
+      }
+      lua_pop(L, 1);
+    }
+    lua_pop(L, 1);
+    lua_pop(L, 1);
+  }
+
+  if (lua_istable(L, 1)) {
+    lua_pushvalue(L, 2);
+    lua_pushvalue(L, 3);
+    lua_rawset(L, 1);
+    return 1;
+  }
+
+  lua_getglobal(L, "debug");
+  lua_getfield(L, -1, "traceback");
+  lua_call(L, 0, 1);
+  const char* tb = lua_tostring(L, -1);
+
+  lua_getglobal(L, "tostring");
+  lua_pushvalue(L, 2);
+  lua_call(L, 1, 1);
+  const char* k = lua_tostring(L, -1);
+
+  return luaL_error(L, "%s: Cannot set field %s", tb ? tb : "", k ? k : "nil");
 }
 
 void create_mt_getters_setters(lua_State* L, const char* tname, const Property* properties)
@@ -54,40 +107,40 @@ void create_mt_getters_setters(lua_State* L, const char* tname, const Property* 
   const int top = lua_gettop(L);
 #endif
 
-  bool withGetters = false;
-  bool withSetters = false;
+  int numGetters = 0;
+  int numSetters = 0;
+
   for (auto p = properties; p->name; ++p) {
     if (p->getter)
-      withGetters = true;
+      numGetters++;
     if (p->setter)
-      withSetters = true;
+      numSetters++;
   }
-  ASSERT(withGetters || withSetters);
+  ASSERT(numGetters > 0 || numSetters > 0);
 
   luaL_getmetatable(L, tname);
-  if (withGetters) {
-    lua_newtable(L);
-    lua_pushvalue(L, -1);
-    lua_setfield(L, -3, "__getters");
-    for (auto p = properties; p->name; ++p) {
+  if (numGetters > 0) {
+    lua_createtable(L, 0, numGetters);
+
+    for (const auto* p = properties; p->name; ++p) {
       if (p->getter) {
         lua_pushcclosure(L, p->getter, 0);
         lua_setfield(L, -2, p->name);
       }
     }
-    lua_pop(L, 1);
+    lua_setfield(L, -2, "__getters");
   }
-  if (withSetters) {
-    lua_newtable(L);
-    lua_pushvalue(L, -1);
-    lua_setfield(L, -3, "__setters");
-    for (auto p = properties; p->name; ++p) {
+
+  if (numSetters > 0) {
+    lua_createtable(L, 0, numSetters);
+
+    for (const auto* p = properties; p->name; ++p) {
       if (p->setter) {
         lua_pushcclosure(L, p->setter, 0);
         lua_setfield(L, -2, p->name);
       }
     }
-    lua_pop(L, 1);
+    lua_setfield(L, -2, "__setters");
   }
   lua_pop(L, 1);
 

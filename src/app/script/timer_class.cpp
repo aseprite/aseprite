@@ -21,23 +21,26 @@ namespace {
 
 class Timer : public ui::Timer {
 public:
-  Timer() : ui::Timer(100) {}
+  explicit Timer(lua_State* L) : ui::Timer(100), L(L) {}
+  ~Timer() override { unrefTimer(); }
 
   int runningRef() const { return m_runningRef; }
 
-  void refTimer(lua_State* L)
+  void refTimer()
   {
     if (m_runningRef == LUA_REFNIL) {
       lua_pushvalue(L, 1);
       m_runningRef = luaL_ref(L, LUA_REGISTRYINDEX);
+      get_engine(L)->trackObject();
     }
   }
 
-  void unrefTimer(lua_State* L)
+  void unrefTimer()
   {
     if (m_runningRef != LUA_REFNIL) {
       luaL_unref(L, LUA_REGISTRYINDEX, m_runningRef);
       m_runningRef = LUA_REFNIL;
+      get_engine(L)->untrackObject();
     }
   }
 
@@ -45,11 +48,13 @@ private:
   // Reference used to keep the timer alive (so it's not garbage
   // collected) when it's running.
   int m_runningRef = LUA_REFNIL;
+
+  lua_State* L;
 };
 
 int Timer_new(lua_State* L)
 {
-  auto timer = push_new<Timer>(L);
+  auto timer = push_new<Timer>(L, L);
 
   if (lua_istable(L, 1)) {
     auto type = lua_getfield(L, 1, "interval");
@@ -74,7 +79,7 @@ int Timer_new(lua_State* L)
           if (lua_isfunction(L, -1)) {
             if (lua_pcall(L, 0, 0, 0)) {
               if (const char* s = lua_tostring(L, -1))
-                App::instance()->scriptEngine()->consolePrint(s);
+                engine_print(L, s);
             }
           }
           else {
@@ -83,7 +88,7 @@ int Timer_new(lua_State* L)
           lua_pop(L, 1); // Pop timer
         }
         catch (const std::exception& ex) {
-          App::instance()->scriptEngine()->consolePrint(ex.what());
+          engine_print(L, ex.what());
         }
       });
     }
@@ -103,7 +108,7 @@ int Timer_start(lua_State* L)
 {
   auto obj = get_obj<Timer>(L, 1);
   obj->start();
-  obj->refTimer(L);
+  obj->refTimer();
   return 0;
 }
 
@@ -111,7 +116,7 @@ int Timer_stop(lua_State* L)
 {
   auto obj = get_obj<Timer>(L, 1);
   obj->stop();
-  obj->unrefTimer(L);
+  obj->unrefTimer();
   return 0;
 }
 

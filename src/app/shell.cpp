@@ -24,22 +24,29 @@
 
 namespace app {
 
-Shell::Shell()
+Shell::Shell() : m_engine(new script::Engine())
 {
+  m_engine->setPrintEvalResult(true);
+  auto print = [](const std::string& message) {
+    puts(message.c_str());
+    fflush(stdout);
+  };
+  m_engine->ConsolePrint.connect(print);
+  m_engine->ConsoleError.connect(print);
 }
 
 Shell::~Shell()
 {
 }
 
-void Shell::run(script::Engine& engine)
+void Shell::run()
 {
   std::cout
     << fmt::format("Welcome to {} v{} Interactive Console", get_app_name(), get_app_version())
     << std::endl;
   std::string line;
   while (std::getline(std::cin, line)) {
-    engine.evalCode(line);
+    m_engine->evalCode(line);
   }
   std::cout << "Done\n";
 }
