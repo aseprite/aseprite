@@ -185,7 +185,6 @@ if(ENABLE_SCRIPTING)
   endif()
 
   target_sources(app-lib PRIVATE
-    commands/cmd_developer_console.cpp
     commands/cmd_open_script_folder.cpp
     commands/cmd_run_script.cpp
     commands/debugger.cpp
@@ -227,7 +226,6 @@ if(ENABLE_SCRIPTING)
     script/properties_class.cpp
     script/range_class.cpp
     script/rectangle_class.cpp
-    script/require.cpp
     script/script_input_chain.cpp
     script/security.cpp
     script/selection_class.cpp
@@ -249,8 +247,7 @@ if(ENABLE_SCRIPTING)
     script/values.cpp
     script/version_class.cpp
     script/window_class.cpp
-    shell.cpp
-    ui/devconsole_view.cpp)
+    shell.cpp)
 endif()
 
 # Main app sources

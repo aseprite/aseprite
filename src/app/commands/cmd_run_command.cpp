@@ -264,7 +264,10 @@ private:
 
     const base::Chrono timer;
     const std::string& text = search()->text();
-    const bool result = App::instance()->scriptEngine()->evalCode(text.substr(1, text.length()));
+    if (!m_evalEngine)
+      m_evalEngine = std::make_unique<script::Engine>();
+
+    const bool result = m_evalEngine->evalCode(text.substr(1, text.length()));
 
     // Give some feedback that the code executed, for errors the console will take care of that.
     // We use the timer to avoid showing the tip in cases where the command was obviously
@@ -419,6 +422,9 @@ private:
 
   RunnerDB* m_db;
   Context* m_context;
+#ifdef ENABLE_SCRIPTING
+  std::unique_ptr<script::Engine> m_evalEngine;
+#endif
   Mode m_mode = Mode::Search;
 };
 } // Unnamed namespace

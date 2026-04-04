@@ -43,8 +43,8 @@
 
 #ifdef ENABLE_SCRIPTING
   #include "app/script/engine.h"
+  #include "app/script/engine_manager.h"
   #include "app/script/luacpp.h"
-  #include "app/script/require.h"
 #endif
 
 #include "archive.h"
@@ -373,8 +373,10 @@ void Extension::addMenuSeparator(ui::Widget* widget)
 
 class ExtensionCustomFormat : public FileFormat {
 public:
-  explicit ExtensionCustomFormat(const Extension::CustomFormatDefinition& formatDefinition)
+  explicit ExtensionCustomFormat(const Extension::CustomFormatDefinition& formatDefinition,
+                                 script::Engine* engine)
     : m_definition(formatDefinition)
+    , m_engine(engine)
   {
     m_dioFormat = dio::register_custom_format();
 
@@ -461,9 +463,7 @@ protected:
 
   bool onLoad(FileOp* fop) override
   {
-    auto* app = App::instance();
-    auto* engine = app->scriptEngine();
-    lua_State* L = engine->luaState();
+    lua_State* L = m_engine->luaState();
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, m_definition.onloadRef);
     lua_pushcclosure(L, script::get_original_io_open(), 0);
@@ -472,6 +472,7 @@ protected:
 
     ASSERT(m_originalDocs.empty());
     m_originalDocs.clear();
+    auto* app = App::instance();
     m_originalActiveDoc = app->context()->activeDocument();
     for (auto* doc : app->context()->documents())
       m_originalDocs.push_back(doc);
@@ -529,8 +530,7 @@ protected:
   #ifdef ENABLE_SAVE
   bool onSave(FileOp* fop) override
   {
-    script::Engine* engine = App::instance()->scriptEngine();
-    lua_State* L = engine->luaState();
+    lua_State* L = m_engine->luaState();
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, m_definition.onsaveRef);
 
@@ -576,7 +576,7 @@ protected:
 
     if (call != LUA_OK) {
       if (const char* s = lua_tostring(L, -1))
-        App::instance()->scriptEngine()->consolePrint(s);
+        m_engine->ConsolePrint(s);
       Console().printf("Could not save format '%s' to destination '%s'",
                        m_definition.name.c_str(),
                        fop->filename().c_str());
@@ -615,13 +615,14 @@ private:
   int m_flags;
   std::vector<Doc*> m_originalDocs;
   Doc* m_originalActiveDoc = nullptr;
+  script::Engine* m_engine;
 
   DISABLE_COPYING(ExtensionCustomFormat);
 };
 
 void Extension::addFileFormat(const CustomFormatDefinition& definition)
 {
-  auto* format = new ExtensionCustomFormat(definition);
+  auto* format = new ExtensionCustomFormat(definition, m_engine.get());
   FileFormatsManager::instance()->registerFormat(format);
 
   m_fileFormats.push_back(format);
@@ -890,16 +891,14 @@ Extension::ScriptItem::ScriptItem(const std::string& fn) : fn(fn), exitFunctionR
 
 void Extension::initScripts()
 {
-  script::Engine* engine = App::instance()->scriptEngine();
-  lua_State* L = engine->luaState();
+  if (!m_engine)
+    m_engine = script::EngineManager::create();
+
+  lua_State* L = m_engine->luaState();
 
   // Put a new "plugin" object for init()/exit() functions
   script::push_plugin(L, this);
   m_plugin.pluginRef = luaL_ref(L, LUA_REGISTRYINDEX);
-
-  // Set the _PLUGIN global so require() can find .lua files from the
-  // plugin path.
-  const script::SetPluginForRequire setPlugin(L, m_plugin.pluginRef);
 
   // Read plugin.preferences value
   {
@@ -922,11 +921,8 @@ void Extension::initScripts()
   }
 
   for (auto& script : m_plugin.scripts) {
-    // Reset global init()/exit() functions
-    engine->evalCode("init=nil exit=nil");
-
     // Eval the code of the script (it should define an init() and an exit() function)
-    engine->evalFile(script.fn);
+    m_engine->evalUserFile(script.fn);
 
     if (lua_getglobal(L, "exit") == LUA_TFUNCTION) {
       // Save a reference to the exit() function of this script
@@ -951,6 +947,9 @@ void Extension::initScripts()
 
 void Extension::exitScripts()
 {
+  if (!m_engine)
+    return;
+
   // Delete all file formats.
   for (auto* format : m_fileFormats) {
     FileFormatsManager::instance()->unregisterFormat(format);
@@ -958,8 +957,7 @@ void Extension::exitScripts()
   }
   m_fileFormats.clear();
 
-  script::Engine* engine = App::instance()->scriptEngine();
-  lua_State* L = engine->luaState();
+  lua_State* L = m_engine->luaState();
 
   // Call the exit() function of each script
   for (auto& script : m_plugin.scripts) {
@@ -1034,6 +1032,7 @@ void Extension::exitScripts()
   }
 
   m_plugin.items.clear();
+  m_engine.reset();
 }
 
 void Extension::addScript(const std::string& fn)

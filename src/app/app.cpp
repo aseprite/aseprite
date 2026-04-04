@@ -88,8 +88,8 @@
 #include <memory>
 
 #ifdef ENABLE_SCRIPTING
-  #include "app/script/engine.h"
   #include "app/shell.h"
+  #include "script/engine_manager.h"
 #endif
 
 #ifdef ENABLE_STEAM
@@ -102,24 +102,6 @@
 namespace app {
 
 using namespace ui;
-
-#ifdef ENABLE_SCRIPTING
-
-namespace {
-
-class ConsoleEngineDelegate : public script::EngineDelegate {
-public:
-  ConsoleEngineDelegate(Console& console) : m_console(console) {}
-  void onConsoleError(const char* text) override { onConsolePrint(text); }
-  void onConsolePrint(const char* text) override { m_console.printf("%s\n", text); }
-
-private:
-  Console& m_console;
-};
-
-} // anonymous namespace
-
-#endif // ENABLER_SCRIPTING
 
 class App::CoreModules {
 public:
@@ -239,9 +221,6 @@ App::App(AppMod* mod)
   , m_isGui(false)
   , m_isShell(false)
   , m_backupIndicator(nullptr)
-#ifdef ENABLE_SCRIPTING
-  , m_engine(new script::Engine)
-#endif
 {
   ASSERT(m_instance == nullptr);
   m_instance = this;
@@ -261,15 +240,6 @@ int App::initialize(const AppOptions& options)
   // available.
   m_showCliOnlyWarning = (startGui && base::utf8_icmp(base::get_file_title(options.exeName()),
                                                       get_app_name()) == 0);
-#endif
-
-  // Notify the scripting engine that we're going to enter to GUI
-  // mode, this is useful so we can mark the stdin file handle as
-  // closed so no script can hang the program if it tries to read from
-  // stdin when the GUI is running.
-#ifdef ENABLE_SCRIPTING
-  if (m_isGui)
-    m_engine->notifyRunningGui();
 #endif
 
   m_isShell = options.startShell();
@@ -551,15 +521,6 @@ void App::run(const bool runGuiManager)
     sendCrash.search();
 #endif
 
-    // Keep the console alive the whole program execute (just in case
-    // we've to print errors).
-    Console console;
-#ifdef ENABLE_SCRIPTING
-    // Use the app::Console() for script errors
-    ConsoleEngineDelegate delegate(console);
-    script::ScopedEngineDelegate setEngineDelegate(m_engine.get(), &delegate);
-#endif
-
     // Run the GUI main message loop
     if (runGuiManager) {
       try {
@@ -576,9 +537,8 @@ void App::run(const bool runGuiManager)
 #ifdef ENABLE_SCRIPTING
   // Start shell to execute scripts.
   if (m_isShell) {
-    m_engine->printLastResult(); // TODO is this needed?
     Shell shell;
-    shell.run(*m_engine);
+    shell.run();
   }
 #endif // ENABLE_SCRIPTING
 
@@ -615,16 +575,8 @@ App::~App()
     ASSERT(m_instance == this);
 
 #ifdef ENABLE_SCRIPTING
-    // Destroy scripting engine calling a method (instead of using
-    // reset()) because we need to keep the "m_engine" pointer valid
-    // until the very end, just in case that some Lua error happens
-    // now and we have to print that error using
-    // App::instance()->scriptEngine() in some way. E.g. if a Dialog
-    // onclose event handler fails with a Lua error when we are
-    // closing the app, a Lua error must be printed, and we need a
-    // valid m_engine pointer.
-    m_engine->destroy();
-    m_engine.reset();
+    // Delete script engines
+    script::EngineManager::clear();
 #endif
 
     // Delete file formats.

@@ -250,8 +250,15 @@ void Console::printf(const char* format, ...)
   std::string msg = base::string_vprintf(format, ap);
   va_end(ap);
 
-  if (!m_withUI) {
-    fputs(msg.c_str(), stdout);
+  print(msg);
+}
+
+void Console::print(std::string message)
+{
+  message.push_back('\n');
+
+  if (!isUIAvailable()) {
+    fputs(message.c_str(), stdout);
     fflush(stdout);
     return;
   }
@@ -268,7 +275,7 @@ void Console::printf(const char* format, ...)
   }
 
   // Update the textbox
-  m_console->addMessage(msg);
+  m_console->addMessage(message);
   m_console->invalidate();
   m_console->flushRedraw();
 }

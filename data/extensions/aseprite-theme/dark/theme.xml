@@ -1149,7 +1149,6 @@
             <icon part="timeline_open_padlock_active"/>
         </style>
         <style id="pal_button" extends="buttonset_item_icon" minwidth="15" padding-top="1"/>
-        <style id="debugger_button" extends="buttonset_item_icon" width="17" height="19"/>
         <style id="edit_pixels_mode" extends="buttonset_item_icon" width="15">
             <icon color="button_normal_text"/>
         </style>

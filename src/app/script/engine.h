@@ -16,6 +16,8 @@
 #include "app/color.h"
 #include "app/commands/params.h"
 #include "app/extensions.h"
+#include "base/chrono.h"
+#include "base/time.h"
 #include "base/uuid.h"
 #include "doc/brush.h"
 #include "doc/frame.h"
@@ -25,9 +27,8 @@
 #include "doc/user_data.h"
 #include "gfx/fwd.h"
 
-#include <cstdio>
-#include <functional>
 #include <map>
+#include <stack>
 #include <string>
 
 struct lua_State;
@@ -69,12 +70,9 @@ class Tool;
 
 namespace script {
 
-class EngineDelegate {
-public:
-  virtual ~EngineDelegate() {}
-  virtual void onConsoleError(const char* text) = 0;
-  virtual void onConsolePrint(const char* text) = 0;
-};
+class AppEvents;
+class WindowEvents;
+class SpriteEvents;
 
 class DebuggerDelegate {
 public:
@@ -86,56 +84,68 @@ public:
 
 class Engine {
 public:
+  struct MemoryTracker {
+    size_t initialUsage = 0;
+    size_t usage = 0;
+    size_t limit = 256'000'000;
+  };
+
   Engine();
   ~Engine();
 
-  void destroy();
+  void setPrintEvalResult(const bool printEvalResult) { m_printEvalResult = printEvalResult; }
+  void setMemoryLimit(const size_t& limit) { m_tracker.limit = limit; }
+  int returnCode() const { return m_returnCode; }
+  lua_State* luaState() const { return L; }
+  const MemoryTracker& memoryTracker() const { return m_tracker; }
+  AppEvents* appEvents();
+  WindowEvents* windowEvents(ui::Window* window);
+  SpriteEvents* spriteEvents(const doc::Sprite* sprite);
 
-  EngineDelegate* delegate() { return m_delegate; }
-  void setDelegate(EngineDelegate* delegate) { m_delegate = delegate; }
+  // Adds an object to the tracker used by hasLingeringObject(), used for Dialogs, Timers and
+  // anything that might linger after execution.
+  void trackObject() { m_objectTracker++; }
+  void untrackObject() { m_objectTracker--; }
 
-  // Called if the GUI is going to be started.
-  void notifyRunningGui();
-
-  void printLastResult();
-  bool evalCode(const std::string& code, const std::string& filename = std::string());
+  bool evalCode(const std::string& code, const std::string& name = std::string());
   bool evalFile(const std::string& filename, const Params& params = Params());
   bool evalUserFile(const std::string& filename, const Params& params = Params());
 
+  // Checks if the Engine has any tracked objects or attached events
+  bool hasLingeringObjects();
+
   void handleException(const std::exception& ex);
 
-  void consolePrint(const char* text) { onConsolePrint(text); }
+  // Functions registered directly to Lua:
+  int lua_print();
+  int lua_dofile();
+  int lua_loadfile();
+  int lua_os_clock();
 
-  int returnCode() const { return m_returnCode; }
-
-  lua_State* luaState() { return L; }
-
-  void startDebugger(DebuggerDelegate* debuggerDelegate);
-  void stopDebugger();
+  obs::signal<void(const std::string&)> ConsolePrint;
+  obs::signal<void(const std::string&)> ConsoleError;
 
 private:
-  void onConsoleError(const char* text);
-  void onConsolePrint(const char* text);
-
   lua_State* L;
-  EngineDelegate* m_delegate;
-  bool m_printLastResult;
+
+  // Events
+  std::unique_ptr<AppEvents> m_appEvents;
+  std::unique_ptr<WindowEvents> m_windowEvents;
+  std::map<doc::ObjectId, std::unique_ptr<SpriteEvents>> m_spriteEvents;
+
+  // Holds the base "entry point" of this engine, the last filename with which evalUserFile was
+  // called, remains after execution has finished, for any events/dialogs that might need to run
+  // relative-path scripts.
+  std::string m_baseScript;
+
+  // Stack of script filenames that are being executed.
+  std::stack<std::string> m_scriptStack;
+
+  MemoryTracker m_tracker;
+  base::Chrono m_clock;
+  bool m_printEvalResult;
   int m_returnCode;
-};
-
-class ScopedEngineDelegate {
-public:
-  ScopedEngineDelegate(Engine* engine, EngineDelegate* delegate)
-    : m_engine(engine)
-    , m_oldDelegate(engine->delegate())
-  {
-    m_engine->setDelegate(delegate);
-  }
-  ~ScopedEngineDelegate() { m_engine->setDelegate(m_oldDelegate); }
-
-private:
-  Engine* m_engine;
-  EngineDelegate* m_oldDelegate;
+  uint32_t m_objectTracker;
 };
 
 void push_app_events(lua_State* L);
@@ -186,9 +196,7 @@ gfx::Point convert_args_into_point(lua_State* L, int index);
 gfx::Rect convert_args_into_rect(lua_State* L, int index);
 gfx::Size convert_args_into_size(lua_State* L, int index);
 app::Color convert_args_into_color(lua_State* L, int index);
-doc::color_t convert_args_into_pixel_color(lua_State* L,
-                                           int index,
-                                           const doc::PixelFormat pixelFormat);
+doc::color_t convert_args_into_pixel_color(lua_State* L, int index, doc::PixelFormat pixelFormat);
 base::Uuid convert_args_into_uuid(lua_State* L, int index);
 doc::Palette* get_palette_from_arg(lua_State* L, int index);
 doc::Image* may_get_image_from_arg(lua_State* L, int index);
@@ -203,11 +211,11 @@ doc::Tileset* get_tile_index_from_arg(lua_State* L, int index, doc::tile_index& 
 doc::UserData::Properties* may_get_properties(lua_State* L, int index);
 
 // Used by App.open(), Sprite{ fromFile }, and Image{ fromFile }
-enum class LoadSpriteFromFileParam { FullAniAsSprite, OneFrameAsSprite, OneFrameAsImage };
-int load_sprite_from_file(lua_State* L, const char* filename, const LoadSpriteFromFileParam param);
+enum class LoadSpriteFromFileParam : uint8_t { FullAniAsSprite, OneFrameAsSprite, OneFrameAsImage };
+int load_sprite_from_file(lua_State* L, const char* filename, LoadSpriteFromFileParam param);
 
-// close all opened Dialogs before closing the UI
-void close_all_dialogs();
+Engine* get_engine(lua_State* L);
+void engine_print(lua_State* L, const std::string& message);
 
 } // namespace script
 } // namespace app

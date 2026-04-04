@@ -52,10 +52,6 @@
 #include "ui/system.h"
 #include "ui/view.h"
 
-#ifdef ENABLE_SCRIPTING
-  #include "app/ui/devconsole_view.h"
-#endif
-
 namespace app {
 
 using namespace ui;
@@ -98,9 +94,6 @@ MainWindow::MainWindow()
   , m_homeView(nullptr)
   , m_scalePanic(nullptr)
   , m_browserView(nullptr)
-#ifdef ENABLE_SCRIPTING
-  , m_devConsoleView(nullptr)
-#endif
 {
   enableFlags(ALLOW_DROP);
   setNeedsTabletPressure(true);
@@ -215,14 +208,6 @@ MainWindow::~MainWindow()
 
   m_layoutSelector.reset();
   m_scalePanic.reset();
-
-#ifdef ENABLE_SCRIPTING
-  if (m_devConsoleView) {
-    if (m_devConsoleView->parent() && m_workspace)
-      m_workspace->removeView(m_devConsoleView.get());
-    m_devConsoleView.reset();
-  }
-#endif
 
   if (m_browserView) {
     if (m_browserView->parent() && m_workspace)
@@ -344,19 +329,6 @@ void MainWindow::showBrowser(const std::string& filename, const std::string& sec
     m_workspace->addView(m_browserView.get());
     m_tabsBar->selectTab(m_browserView.get());
   }
-}
-
-void MainWindow::showDevConsole()
-{
-#ifdef ENABLE_SCRIPTING
-  if (!m_devConsoleView)
-    m_devConsoleView = std::make_unique<DevConsoleView>();
-
-  if (!m_devConsoleView->parent()) {
-    m_workspace->addView(m_devConsoleView.get());
-    m_tabsBar->selectTab(m_devConsoleView.get());
-  }
-#endif
 }
 
 void MainWindow::setMode(Mode mode)
