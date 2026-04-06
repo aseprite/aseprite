@@ -1079,7 +1079,12 @@ void AsepriteDecoder::readExternalFiles(AsepriteExternalFiles& extFiles)
     uint8_t type = read8();
     readPadding(7);
     std::string fn = readString();
-    extFiles.insert(id, type, fn);
+
+    if (type < ASE_EXTERNAL_FILE_TYPES)
+      extFiles.insert(id, type, fn);
+    else
+      delegate()->incompatibilityError(
+        fmt::format("Unknown externail file reference found: {0}", type));
   }
 }
 
