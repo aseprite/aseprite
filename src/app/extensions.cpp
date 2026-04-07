@@ -49,9 +49,8 @@
 
 #include "archive.h"
 #include "archive_entry.h"
-#include "json11.hpp"
+#include "nlohmann/json.hpp"
 
-#include <cctype>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -193,24 +192,20 @@ private:
   bool m_open;
 };
 
-void read_json_file(const std::string& path, json11::Json& json)
+void read_json_file(const std::string& path, nlohmann::json& json)
 {
-  std::string jsonText, line;
-  std::ifstream in(FSTREAM_PATH(path), std::ifstream::binary);
-  while (std::getline(in, line)) {
-    jsonText += line;
-    jsonText.push_back('\n');
+  auto file = base::open_file(path, "rb");
+  try {
+    json = nlohmann::json::parse(file.get());
   }
-  std::string err;
-  json = json11::Json::parse(jsonText, err);
-  if (!err.empty())
-    throw base::Exception("Error parsing JSON file: %s\n", err.c_str());
+  catch (std::exception& e) {
+    throw base::Exception("Error parsing JSON file: %s\n", e.what());
+  }
 }
 
-void write_json_file(const std::string& path, const json11::Json& json)
+void write_json_file(const std::string& path, const nlohmann::json& json)
 {
-  std::string text;
-  json.dump(text);
+  const std::string text = json.dump();
   std::ofstream out(FSTREAM_PATH(path), std::ifstream::binary);
   out.write(text.c_str(), text.size());
 }
@@ -692,13 +687,13 @@ void Extension::uninstallFiles(const std::string& path, const DeletePluginPref d
   if (!base::is_file(infoFn))
     throw base::Exception("Cannot remove extension, '%s' file doesn't exist", infoFn.c_str());
 
-  json11::Json json;
+  nlohmann::json json;
   read_json_file(infoFn, json);
 
   base::paths installedDirs;
 
-  for (const auto& value : json["installedFiles"].array_items()) {
-    const std::string& fn = base::join_path(path, value.string_value());
+  for (const auto& value : json.at("installedFiles")) {
+    const std::string& fn = base::join_path(path, value);
     if (base::is_file(fn)) {
       TRACE("EXT: Deleting file '%s'\n", fn.c_str());
       base::delete_file(fn);
@@ -1252,27 +1247,24 @@ ExtensionInfo Extensions::getCompressedExtensionInfo(const std::string& zipFn) c
     std::stringstream out;
     in.copyDataTo(out);
 
-    std::string err;
-    auto json = json11::Json::parse(out.str(), err);
-    if (err.empty()) {
-      if (json["contributes"].is_object()) {
-        auto themes = json["contributes"]["themes"];
-        if (json["name"].string_value() == Extension::kAsepriteDefaultThemeExtensionName)
-          info.defaultTheme = true;
-        else {
-          if (themes.is_array()) {
-            for (int i = 0; i < themes.array_items().size(); i++) {
-              if (themes[i]["id"].string_value() == Extension::kAsepriteDefaultThemeId) {
-                info.defaultTheme = true;
-                break;
-              }
-            }
+    auto json = nlohmann::json::parse(out.str());
+    info.name = json.at("name");
+    info.version = json.value("version", "");
+    info.dstPath = base::join_path(m_userExtensionsPath, info.name);
+
+    if (json.contains("contributes")) {
+      if (info.name == Extension::kAsepriteDefaultThemeExtensionName) {
+        info.defaultTheme = true;
+      }
+      else {
+        const auto& themes = json["contributes"].value("themes", nlohmann::json::array());
+        for (const auto& theme : themes) {
+          if (theme.at("id") == Extension::kAsepriteDefaultThemeId) {
+            info.defaultTheme = true;
+            break;
           }
         }
       }
-      info.name = json["name"].string_value();
-      info.version = json["version"].string_value();
-      info.dstPath = base::join_path(m_userExtensionsPath, info.name);
     }
     break;
   }
@@ -1335,11 +1327,10 @@ Extension* Extensions::installCompressedExtension(const std::string& zipFn,
 
   // Save the list of installed files in "__info.json" file
   {
-    json11::Json::object obj;
-    obj["installedFiles"] = json11::Json(installedFiles);
-    const json11::Json json(obj);
-
     const std::string fullFn = base::join_path(info.dstPath, kInfoJson);
+    nlohmann::json json = {
+      { "installedFiles", installedFiles }
+    };
     LOG("EXT: Saving list of installed files in <%s>\n", fullFn.c_str());
     write_json_file(fullFn, json);
   }
@@ -1360,11 +1351,13 @@ Extension* Extensions::loadExtension(const std::string& path,
                                      const std::string& fullPackageFilename,
                                      const bool isBuiltinExtension)
 {
-  json11::Json json;
+  nlohmann::json json;
   read_json_file(fullPackageFilename, json);
-  const auto& name = json["name"].string_value();
-  const auto& version = json["version"].string_value();
-  const auto& displayName = json["displayName"].string_value();
+  const std::string& name = json.at("name");
+  if (name.empty())
+    throw base::Exception("Error loading extension '%s', empty name", path.c_str());
+  const auto& version = json.value("version", "");
+  const auto& displayName = json.value("displayName", name);
 
   LOG("EXT: Extension '%s' loaded\n", name.c_str());
 
@@ -1374,8 +1367,8 @@ Extension* Extensions::loadExtension(const std::string& path,
       { "name",    name    },
       { "version", version }
     };
-    if (json["author"].is_object()) {
-      data["url"] = json["author"]["url"].string_value();
+    if (json.contains("author")) {
+      data["url"] = json.at("author").value("url", "");
     }
     Sentry::addBreadcrumb("Load extension", data);
   }
@@ -1389,105 +1382,93 @@ Extension* Extensions::loadExtension(const std::string& path,
                                                get_config_bool("extensions", name.c_str(), true),
                                                isBuiltinExtension);
 
-  const auto& contributes = json["contributes"];
-  if (contributes.is_object()) {
+  const auto& contributes = json.value("contributes", nlohmann::json::object());
+  if (!contributes.empty()) {
     // Keys
-    auto keys = contributes["keys"];
-    if (keys.is_array()) {
-      for (const auto& key : keys.array_items()) {
-        const std::string& keyId = key["id"].string_value();
-        std::string keyPath = key["path"].string_value();
+    auto keys = contributes.value("keys", nlohmann::json::array());
+    for (const auto& key : keys) {
+      const std::string& keyId = key.at("id");
+      std::string keyPath = key.at("path");
 
-        // The path must be always relative to the extension
-        keyPath = base::join_path(path, keyPath);
+      // The path must be always relative to the extension
+      keyPath = base::join_path(path, keyPath);
 
-        LOG("EXT: New keyboard shortcuts '%s' in '%s'\n", keyId.c_str(), keyPath.c_str());
+      LOG("EXT: New keyboard shortcuts '%s' in '%s'\n", keyId.c_str(), keyPath.c_str());
 
-        extension->addKeys(keyId, keyPath);
-      }
+      extension->addKeys(keyId, keyPath);
     }
 
     // Languages
-    const auto& languages = contributes["languages"];
-    if (languages.is_array()) {
-      for (const auto& lang : languages.array_items()) {
-        const std::string& langId = lang["id"].string_value();
-        std::string langPath = lang["path"].string_value();
-        const std::string& langDisplayName = lang["displayName"].string_value();
+    const auto& languages = contributes.value("languages", nlohmann::json::array());
+    for (const auto& lang : languages) {
+      const std::string& langId = lang.at("id");
+      std::string langPath = lang.at("path");
+      const std::string& langDisplayName = lang.value("displayName", langId);
 
-        // The path must be always relative to the extension
-        langPath = base::join_path(path, langPath);
+      // The path must be always relative to the extension
+      langPath = base::join_path(path, langPath);
 
-        LOG("EXT: New language id=%s path=%s displayName=%s\n",
-            langId.c_str(),
-            langPath.c_str(),
-            langDisplayName.c_str());
+      LOG("EXT: New language id=%s path=%s displayName=%s\n",
+          langId.c_str(),
+          langPath.c_str(),
+          langDisplayName.c_str());
 
-        extension->addLanguage(langId, langPath, langDisplayName);
-      }
+      extension->addLanguage(langId, langPath, langDisplayName);
     }
 
     // Themes
-    const auto& themes = contributes["themes"];
-    if (themes.is_array()) {
-      for (const auto& theme : themes.array_items()) {
-        const std::string& themeId = theme["id"].string_value();
-        std::string themePath = theme["path"].string_value();
-        const std::string& themeVariant = theme["variant"].string_value();
+    const auto& themes = contributes.value("themes", nlohmann::json::array());
+    for (const auto& theme : themes) {
+      const std::string& themeId = theme.at("id");
+      std::string themePath = theme.at("path");
+      const std::string& themeVariant = theme.value("variant", "");
 
-        // The path must be always relative to the extension
-        themePath = base::join_path(path, themePath);
+      // The path must be always relative to the extension
+      themePath = base::join_path(path, themePath);
 
-        LOG("EXT: New theme id=%s path=%s variant=%s\n",
-            themeId.c_str(),
-            themePath.c_str(),
-            themeVariant.c_str());
+      LOG("EXT: New theme id=%s path=%s variant=%s\n",
+          themeId.c_str(),
+          themePath.c_str(),
+          themeVariant.c_str());
 
-        extension->addTheme(themeId, themePath, themeVariant);
-      }
+      extension->addTheme(themeId, themePath, themeVariant);
     }
 
     // Palettes
-    const auto& palettes = contributes["palettes"];
-    if (palettes.is_array()) {
-      for (const auto& palette : palettes.array_items()) {
-        const std::string& palId = palette["id"].string_value();
-        std::string palPath = palette["path"].string_value();
+    const auto& palettes = contributes.value("palettes", nlohmann::json::array());
+    for (const auto& palette : palettes) {
+      const std::string& palId = palette.at("id");
+      std::string palPath = palette.at("path");
 
-        // The path must be always relative to the extension
-        palPath = base::join_path(path, palPath);
+      // The path must be always relative to the extension
+      palPath = base::join_path(path, palPath);
 
-        LOG("EXT: New palette id=%s path=%s\n", palId.c_str(), palPath.c_str());
+      LOG("EXT: New palette id=%s path=%s\n", palId.c_str(), palPath.c_str());
 
-        extension->addPalette(palId, palPath);
-      }
+      extension->addPalette(palId, palPath);
     }
 
     // Dithering matrices
-    const auto& ditheringMatrices = contributes["ditheringMatrices"];
-    if (ditheringMatrices.is_array()) {
-      for (const auto& ditheringMatrix : ditheringMatrices.array_items()) {
-        const std::string& matId = ditheringMatrix["id"].string_value();
-        std::string matPath = ditheringMatrix["path"].string_value();
-        std::string matName = ditheringMatrix["name"].string_value();
-        if (matName.empty())
-          matName = matId;
+    const auto& ditheringMatrices = contributes.value("ditheringMatrices", nlohmann::json::array());
+    for (const auto& ditheringMatrix : ditheringMatrices) {
+      const std::string& matId = ditheringMatrix.at("id");
+      std::string matPath = ditheringMatrix.at("path");
+      const std::string matName = ditheringMatrix.value("name", matId);
 
-        // The path must be always relative to the extension
-        matPath = base::join_path(path, matPath);
+      // The path must be always relative to the extension
+      matPath = base::join_path(path, matPath);
 
-        LOG("EXT: New dithering matrix id=%s path=%s\n", matId.c_str(), matPath.c_str());
+      LOG("EXT: New dithering matrix id=%s path=%s\n", matId.c_str(), matPath.c_str());
 
-        extension->addDitheringMatrix(matId, matPath, matName);
-      }
+      extension->addDitheringMatrix(matId, matPath, matName);
     }
 
 #ifdef ENABLE_SCRIPTING
     // Scripts
-    const auto& scripts = contributes["scripts"];
+    const auto& scripts = contributes.value("scripts", nlohmann::json());
     if (scripts.is_array()) {
-      for (const auto& script : scripts.array_items()) {
-        std::string scriptPath = script["path"].string_value();
+      for (const auto& script : scripts) {
+        std::string scriptPath = script.value("path", "");
         if (scriptPath.empty())
           continue;
 
@@ -1500,8 +1481,8 @@ Extension* Extensions::loadExtension(const std::string& path,
       }
     }
     // Simple version of packages.json with {... "scripts": "file.lua" ...}
-    else if (scripts.is_string() && !scripts.string_value().empty()) {
-      std::string scriptPath = scripts.string_value();
+    else if (scripts.is_string() && !scripts.empty()) {
+      std::string scriptPath = scripts;
 
       // The path must be always relative to the extension
       scriptPath = base::join_path(path, scriptPath);

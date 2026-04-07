@@ -125,7 +125,13 @@ if(NOT USE_SHARED_CMARK)
 endif()
 
 # JSON
-add_subdirectory(json11)
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+set(JSON_Install OFF CACHE INTERNAL "")
+if(ENABLE_DEVMODE)
+  set(JSON_Diagnostics ON CACHE INTERNAL "")
+endif()
+
+add_subdirectory(json)
 
 # libarchive
 set(HAVE_WCSCPY 1)

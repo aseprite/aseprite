@@ -90,7 +90,8 @@ public:
     const auto it = std::find_if(extensions.begin(),
                                  extensions.end(),
                                  [this](const Extension* ext) { return ext->name() == m_name; });
-    ASSERT(it != extensions.end());
+    if (it == extensions.end())
+      return nullptr;
     return *it;
   }
 
@@ -471,6 +472,32 @@ end
   app.extensions().enableExtension(testExt, false);
   EXPECT_EQ(e.prefString(),
             R"(return {log={"script1.init","script2.init","script1.exit","script2.exit"}})");
+}
+
+TEST(Extensions, InvalidPackage)
+{
+  int defaultExtensionCount = 0;
+  {
+    INIT_EXTENSION_TEST();
+    defaultExtensionCount = std::distance(app.extensions().begin(), app.extensions().end());
+  }
+  EXPECT_TRUE(defaultExtensionCount != 0);
+  int i = 1;
+  for (const auto& invalidPackageJSON : {
+         R"({ "name": "test-invalid", )",
+         R"({ "name": "" })",
+         R"({})",
+         R"(null)",
+       }) {
+    const ExtFiles extensionFiles = {
+      { "package.json", invalidPackageJSON }
+    };
+    const ExtTestHelper e(fmt::format("test-invalid-package-{}", i), extensionFiles);
+    INIT_EXTENSION_TEST();
+    EXPECT_EQ(std::distance(app.extensions().begin(), app.extensions().end()),
+              defaultExtensionCount);
+    i++;
+  }
 }
 
 TEST(Extensions, BasicZipInstall)
