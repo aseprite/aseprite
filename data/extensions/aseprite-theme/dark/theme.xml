@@ -535,9 +535,6 @@
         <style id="tooltip_window_arrow">
             <background part="tooltip_arrow"/>
         </style>
-        <style id="tooltip_face">
-            <background color="tooltip_face"/>
-        </style>
         <style id="tooltip_text">
             <background color="tooltip_face"/>
             <text color="tooltip_text" align="left"/>
@@ -731,7 +728,7 @@
         </style>
         <style id="separator_in_view_reverse">
             <background color="workspace"/>
-            <text color="text" x="4" align="left middle"/>
+            <text color="background" x="4" align="left middle"/>
         </style>
         <style id="vertical_separator" border-left="4" border-top="2" border-right="1" border-bottom="2">
             <background-border part="separator_vert" align="center"/>
@@ -742,32 +739,29 @@
             <background color="menuitem_hot_face" state="mouse"/>
             <background color="listitem_selected_face" state="selected"/>
             <text color="text" align="left" x="2"/>
-            <text color="text_hot" align="left" x="2" state="mouse"/>
             <text color="listitem_selected_text" align="left" x="2" state="selected"/>
         </style>
         <style id="recent_file_detail" border="2" border-left="0" extends="recent_file">
-            <text color="detail_text" align="left" x="2"/>
+            <text color="disabled" align="left" x="2"/>
         </style>
         <style id="recent_file_pin">
             <background color="background"/>
             <background color="menuitem_hot_face" state="mouse"/>
             <background color="listitem_selected_face" state="selected"/>
-            <icon part="unpinned" align="center middle" color="text_hot"/>
+            <icon part="unpinned" align="center middle" color="text"/>
             <icon part="unpinned" align="center middle" color="listitem_selected_text" state="selected"/>
-            <icon part="pinned" align="center middle" color="detail_text" state="focus"/>
-            <icon part="pinned" align="center middle" color="text_hot" state="focus selected"/>
+            <icon part="pinned" align="center middle" color="text" state="focus"/>
+            <icon part="pinned" align="center middle" color="listitem_selected_text" state="focus selected"/>
         </style>
         <style id="news_item" border="2">
             <background color="background"/>
             <background color="menuitem_hot_face" state="mouse"/>
             <background color="listitem_selected_face" state="selected"/>
             <text color="text" align="left" x="2"/>
-            <text color="text_hot" align="left" x="2" state="mouse"/>
             <text color="listitem_selected_text" align="left" x="2" state="selected"/>
         </style>
         <style id="news_item_detail" extends="news_item" border="2">
-            <text color="detail_text" align="left top wordwrap" x="2"/>
-            <text color="detail_text" align="left top wordwrap" x="2" state="mouse"/>
+            <text color="disabled" align="left top wordwrap" x="2"/>
             <text color="listitem_selected_text" align="left top wordwrap" x="2" state="selected"/>
         </style>
         <style id="scrollbar">
@@ -1019,7 +1013,7 @@
         </style>
         <style id="shade_empty">
             <background color="editor_face"/>
-            <text color="status_bar_text"/>
+            <text color="face"/>
         </style>
         <style id="shade_selection">
             <background part="colorbar_selection_hot"/>
@@ -1092,6 +1086,15 @@
         <style id="buttonset_item_icon_mono" extends="buttonset_item_icon">
             <icon color="button_normal_text"/>
         </style>
+        <style id="buttonset_item_icon_active">
+            <background-border part="buttonset_item_active"/>
+            <background-border part="buttonset_item_active" state="selected"/>
+            <background-border part="buttonset_item_active" state="focus"/>
+            <background-border part="buttonset_item_active" state="mouse"/>
+            <background-border part="buttonset_item_active" state="mouse focus"/>
+            <background-border part="buttonset_item_active" state="capture"/>
+            <background-border part="buttonset_item_active" state="capture selected"/>
+        </style>
         <style id="buttonset_item_text" extends="buttonset_item" padding="1">
             <text color="button_normal_text"/>
             <text color="button_hot_text" state="selected"/>
@@ -1127,7 +1130,6 @@
         <style id="context_bar_button" extends="buttonset_item_icon" width="15"/>
         <style id="context_bar_text_button" extends="buttonset_item_text" width="15"/>
         <style id="brush_type" extends="context_bar_button"/>
-        <style id="corner_radius_field" extends="context_bar_button" padding-left="1"/>
         <style id="brush_type_mono" extends="context_bar_button">
             <icon color="button_normal_text"/>
         </style>
@@ -1138,19 +1140,12 @@
         <style id="selection_mode" extends="context_bar_button" padding-top="1"/>
         <style id="symmetry_field" extends="context_bar_button" padding-top="1"/>
         <style id="symmetry_options" extends="context_bar_text_button" padding-left="3" padding-bottom="3"/>
+        <style id="corner_radius_field" extends="context_bar_button" padding-left="1"/>
         <style id="pal_edit_lock" extends="buttonset_item_icon" width="15">
             <icon part="timeline_closed_padlock_normal"/>
             <icon part="timeline_closed_padlock_normal" state="capture selected"/>
         </style>
-        <style id="pal_edit_unlock" extends="pal_edit_lock">
-            <background-border part="buttonset_item_active"/>
-            <background-border part="buttonset_item_active" state="selected"/>
-            <background-border part="buttonset_item_active" state="focus"/>
-            <background-border part="buttonset_item_active" state="mouse"/>
-            <background-border part="buttonset_item_active" state="mouse focus"/>
-            <background-border part="buttonset_item_active" state="capture"/>
-            <background-border part="buttonset_item_active" state="capture selected"/>
-            <newlayer/>
+        <style id="pal_edit_unlock" extends="buttonset_item_icon_active" width="15">
             <icon part="timeline_open_padlock_active"/>
         </style>
         <style id="pal_button" extends="buttonset_item_icon" minwidth="15" padding-top="1"/>
@@ -1158,15 +1153,7 @@
         <style id="edit_pixels_mode" extends="buttonset_item_icon" width="15">
             <icon color="button_normal_text"/>
         </style>
-        <style id="edit_tiles_mode" extends="edit_pixels_mode" width="15">
-            <background-border part="buttonset_item_active"/>
-            <background-border part="buttonset_item_active" state="selected"/>
-            <background-border part="buttonset_item_active" state="focus"/>
-            <background-border part="buttonset_item_active" state="mouse"/>
-            <background-border part="buttonset_item_active" state="mouse focus"/>
-            <background-border part="buttonset_item_active" state="capture"/>
-            <background-border part="buttonset_item_active" state="capture selected"/>
-            <newlayer/>
+        <style id="edit_tiles_mode" extends="buttonset_item_icon_active" width="15">
             <icon color="button_selected_text"/>
         </style>
         <style id="standard_brush" extends="buttonset_item_icon_mono" width="17" height="19"/>

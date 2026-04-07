@@ -622,28 +622,6 @@ public:
 
   ~OptionsWindow() { manager()->removeMessageFilter(kFocusEnterMessage, this); }
 
-  bool onProcessMessage(Message* msg)
-  {
-    switch (msg->type()) {
-      case kFocusEnterMessage:
-        // Resets the search when we focus any widget that has mouse interaction, unless it's in the
-        // section list
-        if (msg->recipient() == sectionListbox() ||
-            (msg->recipient()->type() == kListItemWidget &&
-             msg->recipient()->parent() == sectionListbox()) ||
-            msg->recipient() == search() || msg->recipient()->hasFlags(IGNORE_MOUSE))
-          return false;
-
-        if (!search()->text().empty()) {
-          search()->clear();
-          onSearch();
-        }
-        break;
-    }
-
-    return Window::onProcessMessage(msg);
-  }
-
   void loadFromPreferences()
   {
     // Default extension to save files
@@ -1176,6 +1154,37 @@ private:
 
     fontPreview()->setFont(m_font);
     miniFontPreview()->setFont(m_miniFont);
+  }
+
+  bool onProcessMessage(Message* msg) override
+  {
+    switch (msg->type()) {
+      case kDropFilesMessage: {
+        base::paths files = static_cast<DropFilesMessage*>(msg)->files();
+        for (const auto& fn : files) {
+          const auto& extension = base::string_to_lower(base::get_file_extension(fn));
+          if (extension == "aseprite-extension" || extension == "zip")
+            showDialogToInstallExtension(fn);
+        }
+        return true;
+      }
+
+      case kFocusEnterMessage:
+        // Resets the search when we focus any widget that has mouse interaction, unless it's in the
+        // section list
+        if (msg->recipient() == sectionListbox() ||
+            (msg->recipient()->type() == kListItemWidget &&
+             msg->recipient()->parent() == sectionListbox()) ||
+            msg->recipient() == search() || msg->recipient()->hasFlags(IGNORE_MOUSE))
+          return false;
+
+        if (!search()->text().empty()) {
+          search()->clear();
+          onSearch();
+        }
+        break;
+    }
+    return Window::onProcessMessage(msg);
   }
 
   void fillThemeVariants()

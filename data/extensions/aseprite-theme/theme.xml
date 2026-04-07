@@ -1082,6 +1082,15 @@
         <style id="buttonset_item_icon_mono" extends="buttonset_item_icon">
             <icon color="button_normal_text"/>
         </style>
+        <style id="buttonset_item_icon_active">
+            <background-border part="buttonset_item_active"/>
+            <background-border part="buttonset_item_active" state="selected"/>
+            <background-border part="buttonset_item_active" state="focus"/>
+            <background-border part="buttonset_item_active" state="mouse"/>
+            <background-border part="buttonset_item_active" state="mouse focus"/>
+            <background-border part="buttonset_item_active" state="capture"/>
+            <background-border part="buttonset_item_active" state="capture selected"/>
+        </style>
         <style id="buttonset_item_text" extends="buttonset_item" padding="1">
             <text color="button_normal_text"/>
             <text color="button_hot_text" state="selected"/>
@@ -1132,15 +1141,7 @@
             <icon part="timeline_closed_padlock_normal"/>
             <icon part="timeline_closed_padlock_normal" state="capture selected"/>
         </style>
-        <style id="pal_edit_unlock" extends="pal_edit_lock">
-            <background-border part="buttonset_item_active"/>
-            <background-border part="buttonset_item_active" state="selected"/>
-            <background-border part="buttonset_item_active" state="focus"/>
-            <background-border part="buttonset_item_active" state="mouse"/>
-            <background-border part="buttonset_item_active" state="mouse focus"/>
-            <background-border part="buttonset_item_active" state="capture"/>
-            <background-border part="buttonset_item_active" state="capture selected"/>
-            <newlayer/>
+        <style id="pal_edit_unlock" extends="buttonset_item_icon_active" width="15">
             <icon part="timeline_open_padlock_active"/>
         </style>
         <style id="pal_button" extends="buttonset_item_icon" minwidth="15" padding-top="1"/>
@@ -1148,15 +1149,7 @@
         <style id="edit_pixels_mode" extends="buttonset_item_icon" width="15">
             <icon color="button_normal_text"/>
         </style>
-        <style id="edit_tiles_mode" extends="edit_pixels_mode" width="15">
-            <background-border part="buttonset_item_active"/>
-            <background-border part="buttonset_item_active" state="selected"/>
-            <background-border part="buttonset_item_active" state="focus"/>
-            <background-border part="buttonset_item_active" state="mouse"/>
-            <background-border part="buttonset_item_active" state="mouse focus"/>
-            <background-border part="buttonset_item_active" state="capture"/>
-            <background-border part="buttonset_item_active" state="capture selected"/>
-            <newlayer/>
+        <style id="edit_tiles_mode" extends="buttonset_item_icon_active" width="15">
             <icon color="button_selected_text"/>
         </style>
         <style id="standard_brush" extends="buttonset_item_icon_mono" width="17" height="19"/>

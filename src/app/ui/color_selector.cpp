@@ -284,6 +284,12 @@ app::Color ColorSelector::getColorByPosition(const gfx::Point& pos)
   if ((hasCapture() && m_capturedInAlpha) || (!hasCapture() && alphaBarBounds.contains(pos)))
     return getAlphaBarColor(u, umax);
 
+  // border color extends bottom/alpha bar if visible
+  if (!hasCapture() && pos.y >= rc.y2()) {
+    if (!bottomBarBounds.isEmpty())
+      return alphaBarBounds.isEmpty() ? getBottomBarColor(u, umax) : getAlphaBarColor(u, umax);
+  }
+
   const int v = pos.y - rc.y;
   const int vmax = std::max(1, rc.h - bottomBarBounds.h - alphaBarBounds.h - 1);
   return getMainAreaColor(u, umax, v, vmax);
@@ -320,6 +326,12 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
         m_capturedInBottom = bottomBarBounds().contains(pos);
         m_capturedInAlpha = alphaBarBounds().contains(pos);
         m_capturedInMain = (hasCapture() && !m_capturedInMain && !m_capturedInBottom);
+
+        const gfx::Rect rc = childrenBounds();
+        if (!m_capturedInAlpha && pos.y >= rc.y2()) {
+          releaseMouse();
+          m_capturedInMain = false;
+        }
       }
 
       app::Color color = getColorByPosition(pos);

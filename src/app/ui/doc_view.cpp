@@ -112,6 +112,12 @@ public:
       StatusBar::instance()->updateFromEditor(this);
   }
 
+  void onZoomChanged(Editor* editor) override
+  {
+    if (isActive())
+      StatusBar::instance()->updateFromEditor(this);
+  }
+
   void onAfterFrameChanged(Editor* editor) override
   {
     m_previewDelegate->onPreviewOtherEditor(this);
