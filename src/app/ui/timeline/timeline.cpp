@@ -2402,8 +2402,8 @@ void Timeline::drawLayer(ui::Graphics* g, const int layerIdx)
     int s = ui::guiscale();
     g->fillRect(is_active ? skinTheme()->colors.timelineClickedText() :
                             skinTheme()->colors.timelineNormalText(),
-                gfx::Rect(bounds.x + 4 * s,
-                          bounds.y + bounds.h - 2 * s,
+                gfx::Rect(textBounds.x + 4 * s,
+                          textBounds.y + textBounds.h - 2 * s,
                           font()->textLength(layer->name().c_str()),
                           s));
   }
@@ -2411,8 +2411,8 @@ void Timeline::drawLayer(ui::Graphics* g, const int layerIdx)
     int s = ui::guiscale();
     g->fillRect(is_active ? skinTheme()->colors.timelineClickedText() :
                             skinTheme()->colors.timelineNormalText(),
-                gfx::Rect(bounds.x + 4 * s,
-                          bounds.y + bounds.h / 2,
+                gfx::Rect(textBounds.x + 4 * s,
+                          textBounds.y + textBounds.h / 2,
                           font()->textLength(layer->name().c_str()),
                           s));
   }
