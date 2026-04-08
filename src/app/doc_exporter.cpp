@@ -1505,6 +1505,23 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, doc::
      << "\"h\": " << texture->height() << " },\n"
      << "  \"scale\": \"1\"";
 
+  // meta.data
+  {
+    Sprite* sprite = nullptr;
+    for (const auto& item : m_documents) {
+      if (item.isOneImageOnly())
+        continue;
+      if (!sprite)
+        sprite = item.doc->sprite();
+      else if (item.doc->sprite() != sprite) {
+        sprite = nullptr;
+        break;
+      }
+    }
+    if (sprite && !sprite->userData().isEmpty())
+      os << sprite->userData();
+  }
+
   // meta.frameTags
   if (m_listTags) {
     os << ",\n"
