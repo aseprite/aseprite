@@ -28,14 +28,22 @@ public:
     os::Surface* iconSurface() const override { return m_icon ? m_icon->bitmap(0) : nullptr; }
     skin::SkinPartPtr icon() const { return m_icon; }
     ButtonSet* buttonSet();
+    void invalidate();
 
   protected:
     void onPaint(ui::PaintEvent& ev) override;
     bool onProcessMessage(ui::Message* msg) override;
     virtual void onClick();
     virtual void onRightClick();
+    virtual void onInvalidateRegion(const gfx::Region& region) override;
+    virtual void getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags) override;
 
   private:
+    // Expands the passed rectangle only if needed as a result of overlapping items.
+    // This is a helper function used to properly paint overlapped items in a
+    // ButtonSet.
+    void expandForOverlappingItems(gfx::Rect& bounds);
+
     skin::SkinPartPtr m_icon;
   };
 
@@ -47,15 +55,28 @@ public:
 
   ButtonSet(int columns, bool same_width_columns = false);
 
-  Item* addItem(const std::string& text, ui::Style* style);
-  Item* addItem(const std::string& text, int hspan = 1, int vspan = 1, ui::Style* style = nullptr);
-  Item* addItem(const skin::SkinPartPtr& icon, ui::Style* style);
+  Item* addItem(const std::string& text,
+                ui::Style* style,
+                int align = ui::HORIZONTAL | ui::VERTICAL);
+  Item* addItem(const std::string& text,
+                int hspan = 1,
+                int vspan = 1,
+                ui::Style* style = nullptr,
+                int align = ui::HORIZONTAL | ui::VERTICAL);
+  Item* addItem(const skin::SkinPartPtr& icon,
+                ui::Style* style,
+                int align = ui::HORIZONTAL | ui::VERTICAL);
   Item* addItem(const skin::SkinPartPtr& icon,
                 int hspan = 1,
                 int vspan = 1,
-                ui::Style* style = nullptr);
-  Item* addItem(Item* item, ui::Style* style);
-  Item* addItem(Item* item, int hspan = 1, int vspan = 1, ui::Style* style = nullptr);
+                ui::Style* style = nullptr,
+                int align = ui::HORIZONTAL | ui::VERTICAL);
+  Item* addItem(Item* item, ui::Style* style, int align = ui::HORIZONTAL | ui::VERTICAL);
+  Item* addItem(Item* item,
+                int hspan = 1,
+                int vspan = 1,
+                ui::Style* style = nullptr,
+                int align = ui::HORIZONTAL | ui::VERTICAL);
   Item* getItem(int index);
   int getItemIndex(const Item* item) const;
 
@@ -69,6 +90,11 @@ public:
   void setOfferCapture(bool state);
   void setTriggerOnMouseUp(bool state);
   void setMultiMode(MultiMode mode);
+
+  bool hasOverlappingItems() const
+  {
+    return children().size() > 1 && (m_rowgap < 0 || m_colgap < 0);
+  }
 
   obs::signal<void(Item*)> ItemChange;
   obs::signal<void(Item*)> RightClick;

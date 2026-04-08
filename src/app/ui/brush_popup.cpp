@@ -12,6 +12,7 @@
 #include "app/ui/brush_popup.h"
 
 #include "app/app.h"
+#include "app/brush_pattern_slot.h"
 #include "app/brush_slot.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
@@ -30,12 +31,15 @@
 #include "app/util/conversion_to_surface.h"
 #include "base/convert_to.h"
 #include "doc/brush.h"
+#include "doc/brush_pattern.h"
 #include "doc/image.h"
 #include "doc/palette.h"
+#include "doc/pixel_format.h"
 #include "gfx/border.h"
 #include "gfx/region.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "ui/base.h"
 #include "ui/button.h"
 #include "ui/fit_bounds.h"
 #include "ui/link_label.h"
@@ -45,6 +49,8 @@
 #include "ui/separator.h"
 
 #include "brush_slot_params.xml.h"
+
+#include <memory>
 
 namespace app {
 
@@ -88,10 +94,12 @@ public:
   {
     ButtonSet::Item::onInitTheme(ev);
     if (m_brush.hasBrush()) {
+      Style* s = SkinTheme::instance()->styles.standardBrush();
       SkinPartPtr icon(new SkinPart);
       icon->setBitmap(
         0,
         BrushPopup::createSurfaceForBrush(m_brush.brush(),
+                                          s->maxSize().w - s->border().width(),
                                           m_brush.hasFlag(BrushSlot::Flags::ImageColor)));
       setIcon(icon);
     }
@@ -108,12 +116,12 @@ private:
     if (m_slot >= 0)
       contextBar->setActiveBrushBySlot(tool, m_slot);
     else if (m_brush.hasBrush()) {
-      auto& brushPref = Preferences::instance().tool(tool).brush;
       BrushRef brush;
 
       brush.reset(new Brush(static_cast<doc::BrushType>(m_brush.brush()->type()),
-                            brushPref.size(),
-                            brushPref.angle()));
+                            m_brush.brush()->size(),
+                            m_brush.brush()->angle(),
+                            m_brush.brush()->thick()));
 
       contextBar->setActiveBrush(brush);
     }
@@ -122,6 +130,36 @@ private:
   AppBrushes& m_brushes;
   BrushSlot m_brush;
   int m_slot;
+};
+
+class SelectPatternItem : public ButtonSet::Item {
+public:
+  SelectPatternItem(const BrushPatternSlot& brushPattern) : m_slot(brushPattern) { initTheme(); }
+
+  void onInitTheme(InitThemeEvent& ev) override
+  {
+    ButtonSet::Item::onInitTheme(ev);
+    if (m_slot.hasPattern()) {
+      Style* s = SkinTheme::instance()->styles.standardPattern();
+      SkinPartPtr icon(new SkinPart);
+      icon->setBitmap(0,
+                      BrushPopup::createSurfaceForPattern(m_slot.pattern(),
+                                                          s->maxSize().w - s->border().width()));
+      setIcon(icon);
+    }
+  }
+
+private:
+  void onClick() override
+  {
+    ContextBar* contextBar = App::instance()->contextBar();
+
+    if (m_slot.hasPattern()) {
+      contextBar->setActivePattern(m_slot.pattern());
+    }
+  }
+
+  BrushPatternSlot m_slot;
 };
 
 class BrushShortcutItem : public ButtonSet::Item {
@@ -354,7 +392,8 @@ private:
 
 BrushPopup::BrushPopup()
   : PopupWindow("", ClickBehavior::CloseOnClickOutsideHotRegion)
-  , m_standardBrushes(3)
+  , m_standardBrushes(8)
+  , m_brushPatterns(8)
   , m_customBrushes(nullptr)
 {
   auto& brushes = App::instance()->brushes();
@@ -367,25 +406,44 @@ BrushPopup::BrushPopup()
 
   HBox* top = new HBox;
   top->addChild(&m_standardBrushes);
-  top->addChild(new BoxFiller);
+  // top->addChild(new BoxFiller);
+  auto* lblPattern = new Label("Pattern");
+  auto* lblRecentBrushes = new Label("Recent brushes");
+
+  // lblPattern->setTheme(theme);
+  // lblPattern->setStyle(theme->styles.miniLabel());
 
   m_box.addChild(top);
+  m_box.addChild(lblPattern);
+  m_box.addChild(&m_brushPatterns);
+  m_box.addChild(lblRecentBrushes);
   m_box.addChild(new Separator("", HORIZONTAL));
 
+  auto* theme = SkinTheme::get(this);
   for (const auto& brush : brushes.getStandardBrushes()) {
-    auto* theme = SkinTheme::get(this);
     m_standardBrushes.addItem(new SelectBrushItem(BrushSlot(BrushSlot::Flags::BrushType, brush)),
-                              theme->styles.standardBrush());
+                              theme->styles.standardBrush(),
+                              ui::LEFT | ui::MIDDLE);
   }
   m_standardBrushes.setTransparent(true);
 
+  for (const auto& pattern : brushes.getStandardPatterns()) {
+    m_brushPatterns.addItem(new SelectPatternItem(BrushPatternSlot(pattern)),
+                            theme->styles.standardPattern(),
+                            ui::LEFT | ui::MIDDLE);
+  }
+  m_brushPatterns.setTransparent(true);
+
   brushes.ItemsChange.connect(&BrushPopup::onBrushChanges, this);
 
-  InitTheme.connect([this] {
+  InitTheme.connect([this, lblPattern, lblRecentBrushes, theme] {
     setBorder(gfx::Border(2) * guiscale());
     setChildSpacing(0);
     m_box.noBorderNoChildSpacing();
     m_standardBrushes.setBgColor(gfx::ColorNone);
+    m_brushPatterns.setBgColor(gfx::ColorNone);
+    lblPattern->setStyle(theme->styles.miniLabel());
+    lblRecentBrushes->setStyle(theme->styles.miniLabel());
   });
   initTheme();
 }
@@ -395,13 +453,17 @@ void BrushPopup::setBrush(Brush* brush)
   for (auto child : m_standardBrushes.children()) {
     SelectBrushItem* item = static_cast<SelectBrushItem*>(child);
 
-    // Same type and same image
+    // Same type, size, angle, thick and image
     if (item->brush().hasBrush() && item->brush().brush()->type() == brush->type() &&
+        item->brush().brush()->size() == brush->size() &&
+        item->brush().brush()->angle() == brush->angle() &&
+        item->brush().brush()->thick() == brush->thick() &&
         (brush->type() != kImageBrushType || item->brush().brush()->image() == brush->image())) {
       m_standardBrushes.setSelectedItem(item);
       return;
     }
   }
+  m_standardBrushes.deselectItems();
 }
 
 void BrushPopup::regenerate(ui::Display* display, const gfx::Point& pos)
@@ -468,18 +530,18 @@ void BrushPopup::onBrushChanges()
 
 // static
 os::SurfaceRef BrushPopup::createSurfaceForBrush(const BrushRef& origBrush,
+                                                 int maxSize,
                                                  const bool useOriginalImage)
 {
-  constexpr int kMaxSize = 9;
-
   Image* image = nullptr;
   BrushRef brush = origBrush;
+  maxSize = maxSize / guiscale();
   if (brush) {
-    if (brush->type() != kImageBrushType && brush->size() > kMaxSize) {
+    if (brush->type() != kImageBrushType && brush->size() > maxSize) {
       // Clone with shared images, as setSize() will re-create the
       // images and the brush is no kImageBrushType anyway.
       brush = brush->cloneWithSharedImages();
-      brush->setSize(kMaxSize);
+      brush->setSize(maxSize);
     }
     // Show the original image in the popup (without the image colors
     // modified if there were some modification).
@@ -490,8 +552,8 @@ os::SurfaceRef BrushPopup::createSurfaceForBrush(const BrushRef& origBrush,
   }
 
   os::SurfaceRef surface = os::System::instance()->makeRgbaSurface(
-    std::min(kMaxSize, (image ? image->width() : 4)),
-    std::min(kMaxSize, (image ? image->height() : 4)));
+    std::min(maxSize, (image ? image->width() : 4)),
+    std::min(maxSize, (image ? image->height() : 4)));
 
   if (image) {
     Palette* palette = get_current_palette();
@@ -502,6 +564,54 @@ os::SurfaceRef BrushPopup::createSurfaceForBrush(const BrushRef& origBrush,
     }
 
     convert_image_to_surface(image,
+                             palette,
+                             surface.get(),
+                             0,
+                             0,
+                             (surface->width() - image->width() - 1) / 2,
+                             (surface->height() - image->height() - 1) / 2,
+                             image->width(),
+                             image->height());
+
+    if (image->pixelFormat() == IMAGE_BITMAP)
+      delete palette;
+
+    surface = surface->applyScale(guiscale());
+  }
+  else {
+    surface->clear();
+  }
+
+  return surface;
+}
+
+// static
+os::SurfaceRef BrushPopup::createSurfaceForPattern(const PatternRef& pattern, int maxSize)
+{
+  std::unique_ptr<Image> image = nullptr;
+  maxSize = maxSize / guiscale();
+  if (pattern) {
+    auto patternImg = pattern->image();
+    image.reset(Image::create(patternImg->pixelFormat(), maxSize, maxSize));
+    for (int x = 0; x < maxSize; x += patternImg->width()) {
+      for (int y = 0; y < maxSize; y += patternImg->height()) {
+        image->copy(patternImg.get(),
+                    gfx::Clip(x, y, 0, 0, patternImg->width(), patternImg->height()));
+      }
+    }
+  }
+
+  os::SurfaceRef surface = os::System::instance()->makeRgbaSurface(maxSize, maxSize);
+
+  if (image) {
+    Palette* palette = get_current_palette();
+    if (image->pixelFormat() == IMAGE_BITMAP) {
+      palette = new Palette(frame_t(0), 2);
+      palette->setEntry(0, rgba(0, 0, 0, 0));
+      palette->setEntry(1, rgba(0, 0, 0, 255));
+    }
+
+    convert_image_to_surface(image.get(),
                              palette,
                              surface.get(),
                              0,

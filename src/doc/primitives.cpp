@@ -293,6 +293,7 @@ void blend_rect(Image* image, int x1, int y1, int x2, int y2, color_t color, int
 struct Data {
   Image* image;
   color_t color;
+  int thick;
 };
 
 static void pixel_for_image(int x, int y, Data* data)
@@ -305,10 +306,28 @@ static void hline_for_image(int x1, int y, int x2, Data* data)
   draw_hline(data->image, x1, y, x2, data->color);
 }
 
+static void squares_for_image(int x, int y, Data* data)
+{
+  int xs = x - (data->thick / 2) + 1;
+  int ys = y - (data->thick / 2) + 1;
+  for (int v = ys; v < ys + data->thick; ++v) {
+    hline_for_image(xs, v, xs + data->thick - 1, data);
+  }
+}
+
 void draw_line(Image* image, int x1, int y1, int x2, int y2, color_t color)
 {
   Data data = { image, color };
   algo_line_continuous(x1, y1, x2, y2, &data, (AlgoPixel)pixel_for_image);
+}
+
+void draw_line(Image* image, int x1, int y1, int x2, int y2, int thick, color_t color)
+{
+  Data data = { image, color, thick };
+  if (thick <= 1)
+    draw_line(image, x1, y1, x2, y2, color);
+  else
+    algo_line_continuous(x1, y1, x2, y2, &data, (AlgoPixel)squares_for_image);
 }
 
 void draw_ellipse(Image* image,
