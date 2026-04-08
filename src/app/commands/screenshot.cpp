@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -96,6 +96,7 @@ void ScreenshotCommand::onExecute(Context* ctx)
 
   doc::Cel* cel = spr->firstLayer()->cel(0);
   doc::Image* img = cel->image();
+  ASSERT(img);
   const int w = img->width();
   const int h = img->height();
 

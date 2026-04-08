@@ -1,5 +1,5 @@
 // Aseprite View Library
-// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2020-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -49,6 +49,10 @@ static CelList get_cels_templ(const Sprite* sprite, Range range, const Target ta
     for (frame_t frame : range.selectedFrames()) {
       Cel* cel = layerImage->cel(frame);
       if (!cel)
+        continue;
+
+      // To edit pixels we want to return only cels with images.
+      if (target == Target::kUniqueCanEditPixelsCels && !cel->image())
         continue;
 
       if (target == Target::kAllCels || visited.find(cel->data()->id()) == visited.end()) {

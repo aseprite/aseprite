@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -29,6 +29,9 @@ void rasterize(doc::Image* dst, const doc::Cel* cel, const int x, const int y, c
 
   if (clear)
     dst->clear(sprite->transparentColor());
+
+  if (!cel->image())
+    return;
 
   int t;
   int opacity;
