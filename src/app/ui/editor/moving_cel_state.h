@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2022 Igara Studio S.A.
+// Copyright (C) 2021-2025 Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -14,6 +14,7 @@
 #include "app/context_access.h"
 #include "app/ui/editor/delayed_mouse_move.h"
 #include "app/ui/editor/handle_type.h"
+#include "app/util/moving_utils.h"
 #include "doc/cel_list.h"
 
 #include <vector>
@@ -80,6 +81,7 @@ private:
   gfx::PointF m_celOffset;
   gfx::SizeF m_celMainSize;
   gfx::SizeF m_celScale;
+  LockedAxis m_lockedAxis;
   bool m_maskVisible;
   bool m_hasReference = false;
   bool m_moved = false;
