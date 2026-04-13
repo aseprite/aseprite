@@ -1505,6 +1505,34 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, doc::
      << "\"h\": " << texture->height() << " },\n"
      << "  \"scale\": \"1\"";
 
+  {
+    os << ",\n"
+       << "  \"documents\": [";
+
+    bool firstDoc = true;
+  
+    std::set<doc::ObjectId> includedSprites;
+
+    for (auto& item : m_documents) {
+      if (firstDoc)
+        firstDoc = false;
+      else
+        os << ",";
+  
+      Doc* doc = item.doc;
+      Sprite* sprite = doc->sprite();
+
+      // Avoid including the same document more than once
+      if (includedSprites.find(sprite->id()) != includedSprites.end())
+        continue;
+      includedSprites.insert(sprite->id());
+  
+      os << "\n   { \"name\": \"" << doc->name() << "\"" << sprite->userData() << " }";
+    }
+  
+    os << "\n  ]";
+  }
+
   // meta.frameTags
   if (m_listTags) {
     os << ",\n"
