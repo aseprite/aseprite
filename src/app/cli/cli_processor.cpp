@@ -595,8 +595,15 @@ int CliProcessor::process(Context* ctx)
         cof.document = nullptr;
         cof.filename = base::normalize_path(value.value());
 
-        if ( // Check that the filename wasn't used loading a sequence
-             // of images as one sprite
+        if (ctx->isUIAvailable() &&
+            base::string_to_lower(base::get_file_extension(cof.filename)) == "aseprite-extension") {
+          Params params = {
+            { "installExtension", cof.filename }
+          };
+          ctx->executeCommand(Commands::instance()->byId(CommandId::Options()), params);
+        }
+        else if ( // Check that the filename wasn't used loading a sequence
+                  // of images as one sprite
           m_usedFiles.find(cof.filename) == m_usedFiles.end() &&
           // Open sprite
           openFile(ctx, cof)) {
