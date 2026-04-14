@@ -690,6 +690,14 @@ void StandbyState::startFlipTransformation(Editor* editor, doc::algorithm::FlipT
     movingPixels->flip(flipType);
 }
 
+void StandbyState::startShiftTransformation(Editor* editor, int dx, int dy)
+{
+  transformSelection(editor, NULL, NoHandle);
+
+  if (auto movingPixels = dynamic_cast<MovingPixelsState*>(editor->getState().get()))
+    movingPixels->shift(dx, dy);
+}
+
 void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleType handle)
 {
   Doc* document = editor->document();

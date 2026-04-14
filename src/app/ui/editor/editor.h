@@ -249,6 +249,7 @@ public:
 
   void startSelectionTransformation(const gfx::Point& move, double angle);
   void startFlipTransformation(doc::algorithm::FlipType flipType);
+  void startShiftTransformation(int dx, int dy);
   void updateTransformation(const Transformation& transform);
 
   // Used by EditorView to notify changes in the view's scroll
