@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -349,6 +349,11 @@ bool DrawingState::onScrollChange(Editor* editor)
     handleMouseMovement();
   }
   return true;
+}
+
+void DrawingState::setIgnoreScrollChange(bool ignore)
+{
+  m_processScrollChange = !ignore;
 }
 
 bool DrawingState::onUpdateStatusBar(Editor* editor)
