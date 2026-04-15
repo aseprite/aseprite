@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -39,6 +39,7 @@ public:
   virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
   virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
   virtual bool onScrollChange(Editor* editor) override;
+  virtual void setIgnoreScrollChange(bool ignore) override;
   virtual bool onUpdateStatusBar(Editor* editor) override;
   virtual void onExposeSpritePixels(const gfx::Region& rgn) override;
 
