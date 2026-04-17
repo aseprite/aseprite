@@ -140,8 +140,8 @@ bool TextEdit::onProcessMessage(Message* msg)
     }
     case kFocusLeaveMessage: {
       // Avoids clearing the selection when using the right click menu
-      Manager* manager = Manager::getDefault();
-      if (manager && manager->getFocus() && manager->getFocus()->type() != kMenuBoxWidget)
+      Manager* mgr = this->manager();
+      if (mgr && mgr->getFocus() && mgr->getFocus()->type() != kMenuBoxWidget)
         m_selection.clear();
 
       stopTimer();
