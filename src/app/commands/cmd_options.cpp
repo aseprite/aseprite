@@ -895,7 +895,7 @@ public:
     m_curPref->show.gridSubdivisions(gridSubdivisionsVisible()->isSelected());
     m_curPref->gridSubdivisions.subdivisions(
       gfx::Size(std::max(gridSubdivisionsX()->textInt(), 1),
-                 std::max(gridSubdivisionsY()->textInt(), 1)));
+                std::max(gridSubdivisionsY()->textInt(), 1)));
     m_curPref->gridSubdivisions.color(gridSubdivisionsColor()->getColor());
     m_curPref->gridSubdivisions.opacity(gridSubdivisionsOpacity()->getValue());
     m_curPref->gridSubdivisions.autoOpacity(gridSubdivisionsAutoOpacity()->isSelected());

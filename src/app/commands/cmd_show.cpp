@@ -43,7 +43,8 @@ protected:
       docPref.show.selectionEdges(true);
       docPref.show.layerEdges(docPref.show.layerEdges() || globPref.show.layerEdges());
       docPref.show.grid(docPref.show.grid() || globPref.show.grid());
-      docPref.show.gridSubdivisions(docPref.show.gridSubdivisions() || globPref.show.gridSubdivisions());
+      docPref.show.gridSubdivisions(docPref.show.gridSubdivisions() ||
+                                    globPref.show.gridSubdivisions());
       docPref.show.pixelGrid(docPref.show.pixelGrid() || globPref.show.pixelGrid());
     }
   }
@@ -92,7 +93,7 @@ public:
 protected:
   bool onChecked(Context* ctx) override
   {
-    DocumentPreferences const& docPref = Preferences::instance().document(ctx->activeDocument());
+    const DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     return docPref.show.gridSubdivisions();
   }
 

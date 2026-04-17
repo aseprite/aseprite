@@ -850,13 +850,13 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
 
         gfx::Size subdiv = m_docPref.gridSubdivisions.subdivisions();
         // Only draw if subdivisions > 1 and grid is evenly divisible
-        bool const drawH = (subdiv.w > 1 && gridrc.w % subdiv.w == 0);
-        bool const drawV = (subdiv.h > 1 && gridrc.h % subdiv.h == 0);
+        const bool drawH = (subdiv.w > 1 && gridrc.w % subdiv.w == 0);
+        const bool drawV = (subdiv.h > 1 && gridrc.h % subdiv.h == 0);
 
         if (drawH || drawV) {
-          int const subW = drawH ? gridrc.w / subdiv.w : gridrc.w;
-          int const subH = drawV ? gridrc.h / subdiv.h : gridrc.h;
-          gfx::Rect const subGridrc(gridrc.x, gridrc.y, subW, subH);
+          const int subW = drawH ? gridrc.w / subdiv.w : gridrc.w;
+          const int subH = drawV ? gridrc.h / subdiv.h : gridrc.h;
+          const gfx::Rect subGridrc(gridrc.x, gridrc.y, subW, subH);
 
           if (m_proj.applyX(subW) > 1 || m_proj.applyY(subH) > 1) {
             int alpha = m_docPref.gridSubdivisions.opacity();
@@ -869,11 +869,14 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
 
             if (alpha > 8) {
               if (m_docPref.gridSubdivisions.dashed())
-                drawDashedGrid(g, enclosingRect, subGridrc, gridrc,
-                               m_docPref.gridSubdivisions.color(), alpha);
+                drawDashedGrid(g,
+                               enclosingRect,
+                               subGridrc,
+                               gridrc,
+                               m_docPref.gridSubdivisions.color(),
+                               alpha);
               else
-                drawGrid(g, enclosingRect, subGridrc,
-                         m_docPref.gridSubdivisions.color(), alpha);
+                drawGrid(g, enclosingRect, subGridrc, m_docPref.gridSubdivisions.color(), alpha);
             }
           }
         }
@@ -1310,8 +1313,8 @@ void Editor::drawDashedGrid(Graphics* g,
     mainGrid.x += (ABS(mainGrid.x) / mainGrid.w + 1) * mainGrid.w;
   if (mainGrid.y < 0)
     mainGrid.y += (ABS(mainGrid.y) / mainGrid.h + 1) * mainGrid.h;
-  mainGrid.setOrigin(Point((mainGrid.x % mainGrid.w) - mainGrid.w,
-                            (mainGrid.y % mainGrid.h) - mainGrid.h));
+  mainGrid.setOrigin(
+    Point((mainGrid.x % mainGrid.w) - mainGrid.w, (mainGrid.y % mainGrid.h) - mainGrid.h));
   if (mainGrid.x < 0)
     mainGrid.x += mainGrid.w;
   if (mainGrid.y < 0)
@@ -1331,10 +1334,10 @@ void Editor::drawDashedGrid(Graphics* g,
 
   const int dashLen = 2; // 2px on, 2px off
 
-  int const x1 = spriteBounds.x;
-  int const y1 = spriteBounds.y;
-  int const x2 = spriteBounds.x + spriteBounds.w;
-  int const y2 = spriteBounds.y + spriteBounds.h;
+  const int x1 = spriteBounds.x;
+  const int y1 = spriteBounds.y;
+  const int x2 = spriteBounds.x + spriteBounds.w;
+  const int y2 = spriteBounds.y + spriteBounds.h;
 
   // Draw dashed horizontal lines
   for (double c = gridF.y; c <= y2; c += gridF.h) {
@@ -1343,11 +1346,13 @@ void Editor::drawDashedGrid(Graphics* g,
     bool onMainGrid = false;
     if (mainGridF.h > 0) {
       double offset = std::fmod(c - mainGridF.y, mainGridF.h);
-      if (offset < 0) offset += mainGridF.h;
+      if (offset < 0)
+        offset += mainGridF.h;
       if (offset < 0.5 || offset > mainGridF.h - 0.5)
         onMainGrid = true;
     }
-    if (onMainGrid) continue;
+    if (onMainGrid)
+      continue;
 
     for (int x = x1; x < x2; x += dashLen * 2)
       g->drawHLine(grid_color, x, cy, std::min(dashLen, x2 - x));
@@ -1360,11 +1365,13 @@ void Editor::drawDashedGrid(Graphics* g,
     bool onMainGrid = false;
     if (mainGridF.w > 0) {
       double offset = std::fmod(c - mainGridF.x, mainGridF.w);
-      if (offset < 0) offset += mainGridF.w;
+      if (offset < 0)
+        offset += mainGridF.w;
       if (offset < 0.5 || offset > mainGridF.w - 0.5)
         onMainGrid = true;
     }
-    if (onMainGrid) continue;
+    if (onMainGrid)
+      continue;
 
     for (int y = y1; y < y2; y += dashLen * 2)
       g->drawVLine(grid_color, cx, y, std::min(dashLen, y2 - y));
