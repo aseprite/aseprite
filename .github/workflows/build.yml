@@ -3,6 +3,7 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:

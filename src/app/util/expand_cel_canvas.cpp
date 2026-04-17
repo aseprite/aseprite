@@ -159,7 +159,7 @@ ExpandCelCanvas::ExpandCelCanvas(Site site,
             m_grid.origin(),
             m_grid.tileSize());
 
-  if (isTilesetPreview()) {
+  if (!m_celCreated && isTilesetPreview()) {
     getDestTileset();
   }
   else if (m_celCreated || (m_layer && m_layer->isTilemap())) {
