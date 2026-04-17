@@ -6,6 +6,7 @@ on: [pull_request_target]
 jobs:
   lint_commits:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     if: always() && github.repository == 'aseprite/aseprite'
     steps:
       - name: Lint PR commits
