@@ -92,7 +92,7 @@ public:
 protected:
   bool onChecked(Context* ctx) override
   {
-    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
+    DocumentPreferences const& docPref = Preferences::instance().document(ctx->activeDocument());
     return docPref.show.gridSubdivisions();
   }
 

@@ -850,13 +850,13 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
 
         gfx::Size subdiv = m_docPref.gridSubdivisions.subdivisions();
         // Only draw if subdivisions > 1 and grid is evenly divisible
-        bool drawH = (subdiv.w > 1 && gridrc.w % subdiv.w == 0);
-        bool drawV = (subdiv.h > 1 && gridrc.h % subdiv.h == 0);
+        bool const drawH = (subdiv.w > 1 && gridrc.w % subdiv.w == 0);
+        bool const drawV = (subdiv.h > 1 && gridrc.h % subdiv.h == 0);
 
         if (drawH || drawV) {
-          int subW = drawH ? gridrc.w / subdiv.w : gridrc.w;
-          int subH = drawV ? gridrc.h / subdiv.h : gridrc.h;
-          gfx::Rect subGridrc(gridrc.x, gridrc.y, subW, subH);
+          int const subW = drawH ? gridrc.w / subdiv.w : gridrc.w;
+          int const subH = drawV ? gridrc.h / subdiv.h : gridrc.h;
+          gfx::Rect const subGridrc(gridrc.x, gridrc.y, subW, subH);
 
           if (m_proj.applyX(subW) > 1 || m_proj.applyY(subH) > 1) {
             int alpha = m_docPref.gridSubdivisions.opacity();
@@ -1331,10 +1331,10 @@ void Editor::drawDashedGrid(Graphics* g,
 
   const int dashLen = 2; // 2px on, 2px off
 
-  int x1 = spriteBounds.x;
-  int y1 = spriteBounds.y;
-  int x2 = spriteBounds.x + spriteBounds.w;
-  int y2 = spriteBounds.y + spriteBounds.h;
+  int const x1 = spriteBounds.x;
+  int const y1 = spriteBounds.y;
+  int const x2 = spriteBounds.x + spriteBounds.w;
+  int const y2 = spriteBounds.y + spriteBounds.h;
 
   // Draw dashed horizontal lines
   for (double c = gridF.y; c <= y2; c += gridF.h) {
