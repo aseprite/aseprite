@@ -9,6 +9,8 @@
 #define RENDER_DITHERING_MATRIX_H_INCLUDED
 #pragma once
 
+#include "base/debug.h"
+
 #include <algorithm>
 #include <vector>
 

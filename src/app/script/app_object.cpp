@@ -948,7 +948,7 @@ void register_app_object(lua_State* L)
 void set_app_params(lua_State* L, const Params& params)
 {
   lua_getglobal(L, "app");
-  lua_newtable(L);
+  lua_createtable(L, 0, params.size());
   for (const auto& kv : params) {
     lua_pushstring(L, kv.second.c_str());
     lua_setfield(L, -2, kv.first.c_str());

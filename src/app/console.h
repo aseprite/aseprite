@@ -19,7 +19,8 @@ public:
   Console(Context* ctx = nullptr);
   ~Console();
 
-  void printf(const char* format, ...);
+  static void printf(const char* format, ...);
+  static void print(std::string message);
 
   static void showException(const std::exception& e);
   static void notifyNewDisplayConfiguration();
