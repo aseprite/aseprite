@@ -378,6 +378,12 @@ private:
                 const gfx::Rect& gridBounds,
                 const app::Color& color,
                 int alpha);
+  void drawDashedGrid(ui::Graphics* g,
+                      const gfx::Rect& spriteBounds,
+                      const gfx::Rect& gridBounds,
+                      const gfx::Rect& mainGridBounds,
+                      const app::Color& color,
+                      int alpha);
   void drawSlices(ui::Graphics* g);
   void drawTileNumbers(ui::Graphics* g, const Cel* cel);
   void drawCelBounds(ui::Graphics* g, const Cel* cel, const gfx::Color color);
@@ -459,6 +465,7 @@ private:
   obs::scoped_connection m_tiledConn;
   obs::scoped_connection m_gridConn;
   obs::scoped_connection m_pixelGridConn;
+  obs::scoped_connection m_gridSubdivisionsConn;
   obs::scoped_connection m_bgConn;
   obs::scoped_connection m_onionskinConn;
   obs::scoped_connection m_symmetryModeConn;
