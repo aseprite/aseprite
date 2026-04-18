@@ -144,6 +144,11 @@ bool WebPFormat::onLoad(FileOp* fop)
   const int w = anim_info.canvas_width;
   const int h = anim_info.canvas_height;
 
+  if (w <= 0 || h <= 0 || w > WEBP_MAX_DIMENSION || h > WEBP_MAX_DIMENSION) {
+    fop->setError("Invalid WebP canvas dimensions (%dx%d)\n", w, h);
+    return false;
+  }
+
   Sprite* sprite = new Sprite(ImageSpec(ColorMode::RGB, w, h), 256);
   LayerImage* layer = new LayerImage(sprite);
   sprite->root()->addLayer(layer);
@@ -170,7 +175,7 @@ bool WebPFormat::onLoad(FileOp* fop)
     if (cel) {
       const uint32_t* src = (const uint32_t*)frame_rgba;
       for (int y = 0; y < h; ++y, src += w) {
-        memcpy(cel->image()->getPixelAddress(0, y), src, w * sizeof(uint32_t));
+        memcpy(cel->image()->getPixelAddress(0, y), src, cel->image()->width() * sizeof(uint32_t));
       }
 
       if (!has_alpha) {
