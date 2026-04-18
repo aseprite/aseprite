@@ -522,7 +522,7 @@ doc::Palette* AsepriteDecoder::readPaletteChunk(doc::Palette* prevPal, doc::fram
   int to = read32();
   readPadding(8);
 
-  if (newSize > 0)
+  if (newSize >= 0)
     pal->resize(newSize);
 
   for (int c = from; c <= to; ++c) {
