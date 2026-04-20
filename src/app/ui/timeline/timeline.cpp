@@ -2318,34 +2318,20 @@ void Timeline::drawLayer(ui::Graphics* g, const int layerIdx)
 
   // Draw the continuous flag/group icon.
   bounds = getPartBounds(Hit(PART_ROW_CONTINUOUS_ICON, layerIdx));
-  if (layer->isImage()) {
-    drawPart(g,
-             bounds,
-             nullptr,
-             layer->isContinuous() ? styles.timelineContinuous() : styles.timelineDiscontinuous(),
-             is_active || (clklayer && m_clk.part == PART_ROW_CONTINUOUS_ICON),
-             (hotlayer && m_hot.part == PART_ROW_CONTINUOUS_ICON),
-             (clklayer && m_clk.part == PART_ROW_CONTINUOUS_ICON));
-  }
-  else if (layer->isGroup()) {
-    drawPart(g,
-             bounds,
-             nullptr,
-             layer->isCollapsed() ? styles.timelineClosedGroup() : styles.timelineOpenGroup(),
-             is_active || (clklayer && m_clk.part == PART_ROW_CONTINUOUS_ICON),
-             (hotlayer && m_hot.part == PART_ROW_CONTINUOUS_ICON),
-             (clklayer && m_clk.part == PART_ROW_CONTINUOUS_ICON));
-  }
-  // Just an empty box for other kind of layers
-  else {
-    drawPart(g,
-             bounds,
-             nullptr,
-             styles.timelineBox(),
-             is_active || (clklayer && m_clk.part == PART_ROW_CONTINUOUS_ICON),
-             (hotlayer && m_hot.part == PART_ROW_CONTINUOUS_ICON),
-             (clklayer && m_clk.part == PART_ROW_CONTINUOUS_ICON));
-  }
+  ui::Style* style = nullptr;
+  if (layer->isImage())
+    style = (layer->isContinuous() ? styles.timelineContinuous() : styles.timelineDiscontinuous());
+  else if (layer->isGroup())
+    style = (layer->isCollapsed() ? styles.timelineClosedGroup() : styles.timelineOpenGroup());
+  else
+    style = styles.timelineBox(); // Just an empty box for other kind of layers
+  drawPart(g,
+           bounds,
+           nullptr,
+           style,
+           is_active || (clklayer && m_clk.part == PART_ROW_CONTINUOUS_ICON),
+           (hotlayer && m_hot.part == PART_ROW_CONTINUOUS_ICON),
+           (clklayer && m_clk.part == PART_ROW_CONTINUOUS_ICON));
 
   // Get the layer's name bounds.
   bounds = getPartBounds(Hit(PART_ROW_TEXT, layerIdx));
