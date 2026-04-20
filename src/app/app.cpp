@@ -88,8 +88,8 @@
 #include <memory>
 
 #ifdef ENABLE_SCRIPTING
+  #include "app/script/engine_manager.h"
   #include "app/shell.h"
-  #include "script/engine_manager.h"
 #endif
 
 #ifdef ENABLE_STEAM

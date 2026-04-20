@@ -173,8 +173,8 @@ void* tracking_allocator(void* ud, void* ptr, size_t osize, size_t nsize)
 
 struct PackagePath {
   std::string previousPath;
-  std::stack<std::string>& stack;
   lua_State* L;
+  std::stack<std::string>& stack;
   PackagePath(lua_State* L, const std::string& filename, std::stack<std::string>& stack)
     : L(L)
     , stack(stack)

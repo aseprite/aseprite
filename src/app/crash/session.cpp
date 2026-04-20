@@ -280,7 +280,6 @@ void Session::removeDocument(Doc* doc)
 
 Doc* Session::restoreBackupDoc(const std::string& backupDir, base::task_token* t)
 {
-  Console console;
   try {
     Doc* doc = read_document(backupDir, t);
     if (doc) {
@@ -321,7 +320,6 @@ Doc* Session::restoreBackupRawImages(const BackupPtr& backup,
                                      const RawImagesAs as,
                                      base::task_token* t)
 {
-  Console console;
   try {
     Doc* doc = read_document_with_raw_images(backup->dir(), as, t);
     if (doc) {

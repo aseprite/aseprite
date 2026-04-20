@@ -32,6 +32,7 @@
 #include "ui/system.h"
 
 #ifdef ENABLE_SCRIPTING
+  #include "app/console.h"
   #include "app/script/engine.h"
 #endif
 
@@ -264,10 +265,13 @@ private:
 
     const base::Chrono timer;
     const std::string& text = search()->text();
-    if (!m_evalEngine)
+    if (!m_evalEngine) {
       m_evalEngine = std::make_unique<script::Engine>();
+      m_evalEngine->ConsolePrint.connect(Console::println);
+      m_evalEngine->ConsoleError.connect(Console::println);
+    }
 
-    const bool result = m_evalEngine->evalCode(text.substr(1, text.length()));
+    const bool result = m_evalEngine->evalCode(text.substr(1));
 
     // Give some feedback that the code executed, for errors the console will take care of that.
     // We use the timer to avoid showing the tip in cases where the command was obviously

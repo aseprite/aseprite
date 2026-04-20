@@ -2069,13 +2069,12 @@ void Editor::showUnhandledException(const std::exception& ex, const ui::Message*
 {
   EditorState* state = getState().get();
 
-  Console console;
   Console::showException(ex);
-  console.printf("\nInternal details:\n"
-                 "- Message type: %d\n"
-                 "- Editor state: %s\n",
-                 (msg ? msg->type() : -1),
-                 (state ? typeid(*state).name() : "None"));
+  Console::printf("\nInternal details:\n"
+                  "- Message type: %d\n"
+                  "- Editor state: %s\n",
+                  (msg ? msg->type() : -1),
+                  (state ? typeid(*state).name() : "None"));
 }
 
 void Editor::makeSelectionToolMask()

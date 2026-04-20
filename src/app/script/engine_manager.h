@@ -13,8 +13,8 @@ public:
   static std::unique_ptr<Engine> create()
   {
     auto engine = std::make_unique<Engine>();
-    engine->ConsolePrint.connect(&Console::print);
-    engine->ConsoleError.connect(&Console::print);
+    engine->ConsolePrint.connect(&Console::println);
+    engine->ConsoleError.connect(&Console::println);
     return engine;
   }
 

@@ -173,7 +173,6 @@ void Context::executeCommand(Command* command, const Params& params)
 
   m_result.reset();
 
-  Console console;
   LOG(VERBOSE, "CTXT: Executing command %s\n", command->id().c_str());
   try {
     m_flags.update(this);
@@ -234,7 +233,7 @@ void Context::executeCommand(Command* command, const Params& params)
         "CTXT: std::exception caught executing %s command\n%s\n",
         command->id().c_str(),
         e.what());
-    console.printf("An error ocurred executing the command.\n\nDetails:\n%s", e.what());
+    Console::printf("An error ocurred executing the command.\n\nDetails:\n%s\n", e.what());
   }
 #ifdef NDEBUG
   catch (...) {
@@ -242,11 +241,11 @@ void Context::executeCommand(Command* command, const Params& params)
 
     LOG(ERROR, "CTXT: Unknown exception executing %s command\n", command->id().c_str());
 
-    console.printf("An unknown error ocurred executing the command.\n"
-                   "Please save your work, close the program, try it\n"
-                   "again, and report this bug.\n\n"
-                   "Details: Unknown exception caught. This can be bad\n"
-                   "memory access, divison by zero, etc.");
+    Console::printf("An unknown error ocurred executing the command.\n"
+                    "Please save your work, close the program, try it\n"
+                    "again, and report this bug.\n\n"
+                    "Details: Unknown exception caught. This can be bad\n"
+                    "memory access, divison by zero, etc.\n");
   }
 #endif
 }

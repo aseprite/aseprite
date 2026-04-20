@@ -66,7 +66,7 @@ protected:
     lua_rawgeti(L, LUA_REGISTRYINDEX, m_onclickRef);
     if (lua_pcall(L, 0, 1, 0)) {
       if (const char* s = lua_tostring(L, -1)) {
-        Console().printf("Error: %s", s);
+        Console::printf("Error: %s\n", s);
       }
     }
     else {
@@ -98,7 +98,7 @@ private:
     lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
     if (lua_pcall(L, 0, 1, 0)) {
       if (const char* s = lua_tostring(L, -1))
-        Console().printf("Error: %s", s);
+        Console::printf("Error: %s\n", s);
       return false;
     }
 

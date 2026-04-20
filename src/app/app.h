@@ -28,12 +28,6 @@ class UISystem;
 
 namespace app {
 
-#ifdef ENABLE_SCRIPTING
-namespace script {
-class Engine;
-}
-#endif
-
 class AppMenus;
 class AppMod;
 class AppOptions;

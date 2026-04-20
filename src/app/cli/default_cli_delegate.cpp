@@ -118,7 +118,7 @@ void DefaultCliDelegate::loadPalette(Context* ctx, const std::string& filename)
     ctx->executeCommand(loadPalCommand, params);
   }
   else {
-    Console().printf("Error loading palette in --palette '%s'\n", filename.c_str());
+    Console::printf("Error loading palette in --palette '%s'\n", filename.c_str());
   }
 }
 

@@ -121,7 +121,7 @@ public:
     if (doc)
       fixUndetectedDocumentIssues(doc);
     else
-      Console().printf("Error recovering the document\n");
+      Console::printf("Error recovering the document\n");
     return doc;
   }
 
@@ -193,7 +193,7 @@ private:
 
     // Show error only if we've failed to load all versions
     if (!m_loadInfo)
-      Console().printf("Error loading object %s #%d\n", prefix, id);
+      Console::printf("Error loading object %s #%d\n", prefix, id);
 
     return nullptr;
   }
@@ -222,7 +222,7 @@ private:
       return doc;
     }
     else {
-      Console().printf("Unable to load sprite #%d\n", sprId);
+      Console::printf("Unable to load sprite #%d\n", sprId);
       return nullptr;
     }
   }
@@ -238,13 +238,13 @@ private:
 
     if (mode != ColorMode::RGB && mode != ColorMode::INDEXED && mode != ColorMode::GRAYSCALE) {
       if (!m_loadInfo)
-        Console().printf("Invalid sprite color mode #%d\n", (int)mode);
+        Console::printf("Invalid sprite color mode #%d\n", (int)mode);
       return nullptr;
     }
 
     if (w < 1 || h < 1 || w > 0xfffff || h > 0xfffff) {
       if (!m_loadInfo)
-        Console().printf("Invalid sprite dimension %dx%d\n", w, h);
+        Console::printf("Invalid sprite dimension %dx%d\n", w, h);
       return nullptr;
     }
 
@@ -268,7 +268,7 @@ private:
       }
     }
     else {
-      Console().printf("Invalid number of frames #%d\n", nframes);
+      Console::printf("Invalid number of frames #%d\n", nframes);
     }
 
     // IDs of all tilesets
@@ -300,7 +300,7 @@ private:
         ObjectId parentId = read32(s);
 
         if (!layersMap[parentId]) {
-          Console().printf("Inexistent parent #%d for layer #%d", parentId, layId);
+          Console::printf("Inexistent parent #%d for layer #%d\n", parentId, layId);
           // Put this layer at the root level
           parentId = 0;
         }
@@ -315,7 +315,7 @@ private:
       }
     }
     else {
-      Console().printf("Invalid number of layers #%d\n", nlayers);
+      Console::printf("Invalid number of layers #%d\n", nlayers);
     }
 
     // Read all cels
@@ -471,7 +471,7 @@ private:
       case ObjectType::LayerGroup: lay = std::make_unique<LayerGroup>(m_sprite); break;
 
       default:
-        Console().printf("Unable to load layer named '%s', type #%d\n", name.c_str(), (int)type);
+        Console::printf("Unable to load layer named '%s', type #%d\n", name.c_str(), (int)type);
         break;
     }
     if (!lay)

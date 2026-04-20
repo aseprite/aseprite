@@ -357,8 +357,7 @@ void Clipboard::cut(ContextWriter& writer)
   ASSERT(writer.layer() != NULL);
 
   if (!copyFromDocument(writer.site())) {
-    Console console;
-    console.printf("Can't copying an image portion from the current layer\n");
+    Console::printf("Can't copying an image portion from the current layer\n");
   }
   else {
     // TODO This code is similar to DocView::onClear()
@@ -380,8 +379,7 @@ void Clipboard::copy(const ContextReader& reader)
   ASSERT(reader.document() != NULL);
 
   if (!copyFromDocument(reader.site())) {
-    Console console;
-    console.printf("Can't copying an image portion from the current layer\n");
+    Console::printf("Can't copying an image portion from the current layer\n");
     return;
   }
 }

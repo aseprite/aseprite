@@ -223,8 +223,7 @@ Doc* load_document(Context* context, const std::string& filename)
   fop->postLoad();
 
   if (fop->hasError()) {
-    Console console(context);
-    console.printf(fop->error().c_str());
+    Console::printf(fop->error().c_str());
   }
 
   Doc* document = fop->releaseDocument();
@@ -250,8 +249,7 @@ int save_document(Context* context, Doc* document)
   fop->done();
 
   if (fop->hasError()) {
-    Console console(context);
-    console.printf(fop->error().c_str());
+    Console::printf(fop->error().c_str());
   }
 
   return (!fop->hasError() ? 0 : -1);

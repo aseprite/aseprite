@@ -539,7 +539,7 @@ protected:
     lua_pushstring(L, m_definition.binary ? "wb" : "w");
 
     if (lua_pcall(L, 2, 1, 0) != LUA_OK) {
-      Console().printf("Failed to open file for writing");
+      Console::println("Failed to open file for writing\n");
       return false;
     }
     lua_pushvalue(L, -1);
@@ -577,9 +577,9 @@ protected:
     if (call != LUA_OK) {
       if (const char* s = lua_tostring(L, -1))
         m_engine->ConsolePrint(s);
-      Console().printf("Could not save format '%s' to destination '%s'",
-                       m_definition.name.c_str(),
-                       fop->filename().c_str());
+      Console::printf("Could not save format '%s' to destination '%s'\n",
+                      m_definition.name.c_str(),
+                      fop->filename().c_str());
       return false;
     }
 
@@ -910,7 +910,7 @@ void Extension::initScripts()
           lua_setfield(L, -2, "preferences");
         }
         else if (const char* s = lua_tostring(L, -1)) {
-          Console().printf("%s\n", s);
+          m_engine->ConsoleError(s);
         }
         lua_pop(L, 1);
       }
@@ -921,6 +921,12 @@ void Extension::initScripts()
   }
 
   for (auto& script : m_plugin.scripts) {
+    // Reset global init()/exit() functions
+    lua_pushnil(L);
+    lua_setglobal(L, "init");
+    lua_pushnil(L);
+    lua_setglobal(L, "exit");
+
     // Eval the code of the script (it should define an init() and an exit() function)
     m_engine->evalUserFile(script.fn);
 

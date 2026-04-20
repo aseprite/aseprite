@@ -70,8 +70,6 @@ void OpenFileCommand::onLoadParams(const Params& params)
 
 void OpenFileCommand::onExecute(Context* context)
 {
-  Console console;
-
   m_usedFiles.clear();
 
   base::paths filenames;
@@ -142,7 +140,7 @@ void OpenFileCommand::onExecute(Context* context)
       return;
 
     if (fop->hasError()) {
-      console.printf(fop->error().c_str());
+      Console::printf(fop->error().c_str());
       unrecent = true;
     }
     else {
@@ -186,7 +184,7 @@ void OpenFileCommand::onExecute(Context* context)
 
       // Show any error
       if (fop->hasError() && !fop->isStop())
-        console.printf(fop->error().c_str());
+        Console::printf(fop->error().c_str());
 
       Doc* doc = fop->document();
       if (doc) {
