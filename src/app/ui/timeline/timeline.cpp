@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -869,8 +869,6 @@ bool Timeline::onProcessMessage(Message* msg)
               // expanded/collapsed a group just right now (i.e. we've
               // called regenerateRows())
               m_clk = m_hot;
-
-              ASSERT(m_rows[m_clk.layer].layer() == layer);
             }
           }
           break;
