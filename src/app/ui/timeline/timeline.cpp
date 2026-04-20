@@ -2336,25 +2336,66 @@ void Timeline::drawLayer(ui::Graphics* g, const int layerIdx)
   // Get the layer's name bounds.
   bounds = getPartBounds(Hit(PART_ROW_TEXT, layerIdx));
 
-  // Draw layer name.
-  doc::color_t layerColor = layer->userData().color();
+  // Layer name background
+  const bool is_clicked_text = (clklayer && m_clk.part == PART_ROW_TEXT);
+  const bool is_active_text = (is_active || is_clicked_text);
+  const bool is_hover_text = (hotlayer && m_hot.part == PART_ROW_TEXT);
+  drawPart(g,
+           bounds,
+           nullptr,
+           styles.timelineLayer(),
+           is_active_text,
+           is_hover_text,
+           is_clicked_text);
+
+  // Get layer name text bounds + paint parent user-defined colors.
   gfx::Rect textBounds = bounds;
   if (m_rows[layerIdx].level() > 0) {
     const int frameBoxWithWithoutZoom = skinTheme()->dimensions.timelineBaseSize();
     const int w = m_rows[layerIdx].level() * frameBoxWithWithoutZoom;
     textBounds.x += w;
     textBounds.w -= w;
+
+    // Draw text bounds
+    drawPart(g,
+             textBounds,
+             nullptr,
+             styles.timelineLayer(),
+             is_active_text,
+             is_hover_text,
+             is_clicked_text);
+
+    // Paint colored levels
+    Layer* parent = layer->parent();
+    Layer* root = m_sprite->root();
+    int u = textBounds.x;
+
+    style = styles.timelineLayer();
+    gfx::Border border = skinTheme()->calcBorder(this, style);
+    border.left(0);
+    border.right(0);
+
+    while (parent && parent != root) {
+      u -= frameBoxWithWithoutZoom;
+      gfx::Rect b2(u, textBounds.y, frameBoxWithWithoutZoom, textBounds.h);
+      gfx::Rect b3 = b2;
+      b2.enlarge(border);
+      drawPart(g, b2, nullptr, style, is_active_text, is_hover_text, is_clicked_text);
+
+      const doc::color_t parentColor = parent->userData().color();
+      if (doc::rgba_geta(parentColor) > 0) {
+        b3.shrinkXW(1 * guiscale()).inflate(1 * guiscale(), 0);
+        g->fillRect(gfx::rgba(doc::rgba_getr(parentColor),
+                              doc::rgba_getg(parentColor),
+                              doc::rgba_getb(parentColor),
+                              doc::rgba_geta(parentColor)),
+                    b3);
+      }
+      parent = parent->parent();
+    }
   }
 
-  // Layer name background
-  drawPart(g,
-           bounds,
-           nullptr,
-           styles.timelineLayer(),
-           is_active || (clklayer && m_clk.part == PART_ROW_TEXT),
-           (hotlayer && m_hot.part == PART_ROW_TEXT),
-           (clklayer && m_clk.part == PART_ROW_TEXT));
-
+  doc::color_t layerColor = layer->userData().color();
   if (doc::rgba_geta(layerColor) > 0) {
     // Fill with an user-defined custom color.
     auto b2 = textBounds;
@@ -2372,9 +2413,9 @@ void Timeline::drawLayer(ui::Graphics* g, const int layerIdx)
              textBounds,
              nullptr,
              styles.timelineTilemapLayer(),
-             is_active || (clklayer && m_clk.part == PART_ROW_TEXT),
-             (hotlayer && m_hot.part == PART_ROW_TEXT),
-             (clklayer && m_clk.part == PART_ROW_TEXT));
+             is_active_text,
+             is_hover_text,
+             is_clicked_text);
 
     gfx::Size sz = skinTheme()->calcSizeHint(this, skinTheme()->styles.timelineTilemapLayer());
     textBounds.x += sz.w;
@@ -2387,8 +2428,8 @@ void Timeline::drawLayer(ui::Graphics* g, const int layerIdx)
            &layer->name(),
            styles.timelineLayerTextOnly(),
            is_active,
-           (hotlayer && m_hot.part == PART_ROW_TEXT),
-           (clklayer && m_clk.part == PART_ROW_TEXT));
+           is_hover_text,
+           is_clicked_text);
 
   if (layer->isBackground()) {
     int s = ui::guiscale();
