@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2026  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -2438,7 +2438,8 @@ void Timeline::drawCel(ui::Graphics* g,
                        const Cel* cel,
                        const DrawCelData* data)
 {
-  auto& styles = skinTheme()->styles;
+  auto* theme = skinTheme();
+  auto& styles = theme->styles;
   Layer* layer = getLayer(layerIndex);
   Image* image = (cel ? cel->image() : nullptr);
   bool is_hover = (m_hot.part == PART_CEL && m_hot.layer == layerIndex && m_hot.frame == col);
@@ -2454,31 +2455,47 @@ void Timeline::drawCel(ui::Graphics* g,
   const fr_t frame = m_adapter->toRealFrame(col);
 
   // Draw background
-  if (layer == m_layer && col == m_frame)
-    drawPart(g,
-             bounds,
-             nullptr,
-             m_range.enabled() ? styles.timelineFocusedCel() : styles.timelineSelectedCel(),
-             false,
-             is_hover,
-             true);
+
+  ui::Style* bgStyle = nullptr;
+  if (layer == m_layer && col == m_frame) {
+    if (m_range.enabled())
+      bgStyle = styles.timelineFocusedCel();
+    else
+      bgStyle = styles.timelineSelectedCel();
+  }
   else if (m_range.enabled() && is_active)
-    drawPart(g, bounds, nullptr, styles.timelineSelectedCel(), false, is_hover, true);
+    bgStyle = styles.timelineSelectedCel();
   else
-    drawPart(g, bounds, nullptr, styles.timelineBox(), is_loosely_active, is_hover);
+    bgStyle = styles.timelineBox();
+
+  gfx::Rect boundsBox = bounds;
+  if (layer->isGroup()) {
+    gfx::Border border = theme->calcBorder(this, bgStyle);
+    border.top(0);
+    border.bottom(0);
+    boundsBox.enlarge(border);
+  }
+
+  if ((layer == m_layer && col == m_frame) || (m_range.enabled() && is_active))
+    drawPart(g, boundsBox, nullptr, bgStyle, false, is_hover, true);
+  else
+    drawPart(g, boundsBox, nullptr, bgStyle, is_loosely_active, is_hover);
 
   // Fill with an user-defined custom color.
-  if (cel && cel->data()) {
-    doc::color_t celColor = cel->data()->userData().color();
-    if (doc::rgba_geta(celColor) > 0) {
-      auto b2 = bounds;
-      b2.shrink(1 * guiscale()).inflate(1 * guiscale());
-      g->fillRect(gfx::rgba(doc::rgba_getr(celColor),
-                            doc::rgba_getg(celColor),
-                            doc::rgba_getb(celColor),
-                            doc::rgba_geta(celColor)),
-                  b2);
-    }
+  doc::color_t celColor = 0;
+  if (cel && cel->data())
+    celColor = cel->data()->userData().color();
+  else if (layer->isGroup())
+    celColor = layer->userData().color();
+
+  if (doc::rgba_geta(celColor) > 0) {
+    auto b2 = boundsBox;
+    b2.shrink(1 * guiscale()).inflate(1 * guiscale());
+    g->fillRect(gfx::rgba(doc::rgba_getr(celColor),
+                          doc::rgba_getg(celColor),
+                          doc::rgba_getb(celColor),
+                          doc::rgba_geta(celColor)),
+                b2);
   }
 
   // Draw keyframe shape
@@ -2487,7 +2504,8 @@ void Timeline::drawCel(ui::Graphics* g,
   bool fromLeft = false;
   bool fromRight = false;
   if (is_empty || !data) {
-    style = styles.timelineEmptyFrame();
+    if (!layer->isGroup())
+      style = styles.timelineEmptyFrame();
   }
   else {
     // Calculate which cel is next to this one (in previous and next
@@ -2512,21 +2530,23 @@ void Timeline::drawCel(ui::Graphics* g,
       style = styles.timelineKeyframe();
   }
 
-  drawPart(g, bounds, nullptr, style, is_loosely_active, is_hover);
+  if (style) {
+    drawPart(g, bounds, nullptr, style, is_loosely_active, is_hover);
 
-  // Draw thumbnail
-  if ((docPref().thumbnails.enabled() && m_zoom > 1) && image) {
-    gfx::Rect thumb_bounds = gfx::Rect(bounds).shrink(skinTheme()->calcBorder(this, style));
+    // Draw thumbnail
+    if ((docPref().thumbnails.enabled() && m_zoom > 1) && image) {
+      gfx::Rect thumb_bounds = gfx::Rect(bounds).shrink(skinTheme()->calcBorder(this, style));
 
-    if (!thumb_bounds.isEmpty()) {
-      if (os::SurfaceRef surface =
-            thumb::get_cel_thumbnail(g->display(), cel, m_scaleUpToFit, thumb_bounds.size())) {
-        const int t = std::clamp(thumb_bounds.w / 8, 4, 16);
-        draw_checkered_grid(g, thumb_bounds, gfx::Size(t, t), docPref());
+      if (!thumb_bounds.isEmpty()) {
+        if (os::SurfaceRef surface =
+              thumb::get_cel_thumbnail(g->display(), cel, m_scaleUpToFit, thumb_bounds.size())) {
+          const int t = std::clamp(thumb_bounds.w / 8, 4, 16);
+          draw_checkered_grid(g, thumb_bounds, gfx::Size(t, t), docPref());
 
-        g->drawRgbaSurface(surface.get(),
-                           thumb_bounds.center().x - surface->width() / 2,
-                           thumb_bounds.center().y - surface->height() / 2);
+          g->drawRgbaSurface(surface.get(),
+                             thumb_bounds.center().x - surface->width() / 2,
+                             thumb_bounds.center().y - surface->height() / 2);
+        }
       }
     }
   }
