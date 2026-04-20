@@ -866,8 +866,6 @@ bool Timeline::onProcessMessage(Message* msg)
               // expanded/collapsed a group just right now (i.e. we've
               // called regenerateRows())
               m_clk = m_hot;
-
-              ASSERT(m_rows[m_clk.layer].layer() == layer);
             }
           }
           break;
@@ -2435,8 +2433,8 @@ void Timeline::drawLayer(ui::Graphics* g, const int layerIdx)
     int s = ui::guiscale();
     g->fillRect(is_active ? skinTheme()->colors.timelineClickedText() :
                             skinTheme()->colors.timelineNormalText(),
-                gfx::Rect(bounds.x + 4 * s,
-                          bounds.y + bounds.h - 2 * s,
+                gfx::Rect(textBounds.x + 4 * s,
+                          textBounds.y + textBounds.h - 2 * s,
                           font()->textLength(layer->name().c_str()),
                           s));
   }
@@ -2444,8 +2442,8 @@ void Timeline::drawLayer(ui::Graphics* g, const int layerIdx)
     int s = ui::guiscale();
     g->fillRect(is_active ? skinTheme()->colors.timelineClickedText() :
                             skinTheme()->colors.timelineNormalText(),
-                gfx::Rect(bounds.x + 4 * s,
-                          bounds.y + bounds.h / 2,
+                gfx::Rect(textBounds.x + 4 * s,
+                          textBounds.y + textBounds.h / 2,
                           font()->textLength(layer->name().c_str()),
                           s));
   }

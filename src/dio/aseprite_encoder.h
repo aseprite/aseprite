@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (C) 2018-2026  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -125,7 +125,7 @@ private:
                          const doc::Tileset* tileset,
                          const doc::tileset_index si);
 
-  void writePropertyValue(const doc::UserData::Variant& value);
+  void writePropertyValue(const doc::UserData::Variant& value, int& depth);
   void writePropertiesMaps(const AsepriteExternalFiles& ext_files,
                            size_t nmaps,
                            const doc::UserData::PropertiesMaps& propertiesMaps);

@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (C) 2018-2026  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -12,6 +12,9 @@
 #include "dio/aseprite_encoder.h"
 
 #include "base/exception.h"
+#include "base/mem_utils.h"
+#include "base/scoped_value.h"
+#include "base/uuid.h"
 #include "dio/aseprite_common.h"
 #include "dio/encode_delegate.h"
 #include "dio/file_interface.h"
@@ -1176,7 +1179,7 @@ void AsepriteEncoder::writeTilesetChunk(AsepriteFrameHeader* frame_header,
   }
 }
 
-void AsepriteEncoder::writePropertyValue(const UserData::Variant& value)
+void AsepriteEncoder::writePropertyValue(const UserData::Variant& value, int& depth)
 {
   switch (value.type()) {
     case USER_DATA_PROPERTY_TYPE_NULLPTR: ASSERT(false); break;
@@ -1205,10 +1208,16 @@ void AsepriteEncoder::writePropertyValue(const UserData::Variant& value)
     }
     case USER_DATA_PROPERTY_TYPE_VECTOR: {
       const auto& vector = *std::get_if<UserData::Vector>(&value);
-      write32(vector.size());
-
+      size_t size = vector.size();
+      if (depth >= 128) {
+        delegate()->error("Error saving more than 128 property levels in user data.\n");
+        size = 0;
+      }
       const uint16_t type = all_elements_of_same_type(vector);
+      write32(size);
       write16(type);
+      if (size == 0)
+        return;
 
       for (const auto& elem : vector) {
         UserData::Variant v = elem;
@@ -1226,14 +1235,22 @@ void AsepriteEncoder::writePropertyValue(const UserData::Variant& value)
           v = cast_to_smaller_int_type(v, type);
         }
 
-        writePropertyValue(v);
+        base::ScopedValue depthInc(depth, depth + 1);
+        writePropertyValue(v, depth);
       }
       break;
     }
     case USER_DATA_PROPERTY_TYPE_PROPERTIES: {
       const auto& properties = *std::get_if<UserData::Properties>(&value);
-      ASSERT(properties.size() > 0);
-      write32(properties.size());
+      size_t size = properties.size();
+      ASSERT(size > 0);
+      if (depth >= 128) {
+        delegate()->error("Error saving more than 128 property levels in user data.\n");
+        size = 0;
+      }
+      write32(size);
+      if (size == 0)
+        return;
 
       for (const auto& property : properties) {
         const std::string& name = property.first;
@@ -1245,7 +1262,8 @@ void AsepriteEncoder::writePropertyValue(const UserData::Variant& value)
         }
         write16(v.type());
 
-        writePropertyValue(v);
+        base::ScopedValue depthInc(depth, depth + 1);
+        writePropertyValue(v, depth);
       }
       break;
     }
@@ -1268,6 +1286,8 @@ void AsepriteEncoder::writePropertiesMaps(const AsepriteExternalFiles& ext_files
   // chunk for now. (actual value is calculated after serialization
   // of all properties maps, at which point this field is overwritten)
   write32(0);
+
+  int depth = 0;
 
   write32(nmaps);
   for (const auto& propertiesMap : propertiesMaps) {
@@ -1294,7 +1314,7 @@ void AsepriteEncoder::writePropertiesMaps(const AsepriteExternalFiles& ext_files
       // continue;
     }
     write32(extensionId);
-    writePropertyValue(properties);
+    writePropertyValue(properties, depth);
   }
   const long endPos = tell();
   // We can overwrite the properties maps size now

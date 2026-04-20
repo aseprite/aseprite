@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018-2026 Igara Studio S.A.
+// Copyright (c) 2018-present Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -16,6 +16,7 @@
 #include "base/file_handle.h"
 #include "base/fs.h"
 #include "base/mask_shift.h"
+#include "base/scoped_value.h"
 #include "dio/aseprite_common.h"
 #include "dio/decode_delegate.h"
 #include "dio/file_interface.h"
@@ -1066,7 +1067,12 @@ void AsepriteDecoder::readExternalFiles(AsepriteExternalFiles& extFiles)
     uint8_t type = read8();
     readPadding(7);
     std::string fn = readString();
-    extFiles.insert(id, type, fn);
+
+    if (type < ASE_EXTERNAL_FILE_TYPES)
+      extFiles.insert(id, type, fn);
+    else
+      delegate()->incompatibilityError(
+        fmt::format("Unknown externail file reference found: {0}", type));
   }
 }
 
@@ -1316,7 +1322,8 @@ void AsepriteDecoder::readPropertiesMaps(UserData::PropertiesMaps& propertiesMap
         extensionId = fmt::format("__missed__{}", id);
         delegate()->error(fmt::format("Error: Invalid extension ID (id={0} not found)", id));
       }
-      auto properties = readPropertyValue(USER_DATA_PROPERTY_TYPE_PROPERTIES);
+      int depth = 0;
+      auto properties = readPropertyValue(USER_DATA_PROPERTY_TYPE_PROPERTIES, depth);
       propertiesMaps[extensionId] = get_value<UserData::Properties>(properties);
     }
   }
@@ -1327,8 +1334,11 @@ void AsepriteDecoder::readPropertiesMaps(UserData::PropertiesMaps& propertiesMap
   seek(startPos + size);
 }
 
-UserData::Variant AsepriteDecoder::readPropertyValue(uint16_t type)
+const UserData::Variant AsepriteDecoder::readPropertyValue(uint16_t type, int& depth)
 {
+  if (depth > 128)
+    throw base::Exception("More than 128 property levels in user data is not supported");
+
   switch (type) {
     case USER_DATA_PROPERTY_TYPE_NULLPTR: {
       // This shouldn't exist in a .aseprite file
@@ -1413,7 +1423,9 @@ UserData::Variant AsepriteDecoder::readPropertyValue(uint16_t type)
         if (elemsType == 0) {
           elemType = read16();
         }
-        value.push_back(readPropertyValue(elemType));
+
+        base::ScopedValue depthInc(depth, depth + 1);
+        value.push_back(readPropertyValue(elemType, depth));
       }
       return value;
     }
@@ -1423,7 +1435,9 @@ UserData::Variant AsepriteDecoder::readPropertyValue(uint16_t type)
       for (int j = 0; j < numProps; ++j) {
         auto name = readString();
         auto type = read16();
-        value[name] = readPropertyValue(type);
+
+        base::ScopedValue depthInc(depth, depth + 1);
+        value[name] = readPropertyValue(type, depth);
       }
       return value;
     }
