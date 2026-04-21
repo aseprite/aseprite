@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -14,6 +14,7 @@
 #include "render/gradient.h"
 
 #include <array>
+#include <limits>
 #include <memory>
 
 namespace app { namespace tools {
@@ -56,14 +57,26 @@ public:
 };
 
 class TilePointShape : public PointShape {
+  gfx::Point m_lastTilePos;
+
 public:
   bool isPixel() override { return true; }
   bool isTile() override { return true; }
+
+  void preparePointShape(ToolLoop* loop) override
+  {
+    // Initialize the "last position" with an impossible position
+    // to compute the first transformPoint in all cases.
+    m_lastTilePos = gfx::Point(std::numeric_limits<int>::max(), std::numeric_limits<int>::max());
+  }
 
   void transformPoint(ToolLoop* loop, const Stroke::Pt& pt) override
   {
     const doc::Grid& grid = loop->getGrid();
     gfx::Point newPos = grid.canvasToTile(pt.toPoint());
+    if (newPos == m_lastTilePos)
+      return;
+    m_lastTilePos = newPos;
 
     loop->getInk()->prepareForPointShape(loop, true, newPos.x, newPos.y, pt.symmetry);
     doInkHline(newPos.x, newPos.y, newPos.x, loop);
