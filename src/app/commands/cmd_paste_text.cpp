@@ -175,12 +175,14 @@ void PasteTextCommand::onExecute(Context* ctx)
                          0,
                          255,
                          doc::BlendMode::NORMAL);
+      tx(new cmd::CopyRegion(writer.cel()->image(),
+                             finalImage.get(),
+                             gfx::Region(finalImage->bounds()),
+                             point));
     }
-
-    tx(new cmd::CopyRegion(writer.cel()->image(),
-                           finalImage.get(),
-                           gfx::Region(finalImage->bounds()),
-                           point));
+    else {
+      // TODO set cel image with rendered text
+    }
     tx.commit();
   }
   catch (const std::exception& ex) {

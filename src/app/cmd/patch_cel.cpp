@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2026  Igara Studio S.A.
 // Copyright (C) 2016  David Capello
 //
 // This program is distributed under the terms of
@@ -30,12 +30,14 @@ PatchCel::PatchCel(doc::Cel* dstCel,
   , m_region(patchedRegion)
   , m_pos(patchPos)
 {
+  ASSERT(dstCel->image());
   ASSERT(!patchedRegion.isEmpty());
 }
 
 void PatchCel::onExecute()
 {
   Cel* cel = this->cel();
+  ASSERT(cel->image());
 
   gfx::Rect newBounds;
   gfx::Region regionInTiles;

@@ -104,10 +104,14 @@ void for_each_tile_using_tileset(Tileset* tileset, UnaryFunction f)
 {
   for (Cel* cel : tileset->sprite()->uniqueCels()) {
     if (!cel->layer()->isTilemap() ||
-        static_cast<LayerTilemap*>(cel->layer())->tileset() != tileset)
+        static_cast<LayerTilemap*>(cel->layer())->tileset() != tileset) {
       continue;
+    }
 
     Image* tilemapImage = cel->image();
+    if (!tilemapImage)
+      continue;
+
     for_each_pixel<TilemapTraits>(tilemapImage, f);
   }
 }
@@ -276,24 +280,28 @@ doc::ImageRef crop_cel_image(const doc::Cel* cel, const color_t bgcolor)
 
   if (cel->layer()->isTilemap()) {
     doc::ImageRef dstImage(doc::Image::create(sprite->spec()));
-
-    render::Render().renderCel(dstImage.get(),
-                               cel,
-                               sprite,
-                               cel->image(),
-                               cel->layer(),
-                               sprite->palette(cel->frame()),
-                               dstImage->bounds(),
-                               gfx::Clip(cel->position(), dstImage->bounds()),
-                               255,
-                               BlendMode::NORMAL);
-
+    if (cel->image()) {
+      render::Render().renderCel(dstImage.get(),
+                                 cel,
+                                 sprite,
+                                 cel->image(),
+                                 cel->layer(),
+                                 sprite->palette(cel->frame()),
+                                 dstImage->bounds(),
+                                 gfx::Clip(cel->position(), dstImage->bounds()),
+                                 255,
+                                 BlendMode::NORMAL);
+    }
     return dstImage;
   }
-  else {
+
+  if (cel->image()) {
     return doc::ImageRef(
       doc::crop_image(cel->image(), gfx::Rect(sprite->bounds()).offset(-cel->position()), bgcolor));
   }
+
+  // If the cel doesn't have an image, we return an image of the whole canvas.
+  return doc::ImageRef(doc::Image::create(sprite->spec()));
 }
 
 Cel* create_cel_copy(CmdSequence* cmds,
@@ -341,8 +349,9 @@ Cel* create_cel_copy(CmdSequence* cmds,
   dstCel->copyNonsharedPropertiesFrom(srcCel);
   dstCel->data()->setUserData(srcCel->data()->userData());
 
-  if (!srcImage)
+  if (!srcImage || !dstImage)
     return dstCel.release();
+
   // The following code is to copy the image between cels...
 
   // Special case were we copy from a tilemap...
@@ -370,7 +379,7 @@ Cel* create_cel_copy(CmdSequence* cmds,
                                    255,
                                    BlendMode::NORMAL);
 
-        doc::ImageRef tilemap = dstCel->imageRef();
+        doc::ImageRef tilemap = dstImage;
 
         draw_image_into_new_tilemap_cel(cmds,
                                         static_cast<doc::LayerTilemap*>(dstLayer),
@@ -385,23 +394,23 @@ Cel* create_cel_copy(CmdSequence* cmds,
     }
     // Tilemap -> Image (so we convert the tilemap to a regular image)
     else {
-      render::Render().renderCel(dstCel->image(),
+      render::Render().renderCel(dstImage.get(),
                                  srcCel,
                                  dstSprite,
                                  srcImage,
                                  srcCel->layer(),
                                  dstSprite->palette(dstCel->frame()),
                                  gfx::Rect(gfx::Point(0, 0), srcCel->bounds().size()),
-                                 gfx::Clip(0, 0, dstCel->image()->bounds()),
+                                 gfx::Clip(0, 0, dstImage->bounds()),
                                  255,
                                  BlendMode::NORMAL);
 
       // Shrink image
       if (dstLayer->isTransparent()) {
-        auto bg = dstCel->image()->maskColor();
+        auto bg = dstImage->maskColor();
         gfx::Rect bounds;
-        if (algorithm::shrink_bounds(dstCel->image(), bg, dstLayer, bounds)) {
-          ImageRef trimmed(doc::crop_image(dstCel->image(), bounds, bg));
+        if (algorithm::shrink_bounds(dstImage.get(), bg, dstLayer, bounds)) {
+          ImageRef trimmed(doc::crop_image(dstImage.get(), bounds, bg));
           dstCel->data()->setImage(trimmed, dstLayer);
           dstCel->setPosition(srcCel->position() + bounds.origin());
           return dstCel.release();
@@ -411,7 +420,7 @@ Cel* create_cel_copy(CmdSequence* cmds,
   }
   // Image -> Tilemap (we'll need to generate new tilesets)
   else if (dstLayer->isTilemap()) {
-    doc::ImageRef tilemap = dstCel->imageRef();
+    doc::ImageRef tilemap = dstImage;
     draw_image_into_new_tilemap_cel(cmds,
                                     static_cast<doc::LayerTilemap*>(dstLayer),
                                     dstCel.get(),
@@ -442,7 +451,7 @@ Cel* create_cel_copy(CmdSequence* cmds,
                                  0);
 
     render::convert_pixel_format(tmpImage.get(),
-                                 dstCel->image(),
+                                 dstImage.get(),
                                  IMAGE_INDEXED,
                                  render::Dithering(),
                                  dstSprite->rgbMap(dstFrame),
@@ -452,7 +461,7 @@ Cel* create_cel_copy(CmdSequence* cmds,
   }
   // Simple case, where we copy both images
   else {
-    render::composite_image(dstCel->image(),
+    render::composite_image(dstImage.get(),
                             srcImage,
                             srcCel->sprite()->palette(srcCel->frame()),
                             0,
@@ -469,7 +478,7 @@ Cel* create_cel_copy(CmdSequence* cmds,
       dstFrame,
       ImageRef(
         Image::create(dstSprite->pixelFormat(), std::ceil(srcBounds.w), std::ceil(srcBounds.h)))));
-    algorithm::resize_image(dstCel->image(),
+    algorithm::resize_image(dstImage.get(),
                             dstCel2->image(),
                             algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR,
                             nullptr,
@@ -587,6 +596,9 @@ void modify_tilemap_cel_region(CmdSequence* cmds,
             region.bounds().h);
 
   if (region.isEmpty())
+    return;
+
+  if (!cel->image())
     return;
 
   ASSERT(cel->layer() && cel->layer()->isTilemap());
@@ -750,8 +762,7 @@ void modify_tilemap_cel_region(CmdSequence* cmds,
       }
     }
 
-    if (newTilemap->width() != cel->image()->width() ||
-        newTilemap->height() != cel->image()->height()) {
+    if (newTilemap->size() != cel->image()->size()) {
       gfx::Point newPos = grid.tileToCanvas(newTilemapBounds.origin());
       if (cel->position() != newPos) {
         cmds->executeAndAdd(new cmd::SetCelPosition(cel, newPos));

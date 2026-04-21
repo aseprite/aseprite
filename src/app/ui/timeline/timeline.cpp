@@ -2545,14 +2545,26 @@ void Timeline::drawCel(ui::Graphics* g,
     fromLeft = (left && left->dataId() == cel->dataId());
     fromRight = (right && right->dataId() == cel->dataId());
 
-    if (fromLeft && fromRight)
-      style = styles.timelineFromBoth();
-    else if (fromLeft)
-      style = styles.timelineFromLeft();
-    else if (fromRight)
-      style = styles.timelineFromRight();
-    else
-      style = styles.timelineKeyframe();
+    if (image) {
+      if (fromLeft && fromRight)
+        style = styles.timelineFromBoth();
+      else if (fromLeft)
+        style = styles.timelineFromLeft();
+      else if (fromRight)
+        style = styles.timelineFromRight();
+      else
+        style = styles.timelineKeyframe();
+    }
+    else {
+      if (fromLeft && fromRight)
+        style = styles.timelineEmptyFromBoth();
+      else if (fromLeft)
+        style = styles.timelineEmptyFromLeft();
+      else if (fromRight)
+        style = styles.timelineEmptyFromRight();
+      else
+        style = styles.timelineEmptyKeyframe();
+    }
   }
 
   if (style) {
@@ -2678,6 +2690,7 @@ void Timeline::drawCelLinkDecorators(ui::Graphics* g,
 {
   auto& styles = skinTheme()->styles;
   const ObjectId dataId = (*data->activeIt)->dataId();
+  const bool has_image = ((*data->activeIt)->image() ? true : false);
 
   ui::Style* style1 = nullptr;
   ui::Style* style2 = nullptr;
@@ -2692,17 +2705,17 @@ void Timeline::drawCelLinkDecorators(ui::Graphics* g,
     if (left) {
       Cel* prevCel = m_layer->cel(cel->frame() - 1);
       if (!prevCel || prevCel->dataId() != dataId)
-        style1 = styles.timelineLeftLink();
+        style1 = (has_image ? styles.timelineLeftLink() : styles.timelineEmptyLeftLink());
     }
     if (right) {
       Cel* nextCel = m_layer->cel(cel->frame() + 1);
       if (!nextCel || nextCel->dataId() != dataId)
-        style2 = styles.timelineRightLink();
+        style2 = (has_image ? styles.timelineRightLink() : styles.timelineEmptyRightLink());
     }
   }
   else {
     if (left && right)
-      style1 = styles.timelineBothLinks();
+      style1 = (has_image ? styles.timelineBothLinks() : styles.timelineEmptyBothLinks());
   }
 
   if (style1)

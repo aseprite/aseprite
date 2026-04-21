@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -766,6 +766,9 @@ private:
   {
     for (Cel* cel : m_sprite->uniqueCels()) {
       Image* oldImage = cel->image();
+      if (!oldImage)
+        continue;
+
       ImageRef newImage(render::convert_pixel_format(oldImage,
                                                      nullptr,
                                                      IMAGE_RGB,
@@ -821,7 +824,8 @@ private:
                                                             // we cannot write the header again
 
     for (Cel* cel : m_sprite->uniqueCels())
-      doc::remap_image(cel->image(), remap);
+      if (cel->image())
+        doc::remap_image(cel->image(), remap);
 
     m_sprite->setPalette(&newPalette, false);
   }

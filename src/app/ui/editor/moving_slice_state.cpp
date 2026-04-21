@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -257,7 +257,7 @@ void MovingSliceState::drawExtraCel(int layerIdx)
       dst->setMaskColor(doc::notile);
       dst->clear(dst->maskColor());
 
-      if (m_site.cel()) {
+      if (m_site.cel() && m_site.cel()->image()) {
         doc::Grid grid = m_site.grid();
         dst->copy(m_site.cel()->image(), gfx::Clip(0, 0, grid.canvasToTile(bounds)));
       }

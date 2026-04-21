@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2025 Igara Studio S.A.
+// Copyright (c) 2019-2026 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -48,7 +48,10 @@ Cel::~Cel()
 // static
 Cel* Cel::MakeCopy(const frame_t newFrame, const Cel* other)
 {
-  Cel* cel = new Cel(newFrame, ImageRef(Image::createCopy(other->image())));
+  ImageRef newImage;
+  if (other->image())
+    newImage.reset(Image::createCopy(other->image()));
+  Cel* cel = new Cel(newFrame, newImage);
 
   cel->setPosition(other->position());
   cel->setOpacity(other->opacity());

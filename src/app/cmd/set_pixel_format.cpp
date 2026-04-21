@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -103,6 +103,9 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
       continue;
 
     ImageRef oldImage = cel->imageRef();
+    if (!oldImage)
+      continue;
+
     convertImage(sprite,
                  dithering,
                  oldImage,

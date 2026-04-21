@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -18,6 +18,7 @@
 #include "app/cmd/remove_cel.h"
 #include "app/cmd/remove_layer.h"
 #include "app/cmd/replace_image.h"
+#include "app/cmd/set_cel_image.h"
 #include "app/cmd/set_cel_opacity.h"
 #include "app/cmd/set_cel_position.h"
 #include "app/cmd/set_cel_zindex.h"
@@ -178,7 +179,6 @@ void FlattenLayers::onExecute()
           executeAndAdd(new cmd::UnlinkCel(cel));
 
         const ImageRef cel_image = cel->imageRef();
-        ASSERT(cel_image);
 
         // Reset cel properties when flattening in-place
         if (!newFlatLayer) {
@@ -192,7 +192,10 @@ void FlattenLayers::onExecute()
         }
 
         // Modify destination cel
-        executeAndAdd(new cmd::ReplaceImage(sprite, cel_image, new_image));
+        if (cel_image)
+          executeAndAdd(new cmd::ReplaceImage(sprite, cel_image, new_image));
+        else
+          executeAndAdd(new cmd::SetCelImage(cel, new_image));
       }
       // Add new cel on null
       else {

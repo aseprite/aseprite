@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 // Copyright (C) 2016  Carlo Caputo
 //
@@ -35,6 +35,9 @@ os::SurfaceRef get_cel_thumbnail(ui::Display* display,
     newSize = cel->bounds().size();
 
   if (newSize.w < 1 || newSize.h < 1)
+    return nullptr;
+
+  if (!cel->image())
     return nullptr;
 
   doc::ImageRef thumbnailImage(doc::Image::create(doc::IMAGE_RGB, newSize.w, newSize.h));
