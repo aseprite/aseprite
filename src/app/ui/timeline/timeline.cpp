@@ -4308,7 +4308,10 @@ void Timeline::updateDropRange(const gfx::Point& pt)
   else if (m_range.type() == Range::kLayers && m_hot.layer >= 0 &&
            m_hot.layer < int(m_rows.size()) &&
            // Special drop target for expanded groups
-           (m_rows[m_hot.layer].layer()->isGroup() && m_rows[m_hot.layer].layer()->isExpanded())) {
+           ((m_rows[m_hot.layer].layer()->isGroup() && m_rows[m_hot.layer].layer()->isExpanded()) ||
+            // Special drop for mask/fx inside layers
+            (m_rows[m_clk.layer].layer()->isMaskOrFx() &&
+             m_rows[m_hot.layer].layer()->acceptMaskOrFx()))) {
     m_dropTarget.vhit = DropTarget::FirstChild;
   }
   else {

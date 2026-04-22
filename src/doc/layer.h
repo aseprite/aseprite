@@ -95,6 +95,19 @@ public:
   bool isGroup() const { return type() == ObjectType::LayerGroup; }
   bool isTilemap() const { return type() == ObjectType::LayerTilemap; }
   bool isBrowsable() const { return isExpanded() && !m_layers.empty(); }
+  // If this layer is a Mask or FX
+  bool isMaskOrFx() const
+  {
+    return type() == ObjectType::LayerMask || type() == ObjectType::LayerFx;
+  }
+  // In case we can drop a Mask or FX inside this kind of layer
+  bool acceptMaskOrFx() const
+  {
+    return type() == ObjectType::LayerImage || type() == ObjectType::LayerTilemap ||
+           type() == ObjectType::LayerText || type() == ObjectType::LayerVector ||
+           type() == ObjectType::LayerSubsprite;
+  }
+
   bool isBackground() const { return hasFlags(LayerFlags::Background); }
   bool isTransparent() const { return !hasFlags(LayerFlags::Background); }
   bool isVisible() const { return hasFlags(LayerFlags::Visible); }
