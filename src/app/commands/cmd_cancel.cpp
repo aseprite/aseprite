@@ -37,7 +37,7 @@ private:
   Type m_type;
 };
 
-CancelCommand::CancelCommand() : Command(CommandId::Cancel(), CmdUIOnlyFlag), m_type(NoOp)
+CancelCommand::CancelCommand() : Command(CommandId::Cancel()), m_type(NoOp)
 {
 }
 

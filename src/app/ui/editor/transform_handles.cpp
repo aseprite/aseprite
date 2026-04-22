@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -209,7 +209,8 @@ gfx::Rect TransformHandles::getPivotHandleBounds(Editor* editor,
 {
   auto theme = SkinTheme::get(editor);
   gfx::Size partSize = theme->parts.pivotHandle()->size();
-  gfx::Point screenPivotPos = editor->editorToScreen(gfx::Point(transform.pivot()));
+  gfx::Point pivotPos = gfx::Point(transform.pivot()) + editor->mainTilePosition();
+  gfx::Point screenPivotPos = editor->editorToScreen(pivotPos);
 
   screenPivotPos.x += editor->projection().applyX(1) / 2;
   screenPivotPos.y += editor->projection().applyY(1) / 2;

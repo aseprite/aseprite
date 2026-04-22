@@ -32,29 +32,29 @@
     <grid id="options" columns="2" childspacing="0" expansive="true">
       <separator id="separator" text="@.max_point_value" horizontal="true" cell_hspan="2" />
 
-      <label id="size_label" text="@.size" style="mini_label" />
+      <label id="size_label" text="@.size" style="mini_label" for="min_size" />
       <slider id="min_size" value="1" min="1" max="64" cell_align="horizontal" style="mini_slider"
               tooltip="@.min_size_tooltip" tooltip_dir="left" />
       <boxfiller />
       <slider id="max_size" value="64" min="1" max="64" cell_align="horizontal" style="mini_slider"
               tooltip="@.max_size_tooltip" tooltip_dir="left" />
 
-      <label id="angle_label" text="@.angle" style="mini_label" />
+      <label id="angle_label" text="@.angle" style="mini_label" for="min_angle" />
       <slider id="min_angle" value="0" min="-180" max="+180" cell_align="horizontal" style="mini_slider"
               tooltip="@.min_angle_tooltip" tooltip_dir="left" />
       <boxfiller />
       <slider id="max_angle" value="0" min="-180" max="+180" cell_align="horizontal" style="mini_slider"
               tooltip="@.max_angle_tooltip" tooltip_dir="left" />
 
-      <label id="gradient_label" text="@.gradient" style="mini_label"  />
+      <label id="gradient_label" text="@.gradient" style="mini_label" for="dithering_selector"  />
       <hbox id="gradient_placeholder" cell_vspan="2" />
       <link id="gradient_from_to" style="mini_label"  />
 
       <separator id="separator2" text="@.sensors_tweaks" horizontal="true" cell_hspan="2" />
 
-      <label id="pressure_label" text="@.pressure" style="mini_label" />
+      <label id="pressure_label" text="@.pressure" style="mini_label" for="pressure_slider" />
       <hbox id="pressure_placeholder" cell_align="horizontal" />
-      <label id="velocity_label" text="@.velocity" style="mini_label" />
+      <label id="velocity_label" text="@.velocity" style="mini_label" for="velocity_slider" />
       <hbox id="velocity_placeholder" cell_align="horizontal" />
     </grid>
     <separator horizontal="true" cell_hspan="2" />

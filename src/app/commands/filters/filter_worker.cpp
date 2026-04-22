@@ -73,7 +73,7 @@ private:
 
 class FilterWorker : public FilterManagerImpl::IProgressDelegate {
 public:
-  FilterWorker(FilterManagerImpl* filterMgr);
+  FilterWorker(FilterManagerImpl* filterMgr, bool ui);
   ~FilterWorker();
 
   void run();
@@ -97,7 +97,7 @@ private:
   std::unique_ptr<FilterWorkerAlert> m_alert;
 };
 
-FilterWorker::FilterWorker(FilterManagerImpl* filterMgr) : m_filterMgr(filterMgr)
+FilterWorker::FilterWorker(FilterManagerImpl* filterMgr, const bool ui) : m_filterMgr(filterMgr)
 {
   m_filterMgr->setProgressDelegate(this);
 
@@ -106,7 +106,7 @@ FilterWorker::FilterWorker(FilterManagerImpl* filterMgr) : m_filterMgr(filterMgr
   m_cancelled = false;
   m_abort = false;
 
-  if (Manager::getDefault())
+  if (ui && Manager::getDefault())
     m_alert.reset(new FilterWorkerAlert([this] { onMonitoringTick(); }));
 }
 
@@ -118,7 +118,13 @@ FilterWorker::~FilterWorker()
 
 void FilterWorker::run()
 {
-  // Initialize writting transaction
+  // Initialize writing transaction from the main thread. This is
+  // required to get the activeSite() from the UIContext from
+  // CmdTransaction::calcSpritePosition().
+  //
+  // The document will keep the UI thread associated as the "writer"
+  // thread, but that will be updated later in
+  // applyFilterInBackground() with the worker thread ID.
   m_filterMgr->initTransaction();
 
   std::thread thread;
@@ -144,6 +150,13 @@ void FilterWorker::run()
   // Wait the `effect_bg' thread
   if (thread.joinable())
     thread.join();
+
+  // Update the writer thread again to the UI thread so if we are
+  // inside a sub-transaction we can readLock() again the document in
+  // future commands inside the same parent transaction. This allows
+  // us to call several filters with UI inside an app.transaction()
+  // from a script.
+  m_filterMgr->updateWriterThread();
 
   if (!m_error.empty()) {
     Console console;
@@ -182,6 +195,11 @@ bool FilterWorker::isCancelled()
 void FilterWorker::applyFilterInBackground()
 {
   try {
+    // This background thread is the new writer. This is required to
+    // avoid read-locking from the UI thread from Editor and Timeline
+    // onPaint() events.
+    m_filterMgr->updateWriterThread();
+
     // Apply the filter
     m_filterMgr->applyToTarget();
 
@@ -214,9 +232,9 @@ void FilterWorker::onMonitoringTick()
 //
 // [main thread]
 //
-void FilterManagerImpl::startWorker()
+void FilterManagerImpl::startWorker(const bool ui)
 {
-  FilterWorker filterWorker(this);
+  FilterWorker filterWorker(this, ui);
   filterWorker.run();
 }
 

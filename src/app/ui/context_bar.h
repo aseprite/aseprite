@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -17,6 +17,7 @@
 #include "app/tools/tool_loop_modifiers.h"
 #include "app/ui/context_bar_observer.h"
 #include "app/ui/doc_observer_widget.h"
+#include "app/ui/dockable.h"
 #include "app/ui/font_entry.h"
 #include "doc/brush.h"
 #include "obs/connection.h"
@@ -60,7 +61,8 @@ class Transformation;
 
 class ContextBar : public DocObserverWidget<ui::HBox>,
                    public obs::observable<ContextBarObserver>,
-                   public tools::ActiveToolObserver {
+                   public tools::ActiveToolObserver,
+                   public Dockable {
 public:
   ContextBar(ui::TooltipManager* tooltipManager, ColorBar* colorBar);
   ~ContextBar();
@@ -90,6 +92,7 @@ public:
 
   // For text tool
   FontInfo fontInfo() const;
+  FontEntry* fontEntry();
 
   // For gradients
   render::DitheringMatrix ditheringMatrix();
@@ -98,6 +101,10 @@ public:
 
   // For freehand with dynamics
   const tools::DynamicsOptions& getDynamics() const;
+
+  // Dockable impl
+  int dockableAt() const override { return ui::TOP | ui::BOTTOM; }
+  int dockHandleSide() const override { return ui::LEFT; }
 
   // Signals
   obs::signal<void()> BrushChange;
@@ -124,6 +131,7 @@ protected:
 private:
   void onBrushSizeChange();
   void onBrushAngleChange();
+  void onCornerRadiusChange(int value);
   void onSymmetryModeChange();
   void onFgOrBgColorChange(doc::Brush::ImageColor imageColor);
   void onOpacityRangeChange();
@@ -161,6 +169,7 @@ private:
   class DynamicsField;
   class FreehandAlgorithmField;
   class BrushPatternField;
+  class CornerRadiusField;
   class EyedropperField;
   class DropPixelsField;
   class AutoSelectLayerField;
@@ -174,6 +183,7 @@ private:
   BrushTypeField* m_brushType;
   BrushAngleField* m_brushAngle;
   BrushSizeField* m_brushSize;
+  CornerRadiusField* m_cornerRadius;
   ui::Label* m_toleranceLabel;
   ToleranceField* m_tolerance;
   ContiguousField* m_contiguous;
@@ -217,6 +227,7 @@ private:
   obs::scoped_connection m_opacityConn;
   obs::scoped_connection m_freehandAlgoConn;
   obs::scoped_connection m_contiguousConn;
+  obs::scoped_connection m_cornerRadiusConn;
 };
 
 } // namespace app

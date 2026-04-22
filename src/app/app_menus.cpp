@@ -26,7 +26,6 @@
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
 #include "app/ui_context.h"
-#include "app/util/filetoks.h"
 #include "base/fs.h"
 #include "base/string.h"
 #include "fmt/format.h"
@@ -110,7 +109,8 @@ bool can_call_global_shortcut(const AppMenuItem::Native* native)
     // prefer text input, so we cannot call shortcuts without
     // modifiers (e.g. F or T keystrokes) to trigger a global command
     // in a text field.
-    (focus == nullptr || focus->type() != ui::kEntryWidget ||
+    (focus == nullptr ||
+     (focus->type() != ui::kEntryWidget && focus->type() != ui::kTextEditWidget) ||
      !is_text_entry_shortcut(native->shortcut)) &&
     (native->keyContext == KeyContext::Any ||
      native->keyContext == KeyboardShortcuts::getCurrentKeyContext());
@@ -463,6 +463,8 @@ void AppMenus::reload()
   // Create native menus after the default + user defined keyboard
   // shortcuts are loaded correctly.
   createNativeMenus();
+
+  MenusLoaded();
 }
 
 #ifdef ENABLE_SCRIPTING

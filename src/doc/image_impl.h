@@ -224,6 +224,26 @@ private:
 // Specializations
 
 template<>
+inline void ImageImpl<RgbTraits>::blendRect(int x1,
+                                            int y1,
+                                            int x2,
+                                            int y2,
+                                            color_t color,
+                                            int opacity)
+{
+  address_t addr;
+  int x, y;
+
+  for (y = y1; y <= y2; ++y) {
+    addr = (address_t)getPixelAddress(x1, y);
+    for (x = x1; x <= x2; ++x) {
+      *addr = rgba_blender_normal(*addr, color, opacity);
+      ++addr;
+    }
+  }
+}
+
+template<>
 inline void ImageImpl<IndexedTraits>::clear(color_t color)
 {
   uint8_t* p = address(0, 0);
@@ -236,6 +256,8 @@ inline void ImageImpl<BitmapTraits>::clear(color_t color)
   uint8_t* p = address(0, 0);
   std::fill(p, p + rowBytes() * height(), (color ? 0xff : 0x00));
 }
+
+#if DOC_USE_BITMAP_AS_1BPP
 
 template<>
 inline color_t ImageImpl<BitmapTraits>::getPixel(int x, int y) const
@@ -267,32 +289,14 @@ inline void ImageImpl<BitmapTraits>::fillRect(int x1, int y1, int x2, int y2, co
     ImageImpl<BitmapTraits>::drawHLine(x1, y, x2, color);
 }
 
-template<>
-inline void ImageImpl<RgbTraits>::blendRect(int x1,
-                                            int y1,
-                                            int x2,
-                                            int y2,
-                                            color_t color,
-                                            int opacity)
-{
-  address_t addr;
-  int x, y;
-
-  for (y = y1; y <= y2; ++y) {
-    addr = (address_t)getPixelAddress(x1, y);
-    for (x = x1; x <= x2; ++x) {
-      *addr = rgba_blender_normal(*addr, color, opacity);
-      ++addr;
-    }
-  }
-}
-
 void copy_bitmaps(Image* dst, const Image* src, gfx::Clip area);
 template<>
 inline void ImageImpl<BitmapTraits>::copy(const Image* src, gfx::Clip area)
 {
   copy_bitmaps(this, src, area);
 }
+
+#endif // DOC_USE_BITMAP_AS_1BPP
 
 } // namespace doc
 

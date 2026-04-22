@@ -3,7 +3,7 @@
 <gui>
 <window id="jpeg_options" text="@.title">
   <grid columns="2">
-    <label text="@.quality" />
+    <label text="@.quality" for="quality" />
     <slider min="0" max="10" id="quality" cell_align="horizontal" width="128" />
 
     <separator horizontal="true" cell_hspan="2" />

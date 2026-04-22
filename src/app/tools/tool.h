@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -44,12 +44,12 @@ public:
     m_default_brush_size = default_brush_size;
   }
 
-  Fill getFill(int button) { return m_button[button].m_fill; }
-  Ink* getInk(int button) { return m_button[button].m_ink; }
-  Controller* getController(int button) { return m_button[button].m_controller; }
-  PointShape* getPointShape(int button) { return m_button[button].m_point_shape; }
-  Intertwine* getIntertwine(int button) { return m_button[button].m_intertwine; }
-  TracePolicy getTracePolicy(int button) { return m_button[button].m_trace_policy; }
+  Fill getFill(int button) const { return m_button[button].m_fill; }
+  Ink* getInk(int button) const { return m_button[button].m_ink; }
+  Controller* getController(int button) const { return m_button[button].m_controller; }
+  PointShape* getPointShape(int button) const { return m_button[button].m_point_shape; }
+  Intertwine* getIntertwine(int button) const { return m_button[button].m_intertwine; }
+  TracePolicy getTracePolicy(int button) const { return m_button[button].m_trace_policy; }
 
   void setFill(int button, Fill fill) { m_button[button].m_fill = fill; }
   void setInk(int button, Ink* ink) { m_button[button].m_ink = ink; }

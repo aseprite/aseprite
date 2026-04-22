@@ -194,7 +194,11 @@ private:
       if (!blob)
         return;
 
-      doc::ImageRef image = render_text_blob(blob, gfx::rgba(0, 0, 0));
+      ui::Paint paint;
+      paint.color(gfx::rgba(0, 0, 0));
+      paint.style(ui::Paint::Fill);
+      const gfx::RectF textBounds = get_text_blob_required_bounds(blob);
+      doc::ImageRef image = render_text_blob(blob, textBounds, paint);
       if (!image)
         return;
 

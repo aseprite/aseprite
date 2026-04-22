@@ -11,7 +11,6 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
-#include "app/context_access.h"
 #include "app/ui/editor/editor.h"
 
 namespace app {
@@ -25,7 +24,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-ScrollCenterCommand::ScrollCenterCommand() : Command(CommandId::ScrollCenter(), CmdUIOnlyFlag)
+ScrollCenterCommand::ScrollCenterCommand() : Command(CommandId::ScrollCenter())
 {
 }
 

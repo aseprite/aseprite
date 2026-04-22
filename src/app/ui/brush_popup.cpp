@@ -506,8 +506,8 @@ os::SurfaceRef BrushPopup::createSurfaceForBrush(const BrushRef& origBrush,
                              surface.get(),
                              0,
                              0,
-                             0,
-                             0,
+                             (surface->width() - image->width() - 1) / 2,
+                             (surface->height() - image->height() - 1) / 2,
                              image->width(),
                              image->height());
 

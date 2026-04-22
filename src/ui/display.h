@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -31,6 +31,7 @@ public:
   Display* parentDisplay() { return m_parentDisplay; }
   os::Window* nativeWindow() const { return m_nativeWindow.get(); }
   os::SurfaceRef nativeSurface() const;
+  os::ColorSpaceRef colorSpace() const { return m_nativeWindow->colorSpace(); }
 
   UILayers layers() { return m_layers; }
   UILayerRef backLayer() { return m_layers.front(); }

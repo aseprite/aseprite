@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -620,6 +620,11 @@ bool Timeline::onProcessMessage(Message* msg)
   switch (msg->type()) {
     case kFocusEnterMessage: App::instance()->inputChain().prioritize(this, msg); break;
 
+    case kMouseEnterMessage:
+      if (!hasCapture())
+        m_scroll = ((msg->modifiers() & kKeySpaceModifier) != 0);
+      break;
+
     case kTimerMessage:
       if (static_cast<TimerMessage*>(msg)->timer() == &m_clipboard_timer) {
         Doc* clipboard_document;
@@ -791,53 +796,35 @@ bool Timeline::onProcessMessage(Message* msg)
           if (validLayer(m_clk.layer)) {
             Row& row = m_rows[m_clk.layer];
             Layer* layer = row.layer();
-            ASSERT(layer)
+            ASSERT(layer);
 
             // Hide everything or restore alternative state
             bool oneWithInternalState = false;
             if (msg->altPressed()) {
-              for (const Row& row : m_rows) {
-                const Layer* l = row.layer();
-                if (l->hasFlags(LayerFlags::Internal_WasVisible)) {
-                  oneWithInternalState = true;
-                  break;
-                }
-              }
+              oneWithInternalState =
+                std::any_of(m_rows.begin(), m_rows.end(), [](const Row& row) -> bool {
+                  return row.layer()->hasFlags(LayerFlags::Internal_WasVisible);
+                });
 
-              // If there is one layer with the internal state, restore the previous visible state
-              if (oneWithInternalState) {
-                for (Row& row : m_rows) {
-                  Layer* l = row.layer();
-                  if (l->hasFlags(LayerFlags::Internal_WasVisible)) {
-                    m_document->setLayerVisibilityWithNotifications(l, true);
-                    l->switchFlags(LayerFlags::Internal_WasVisible, false);
-                  }
-                  else {
-                    m_document->setLayerVisibilityWithNotifications(l, false);
-                  }
-                }
-              }
-              // In other case, hide everything
-              else {
-                for (Row& row : m_rows) {
-                  Layer* l = row.layer();
-                  l->switchFlags(LayerFlags::Internal_WasVisible, l->isVisible());
-                  m_document->setLayerVisibilityWithNotifications(l, false);
-                }
-              }
+              Command* command = Commands::instance()->byId(CommandId::SoloLayer());
+              Params params;
+              params.set("layerId", base::convert_to<std::string>(layer->id()).c_str());
+              m_context->executeCommand(command, params);
 
               regenerateRows();
               invalidate();
-
-              m_document->notifyGeneralUpdate();
+            }
+            else {
+              setLayerVisibleFlag(m_clk.layer, !layer->isVisible());
             }
 
-            if (layer->isVisible() && !oneWithInternalState)
+            // Set the internal m_state to continue with this action
+            // (hiding layers or showing layers) if we drag the mouse
+            // over other eye icons.
+            if (!layer->isVisible() && !oneWithInternalState)
               m_state = STATE_HIDING_LAYERS;
             else
               m_state = STATE_SHOWING_LAYERS;
-
-            setLayerVisibleFlag(m_clk.layer, m_state == STATE_SHOWING_LAYERS);
           }
           break;
 
@@ -882,8 +869,6 @@ bool Timeline::onProcessMessage(Message* msg)
               // expanded/collapsed a group just right now (i.e. we've
               // called regenerateRows())
               m_clk = m_hot;
-
-              ASSERT(m_rows[m_clk.layer].layer() == layer);
             }
           }
           break;
@@ -1471,23 +1456,26 @@ bool Timeline::onProcessMessage(Message* msg)
       break;
     }
 
-    case kKeyUpMessage: {
-      bool used = false;
+    case kKeyUpMessage:
+      // Use KeyUp only if the mouse is above the timeline. Without
+      // this we might be consuming a Space modifer that should go the
+      // the active sprite editor.
+      if (hasMouse() && !hasCapture()) {
+        bool used = false;
 
-      switch (static_cast<KeyMessage*>(msg)->scancode()) {
-        case kKeySpace: {
-          m_scroll = false;
-          used = true;
-          break;
+        switch (static_cast<KeyMessage*>(msg)->scancode()) {
+          case kKeySpace: {
+            m_scroll = false;
+            used = true;
+            break;
+          }
         }
+
+        updateByMousePos(msg, mousePosInClientBounds());
+        if (used)
+          return true;
       }
-
-      updateByMousePos(msg, mousePosInClientBounds());
-      if (used)
-        return true;
-
       break;
-    }
 
     case kMouseWheelMessage:
       if (m_document) {
@@ -2412,8 +2400,8 @@ void Timeline::drawLayer(ui::Graphics* g, const int layerIdx)
     int s = ui::guiscale();
     g->fillRect(is_active ? skinTheme()->colors.timelineClickedText() :
                             skinTheme()->colors.timelineNormalText(),
-                gfx::Rect(bounds.x + 4 * s,
-                          bounds.y + bounds.h - 2 * s,
+                gfx::Rect(textBounds.x + 4 * s,
+                          textBounds.y + textBounds.h - 2 * s,
                           font()->textLength(layer->name().c_str()),
                           s));
   }
@@ -2421,8 +2409,8 @@ void Timeline::drawLayer(ui::Graphics* g, const int layerIdx)
     int s = ui::guiscale();
     g->fillRect(is_active ? skinTheme()->colors.timelineClickedText() :
                             skinTheme()->colors.timelineNormalText(),
-                gfx::Rect(bounds.x + 4 * s,
-                          bounds.y + bounds.h / 2,
+                gfx::Rect(textBounds.x + 4 * s,
+                          textBounds.y + textBounds.h / 2,
                           font()->textLength(layer->name().c_str()),
                           s));
   }
@@ -2526,7 +2514,7 @@ void Timeline::drawCel(ui::Graphics* g,
 
     if (!thumb_bounds.isEmpty()) {
       if (os::SurfaceRef surface =
-            thumb::get_cel_thumbnail(cel, m_scaleUpToFit, thumb_bounds.size())) {
+            thumb::get_cel_thumbnail(g->display(), cel, m_scaleUpToFit, thumb_bounds.size())) {
         const int t = std::clamp(thumb_bounds.w / 8, 4, 16);
         draw_checkered_grid(g, thumb_bounds, gfx::Size(t, t), docPref());
 
@@ -2618,7 +2606,8 @@ void Timeline::drawCelOverlay(ui::Graphics* g)
     return;
 
   gfx::Rect rc = m_sprite->bounds().fitIn(gfx::Rect(m_thumbnailsOverlayBounds).shrink(1));
-  if (os::SurfaceRef surface = thumb::get_cel_thumbnail(cel, m_scaleUpToFit, rc.size())) {
+  if (os::SurfaceRef surface =
+        thumb::get_cel_thumbnail(g->display(), cel, m_scaleUpToFit, rc.size())) {
     draw_checkered_grid(g, rc, gfx::Size(8, 8) * ui::guiscale(), docPref());
 
     g->drawRgbaSurface(surface.get(),
@@ -2885,7 +2874,8 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
   switch (m_dropRange.type()) {
     case Range::kCels: {
       gfx::Rect outlineBounds(dropBounds);
-      outlineBounds.enlarge(outlineWidth());
+      const int s = outlineWidth();
+      outlineBounds.enlarge(gfx::Border(s - guiscale(), s - guiscale(), s, s));
       info.styleFlags = ui::Style::Layer::kFocus;
       theme()->paintWidgetPart(g, styles.timelineRangeOutline(), outlineBounds, info);
 
@@ -4321,6 +4311,12 @@ void Timeline::clearAndInvalidateRange()
   }
 }
 
+void Timeline::refresh()
+{
+  regenerateRows();
+  invalidate();
+}
+
 app::gen::GlobalPref::Timeline& Timeline::timelinePref() const
 {
   return Preferences::instance().timeline;
@@ -4545,7 +4541,7 @@ void Timeline::onDrag(ui::DragEvent& e)
   m_range.clearRange();
   setHot(hitTest(nullptr, e.position()));
   switch (m_hot.part) {
-    case PART_NOTHING:             invalidate();
+    case PART_NOTHING:             invalidate(); [[fallthrough]];
     case PART_ROW:
     case PART_ROW_EYE_ICON:
     case PART_ROW_CONTINUOUS_ICON:
@@ -4576,7 +4572,7 @@ void Timeline::onDrop(ui::DragEvent& e)
 
   // Determine at which frame and layer the content was dropped on.
   frame_t frame = m_frame;
-  layer_t layerIndex = getLayerIndex(m_layer);
+  layer_t layerIndex = m_sprite->root()->getLayerIndex(m_layer);
   InsertionPoint insert = InsertionPoint::BeforeLayer;
   DroppedOn droppedOn = DroppedOn::Unspecified;
   TRACE("m_dropRange.type() %d\n", m_dropRange.type());
@@ -4602,7 +4598,7 @@ void Timeline::onDrop(ui::DragEvent& e)
       break;
     case Range::kLayers:
       droppedOn = DroppedOn::Layer;
-      if (m_dropTarget.vhit != DropTarget::VeryBottom) {
+      if (m_dropTarget.vhit != DropTarget::VeryBottom && !m_dropRange.selectedLayers().empty()) {
         auto* selectedLayer = *m_dropRange.selectedLayers().begin();
         layerIndex = getLayerIndex(selectedLayer);
       }
@@ -4621,25 +4617,35 @@ void Timeline::onDrop(ui::DragEvent& e)
     auto surface = e.getImage();
 
     execute_from_ui_thread([=] {
-      std::string txmsg;
-      std::unique_ptr<docapi::DocProvider> docProvider = nullptr;
-      if (droppedImage) {
-        txmsg = "Dropped image on timeline";
-        doc::ImageRef image = nullptr;
-        convert_surface_to_image(surface.get(), 0, 0, surface->width(), surface->height(), image);
-        docProvider = std::make_unique<DocProviderFromImage>(image);
-      }
-      else {
-        txmsg = "Dropped paths on timeline";
-        docProvider = std::make_unique<DocProviderFromPaths>(m_document->context(), paths);
-      }
+      try {
+        std::string txmsg;
+        std::unique_ptr<docapi::DocProvider> docProvider = nullptr;
+        if (droppedImage) {
+          if (!surface)
+            throw std::runtime_error("Invalid format");
 
-      Tx tx(m_document, txmsg);
-      DocApi docApi(m_document, tx);
-      docApi.dropDocumentsOnTimeline(m_document, frame, layerIndex, insert, droppedOn, *docProvider);
-      tx.commit();
-      m_document->notifyGeneralUpdate();
+          txmsg = "Drop Image";
+          doc::ImageRef image = nullptr;
+          convert_surface_to_image(surface.get(), 0, 0, surface->width(), surface->height(), image);
+          docProvider = std::make_unique<DocProviderFromImage>(image);
+        }
+        else {
+          txmsg = "Drop File";
+          docProvider = std::make_unique<DocProviderFromPaths>(m_document->context(), paths);
+        }
+
+        Tx tx(m_document, txmsg);
+        DocApi docApi(m_document, tx);
+        docApi
+          .dropDocumentsOnTimeline(m_document, frame, layerIndex, insert, droppedOn, *docProvider);
+        tx.commit();
+        m_document->notifyGeneralUpdate();
+      }
+      catch (const std::exception& e) {
+        Console::showException(e);
+      }
     });
+
     e.handled(true);
   }
 

@@ -24,6 +24,7 @@ public:
   TimelineCommand();
 
 protected:
+  bool onEnabled(Context* context) override;
   bool onNeedsParams() const override { return true; }
   void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
@@ -34,11 +35,16 @@ protected:
   bool m_switch;
 };
 
-TimelineCommand::TimelineCommand() : Command(CommandId::Timeline(), CmdUIOnlyFlag)
+TimelineCommand::TimelineCommand() : Command(CommandId::Timeline())
 {
   m_open = true;
   m_close = false;
   m_switch = false;
+}
+
+bool TimelineCommand::onEnabled(Context* context)
+{
+  return context->isUIAvailable();
 }
 
 void TimelineCommand::onLoadParams(const Params& params)

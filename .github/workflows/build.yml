@@ -3,6 +3,7 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -28,7 +29,8 @@ jobs:
         sudo apt-get update -qq
         sudo apt-get install -y \
           libpixman-1-dev libfreetype6-dev libharfbuzz-dev zlib1g-dev \
-          libx11-dev libxcursor-dev libxi-dev libgl1-mesa-dev libfontconfig1-dev
+          libx11-dev libxcursor-dev libxi-dev libxrandr-dev libgl1-mesa-dev \
+          libfontconfig1-dev
     - name: Install Skia
       if: ${{ matrix.ui == 'gui' }}
       shell: bash
@@ -79,7 +81,7 @@ jobs:
 
         cmake -S . -B build -G Ninja \
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-          -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 \
+          -DCMAKE_OSX_DEPLOYMENT_TARGET=10.14 \
           -DENABLE_TESTS=ON \
           -DENABLE_SCRIPTING=$enable_scripting \
           -DENABLE_CCACHE=$enable_ccache \

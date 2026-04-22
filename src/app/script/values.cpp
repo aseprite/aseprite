@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -34,7 +34,6 @@ namespace app { namespace script {
 template<>
 void push_value_to_lua(lua_State* L, const std::nullptr_t&)
 {
-  TRACEARGS("push_value_to_lua nullptr_t");
   lua_pushnil(L);
 }
 

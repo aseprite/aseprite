@@ -359,6 +359,11 @@ void register_selection_class(lua_State* L)
   REG_CLASS_PROPERTIES(L, Selection);
 }
 
+void push_standalone_selection(lua_State* L, Mask* mask)
+{
+  push_new<SelectionObj>(L, mask, nullptr);
+}
+
 void push_sprite_selection(lua_State* L, Sprite* sprite)
 {
   push_new<SelectionObj>(L, nullptr, sprite);

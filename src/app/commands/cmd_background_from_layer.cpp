@@ -15,7 +15,6 @@
 #include "app/modules/gui.h"
 #include "app/tx.h"
 #include "doc/layer.h"
-#include "doc/sprite.h"
 
 namespace app {
 
@@ -28,8 +27,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-BackgroundFromLayerCommand::BackgroundFromLayerCommand()
-  : Command(CommandId::BackgroundFromLayer(), CmdRecordableFlag)
+BackgroundFromLayerCommand::BackgroundFromLayerCommand() : Command(CommandId::BackgroundFromLayer())
 {
 }
 

@@ -140,6 +140,8 @@ struct IndexedTraits {
   static inline bool same_color(const pixel_t a, const pixel_t b) { return a == b; }
 };
 
+#if DOC_USE_BITMAP_AS_1BPP
+
 struct BitmapTraits {
   static const ColorMode color_mode = ColorMode::BITMAP;
   static const PixelFormat pixel_format = IMAGE_BITMAP;
@@ -168,6 +170,47 @@ struct BitmapTraits {
 
   static inline bool same_color(const pixel_t a, const pixel_t b) { return a == b; }
 };
+
+#else // !DOC_USE_BITMAP_AS_1BPP
+
+struct BitmapTraits {
+  static const ColorMode color_mode = ColorMode::BITMAP;
+  static const PixelFormat pixel_format = IMAGE_BITMAP;
+
+  enum {
+    bits_per_pixel = 8,
+    bytes_per_pixel = 1,
+    pixels_per_byte = 1,
+    channels = 1,
+    has_alpha = false,
+  };
+
+  typedef uint8_t pixel_t;
+  typedef pixel_t* address_t;
+  typedef const pixel_t* const_address_t;
+
+  static const pixel_t min_value = 0x00;
+  static const pixel_t max_value = 0xff;
+
+  static inline int width_bytes(int pixels_per_row) { return bytes_per_pixel * pixels_per_row; }
+
+  static inline int rowstride_bytes(int pixels_per_row)
+  {
+    return doc_align_size(width_bytes(pixels_per_row));
+  }
+
+  static inline BlendFunc get_blender(BlendMode blend_mode, bool newBlend)
+  {
+    return get_indexed_blender(blend_mode, newBlend);
+  }
+
+  static inline bool same_color(const pixel_t a, const pixel_t b)
+  {
+    return (a == 0 && b == 0) || (a != 0 && b != 0);
+  }
+};
+
+#endif // !DOC_USE_BITMAP_AS_1BPP
 
 struct TilemapTraits {
   static const ColorMode color_mode = ColorMode::TILEMAP;

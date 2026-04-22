@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -90,10 +90,9 @@ SliceWindow::SliceWindow(const doc::Sprite* sprite,
       entry->Change.connect([this, entry, mod] { onModifyField(entry, mod); });
     }
 
-    ui::Entry* userDataEntry = m_userDataView.entry();
-    userDataEntry->setSuffix("*");
-    userDataEntry->Change.connect(
-      [this, userDataEntry] { onModifyField(userDataEntry, kUserData); });
+    ui::TextEdit* userDataEntry = m_userDataView.textEdit();
+    // userDataEntry->setSuffix("*");
+    userDataEntry->Change.connect([this] { onModifyField(nullptr, kUserData); });
 
     ColorButton* colorButton = m_userDataView.color();
     colorButton->Click.connect([this] { onPossibleColorChange(); });
@@ -181,8 +180,7 @@ void SliceWindow::onPivotChange()
 void SliceWindow::onToggleUserData()
 {
   m_userDataView.toggleVisibility();
-  remapWindow();
-  manager()->invalidate();
+  expandWindow(gfx::Size(bounds().w, sizeHint().h));
 }
 
 void SliceWindow::onModifyField(ui::Entry* entry, const Mods mods)

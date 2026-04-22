@@ -156,7 +156,7 @@ void FilterWindow::apply()
   stopPreview();
 
   // Apply the filter in background
-  m_filterMgr->startWorker();
+  m_filterMgr->startWorker(true);
 }
 
 void FilterWindow::onApply()

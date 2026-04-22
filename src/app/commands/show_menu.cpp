@@ -33,8 +33,7 @@ protected:
   void openSubmenuById(Menu* menu, const std::string& id);
 };
 
-ShowMenuCommand::ShowMenuCommand()
-  : CommandWithNewParams<ShowMenuParams>(CommandId::ShowMenu(), CmdUIOnlyFlag)
+ShowMenuCommand::ShowMenuCommand() : CommandWithNewParams<ShowMenuParams>(CommandId::ShowMenu())
 {
 }
 

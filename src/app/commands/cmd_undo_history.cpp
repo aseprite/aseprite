@@ -21,6 +21,7 @@
 #include "app/doc_undo.h"
 #include "app/doc_undo_observer.h"
 #include "app/docs_observer.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/site.h"
@@ -29,8 +30,6 @@
 #include "base/mem_utils.h"
 #include "fmt/format.h"
 #include "text/font_metrics.h"
-#include "ui/init_theme_event.h"
-#include "ui/listitem.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
 #include "ui/scale.h"
@@ -292,7 +291,7 @@ public:
                    base::get_pretty_memory_size(static_cast<Cmd*>(state->cmd())->memSize())
 #endif
                  :
-                 std::string("Initial State"));
+                 Strings::undo_history_initial_state());
 
       if ((g->getClipBounds() & itemBounds).isEmpty())
         return;
@@ -496,13 +495,19 @@ public:
   UndoHistoryCommand();
 
 protected:
+  bool onEnabled(Context* context) override;
   void onExecute(Context* ctx) override;
 };
 
 static UndoHistoryWindow* g_window = NULL;
 
-UndoHistoryCommand::UndoHistoryCommand() : Command(CommandId::UndoHistory(), CmdUIOnlyFlag)
+UndoHistoryCommand::UndoHistoryCommand() : Command(CommandId::UndoHistory())
 {
+}
+
+bool UndoHistoryCommand::onEnabled(Context* context)
+{
+  return context->isUIAvailable();
 }
 
 void UndoHistoryCommand::onExecute(Context* ctx)

@@ -26,6 +26,7 @@
 #include "app/script/security.h"
 #include "app/site.h"
 #include "app/tx.h"
+#include "app/ui/editor/scoped_tool_loop_fix.h"
 #include "app/util/autocrop.h"
 #include "app/util/resize_image.h"
 #include "app/util/shader_helpers.h"
@@ -362,6 +363,8 @@ int Image_drawSprite(lua_State* L)
 
   ASSERT(dst);
   ASSERT(sprite);
+
+  ScopedToolLoopFix fix(sprite);
 
   if (auto cel = obj->cel(L)) {
     Tx tx(cel->sprite());

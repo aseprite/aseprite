@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -151,12 +151,12 @@ private:
       os::Paint paint;
       paint.color(gfx::rgba(0, 0, 0, 0));
       paint.style(os::Paint::Fill);
-      surface->drawRect(gfx::Rect(0, 0, surface->width(), surface->height()), paint);
+      surface->drawRect(surface->bounds(), paint);
     }
 
     ui::Display* display = this->Base::display();
     {
-      ui::Graphics g(display, surface, 0, 0);
+      ui::Graphics g(surface);
       g.setFont(this->font());
 
       // Draw this widget on the UILayer surface

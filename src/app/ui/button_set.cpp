@@ -124,6 +124,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
 
       if (static_cast<MouseMessage*>(msg)->left() && !buttonSet()->m_triggerOnMouseUp) {
         onClick();
+        return true;
       }
       break;
 
@@ -136,11 +137,14 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
         invalidate();
 
         if (static_cast<MouseMessage*>(msg)->left()) {
-          if (buttonSet()->m_triggerOnMouseUp)
+          if (buttonSet()->m_triggerOnMouseUp) {
             onClick();
+            return true;
+          }
         }
         else if (static_cast<MouseMessage*>(msg)->right()) {
           onRightClick();
+          return true;
         }
       }
       break;

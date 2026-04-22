@@ -15,7 +15,6 @@
 #include "app/context_access.h"
 #include "app/tx.h"
 #include "doc/palette.h"
-#include "doc/sprite.h"
 
 #include "palette_size.xml.h"
 
@@ -33,17 +32,21 @@ protected:
   void onExecute(Context* context) override;
 
 private:
-  int m_size;
+  int m_size = 0;
+  bool m_ui = true;
 };
 
-PaletteSizeCommand::PaletteSizeCommand() : Command(CommandId::PaletteSize(), CmdRecordableFlag)
+PaletteSizeCommand::PaletteSizeCommand() : Command(CommandId::PaletteSize())
 {
-  m_size = 0;
 }
 
 void PaletteSizeCommand::onLoadParams(const Params& params)
 {
   m_size = params.get_as<int>("size");
+  if (params.has_param("ui"))
+    m_ui = params.get_as<bool>("ui");
+  else
+    m_ui = true;
 }
 
 bool PaletteSizeCommand::onEnabled(Context* context)
@@ -59,7 +62,7 @@ void PaletteSizeCommand::onExecute(Context* context)
   Palette palette(*reader.palette());
   int ncolors = (m_size != 0 ? m_size : palette.size());
 
-  if (m_size == 0 && context->isUIAvailable()) {
+  if (m_size == 0 && m_ui && context->isUIAvailable()) {
     app::gen::PaletteSize window;
     window.colors()->setTextf("%d", ncolors);
     window.openWindowInForeground();

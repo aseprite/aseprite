@@ -81,7 +81,7 @@ public:
 
   ~ConsoleWindow() { TRACE_CON("CON: ~ConsoleWindow this=", this); }
 
-  void addMessage(const std::string& msg)
+  void addMessage(std::string msg)
   {
     if (!m_hasText) {
       m_hasText = true;
@@ -92,6 +92,17 @@ public:
     gfx::Size visible = m_view.visibleSize();
     gfx::Point pt = m_view.viewScroll();
     const bool autoScroll = (pt.y >= maxSize.h - visible.h);
+
+    // Escape characters we can't show properly
+    for (size_t i = 0; i < msg.size(); i++) {
+      switch (msg[i]) {
+        case '\a':
+        case '\b':
+        case '\r':
+        case '\t':
+        case '\v': msg[i] = ' ';
+      }
+    }
 
     m_textbox.setText(m_textbox.text() + msg);
 
@@ -258,6 +269,8 @@ void Console::printf(const char* format, ...)
 
   // Update the textbox
   m_console->addMessage(msg);
+  m_console->invalidate();
+  m_console->flushRedraw();
 }
 
 // static
@@ -289,7 +302,7 @@ void Console::showException(const std::exception& e)
 // static
 void Console::notifyNewDisplayConfiguration()
 {
-  if (m_console)
+  if (m_console && !m_console->hasConsoleText())
     m_console->centerConsole();
 }
 

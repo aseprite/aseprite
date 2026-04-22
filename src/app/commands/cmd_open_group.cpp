@@ -32,7 +32,7 @@ protected:
   // std::string onGetFriendlyName() const override;
 };
 
-OpenGroupCommand::OpenGroupCommand() : Command(CommandId::OpenGroup(), CmdRecordableFlag)
+OpenGroupCommand::OpenGroupCommand() : Command(CommandId::OpenGroup())
 {
 }
 

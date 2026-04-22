@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,6 +22,7 @@
 #include "doc/object_ids.h"
 #include "doc/pixel_format.h"
 #include "doc/tile.h"
+#include "doc/user_data.h"
 #include "gfx/fwd.h"
 
 #include <cstdio>
@@ -169,6 +170,7 @@ void push_sprite_selection(lua_State* L, doc::Sprite* sprite);
 void push_sprite_slices(lua_State* L, doc::Sprite* sprite);
 void push_sprite_tags(lua_State* L, doc::Sprite* sprite);
 void push_sprites(lua_State* L);
+void push_standalone_selection(lua_State* L, doc::Mask* mask);
 void push_tile(lua_State* L, const doc::Tileset* tileset, doc::tile_index ti);
 void push_tile_properties(lua_State* L,
                           const doc::Tileset* tileset,
@@ -199,6 +201,7 @@ doc::Mask* get_mask_from_arg(lua_State* L, int index);
 app::tools::Tool* get_tool_from_arg(lua_State* L, int index);
 doc::BrushRef get_brush_from_arg(lua_State* L, int index);
 doc::Tileset* get_tile_index_from_arg(lua_State* L, int index, doc::tile_index& ts);
+doc::UserData::Properties* may_get_properties(lua_State* L, int index);
 
 // Used by App.open(), Sprite{ fromFile }, and Image{ fromFile }
 enum class LoadSpriteFromFileParam { FullAniAsSprite, OneFrameAsSprite, OneFrameAsImage };

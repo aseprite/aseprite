@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -165,6 +165,16 @@ bool DrawingState::onMouseDown(Editor* editor, MouseMessage* msg)
   // line with the background color.
   bool recreateLoop = false;
   if (m_type == DrawingType::LineFreehand && !m_mousePressedReceived) {
+    // The Shift+a custom mouse button could start a drag action
+    // (e.g. Shift+X1 button), here we check if this is the case.
+    if (auto dragState = handleDragActionsFromMessage(editor, msg)) {
+      // Cancel the whole tool loop for the drag action.
+      m_toolLoopManager->cancel();
+      destroyLoopIfCanceled(editor);
+      editor->setState(dragState);
+      return true;
+    }
+
     recreateLoop = true;
   }
 
@@ -219,6 +229,8 @@ bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
     if (m_toolLoopManager->releaseButton(m_lastPointer))
       return true;
   }
+  if (m_toolLoop->isSelectionToolLoop())
+    m_toolLoop->clearSelectionToolMask(true);
 
   destroyLoop(editor);
 
@@ -403,6 +415,9 @@ void DrawingState::destroyLoopIfCanceled(Editor* editor)
 {
   // Cancel drawing loop
   if (m_toolLoopManager->isCanceled()) {
+    if (m_toolLoop->isSelectionToolLoop())
+      m_toolLoop->clearSelectionToolMask(true);
+
     destroyLoop(editor);
 
     // Change to standby state
@@ -423,6 +438,11 @@ void DrawingState::destroyLoop(Editor* editor)
   m_toolLoop.reset(nullptr);
 
   app_rebuild_documents_tabs();
+}
+
+ExpandCelCanvas* DrawingState::expandCelCanvas() const
+{
+  return m_toolLoop->expandCelCanvas();
 }
 
 } // namespace app

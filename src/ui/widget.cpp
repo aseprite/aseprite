@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -936,6 +936,10 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
     if (p) {
       region &= Region(p->bounds());
     }
+    // Intersect with window bounds
+    if (this->window()) {
+      region &= Region(this->window()->bounds());
+    }
   }
 
   // Limit to the displayable area
@@ -1387,7 +1391,8 @@ GraphicsPtr Widget::getGraphics(const gfx::Rect& clip)
   // In case of double-buffering, we need to create the temporary
   // buffer only if the default surface is the screen.
   if (isDoubleBuffered() && dstSurface->isDirectToScreen()) {
-    os::SurfaceRef surface = os::System::instance()->makeSurface(clip.w, clip.h);
+    os::SurfaceRef surface =
+      os::System::instance()->makeSurface(clip.w, clip.h, dstSurface->colorSpace());
     graphics.reset(new Graphics(display, surface, -clip.x, -clip.y),
                    DeleteGraphicsAndSurface(clip, surface, dstSurface));
   }
@@ -1594,6 +1599,10 @@ void Widget::processMnemonicFromText(const int escapeChar, const bool requireMod
       if (!chr) {
         break; // Ill-formed string (it ends with escape character)
       }
+      if (std::isspace(chr)) {
+        // Avoid mnemonics for space characters.
+        newText.push_back(escapeChar);
+      }
       else if (chr != escapeChar) {
         setMnemonic(chr, requireModifiers);
       }
@@ -1650,8 +1659,15 @@ bool Widget::onProcessMessage(Message* msg)
       break;
     }
 
-    case kMouseDownMessage:
     case kMouseUpMessage:
+      // In a kMouseUpMessage without button, the capture was lost by
+      // force because the user changed to another app.
+      if (hasCapture() && static_cast<const MouseMessage*>(msg)->button() == kButtonNone)
+        releaseMouse();
+
+      [[fallthrough]];
+
+    case kMouseDownMessage:
     case kMouseMoveMessage:
     case kMouseWheelMessage:
       // Propagate the message to the parent.

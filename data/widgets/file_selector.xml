@@ -23,13 +23,14 @@
       <combobox id="location" expansive="true" />
       <button text="" id="refresh_button" style="refresh_button"
                 tooltip="@.refresh_button_tooltip" tooltip_dir="bottom" />
+      <check id="show_hidden_check" text="@.show_hidden" />
     </box>
     <vbox id="file_view_placeholder" expansive="true" />
     <grid columns="2">
-      <label text="@.file_name" />
+      <label text="@.file_name" for="file_name" />
       <box id="file_name_placeholder" cell_align="horizontal" />
 
-      <label text="@.file_type" />
+      <label text="@.file_type" for="file_type" />
       <hbox cell_align="horizontal">
         <combobox id="file_type" minwidth="70" />
         <boxfiller />

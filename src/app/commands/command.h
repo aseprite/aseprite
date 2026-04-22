@@ -20,14 +20,9 @@ namespace app {
 class Context;
 class Params;
 
-enum CommandFlags {
-  CmdUIOnlyFlag = 0x00000001,
-  CmdRecordableFlag = 0x00000002,
-};
-
 class Command {
 public:
-  Command(const char* id, CommandFlags flags);
+  Command(const char* id);
   virtual ~Command();
 
   const std::string& id() const { return m_id; }
@@ -41,6 +36,7 @@ public:
   // Returns true if the command must be displayed in the Keyboard
   // Shortcuts list.
   virtual bool isListed(const Params& params) const { return true; }
+  virtual bool isPlugin() { return false; }
 
 protected:
   virtual bool onNeedsParams() const;
@@ -55,7 +51,6 @@ private:
   void execute(Context* context);
 
   std::string m_id;
-  CommandFlags m_flags;
 };
 
 } // namespace app

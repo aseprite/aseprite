@@ -21,9 +21,7 @@
 #include "app/console.h"
 #include "app/context_access.h"
 #include "app/doc_api.h"
-#include "app/find_widget.h"
 #include "app/i18n/strings.h"
-#include "app/load_widget.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/restore_visible_layers.h"
@@ -48,7 +46,6 @@
 #include "new_layer.xml.h"
 
 #include <algorithm>
-#include <cstdlib>
 #include <cstring>
 #include <string>
 
@@ -99,7 +96,7 @@ private:
   Place m_place;
 };
 
-NewLayerCommand::NewLayerCommand() : CommandWithNewParams(CommandId::NewLayer(), CmdRecordableFlag)
+NewLayerCommand::NewLayerCommand() : CommandWithNewParams(CommandId::NewLayer())
 {
 }
 
@@ -230,6 +227,7 @@ void NewLayerCommand::onExecute(Context* context)
     if (isTilemap) {
       tilesetSelector = new TilesetSelector(sprite, tilesetInfo);
       window.tilesetOptions()->addChild(tilesetSelector);
+      window.tilesetLabel()->setBuddy(tilesetSelector->tilesets());
     }
 
     window.openWindowInForeground();
@@ -267,16 +265,8 @@ void NewLayerCommand::onExecute(Context* context)
     bool afterBackground = false;
 
     switch (m_type) {
-      case Type::Layer:
-
-        if (m_place == Place::BeforeActiveLayer) {
-          layer = api.newLayer(parent, name);
-          api.restackLayerBefore(layer, parent, activeLayer);
-        }
-        else
-          layer = api.newLayerAfter(parent, name, activeLayer);
-        break;
-      case Type::Group: layer = api.newGroupAfter(parent, name, activeLayer); break;
+      case Type::Layer: layer = api.newLayer(parent, name); break;
+      case Type::Group: layer = api.newGroup(parent, name); break;
       case Type::ReferenceLayer:
         layer = api.newLayer(parent, name);
         if (layer)
@@ -310,6 +300,15 @@ void NewLayerCommand::onExecute(Context* context)
       return;
 
     ASSERT(layer->parent());
+
+    // Reorder the resulting layer.
+    switch (m_place) {
+      case Place::AfterActiveLayer:  api.restackLayerAfter(layer, parent, activeLayer); break;
+      case Place::BeforeActiveLayer: api.restackLayerBefore(layer, parent, activeLayer); break;
+      case Place::Top:
+        api.restackLayerAfter(layer, sprite->root(), sprite->root()->lastLayer());
+        break;
+    }
 
     // Put new layer as an overlay of the background or in the first
     // layer in case the sprite is transparent.

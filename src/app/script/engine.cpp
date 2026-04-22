@@ -452,6 +452,7 @@ Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(fa
   lua_setglobal(L, "FlipType");
   setfield_integer(L, "HORIZONTAL", doc::algorithm::FlipType::FlipHorizontal);
   setfield_integer(L, "VERTICAL", doc::algorithm::FlipType::FlipVertical);
+  setfield_integer(L, "DIAGONAL", doc::algorithm::FlipType::FlipDiagonal);
   lua_pop(L, 1);
 
   lua_newtable(L);

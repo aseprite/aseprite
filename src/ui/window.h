@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -59,6 +59,7 @@ public:
 
   bool isTopLevel();
   bool isForeground() const { return m_isForeground; }
+  bool isAutoRemap() const { return m_isAutoRemap; }
   bool isDesktop() const { return m_isDesktop; }
   bool isOnTop() const { return m_isOnTop; }
   bool isWantFocus() const { return m_isWantFocus; }

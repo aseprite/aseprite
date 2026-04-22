@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -50,10 +50,8 @@ TaskWidget::TaskWidget(const Type type, base::task::func_t&& func)
     }
     else if (m_progressBar.parent()) {
       float v = m_task.progress();
-      if (v > 0.0f) {
-        TRACEARGS("progressBar setValue", int(std::clamp(v * 100.0f, 0.0f, 100.0f)));
+      if (v > 0.0f)
         m_progressBar.setValue(int(std::clamp(v * 100.0f, 0.0f, 100.0f)));
-      }
     }
   });
   m_monitorTimer.start();

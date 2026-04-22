@@ -25,6 +25,7 @@
 namespace ui {
 
 class Display;
+class Shortcut;
 class Timer;
 class Widget;
 
@@ -68,6 +69,8 @@ public:
   Widget* commonAncestor() { return m_commonAncestor; }
   void setCommonAncestor(Widget* widget) { m_commonAncestor = widget; }
 
+  virtual Shortcut shortcut() const;
+
 private:
   bool hasFlag(const Flags flag) const { return (m_flags & flag) == flag; }
   void setFlag(const Flags flag, const bool state)
@@ -98,18 +101,31 @@ private:
 
 class FocusMessage : public Message {
 public:
-  FocusMessage(MessageType type, Widget* oldFocus, Widget* newFocus)
+  enum class Source {
+    Keyboard,
+    Mouse,
+    // Focused by window opening, either from being the first child, or the focus magnet
+    Window,
+    // Focused by the label buddy
+    Buddy,
+    // Any other type of focus
+    Other
+  };
+  FocusMessage(MessageType type, Widget* oldFocus, Widget* newFocus, Source source = Source::Other)
     : Message(type)
     , m_oldFocus(oldFocus)
     , m_newFocus(newFocus)
+    , m_source(source)
   {
   }
   Widget* oldFocus() { return m_oldFocus; }
   Widget* newFocus() { return m_newFocus; }
+  Source source() const { return m_source; }
 
 private:
   Widget* m_oldFocus;
   Widget* m_newFocus;
+  Source m_source;
 };
 
 class KeyMessage : public Message {
@@ -125,6 +141,8 @@ public:
   int repeat() const { return m_repeat; }
   bool isDeadKey() const { return m_isDead; }
   void setDeadKey(bool state) { m_isDead = state; }
+
+  Shortcut shortcut() const override;
 
 private:
   KeyScancode m_scancode;
@@ -199,6 +217,8 @@ public:
 
   // Absolute position of this message on the screen.
   gfx::Point screenPosition() const;
+
+  Shortcut shortcut() const override;
 
 private:
   PointerType m_pointerType;

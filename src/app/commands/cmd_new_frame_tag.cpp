@@ -9,7 +9,6 @@
   #include "config.h"
 #endif
 
-#include "app/app.h"
 #include "app/cmd/add_tag.h"
 #include "app/commands/command.h"
 #include "app/context.h"
@@ -17,8 +16,6 @@
 #include "app/tx.h"
 #include "app/ui/tag_window.h"
 #include "doc/tag.h"
-
-#include <stdexcept>
 
 namespace app {
 
@@ -33,14 +30,14 @@ protected:
   void onExecute(Context* context) override;
 };
 
-NewFrameTagCommand::NewFrameTagCommand() : Command(CommandId::NewFrameTag(), CmdRecordableFlag)
+NewFrameTagCommand::NewFrameTagCommand() : Command(CommandId::NewFrameTag())
 {
 }
 
 bool NewFrameTagCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasActiveSprite);
+  return context->isUIAvailable() && context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                                                         ContextFlags::HasActiveSprite);
 }
 
 void NewFrameTagCommand::onExecute(Context* context)

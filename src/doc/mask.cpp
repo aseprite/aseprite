@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -46,24 +46,16 @@ void for_each_mask_pixel(Mask& a, const Mask& b, Func f)
 
 Mask::Mask() : Object(ObjectType::Mask)
 {
-  initialize();
 }
 
 Mask::Mask(const Mask& mask) : Object(mask)
 {
-  initialize();
   copyFrom(&mask);
 }
 
 Mask::~Mask()
 {
-  ASSERT(m_freeze_count == 0);
-}
-
-void Mask::initialize()
-{
-  m_freeze_count = 0;
-  m_bounds = gfx::Rect(0, 0, 0, 0);
+  ASSERT(m_freezes == 0);
 }
 
 int Mask::getMemSize() const
@@ -78,17 +70,17 @@ void Mask::setName(const char* name)
 
 void Mask::freeze()
 {
-  ASSERT(m_freeze_count >= 0);
-  m_freeze_count++;
+  ASSERT(m_freezes >= 0);
+  m_freezes++;
 }
 
 void Mask::unfreeze()
 {
-  ASSERT(m_freeze_count > 0);
-  m_freeze_count--;
+  ASSERT(m_freezes > 0);
+  m_freezes--;
 
   // Shrink just in case
-  if (m_freeze_count == 0)
+  if (m_freezes == 0)
     shrink();
 }
 
@@ -110,7 +102,7 @@ bool Mask::isRectangular() const
 
 void Mask::copyFrom(const Mask* sourceMask)
 {
-  ASSERT(m_freeze_count == 0);
+  ASSERT(m_freezes == 0);
 
   clear();
   setName(sourceMask->name().c_str());
@@ -245,10 +237,10 @@ void Mask::intersect(const doc::Mask& mask)
 
 void Mask::add(const gfx::Rect& bounds)
 {
-  if (m_freeze_count == 0)
+  if (m_freezes == 0)
     reserve(bounds);
 
-  // m_bitmap can be nullptr if we have m_freeze_count > 0
+  // m_bitmap can be nullptr if we have m_freezes > 0
   if (!m_bitmap)
     return;
 
@@ -490,7 +482,7 @@ void Mask::reserve(const gfx::Rect& bounds)
 void Mask::shrink()
 {
   // If the mask is frozen we avoid the shrinking
-  if (m_freeze_count > 0)
+  if (m_freezes > 0)
     return;
 
 #define SHRINK_SIDE(u_begin, u_op, u_final, u_add, v_begin, v_op, v_final, v_add, U, V, var)       \

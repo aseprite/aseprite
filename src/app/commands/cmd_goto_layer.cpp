@@ -24,11 +24,7 @@ namespace app {
 
 class GotoLayerCommand : public Command {
 public:
-  GotoLayerCommand(int offset, const char* id, CommandFlags flags)
-    : Command(id, flags)
-    , m_offset(offset)
-  {
-  }
+  GotoLayerCommand(int offset, const char* id) : Command(id), m_offset(offset) {}
 
 protected:
   bool onEnabled(Context* context) override
@@ -88,12 +84,12 @@ private:
 
 class GotoPreviousLayerCommand : public GotoLayerCommand {
 public:
-  GotoPreviousLayerCommand() : GotoLayerCommand(-1, "GotoPreviousLayer", CmdUIOnlyFlag) {}
+  GotoPreviousLayerCommand() : GotoLayerCommand(-1, CommandId::GotoPreviousLayer()) {}
 };
 
 class GotoNextLayerCommand : public GotoLayerCommand {
 public:
-  GotoNextLayerCommand() : GotoLayerCommand(+1, "GotoNextLayer", CmdUIOnlyFlag) {}
+  GotoNextLayerCommand() : GotoLayerCommand(+1, CommandId::GotoNextLayer()) {}
 };
 
 Command* CommandFactory::createGotoPreviousLayerCommand()

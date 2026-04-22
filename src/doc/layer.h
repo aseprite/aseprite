@@ -10,6 +10,7 @@
 #pragma once
 
 #include "base/debug.h"
+#include "base/enum_flags.h"
 #include "base/uuid.h"
 #include "doc/blend_mode.h"
 #include "doc/cel_list.h"
@@ -52,6 +53,7 @@ enum class LayerFlags {
   // (e.g. created by undoable actions).
   StructuralFlagsMask = Background | Reference,
 };
+LAF_ENUM_FLAGS(LayerFlags);
 
 class Layer : public WithUserData {
 protected:
@@ -236,8 +238,12 @@ public:
 
   bool isBrowsable() const override { return isGroup() && isExpanded() && !m_layers.empty(); }
 
+  layer_t getLayerIndex(const Layer* layer) const;
+
 private:
   void destroyAllLayers();
+
+  layer_t getLayerIndex(const Layer* layer, layer_t& index) const;
 
   LayerList m_layers;
 };

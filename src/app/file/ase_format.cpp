@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,6 +20,7 @@
 #include "base/file_handle.h"
 #include "base/fs.h"
 #include "base/mem_utils.h"
+#include "base/scoped_value.h"
 #include "base/uuid.h"
 #include "dio/aseprite_common.h"
 #include "dio/aseprite_decoder.h"
@@ -1607,7 +1608,10 @@ static void ase_file_write_tileset_chunk(FILE* f,
   }
 }
 
-static void ase_file_write_property_value(FILE* f, const UserData::Variant& value)
+static void ase_file_write_property_value(FILE* f,
+                                          FileOp* fop,
+                                          const UserData::Variant& value,
+                                          int& depth)
 {
   switch (value.type()) {
     case USER_DATA_PROPERTY_TYPE_NULLPTR: ASSERT(false); break;
@@ -1642,10 +1646,16 @@ static void ase_file_write_property_value(FILE* f, const UserData::Variant& valu
     }
     case USER_DATA_PROPERTY_TYPE_VECTOR: {
       auto& vector = *std::get_if<UserData::Vector>(&value);
-      fputl(vector.size(), f);
-
+      size_t size = vector.size();
+      if (depth >= 128) {
+        fop->setError("Error saving more than 128 property levels in user data.\n");
+        size = 0;
+      }
       const uint16_t type = doc::all_elements_of_same_type(vector);
+      fputl(size, f);
       fputw(type, f);
+      if (size == 0)
+        return;
 
       for (const auto& elem : vector) {
         UserData::Variant v = elem;
@@ -1663,14 +1673,22 @@ static void ase_file_write_property_value(FILE* f, const UserData::Variant& valu
           v = cast_to_smaller_int_type(v, type);
         }
 
-        ase_file_write_property_value(f, v);
+        base::ScopedValue depthInc(depth, depth + 1);
+        ase_file_write_property_value(f, fop, v, depth);
       }
       break;
     }
     case USER_DATA_PROPERTY_TYPE_PROPERTIES: {
       auto& properties = *std::get_if<UserData::Properties>(&value);
-      ASSERT(properties.size() > 0);
-      fputl(properties.size(), f);
+      size_t size = properties.size();
+      ASSERT(size > 0);
+      if (depth >= 128) {
+        fop->setError("Error saving more than 128 property levels in user data.\n");
+        size = 0;
+      }
+      fputl(size, f);
+      if (size == 0)
+        return;
 
       for (const auto& property : properties) {
         const std::string& name = property.first;
@@ -1682,7 +1700,8 @@ static void ase_file_write_property_value(FILE* f, const UserData::Variant& valu
         }
         fputw(v.type(), f);
 
-        ase_file_write_property_value(f, v);
+        base::ScopedValue depthInc(depth, depth + 1);
+        ase_file_write_property_value(f, fop, v, depth);
       }
       break;
     }
@@ -1707,6 +1726,8 @@ static void ase_file_write_properties_maps(FILE* f,
   // chunk for now. (actual value is calculated after serialization
   // of all properties maps, at which point this field is overwritten)
   fputl(0, f);
+
+  int depth = 0;
 
   fputl(nmaps, f);
   for (const auto& propertiesMap : propertiesMaps) {
@@ -1733,7 +1754,7 @@ static void ase_file_write_properties_maps(FILE* f,
       // continue;
     }
     fputl(extensionId, f);
-    ase_file_write_property_value(f, properties);
+    ase_file_write_property_value(f, fop, properties, depth);
   }
   long endPos = ftell(f);
   // We can overwrite the properties maps size now

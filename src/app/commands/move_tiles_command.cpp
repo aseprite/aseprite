@@ -31,8 +31,7 @@ class MoveTilesCommand : public CommandWithNewParams<MoveTilesParams> {
 public:
   MoveTilesCommand(const bool copy)
     : CommandWithNewParams<MoveTilesParams>(
-        (copy ? CommandId::CopyTiles() : CommandId::MoveTiles()),
-        CmdRecordableFlag)
+        (copy ? CommandId::CopyTiles() : CommandId::MoveTiles()))
     , m_copy(copy)
   {
   }

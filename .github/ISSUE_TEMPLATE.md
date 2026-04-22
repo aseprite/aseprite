@@ -1,9 +1,0 @@
-Describe your bug report or feature request here
-...
-...
-...
-
-### Aseprite and System version
-
-* Aseprite version: version number, installer/portable/Steam/beta/dev/commit-hash
-* System: Windows/macOS/Linux, version, distribution

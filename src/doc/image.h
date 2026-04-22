@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2023 Igara Studio S.A.
+// Copyright (c) 2018-2024 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -12,6 +12,7 @@
 #include "doc/color.h"
 #include "doc/color_mode.h"
 #include "doc/image_buffer.h"
+#include "doc/image_iterators2.h"
 #include "doc/image_spec.h"
 #include "doc/object.h"
 #include "doc/pixel_format.h"
@@ -102,6 +103,21 @@ public:
   virtual void drawHLine(int x1, int y, int x2, color_t color) = 0;
   virtual void fillRect(int x1, int y1, int x2, int y2, color_t color) = 0;
   virtual void blendRect(int x1, int y1, int x2, int y2, color_t color, int opacity) = 0;
+
+  ReadIterator readArea() const { return ReadIterator(this, this->bounds()); }
+  WriteIterator writeArea() { return WriteIterator(this, this->bounds()); }
+
+  ReadIterator readArea(const gfx::Rect& bounds,
+                        const IteratorStart start = IteratorStart::TopLeft) const
+  {
+    return ReadIterator(this, bounds, start);
+  }
+
+  WriteIterator writeArea(const gfx::Rect& bounds,
+                          const IteratorStart start = IteratorStart::TopLeft)
+  {
+    return WriteIterator(this, bounds, start);
+  }
 
 protected:
   Image(const ImageSpec& spec);

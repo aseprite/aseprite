@@ -21,9 +21,7 @@
 #include "app/i18n/strings.h"
 #include "app/load_matrix.h"
 #include "app/modules/gui.h"
-#include "app/modules/palettes.h"
 #include "app/sprite_job.h"
-#include "app/transaction.h"
 #include "app/ui/best_fit_criteria_selector.h"
 #include "app/ui/dithering_selector.h"
 #include "app/ui/editor/editor.h"
@@ -37,13 +35,11 @@
 #include "fmt/format.h"
 #include "render/dithering.h"
 #include "render/dithering_algorithm.h"
-#include "render/ordered_dither.h"
 #include "render/quantization.h"
 #include "render/render.h"
 #include "render/task_delegate.h"
 #include "ui/button.h"
 #include "ui/listitem.h"
-#include "ui/paint_event.h"
 #include "ui/size_hint_event.h"
 
 #include "color_mode.xml.h"
@@ -524,7 +520,7 @@ private:
 };
 
 ChangePixelFormatCommand::ChangePixelFormatCommand()
-  : CommandWithNewParams(CommandId::ChangePixelFormat(), CmdUIOnlyFlag)
+  : CommandWithNewParams(CommandId::ChangePixelFormat())
 {
 }
 

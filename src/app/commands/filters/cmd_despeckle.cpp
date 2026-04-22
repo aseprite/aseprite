@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -106,8 +106,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-DespeckleCommand::DespeckleCommand()
-  : CommandWithNewParams<DespeckleParams>(CommandId::Despeckle(), CmdRecordableFlag)
+DespeckleCommand::DespeckleCommand() : CommandWithNewParams<DespeckleParams>(CommandId::Despeckle())
 {
 }
 
@@ -152,7 +151,7 @@ void DespeckleCommand::onExecute(Context* context)
     }
   }
   else {
-    filterMgr.startWorker();
+    filterMgr.startWorker(false);
   }
 }
 

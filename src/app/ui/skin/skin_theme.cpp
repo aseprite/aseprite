@@ -1233,6 +1233,8 @@ void SkinTheme::initWidget(Widget* widget)
       widget->setStyle(styles.textboxText());
       break;
 
+    case kTextEditWidget: widget->setStyle(styles.textedit()); break;
+
     case kViewWidget:
       widget->setChildSpacing(0);
       widget->setBgColor(colors.windowFace());
@@ -1294,12 +1296,55 @@ int SkinTheme::getScrollbarSize()
   return dimensions.scrollbarSize();
 }
 
-gfx::Size SkinTheme::getEntryCaretSize(Widget* widget)
+gfx::Size SkinTheme::getCaretSize(Widget* widget)
 {
+  int caretHeight;
+  if (widget->type() == kTextEditWidget) {
+    // We cannot use the height of the widget text, because it
+    // includes the line height of every single line in the widget.
+    caretHeight = widget->font()->lineHeight();
+  }
+  else {
+    caretHeight = widget->textHeight();
+  }
+
   if (widget->font()->type() == text::FontType::FreeType)
-    return gfx::Size(2 * guiscale(), widget->textHeight());
+    return gfx::Size(2 * guiscale(), caretHeight);
   else
-    return gfx::Size(2 * guiscale(), widget->textHeight() + 2 * guiscale());
+    return gfx::Size(2 * guiscale(), caretHeight + 2 * guiscale());
+}
+
+Theme::TextColors SkinTheme::getTextColors(Widget* widget)
+{
+  Theme::TextColors c;
+
+  // Default colors
+  c.text = Paint(colors.textboxText());
+  c.background = Paint(colors.textboxFace());
+  c.selectedText = Paint(colors.selectedText());
+  c.selectedBackground = Paint(colors.selected());
+
+  // Try to get colors from the widget style
+  if (ui::Style* style = widget->style()) {
+    for (auto& layer : style->layers()) {
+      switch (layer.type()) {
+        case ui::Style::Layer::Type::kBackground:
+          if (layer.flags() & ui::Style::Layer::kSelected)
+            c.selectedBackground.color(layer.color());
+          else
+            c.background.color(layer.color());
+          break;
+        case ui::Style::Layer::Type::kText:
+          if (layer.flags() & ui::Style::Layer::kSelected)
+            c.selectedText.color(layer.color());
+          else
+            c.text.color(layer.color());
+          break;
+      }
+    }
+  }
+
+  return c;
 }
 
 void SkinTheme::paintEntry(PaintEvent& ev)
@@ -1350,6 +1395,7 @@ public:
     , m_h(h)
   {
     m_widget->getEntryThemeInfo(&m_index, &m_caret, &m_state, &m_range);
+    m_suffixIndex = m_widget->text().size();
   }
 
   int index() const { return m_index; }
@@ -1368,6 +1414,11 @@ public:
     auto& colors = theme->colors;
     bg = ColorNone;
     fg = colors.text();
+
+    // Suffix text
+    if (m_index >= m_suffixIndex) {
+      fg = colors.entrySuffix();
+    }
 
     // Selected
     if ((m_index >= m_range.from) && (m_index < m_range.to)) {
@@ -1394,12 +1445,11 @@ public:
 
     if (charBounds.x2() - m_widget->bounds().x < m_widget->clientBounds().x2()) {
       if (m_bg != ColorNone) {
-        // Fill background e.g. needed for selected/highlighted
-        // regions with TTF fonts where the char is smaller than the
-        // text bounds [m_y,m_y+m_h)
-        gfx::Rect fillThisRect(m_lastX - m_widget->bounds().x, m_y, charBounds.x2() - m_lastX, m_h);
-        if (charBounds != fillThisRect)
-          m_graphics->fillRect(m_bg, fillThisRect);
+        // Fill the background here, accounts for regions with TTF fonts where the char is smaller
+        // than the text bounds [m_y,m_y+m_h)
+        m_graphics->fillRect(
+          m_bg,
+          gfx::Rect(m_lastX - m_widget->bounds().x, m_y, charBounds.x2() - m_lastX, m_h));
       }
       m_lastX = charBounds.x2();
       return true;
@@ -1433,6 +1483,7 @@ private:
   int m_lastX; // Last position used to fill the background
   int m_y, m_h;
   int m_charStartX;
+  int m_suffixIndex;
 };
 
 } // anonymous namespace
@@ -1445,47 +1496,41 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
   DrawEntryTextDelegate delegate(widget, g, bounds.origin(), widget->textHeight());
   int scroll = delegate.index();
 
-  if (!widget->text().empty()) {
-    const std::string& textString = widget->text();
-    base::utf8_decode dec(textString);
+  const std::string& fullText = widget->text() + widget->getSuffix();
+
+  // Full text to paint: widget text + suffix or placeholder
+  const std::string& paintText = fullText.empty() ? widget->placeholder() : fullText;
+
+  if (!paintText.empty()) {
+    base::utf8_decode dec(paintText);
     auto pos = dec.pos();
     for (int i = 0; i < scroll && dec.next(); ++i)
       pos = dec.pos();
 
     IntersectClip clip(g, bounds);
     if (clip) {
-      g->drawTextWithDelegate(
-        std::string(pos, textString.end()), // TODO use a string_view()
-        colors.text(),
-        ColorNone,
-        gfx::Point(bounds.x, widget->textBaseline() - widget->textBlob()->baseline()),
-        &delegate);
-    }
-  }
+      int baselineAdjustment = widget->textBaseline();
+      if (auto blob = widget->textBlob()) {
+        baselineAdjustment -= blob->baseline();
+      }
+      else {
+        text::FontMetrics metrics;
+        widget->font()->metrics(&metrics);
+        baselineAdjustment += metrics.ascent;
+      }
 
-  bounds.x += delegate.textBounds().w;
-
-  // Draw suffix if there is enough space
-  if (!widget->getSuffix().empty()) {
-    Rect sufBounds(bounds.x,
-                   bounds.y,
-                   bounds.x2() - widget->childSpacing() - bounds.x,
-                   widget->textHeight());
-    IntersectClip clip(g, sufBounds & widget->clientChildrenBounds());
-    if (clip) {
-      drawText(g,
-               widget->getSuffix().c_str(),
-               colors.entrySuffix(),
-               ColorNone,
-               widget,
-               sufBounds,
-               widget->align(),
-               0);
+      g->drawTextWithDelegate(std::string(pos, paintText.end()), // TODO use a string_view()
+                              fullText.empty() ? colors.disabled() : colors.text(),
+                              ColorNone,
+                              gfx::Point(bounds.x, baselineAdjustment),
+                              &delegate);
     }
   }
 
   // Draw caret at the end of the text
   if (!delegate.caretDrawn()) {
+    bounds.x += delegate.textBounds().w;
+
     gfx::Rect charBounds(bounds.x + widget->bounds().x,
                          bounds.y + widget->bounds().y,
                          0,
@@ -1863,7 +1908,7 @@ void SkinTheme::drawEntryCaret(ui::Graphics* g, Entry* widget, int x, int y)
 {
   gfx::Color color = colors.text();
   int textHeight = widget->textHeight();
-  gfx::Size caretSize = getEntryCaretSize(widget);
+  gfx::Size caretSize = getCaretSize(widget);
 
   for (int u = x; u < x + caretSize.w; ++u)
     g->drawVLine(color, u, y + textHeight / 2 - caretSize.h / 2, caretSize.h);

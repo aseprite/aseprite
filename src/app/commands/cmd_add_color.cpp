@@ -63,8 +63,7 @@ protected:
   std::string onGetFriendlyName() const override;
 };
 
-AddColorCommand::AddColorCommand()
-  : CommandWithNewParams<AddColorParams>(CommandId::AddColor(), CmdUIOnlyFlag)
+AddColorCommand::AddColorCommand() : CommandWithNewParams<AddColorParams>(CommandId::AddColor())
 {
 }
 

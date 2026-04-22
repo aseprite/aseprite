@@ -104,7 +104,7 @@ void ColorPicker::pickColor(const Site& site,
   switch (mode) {
     // Pick from the composed image
     case FromComposition: {
-      doc::RenderPlan plan(pref.experimental.composeGroups());
+      doc::RenderPlan plan;
       plan.addLayer(sprite->root(), site.frame());
 
       doc::CelList cels;

@@ -13,7 +13,7 @@
 namespace app {
 
 QuickCommand::QuickCommand(const char* id, std::function<void()> execute)
-  : Command(id, CmdUIOnlyFlag)
+  : Command(id)
   , m_execute(execute)
 {
 }

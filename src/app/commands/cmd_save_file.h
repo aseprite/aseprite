@@ -67,7 +67,7 @@ public:
   enum class SaveInBackground { Off, On };
   enum class ResizeOnTheFly { Off, On };
 
-  SaveFileBaseCommand(const char* id, CommandFlags flags);
+  SaveFileBaseCommand(const char* id);
 
 protected:
   void onLoadParams(const Params& params) override;

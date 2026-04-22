@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -162,7 +162,7 @@ protected:
 };
 
 ConvolutionMatrixCommand::ConvolutionMatrixCommand()
-  : CommandWithNewParams<ConvolutionMatrixParams>(CommandId::ConvolutionMatrix(), CmdRecordableFlag)
+  : CommandWithNewParams<ConvolutionMatrixParams>(CommandId::ConvolutionMatrix())
 {
 }
 
@@ -205,7 +205,7 @@ void ConvolutionMatrixCommand::onExecute(Context* context)
     }
   }
   else {
-    filterMgr.startWorker();
+    filterMgr.startWorker(false);
   }
 }
 

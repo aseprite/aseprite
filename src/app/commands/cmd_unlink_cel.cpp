@@ -19,7 +19,6 @@
 #include "app/ui/status_bar.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
-#include "doc/sprite.h"
 
 namespace app {
 
@@ -32,7 +31,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-UnlinkCelCommand::UnlinkCelCommand() : Command(CommandId::UnlinkCel(), CmdRecordableFlag)
+UnlinkCelCommand::UnlinkCelCommand() : Command(CommandId::UnlinkCel())
 {
 }
 

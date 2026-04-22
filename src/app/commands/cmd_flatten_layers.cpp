@@ -36,7 +36,7 @@ protected:
   bool m_visibleOnly;
 };
 
-FlattenLayersCommand::FlattenLayersCommand() : Command(CommandId::FlattenLayers(), CmdUIOnlyFlag)
+FlattenLayersCommand::FlattenLayersCommand() : Command(CommandId::FlattenLayers())
 {
   m_visibleOnly = false;
 }

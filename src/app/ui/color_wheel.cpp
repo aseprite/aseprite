@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +11,7 @@
 
 #include "app/ui/color_wheel.h"
 
+#include "app/color_spaces.h"
 #include "app/color_utils.h"
 #include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
@@ -358,6 +359,9 @@ void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
       int n = getHarmonies();
       int boxsize = std::min(rc.w / 10, rc.h / 10);
 
+      ui::Paint paint;
+      auto cs = get_current_color_space(g->display());
+
       for (int i = 0; i < n; ++i) {
         app::Color color = getColorInHarmony(i);
         double angle = color.getHsvHue() - 30.0;
@@ -374,9 +378,10 @@ void ColorWheel::onPaintMainArea(ui::Graphics* g, const gfx::Rect& rc)
 
         paintColorIndicator(g, pos, color.getHsvValue() < 0.5);
 
-        g->fillRect(
-          gfx::rgba(color.getRed(), color.getGreen(), color.getBlue(), 255),
-          gfx::Rect(rc.x + rc.w - (n - i) * boxsize, rc.y + rc.h - boxsize, boxsize, boxsize));
+        paint.color(gfx::rgba(color.getRed(), color.getGreen(), color.getBlue(), 255), cs.get());
+        g->drawRect(
+          gfx::Rect(rc.x + rc.w - (n - i) * boxsize, rc.y + rc.h - boxsize, boxsize, boxsize),
+          paint);
       }
     }
   }

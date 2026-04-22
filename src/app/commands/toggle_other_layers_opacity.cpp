@@ -39,8 +39,7 @@ private:
 };
 
 ToggleOtherLayersOpacityCommand::ToggleOtherLayersOpacityCommand()
-  : CommandWithNewParams<ToggleOtherLayersOpacityParams>(CommandId::ToggleOtherLayersOpacity(),
-                                                         CmdUIOnlyFlag)
+  : CommandWithNewParams<ToggleOtherLayersOpacityParams>(CommandId::ToggleOtherLayersOpacity())
 {
 }
 

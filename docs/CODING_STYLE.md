@@ -163,8 +163,9 @@ clang-format should fix the `const` position anyway.
 
 ## C++17
 
-We are using C++17 standard. Some things cannot be used because we're
-targetting macOS 10.9, some notes are added about this:
+We are using C++17 standard. Some things might not be used as we're
+targetting macOS 10.14, please add some note about its limitations if
+you find one:
 
 * Use `nullptr` instead of `NULL` macro
 * Use `auto`/`auto*` for complex types/pointers, iterators, or when
@@ -175,15 +176,6 @@ targetting macOS 10.9, some notes are added about this:
 * Use `std::shared_ptr`, `std::unique_ptr`, or `base::Ref`, but
   generally we'd prefer value semantics instead of smart pointers
 * Use `std::min`/`std::max`/`std::clamp`
-* Use `std::optional` but taking care of some limitations from macOS 10.9:
-  * Use `std::optional::has_value()` instead of `std::optional::operator bool()` ([example](https://github.com/aseprite/laf/commit/81622fcbb9e4a0edc14a02250c387bd6fa878708))
-  * Use `std::optional::operator*()` instead of `std::optional::value()` ([example](https://github.com/aseprite/aseprite/commit/4471dab289cdd45762155ce0b16472e95a7f8642))
-* Use `std::variant` but taking care of some limitations from macOS 10.9:
-  * Use `T* p = std::get_if<T>(&value)` instead of `T v = std::get<T>(value)` or
-    create an auxiliary `get_value()` using `std::get_if` function ([example](https://github.com/aseprite/aseprite/commit/dc0e57728ae2b10cd8365ff0a50263daa8fcc9ac#diff-a59e14240d83bffc2ea917d7ddd7b2762576b0e9ab49bf823ba1a89c653ff978R98))
-  * Don't use `std::visit()`, use some alternative with switch-case and the `std::variant::index()` ([example](https://github.com/aseprite/aseprite/commit/574f58375332bb80ce5572fdedb1028617786e45))
-* Use `std::any` but taking care of some limitations from macOS 10.9:
-  * Use `T* p = std::any_cast<T>(&value)` instead of `T v = std::any_cast<T>(value)` ([example](https://github.com/aseprite/aseprite/commit/c8d4c60f07df27590381ef28001a40f8f785f50e))
 * Use `static constexpr T v = ...;`
 * You can use `<atomic>`, `<thread>`, `<mutex>`, and `<condition_variable>`
 * Prefer `using T = ...;` instead of `typedef ... T`

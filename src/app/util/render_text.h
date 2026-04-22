@@ -11,25 +11,28 @@
 
 #include "doc/image_ref.h"
 #include "gfx/color.h"
+#include "gfx/rect.h"
 #include "text/text_blob.h"
+#include "ui/paint.h"
 
 #include <string>
 
 namespace app {
 
-class Color;
 class FontInfo;
-namespace skin {
-class SkinTheme;
-}
 
-// Returns the exact bounds that are required to draw this TextBlob,
-// i.e. the image size that will be required in render_text_blob().
-gfx::Size get_text_blob_required_size(const text::TextBlobRef& blob);
+// Returns the exact bounds that are required to draw this TextBlob in
+// the origin point (0, 0), i.e. the image size that will be required
+// in render_text_blob().
+gfx::RectF get_text_blob_required_bounds(const text::TextBlobRef& blob);
 
-doc::ImageRef render_text_blob(const text::TextBlobRef& blob, gfx::Color color);
+doc::ImageRef render_text_blob(const text::TextBlobRef& blob,
+                               const gfx::RectF& textBounds,
+                               const ui::Paint& paint);
 
-doc::ImageRef render_text(const FontInfo& fontInfo, const std::string& text, gfx::Color color);
+doc::ImageRef render_text(const FontInfo& fontInfo,
+                          const std::string& text,
+                          const ui::Paint& paint);
 
 } // namespace app
 

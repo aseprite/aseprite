@@ -4,19 +4,19 @@
 <gui>
 <window id="layer_properties" text="@.title">
   <vbox>
-    <grid id="properties_grid" columns="3">
+    <grid id="properties_grid" columns="3" expansive="true">
       <label text="@.name" />
       <entry text="" id="name" magnet="true" maxsize="256" minwidth="64" cell_align="horizontal" />
       <button id="user_data" icon="icon_user_data" tooltip="@general.user_data" />
 
-      <label text="@.mode" />
+      <label text="@.mode" for="mode" />
       <combobox id="mode" />
       <button id="tileset" icon="tiles" tooltip="@.tileset_tooltip" />
 
-      <label text="@.opacity" />
+      <label text="@.opacity" for="opacity" />
       <opacityslider id="opacity" width="128" cell_align="horizontal" cell_hspan="2" />
 
-      <label id="uuid_label" text="@.uuid" visible="false" />
+      <label id="uuid_label" text="@.uuid" visible="false" for="uuid" />
       <entry id="uuid" readonly="true" maxsize="36" cell_hspan="2" visible="false"/>
     </grid>
   </vbox>

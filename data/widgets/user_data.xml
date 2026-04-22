@@ -3,9 +3,11 @@
 <!-- Copyright (C) 2001-2017 by David Capello -->
 <gui>
   <hbox id="user_data">
-    <label id="color_label" text="@.color" />
-    <label id="entry_label" text="@.user_data" />
+    <label id="color_label" text="@.color" for="color" />
+    <label id="entry_label" text="@.user_data" for="entry" />
     <colorpicker id="color" simple="true" expansive="true" />
-    <entry id="entry" maxsize="65535" minwidth="128" expansive="true" />
+    <view id="text_edit_view" height="30" expansive="true">
+      <textedit id="text_edit" />
+    </view>
   </hbox>
 </gui>

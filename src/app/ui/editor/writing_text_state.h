@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2022-2024  Igara Studio S.A.
+// Copyright (c) 2022-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -59,7 +59,7 @@ private:
 
   DelayedMouseMove m_delayedMouseMove;
   Editor* m_editor;
-  gfx::Rect m_bounds;
+  gfx::RectF m_bounds;
   std::unique_ptr<TextEditor> m_entry;
 
   // True if the text was discarded.
@@ -71,7 +71,7 @@ private:
   bool m_mouseMoveReceived = false;
   bool m_movingBounds = false;
   gfx::PointF m_cursorStart;
-  gfx::Point m_boundsOrigin;
+  gfx::PointF m_boundsOrigin;
 
   obs::scoped_connection m_beforeCmdConn;
   obs::scoped_connection m_fontChangeConn;

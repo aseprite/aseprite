@@ -35,7 +35,7 @@ protected:
 };
 
 TiledModeCommand::TiledModeCommand()
-  : Command(CommandId::TiledMode(), CmdUIOnlyFlag)
+  : Command(CommandId::TiledMode())
   , m_mode(filters::TiledMode::NONE)
 {
 }

@@ -26,14 +26,14 @@ protected:
   void onExecute(Context* context) override;
 };
 
-TogglePreviewCommand::TogglePreviewCommand() : Command(CommandId::TogglePreview(), CmdUIOnlyFlag)
+TogglePreviewCommand::TogglePreviewCommand() : Command(CommandId::TogglePreview())
 {
 }
 
 bool TogglePreviewCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasActiveSprite);
+  return context->isUIAvailable() && context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                                                         ContextFlags::HasActiveSprite);
 }
 
 bool TogglePreviewCommand::onChecked(Context* context)

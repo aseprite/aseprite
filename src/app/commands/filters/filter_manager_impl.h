@@ -93,6 +93,7 @@ public:
   void applyToTarget();
 
   void initTransaction();
+  void updateWriterThread();
   bool isTransaction() const;
   void commitTransaction();
 
@@ -130,7 +131,7 @@ public:
   doc::Palette* getNewPalette() override;
   doc::PalettePicks getPalettePicks() override;
 
-  void startWorker();
+  void startWorker(bool ui);
 
 private:
   void init(doc::Cel* cel);

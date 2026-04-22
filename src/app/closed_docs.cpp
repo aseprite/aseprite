@@ -27,8 +27,13 @@ ClosedDocs::ClosedDocs(const Preferences& pref) : m_done(false)
   else
     m_dataRecoveryPeriodMSecs = 0;
 
-  if (pref.general.keepClosedSpriteOnMemory())
-    m_keepClosedDocAliveForMSecs = int(1000.0 * 60.0 * pref.general.keepClosedSpriteOnMemoryFor());
+  if (pref.general.keepClosedSpriteOnMemory()) {
+    if (pref.general.keepClosedSpriteOnMemoryFor() < 0)
+      m_keepClosedDocAliveForMSecs = std::numeric_limits<base::tick_t>::max();
+    else
+      m_keepClosedDocAliveForMSecs = int(1000.0 * 60.0 *
+                                         pref.general.keepClosedSpriteOnMemoryFor());
+  }
   else
     m_keepClosedDocAliveForMSecs = 0;
 
@@ -125,6 +130,11 @@ void ClosedDocs::backgroundThread()
   while (!m_done) {
     base::tick_t now = base::current_tick();
     base::tick_t waitForMSecs = std::numeric_limits<base::tick_t>::max();
+
+    if (m_keepClosedDocAliveForMSecs == std::numeric_limits<base::tick_t>::max()) {
+      m_done = true;
+      continue;
+    }
 
     for (auto it = m_docs.begin(); it != m_docs.end();) {
       const ClosedDoc& closedDoc = *it;

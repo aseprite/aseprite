@@ -15,7 +15,6 @@
 #include "app/cmd/set_tag_range.h"
 #include "app/cmd/set_tag_repeat.h"
 #include "app/cmd/set_user_data.h"
-#include "app/color.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
@@ -48,7 +47,7 @@ private:
 };
 
 FrameTagPropertiesCommand::FrameTagPropertiesCommand()
-  : Command(CommandId::FrameTagProperties(), CmdUIOnlyFlag)
+  : Command(CommandId::FrameTagProperties())
   , m_tagId(NullId)
 {
 }
@@ -66,7 +65,7 @@ void FrameTagPropertiesCommand::onLoadParams(const Params& params)
 
 bool FrameTagPropertiesCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
+  return context->isUIAvailable() && context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
 void FrameTagPropertiesCommand::onExecute(Context* context)

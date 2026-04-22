@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -107,11 +107,11 @@ public:
     }
   }
 
-  os::Surface* getCanvas(int w, int h, gfx::Color bgColor)
+  os::Surface* getCanvas(Display* display, int w, int h, gfx::Color bgColor)
   {
     assert_ui_thread();
 
-    auto activeCS = get_current_color_space();
+    auto activeCS = get_current_color_space(display);
 
     if (!m_canvas || m_canvas->width() != w || m_canvas->height() != h ||
         m_canvas->colorSpace() != activeCS) {
@@ -284,6 +284,12 @@ app::Color ColorSelector::getColorByPosition(const gfx::Point& pos)
   if ((hasCapture() && m_capturedInAlpha) || (!hasCapture() && alphaBarBounds.contains(pos)))
     return getAlphaBarColor(u, umax);
 
+  // border color extends bottom/alpha bar if visible
+  if (!hasCapture() && pos.y >= rc.y2()) {
+    if (!bottomBarBounds.isEmpty())
+      return alphaBarBounds.isEmpty() ? getBottomBarColor(u, umax) : getAlphaBarColor(u, umax);
+  }
+
   const int v = pos.y - rc.y;
   const int vmax = std::max(1, rc.h - bottomBarBounds.h - alphaBarBounds.h - 1);
   return getMainAreaColor(u, umax, v, vmax);
@@ -320,6 +326,12 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
         m_capturedInBottom = bottomBarBounds().contains(pos);
         m_capturedInAlpha = alphaBarBounds().contains(pos);
         m_capturedInMain = (hasCapture() && !m_capturedInMain && !m_capturedInBottom);
+
+        const gfx::Rect rc = childrenBounds();
+        if (!m_capturedInAlpha && pos.y >= rc.y2()) {
+          releaseMouse();
+          m_capturedInMain = false;
+        }
       }
 
       app::Color color = getColorByPosition(pos);
@@ -432,9 +444,9 @@ void ColorSelector::onPaint(ui::PaintEvent& ev)
     SkCanvas* canvas;
     bool isSRGB;
     // TODO compare both color spaces
-    if ((!get_current_color_space() || get_current_color_space()->isSRGB()) &&
-        (!g->getInternalSurface()->colorSpace() ||
-         g->getInternalSurface()->colorSpace()->isSRGB())) {
+    auto displayCs = get_current_color_space(display());
+    auto gCs = g->getInternalSurface()->colorSpace();
+    if ((!displayCs || displayCs->isSRGB()) && (!gCs || gCs->isSRGB())) {
       // We can render directly in the ui::Graphics surface
       canvas = &static_cast<os::SkiaSurface*>(g->getInternalSurface())->canvas();
       isSRGB = true;
@@ -442,7 +454,7 @@ void ColorSelector::onPaint(ui::PaintEvent& ev)
     else {
       // We'll paint in the ColorSelector::Painter canvas, and so we
       // can convert color spaces.
-      painterSurface = painter.getCanvas(rc.w, rc.h, theme->colors.workspace());
+      painterSurface = painter.getCanvas(display(), rc.w, rc.h, theme->colors.workspace());
       canvas = &static_cast<os::SkiaSurface*>(painterSurface)->canvas();
       isSRGB = false;
     }
@@ -497,7 +509,7 @@ void ColorSelector::onPaint(ui::PaintEvent& ev)
   else
 #endif // SK_ENABLE_SKSL
   {
-    painterSurface = painter.getCanvas(rc.w, rc.h, theme->colors.workspace());
+    painterSurface = painter.getCanvas(display(), rc.w, rc.h, theme->colors.workspace());
   }
 
   if (painterSurface)

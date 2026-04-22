@@ -1,11 +1,12 @@
 // Aseprite
-// Copyright (c) 2022-2024  Igara Studio S.A.
+// Copyright (c) 2022-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
 #include "app/script/canvas_widget.h"
 
+#include "app/color_spaces.h"
 #include "app/script/graphics_context.h"
 #include "app/ui/skin/skin_theme.h"
 #include "os/system.h"
@@ -45,7 +46,7 @@ void Canvas::callPaint()
     return;
 
   os::Paint p;
-  p.color(bgColor());
+  p.color(bgColor(), m_surface->colorSpace().get());
   m_surface->drawRect(m_surface->bounds(), p);
 
   // Draw only on resize (onPaint we draw the cached m_surface)
@@ -153,14 +154,16 @@ bool Canvas::onProcessMessage(ui::Message* msg)
       break;
     }
 
-    case ui::kMouseWheelMessage: {
-      auto mouseMsg = *static_cast<ui::MouseMessage*>(msg);
-      if (m_autoScaling) {
-        mouseMsg = makeScaled(&mouseMsg, bounds().origin());
+    case ui::kMouseWheelMessage:
+      if (Wheel) {
+        auto mouseMsg = *static_cast<ui::MouseMessage*>(msg);
+        if (m_autoScaling) {
+          mouseMsg = makeScaled(&mouseMsg, bounds().origin());
+        }
+        Wheel(&mouseMsg);
+        return true;
       }
-      Wheel(&mouseMsg);
       break;
-    }
 
     case ui::kTouchMagnifyMessage: {
       auto touchMsg = *static_cast<ui::TouchMessage*>(msg);
@@ -189,7 +192,9 @@ void Canvas::onResize(ui::ResizeEvent& ev)
     }
 
     if (!m_surface || m_surface->width() != w || m_surface->height() != h) {
-      m_surface = system->makeSurface(w, h);
+      ui::Display* display = this->display();
+      os::ColorSpaceRef cs = (display ? display->colorSpace() : nullptr);
+      m_surface = system->makeSurface(w, h, cs);
       callPaint();
     }
   }

@@ -29,8 +29,7 @@ protected:
   void onExecute(Context* context);
 };
 
-DeveloperConsoleCommand::DeveloperConsoleCommand()
-  : Command(CommandId::DeveloperConsole(), CmdUIOnlyFlag)
+DeveloperConsoleCommand::DeveloperConsoleCommand() : Command(CommandId::DeveloperConsole())
 {
 }
 

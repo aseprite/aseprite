@@ -35,6 +35,7 @@ public:
   bool isPlaySubtags() const;
   bool applyPixelRatio() const;
   bool isForTwitter() const;
+  bool isIgnoreEmpty() const;
 
   void setResizeScale(const double scale);
   void setArea(const std::string& area);

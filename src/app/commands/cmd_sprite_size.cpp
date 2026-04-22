@@ -372,7 +372,7 @@ protected:
 };
 
 SpriteSizeCommand::SpriteSizeCommand()
-  : CommandWithNewParams<SpriteSizeParams>(CommandId::SpriteSize(), CmdRecordableFlag)
+  : CommandWithNewParams<SpriteSizeParams>(CommandId::SpriteSize())
 {
 }
 

@@ -10,6 +10,7 @@
 #endif
 
 #include "app/cmd/set_layer_blend_mode.h"
+#include "app/cmd/set_layer_flags.h"
 #include "app/cmd/set_layer_name.h"
 #include "app/cmd/set_layer_opacity.h"
 #include "app/cmd/set_layer_tileset.h"
@@ -22,6 +23,7 @@
 #include "app/script/luacpp.h"
 #include "app/script/userdata.h"
 #include "app/tx.h"
+#include "app/ui/timeline/timeline.h"
 #include "doc/layer.h"
 #include "doc/layer_tilemap.h"
 #include "doc/sprite.h"
@@ -33,6 +35,32 @@ namespace app { namespace script {
 using namespace doc;
 
 namespace {
+
+// Returns false if we are outside a transaction, so you have to
+// change the flag manually.
+bool set_layer_flags_with_undo(Layer* layer, const bool enableFlag, const LayerFlags flag)
+{
+  ASSERT(layer->sprite());
+  Doc* doc = static_cast<Doc*>(layer->sprite()->document());
+  ASSERT(doc);
+
+  // With undo when we are inside a transaction
+  if (doc->transaction()) {
+    Tx tx(doc);
+    LayerFlags newFlags = layer->flags();
+    if (enableFlag)
+      newFlags |= flag;
+    else
+      newFlags &= ~flag;
+
+    tx(new cmd::SetLayerFlags(layer, newFlags));
+    tx.commit();
+    return true;
+  }
+
+  // Without undo
+  return false;
+}
 
 int Layer_eq(lua_State* L)
 {
@@ -331,7 +359,11 @@ int Layer_set_stackIndex(lua_State* L)
 int Layer_set_isEditable(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
-  layer->setEditable(lua_toboolean(L, 2));
+  const bool newState = lua_toboolean(L, 2);
+
+  if (!set_layer_flags_with_undo(layer, newState, LayerFlags::Editable))
+    layer->setEditable(newState);
+
   return 0;
 }
 
@@ -339,29 +371,53 @@ int Layer_set_isVisible(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   const bool newState = lua_toboolean(L, 2);
-  Doc* doc = static_cast<Doc*>(layer->sprite()->document());
-  doc->setLayerVisibilityWithNotifications(layer, newState);
+
+  if (!set_layer_flags_with_undo(layer, newState, LayerFlags::Visible)) {
+    Doc* doc = static_cast<Doc*>(layer->sprite()->document());
+    doc->setLayerVisibilityWithNotifications(layer, newState);
+  }
+
   return 0;
 }
 
 int Layer_set_isContinuous(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
-  layer->setContinuous(lua_toboolean(L, 2));
+  const bool newState = lua_toboolean(L, 2);
+
+  if (!set_layer_flags_with_undo(layer, newState, LayerFlags::Continuous))
+    layer->setContinuous(newState);
+
   return 0;
 }
 
 int Layer_set_isCollapsed(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
-  layer->setCollapsed(lua_toboolean(L, 2));
+  const bool newState = lua_toboolean(L, 2);
+
+  if (!set_layer_flags_with_undo(layer, newState, LayerFlags::Collapsed))
+    layer->setCollapsed(newState);
+
+  // TODO the timeline should be listening this kind of changes
+  if (auto* timeline = App::instance()->timeline())
+    timeline->refresh();
+
   return 0;
 }
 
 int Layer_set_isExpanded(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
-  layer->setCollapsed(!lua_toboolean(L, 2));
+  const bool newState = !lua_toboolean(L, 2);
+
+  if (!set_layer_flags_with_undo(layer, newState, LayerFlags::Collapsed))
+    layer->setCollapsed(newState);
+
+  // TODO the timeline should be listening this kind of changes
+  if (auto* timeline = App::instance()->timeline())
+    timeline->refresh();
+
   return 0;
 }
 

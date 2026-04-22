@@ -47,6 +47,22 @@ Graphics::Graphics(Display* display, const os::SurfaceRef& surface, int dx, int 
 {
 }
 
+Graphics::Graphics(Display* display)
+  : m_display(display)
+  , m_surface(display->backLayer()->surface())
+  , m_dx(0)
+  , m_dy(0)
+{
+}
+
+Graphics::Graphics(const os::SurfaceRef& surface)
+  : m_display(nullptr)
+  , m_surface(surface)
+  , m_dx(0)
+  , m_dy(0)
+{
+}
+
 Graphics::~Graphics()
 {
   // If we were drawing in the screen surface, we mark these regions

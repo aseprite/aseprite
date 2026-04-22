@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -139,6 +139,13 @@ DataRecovery::Sessions DataRecovery::sessions()
   return copy;
 }
 
+bool DataRecovery::isRunningSession(const SessionPtr& session) const
+{
+  ASSERT(session);
+  ASSERT(m_inProgress);
+  return session->path() == m_inProgress->path();
+}
+
 void DataRecovery::searchForSessions()
 {
   Sessions sessions;
@@ -150,7 +157,7 @@ void DataRecovery::searchForSessions()
     RECO_TRACE("RECO: Session '%s' ", itempath.c_str());
 
     SessionPtr session(new Session(&m_config, itempath));
-    if (!session->isRunning()) {
+    if (!isRunningSession(session)) {
       if ((session->isEmpty()) || (!session->isCrashedSession() && session->isOldSession())) {
         RECO_TRACE("to be deleted (%s)\n",
                    session->isEmpty() ? "is empty" :

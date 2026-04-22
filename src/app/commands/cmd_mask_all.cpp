@@ -29,7 +29,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-MaskAllCommand::MaskAllCommand() : Command(CommandId::MaskAll(), CmdRecordableFlag)
+MaskAllCommand::MaskAllCommand() : Command(CommandId::MaskAll())
 {
 }
 

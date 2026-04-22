@@ -74,7 +74,7 @@ add_custom_command(
   COMMAND ${CMAKE_COMMAND} -E copy_if_different ${output_fn}.tmp ${output_fn}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   MAIN_DEPENDENCY ${strings_en_ini}
-  DEPENDS ${GEN_DEP})
+  DEPENDS ${GEN_DEP} commands/commands_list.h)
 list(APPEND generated_files ${output_fn})
 
 # Check translations
@@ -368,6 +368,7 @@ target_sources(app-lib PRIVATE
   color_picker.cpp
   color_spaces.cpp
   color_utils.cpp
+  commands/apply.cpp
   commands/cmd_about.cpp
   commands/cmd_add_color.cpp
   commands/cmd_advanced_mode.cpp
@@ -393,6 +394,7 @@ target_sources(app-lib PRIVATE
   commands/cmd_deselect_mask.cpp
   commands/cmd_discard_brush.cpp
   commands/cmd_duplicate_layer.cpp
+  commands/cmd_duplicate_slice.cpp
   commands/cmd_duplicate_sprite.cpp
   commands/cmd_duplicate_view.cpp
   commands/cmd_enter_license.cpp
@@ -460,6 +462,7 @@ target_sources(app-lib PRIVATE
   commands/cmd_reselect_mask.cpp
   commands/cmd_reverse_frames.cpp
   commands/cmd_rotate.cpp
+  commands/cmd_run_command.cpp
   commands/cmd_save_file.cpp
   commands/cmd_save_mask.cpp
   commands/cmd_save_palette.cpp
@@ -517,9 +520,11 @@ target_sources(app-lib PRIVATE
   commands/screenshot.cpp
   commands/set_playback_speed.cpp
   commands/show_menu.cpp
+  commands/solo_layer.cpp
   commands/tileset_mode.cpp
   commands/toggle_other_layers_opacity.cpp
   commands/toggle_play_option.cpp
+  commands/toggle_workspace_layout.cpp
   console.cpp
   context.cpp
   context_flags.cpp
@@ -609,6 +614,7 @@ target_sources(app-lib PRIVATE
   ui/context_bar.cpp
   ui/dithering_selector.cpp
   ui/doc_view.cpp
+  ui/dock.cpp
   ui/drop_down_button.cpp
   ui/dynamics_popup.cpp
   ui/editor/brush_preview.cpp
@@ -651,8 +657,12 @@ target_sources(app-lib PRIVATE
   ui/icon_button.cpp
   ui/incompat_file_window.cpp
   ui/input_chain.cpp
+  ui/key.cpp
   ui/keyboard_shortcuts.cpp
   ui/layer_frame_comboboxes.cpp
+  ui/layout.cpp
+  ui/layouts.cpp
+  ui/layout_selector.cpp
   ui/main_menu_bar.cpp
   ui/main_window.cpp
   ui/mini_help_button.cpp
@@ -715,7 +725,9 @@ target_sources(app-lib PRIVATE
   util/render_text.cpp
   util/resize_image.cpp
   util/shader_helpers.cpp
+  util/slice_utils.cpp
   util/tile_flags_utils.cpp
+  util/tiled_mode.cpp
   util/tileset_utils.cpp
   util/wrap_point.cpp
   widget_loader.cpp
@@ -724,6 +736,12 @@ target_sources(app-lib PRIVATE
 
 if(TARGET generated_version)
   add_dependencies(app-lib generated_version)
+endif()
+
+if(WIN32)
+  target_sources(app-lib PRIVATE
+    win/file_associations.cpp
+    win/thumbnails.cpp)
 endif()
 
 if(ENABLE_NEWS)
@@ -819,4 +837,10 @@ if(ENABLE_SENTRY)
   target_sources(app-lib PRIVATE sentry_wrapper.cpp)
 else()
   target_sources(app-lib PRIVATE send_crash.cpp)
+endif()
+
+# When we use the laf-dlgs-proc, aseprite depends on it to show the
+# native file dialog.
+if(LAF_WITH_DLGS_PROC)
+  add_dependencies(app-lib laf-dlgs-proc)
 endif()

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -64,6 +64,7 @@
 #include "doc/tag.h"
 #include "doc/tileset.h"
 #include "doc/tilesets.h"
+#include "undo/undo_state.h"
 
 #include <algorithm>
 
@@ -456,7 +457,7 @@ int Sprite_newCel(lua_State* L)
   auto sprite = get_docobj<Sprite>(L, 1);
   auto layerBase = get_docobj<Layer>(L, 2);
   if (!layerBase->isImage())
-    return luaL_error(L, "unexpected kinf of layer in Sprite:newCel()");
+    return luaL_error(L, "unexpected kind of layer in Sprite:newCel()");
 
   frame_t frame = get_frame_number_from_arg(L, 3);
   if (frame < 0 || frame > sprite->lastFrame())
@@ -778,6 +779,14 @@ int Sprite_get_isModified(lua_State* L)
   return 1;
 }
 
+int Sprite_get_hasAssociatedFile(lua_State* L)
+{
+  auto sprite = get_docobj<Sprite>(L, 1);
+  Doc* doc = static_cast<Doc*>(sprite->document());
+  lua_pushboolean(L, doc->isAssociatedToFile());
+  return 1;
+}
+
 int Sprite_get_width(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -1029,6 +1038,48 @@ int Sprite_set_useLayerUuids(lua_State* L)
   return 0;
 }
 
+int Sprite_get_undoHistory(lua_State* L)
+{
+  const auto* sprite = get_docobj<Sprite>(L, 1);
+  const auto* doc = static_cast<Doc*>(sprite->document());
+  const auto* history = doc->undoHistory();
+
+  if (!history) {
+    lua_pushnil(L);
+    return 1;
+  }
+
+  const undo::UndoState* currentState = history->currentState();
+  const undo::UndoState* s = history->firstState();
+  const bool canRedo = history->canRedo();
+  bool pastCurrent = !currentState && canRedo;
+
+  int undoSteps = 0;
+  int redoSteps = 0;
+  while (s) {
+    if (pastCurrent && canRedo)
+      redoSteps++;
+    else if (currentState || !canRedo)
+      undoSteps++;
+
+    if (s == currentState || !currentState)
+      pastCurrent = true;
+
+    s = s->next();
+  }
+
+  lua_newtable(L);
+  setfield_integer(L, "undoSteps", undoSteps);
+  setfield_integer(L, "redoSteps", redoSteps);
+  return 1;
+}
+
+int Sprite_get_isValid(lua_State* L)
+{
+  lua_pushboolean(L, may_get_docobj<Sprite>(L, 1) ? true : false);
+  return 1;
+}
+
 const luaL_Reg Sprite_methods[] = {
   { "__eq",              Sprite_eq                },
   { "resize",            Sprite_resize            },
@@ -1070,6 +1121,7 @@ const Property Sprite_properties[] = {
   { "id",                   Sprite_get_id,                   nullptr                         },
   { "filename",             Sprite_get_filename,             Sprite_set_filename             },
   { "isModified",           Sprite_get_isModified,           nullptr                         },
+  { "hasAssociatedFile",    Sprite_get_hasAssociatedFile,    nullptr                         },
   { "width",                Sprite_get_width,                Sprite_set_width                },
   { "height",               Sprite_get_height,               Sprite_set_height               },
   { "colorMode",            Sprite_get_colorMode,            nullptr                         },
@@ -1094,6 +1146,8 @@ const Property Sprite_properties[] = {
   { "events",               Sprite_get_events,               nullptr                         },
   { "tileManagementPlugin", Sprite_get_tileManagementPlugin, Sprite_set_tileManagementPlugin },
   { "useLayerUuids",        Sprite_get_useLayerUuids,        Sprite_set_useLayerUuids        },
+  { "undoHistory",          Sprite_get_undoHistory,          nullptr                         },
+  { "isValid",              Sprite_get_isValid,              nullptr                         },
   { nullptr,                nullptr,                         nullptr                         }
 };
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,13 +8,18 @@
 #define APP_UI_FILENAME_FIELD_H_INCLUDED
 #pragma once
 
+#include "app/ui/button_set.h"
+#include "base/paths.h"
 #include "obs/connection.h"
 #include "obs/signal.h"
 #include "ui/box.h"
-#include "ui/button.h"
 #include "ui/entry.h"
 
 #include <string>
+
+namespace ui {
+class Menu;
+}
 
 namespace app {
 
@@ -44,17 +49,25 @@ protected:
   void onSetEditFullPath();
 
 private:
+  class FilenameButton : public ButtonSet {
+  public:
+    FilenameButton(const std::string& text);
+  };
+
   void setEditFullPath(const bool on);
   void updateWidgets();
   void onBrowse();
   std::string updatedFilename() const;
+  void addFoldersToMenu(ui::Menu* menu,
+                        const base::paths& folders,
+                        const std::string& separatorTitle);
 
   std::string m_path;
   std::string m_pathBase;
   std::string m_file;
   std::string m_docFilename;
   ui::Entry* m_entry;
-  ui::Button m_button;
+  FilenameButton m_button;
   bool m_editFullPath;
   bool m_askOverwrite;
 

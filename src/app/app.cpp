@@ -329,7 +329,8 @@ int App::initialize(const AppOptions& options)
 #endif
 
 #ifdef ENABLE_STEAM
-  if (options.noInApp())
+  // Don't connect to Steam if -noinapp or -batch mode is used.
+  if (options.noInApp() || !options.startUI())
     m_inAppSteam = false;
 #endif
 

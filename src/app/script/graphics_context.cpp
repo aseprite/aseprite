@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2024  Igara Studio S.A.
+// Copyright (C) 2022-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -151,7 +151,7 @@ void GraphicsContext::drawThemeRect(const std::string& partId, const gfx::Rect& 
     skin::SkinPartPtr part = (m_uiscale > 1 ? theme->getUnscaledPartById(partId) :
                                               theme->getPartById(partId));
     if (part && part->bitmap(0)) {
-      ui::Graphics g(nullptr, m_surface, 0, 0);
+      ui::Graphics g(m_surface);
 
       // TODO Copy code from Theme::paintLayer()
 

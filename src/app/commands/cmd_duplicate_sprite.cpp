@@ -13,15 +13,13 @@
 #include "app/commands/new_params.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
+#include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/ui_context.h"
 #include "base/fs.h"
-#include "doc/sprite.h"
 #include "ui/ui.h"
 
 #include "duplicate_sprite.xml.h"
-
-#include <cstdio>
 
 namespace app {
 
@@ -43,7 +41,7 @@ protected:
 };
 
 DuplicateSpriteCommand::DuplicateSpriteCommand()
-  : CommandWithNewParams<DuplicateSpriteParams>(CommandId::DuplicateSprite(), CmdRecordableFlag)
+  : CommandWithNewParams<DuplicateSpriteParams>(CommandId::DuplicateSprite())
 {
 }
 
@@ -64,7 +62,8 @@ void DuplicateSpriteCommand::onExecute(Context* context)
 
   std::string duplicateFn = params().filename.isSet() ?
                               params().filename() :
-                              base::get_file_title(fn) + " Copy" + (!ext.empty() ? "." + ext : "");
+                              Strings::general_copy_of(base::get_file_title(fn)) +
+                                (!ext.empty() ? "." + ext : "");
 
   bool flatten = params().flatten.isSet() ? params().flatten() :
                                             get_config_bool("DuplicateSprite", "Flatten", false);

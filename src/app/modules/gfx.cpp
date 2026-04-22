@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -30,6 +30,7 @@
 #include "os/surface.h"
 #include "os/system.h"
 #include "ui/intern.h"
+#include "ui/paint.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 
@@ -118,9 +119,6 @@ void draw_color(ui::Graphics* g,
   app::Color color = _color;
   const int alpha = color.getAlpha();
 
-  // Color space conversion
-  auto convertColor = convert_from_current_to_screen_color_space();
-
   if (alpha < 255) {
     if (rc.w == rc.h)
       draw_checkered_grid(g, rc, gfx::Size(rc.w / 2, rc.h / 2));
@@ -133,11 +131,15 @@ void draw_color(ui::Graphics* g,
       color = app::Color::fromGray(color.getGray(), color.getAlpha());
     }
 
+    // The color is in the current sprite color space.
+    ui::Paint paint;
+    paint.color(color_utils::color_for_ui(color), get_current_color_space(g->display()).get());
+
     if (color.getType() == app::Color::IndexType) {
       int index = color.getIndex();
 
       if (index >= 0 && index < get_current_palette()->size()) {
-        g->fillRect(convertColor(color_utils::color_for_ui(color)), rc);
+        g->drawRect(rc, paint);
       }
       else {
         g->fillRect(gfx::rgba(0, 0, 0), rc);
@@ -147,7 +149,7 @@ void draw_color(ui::Graphics* g,
       }
     }
     else {
-      g->fillRect(convertColor(color_utils::color_for_ui(color)), rc);
+      g->drawRect(rc, paint);
     }
   }
 }
@@ -219,7 +221,8 @@ void draw_tile(ui::Graphics* g, const Rect& rc, const Site& site, doc::tile_t ti
   int w = tileImage->width();
   int h = tileImage->height();
 
-  os::SurfaceRef surface = os::System::instance()->makeRgbaSurface(w, h);
+  os::SurfaceRef surface =
+    os::System::instance()->makeRgbaSurface(w, h, get_current_color_space(g->display()));
   convert_image_to_surface(tileImage.get(), get_current_palette(), surface.get(), 0, 0, 0, 0, w, h);
 
   ui::Paint paint;

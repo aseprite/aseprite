@@ -1,5 +1,5 @@
 // Aseprite Steam Wrapper
-// Copyright (c) 2020-2024 Igara Studio S.A.
+// Copyright (c) 2020-2025 Igara Studio S.A.
 // Copyright (c) 2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -153,8 +153,6 @@ public:
 
     CallbackMsg_t msg;
     if (SteamAPI_ManualDispatch_GetNextCallback(m_pipe, &msg)) {
-      // TRACEARGS("SteamAPI_ManualDispatch_GetNextCallback", msg.callback);
-
       bool disconnected = false;
       switch (msg.callback) {
         case kSteamServersDisconnected:

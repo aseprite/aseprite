@@ -12,15 +12,19 @@
 
 #include "app/app.h"
 #include "app/console.h"
+#include "app/i18n/strings.h"
 #include "app/recent_files.h"
 #include "app/ui/font_popup.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/contains.h"
+#include "base/convert_to.h"
 #include "base/scoped_value.h"
 #include "fmt/format.h"
+#include "text/font_style_set.h"
 #include "ui/display.h"
 #include "ui/fit_bounds.h"
 #include "ui/manager.h"
+#include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/scale.h"
 
@@ -262,22 +266,91 @@ void FontEntry::FontSize::onEntryChange()
   Change();
 }
 
-FontEntry::FontStyle::FontStyle() : ButtonSet(3, true)
+FontEntry::FontStyle::FontStyle(ui::TooltipManager* tooltips) : ButtonSet(3, true)
 {
   addItem("B");
   addItem("I");
   addItem("...");
   setMultiMode(MultiMode::Set);
+
+  tooltips->addTooltipFor(getItem(0), Strings::font_style_font_weight(), BOTTOM);
+  tooltips->addTooltipFor(getItem(1), Strings::text_tool_italic(), BOTTOM);
+  tooltips->addTooltipFor(getItem(2), Strings::text_tool_more_options(), BOTTOM);
 }
 
-FontEntry::FontEntry()
+FontEntry::FontStroke::FontStroke(ui::TooltipManager* tooltips) : m_fill(2)
+{
+  auto* theme = skin::SkinTheme::get(this);
+
+  m_fill.addItem(theme->parts.toolFilledRectangle(), theme->styles.contextBarButton());
+  m_fill.addItem(theme->parts.toolRectangle(), theme->styles.contextBarButton());
+  m_fill.setSelectedItem(0);
+  m_fill.ItemChange.connect([this] { Change(); });
+
+  m_stroke.setText("0");
+  m_stroke.setSuffix("pt");
+  m_stroke.ValueChange.connect([this] { Change(); });
+
+  addChild(&m_fill);
+  addChild(&m_stroke);
+
+  tooltips->addTooltipFor(m_fill.getItem(0), Strings::shape_fill(), BOTTOM);
+  tooltips->addTooltipFor(m_fill.getItem(1), Strings::shape_stroke(), BOTTOM);
+  tooltips->addTooltipFor(&m_stroke, Strings::shape_stroke_width(), BOTTOM);
+}
+
+bool FontEntry::FontStroke::fill() const
+{
+  return const_cast<FontStroke*>(this)->m_fill.getItem(0)->isSelected();
+}
+
+float FontEntry::FontStroke::stroke() const
+{
+  return m_stroke.textDouble();
+}
+
+FontEntry::FontStroke::WidthEntry::WidthEntry() : ui::IntEntry(0, 100, this)
+{
+}
+
+void FontEntry::FontStroke::WidthEntry::onValueChange()
+{
+  ui::IntEntry::onValueChange();
+  ValueChange();
+}
+
+bool FontEntry::FontStroke::WidthEntry::onAcceptUnicodeChar(int unicodeChar)
+{
+  return (IntEntry::onAcceptUnicodeChar(unicodeChar) || unicodeChar == '.');
+}
+
+std::string FontEntry::FontStroke::WidthEntry::onGetTextFromValue(int value)
+{
+  return fmt::format("{:.1f}", value / 10.0);
+}
+
+int FontEntry::FontStroke::WidthEntry::onGetValueFromText(const std::string& text)
+{
+  return int(10.0 * base::convert_to<double>(text));
+}
+
+FontEntry::FontEntry(const bool withStrokeAndFill)
+  : m_style(&m_tooltips)
+  , m_stroke(withStrokeAndFill ? std::make_unique<FontStroke>(&m_tooltips) : nullptr)
 {
   m_face.setExpansive(true);
   m_size.setExpansive(false);
   m_style.setExpansive(false);
+
+  addChild(&m_tooltips);
   addChild(&m_face);
   addChild(&m_size);
   addChild(&m_style);
+  if (m_stroke)
+    addChild(m_stroke.get());
+
+  m_tooltips.addTooltipFor(&m_face, Strings::text_tool_font_family(), BOTTOM);
+  m_tooltips.addTooltipFor(m_size.getEntryWidget(), Strings::text_tool_font_size(), BOTTOM);
 
   m_face.setMinSize(gfx::Size(128 * guiscale(), 0));
 
@@ -299,6 +372,8 @@ FontEntry::FontEntry()
   });
 
   m_style.ItemChange.connect(&FontEntry::onStyleItemClick, this);
+  if (m_stroke)
+    m_stroke->Change.connect(&FontEntry::onStrokeChange, this);
 }
 
 // Defined here as FontPopup type is not fully defined in the header
@@ -311,20 +386,104 @@ void FontEntry::setInfo(const FontInfo& info, const From fromField)
 {
   m_info = info;
 
-  if (fromField != From::Face)
-    m_face.setText(info.title());
+  if (fromField == From::Init && !info.findTypeface(theme()->fontMgr())) {
+    // Revert to default if we are initialized with an invalid/non-existent font
+    m_info = skin::SkinTheme::get(this)->getDefaultFontInfo();
+  }
+
+  auto family = theme()->fontMgr()->matchFamily(m_info.name());
+  bool hasBold = false;
+  m_availableWeights.clear();
+
+  if (family) {
+    auto checkWeight = [this, &family, &hasBold](text::FontStyle::Weight w) {
+      auto ref = family->matchStyle(
+        text::FontStyle(w, m_info.style().width(), m_info.style().slant()));
+      if (ref->fontStyle().weight() == w)
+        m_availableWeights.push_back(w);
+
+      if (ref->fontStyle().weight() == text::FontStyle::Weight::Bold)
+        hasBold = true;
+    };
+
+    checkWeight(text::FontStyle::Weight::Thin);
+    checkWeight(text::FontStyle::Weight::ExtraLight);
+    checkWeight(text::FontStyle::Weight::Light);
+    checkWeight(text::FontStyle::Weight::Normal);
+    checkWeight(text::FontStyle::Weight::Medium);
+    checkWeight(text::FontStyle::Weight::SemiBold);
+    checkWeight(text::FontStyle::Weight::Bold);
+    checkWeight(text::FontStyle::Weight::Black);
+    checkWeight(text::FontStyle::Weight::ExtraBlack);
+  }
+  else {
+    // Stick to only "normal" for fonts without a family.
+    m_availableWeights.push_back(text::FontStyle::Weight::Normal);
+    m_style.getItem(0)->setEnabled(false);
+  }
+
+  if (std::find(m_availableWeights.begin(), m_availableWeights.end(), m_info.style().weight()) ==
+      m_availableWeights.end()) {
+    // The currently selected weight is not available, reset it back to normal.
+    m_info = app::FontInfo(m_info,
+                           m_info.size(),
+                           text::FontStyle(text::FontStyle::Weight::Normal,
+                                           m_info.style().width(),
+                                           m_info.style().slant()),
+                           m_info.flags(),
+                           m_info.hinting());
+  }
+
+  if (fromField != From::Face) {
+    m_face.setText(m_info.title());
+    m_face.setPlaceholder(m_info.title());
+  }
 
   if (fromField != From::Size) {
-    m_size.updateForFont(info);
-    m_size.setValue(fmt::format("{}", info.size()));
+    m_size.updateForFont(m_info);
+    m_size.setValue(fmt::format("{}", m_info.size()));
+  }
+
+  m_style.getItem(0)->setEnabled(hasBold);
+  m_style.getItem(0)->setSelected(m_info.style().weight() != text::FontStyle::Weight::Normal);
+  m_style.getItem(0)->setText("B");
+
+  // Give some indication of what the weight is, if we have any variation
+  if (m_style.getItem(0)->isSelected() && m_availableWeights.size() > 1) {
+    if (m_info.style().weight() > text::FontStyle::Weight::Bold)
+      m_style.getItem(0)->setText("B+");
+    else if (m_info.style().weight() < text::FontStyle::Weight::Bold)
+      m_style.getItem(0)->setText("B-");
   }
 
   if (fromField != From::Style) {
-    m_style.getItem(0)->setSelected(info.style().weight() >= text::FontStyle::Weight::SemiBold);
-    m_style.getItem(1)->setSelected(info.style().slant() != text::FontStyle::Slant::Upright);
+    m_style.getItem(1)->setSelected(m_info.style().slant() != text::FontStyle::Slant::Upright);
   }
 
   FontChange(m_info, fromField);
+}
+
+ui::Paint FontEntry::paint()
+{
+  ui::Paint paint;
+  ui::Paint::Style style = ui::Paint::Fill;
+
+  if (m_stroke) {
+    const float stroke = m_stroke->stroke();
+    if (m_stroke->fill()) {
+      if (stroke > 0.0f) {
+        style = ui::Paint::StrokeAndFill;
+        paint.strokeWidth(stroke);
+      }
+    }
+    else {
+      style = ui::Paint::Stroke;
+      paint.strokeWidth(stroke);
+    }
+  }
+
+  paint.style(style);
+  return paint;
 }
 
 void FontEntry::onStyleItemClick(ButtonSet::Item* item)
@@ -334,17 +493,51 @@ void FontEntry::onStyleItemClick(ButtonSet::Item* item)
   switch (m_style.getItemIndex(item)) {
     // Bold button changed
     case 0: {
-      const bool bold = m_style.getItem(0)->isSelected();
-      style = text::FontStyle(
-        bold ? text::FontStyle::Weight::Bold : text::FontStyle::Weight::Normal,
-        style.width(),
-        style.slant());
+      if (m_availableWeights.size() > 2) {
+        // Ensure consistency, since the click also affects the "selected" highlighting.
+        item->setSelected(style.weight() != text::FontStyle::Weight::Normal);
 
-      setInfo(FontInfo(m_info, m_info.size(), style, m_info.flags(), m_info.hinting()),
-              From::Style);
+        Menu weightMenu;
+        auto currentWeight = m_info.style().weight();
+
+        auto weightChange = [this](text::FontStyle::Weight newWeight) {
+          const text::FontStyle style(newWeight, m_info.style().width(), m_info.style().slant());
+          setInfo(FontInfo(m_info, m_info.size(), style, m_info.flags(), m_info.hinting()),
+                  From::Style);
+        };
+
+        for (auto weight : m_availableWeights) {
+          auto* menuItem = new MenuItem(Strings::Translate(
+            fmt::format("font_style.font_weight_{}", static_cast<int>(weight)).c_str()));
+          menuItem->setSelected(weight == currentWeight);
+          if (!menuItem->isSelected())
+            menuItem->Click.connect([&weightChange, weight] { weightChange(weight); });
+
+          if (weight == text::FontStyle::Weight::Bold &&
+              currentWeight == text::FontStyle::Weight::Normal)
+            menuItem->setHighlighted(true);
+
+          weightMenu.addChild(menuItem);
+        }
+
+        weightMenu.initTheme();
+        const auto& bounds = m_style.getItem(0)->bounds();
+
+        weightMenu.showPopup(gfx::Point(bounds.x, bounds.y2()), display());
+      }
+      else {
+        const bool isBold = m_info.style().weight() == text::FontStyle::Weight::Bold;
+        style = text::FontStyle(
+          isBold ? text::FontStyle::Weight::Normal : text::FontStyle::Weight::Bold,
+          style.width(),
+          style.slant());
+
+        setInfo(FontInfo(m_info, m_info.size(), style, m_info.flags(), m_info.hinting()),
+                From::Style);
+      }
       break;
     }
-      // Italic button changed
+    // Italic button changed
     case 1: {
       const bool italic = m_style.getItem(1)->isSelected();
       style = text::FontStyle(
@@ -402,6 +595,11 @@ void FontEntry::onStyleItemClick(ButtonSet::Item* item)
       break;
     }
   }
+}
+
+void FontEntry::onStrokeChange()
+{
+  FontChange(m_info, From::Paint);
 }
 
 } // namespace app

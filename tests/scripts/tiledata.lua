@@ -1,4 +1,4 @@
--- Copyright (C) 2023  Igara Studio S.A.
+-- Copyright (C) 2023-2025  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
@@ -39,8 +39,12 @@ do
   assert(#tileset.properties == 1) -- Check that tileset properties are not set
 
   local tile2 = tileset:tile(2)
-  tile2.properties.center = Point(3, 2)
-  tile2.properties.extra = 32
+  app.transaction(function()
+    tile2.properties.center = Point(3, 2)
+  end)
+  app.transaction(function()
+    tile2.properties.extra = 32
+  end)
   assert(tile2.properties.center == Point(3, 2))
   assert(tile2.properties.extra == 32)
   assert(tile1.properties.center == Point(2, 2))
@@ -59,13 +63,17 @@ do
 
   -- Undoable Tile.color and Tile.data
   assert(tile2.color == Color())
-  tile2.color = Color(0, 0, 255)
+  app.transaction(function()
+    tile2.color = Color(0, 0, 255)
+  end)
   assert(tile2.color == Color(0, 0, 255))
   app.undo()
   assert(tile2.color == Color())
 
   assert(tile2.data == "")
-  tile2.data = "B"
+  app.transaction(function()
+    tile2.data = "B"
+  end)
   assert(tile2.data == "B")
   app.undo()
   assert(tile2.data == "")
@@ -77,9 +85,46 @@ do
   assert(tile1.properties.b == 2.1)
 
   assert(#tile1.properties("ext") == 1)
-  tile1.properties("ext", { x=2, y=3 })
-  assert(#tile1.properties("ext") == 2)
+  tile1.properties("ext", { x=2, y=3, z=4 })
+  assert(#tile1.properties("ext") == 3)
   assert(tile1.properties("ext").x == 2)
   assert(tile1.properties("ext").y == 3)
+  assert(tile1.properties("ext").z == 4)
 
+  -- Test crash setting the same properties
+  -- https://github.com/aseprite/aseprite/issues/5519
+  tile1.properties = tile1.properties
+
+  -- Copy properties
+  tile2.properties = tile1.properties
+  assert(#tile1.properties == #tile2.properties)
+  assert(1 == tile1.properties.a)
+  assert(1 == tile2.properties.a)
+
+  tile1.properties("ext", tile2.properties)
+  tile1.properties("ext", tile1.properties("ext")) -- Copy same object
+  assert(1 == tile1.properties("ext").a)
+  assert(2.1 == tile1.properties("ext").b)
+
+  -- Test mixing property changes with undo and without undo
+  assert(#tile1.properties == 2)
+  app.transaction(function()
+    tile1.properties = {}
+  end)
+  assert(#tile1.properties == 0)
+  app.undo()
+  assert(#tile1.properties == 2)
+  assert(tile1.properties.a == 1)
+  assert(tile1.properties.b == 2.1)
+  app.redo()
+  assert(#tile1.properties == 0)
+  tile1.properties = { c=3 }
+  assert(#tile1.properties == 1)
+  app.undo()
+  assert(#tile1.properties == 2)
+  assert(tile1.properties.a == 1)
+  assert(tile1.properties.b == 2.1)
+  app.redo()
+  assert(#tile1.properties == 1)
+  assert(tile1.properties.c == 3)
 end

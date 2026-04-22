@@ -635,6 +635,12 @@ void Window::onResize(ResizeEvent& ev)
   windowSetPosition(ev.bounds());
   // Fire Resize signal
   Resize(ev);
+
+  // After resizing/positioning a window, we have to update the active
+  // mouse widget, because the mouse might have been above a widget of
+  // this window that now has moved to other place.
+  if (auto* mgr = this->manager())
+    mgr->_updateMouseWidgets();
 }
 
 void Window::onSizeHint(SizeHintEvent& ev)
@@ -882,7 +888,7 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
 
     // Move the window's graphics
     Display* display = this->display();
-    Graphics g(display, display->backLayer()->surface(), 0, 0);
+    Graphics g(display);
     {
       IntersectClip clip(&g, man_pos);
       if (clip) {

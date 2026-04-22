@@ -271,6 +271,8 @@ void ToolLoopManager::doLoopStep(bool lastStep)
   }
 
   m_toolLoop->validateDstImage(m_dirtyArea);
+  if (!lastStep && m_toolLoop->isSelectionToolLoop())
+    m_toolLoop->clearSelectionToolMask(false);
 
   // Join or fill user points
   if (fillStrokes)
@@ -339,6 +341,13 @@ void ToolLoopManager::calculateDirtyArea(const Strokes& strokes)
                                                  r2);
 
     m_dirtyArea.createUnion(m_dirtyArea, Region(r1.createUnion(r2)));
+  }
+
+  // This ensures the Selection Tool Mask doesn't leave a 'trail' behind
+  if (m_toolLoop->isSelectionToolLoop()) {
+    auto bounds = m_dirtyArea.bounds();
+    bounds.enlarge(1);
+    m_dirtyArea |= gfx::Region(bounds);
   }
 
   // Merge new dirty area with the previous one (for tools like line

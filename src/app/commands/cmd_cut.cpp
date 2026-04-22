@@ -23,7 +23,7 @@ protected:
   void onExecute(Context* ctx) override;
 };
 
-CutCommand::CutCommand() : Command(CommandId::Cut(), CmdUIOnlyFlag)
+CutCommand::CutCommand() : Command(CommandId::Cut())
 {
 }
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -235,6 +235,7 @@ private:
   void clearSlices();
 
   doc::frame_t m_frame;
+  doc::frame_t m_keyFrame;
   EditorHit m_hit;
   gfx::Point m_mouseStart;
   std::vector<Item> m_items;

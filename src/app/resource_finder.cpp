@@ -213,7 +213,7 @@ void ResourceFinder::includeDesktopDir(const char* filename)
 #ifdef _WIN32
 
   std::vector<wchar_t> buf(MAX_PATH);
-  HRESULT hr = SHGetFolderPath(NULL, CSIDL_DESKTOPDIRECTORY, NULL, SHGFP_TYPE_DEFAULT, &buf[0]);
+  HRESULT hr = SHGetFolderPath(NULL, CSIDL_DESKTOP, NULL, SHGFP_TYPE_CURRENT, &buf[0]);
   if (hr == S_OK) {
     addPath(base::join_path(base::to_utf8(&buf[0]), filename));
   }

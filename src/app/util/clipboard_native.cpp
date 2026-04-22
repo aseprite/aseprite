@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -311,7 +311,7 @@ bool Clipboard::getNativeBitmap(doc::Image** image,
         for (unsigned long x = 0; x < spec.width; ++x, ++it, ++src) {
           const uint16_t c = *((const uint16_t*)src);
           *it = doc::rgba(doc::scale_5bits_to_8bits((c & spec.red_mask) >> spec.red_shift),
-                          doc::scale_6bits_to_8bits((c & spec.green_mask) >> spec.green_shift),
+                          doc::scale_5bits_to_8bits((c & spec.green_mask) >> spec.green_shift),
                           doc::scale_5bits_to_8bits((c & spec.blue_mask) >> spec.blue_shift),
                           255);
         }

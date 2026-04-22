@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-2025  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <!-- Keyboard shortcuts -->
@@ -119,6 +119,7 @@
         <param name="frame" value="current" />
       </key>
       <key command="ReverseFrames" shortcut="Alt+I" />
+      <key command="RunCommand" shortcut="Ctrl+Space" />
       <key command="GotoFirstFrame" shortcut="Home" />
       <key command="GotoPreviousFrame" shortcut="Left" context="Normal" />
       <key command="GotoNextFrame" shortcut="Right" context="Normal" />
@@ -175,6 +176,7 @@
         <param name="popup" value="background" />
       </key>
       <key command="ShowExtras" shortcut="Ctrl+H" />
+      <key command="ToggleWorkspaceLayout" shortcut="Shift+W" />
       <!-- Tabs -->
       <key command="GotoNextTab" shortcut="Ctrl+Tab" />
       <key command="GotoPreviousTab" shortcut="Ctrl+Shift+Tab" />
@@ -318,6 +320,8 @@
       <key command="LayerOpacity"><param name="opacity" value="224" /></key>
       <key command="LayerOpacity" shortcut="Shift+4"><param name="opacity" value="255" /></key>
 
+      <key command="SoloLayer" />
+
       <key command="ToggleOtherLayersOpacity" />
       <key command="ToggleOtherLayersOpacity" shortcut="Shift+F7">
         <param name="preview" value="true" />
@@ -370,6 +374,12 @@
         <param name="units" value="zoomed-tile-height" />
         <param name="quantity" value="1" />
       </key>
+
+      <!-- Main selection actions (apply transformation / undo) -->
+      <key command="DeselectMask" shortcut="Esc" context="Transformation" />
+      <key command="Apply" shortcut="Enter" context="Transformation" />
+      <key command="Apply" shortcut="Enter Pad" context="Transformation" />
+      <key command="Undo" shortcut="Ctrl+Z" mac="Cmd+Z" context="Transformation" />
 
       <!-- Move selection with arrows -->
       <key command="MoveMask" shortcut="Left" context="Selection">
@@ -670,6 +680,8 @@
       <!-- Modifiers for two-points tool controller -->
       <key action="SquareAspect" shortcut="Shift" />
       <key action="DrawFromCenter" shortcut="Ctrl" />
+      <key action="CornerRadius" shortcut="C" />
+
       <!-- Modifiers for two-or-more-points tools -->
       <key action="MoveOrigin" shortcut="Space" />
       <key action="RotateShape" shortcut="Alt" />
@@ -1002,6 +1014,8 @@
       </menu>
       <menu text="@.view" id="view_menu">
         <item command="DuplicateView" text="@.view_duplicate_view" group="view_new" />
+        <item command="ToggleWorkspaceLayout" text="@.view_workspace_layout" />
+        <item command="RunCommand" text="@.view_run_command" />
         <separator />
         <item command="ShowExtras" text="@.view_show_extras" />
         <menu text="@.view_show" group="view_extras">
@@ -1203,6 +1217,7 @@
 
     <menu id="slice_popup_menu">
       <item command="SliceProperties" text="@.properties" group="slice_popup_properties" />
+      <item command="DuplicateSlice" text="@.duplicate" group="slice_popup_duplicate" />
       <item command="RemoveSlice" text="@.delete" group="slice_popup_delete" />
     </menu>
 

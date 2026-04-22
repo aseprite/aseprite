@@ -3,16 +3,13 @@
 <gui>
 <window id="duplicate_sprite" text="@.title">
   <box vertical="true">
-    <box horizontal="true" expansive="true">
-      <box vertical="true" homogeneous="true">
-        <label text="@.duplicate" />
-        <label text="@.as" />
-      </box>
-      <box vertical="true" homogeneous="true" expansive="true">
-        <label text="" id="src_name" />
-        <entry maxsize="256" id="dst_name" magnet="true" />
-      </box>
-    </box>
+    <grid columns="2">
+      <label text="@.duplicate" />
+      <label text="" id="src_name" cell_align="horizontal" />
+
+      <label text="@.as" for="dst_name" />
+      <entry maxsize="256" id="dst_name" magnet="true" cell_align="horizontal" />
+    </grid>
     <check text="@.merged_layers" id="flatten" />
     <box horizontal="true" homogeneous="true">
       <button text="@general.ok" closewindow="true" id="ok" magnet="true" />

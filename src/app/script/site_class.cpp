@@ -13,6 +13,8 @@
 #include "app/console.h"
 #include "app/context.h"
 #include "app/context_observer.h"
+#include "app/doc.h"
+#include "app/doc_undo.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"

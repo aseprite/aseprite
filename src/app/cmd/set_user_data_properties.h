@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -35,8 +35,7 @@ protected:
 private:
   doc::ObjectId m_objId;
   std::string m_group;
-  doc::UserData::Properties m_oldProperties;
-  doc::UserData::Properties m_newProperties;
+  doc::UserData::Properties m_properties;
 };
 
 }} // namespace app::cmd

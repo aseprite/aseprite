@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,6 +22,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/move_thing.h"
 #include "app/console.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/tools/ink.h"
@@ -48,6 +49,7 @@
 #include "fmt/format.h"
 #include "gfx/rect.h"
 #include "ui/manager.h"
+#include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/system.h"
 #include "ui/view.h"
@@ -286,9 +288,6 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
   UIContext* ctx = UIContext::instance();
   ctx->setActiveView(editor->getDocView());
 
-  ContextBar* contextBar = App::instance()->contextBar();
-  contextBar->updateForMovingPixels(getTransformation(editor));
-
   // Start scroll loop
   if (editor->checkForScroll(msg) || editor->checkForZoom(msg))
     return true;
@@ -442,10 +441,6 @@ void MovingPixelsState::onCommitMouseMove(Editor* editor, const gfx::PointF& spr
   // Drag the image to that position
   m_pixelsMovement->moveImage(spritePos, moveModifier);
 
-  // Update context bar and status bar
-  ContextBar* contextBar = App::instance()->contextBar();
-  contextBar->updateForMovingPixels(transformation);
-
   m_editor->updateStatusBar();
 }
 
@@ -474,19 +469,6 @@ bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
   // Reset the locked action just to indicate that we can use the
   // FineControl now (e.g. if we pressed another modifier key).
   m_lockedKeyAction = KeyAction::None;
-
-  if (msg->scancode() == kKeyEnter || // TODO make this key customizable
-      msg->scancode() == kKeyEnterPad || msg->scancode() == kKeyEsc) {
-    dropPixels();
-
-    // The escape key drop pixels and deselect the mask.
-    if (msg->scancode() == kKeyEsc) { // TODO make this key customizable
-      Command* cmd = Commands::instance()->byId(CommandId::DeselectMask());
-      UIContext::instance()->executeCommandFromMenuOrShortcut(cmd);
-    }
-
-    return true;
-  }
 
   // Use StandbyState implementation
   return StandbyState::onKeyDown(editor, msg);
@@ -528,6 +510,10 @@ bool MovingPixelsState::onUpdateStatusBar(Editor* editor)
 
   const Transformation& transform(getTransformation(editor));
   gfx::Size imageSize = m_pixelsMovement->getInitialImageSize();
+
+  // Update the context bar along with the status bar
+  ContextBar* contextBar = App::instance()->contextBar();
+  contextBar->updateForMovingPixels(transform);
 
   int w = int(transform.bounds().w);
   int h = int(transform.bounds().h);
@@ -633,6 +619,12 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
       ev.cancel();
       return;
     }
+  }
+  // Handle undo directly as cancelDrag() to avoid adding an action in the history.
+  else if (command->id() == CommandId::Undo()) {
+    cancelDrag();
+    ev.cancel();
+    return;
   }
   // Don't drop pixels if the user zooms/scrolls/picks a color
   // using commands.
@@ -795,16 +787,33 @@ void MovingPixelsState::onDropPixels(ContextBarObserver::DropAction action)
     return;
 
   switch (action) {
+    case ContextBarObserver::Deselect:   deselect(); break;
     case ContextBarObserver::DropPixels: dropPixels(); break;
-
-    case ContextBarObserver::CancelDrag:
-      m_pixelsMovement->discardImage(PixelsMovement::DontCommitChanges);
-      m_discarded = true;
-
-      // Quit from MovingPixelsState, back to standby.
-      m_editor->backToPreviousState();
-      break;
+    case ContextBarObserver::CancelDrag: cancelDrag(); break;
   }
+}
+
+void MovingPixelsState::deselect()
+{
+  if (!m_pixelsMovement || m_discarded)
+    return;
+
+  dropPixels();
+
+  Command* cmd = Commands::instance()->byId(CommandId::DeselectMask());
+  UIContext::instance()->executeCommandFromMenuOrShortcut(cmd);
+}
+
+void MovingPixelsState::cancelDrag()
+{
+  if (!m_pixelsMovement || m_discarded)
+    return;
+
+  m_pixelsMovement->discardImage(PixelsMovement::DontCommitChanges);
+  m_discarded = true;
+
+  // Quit from MovingPixelsState, back to standby.
+  dropPixels();
 }
 
 void MovingPixelsState::onPivotChange()

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2020-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -23,7 +23,6 @@
 #include "base/thread.h"
 #include "doc/sprite.h"
 #include "ui/manager.h"
-#include "ui/system.h"
 
 namespace app {
 
@@ -42,7 +41,7 @@ private:
 };
 
 UndoCommand::UndoCommand(Type type)
-  : Command((type == Undo ? CommandId::Undo() : CommandId::Redo()), CmdUIOnlyFlag)
+  : Command((type == Undo ? CommandId::Undo() : CommandId::Redo()))
   , m_type(type)
 {
 }
@@ -81,7 +80,7 @@ void UndoCommand::onExecute(Context* context)
 
       // Draw the current layer/frame (which is not undone yet) so the
       // user can see the doUndo/doRedo effect.
-      editor->drawSpriteClipped(gfx::Region(gfx::Rect(0, 0, sprite->width(), sprite->height())));
+      editor->drawSpriteClipped(gfx::Region(sprite->bounds()));
 
       editor->display()->flipDisplay();
       base::this_thread::sleep_for(0.01);

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -15,14 +15,13 @@
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/i18n/strings.h"
-#include "app/modules/gui.h"
+#include "app/pref/preferences.h"
 #include "app/tx.h"
 #include "app/ui/status_bar.h"
 #include "base/convert_to.h"
 #include "doc/selected_objects.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
-#include "ui/alert.h"
 #include "ui/widget.h"
 
 namespace app {
@@ -41,7 +40,7 @@ private:
   ObjectId m_sliceId;
 };
 
-RemoveSliceCommand::RemoveSliceCommand() : Command(CommandId::RemoveSlice(), CmdRecordableFlag)
+RemoveSliceCommand::RemoveSliceCommand() : Command(CommandId::RemoveSlice())
 {
 }
 
@@ -95,6 +94,7 @@ void RemoveSliceCommand::onExecute(Context* context)
   }
 
   {
+    const bool useKeys = Preferences::instance().slices.useKeys();
     ContextWriter writer(reader);
     Doc* document(writer.document());
     Sprite* sprite(writer.sprite());
@@ -105,7 +105,7 @@ void RemoveSliceCommand::onExecute(Context* context)
       if (!slice)
         continue;
 
-      if (slice->size() > 1) {
+      if (useKeys && slice->size() > 1) {
         tx(new cmd::SetSliceKey(slice, frame, SliceKey()));
       }
       else {
@@ -117,13 +117,15 @@ void RemoveSliceCommand::onExecute(Context* context)
     document->notifyGeneralUpdate();
   }
 
-  StatusBar::instance()->invalidate();
-  if (!sliceName.empty()) {
-    StatusBar::instance()->showTip(1000, Strings::remove_slice_x_removed(sliceName));
-  }
-  else {
-    StatusBar::instance()->showTip(1000,
-                                   Strings::remove_slice_n_slices_removed(slicesToDelete.size()));
+  if (context->isUIAvailable()) {
+    StatusBar::instance()->invalidate();
+    if (!sliceName.empty()) {
+      StatusBar::instance()->showTip(1000, Strings::remove_slice_x_removed(sliceName));
+    }
+    else {
+      StatusBar::instance()->showTip(1000,
+                                     Strings::remove_slice_n_slices_removed(slicesToDelete.size()));
+    }
   }
 }
 

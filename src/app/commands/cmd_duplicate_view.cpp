@@ -13,8 +13,6 @@
 #include "app/commands/command.h"
 #include "app/ui/workspace.h"
 
-#include <cstdio>
-
 namespace app {
 
 // using namespace ui;
@@ -28,7 +26,7 @@ protected:
   void onExecute(Context* context) override;
 };
 
-DuplicateViewCommand::DuplicateViewCommand() : Command(CommandId::DuplicateView(), CmdUIOnlyFlag)
+DuplicateViewCommand::DuplicateViewCommand() : Command(CommandId::DuplicateView())
 {
 }
 

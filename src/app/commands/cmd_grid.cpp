@@ -15,13 +15,9 @@
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/doc.h"
-#include "app/find_widget.h"
-#include "app/load_widget.h"
 #include "app/pref/preferences.h"
 #include "app/tx.h"
 #include "app/ui/status_bar.h"
-#include "app/ui_context.h"
-#include "doc/document.h"
 #include "doc/mask.h"
 #include "ui/window.h"
 
@@ -36,7 +32,7 @@ using namespace gfx;
 
 class SnapToGridCommand : public Command {
 public:
-  SnapToGridCommand() : Command(CommandId::SnapToGrid(), CmdUIOnlyFlag) {}
+  SnapToGridCommand() : Command(CommandId::SnapToGrid()) {}
 
 protected:
   bool onChecked(Context* ctx) override
@@ -51,13 +47,14 @@ protected:
     bool newValue = !docPref.grid.snap();
     docPref.grid.snap(newValue);
 
-    StatusBar::instance()->showSnapToGridWarning(newValue);
+    if (ctx->isUIAvailable())
+      StatusBar::instance()->showSnapToGridWarning(newValue);
   }
 };
 
 class SelectionAsGridCommand : public Command {
 public:
-  SelectionAsGridCommand() : Command(CommandId::SelectionAsGrid(), CmdUIOnlyFlag) {}
+  SelectionAsGridCommand() : Command(CommandId::SelectionAsGrid()) {}
 
 protected:
   bool onEnabled(Context* ctx) override
@@ -92,13 +89,13 @@ protected:
   void onExecute(Context* context) override;
 };
 
-GridSettingsCommand::GridSettingsCommand() : Command(CommandId::GridSettings(), CmdUIOnlyFlag)
+GridSettingsCommand::GridSettingsCommand() : Command(CommandId::GridSettings())
 {
 }
 
 bool GridSettingsCommand::onEnabled(Context* context)
 {
-  return true;
+  return context->isUIAvailable();
 }
 
 void GridSettingsCommand::onExecute(Context* context)

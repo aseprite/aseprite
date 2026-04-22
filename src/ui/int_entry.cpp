@@ -27,6 +27,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 namespace ui {
 
@@ -54,14 +55,20 @@ IntEntry::~IntEntry()
 int IntEntry::getValue() const
 {
   int value = m_slider->convertTextToValue(text());
-  return std::clamp(value, m_min, m_max);
+  return std::clamp(value, m_min, (m_maxValueUnbounded ? std::numeric_limits<int>::max() : m_max));
 }
 
 void IntEntry::setValue(int value)
 {
-  value = std::clamp(value, m_min, m_max);
+  value = std::clamp(value, m_min, (m_maxValueUnbounded ? std::numeric_limits<int>::max() : m_max));
 
   setText(m_slider->convertValueToText(value));
+
+  // Value is out of slider's range, then close the popup.
+  if (m_popupWindow && ((m_maxValueUnbounded && value > m_max) || value < m_min)) {
+    closePopup();
+    requestFocus();
+  }
 
   if (m_popupWindow && !m_changeFromSlider)
     m_slider->setValue(value);
@@ -74,7 +81,7 @@ bool IntEntry::onProcessMessage(Message* msg)
   switch (msg->type()) {
     // Reset value if it's out of bounds when focus is lost
     case kFocusLeaveMessage:
-      setValue(std::clamp(getValue(), m_min, m_max));
+      setValue(getValue());
       deselectText();
       break;
 
@@ -115,8 +122,8 @@ bool IntEntry::onProcessMessage(Message* msg)
     case kKeyDownMessage:
       if (hasFocus() && !isReadOnly()) {
         KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
-        int chr = keymsg->unicodeChar();
-        if (chr >= 32 && (chr < '0' || chr > '9')) {
+        const int chr = keymsg->unicodeChar();
+        if (chr >= 32 && !onAcceptUnicodeChar(chr)) {
           // "Eat" all keys that aren't number
           return true;
         }
@@ -141,7 +148,7 @@ void IntEntry::onSizeHint(SizeHintEvent& ev)
 {
   const text::FontRef& font = this->font();
   int trailing = font->textLength(getSuffix());
-  trailing = std::max(trailing, 2 * theme()->getEntryCaretSize(this).w);
+  trailing = std::max(trailing, 2 * theme()->getCaretSize(this).w);
 
   int min_w = font->textLength(m_slider->convertValueToText(m_min));
   int max_w = font->textLength(m_slider->convertValueToText(m_max)) + trailing;
@@ -166,47 +173,55 @@ void IntEntry::onValueChange()
   // Do nothing
 }
 
+bool IntEntry::onAcceptUnicodeChar(const int unicodeChar)
+{
+  return (unicodeChar >= '0' && unicodeChar <= '9');
+}
+
 void IntEntry::openPopup()
 {
   m_slider->setValue(getValue());
 
-  // We weren't able to reproduce it, but there are crash reports
-  // where this openPopup() function is called and the popup is still
-  // alive, with the slider inside (we have to remove it before
-  // resetting m_popupWindow pointer to avoid deleting the slider
-  // pointer).
-  removeSlider();
+  if (m_useSlider) {
+    // We weren't able to reproduce it, but there are crash reports
+    // where this openPopup() function is called and the popup is still
+    // alive, with the slider inside (we have to remove it before
+    // resetting m_popupWindow pointer to avoid deleting the slider
+    // pointer).
+    removeSlider();
 
-  m_popupWindow = std::make_unique<TransparentPopupWindow>(
-    PopupWindow::ClickBehavior::CloseOnClickInOtherWindow);
-  m_popupWindow->setAutoRemap(false);
-  m_popupWindow->addChild(m_slider.get());
-  m_popupWindow->Close.connect(&IntEntry::onPopupClose, this);
+    m_popupWindow = std::make_unique<TransparentPopupWindow>(
+      PopupWindow::ClickBehavior::CloseOnClickInOtherWindow);
+    m_popupWindow->setAutoRemap(false);
+    m_popupWindow->addChild(m_slider.get());
+    m_popupWindow->Open.connect(&IntEntry::onPopupOpen, this);
+    m_popupWindow->Close.connect(&IntEntry::onPopupClose, this);
 
-  fit_bounds(display(),
-             m_popupWindow.get(),
-             gfx::Rect(0, 0, 128 * guiscale(), m_popupWindow->sizeHint().h),
-             [this](const gfx::Rect& workarea,
-                    gfx::Rect& rc,
-                    std::function<gfx::Rect(Widget*)> getWidgetBounds) {
-               Rect entryBounds = getWidgetBounds(this);
+    fit_bounds(display(),
+               m_popupWindow.get(),
+               gfx::Rect(0, 0, 128 * guiscale(), m_popupWindow->sizeHint().h),
+               [this](const gfx::Rect& workarea,
+                      gfx::Rect& rc,
+                      std::function<gfx::Rect(Widget*)> getWidgetBounds) {
+                 Rect entryBounds = getWidgetBounds(this);
 
-               rc.x = entryBounds.x;
-               rc.y = entryBounds.y2();
+                 rc.x = entryBounds.x;
+                 rc.y = entryBounds.y2();
 
-               if (rc.x2() > workarea.x2())
-                 rc.x = rc.x - rc.w + entryBounds.w;
+                 if (rc.x2() > workarea.x2())
+                   rc.x = rc.x - rc.w + entryBounds.w;
 
-               if (rc.y2() > workarea.y2())
-                 rc.y = entryBounds.y - entryBounds.h;
+                 if (rc.y2() > workarea.y2())
+                   rc.y = entryBounds.y - entryBounds.h;
 
-               m_popupWindow->setBounds(rc);
-             });
+                 m_popupWindow->setBounds(rc);
+               });
 
-  Region rgn(m_popupWindow->boundsOnScreen().createUnion(boundsOnScreen()));
-  m_popupWindow->setHotRegion(rgn);
+    Region rgn(m_popupWindow->boundsOnScreen().createUnion(boundsOnScreen()));
+    m_popupWindow->setHotRegion(rgn);
 
-  m_popupWindow->openWindow();
+    m_popupWindow->openWindow();
+  }
 }
 
 void IntEntry::closePopup()
