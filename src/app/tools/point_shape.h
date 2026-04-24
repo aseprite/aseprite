@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -24,6 +24,7 @@ public:
   virtual bool isFloodFill() { return false; }
   virtual bool isSpray() { return false; }
   virtual void preparePointShape(ToolLoop* loop) {}
+  virtual void prepareForStroke(ToolLoop* loop) {}
 
   // The x, y position must be relative to the cel/src/dst image origin.
   virtual void transformPoint(ToolLoop* loop, const Stroke::Pt& pt) = 0;

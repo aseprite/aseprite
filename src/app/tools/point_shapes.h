@@ -65,8 +65,16 @@ public:
 
   void preparePointShape(ToolLoop* loop) override
   {
-    // Initialize the "last position" with an impossible position
-    // to compute the first transformPoint in all cases.
+    // Initialize the "last position" with an impossible position to compute
+    // the first transformPoint in all cases.
+    m_lastTilePos = gfx::Point(std::numeric_limits<int>::max(), std::numeric_limits<int>::max());
+  }
+
+  void prepareForStroke(ToolLoop* loop) override
+  {
+    // Reset last tile position for each new stroke to detect any new tile position.
+    // This variable helps detect when we move to a new tile, allowing us to optimize
+    // transformPoint function during a stroke by not compute a new 'pt' along the same tile.
     m_lastTilePos = gfx::Point(std::numeric_limits<int>::max(), std::numeric_limits<int>::max());
   }
 
