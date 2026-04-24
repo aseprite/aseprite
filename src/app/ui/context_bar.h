@@ -20,6 +20,7 @@
 #include "app/ui/dockable.h"
 #include "app/ui/font_entry.h"
 #include "doc/brush.h"
+#include "doc/brush_pattern.h"
 #include "obs/connection.h"
 #include "obs/observable.h"
 #include "obs/signal.h"
@@ -83,6 +84,8 @@ public:
 
   BrushSlot createBrushSlotFromPreferences();
   static doc::BrushRef createBrushFromPreferences(ToolPreferences::Brush* brushPref = nullptr);
+
+  void setActivePattern(const doc::PatternRef& pattern);
 
   doc::Remap* createShadeRemap(bool left);
   void reverseShadeColors();
@@ -212,6 +215,7 @@ private:
   TransformationFields* m_transformation = nullptr;
   DropPixelsField* m_dropPixels;
   doc::BrushRef m_activeBrush;
+  doc::PatternRef m_activePattern;
   ui::Label* m_selectBoxHelp;
   SymmetryField* m_symmetry;
   SliceFields* m_sliceFields;
