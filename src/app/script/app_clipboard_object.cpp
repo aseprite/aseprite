@@ -257,7 +257,7 @@ const Property Clipboard_properties[] = {
   { "content",  Clipboard_get_content, Clipboard_set_content },
   { nullptr,    nullptr,               nullptr               }
 };
-
+DEF_ITERATOR_PAIRS(Clipboard);
 } // anonymous namespace
 
 DEF_MTNAME(Clipboard);

@@ -149,7 +149,7 @@ const luaL_Reg ThemeColor_methods[] = {
   { "__index", ThemeColor_index },
   { nullptr,   nullptr          }
 };
-
+DEF_ITERATOR_PAIRS(Theme);
 } // anonymous namespace
 
 DEF_MTNAME(Theme);

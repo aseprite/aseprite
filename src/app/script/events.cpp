@@ -145,6 +145,16 @@ bool Events::empty() const
   return true;
 }
 
+AppEvents::AppEvents(lua_State* L) : Events(L), m_addedObserver(0)
+{
+}
+
+AppEvents::~AppEvents()
+{
+  if (m_addedObserver)
+    App::instance()->context()->remove_observer(this);
+}
+
 void AppEvents::onAddFirstListener(EventType eventType)
 {
   auto* app = App::instance();

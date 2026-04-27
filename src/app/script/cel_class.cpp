@@ -181,7 +181,7 @@ const Property Cel_properties[] = {
   { "properties",  UserData_get_properties<Cel>, UserData_set_properties<Cel> },
   { nullptr,       nullptr,                      nullptr                      }
 };
-
+DEF_ITERATOR_PAIRS(Cel);
 } // anonymous namespace
 
 DEF_MTNAME(Cel);

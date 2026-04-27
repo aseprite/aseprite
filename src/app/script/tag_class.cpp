@@ -161,7 +161,7 @@ const Property Tag_properties[] = {
   { "properties", UserData_get_properties<Tag>, UserData_set_properties<Tag> },
   { nullptr,      nullptr,                      nullptr                      }
 };
-
+DEF_ITERATOR_PAIRS(Tag);
 } // anonymous namespace
 
 DEF_MTNAME(Tag);

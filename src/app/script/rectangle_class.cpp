@@ -261,7 +261,7 @@ const Property Rectangle_properties[] = {
   { "isEmpty", Rectangle_get_isEmpty, nullptr              },
   { nullptr,   nullptr,               nullptr              }
 };
-
+DEF_ITERATOR_PAIRS(Rectangle);
 } // anonymous namespace
 
 DEF_MTNAME(gfx::Rect);

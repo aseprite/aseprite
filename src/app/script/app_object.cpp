@@ -927,7 +927,7 @@ const Property App_properties[] = {
   { "clipboard",      App_get_clipboard,      nullptr                },
   { nullptr,          nullptr,                nullptr                }
 };
-
+DEF_ITERATOR_PAIRS(App);
 } // anonymous namespace
 
 DEF_MTNAME(App);

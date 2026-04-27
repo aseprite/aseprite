@@ -125,7 +125,7 @@ const Property Version_properties[] = {
   { "prereleaseNumber", Version_get_prereleaseNumber, nullptr },
   { nullptr,            nullptr,                      nullptr }
 };
-
+DEF_ITERATOR_PAIRS(Version);
 } // anonymous namespace
 
 DEF_MTNAME(base::Version);

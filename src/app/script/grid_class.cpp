@@ -71,7 +71,7 @@ const Property Grid_properties[] = {
   { "origin",   Grid_get_origin,   nullptr },
   { nullptr,    nullptr,           nullptr }
 };
-
+DEF_ITERATOR_PAIRS(Grid);
 } // anonymous namespace
 
 DEF_MTNAME(Grid);

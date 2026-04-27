@@ -17,6 +17,7 @@
 #include "app/file/file_format.h"
 #include "app/pref/preferences.h"
 #include "app/script/blend_mode.h"
+#include "app/script/debugger.h"
 #include "app/script/events.h"
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
@@ -85,6 +86,7 @@ void register_app_command_object(lua_State* L);
 void register_app_preferences_object(lua_State* L);
 void register_json_object(lua_State* L);
 
+void register_iterator_class(lua_State* L);
 void register_brush_class(lua_State* L);
 void register_cel_class(lua_State* L);
 void register_cels_class(lua_State* L);
@@ -142,6 +144,14 @@ int wrap(lua_State* L)
 {
   Engine* ptr = *static_cast<Engine**>(lua_getextraspace(L));
   return (ptr->*function)();
+}
+
+using memberHook = void (Engine::*)(lua_Debug*);
+template<memberHook function>
+void wrapHook(lua_State* L, lua_Debug* ar)
+{
+  Engine* ptr = *static_cast<Engine**>(lua_getextraspace(L));
+  (ptr->*function)(ar);
 }
 
 // Functions like the Lua allocator except filling the Engine memory tracker and
@@ -223,6 +233,7 @@ constexpr luaL_Reg lua_libraries[] = {
 };
 
 constexpr auto registration_functions = {
+  register_iterator_class,
   register_app_object,
   register_app_pixel_color_object,
   register_app_fs_object,
@@ -603,6 +614,22 @@ int Engine::lua_os_clock()
 {
   lua_pushnumber(L, m_clock.elapsed());
   return 1;
+}
+
+void Engine::lua_hook(lua_Debug* ar)
+{
+  ASSERT(m_debugger)
+  if (m_debugger)
+    m_debugger->onHook(L, ar);
+}
+
+void Engine::setDebugger(Debugger* debugger)
+{
+  m_debugger = debugger;
+  if (m_debugger)
+    lua_sethook(L, &wrapHook<&Engine::lua_hook>, LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE, 0);
+  else
+    lua_sethook(L, nullptr, 0, 0);
 }
 
 AppEvents* Engine::appEvents()

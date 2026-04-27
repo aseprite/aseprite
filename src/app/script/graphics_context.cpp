@@ -590,7 +590,7 @@ const Property GraphicsContext_properties[] = {
   { "palette",     GraphicsContext_get_palette,     GraphicsContext_set_palette     },
   { nullptr,       nullptr,                         nullptr                         }
 };
-
+DEF_ITERATOR_PAIRS(GraphicsContext);
 } // anonymous namespace
 
 DEF_MTNAME(GraphicsContext);

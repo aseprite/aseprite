@@ -64,7 +64,8 @@ public:
     AfterCommand,
   };
 
-  explicit AppEvents(lua_State* L) : Events(L), m_addedObserver(0) {}
+  explicit AppEvents(lua_State* L);
+  ~AppEvents();
 
   EventType eventType(const char* eventName) const override;
 

@@ -345,7 +345,7 @@ const Property Selection_properties[] = {
   { "isEmpty", Selection_get_isEmpty, nullptr              },
   { nullptr,   nullptr,               nullptr              }
 };
-
+DEF_ITERATOR_PAIRS(Selection);
 } // anonymous namespace
 
 DEF_MTNAME(SelectionObj);

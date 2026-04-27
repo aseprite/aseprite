@@ -211,7 +211,7 @@ const Property Brush_properties[] = {
   { "patternOrigin", Brush_get_patternOrigin, nullptr },
   { nullptr,         nullptr,                 nullptr }
 };
-
+DEF_ITERATOR_PAIRS(Brush);
 } // anonymous namespace
 
 DEF_MTNAME(BrushObj);

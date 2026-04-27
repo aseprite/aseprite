@@ -99,7 +99,7 @@ const Property AppOS_properties[] = {
 const luaL_Reg AppOS_methods[] = {
   { nullptr, nullptr }
 };
-
+DEF_ITERATOR_PAIRS(AppOS);
 } // anonymous namespace
 
 DEF_MTNAME(AppOS);

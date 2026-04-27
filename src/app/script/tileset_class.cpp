@@ -126,7 +126,7 @@ const Property Tileset_properties[] = {
   { "properties", UserData_get_properties<Tileset>, UserData_set_properties<Tileset> },
   { nullptr,      nullptr,                          nullptr                          }
 };
-
+DEF_ITERATOR_PAIRS(Tileset);
 } // anonymous namespace
 
 DEF_MTNAME(Tileset);

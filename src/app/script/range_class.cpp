@@ -429,7 +429,7 @@ const Property Range_properties[] = {
   { "slices",         Range_get_slices,         Range_set_slices },
   { nullptr,          nullptr,                  nullptr          }
 };
-
+DEF_ITERATOR_PAIRS(Range);
 } // anonymous namespace
 
 DEF_MTNAME(RangeObj);

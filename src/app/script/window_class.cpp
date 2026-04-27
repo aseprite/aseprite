@@ -47,7 +47,7 @@ const Property Window_properties[] = {
   { "events", Window_get_events, nullptr },
   { nullptr,  nullptr,           nullptr }
 };
-
+DEF_ITERATOR_PAIRS(Window);
 } // anonymous namespace
 
 DEF_MTNAME(ui::Window);

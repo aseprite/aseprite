@@ -512,7 +512,7 @@ const Property Layer_properties[] = {
   { "uuid",          Layer_get_uuid,                 nullptr                        },
   { nullptr,         nullptr,                        nullptr                        }
 };
-
+DEF_ITERATOR_PAIRS(Layer);
 } // anonymous namespace
 
 DEF_MTNAME(Layer);

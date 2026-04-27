@@ -176,6 +176,7 @@ endif()
 if(ENABLE_SCRIPTING)
   target_link_libraries(app-lib lua lauxlib lualib)
   target_compile_definitions(app-lib PUBLIC -DENABLE_SCRIPTING)
+  target_link_libraries(app-lib cppdap)
 
   if(ENABLE_WEBSOCKET)
     target_link_libraries(app-lib ixwebsocket)
@@ -200,6 +201,7 @@ if(ENABLE_SCRIPTING)
     script/cels_class.cpp
     script/color_class.cpp
     script/color_space_class.cpp
+    script/debugger.cpp
     script/dialog_class.cpp
     script/editor_class.cpp
     script/engine.cpp
@@ -214,6 +216,7 @@ if(ENABLE_SCRIPTING)
     script/image_spec_class.cpp
     script/images_class.cpp
     script/json_class.cpp
+    script/iterator_class.cpp
     script/keys.cpp
     script/layer_class.cpp
     script/layers_class.cpp

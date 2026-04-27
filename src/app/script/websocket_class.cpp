@@ -231,7 +231,7 @@ const Property WebSocket_properties[] = {
   { "url",   WebSocket_get_url, nullptr },
   { nullptr, nullptr,           nullptr }
 };
-
+DEF_ITERATOR_PAIRS(WebSocket);
 } // anonymous namespace
 
 using WebSocket = ix::WebSocket;

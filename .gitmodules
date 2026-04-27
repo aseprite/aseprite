@@ -81,3 +81,6 @@
 [submodule "third_party/json"]
 	path = third_party/json
 	url = https://github.com/aseprite/json
+[submodule "third_party/cppdap"]
+	path = third_party/cppdap
+	url = https://github.com/aseprite/cppdap

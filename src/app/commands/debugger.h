@@ -10,8 +10,6 @@
 
 #include "app/commands/command.h"
 
-#include <memory>
-
 namespace app {
 
 class DebuggerCommand : public Command {

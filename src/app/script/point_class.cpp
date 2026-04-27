@@ -207,7 +207,7 @@ const Property Point_properties[] = {
   { "y",     Point_get_y, Point_set_y },
   { nullptr, nullptr,     nullptr     }
 };
-
+DEF_ITERATOR_PAIRS(Point);
 } // anonymous namespace
 
 DEF_MTNAME(gfx::Point);
