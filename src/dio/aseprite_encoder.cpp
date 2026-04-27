@@ -42,7 +42,7 @@ bool AsepriteEncoder::encode()
   const Sprite* sprite = delegate()->sprite();
   bool require_new_palette_chunk = false;
   for (Palette* pal : sprite->getPalettes()) {
-    if (pal->size() > 256 || pal->hasAlpha()) {
+    if (pal->size() == 0 || pal->size() > 256 || pal->hasAlpha()) {
       require_new_palette_chunk = true;
       break;
     }
@@ -70,11 +70,18 @@ bool AsepriteEncoder::encode()
 
     // is the first frame or did the palette change?
     Palette* pal = sprite->palette(frame);
-    int palFrom = 0, palTo = pal->size() - 1;
-    if ( // First frame or..
-      (frame == delegate()->fromFrame() ||
-       // This palette is different from the previous frame palette
-       sprite->palette(frame - 1)->countDiff(pal, &palFrom, &palTo) > 0)) {
+    const int paletteSize = pal->size();
+    int palFrom = 0, palTo = paletteSize - 1;
+
+    // Current frame is the first frame
+    const bool isFirstFrame = (frame == delegate()->fromFrame());
+    // Frame's palette is different from the previous frame palette
+    // Check if it's not first frame first so an invalid frame number
+    // (-1) isn't passed into palette()
+    const bool paletteChanged = (!isFirstFrame &&
+                                 sprite->palette(frame - 1)->countDiff(pal, &palFrom, &palTo) > 0);
+
+    if ((isFirstFrame || paletteChanged) && paletteSize != 0) {
       // Write new palette chunk
       if (require_new_palette_chunk) {
         writePaletteChunk(&frame_header, pal, palFrom, palTo);
@@ -85,6 +92,10 @@ bool AsepriteEncoder::encode()
         // is smaller than the new palette chunk).
         writeColor2Chunk(&frame_header, pal);
       }
+    }
+    else if (paletteChanged && paletteSize == 0) {
+      // Write new palette chunk with ncolors = 0 and ignore from and to
+      writePaletteChunk(&frame_header, pal, 0, 0);
     }
 
     // Write extra chunks in the first frame
@@ -402,6 +413,9 @@ void AsepriteEncoder::writePaletteChunk(AsepriteFrameHeader* frame_header,
   write32(from);
   write32(to);
   writePadding(8);
+
+  if (pal->size() == 0)
+    return;
 
   for (int c = from; c <= to; ++c) {
     const color_t color = pal->getEntry(c);
