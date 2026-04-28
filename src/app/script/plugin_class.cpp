@@ -121,6 +121,10 @@ void deleteCommandIfExistent(Extension* ext, const std::string& id)
 {
   auto cmd = Commands::instance()->byId(id.c_str());
   if (cmd) {
+    // Delete the item added by the "group" parameter, if any.
+    if (auto* appMenus = AppMenus::instance())
+      appMenus->removeMenuItemFromGroup(cmd);
+
     Commands::instance()->remove(cmd);
     ext->removeCommand(id);
     delete cmd;
