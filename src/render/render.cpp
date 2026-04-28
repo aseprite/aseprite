@@ -274,8 +274,8 @@ void composite_image_scale_down(Image* dst,
     return;
 
   BlenderHelper<DstTraits, SrcTraits> blender(dst, src, pal, blendMode, newBlend);
-  int step_w = int(1.0 / sx);
-  int step_h = int(1.0 / sy);
+  int step_w = int(std::round(1.0 / sx));
+  int step_h = int(std::round(1.0 / sy));
   if (step_w < 1 || step_h < 1)
     return;
 
