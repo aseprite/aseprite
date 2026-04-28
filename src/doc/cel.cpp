@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2025 Igara Studio S.A.
+// Copyright (c) 2019-present Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -27,7 +27,7 @@ Cel::Cel(frame_t frame, const ImageRef& image)
   , m_frame(frame)
   , m_data(new CelData(image))
 {
-  ++m_data->m_refs;
+  m_data->incRefs();
 }
 
 Cel::Cel(frame_t frame, const CelDataRef& celData)
@@ -36,13 +36,11 @@ Cel::Cel(frame_t frame, const CelDataRef& celData)
   , m_frame(frame)
   , m_data(celData)
 {
-  ++m_data->m_refs;
+  m_data->incRefs();
 }
 
 Cel::~Cel()
 {
-  if (m_data)
-    --m_data->m_refs;
 }
 
 // static
@@ -74,10 +72,10 @@ void Cel::setDataRef(const CelDataRef& celData)
 {
   ASSERT(celData);
   if (m_data)
-    --m_data->m_refs;
+    m_data->decRefs();
   m_data = celData;
   if (m_data)
-    ++m_data->m_refs;
+    m_data->incRefs();
 }
 
 void Cel::setPosition(int x, int y)
@@ -155,7 +153,7 @@ std::size_t Cel::links() const
 void Cel::suspendObject()
 {
   if (m_data) {
-    if (--m_data->m_refs == 0) {
+    if (m_data->decRefs() == 0) {
       // Suspend the CelData only if this was the latest cel referencing it.
       m_data->suspendObject();
     }
@@ -169,7 +167,7 @@ void Cel::restoreObject()
   Object::restoreObject();
 
   if (m_data) {
-    if (++m_data->m_refs == 1) {
+    if (m_data->incRefs() == 1) {
       m_data->restoreObject();
     }
   }
