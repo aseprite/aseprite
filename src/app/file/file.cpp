@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1018,9 +1018,34 @@ void FileOp::operate(IFileOpProgress* progress)
         m_abstractImage->setSpecSize(m_roi.fileCanvasSize(), m_roi.fileCanvasSize());
       }
 
+      std::string originalFilename;
+      std::string tempFilename;
+      if (m_safeSave) {
+        originalFilename = m_filename;
+        tempFilename = base::get_temp_path() + base::get_file_name(m_filename) + ".tmp";
+        m_filename = tempFilename;
+      }
+
       // Call the "save" procedure.
       if (!m_format->save(this)) {
-        setError("Error saving the sprite in the file \"%s\"\n", m_filename.c_str());
+        setError("Error saving the sprite in the file \"%s\"\n",
+                 (m_safeSave ? originalFilename : m_filename).c_str());
+      }
+
+      if (m_safeSave) {
+        m_filename = originalFilename;
+        if (!hasError() && !isStop()) {
+          try {
+            base::move_file(tempFilename, m_filename, true);
+          }
+          catch (const std::exception& e) {
+            setError("Error replacing the original file: %s\n", e.what());
+          }
+        }
+        else {
+          if (base::is_file(tempFilename))
+            base::delete_file(tempFilename);
+        }
       }
     }
 

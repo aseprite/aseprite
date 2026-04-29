@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2026  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-present  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <window id="options" text="@.title" help="preferences">
@@ -625,6 +625,7 @@
                  pref="experimental.hue_with_sat_value_for_color_selector" />
           <check id="flash_layer" text="@.flash_selected_layer" />
           <check id="use_selection_tool_loop" text="@.use_selection_tool_loop" />
+          <check id="safe_save" text="@.safe_save" />
           <hbox>
             <label for="tooltip_delay" text="@.tooltip_delay" />
             <expr id="tooltip_delay" suffix="@.tooltip_delay_unit" />
