@@ -221,6 +221,15 @@ void ExpandCelCanvas::commit()
       // We can temporary remove the cel.
       static_cast<LayerImage*>(m_layer)->removeCel(m_cel);
 
+      // Manual mode doesn't create new cels.
+      if (m_layer->isTilemap() && m_tilemapMode == TilemapMode::Pixels &&
+          m_tilesetMode == TilesetMode::Manual) {
+        delete m_cel;
+        m_cel = nullptr;
+        m_committed = true; // Makes sure rollback() isn't called
+        return;
+      }
+
       gfx::Rect trimBounds = getTrimDstImageBounds();
       if (!trimBounds.isEmpty()) {
         // Convert the image to tiles
