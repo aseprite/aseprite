@@ -49,9 +49,16 @@ void unregister_custom_format_extension(const std::string& ext, const FileFormat
 
 FileFormat detect_format(const std::string& filename)
 {
-  FileFormat ff = detect_format_by_file_content(filename);
-  if (ff == FileFormat::UNKNOWN)
-    ff = detect_format_by_file_extension(filename);
+  FileFormat ff = detect_format_by_file_extension(filename);
+
+  if (ff < FileFormat::FIRST_CUSTOM) {
+    // For non-custom formats, we use content detection and override the detection if we find
+    // something valid, to account for incorrect extensions.
+    const FileFormat contentFormat = detect_format_by_file_content(filename);
+    if (contentFormat > FileFormat::UNKNOWN)
+      ff = contentFormat;
+  }
+
   return ff;
 }
 
