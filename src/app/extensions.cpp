@@ -1104,7 +1104,7 @@ Extensions::Extensions()
         loadExtension(dir, fullFn, isBuiltinExtension);
       }
       catch (const std::exception& ex) {
-        LOG("EXT: Error loading JSON file: %s\n", ex.what());
+        LOG(ERROR, "EXT: Error loading extension from '%s': %s\n", dir.c_str(), ex.what());
       }
     }
   }
@@ -1374,6 +1374,12 @@ Extension* Extensions::loadExtension(const std::string& path,
   const auto& name = json["name"].string_value();
   const auto& version = json["version"].string_value();
   const auto& displayName = json["displayName"].string_value();
+
+  auto it = std::find_if(m_extensions.begin(), m_extensions.end(), [&name](const Extension* ext) {
+    return ext->name() == name;
+  });
+  if (it != m_extensions.end())
+    throw base::Exception("An extension with the name '%s' already exists", name.c_str());
 
   LOG("EXT: Extension '%s' loaded\n", name.c_str());
 
