@@ -7,7 +7,7 @@
 #include <benchmark/benchmark.h>
 
 #ifdef ENABLE_SCRIPTING
-  #include "engine.h"
+  #include "app/script/engine.h"
 
 using namespace app;
 

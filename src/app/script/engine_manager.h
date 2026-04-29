@@ -1,58 +1,37 @@
-#ifndef ASEPRITE_ENGINEMANAGER_H
-#define ASEPRITE_ENGINEMANAGER_H
+// Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-#include "app/console.h"
-#include "engine.h"
+#ifndef APP_SCRIPT_ENGINE_MANAGER_H_INCLUDED
+#define APP_SCRIPT_ENGINE_MANAGER_H_INCLUDED
 
-namespace app { namespace script {
+#include "app/script/engine.h"
+
+namespace app::script {
 
 using Engines = std::map<std::string, std::shared_ptr<Engine>>;
 class EngineManager {
 public:
   // Creates a new Engine with Console printing.
-  static std::unique_ptr<Engine> create()
-  {
-    auto engine = std::make_unique<Engine>();
-    engine->ConsolePrint.connect(&Console::println);
-    engine->ConsoleError.connect(&Console::println);
-    return engine;
-  }
+  static std::unique_ptr<Engine> create();
 
   // Creates a new Engine and evals the given filename, if the filename entry point was already
   // used, the engine is reused.
   // This engine's memory is handled by the manager and is released on exit.
-  static void createForScript(const std::string& filename, const Params& params)
-  {
-    auto* manager = instance();
-    std::shared_ptr<Engine> engine;
+  static void runUserScript(const std::string& filename, const Params& params);
 
-    auto it = manager->m_engines.find(filename);
-    if (it == manager->m_engines.end()) {
-      engine = create();
-      it = manager->m_engines.emplace(filename, engine).first;
-    }
-    else {
-      engine = it->second;
-    }
+  // Deletes all managed engine instances
+  static void clear();
 
-    engine->evalUserFile(filename, params);
-    if (!engine->hasLingeringObjects())
-      manager->m_engines.erase(it);
-  }
-
-  static void clear() { instance()->m_engines.clear(); }
-
-  static EngineManager* instance()
-  {
-    static EngineManager instance;
-    return &instance;
-  }
+  static EngineManager* instance();
 
 private:
   EngineManager() = default;
   Engines m_engines;
 };
 
-}} // namespace app::script
+} // namespace app::script
 
-#endif // ASEPRITE_ENGINEMANAGER_H
+#endif // APP_SCRIPT_ENGINE_MANAGER_H_INCLUDED

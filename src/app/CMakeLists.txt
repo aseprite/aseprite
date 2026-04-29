@@ -203,6 +203,7 @@ if(ENABLE_SCRIPTING)
     script/dialog_class.cpp
     script/editor_class.cpp
     script/engine.cpp
+    script/engine_manager.cpp
     script/events_class.cpp
     script/frame_class.cpp
     script/frames_class.cpp

@@ -208,14 +208,6 @@ private:
   bool m_hasText = false;
 };
 
-Console::~Console()
-{
-  if (m_console && m_console->hasConsoleText() && !m_console->isVisible()) {
-    m_console->manager()->attractFocus(m_console);
-    m_console->openWindow();
-  }
-}
-
 void Console::printf(const char* format, ...)
 {
   std::va_list ap;

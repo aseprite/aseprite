@@ -71,7 +71,7 @@ void RunScriptCommand::onExecute(Context* context)
       return;
   }
 
-  script::EngineManager::createForScript(m_filename, m_params);
+  script::EngineManager::runUserScript(m_filename, m_params);
 
   if (context->isUIAvailable())
     ui::Manager::getDefault()->invalidate();

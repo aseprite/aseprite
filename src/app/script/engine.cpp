@@ -17,6 +17,7 @@
 #include "app/file/file_format.h"
 #include "app/pref/preferences.h"
 #include "app/script/blend_mode.h"
+#include "app/script/events.h"
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
 #include "app/sprite_sheet_type.h"
@@ -27,10 +28,10 @@
 #include "base/file_handle.h"
 #include "base/fs.h"
 #include "base/fstream_path.h"
+#include "base/mem_utils.h"
 #include "doc/algorithm/flip_type.h"
 #include "doc/anidir.h"
 #include "doc/color_mode.h"
-#include "events.h"
 #include "filters/target.h"
 #include "fmt/format.h"
 #include "ui/base.h"
@@ -160,9 +161,9 @@ void* tracking_allocator(void* ud, void* ptr, size_t osize, size_t nsize)
   // Memory usage limiter
   if (tracker->limit > 0 && tracker->usage + nsize >= tracker->limit) {
     LOG(ERROR,
-        "Script memory limit hit: Using %d, attempted to allocate %d.\n",
-        tracker->usage,
-        nsize);
+        "Script memory limit hit: Using %s, attempted to allocate %s.\n",
+        base::get_pretty_memory_size(tracker->usage).c_str(),
+        base::get_pretty_memory_size(nsize).c_str());
     return nullptr;
   }
   tracker->usage += nsize;
@@ -293,7 +294,7 @@ Engine::Engine() : L(nullptr), m_printEvalResult(false), m_returnCode(0), m_obje
   // Load Lua libraries
   for (const auto& [name, func] : lua_libraries) {
     luaL_requiref(L, name, func, 1);
-    lua_pop(L, 1); /* remove lib */
+    lua_pop(L, 1); // remove lib
   }
 
   // Secure Lua functions

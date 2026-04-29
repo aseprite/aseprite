@@ -539,7 +539,7 @@ protected:
     lua_pushstring(L, m_definition.binary ? "wb" : "w");
 
     if (lua_pcall(L, 2, 1, 0) != LUA_OK) {
-      Console::println("Failed to open file for writing\n");
+      Console::println("Failed to open file for writing");
       return false;
     }
     lua_pushvalue(L, -1);

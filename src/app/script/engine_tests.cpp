@@ -14,10 +14,10 @@ const char* g_exeName = nullptr;
   #include "app/commands/commands.h"
   #include "app/context.h"
   #include "app/doc.h"
+  #include "app/script/engine.h"
   #include "app/script/luacpp.h"
   #include "base/fs.h"
   #include "base/time.h"
-  #include "engine.h"
   #include "fmt/args.h"
   #include "os/os.h"
 

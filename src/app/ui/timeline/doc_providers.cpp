@@ -35,7 +35,7 @@ std::unique_ptr<Doc> DocProviderFromPaths::nextDoc()
     return nullptr;
 
   if (fop->hasError()) {
-    Console::printf(fop->error().c_str());
+    Console::print(fop->error());
     return nullptr;
   }
 
@@ -56,7 +56,7 @@ std::unique_ptr<Doc> DocProviderFromPaths::nextDoc()
 
   // Show any error
   if (fop->hasError() && !fop->isStop())
-    Console::printf(fop->error().c_str());
+    Console::print(fop->error());
 
   return std::unique_ptr<Doc>(fop->releaseDocument());
 }

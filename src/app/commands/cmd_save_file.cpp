@@ -234,7 +234,7 @@ void SaveFileBaseCommand::saveDocumentInBackground(const Context* context,
   }
 
   if (fop->hasError()) {
-    Console::printf(fop->error().c_str());
+    Console::print(fop->error());
 
     // We don't know if the file was saved correctly or not. So mark
     // it as it should be saved again. Except for read-only documents,
