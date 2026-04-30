@@ -337,16 +337,17 @@ void Extension::addCommand(const std::string& id)
   m_plugin.items.push_back(item);
 }
 
-void Extension::removeCommand(const std::string& id)
+bool Extension::removeCommand(const std::string& id)
 {
   for (auto it = m_plugin.items.begin(); it != m_plugin.items.end();) {
     if (it->type == PluginItem::Command && it->id == id) {
-      it = m_plugin.items.erase(it);
+      m_plugin.items.erase(it);
+      return true;
     }
-    else {
-      ++it;
-    }
+
+    ++it;
   }
+  return false;
 }
 
 void Extension::addMenuGroup(const std::string& id)
@@ -357,16 +358,17 @@ void Extension::addMenuGroup(const std::string& id)
   m_plugin.items.push_back(item);
 }
 
-void Extension::removeMenuGroup(const std::string& id)
+bool Extension::removeMenuGroup(const std::string& id)
 {
   for (auto it = m_plugin.items.begin(); it != m_plugin.items.end();) {
     if (it->type == PluginItem::MenuGroup && it->id == id) {
-      it = m_plugin.items.erase(it);
+      m_plugin.items.erase(it);
+      return true;
     }
-    else {
-      ++it;
-    }
+
+    ++it;
   }
+  return false;
 }
 
 void Extension::addMenuSeparator(ui::Widget* widget)
