@@ -58,8 +58,8 @@
         <color id="menuitem_normal_text" value="#c0c0c0"/>
         <color id="menuitem_disabled_text" value="#202125"/>
         <color id="menuitem_normal_face" value="#2c2c30"/>
-        <color id="menuitem_hot_text" value="#2c2c30"/>
-        <color id="menuitem_hot_face" value="#c0c0c0"/>
+        <color id="menuitem_hot_text" value="#7d7d7d"/>
+        <color id="menuitem_hot_face" value="#2c2c30"/>
         <color id="menuitem_highlight_text" value="#2c2c30"/>
         <color id="menuitem_highlight_face" value="#c0c0c0"/>
         <color id="window_face" value="#2c2c30"/>
@@ -742,7 +742,7 @@
             <text color="listitem_selected_text" align="left" x="2" state="selected"/>
         </style>
         <style id="recent_file_detail" border="2" border-left="0" extends="recent_file">
-            <text color="disabled" align="left" x="2"/>
+            <text color="tab_normal_text" align="left" x="2"/>
         </style>
         <style id="recent_file_pin">
             <background color="background"/>
@@ -761,7 +761,7 @@
             <text color="listitem_selected_text" align="left" x="2" state="selected"/>
         </style>
         <style id="news_item_detail" extends="news_item" border="2">
-            <text color="disabled" align="left top wordwrap" x="2"/>
+            <text color="tab_normal_text" align="left top wordwrap" x="2"/>
             <text color="listitem_selected_text" align="left top wordwrap" x="2" state="selected"/>
         </style>
         <style id="scrollbar">
