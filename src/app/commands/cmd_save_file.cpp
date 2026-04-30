@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -282,11 +282,7 @@ void SaveFileCommand::onExecute(Context* context)
     const ContextReader reader(context);
     const Doc* documentReader = reader.document();
 
-    saveDocumentInBackground(
-      context,
-      document,
-      (params().filename.isSet() ? params().filename() : documentReader->filename()),
-      MarkAsSaved::On);
+    saveDocumentInBackground(context, document, documentReader->filename(), MarkAsSaved::On);
   }
   // If the document isn't associated to a file, we must to show the
   // save-as dialog to the user to select for first time the file-name
@@ -316,7 +312,8 @@ void SaveFileAsCommand::onExecute(Context* context)
   Doc* document = context->activeDocument();
   saveAsDialog(context,
                Strings::save_file_save_as(),
-               (params().filename.isSet() ? params().filename() : document->filename()),
+               ((params().filename.isSet() && params().filename() != "") ? params().filename() :
+                                                                           document->filename()),
                MarkAsSaved::On);
 }
 
