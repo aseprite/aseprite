@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -193,6 +193,8 @@ public:
   bool isDone() const;
   bool isStop() const;
 
+  void setSafeSave(bool state) { m_safeSave = state; }
+
   // Does extra post-load processing which may require user intervention.
   void postLoad();
 
@@ -292,6 +294,7 @@ private:
   std::string m_filename;     // File-name to load/save.
   std::string m_dataFilename; // File-name for a special XML .aseprite-data where extra sprite data
                               // can be stored
+  bool m_safeSave = false;
   FileOpROI m_roi;
 
   // Shared fields between threads.
