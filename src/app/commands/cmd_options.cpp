@@ -892,6 +892,15 @@ public:
     m_curPref->grid.opacity(gridOpacity()->getValue());
     m_curPref->grid.autoOpacity(gridAutoOpacity()->isSelected());
 
+    m_curPref->show.gridSubdivisions(gridSubdivisionsVisible()->isSelected());
+    m_curPref->gridSubdivisions.subdivisions(
+      gfx::Size(std::max(gridSubdivisionsX()->textInt(), 1),
+                std::max(gridSubdivisionsY()->textInt(), 1)));
+    m_curPref->gridSubdivisions.color(gridSubdivisionsColor()->getColor());
+    m_curPref->gridSubdivisions.opacity(gridSubdivisionsOpacity()->getValue());
+    m_curPref->gridSubdivisions.autoOpacity(gridSubdivisionsAutoOpacity()->isSelected());
+    m_curPref->gridSubdivisions.dashed(gridSubdivisionsDashed()->isSelected());
+
     m_curPref->show.pixelGrid(pixelGridVisible()->isSelected());
     m_curPref->pixelGrid.color(pixelGridColor()->getColor());
     m_curPref->pixelGrid.opacity(pixelGridOpacity()->getValue());
@@ -1596,6 +1605,14 @@ private:
     gridOpacity()->setValue(m_curPref->grid.opacity());
     gridAutoOpacity()->setSelected(m_curPref->grid.autoOpacity());
 
+    gridSubdivisionsVisible()->setSelected(m_curPref->show.gridSubdivisions());
+    gridSubdivisionsX()->setTextf("%d", m_curPref->gridSubdivisions.subdivisions().w);
+    gridSubdivisionsY()->setTextf("%d", m_curPref->gridSubdivisions.subdivisions().h);
+    gridSubdivisionsColor()->setColor(m_curPref->gridSubdivisions.color());
+    gridSubdivisionsOpacity()->setValue(m_curPref->gridSubdivisions.opacity());
+    gridSubdivisionsAutoOpacity()->setSelected(m_curPref->gridSubdivisions.autoOpacity());
+    gridSubdivisionsDashed()->setSelected(m_curPref->gridSubdivisions.dashed());
+
     pixelGridVisible()->setSelected(m_curPref->show.pixelGrid());
     pixelGridColor()->setColor(m_curPref->pixelGrid.color());
     pixelGridOpacity()->setValue(m_curPref->pixelGrid.opacity());
@@ -1640,6 +1657,14 @@ private:
       gridOpacity()->setValue(pref.grid.opacity.defaultValue());
       gridAutoOpacity()->setSelected(pref.grid.autoOpacity.defaultValue());
 
+      gridSubdivisionsVisible()->setSelected(pref.show.gridSubdivisions.defaultValue());
+      gridSubdivisionsX()->setTextf("%d", pref.gridSubdivisions.subdivisions.defaultValue().w);
+      gridSubdivisionsY()->setTextf("%d", pref.gridSubdivisions.subdivisions.defaultValue().h);
+      gridSubdivisionsColor()->setColor(pref.gridSubdivisions.color.defaultValue());
+      gridSubdivisionsOpacity()->setValue(pref.gridSubdivisions.opacity.defaultValue());
+      gridSubdivisionsAutoOpacity()->setSelected(pref.gridSubdivisions.autoOpacity.defaultValue());
+      gridSubdivisionsDashed()->setSelected(pref.gridSubdivisions.dashed.defaultValue());
+
       pixelGridVisible()->setSelected(pref.show.pixelGrid.defaultValue());
       pixelGridColor()->setColor(pref.pixelGrid.color.defaultValue());
       pixelGridOpacity()->setValue(pref.pixelGrid.opacity.defaultValue());
@@ -1656,6 +1681,14 @@ private:
       gridColor()->setColor(pref.grid.color());
       gridOpacity()->setValue(pref.grid.opacity());
       gridAutoOpacity()->setSelected(pref.grid.autoOpacity());
+
+      gridSubdivisionsVisible()->setSelected(pref.show.gridSubdivisions());
+      gridSubdivisionsX()->setTextf("%d", pref.gridSubdivisions.subdivisions().w);
+      gridSubdivisionsY()->setTextf("%d", pref.gridSubdivisions.subdivisions().h);
+      gridSubdivisionsColor()->setColor(pref.gridSubdivisions.color());
+      gridSubdivisionsOpacity()->setValue(pref.gridSubdivisions.opacity());
+      gridSubdivisionsAutoOpacity()->setSelected(pref.gridSubdivisions.autoOpacity());
+      gridSubdivisionsDashed()->setSelected(pref.gridSubdivisions.dashed());
 
       pixelGridVisible()->setSelected(pref.show.pixelGrid());
       pixelGridColor()->setColor(pref.pixelGrid.color());
