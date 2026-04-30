@@ -518,6 +518,12 @@ Palette* AsepriteDecoder::readPaletteChunk(Palette* prevPal, frame_t frame)
   int to = read32();
   readPadding(8);
 
+  // If the palette has no colors, resize pal and return early
+  // because there are no colors to be read
+  if (newSize == 0) {
+    pal->resize(newSize);
+    return pal;
+  }
   if (newSize > 0)
     pal->resize(newSize);
 
