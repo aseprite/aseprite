@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2026  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-present  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <window id="options" text="@.title" help="preferences">
@@ -247,7 +247,12 @@
           <check text="@.zoom_from_center_with_wheel" id="zoom_from_center_with_wheel" />
           <check text="@.zoom_from_center_with_keys" id="zoom_from_center_with_keys" />
           <check text="@.show_scrollbars" id="show_scrollbars" tooltip="@.show_scrollbars_tooltip" />
-          <check text="@.auto_scroll" id="auto_scroll" />
+          <hbox>
+            <check text="@.auto_scroll" id="auto_scroll" />
+            <boxfiller />
+            <label text="@.auto_scroll_speed" id="auto_scroll_speed_label" />
+            <expr id="auto_scroll_speed" text="100" />
+          </hbox>
           <check text="@.auto_fit" id="auto_fit"
                  pref="editor.auto_fit" />
           <check text="@.straight_line_preview" id="straight_line_preview" tooltip="@.straight_line_preview_tooltip" />
