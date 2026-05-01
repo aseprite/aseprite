@@ -310,7 +310,6 @@ Engine::Engine() : L(nullptr), m_printEvalResult(false), m_returnCode(0), m_obje
   }
   lua_register(L, "loadfile", &wrap<&Engine::lua_loadfile>);
 
-  // TODO: Do we want a global clock or are we keeping one per engine?
   lua_getglobal(L, "os");
   lua_pushcfunction(L, &wrap<&Engine::lua_os_clock>);
   lua_setfield(L, -2, "clock");

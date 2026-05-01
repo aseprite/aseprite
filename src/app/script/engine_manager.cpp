@@ -5,6 +5,7 @@
 // the End-User License Agreement for Aseprite.
 
 #include "app/script/engine_manager.h"
+
 #include "app/console.h"
 
 namespace app::script {

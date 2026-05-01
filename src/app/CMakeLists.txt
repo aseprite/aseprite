@@ -204,7 +204,7 @@ if(ENABLE_SCRIPTING)
     script/editor_class.cpp
     script/engine.cpp
     script/engine_manager.cpp
-    script/events_class.cpp
+    script/events.cpp
     script/frame_class.cpp
     script/frames_class.cpp
     script/graphics_context.cpp

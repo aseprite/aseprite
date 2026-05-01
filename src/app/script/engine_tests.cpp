@@ -306,12 +306,12 @@ TEST(Engine, Events)
 
   EXPECT_TRUE(engine->evalCode(R"(
 BeforeCommandID = app.events:on('beforecommand',
-  function()
-    print('event.beforecommand')
+  function(ev)
+    print('event.beforecommand.' .. ev.name)
   end)
 AfterCommandID = app.events:on('aftercommand',
-  function()
-    print('event.aftercommand')
+  function(ev)
+    print('event.aftercommand.' .. ev.name)
   end)
 print(AfterCommandID)
 )"));
@@ -321,8 +321,8 @@ print(AfterCommandID)
   app.context()->executeCommand(Commands::instance()->byId(CommandId::Refresh()));
 
   EXPECT_EQ(print.size(), 3);
-  EXPECT_EQ(print[1], "event.beforecommand");
-  EXPECT_EQ(print[2], "event.aftercommand");
+  EXPECT_EQ(print[1], "event.beforecommand.Refresh");
+  EXPECT_EQ(print[2], "event.aftercommand.Refresh");
 
   // Ensure we are not sharing events.
   auto engine2 = std::make_shared<Engine>();
@@ -330,8 +330,8 @@ print(AfterCommandID)
   EXPECT_TRUE(engine2->evalCode(fmt::format("app.events:off({})", print[0])));
 
   app.context()->executeCommand(Commands::instance()->byId(CommandId::Refresh()));
-  EXPECT_EQ(print[3], "event.beforecommand");
-  EXPECT_EQ(print[4], "event.aftercommand");
+  EXPECT_EQ(print[3], "event.beforecommand.Refresh");
+  EXPECT_EQ(print[4], "event.aftercommand.Refresh");
 
   EXPECT_TRUE(engine->evalCode(R"(
 app.events:off(BeforeCommandID)

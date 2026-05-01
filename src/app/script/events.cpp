@@ -133,6 +133,18 @@ Events::EventType AppEvents::eventType(const char* eventName) const
   return Unknown;
 }
 
+bool Events::empty() const
+{
+  if (m_listeners.empty())
+    return true;
+
+  for (const auto& listener : m_listeners)
+    if (!listener.empty())
+      return false;
+
+  return true;
+}
+
 void AppEvents::onAddFirstListener(EventType eventType)
 {
   auto* app = App::instance();
@@ -426,18 +438,6 @@ void SpriteEvents::disconnectFromUndoHistory(Doc* doc)
     doc->undoHistory()->remove_observer(this);
     m_observingUndo = false;
   }
-}
-
-bool Events::empty() const
-{
-  if (m_listeners.empty())
-    return true;
-
-  for (const auto& listener : m_listeners)
-    if (!listener.empty())
-      return false;
-
-  return true;
 }
 
 int Events_on(lua_State* L)

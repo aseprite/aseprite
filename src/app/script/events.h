@@ -8,13 +8,10 @@
 #define APP_SCRIPT_EVENTS_H_INCLUDED
 #pragma once
 
-#include "app/commands/command.h"
 #include "app/context.h"
 #include "app/context_observer.h"
 #include "app/doc.h"
-#include "app/doc_event.h"
 #include "app/doc_undo_observer.h"
-#include "app/pref/preferences.h"
 #include "app/site.h"
 #include "ui/window.h"
 
@@ -126,9 +123,6 @@ public:
     Change,
     FilenameChange,
     AfterAddTile,
-#if ENABLE_REMAP_TILESET_EVENT
-    RemapTileset,
-#endif
     LayerBlendMode,
     LayerName,
     LayerOpacity,
