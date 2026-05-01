@@ -771,8 +771,7 @@ Doc* DocExporter::exportSheet(Context* ctx, base::task_token& token)
           base::make_all_directories(dir);
       }
       catch (const std::exception& ex) {
-        Console console;
-        console.printf("Error creating directory \"%s\"\n%s", dir.c_str(), ex.what());
+        Console::printf("Error creating directory \"%s\"\n%s", dir.c_str(), ex.what());
       }
     }
 
@@ -787,8 +786,7 @@ Doc* DocExporter::exportSheet(Context* ctx, base::task_token& token)
   captureSamples(samples, token);
   if (samples.empty()) {
     if (!ctx->isUIAvailable()) {
-      Console console;
-      console.printf("No documents to export");
+      Console::println("No documents to export");
     }
     return nullptr;
   }

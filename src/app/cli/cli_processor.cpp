@@ -176,7 +176,6 @@ int CliProcessor::process(Context* ctx)
 #ifdef ENABLE_SCRIPTING
     Params scriptParams;
 #endif
-    Console console;
     CliOpenFile cof;
     SpriteSheetType sheetType = SpriteSheetType::None;
     Doc* lastDoc = nullptr;
@@ -424,7 +423,7 @@ int CliProcessor::process(Context* ctx)
             }
           }
           else
-            console.printf("A document is needed before --save-as argument\n");
+            Console::printf("A document is needed before --save-as argument\n");
         }
         // --palette <filename>
         else if (opt == &m_options.palette()) {
@@ -435,7 +434,7 @@ int CliProcessor::process(Context* ctx)
             m_delegate->loadPalette(ctx, filename);
           }
           else {
-            console.printf("You need to load a document to change its palette with --palette\n");
+            Console::printf("You need to load a document to change its palette with --palette\n");
           }
         }
         // --scale <factor>

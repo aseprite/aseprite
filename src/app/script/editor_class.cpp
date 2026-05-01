@@ -145,7 +145,7 @@ public:
       lua_setfield(L, -2, "point");
       if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
         if (const char* s = lua_tostring(L, -1))
-          Console().printf("%s\n", s);
+          Console::println(s);
       }
     }
   }
@@ -160,7 +160,7 @@ public:
       lua_setfield(L, -2, "point");
       if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
         if (const char* s = lua_tostring(L, -1))
-          Console().printf("%s\n", s);
+          Console::println(s);
       }
     }
     cancel();
@@ -174,7 +174,7 @@ public:
       lua_newtable(L); // Create empty "ev" table as argument
       if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
         if (const char* s = lua_tostring(L, -1))
-          Console().printf("%s\n", s);
+          Console::println(s);
       }
     }
     cancel();

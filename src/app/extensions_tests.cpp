@@ -17,6 +17,7 @@ const char* g_exeName = nullptr;
   #include "app/doc_undo.h"
   #include "app/extensions.h"
   #include "app/ini_file.h"
+  #include "app/script/engine.h"
   #include "archive.h"
   #include "archive_entry.h"
   #include "base/convert_to.h"
@@ -127,6 +128,14 @@ public:
           FAIL() << "Failed to write to the zip file";
       }
     }
+  }
+
+  std::string prefString() const
+  {
+    const std::ifstream ifs(base::join_path(m_path, "__pref.lua"));
+    std::stringstream buffer;
+    buffer << ifs.rdbuf();
+    return buffer.str();
   }
 
   std::string path() const { return m_path; }
@@ -373,10 +382,7 @@ end
   EXPECT_EQ(menuItemGroupIds[1], "new_group_id");
 
   // Make sure all our values got serialized correctly into __pref.lua
-  const std::ifstream ifs(base::join_path(e.path(), "__pref.lua"));
-  std::stringstream buffer;
-  buffer << ifs.rdbuf();
-  const auto pref = buffer.str();
+  const auto pref = e.prefString();
   const std::vector<std::string> serializedResults = {
     "count=1",
     "starting_pref=1235",
@@ -424,6 +430,47 @@ end
   app.run(false);
 
   EXPECT_FALSE(Commands::instance()->byId("TestCommand"));
+}
+
+TEST(Extensions, MultiScriptInit)
+{
+  const ExtFiles extensionFiles = {
+    { "package.json", R"(
+{
+  "name": "test-multi-script-innit",
+  "displayName": "Multi Script Init Test",
+  "contributes": {
+    "scripts": [
+        { "path": "./script1.lua" }, { "path": "./script2.lua" }, { "path": "./script3.lua" }
+    ]
+  }
+})" },
+    { "script1.lua",  R"(
+function init(plugin)
+  plugin.preferences.log = {"script1.init"}
+end
+function exit(plugin)
+  table.insert(plugin.preferences.log, "script1.exit")
+end
+)" },
+    { "script2.lua",  R"(
+function init(plugin)
+  table.insert(plugin.preferences.log, "script2.init")
+end
+function exit(plugin)
+  table.insert(plugin.preferences.log, "script2.exit")
+end
+)" },
+    { "script3.lua",  R"(
+)" }
+  };
+  const ExtTestHelper e("test-multi-script-innit", extensionFiles);
+  INIT_EXTENSION_TEST();
+
+  Extension* testExt = e.get(app.extensions());
+  app.extensions().enableExtension(testExt, false);
+  EXPECT_EQ(e.prefString(),
+            R"(return {log={"script1.init","script2.init","script1.exit","script2.exit"}})");
 }
 
 TEST(Extensions, BasicZipInstall)

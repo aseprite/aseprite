@@ -84,8 +84,7 @@ void Job::startJob()
         Console::showException(ex);
       }
       catch (...) {
-        Console console;
-        console.printf("Unknown error performing the task");
+        Console::println("Unknown error performing the task");
       }
     }
   }

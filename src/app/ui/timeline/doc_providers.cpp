@@ -25,7 +25,6 @@ std::unique_ptr<Doc> DocProviderFromPaths::nextDoc()
   // Remove the path that is currently being processed
   m_paths.erase(m_paths.begin());
 
-  Console console;
   int flags = FILE_LOAD_DATA_FILE | FILE_LOAD_AVOID_BACKGROUND_LAYER | FILE_LOAD_CREATE_PALETTE |
               FILE_LOAD_SEQUENCE_YES;
 
@@ -36,7 +35,7 @@ std::unique_ptr<Doc> DocProviderFromPaths::nextDoc()
     return nullptr;
 
   if (fop->hasError()) {
-    console.printf(fop->error().c_str());
+    Console::print(fop->error());
     return nullptr;
   }
 
@@ -57,7 +56,7 @@ std::unique_ptr<Doc> DocProviderFromPaths::nextDoc()
 
   // Show any error
   if (fop->hasError() && !fop->isStop())
-    console.printf(fop->error().c_str());
+    Console::print(fop->error());
 
   return std::unique_ptr<Doc>(fop->releaseDocument());
 }

@@ -159,8 +159,7 @@ void FilterWorker::run()
   m_filterMgr->updateWriterThread();
 
   if (!m_error.empty()) {
-    Console console;
-    console.printf("A problem has occurred.\n\nDetails:\n%s", m_error.c_str());
+    Console::printf("A problem has occurred.\n\nDetails:\n%s\n", m_error.c_str());
   }
 }
 

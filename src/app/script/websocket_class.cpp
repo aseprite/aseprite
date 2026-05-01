@@ -98,7 +98,7 @@ int WebSocket_new(lua_State* L)
 
           if (lua_pcall(L, 3, 0, 0)) {
             if (const char* s = lua_tostring(L, -1)) {
-              App::instance()->scriptEngine()->consolePrint(s);
+              engine_print(L, s);
               ws->stop();
             }
           }
