@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2023  Igara Studio S.A.
+// Copyright (C) 2022-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -85,6 +85,16 @@ void SimpleRenderer::setExtraImage(render::ExtraType type,
 void SimpleRenderer::removeExtraImage()
 {
   m_render.removeExtraImage();
+}
+
+void SimpleRenderer::setExtraCelInfoMap(const render::ExtraCelInfoMap* map)
+{
+  m_render.setExtraCelInfoMap(map);
+}
+
+void SimpleRenderer::removeExtraCelInfoMap()
+{
+  m_render.removeExtraCelInfoMap();
 }
 
 void SimpleRenderer::setOnionskin(const render::OnionskinOptions& options)
