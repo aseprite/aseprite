@@ -14,6 +14,7 @@
 #include "render/dithering_matrix.h"
 
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -68,6 +69,25 @@ public:
     DitheringMatrices,
     Multiple,
     Max
+  };
+
+  struct About {
+    struct Contributor {
+      std::string name;
+      std::string email;
+      std::string url;
+      std::string toString() const;
+    };
+
+    std::string name;
+    std::string displayName;
+    std::string version;
+    std::string description;
+    std::string publisher;
+    std::string license;
+    std::string url;
+    std::optional<Contributor> author;
+    std::vector<Contributor> contributors;
   };
 
   bool isDefaultTheme() const;
@@ -126,6 +146,7 @@ public:
   const std::string& version() const { return m_version; }
   const std::string& displayName() const { return m_displayName; }
   Category category() const { return m_category; }
+  About readAbout() const;
 
   const ExtensionItems& keys() const { return m_keys; }
   const Languages& languages() const { return m_languages; }

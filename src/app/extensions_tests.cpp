@@ -216,6 +216,10 @@ TEST(Extensions, Complex)
   "author": { "name": "Test",
               "email": "test@igara.com",
               "url": "https://aseprite.org/" },
+  "contributors": [
+    { "name": "Test 2" },
+    "Test 3"
+  ],
   "contributes": {
     "scripts": [
         { "path": "./script.lua" }
@@ -323,6 +327,19 @@ end
   EXPECT_EQ(testExt->displayName(), "Complex Extension Test");
   EXPECT_EQ(testExt->category(), Extension::Category::Multiple);
   EXPECT_EQ(testExt->version(), "0.1");
+
+  Extension::About about = testExt->readAbout();
+  EXPECT_EQ(about.name, "test-complex");
+  EXPECT_EQ(about.displayName, "Complex Extension Test");
+  EXPECT_EQ(about.version, "0.1");
+  {
+    const auto& author = about.author.value();
+    EXPECT_EQ(author.name, "Test");
+    EXPECT_EQ(author.email, "test@igara.com");
+    EXPECT_EQ(author.url, "https://aseprite.org/");
+  }
+  EXPECT_EQ(about.contributors[0].name, "Test 2");
+  EXPECT_EQ(about.contributors[1].name, "Test 3");
 
   EXPECT_EQ(testExt->keys().size(), 1);
   EXPECT_EQ(testExt->languages().size(), 1);

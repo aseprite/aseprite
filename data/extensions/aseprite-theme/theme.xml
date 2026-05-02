@@ -539,7 +539,7 @@
             <background color="textbox_face"/>
             <text color="textbox_text" align="left"/>
         </style>
-        <style id="textbox_label" extends="textbox_text">
+        <style id="textbox_label" border="0" extends="textbox_text">
             <background color="window_face"/>
             <text color="text" align="left"/>
         </style>

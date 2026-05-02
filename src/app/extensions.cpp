@@ -49,6 +49,7 @@
 
 #include "archive.h"
 #include "archive_entry.h"
+#include "fmt/format.h"
 #include "nlohmann/json.hpp"
 
 #include <fstream>
@@ -192,11 +193,11 @@ private:
   bool m_open;
 };
 
-void read_json_file(const std::string& path, nlohmann::json& json)
+nlohmann::json read_json_file(const std::string& path)
 {
-  auto file = base::open_file(path, "rb");
+  const auto file = base::open_file(path, "rb");
   try {
-    json = nlohmann::json::parse(file.get());
+    return nlohmann::json::parse(file.get());
   }
   catch (std::exception& e) {
     throw base::Exception("Error parsing JSON file: %s\n", e.what());
@@ -265,6 +266,53 @@ void Extension::executeExitActions()
   if (isEnabled() && hasScripts())
     exitScripts();
 #endif // ENABLE_SCRIPTING
+}
+
+Extension::About Extension::readAbout() const
+{
+  const std::string packageJson = base::join_path(m_path, kPackageJson);
+  auto json = read_json_file(packageJson);
+
+  About about{ m_name,
+               m_displayName,
+               m_version,
+               json.value("description", ""),
+               json.value("publisher", ""),
+               json.value("license", ""),
+               json.value("url", "") };
+
+  constexpr auto extractContributor = [](const auto& jsonObj) {
+    std::optional<About::Contributor> opt;
+    if (jsonObj.is_string()) {
+      opt = About::Contributor{ jsonObj };
+    }
+    else if (jsonObj.is_object()) {
+      opt = About::Contributor{
+        jsonObj.value("name", ""),
+        jsonObj.value("email", ""),
+        jsonObj.value("url", ""),
+      };
+    }
+
+    if (opt.has_value() && opt.value().toString().empty())
+      opt = std::nullopt;
+
+    return opt;
+  };
+
+  if (json.contains("author")) {
+    const auto& author = json.at("author");
+    about.author = extractContributor(author);
+  }
+
+  auto contributors = json.value("contributors", nlohmann::json::array());
+  for (const auto& obj : contributors) {
+    auto contributor = extractContributor(obj);
+    if (contributor.has_value())
+      about.contributors.push_back(contributor.value());
+  }
+
+  return about;
 }
 
 void Extension::addKeys(const std::string& id, const std::string& path)
@@ -687,8 +735,7 @@ void Extension::uninstallFiles(const std::string& path, const DeletePluginPref d
   if (!base::is_file(infoFn))
     throw base::Exception("Cannot remove extension, '%s' file doesn't exist", infoFn.c_str());
 
-  nlohmann::json json;
-  read_json_file(infoFn, json);
+  auto json = read_json_file(infoFn);
 
   base::paths installedDirs;
 
@@ -1043,6 +1090,23 @@ void Extension::addScript(const std::string& fn)
 }
 #endif // ENABLE_SCRIPTING
 
+std::string Extension::About::Contributor::toString() const
+{
+  if (name.empty() && email.empty() && url.empty())
+    return std::string();
+
+  if (name.empty()) {
+    if (email.empty())
+      return url;
+    return email;
+  }
+
+  if (!email.empty())
+    return fmt::format("{} <{}>", name, email);
+
+  return name;
+}
+
 //////////////////////////////////////////////////////////////////////
 // Extensions
 
@@ -1351,8 +1415,7 @@ Extension* Extensions::loadExtension(const std::string& path,
                                      const std::string& fullPackageFilename,
                                      const bool isBuiltinExtension)
 {
-  nlohmann::json json;
-  read_json_file(fullPackageFilename, json);
+  auto json = read_json_file(fullPackageFilename);
   const std::string& name = json.at("name");
   if (name.empty())
     throw base::Exception("Error loading extension '%s', empty name", path.c_str());
