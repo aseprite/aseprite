@@ -896,6 +896,7 @@ void Theme::drawTextBox(Graphics* g,
   gfx::Point scroll;
   const text::FontRef& font = widget->font();
   const int lineheight = font->lineHeight();
+  const int lineseparation = (widget->type() == kTextBoxWidget) ? 2 * guiscale() : 0;
   char *beg_end, *old_end;
   int width;
   gfx::Rect vp;
@@ -1016,7 +1017,7 @@ void Theme::drawTextBox(Graphics* g,
     if (w)
       *w = std::max(*w, len);
 
-    y += lineheight;
+    y += lineheight + lineseparation;
 
     if (end) {
       *end = chr;
@@ -1025,7 +1026,7 @@ void Theme::drawTextBox(Graphics* g,
   }
 
   if (h)
-    *h = (y - y1 + scroll.y);
+    *h = (y - y1 - lineseparation + scroll.y);
 
   if (w)
     *w += widget->border().width();
