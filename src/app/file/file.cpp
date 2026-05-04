@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -990,13 +990,22 @@ void FileOp::operate(IFileOpProgress* progress)
           // Make directories
           makeDirectories();
 
+          std::string tempFilename;
+          if (m_safeSave)
+            initSafeSave(tempFilename);
+
           // Call the "save" procedure... did it fail?
           if (!m_format->save(this)) {
             setError("Error saving frame %d in the file \"%s\"\n",
                      outputFrame + 1,
                      m_filename.c_str());
-            break;
           }
+
+          if (m_safeSave)
+            finishSafeSave(tempFilename);
+
+          if (hasError())
+            break;
         }
 
         m_seq.progress_offset += m_seq.progress_fraction;
@@ -1016,10 +1025,17 @@ void FileOp::operate(IFileOpProgress* progress)
         m_abstractImage->setSpecSize(m_roi.fileCanvasSize(), m_roi.fileCanvasSize());
       }
 
+      std::string tempFilename;
+      if (m_safeSave)
+        initSafeSave(tempFilename);
+
       // Call the "save" procedure.
       if (!m_format->save(this)) {
         setError("Error saving the sprite in the file \"%s\"\n", m_filename.c_str());
       }
+
+      if (m_safeSave)
+        finishSafeSave(tempFilename);
     }
 
     // Save special data from .aseprite-data file
@@ -1041,6 +1057,37 @@ void FileOp::operate(IFileOpProgress* progress)
 
   // Progress = 100%
   setProgress(1.0f);
+}
+
+void FileOp::initSafeSave(std::string& tempFilename)
+{
+  auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+  tempFilename = base::join_path(base::get_temp_path(),
+                                 fmt::format("{}_{}.tmp", base::get_file_name(m_filename), now));
+  std::swap(m_filename, tempFilename);
+}
+
+void FileOp::finishSafeSave(std::string& tempFilename)
+{
+  std::swap(m_filename, tempFilename);
+  if (!hasError() && !isStop()) {
+    try {
+      base::move_file(tempFilename, m_filename, true);
+    }
+    catch (const std::exception& e) {
+      setError("Error overwriting file: %s\n", e.what());
+    }
+  }
+  else {
+    if (base::is_file(tempFilename)) {
+      try {
+        base::delete_file(tempFilename);
+      }
+      catch (const std::exception& e) {
+        setError("Error deleting temporary file: %s\n", e.what());
+      }
+    }
+  }
 }
 
 // After mark the 'fop' as 'done' you must to free it calling fop_free().
