@@ -1130,10 +1130,8 @@ void Render::renderPlan(RenderPlan& plan,
 
         RenderPlan subPlan(m_composeGroups);
 
-        for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers()) {
-          if (child->isVisible())
-            subPlan.addLayer(child, frame);
-        }
+        for (const Layer* child : layer->layers())
+          subPlan.addLayer(child, frame);
 
         // We treat the group layer as a separate image so we can apply modifiers
         // in the whole group while not affecting the layers behind it.

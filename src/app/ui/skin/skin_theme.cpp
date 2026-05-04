@@ -1323,19 +1323,26 @@ Theme::TextColors SkinTheme::getTextColors(Widget* widget)
   c.background = Paint(colors.textboxFace());
   c.selectedText = Paint(colors.selectedText());
   c.selectedBackground = Paint(colors.selected());
+  c.disabledBackground = Paint(colors.face());
+  c.disabledText = Paint(colors.disabled());
+  c.placeholderText = Paint(colors.entrySuffix());
 
   // Try to get colors from the widget style
   if (ui::Style* style = widget->style()) {
     for (auto& layer : style->layers()) {
       switch (layer.type()) {
         case ui::Style::Layer::Type::kBackground:
-          if (layer.flags() & ui::Style::Layer::kSelected)
+          if (layer.flags() & ui::Style::Layer::kDisabled)
+            c.disabledBackground.color(layer.color());
+          else if (layer.flags() & ui::Style::Layer::kSelected)
             c.selectedBackground.color(layer.color());
           else
             c.background.color(layer.color());
           break;
         case ui::Style::Layer::Type::kText:
-          if (layer.flags() & ui::Style::Layer::kSelected)
+          if (layer.flags() & ui::Style::Layer::kDisabled)
+            c.disabledText.color(layer.color());
+          else if (layer.flags() & ui::Style::Layer::kSelected)
             c.selectedText.color(layer.color());
           else
             c.text.color(layer.color());
@@ -1499,8 +1506,9 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
   const std::string& fullText = widget->text() + widget->getSuffix();
 
   // Full text to paint: widget text + suffix or placeholder
-  const std::string& paintText = fullText.empty() ? widget->placeholder() : fullText;
-
+  const std::string& paintText = (fullText.empty() && !widget->isReadOnly()) ?
+                                   widget->placeholder() :
+                                   fullText;
   if (!paintText.empty()) {
     base::utf8_decode dec(paintText);
     auto pos = dec.pos();
@@ -1520,7 +1528,7 @@ void SkinTheme::drawEntryText(ui::Graphics* g, ui::Entry* widget)
       }
 
       g->drawTextWithDelegate(std::string(pos, paintText.end()), // TODO use a string_view()
-                              fullText.empty() ? colors.disabled() : colors.text(),
+                              fullText.empty() ? colors.entrySuffix() : colors.text(),
                               ColorNone,
                               gfx::Point(bounds.x, baselineAdjustment),
                               &delegate);

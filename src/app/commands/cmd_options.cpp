@@ -23,6 +23,7 @@
 #include "app/i18n/strings.h"
 #include "app/ini_file.h"
 #include "app/launcher.h"
+#include "app/match_words.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/recent_files.h"
@@ -83,6 +84,48 @@ app::gen::ColorProfileBehavior missingCsMap[] = {
   app::gen::ColorProfileBehavior::DISABLE,
   app::gen::ColorProfileBehavior::ASSIGN,
   app::gen::ColorProfileBehavior::ASK,
+};
+
+// This property generates a lower case version of the widget's text, and a space-separated lower
+// case list of words. It includes any tooltips attached to the widget and for ComboBoxes it
+// combines all of the item text. This helps the preference search not have to repeatedly do all of
+// these string operations when the user is typing.
+//
+// When the UI language changes, these properties are removed so they may be generated again.
+class SearchTextProperty : public ui::Property {
+public:
+  static constexpr const char* Name = "SearchText";
+
+  SearchTextProperty(ui::Widget* widget, ui::TooltipManager* tooltipManager) : ui::Property(Name)
+  {
+    m_text = widget->text();
+
+    if (widget->type() == ui::kComboBoxWidget) {
+      auto* comboBox = static_cast<ui::ComboBox*>(widget);
+
+      for (int i = 0; i < comboBox->getItemCount(); i++)
+        m_text += " " + comboBox->getItemText(i);
+
+      // Handle the special combobox tooltip case, where they're attached to the entry widget.
+      if (const auto& comboTooltip = tooltipManager->getTooltipFor(comboBox->getEntryWidget());
+          !comboTooltip.empty())
+        m_text += " " + comboTooltip;
+    }
+    else if (const auto& tooltip = tooltipManager->getTooltipFor(widget); !tooltip.empty())
+      m_text += " " + tooltip;
+
+    m_text = base::string_to_lower(m_text);
+
+    base::split_string(m_text, m_textWords, " ");
+  }
+
+  const std::string& text() const { return m_text; }
+
+  const std::vector<std::string>& textWords() const { return m_textWords; }
+
+private:
+  std::string m_text;
+  std::vector<std::string> m_textWords;
 };
 
 class ExtensionCategorySeparator : public SeparatorInView {
@@ -230,7 +273,7 @@ class OptionsWindow : public app::gen::Options {
     {
       ASSERT(m_extension);
       ASSERT(canBeUninstalled());
-      App::instance()->extensions().uninstallExtension(m_extension, DeletePluginPref::kYes);
+      App::instance()->extensions().uninstallExtension(m_extension, DeletePluginPref::Yes);
       m_extension = nullptr;
     }
 
@@ -570,8 +613,14 @@ public:
     m_extThemesChanges = App::instance()->extensions().ThemesChange.connect(
       [this] { reloadThemes(); });
 
+    search()->Change.connect(&OptionsWindow::onSearch, this);
+
     loadFromPreferences();
+
+    manager()->addMessageFilter(kFocusEnterMessage, this);
   }
+
+  ~OptionsWindow() { manager()->removeMessageFilter(kFocusEnterMessage, this); }
 
   void loadFromPreferences()
   {
@@ -620,6 +669,9 @@ public:
 
     // Slices default color
     defaultSliceColor()->setColor(m_pref.slices.defaultColor());
+
+    // Tooltip Delay
+    tooltipDelay()->setTextf("%d", m_pref.experimental.tooltipDelay());
 
     // Timeline
     firstFrame()->setTextf("%d", m_globPref.timeline.firstFrame());
@@ -926,6 +978,7 @@ public:
     m_pref.experimental.nonactiveLayersOpacity(nonactiveLayersOpacity()->getValue());
     m_pref.quantization.rgbmapAlgorithm(m_rgbmapAlgorithmSelector.algorithm());
     m_pref.quantization.fitCriteria(m_bestFitCriteriaSelector.criteria());
+    m_pref.experimental.tooltipDelay(tooltipDelay()->textInt());
 
 #if LAF_WINDOWS
     // Windows API tablet settings
@@ -1106,7 +1159,7 @@ private:
   bool onProcessMessage(Message* msg) override
   {
     switch (msg->type()) {
-      case kDropFilesMessage:
+      case kDropFilesMessage: {
         base::paths files = static_cast<DropFilesMessage*>(msg)->files();
         for (const auto& fn : files) {
           const auto& extension = base::string_to_lower(base::get_file_extension(fn));
@@ -1114,6 +1167,22 @@ private:
             showDialogToInstallExtension(fn);
         }
         return true;
+      }
+
+      case kFocusEnterMessage:
+        // Resets the search when we focus any widget that has mouse interaction, unless it's in the
+        // section list
+        if (msg->recipient() == sectionListbox() ||
+            (msg->recipient()->type() == kListItemWidget &&
+             msg->recipient()->parent() == sectionListbox()) ||
+            msg->recipient() == search() || msg->recipient()->hasFlags(IGNORE_MOUSE))
+          return false;
+
+        if (!search()->text().empty()) {
+          search()->clear();
+          onSearch();
+        }
+        break;
     }
     return Window::onProcessMessage(msg);
   }
@@ -1260,7 +1329,7 @@ private:
 
       for (auto* e : uninstall) {
         try {
-          App::instance()->extensions().uninstallExtension(e, DeletePluginPref::kYes);
+          App::instance()->extensions().uninstallExtension(e, DeletePluginPref::Yes);
         }
         catch (const std::exception& ex) {
           LOG(ERROR,
@@ -1429,12 +1498,19 @@ private:
     auto* item = dynamic_cast<const LangItem*>(language()->getSelectedItem());
     if (!item)
       return;
+
     const std::string lang = item->langId();
     const bool state = (lang == "ar" || lang == "ja" || lang == "ko" || lang == "th" ||
                         lang == "yue_Hant" || lang == "zh_Hans" || lang == "zh_Hant");
     fontWarningFiller()->setVisible(state);
     fontWarning()->setVisible(state);
     layout();
+
+    // Clear search text cache inside widgets
+    WidgetsList allWidgets;
+    allWidgetsIn(this, allWidgets);
+    for (auto* widget : allWidgets)
+      widget->removeProperty(SearchTextProperty::Name);
   }
 
   void onClearRecentFiles() { App::instance()->recentFiles()->clear(); }
@@ -1466,11 +1542,11 @@ private:
   }
 
   void updateColorProfileControls(const bool manage,
-                                  const app::gen::WindowColorProfile& windowProfile,
+                                  const app::gen::WindowColorProfile windowProfile,
                                   const std::string& windowProfileName,
                                   const std::string& workingRgbSpace,
-                                  const app::gen::ColorProfileBehavior& filesWithProfile,
-                                  const app::gen::ColorProfileBehavior& missingProfile)
+                                  const app::gen::ColorProfileBehavior filesWithProfile,
+                                  const app::gen::ColorProfileBehavior missingProfile)
   {
     colorManagement()->setSelected(manage);
 
@@ -1587,10 +1663,11 @@ private:
     }
 
     gridVisible()->setSelected(m_curPref->show.grid());
-    gridX()->setTextf("%d", m_curPref->grid.bounds().x);
-    gridY()->setTextf("%d", m_curPref->grid.bounds().y);
-    gridW()->setTextf("%d", m_curPref->grid.bounds().w);
-    gridH()->setTextf("%d", m_curPref->grid.bounds().h);
+    const auto& gridBounds = m_curPref->grid.bounds();
+    gridX()->setTextf("%d", gridBounds.x);
+    gridY()->setTextf("%d", gridBounds.y);
+    gridW()->setTextf("%d", gridBounds.w);
+    gridH()->setTextf("%d", gridBounds.h);
 
     gridColor()->setColor(m_curPref->grid.color());
     gridOpacity()->setValue(m_curPref->grid.opacity());
@@ -1631,10 +1708,11 @@ private:
     // Reset global preferences (use default values specified in pref.xml)
     if (m_curPref == &m_globPref) {
       gridVisible()->setSelected(pref.show.grid.defaultValue());
-      gridX()->setTextf("%d", pref.grid.bounds.defaultValue().x);
-      gridY()->setTextf("%d", pref.grid.bounds.defaultValue().y);
-      gridW()->setTextf("%d", pref.grid.bounds.defaultValue().w);
-      gridH()->setTextf("%d", pref.grid.bounds.defaultValue().h);
+      const auto& defaultBounds = pref.grid.bounds.defaultValue();
+      gridX()->setTextf("%d", defaultBounds.x);
+      gridY()->setTextf("%d", defaultBounds.y);
+      gridW()->setTextf("%d", defaultBounds.w);
+      gridH()->setTextf("%d", defaultBounds.h);
 
       gridColor()->setColor(pref.grid.color.defaultValue());
       gridOpacity()->setValue(pref.grid.opacity.defaultValue());
@@ -1648,10 +1726,11 @@ private:
     // Reset document preferences with global settings
     else {
       gridVisible()->setSelected(pref.show.grid());
-      gridX()->setTextf("%d", pref.grid.bounds().x);
-      gridY()->setTextf("%d", pref.grid.bounds().y);
-      gridW()->setTextf("%d", pref.grid.bounds().w);
-      gridH()->setTextf("%d", pref.grid.bounds().h);
+      const auto& prefBounds = pref.grid.bounds();
+      gridX()->setTextf("%d", prefBounds.x);
+      gridY()->setTextf("%d", prefBounds.y);
+      gridW()->setTextf("%d", prefBounds.w);
+      gridH()->setTextf("%d", prefBounds.h);
 
       gridColor()->setColor(pref.grid.color());
       gridOpacity()->setValue(pref.grid.opacity());
@@ -1979,7 +2058,7 @@ private:
 
         // Uninstall old version
         if (ext->canBeUninstalled()) {
-          exts.uninstallExtension(ext, DeletePluginPref::kNo);
+          exts.uninstallExtension(ext, DeletePluginPref::No);
 
           ExtensionItem* item = getItemByExtension(ext);
           if (item)
@@ -2114,6 +2193,169 @@ private:
     selectOnClickWithKey()->setSelected(m_pref.timeline.selectOnClickWithKey.defaultValue());
     selectOnDrag()->setSelected(m_pref.timeline.selectOnDrag.defaultValue());
     dragAndDropFromEdges()->setSelected(m_pref.timeline.dragAndDropFromEdges.defaultValue());
+  }
+
+  void allWidgetsIn(Widget* root, WidgetsList& list)
+  {
+    const auto& children = root->children();
+    for (auto i = children.rbegin(); i != children.rend(); ++i) {
+      list.push_back(*i);
+      allWidgetsIn(*i, list);
+    }
+  }
+
+  void savePreSearchState()
+  {
+    static bool everythingPreloaded = false;
+    if (!everythingPreloaded) {
+      // Do all the actions that would happen when switching sections for the first to ensure things
+      // like extensions are loaded and we can search them.
+      loadLanguages();
+      onChangeBgScope();
+      onChangeGridScope();
+      loadThemes();
+      loadExtensions();
+      everythingPreloaded = true;
+    }
+
+    WidgetsList allWidgets;
+    allWidgetsIn(this, allWidgets);
+    m_preSearchDisabledFlag.reserve(allWidgets.size());
+
+    // Using the flag instead of isEnabled() preserves the specific widget's state instead of trying
+    // to find a disabled parent, etc.
+    for (auto* widget : allWidgets) {
+      auto searchProp = widget->getProperty(SearchTextProperty::Name);
+      if (!searchProp)
+        widget->setProperty(std::make_shared<SearchTextProperty>(widget, tooltipManager()));
+
+      m_preSearchDisabledFlag.try_emplace(widget, widget->hasFlags(DISABLED));
+    }
+  }
+
+  void loadPreSearchState()
+  {
+    if (m_preSearchDisabledFlag.empty())
+      return;
+
+    for (auto [widget, hadDisabledFlag] : m_preSearchDisabledFlag) {
+      if (hadDisabledFlag)
+        widget->enableFlags(DISABLED);
+      else
+        widget->disableFlags(DISABLED);
+    }
+
+    for (auto* item : sectionListbox()->children())
+      item->setEnabled(true);
+
+    // Necessary since we're manually poking flags
+    invalidate();
+
+    m_preSearchDisabledFlag.clear();
+  }
+
+  void onSearch()
+  {
+    const std::string& lowerText = base::string_to_lower(search()->text());
+
+    if (lowerText.empty()) {
+      loadPreSearchState();
+      return;
+    }
+
+    if (m_preSearchDisabledFlag.empty())
+      savePreSearchState();
+
+    const MatchWords match(lowerText);
+    int newIndex = -1;
+    for (int i = 0; i < sectionListbox()->getItemsCount(); i++) {
+      auto* item = dynamic_cast<ListItem*>(sectionListbox()->at(i));
+      if (!item || item->type() == kSeparatorWidget)
+        continue;
+
+      auto* section = findChild(item->getValue().c_str());
+      if (!section)
+        continue;
+
+      WidgetsList sectionWidgets;
+      allWidgetsIn(section, sectionWidgets);
+
+      std::vector<Widget*> labelsWithBuddies;
+      bool activeSection = false;
+      for (auto* widget : sectionWidgets) {
+        // Ignore combo box items and hidden widgets (checking flag to avoid false positives with
+        // things in other sections), and any widgets disabled beforehand
+        if (widget->parent()->type() == kComboBoxWidget || widget->hasFlags(HIDDEN) ||
+            m_preSearchDisabledFlag[widget] == true)
+          continue;
+
+        const auto& property = std::static_pointer_cast<SearchTextProperty>(
+          widget->getProperty(SearchTextProperty::Name));
+        const auto& text = property->text();
+
+        if (text.empty())
+          continue;
+
+        bool highlight = match.word(text);
+        if (!highlight)
+          highlight = match.fuzzyWords(property->textWords(), 2);
+
+        widget->setEnabled(highlight);
+
+        if (widget->type() == kLabelWidget || widget->type() == kLinkLabelWidget) {
+          if (static_cast<Label*>(widget)->buddy())
+            labelsWithBuddies.push_back(widget);
+        }
+
+        if (highlight)
+          activeSection = true;
+      }
+
+      if (activeSection) {
+        for (auto* widget : labelsWithBuddies) {
+          auto* label = (static_cast<Label*>(widget));
+          auto* buddy = label->buddy();
+
+          if (label->isEnabled()) {
+            buddy->setEnabled(true);
+
+            // Special case to handle ButtonSet & rows
+            if (buddy->type() == kGridWidget || buddy->type() == kBoxWidget) {
+              for (auto* child : buddy->children())
+                child->setEnabled(true);
+            }
+          }
+          else {
+            bool isBuddyEnabled = buddy->isEnabled();
+            if (buddy->type() == kGridWidget || buddy->type() == kBoxWidget) {
+              isBuddyEnabled = false;
+              for (const auto* child : buddy->children()) {
+                if (child->isEnabled() && !child->hasFlags(HIDDEN) &&
+                    (!child->text().empty() || child->type() == kComboBoxWidget)) {
+                  // Any enabled direct child counts
+                  isBuddyEnabled = true;
+                  break;
+                }
+              }
+            }
+
+            label->setEnabled(isBuddyEnabled);
+          }
+        }
+      }
+      else {
+        // For matching the section exactly even when we have no matches inside eg. "Experimental"
+        activeSection = match(item->text());
+      }
+
+      item->setEnabled(activeSection);
+
+      if (activeSection && newIndex == -1)
+        newIndex = i;
+    }
+
+    if (newIndex >= 0 && !sectionListbox()->getSelectedChild()->isEnabled())
+      sectionListbox()->selectChild(sectionListbox()->at(newIndex));
   }
 
   gfx::Rect gridBounds() const
@@ -2256,6 +2498,7 @@ private:
   SamplingSelector* m_samplingSelector = nullptr;
   text::FontRef m_font;
   text::FontRef m_miniFont;
+  std::unordered_map<Widget*, bool> m_preSearchDisabledFlag;
 #if LAF_WINDOWS
   bool m_restartExplorerProc = false;
 #endif // LAF_WINDOWS

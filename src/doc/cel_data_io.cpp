@@ -35,7 +35,7 @@ void write_celdata(std::ostream& os, const CelData* celdata)
   write32(os, celdata->bounds().w);
   write32(os, celdata->bounds().h);
   write8(os, celdata->opacity());
-  write32(os, celdata->image()->id());
+  write32(os, celdata->imageId());
   write_user_data(os, celdata->userData());
 
   if (celdata->hasBoundsF()) { // Reference layer
@@ -78,9 +78,12 @@ CelData* read_celdata(std::istream& is,
     }
   }
 
-  ImageRef image(subObjects->getImageRef(imageId));
-  if (!image)
-    return nullptr;
+  ImageRef image;
+  if (imageId) {
+    image = subObjects->getImageRef(imageId);
+    if (!image)
+      return nullptr;
+  }
 
   std::unique_ptr<CelData> celdata(new CelData(image));
   celdata->setBounds(gfx::Rect(x, y, w, h));
