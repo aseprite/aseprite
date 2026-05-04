@@ -42,13 +42,6 @@ void ExitCommand::onExecute(Context* ctx)
   if (Job::runningJobs() > 0)
     return;
 
-#ifdef ENABLE_SCRIPTING
-  if (auto debuggerCommand = dynamic_cast<DebuggerCommand*>(
-        Commands::instance()->byId(CommandId::Debugger()))) {
-    debuggerCommand->closeDebugger(ctx);
-  }
-#endif
-
   if (ctx->hasModifiedDocuments()) {
     Command* closeAll = Commands::instance()->byId(CommandId::CloseAllFiles());
     Params params;

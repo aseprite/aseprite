@@ -15,7 +15,6 @@
 
 #include <map>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 namespace ui {
@@ -28,6 +27,12 @@ class Sprite;
 namespace app {
 class FileFormat;
 class Command;
+
+#ifdef ENABLE_SCRIPTING
+namespace script {
+class Engine;
+}
+#endif
 
 // Key=id
 // Value=path
@@ -157,6 +162,7 @@ public:
   bool hasFileFormats() const { return !m_fileFormats.empty(); }
   bool hasScripts() const { return !m_plugin.scripts.empty(); }
   void addScript(const std::string& fn);
+  script::Engine* scriptEngine() { return m_engine.get(); }
 #endif
 
   bool isCurrentTheme() const;
@@ -209,6 +215,10 @@ private:
   bool m_isEnabled;
   bool m_isInstalled;
   bool m_isBuiltinExtension;
+
+#ifdef ENABLE_SCRIPTING
+  std::unique_ptr<script::Engine> m_engine;
+#endif
 };
 
 class Extensions {

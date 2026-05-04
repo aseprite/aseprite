@@ -31,11 +31,13 @@ class PluginCommand : public Command {
 public:
   PluginCommand(const std::string& id,
                 const std::string& title,
+                script::Engine* engine,
                 int onclickRef,
                 int onenabledRef,
                 int oncheckedRef)
     : Command(id.c_str())
     , m_title(title)
+    , m_engine(engine)
     , m_onclickRef(onclickRef)
     , m_onenabledRef(onenabledRef)
     , m_oncheckedRef(oncheckedRef)
@@ -49,10 +51,8 @@ public:
     if (!app)
       return;
 
-    if (script::Engine* engine = app->scriptEngine()) {
-      lua_State* L = engine->luaState();
-      luaL_unref(L, LUA_REGISTRYINDEX, m_onclickRef);
-    }
+    ASSERT(m_engine);
+    luaL_unref(m_engine->luaState(), LUA_REGISTRYINDEX, m_onclickRef);
   }
 
   bool isPlugin() override { return true; }
@@ -60,15 +60,13 @@ public:
 protected:
   std::string onGetFriendlyName() const override { return m_title; }
 
-  void onExecute(Context* context) override
+  void onExecute(Context*) override
   {
-    script::Engine* engine = App::instance()->scriptEngine();
-    lua_State* L = engine->luaState();
-
+    lua_State* L = m_engine->luaState();
     lua_rawgeti(L, LUA_REGISTRYINDEX, m_onclickRef);
     if (lua_pcall(L, 0, 1, 0)) {
       if (const char* s = lua_tostring(L, -1)) {
-        Console().printf("Error: %s", s);
+        Console::printf("Error: %s\n", s);
       }
     }
     else {
@@ -96,13 +94,11 @@ private:
   bool callScriptRef(int ref)
   {
     ASSERT(ref);
-    script::Engine* engine = App::instance()->scriptEngine();
-    lua_State* L = engine->luaState();
-
+    lua_State* L = m_engine->luaState();
     lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
     if (lua_pcall(L, 0, 1, 0)) {
       if (const char* s = lua_tostring(L, -1))
-        Console().printf("Error: %s", s);
+        Console::printf("Error: %s\n", s);
       return false;
     }
 
@@ -112,6 +108,7 @@ private:
   }
 
   std::string m_title;
+  Engine* m_engine;
   int m_onclickRef;
   int m_onenabledRef;
   int m_oncheckedRef;
@@ -194,7 +191,12 @@ int Plugin_newCommand(lua_State* L)
       // overwriting a previous registered command)
       deleteCommandIfExistent(plugin->ext, id);
 
-      auto cmd = new PluginCommand(id, title, onclickRef, onenabledRef, oncheckedRef);
+      auto cmd = new PluginCommand(id,
+                                   title,
+                                   plugin->ext->scriptEngine(),
+                                   onclickRef,
+                                   onenabledRef,
+                                   oncheckedRef);
       Commands::instance()->add(cmd);
       plugin->ext->addCommand(id);
 

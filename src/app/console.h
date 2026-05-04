@@ -15,19 +15,18 @@ namespace app {
 class Context;
 
 class Console {
-public:
-  Console(Context* ctx = nullptr);
   ~Console();
 
-  void printf(const char* format, ...);
+public:
+  static void printf(const char* format, ...);
+  static void print(const std::string& message);
+  static void println(const std::string& message) { print(message + "\n"); }
 
   static void showException(const std::exception& e);
   static void notifyNewDisplayConfiguration();
 
 private:
   static bool isUIAvailable();
-
-  bool m_withUI;
 
   class ConsoleWindow;
   static ConsoleWindow* m_console;

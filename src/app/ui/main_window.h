@@ -29,7 +29,6 @@ class CheckUpdateDelegate;
 class BrowserView;
 class ColorBar;
 class ContextBar;
-class DevConsoleView;
 class DocView;
 class Dock;
 class HomeView;
@@ -81,7 +80,6 @@ public:
   void showHomeOnOpen();
   void showHome();
   void showDefaultStatusBar();
-  void showDevConsole();
   void showBrowser(const std::string& filename, const std::string& section = std::string());
   bool isHomeSelected() const;
 
@@ -158,9 +156,6 @@ private:
   std::unique_ptr<HomeView> m_homeView;
   std::unique_ptr<INotificationDelegate> m_scalePanic;
   std::unique_ptr<BrowserView> m_browserView;
-#ifdef ENABLE_SCRIPTING
-  std::unique_ptr<DevConsoleView> m_devConsoleView;
-#endif
   obs::scoped_connection m_timelineResizeConn;
   obs::scoped_connection m_colorBarResizeConn;
   obs::scoped_connection m_saveDockLayoutConn;

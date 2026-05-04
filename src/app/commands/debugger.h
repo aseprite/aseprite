@@ -14,18 +14,13 @@
 
 namespace app {
 
-class Debugger;
-
 class DebuggerCommand : public Command {
 public:
   DebuggerCommand();
 
-  void closeDebugger(Context* ctx);
-
 protected:
+  bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
-
-  std::unique_ptr<Debugger> m_debugger;
 };
 
 } // namespace app

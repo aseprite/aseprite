@@ -30,7 +30,7 @@
 
 #ifdef ENABLE_SCRIPTING
   #include "app/app.h"
-  #include "app/script/engine.h"
+  #include "app/script/engine_manager.h"
   #include "app/script/script_input_chain.h"
   #include "app/ui/input_chain.h"
 #endif
@@ -118,7 +118,7 @@ void DefaultCliDelegate::loadPalette(Context* ctx, const std::string& filename)
     ctx->executeCommand(loadPalCommand, params);
   }
   else {
-    Console().printf("Error loading palette in --palette '%s'\n", filename.c_str());
+    Console::printf("Error loading palette in --palette '%s'\n", filename.c_str());
   }
 }
 
@@ -141,7 +141,7 @@ int DefaultCliDelegate::execScript(const std::string& filename, const Params& pa
   if (!App::instance()->isGui()) {
     App::instance()->inputChain().prioritize(&scriptInputChain, nullptr);
   }
-  auto engine = App::instance()->scriptEngine();
+  auto engine = script::EngineManager::create();
   if (!engine->evalUserFile(filename, params))
     throw base::Exception("Error executing script %s", filename.c_str());
   return engine->returnCode();

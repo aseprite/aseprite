@@ -208,41 +208,6 @@ private:
   bool m_hasText = false;
 };
 
-Console::Console(Context* ctx) : m_withUI(false)
-{
-  TRACE_CON("CON: Console this=", this, "ctx=", ctx, "is_ui_thread=", ui::is_ui_thread(), "{");
-
-  if (!ui::is_ui_thread())
-    return;
-
-  if (ctx)
-    m_withUI = ctx->isUIAvailable();
-  else
-    m_withUI = Console::isUIAvailable();
-
-  if (!m_withUI)
-    return;
-
-  TRACE_CON("CON: -> withUI=", m_withUI);
-
-  if (!m_console)
-    m_console = new ConsoleWindow;
-}
-
-Console::~Console()
-{
-  TRACE_CON("CON: } ~Console this=", this, "withUI=", m_withUI);
-
-  if (!m_withUI)
-    return;
-
-  if (m_console && m_console->hasConsoleText() && !m_console->isVisible()) {
-    m_console->manager()->attractFocus(m_console);
-    m_console->openWindow();
-    TRACE_CON("CON: openWindow");
-  }
-}
-
 void Console::printf(const char* format, ...)
 {
   std::va_list ap;
@@ -250,8 +215,13 @@ void Console::printf(const char* format, ...)
   std::string msg = base::string_vprintf(format, ap);
   va_end(ap);
 
-  if (!m_withUI) {
-    fputs(msg.c_str(), stdout);
+  print(msg);
+}
+
+void Console::print(const std::string& message)
+{
+  if (!isUIAvailable()) {
+    fputs(message.c_str(), stdout);
     fflush(stdout);
     return;
   }
@@ -268,7 +238,7 @@ void Console::printf(const char* format, ...)
   }
 
   // Update the textbox
-  m_console->addMessage(msg);
+  m_console->addMessage(message);
   m_console->invalidate();
   m_console->flushRedraw();
 }
@@ -278,7 +248,7 @@ void Console::showException(const std::exception& e)
 {
   std::string text;
   if (typeid(e) == typeid(std::bad_alloc))
-    text = "There is not enough memory to complete the action.";
+    text = "There is not enough memory to complete the action.\n";
   else
     text = fmt::format("A problem has occurred.\n\nDetails:\n{}\n", e.what());
 
@@ -287,16 +257,12 @@ void Console::showException(const std::exception& e)
 
     // Show the error in the UI thread (if the UI is available)
     if (Console::isUIAvailable()) {
-      ui::execute_from_ui_thread([text] {
-        Console console;
-        console.printf(text.c_str());
-      });
+      ui::execute_from_ui_thread([text] { print(text); });
     }
     return;
   }
 
-  Console console;
-  console.printf(text.c_str());
+  print(text);
 }
 
 // static

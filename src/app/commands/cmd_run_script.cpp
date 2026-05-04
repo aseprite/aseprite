@@ -20,7 +20,7 @@
 #include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
 #include "app/resource_finder.h"
-#include "app/script/engine.h"
+#include "app/script/engine_manager.h"
 #include "app/ui/optional_alert.h"
 #include "base/fs.h"
 #include "fmt/format.h"
@@ -71,7 +71,7 @@ void RunScriptCommand::onExecute(Context* context)
       return;
   }
 
-  App::instance()->scriptEngine()->evalUserFile(m_filename, m_params);
+  script::EngineManager::runUserScript(m_filename, m_params);
 
   if (context->isUIAvailable())
     ui::Manager::getDefault()->invalidate();

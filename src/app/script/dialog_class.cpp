@@ -120,9 +120,6 @@ private:
   bool m_handTool = false;
 };
 
-struct Dialog;
-std::vector<Dialog*> all_dialogs;
-
 struct Dialog {
   DialogWindow window;
   // Pointer to current grid (might be the main grid or a tab's grid).
@@ -159,10 +156,9 @@ struct Dialog {
     , currentGrid(window.grid())
   {
     window.setSizeable(sizeable);
-    all_dialogs.push_back(this);
   }
 
-  ~Dialog() { base::remove_from_container(all_dialogs, this); }
+  ~Dialog() { window.closeWindow(nullptr); }
 
   ui::View* view() { return window.view(); }
 
@@ -325,14 +321,14 @@ void Dialog_connect_signal(lua_State* L,
       try {
         if (lua_pcall(L, 1, 0, 0)) {
           if (const char* s = lua_tostring(L, -1))
-            App::instance()->scriptEngine()->consolePrint(s);
+            engine_print(L, s);
         }
       }
       catch (const std::exception& ex) {
         // This is used to catch unhandled exception or for
         // example, std::runtime_error exceptions when a Tx() is
         // created without an active sprite.
-        App::instance()->scriptEngine()->handleException(ex);
+        get_engine(L)->handleException(ex);
       }
     }
     else {
@@ -421,6 +417,7 @@ int Dialog_new(lua_State* L)
   // last connection to ui::Window::Close)
   dlg->unrefShowOnClose();
 
+  get_engine(L)->trackObject();
   TRACE_DIALOG("Dialog_new", dlg);
   return 1;
 }
@@ -430,6 +427,7 @@ int Dialog_gc(lua_State* L)
   auto dlg = get_obj<Dialog>(L, 1);
   TRACE_DIALOG("Dialog_gc", dlg);
   dlg->~Dialog();
+  get_engine(L)->untrackObject();
   return 0;
 }
 
@@ -2067,16 +2065,6 @@ void register_dialog_class(lua_State* L)
   REG_CLASS(L, Dialog);
   REG_CLASS_NEW(L, Dialog);
   REG_CLASS_PROPERTIES(L, Dialog);
-}
-
-// close all opened Dialogs before closing the UI
-void close_all_dialogs()
-{
-  for (Dialog* dlg : all_dialogs) {
-    ASSERT(dlg);
-    if (dlg)
-      dlg->window.closeWindow(nullptr);
-  }
 }
 
 }} // namespace app::script

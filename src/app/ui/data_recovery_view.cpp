@@ -122,7 +122,7 @@ public:
         std::string err = ex.what();
         if (!err.empty()) {
           ui::execute_from_ui_thread(
-            [err] { Console().printf("Error deleting file: %s", err.c_str()); });
+            [err] { Console::printf("Error deleting file: %s\n", err.c_str()); });
         }
       }
     });
@@ -487,7 +487,6 @@ void DataRecoveryView::onDelete()
   if (Alert::show(Strings::alerts_delete_selected_backups(int(items.size()))) != 1)
     return; // Cancel
 
-  Console console;
   for (auto item : items)
     item->deleteBackup();
 }
