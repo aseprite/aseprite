@@ -16,6 +16,7 @@
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/ui/app_menuitem.h"
+#include "base/exception.h"
 #include "base/version.h"
 
 namespace app { namespace script {
@@ -31,12 +32,14 @@ class PluginCommand : public Command {
 public:
   PluginCommand(const std::string& id,
                 const std::string& title,
+                const std::string& extensionName,
                 script::Engine* engine,
                 int onclickRef,
                 int onenabledRef,
                 int oncheckedRef)
     : Command(id.c_str())
     , m_title(title)
+    , m_extensionName(extensionName)
     , m_engine(engine)
     , m_onclickRef(onclickRef)
     , m_onenabledRef(onenabledRef)
@@ -56,6 +59,8 @@ public:
   }
 
   bool isPlugin() override { return true; }
+
+  const std::string& extensionName() const { return m_extensionName; }
 
 protected:
   std::string onGetFriendlyName() const override { return m_title; }
@@ -108,6 +113,7 @@ private:
   }
 
   std::string m_title;
+  std::string m_extensionName;
   Engine* m_engine;
   int m_onclickRef;
   int m_onenabledRef;
@@ -116,20 +122,35 @@ private:
 
 void deleteCommandIfExistent(Extension* ext, const std::string& id)
 {
-  auto cmd = Commands::instance()->byId(id.c_str());
-  if (cmd) {
+  auto* cmd = Commands::instance()->byId(id.c_str());
+  if (!cmd)
+    return;
+
+  const auto* pluginCmd = dynamic_cast<PluginCommand*>(cmd);
+
+  // TODO: We need to prefix or tag extension commands in some way so that they can share names.
+  if (!pluginCmd || ext->name() != pluginCmd->extensionName())
+    throw base::Exception(
+      "Extension %s attempted to alter a command (%s) that does not belong to it",
+      ext->name().c_str(),
+      id.c_str());
+
+  if (ext->removeCommand(id)) {
+    if (auto* appMenus = AppMenus::instance())
+      appMenus->removeMenuItemFromGroup(cmd);
+
     Commands::instance()->remove(cmd);
-    ext->removeCommand(id);
     delete cmd;
   }
 }
 
 void deleteMenuGroupIfExistent(Extension* ext, const std::string& id)
 {
+  if (!ext->removeMenuGroup(id))
+    return;
+
   if (auto* appMenus = AppMenus::instance())
     appMenus->removeMenuGroup(id);
-
-  ext->removeMenuGroup(id);
 }
 
 int Plugin_gc(lua_State* L)
@@ -193,6 +214,7 @@ int Plugin_newCommand(lua_State* L)
 
       auto cmd = new PluginCommand(id,
                                    title,
+                                   plugin->ext->name(),
                                    plugin->ext->scriptEngine(),
                                    onclickRef,
                                    onenabledRef,

@@ -48,8 +48,14 @@
 #endif
 
 #include "archive.h"
+#define WIN32_LEAN_AND_MEAN
 #include "archive_entry.h"
 #include "json11.hpp"
+
+#ifdef LAF_WINDOWS
+  // archive_entry.h includes windows.h and this breaks LOG
+  #undef ERROR
+#endif
 
 #include <cctype>
 #include <fstream>
@@ -331,16 +337,17 @@ void Extension::addCommand(const std::string& id)
   m_plugin.items.push_back(item);
 }
 
-void Extension::removeCommand(const std::string& id)
+bool Extension::removeCommand(const std::string& id)
 {
   for (auto it = m_plugin.items.begin(); it != m_plugin.items.end();) {
     if (it->type == PluginItem::Command && it->id == id) {
-      it = m_plugin.items.erase(it);
+      m_plugin.items.erase(it);
+      return true;
     }
-    else {
-      ++it;
-    }
+
+    ++it;
   }
+  return false;
 }
 
 void Extension::addMenuGroup(const std::string& id)
@@ -351,16 +358,17 @@ void Extension::addMenuGroup(const std::string& id)
   m_plugin.items.push_back(item);
 }
 
-void Extension::removeMenuGroup(const std::string& id)
+bool Extension::removeMenuGroup(const std::string& id)
 {
   for (auto it = m_plugin.items.begin(); it != m_plugin.items.end();) {
     if (it->type == PluginItem::MenuGroup && it->id == id) {
-      it = m_plugin.items.erase(it);
+      m_plugin.items.erase(it);
+      return true;
     }
-    else {
-      ++it;
-    }
+
+    ++it;
   }
+  return false;
 }
 
 void Extension::addMenuSeparator(ui::Widget* widget)
@@ -1096,7 +1104,7 @@ Extensions::Extensions()
         loadExtension(dir, fullFn, isBuiltinExtension);
       }
       catch (const std::exception& ex) {
-        LOG("EXT: Error loading JSON file: %s\n", ex.what());
+        LOG(ERROR, "EXT: Error loading extension from '%s': %s\n", dir.c_str(), ex.what());
       }
     }
   }
@@ -1282,7 +1290,7 @@ ExtensionInfo Extensions::getCompressedExtensionInfo(const std::string& zipFn) c
 Extension* Extensions::installCompressedExtension(const std::string& zipFn,
                                                   const ExtensionInfo& info)
 {
-  base::paths installedFiles;
+  std::set<std::string> installedFiles;
 
   // Uncompress zipFn in info.dstPath
   {
@@ -1318,7 +1326,8 @@ Extension* Extensions::installCompressedExtension(const std::string& zipFn,
           continue;
       }
 
-      installedFiles.push_back(fn);
+      installedFiles.emplace(base::get_file_path(fn));
+      installedFiles.emplace(fn);
 
       const std::string fullFn = base::join_path(info.dstPath, fn);
 #if _WIN32
@@ -1365,6 +1374,12 @@ Extension* Extensions::loadExtension(const std::string& path,
   const auto& name = json["name"].string_value();
   const auto& version = json["version"].string_value();
   const auto& displayName = json["displayName"].string_value();
+
+  auto it = std::find_if(m_extensions.begin(), m_extensions.end(), [&name](const Extension* ext) {
+    return ext->name() == name;
+  });
+  if (it != m_extensions.end())
+    throw base::Exception("An extension with the name '%s' already exists", name.c_str());
 
   LOG("EXT: Extension '%s' loaded\n", name.c_str());
 

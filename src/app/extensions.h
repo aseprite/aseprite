@@ -139,10 +139,10 @@ public:
   void addDitheringMatrix(const std::string& id, const std::string& path, const std::string& name);
 #ifdef ENABLE_SCRIPTING
   void addCommand(const std::string& id);
-  void removeCommand(const std::string& id);
+  bool removeCommand(const std::string& id);
 
   void addMenuGroup(const std::string& id);
-  void removeMenuGroup(const std::string& id);
+  bool removeMenuGroup(const std::string& id);
 
   void addMenuSeparator(ui::Widget* widget);
   void addFileFormat(const CustomFormatDefinition& definition);
