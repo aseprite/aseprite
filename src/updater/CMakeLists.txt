@@ -11,5 +11,5 @@ target_link_libraries(updater-lib laf-base ver-lib)
 # portion of the library.
 if(ENABLE_UPDATER)
   target_sources(updater-lib PRIVATE check_update.cpp)
-  target_link_libraries(updater-lib net-lib ${TINYXML_LIBRARY})
+  target_link_libraries(updater-lib net-lib tinyxml2::tinyxml2)
 endif()
