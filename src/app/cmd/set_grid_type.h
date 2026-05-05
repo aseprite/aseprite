@@ -16,7 +16,8 @@ namespace doc {
 class Sprite;
 }
 
-namespace app { namespace cmd {
+namespace app {
+namespace cmd {
 
 class SetGridType : public Cmd,
                     public WithSprite {

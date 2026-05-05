@@ -10,13 +10,14 @@
 
 #include "app/cmd/set_grid_type.h"
 
-#include "base/exception.h"
 #include "app/doc.h"
 #include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
+#include "base/exception.h"
 #include "doc/sprite.h"
 
-namespace app { namespace cmd {
+namespace app {
+namespace cmd {
 
 using namespace doc;
 
