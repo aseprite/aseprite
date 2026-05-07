@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -636,7 +636,7 @@ FileItem::~FileItem()
 {
   FS_TRACE("FS: Destroying FileItem() with parent %p\n", m_parent);
 
-  m_thumbnail.exchange(nullptr);
+  setThumbnail(nullptr);
 
 #ifdef _WIN32
   if (m_fullpidl && m_fullpidl != m_pidl) {
