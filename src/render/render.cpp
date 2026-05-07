@@ -631,6 +631,16 @@ void Render::removeExtraImage()
   m_extraCel = nullptr;
 }
 
+void Render::setExtraCelInfoMap(const ExtraCelInfoMap* map)
+{
+  m_extraCelInfoMap = map;
+}
+
+void Render::removeExtraCelInfoMap()
+{
+  m_extraCelInfoMap = nullptr;
+}
+
 void Render::setOnionskin(const OnionskinOptions& options)
 {
   m_onionskin = options;
@@ -1020,6 +1030,9 @@ void Render::renderPlan(RenderPlan& plan,
         extraArea.h = 1;
     }
 
+    // Extra cel info from map (for multi-cel transformations)
+    const ExtraCelInfo* extraCelInfo = nullptr;
+
     switch (layer->type()) {
       case ObjectType::LayerImage:
       case ObjectType::LayerTilemap: {
@@ -1073,13 +1086,32 @@ void Render::renderPlan(RenderPlan& plan,
             if (!isSelected && m_nonactiveLayersOpacity != 255)
               opacity = MUL_UN8(opacity, m_nonactiveLayersOpacity, t);
 
+            // Check if there's extra cel info for this cel (multi-cel transformations)
+            // We use cel->data() as key to support linked cels
+            if (m_extraCelInfoMap) {
+              auto it = m_extraCelInfoMap->find(cel->data());
+              if (it != m_extraCelInfoMap->end())
+                extraCelInfo = &it->second;
+            }
+
             // Generally this is just one pass, but if we are using
             // OVER_COMPOSITE extra cel, this will be two passes.
             for (int pass = 0; pass < 2; ++pass) {
-              // Draw parts outside the "m_extraCel" area
-              if (drawExtra && m_extraType == ExtraType::PATCH) {
+              // Draw parts outside the "m_extraCel" area and/or extra cel info area
+              const bool hasExtraCelPatch = (drawExtra && m_extraType == ExtraType::PATCH);
+              const bool hasExtraCelInfo = (extraCelInfo && extraCelInfo->image);
+
+              if (hasExtraCelPatch || hasExtraCelInfo) {
                 gfx::Region originalAreas(area.srcBounds());
-                originalAreas.createSubtraction(originalAreas, gfx::Region(extraArea));
+
+                // Exclude the main extra cel area
+                if (hasExtraCelPatch)
+                  originalAreas.createSubtraction(originalAreas, gfx::Region(extraArea));
+
+                // Exclude the extra cel info area
+                if (hasExtraCelInfo)
+                  originalAreas.createSubtraction(originalAreas,
+                                                  gfx::Region(m_proj.apply(extraCelInfo->bounds)));
 
                 for (auto rc : originalAreas) {
                   renderCel(
@@ -1178,6 +1210,23 @@ void Render::renderPlan(RenderPlan& plan,
                   m_extraCel->opacity(),
                   m_extraBlendMode);
       }
+    }
+
+    // Draw per-cel extra images (for multi-cel transformations)
+    if (extraCelInfo && extraCelInfo->image && extraCelInfo->opacity > 0) {
+      const gfx::Rect extraBounds = m_proj.apply(extraCelInfo->bounds);
+      renderCel(image,
+                cel,
+                m_sprite,
+                extraCelInfo->image,
+                layer,
+                m_sprite->palette(frame),
+                extraCelInfo->bounds,
+                gfx::Clip(area.dst.x + extraBounds.x - area.src.x,
+                          area.dst.y + extraBounds.y - area.src.y,
+                          extraBounds),
+                extraCelInfo->opacity,
+                extraCelInfo->blendMode);
     }
   }
 }

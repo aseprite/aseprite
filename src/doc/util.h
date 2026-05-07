@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2020-2024 Igara Studio S.A.
+// Copyright (c) 2020-present Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,6 +8,7 @@
 #define DOC_UTIL_H_INCLUDED
 #pragma once
 
+#include "doc/image_ref.h"
 #include "doc/tile.h"
 
 namespace doc {
@@ -32,6 +33,11 @@ void fix_old_tilemap(Image* image,
 // Returns a mask aligned with a given grid, starting from another
 // mask not aligned with the grid.
 Mask make_aligned_mask(const Grid* grid, const Mask* mask);
+
+// Creates a tile-level mask from a pixel-level mask.
+// Returns a bitmap image where each pixel represents a tile:
+// 1 = tile is inside the selection.
+ImageRef make_tile_mask_bitmap(const Grid* grid, const Mask* mask);
 
 } // namespace doc
 
