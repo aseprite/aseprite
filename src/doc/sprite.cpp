@@ -37,6 +37,7 @@
 namespace doc {
 
 static gfx::Rect g_defaultGridBounds(0, 0, 16, 16);
+static Grid::Type g_defaultGridType = Grid::Type::Orthogonal;
 
 // static
 gfx::Rect Sprite::DefaultGridBounds()
@@ -55,6 +56,18 @@ void Sprite::SetDefaultGridBounds(const gfx::Rect& defGridBounds)
     g_defaultGridBounds.h = 1;
 }
 
+// static
+Grid::Type Sprite::DefaultGridType()
+{
+  return g_defaultGridType;
+}
+
+// static
+void Sprite::SetDefaultGridType(const Grid::Type type)
+{
+  g_defaultGridType = type;
+}
+
 //////////////////////////////////////////////////////////////////////
 // Constructors/Destructor
 
@@ -67,6 +80,7 @@ Sprite::Sprite(const ImageSpec& spec, int ncolors)
   , m_frlens(1, 100) // First frame with 100 msecs of duration
   , m_root(new LayerGroup(this))
   , m_gridBounds(Sprite::DefaultGridBounds())
+  , m_gridType(Sprite::DefaultGridType())
   , m_tags(this)
   , m_slices(this)
   , m_tilesets(nullptr)
