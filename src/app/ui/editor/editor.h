@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -417,6 +417,11 @@ private:
 
   int otherLayersOpacity() const;
 
+  void onAutoScrollTick();
+  gfx::PointF calculateAutoScrollDelta() const;
+  void startAutoScrollTimer();
+  void stopAutoScrollTimer();
+
   // Stack of states. The top element in the stack is the current state (m_state).
   EditorStatesHistory m_statesHistory;
   EditorStatesHistory m_deletedStates;
@@ -449,6 +454,14 @@ private:
   ui::Timer m_antsTimer;
   int m_antsOffset;
 
+  // Auto-scroll stuff
+  ui::Timer m_autoScrollTimer;
+  bool m_autoScrollActive = false;
+  AutoScroll m_autoScrollDir = AutoScroll::MouseDir;
+  gfx::Point m_autoScrollMousePos;
+  // Fractional pixel accumulator used at low speeds to avoid integer truncation.
+  gfx::PointF m_autoScrollAccum;
+
   obs::scoped_connection m_samplingChangeConn;
   obs::scoped_connection m_fgColorChangeConn;
   obs::scoped_connection m_contextBarBrushChangeConn;
@@ -475,12 +488,6 @@ private:
   // creates a new sprite change in the same sprite change scripting
   // event.
   bool m_leavingState = false;
-
-  // Last known mouse position received by this editor when the
-  // mouse button was pressed. Used for auto-scrolling. To get the
-  // current mouse position on the editor you can use
-  // ui::Display::lastMousePos().
-  gfx::Point m_oldPos;
 
   EditorFlags m_flags;
 

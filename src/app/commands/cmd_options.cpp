@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -750,6 +750,13 @@ public:
 
     showScrollbars()->setSelected(m_pref.editor.showScrollbars());
     autoScroll()->setSelected(m_pref.editor.autoScroll());
+    autoScrollSpeed()->setTextf("%d", m_pref.editor.autoScrollSpeed());
+    autoScrollSpeed()->setEnabled(autoScroll()->isSelected());
+    autoScrollSpeedLabel()->setEnabled(autoScroll()->isSelected());
+    autoScroll()->Click.connect([this] {
+      autoScrollSpeed()->setEnabled(autoScroll()->isSelected());
+      autoScrollSpeedLabel()->setEnabled(autoScroll()->isSelected());
+    });
     straightLinePreview()->setSelected(m_pref.editor.straightLinePreview());
     discardBrush()->setSelected(m_pref.eyedropper.discardBrush());
 
@@ -865,6 +872,7 @@ public:
     m_pref.editor.zoomFromCenterWithKeys(zoomFromCenterWithKeys()->isSelected());
     m_pref.editor.showScrollbars(showScrollbars()->isSelected());
     m_pref.editor.autoScroll(autoScroll()->isSelected());
+    m_pref.editor.autoScrollSpeed(std::clamp(autoScrollSpeed()->textInt(), 10, 500));
     m_pref.editor.straightLinePreview(straightLinePreview()->isSelected());
     m_pref.eyedropper.discardBrush(discardBrush()->isSelected());
     m_pref.editor.rightClickMode(
