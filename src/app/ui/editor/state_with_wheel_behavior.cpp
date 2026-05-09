@@ -29,12 +29,25 @@
 #include "doc/brush.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
+#include "ui/fit_bounds.h"
+#include "ui/label.h"
 #include "ui/message.h"
+#include "ui/popup_window.h"
 #include "ui/system.h"
 #include "ui/theme.h"
+#include "ui/timer.h"
 
 #include "app/tools/ink.h"
 #include "app/ui/skin/skin_theme.h"
+
+#include "app/app_menus.h"
+#include "app/ui/app_menuitem.h"
+#include <algorithm>
+#include <cmath>
+#include <memory>
+#include <vector>
+
+#include <fmt/format.h>
 
 namespace app {
 
@@ -62,6 +75,188 @@ static inline void adjust_hue(PreciseWheel preciseWheel, double dz, T& v, T min,
 static inline void adjust_unit(PreciseWheel preciseWheel, double dz, double& v)
 {
   v = std::clamp<double>(v + (preciseWheel == PreciseWheel::On ? dz / 100.0 : dz / 25.0), 0.0, 1.0);
+}
+
+static bool isInCustomToolset(tools::Tool* tool)
+{
+  const std::string& id = tool->getId();
+  const auto& custom = Preferences::instance().customToolset;
+
+  if (id == "rectangular_marquee")
+    return custom.rectangularMarquee();
+  if (id == "elliptical_marquee")
+    return custom.ellipticalMarquee();
+  if (id == "lasso_tool")
+    return custom.lassoTool();
+  if (id == "polygonal_lasso")
+    return custom.polygonalLasso();
+  if (id == "magic_wand")
+    return custom.magicWand();
+  if (id == "pencil")
+    return custom.pencil();
+  if (id == "spray")
+    return custom.spray();
+  if (id == "eraser")
+    return custom.eraser();
+  if (id == "eyedropper")
+    return custom.eyedropper();
+  if (id == "zoom")
+    return custom.zoom();
+  if (id == "hand")
+    return custom.hand();
+  if (id == "move")
+    return custom.move();
+  if (id == "slice")
+    return custom.slice();
+  if (id == "paint_bucket")
+    return custom.paintBucket();
+  if (id == "gradient")
+    return custom.gradient();
+  if (id == "line")
+    return custom.line();
+  if (id == "curve")
+    return custom.curve();
+  if (id == "rectangle")
+    return custom.rectangle();
+  if (id == "filled_rectangle")
+    return custom.filledRectangle();
+  if (id == "ellipse")
+    return custom.ellipse();
+  if (id == "filled_ellipse")
+    return custom.filledEllipse();
+  if (id == "contour")
+    return custom.contour();
+  if (id == "polygon")
+    return custom.polygon();
+  if (id == "blur")
+    return custom.blur();
+  if (id == "jumble")
+    return custom.jumble();
+  if (id == "text")
+    return custom.text();
+
+  return false;
+}
+// Retrieve playback speed presets from the Animation menu (gui.xml).
+static std::vector<double> get_playback_speed_presets()
+{
+  std::vector<double> presets;
+
+  AppMenus* menus = AppMenus::instance();
+  if (!menus)
+    return presets;
+
+  if (Menu* menu = menus->getAnimationMenu()) {
+    for (auto child : menu->children()) {
+      if (child->type() != ui::kMenuItemWidget)
+        continue;
+
+      if (AppMenuItem* appItem = dynamic_cast<AppMenuItem*>(child)) {
+        const std::string mi_command = appItem->getCommandId();
+        if (mi_command == CommandId::SetPlaybackSpeed()) {
+          const Params& params = appItem->getParams();
+          if (params.has_param("multiplier")) {
+            double m = params.get_as<double>("multiplier");
+            if (m > 0.0 && std::isfinite(m))
+              presets.push_back(m);
+          }
+        }
+      }
+    }
+  }
+
+  if (!presets.empty()) {
+    std::sort(presets.begin(), presets.end());
+    presets.erase(std::unique(presets.begin(), presets.end()), presets.end());
+  }
+
+  return presets;
+}
+
+class PlaybackSpeedPopupWindow : public ui::PopupWindow {
+public:
+  PlaybackSpeedPopupWindow()
+    : ui::PopupWindow("", ClickBehavior::CloseOnClickInOtherWindow)
+    , m_label("")
+  {
+    setTransparent(true);
+    addChild(&m_label);
+    makeFixed();
+    initTheme();
+  }
+
+  void setInterval(int msecs)
+  {
+    if (!m_timer)
+      m_timer = std::make_unique<ui::Timer>(msecs, this);
+    else
+      m_timer->setInterval(msecs);
+  }
+
+  void startTimer()
+  {
+    if (m_timer)
+      m_timer->start();
+  }
+
+  void setText(const std::string& text)
+  {
+    m_label.setText(text);
+    remapWindow();
+  }
+
+protected:
+  void onInitTheme(ui::InitThemeEvent& ev) override
+  {
+    ui::PopupWindow::onInitTheme(ev);
+    auto theme = app::skin::SkinTheme::get(this);
+    setBorder(gfx::Border(4 * guiscale()));
+    setBgColor(gfx::rgba(0, 0, 0, 160));
+    if (theme)
+      m_label.setStyle(theme->styles.tooltipText());
+  }
+
+  bool onProcessMessage(ui::Message* msg) override
+  {
+    switch (msg->type()) {
+      case ui::kTimerMessage:
+        closeWindow(nullptr);
+        if (m_timer)
+          m_timer->stop();
+        break;
+    }
+    return ui::PopupWindow::onProcessMessage(msg);
+  }
+
+private:
+  ui::Label m_label;
+  std::unique_ptr<ui::Timer> m_timer;
+};
+
+void show_playback_speed_popup(Editor* editor, double speed)
+{
+  static PlaybackSpeedPopupWindow* g_window = nullptr;
+  if (!g_window)
+    g_window = new PlaybackSpeedPopupWindow;
+
+  g_window->setDisplay(editor->display(), false);
+
+  g_window->setText(fmt::format("Playback Speed: {:.1f}x", speed));
+  g_window->setInterval(1300);
+
+  if (g_window->isVisible())
+    g_window->closeWindow(nullptr);
+
+  g_window->remapWindow();
+
+  gfx::Rect rc = g_window->bounds();
+  const gfx::Rect viewport = editor->editorToScreen(editor->getViewportBounds());
+  rc.x = viewport.x2() - rc.w - 6 * guiscale();
+  rc.y = viewport.y + 6 * guiscale();
+  ui::fit_bounds(editor->display(), g_window, rc);
+
+  g_window->openWindow();
+  g_window->startTimer();
 }
 
 StateWithWheelBehavior::StateWithWheelBehavior()
@@ -233,6 +428,51 @@ void StateWithWheelBehavior::processWheelAction(Editor* editor,
       break;
     }
 
+    case WheelAction::PlaybackSpeed: {
+      std::vector<double> presets = get_playback_speed_presets();
+
+      // Fallback to built-in list if gui.xml does not contain presets
+      if (presets.empty())
+        presets = { 0.25, 0.5, 1.0, 1.5, 2.0, 3.0 };
+
+      const int npresets = int(presets.size());
+      if (npresets == 0)
+        break;
+
+      double cur = editor->getAnimationSpeedMultiplier();
+
+      // Find nearest preset index to the current multiplier (with small epsilon)
+      int idx = 0;
+      double best = std::abs(cur - presets[0]);
+      for (int i = 1; i < npresets; ++i) {
+        double d = std::abs(cur - presets[i]);
+        if (d < best) {
+          best = d;
+          idx = i;
+        }
+      }
+
+      int deltaIndex = 0;
+      if (preciseWheel == PreciseWheel::On) {
+        if (dz < 0.0)
+          deltaIndex = +1;
+        else if (dz > 0.0)
+          deltaIndex = -1;
+      }
+      else {
+        deltaIndex = -int(dz);
+      }
+
+      int newIdx = idx + deltaIndex;
+      newIdx = std::clamp(newIdx, 0, npresets - 1);
+
+      if (newIdx != idx) {
+        editor->setAnimationSpeedMultiplier(presets[newIdx]);
+        show_playback_speed_popup(editor, presets[newIdx]);
+      }
+      break;
+    }
+
     case WheelAction::Zoom: {
       render::Zoom zoom = initialZoom(editor);
 
@@ -376,6 +616,42 @@ void StateWithWheelBehavior::processWheelAction(Editor* editor,
       break;
     }
 
+    case WheelAction::ToolCustomToolset: {
+      const tools::Tool* tool = initialTool();
+
+      auto toolBox = App::instance()->toolBox();
+      std::vector<tools::Tool*> tools;
+      for (tools::Tool* t : *toolBox) {
+        if (isInCustomToolset(t))
+          tools.push_back(t);
+      }
+
+      // If Custom Toolset is empty, do nothing
+      if (tools.empty())
+        break;
+
+      auto begin = tools.begin();
+      auto end = tools.end();
+      auto it = std::find(begin, end, tool);
+      if (it != end) {
+        int i = std::round(dz);
+        while (i < 0) {
+          ++i;
+          if (it == begin)
+            it = end;
+          --it;
+        }
+        while (i > 0) {
+          --i;
+          ++it;
+          if (it == end)
+            it = begin;
+        }
+        onToolChange(*it);
+      }
+      break;
+    }
+
     case WheelAction::Layer: {
       int deltaLayer = 0;
       if (preciseWheel == PreciseWheel::On) {
@@ -505,6 +781,20 @@ void StateWithWheelBehavior::processWheelAction(Editor* editor,
       changeFgColor(Color::fromHsv(std::clamp(h, 0.0, 360.0),
                                    std::clamp(s, 0.0, 1.0),
                                    std::clamp(v, 0.0, 1.0)));
+      break;
+    }
+
+    case WheelAction::UndoRedo: {
+      if (dz < 0.0) {
+        Command* command = Commands::instance()->byId(CommandId::Undo());
+        if (command)
+          UIContext::instance()->executeCommand(command, Params());
+      }
+      else if (dz > 0.0) {
+        Command* command = Commands::instance()->byId(CommandId::Redo());
+        if (command)
+          UIContext::instance()->executeCommand(command, Params());
+      }
       break;
     }
   }

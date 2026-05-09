@@ -53,6 +53,22 @@ static KeyboardShortcuts* ks = nullptr;
     EXPECT_FALSE(ks->getCommandFromKeyMessage(&msg, &cmd, nullptr, keycontext));                   \
     ASSERT_TRUE(cmd == nullptr) << "command found for key: " << cmd->id();                         \
   }
+
+static MouseMessage make_wheel_message(KeyModifiers modifiers,
+                                       MouseButton button,
+                                       bool isX1Pressed,
+                                       bool isX2Pressed)
+{
+  return MouseMessage(kMouseWheelMessage,
+                      PointerType::Mouse,
+                      button,
+                      modifiers,
+                      gfx::Point(0, 0),
+                      isX1Pressed,
+                      isX2Pressed,
+                      gfx::Point(0, -1),
+                      false);
+}
 TEST(KeyboardShortcuts, Basic)
 {
   ks->clear();
@@ -166,6 +182,142 @@ TEST(KeyboardShortcuts, FramesSelection)
   DEFINE_KEY(SetLoopSection, kKeyF2, KeyContext::FramesSelection);
   EXPECT_COMMAND_FOR_KEY(LayerProperties, kKeyF2, KeyContext::Normal);
   EXPECT_COMMAND_FOR_KEY(SetLoopSection, kKeyF2, KeyContext::FramesSelection);
+}
+
+// Test mouse wheel action shortcut without any keys
+TEST(KeyboardShortcuts, WheelActionBasic)
+{
+  ks->clear();
+
+  KeyPtr key = ks->wheelAction(WheelAction::Zoom);
+  key->add(Shortcut(kKeyNoneModifier, kButtonNone), KeySource::UserDefined, *ks);
+
+  auto msg = make_wheel_message(kKeyNoneModifier, kButtonNone, false, false);
+  EXPECT_EQ(WheelAction::Zoom, ks->getWheelActionFromMouseMessage(KeyContext::MouseWheel, &msg));
+}
+
+// Test mouse wheel action shortcut with modifier
+TEST(KeyboardShortcuts, WheelActionWithModifier)
+{
+  ks->clear();
+
+  KeyPtr key = ks->wheelAction(WheelAction::Zoom);
+  key->add(Shortcut(kKeyCtrlModifier, kButtonNone), KeySource::UserDefined, *ks);
+
+  auto msg = make_wheel_message(kKeyCtrlModifier, kButtonNone, false, false);
+  EXPECT_EQ(WheelAction::Zoom, ks->getWheelActionFromMouseMessage(KeyContext::MouseWheel, &msg));
+}
+
+// Test mouse wheel action shortcut with side mouse button
+TEST(KeyboardShortcuts, WheelActionWithSideButton)
+{
+  ks->clear();
+
+  KeyPtr key = ks->wheelAction(WheelAction::Zoom);
+  key->add(Shortcut(kKeyNoneModifier, kButtonX1), KeySource::UserDefined, *ks);
+
+  auto msg = make_wheel_message(kKeyNoneModifier, kButtonX1, true, false);
+  EXPECT_EQ(WheelAction::Zoom, ks->getWheelActionFromMouseMessage(KeyContext::MouseWheel, &msg));
+}
+
+// Test mouse wheel action shortcut with modifier and side mouse button
+TEST(KeyboardShortcuts, WheelActionWithModifierAndSideButton)
+{
+  ks->clear();
+
+  KeyPtr key = ks->wheelAction(WheelAction::Zoom);
+  key->add(Shortcut(kKeyAltModifier, kButtonX2), KeySource::UserDefined, *ks);
+
+  auto msg = make_wheel_message(kKeyAltModifier, kButtonX2, false, true);
+  EXPECT_EQ(WheelAction::Zoom, ks->getWheelActionFromMouseMessage(KeyContext::MouseWheel, &msg));
+}
+
+// Test mouse wheel action shortcut priorities:
+// Shortcut with no keys and shortcut with modifier
+// Modifer should win
+TEST(KeyboardShortcuts, WheelPriorityNoneVsModifier)
+{
+  ks->clear();
+
+  KeyPtr noneKey = ks->wheelAction(WheelAction::Zoom);
+  noneKey->add(Shortcut(kKeyNoneModifier, kButtonNone), KeySource::UserDefined, *ks);
+
+  KeyPtr modifierKey = ks->wheelAction(WheelAction::HScroll);
+  modifierKey->add(Shortcut(kKeyCtrlModifier, kButtonNone), KeySource::UserDefined, *ks);
+
+  auto msg = make_wheel_message(kKeyCtrlModifier, kButtonNone, false, false);
+  EXPECT_EQ(WheelAction::HScroll, ks->getWheelActionFromMouseMessage(KeyContext::MouseWheel, &msg));
+}
+
+// Test mouse wheel action shortcut priorities:
+// Shortcut with no keys and shortcut with side mouse button
+// Side mouse button should win
+TEST(KeyboardShortcuts, WheelPriorityNoneVsSideButton)
+{
+  ks->clear();
+
+  KeyPtr noneKey = ks->wheelAction(WheelAction::Zoom);
+  noneKey->add(Shortcut(kKeyNoneModifier, kButtonNone), KeySource::UserDefined, *ks);
+
+  KeyPtr sideKey = ks->wheelAction(WheelAction::HScroll);
+  sideKey->add(Shortcut(kKeyNoneModifier, kButtonX1), KeySource::UserDefined, *ks);
+
+  auto msg = make_wheel_message(kKeyNoneModifier, kButtonX1, true, false);
+  EXPECT_EQ(WheelAction::HScroll, ks->getWheelActionFromMouseMessage(KeyContext::MouseWheel, &msg));
+}
+
+// Test mouse wheel action shortcut priorities:
+// Shortcut with modifier and shortcut with side mouse button
+// Modifer should win
+TEST(KeyboardShortcuts, WheelPriorityModifierVsSideButton)
+{
+  ks->clear();
+
+  KeyPtr modifierKey = ks->wheelAction(WheelAction::Zoom);
+  modifierKey->add(Shortcut(kKeyCtrlModifier, kButtonNone), KeySource::UserDefined, *ks);
+
+  KeyPtr sideKey = ks->wheelAction(WheelAction::HScroll);
+  sideKey->add(Shortcut(kKeyNoneModifier, kButtonX1), KeySource::UserDefined, *ks);
+
+  auto msg = make_wheel_message(kKeyCtrlModifier, kButtonX1, true, false);
+  EXPECT_EQ(WheelAction::Zoom, ks->getWheelActionFromMouseMessage(KeyContext::MouseWheel, &msg));
+}
+
+// Test mouse wheel action shortcut priorities:
+// Shortcut with modifier and shortcut with modifier and side mouse button
+// Modifer should win
+TEST(KeyboardShortcuts, WheelPriorityModifierVsModifierAndSideButton)
+{
+  ks->clear();
+
+  KeyPtr modifierKey = ks->wheelAction(WheelAction::Zoom);
+  modifierKey->add(Shortcut(kKeyCtrlModifier, kButtonNone), KeySource::UserDefined, *ks);
+
+  KeyPtr sideKey = ks->wheelAction(WheelAction::HScroll);
+  sideKey->add(Shortcut(kKeyCtrlModifier, kButtonX1), KeySource::UserDefined, *ks);
+
+  auto msg = make_wheel_message(kKeyCtrlModifier, kButtonX1, true, false);
+  EXPECT_EQ(WheelAction::HScroll, ks->getWheelActionFromMouseMessage(KeyContext::MouseWheel, &msg));
+}
+
+// Test mouse wheel action shortcut priorities:
+// Shortcut with two modifiers and shortcut with modifier and side mouse button
+// Modifer should win
+TEST(KeyboardShortcuts, WheelPriorityTwoModifiersVsModifierAndSideButton)
+{
+  ks->clear();
+
+  KeyPtr twoModifiersKey = ks->wheelAction(WheelAction::Zoom);
+  twoModifiersKey->add(Shortcut(KeyModifiers(kKeyCtrlModifier | kKeyShiftModifier), kButtonNone),
+                       KeySource::UserDefined,
+                       *ks);
+
+  KeyPtr sideKey = ks->wheelAction(WheelAction::HScroll);
+  sideKey->add(Shortcut(kKeyCtrlModifier, kButtonX1), KeySource::UserDefined, *ks);
+
+  auto msg =
+    make_wheel_message(KeyModifiers(kKeyCtrlModifier | kKeyShiftModifier), kButtonX1, true, false);
+  EXPECT_EQ(WheelAction::Zoom, ks->getWheelActionFromMouseMessage(KeyContext::MouseWheel, &msg));
 }
 
 int app_main(int argc, char* argv[])

@@ -159,31 +159,34 @@ const std::vector<KeyShortcutWheelAction>& wheel_actions()
 {
   if (g_wheel_actions.empty()) {
     g_wheel_actions = std::vector<KeyShortcutWheelAction>{
-      { "",               "",                               Vec(0.0,  0.0)   },
-      { "Zoom",           I18N_KEY(zoom),                   Vec(8.0,  0.0)   },
-      { "VScroll",        I18N_KEY(scroll_vertically),      Vec(4.0,  0.0)   },
-      { "HScroll",        I18N_KEY(scroll_horizontally),    Vec(4.0,  0.0)   },
-      { "FgColor",        I18N_KEY(fg_color),               Vec(8.0,  0.0)   },
-      { "BgColor",        I18N_KEY(bg_color),               Vec(8.0,  0.0)   },
-      { "FgTile",         I18N_KEY(fg_tile),                Vec(8.0,  0.0)   },
-      { "BgTile",         I18N_KEY(bg_tile),                Vec(8.0,  0.0)   },
-      { "Frame",          I18N_KEY(change_frame),           Vec(16.0, 0.0)   },
-      { "BrushSize",      I18N_KEY(change_brush_size),      Vec(4.0,  0.0)   },
-      { "BrushAngle",     I18N_KEY(change_brush_angle),     Vec(-4.0, 0.0)   },
-      { "ToolSameGroup",  I18N_KEY(change_tool_same_group), Vec(8.0,  0.0)   },
-      { "ToolOtherGroup", I18N_KEY(change_tool),            Vec(0.0,  -8.0)  },
-      { "Layer",          I18N_KEY(change_layer),           Vec(0.0,  8.0)   },
-      { "InkType",        I18N_KEY(change_ink_type),        Vec(0.0,  -16.0) },
-      { "InkOpacity",     I18N_KEY(change_ink_opacity),     Vec(0.0,  1.0)   },
-      { "LayerOpacity",   I18N_KEY(change_layer_opacity),   Vec(0.0,  1.0)   },
-      { "CelOpacity",     I18N_KEY(change_cel_opacity),     Vec(0.0,  1.0)   },
-      { "Alpha",          I18N_KEY(color_alpha),            Vec(4.0,  0.0)   },
-      { "HslHue",         I18N_KEY(color_hsl_hue),          Vec(1.0,  0.0)   },
-      { "HslSaturation",  I18N_KEY(color_hsl_saturation),   Vec(4.0,  0.0)   },
-      { "HslLightness",   I18N_KEY(color_hsl_lightness),    Vec(0.0,  4.0)   },
-      { "HsvHue",         I18N_KEY(color_hsv_hue),          Vec(1.0,  0.0)   },
-      { "HsvSaturation",  I18N_KEY(color_hsv_saturation),   Vec(4.0,  0.0)   },
-      { "HsvValue",       I18N_KEY(color_hsv_value),        Vec(0.0,  4.0)   }
+      { "",                  "",                                   Vec(0.0,  0.0)   },
+      { "Zoom",              I18N_KEY(zoom),                       Vec(8.0,  0.0)   },
+      { "VScroll",           I18N_KEY(scroll_vertically),          Vec(4.0,  0.0)   },
+      { "HScroll",           I18N_KEY(scroll_horizontally),        Vec(4.0,  0.0)   },
+      { "FgColor",           I18N_KEY(fg_color),                   Vec(8.0,  0.0)   },
+      { "BgColor",           I18N_KEY(bg_color),                   Vec(8.0,  0.0)   },
+      { "FgTile",            I18N_KEY(fg_tile),                    Vec(8.0,  0.0)   },
+      { "BgTile",            I18N_KEY(bg_tile),                    Vec(8.0,  0.0)   },
+      { "Frame",             I18N_KEY(change_frame),               Vec(16.0, 0.0)   },
+      { "BrushSize",         I18N_KEY(change_brush_size),          Vec(4.0,  0.0)   },
+      { "BrushAngle",        I18N_KEY(change_brush_angle),         Vec(-4.0, 0.0)   },
+      { "ToolSameGroup",     I18N_KEY(change_tool_same_group),     Vec(8.0,  0.0)   },
+      { "ToolOtherGroup",    I18N_KEY(change_tool),                Vec(0.0,  -8.0)  },
+      { "ToolCustomToolset", I18N_KEY(change_tool_custom_toolset), Vec(-8.0, 0.0)   },
+      { "Layer",             I18N_KEY(change_layer),               Vec(0.0,  8.0)   },
+      { "InkType",           I18N_KEY(change_ink_type),            Vec(0.0,  -16.0) },
+      { "InkOpacity",        I18N_KEY(change_ink_opacity),         Vec(0.0,  1.0)   },
+      { "LayerOpacity",      I18N_KEY(change_layer_opacity),       Vec(0.0,  1.0)   },
+      { "CelOpacity",        I18N_KEY(change_cel_opacity),         Vec(0.0,  1.0)   },
+      { "Alpha",             I18N_KEY(color_alpha),                Vec(4.0,  0.0)   },
+      { "HslHue",            I18N_KEY(color_hsl_hue),              Vec(1.0,  0.0)   },
+      { "HslSaturation",     I18N_KEY(color_hsl_saturation),       Vec(4.0,  0.0)   },
+      { "HslLightness",      I18N_KEY(color_hsl_lightness),        Vec(0.0,  4.0)   },
+      { "HsvHue",            I18N_KEY(color_hsv_hue),              Vec(1.0,  0.0)   },
+      { "HsvSaturation",     I18N_KEY(color_hsv_saturation),       Vec(4.0,  0.0)   },
+      { "HsvValue",          I18N_KEY(color_hsv_value),            Vec(0.0,  4.0)   },
+      { "UndoRedo",          I18N_KEY(undo_redo),                  Vec(8.0,  0.0)   },
+      { "PlaybackSpeed",     I18N_KEY(playback_speed),             Vec(16.0, 0.0)   }
     };
   }
   return g_wheel_actions;
@@ -529,12 +532,24 @@ const AppShortcut* Key::isPressed(const Message* msg, const KeyContext keyContex
       const auto pressedMouseButton = (pressed ? mouseMsg->button() : kButtonNone);
 
       for (const AppShortcut& shortcut : shortcuts()) {
+        bool mouseButtonMatch = true;
+        if (shortcut.mouseButton() != kButtonNone) {
+          if (pressedMouseButton == kButtonNone) {
+            mouseButtonMatch = false;
+          }
+          else {
+            switch (shortcut.mouseButton()) {
+              case kButtonX1: mouseButtonMatch = mouseMsg->isX1Pressed(); break;
+              case kButtonX2: mouseButtonMatch = mouseMsg->isX2Pressed(); break;
+              default:        mouseButtonMatch = (mouseMsg->button() == shortcut.mouseButton()); break;
+            }
+          }
+        }
         if ((shortcut.modifiers() == mouseMsg->modifiers()) &&
             ((shortcut.scancode() == kKeyNil && shortcut.unicodeChar() == 0) ||
              (shortcut.modifiers() == kKeySpaceModifier && shortcut.scancode() == kKeySpace &&
               shortcut.unicodeChar() == ' ')) &&
-            (shortcut.mouseButton() == kButtonNone ||
-             (pressedMouseButton != kButtonNone && shortcut.mouseButton() == mouseMsg->button())) &&
+            mouseButtonMatch &&
             (!best || shortcut.fitsBetterThan(keyContext, keycontext(), keycontext(), *best))) {
           best = &shortcut;
         }

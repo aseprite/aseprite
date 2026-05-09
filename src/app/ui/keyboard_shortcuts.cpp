@@ -674,7 +674,9 @@ WheelAction KeyboardShortcuts::getWheelActionFromMouseMessage(const KeyContext c
   for (const KeyPtr& key : m_keys) {
     if (key->type() == KeyType::WheelAction && key->keycontext() == context) {
       const AppShortcut* shortcut = key->isPressed(msg);
-      if (shortcut && (!best || best->lessModifiersThan(*shortcut))) {
+      if (shortcut &&
+          (!best || best->lessModifiersThan(*shortcut) ||
+           (best->mouseButton() == kButtonNone && shortcut->mouseButton() != kButtonNone))) {
         best = shortcut;
         wheelAction = key->wheelAction();
       }
@@ -696,6 +698,20 @@ Keys KeyboardShortcuts::getDragActionsFromMessage(const ui::Message* msg)
     }
   }
   return keys;
+}
+
+bool KeyboardShortcuts::hasShortcutWithMouseButton(ui::MouseButton button) const
+{
+  if (button == kButtonNone)
+    return false;
+
+  for (const KeyPtr& key : m_keys) {
+    for (const auto& shortcut : key->shortcuts()) {
+      if (shortcut.mouseButton() == button)
+        return true;
+    }
+  }
+  return false;
 }
 
 bool KeyboardShortcuts::hasMouseWheelCustomization() const
