@@ -60,6 +60,7 @@ const char* WellKnownInks::PaintAlphaCompositing = "paint_alpha_compositing";
 const char* WellKnownInks::PaintCopy = "paint_copy";
 const char* WellKnownInks::PaintLockAlpha = "paint_lock_alpha";
 const char* WellKnownInks::Shading = "shading";
+const char* WellKnownInks::RandomColor = "random_color";
 const char* WellKnownInks::Gradient = "gradient";
 const char* WellKnownInks::Eraser = "eraser";
 const char* WellKnownInks::ReplaceFgWithBg = "replace_fg_with_bg";
@@ -129,6 +130,7 @@ ToolBox::ToolBox()
   m_inks[WellKnownInks::PaintLockAlpha] = new PaintInk(PaintInk::LockAlpha);
   m_inks[WellKnownInks::Gradient] = new GradientInk();
   m_inks[WellKnownInks::Shading] = new ShadingInk();
+  m_inks[WellKnownInks::RandomColor] = new RandomColorInk();
   m_inks[WellKnownInks::Eraser] = new EraserInk(EraserInk::Eraser);
   m_inks[WellKnownInks::ReplaceFgWithBg] = new EraserInk(EraserInk::ReplaceFgWithBg);
   m_inks[WellKnownInks::ReplaceBgWithFg] = new EraserInk(EraserInk::ReplaceBgWithFg);
