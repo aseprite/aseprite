@@ -204,6 +204,7 @@ Editor::Editor(Doc* document, EditorFlags flags, EditorStatePtr state)
   m_tiledConn = m_docPref.tiled.AfterChange.connect([this] { onTiledModeChange(); });
   m_gridConn = m_docPref.grid.AfterChange.connect([this] { invalidate(); });
   m_pixelGridConn = m_docPref.pixelGrid.AfterChange.connect([this] { invalidate(); });
+  m_gridSubdivisionsConn = m_docPref.gridSubdivisions.AfterChange.connect([this] { invalidate(); });
   m_bgConn = m_docPref.bg.AfterChange.connect([this] { invalidate(); });
   m_onionskinConn = m_docPref.onionskin.AfterChange.connect([this] { invalidate(); });
   m_symmetryModeConn = Preferences::instance().symmetryMode.enabled.AfterChange.connect(
@@ -841,6 +842,49 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
       }
       m_docPref.show.pixelGrid.forceDirtyFlag();
 
+      // Draw grid subdivisions (before main grid so main grid lines draw on top)
+      if (m_docPref.show.gridSubdivisions()) {
+        gfx::Rect gridrc;
+        if (!m_state->getGridBounds(this, gridrc))
+          gridrc = getSite().gridBounds();
+
+        gfx::Size subdiv = m_docPref.gridSubdivisions.subdivisions();
+        // Only draw if subdivisions > 1 and grid is evenly divisible
+        const bool drawH = (subdiv.w > 1 && gridrc.w % subdiv.w == 0);
+        const bool drawV = (subdiv.h > 1 && gridrc.h % subdiv.h == 0);
+
+        if (drawH || drawV) {
+          const int subW = drawH ? gridrc.w / subdiv.w : gridrc.w;
+          const int subH = drawV ? gridrc.h / subdiv.h : gridrc.h;
+          const gfx::Rect subGridrc(gridrc.x, gridrc.y, subW, subH);
+
+          if (m_proj.applyX(subW) > 1 || m_proj.applyY(subH) > 1) {
+            int alpha = m_docPref.gridSubdivisions.opacity();
+
+            if (m_docPref.gridSubdivisions.autoOpacity()) {
+              double len = (m_proj.applyX(gridrc.w) + m_proj.applyY(gridrc.h)) / 2.;
+              alpha = int(alpha * len / 32.);
+              alpha = std::clamp(alpha, 0, 255);
+            }
+
+            if (alpha > 8) {
+              if (m_docPref.gridSubdivisions.dashed())
+                drawDashedGrid(g,
+                               enclosingRect,
+                               subGridrc,
+                               gridrc,
+                               m_docPref.gridSubdivisions.color(),
+                               alpha);
+              else
+                drawGrid(g, enclosingRect, subGridrc, m_docPref.gridSubdivisions.color(), alpha);
+            }
+          }
+        }
+
+        m_docPref.gridSubdivisions.forceSection();
+      }
+      m_docPref.show.gridSubdivisions.forceDirtyFlag();
+
       // Draw the grid
       if (m_docPref.show.grid()) {
         gfx::Rect gridrc;
@@ -1218,6 +1262,120 @@ void Editor::drawGrid(Graphics* g,
 
   for (double c = x1; c <= x2; c += gridF.w)
     g->drawVLine(grid_color, c, y1, spriteBounds.h);
+}
+
+void Editor::drawDashedGrid(Graphics* g,
+                            const gfx::Rect& spriteBounds,
+                            const Rect& gridBounds,
+                            const Rect& mainGridBounds,
+                            const app::Color& color,
+                            int alpha)
+{
+  if ((m_flags & kShowGrid) == 0)
+    return;
+
+  // Copy the grid bounds
+  Rect grid(gridBounds);
+  if (grid.w < 1 || grid.h < 1)
+    return;
+
+  // Move the grid bounds to a non-negative position.
+  if (grid.x < 0)
+    grid.x += (ABS(grid.x) / grid.w + 1) * grid.w;
+  if (grid.y < 0)
+    grid.y += (ABS(grid.y) / grid.h + 1) * grid.h;
+
+  // Change the grid position to the first grid's tile
+  grid.setOrigin(Point((grid.x % grid.w) - grid.w, (grid.y % grid.h) - grid.h));
+  if (grid.x < 0)
+    grid.x += grid.w;
+  if (grid.y < 0)
+    grid.y += grid.h;
+
+  // Convert the "grid" rectangle to screen coordinates
+  RectF gridF(grid);
+  gridF = editorToScreenF(gridF);
+  if (gridF.w < 1. || gridF.h < 1.)
+    return;
+
+  // Adjust for client area
+  gfx::Rect bounds = this->bounds();
+  gridF.offset(-bounds.origin());
+
+  while (gridF.x - gridF.w >= spriteBounds.x)
+    gridF.x -= gridF.w;
+  while (gridF.y - gridF.h >= spriteBounds.y)
+    gridF.y -= gridF.h;
+
+  // Also compute the main grid in screen coordinates for skipping
+  Rect mainGrid(mainGridBounds);
+  if (mainGrid.x < 0)
+    mainGrid.x += (ABS(mainGrid.x) / mainGrid.w + 1) * mainGrid.w;
+  if (mainGrid.y < 0)
+    mainGrid.y += (ABS(mainGrid.y) / mainGrid.h + 1) * mainGrid.h;
+  mainGrid.setOrigin(
+    Point((mainGrid.x % mainGrid.w) - mainGrid.w, (mainGrid.y % mainGrid.h) - mainGrid.h));
+  if (mainGrid.x < 0)
+    mainGrid.x += mainGrid.w;
+  if (mainGrid.y < 0)
+    mainGrid.y += mainGrid.h;
+  RectF mainGridF(mainGrid);
+  mainGridF = editorToScreenF(mainGridF);
+  mainGridF.offset(-bounds.origin());
+  while (mainGridF.x - mainGridF.w >= spriteBounds.x)
+    mainGridF.x -= mainGridF.w;
+  while (mainGridF.y - mainGridF.h >= spriteBounds.y)
+    mainGridF.y -= mainGridF.h;
+
+  // Get the grid's color
+  gfx::Color grid_color = color_utils::color_for_ui(color);
+  grid_color =
+    gfx::rgba(gfx::getr(grid_color), gfx::getg(grid_color), gfx::getb(grid_color), alpha);
+
+  const int dashLen = 2; // 2px on, 2px off
+
+  const int x1 = spriteBounds.x;
+  const int y1 = spriteBounds.y;
+  const int x2 = spriteBounds.x + spriteBounds.w;
+  const int y2 = spriteBounds.y + spriteBounds.h;
+
+  // Draw dashed horizontal lines
+  for (double c = gridF.y; c <= y2; c += gridF.h) {
+    int cy = (int)c;
+    // Skip lines that coincide with the main grid
+    bool onMainGrid = false;
+    if (mainGridF.h > 0) {
+      double offset = std::fmod(c - mainGridF.y, mainGridF.h);
+      if (offset < 0)
+        offset += mainGridF.h;
+      if (offset < 0.5 || offset > mainGridF.h - 0.5)
+        onMainGrid = true;
+    }
+    if (onMainGrid)
+      continue;
+
+    for (int x = x1; x < x2; x += dashLen * 2)
+      g->drawHLine(grid_color, x, cy, std::min(dashLen, x2 - x));
+  }
+
+  // Draw dashed vertical lines
+  for (double c = gridF.x; c <= x2; c += gridF.w) {
+    int cx = (int)c;
+    // Skip lines that coincide with the main grid
+    bool onMainGrid = false;
+    if (mainGridF.w > 0) {
+      double offset = std::fmod(c - mainGridF.x, mainGridF.w);
+      if (offset < 0)
+        offset += mainGridF.w;
+      if (offset < 0.5 || offset > mainGridF.w - 0.5)
+        onMainGrid = true;
+    }
+    if (onMainGrid)
+      continue;
+
+    for (int y = y1; y < y2; y += dashLen * 2)
+      g->drawVLine(grid_color, cx, y, std::min(dashLen, y2 - y));
+  }
 }
 
 void Editor::drawSlices(ui::Graphics* g)

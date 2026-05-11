@@ -539,6 +539,13 @@
       <option id="opacity" type="int" default="160" />
       <option id="auto_opacity" type="bool" default="true" />
     </section>
+    <section id="grid_subdivisions" canforce="true">
+      <option id="subdivisions" type="gfx::Size" default="gfx::Size(1, 1)" />
+      <option id="color" type="app::Color" default="app::Color::fromRgb(144, 205, 243)" />
+      <option id="opacity" type="int" default="70" />
+      <option id="auto_opacity" type="bool" default="true" />
+      <option id="dashed" type="bool" default="true" />
+    </section>
     <section id="pixel_grid" canforce="true">
       <option id="color" type="app::Color" default="app::Color::fromRgb(200, 200, 200)" />
       <option id="opacity" type="int" default="160" />
@@ -633,6 +640,7 @@
       <option id="layer_edges" type="bool" default="false" />
       <option id="selection_edges" type="bool" default="true" />
       <option id="grid" type="bool" default="false" />
+      <option id="grid_subdivisions" type="bool" default="false" />
       <option id="pixel_grid" type="bool" default="false" />
       <option id="brush_preview" type="bool" default="true" />
       <option id="slices" type="bool" default="true" />
