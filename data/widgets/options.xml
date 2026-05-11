@@ -84,6 +84,10 @@
                  text="@.show_aseprite_file_dialog" />
           <check id="show_home"
                  text="@.show_home" />
+          <check id="show_fixed_title_bar"
+                 text="@.show_fixed_title_bar"
+                 tooltip="@.show_fixed_title_bar_tooltip"
+                 pref="general.fixed_title" />
           <check id="expand_menubar_on_mouseover"
                  text="@.expand_menu_bar_items_on_mouseover"
                  tooltip="@.expand_menu_bar_items_on_mouseover_tooltip" />

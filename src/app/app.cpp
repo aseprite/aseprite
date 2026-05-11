@@ -771,42 +771,52 @@ void App::showBackupNotification(bool state)
 void App::updateDisplayTitleBar()
 {
   static std::string defaultTitle;
+  static bool cachedFixedTitle = false;
+
+  const bool fixedTitle = preferences().general.fixedTitle();
   std::string title;
 
-  if (defaultTitle.empty()) {
-    defaultTitle = fmt::format("{} v{}", get_app_name(), get_app_version());
+  if (defaultTitle.empty() || cachedFixedTitle != fixedTitle) {
+    cachedFixedTitle = fixedTitle;
+    if (fixedTitle)
+      defaultTitle = get_app_name();
+    else {
+      defaultTitle = fmt::format("{} v{}", get_app_name(), get_app_version());
 
 #if LAF_MACOS
-    // On macOS we remove the "-arm64" suffix for Apple Silicon as it
-    // will be the most common platform from now on.
-    if constexpr (base::Platform::arch == base::Platform::Arch::arm64) {
-      base::replace_string(defaultTitle, "-arm64", "");
-    }
-    else if constexpr (base::Platform::arch == base::Platform::Arch::x64) {
-      base::replace_string(defaultTitle, "-x64", "");
-      defaultTitle += " (x64)";
-    }
+      // On macOS we remove the "-arm64" suffix for Apple Silicon as it
+      // will be the most common platform from now on.
+      if constexpr (base::Platform::arch == base::Platform::Arch::arm64) {
+        base::replace_string(defaultTitle, "-arm64", "");
+      }
+      else if constexpr (base::Platform::arch == base::Platform::Arch::x64) {
+        base::replace_string(defaultTitle, "-x64", "");
+        defaultTitle += " (x64)";
+      }
 #else
-    // On PC (Windows/Linux) we try to remove "-x64" suffix as it's
-    // the most common platform.
-    if constexpr (base::Platform::arch == base::Platform::Arch::x64) {
-      base::replace_string(defaultTitle, "-x64", "");
-    }
-    else if constexpr (base::Platform::arch == base::Platform::Arch::x86) {
-      base::replace_string(defaultTitle, "-x86", "");
-      defaultTitle += " (x86)";
-    }
+      // On PC (Windows/Linux) we try to remove "-x64" suffix as it's
+      // the most common platform.
+      if constexpr (base::Platform::arch == base::Platform::Arch::x64) {
+        base::replace_string(defaultTitle, "-x64", "");
+      }
+      else if constexpr (base::Platform::arch == base::Platform::Arch::x86) {
+        base::replace_string(defaultTitle, "-x86", "");
+        defaultTitle += " (x86)";
+      }
 #endif
+    }
   }
 
-  DocView* docView = UIContext::instance()->activeView();
-  if (docView) {
-    // Prepend the document's filename.
-    title += docView->document()->name();
-    if (docView->document()->isReadOnly()) {
-      title += " [Read-Only]";
+  if (!fixedTitle) {
+    DocView* docView = UIContext::instance()->activeView();
+    if (docView) {
+      // Prepend the document's filename.
+      title += docView->document()->name();
+      if (docView->document()->isReadOnly()) {
+        title += " [Read-Only]";
+      }
+      title += " - ";
     }
-    title += " - ";
   }
 
   title += defaultTitle;
