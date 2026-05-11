@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,11 +12,12 @@
 #include "app/doc.h"
 #include "app/pref/preferences.h"
 #include "base/thread.h"
+#include "ui/system.h"
 
 #include <algorithm>
 #include <limits>
 
-#define CLOSEDOC_TRACE(...) // TRACEARGS
+#define CLOSEDOC_TRACE(...) // TRACEARGS(__VA_ARGS__)
 
 namespace app {
 
@@ -80,14 +81,19 @@ void ClosedDocs::addClosedDoc(Doc* doc)
   ASSERT(doc->context() == nullptr);
 
   ClosedDoc closedDoc = { doc, base::current_tick() };
+  ObjectId docId = doc->id();
 
-  std::unique_lock<std::mutex> lock(m_mutex);
-  m_docs.insert(m_docs.begin(), std::move(closedDoc));
+  {
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_docs.insert(m_docs.begin(), std::move(closedDoc));
 
-  if (!m_thread.joinable())
-    m_thread = std::thread([this] { backgroundThread(); });
-  else
-    m_cv.notify_one();
+    if (!m_thread.joinable())
+      m_thread = std::thread([this] { backgroundThread(); });
+    else
+      m_cv.notify_one();
+  }
+
+  notify_observers(&ClosedDocsObserver::onNewClosedDoc, docId);
 }
 
 Doc* ClosedDocs::reopenLastClosedDoc()
@@ -102,7 +108,39 @@ Doc* ClosedDocs::reopenLastClosedDoc()
     CLOSEDOC_TRACE(" -> ", doc);
   }
   CLOSEDOC_TRACE("CLOSEDOC: Reopen last closed doc", doc);
+  if (doc)
+    notify_observers(&ClosedDocsObserver::onReopenClosedDoc, doc->id());
   return doc;
+}
+
+Doc* ClosedDocs::reopenClosedDocById(const doc::ObjectId docId)
+{
+  Doc* doc = nullptr;
+  {
+    std::unique_lock<std::mutex> lock(m_mutex);
+    for (auto it = m_docs.begin(), end = m_docs.end(); it != end; ++it) {
+      if (it->doc && it->doc->id() == docId) {
+        doc = it->doc;
+        m_docs.erase(it);
+        break;
+      }
+    }
+  }
+  CLOSEDOC_TRACE("CLOSEDOC: Reopen specific closed doc", doc);
+  if (doc)
+    notify_observers(&ClosedDocsObserver::onReopenClosedDoc, doc->id());
+  return doc;
+}
+
+std::vector<crash::DocumentInfo> ClosedDocs::getClosedDocInfos()
+{
+  std::vector<crash::DocumentInfo> infos;
+  {
+    std::unique_lock<std::mutex> lock(m_mutex);
+    for (const ClosedDoc& closedDoc : m_docs)
+      infos.push_back(crash::DocumentInfo(closedDoc.doc));
+  }
+  return infos;
 }
 
 std::vector<Doc*> ClosedDocs::getAndRemoveAllClosedDocs()
@@ -142,17 +180,24 @@ void ClosedDocs::backgroundThread()
 
       base::tick_t diff = now - closedDoc.timestamp;
       if (diff >= m_keepClosedDocAliveForMSecs) {
-        if ( // If we backup process is disabled
+        if ( // If the backup process is disabled
           m_dataRecoveryPeriodMSecs == 0 ||
           // Or this document doesn't need a backup (e.g. an unmodified document)
           !doc->needsBackup() ||
           // Or the document already has the backup done
           doc->isFullyBackedUp()) {
+          const bool backedup = (doc->needsBackup() && doc->isFullyBackedUp());
+
           // Finally delete the document (this is the place where we
           // delete all documents created/loaded by the user)
           CLOSEDOC_TRACE("CLOSEDOC: [BG] Delete doc", doc);
+          const doc::ObjectId docId = doc->id();
           delete doc;
           it = m_docs.erase(it);
+
+          ui::execute_from_ui_thread([this, docId, backedup] {
+            notify_observers(&ClosedDocsObserver::onArchiveClosedDoc, docId, backedup);
+          });
         }
         else {
           waitForMSecs = std::min(waitForMSecs, m_dataRecoveryPeriodMSecs);

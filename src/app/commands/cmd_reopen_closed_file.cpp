@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,6 +8,7 @@
   #include "config.h"
 #endif
 
+#include "app/closed_docs.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/ui_context.h"
@@ -30,7 +31,7 @@ ReopenClosedFileCommand::ReopenClosedFileCommand() : Command(CommandId::ReopenCl
 bool ReopenClosedFileCommand::onEnabled(Context* ctx)
 {
   if (auto uiCtx = dynamic_cast<UIContext*>(ctx)) {
-    return uiCtx->hasClosedDocs();
+    return uiCtx->closedDocs().hasClosedDocs();
   }
   return false;
 }

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (c) 2026-present  Igara Studio S.A.
 // Copyright (c) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,8 +17,8 @@ class Site;
 class ContextObserver {
 public:
   virtual ~ContextObserver() {}
-  virtual void onActiveSiteChange(const Site& site) {};
-  virtual void onBeforeActiveSiteChange(const Site& fromSite) {};
+  virtual void onActiveSiteChange(const Site& site) {}
+  virtual void onBeforeActiveSiteChange(const Site& fromSite) {}
 };
 
 } // namespace app

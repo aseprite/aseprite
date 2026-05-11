@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -21,7 +21,8 @@
 namespace app {
 namespace crash {
 class DataRecovery;
-}
+class Session;
+} // namespace crash
 
 class DataRecoveryView : public ui::VBox,
                          public TabView,
@@ -52,9 +53,10 @@ public:
 private:
   void clearList();
   void fillList();
-  void fillListWith(const bool crashes);
+  void addSession(crash::Session* session);
   void disableRefresh();
   bool someItemIsBusy();
+  ui::WidgetsList selectedItems();
 
   void onOpen();
   void onOpenRaw(crash::RawImagesAs as);
@@ -73,6 +75,10 @@ private:
   ui::Button m_deleteButton;
   ui::Button m_refreshButton;
   ui::Timer m_waitToEnableRefreshTimer;
+
+  // Running session separator.
+  class SessionSeparator;
+  SessionSeparator* m_runningSession = nullptr;
 
   // Connection to to showFullPath.AfterChange signal to update the
   // items text when the setting is changed.

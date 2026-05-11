@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,6 +16,7 @@
 #include <vector>
 
 namespace app {
+class ClosedDocs;
 class DocView;
 class Editor;
 
@@ -45,9 +46,9 @@ public:
   // new one if it's necessary.
   Editor* getEditorFor(Doc* document);
 
-  bool hasClosedDocs();
   void reopenLastClosedDoc();
-  std::vector<Doc*> getAndRemoveAllClosedDocs();
+  void reopenClosedDocById(doc::ObjectId docId);
+  ClosedDocs& closedDocs();
 
   // Sets the DocView used to run some specific commands
   // (e.g. commands that depend on the current view or the preview

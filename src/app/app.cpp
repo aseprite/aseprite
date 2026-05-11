@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -18,6 +18,7 @@
 #include "app/cli/cli_processor.h"
 #include "app/cli/default_cli_delegate.h"
 #include "app/cli/preview_cli_delegate.h"
+#include "app/closed_docs.h"
 #include "app/color_spaces.h"
 #include "app/color_utils.h"
 #include "app/commands/commands.h"
@@ -416,7 +417,7 @@ struct DeleteAllDocs {
     // Add all documents that were closed in the past, these docs
     // are not part of any context and they are just temporarily in
     // memory just in case the user wants to recover them.
-    for (Doc* doc : static_cast<UIContext*>(m_ctx)->getAndRemoveAllClosedDocs())
+    for (Doc* doc : static_cast<UIContext*>(m_ctx)->closedDocs().getAndRemoveAllClosedDocs())
       docs.push_back(doc);
 
     // Add documents that are currently opened/in tabs/in the

@@ -284,11 +284,6 @@ Editor* UIContext::getEditorFor(Doc* document)
     return nullptr;
 }
 
-bool UIContext::hasClosedDocs()
-{
-  return m_closedDocs.hasClosedDocs();
-}
-
 void UIContext::reopenLastClosedDoc()
 {
   if (Doc* doc = m_closedDocs.reopenLastClosedDoc()) {
@@ -297,9 +292,17 @@ void UIContext::reopenLastClosedDoc()
   }
 }
 
-std::vector<Doc*> UIContext::getAndRemoveAllClosedDocs()
+void UIContext::reopenClosedDocById(doc::ObjectId docId)
 {
-  return m_closedDocs.getAndRemoveAllClosedDocs();
+  if (Doc* doc = m_closedDocs.reopenClosedDocById(docId)) {
+    // Put the document in the context again.
+    doc->setContext(this);
+  }
+}
+
+ClosedDocs& UIContext::closedDocs()
+{
+  return m_closedDocs;
 }
 
 void UIContext::onAddDocument(Doc* doc)

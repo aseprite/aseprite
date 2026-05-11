@@ -129,6 +129,7 @@ if(ENABLE_DATA_RECOVERY)
   target_sources(app-lib PRIVATE
     crash/backup_observer.cpp
     crash/data_recovery.cpp
+    crash/document_info.cpp
     crash/read_document.cpp
     crash/session.cpp
     crash/write_document.cpp
