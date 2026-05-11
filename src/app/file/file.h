@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -27,14 +27,13 @@
 #include <string>
 
 // Flags for FileOp::createLoadDocumentOperation()
-#define FILE_LOAD_SEQUENCE_NONE          0x00000001
-#define FILE_LOAD_SEQUENCE_ASK           0x00000002
-#define FILE_LOAD_SEQUENCE_ASK_CHECKBOX  0x00000004
-#define FILE_LOAD_SEQUENCE_YES           0x00000008
-#define FILE_LOAD_ONE_FRAME              0x00000010
-#define FILE_LOAD_DATA_FILE              0x00000020
-#define FILE_LOAD_CREATE_PALETTE         0x00000040
-#define FILE_LOAD_AVOID_BACKGROUND_LAYER 0x00000080
+#define FILE_LOAD_SEQUENCE_NONE         0x00000001
+#define FILE_LOAD_SEQUENCE_ASK          0x00000002
+#define FILE_LOAD_SEQUENCE_ASK_CHECKBOX 0x00000004
+#define FILE_LOAD_SEQUENCE_YES          0x00000008
+#define FILE_LOAD_ONE_FRAME             0x00000010
+#define FILE_LOAD_DATA_FILE             0x00000020
+#define FILE_LOAD_CREATE_PALETTE        0x00000040
 
 namespace doc {
 class Tag;
@@ -307,7 +306,6 @@ private:
                                       // GIF/FLI/ASE).
   bool m_createPaletteFromRgba;
   bool m_ignoreEmpty;
-  bool m_avoidBackgroundLayer;
 
   // True if the file contained a color profile when it was loaded.
   bool m_embeddedColorProfile;
