@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2018-2019 Igara Studio S.A.
+// Copyright (c) 2018-present Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +9,7 @@
 #define APP_CRASH_READ_DOCUMENT_H_INCLUDED
 #pragma once
 
+#include "app/crash/document_info.h"
 #include "app/crash/raw_images_as.h"
 #include "base/task.h"
 #include "doc/color_mode.h"
@@ -19,16 +20,6 @@
 namespace app {
 class Doc;
 namespace crash {
-
-struct DocumentInfo {
-  doc::ColorMode mode;
-  int width;
-  int height;
-  doc::frame_t frames;
-  std::string filename;
-
-  DocumentInfo() : mode(doc::ColorMode::RGB), width(0), height(0), frames(0) {}
-};
 
 bool read_document_info(const std::string& dir, DocumentInfo& info);
 Doc* read_document(const std::string& dir, base::task_token* t);

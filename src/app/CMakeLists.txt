@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2018-2025  Igara Studio S.A.
+# Copyright (C) 2018-present  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 # Generate a ui::Widget for each widget in a XML file
@@ -130,6 +130,7 @@ if(ENABLE_DATA_RECOVERY)
   target_sources(app-lib PRIVATE
     crash/backup_observer.cpp
     crash/data_recovery.cpp
+    crash/document_info.cpp
     crash/read_document.cpp
     crash/session.cpp
     crash/write_document.cpp
