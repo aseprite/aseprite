@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -37,7 +37,6 @@ public:
   private:
     std::string m_dir;
     mutable std::string m_desc;
-    mutable std::string m_fn;
   };
   using BackupPtr = std::shared_ptr<Backup>;
   using Backups = std::vector<BackupPtr>;
@@ -46,11 +45,12 @@ public:
   ~Session();
 
   std::string name() const;
-  std::string version();
-  std::string& path() { return m_path; }
+  std::string version() const;
+  const std::string& path() const { return m_path; }
   const Backups& backups();
+  const Backups& reloadBackups();
 
-  bool isCrashedSession();
+  bool isCrashedSession() const;
   bool isOldSession();
   bool isEmpty();
 
@@ -69,7 +69,7 @@ public:
 
 private:
   Doc* restoreBackupDoc(const std::string& backupDir, base::task_token* t);
-  void loadPid();
+  void loadPid() const;
   std::string pidFilename() const;
   std::string verFilename() const;
   void markDocumentAsCorrectlyClosed(Doc* doc);
@@ -77,9 +77,9 @@ private:
   void fixFilename(Doc* doc);
   int filenamePartToInt(const std::string& part) const;
 
-  base::pid m_pid;
+  mutable base::pid m_pid;
   std::string m_path;
-  std::string m_version;
+  mutable std::string m_version;
   Backups m_backups;
   RecoveryConfig* m_config;
 

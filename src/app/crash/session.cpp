@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -52,19 +52,9 @@ std::string Session::Backup::description(const bool withFullPath) const
   if (m_desc.empty()) {
     DocumentInfo info;
     read_document_info(m_dir, info);
-    m_fn = info.filename;
-    m_desc = fmt::format("{} Sprite {}x{}, {} {}",
-                         info.mode == ColorMode::RGB       ? "RGB" :
-                         info.mode == ColorMode::GRAYSCALE ? "Grayscale" :
-                         info.mode == ColorMode::INDEXED   ? "Indexed" :
-                         info.mode == ColorMode::BITMAP    ? "Bitmap" :
-                                                             "Unknown",
-                         info.width,
-                         info.height,
-                         info.frames,
-                         info.frames == 1 ? "frame" : "frames");
+    m_desc = info.toString(withFullPath);
   }
-  return fmt::format("{}: {}", m_desc, withFullPath ? m_fn : base::get_file_name(m_fn));
+  return m_desc;
 }
 
 Session::Session(RecoveryConfig* config, const std::string& path)
@@ -93,13 +83,17 @@ std::string Session::name() const
       parts[1].insert(4, 1, '.');
       parts[1].insert(2, 1, ':');
     }
-    return "Session date: " + parts[0] + " time: " + parts[1] + " (PID " + parts[2] + ")";
+    return fmt::format("Session date: {} time: {} (PID {}{})",
+                       parts[0],
+                       parts[1],
+                       parts[2],
+                       isCrashedSession() ? " CRASHED" : "");
   }
-  else
-    return name;
+
+  return name;
 }
 
-std::string Session::version()
+std::string Session::version() const
 {
   if (m_version.empty()) {
     std::string verfile = verFilename();
@@ -126,7 +120,13 @@ const Session::Backups& Session::backups()
   return m_backups;
 }
 
-bool Session::isCrashedSession()
+const Session::Backups& Session::reloadBackups()
+{
+  m_backups.clear();
+  return Session::backups();
+}
+
+bool Session::isCrashedSession() const
 {
   loadPid();
   return (m_pid != 0);
@@ -345,7 +345,7 @@ void Session::deleteBackup(const BackupPtr& backup)
     deleteDirectory(backup->dir());
 }
 
-void Session::loadPid()
+void Session::loadPid() const
 {
   if (m_pid)
     return;

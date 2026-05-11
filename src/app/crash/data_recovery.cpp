@@ -139,7 +139,7 @@ DataRecovery::Sessions DataRecovery::sessions()
   return copy;
 }
 
-bool DataRecovery::isRunningSession(const SessionPtr& session) const
+bool DataRecovery::isRunningSession(const Session* session) const
 {
   ASSERT(session);
   ASSERT(m_inProgress);
@@ -157,7 +157,7 @@ void DataRecovery::searchForSessions()
     RECO_TRACE("RECO: Session '%s' ", itempath.c_str());
 
     SessionPtr session(new Session(&m_config, itempath));
-    if (!isRunningSession(session)) {
+    if (!isRunningSession(session.get())) {
       if ((session->isEmpty()) || (!session->isCrashedSession() && session->isOldSession())) {
         RECO_TRACE("to be deleted (%s)\n",
                    session->isEmpty() ? "is empty" :

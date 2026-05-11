@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -167,7 +167,12 @@ public:
   const WidgetsList& children() const { return m_children; }
   bool hasChildren() const { return !m_children.empty(); }
 
-  Widget* at(int index) { return m_children[index]; }
+  Widget* at(int index) const
+  {
+    if (index >= 0 && index < m_children.size())
+      return m_children[index];
+    return nullptr;
+  }
   int getChildIndex(Widget* child);
 
   // Returns the first/last child or nullptr if it doesn't exist.

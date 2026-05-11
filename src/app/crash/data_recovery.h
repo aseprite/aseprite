@@ -45,7 +45,7 @@ public:
   // Returns a copy of the list of sessions that can be recovered.
   Sessions sessions();
 
-  bool isRunningSession(const SessionPtr& session) const;
+  bool isRunningSession(const Session* session) const;
 
   // Triggered in the UI-thread from the m_thread using an
   // ui::execute_from_ui_thread() when the list of sessions is ready

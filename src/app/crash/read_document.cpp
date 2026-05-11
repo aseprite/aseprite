@@ -127,6 +127,7 @@ public:
 
   bool loadDocumentInfo(DocumentInfo& info)
   {
+    info.docId = m_docId;
     m_loadInfo = &info;
     return loadObject<Doc*>("doc", m_docId, &Reader::readDocument) == (Doc*)1;
   }
