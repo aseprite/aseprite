@@ -1483,6 +1483,15 @@ void Manager::_openWindow(Window* window, bool center)
       spec.transparent(window->isTransparent());
       spec.modal(window->isForeground());
 
+      // Convert the current window to modal if the parent window is also modal
+      // so the child window is not placed behind its modal parent.
+      if (!window->isForeground() && parentDisplay) {
+        if (auto* parentWindow = dynamic_cast<Window*>(parentDisplay->containedWidget())) {
+          if (parentWindow->isForeground())
+            spec.modal(true);
+        }
+      }
+
       if (!window->isDesktop()) {
         spec.parent(parentDisplay->nativeWindow());
       }
