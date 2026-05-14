@@ -28,7 +28,15 @@
 #include "doc/frame.h"
 #include "doc/image_io.h"
 #include "doc/layer.h"
+#include "doc/layer_audio.h"
+#include "doc/layer_fill.h"
+#include "doc/layer_fx.h"
+#include "doc/layer_hitbox.h"
+#include "doc/layer_mask.h"
+#include "doc/layer_subsprite.h"
+#include "doc/layer_text.h"
 #include "doc/layer_tilemap.h"
+#include "doc/layer_vector.h"
 #include "doc/palette.h"
 #include "doc/palette_io.h"
 #include "doc/serial_format.h"
@@ -468,7 +476,23 @@ private:
         break;
       }
 
-      case ObjectType::LayerGroup: lay = std::make_unique<LayerGroup>(m_sprite); break;
+      case ObjectType::LayerGroup:     lay = std::make_unique<LayerGroup>(m_sprite); break;
+
+      case ObjectType::LayerFill:      lay = std::make_unique<LayerFill>(m_sprite); break;
+
+      case ObjectType::LayerMask:      lay = std::make_unique<LayerMask>(m_sprite); break;
+
+      case ObjectType::LayerFx:        lay = std::make_unique<LayerFx>(m_sprite); break;
+
+      case ObjectType::LayerText:      lay = std::make_unique<LayerText>(m_sprite); break;
+
+      case ObjectType::LayerVector:    lay = std::make_unique<LayerVector>(m_sprite); break;
+
+      case ObjectType::LayerAudio:     lay = std::make_unique<LayerAudio>(m_sprite); break;
+
+      case ObjectType::LayerSubsprite: lay = std::make_unique<LayerSubsprite>(m_sprite); break;
+
+      case ObjectType::LayerHitbox:    lay = std::make_unique<LayerHitbox>(m_sprite); break;
 
       default:
         Console::printf("Unable to load layer named '%s', type #%d\n", name.c_str(), (int)type);
