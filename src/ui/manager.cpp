@@ -837,12 +837,13 @@ void Manager::updateMouseWidgets(const gfx::Point& mousePos, Display* display)
   for (auto mouseWidget : mouse_widgets_list) {
     if (get_multiple_displays()) {
       if (display) {
-        if (display != mouseWidget->display()) {
-          widget = mouseWidget->display()->containedWidget()->pickFromScreenPos(screenPos);
-        }
-        else {
-          widget = mouseWidget->pick(mousePos);
-        }
+        // When 'updateMouseWidgets' comes with a 'display', prioritize
+        // widgets on it first. This avoids picking widgets from a display
+        // at the background whose area overlaps with the current display
+        // that received the native mouse event.
+        if (display != mouseWidget->display())
+          continue;
+        widget = mouseWidget->pick(mousePos);
       }
       else {
         widget = mouseWidget->display()->containedWidget()->pickFromScreenPos(screenPos);
@@ -860,6 +861,21 @@ void Manager::updateMouseWidgets(const gfx::Point& mousePos, Display* display)
       while (widget && widget->hasFlags(IGNORE_MOUSE))
         widget = widget->parent();
       break;
+    }
+  }
+  // If no widget was found in the current display, try the other displays.
+  if (!widget && get_multiple_displays() && display) {
+    for (auto mouseWidget : mouse_widgets_list) {
+      if (display == mouseWidget->display())
+        continue;
+      widget = mouseWidget->display()->containedWidget()->pickFromScreenPos(screenPos);
+      if (widget) {
+        // Get the first ancestor of the picked widget that doesn't
+        // ignore mouse events.
+        while (widget && widget->hasFlags(IGNORE_MOUSE))
+          widget = widget->parent();
+        break;
+      }
     }
   }
 
