@@ -147,7 +147,7 @@ const Property Slice_properties[] = {
   { "properties", UserData_get_properties<Slice>, UserData_set_properties<Slice> },
   { nullptr,      nullptr,                        nullptr                        }
 };
-
+DEF_ITERATOR_PAIRS(Slice);
 } // anonymous namespace
 
 DEF_MTNAME(Slice);

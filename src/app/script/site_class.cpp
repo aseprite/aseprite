@@ -119,7 +119,7 @@ const Property Site_properties[] = {
   { "tilesetMode", Site_get_tilesetMode, nullptr },
   { nullptr,       nullptr,              nullptr }
 };
-
+DEF_ITERATOR_PAIRS(Site);
 } // anonymous namespace
 
 DEF_MTNAME(app::Site);

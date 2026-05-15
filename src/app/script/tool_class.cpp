@@ -33,7 +33,7 @@ const Property Tool_properties[] = {
   { "id",    Tool_get_id, nullptr },
   { nullptr, nullptr,     nullptr }
 };
-
+DEF_ITERATOR_PAIRS(Tool);
 } // anonymous namespace
 
 using Tool = tools::Tool;

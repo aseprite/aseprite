@@ -90,6 +90,9 @@ int ImageIterator_index(lua_State* L)
     { "__call",  ImageIterator_call<Prefix##Traits>  },                                              \
     { "__gc",    ImageIterator_gc<Prefix##Traits>    },                                                  \
     { nullptr,   nullptr                             }                                                                           \
+  };                                                                                               \
+  const luaL_Reg Prefix##ImageIterator_properties[] = {                                            \
+    { nullptr, nullptr }                                                                           \
   }
 
 DEFINE_METHODS(Rgb);

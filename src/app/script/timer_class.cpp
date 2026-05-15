@@ -154,7 +154,7 @@ const Property Timer_properties[] = {
   { "isRunning", Timer_get_isRunning, nullptr            },
   { nullptr,     nullptr,             nullptr            }
 };
-
+DEF_ITERATOR_PAIRS(Timer);
 } // anonymous namespace
 
 DEF_MTNAME(Timer);

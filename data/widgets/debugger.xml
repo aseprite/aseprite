@@ -1,0 +1,25 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2026-present by Igara Studio S.A. -->
+<gui>
+<window id="debugger" text="@.title">
+  <vbox>
+    <hbox childspacing="1">
+      <label text="@.connect_using" /><link text="@.vscode" url="#TODO-VSCODE-EXTENSION-LINK" />
+    </hbox>
+    <label text="@.or_compatible" />
+    <separator text="@.configuration" horizontal="true" />
+    <hbox>
+      <label text="@.address" for="address_entry" />
+      <entry id="address_entry" maxsize="45" />
+      <label text="@.port" for="port_entry" />
+      <entry id="port_entry" maxsize="5" />
+    </hbox>
+    <separator horizontal="true" />
+    <hbox>
+      <link text="@.help" url="https://www.aseprite.org/docs/scripting/#TODO" />
+      <boxfiller />
+      <button id="toggle_debugger" magnet="true" text="@.enable" />
+    </hbox>
+  </vbox>
+</window>
+</gui>

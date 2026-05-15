@@ -794,7 +794,7 @@ const Property Image_properties[] = {
   { "context",       Image_get_context,       nullptr         },
   { nullptr,         nullptr,                 nullptr         }
 };
-
+DEF_ITERATOR_PAIRS(Image);
 } // anonymous namespace
 
 DEF_MTNAME(ImageObj);

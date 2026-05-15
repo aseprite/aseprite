@@ -214,7 +214,7 @@ const luaL_Reg AppFS_methods[] = {
   { "removeDirectory",    AppFS_removeDirectory                             },
   { nullptr,              nullptr                                           }
 };
-
+DEF_ITERATOR_PAIRS(AppFS);
 } // anonymous namespace
 
 DEF_MTNAME(AppFS);

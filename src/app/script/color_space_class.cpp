@@ -90,7 +90,7 @@ const Property ColorSpace_properties[] = {
   { "name",  ColorSpace_get_name, ColorSpace_set_name },
   { nullptr, nullptr,             nullptr             }
 };
-
+DEF_ITERATOR_PAIRS(ColorSpace);
 } // anonymous namespace
 
 DEF_MTNAME(gfx::ColorSpace);

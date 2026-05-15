@@ -153,6 +153,20 @@ struct Property {
   lua_CFunction setter;
 };
 
+struct ObjectIterator {
+  int i = 0;
+  const Property* properties;
+};
+int ObjectIterator_pairs_next(lua_State* L);
+#define DEF_ITERATOR_PAIRS(T)                                                                      \
+  int T##_pairs(lua_State* L)                                                                      \
+  {                                                                                                \
+    push_obj(L, ObjectIterator{ 0, T##_properties });                                              \
+    lua_pushcclosure(L, ObjectIterator_pairs_next, 1);                                             \
+    lua_pushvalue(L, 1);                                                                           \
+    return 2;                                                                                      \
+  }
+
 int generic_mt_index(lua_State* L);
 int generic_mt_newindex(lua_State* L);
 void create_mt_getters_setters(lua_State* L, const char* tname, const Property* properties);
@@ -163,6 +177,10 @@ bool lua_is_key_true(lua_State* L, int tableIndex, const char* keyName);
   {                                                                                                \
     luaL_getmetatable(L, get_mtname<T>());                                                         \
     create_mt_getters_setters(L, get_mtname<T>(), T##_properties);                                 \
+    lua_pushcfunction(L, T##_pairs);                                                               \
+    lua_setfield(L, -2, "__pairs");                                                                \
+    lua_pushstring(L, #T);                                                                         \
+    lua_setfield(L, -2, "__typename");                                                             \
     lua_pop(L, 1);                                                                                 \
   }
 

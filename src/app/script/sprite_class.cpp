@@ -1152,7 +1152,7 @@ const Property Sprite_properties[] = {
   { "isValid",              Sprite_get_isValid,              nullptr                         },
   { nullptr,                nullptr,                         nullptr                         }
 };
-
+DEF_ITERATOR_PAIRS(Sprite);
 } // anonymous namespace
 
 DEF_MTNAME(doc::Sprite);

@@ -202,7 +202,7 @@ const Property Tile_properties[] = {
   { "properties", Tile_get_properties, Tile_set_properties },
   { nullptr,      nullptr,             nullptr             }
 };
-
+DEF_ITERATOR_PAIRS(Tile);
 } // anonymous namespace
 
 DEF_MTNAME(Tile);

@@ -118,7 +118,7 @@ const Property Frame_properties[] = {
   { "next",        Frame_get_next,        nullptr            },
   { nullptr,       nullptr,               nullptr            }
 };
-
+DEF_ITERATOR_PAIRS(Frame);
 } // anonymous namespace
 
 DEF_MTNAME(FrameObj);

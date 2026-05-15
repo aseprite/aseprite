@@ -468,7 +468,7 @@ const Property Color_properties[] = {
   { "grayPixel",     Color_get_grayPixel,     nullptr                 },
   { nullptr,         nullptr,                 nullptr                 }
 };
-
+DEF_ITERATOR_PAIRS(Color);
 } // anonymous namespace
 
 DEF_MTNAME(app::Color);

@@ -267,7 +267,7 @@ const Property Palette_properties[] = {
   { "frameNumber", Palette_get_frameNumber, nullptr },
   { nullptr,       nullptr,                 nullptr }
 };
-
+DEF_ITERATOR_PAIRS(Palette);
 } // anonymous namespace
 
 DEF_MTNAME(PaletteObj);

@@ -480,7 +480,7 @@ const Property Plugin_properties[] = {
   { "preferences", Plugin_get_preferences, Plugin_set_preferences },
   { nullptr,       nullptr,                nullptr                }
 };
-
+DEF_ITERATOR_PAIRS(Plugin)
 } // anonymous namespace
 
 DEF_MTNAME(Plugin);

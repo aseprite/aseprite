@@ -73,14 +73,7 @@ namespace script {
 class AppEvents;
 class WindowEvents;
 class SpriteEvents;
-
-class DebuggerDelegate {
-public:
-  virtual ~DebuggerDelegate() {}
-  virtual void hook(lua_State* L, lua_Debug* ar) = 0;
-  virtual void startFile(const std::string& file, const std::string& content) = 0;
-  virtual void endFile(const std::string& file) = 0;
-};
+class Debugger;
 
 class Engine {
 public:
@@ -98,6 +91,7 @@ public:
   int returnCode() const { return m_returnCode; }
   lua_State* luaState() const { return L; }
   const MemoryTracker& memoryTracker() const { return m_tracker; }
+  void setDebugger(Debugger* debugger);
   AppEvents* appEvents();
   WindowEvents* windowEvents(ui::Window* window);
   SpriteEvents* spriteEvents(const doc::Sprite* sprite);
@@ -121,12 +115,14 @@ public:
   int lua_dofile();
   int lua_loadfile();
   int lua_os_clock();
+  void lua_hook(lua_Debug* ar);
 
   obs::signal<void(const std::string&)> ConsolePrint;
   obs::signal<void(const std::string&)> ConsoleError;
 
 private:
   lua_State* L;
+  Debugger* m_debugger = nullptr;
 
   // Events
   std::unique_ptr<AppEvents> m_appEvents;
@@ -147,6 +143,8 @@ private:
   int m_returnCode;
   uint32_t m_objectTracker;
 };
+
+int ObjectIterator_pairs_next(lua_State* L);
 
 void push_app_events(lua_State* L);
 void push_app_theme(lua_State* L, int uiscale = 1);

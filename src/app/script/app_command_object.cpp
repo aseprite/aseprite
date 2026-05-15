@@ -102,7 +102,7 @@ const luaL_Reg AppCommand_methods[] = {
   { "__index", AppCommand_index },
   { nullptr,   nullptr          }
 };
-
+DEF_ITERATOR_PAIRS(Command);
 } // anonymous namespace
 
 DEF_MTNAME(Command);

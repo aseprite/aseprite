@@ -390,7 +390,7 @@ const Property Editor_properties[] = {
   { "scroll",    Editor_get_scroll,    Editor_set_scroll },
   { nullptr,     nullptr,              nullptr           }
 };
-
+DEF_ITERATOR_PAIRS(Editor);
 } // anonymous namespace
 
 DEF_MTNAME(EditorObj);

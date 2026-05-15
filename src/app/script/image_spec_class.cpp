@@ -153,7 +153,7 @@ const Property ImageSpec_properties[] = {
   { "transparentColor", ImageSpec_get_transparentColor, ImageSpec_set_transparentColor },
   { nullptr,            nullptr,                        nullptr                        }
 };
-
+DEF_ITERATOR_PAIRS(ImageSpec);
 } // anonymous namespace
 
 DEF_MTNAME(doc::ImageSpec);

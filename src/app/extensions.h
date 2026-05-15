@@ -31,7 +31,8 @@ class Command;
 #ifdef ENABLE_SCRIPTING
 namespace script {
 class Engine;
-}
+class Debugger;
+} // namespace script
 #endif
 
 // Key=id
@@ -96,6 +97,10 @@ public:
   };
 
 #ifdef ENABLE_SCRIPTING
+  // Allows the debugger to initialize m_engine before initScripts() with the debugger already
+  // attached
+  friend script::Debugger;
+
   struct CustomFormatDefinition {
     std::string name;
     std::vector<std::string> extensions;

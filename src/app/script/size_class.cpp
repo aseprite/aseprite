@@ -225,7 +225,7 @@ const Property Size_properties[] = {
   { "height", Size_get_height, Size_set_height },
   { nullptr,  nullptr,         nullptr         }
 };
-
+DEF_ITERATOR_PAIRS(Size);
 } // anonymous namespace
 
 DEF_MTNAME(gfx::Size);
