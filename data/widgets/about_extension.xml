@@ -1,0 +1,48 @@
+<!-- Aseprite -->
+<!-- Copyright (c) 2026-present Igara Studio S.A. -->
+<gui>
+  <window id="about_extension" text="@.title" expansive="true">
+    <vbox>
+      <hbox>
+        <boxfiller />
+        <label id="display_name" />
+        <boxfiller />
+      </hbox>
+
+      <hbox>
+        <boxfiller />
+        <label id="name" tooltip="@.id" style="mini_label" />
+        <label text="-" id="version_separator" style="mini_label" />
+        <label id="version" tooltip="@.version" style="mini_label" />
+        <boxfiller />
+      </hbox>
+
+      <hbox>
+        <textbox id="description" wordwrap="true" border="0" text_align="center middle" width="180" style="textbox_label" />
+      </hbox>
+
+      <hbox id="url_container">
+        <boxfiller />
+        <link id="url" />
+        <boxfiller />
+      </hbox>
+
+      <vbox id="author_container">
+        <separator horizontal="true" text="@.author" />
+      </vbox>
+
+      <vbox id="contributors_container">
+        <separator horizontal="true" text="@.contributors" />
+        <vbox id="contributors">
+        </vbox>
+      </vbox>
+
+      <separator horizontal="true" />
+      <hbox>
+        <button text="@options.open_extension_folder" id="openFolder" minwidth="60" />
+        <boxfiller />
+        <button text="@general.close" closewindow="true" id="ok" magnet="true" minwidth="60" />
+      </hbox>
+    </vbox>
+  </window>
+</gui>

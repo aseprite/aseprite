@@ -572,7 +572,7 @@
             <boxfiller />
             <button id="disable_extension" text="@.disable_extension" minwidth="60" />
             <button id="uninstall_extension" text="@.uninstall_extension" minwidth="60" />
-            <button id="open_extension_folder" text="@.open_extension_folder" minwidth="60" />
+            <button id="open_extension_about" text="@.open_extension_about" minwidth="60" />
           </hbox>
         </vbox>
 

@@ -58,6 +58,7 @@
   #include "app/sentry_wrapper.h"
 #endif
 
+#include "about_extension.xml.h"
 #include "options.xml.h"
 
 namespace app {
@@ -223,6 +224,88 @@ class OptionsWindow : public app::gen::Options {
     LangInfo m_langInfo;
   };
 
+  class AboutExtensionWindow : public gen::AboutExtension {
+  public:
+    explicit AboutExtensionWindow(const Extension* ext)
+    {
+      const auto& about = ext->readAbout();
+
+      if (!ext->canBeUninstalled())
+        setText(Strings::about_extension_title_builtin());
+
+      name()->setText(about.name);
+      version()->setText(about.version);
+
+      if (about.description.empty())
+        description()->setVisible(false);
+      else {
+        auto* desc = description();
+        desc->setText(about.description);
+        desc->InitTheme.connect([desc] {
+          auto* theme = skin::SkinTheme::get(desc);
+          auto* s = theme->styles.textboxLabel();
+          s->setBorder(gfx::Border(0));
+          desc->setStyle(s);
+        });
+        desc->initTheme();
+      }
+
+      if (about.url.empty()) {
+        urlContainer()->setVisible(false);
+      }
+      else {
+        url()->setText(about.url);
+        url()->setUrl(about.url);
+      }
+
+      openFolder()->Click.connect([ext] { launcher::open_folder(ext->path()); });
+
+      if (about.displayName.empty() || about.displayName == about.name) {
+        displayName()->setText(about.name);
+        name()->setVisible(false);
+        versionSeparator()->setVisible(false);
+      }
+      else {
+        displayName()->setText(about.displayName);
+      }
+
+      if (about.author.has_value()) {
+        const auto& contributor = about.author.value();
+        Widget* label;
+        if (contributor.url.empty()) {
+          label = new Label(contributor.toString());
+        }
+        else {
+          label = new LinkLabel(contributor.url, contributor.toString());
+          tooltipManager()->addTooltipFor(label, contributor.url, BOTTOM);
+        }
+        authorContainer()->addChild(label);
+      }
+      else {
+        authorContainer()->setVisible(false);
+      }
+
+      if (!about.contributors.empty()) {
+        for (const auto& contributor : about.contributors) {
+          Widget* label;
+          if (!contributor.url.empty()) {
+            label = new LinkLabel(contributor.url, contributor.toString());
+            tooltipManager()->addTooltipFor(label, contributor.url, BOTTOM);
+          }
+          else {
+            label = new Label(contributor.toString());
+          }
+          contributors()->addChild(label);
+        }
+      }
+      else {
+        contributorsContainer()->setVisible(false);
+      }
+
+      layout();
+    };
+  };
+
   class ExtensionItem : public ListItem {
   public:
     ExtensionItem(Extension* extension) : ListItem(extension->displayName()), m_extension(extension)
@@ -277,10 +360,17 @@ class OptionsWindow : public app::gen::Options {
       m_extension = nullptr;
     }
 
-    void openFolder() const
+    void openAbout() const
     {
       ASSERT(m_extension);
-      app::launcher::open_folder(m_extension->path());
+      try {
+        AboutExtensionWindow about(m_extension);
+        about.openWindowInForeground();
+      }
+      catch (const std::exception&) {
+        if (Alert::show(Strings::alerts_cannot_read_extension()) == 1)
+          launcher::open_folder(m_extension->path());
+      }
     }
 
   private:
@@ -511,10 +601,11 @@ public:
 
     // Extensions buttons
     extensionsList()->Change.connect([this] { onExtensionChange(); });
+    extensionsList()->DoubleClickItem.connect([this] { onSelectExtension(); });
     addExtension()->Click.connect([this] { onAddExtension(); });
     disableExtension()->Click.connect([this] { onDisableExtension(); });
     uninstallExtension()->Click.connect([this] { onUninstallExtension(); });
-    openExtensionFolder()->Click.connect([this] { onOpenExtensionFolder(); });
+    openExtensionAbout()->Click.connect([this] { onOpenExtensionAbout(); });
 
     // Aseprite Format preferences
     celFormat()->Change.connect([this] { onCelFormatChange(); });
@@ -2002,13 +2093,20 @@ private:
       disableExtension()->processMnemonicFromText();
       disableExtension()->setEnabled(item->isEnabled() ? item->canBeDisabled() : true);
       uninstallExtension()->setEnabled(item->canBeUninstalled());
-      openExtensionFolder()->setEnabled(true);
+      openExtensionAbout()->setEnabled(true);
     }
     else {
       disableExtension()->setEnabled(false);
       uninstallExtension()->setEnabled(false);
-      openExtensionFolder()->setEnabled(false);
+      openExtensionAbout()->setEnabled(false);
     }
+  }
+
+  void onSelectExtension()
+  {
+    ExtensionItem* item = dynamic_cast<ExtensionItem*>(extensionsList()->getSelectedChild());
+    if (item && item->isInstalled())
+      item->openAbout();
   }
 
   void onAddExtension()
@@ -2157,11 +2255,11 @@ private:
     return nullptr;
   }
 
-  void onOpenExtensionFolder()
+  void onOpenExtensionAbout()
   {
     ExtensionItem* item = dynamic_cast<ExtensionItem*>(extensionsList()->getSelectedChild());
     if (item)
-      item->openFolder();
+      item->openAbout();
   }
 
   void onCelFormatChange()
