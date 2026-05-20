@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2026  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -71,7 +71,7 @@ AppOptions::AppOptions(int argc, const char* argv[])
       m_po.add("sheet-type")
         .requiresValue("<type>")
         .description(
-          "Algorithm to create the sprite sheet:\n  horizontal\n  vertical\n  rows\n  columns\n  packed"))
+          "Algorithm to create the sprite sheet:\n  horizontal\n  vertical\n  rows\n  columns\n  packed\n  packed-ordered"))
   , m_sheetPack(m_po.add("sheet-pack").description("Same as -sheet-type packed"))
   , m_sheetWidth(
       m_po.add("sheet-width").requiresValue("<pixels>").description("Sprite sheet width"))

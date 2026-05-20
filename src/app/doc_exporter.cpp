@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2026  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -779,6 +779,15 @@ Doc* DocExporter::exportSheet(Context* ctx, base::task_token& token)
     osbuf = fos.rdbuf();
   }
   std::ostream os(osbuf);
+
+  if (m_sheetType == SpriteSheetType::PackedOrdered) {
+    int totalItems = 0;
+    for (const auto& item : m_documents)
+      totalItems += item.isOneImageOnly() ? 1 : item.frames();
+    m_sheetType = SpriteSheetType::Rows;
+    m_textureColumns = std::ceil(std::sqrt(totalItems));
+    m_textureRows = 0;
+  }
 
   // Steps for sheet construction:
   // 1) Capture the samples (each sprite+frame pair)

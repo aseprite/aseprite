@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -122,6 +122,8 @@ void Param<app::SpriteSheetType>::fromString(const std::string& value)
     setValue(app::SpriteSheetType::Columns);
   else if (value == "packed")
     setValue(app::SpriteSheetType::Packed);
+  else if (value == "packed-ordered")
+    setValue(app::SpriteSheetType::PackedOrdered);
   else
     setValue(app::SpriteSheetType::None);
 }

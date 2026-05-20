@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -37,6 +37,7 @@
 #include "base/string.h"
 #include "base/thread.h"
 #include "doc/layer.h"
+#include "doc/layer_tilemap.h"
 #include "doc/tag.h"
 #include "doc/tileset.h"
 #include "fmt/format.h"
@@ -161,8 +162,8 @@ Doc* generate_sprite_sheet_from_params(DocExporter& exporter,
                                        const bool saveData,
                                        base::task_token& token)
 {
-  const app::SpriteSheetType type = params.type();
-  const int columns = params.columns();
+  app::SpriteSheetType type = params.type();
+  int columns = params.columns();
   const int rows = params.rows();
   const int width = params.width();
   const int height = params.height();
@@ -194,10 +195,8 @@ Doc* generate_sprite_sheet_from_params(DocExporter& exporter,
   SelectedFrames selFrames;
   Tag* tag = calculate_selected_frames(site, tagName, selFrames);
 
-#ifdef _DEBUG
-  frame_t nframes = selFrames.size();
+  const frame_t nframes = selFrames.size();
   ASSERT(nframes > 0);
-#endif
 
   Doc* doc = const_cast<Doc*>(site.document());
   const Sprite* sprite = site.sprite();
@@ -221,6 +220,32 @@ Doc* generate_sprite_sheet_from_params(DocExporter& exporter,
         break;
       }
     }
+  }
+
+  if (type == app::SpriteSheetType::PackedOrdered) {
+    type = app::SpriteSheetType::Rows;
+
+    int totalItems;
+    if (fromTilesets) {
+      LayerList layers;
+      if (!selLayers.empty())
+        layers = selLayers.toAllLayersList();
+      else
+        layers = sprite->allVisibleLayers();
+
+      std::set<doc::ObjectId> counted;
+      totalItems = 0;
+      for (auto* layer : layers) {
+        if (layer->isTilemap()) {
+          auto* ts = static_cast<doc::LayerTilemap*>(layer)->tileset();
+          if (counted.insert(ts->id()).second)
+            totalItems += ts->size();
+        }
+      }
+    }
+    else
+      totalItems = nframes;
+    columns = std::ceil(std::sqrt(totalItems));
   }
 
   exporter.reset();
@@ -335,7 +360,8 @@ public:
     static_assert(
       (int)app::SpriteSheetType::None == 0 && (int)app::SpriteSheetType::Horizontal == 1 &&
         (int)app::SpriteSheetType::Vertical == 2 && (int)app::SpriteSheetType::Rows == 3 &&
-        (int)app::SpriteSheetType::Columns == 4 && (int)app::SpriteSheetType::Packed == 5,
+        (int)app::SpriteSheetType::Columns == 4 && (int)app::SpriteSheetType::Packed == 5 &&
+        (int)app::SpriteSheetType::PackedOrdered == 6,
       "SpriteSheetType enum changed");
 
     sheetType()->addItem(Strings::export_sprite_sheet_type_horz());
@@ -343,6 +369,7 @@ public:
     sheetType()->addItem(Strings::export_sprite_sheet_type_rows());
     sheetType()->addItem(Strings::export_sprite_sheet_type_cols());
     sheetType()->addItem(Strings::export_sprite_sheet_type_pack());
+    sheetType()->addItem(Strings::export_sprite_sheet_type_pack_ordered());
     {
       int i;
       if (params.type() != app::SpriteSheetType::None)
@@ -814,6 +841,9 @@ private:
         }
         mergeDups()->setSelected(true);
         mergeDups()->setEnabled(false);
+        break;
+      case app::SpriteSheetType::PackedOrdered:
+        constraintType()->setSelectedItemIndex(kConstraintType_None);
         break;
     }
     onConstraintTypeChange();

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -10,7 +11,7 @@
 
 namespace app {
 
-enum class SpriteSheetType { None, Horizontal, Vertical, Rows, Columns, Packed };
+enum class SpriteSheetType { None, Horizontal, Vertical, Rows, Columns, Packed, PackedOrdered };
 
 } // namespace app
 

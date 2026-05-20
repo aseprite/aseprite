@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2026  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -242,6 +242,8 @@ int CliProcessor::process(Context* ctx)
             sheetType = SpriteSheetType::Columns;
           else if (value.value() == "packed")
             sheetType = SpriteSheetType::Packed;
+          else if (value.value() == "packed-ordered")
+            sheetType = SpriteSheetType::PackedOrdered;
         }
         // --sheet-pack
         else if (opt == &m_options.sheetPack()) {
