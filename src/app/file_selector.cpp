@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -82,6 +82,11 @@ bool show_file_selector(const std::string& title,
         dlg->addFilter(ext, ext + " files (*." + ext + ")");
 
       auto res = dlg->show(system->defaultWindow()->nativeHandle());
+
+      // Reset all held keys in the internal key press matrix once
+      // user data input is complete in the native dialog box.
+      system->resetKeyPressed();
+
       if (res != dlgs::FileDialog::Result::Error) {
         if (res == dlgs::FileDialog::Result::OK) {
           if (type == FileSelectorType::OpenMultiple)
