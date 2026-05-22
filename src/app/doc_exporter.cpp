@@ -744,6 +744,7 @@ void DocExporter::reset()
   m_listLayers = false;
   m_listLayerHierarchy = false;
   m_listSlices = false;
+  m_isSourceTilesets = false;
   m_documents.clear();
 }
 
@@ -973,6 +974,8 @@ int DocExporter::addDocumentSamples(Doc* doc,
 
 int DocExporter::addTilesetsSamples(Doc* doc, const doc::SelectedLayers* selLayers)
 {
+  m_isSourceTilesets = true;
+
   LayerList layers;
   if (selLayers)
     layers = selLayers->toAllLayersList();
@@ -986,8 +989,13 @@ int DocExporter::addTilesetsSamples(Doc* doc, const doc::SelectedLayers* selLaye
       Tileset* ts = dynamic_cast<LayerTilemap*>(layer)->tileset();
 
       if (alreadyExported.find(ts->id()) == alreadyExported.end()) {
+        int tileIdx = 0;
         for (const auto& tile : *ts) {
           addImage(doc, tile.image);
+          m_documents.back().layerName = layer->name();
+          m_documents.back().tilesetName = ts->name();
+          m_documents.back().tileIndex = tileIdx;
+          ++tileIdx;
           ++items;
         }
         alreadyExported.insert(ts->id());
@@ -1025,10 +1033,13 @@ void DocExporter::captureSamples(Samples& samples, base::task_token& token)
 
     std::string format = m_filenameFormat;
     if (format.empty()) {
-      format = get_default_filename_format_for_sheet(doc->filename(),
-                                                     (frames > 1),       // Has frames
-                                                     (layer != nullptr), // Has layer
-                                                     (tag != nullptr));  // Has tag
+      if (m_isSourceTilesets)
+        format = get_default_filename_format_for_tilesets();
+      else
+        format = get_default_filename_format_for_sheet(doc->filename(),
+                                                       (frames > 1),       // Has frames
+                                                       (layer != nullptr), // Has layer
+                                                       (tag != nullptr));  // Has tag
     }
 
     gfx::Rect spriteBounds;
@@ -1070,12 +1081,14 @@ void DocExporter::captureSamples(Samples& samples, base::task_token& token)
       const Tag* outerTag = sprite->tags().outerTag(frame);
       FilenameInfo fnInfo;
       fnInfo.filename(doc->filename())
-        .layerName(layer ? layer->name() : "")
+        .layerName(m_isSourceTilesets ? item.layerName : (layer ? layer->name() : ""))
         .groupName(layer && layer->parent() != sprite->root() ? layer->parent()->name() : "")
         .innerTagName(innerTag ? innerTag->name() : "")
         .outerTagName(outerTag ? outerTag->name() : "")
         .frame(outputFrame)
         .tagFrame(innerTag ? frame - innerTag->fromFrame() : outputFrame)
+        .tilesetName(item.tilesetName)
+        .tile(item.tileIndex)
         .duration(sprite->frameDuration(frame));
       ++outputFrame;
 
@@ -1479,12 +1492,27 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, doc::
       break;
   }
 
-  os << "{ \"frames\": " << frames_begin << "\n";
+  os << "{ \"" << (m_isSourceTilesets ? "tiles" : "frames") << "\": " << frames_begin << "\n";
   for (Samples::const_iterator it = samples.begin(), end = samples.end(); it != end;) {
     const Sample& sample = *it;
-    gfx::Size srcSize = sample.originalSize();
-    gfx::Rect spriteSourceBounds = sample.trimmedBounds();
     gfx::Rect frameBounds = sample.inTextureBounds();
+
+    const char* sourceSizeLabel;
+    const char* sizeLabel;
+    gfx::Rect sourceBounds;
+    gfx::Size sourceSize;
+    if (m_isSourceTilesets) {
+      sourceSizeLabel = "tilesetSourceSize";
+      sizeLabel = "tileSize";
+      sourceBounds = gfx::Rect(0, 0, texture->width(), texture->height());
+      sourceSize = sample.originalSize();
+    }
+    else {
+      sourceSizeLabel = "spriteSourceSize";
+      sizeLabel = "sourceSize";
+      sourceBounds = sample.trimmedBounds();
+      sourceSize = sample.originalSize();
+    }
 
     if (filename_as_key)
       os << "   \"" << escape_for_json(sample.filename()) << "\": {\n";
@@ -1499,15 +1527,20 @@ void DocExporter::createDataFile(const Samples& samples, std::ostream& os, doc::
        << "\"h\": " << frameBounds.h + nonExtrudedSize << " },\n"
        << "    \"rotated\": false,\n"
        << "    \"trimmed\": " << (sample.trimmed() ? "true" : "false") << ",\n"
-       << "    \"spriteSourceSize\": { "
-       << "\"x\": " << spriteSourceBounds.x << ", "
-       << "\"y\": " << spriteSourceBounds.y << ", "
-       << "\"w\": " << spriteSourceBounds.w << ", "
-       << "\"h\": " << spriteSourceBounds.h << " },\n"
-       << "    \"sourceSize\": { "
-       << "\"w\": " << srcSize.w << ", "
-       << "\"h\": " << srcSize.h << " },\n"
-       << "    \"duration\": " << sample.sprite()->frameDuration(sample.frame()) << "\n"
+       << "    \"" << sourceSizeLabel << "\": { "
+       << "\"x\": " << sourceBounds.x << ", "
+       << "\"y\": " << sourceBounds.y << ", "
+       << "\"w\": " << sourceBounds.w << ", "
+       << "\"h\": " << sourceBounds.h << " },\n"
+       << "    \"" << sizeLabel << "\": { "
+       << "\"w\": " << sourceSize.w << ", "
+       << "\"h\": " << sourceSize.h << " }";
+
+    if (!m_isSourceTilesets)
+      os << ",\n"
+         << "    \"duration\": " << sample.sprite()->frameDuration(sample.frame());
+
+    os << "\n"
        << "   }";
 
     if (++it != samples.end())

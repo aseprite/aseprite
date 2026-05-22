@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2023  Igara Studio S.A.
+// Copyright (C) 2022-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -21,8 +21,10 @@ public:
   const std::string& innerTagName() const { return m_innerTagName; }
   const std::string& outerTagName() const { return m_outerTagName; }
   const std::string& sliceName() const { return m_sliceName; }
+  const std::string& tilesetName() const { return m_tilesetName; }
   int frame() const { return m_frame; }
   int tagFrame() const { return m_tagFrame; }
+  int tile() const { return m_tile; }
   int duration() const { return m_duration; }
 
   FilenameInfo& filename(const std::string& value)
@@ -73,6 +75,18 @@ public:
     return *this;
   }
 
+  FilenameInfo& tilesetName(const std::string& value)
+  {
+    m_tilesetName = value;
+    return *this;
+  }
+
+  FilenameInfo& tile(int value)
+  {
+    m_tile = value;
+    return *this;
+  }
+
   FilenameInfo& duration(int value)
   {
     m_duration = value;
@@ -86,8 +100,10 @@ private:
   std::string m_innerTagName;
   std::string m_outerTagName;
   std::string m_sliceName;
+  std::string m_tilesetName;
   int m_frame = -1;
   int m_tagFrame = -1;
+  int m_tile = -1;
   int m_duration = 0;
 };
 
@@ -121,6 +137,8 @@ std::string get_default_filename_format_for_sheet(const std::string& filename,
                                                   const bool hasFrames,
                                                   const bool hasLayer,
                                                   const bool hasTag);
+
+std::string get_default_filename_format_for_tilesets();
 
 std::string get_default_tagname_format_for_sheet();
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2023  Igara Studio S.A.
+// Copyright (C) 2022-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -142,6 +142,7 @@ std::string filename_formatter(const std::string& format,
   base::replace_string(output, "{layer}", info.layerName());
   base::replace_string(output, "{group}", info.groupName());
   base::replace_string(output, "{slice}", info.sliceName());
+  base::replace_string(output, "{tileset}", info.tilesetName());
 
   if (replaceFrame) {
     base::replace_string(output, "{tag}", info.innerTagName());
@@ -150,6 +151,7 @@ std::string filename_formatter(const std::string& format,
     base::replace_string(output, "{duration}", std::to_string(info.duration()));
     replace_frame("{frame", info.frame(), output);
     replace_frame("{tagframe", info.tagFrame(), output);
+    replace_frame("{tile", info.tile(), output);
   }
 
   return output;
@@ -237,6 +239,11 @@ std::string get_default_filename_format_for_sheet(const std::string& filename,
 
   format += ".{extension}";
   return format;
+}
+
+std::string get_default_filename_format_for_tilesets()
+{
+  return "{title} {layer} {tileset} {tile}";
 }
 
 std::string get_default_tagname_format_for_sheet()
