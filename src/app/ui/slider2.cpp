@@ -19,10 +19,11 @@ namespace app {
 
 // TODO merge this code with ColorEntry in color_sliders.cpp
 Slider2::Slider2Entry::Slider2Entry(ui::Slider* slider)
-  : ui::Entry(4, "0")
+  : ui::Entry(4)
   , m_slider(slider)
   , m_recentFocus(false)
 {
+  setText("0");
 }
 
 bool Slider2::Slider2Entry::onProcessMessage(ui::Message* msg)

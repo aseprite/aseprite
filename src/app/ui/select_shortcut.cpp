@@ -23,7 +23,7 @@ using namespace ui;
 
 class SelectShortcut::KeyField : public ui::Entry {
 public:
-  KeyField(const Shortcut& shortcut) : ui::Entry(256, "")
+  KeyField(const Shortcut& shortcut) : ui::Entry(256)
   {
     setId("key_field");
     setTranslateDeadKeys(false);

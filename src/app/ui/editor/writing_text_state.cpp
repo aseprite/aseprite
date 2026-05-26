@@ -81,7 +81,7 @@ public:
   };
 
   TextEditor(Editor* editor, const Site& site, const gfx::Rect& bounds)
-    : Entry(4096, "")
+    : Entry(4096)
     , m_editor(editor)
     , m_doc(site.document())
     , m_extraCel(new ExtraCel)

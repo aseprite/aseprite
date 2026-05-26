@@ -158,11 +158,8 @@ void Widget::setTextf(const char* format, ...)
   if (format) {
     va_list ap;
     va_start(ap, format);
-    char buf[4096];
-    std::vsnprintf(buf, sizeof(buf), format, ap);
+    setText(base::string_vprintf(format, ap));
     va_end(ap);
-
-    setText(buf);
   }
   // empty string
   else {

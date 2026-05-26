@@ -867,7 +867,8 @@ int Dialog_entry(lua_State* L)
     lua_pop(L, 1);
   }
 
-  auto widget = new ui::Entry(4096, text.c_str());
+  auto widget = new ui::Entry(4096);
+  widget->setText(text);
 
   if (lua_istable(L, 2)) {
     int type = lua_getfield(L, 2, "onchange");

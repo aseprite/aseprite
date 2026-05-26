@@ -32,7 +32,7 @@ FilenameField::FilenameButton::FilenameButton(const std::string& text) : ButtonS
 }
 
 FilenameField::FilenameField(const Type type, const std::string& pathAndFilename)
-  : m_entry(type == EntryAndButton ? new ui::Entry(1024, "") : nullptr)
+  : m_entry(type == EntryAndButton ? new ui::Entry(1024) : nullptr)
   , m_button(type == EntryAndButton ? Strings::select_file_browse() : Strings::select_file_text())
   , m_askOverwrite(true)
 {

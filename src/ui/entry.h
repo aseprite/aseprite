@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -31,10 +31,10 @@ public:
     void reset() { from = to = -1; }
   };
 
-  Entry(const int maxsize, const char* format, ...);
-  ~Entry();
+  explicit Entry(int maxsize);
+  ~Entry() override;
 
-  void setMaxTextLength(const int maxsize);
+  void setMaxTextLength(int maxsize);
 
   bool isReadOnly() const;
   void setReadOnly(bool state);

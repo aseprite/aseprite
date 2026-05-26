@@ -217,7 +217,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
     const char* decimals = elem->Attribute("decimals");
     const bool readonly = bool_attr(elem, "readonly", false);
 
-    widget = (elem_name == "expr" ? new ExprEntry : new Entry(strtol(maxsize, nullptr, 10), ""));
+    widget = (elem_name == "expr" ? new ExprEntry : new Entry(strtol(maxsize, nullptr, 10)));
 
     if (readonly)
       ((Entry*)widget)->setReadOnly(true);

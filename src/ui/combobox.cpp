@@ -40,7 +40,7 @@ public:
 
 class ComboBoxEntry : public Entry {
 public:
-  ComboBoxEntry(ComboBox* comboBox) : Entry(256, ""), m_comboBox(comboBox) {}
+  ComboBoxEntry(ComboBox* comboBox) : Entry(256), m_comboBox(comboBox) {}
 
 protected:
   bool onProcessMessage(Message* msg) override;

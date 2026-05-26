@@ -21,7 +21,7 @@
 
 namespace app {
 
-ExprEntry::ExprEntry() : ui::Entry(1024, ""), m_decimals(0)
+ExprEntry::ExprEntry() : ui::Entry(1024), m_decimals(0)
 {
 }
 

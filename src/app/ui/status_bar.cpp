@@ -612,7 +612,7 @@ private:
 // This widget is used to show the current frame.
 class GotoFrameEntry : public Entry {
 public:
-  GotoFrameEntry() : Entry(4, "") {}
+  GotoFrameEntry() : Entry(4) {}
 
   bool onProcessMessage(Message* msg) override
   {

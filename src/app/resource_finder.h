@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-present Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -38,13 +38,13 @@ public:
 
   // These functions add possible full paths to find files.
   void addPath(const std::string& path);
-  void includeBinDir(const char* filename);
-  void includeDataDir(const char* filename);
-  void includeHomeDir(const char* filename);
+  void includeBinDir(const std::string& filename);
+  void includeDataDir(const std::string& filename);
+  void includeHomeDir(const std::string& filename);
 
 #if !defined(_WIN32) && !defined(__APPLE__)
   // For Linux: It's $XDG_CONFIG_HOME or $HOME/.config
-  void includeHomeConfigDir(const char* filename);
+  void includeHomeConfigDir(const std::string& filename);
 #endif
 
   // Tries to add the given filename in these locations:
@@ -59,9 +59,9 @@ public:
   //   %AppData% location
   // For Unix-like platforms:
   // - The filename will be in $HOME/.config/aseprite/
-  void includeUserDir(const char* filename);
+  void includeUserDir(const std::string& filename);
 
-  void includeDesktopDir(const char* filename);
+  void includeDesktopDir(const std::string& filename);
 
   // Returns the first file found or creates the whole directory
   // structure to create the file in its default location.

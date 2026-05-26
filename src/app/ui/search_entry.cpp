@@ -27,7 +27,7 @@ using namespace app::skin;
 using namespace gfx;
 using namespace ui;
 
-SearchEntry::SearchEntry() : Entry(256, ""), m_clearOnEsc(false), m_debounceMs(0)
+SearchEntry::SearchEntry() : Entry(256), m_clearOnEsc(false), m_debounceMs(0)
 {
 }
 

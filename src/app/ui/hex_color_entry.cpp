@@ -21,7 +21,7 @@ namespace app {
 
 using namespace ui;
 
-HexColorEntry::CustomEntry::CustomEntry() : Entry(16, "")
+HexColorEntry::CustomEntry::CustomEntry() : Entry(16)
 {
 }
 

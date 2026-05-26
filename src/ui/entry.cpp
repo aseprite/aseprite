@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -27,9 +27,6 @@
 #include "ui/widget.h"
 
 #include <algorithm>
-#include <cctype>
-#include <cstdarg>
-#include <cstdio>
 #include <memory>
 
 namespace ui {
@@ -48,7 +45,7 @@ static inline bool is_word_char(int ch)
   return (ch && !std::isspace(ch) && !std::ispunct(ch));
 }
 
-Entry::Entry(const int maxsize, const char* format, ...)
+Entry::Entry(const int maxsize)
   : Widget(kEntryWidget)
   , m_maxsize(maxsize)
   , m_caret(0)
@@ -64,24 +61,6 @@ Entry::Entry(const int maxsize, const char* format, ...)
   , m_scale(1.0f, 1.0f)
 {
   enableFlags(CTRL_RIGHT_CLICK);
-
-  // formatted string
-  char buf[4096]; // TODO buffer overflow
-  if (format) {
-    va_list ap;
-    va_start(ap, format);
-    std::vsnprintf(buf, sizeof(buf), format, ap);
-    va_end(ap);
-  }
-  // empty string
-  else {
-    buf[0] = 0;
-  }
-
-  // TODO support for text alignment and multi-line
-  // widget->align = LEFT | MIDDLE;
-  setText(buf);
-
   setFocusStop(true);
   initTheme();
 }
