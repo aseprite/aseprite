@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -730,16 +730,38 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
                                     m_frame);
     }
 
-    // Render background first (e.g. new ShaderRenderer will paint the
-    // background on the screen first and then composite the rendered
-    // sprite on it.)
-    if (renderProperties.renderBgOnScreen) {
+    // Using new render engine, render the background on the screen
+    // before renderSprite (which renders the sprite at a 1:1 scale and
+    // scales it later). ShaderRenderer draws directly on the screen
+    // surface, while SimpleRenderer uses a temp surface and copies it
+    // to screen.
+    if (newEngine) {
       m_renderEngine->setProjection(m_proj);
-      m_renderEngine->renderCheckeredBackground(g->getInternalSurface(),
-                                                m_sprite,
-                                                gfx::Clip(dest.x + g->getInternalDeltaX(),
-                                                          dest.y + g->getInternalDeltaY(),
-                                                          m_proj.apply(rc2)));
+      // ShaderRendered path
+      if (renderProperties.renderBgOnScreen) {
+        m_renderEngine->renderCheckeredBackground(g->getInternalSurface(),
+                                                  m_sprite,
+                                                  gfx::Clip(dest.x + g->getInternalDeltaX(),
+                                                            dest.y + g->getInternalDeltaY(),
+                                                            m_proj.apply(rc2)));
+      }
+      // SimpleRendered path
+      else {
+        static os::SurfaceRef bgSurface = nullptr; // TODO move this to other centralized place
+        const gfx::Rect bgRect = m_proj.apply(rc2);
+        if (!bgSurface || bgSurface->width() < bgRect.w || bgSurface->height() < bgRect.h) {
+          bgSurface = os::System::instance()->makeRgbaSurface(
+            std::max(bgRect.w, bgSurface ? bgSurface->width() : 0),
+            std::max(bgRect.h, bgSurface ? bgSurface->height() : 0),
+            m_document->osColorSpace());
+        }
+        m_renderEngine->renderCheckeredBackground(
+          bgSurface.get(),
+          m_sprite,
+          gfx::Clip(0, 0, bgRect.x, bgRect.y, bgRect.w, bgRect.h));
+        g->drawRgbaSurface(bgSurface.get(), 0, 0, dest.x, dest.y, bgRect.w, bgRect.h);
+      }
+      m_renderEngine->setTransparentBackground();
     }
 
     // Create a temporary surface to draw the sprite on it
@@ -787,10 +809,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
         }
       }
 
-      if (renderProperties.requiresRgbaBackbuffer)
-        p.blendMode(os::BlendMode::SrcOver);
-      else
-        p.blendMode(os::BlendMode::Src);
+      p.blendMode(newEngine ? os::BlendMode::SrcOver : os::BlendMode::Src);
 
       gfx::Rect destClip = dest;
       if (m_proj.scaleX() < 1.0)
