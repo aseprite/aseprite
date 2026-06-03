@@ -299,6 +299,7 @@ int CliProcessor::process(Context* ctx)
 
           cof.fromFrame = base::convert_to<frame_t>(splitRange[0]);
           cof.toFrame = base::convert_to<frame_t>(splitRange[1]);
+          cof.oneFrame = false;
         }
         // --ignore-empty
         else if (opt == &m_options.ignoreEmpty()) {
@@ -584,6 +585,8 @@ int CliProcessor::process(Context* ctx)
         // --oneframe
         else if (opt == &m_options.oneFrame()) {
           cof.oneFrame = true;
+          cof.fromFrame = 0;
+          cof.toFrame = 0;
         }
         // --export-tileset
         else if (opt == &m_options.exportTileset()) {
