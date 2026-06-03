@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -464,7 +464,10 @@ public:
     trimSpriteEnabled()->Click.connect([this] { onTrimEnabledChange(); });
     trimEnabled()->Click.connect([this] { onTrimEnabledChange(); });
     gridTrimEnabled()->Click.connect([this] { generatePreview(); });
-    source()->Change.connect([this] { generatePreview(); });
+    source()->Change.connect([this] {
+      updateDefaultDataFilenameFormat();
+      generatePreview();
+    });
     layers()->Change.connect([this] { generatePreview(); });
     splitLayers()->Click.connect([this] { onSplitLayersOrFrames(); });
     splitTags()->Click.connect([this] { onSplitLayersOrFrames(); });
@@ -925,11 +928,14 @@ private:
 
   void updateDefaultDataFilenameFormat()
   {
-    m_filenameFormatDefault = get_default_filename_format_for_sheet(
-      m_site.document()->filename(),
-      m_site.document()->sprite()->totalFrames() > 0,
-      splitLayersValue(),
-      splitTagsValue());
+    if (source()->getSelectedItemIndex() == int(kSource_Tilesets))
+      m_filenameFormatDefault = get_default_filename_format_for_tilesets();
+    else
+      m_filenameFormatDefault = get_default_filename_format_for_sheet(
+        m_site.document()->filename(),
+        m_site.document()->sprite()->totalFrames() > 0,
+        splitLayersValue(),
+        splitTagsValue());
 
     if (m_filenameFormat.empty()) {
       dataFilenameFormat()->setText(m_filenameFormatDefault);
