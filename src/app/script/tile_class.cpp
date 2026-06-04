@@ -83,10 +83,7 @@ int Tile_get_color(lua_State* L)
 
   auto& ud = ts->getTileData(tile->ti);
   doc::color_t docColor = ud.color();
-  app::Color appColor = app::Color::fromRgb(doc::rgba_getr(docColor),
-                                            doc::rgba_getg(docColor),
-                                            doc::rgba_getb(docColor),
-                                            doc::rgba_geta(docColor));
+  app::Color appColor = app::Color::fromTile(doc::tile(tile->ti, 0));
   if (appColor.getAlpha() == 0)
     appColor = app::Color::fromMask();
   push_obj<app::Color>(L, appColor);
