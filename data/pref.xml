@@ -181,6 +181,9 @@
       <option id="allow_nonlinear_history" type="bool" default="false" />
       <option id="show_tooltip" type="bool" default="true" />
     </section>
+    <section id="miniEditor" text="Mini Editor">
+      <option id="enabled" type="bool" default="true" />
+    </section>
     <section id="editor" text="Editor">
       <option id="zoom_with_wheel" type="bool" default="true" />
       <option id="zoom_with_slide" type="bool" default="false" />
