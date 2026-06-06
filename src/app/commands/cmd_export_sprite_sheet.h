@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2024  Igara Studio S.A.
+// Copyright (C) 2022-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -69,6 +69,9 @@ public:
 protected:
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
+  std::string askFilename(Context* context,
+                          const std::string& initialPath,
+                          const ExportSpriteSheetParams& params) const;
 };
 
 } // namespace app
