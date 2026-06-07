@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -127,6 +127,9 @@ private:
     std::unique_ptr<doc::SelectedFrames> selFrames;
     bool splitGrid = false;
     doc::ImageRef image;
+    std::string layerName;
+    std::string tilesetName;
+    int tileIndex = -1;
 
     Item(Doc* doc,
          const doc::Tag* tag,
@@ -174,6 +177,7 @@ private:
   bool m_listLayerHierarchy;
   bool m_listSlices;
   bool m_powerOfTwoSize;
+  bool m_isSourceTilesets;
   Items m_documents;
 
   // Buffers used
