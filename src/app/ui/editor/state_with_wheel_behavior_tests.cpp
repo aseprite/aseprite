@@ -68,7 +68,7 @@ TEST(StateWithWheelBehavior, UndoRedoWithSideButton)
 {
   os::SystemRef system = os::System::make();
   const char* argv[] = { "state_with_wheel_behaviour_tests", "--batch" };
-  app::AppOptions options(sizeof(argv) / sizeof(argv[0]), argv);
+  const app::AppOptions options(sizeof(argv) / sizeof(argv[0]), argv);
   app::App app;
   app.initialize(options);
 
@@ -154,7 +154,7 @@ TEST(StateWithWheelBehavior, ChangeToolCustomToolsetWithWheelAction)
 {
   os::SystemRef system = os::System::make();
   const char* argv[] = { "state_with_wheel_behaviour_tests", "--batch" };
-  app::AppOptions options(sizeof(argv) / sizeof(argv[0]), argv);
+  const app::AppOptions options(sizeof(argv) / sizeof(argv[0]), argv);
   app::App app;
   app.initialize(options);
 
@@ -280,7 +280,7 @@ TEST(StateWithWheelBehavior, ChangePlaybackSpeedWithWheelAction)
 {
   os::SystemRef system = os::System::make();
   const char* argv[] = { "state_with_wheel_behaviour_tests" };
-  app::AppOptions options(sizeof(argv) / sizeof(argv[0]), argv);
+  const app::AppOptions options(sizeof(argv) / sizeof(argv[0]), argv);
   app::App app;
   app.initialize(options);
 

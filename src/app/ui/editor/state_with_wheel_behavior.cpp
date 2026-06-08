@@ -188,7 +188,7 @@ public:
   void setInterval(int msecs)
   {
     if (!m_timer)
-      m_timer = std::make_unique<ui::Timer>(msecs, this);
+      m_timer = new ui::Timer(msecs, this);
     else
       m_timer->setInterval(msecs);
   }
@@ -220,32 +220,28 @@ protected:
   {
     switch (msg->type()) {
       case ui::kTimerMessage:
-        closeWindow(nullptr);
         if (m_timer)
           m_timer->stop();
+        closeWindow(nullptr);
         break;
+      case ui::kCloseMessage: deferDelete(); break;
     }
     return ui::PopupWindow::onProcessMessage(msg);
   }
 
 private:
   ui::Label m_label;
-  std::unique_ptr<ui::Timer> m_timer;
+  ui::Timer* m_timer = nullptr;
 };
 
 void show_playback_speed_popup(Editor* editor, double speed)
 {
-  static PlaybackSpeedPopupWindow* g_window = nullptr;
-  if (!g_window)
-    g_window = new PlaybackSpeedPopupWindow;
+  auto g_window = new PlaybackSpeedPopupWindow();
 
   g_window->setDisplay(editor->display(), false);
 
   g_window->setText(fmt::format("Playback Speed: {:.1f}x", speed));
   g_window->setInterval(1300);
-
-  if (g_window->isVisible())
-    g_window->closeWindow(nullptr);
 
   g_window->remapWindow();
 
@@ -619,7 +615,7 @@ void StateWithWheelBehavior::processWheelAction(Editor* editor,
     case WheelAction::ToolCustomToolset: {
       const tools::Tool* tool = initialTool();
 
-      auto toolBox = App::instance()->toolBox();
+      auto* toolBox = App::instance()->toolBox();
       std::vector<tools::Tool*> tools;
       for (tools::Tool* t : *toolBox) {
         if (isInCustomToolset(t))
