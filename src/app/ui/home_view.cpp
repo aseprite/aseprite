@@ -105,7 +105,7 @@ HomeView::~HomeView()
 #ifdef ENABLE_DATA_RECOVERY
   if (m_dataRecoveryView) {
     ASSERT(!m_dataRecoveryView->parent());
-    delete m_dataRecoveryView;
+    m_dataRecoveryView.reset();
   }
 #endif
 }
@@ -129,6 +129,16 @@ void HomeView::dataRecoverySessionsAreReady()
   }
   if (m_dataRecoveryView) {
     m_dataRecoveryView->refreshListNotification();
+  }
+#endif
+}
+
+void HomeView::closeDataRecoveryView()
+{
+#ifdef ENABLE_DATA_RECOVERY
+  if (m_dataRecoveryView) {
+    App::instance()->workspace()->removeView(m_dataRecoveryView.get());
+    m_dataRecoveryView.reset();
   }
 #endif
 }
@@ -172,7 +182,7 @@ bool HomeView::onCloseView(Workspace* workspace, bool quitting)
 void HomeView::onAfterRemoveView(Workspace* workspace)
 {
   if (m_dataRecoveryView && m_dataRecoveryView->parent()) {
-    workspace->removeView(m_dataRecoveryView);
+    workspace->removeView(m_dataRecoveryView.get());
   }
 }
 
@@ -341,7 +351,7 @@ void HomeView::onRecoverSprites()
     return;
 
   if (!m_dataRecoveryView) {
-    m_dataRecoveryView = new DataRecoveryView(m_dataRecovery);
+    m_dataRecoveryView = std::make_unique<DataRecoveryView>(m_dataRecovery);
 
     // Restore the "Recover Files" link style when the
     // DataRecoveryView is empty (so there is no more warning icon on
@@ -354,9 +364,9 @@ void HomeView::onRecoverSprites()
   }
 
   if (!m_dataRecoveryView->parent())
-    App::instance()->workspace()->addView(m_dataRecoveryView);
+    App::instance()->workspace()->addView(m_dataRecoveryView.get());
 
-  App::instance()->mainWindow()->getTabsBar()->selectTab(m_dataRecoveryView);
+  App::instance()->mainWindow()->getTabsBar()->selectTab(m_dataRecoveryView.get());
 #endif
 }
 

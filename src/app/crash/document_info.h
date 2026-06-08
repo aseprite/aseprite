@@ -13,13 +13,14 @@
 #include "doc/object_id.h"
 
 #include <string>
+#include <vector>
 
 namespace app {
 class Doc;
 namespace crash {
 
 struct DocumentInfo {
-  doc::ObjectId docId;
+  doc::ObjectId docId = doc::NullId;
   doc::ColorMode mode;
   int width;
   int height;
@@ -29,8 +30,12 @@ struct DocumentInfo {
   DocumentInfo() : mode(doc::ColorMode::RGB), width(0), height(0), frames(0) {}
   explicit DocumentInfo(const Doc* doc);
 
+  bool isEmpty() const { return docId == doc::NullId; }
+
   std::string toString(bool withFullPath) const;
 };
+
+using DocumentInfos = std::vector<DocumentInfo>;
 
 } // namespace crash
 } // namespace app

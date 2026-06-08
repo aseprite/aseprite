@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,7 +26,7 @@ class BackupObserver;
 
 class DataRecovery {
 public:
-  typedef std::vector<SessionPtr> Sessions;
+  using Sessions = std::vector<SessionPtr>;
 
   DataRecovery(Context* context);
   ~DataRecovery();
@@ -40,17 +40,18 @@ public:
   // recover (i.e. a crashed session were changes weren't saved)
   bool hasRecoverySessions() const;
 
-  Session* activeSession() { return m_inProgress.get(); }
+  SessionPtr activeSession() { return m_inProgress; }
 
   // Returns a copy of the list of sessions that can be recovered.
   Sessions sessions();
-
-  bool isRunningSession(const Session* session) const;
 
   // Triggered in the UI-thread from the m_thread using an
   // ui::execute_from_ui_thread() when the list of sessions is ready
   // to be used.
   obs::signal<void()> SessionsListIsReady;
+
+  // Trigerred when a Doc is fully backed up in the active running session.
+  obs::signal<void(doc::ObjectId)> BackupDone;
 
 private:
   // Executed from m_thread to search for the list of sessions.

@@ -46,21 +46,19 @@ Session::Backup::Backup(const std::string& dir) : m_dir(dir)
 {
 }
 
-std::string Session::Backup::description(const bool withFullPath) const
+DocumentInfo Session::Backup::info() const
 {
-  // Lazy initialize description and filename.
-  if (m_desc.empty()) {
-    DocumentInfo info;
-    read_document_info(m_dir, info);
-    m_desc = info.toString(withFullPath);
-  }
-  return m_desc;
+  // Lazy initialize document info.
+  if (m_info.isEmpty())
+    read_document_info(m_dir, m_info);
+  return m_info;
 }
 
-Session::Session(RecoveryConfig* config, const std::string& path)
+Session::Session(RecoveryConfig* config, const std::string& path, const bool isActive)
   : m_pid(0)
   , m_path(path)
   , m_config(config)
+  , m_isActive(isActive)
 {
 }
 
@@ -245,7 +243,8 @@ bool Session::saveDocumentChanges(Doc* doc)
     return false;
 
   app::Context ctx;
-  std::string dir = base::join_path(m_path, base::convert_to<std::string>(doc->id()));
+  std::string dir = docBackupDir(doc->id());
+
   RECO_TRACE("RECO: Saving document '%s'...\n", dir.c_str());
 
   // Create directory for document
@@ -276,6 +275,20 @@ void Session::removeDocument(Doc* doc)
   catch (const std::exception& ex) {
     LOG(FATAL, "Exception deleting document %s\n", ex.what());
   }
+}
+
+void Session::addBackupItem(const doc::ObjectId docId)
+{
+  auto it = std::find_if(m_backups.begin(), m_backups.end(), [docId](const BackupPtr& b) {
+    return b->info().docId == docId;
+  });
+  if (it == m_backups.end())
+    m_backups.push_back(std::make_shared<Backup>(docBackupDir(docId)));
+}
+
+std::string Session::docBackupDir(doc::ObjectId docId)
+{
+  return base::join_path(m_path, base::convert_to<std::string>(docId));
 }
 
 Doc* Session::restoreBackupDoc(const std::string& backupDir, base::task_token* t)

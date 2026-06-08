@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/crash/raw_images_as.h"
+#include "app/crash/session.h"
 #include "app/ui/drop_down_button.h"
 #include "app/ui/tabs.h"
 #include "app/ui/workspace_view.h"
@@ -53,7 +54,7 @@ public:
 private:
   void clearList();
   void fillList();
-  void addSession(crash::Session* session);
+  void addSession(const crash::SessionPtr& session);
   void disableRefresh();
   bool someItemIsBusy();
   ui::WidgetsList selectedItems();
@@ -82,7 +83,9 @@ private:
 
   // Connection to to showFullPath.AfterChange signal to update the
   // items text when the setting is changed.
-  obs::connection m_conn;
+  obs::scoped_connection m_connFullPath;
+
+  obs::scoped_connection m_connBackup;
 };
 
 } // namespace app

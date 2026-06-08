@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -21,7 +21,7 @@ namespace app {
 
 class DropDownButton : public ui::HBox {
 public:
-  DropDownButton(const char* text);
+  explicit DropDownButton(const std::string& text);
 
   ui::Button* mainButton() { return m_button; }
   ui::Button* dropDown() { return m_dropDown; }

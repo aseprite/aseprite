@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -16,6 +16,8 @@
 #include "ui/box.h"
 
 #include "home_view.xml.h"
+
+#include <memory>
 
 namespace ui {
 class View;
@@ -48,6 +50,8 @@ public:
   // When crash::DataRecovery finish to search for sessions, this
   // function is called.
   void dataRecoverySessionsAreReady();
+
+  void closeDataRecoveryView();
 
 #if ENABLE_SENTRY
   void updateConsentCheckbox();
@@ -96,7 +100,7 @@ private:
   RecentFoldersListBox* m_folders;
   NewsListBox* m_news;
   crash::DataRecovery* m_dataRecovery;
-  DataRecoveryView* m_dataRecoveryView;
+  std::unique_ptr<DataRecoveryView> m_dataRecoveryView;
 };
 
 } // namespace app

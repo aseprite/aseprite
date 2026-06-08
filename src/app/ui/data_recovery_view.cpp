@@ -55,10 +55,13 @@ using namespace app::skin;
 
 namespace {
 
+using ClosedIds = std::set<doc::ObjectId>;
+
 class DataItem : public ListItem {
 public:
   DataItem() {}
   DataItem(const std::string& title) : ListItem(title) {}
+  ~DataItem() {}
 
   virtual bool hasBackup() const { return false; }
   virtual void restoreBackup() {}
@@ -76,7 +79,7 @@ protected:
 class ClosedDocItem : public DataItem {
 public:
   ClosedDocItem(ObjectId id, const std::string& title)
-    : DataItem(fmt::format("{} ({})", title, Strings::recover_files_in_memory()))
+    : DataItem(Strings::recover_files_in_memory(title))
     , m_id(id)
   {
   }
@@ -97,9 +100,9 @@ public:
   NoClosedDocItem() : DataItem(Strings::recover_files_no_closed_docs()) {}
 };
 
-class Item : public DataItem {
+class BackupItem : public DataItem {
 public:
-  Item(crash::Session* session, const crash::Session::BackupPtr& backup)
+  BackupItem(crash::Session* session, const crash::Session::BackupPtr& backup)
     : m_session(session)
     , m_backup(backup)
     , m_task(nullptr)
@@ -185,7 +188,13 @@ public:
       if (!m_backup)
         return;
 
-      setText(m_backup->description(Preferences::instance().general.showFullPath()));
+      const std::string desc = m_backup->info().toString(
+        Preferences::instance().general.showFullPath());
+
+      if (m_session->isActiveSession())
+        setText(Strings::recover_files_on_disk(desc));
+      else
+        setText(desc);
     }
   }
 
@@ -280,29 +289,73 @@ private:
 class DataRecoveryView::SessionSeparator : public SeparatorInView,
                                            public ClosedDocsObserver {
 public:
-  SessionSeparator(crash::Session* session, bool isRunningSession)
+  SessionSeparator(const crash::SessionPtr& session)
     : SeparatorInView({}, HORIZONTAL)
     , m_session(session)
   {
     std::string title;
-    if (isRunningSession) {
+    if (session->isActiveSession()) {
       title = Strings::recover_files_active_session();
-      m_isRunningSession = true;
     }
     else {
       title = session->name();
       if (session->version() != get_app_version())
         title = Strings::recover_files_incompatible(title, session->version());
-      m_isRunningSession = false;
     }
 
     setText(title);
 
-    if (m_isRunningSession) {
+    if (m_session->isActiveSession()) {
       auto* ctx = UIContext::instance();
       ctx->closedDocs().add_observer(this);
     }
   }
+
+  ~SessionSeparator()
+  {
+    if (m_session->isActiveSession()) {
+      auto* ctx = UIContext::instance();
+      ctx->closedDocs().remove_observer(this);
+    }
+  }
+
+  NoClosedDocItem* noClosedDoc() { return m_noClosedDoc; }
+
+  void initializeItems()
+  {
+    m_isEmpty = true;
+    addClosedDocs();
+    addBackups();
+
+    if (m_session->isActiveSession()) {
+      if (!m_noClosedDoc)
+        listBox()->addChild(m_noClosedDoc = new NoClosedDocItem);
+      m_noClosedDoc->setVisible(m_isEmpty);
+    }
+
+    updateView();
+  }
+
+  bool isEmpty() const { return m_isEmpty; }
+
+  crash::SessionPtr session() const { return m_session; }
+
+  void notifyDocBackupDone(const doc::ObjectId docId)
+  {
+    if (!existsBackupItem(docId)) {
+      DATAVIEW_TRACE("DATAVIEW: notifyDocBackupDone", (int)docId, "doesn't exist, adding item");
+
+      addBackup(docId);
+      updateNoClosedDocVisibility();
+      updateView();
+    }
+    else {
+      DATAVIEW_TRACE("DATAVIEW: notifyDocBackupDone", (int)docId, "already exists");
+    }
+  }
+
+private:
+  ui::Widget* listBox() const { return parent(); }
 
   void onInitTheme(ui::InitThemeEvent& ev) override
   {
@@ -310,57 +363,35 @@ public:
     setBorder(border() + gfx::Border(0, 8, 0, 8) * guiscale());
   }
 
-  ~SessionSeparator()
+  void addClosedDocs()
   {
-    if (m_isRunningSession) {
-      auto* ctx = UIContext::instance();
-      ctx->closedDocs().remove_observer(this);
-    }
-  }
-
-  void initializeItems(ui::Widget* listBox)
-  {
-    addClosedDocs(listBox);
-    addBackups(listBox);
-
-    if (m_isRunningSession) {
-      listBox->addChild(m_noClosedDoc = new NoClosedDocItem);
-      m_noClosedDoc->setVisible(m_isEmpty);
-    }
-  }
-
-  bool isEmpty() const { return m_isEmpty; }
-
-  crash::Session* session() const { return m_session; }
-
-private:
-  void addClosedDocs(ui::Widget* listBox)
-  {
-    if (!m_isRunningSession)
+    m_closedIds.clear();
+    if (!m_session->isActiveSession())
       return;
 
     const bool fullPath = Preferences::instance().general.showFullPath();
     auto* ctx = UIContext::instance();
     for (const auto& info : ctx->closedDocs().getClosedDocInfos()) {
       auto* item = new ClosedDocItem(info.docId, info.toString(fullPath));
-      listBox->addChild(item);
-      m_isEmpty = false;
+      listBox()->addChild(item);
+
+      m_closedIds.insert(info.docId);
     }
   }
 
-  int clearBackups(ui::Widget* listBox)
+  int clearBackups()
   {
-    int n = int(parent()->children().size());
-    int i = parent()->getChildIndex(this);
+    int n = int(listBox()->children().size());
+    int i = listBox()->getChildIndex(this);
     for (++i; i < n; ++i) {
-      Widget* child = parent()->at(i);
+      Widget* child = listBox()->at(i);
 
       // Outside this section
       if (dynamic_cast<Separator*>(child))
         break;
 
-      if (dynamic_cast<Item*>(child)) {
-        listBox->removeChild(child);
+      if (dynamic_cast<BackupItem*>(child)) {
+        listBox()->removeChild(child);
         child->deferDelete();
         --i;
         --n;
@@ -369,15 +400,52 @@ private:
     return i;
   }
 
-  void addBackups(ui::Widget* listBox, int index = -1)
+  bool existsBackupItem(const doc::ObjectId docId)
+  {
+    bool exists = false;
+    forEachItemInSection([docId, &exists](DataItem* item) {
+      if (auto* backupItem = dynamic_cast<BackupItem*>(item)) {
+        if (backupItem->backup()->info().docId == docId) {
+          exists = true;
+          return true; // Stop
+        }
+      }
+      return false; // Continue
+    });
+    return exists;
+  }
+
+  void addBackup(const doc::ObjectId docId)
   {
     for (auto& backup : m_session->backups()) {
-      auto* item = new Item(m_session, backup);
-      if (index < 0)
-        listBox->addChild(item);
-      else
-        listBox->insertChild(index++, item);
-      m_isEmpty = false;
+      if (backup->info().docId == docId) {
+        addBackup(backup, lastIndexInSection());
+        break;
+      }
+    }
+  }
+
+  void addBackup(const crash::Session::BackupPtr& backup, int index = -1)
+  {
+    auto* item = new BackupItem(m_session.get(), backup);
+    if (index < 0)
+      listBox()->addChild(item);
+    else
+      listBox()->insertChild(index, item);
+
+    // Don't show backup items on disk for sprites that are still in memory.
+    const bool backupVisible = (m_closedIds.find(backup->info().docId) == m_closedIds.end());
+    item->setVisible(backupVisible);
+
+    m_isEmpty = false;
+  }
+
+  void addBackups(int index = -1)
+  {
+    for (auto& backup : m_session->backups()) {
+      addBackup(backup, index);
+      if (index >= 0)
+        ++index;
     }
   }
 
@@ -386,43 +454,67 @@ private:
   {
     DATAVIEW_TRACE("DATAVIEW: onNewClosedDoc", (int)docId);
 
-    int i = parent()->getChildIndex(this);
+    int i = listBox()->getChildIndex(this);
 
     const bool fullPath = Preferences::instance().general.showFullPath();
     const crash::DocumentInfo info(doc::get<Doc>(docId));
-    parent()->insertChild(i + 1, new ClosedDocItem(info.docId, info.toString(fullPath)));
+    listBox()->insertChild(i + 1, new ClosedDocItem(info.docId, info.toString(fullPath)));
 
+    m_closedIds.insert(docId);
+    updateMatchingBackupItemVisibility(docId);
     updateNoClosedDocVisibility();
+    updateView();
   }
 
-  void onReopenClosedDoc(doc::ObjectId docId) override
+  void onReopenClosedDoc(const doc::ObjectId docId) override
   {
     DATAVIEW_TRACE("DATAVIEW: onReopenClosedDoc", (int)docId);
+    deleteClosedDocItem(docId);
+  }
 
-    for (auto* widget : parent()->children()) {
-      if (auto item = dynamic_cast<ClosedDocItem*>(widget)) {
+  void onArchiveClosedDoc(const doc::ObjectId docId, const bool backedup) override
+  {
+    DATAVIEW_TRACE("DATAVIEW: onArchiveClosedDoc", (int)docId, "backedup=", backedup);
+    deleteClosedDocItem(docId);
+  }
+
+  void deleteClosedDocItem(const doc::ObjectId docId)
+  {
+    if (auto it = m_closedIds.find(docId); it != m_closedIds.end())
+      m_closedIds.erase(it);
+
+    for (auto* widget : listBox()->children()) {
+      if (auto* item = dynamic_cast<ClosedDocItem*>(widget)) {
         if (item->docId() == docId) {
-          parent()->removeChild(item);
+          listBox()->removeChild(item);
           item->deferDelete();
           break;
         }
       }
     }
 
+    updateMatchingBackupItemVisibility(docId);
     updateNoClosedDocVisibility();
+    updateView();
   }
 
-  void onArchiveClosedDoc(doc::ObjectId docId, const bool backedup) override
+  void updateMatchingBackupItemVisibility(const doc::ObjectId docId)
   {
-    DATAVIEW_TRACE("DATAVIEW: onArchiveClosedDoc", (int)docId, "backedup=", backedup);
-
-    onReopenClosedDoc(docId);
-
-    int index = clearBackups(parent());
-    m_session->reloadBackups();
-    addBackups(parent(), index);
-
-    updateNoClosedDocVisibility();
+    forEachItemInSection([this, docId](DataItem* item) {
+      // Backup item found...
+      if (auto* backupItem = dynamic_cast<BackupItem*>(item)) {
+        const doc::ObjectId backupDocId = backupItem->backup()->info().docId;
+        if (backupDocId == docId) {
+          // Show/hide the backup item depending if there is a closed
+          // sprite related (we prefer to display the ClosedDocItem as
+          // it contains undo information).
+          const bool backupVisible = (m_closedIds.find(backupDocId) == m_closedIds.end());
+          backupItem->setVisible(backupVisible);
+          return true; // Stop
+        }
+      }
+      return false; // Continue
+    });
   }
 
   void updateNoClosedDocVisibility()
@@ -430,39 +522,66 @@ private:
     ASSERT(m_noClosedDoc);
     if (m_noClosedDoc)
       m_noClosedDoc->setVisible(countItemsInThisSection() == 0);
-    parent()->parent()->layout();
+  }
+
+  void updateView()
+  {
+    if (auto view = View::getView(this->parent()))
+      view->updateView();
+    else
+      parent()->layout();
   }
 
   int countItemsInThisSection()
   {
     int itemsInThisSection = 0;
-    int n = int(parent()->children().size());
-    int i = parent()->getChildIndex(this);
-    for (++i; i < n; ++i) {
-      Widget* child = parent()->at(i);
-
-      // Outside this section
-      if (dynamic_cast<Separator*>(child))
-        break;
-
-      // Don't count the "no closed item"
-      if (dynamic_cast<NoClosedDocItem*>(child))
-        continue;
-
+    return forEachItemInSection([&itemsInThisSection](DataItem* item) {
       ++itemsInThisSection;
-    }
+      return false; // Continue for all items
+    });
     return itemsInThisSection;
   }
 
-  crash::Session* m_session = nullptr;
+  int lastIndexInSection()
+  {
+    return forEachItemInSection([](DataItem* item) {
+      if (auto* backupItem = dynamic_cast<BackupItem*>(item))
+        return true; // Stop and return the index of this item
+      return false;
+    });
+  }
+
+  int forEachItemInSection(std::function<bool(DataItem*)> callback)
+  {
+    int n = int(listBox()->children().size());
+    int i = listBox()->getChildIndex(this);
+    for (++i; i < n; ++i) {
+      Widget* child = listBox()->at(i);
+
+      // Outside this section
+      if (dynamic_cast<Separator*>(child))
+        return i;
+
+      // Don't count the "no closed item"
+      if (dynamic_cast<NoClosedDocItem*>(child))
+        return i;
+
+      auto* item = dynamic_cast<DataItem*>(child);
+      if (callback(item))
+        return i; // If returns true we stop
+    }
+    return i;
+  }
+
+  crash::SessionPtr m_session = nullptr;
   NoClosedDocItem* m_noClosedDoc = nullptr;
   bool m_isEmpty = true;
-  bool m_isRunningSession = false;
+  ClosedIds m_closedIds;
 };
 
 DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
   : m_dataRecovery(dataRecovery)
-  , m_openButton(Strings::recover_files_recover_sprite().c_str())
+  , m_openButton(Strings::recover_files_recover_sprite())
   , m_deleteButton(Strings::recover_files_delete())
   , m_refreshButton(Strings::recover_files_refresh())
   , m_waitToEnableRefreshTimer(100)
@@ -503,13 +622,14 @@ DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
   m_listBox.DoubleClickItem.connect([this] { onOpen(); });
   m_waitToEnableRefreshTimer.Tick.connect([this] { onCheckIfWeCanEnableRefreshButton(); });
 
-  m_conn = Preferences::instance().general.showFullPath.AfterChange.connect(
+  m_connFullPath = Preferences::instance().general.showFullPath.AfterChange.connect(
     [this](const bool&) { onShowFullPathPrefChange(); });
+  m_connBackup = dataRecovery->BackupDone.connect(
+    [this](const doc::ObjectId docId) { m_runningSession->notifyDocBackupDone(docId); });
 }
 
 DataRecoveryView::~DataRecoveryView()
 {
-  m_conn.disconnect();
 }
 
 void DataRecoveryView::refreshListNotification()
@@ -525,10 +645,12 @@ void DataRecoveryView::clearList()
 {
   WidgetsList children = m_listBox.children();
   for (auto* child : children) {
+    if (m_runningSession && (child == m_runningSession || child == m_runningSession->noClosedDoc()))
+      continue;
+
     m_listBox.removeChild(child);
     child->deferDelete();
   }
-  m_runningSession = nullptr;
 }
 
 void DataRecoveryView::fillList()
@@ -541,29 +663,28 @@ void DataRecoveryView::fillList()
   }
 
   // Add current session
-  addSession(m_dataRecovery->activeSession());
+  if (!m_runningSession)
+    addSession(m_dataRecovery->activeSession());
+  else
+    m_runningSession->initializeItems();
 
   // Add previous sessions
   for (auto& session : m_dataRecovery->sessions()) {
     if (!session->isEmpty())
-      addSession(session.get());
+      addSession(session);
   }
 }
 
-void DataRecoveryView::addSession(crash::Session* session)
+void DataRecoveryView::addSession(const crash::SessionPtr& session)
 {
-  const bool isRunningSession = m_dataRecovery->isRunningSession(session);
-
-  auto* sep = new SessionSeparator(session, isRunningSession);
+  auto* sep = new SessionSeparator(session);
   m_listBox.addChild(sep);
-  sep->initializeItems(&m_listBox);
+  sep->initializeItems();
 
-  if (isRunningSession)
+  if (session->isActiveSession())
     m_runningSession = sep;
-  else if (sep->isEmpty()) {
+  else if (sep->isEmpty())
     delete sep;
-    return;
-  }
 }
 
 void DataRecoveryView::disableRefresh()
@@ -577,7 +698,7 @@ bool DataRecoveryView::someItemIsBusy()
   // Just in case check that we are not already running some task (so
   // we cannot refresh the list)
   for (auto widget : m_listBox.children()) {
-    if (auto item = dynamic_cast<Item*>(widget)) {
+    if (auto* item = dynamic_cast<BackupItem*>(widget)) {
       if (item->isTaskRunning())
         return true;
     }
@@ -627,7 +748,7 @@ WidgetsList DataRecoveryView::selectedItems()
     if (!widget->isVisible() || !widget->isSelected())
       continue;
 
-    if (auto item = dynamic_cast<DataItem*>(widget))
+    if (auto* item = dynamic_cast<DataItem*>(widget))
       selected.push_back(item);
   }
   return selected;
@@ -638,7 +759,7 @@ void DataRecoveryView::onOpen()
   disableRefresh();
 
   for (auto* widget : selectedItems()) {
-    if (auto item = dynamic_cast<DataItem*>(widget)) {
+    if (auto* item = dynamic_cast<DataItem*>(widget)) {
       if (item->hasBackup())
         item->restoreBackup();
     }
@@ -650,7 +771,7 @@ void DataRecoveryView::onOpenRaw(crash::RawImagesAs as)
   disableRefresh();
 
   for (auto* widget : selectedItems()) {
-    if (auto item = dynamic_cast<Item*>(widget)) {
+    if (auto* item = dynamic_cast<BackupItem*>(widget)) {
       if (item->backup())
         item->restoreRawImages(as);
     }
@@ -677,12 +798,12 @@ void DataRecoveryView::onDelete()
 {
   disableRefresh();
 
-  std::vector<Item*> items; // Items to delete.
+  std::vector<BackupItem*> items; // Items to delete.
   for (auto widget : m_listBox.children()) {
     if (!widget->isVisible() || !widget->isSelected())
       continue;
 
-    if (auto item = dynamic_cast<Item*>(widget)) {
+    if (auto item = dynamic_cast<BackupItem*>(widget)) {
       if (item->backup() && !item->isTaskRunning())
         items.push_back(item);
     }
@@ -701,6 +822,9 @@ void DataRecoveryView::onDelete()
 
 void DataRecoveryView::onRefresh()
 {
+  // This starts the timer to re-fill the list in case some item is busy.
+  disableRefresh();
+
   if (someItemIsBusy())
     return;
 
@@ -738,8 +862,13 @@ void DataRecoveryView::onCheckIfWeCanEnableRefreshButton()
   if (someItemIsBusy())
     return;
 
-  m_refreshButton.setEnabled(true);
   m_waitToEnableRefreshTimer.stop();
+  m_refreshButton.setEnabled(true);
+
+  // After re-enabling the Refresh button the mouse might be above the
+  // same button so in this way the user can re-click the button
+  // without moving the mouse.
+  manager()->_updateMouseWidgets();
 
   onChangeSelection();
 
@@ -754,7 +883,7 @@ void DataRecoveryView::onCheckIfWeCanEnableRefreshButton()
 void DataRecoveryView::onShowFullPathPrefChange()
 {
   for (auto widget : m_listBox.children()) {
-    if (auto item = dynamic_cast<Item*>(widget)) {
+    if (auto* item = dynamic_cast<BackupItem*>(widget)) {
       if (!item->isTaskRunning())
         item->updateText();
     }
@@ -764,7 +893,7 @@ void DataRecoveryView::onShowFullPathPrefChange()
 bool DataRecoveryView::thereAreCrashSessions() const
 {
   for (auto widget : m_listBox.children()) {
-    if (auto item = dynamic_cast<const Item*>(widget)) {
+    if (auto* item = dynamic_cast<const BackupItem*>(widget)) {
       if (item && item->isVisible() && item->session() && item->session()->isCrashedSession())
         return true;
     }

@@ -452,7 +452,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
   }
   else if (elem_name == "dropdownbutton") {
     if (!widget) {
-      widget = new DropDownButton(m_xmlTranslator(elem, "text").c_str());
+      widget = new DropDownButton(m_xmlTranslator(elem, "text"));
     }
   }
   else if (elem_name == "buttonset") {

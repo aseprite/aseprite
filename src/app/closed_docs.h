@@ -56,7 +56,7 @@ public:
 
   // Returns the info of closed docs (used for the "Recover Files"
   // view).
-  std::vector<crash::DocumentInfo> getClosedDocInfos();
+  crash::DocumentInfos getClosedDocInfos();
 
 private:
   void backgroundThread();

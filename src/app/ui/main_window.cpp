@@ -465,6 +465,11 @@ void MainWindow::dataRecoverySessionsAreReady()
   getHomeView()->dataRecoverySessionsAreReady();
 }
 
+void MainWindow::closeDataRecoveryView()
+{
+  getHomeView()->closeDataRecoveryView();
+}
+
 bool MainWindow::onProcessMessage(ui::Message* msg)
 {
   if (msg->type() == kOpenMessage)

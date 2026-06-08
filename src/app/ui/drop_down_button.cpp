@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2023  Igara Studio S.A.
+// Copyright (C) 2022-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -22,10 +22,10 @@ namespace app {
 using namespace app::skin;
 using namespace ui;
 
-DropDownButton::DropDownButton(const char* text)
+DropDownButton::DropDownButton(const std::string& text)
   : HBox()
   , m_button(new Button(text))
-  , m_dropDown(new Button(""))
+  , m_dropDown(new Button({}))
 {
   m_button->setExpansive(true);
   m_button->Click.connect(&DropDownButton::onButtonClick, this);

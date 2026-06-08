@@ -74,7 +74,7 @@ DataRecovery::DataRecovery(Context* ctx)
     }
   } while (newSessionDir.empty());
 
-  m_inProgress.reset(new Session(&m_config, newSessionDir));
+  m_inProgress.reset(new Session(&m_config, newSessionDir, true));
   m_inProgress->create(pid);
   RECO_TRACE("RECO: Session in progress '%s'\n", newSessionDir.c_str());
 
@@ -139,13 +139,6 @@ DataRecovery::Sessions DataRecovery::sessions()
   return copy;
 }
 
-bool DataRecovery::isRunningSession(const Session* session) const
-{
-  ASSERT(session);
-  ASSERT(m_inProgress);
-  return session->path() == m_inProgress->path();
-}
-
 void DataRecovery::searchForSessions()
 {
   Sessions sessions;
@@ -156,8 +149,9 @@ void DataRecovery::searchForSessions()
     const auto& itempath = base::join_path(m_sessionsDir, itemname);
     RECO_TRACE("RECO: Session '%s' ", itempath.c_str());
 
-    SessionPtr session(new Session(&m_config, itempath));
-    if (!isRunningSession(session.get())) {
+    const bool isRunningSession = (itempath == m_inProgress->path());
+    if (!isRunningSession) {
+      auto session = std::make_shared<Session>(&m_config, itempath, false);
       if ((session->isEmpty()) || (!session->isCrashedSession() && session->isOldSession())) {
         RECO_TRACE("to be deleted (%s)\n",
                    session->isEmpty() ? "is empty" :

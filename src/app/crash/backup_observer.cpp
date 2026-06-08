@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,6 +20,7 @@
 
 #include "app/app.h"
 #include "app/context.h"
+#include "app/crash/data_recovery.h"
 #include "app/crash/log.h"
 #include "app/crash/recovery_config.h"
 #include "app/crash/session.h"
@@ -182,20 +183,21 @@ void BackupObserver::backgroundThread()
 // Executed from the backgroundThread() (non-UI thread)
 bool BackupObserver::saveDocData(Doc* doc)
 {
+  const ObjectId docId = doc->id();
   try {
     if (!doc->needsBackup())
       return true;
 
     if (doc->inhibitBackup()) {
-      RECO_TRACE("RECO: Document '%d' backup is temporarily inhibited\n", doc->id());
+      RECO_TRACE("RECO: Document '%d' backup is temporarily inhibited\n", docId);
     }
     else if (!m_session->saveDocumentChanges(doc)) {
-      RECO_TRACE("RECO: Document '%d' backup was canceled by UI\n", doc->id());
+      RECO_TRACE("RECO: Document '%d' backup was canceled by UI\n", docId);
     }
     else {
 #ifdef TEST_BACKUP_INTEGRITY
       DocReader reader(doc, 500);
-      std::unique_ptr<Doc> copy(m_session->restoreBackupDocById(doc->id(), nullptr));
+      std::unique_ptr<Doc> copy(m_session->restoreBackupDocById(docId, nullptr));
       DocDiff diff = compare_docs(doc, copy.get());
       if (diff.anything) {
         RECO_TRACE("RECO: Differences: %s %s %s %s %s %s %s %s %s %s %s\n",
@@ -218,11 +220,17 @@ bool BackupObserver::saveDocData(Doc* doc)
         RECO_TRACE("RECO: No differences\n");
       }
 #endif
+      Session* session = m_session;
+      ui::execute_from_ui_thread([session, docId] {
+        session->addBackupItem(docId);
+        if (App* app = App::instance())
+          app->dataRecovery()->BackupDone(docId);
+      });
       return true;
     }
   }
   catch (const std::exception&) {
-    RECO_TRACE("RECO: Document '%d' is locked\n", doc->id());
+    RECO_TRACE("RECO: Document '%d' is locked\n", docId);
   }
   return false;
 }

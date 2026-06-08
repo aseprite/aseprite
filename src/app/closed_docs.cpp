@@ -132,9 +132,9 @@ Doc* ClosedDocs::reopenClosedDocById(const doc::ObjectId docId)
   return doc;
 }
 
-std::vector<crash::DocumentInfo> ClosedDocs::getClosedDocInfos()
+crash::DocumentInfos ClosedDocs::getClosedDocInfos()
 {
-  std::vector<crash::DocumentInfo> infos;
+  crash::DocumentInfos infos;
   {
     std::unique_lock<std::mutex> lock(m_mutex);
     for (const ClosedDoc& closedDoc : m_docs)

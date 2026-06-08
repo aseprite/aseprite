@@ -556,6 +556,9 @@ void App::run(const bool runGuiManager)
     // Select no document
     static_cast<UIContext*>(context())->setActiveView(nullptr);
 
+    // Close "Recover Files" tab before deleting all the DataRecovery stuff.
+    m_mainWindow->closeDataRecoveryView();
+
     // Delete backups (this is a normal shutdown, we are not handling
     // exceptions, and we are not in a destructor).
     m_modules->deleteDataRecovery();

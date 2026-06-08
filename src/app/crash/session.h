@@ -9,6 +9,7 @@
 #define APP_CRASH_SESSION_H_INCLUDED
 #pragma once
 
+#include "app/crash/document_info.h"
 #include "app/crash/raw_images_as.h"
 #include "base/disable_copying.h"
 #include "base/process.h"
@@ -32,16 +33,16 @@ public:
   public:
     Backup(const std::string& dir);
     const std::string& dir() const { return m_dir; }
-    std::string description(const bool withFullPath) const;
+    DocumentInfo info() const;
 
   private:
     std::string m_dir;
-    mutable std::string m_desc;
+    mutable DocumentInfo m_info;
   };
   using BackupPtr = std::shared_ptr<Backup>;
   using Backups = std::vector<BackupPtr>;
 
-  Session(RecoveryConfig* config, const std::string& path);
+  Session(RecoveryConfig* config, const std::string& path, bool isActive);
   ~Session();
 
   std::string name() const;
@@ -50,6 +51,7 @@ public:
   const Backups& backups();
   const Backups& reloadBackups();
 
+  bool isActiveSession() const { return m_isActive; }
   bool isCrashedSession() const;
   bool isOldSession();
   bool isEmpty();
@@ -60,6 +62,8 @@ public:
 
   bool saveDocumentChanges(Doc* doc);
   void removeDocument(Doc* doc);
+  void addBackupItem(doc::ObjectId docId);
+  std::string docBackupDir(doc::ObjectId docId);
 
   Doc* restoreBackupDoc(const BackupPtr& backup, base::task_token* t);
   Doc* restoreBackupById(const doc::ObjectId id, base::task_token* t);
@@ -82,11 +86,12 @@ private:
   mutable std::string m_version;
   Backups m_backups;
   RecoveryConfig* m_config;
+  bool m_isActive = false;
 
   DISABLE_COPYING(Session);
 };
 
-typedef std::shared_ptr<Session> SessionPtr;
+using SessionPtr = std::shared_ptr<Session>;
 
 } // namespace crash
 } // namespace app
