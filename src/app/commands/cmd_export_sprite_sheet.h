@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2024  Igara Studio S.A.
+// Copyright (C) 2022-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -44,6 +44,7 @@ struct ExportSpriteSheetParams : public NewParams {
   Param<bool> extrude{ this, false, "extrude" };
   Param<bool> ignoreEmpty{ this, false, "ignoreEmpty" };
   Param<bool> mergeDuplicates{ this, false, "mergeDuplicates" };
+  Param<bool> powerOfTwoSize{ this, false, "powerOfTwoSize" };
   Param<bool> openGenerated{ this, false, "openGenerated" };
   Param<std::string> layer{ this, std::string(), "layer" };
   // TODO The layerIndex parameter is for internal use only, layers

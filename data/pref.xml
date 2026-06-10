@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2025  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-present  Igara Studio S.A. -->
 <!-- Copyright (C) 2014-2018  David Capello -->
 <preferences>
 
@@ -606,6 +606,7 @@
       <option id="extrude" type="bool" default="false" />
       <option id="merge_duplicates" type="bool" default="false" />
       <option id="ignore_empty" type="bool" default="false" />
+      <option id="power_of_two_size" type="bool" default="false" />
       <option id="open_generated" type="bool" default="false" />
       <option id="layer" type="std::string" />
       <option id="layer_index" type="int" default ="-1" />

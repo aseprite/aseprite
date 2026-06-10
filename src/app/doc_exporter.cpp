@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2026  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -711,7 +711,6 @@ public:
 DocExporter::DocExporter()
   : m_docBuf(std::make_shared<doc::ImageBuffer>())
   , m_sampleBuf(std::make_shared<doc::ImageBuffer>())
-  , m_powerOfTwoSize(false)
 {
   m_cache.spriteId = doc::NullId;
   reset();
@@ -734,6 +733,7 @@ void DocExporter::reset()
   m_innerPadding = 0;
   m_ignoreEmptyCels = false;
   m_mergeDuplicates = false;
+  m_powerOfTwoSize = false;
   m_trimSprite = false;
   m_trimCels = false;
   m_trimByGrid = false;

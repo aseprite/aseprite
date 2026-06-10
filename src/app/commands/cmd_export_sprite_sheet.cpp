@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -183,6 +183,7 @@ Doc* generate_sprite_sheet_from_params(DocExporter& exporter,
   const bool extrude = params.extrude();
   const bool ignoreEmpty = params.ignoreEmpty();
   const bool mergeDuplicates = params.mergeDuplicates();
+  const bool powerOfTwoSize = params.powerOfTwoSize();
   const bool splitLayers = params.splitLayers();
   const bool splitTags = params.splitTags();
   const bool splitGrid = params.splitGrid();
@@ -270,6 +271,7 @@ Doc* generate_sprite_sheet_from_params(DocExporter& exporter,
   exporter.setSplitTags(splitTags);
   exporter.setIgnoreEmptyCels(ignoreEmpty);
   exporter.setMergeDuplicates(mergeDuplicates);
+  exporter.setPowerOfTwoSize(powerOfTwoSize);
   if (listLayers)
     exporter.setListLayers(true);
   if (listTags)
@@ -395,6 +397,7 @@ public:
     extrudeEnabled()->setSelected(params.extrude());
     mergeDups()->setSelected(params.mergeDuplicates());
     ignoreEmpty()->setSelected(params.ignoreEmpty());
+    powerOfTwoSize()->setSelected(params.powerOfTwoSize());
 
     borderPadding()->setTextf("%d", params.borderPadding());
     shapePadding()->setTextf("%d", params.shapePadding());
@@ -449,6 +452,7 @@ public:
     extrudeEnabled()->Click.connect([this] { generatePreview(); });
     mergeDups()->Click.connect([this] { generatePreview(); });
     ignoreEmpty()->Click.connect([this] { generatePreview(); });
+    powerOfTwoSize()->Click.connect([this] { generatePreview(); });
 
     imageEnabled()->Click.connect(
       [this] { onOutputFieldEnabledChange(imageFilename(), imageEnabled()->isSelected()); });
@@ -549,6 +553,7 @@ public:
     params.extrude(extrudeValue());
     params.mergeDuplicates(mergeDupsValue());
     params.ignoreEmpty(ignoreEmptyValue());
+    params.powerOfTwoSize(powerOfTwoSizeValue());
     params.openGenerated(openGeneratedValue());
     params.layer(layerValue());
     params.layerIndex(layerIndex());
@@ -763,6 +768,8 @@ private:
   bool listTagsValue() const { return listTags()->isSelected(); }
 
   bool listSlicesValue() const { return listSlices()->isSelected(); }
+
+  bool powerOfTwoSizeValue() const { return powerOfTwoSize()->isSelected(); }
 
   void onExport()
   {
@@ -1249,6 +1256,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
         params.mergeDuplicates(defPref.spriteSheet.mergeDuplicates());
       if (!params.ignoreEmpty.isSet())
         params.ignoreEmpty(defPref.spriteSheet.ignoreEmpty());
+      if (!params.powerOfTwoSize.isSet())
+        params.powerOfTwoSize(defPref.spriteSheet.powerOfTwoSize());
       if (!params.openGenerated.isSet())
         params.openGenerated(defPref.spriteSheet.openGenerated());
       if (!params.layer.isSet())
@@ -1308,6 +1317,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.extrude(params.extrude());
     docPref.spriteSheet.mergeDuplicates(params.mergeDuplicates());
     docPref.spriteSheet.ignoreEmpty(params.ignoreEmpty());
+    docPref.spriteSheet.powerOfTwoSize(params.powerOfTwoSize());
     docPref.spriteSheet.openGenerated(params.openGenerated());
     docPref.spriteSheet.layer(params.layer());
     docPref.spriteSheet.layerIndex(params.layerIndex());
