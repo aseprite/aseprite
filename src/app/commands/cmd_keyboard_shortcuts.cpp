@@ -239,7 +239,7 @@ private:
 
     if (ui::Alert::show(Strings::alerts_delete_shortcut(shortcut.toString())) != 1)
       return;
-
+    
     m_key->disableShortcut(shortcut, KeySource::UserDefined);
     window()->layout();
   }
@@ -266,8 +266,6 @@ private:
         m_menuKeys[m_menuitem] = m_key;
       }
       bool conflict = false;
-    
-        
       for (KeyPtr& key : m_keys) {
         if (key.get() != m_key.get() && key->keycontext() == m_key->keycontext() && key->hasShortcut(window.shortcut()) &&
           // Tools can contain the same keyboard shortcut
