@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +11,7 @@
 
 #include "app/tools/intertwine.h"
 
+#include "app/pref/preferences.h"
 #include "app/tools/controller.h"
 #include "app/tools/point_shape.h"
 #include "app/tools/stroke.h"
@@ -144,15 +145,20 @@ doc::AlgoLineWithAlgoPixel Intertwine::getLineAlgo(ToolLoop* loop,
     }
   }
 
-  if ( // When "Snap Angle" in being used or...
-    (int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect)) ||
-    // "Snap to Grid" is enabled
-    (loop->getController()->canSnapToGrid() && loop->getSnapToGrid())) {
-    // We prefer the perfect pixel lines that matches grid tiles
+  if (loop->getController()->canSnapToGrid() && loop->getSnapToGrid()) {
+    // "Snap to Grid" is enabled. Has precedence over other modifiers.
     return (needsFixForLineBrush ? algo_line_perfect_with_fix_for_line_brush : algo_line_perfect);
   }
+  else if (int(loop->getModifiers()) & int(ToolLoopModifiers::kSquareAspect)) {
+    // When "Snap Angle" in being used.
+    if (needsFixForLineBrush)
+      return algo_line_perfect_with_fix_for_line_brush;
+    else {
+      return algo_line_snap_using_step(Preferences::instance().editor.fixedStepTilt());
+    }
+  }
   else {
-    // In other case we use the regular algorithm that is useful to
+    // Otherwise use the regular algorithm that is useful to
     // draw continuous lines/strokes.
     return (needsFixForLineBrush ? algo_line_continuous_with_fix_for_line_brush :
                                    algo_line_continuous);
