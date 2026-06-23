@@ -816,6 +816,17 @@ target_include_directories(app-lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 if(REQUIRE_CURL)
   target_link_libraries(app-lib net-lib)
+
+  # Lospec palette-list integration (requires HTTP/curl).
+  target_compile_definitions(app-lib PUBLIC -DENABLE_LOSPEC)
+  target_sources(app-lib PRIVATE
+    lospec.cpp
+    ui/lospec_listbox.cpp)
+  # http_loader.cpp is also needed by the Lospec feature; only add it
+  # here if it wasn't already added by ENABLE_NEWS.
+  if(NOT ENABLE_NEWS)
+    target_sources(app-lib PRIVATE res/http_loader.cpp)
+  endif()
 endif()
 
 # Enable loading Steam API

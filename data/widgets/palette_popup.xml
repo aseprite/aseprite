@@ -5,11 +5,16 @@
   <vbox id="palette_popup">
     <hbox>
       <search id="search" magnet="true" expansive="true" debounce="250" />
+      <combobox id="color_filter" tooltip="@.color_filter_tooltip" tooltip_dir="bottom" />
       <button text="" id="refresh" style="refresh_button" />
+      <button id="lospec" text="@.lospec" tooltip="@.lospec_tooltip" tooltip_dir="bottom" />
     </hbox>
     <view id="view" expansive="true" />
+    <view id="lospec_view" expansive="true" />
     <hbox>
       <button id="load_pal" text="@.load" minwidth="80" magnet="true" />
+      <button id="import_pal" text="@.import" minwidth="80" magnet="true" />
+      <button id="import_use_pal" text="@.import_use" minwidth="100" />
       <hbox expansive="true" />
       <button id="open_folder" text="@.open_folder" minwidth="60" />
     </hbox>
