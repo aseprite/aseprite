@@ -1,0 +1,76 @@
+name: package-macos
+on:
+  # Build a ready-to-run macOS app on every push to a feature branch,
+  # and allow triggering it manually from the Actions tab.
+  push:
+    branches:
+      - 'feature/**'
+      - 'lospec/**'
+  workflow_dispatch:
+
+jobs:
+  package-macos:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+
+    - name: Install Skia
+      shell: bash
+      run: |
+        skia_url=$(source laf/misc/skia-url.sh release macos arm64 | xargs)
+        skia_file=$(basename "$skia_url")
+        curl --ssl-revoke-best-effort -L -o "$skia_file" "$skia_url"
+        unzip -q "$skia_file" -d skia
+
+    - name: ccache
+      uses: hendrikmuhs/ccache-action@v1.2.17
+      with:
+        key: package-macos-arm64
+
+    - uses: aseprite/get-ninja@main
+
+    - name: Generating Makefiles
+      shell: bash
+      run: |
+        cmake -S . -B build -G Ninja \
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+          -DCMAKE_OSX_ARCHITECTURES=arm64 \
+          -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
+          -DENABLE_CCACHE=on \
+          -DLAF_BACKEND=skia \
+          -DSKIA_DIR=$(realpath skia) \
+          -DSKIA_LIBRARY_DIR=$(realpath skia/out/Release-arm64)
+
+    - name: Compiling
+      shell: bash
+      run: |
+        cd build && ninja aseprite
+
+    - name: Ad-hoc code signing
+      shell: bash
+      run: |
+        # Ad-hoc sign the bundle so macOS treats it as a valid (though
+        # unidentified) app. You'll still need to allow it once via
+        # right-click > Open, or by removing the quarantine attribute:
+        #   xattr -dr com.apple.quarantine Aseprite.app
+        codesign --force --deep --sign - build/bin/Aseprite.app
+        codesign --verify --verbose build/bin/Aseprite.app || true
+
+    - name: Packaging
+      shell: bash
+      run: |
+        cd build/bin
+        # Use ditto to preserve the bundle structure, symlinks and the
+        # code signature inside the zip.
+        ditto -c -k --sequesterRsrc --keepParent Aseprite.app ../../Aseprite-macOS-arm64.zip
+
+    - name: Upload app artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Aseprite-macOS-arm64
+        path: Aseprite-macOS-arm64.zip
+        if-no-files-found: error
+        retention-days: 14
