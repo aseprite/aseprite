@@ -385,6 +385,7 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
   switch (m_handle) {
     case MovePixelsHandle: {
       double dx, dy;
+      const bool isLockAxis = ((moveModifier & LockAxisMovement) == LockAxisMovement);
       if (tilesModeOn) {
         if (m_catchPos.x == 0 && m_catchPos.y == 0) {
           // Movement through keyboard:
@@ -402,7 +403,8 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
           dy = point.y;
         }
       }
-      else if ((moveModifier & FineControl) == 0) {
+      // FineControl is discarded if 'Locked Axis' is active
+      else if (isLockAxis || ((moveModifier & FineControl) == 0)) {
         dx = (std::floor(pos.x) - std::floor(m_catchPos.x));
         dy = (std::floor(pos.y) - std::floor(m_catchPos.y));
       }
@@ -411,12 +413,10 @@ void PixelsMovement::moveImage(const gfx::PointF& pos, MoveModifier moveModifier
         dy = (pos.y - m_catchPos.y);
       }
 
-      if ((moveModifier & LockAxisMovement) == LockAxisMovement) {
-        if (std::abs(dx) < std::abs(dy))
-          dx = 0.0;
-        else
-          dy = 0.0;
-      }
+      if (isLockAxis)
+        lockAxis(m_lockedAxis, dx, dy);
+      else
+        m_lockedAxis = LockedAxis::NONE;
 
       bounds.offset(dx, dy);
 
