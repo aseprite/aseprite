@@ -31,6 +31,7 @@
 #include "app/loop_tag.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
+#include "app/pref/preferences.h"
 #include "app/thumbnails.h"
 #include "app/transaction.h"
 #include "app/tx.h"
@@ -52,6 +53,7 @@
 #include "base/scoped_value.h"
 #include "doc/doc.h"
 #include "doc/image_ref.h"
+#include "doc/slice.h"
 #include "fmt/format.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -1841,6 +1843,8 @@ void Timeline::onAfterCommandExecution(CommandExecutionEvent& ev)
 
 void Timeline::onActiveSiteChange(const Site& site)
 {
+  invalidate();
+
   if (m_adapter && hasMouse()) {
     updateStatusBarForFrame(m_adapter->toColFrame(fr_t(site.frame())), nullptr, site.cel());
   }
@@ -2273,6 +2277,28 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, col_t col)
            is_active,
            is_hover,
            is_clicked);
+
+  // Show slice keyframes in the frame header when exactly one slice is selected.
+  if (Preferences::instance().slices.useKeys() && m_editor) {
+    Site site;
+    m_editor->getSite(&site);
+    const auto& selectedSlices = site.selectedSlices();
+    if (selectedSlices.size() == 1) {
+      if (const Slice* slice = selectedSlices.frontAs<Slice>()) {
+        auto it = slice->getIteratorByFrame(frame);
+        if (it != slice->end() && it->frame() == frame) {
+          const doc::color_t docColor = slice->userData().color();
+          gfx::Color color = gfx::rgba(doc::rgba_getr(docColor),
+                                       doc::rgba_getg(docColor),
+                                       doc::rgba_getb(docColor),
+                                       255);
+          gfx::Rect marker(bounds);
+          marker.shrink(guiscale());
+          g->drawRect(color, marker);
+        }
+      }
+    }
+  }
 }
 
 void Timeline::drawLayer(ui::Graphics* g, const int layerIdx)

@@ -1,29 +1,41 @@
+// Aseprite
+// Copyright (C) 2026  Igara Studio S.A.
+//
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
-#ifndef APP_CMD_MOVE_SLICE_H_INCLUDED
-#define APP_CMD_MOVE_SLICE_H_INCLUDED
+#ifndef APP_CMD_ADJUST_SLICE_KEYS_H_INCLUDED
+#define APP_CMD_ADJUST_SLICE_KEYS_H_INCLUDED
 #pragma once
 
 #include "app/cmd.h"
 #include "app/cmd/with_sprite.h"
 #include "doc/frame.h"
+#include "doc/object_id.h"
+#include "doc/slice.h"
 
-#include <sstream>
+#include <vector>
 
 namespace app { namespace cmd {
 using namespace doc;
 
 class AdjustSliceKeys : public Cmd,
-                 public WithSprite {
+                        public WithSprite {
 public:
   AdjustSliceKeys(Sprite* sprite, int frame);
 
 protected:
-  void moveSliceKeysBack(Sprite* sprite, frame_t frame);
-  void moveSliceKeysForward(Sprite* sprite, frame_t frame);
+  struct StoredKey {
+    ObjectId sliceId;
+    SliceKey key;
+  };
 
-  int frame;
-  size_t m_size;
-  std::stringstream m_stream;
+  void moveSliceKeysBack(Sprite* sprite, frame_t frame, bool storeRemovedKeys);
+  void moveSliceKeysForward(Sprite* sprite, frame_t frame);
+  void restoreKeys(Sprite* sprite, frame_t frame);
+
+  int m_frame;
+  std::vector<StoredKey> m_keys;
 };
 
 class DeleteSliceKeys : public AdjustSliceKeys {
@@ -33,7 +45,7 @@ public:
 protected:
   void onExecute() override;
   void onUndo() override;
-  size_t onMemSize() const override { return sizeof(*this) + m_size; }
+  size_t onMemSize() const override { return sizeof(*this) + m_keys.size() * sizeof(StoredKey); }
 };
 
 class InsertSliceKeys : public AdjustSliceKeys {
@@ -53,9 +65,9 @@ public:
 protected:
   void onExecute() override;
   void onUndo() override;
-  size_t onMemSize() const override { return sizeof(*this) + m_size; }
+  size_t onMemSize() const override { return sizeof(*this) + m_keys.size() * sizeof(StoredKey); }
 
-  int targetFrame;
+  int m_targetFrame;
 };
 
 }} // namespace app::cmd

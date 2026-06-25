@@ -162,6 +162,7 @@ private:
 
   struct Item {
     doc::Slice* slice;
+    doc::frame_t keyFrame;
     doc::SliceKey oldKey;
     doc::SliceKey newKey;
     // Vector of each selected layer's part of the sprite under
@@ -235,7 +236,6 @@ private:
   void clearSlices();
 
   doc::frame_t m_frame;
-  doc::frame_t m_keyFrame;
   EditorHit m_hit;
   gfx::Point m_mouseStart;
   std::vector<Item> m_items;

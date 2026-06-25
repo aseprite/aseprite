@@ -19,6 +19,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/expand_cel_canvas.h"
+#include "app/util/slice_utils.h"
 #include "doc/algorithm/rotate.h"
 #include "doc/blend_internals.h"
 #include "doc/slice.h"
@@ -38,7 +39,6 @@ MovingSliceState::MovingSliceState(Editor* editor,
                                    const EditorHit& hit,
                                    const doc::SelectedObjects& selectedSlices)
   : m_frame(editor->frame())
-  , m_keyFrame(Preferences::instance().slices.useKeys() ? m_frame : 0)
   , m_hit(hit)
   , m_items(std::max<std::size_t>(1, selectedSlices.size()))
   , m_tx(Tx::DontLockDoc,
@@ -52,15 +52,6 @@ MovingSliceState::MovingSliceState(Editor* editor,
     m_items[0] = getItemForSlice(m_hit.slice());
   }
   else {
-    // If there is one selected slice with multiple keys, we will
-    // modify the key in from the current frame.
-    for (Slice* slice : selectedSlices.iterateAs<Slice>()) {
-      if (slice->size() > 1) {
-        m_keyFrame = m_frame;
-        break;
-      }
-    }
-
     int i = 0;
     for (Slice* slice : selectedSlices.iterateAs<Slice>()) {
       ASSERT(slice);
@@ -156,9 +147,9 @@ bool MovingSliceState::onMouseUp(Editor* editor, MouseMessage* msg)
     ContextWriter writer(UIContext::instance(), 1000);
     CmdTransaction* cmds = m_tx;
     for (const auto& item : m_items) {
-      item.slice->insert(m_keyFrame, item.oldKey);
+      item.slice->insert(item.keyFrame, item.oldKey);
       cmds->addAndExecute(writer.context(),
-                          new cmd::SetSliceKey(item.slice, m_keyFrame, item.newKey));
+                          new cmd::SetSliceKey(item.slice, item.keyFrame, item.newKey));
 
       if (editor->slicesTransforms()) {
         for (int i = 0; i < m_selectedLayers.size(); ++i) {
@@ -436,7 +427,7 @@ bool MovingSliceState::onMouseMove(Editor* editor, MouseMessage* msg)
     }
 
     // Update the slice key
-    item.slice->insert(m_keyFrame, key);
+    item.slice->insert(item.keyFrame, key);
   }
 
   if (editor->slicesTransforms())
@@ -468,8 +459,11 @@ MovingSliceState::Item MovingSliceState::getItemForSlice(doc::Slice* slice)
 {
   Item item;
   item.slice = slice;
+  item.keyFrame = (Preferences::instance().slices.useKeys() ?
+                     effective_slice_key_frame(slice, m_frame) :
+                     frame_t(0));
 
-  const auto* keyPtr = slice->getByFrame(m_frame);
+  const auto* keyPtr = slice->getByFrame(item.keyFrame);
   ASSERT(keyPtr);
   if (keyPtr)
     item.oldKey = item.newKey = *keyPtr;

@@ -1803,6 +1803,7 @@ public:
     , m_combobox(this)
     , m_transform(Strings::context_bar_slice_transform())
     , m_action(2)
+    , m_keyAction(2)
   {
     auto* theme = SkinTheme::get(this);
 
@@ -1825,13 +1826,21 @@ public:
     m_action.ItemChange.connect(
       [this](ButtonSet::Item* item) { onAction(m_action.selectedItem()); });
 
+    m_keyAction.setEnabled(false);
+    m_keyAction.addItem(theme->parts.iconAdd(), theme->styles.buttonsetItemIconMono());
+    m_keyAction.addItem(theme->parts.tabCloseIconNormal(), theme->styles.buttonsetItemIconMono());
+    m_keyAction.ItemChange.connect(
+      [this](ButtonSet::Item* item) { onKeyAction(m_keyAction.selectedItem()); });
+
     addChild(&m_sel);
     addChild(&m_combobox);
     addChild(&m_transform);
     addChild(&m_action);
+    addChild(&m_keyAction);
 
     m_combobox.setVisible(false);
     m_action.setVisible(false);
+    m_keyAction.setVisible(false);
   }
 
   void setupTooltips(TooltipManager* tooltipManager)
@@ -1841,6 +1850,10 @@ public:
     tooltipManager->addTooltipFor(&m_transform, Strings::context_bar_slice_transform_tip(), BOTTOM);
     tooltipManager->addTooltipFor(m_action.at(0), Strings::context_bar_slice_props(), BOTTOM);
     tooltipManager->addTooltipFor(m_action.at(1), Strings::context_bar_delete_slice(), BOTTOM);
+    tooltipManager->addTooltipFor(m_keyAction.at(0), Strings::context_bar_add_slice_key(), BOTTOM);
+    tooltipManager->addTooltipFor(m_keyAction.at(1),
+                                  Strings::context_bar_remove_slice_key(),
+                                  BOTTOM);
   }
 
   void setDoc(Doc* doc) { m_doc = doc; }
@@ -1910,7 +1923,9 @@ private:
   {
     auto editor = Editor::activeEditor();
     if (editor && slice) {
-      if (const SliceKey* key = slice->getByFrame(editor->frame())) {
+      const doc::frame_t frame = (Preferences::instance().slices.useKeys() ? editor->frame() :
+                                                                             doc::frame_t(0));
+      if (const doc::SliceKey* key = slice->getByFrame(frame)) {
         editor->centerInSpritePoint(key->bounds().center());
       }
     }
@@ -1919,11 +1934,15 @@ private:
   void updateLayout()
   {
     const bool visible = (m_doc && m_doc->sprite() && !m_doc->sprite()->slices().empty());
-    const bool relayout = (visible != m_combobox.isVisible() || visible != m_action.isVisible());
+    const bool useKeys = Preferences::instance().slices.useKeys();
+    const bool keyActionVisible = (visible && useKeys);
+    const bool relayout = (visible != m_combobox.isVisible() || visible != m_action.isVisible() ||
+                           keyActionVisible != m_keyAction.isVisible());
 
     m_combobox.setVisible(visible);
     m_transform.setVisible(visible);
     m_action.setVisible(visible);
+    m_keyAction.setVisible(keyActionVisible);
 
     if (auto* editor = Editor::activeEditor())
       m_transform.setSelected(editor->slicesTransforms());
@@ -1937,7 +1956,9 @@ private:
   void updateState()
   {
     if (auto editor = Editor::activeEditor()) {
-      m_action.setEnabled(editor->hasSelectedSlices());
+      const bool hasSelectedSlices = editor->hasSelectedSlices();
+      m_action.setEnabled(hasSelectedSlices);
+      m_keyAction.setEnabled(hasSelectedSlices);
     }
   }
 
@@ -2003,11 +2024,30 @@ private:
     updateLayout();
   }
 
+  void onKeyAction(const int item)
+  {
+    m_keyAction.deselectItems();
+
+    Command* cmd = nullptr;
+    Params params;
+
+    switch (item) {
+      case 0: cmd = Commands::instance()->byId(CommandId::AddSliceKey()); break;
+      case 1: cmd = Commands::instance()->byId(CommandId::RemoveSliceKey()); break;
+    }
+
+    if (cmd)
+      UIContext::instance()->executeCommand(cmd, params);
+
+    updateLayout();
+  }
+
   Doc* m_doc;
   ButtonSet m_sel;
   Combo m_combobox;
   CheckBox m_transform;
   ButtonSet m_action;
+  ButtonSet m_keyAction;
   bool m_changeFromEntry;
   std::string m_filter;
 };

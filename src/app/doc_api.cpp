@@ -15,6 +15,7 @@
 #include "app/cmd/add_frame.h"
 #include "app/cmd/add_layer.h"
 #include "app/cmd/add_tileset.h"
+#include "app/cmd/adjust_slice_keys.h"
 #include "app/cmd/clear_cel.h"
 #include "app/cmd/clear_image.h"
 #include "app/cmd/copy_cel.h"
@@ -40,7 +41,6 @@
 #include "app/cmd/set_tag_range.h"
 #include "app/cmd/set_total_frames.h"
 #include "app/cmd/set_transparent_color.h"
-#include "app/cmd/adjust_slice_keys.h"
 #include "app/color_target.h"
 #include "app/color_utils.h"
 #include "app/context.h"
@@ -429,7 +429,7 @@ void DocApi::moveFrame(Sprite* sprite,
 
       m_transaction.execute(new cmd::MoveSliceKeys(sprite, frame, sliceFrame));
     }
-      
+
     if (tagsHandling != kDontAdjustTags) {
       adjustTags(sprite, frame, -1, dropFramePlace, tagsHandling);
       if (targetFrame >= frame)

@@ -395,6 +395,7 @@ target_sources(app-lib PRIVATE
   commands/cmd_discard_brush.cpp
   commands/cmd_duplicate_layer.cpp
   commands/cmd_duplicate_slice.cpp
+  commands/cmd_slice_key.cpp
   commands/cmd_duplicate_sprite.cpp
   commands/cmd_duplicate_view.cpp
   commands/cmd_enter_license.cpp

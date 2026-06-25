@@ -1232,9 +1232,10 @@ void Editor::drawSlices(ui::Graphics* g)
 
   auto theme = SkinTheme::get(this);
   gfx::Point mainOffset(mainTilePosition());
+  const auto sliceFrame = (Preferences::instance().slices.useKeys() ? m_frame : doc::frame_t(0));
 
   for (auto slice : m_sprite->slices()) {
-    auto key = slice->getByFrame(m_frame);
+    auto key = slice->getByFrame(sliceFrame);
     if (!key)
       continue;
 
@@ -2113,8 +2114,9 @@ bool Editor::selectSliceBox(const gfx::Rect& box)
     UIContext::instance()->notifyBeforeActiveSiteChanged();
 
   m_selectedSlices.clear();
+  const auto sliceFrame = (Preferences::instance().slices.useKeys() ? m_frame : doc::frame_t(0));
   for (auto slice : m_sprite->slices()) {
-    auto key = slice->getByFrame(m_frame);
+    auto key = slice->getByFrame(sliceFrame);
     if (key && key->bounds().intersects(box))
       m_selectedSlices.insert(slice->id());
   }
@@ -2787,9 +2789,11 @@ EditorHit Editor::calcHit(const gfx::Point& mouseScreenPos)
     if (ink->isSlice()) {
       if (m_docPref.show.slices()) {
         gfx::Point mainOffset(mainTilePosition());
+        const auto sliceFrame = (Preferences::instance().slices.useKeys() ? m_frame :
+                                                                            doc::frame_t(0));
 
         for (auto slice : m_sprite->slices()) {
-          auto key = slice->getByFrame(m_frame);
+          auto key = slice->getByFrame(sliceFrame);
           if (key) {
             gfx::Rect bounds = key->bounds();
             bounds.offset(mainOffset);

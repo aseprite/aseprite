@@ -39,4 +39,10 @@ std::vector<doc::Slice*> get_selected_slices(const Site& site)
   return selectedSlices;
 }
 
+doc::frame_t effective_slice_key_frame(const doc::Slice* slice, const doc::frame_t frame)
+{
+  auto it = slice->getIteratorByFrame(frame);
+  return (it != slice->end() ? it->frame() : doc::frame_t(0));
+}
+
 } // namespace app

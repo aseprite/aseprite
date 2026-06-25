@@ -581,8 +581,10 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
 
     if (editor->docPref().show.slices()) {
       int count = 0;
+      const auto sliceFrame = (Preferences::instance().slices.useKeys() ? editor->frame() :
+                                                                          doc::frame_t(0));
       for (auto slice : editor->document()->sprite()->slices()) {
-        auto key = slice->getByFrame(editor->frame());
+        auto key = slice->getByFrame(sliceFrame);
         if (key &&
             key->bounds().contains(int(std::floor(spritePos.x)), int(std::floor(spritePos.y)))) {
           if (++count == 3) {

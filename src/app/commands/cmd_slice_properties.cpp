@@ -16,6 +16,7 @@
 #include "app/context_access.h"
 #include "app/tx.h"
 #include "app/ui/slice_window.h"
+#include "app/util/slice_utils.h"
 #include "base/convert_to.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
@@ -84,16 +85,11 @@ void SlicePropertiesCommand::onExecute(Context* context)
     return;
 
   const bool useKeys = Preferences::instance().slices.useKeys();
-  frame_t frame = (useKeys ? reader.frame() : 0);
-  if (!useKeys) {
-    // If there is one selected slice with multiple keys, we will
-    // modify the key in from the current frame.
-    for (Slice* slice : slices.iterateAs<Slice>()) {
-      if (slice->size() > 1) {
-        frame = reader.frame();
-        break;
-      }
-    }
+  const frame_t currentFrame = reader.frame();
+  frame_t frame = frame_t(0);
+  if (useKeys) {
+    if (Slice* firstSlice = slices.frontAs<Slice>())
+      frame = effective_slice_key_frame(firstSlice, currentFrame);
   }
 
   SliceWindow window(sprite, slices, frame);
@@ -121,7 +117,9 @@ void SlicePropertiesCommand::onExecute(Context* context)
       }
 
       // Change slice properties
-      const doc::SliceKey* key = slice->getByFrame(frame);
+      const frame_t keyFrame = (useKeys ? effective_slice_key_frame(slice, currentFrame) :
+                                          frame_t(0));
+      const doc::SliceKey* key = slice->getByFrame(keyFrame);
       if (!key)
         continue;
 
@@ -155,7 +153,7 @@ void SlicePropertiesCommand::onExecute(Context* context)
 
       if (key->bounds() != newKey.bounds() || key->center() != newKey.center() ||
           key->pivot() != newKey.pivot()) {
-        tx(new cmd::SetSliceKey(slice, frame, newKey));
+        tx(new cmd::SetSliceKey(slice, keyFrame, newKey));
       }
     }
 
