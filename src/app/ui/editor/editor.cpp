@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -2650,8 +2650,11 @@ void Editor::onSliceDuplicated(DocEvent& ev)
 
 void Editor::onBeforeCommitTransaction(DocEvent& ev)
 {
-  if (ev.document() == m_document && isMovingPixels())
-    dropMovingPixels();
+  if (ev.document() == m_document && isMovingPixels()) {
+    auto movingPixels = static_cast<MovingPixelsState*>(m_state.get());
+    if (!movingPixels->ownsTransaction())
+      dropMovingPixels();
+  }
 }
 
 void Editor::setCursor(const gfx::Point& mouseDisplayPos)
