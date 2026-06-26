@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2023 Igara Studio S.A.
+// Copyright (c) 2018-present Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -371,6 +371,24 @@ int count_diff_between_images_templ(const Image* i1, const Image* i2)
 }
 
 template<typename ImageTraits>
+int count_diff_between_images_exact_match_templ(const Image* i1, const Image* i2)
+{
+  int diff = 0;
+  const LockImageBits<ImageTraits> bits1(i1);
+  const LockImageBits<ImageTraits> bits2(i2);
+  typename LockImageBits<ImageTraits>::const_iterator it1, it2, end1, end2;
+  for (it1 = bits1.begin(), end1 = bits1.end(), it2 = bits2.begin(), end2 = bits2.end();
+       it1 != end1 && it2 != end2;
+       ++it1, ++it2) {
+    if (*it1 != *it2)
+      diff++;
+  }
+  ASSERT(it1 == end1);
+  ASSERT(it2 == end2);
+  return diff;
+}
+
+template<typename ImageTraits>
 bool is_same_image_templ(const Image* i1, const Image* i2)
 {
   const LockImageBits<ImageTraits> bits1(i1);
@@ -484,6 +502,25 @@ int count_diff_between_images(const Image* i1, const Image* i2)
     case IMAGE_INDEXED:   return count_diff_between_images_templ<IndexedTraits>(i1, i2);
     case IMAGE_BITMAP:    return count_diff_between_images_templ<BitmapTraits>(i1, i2);
     case IMAGE_TILEMAP:   return count_diff_between_images_templ<TilemapTraits>(i1, i2);
+  }
+
+  ASSERT(false);
+  return -1;
+}
+
+int count_diff_between_images_exact_match(const Image* i1, const Image* i2)
+{
+  if ((i1->pixelFormat() != i2->pixelFormat()) || (i1->width() != i2->width()) ||
+      (i1->height() != i2->height()))
+    return -1;
+
+  switch (i1->pixelFormat()) {
+    case IMAGE_RGB: return count_diff_between_images_exact_match_templ<RgbTraits>(i1, i2);
+    case IMAGE_GRAYSCALE:
+      return count_diff_between_images_exact_match_templ<GrayscaleTraits>(i1, i2);
+    case IMAGE_INDEXED: return count_diff_between_images_exact_match_templ<IndexedTraits>(i1, i2);
+    case IMAGE_BITMAP:  return count_diff_between_images_exact_match_templ<BitmapTraits>(i1, i2);
+    case IMAGE_TILEMAP: return count_diff_between_images_exact_match_templ<TilemapTraits>(i1, i2);
   }
 
   ASSERT(false);
