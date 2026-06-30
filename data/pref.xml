@@ -476,6 +476,34 @@
     <section id="aseprite_format">
       <option id="cel_format" type="CelContentFormat" default="CelContentFormat::COMPRESSED" />
     </section>
+    <section id="custom_toolset">
+      <option id="rectangular_marquee" type="bool" default="false" />
+      <option id="elliptical_marquee" type="bool" default="false" />
+      <option id="lasso_tool" type="bool" default="false" />
+      <option id="polygonal_lasso" type="bool" default="false" />
+      <option id="magic_wand" type="bool" default="false" />
+      <option id="pencil" type="bool" default="false" />
+      <option id="spray" type="bool" default="false" />
+      <option id="eraser" type="bool" default="false" />
+      <option id="eyedropper" type="bool" default="false" />
+      <option id="zoom" type="bool" default="false" />
+      <option id="hand" type="bool" default="false" />
+      <option id="move" type="bool" default="false" />
+      <option id="slice" type="bool" default="false" />
+      <option id="paint_bucket" type="bool" default="false" />
+      <option id="gradient" type="bool" default="false" />
+      <option id="line" type="bool" default="false" />
+      <option id="curve" type="bool" default="false" />
+      <option id="rectangle" type="bool" default="false" />
+      <option id="filled_rectangle" type="bool" default="false" />
+      <option id="ellipse" type="bool" default="false" />
+      <option id="filled_ellipse" type="bool" default="false" />
+      <option id="contour" type="bool" default="false" />
+      <option id="polygon" type="bool" default="false" />
+      <option id="blur" type="bool" default="false" />
+      <option id="jumble" type="bool" default="false" />
+      <option id="text" type="bool" default="false" />
+    </section>
   </global>
 
   <tool>

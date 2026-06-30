@@ -22,6 +22,7 @@
             <listitem text="@.section_grid" value="section_grid" />
             <listitem text="@.section_guides_and_slices" value="section_guides_and_slices" />
             <listitem text="@.section_undo" value="section_undo" />
+            <listitem text="@.section_custom_toolset" value="section_custom_toolset" />
             <listitem text="@.section_theme" value="section_theme" />
             <listitem text="@.section_extensions" value="section_extensions" />
             <listitem text="@.section_aseprite_format" value="section_aseprite_format" />
@@ -507,6 +508,65 @@
             <check text="@.undo_show_tooltip" id="undo_show_tooltip"
                    pref="undo.show_tooltip" />
           </vbox>
+        </vbox>
+
+        <!-- Custom Toolset -->
+        <vbox id="section_custom_toolset">
+          <separator text="@.section_custom_toolset" horizontal="true" />
+          <grid columns="5" id="toolset_list">
+            <check id="rectangular_marquee" text="@tools.rectangular_marquee"
+                   pref="custom_toolset.rectangular_marquee" />
+            <check id="elliptical_marquee" text="@tools.elliptical_marquee"
+                   pref="custom_toolset.elliptical_marquee" />
+            <check id="lasso_tool" text="@tools.lasso_tool"
+                   pref="custom_toolset.lasso_tool" />
+            <check id="polygonal_lasso" text="@tools.polygonal_lasso"
+                   pref="custom_toolset.polygonal_lasso" />
+            <check id="magic_wand" text="@tools.magic_wand"
+                   pref="custom_toolset.magic_wand" />
+            <check id="pencil" text="@tools.pencil"
+                   pref="custom_toolset.pencil" />
+            <check id="spray" text="@tools.spray"
+                   pref="custom_toolset.spray" />
+            <check id="eraser" text="@tools.eraser"
+                   pref="custom_toolset.eraser" />
+            <check id="eyedropper" text="@tools.eyedropper"
+                   pref="custom_toolset.eyedropper" />
+            <check id="zoom" text="@tools.zoom"
+                   pref="custom_toolset.zoom" />
+            <check id="hand" text="@tools.hand"
+                   pref="custom_toolset.hand" />
+            <check id="move" text="@tools.move"
+                   pref="custom_toolset.move" />
+            <check id="slice" text="@tools.slice"
+                   pref="custom_toolset.slice" />
+            <check id="paint_bucket" text="@tools.paint_bucket"
+                   pref="custom_toolset.paint_bucket" />
+            <check id="gradient" text="@tools.gradient"
+                   pref="custom_toolset.gradient" />
+            <check id="line" text="@tools.line"
+                   pref="custom_toolset.line" />
+            <check id="curve" text="@tools.curve"
+                   pref="custom_toolset.curve" />
+            <check id="rectangle" text="@tools.rectangle"
+                   pref="custom_toolset.rectangle" />
+            <check id="filled_rectangle" text="@tools.filled_rectangle"
+                   pref="custom_toolset.filled_rectangle" />
+            <check id="ellipse" text="@tools.ellipse"
+                   pref="custom_toolset.ellipse" />
+            <check id="filled_ellipse" text="@tools.filled_ellipse"
+                   pref="custom_toolset.filled_ellipse" />
+            <check id="contour" text="@tools.contour"
+                   pref="custom_toolset.contour" />
+            <check id="polygon" text="@tools.polygon"
+                   pref="custom_toolset.polygon" />
+            <check id="blur" text="@tools.blur"
+                   pref="custom_toolset.blur" />
+            <check id="jumble" text="@tools.jumble"
+                   pref="custom_toolset.jumble" />
+            <check id="text" text="@tools.text"
+                   pref="custom_toolset.text" />
+          </grid>
         </vbox>
 
         <!-- Alerts -->

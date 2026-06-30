@@ -150,6 +150,15 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     return true;
   }
 
+  // Side mouse buttons are reserved for shortcuts (e.g. X1/X2 + wheel)
+  // only when there is a shortcut bound to them.
+  if ((KeyboardShortcuts::instance()->hasShortcutWithMouseButton(kButtonX1) &&
+       (msg->button() == kButtonX1 || msg->isX1Pressed())) ||
+      (KeyboardShortcuts::instance()->hasShortcutWithMouseButton(kButtonX2) &&
+       (msg->button() == kButtonX2 || msg->isX2Pressed()))) {
+    return true;
+  }
+
   // Start scroll loop
   if (editor->checkForScroll(msg) || editor->checkForZoom(msg))
     return true;

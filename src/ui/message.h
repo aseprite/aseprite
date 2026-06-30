@@ -187,6 +187,8 @@ public:
                MouseButton button,
                KeyModifiers modifiers,
                const gfx::Point& pos,
+               bool isX1Pressed = false,
+               bool isX2Pressed = false,
                const gfx::Point& wheelDelta = gfx::Point(0, 0),
                bool preciseWheel = false,
                float pressure = 0.0f)
@@ -194,6 +196,7 @@ public:
     , m_pointerType(pointerType)
     , m_button(button)
     , m_pos(pos)
+    , m_sideButtons{ isX1Pressed, isX2Pressed }
     , m_wheelDelta(wheelDelta)
     , m_preciseWheel(preciseWheel)
     , m_pressure(pressure)
@@ -206,6 +209,7 @@ public:
     , m_pointerType(other.pointerType())
     , m_button(other.button())
     , m_pos(newPosition)
+    , m_sideButtons{ other.m_sideButtons[0], other.m_sideButtons[1] }
     , m_wheelDelta(other.wheelDelta())
     , m_preciseWheel(other.preciseWheel())
     , m_pressure(other.pressure())
@@ -214,6 +218,8 @@ public:
 
   PointerType pointerType() const { return m_pointerType; }
   MouseButton button() const { return m_button; }
+  bool isX1Pressed() const { return m_sideButtons[0]; }
+  bool isX2Pressed() const { return m_sideButtons[1]; }
   bool left() const { return (m_button == kButtonLeft); }
   bool right() const { return (m_button == kButtonRight); }
   bool middle() const { return (m_button == kButtonMiddle); }
@@ -236,6 +242,7 @@ private:
   PointerType m_pointerType;
   MouseButton m_button;    // Pressed button
   gfx::Point m_pos;        // Mouse position
+  bool m_sideButtons[2];   // X1/X2 pressed state
   gfx::Point m_wheelDelta; // Wheel axis variation
   bool m_preciseWheel;
   float m_pressure;

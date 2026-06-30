@@ -383,6 +383,8 @@ void Manager::generateSetCursorMessage(Display* display,
                                    mousePos,
                                    pointerType,
                                    m_mouseButton,
+                                   m_sideButtons[0],
+                                   m_sideButtons[1],
                                    modifiers));
   else
     set_mouse_cursor(kArrowCursor);
@@ -464,9 +466,14 @@ void Manager::generateMessagesFromOSEvents()
                                       PointerType::Unknown,
                                       // No button indicates the capture was lost
                                       kButtonNone,
+                                      false,
+                                      false,
                                       kKeyUninitializedModifier);
           msg->setRecipient(capture_widget);
           enqueueMessage(msg);
+
+          m_sideButtons[0] = false;
+          m_sideButtons[1] = false;
 
           setMouse(nullptr);
         }
@@ -646,6 +653,8 @@ void Manager::handleMouseMove(Display* display,
                                  mousePos,
                                  pointerType,
                                  m_mouseButton,
+                                 m_sideButtons[0],
+                                 m_sideButtons[1],
                                  modifiers,
                                  gfx::Point(0, 0),
                                  false,
@@ -659,6 +668,11 @@ void Manager::handleMouseDown(Display* display,
                               PointerType pointerType,
                               const float pressure)
 {
+  if (mouseButton == kButtonX1)
+    m_sideButtons[0] = true;
+  else if (mouseButton == kButtonX2)
+    m_sideButtons[1] = true;
+
   // Returns false in case that we click another Display (os::Window)
   // that is not the current running top-most foreground window.
   if (!handleWindowZOrder())
@@ -671,6 +685,8 @@ void Manager::handleMouseDown(Display* display,
                     mousePos,
                     pointerType,
                     mouseButton,
+                    m_sideButtons[0],
+                    m_sideButtons[1],
                     modifiers,
                     gfx::Point(0, 0),
                     false,
@@ -686,12 +702,19 @@ void Manager::handleMouseUp(Display* display,
                             KeyModifiers modifiers,
                             PointerType pointerType)
 {
+  if (mouseButton == kButtonX1)
+    m_sideButtons[0] = false;
+  else if (mouseButton == kButtonX2)
+    m_sideButtons[1] = false;
+
   enqueueMessage(newMouseMessage(kMouseUpMessage,
                                  display,
                                  (capture_widget ? capture_widget : mouse_widget),
                                  mousePos,
                                  pointerType,
                                  mouseButton,
+                                 m_sideButtons[0],
+                                 m_sideButtons[1],
                                  modifiers));
 }
 
@@ -702,6 +725,11 @@ void Manager::handleMouseDoubleClick(Display* display,
                                      PointerType pointerType,
                                      const float pressure)
 {
+  if (mouseButton == kButtonX1)
+    m_sideButtons[0] = true;
+  else if (mouseButton == kButtonX2)
+    m_sideButtons[1] = true;
+
   Widget* dst = (capture_widget ? capture_widget : mouse_widget);
   if (dst) {
     enqueueMessage(newMouseMessage(kDoubleClickMessage,
@@ -710,6 +738,8 @@ void Manager::handleMouseDoubleClick(Display* display,
                                    mousePos,
                                    pointerType,
                                    mouseButton,
+                                   m_sideButtons[0],
+                                   m_sideButtons[1],
                                    modifiers,
                                    gfx::Point(0, 0),
                                    false,
@@ -730,6 +760,8 @@ void Manager::handleMouseWheel(Display* display,
                                  mousePos,
                                  pointerType,
                                  m_mouseButton,
+                                 m_sideButtons[0],
+                                 m_sideButtons[1],
                                  modifiers,
                                  wheelDelta,
                                  preciseWheel));
@@ -1054,6 +1086,8 @@ void Manager::setMouse(Widget* widget)
                                mousePos,
                                PointerType::Unknown,
                                m_mouseButton,
+                               m_sideButtons[0],
+                               m_sideButtons[1],
                                kKeyUninitializedModifier);
 
     msg->setRecipient(widget);
@@ -2293,6 +2327,8 @@ MouseMessage* Manager::newMouseMessage(MessageType type,
                                        const gfx::Point& mousePos,
                                        PointerType pointerType,
                                        MouseButton button,
+                                       bool isX1Pressed,
+                                       bool isX2Pressed,
                                        KeyModifiers modifiers,
                                        const gfx::Point& wheelDelta,
                                        bool preciseWheel,
@@ -2312,6 +2348,8 @@ MouseMessage* Manager::newMouseMessage(MessageType type,
                                button,
                                modifiers,
                                mousePos,
+                               isX1Pressed,
+                               isX2Pressed,
                                wheelDelta,
                                preciseWheel,
                                pressure);

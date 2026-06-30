@@ -214,6 +214,8 @@ private:
                                        const gfx::Point& mousePos,
                                        PointerType pointerType,
                                        MouseButton button,
+                                       bool isX1Pressed,
+                                       bool isX2Pressed,
                                        KeyModifiers modifiers,
                                        const gfx::Point& wheelDelta = gfx::Point(0, 0),
                                        bool preciseWheel = false,
@@ -232,6 +234,9 @@ private:
 
   // Last pressed mouse button.
   MouseButton m_mouseButton;
+
+  // Pressed side buttons (X1/X2).
+  bool m_sideButtons[2] = { false, false };
 
   // Widget over which the drag is being hovered in a drag & drop operation.
   Widget* m_dragOverWidget = nullptr;

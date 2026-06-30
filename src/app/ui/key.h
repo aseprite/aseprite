@@ -81,6 +81,7 @@ enum class WheelAction {
   BrushAngle,
   ToolSameGroup,
   ToolOtherGroup,
+  ToolCustomToolset,
   Layer,
   InkType,
   InkOpacity,
@@ -93,10 +94,12 @@ enum class WheelAction {
   HsvHue,
   HsvSaturation,
   HsvValue,
+  UndoRedo,
+  PlaybackSpeed,
 
   // Range
   First = Zoom,
-  Last = HsvValue,
+  Last = PlaybackSpeed,
 };
 
 inline KeyAction operator&(KeyAction a, KeyAction b)

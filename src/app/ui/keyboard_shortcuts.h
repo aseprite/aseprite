@@ -79,6 +79,7 @@ public:
   KeyAction getCurrentActionModifiers(KeyContext context);
   WheelAction getWheelActionFromMouseMessage(KeyContext context, const ui::Message* msg);
   Keys getDragActionsFromMessage(const ui::Message* msg);
+  bool hasShortcutWithMouseButton(ui::MouseButton button) const;
   bool hasMouseWheelCustomization() const;
   void clearMouseWheelKeys();
   void addMissingMouseWheelKeys();
