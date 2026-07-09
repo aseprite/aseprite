@@ -246,7 +246,14 @@ void StateWithWheelBehavior::processWheelAction(Editor* editor,
 
       zoom = render::Zoom::fromLinearScale(zoom.linearScale() - int(dz));
 
-      setZoom(editor, zoom, position);
+      Params params;
+      params.set("action", "set");
+      params.set("percentage", std::to_string(zoom.scale() * 100.0).c_str());
+      params.set("focus", Preferences::instance().editor.zoomFromCenterWithWheel() ? "center" : "mouse");
+
+      UIContext::instance()->executeCommand(
+        Commands::instance()->byId(CommandId::Zoom()),
+        params);
       break;
     }
 
@@ -516,7 +523,14 @@ bool StateWithWheelBehavior::onTouchMagnify(Editor* editor, ui::TouchMessage* ms
   zoom = render::Zoom::fromScale(zoom.internalScale() +
                                  zoom.internalScale() * msg->magnification());
 
-  setZoom(editor, zoom, msg->position());
+  Params params;
+  params.set("action", "set");
+  params.set("percentage", std::to_string(zoom.scale() * 100.0).c_str());
+  params.set("focus", Preferences::instance().editor.zoomFromCenterWithWheel() ? "center" : "mouse");
+
+  UIContext::instance()->executeCommand(
+    Commands::instance()->byId(CommandId::Zoom()),
+    params);
   return true;
 }
 
