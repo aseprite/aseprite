@@ -56,7 +56,7 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
         m_alpha = addItem("A");
 
         if (imgtype == IMAGE_INDEXED)
-          m_index = addItem("Index", 4, 1);
+          m_index = addItem(Strings::filters_target_index(), 4, 1);
         break;
 
       case IMAGE_GRAYSCALE:

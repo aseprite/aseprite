@@ -75,10 +75,10 @@ FrameListItem::FrameListItem(doc::Tag* tag)
 
 void fill_area_combobox(const doc::Sprite* sprite, ui::ComboBox* area, const std::string& defArea)
 {
-  int i = area->addItem("Canvas");
+  int i = area->addItem(Strings::area_combo_canvas());
   dynamic_cast<ui::ListItem*>(area->getItem(i))->setValue(kWholeCanvas);
 
-  i = area->addItem("Selection");
+  i = area->addItem(Strings::area_combo_selection());
   dynamic_cast<ui::ListItem*>(area->getItem(i))->setValue(kSelectedCanvas);
   if (defArea == kSelectedCanvas)
     area->setSelectedItemIndex(i);

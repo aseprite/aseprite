@@ -11,6 +11,7 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
+#include "app/i18n/strings.h"
 #include "app/context_access.h"
 #include "app/doc_undo.h"
 #include "app/ini_file.h"
@@ -99,9 +100,9 @@ void UndoCommand::onExecute(Context* context)
   if (auto* statusBar = StatusBar::instance()) {
     std::string msg;
     if (m_type == Undo)
-      msg = "Undid " + undo->nextUndoLabel();
+      msg = Strings::undo_history_undid(undo->nextUndoLabel());
     else
-      msg = "Redid " + undo->nextRedoLabel();
+      msg = Strings::undo_history_redid(undo->nextRedoLabel());
     if (Preferences::instance().undo.showTooltip())
       statusBar->showTip(1000, msg);
     else

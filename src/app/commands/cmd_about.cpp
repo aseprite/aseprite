@@ -11,6 +11,7 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
+#include "app/i18n/strings.h"
 #include "app/ui/main_window.h"
 #include "fmt/format.h"
 #include "ver/info.h"
@@ -43,7 +44,8 @@ bool AboutCommand::onEnabled(Context* context)
 void AboutCommand::onExecute(Context* context)
 {
   gen::About window;
-  window.title()->setText(fmt::format("{} v{}", get_app_name(), get_app_version()));
+  window.title()->setText(
+    fmt::format("{} v{}", Strings::about_app_name(), get_app_version()));
   window.licenses()->Click.connect([&window] {
     window.closeWindow(nullptr);
     App::instance()->mainWindow()->showBrowser("docs/LICENSES.md");

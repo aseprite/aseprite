@@ -11,6 +11,8 @@
 
 #include "app/ui/color_shades.h"
 
+#include "app/i18n/strings.h"
+
 #include "app/app.h"
 #include "app/modules/gfx.h"
 #include "app/modules/palettes.h"
@@ -40,7 +42,7 @@ ColorShades::ColorShades(const Shade& colors, ClickType click)
   , m_dragIndex(-1)
   , m_boxSize(12)
 {
-  setText("No colors");
+  setText(Strings::color_shades_no_colors());
   initTheme();
 }
 

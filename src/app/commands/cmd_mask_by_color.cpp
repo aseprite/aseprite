@@ -318,7 +318,7 @@ void MaskByColorWindow::maskPreview()
 
 #ifdef SHOW_BOUNDARIES_GEN_PERFORMANCE
     double time = chrono.elapsed();
-    m_window->setText("Mask by Color (" + base::convert_to<std::string>(time) + ")");
+    m_window->setText(Strings::mask_by_color_title() + " (" + base::convert_to<std::string>(time) + ")");
 #endif
 
     update_screen_for_document(writer.document());

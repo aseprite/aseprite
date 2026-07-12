@@ -890,7 +890,7 @@ void AppMenus::createNativeMenus()
 
 #if LAF_MACOS // Create default macOS app menus (App ... Window)
   {
-    os::MenuItemInfo about(fmt::format("About {}", get_app_name()));
+    os::MenuItemInfo about(Strings::Translate("mac_menu.about"));
     auto native = get_native_shortcut_for_command(CommandId::About());
     about.shortcut = native.shortcut;
     about.execute = [native] {
@@ -903,7 +903,7 @@ void AppMenus::createNativeMenus()
       item->setEnabled(can_call_global_shortcut(&native));
     };
 
-    os::MenuItemInfo preferences("Preferences...");
+    os::MenuItemInfo preferences(Strings::Translate("mac_menu.preferences"));
     native = get_native_shortcut_for_command(CommandId::Options());
     preferences.shortcut = native.shortcut;
     preferences.execute = [native] {
@@ -916,10 +916,10 @@ void AppMenus::createNativeMenus()
       item->setEnabled(can_call_global_shortcut(&native));
     };
 
-    os::MenuItemInfo hide(fmt::format("Hide {}", get_app_name()), os::MenuItemInfo::Hide);
+    os::MenuItemInfo hide(Strings::Translate("mac_menu.hide"), os::MenuItemInfo::Hide);
     hide.shortcut = os::Shortcut('h', os::kKeyCmdModifier);
 
-    os::MenuItemInfo quit(fmt::format("Quit {}", get_app_name()), os::MenuItemInfo::Quit);
+    os::MenuItemInfo quit(Strings::Translate("mac_menu.quit"), os::MenuItemInfo::Quit);
     quit.shortcut = os::Shortcut('q', os::kKeyCmdModifier);
 
     os::MenuRef appMenu = menus->makeMenu();
@@ -928,9 +928,10 @@ void AppMenus::createNativeMenus()
     appMenu->addItem(menus->makeMenuItem(preferences));
     appMenu->addItem(menus->makeMenuItem(os::MenuItemInfo(os::MenuItemInfo::Separator)));
     appMenu->addItem(menus->makeMenuItem(hide));
-    appMenu->addItem(
-      menus->makeMenuItem(os::MenuItemInfo("Hide Others", os::MenuItemInfo::HideOthers)));
-    appMenu->addItem(menus->makeMenuItem(os::MenuItemInfo("Show All", os::MenuItemInfo::ShowAll)));
+    appMenu->addItem(menus->makeMenuItem(
+      os::MenuItemInfo(Strings::Translate("mac_menu.hide_others"), os::MenuItemInfo::HideOthers)));
+    appMenu->addItem(menus->makeMenuItem(
+      os::MenuItemInfo(Strings::Translate("mac_menu.show_all"), os::MenuItemInfo::ShowAll)));
     appMenu->addItem(menus->makeMenuItem(os::MenuItemInfo(os::MenuItemInfo::Separator)));
     appMenu->addItem(menus->makeMenuItem(quit));
 
@@ -955,14 +956,15 @@ void AppMenus::createNativeMenus()
       ++i;
     }
 
-    os::MenuItemInfo minimize("Minimize", os::MenuItemInfo::Minimize);
+    os::MenuItemInfo minimize(Strings::Translate("mac_menu.minimize"), os::MenuItemInfo::Minimize);
     minimize.shortcut = os::Shortcut('m', os::kKeyCmdModifier);
 
     os::MenuRef windowMenu = menus->makeMenu();
     windowMenu->addItem(menus->makeMenuItem(minimize));
-    windowMenu->addItem(menus->makeMenuItem(os::MenuItemInfo("Zoom", os::MenuItemInfo::Zoom)));
+    windowMenu->addItem(
+      menus->makeMenuItem(os::MenuItemInfo(Strings::Translate("mac_menu.zoom"), os::MenuItemInfo::Zoom)));
 
-    os::MenuItemRef windowItem = menus->makeMenuItem(os::MenuItemInfo("Window"));
+    os::MenuItemRef windowItem = menus->makeMenuItem(os::MenuItemInfo(Strings::Translate("mac_menu.window")));
     windowItem->setSubmenu(windowMenu);
 
     // We use helpIndex+1 because the first index in m_osMenu is the

@@ -1,17 +1,17 @@
 <!-- Aseprite -->
 <!-- Copyright (C) 2018-present  Igara Studio S.A. -->
 <!-- Copyright (C) 2018  David Capello -->
-<gui i18nwarnings="false">
-<window id="about" text="About Aseprite">
+<gui>
+<window id="about" text="@.window_title">
   <vbox>
     <label text="" id="title" />
-    <label text="Animated sprite editor &amp;&amp; pixel art tool" />
-    <link text="Authors &amp;&amp; Credits" url="" id="credits" />
-    <link text="Translators" url="" id="i18n_credits" />
-    <link text="Open Source Projects" url="" id="licenses" />
+    <label text="@.subtitle" />
+    <link text="@.credits" url="" id="credits" />
+    <link text="@.translators" url="" id="i18n_credits" />
+    <link text="@.licenses" url="" id="licenses" />
     <separator horizontal="true" />
     <hbox>
-      <label text="Copyright (C) 2001-2026" />
+      <label text="@.copyright" />
       <link text="Igara Studio S.A." url="https://igara.com/" />
     </hbox>
     <link text="https://www.aseprite.org/" url="https://www.aseprite.org/" />

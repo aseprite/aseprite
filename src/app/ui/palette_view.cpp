@@ -22,6 +22,8 @@
 #include "app/site.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/palette_view.h"
+
+#include "app/i18n/strings.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
@@ -214,7 +216,7 @@ public:
       picks[i] = false;
       if (!picks.picks()) {
         // Cannot remove empty tile
-        StatusBar::instance()->showTip(1000, "Cannot delete the empty tile");
+        StatusBar::instance()->showTip(1000, Strings::palette_view_cannot_delete_empty_tile());
         return;
       }
     }
@@ -261,7 +263,7 @@ public:
       newPicks[0] = false;
     if (!newPicks.picks()) {
       // Cannot move empty tile
-      StatusBar::instance()->showTip(1000, "Cannot move the empty tile");
+      StatusBar::instance()->showTip(1000, Strings::palette_view_cannot_move_empty_tile());
       return;
     }
 

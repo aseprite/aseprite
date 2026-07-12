@@ -101,7 +101,7 @@ void ModifySelectionCommand::onExecute(Context* context)
 
     window.setText(getActionName() + " Selection");
     if (m_modifier == Modifier::Border)
-      window.byLabel()->setText("Width:");
+      window.byLabel()->setText(Strings::modify_selection_width_label());
     else
       window.byLabel()->setText(getActionName() + " By:");
 
