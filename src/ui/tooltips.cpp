@@ -13,20 +13,17 @@
 
 #include "gfx/size.h"
 #include "ui/fit_bounds.h"
-#include "ui/graphics.h"
-#include "ui/intern.h"
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
 #include "ui/scale.h"
-#include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/textbox.h"
 #include "ui/theme.h"
 
 #include <string>
 
-static const int kDefaultTooltipDelayMsecs = 300;
+static constexpr int kDefaultTooltipDelayMsecs = 300;
 
 namespace ui {
 
@@ -82,6 +79,30 @@ std::string TooltipManager::getTooltipFor(Widget* widget)
   return {};
 }
 
+void TooltipManager::closeTooltip()
+{
+  if (m_tipWindow) {
+    m_tipWindow->closeWindow(nullptr);
+    m_tipWindow.reset();
+  }
+
+  if (m_timer)
+    m_timer->stop();
+}
+
+void TooltipManager::showAreaTooltip(Widget* parent,
+                                     const gfx::Rect& bounds,
+                                     const std::string& text,
+                                     int arrowAlign)
+{
+  // This will be called from MouseMove so we need to deduplicate to let the timer run
+  if (m_target.isArea && m_target.bounds == bounds && (m_timer->isRunning() || m_tipWindow))
+    return;
+
+  m_target.isArea = true;
+  showTooltip(parent, bounds, TipInfo(text, arrowAlign));
+}
+
 bool TooltipManager::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
@@ -94,15 +115,8 @@ bool TooltipManager::onProcessMessage(Message* msg)
 
         const auto it = m_tips.find(widget);
         if (it != m_tips.end()) {
-          m_target.widget = it->first;
-          m_target.tipInfo = it->second;
-
-          if (m_timer == nullptr) {
-            m_timer = std::make_unique<Timer>(m_delay, this);
-            m_timer->Tick.connect(&TooltipManager::onTick, this);
-          }
-
-          m_timer->start();
+          m_target.isArea = false;
+          showTooltip(it->first, it->first->bounds(), it->second);
         }
       }
       return false;
@@ -110,16 +124,18 @@ bool TooltipManager::onProcessMessage(Message* msg)
 
     case kKeyDownMessage:
     case kMouseDownMessage:
-    case kMouseLeaveMessage:
-      if (m_tipWindow) {
-        m_tipWindow->closeWindow(nullptr);
-        m_tipWindow.reset();
+    case kMouseLeaveMessage: closeTooltip(); return false;
+    case kMouseMoveMessage:  {
+      if (m_tipWindow && m_target.isArea) {
+        const MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+        if (!m_target.bounds.contains(mouseMsg->position())) {
+          closeTooltip();
+          Manager::getDefault()->removeMessageFilter(kMouseMoveMessage, this);
+          return false;
+        }
       }
-
-      if (m_timer)
-        m_timer->stop();
-
-      return false;
+      break;
+    }
   }
 
   return Widget::onProcessMessage(msg);
@@ -138,7 +154,7 @@ void TooltipManager::onTick()
     m_tipWindow = std::make_unique<TipWindow>(m_target.tipInfo.text);
 
     int arrowAlign = m_target.tipInfo.arrowAlign;
-    gfx::Rect target = m_target.widget->bounds();
+    gfx::Rect target = m_target.bounds;
     if (!arrowAlign)
       target.setOrigin(m_target.widget->mousePosInDisplay() + 12 * guiscale());
 
@@ -153,8 +169,26 @@ void TooltipManager::onTick()
       m_tipWindow.reset();
       m_timer->stop();
     }
+
+    if (m_target.isArea) {
+      Manager::getDefault()->addMessageFilter(kMouseMoveMessage, this);
+    }
   }
   m_timer->stop();
+}
+
+void TooltipManager::showTooltip(Widget* widget, const gfx::Rect& bounds, const TipInfo& info)
+{
+  m_target.widget = widget;
+  m_target.bounds = bounds;
+  m_target.tipInfo = info;
+
+  if (m_timer == nullptr) {
+    m_timer = std::make_unique<Timer>(m_delay, this);
+    m_timer->Tick.connect(&TooltipManager::onTick, this);
+  }
+
+  m_timer->start();
 }
 
 // TipWindow

@@ -12,12 +12,13 @@
 #include "app/commands/command.h"
 #include "app/extensions.h"
 #include "app/modules/gui.h"
+#include "app/resource_finder.h"
+#include "app/ui/directory_tree.h"
 #include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
-#include "base/fs.h"
+#include "app/ui/tree.h"
 #include "fmt/format.h"
 #include "ui/menu.h"
-#include "ver/info.h"
 
 #include "zoo.xml.h"
 
@@ -49,6 +50,11 @@ public:
     });
 
     themeSelector()->Click.connect(&ZooWindow::showThemeMenu, this);
+
+    ResourceFinder rf;
+    rf.includeUserDir("");
+    auto* tree = new DirectoryTree(rf.defaultFilename());
+    treeView()->attachToView(tree);
 
     reset()->Click.connect([this] {
       m_reset = true;

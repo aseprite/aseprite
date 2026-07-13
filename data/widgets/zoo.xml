@@ -16,7 +16,7 @@
       </hbox>
 
       <boxfiller height="4"></boxfiller>
-        <grid id="main_container" childspacing="6" columns="3" expansive="true">
+        <grid id="main_container" childspacing="6" columns="4" expansive="true">
           <!-- Buttons -->
           <vbox expansive="true" width="100">
             <separator text="Buttons" horizontal="true" />
@@ -51,23 +51,6 @@
             <radio text="RadioBox" group="2" selected="true" />
           </vbox>
 
-          <!-- Entries -->
-          <vbox expansive="true" width="100">
-            <separator text="Text Entry" horizontal="true" />
-            <hbox>
-              <label text="for" for="entry" />
-              <entry id="entry" maxsize="255" text=""  expansive="true" />
-            </hbox>
-            <entry id="entry_suf" maxsize="255" text="with" suffix="suffix" />
-            <expr id="entry_expr" maxsize="10" placeholder="expr" />
-            <expr id="entry_expr_suf" maxsize="10" suffix="px" decimals="2" text="5" placeholder="expr with sfx" />
-            <view height="30">
-              <textedit id="text_edit" text="" placeholder="TextEdit" />
-            </view>
-            <filename id="filename" />
-            <search id="search" />
-          </vbox>
-
           <!-- ComboBoxes -->
           <vbox expansive="true">
             <separator text="ComboBoxes" horizontal="true" />
@@ -82,6 +65,15 @@
               <listitem text="Editable Combobox" />
             </combobox>
             <boxfiller />
+          </vbox>
+
+          <!-- Images -->
+          <vbox expansive="true">
+            <separator text="Images" horizontal="true" />
+            <hbox>
+              <image id="image_icon" icon="warning_box" />
+              <image id="image_file" file="icons/ext16.png" />
+            </hbox>
           </vbox>
 
           <!-- Separators -->
@@ -118,17 +110,32 @@
             <link text="Link Label" url="https://www.aseprite.org/" />
           </vbox>
 
-          <!-- Images -->
-          <vbox expansive="true">
-            <separator text="Images" horizontal="true" />
+          <!-- Entries -->
+          <vbox expansive="true" width="100">
+            <separator text="Text Entry" horizontal="true" />
             <hbox>
-              <image id="image_icon" icon="warning_box" />
-              <image id="image_file" file="icons/ext16.png" />
+              <label text="for" for="entry" />
+              <entry id="entry" maxsize="255" text=""  expansive="true" />
             </hbox>
+            <entry id="entry_suf" maxsize="255" text="with" suffix="suffix" />
+            <expr id="entry_expr" maxsize="10" placeholder="expr" />
+            <expr id="entry_expr_suf" maxsize="10" suffix="px" decimals="2" text="5" placeholder="expr with sfx" />
+            <view height="30">
+              <textedit id="text_edit" text="" placeholder="TextEdit" />
+            </view>
+            <filename id="filename" />
+            <search id="search" />
+          </vbox>
+
+          <!-- Tree -->
+          <vbox expansive="true" cell_hspan="4">
+            <separator text="Tree" horizontal="true" />
+            <view id="treeView" height="145" />
+            <boxfiller />
           </vbox>
 
           <!-- Font -->
-          <vbox expansive="true" cell_hspan="3">
+          <vbox expansive="true" cell_hspan="4">
             <separator text="Fonts" horizontal="true" />
             <font id="font_picker" />
             <boxfiller />

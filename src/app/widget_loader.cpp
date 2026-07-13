@@ -29,6 +29,7 @@
 #include "app/ui/mini_help_button.h"
 #include "app/ui/search_entry.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui/tree.h"
 #include "app/widget_not_found.h"
 #include "app/xml_document.h"
 #include "app/xml_exception.h"
@@ -246,6 +247,9 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
       ((TextEdit*)widget)->setPlaceholder(m_xmlTranslator(elem, "placeholder"));
     if (readonly)
       ((TextEdit*)widget)->setReadOnly(true);
+  }
+  else if (elem_name == "tree") {
+    widget = new Tree();
   }
   else if (elem_name == "grid") {
     const char* columns = elem->Attribute("columns");

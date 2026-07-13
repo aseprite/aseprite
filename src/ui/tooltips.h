@@ -32,21 +32,30 @@ public:
   void removeTooltipFor(Widget* widget);
   void setDelay(int delay);
   std::string getTooltipFor(Widget* widget);
+  void closeTooltip();
+
+  // Shows an ephemeral tooltip that's not stored within our tooltip list, useful for widgets with
+  // complex inner parts that aren't represented by other individual Widgets.
+  void showAreaTooltip(Widget* parent,
+                       const gfx::Rect& bounds,
+                       const std::string& text,
+                       int arrowAlign = 0);
 
 protected:
   bool onProcessMessage(Message* msg) override;
   void onInitTheme(InitThemeEvent& ev) override;
 
 private:
-  void onTick();
-
   struct TipInfo {
     std::string text;
-    int arrowAlign;
+    int arrowAlign = 0;
 
-    TipInfo() {}
+    TipInfo() = default;
     TipInfo(const std::string& text, int arrowAlign) : text(text), arrowAlign(arrowAlign) {}
   };
+
+  void onTick();
+  void showTooltip(Widget* widget, const gfx::Rect& bounds, const TipInfo& info);
 
   typedef std::map<Widget*, TipInfo> Tips;
 
@@ -56,6 +65,9 @@ private:
   std::unique_ptr<Timer> m_timer;         // Timer to control the tooltip delay.
   struct {
     Widget* widget;
+    gfx::Rect bounds;
+    gfx::Point origin;
+    bool isArea = false;
     TipInfo tipInfo;
   } m_target;
 };
