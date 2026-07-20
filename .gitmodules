@@ -80,7 +80,10 @@
 	url = https://github.com/aseprite/TinyEXIF.git
 [submodule "third_party/json"]
 	path = third_party/json
-	url = https://github.com/aseprite/json
+	url = https://github.com/aseprite/json.git
 [submodule "third_party/cppdap"]
 	path = third_party/cppdap
-	url = https://github.com/aseprite/cppdap
+	url = https://github.com/aseprite/cppdap.git
+[submodule "third_party/mbedtls"]
+	path = third_party/mbedtls
+	url = https://github.com/aseprite/mbedtls.git

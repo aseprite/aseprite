@@ -109,21 +109,6 @@ else()
   set(REQUIRE_CURL OFF)
 endif()
 
-# SSL/TLS support
-if(REQUIRE_CURL AND NOT USE_SHARED_CURL)
-  # Disable OpenSSL (use native libraries only)
-  set(CMAKE_USE_OPENSSL OFF CACHE BOOL "Use OpenSSL code. Experimental")
-  set(CMAKE_USE_LIBSSH2 OFF CACHE BOOL "Use libSSH2")
-
-  if(WIN32)
-    set(CMAKE_USE_SCHANNEL ON CACHE BOOL "enable Windows native SSL/TLS")
-  elseif(APPLE)
-    set(CMAKE_USE_SECTRANSP ON CACHE BOOL "enable Apple OS native SSL/TLS")
-  else()
-    # TODO Linux?
-  endif()
-endif()
-
 # Default laf backend depends in the SKIA_DIR is specified (similar to
 # laf/CMakeLists.txt logic)
 if(NOT LAF_BACKEND)

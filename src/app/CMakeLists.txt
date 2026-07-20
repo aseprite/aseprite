@@ -831,6 +831,7 @@ endif()
 
 # Report crashes using Sentry
 if(ENABLE_SENTRY)
+  set(SENTRY_ENABLE_INSTALL OFF CACHE BOOL "")
   target_compile_definitions(app-lib PUBLIC
     -DENABLE_SENTRY
     -DSENTRY_BUILD_STATIC=1

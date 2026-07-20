@@ -23,14 +23,19 @@ jobs:
       with:
         submodules: 'recursive'
     - name: Install Dependencies
-      if: runner.os == 'Linux'
       shell: bash
       run: |
-        sudo apt-get update -qq
-        sudo apt-get install -y \
-          libpixman-1-dev libfreetype6-dev libharfbuzz-dev zlib1g-dev \
-          libx11-dev libxcursor-dev libxi-dev libxrandr-dev libgl1-mesa-dev \
-          libfontconfig1-dev
+        if [[ "${{ runner.os }}" == "Linux" ]] ; then
+          sudo apt-get update -qq
+          sudo apt-get install -y \
+            libpixman-1-dev libfreetype6-dev libharfbuzz-dev zlib1g-dev \
+            libx11-dev libxcursor-dev libxi-dev libxrandr-dev libgl1-mesa-dev \
+            libfontconfig1-dev python3-jinja2 python3-jsonschema
+        elif [[ "${{ runner.os }}" == "macOS" ]] ; then
+          python3 -m venv ./venv
+          source ./venv/bin/activate
+          python3 -m pip install -r third_party/mbedtls/scripts/basic.requirements.txt
+        fi
     - name: Install Skia
       if: ${{ matrix.ui == 'gui' }}
       shell: bash
@@ -77,6 +82,7 @@ jobs:
 
         if [[ "${{ runner.os }}" == "macOS" ]] ; then
           export skia_arch=arm64
+          source ./venv/bin/activate
         else
           export skia_arch=x64
         fi
