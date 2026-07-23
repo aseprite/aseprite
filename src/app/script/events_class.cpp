@@ -365,6 +365,8 @@ public:
   enum : EventType {
     Unknown = -1,
     Change,
+    BeforeSave,
+    AfterSave,
     FilenameChange,
     AfterAddTile,
 #if ENABLE_REMAP_TILESET_EVENT
@@ -397,6 +399,10 @@ public:
   {
     if (std::strcmp(eventName, "change") == 0)
       return Change;
+    else if (std::strcmp(eventName, "beforesave") == 0)
+      return BeforeSave;
+    else if (std::strcmp(eventName, "save") == 0)
+      return AfterSave;
     else if (std::strcmp(eventName, "filenamechange") == 0)
       return FilenameChange;
     else if (std::strcmp(eventName, "afteraddtile") == 0)
@@ -427,6 +433,10 @@ public:
       g_spriteEvents.erase(it);
     }
   }
+
+  void onBeforeSave(DocEvent& ev) override { call(BeforeSave); }
+
+  void onAfterSave(DocEvent& ev) override { call(AfterSave); }
 
   void onFileNameChanged(Doc* doc) override { call(FilenameChange); }
 

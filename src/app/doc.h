@@ -128,6 +128,8 @@ public:
   // Notifications
 
   void notifyGeneralUpdate();
+  void notifyBeforeSave();
+  void notifyAfterSave();
   void notifyColorSpaceChanged();
   void notifyPaletteChanged();
   void notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region, frame_t frame);
