@@ -28,6 +28,9 @@ public:
   // anything in the document could be changed.
   virtual void onGeneralUpdate(DocEvent& ev) {}
 
+  virtual void onBeforeSave(DocEvent& ev) {}
+  virtual void onAfterSave(DocEvent& ev) {}
+
   virtual void onColorSpaceChanged(DocEvent& ev) {}
   virtual void onPixelFormatChanged(DocEvent& ev) {}
   virtual void onPaletteChanged(DocEvent& ev) {}
