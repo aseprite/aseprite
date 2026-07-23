@@ -1073,7 +1073,9 @@ public:
 
   bool encode()
   {
-    writeHeader();
+    gifframe_t nframes = totalFrames();
+    // #4746: Use GIF 89a when there is more than one frame in the GIF.
+    writeHeader(nframes > 1);
     if (m_loop >= 0)
       writeLoopExtension();
 
@@ -1092,7 +1094,6 @@ public:
 
     // In this code "gifFrame" will be the GIF frame, and "frame" will
     // be the doc::Sprite frame.
-    gifframe_t nframes = totalFrames();
     for (gifframe_t gifFrame = 0; gifFrame < nframes; ++gifFrame) {
       ASSERT(frame_it != frame_end);
       if (m_fop->isStop())
@@ -1270,8 +1271,9 @@ private:
 
   doc::frame_t totalFrames() const { return m_fop->roi().frames(); }
 
-  void writeHeader()
+  void writeHeader(bool isGif89)
   {
+    EGifSetGifVersion(m_gifFile, isGif89);
     if (EGifPutScreenDesc(m_gifFile,
                           m_spriteBounds.w,
                           m_spriteBounds.h,
