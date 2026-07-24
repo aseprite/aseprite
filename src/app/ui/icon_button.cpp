@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2023  Igara Studio S.A.
+// Copyright (C) 2022-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -44,7 +44,10 @@ void IconButton::onInitTheme(InitThemeEvent& ev)
 
 void IconButton::onSizeHint(SizeHintEvent& ev)
 {
-  os::Surface* icon = m_part->bitmap(0);
+  os::Surface* icon = (m_part ? m_part->bitmap(0) : nullptr);
+  if (!icon)
+    return;
+
   ev.setSizeHint(gfx::Size(icon->width(), icon->height()) + 4 * guiscale());
 }
 

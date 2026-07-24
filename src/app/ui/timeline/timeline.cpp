@@ -421,6 +421,7 @@ void Timeline::detachDocument()
   }
 
   m_adapter.reset();
+  updateByMousePos(nullptr, mousePosInClientBounds());
   invalidate();
 }
 
@@ -2139,6 +2140,7 @@ void Timeline::getDrawableFrames(col_t* firstFrame, col_t* lastFrame)
 bool Timeline::getTagFrames(const doc::Tag* tag, col_t* fromFrame, col_t* toFrame) const
 {
   ASSERT(tag);
+  ASSERT(m_adapter);
 
   *fromFrame = m_adapter->toColFrame(fr_t(tag->fromFrame()));
   *toFrame = m_adapter->toColFrame(fr_t(tag->toFrame()));
@@ -3366,6 +3368,12 @@ view::col_t Timeline::getFrameInXPos(const int x) const
 
 void Timeline::invalidateHit(const Hit& hit)
 {
+  // If there is no document or adapter it means that the document was
+  // changed and we're trying to invalidate an invalid "hit" area from
+  // the timeline.
+  if (!m_document || !m_adapter)
+    return;
+
   if (hit.band >= 0) {
     Hit hit2 = hit;
     hit2.part = PART_TAG_BAND;
@@ -3522,7 +3530,7 @@ void Timeline::updateByMousePos(ui::Message* msg, const gfx::Point& mousePos)
 Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
 {
   Hit hit(PART_NOTHING);
-  if (!m_document)
+  if (!m_document || !m_adapter)
     return hit;
 
   if (m_clk.part == PART_SEPARATOR) {
@@ -3767,8 +3775,10 @@ void Timeline::setHot(const Hit& hit)
     if (isMovingCel()) {
       invalidate();
     }
-    // Invalidate the old and new 'hot' thing.
-    else {
+    // Invalidate the old and new 'hot' thing. The old hit region with
+    // the mouse (m_hot) is valid only if there is document and
+    // adapter in the timeline.
+    else if (m_document && m_adapter) {
       invalidateHit(m_hot);
       invalidateHit(hit);
     }
