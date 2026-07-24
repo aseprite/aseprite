@@ -188,7 +188,7 @@ PreviewEditorWindow::PreviewEditorWindow()
   setAutoRemap(false);
   setWantFocus(false);
 
-  m_isEnabled = get_config_bool("MiniEditor", "Enabled", true);
+  m_isEnabled = app::Preferences::instance().miniEditor.enabled();
 
   m_centerButton->Click.connect([this] { onCenterClicked(); });
   m_playButton->Click.connect([this] { onPlayClicked(); });
@@ -202,12 +202,15 @@ PreviewEditorWindow::PreviewEditorWindow()
 
 PreviewEditorWindow::~PreviewEditorWindow()
 {
-  set_config_bool("MiniEditor", "Enabled", m_isEnabled);
+  app::Preferences::instance().miniEditor.enabled(m_isEnabled);
+  save_window_pos(this, "MiniEditor");
 }
 
 void PreviewEditorWindow::setPreviewEnabled(bool state)
 {
   m_isEnabled = state;
+
+  app::Preferences::instance().miniEditor.enabled(state);
 
   updateUsingEditor(Editor::activeEditor());
 }
@@ -268,6 +271,9 @@ void PreviewEditorWindow::onClose(ui::CloseEvent& ev)
 
     // Redraw the tool bar because it shows the mini editor enabled
     // state. TODO abstract this event
+
+    app::Preferences::instance().miniEditor.enabled(false);
+
     ToolBar::instance()->invalidate();
 
     destroyDocView();
