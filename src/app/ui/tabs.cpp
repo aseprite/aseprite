@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -645,7 +645,8 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box, Tab* tab, int dy, bool ho
                                gfx::Rect(box.x, box.y + dy, box.x - dx, box.h),
                                info);
         dx += theme->dimensions.tabsIconWidth();
-      } break;
+        break;
+      }
     }
 
     // Tab with text + clipping the close button
