@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2024  Igara Studio S.A.
+// Copyright (C) 2021-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -201,7 +201,8 @@ private:
           ctx->add_observer(this);
 
         ++m_addedObserver;
-      } break;
+        break;
+      }
       case FgColorChange:
         m_fgConn = pref.colorBar.fgColor.AfterChange.connect([this] { onFgColorChange(); });
         break;
