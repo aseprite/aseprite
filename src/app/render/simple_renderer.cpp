@@ -52,6 +52,11 @@ void SimpleRenderer::setProjection(const render::Projection& projection)
   m_render.setProjection(projection);
 }
 
+void SimpleRenderer::setSampling(const os::Sampling& sampling)
+{
+  // Do nothing, the sampling is done drawing the final render into the editor surface
+}
+
 void SimpleRenderer::setSelectedLayer(const doc::Layer* layer)
 {
   m_render.setSelectedLayer(layer);

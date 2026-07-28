@@ -8,6 +8,7 @@
 #define APP_RENDER_RENDERER_H_INCLUDED
 #pragma once
 
+#include "os/sampling.h"
 #include "render/render.h"
 
 namespace doc {
@@ -58,12 +59,13 @@ public:
   // ----------------------------------------------------------------------
   // Basic configuration
 
-  virtual void setRefLayersVisiblity(const bool visible) = 0;
-  virtual void setNonactiveLayersOpacity(const int opacity) = 0;
-  virtual void setNewBlendMethod(const bool newBlend) = 0;
+  virtual void setRefLayersVisiblity(bool visible) = 0;
+  virtual void setNonactiveLayersOpacity(int opacity) = 0;
+  virtual void setNewBlendMethod(bool newBlend) = 0;
   virtual void setComposeGroups(bool composeGroups) = 0;
   virtual void setBgOptions(const render::BgOptions& bg) = 0;
   virtual void setProjection(const render::Projection& projection) = 0;
+  virtual void setSampling(const os::Sampling& sampling) = 0;
 
   // ----------------------------------------------------------------------
   // Advance configuration (for preview/brushes purposes)

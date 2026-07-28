@@ -48,6 +48,8 @@ public:
   EditorRender();
   ~EditorRender();
 
+  void updateFromPref();
+
   Type type() const;
   void setType(const Type type);
 
@@ -59,6 +61,7 @@ public:
   void setComposeGroups(bool composeGroups);
 
   void setProjection(const render::Projection& projection);
+  void setSampling(const os::Sampling& sampling);
 
   void setupBackground(Doc* doc, doc::PixelFormat pixelFormat);
   void setTransparentBackground();

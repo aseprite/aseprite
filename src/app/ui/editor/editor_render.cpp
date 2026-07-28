@@ -21,20 +21,26 @@ namespace app {
 static doc::ImageBufferPtr g_renderBuffer;
 
 EditorRender::EditorRender()
-  // TODO create a switch in the preferences
-  : m_renderer(std::make_unique<SimpleRenderer>())
 {
-  m_renderer->setNewBlendMethod(Preferences::instance().experimental.newBlend());
-  m_renderer->setComposeGroups(Preferences::instance().experimental.composeGroups());
+  updateFromPref();
 }
 
 EditorRender::~EditorRender()
 {
 }
 
+void EditorRender::updateFromPref()
+{
+  switch (Preferences::instance().render.renderEngine()) {
+    case gen::RenderEngine::RASTER_V1:
+    case gen::RenderEngine::RASTER_V2: setType(Type::kSimpleRenderer); break;
+    case gen::RenderEngine::SHADER:    setType(Type::kShaderRenderer); break;
+  }
+}
+
 EditorRender::Type EditorRender::type() const
 {
-#if SK_ENABLE_SKSL && ENABLE_DEVMODE
+#if SK_ENABLE_SKSL
   if (dynamic_cast<ShaderRenderer*>(m_renderer.get()))
     return Type::kShaderRenderer;
 #endif
@@ -43,7 +49,7 @@ EditorRender::Type EditorRender::type() const
 
 void EditorRender::setType(const Type type)
 {
-#if SK_ENABLE_SKSL && ENABLE_DEVMODE
+#if SK_ENABLE_SKSL
   if (type == Type::kShaderRenderer) {
     m_renderer = std::make_unique<ShaderRenderer>();
   }
@@ -54,6 +60,7 @@ void EditorRender::setType(const Type type)
   }
 
   m_renderer->setNewBlendMethod(Preferences::instance().experimental.newBlend());
+  m_renderer->setComposeGroups(Preferences::instance().experimental.composeGroups());
 }
 
 void EditorRender::setRefLayersVisiblity(const bool visible)
@@ -79,6 +86,11 @@ void EditorRender::setComposeGroups(const bool composeGroups)
 void EditorRender::setProjection(const render::Projection& projection)
 {
   m_renderer->setProjection(projection);
+}
+
+void EditorRender::setSampling(const os::Sampling& sampling)
+{
+  m_renderer->setSampling(sampling);
 }
 
 void EditorRender::setupBackground(Doc* doc, doc::PixelFormat pixelFormat)

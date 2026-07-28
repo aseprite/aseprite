@@ -244,21 +244,6 @@ void Editor::destroyEditorSharedInternals()
     m_renderEngine.reset();
 }
 
-bool Editor::isUsingNewRenderEngine() const
-{
-  ASSERT(m_sprite);
-  return
-    // TODO add an option to the ShaderRenderer to work as the "old"
-    //      engine (screen pixel by screen pixel) or as the "new"
-    //      engine (sprite pixel by sprite pixel)
-    (m_renderEngine->type() == EditorRender::Type::kShaderRenderer) ||
-    (Preferences::instance().experimental.newRenderEngine()
-     // Reference layers + zoom > 100% need the old render engine for
-     // sub-pixel rendering.
-     && (!m_sprite->hasVisibleReferenceLayers() ||
-         (m_proj.scaleX() <= 1.0 && m_proj.scaleY() <= 1.0)));
-}
-
 // static
 WidgetType Editor::Type()
 {
@@ -356,13 +341,11 @@ void Editor::getInvalidDecoratoredRegion(gfx::Region& region)
   if ((m_flags & kShowDecorators) && m_decorator)
     m_decorator->getInvalidDecoratoredRegion(this, region);
 
-#if ENABLE_DEVMODE
   // TODO put this in other widget
-  if (Preferences::instance().perf.showRenderTime()) {
+  if (App::instance()->isDevMode() && Preferences::instance().perf.showRenderTime()) {
     if (!m_perfInfoBounds.isEmpty())
       region |= gfx::Region(m_perfInfoBounds);
   }
-#endif // ENABLE_DEVMODE
 }
 
 void Editor::setLayer(const Layer* layer)
@@ -654,11 +637,95 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
   if (expose.isEmpty())
     return;
 
-  // rc2 is the rectangle used to create a temporal rendered image of the sprite
+  // Generate a "expose sprite pixels" notification. This is used by
+  // tool managers that need to validate this region (copy pixels from
+  // the original cel) before it can be used by the RenderEngine.
+  m_document->notifyExposeSpritePixels(m_sprite, gfx::Region(expose));
+
+  const auto& renderProperties = m_renderEngine->properties();
+
+  // Configure render engine options
   const auto& pref = Preferences::instance();
-  const bool newEngine = isUsingNewRenderEngine();
+  m_renderEngine->setComposeGroups(pref.experimental.composeGroups());
+  m_renderEngine->setNewBlendMethod(pref.experimental.newBlend());
+  m_renderEngine->setRefLayersVisiblity(true);
+  m_renderEngine->setSelectedLayer(m_layer);
+  m_renderEngine->setNonactiveLayersOpacity(otherLayersOpacity());
+  m_renderEngine->disableOnionskin();
+
+  if ((m_flags & kShowOnionskin) == kShowOnionskin) {
+    if (m_docPref.onionskin.active()) {
+      OnionskinOptions opts(
+        (m_docPref.onionskin.type() == app::gen::OnionskinType::MERGE ?
+           render::OnionskinType::MERGE :
+           (m_docPref.onionskin.type() == app::gen::OnionskinType::RED_BLUE_TINT ?
+              render::OnionskinType::RED_BLUE_TINT :
+              render::OnionskinType::NONE)));
+
+      opts.position(m_docPref.onionskin.position());
+      opts.prevFrames(m_docPref.onionskin.prevFrames());
+      opts.nextFrames(m_docPref.onionskin.nextFrames());
+      opts.opacityBase(m_docPref.onionskin.opacityBase());
+      opts.opacityStep(m_docPref.onionskin.opacityStep());
+      opts.layer(m_docPref.onionskin.currentLayer() ? m_layer : nullptr);
+
+      Tag* tag = nullptr;
+      if (m_docPref.onionskin.loopTag())
+        tag = m_sprite->tags().innerTag(m_frame);
+      opts.loopTag(tag);
+
+      m_renderEngine->setOnionskin(opts);
+    }
+  }
+
+  ExtraCelRef extraCel = m_document->extraCel();
+  if (extraCel && extraCel->type() != render::ExtraType::NONE &&
+      // We render the extra cel if:
+      ( // 1) it doesn't contains the brush preview (e.g. the user
+        // is transforming the selection),
+        extraCel->purpose() != ExtraCel::Purpose::BrushPreview
+        // 2) we are drawing the brush preview in a regular editor,
+        || !m_docView->isPreview()
+        // 3) we are drawing the brush preview in a preview editor
+        // and preferences (brushPreviewInPreview) says that we
+        // should do that.
+        || pref.cursor.brushPreviewInPreview())) {
+    m_renderEngine->setExtraImage(extraCel->type(),
+                                  extraCel->cel(),
+                                  extraCel->image(),
+                                  extraCel->blendMode(),
+                                  m_layer,
+                                  m_frame);
+  }
+
+  // Build map for per-cel extra rendering (multi-cel transformations)
+  // We use cel->data() as key to support linked cels.
+  render::ExtraCelInfoMap extraCelInfoMap;
+  if (extraCel && !extraCel->celMap().empty()) {
+    for (const auto& [cel, data] : extraCel->celMap()) {
+      if (data.transformedImage) {
+        int t;
+        extraCelInfoMap[cel->data()] = { data.transformedBounds,
+                                         data.transformedImage.get(),
+                                         MUL_UN8(cel->opacity(), cel->layer()->opacity(), t),
+                                         cel->layer()->blendMode() };
+      }
+    }
+    if (!extraCelInfoMap.empty())
+      m_renderEngine->setExtraCelInfoMap(&extraCelInfoMap);
+  }
+
+  // rc2 is the rectangle used to create a temporal rendered image of the sprite
+  const auto renderEngine = Preferences::instance().render.renderEngine();
+  const bool renderWithoutProj = (renderEngine == gen::RenderEngine::SHADER) ||
+                                 (renderEngine == gen::RenderEngine::RASTER_V2
+                                  // Reference layers + zoom > 100% need the old render engine for
+                                  // sub-pixel rendering.
+                                  && (!m_sprite->hasVisibleReferenceLayers() ||
+                                      (m_proj.scaleX() <= 1.0 && m_proj.scaleY() <= 1.0)));
+
   gfx::Rect rc2;
-  if (newEngine) {
+  if (renderWithoutProj) {
     rc2 = expose; // New engine, exposed rectangle (without zoom)
     dest.x = dx + m_padding.x + m_proj.applyX(rc2.x);
     dest.y = dy + m_padding.y + m_proj.applyY(rc2.y);
@@ -671,166 +738,228 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
     dest.h = rc.h;
   }
 
-  // Convert the render to a os::Surface
-  static os::SurfaceRef rendered = nullptr; // TODO move this to other centralized place
-  const auto& renderProperties = m_renderEngine->properties();
-  try {
-    // Generate a "expose sprite pixels" notification. This is used by
-    // tool managers that need to validate this region (copy pixels from
-    // the original cel) before it can be used by the RenderEngine.
-    m_document->notifyExposeSpritePixels(m_sprite, gfx::Region(expose));
+  if (pref.render.tileBasedRenderEngine()) {
+    IntersectClip clip(g, dest);
+    if (clip) {
+      os::Paint paint;
 
-    m_renderEngine->setComposeGroups(pref.experimental.composeGroups());
-    m_renderEngine->setNewBlendMethod(pref.experimental.newBlend());
-    m_renderEngine->setRefLayersVisiblity(true);
-    m_renderEngine->setSelectedLayer(m_layer);
-    m_renderEngine->setNonactiveLayersOpacity(otherLayersOpacity());
-    m_renderEngine->setupBackground(m_document, IMAGE_RGB);
-    m_renderEngine->disableOnionskin();
-
-    if ((m_flags & kShowOnionskin) == kShowOnionskin) {
-      if (m_docPref.onionskin.active()) {
-        OnionskinOptions opts(
-          (m_docPref.onionskin.type() == app::gen::OnionskinType::MERGE ?
-             render::OnionskinType::MERGE :
-             (m_docPref.onionskin.type() == app::gen::OnionskinType::RED_BLUE_TINT ?
-                render::OnionskinType::RED_BLUE_TINT :
-                render::OnionskinType::NONE)));
-
-        opts.position(m_docPref.onionskin.position());
-        opts.prevFrames(m_docPref.onionskin.prevFrames());
-        opts.nextFrames(m_docPref.onionskin.nextFrames());
-        opts.opacityBase(m_docPref.onionskin.opacityBase());
-        opts.opacityStep(m_docPref.onionskin.opacityStep());
-        opts.layer(m_docPref.onionskin.currentLayer() ? m_layer : nullptr);
-
-        Tag* tag = nullptr;
-        if (m_docPref.onionskin.loopTag())
-          tag = m_sprite->tags().innerTag(m_frame);
-        opts.loopTag(tag);
-
-        m_renderEngine->setOnionskin(opts);
+      // Render background
+      {
+        EditorRender bgRenderer;
+        bgRenderer.setType(EditorRender::kShaderRenderer);
+        bgRenderer.setProjection(m_proj);
+        bgRenderer.setupBackground(m_document, IMAGE_RGB);
+        bgRenderer.renderCheckeredBackground(g->getInternalSurface(),
+                                             m_sprite,
+                                             gfx::Clip(dest.x + g->getInternalDeltaX(),
+                                                       dest.y + g->getInternalDeltaY(),
+                                                       m_proj.apply(expose)));
       }
-    }
+      m_renderEngine->setTransparentBackground();
 
-    ExtraCelRef extraCel = m_document->extraCel();
-    if (extraCel && extraCel->type() != render::ExtraType::NONE &&
-        // We render the extra cel if:
-        ( // 1) it doesn't contains the brush preview (e.g. the user
-          // is transforming the selection),
-          extraCel->purpose() != ExtraCel::Purpose::BrushPreview
-          // 2) we are drawing the brush preview in a regular editor,
-          || !m_docView->isPreview()
-          // 3) we are drawing the brush preview in a preview editor
-          // and preferences (brushPreviewInPreview) says that we
-          // should do that.
-          || pref.cursor.brushPreviewInPreview())) {
-      m_renderEngine->setExtraImage(extraCel->type(),
-                                    extraCel->cel(),
-                                    extraCel->image(),
-                                    extraCel->blendMode(),
-                                    m_layer,
-                                    m_frame);
-    }
-
-    // Build map for per-cel extra rendering (multi-cel transformations)
-    // We use cel->data() as key to support linked cels.
-    render::ExtraCelInfoMap extraCelInfoMap;
-    if (extraCel && !extraCel->celMap().empty()) {
-      for (const auto& [cel, data] : extraCel->celMap()) {
-        if (data.transformedImage) {
-          int t;
-          extraCelInfoMap[cel->data()] = { data.transformedBounds,
-                                           data.transformedImage.get(),
-                                           MUL_UN8(cel->opacity(), cel->layer()->opacity(), t),
-                                           cel->layer()->blendMode() };
+      struct CacheTile {
+        gfx::Rect src, dst;
+        int tileNum;
+        os::SurfaceRef surface;
+        CacheTile(const gfx::Rect& src, const gfx::Rect& dst, const int tileNum)
+          : src(src)
+          , dst(dst)
+          , tileNum(tileNum)
+        {
         }
-      }
-      if (!extraCelInfoMap.empty())
-        m_renderEngine->setExtraCelInfoMap(&extraCelInfoMap);
-    }
+      };
+      std::vector<CacheTile> cachedTiles;
 
-    // Render background first (e.g. new ShaderRenderer will paint the
-    // background on the screen first and then composite the rendered
-    // sprite on it.)
-    if (renderProperties.renderBgOnScreen) {
-      m_renderEngine->setProjection(m_proj);
-      m_renderEngine->renderCheckeredBackground(g->getInternalSurface(),
-                                                m_sprite,
-                                                gfx::Clip(dest.x + g->getInternalDeltaX(),
-                                                          dest.y + g->getInternalDeltaY(),
-                                                          m_proj.apply(rc2)));
-    }
+      // Paint tiles
+      const gfx::Size tileSize(128, 128);
+      const gfx::SizeF tileSizeSrc(tileSize.w, tileSize.h);
 
-    // Create a temporary surface to draw the sprite on it
-    if (!rendered || rendered->width() < rc2.w || rendered->height() < rc2.h ||
-        rendered->colorSpace() != m_document->osColorSpace()) {
-      const int maxw = std::max(rc2.w, rendered ? rendered->width() : 0);
-      const int maxh = std::max(rc2.h, rendered ? rendered->height() : 0);
-      rendered = os::System::instance()->makeRgbaSurface(maxw, maxh, m_document->osColorSpace());
-    }
+      {
+        paint.style(os::Paint::Stroke);
+        paint.color(gfx::rgba(0, 0, 255, 128));
+        paint.blendMode(os::BlendMode::SrcOver);
 
-    m_renderEngine->setProjection(newEngine ? render::Projection() : m_proj);
-    m_renderEngine->renderSprite(rendered.get(), m_sprite, m_frame, gfx::Clip(0, 0, rc2));
+        gfx::Rect rc(canvasSize());
+        rc = editorToScreen(rc);
+        rc.offset(-bounds().origin());
 
-    m_renderEngine->removeExtraImage();
-    m_renderEngine->removeExtraCelInfoMap();
+        gfx::Rect visible = m_proj.apply(expose);
+        gfx::Rect tilerc(tileSize);
+        int tileNum = 0;
 
-    // If the checkered background is visible in this sprite, we save
-    // all settings of the background for this document.
-    if (!m_sprite->isOpaque())
-      m_docPref.bg.forceSection();
-  }
-  catch (const std::exception& e) {
-    Console::showException(e);
-  }
+        gfx::PointF firstTilePos;
+        firstTilePos.x = std::floor(visible.x / tileSizeSrc.w) * tileSizeSrc.w;
+        firstTilePos.y = std::floor(visible.y / tileSizeSrc.h) * tileSizeSrc.h;
 
-  if (rendered && rendered->nativeHandle()) {
-    os::Paint p;
-    if (newEngine) {
-      os::Sampling sampling;
-      p.srcEdges(os::Paint::SrcEdges::Fast); // Enable mipmaps if possible
+        rc.x += (visible.x / tileSize.w) * tileSize.w;
+        rc.y += (visible.y / tileSize.h) * tileSize.h;
+        rc.w = ((std::max(rc.w, visible.w) + tileSize.w) / tileSize.w) * tileSize.w;
+        rc.h = ((std::max(rc.h, visible.h) + tileSize.h) / tileSize.h) * tileSize.w;
 
-      if (m_proj.scaleX() < 1.0) {
-        switch (pref.editor.downsampling()) {
-          case gen::Downsampling::NEAREST:
-            sampling = os::Sampling(os::Sampling::Filter::Nearest);
-            break;
-          case gen::Downsampling::BILINEAR:
-            sampling = os::Sampling(os::Sampling::Filter::Linear);
-            break;
-          case gen::Downsampling::BILINEAR_MIPMAP:
-            sampling = os::Sampling(os::Sampling::Filter::Linear, os::Sampling::Mipmap::Nearest);
-            break;
-          case gen::Downsampling::TRILINEAR_MIPMAP:
-            sampling = os::Sampling(os::Sampling::Filter::Linear, os::Sampling::Mipmap::Linear);
-            break;
+        for (int y = 0, v = 0; y < dest.h + tileSize.h; y += tileSize.h, ++v) {
+          for (int x = 0, u = 0; x < dest.w + tileSize.w; x += tileSize.w, ++u) {
+            tilerc.x = rc.x + x;
+            tilerc.y = rc.y + y;
+            if (tilerc.intersects(dest)) {
+              g->drawRect(tilerc, paint);
+
+              auto srcrc = gfx::RectF(firstTilePos.x + u * tileSizeSrc.w,
+                                      firstTilePos.y + v * tileSizeSrc.h,
+                                      tileSizeSrc.w,
+                                      tileSizeSrc.h);
+
+              cachedTiles.push_back(CacheTile(srcrc, tilerc, tileNum));
+              ++tileNum;
+            }
+          }
         }
       }
 
-      if (renderProperties.requiresRgbaBackbuffer)
-        p.blendMode(os::BlendMode::SrcOver);
-      else
-        p.blendMode(os::BlendMode::Src);
+      // Render tiles
+      {
+        m_renderEngine->setProjection(m_proj);
 
-      gfx::Rect destClip = dest;
-      if (m_proj.scaleX() < 1.0)
-        --destClip.w;
-      if (m_proj.scaleY() < 1.0)
-        --destClip.h;
+        os::Sampling sampling(os::Sampling::Filter::Nearest);
+        if (m_proj.scaleX() < 1.0) {
+          switch (pref.editor.downsampling()) {
+            case gen::Downsampling::NEAREST:
+              sampling = os::Sampling(os::Sampling::Filter::Nearest);
+              break;
+            case gen::Downsampling::BILINEAR:
+              sampling = os::Sampling(os::Sampling::Filter::Linear);
+              break;
+            case gen::Downsampling::BILINEAR_MIPMAP:
+              sampling = os::Sampling(os::Sampling::Filter::Linear, os::Sampling::Mipmap::Nearest);
+              break;
+            case gen::Downsampling::TRILINEAR_MIPMAP:
+              sampling = os::Sampling(os::Sampling::Filter::Linear, os::Sampling::Mipmap::Linear);
+              break;
+          }
+        }
+        m_renderEngine->setSampling(sampling);
 
-      IntersectClip clip(g, destClip);
-      if (clip)
-        g->drawSurface(rendered.get(), gfx::Rect(0, 0, rc2.w, rc2.h), dest, sampling, &p);
-    }
-    else {
-      g->drawSurface(rendered.get(),
-                     gfx::Rect(0, 0, dest.w, dest.h),
-                     gfx::Rect(dest.x, dest.y, dest.w, dest.h),
-                     os::Sampling(os::Sampling::Filter::Nearest),
-                     &p);
+        static os::SurfaceRef tmpSurface = nullptr;
+
+        // Create a temporary surface to draw one tile on it
+        if (!tmpSurface || tmpSurface->width() != tileSize.w ||
+            tmpSurface->height() != tileSize.h) {
+          tmpSurface = os::System::instance()->makeRgbaSurface(tileSize.w, tileSize.h);
+        }
+        tmpSurface->setColorSpace(m_document->osColorSpace());
+
+        for (CacheTile& cacheTile : cachedTiles) {
+          cacheTile.surface = tmpSurface;
+          tmpSurface->clear();
+          m_renderEngine->renderSprite(cacheTile.surface.get(),
+                                       m_sprite,
+                                       m_frame,
+                                       gfx::Clip(0, 0, cacheTile.src));
+
+          {
+            os::Paint p;
+            p.srcEdges(os::Paint::SrcEdges::Fast);
+            p.blendMode(os::BlendMode::SrcOver);
+            g->drawSurface(cacheTile.surface.get(),
+                           cacheTile.surface->bounds(),
+                           cacheTile.dst,
+                           sampling,
+                           &p);
+            g->drawText(fmt::format("{}", cacheTile.tileNum),
+                        gfx::rgba(0, 0, 0, 64),
+                        gfx::ColorNone,
+                        cacheTile.dst.origin() + gfx::Point(cacheTile.dst.size()) / 2);
+          }
+        }
+      }
     }
   }
+  else {
+    // Convert the render to a os::Surface
+    static os::SurfaceRef rendered = nullptr; // TODO move this to other centralized place
+    try {
+      m_renderEngine->setupBackground(m_document, IMAGE_RGB);
+
+      // Render background first (e.g. new ShaderRenderer will paint the
+      // background on the screen first and then composite the rendered
+      // sprite on it.)
+      if (renderProperties.renderBgOnScreen) {
+        m_renderEngine->setProjection(m_proj);
+        m_renderEngine->renderCheckeredBackground(g->getInternalSurface(),
+                                                  m_sprite,
+                                                  gfx::Clip(dest.x + g->getInternalDeltaX(),
+                                                            dest.y + g->getInternalDeltaY(),
+                                                            m_proj.apply(rc2)));
+      }
+
+      // Create a temporary surface to draw the sprite on it
+      if (!rendered || rendered->width() < rc2.w || rendered->height() < rc2.h) {
+        const int maxw = std::max(rc2.w, rendered ? rendered->width() : 0);
+        const int maxh = std::max(rc2.h, rendered ? rendered->height() : 0);
+        rendered = os::System::instance()->makeRgbaSurface(maxw, maxh);
+      }
+      rendered->setColorSpace(m_document->osColorSpace());
+
+      m_renderEngine->setProjection(renderWithoutProj ? render::Projection() : m_proj);
+      m_renderEngine->renderSprite(rendered.get(), m_sprite, m_frame, gfx::Clip(0, 0, rc2));
+
+      // If the checkered background is visible in this sprite, we save
+      // all settings of the background for this document.
+      if (!m_sprite->isOpaque())
+        m_docPref.bg.forceSection();
+    }
+    catch (const std::exception& e) {
+      Console::showException(e);
+    }
+
+    if (rendered && rendered->nativeHandle()) {
+      os::Paint p;
+      if (renderWithoutProj) {
+        os::Sampling sampling;
+        p.srcEdges(os::Paint::SrcEdges::Fast); // Enable mipmaps if possible
+
+        if (m_proj.scaleX() < 1.0) {
+          switch (pref.editor.downsampling()) {
+            case gen::Downsampling::NEAREST:
+              sampling = os::Sampling(os::Sampling::Filter::Nearest);
+              break;
+            case gen::Downsampling::BILINEAR:
+              sampling = os::Sampling(os::Sampling::Filter::Linear);
+              break;
+            case gen::Downsampling::BILINEAR_MIPMAP:
+              sampling = os::Sampling(os::Sampling::Filter::Linear, os::Sampling::Mipmap::Nearest);
+              break;
+            case gen::Downsampling::TRILINEAR_MIPMAP:
+              sampling = os::Sampling(os::Sampling::Filter::Linear, os::Sampling::Mipmap::Linear);
+              break;
+          }
+        }
+
+        if (renderProperties.requiresRgbaBackbuffer)
+          p.blendMode(os::BlendMode::SrcOver);
+        else
+          p.blendMode(os::BlendMode::Src);
+
+        gfx::Rect destClip = dest;
+        if (m_proj.scaleX() < 1.0)
+          --destClip.w;
+        if (m_proj.scaleY() < 1.0)
+          --destClip.h;
+
+        IntersectClip clip(g, destClip);
+        if (clip)
+          g->drawSurface(rendered.get(), gfx::Rect(0, 0, rc2.w, rc2.h), dest, sampling, &p);
+      }
+      else {
+        g->drawSurface(rendered.get(),
+                       gfx::Rect(0, 0, dest.w, dest.h),
+                       gfx::Rect(dest.x, dest.y, dest.w, dest.h),
+                       os::Sampling(os::Sampling::Filter::Nearest),
+                       &p);
+      }
+    }
+  }
+  m_renderEngine->removeExtraImage();
+  m_renderEngine->removeExtraCelInfoMap();
 
   // Draw  Slices and Grids
   {
@@ -2359,51 +2488,43 @@ bool Editor::onProcessMessage(Message* msg)
       break;
 
     case kKeyDownMessage:
-#if ENABLE_DEVMODE
       // Switch renderer
-      if (msg->modifiers() == 0 && static_cast<KeyMessage*>(msg)->scancode() == kKeyF1) {
+      if (App::instance()->isDevMode() && static_cast<KeyMessage*>(msg)->scancode() == kKeyF1) {
         // TODO replace this experimental flag with a new enum (or
         //      maybe there is no need for user option now that the
         //      new engine allows to disable the bilinear mipmapping
         //      interpolation) as we still need the "old" engine to
         //      render reference layers
-        auto& newRenderEngine = Preferences::instance().experimental.newRenderEngine;
+        auto& renderEngine = Preferences::instance().render.renderEngine;
+        auto& tileBased = Preferences::instance().render.tileBasedRenderEngine;
 
-  #if SK_ENABLE_SKSL
-        // Simple (new) -> Simple (old) -> Shader -> Simple (new) -> ...
-        if (m_renderEngine->type() == EditorRender::Type::kShaderRenderer) {
-          newRenderEngine(true);
-          m_renderEngine->setType(EditorRender::Type::kSimpleRenderer);
-        }
-        else {
-          if (newRenderEngine()) {
-            newRenderEngine(false);
+        if (msg->modifiers() == 0) {
+          switch (renderEngine()) {
+            case gen::RenderEngine::RASTER_V1: renderEngine(gen::RenderEngine::RASTER_V2); break;
+            case gen::RenderEngine::RASTER_V2: renderEngine(gen::RenderEngine::SHADER); break;
+            case gen::RenderEngine::SHADER:    renderEngine(gen::RenderEngine::RASTER_V1); break;
           }
-          else {
-            newRenderEngine(true);
-            m_renderEngine->setType(EditorRender::Type::kShaderRenderer);
-          }
+          m_renderEngine->updateFromPref();
         }
-  #else
-        // Simple (new) <-> Simple (old)
-        newRenderEngine(!newRenderEngine());
-  #endif
+        else if (msg->altPressed()) {
+          tileBased(!tileBased());
+        }
 
+        std::string tip;
         switch (m_renderEngine->type()) {
           case EditorRender::Type::kSimpleRenderer:
-            StatusBar::instance()->showTip(
-              1000,
-              fmt::format("Simple Renderer ({})", newRenderEngine() ? "new" : "old"));
+            tip = fmt::format("Raster Renderer ({})",
+                              (renderEngine() == gen::RenderEngine::RASTER_V2) ? "v2" : "v1");
             break;
-          case EditorRender::Type::kShaderRenderer:
-            StatusBar::instance()->showTip(1000, fmt::format("Shader Renderer"));
-            break;
+          case EditorRender::Type::kShaderRenderer: tip = "Shader Renderer"; break;
         }
+        if (tileBased())
+          tip += " (Tile-Based)";
+        StatusBar::instance()->showTip(1000, tip);
 
         app_refresh_screen();
         return true;
       }
-#endif // ENABLE_DEVMODE
 
       if (m_sprite && (isActive() || hasMouse())) {
         EditorStatePtr holdState(m_state);
@@ -2559,14 +2680,17 @@ void Editor::onPaint(ui::PaintEvent& ev)
       drawSpriteUnclippedRect(g, m_sprite->bounds());
       renderElapsed = renderChrono.elapsed();
 
-#if ENABLE_DEVMODE
       // Show performance stats (TODO show performance stats in other widget)
-      if (Preferences::instance().perf.showRenderTime()) {
+      if (App::instance()->isDevMode() && Preferences::instance().perf.showRenderTime()) {
         View* view = View::getView(this);
         gfx::Rect vp = view->viewportBounds();
         std::string buf = fmt::format(
-          "{:c} {:.4g}s",
-          Preferences::instance().experimental.newRenderEngine() ? 'N' : 'O',
+          "{}{} {:.4g}s",
+          Preferences::instance().render.renderEngine() == gen::RenderEngine::RASTER_V1 ? "R1" :
+          Preferences::instance().render.renderEngine() == gen::RenderEngine::RASTER_V2 ? "R2" :
+          Preferences::instance().render.renderEngine() == gen::RenderEngine::SHADER    ? "S3" :
+                                                                                          "",
+          Preferences::instance().render.tileBasedRenderEngine() ? "/TILED" : "",
           renderElapsed);
         g->drawText(buf,
                     gfx::rgba(255, 255, 255, 255),
@@ -2576,7 +2700,6 @@ void Editor::onPaint(ui::PaintEvent& ev)
         m_perfInfoBounds.setOrigin(vp.origin());
         m_perfInfoBounds.setSize(g->measureText(buf));
       }
-#endif // ENABLE_DEVMODE
 
       // Draw the mask boundaries
       if (m_document->hasMaskBoundaries()) {
@@ -2615,7 +2738,7 @@ void Editor::onActiveToolChange(tools::Tool* tool)
 
 void Editor::onSamplingChange()
 {
-  if (m_proj.scaleX() < 1.0 && m_proj.scaleY() < 1.0 && isUsingNewRenderEngine()) {
+  if (m_proj.scaleX() < 1.0 && m_proj.scaleY() < 1.0) {
     invalidate();
   }
 }
