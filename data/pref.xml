@@ -175,13 +175,13 @@
       <option id="osx_async_view" type="bool" default="true" />
       <option id="x11_stylus_id" type="std::string" />
     </section>
-    <section id="undo" text="Undo">
+    <section id="undo">
       <option id="size_limit" type="int" default="0" />
       <option id="goto_modified" type="bool" default="true" />
       <option id="allow_nonlinear_history" type="bool" default="false" />
       <option id="show_tooltip" type="bool" default="true" />
     </section>
-    <section id="editor" text="Editor">
+    <section id="editor">
       <option id="zoom_with_wheel" type="bool" default="true" />
       <option id="zoom_with_slide" type="bool" default="false" />
       <option id="zoom_from_center_with_wheel" type="bool" default="false" />
@@ -231,21 +231,21 @@
       <option id="brush_preview_in_preview" type="bool" default="false" />
       <option id="snap_to_grid" type="bool" default="false" />
     </section>
-    <section id="preview" text="Preview">
+    <section id="preview">
       <option id="play_once" type="bool" default="false" />
       <option id="play_all" type="bool" default="false" />
       <option id="play_subtags" type="bool" default="true" />
     </section>
-    <section id="theme" text="Theme">
+    <section id="theme">
       <option id="selected" type="std::string" default="&quot;default&quot;" />
       <option id="font" type="std::string" />
       <option id="mini_font" type="std::string" />
     </section>
-    <section id="tablet" text="Tablet">
+    <section id="tablet">
       <option id="api" type="std::string" />
       <option id="set_cursor_fix" type="bool" default="true" />
     </section>
-    <section id="experimental" text="Experimental">
+    <section id="experimental">
       <option id="multiple_windows" type="bool" default="false" />
       <option id="new_render_engine" type="bool" default="true" />
       <option id="new_blend" type="bool" default="true" />
@@ -345,7 +345,7 @@
       <option id="rgbmap_algorithm" type="doc::RgbMapAlgorithm" default="doc::RgbMapAlgorithm::DEFAULT" />
       <option id="fit_criteria" type="doc::FitCriteria" default="doc::FitCriteria::DEFAULT" />
     </section>
-    <section id="eyedropper" text="Editor">
+    <section id="eyedropper">
       <option id="channel" type="EyedropperChannel" default="EyedropperChannel::COLOR_ALPHA" />
       <option id="sample" type="EyedropperSample" default="EyedropperSample::ALL_LAYERS" />
       <option id="discard_brush" type="bool" default="false" />
@@ -629,7 +629,7 @@
       <option id="padding_bounds" type="gfx::Size" default="gfx::Size(0, 0)" />
       <option id="partial_tiles" type="bool" default="false" />
     </section>
-    <section id="preview" text="Preview">
+    <section id="preview">
       <option id="zoom" type="double" default="1.0" />
       <option id="scroll" type="gfx::Point" />
       <option id="auto_scroll" type="bool" default="true" />
