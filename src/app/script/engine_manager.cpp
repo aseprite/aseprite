@@ -10,9 +10,9 @@
 
 namespace app::script {
 
-std::unique_ptr<Engine> EngineManager::create()
+std::unique_ptr<Engine> EngineManager::create(const std::string& extensionName)
 {
-  auto engine = std::make_unique<Engine>();
+  auto engine = std::make_unique<Engine>(extensionName);
   engine->ConsolePrint.connect(&Console::println);
   engine->ConsoleError.connect(&Console::println);
   return engine;

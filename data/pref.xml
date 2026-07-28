@@ -179,6 +179,7 @@
       <option id="show_menu_bar" type="bool" default="true" />
       <option id="recent_items" type="int" default="16" />
       <option id="osx_async_view" type="bool" default="true" />
+      <option id="allow_cli_scripts_full_access" type="bool" default="true" />
       <option id="x11_stylus_id" type="std::string" />
     </section>
     <section id="undo">
@@ -277,6 +278,7 @@
       <option id="paint_widget_baseline" type="bool" default="false" />
       <option id="debug_view_scroll" type="bool" default="false" />
       <option id="move_region_on_view_scroll" type="bool" default="true" />
+      <option id="disable_integrity_check" type="bool" default="false" />
     </section>
     <section id="news">
       <option id="cache_file" type="std::string" />

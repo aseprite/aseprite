@@ -21,6 +21,8 @@ class ConfigModule {
 public:
   ConfigModule();
   ~ConfigModule();
+
+  static void setConfigFilename(const std::string& filename);
 };
 
 void push_config_state();

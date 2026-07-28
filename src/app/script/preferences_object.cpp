@@ -67,6 +67,9 @@ int Section_newindex(lua_State* L)
   if (!option)
     return luaL_error(L, "option '%s' in section '%s' doesn't exist", id, section->name());
 
+  get_engine(L)->accessGate(Permission::Preferences,
+                            fmt::format("{}.{}", section->name(), option->id()));
+
   option->fromLua(L, 3);
   return 0;
 }
@@ -110,6 +113,9 @@ int AppPreferences_index(lua_State* L)
   else if (std::strcmp(id, "document") == 0) {
     lua_pushcfunction(L, DocPref_function);
     return 1;
+  }
+  else if (std::strcmp(id, "developer") == 0) {
+    return 0;
   }
 
   Section* section = Preferences::instance().section(id);
