@@ -518,7 +518,7 @@ protected:
     lua_State* L = m_engine->luaState();
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, m_definition.onloadRef);
-    lua_pushcclosure(L, script::get_original_io_open(), 0);
+    lua_pushcclosure(L, script::engine_io_open(), 0);
     lua_pushstring(L, fop->filename().c_str());
     lua_pushstring(L, m_definition.binary ? "rb" : "r");
 
@@ -586,7 +586,7 @@ protected:
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, m_definition.onsaveRef);
 
-    lua_pushcclosure(L, script::get_original_io_open(), 0);
+    lua_pushcclosure(L, script::engine_io_open(), 0);
     lua_pushstring(L, fop->filename().c_str());
     lua_pushstring(L, m_definition.binary ? "wb" : "w");
 
@@ -979,7 +979,7 @@ void Extension::initScripts()
     lua_setglobal(L, "exit");
 
     // Eval the code of the script (it should define an init() and an exit() function)
-    m_engine->evalUserFile(script.fn);
+    m_engine->evalExtension(script.fn, m_name);
 
     if (lua_getglobal(L, "exit") == LUA_TFUNCTION) {
       // Save a reference to the exit() function of this script
@@ -1270,6 +1270,15 @@ std::vector<Extension::DitheringMatrixInfo*> Extensions::ditheringMatrices()
   return result;
 }
 
+Extension* Extensions::find(const std::string& name) const
+{
+  for (auto* ext : m_extensions) {
+    if (ext->name() == name)
+      return ext;
+  }
+  return nullptr;
+}
+
 void Extensions::enableExtension(Extension* extension, const bool state)
 {
   extension->enable(state);
@@ -1432,10 +1441,7 @@ Extension* Extensions::loadExtension(const std::string& path,
   const auto& version = json.value("version", "");
   const auto& displayName = json.value("displayName", name);
 
-  auto it = std::find_if(m_extensions.begin(), m_extensions.end(), [&name](const Extension* ext) {
-    return ext->name() == name;
-  });
-  if (it != m_extensions.end())
+  if (find(name) != nullptr)
     throw base::Exception("An extension with the name '%s' already exists", name.c_str());
 
   LOG("EXT: Extension '%s' loaded\n", name.c_str());
