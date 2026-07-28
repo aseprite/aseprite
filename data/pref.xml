@@ -137,6 +137,11 @@
       <value id="BILINEAR_MIPMAP" value="2" />
       <value id="TRILINEAR_MIPMAP" value="3" />
     </enum>
+    <enum id="RenderEngine">
+      <value id="RASTER_V1" value="0" />
+      <value id="RASTER_V2" value="1" />
+      <value id="SHADER" value="2" />
+    </enum>
     <enum id="AlphaRange">
       <value id="EIGHT_BIT" value="0" />
       <value id="PERCENTAGE" value="1" />
@@ -203,6 +208,10 @@
       <option id="auto_fit" type="bool" default="false" />
       <option id="downsampling" type="Downsampling" default="Downsampling::BILINEAR_MIPMAP" />
     </section>
+    <section id="render">
+      <option id="render_engine" type="RenderEngine" default="RenderEngine::RASTER_V2" />
+      <option id="tile_based_render_engine" type="bool" default="false" />
+    </section>
     <section id="cels">
       <option id="user_data_visibility" type="bool" default="false" />
     </section>
@@ -247,7 +256,6 @@
     </section>
     <section id="experimental">
       <option id="multiple_windows" type="bool" default="false" />
-      <option id="new_render_engine" type="bool" default="true" />
       <option id="new_blend" type="bool" default="true" />
       <option id="compose_groups" type="bool" default="false" />
       <option id="use_native_clipboard" type="bool" default="true" />

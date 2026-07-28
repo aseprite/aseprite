@@ -58,7 +58,6 @@ When Aseprite is compiled with `ENABLE_DEVMODE`, you have the
 following extra commands/features available:
 
 * `F5`: On Windows shows the amount of used memory.
-* `F1`: Switch between new/old/shader renderers.
 * `Ctrl+F1`: Switch/test Screen/UI Scaling values.
 * `Ctrl+Alt+Shift+Q`: crashes the application in case that you want to
   test the anticrash feature or your need a memory dump file.
@@ -66,6 +65,11 @@ following extra commands/features available:
   recovery store.
 * `aseprite.ini`: `[perf] show_render_time=true` shows a performance
   clock in the Editor.
+
+In `-dev` mode (running `aseprite -dev`):
+
+* `F1`: Switch between raster v1, v2, and shader renderers.
+* `Alt+F1`: Switch between tiled-based renderer.
 
 In Debug mode (`_DEBUG`):
 

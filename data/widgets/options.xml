@@ -15,6 +15,7 @@
             <listitem text="@.section_color" value="section_color" />
             <listitem text="@.section_alerts" value="section_alerts" />
             <listitem text="@.section_editor" value="section_editor" />
+            <listitem text="@.section_rendering" value="section_rendering" />
             <listitem text="@.section_selection" value="section_selection" />
             <listitem text="@.section_timeline" value="section_timeline" />
             <listitem text="@.section_cursors" value="section_cursors" />
@@ -265,10 +266,26 @@
                  pref="editor.straight_line_preview" />
           <check text="@.discard_brush" id="discard_brush"
                  pref="eyedropper.discard_brush" />
-          <hbox id="sampling_placeholder" />
           <hbox>
             <label text="@.right_click" for="right_click_behavior" />
             <combobox id="right_click_behavior" expansive="true" />
+          </hbox>
+        </vbox>
+
+        <vbox id="section_rendering">
+          <separator text="@.section_rendering" horizontal="true" />
+          <hbox id="sampling_placeholder" />
+          <hbox>
+            <check id="new_blend"
+                   text="@.new_blend"
+                   pref="experimental.new_blend" />
+            <link text="(#1096)" for="new_blend" url="https://github.com/aseprite/aseprite/issues/1096" />
+          </hbox>
+          <hbox>
+            <check id="compose_groups"
+                   text="@.compose_groups"
+                   pref="experimental.compose_groups" />
+            <link text="(#3225)" for="compose_groups" url="https://github.com/aseprite/aseprite/issues/3225" />
           </hbox>
         </vbox>
 
@@ -619,24 +636,6 @@
           <separator text="@.user_interface" horizontal="true" />
           <check id="multiple_windows" text="@.multiple_windows"
                  pref="experimental.multiple_windows" />
-          <hbox>
-            <check id="new_render_engine"
-                   text="@.new_render_engine"
-                   pref="experimental.new_render_engine" />
-            <link text="(#1671)" for="new_render_engine" url="https://github.com/aseprite/aseprite/issues/1671" />
-          </hbox>
-          <hbox>
-            <check id="new_blend"
-                   text="@.new_blend"
-                   pref="experimental.new_blend" />
-            <link text="(#1096)" for="new_blend" url="https://github.com/aseprite/aseprite/issues/1096" />
-          </hbox>
-          <hbox>
-            <check id="compose_groups"
-                   text="@.compose_groups"
-                   pref="experimental.compose_groups" />
-            <link text="(#3225)" for="compose_groups" url="https://github.com/aseprite/aseprite/issues/3225" />
-          </hbox>
           <check id="native_clipboard" text="@.native_clipboard"
                  pref="experimental.use_native_clipboard" />
           <check id="native_file_dialog" text="@.native_file_dialog"
@@ -727,6 +726,11 @@
           <check text="Paint widgets baseline"
                  id="devmode_paint_widget_baseline"
                  pref="developer.paint_widget_baseline" />
+          <separator text="Rendering" horizontal="true" />
+          <check text="Show render performance"
+                 pref="perf.show_render_time" />
+          <check text="Paint using new tile-based rendering"
+                 pref="render.tile_based_render_engine" />
         </vbox>
 
         <!-- Reset -->

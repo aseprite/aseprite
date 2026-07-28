@@ -10,12 +10,13 @@
 
 #include "app/render/shader_renderer.h"
 
-#if SK_ENABLE_SKSL && ENABLE_DEVMODE // TODO remove ENABLE_DEVMODE when the ShaderRenderer is ready
+#if SK_ENABLE_SKSL
 
   #include "app/color_utils.h"
   #include "app/util/shader_helpers.h"
   #include "doc/render_plan.h"
   #include "os/common/generic_surface.h"
+  #include "os/skia/skia_helpers.h"
   #include "os/skia/skia_surface.h"
 
   #include "include/core/SkCanvas.h"
@@ -126,6 +127,11 @@ void ShaderRenderer::setProjection(const render::Projection& projection)
   m_proj = projection;
 }
 
+void ShaderRenderer::setSampling(const os::Sampling& sampling)
+{
+  m_sampling = sampling;
+}
+
 void ShaderRenderer::setSelectedLayer(const doc::Layer* layer)
 {
   // TODO impl
@@ -159,12 +165,19 @@ void ShaderRenderer::setExtraImage(render::ExtraType type,
                                    const doc::Layer* currentLayer,
                                    const doc::frame_t currentFrame)
 {
-  // TODO impl
+  // TODO merge this code with the render::Render one
+  m_extraType = type;
+  m_extraCel = cel;
+  m_extraImage = image;
+  m_extraBlendMode = blendMode;
+  m_currentLayer = currentLayer;
+  m_currentFrame = currentFrame;
 }
 
 void ShaderRenderer::removeExtraImage()
 {
-  // TODO impl
+  m_extraType = render::ExtraType::NONE;
+  m_extraCel = nullptr;
 }
 
 void ShaderRenderer::setExtraCelInfoMap(const render::ExtraCelInfoMap* map)
@@ -213,6 +226,7 @@ void ShaderRenderer::renderSprite(os::Surface* dstSurface,
 
   SkCanvas* canvas = &static_cast<os::SkiaSurface*>(dstSurface)->canvas();
   canvas->save();
+  canvas->clipIRect(SkIRect::MakeXYWH(area.dst.x, area.dst.y, area.size.w, area.size.h));
   {
     SkPaint p;
     p.setStyle(SkPaint::kFill_Style);
@@ -237,9 +251,53 @@ void ShaderRenderer::renderPlan(SkCanvas* canvas,
                                 const doc::frame_t frame,
                                 const gfx::ClipF& area)
 {
+  const bool render_background = true;
+  const bool render_transparent = true;
+
   for (const auto& item : plan.items()) {
     const Cel* cel = item.cel;
     const Layer* layer = item.layer;
+
+    gfx::Rect extraArea;
+    bool drawExtra = false;
+
+    if (m_extraCel && m_extraImage && layer == m_currentLayer &&
+        ((layer->isBackground() && render_background) ||
+         (!layer->isBackground() && render_transparent)) &&
+        // Don't use a tilemap extra cel (IMAGE_TILEMAP) in a
+        // non-tilemap layer (in the other hand tilemap layers allow
+        // extra cels of any kind). This fixes a crash on renderCel()
+        // when we were painting the Preview window using a tilemap
+        // extra image to patch a regular layer, when switching from a
+        // tilemap layer to a regular layer.
+        ((layer->isTilemap()) ||
+         (!layer->isTilemap() && m_extraImage->pixelFormat() != IMAGE_TILEMAP))) {
+      if (frame == m_extraCel->frame() && frame == m_currentFrame) { // TODO this double check is
+                                                                     // not necessary
+        drawExtra = true;
+      }
+      else {
+        // Check if we can draw the extra cel when we render a linked
+        // frame.
+        const Cel* cel2 = layer->cel(m_extraCel->frame());
+        if (cel && cel2 && cel->data() == cel2->data()) {
+          drawExtra = true;
+        }
+      }
+    }
+
+    if (drawExtra) {
+      extraArea = m_extraCel->bounds();
+      extraArea = m_proj.apply(extraArea);
+      if (m_proj.scaleX() < 1.0)
+        extraArea.w--;
+      if (m_proj.scaleY() < 1.0)
+        extraArea.h--;
+      if (extraArea.w < 1)
+        extraArea.w = 1;
+      if (extraArea.h < 1)
+        extraArea.h = 1;
+    }
 
     switch (layer->type()) {
       case doc::ObjectType::LayerImage: {
@@ -270,7 +328,10 @@ void ShaderRenderer::renderPlan(SkCanvas* canvas,
           int opacity = cel->opacity();
           opacity = MUL_UN8(opacity, imgLayer->opacity(), t);
 
-          drawImage(canvas, celImage, celBounds.x, celBounds.y, opacity, imgLayer->blendMode());
+          if (layer->isReference())
+            drawImage(canvas, celImage, celBounds, opacity, imgLayer->blendMode());
+          else
+            drawImage(canvas, celImage, celBounds.x, celBounds.y, opacity, imgLayer->blendMode());
         }
         break;
       }
@@ -355,6 +416,18 @@ void ShaderRenderer::renderPlan(SkCanvas* canvas,
     if (layer == m_bgLayer) {
       afterBackgroundLayerIsPainted();
     }
+
+    // Draw extras
+    if (drawExtra && m_extraType != render::ExtraType::NONE) {
+      if (m_extraCel->opacity() > 0) {
+        drawImage(canvas,
+                  m_extraImage,
+                  m_proj.removeX(extraArea.x),
+                  m_proj.removeY(extraArea.y),
+                  m_extraCel->opacity(),
+                  m_extraBlendMode);
+      }
+    }
   }
 }
 
@@ -401,6 +474,74 @@ void ShaderRenderer::renderImage(doc::Image* dstImage,
 
 void ShaderRenderer::drawImage(SkCanvas* canvas,
                                const doc::Image* srcImage,
+                               const gfx::RectF& bounds,
+                               const int opacity,
+                               const doc::BlendMode blendMode)
+{
+  auto skImg = make_skimage_for_docimage(srcImage);
+
+  SkSamplingOptions skSampling;
+  os::to_skia(m_sampling, skSampling);
+
+  switch (srcImage->colorMode()) {
+    case doc::ColorMode::RGB: {
+      SkPaint p;
+      p.setAlpha(opacity);
+      p.setBlendMode(to_skia(blendMode));
+
+      SkRect dstRect = os::to_skia(bounds);
+      canvas->drawImageRect(skImg.get(), dstRect, skSampling, &p);
+      break;
+    }
+
+    case doc::ColorMode::GRAYSCALE: {
+      SkRuntimeShaderBuilder builder(m_grayscaleEffect);
+      builder.child("iImg") = skImg->makeRawShader(skSampling);
+
+      SkPaint p;
+      p.setAlpha(opacity);
+      p.setBlendMode(to_skia(blendMode));
+      p.setStyle(SkPaint::kFill_Style);
+      p.setShader(builder.makeShader());
+
+      canvas->save();
+      canvas->translate(bounds.x, bounds.y);
+      canvas->drawRect(SkRect::MakeXYWH(0, 0, srcImage->width(), srcImage->height()), p);
+      canvas->restore();
+      break;
+    }
+
+    case doc::ColorMode::INDEXED: {
+      // Use the palette data as an "width x height" image where
+      // width=number of palette colors, and height=1
+      const size_t palSize = sizeof(color_t) * m_palette.size();
+      auto skPalData = SkData::MakeWithoutCopy((const void*)m_palette.rawColorsData(), palSize);
+      auto skPal = SkImages::RasterFromData(
+        SkImageInfo::Make(m_palette.size(), 1, kRGBA_8888_SkColorType, kUnpremul_SkAlphaType),
+        skPalData,
+        palSize);
+
+      SkRuntimeShaderBuilder builder(m_indexedEffect);
+      builder.child("iImg") = skImg->makeRawShader(SkSamplingOptions(SkFilterMode::kNearest));
+      builder.child("iPal") = skPal->makeShader(SkSamplingOptions(SkFilterMode::kNearest));
+
+      SkPaint p;
+      p.setAlpha(opacity);
+      p.setBlendMode(to_skia(blendMode));
+      p.setStyle(SkPaint::kFill_Style);
+      p.setShader(builder.makeShader());
+
+      canvas->save();
+      canvas->translate(bounds.x, bounds.y);
+      canvas->drawRect(SkRect::MakeXYWH(0, 0, srcImage->width(), srcImage->height()), p);
+      canvas->restore();
+      break;
+    }
+  }
+}
+
+void ShaderRenderer::drawImage(SkCanvas* canvas,
+                               const doc::Image* srcImage,
                                const int x,
                                const int y,
                                const int opacity,
@@ -408,18 +549,21 @@ void ShaderRenderer::drawImage(SkCanvas* canvas,
 {
   auto skImg = make_skimage_for_docimage(srcImage);
 
+  SkSamplingOptions skSampling;
+  os::to_skia(m_sampling, skSampling);
+
   switch (srcImage->colorMode()) {
     case doc::ColorMode::RGB: {
       SkPaint p;
       p.setAlpha(opacity);
       p.setBlendMode(to_skia(blendMode));
-      canvas->drawImage(skImg.get(), SkIntToScalar(x), SkIntToScalar(y), SkSamplingOptions(), &p);
+      canvas->drawImage(skImg.get(), SkIntToScalar(x), SkIntToScalar(y), skSampling, &p);
       break;
     }
 
     case doc::ColorMode::GRAYSCALE: {
       SkRuntimeShaderBuilder builder(m_grayscaleEffect);
-      builder.child("iImg") = skImg->makeRawShader(SkSamplingOptions(SkFilterMode::kNearest));
+      builder.child("iImg") = skImg->makeRawShader(skSampling);
 
       SkPaint p;
       p.setAlpha(opacity);
@@ -495,4 +639,4 @@ void ShaderRenderer::afterBackgroundLayerIsPainted()
 
 } // namespace app
 
-#endif // SK_ENABLE_SKSL && ENABLE_DEVMODE
+#endif // SK_ENABLE_SKSL

@@ -21,12 +21,13 @@ public:
 
   const Properties& properties() const override { return m_properties; }
 
-  void setRefLayersVisiblity(const bool visible) override;
-  void setNonactiveLayersOpacity(const int opacity) override;
-  void setNewBlendMethod(const bool newBlend) override;
+  void setRefLayersVisiblity(bool visible) override;
+  void setNonactiveLayersOpacity(int opacity) override;
+  void setNewBlendMethod(bool newBlend) override;
   void setComposeGroups(bool composeGroups) override;
   void setBgOptions(const render::BgOptions& bg) override;
   void setProjection(const render::Projection& projection) override;
+  void setSampling(const os::Sampling& sampling) override;
 
   void setSelectedLayer(const doc::Layer* layer) override;
   void setPreviewImage(const doc::Layer* layer,

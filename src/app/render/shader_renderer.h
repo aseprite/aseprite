@@ -26,9 +26,6 @@ namespace app {
 
 // Use SkSL to compose images with Skia shaders on the CPU (with the
 // SkSL VM) or GPU-accelerated (with native OpenGL/Metal/etc. shaders).
-//
-// TODO This is an ongoing effort, not yet ready for production, and
-//      only accessible when ENABLE_DEVMODE is defined.
 class ShaderRenderer : public Renderer {
 public:
   ShaderRenderer();
@@ -42,6 +39,7 @@ public:
   void setComposeGroups(const bool composeGroups) override;
   void setBgOptions(const render::BgOptions& bg) override;
   void setProjection(const render::Projection& projection) override;
+  void setSampling(const os::Sampling& sampling) override;
 
   void setSelectedLayer(const doc::Layer* layer) override;
   void setPreviewImage(const doc::Layer* layer,
@@ -86,6 +84,11 @@ private:
                   const gfx::ClipF& area);
   void drawImage(SkCanvas* canvas,
                  const doc::Image* srcImage,
+                 const gfx::RectF& bounds,
+                 const int opacity,
+                 const doc::BlendMode blendMode);
+  void drawImage(SkCanvas* canvas,
+                 const doc::Image* srcImage,
                  const int x,
                  const int y,
                  const int opacity,
@@ -97,6 +100,7 @@ private:
   Properties m_properties;
   render::BgOptions m_bgOptions;
   render::Projection m_proj;
+  os::Sampling m_sampling;
   sk_sp<SkRuntimeEffect> m_bgEffect;
   sk_sp<SkRuntimeEffect> m_indexedEffect;
   sk_sp<SkRuntimeEffect> m_grayscaleEffect;
@@ -110,6 +114,14 @@ private:
   const doc::Tileset* m_previewTileset = nullptr;
   gfx::Point m_previewPos;
   doc::BlendMode m_previewBlendMode = doc::BlendMode::NORMAL;
+
+  // TODO create a render::ExtraCel to share this with render::Render
+  const doc::Layer* m_currentLayer = nullptr;
+  doc::frame_t m_currentFrame;
+  render::ExtraType m_extraType;
+  const doc::Cel* m_extraCel = nullptr;
+  const doc::Image* m_extraImage = nullptr;
+  doc::BlendMode m_extraBlendMode;
 
   // Palette of 256 colors (useful for the indexed shader to set all
   // colors outside the valid range as transparent RGBA=0 values)

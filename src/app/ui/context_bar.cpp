@@ -2512,8 +2512,7 @@ bool ContextBar::updateSamplingVisibility(tools::Tool* tool)
   auto editor = Editor::activeEditor();
   const bool newVisibility = needZoomButtons(tool) && editor &&
                              (editor->projection().scaleX() < 1.0 ||
-                              editor->projection().scaleY() < 1.0) &&
-                             editor->isUsingNewRenderEngine();
+                              editor->projection().scaleY() < 1.0);
 
   if (newVisibility == m_samplingSelector->hasFlags(HIDDEN)) {
     m_samplingSelector->setVisible(newVisibility);
