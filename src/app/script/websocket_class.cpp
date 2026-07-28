@@ -53,9 +53,7 @@ int WebSocket_new(lua_State* L)
   if (lua_istable(L, 1)) {
     lua_getfield(L, 1, "url");
     if (const char* s = lua_tostring(L, -1)) {
-      if (!ask_access(L, s, FileAccessMode::OpenSocket, ResourceType::WebSocket))
-        return luaL_error(L, "the script doesn't have access to create a WebSocket for '%s'", s);
-
+      get_engine(L)->accessGate(Permission::Network, s);
       ws->setUrl(s);
     }
     lua_pop(L, 1);

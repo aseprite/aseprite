@@ -10,6 +10,7 @@
 
 #include "app/app.h"
 #include "app/resource_finder.h"
+#include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
 #include "base/fs.h"
@@ -125,8 +126,7 @@ int AppFS_makeDirectory(lua_State* L)
     return 1;
   }
 
-  if (!ask_access(L, path, FileAccessMode::Write, ResourceType::File))
-    return luaL_error(L, "the script doesn't have access to create the directory '%s'", path);
+  get_engine(L)->accessGate(Permission::IOWrite, path);
 
   try {
     // TODO don't throw exception from base::make_directory() function
@@ -147,8 +147,7 @@ int AppFS_makeAllDirectories(lua_State* L)
     return 1;
   }
 
-  if (!ask_access(L, path, FileAccessMode::Write, ResourceType::File))
-    return luaL_error(L, "the script doesn't have access to create all directories '%s'", path);
+  get_engine(L)->accessGate(Permission::IOWrite, path);
 
   try {
     base::make_all_directories(path);
@@ -170,8 +169,7 @@ int AppFS_removeDirectory(lua_State* L)
     return 1;
   }
 
-  if (!ask_access(L, path, FileAccessMode::Write, ResourceType::File))
-    return luaL_error(L, "the script doesn't have access to remove the directory '%s'", path);
+  get_engine(L)->accessGate(Permission::IOWrite, path);
 
   try {
     base::remove_directory(path);

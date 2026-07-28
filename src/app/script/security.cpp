@@ -9,436 +9,690 @@
   #include "config.h"
 #endif
 
-#include "app/script/security.h"
-
 #include "app/app.h"
-#include "app/context.h"
+#include "app/extensions.h"
 #include "app/i18n/strings.h"
-#include "app/ini_file.h"
-#include "app/launcher.h"
+#include "app/resource_finder.h"
+#include "app/script/about_extension_window.h"
 #include "app/script/engine.h"
-#include "app/script/luacpp.h"
-#include "base/convert_to.h"
+#include "app/script/security.h"
+#include "app/ui/skin/skin_theme.h"
+#include "base/file_handle.h"
 #include "base/fs.h"
-#include "base/sha1.h"
-#include "fmt/format.h"
-#include "ui/widget_type.h"
+#include "base/fstream_path.h"
+#include "base/launcher.h"
+#include "clip/clip.h"
+#include "ui/alert.h"
+#include "ui/menu.h"
+#include "ui/system.h"
+#include "ui/view.h"
 
 #include "script_access.xml.h"
 
-#include <algorithm>
-#include <cstring>
-#include <unordered_map>
+#ifdef LAF_WINDOWS
+  #include <shlwapi.h>
+#else
+  #include <fnmatch.h>
+#endif
 
-namespace app { namespace script {
+#include <fstream>
+#include <sstream>
+
+#include "blake3.h"
+
+namespace app::script {
+
+using json = nlohmann::json;
+using namespace std::string_view_literals;
 
 namespace {
+PermissionStorage* g_instance_override = nullptr;
 
-int secure_io_open(lua_State* L);
-int secure_io_popen(lua_State* L);
-int secure_io_lines(lua_State* L);
-int secure_io_input(lua_State* L);
-int secure_io_output(lua_State* L);
-int secure_os_execute(lua_State* L);
-int secure_os_remove(lua_State* L);
-int secure_os_rename(lua_State* L);
-int secure_package_loadlib(lua_State* L);
-
-enum {
-  io_open,
-  io_popen,
-  io_lines,
-  io_input,
-  io_output,
-  os_execute,
-  os_remove,
-  os_rename,
-  package_loadlib,
-};
-
-static struct {
-  const char* package;
-  const char* funcname;
-  lua_CFunction newfunc;
-  lua_CFunction origfunc = nullptr;
-} replaced_functions[] = {
-  { "io",      "open",    secure_io_open         },
-  { "io",      "popen",   secure_io_popen        },
-  { "io",      "lines",   secure_io_lines        },
-  { "io",      "input",   secure_io_input        },
-  { "io",      "output",  secure_io_output       },
-  { "os",      "execute", secure_os_execute      },
-  { "os",      "remove",  secure_os_remove       },
-  { "os",      "rename",  secure_os_rename       },
-  { "package", "loadlib", secure_package_loadlib },
-};
-
-// Map from .lua file name -> sha1
-std::unordered_map<std::string, std::string> g_keys;
-
-std::string get_key(const std::string& source)
+bool wildcard_match(const std::string& pattern, const std::string& str)
 {
-  auto it = g_keys.find(source);
-  if (it != g_keys.end())
-    return it->second;
-  else
-    return g_keys[source] = base::convert_to<std::string>(base::Sha1::calculateFromString(source));
+#ifdef LAF_WINDOWS
+  return PathMatchSpec(base::from_utf8(str).c_str(), base::from_utf8(pattern).c_str());
+#else
+  return fnmatch(pattern.c_str(), str.c_str(), 0) != FNM_NOMATCH;
+#endif
 }
 
-std::string get_script_filename(lua_State* L, int stackLevel)
+int wildcard_specificity_score(const std::string_view pattern)
 {
-  std::string script;
-  lua_Debug ar;
-  if (!lua_getstack(L, stackLevel - 1, &ar))
-    return script;
-
-  if (!lua_getinfo(L, "S", &ar))
-    return script;
-
-  script = ar.source;
-  if (!script.empty() && script[0] == '@')
-    script = ar.source + 1;
-
-  return script;
-}
-
-int unsupported(lua_State* L)
-{
-  // debug.getinfo(1, "n").name
-  lua_getglobal(L, "debug");
-  lua_getfield(L, -1, "getinfo");
-  lua_remove(L, -2);
-  lua_pushinteger(L, 1);
-  lua_pushstring(L, "n");
-  lua_call(L, 2, 1);
-  lua_getfield(L, -1, "name");
-  return luaL_error(L, "unsupported function '%s'", lua_tostring(L, -1));
-}
-
-int secure_io_open(lua_State* L)
-{
-  std::string absFilename = base::get_absolute_path(luaL_checkstring(L, 1));
-
-  FileAccessMode mode = FileAccessMode::Read; // Read is the default access
-  if (lua_tostring(L, 2) && std::strchr(lua_tostring(L, 2), 'w') != nullptr) {
-    mode = FileAccessMode::Write;
-  }
-
-  if (!ask_access(L, absFilename.c_str(), mode, ResourceType::File)) {
-    return luaL_error(L, "the script doesn't have access to file '%s'", absFilename.c_str());
-  }
-  return replaced_functions[io_open].origfunc(L);
-}
-
-int secure_io_popen(lua_State* L)
-{
-  const char* cmd = luaL_checkstring(L, 1);
-  if (!ask_access(L, cmd, FileAccessMode::Execute, ResourceType::Command)) {
-    // Stop script
-    return luaL_error(L, "the script doesn't have access to execute the command: '%s'", cmd);
-  }
-  return replaced_functions[io_popen].origfunc(L);
-}
-
-int secure_io_lines(lua_State* L)
-{
-  if (auto fn = lua_tostring(L, 1)) {
-    std::string absFilename = base::get_absolute_path(fn);
-
-    if (!ask_access(L, absFilename.c_str(), FileAccessMode::Read, ResourceType::File)) {
-      return luaL_error(L, "the script doesn't have access to file '%s'", absFilename.c_str());
+  int score = 0;
+  for (const char c : pattern) {
+    if (c != '*' && c != '?') {
+      score++;
+    }
+    else {
+      score -= 2;
     }
   }
-  return replaced_functions[io_lines].origfunc(L);
+  return score;
 }
 
-int secure_io_input(lua_State* L)
+constexpr bool is_extension(const std::string_view script)
 {
-  if (auto fn = lua_tostring(L, 1)) {
-    std::string absFilename = base::get_absolute_path(fn);
-
-    if (!ask_access(L, absFilename.c_str(), FileAccessMode::Read, ResourceType::File)) {
-      return luaL_error(L, "the script doesn't have access to file '%s'", absFilename.c_str());
-    }
-  }
-  return replaced_functions[io_input].origfunc(L);
+  return script.rfind(Engine::kExtensionPrefix, 0) == 0;
 }
 
-int secure_io_output(lua_State* L)
+std::string get_integrity_hash(const std::string& filename)
 {
-  if (auto fn = lua_tostring(L, 1)) {
-    std::string absFilename = base::get_absolute_path(fn);
+  ASSERT(!is_extension(filename));
+  const auto file = base::open_file(filename, "rb");
+  if (!file)
+    return std::string();
 
-    if (!ask_access(L, absFilename.c_str(), FileAccessMode::Write, ResourceType::File)) {
-      return luaL_error(L, "the script doesn't have access to file '%s'", absFilename.c_str());
-    }
-  }
-  return replaced_functions[io_output].origfunc(L);
+  blake3_hasher hasher;
+  blake3_hasher_init(&hasher);
+
+  constexpr size_t size = 1024uL * 1024;
+  std::vector<uint8_t> buffer(size);
+
+  size_t read;
+  while ((read = std::fread(buffer.data(), 1, size, file.get())) > 0)
+    blake3_hasher_update(&hasher, buffer.data(), read);
+
+  std::vector<uint8_t> hash(BLAKE3_OUT_LEN);
+  blake3_hasher_finalize(&hasher, hash.data(), BLAKE3_OUT_LEN);
+
+  std::stringstream stream;
+  for (size_t i = 0; i < BLAKE3_OUT_LEN; ++i)
+    stream << std::setfill('0') << std::setw(2) << std::hex << static_cast<int>(hash[i]);
+
+  return stream.str();
+}
+} // namespace
+
+void set_permission_storage(PermissionStorage* storage)
+{
+  g_instance_override = storage;
 }
 
-int secure_os_execute(lua_State* L)
+PermissionStorage::PermissionStorage()
 {
-  const char* cmd = luaL_checkstring(L, 1);
-  if (!ask_access(L, cmd, FileAccessMode::Execute, ResourceType::Command)) {
-    // Stop script
-    return luaL_error(L, "the script doesn't have access to execute the command: '%s'", cmd);
-  }
-  return replaced_functions[os_execute].origfunc(L);
+  ResourceFinder rf;
+  rf.includeUserDir("permissions.json");
+  m_path = rf.getFirstOrCreateDefault();
+  load();
 }
 
-int file_result(lua_State* L, bool result, int errorNo = 0, const std::string& fileName = "")
+PermissionStorage::PermissionStorage(const std::string& path) : m_path(path)
 {
-  if (result) {
-    lua_pushboolean(L, 1);
-    return 1;
-  }
-
-  luaL_pushfail(L);
-  if (fileName.empty())
-    lua_pushstring(L, strerror(errorNo));
-  else
-    lua_pushfstring(L, "%s: %s", fileName.c_str(), strerror(errorNo));
-  lua_pushinteger(L, errorNo);
-  return 3;
+  load();
 }
 
-int secure_os_remove(lua_State* L)
+std::optional<bool> PermissionStorage::read(const std::string& script,
+                                            const Permission permission) const
 {
-  const std::string absFilename = base::get_canonical_path(luaL_checkstring(L, 1));
-  if (absFilename.empty())
-    return file_result(L, false, ENOENT, absFilename);
+  ASSERT(!permission_supports_matching(permission))
 
-  if (!ask_access(L, absFilename.data(), FileAccessMode::Write, ResourceType::File))
-    return file_result(L, false, EACCES, absFilename);
+  if (!m_json.contains(script))
+    return std::nullopt;
 
-  if (base::is_directory(absFilename)) {
-    try {
-      base::remove_directory(absFilename);
-      return file_result(L, true);
-    }
-    catch (const std::exception&) {
-      return file_result(L, false, EIO, absFilename);
-    }
+  if (readFullAccess(script))
+    return true;
+
+  const auto& permissionString = permission_to_string(permission);
+  if (m_json[script].contains("permissions"sv) &&
+      m_json[script]["permissions"sv].contains(permissionString)) {
+    return m_json[script]["permissions"sv][permissionString].value("granted"sv, false);
   }
 
-  try {
-    base::delete_file(absFilename);
-  }
-  catch (const std::exception&) {
-    return file_result(L, false, EIO, absFilename);
-  }
-
-  return file_result(L, true);
+  return std::nullopt;
 }
 
-int secure_os_rename(lua_State* L)
+std::optional<bool> PermissionStorage::readMatch(const std::string& script,
+                                                 const Permission permission,
+                                                 const std::string& match) const
 {
-  const std::string absSourceFilename = base::get_canonical_path(luaL_checkstring(L, 1));
-  const std::string absDestFilename = base::get_absolute_path(luaL_checkstring(L, 2));
-  lua_pop(L, 2);
+  ASSERT(permission_supports_matching(permission))
+  ASSERT(permission != Permission::Unknown);
 
-  if (absSourceFilename.empty())
-    return file_result(L, false, ENOENT, absSourceFilename);
+  if (!m_json.contains(script))
+    return std::nullopt;
 
-  if (absDestFilename.empty())
-    return file_result(L, false, EINVAL, absDestFilename);
+  if (readFullAccess(script))
+    return true;
 
-  if (!ask_access(L, absSourceFilename.data(), FileAccessMode::Write, ResourceType::File))
-    return file_result(L, false, EACCES, absSourceFilename);
+  const std::string permissionString(permission_to_string(permission));
 
-  try {
-    // If the destination file already exists, we should ask for permission to overwrite it.
-    if (!base::get_canonical_path(absDestFilename).empty() &&
-        !ask_access(L, absDestFilename.data(), FileAccessMode::Write, ResourceType::File)) {
-      return file_result(L, false, EACCES, absDestFilename);
+  json::json_pointer ptr("/permissions");
+  ptr /= permissionString;
+
+  if (m_json[script].contains(ptr)) {
+    std::vector<std::pair<std::string, bool>> matches;
+    for (const auto& it : m_json[script][ptr].items()) {
+      const auto& permMatch = it.value().value("match"sv, "");
+      if (wildcard_match(permMatch, match))
+        matches.emplace_back(permMatch, it.value().value("granted"sv, false));
     }
 
-    base::move_file(absSourceFilename, absDestFilename);
-    return file_result(L, true);
+    std::sort(
+      matches.begin(),
+      matches.end(),
+      [](const std::pair<std::string_view, bool>& a, const std::pair<std::string_view, bool>& b) {
+        return wildcard_specificity_score(a.first) > wildcard_specificity_score(b.first);
+      });
+
+    if (!matches.empty())
+      return matches.begin()->second;
   }
-  catch (const std::exception&) {
-    return file_result(L, false, EIO, absSourceFilename);
-  }
+
+  return std::nullopt;
 }
 
-int secure_package_loadlib(lua_State* L)
+void PermissionStorage::write(const std::string& script, const Permission permission, bool value)
 {
-  const char* cmd = luaL_checkstring(L, 1);
-  if (!ask_access(L, cmd, FileAccessMode::LoadLib, ResourceType::File)) {
-    // Stop script
-    return luaL_error(L, "the script doesn't have access to execute the command: '%s'", cmd);
-  }
-  return replaced_functions[package_loadlib].origfunc(L);
+  ASSERT(!permission_supports_matching(permission));
+  ASSERT(permission != Permission::Unknown);
+  if (permission == Permission::Unknown)
+    return;
+
+  const auto& permissionString = permission_to_string(permission);
+
+  if (!m_json.contains(script) && !is_extension(script))
+    m_json[script]["integrity"sv] = get_integrity_hash(script);
+
+  m_json[script]["permissions"sv][permissionString] = json::object({
+    { "granted"sv, value }
+  });
+
+  flush();
 }
 
-} // anonymous namespace
-
-void overwrite_unsecure_functions(lua_State* L)
+void PermissionStorage::writeForMatch(const std::string& script,
+                                      const Permission permission,
+                                      const std::string& match,
+                                      const bool value)
 {
-  // Remove unsupported functions
-  lua_getglobal(L, "os");
-  for (const char* name : { "exit", "tmpname" }) {
-    lua_pushcfunction(L, unsupported);
-    lua_setfield(L, -2, name);
-  }
-  lua_pop(L, 1);
+  ASSERT(permission_supports_matching(permission));
+  ASSERT(permission != Permission::Unknown);
+  if (permission == Permission::Unknown)
+    return;
 
-  // Replace functions with our own implementations (that ask for
-  // permissions first).
-  for (auto& item : replaced_functions) {
-    lua_getglobal(L, item.package);
+  const std::string permissionString(permission_to_string(permission));
 
-    // Get old function
-    if (!item.origfunc) {
-      lua_getfield(L, -1, item.funcname);
-      item.origfunc = lua_tocfunction(L, -1);
-      lua_pop(L, 1);
-    }
+  json::json_pointer ptr("/permissions");
+  ptr /= permissionString;
 
-    // Push and set the new function
-    lua_pushcfunction(L, item.newfunc);
-    lua_setfield(L, -2, item.funcname);
+  if (!m_json.contains(script) && !is_extension(script))
+    m_json[script]["integrity"sv] = get_integrity_hash(script);
 
-    lua_pop(L, 1);
-  }
-}
+  auto obj = json::object({
+    { "match",   match },
+    { "granted", value }
+  });
 
-bool ask_access(lua_State* L,
-                const char* filename,
-                const FileAccessMode mode,
-                const ResourceType resourceType,
-                const int stackLevel)
-{
-  // Ask for permission to open the file
-  if (App::instance()->context()->isUIAvailable()) {
-    const std::string script = get_script_filename(L, stackLevel);
-    if (script.empty()) {
-      // No script
-      luaL_error(L, "no debug information (script filename) to secure io.open() call");
-      return false;
-    }
-
-    const char* section = "script_access";
-    std::string key = get_key(script);
-
-    int access = get_config_int(section, key.c_str(), 0);
-
-    // Has the correct access
-    if ((access & int(mode)) == int(mode))
-      return true;
-
-    std::string allowButtonText;
-    switch (mode) {
-      case FileAccessMode::LoadLib:
-        allowButtonText = Strings::script_access_allow_load_lib_access();
-        break;
-      case FileAccessMode::OpenSocket:
-        allowButtonText = Strings::script_access_allow_open_conn_access();
-        break;
-      case FileAccessMode::Execute:
-        allowButtonText = Strings::script_access_allow_execute_access();
-        break;
-      case FileAccessMode::Write:
-        allowButtonText = Strings::script_access_allow_write_access();
-        break;
-      case FileAccessMode::Read:
-        allowButtonText = Strings::script_access_allow_read_access();
-        break;
-      default: {
-        luaL_error(L, "invalid access request");
-        return false;
+  if (m_json[script][ptr].is_array()) {
+    // Modify existing match in-place
+    for (const auto& it : m_json[script][ptr].items()) {
+      if (it.value().value("match"sv, "") == match) {
+        m_json[script][ptr / it.key() / "granted"] = value;
+        return;
       }
     }
 
-    app::gen::ScriptAccess dlg;
-    dlg.script()->setText(script);
+    m_json[script][ptr].push_back(obj);
+  }
+  else {
+    m_json[script][ptr] = nlohmann::json::array({ obj });
+  }
 
-    {
-      std::string label;
-      switch (resourceType) {
-        case ResourceType::File: {
-          if (mode == FileAccessMode::Write) {
-            label = Strings::script_access_file_write_label();
+  flush();
+}
+
+bool PermissionStorage::readFullAccess(const std::string& script) const
+{
+  if (!m_json.contains(script))
+    return false;
+
+  return m_json[script].value("full_access"sv, false);
+}
+
+void PermissionStorage::writeFullAccess(const std::string& script, const bool access)
+{
+  // Granting "full access" is entirely destructive of old permissions
+  if (access) {
+    m_json[script]["full_access"sv] = true;
+
+    if (!is_extension(script))
+      m_json[script]["integrity"sv] = get_integrity_hash(script);
+  }
+  else {
+    m_json[script]["full_access"sv] = false;
+  }
+  flush();
+}
+
+bool PermissionStorage::isValid() const
+{
+  try {
+    if (!m_json.is_object())
+      return false;
+
+    for (const auto& item : m_json.items()) {
+      if (item.key().empty())
+        return false;
+
+      if (item.value().empty())
+        return false;
+
+      if (!item.value().is_object())
+        return false;
+
+      if (item.value().contains("permissions")) {
+        auto permissions = item.value()["permissions"];
+        if (!permissions.is_object())
+          return false;
+
+        for (const auto& perm : permissions.items()) {
+          const auto p = string_to_permission(perm.key());
+          if (perm.key().empty() || p == Permission::Unknown)
+            return false;
+          if (perm.value().empty())
+            return false;
+
+          if (perm.value().is_object()) {
+            if (permission_supports_matching(p))
+              return false;
+
+            if (!(perm.value().contains("granted")))
+              return false;
+
+            if (!perm.value()["granted"].is_boolean())
+              return false;
+          }
+          else if (perm.value().is_array()) {
+            if (!permission_supports_matching(p))
+              return false;
+
+            for (const auto& match : perm.value()) {
+              if (!match.is_object())
+                return false;
+
+              if (!(match.contains("granted") && match.contains("match")))
+                return false;
+
+              if (!(match["granted"].is_boolean() && match["match"].is_string()))
+                return false;
+            }
           }
           else {
-            label = Strings::script_access_file_label();
+            return false;
           }
-          break;
         }
-        case ResourceType::Command:   label = Strings::script_access_command_label(); break;
-        case ResourceType::WebSocket: label = Strings::script_access_websocket_label(); break;
-        case ResourceType::Clipboard: label = Strings::script_access_clipboard_label(); break;
       }
-      dlg.fileLabel()->setText(label);
     }
-
-    if (filename && strlen(filename) > 0)
-      dlg.file()->setText(filename);
-    else
-      dlg.fileContainer()->setVisible(false);
-
-    dlg.allow()->setText(allowButtonText);
-    dlg.allow()->processMnemonicFromText();
-
-    if (script == "internal") {
-      // This should not happen, we should have a proper script
-      // filename here, probably the given "stackLevel" is wrong.
-      ASSERT(false);
-
-      // Make it look like a normal label
-      dlg.script()->setType(ui::WidgetType::kLabelWidget);
-      dlg.script()->initTheme();
-    }
-    else
-      dlg.script()->Click.connect([&dlg] { app::launcher::open_folder(dlg.script()->text()); });
-
-    dlg.full()->Click.connect([&dlg, &allowButtonText]() {
-      if (dlg.full()->isSelected()) {
-        dlg.dontShow()->setSelected(true);
-        dlg.dontShow()->setEnabled(false);
-        dlg.allow()->setText(Strings::script_access_give_full_access());
-        dlg.allow()->processMnemonicFromText();
-        dlg.layout();
-      }
-      else {
-        dlg.dontShow()->setEnabled(true);
-        dlg.allow()->setText(allowButtonText);
-        dlg.allow()->processMnemonicFromText();
-        dlg.layout();
-      }
-    });
-
-    if (resourceType == ResourceType::File) {
-      dlg.file()->Click.connect([&dlg] {
-        std::string fn = dlg.file()->text();
-        if (base::is_file(fn))
-          app::launcher::open_folder(fn);
-        else
-          app::launcher::open_folder(base::get_file_path(fn));
-      });
-    }
-
-    dlg.openWindowInForeground();
-    const bool allow = (dlg.closer() == dlg.allow());
-
-    // Save selected option
-    if (allow && dlg.dontShow()->isSelected()) {
-      if (dlg.full()->isSelected())
-        set_config_int(section, key.c_str(), access | int(FileAccessMode::Full));
-      else
-        set_config_int(section, key.c_str(), access | int(mode));
-      flush_config_file();
-    }
-
-    if (!allow)
-      return false;
   }
+  catch (const std::exception& e) {
+    return false;
+  }
+
   return true;
 }
 
-lua_CFunction get_original_io_open()
+bool PermissionStorage::passesIntegrityCheck(const std::string& script)
 {
-  return replaced_functions[io_open].origfunc;
+  if (!m_json.contains(script))
+    return true;
+
+  try {
+    const std::string& hash = m_json[script].value("integrity"sv, "");
+    if (hash.size() != BLAKE3_OUT_LEN * 2uL)
+      return false;
+    return hash == get_integrity_hash(script);
+  }
+  catch (const std::exception& e) {
+    LOG(WARNING,
+        "Failed to perform integrity check of script '%s' with error '%s'",
+        script.c_str(),
+        e.what());
+    return false;
+  }
 }
 
-}} // namespace app::script
+void PermissionStorage::reset(const std::string& script)
+{
+  try {
+    if (script.empty())
+      m_json = json::object();
+    else
+      m_json.erase(script);
+  }
+  catch (const std::exception& e) {
+    LOG(ERROR, "Parsing error while resetting permissions with error '%s'", e.what());
+    m_json = json::object();
+  }
+  flush();
+}
+
+void PermissionStorage::reset(const std::string& script, Permission permission)
+{
+  try {
+    if (!m_json.contains(script))
+      return;
+
+    m_json[script]["permissions"sv].erase(permission_to_string(permission));
+    flush();
+  }
+  catch (const std::exception& e) {
+  }
+}
+
+void PermissionStorage::reset(const std::string& script,
+                              const Permission permission,
+                              const std::string& match)
+{
+  try {
+    const std::string permissionString(permission_to_string(permission));
+    json::json_pointer ptr("/permissions");
+    ptr /= permissionString;
+
+    if (!m_json[script].contains(ptr))
+      return;
+
+    int i = 0;
+    for (const auto& val : m_json[script][ptr]) {
+      if (val["match"sv] == match) {
+        m_json[script][ptr].erase(i);
+        flush();
+        return;
+      }
+      i++;
+    }
+  }
+  catch (const std::exception& e) {
+  }
+}
+
+std::vector<std::string> PermissionStorage::scripts() const
+{
+  std::vector<std::string> scripts;
+  for (const auto& [key, _] : m_json.items())
+    scripts.push_back(key);
+  return scripts;
+}
+
+std::vector<Permission> PermissionStorage::stored(const std::string& script) const
+{
+  std::vector<Permission> stored;
+
+  if (!m_json.contains(script) || !m_json[script].contains("permissions"sv))
+    return stored;
+
+  for (const auto& [key, _] : m_json[script]["permissions"sv].items()) {
+    stored.push_back(string_to_permission(key));
+  }
+
+  return stored;
+}
+
+std::vector<std::pair<std::string, bool>> PermissionStorage::matches(
+  const std::string& script,
+  const Permission permission) const
+{
+  std::vector<std::pair<std::string, bool>> matches;
+
+  if (!m_json.contains(script) || !m_json[script].contains("permissions"sv))
+    return matches;
+
+  const std::string permissionString(permission_to_string(permission));
+  json::json_pointer ptr("/permissions");
+  ptr /= permissionString;
+
+  if (m_json[script][ptr].is_array()) {
+    for (const auto& it : m_json[script][ptr].items()) {
+      matches.emplace_back(it.value()["match"sv], it.value()["granted"sv]);
+    }
+  }
+
+  return matches;
+}
+
+void PermissionStorage::load()
+{
+  try {
+    const auto file = base::open_file(m_path, "rb");
+    if (file) {
+      m_json = json::parse(file.get());
+      if (!isValid())
+        throw std::runtime_error("invalid permissions schema");
+    }
+  }
+  catch (const std::exception& e) {
+    TRACEARGS(e.what());
+    LOG(ERROR, "Failed to load permissions at '%s' with error '%s'", m_path.c_str(), e.what());
+    m_json = json::object();
+    flush();
+  }
+}
+
+void PermissionStorage::flush()
+{
+  if (m_pendingFlush)
+    return;
+
+  m_pendingFlush = true;
+  execute_now_or_enqueue([this] {
+    m_pendingFlush = false;
+    std::ofstream out(FSTREAM_PATH(m_path), std::ios::binary);
+    if (out)
+      out << m_json.dump();
+    else
+      LOG(ERROR, "Failed to write permissions to '%s'", m_path.c_str());
+  });
+}
+
+PermissionStorage* PermissionStorage::instance()
+{
+  if (g_instance_override)
+    return g_instance_override;
+  static PermissionStorage instance;
+  return &instance;
+}
+
+PermissionDialog::PermissionDialog(const std::string& origin,
+                                   const std::string& extensionName,
+                                   const Permission permission,
+                                   const std::string& match)
+  : m_isExtension(!extensionName.empty())
+  , m_timer(1000)
+  , m_scaryAllowCooldown(0) // TODO: 4000? Configurable?
+{
+  if (m_isExtension) {
+    originLink()->setText(extensionName);
+    originLink()->Click.connect([extensionName] {
+      if (const auto* ext = App::instance()->extensions().find(extensionName))
+        AboutExtensionWindow::show(ext);
+    });
+    requiresPreamble()->setText(Strings::script_access_the_extension());
+  }
+  else {
+    originLink()->setText(base::get_file_name(origin));
+    originLink()->Click.connect(
+      [origin] { base::launcher::open_file(base::get_file_path(origin)); });
+    tooltipManager()->addTooltipFor(originLink(), origin, ui::BOTTOM);
+    requiresPreamble()->setText(Strings::script_access_the_script());
+  }
+
+  if (permission == Permission::IORead || permission == Permission::IOWrite ||
+      permission == Permission::SpriteRead || permission == Permission::SpriteWrite) {
+    remember()->setVisible(false);
+    rememberFile()->setVisible(true);
+    rememberDirectory()->setVisible(true);
+  }
+
+  if (permission == Permission::LoadLib || permission == Permission::Execute ||
+      permission == Permission::Network || permission == Permission::Preferences) {
+    rememberExtra()->setVisible(true);
+  }
+
+  permissionWarning()->setVisible(permission_is_scary(permission));
+
+  if (match.empty()) {
+    matchContainer()->setVisible(false);
+  }
+  else {
+    matchText()->setText(match);
+    matchText()->selectAll();
+    matchText()->selectionClear();
+
+    // Ensures we can see the most important part of long paths
+    execute_from_ui_thread([this] {
+      auto* view = View::getView(matchText());
+      view->setViewScroll(view->viewportBounds().point2());
+    });
+
+    matchButtons()->ItemChange.connect([this, match](ButtonSet::Item*) {
+      if (matchButtons()->selectedItem() == 0)
+        clip::set_text(match);
+      else
+        base::launcher::open_folder(match);
+      matchButtons()->setSelectedItem(nullptr);
+    });
+  }
+
+  const std::string& who = m_isExtension ? Strings::script_access_extension() :
+                                           Strings::script_access_script();
+  switch (permission) {
+    case Permission::Network:
+      wants()->setText(Strings::script_access_wants_network());
+      permissionLabel()->setText(Strings::script_access_permission_network());
+      rememberExtra()->setText(Strings::script_access_remember_network());
+      matchButtons()->getItem(1)->setEnabled(false);
+      break;
+    case Permission::SpriteRead:
+      wants()->setText(Strings::script_access_wants_sprite_read());
+      permissionLabel()->setText(Strings::script_access_permission_sprite_read());
+      break;
+    case Permission::SpriteWrite:
+      wants()->setText(Strings::script_access_wants_sprite_write());
+      permissionLabel()->setText(Strings::script_access_permission_sprite_write());
+      break;
+    case Permission::IORead:
+      wants()->setText(Strings::script_access_wants_io_read());
+      permissionLabel()->setText(Strings::script_access_permission_io_read());
+      permissionWarning()->setText(Strings::script_access_permission_io_read_warning(who));
+      break;
+    case Permission::IOWrite:
+      wants()->setText(Strings::script_access_wants_io_write());
+      permissionLabel()->setText(Strings::script_access_permission_io_write());
+      permissionWarning()->setText(Strings::script_access_permission_io_write_warning(who));
+      break;
+    case Permission::ClipboardRead:
+      permissionLabel()->setText(Strings::script_access_permission_clipboard_read());
+      break;
+    case Permission::ClipboardWrite:
+      permissionLabel()->setText(Strings::script_access_permission_clipboard_write());
+      break;
+    case Permission::TemporaryFile:
+      permissionLabel()->setText(Strings::script_access_permission_temporary_file());
+      break;
+    case Permission::Preferences:
+      permissionLabel()->setText(Strings::script_access_permission_preferences());
+      rememberExtra()->setText(Strings::script_access_remember_preferences());
+      matchButtons()->getItem(1)->setEnabled(false);
+      break;
+    case Permission::Debug:
+      permissionLabel()->setText(Strings::script_access_permission_debug());
+      break;
+    case Permission::Bytecode:
+      permissionLabel()->setText(Strings::script_access_permission_bytecode());
+      permissionWarning()->setText(Strings::script_access_permission_bytecode_warning(who));
+      break;
+    case Permission::Execute:
+      wants()->setText(Strings::script_access_wants_execute());
+      permissionLabel()->setText(Strings::script_access_permission_execute());
+      permissionWarning()->setText(Strings::script_access_permission_execute_warning(who));
+      rememberExtra()->setText(Strings::script_access_remember_execute());
+      break;
+    case Permission::LoadLib:
+      wants()->setText(Strings::script_access_wants_loadlib());
+      permissionLabel()->setText(Strings::script_access_permission_loadlib());
+      permissionWarning()->setText(Strings::script_access_permission_loadlib_warning(who));
+      rememberExtra()->setText(Strings::script_access_remember_loadlib());
+      break;
+  }
+
+  if (base::is_file(match)) {
+    matchExtra()->setText(Strings::script_access_file_exists());
+    matchExtra()->setVisible(true);
+  }
+
+  wants()->setVisible(!wants()->text().empty());
+  dotdotdot()->Click.connect(&PermissionDialog::showPopup, this);
+
+  if (permission_is_scary(permission)) {
+    permissionIcon()->setSurface(skin::SkinTheme::get(this)->parts.warningBox()->bitmapRef(0));
+
+    if (m_scaryAllowCooldown > 0) {
+      const std::string& original = allow()->text();
+      auto tick = [this, original] {
+        m_scaryAllowCooldown -= m_timer.interval();
+        if (m_scaryAllowCooldown <= 0) {
+          allow()->setText(original);
+          allow()->setEnabled(true);
+          m_timer.stop();
+        }
+        else {
+          allow()->setText(
+            fmt::format("{} ({})", original, std::ceil(m_scaryAllowCooldown / 1000.0)));
+        }
+      };
+      m_scaryAllowCooldown += m_timer.interval();
+      tick();
+      m_timer.Tick.connect(tick);
+      m_timer.start();
+    }
+    else {
+      allow()->setEnabled(true);
+    }
+  }
+  else {
+    allow()->setEnabled(true);
+  }
+}
+
+std::pair<bool, PermissionDialog::Remember> PermissionDialog::ask()
+{
+  openWindowInForeground();
+
+  if (closer() == dotdotdot())
+    return std::make_pair(true, Remember::FullAccess);
+
+  auto shouldRemember = Remember::Nothing;
+  if (remember()->isSelected())
+    shouldRemember = matchText()->text().empty() ? Remember::Permission : Remember::Match;
+  if (rememberFile()->isSelected())
+    shouldRemember = Remember::Match;
+  if (rememberDirectory()->isSelected())
+    shouldRemember = Remember::Directory;
+  if (rememberExtra()->isSelected())
+    shouldRemember = Remember::AllOfType;
+
+  return std::make_pair(closer() == allow(), shouldRemember);
+}
+
+void PermissionDialog::showPopup()
+{
+  Menu menu;
+  MenuItem fullAccess(Strings::script_access_give_full_access());
+  fullAccess.Click.connect([this] {
+    if (Alert::show(Strings::alerts_permissions_full_access(
+          m_isExtension ? Strings::script_access_extension() : Strings::script_access_script())) ==
+        1)
+      closeWindow(dotdotdot());
+  });
+  MenuItem help(Strings::script_access_help());
+  help.Click.connect([] { base::launcher::open_url("https://www.aseprite.org/api/permissions"); });
+
+  menu.addChild(&fullAccess);
+  menu.addChild(new MenuSeparator);
+  menu.addChild(&help);
+
+  const auto& bounds = dotdotdot()->bounds();
+  menu.showPopup(gfx::Point(bounds.x, bounds.y2()), display());
+}
+
+} // namespace app::script

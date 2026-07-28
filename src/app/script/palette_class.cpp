@@ -74,8 +74,8 @@ int Palette_new(lua_State* L)
         std::string absFn = base::get_absolute_path(fromFile);
         lua_pop(L, 1);
 
-        if (!ask_access(L, absFn.c_str(), FileAccessMode::Read, ResourceType::File))
-          return luaL_error(L, "script doesn't have access to open file %s", absFn.c_str());
+        // TODO: Do we want another category for palettes/images?
+        get_engine(L)->accessGate(Permission::IORead, absFn);
 
         auto pal = load_palette(absFn.c_str());
         if (pal)
@@ -102,8 +102,7 @@ int Palette_new(lua_State* L)
         if (!idAndPaths[id].empty()) {
           std::string absFn = base::get_absolute_path(idAndPaths[id]);
 
-          if (!ask_access(L, absFn.c_str(), FileAccessMode::Read, ResourceType::File))
-            return luaL_error(L, "script doesn't have access to open file %s", absFn.c_str());
+          get_engine(L)->accessGate(Permission::IORead, absFn);
 
           auto pal = load_palette(absFn.c_str());
           if (pal)
@@ -236,8 +235,7 @@ int Palette_saveAs(lua_State* L)
 
   if (fn) {
     std::string absFn = base::get_absolute_path(fn);
-    if (!ask_access(L, absFn.c_str(), FileAccessMode::Write, ResourceType::File))
-      return luaL_error(L, "script doesn't have access to write file %s", absFn.c_str());
+    get_engine(L)->accessGate(Permission::IOWrite, absFn);
     save_palette(absFn.c_str(), pal, pal->size(), (sprite ? sprite->colorSpace() : nullptr));
   }
   return 0;

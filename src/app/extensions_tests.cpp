@@ -4,6 +4,7 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
+#include "tests/utils.h"
 #include <gtest/gtest.h>
 
 const char* g_exeName = nullptr;
@@ -85,15 +86,7 @@ public:
     base::remove_directory(m_path);
   }
 
-  Extension* get(Extensions& extensions) const
-  {
-    const auto it = std::find_if(extensions.begin(),
-                                 extensions.end(),
-                                 [this](const Extension* ext) { return ext->name() == m_name; });
-    if (it == extensions.end())
-      return nullptr;
-    return *it;
-  }
+  Extension* get(const Extensions& extensions) const { return extensions.find(m_name); }
 
   void zip()
   {
@@ -156,11 +149,10 @@ private:
     const os::SystemRef system = os::System::make();                                               \
     const char* argv[] = { g_exeName, "--batch" };                                                 \
     const AppOptions options(std::size(argv), argv);                                               \
+    TestTempFile tempIni("", "ini");                                                               \
+    ConfigModule::setConfigFilename(tempIni.filename);                                             \
     App app;                                                                                       \
-    app.initialize(options);                                                                       \
-    if (base::is_file("_extensions.ini"))                                                          \
-      base::delete_file("_extensions.ini");                                                        \
-    set_config_file("_extensions.ini")
+    app.initialize(options)
 
 TEST(Extensions, BasicBuiltIn)
 {

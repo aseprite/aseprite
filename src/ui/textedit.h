@@ -28,6 +28,7 @@ public:
   void copy();
   void paste();
   void selectAll();
+  void selectionClear();
   void setReadOnly(bool readOnly);
   bool isReadOnly() const;
   void setPlaceholder(const std::string& placeholder);
