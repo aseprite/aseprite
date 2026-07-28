@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -49,11 +49,19 @@ bool QoiFormat::onLoad(FileOp* fop)
   FileHandle handle(open_file_with_exception(fop->filename(), "rb"));
   FILE* f = handle.get();
 
-  fseek(f, 0, SEEK_END);
-  auto size = ftell(f);
+#if LAF_WINDOWS
+  _fseeki64(f, 0, SEEK_END);
+  auto size = _ftelli64(f);
   if (size <= 0)
     return false;
-  fseek(f, 0, SEEK_SET);
+  _fseeki64(f, 0, SEEK_SET);
+#else
+  fseeko(f, 0, SEEK_END);
+  auto size = ftello(f);
+  if (size <= 0)
+    return false;
+  fseeko(f, 0, SEEK_SET);
+#endif
 
   auto data = QOI_MALLOC(size);
   if (!data)

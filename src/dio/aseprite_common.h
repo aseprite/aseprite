@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018-2025 Igara Studio S.A.
+// Copyright (c) 2018-present Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -80,9 +80,9 @@
 namespace dio {
 
 struct AsepriteHeader {
-  long pos; // TODO used by the encoder in app project
+  uint64_t pos; // TODO used by the encoder in app project
 
-  uint32_t size;
+  uint32_t size; // TODO should be uint64_t to support file sizes >4.30GB (requires format revision)
   uint16_t magic;
   uint16_t frames;
   uint16_t width;
@@ -104,6 +104,7 @@ struct AsepriteHeader {
 };
 
 struct AsepriteFrameHeader {
+  uint64_t pos;
   uint32_t size;
   uint16_t magic;
   uint32_t chunks;
@@ -112,7 +113,7 @@ struct AsepriteFrameHeader {
 
 struct AsepriteChunk {
   int type;
-  int start;
+  uint64_t start;
 };
 
 class AsepriteExternalFiles {

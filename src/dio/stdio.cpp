@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2026 Igara Studio S.A.
+// Copyright (c) 2026-present Igara Studio S.A.
 // Copyright (c) 2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -18,14 +18,22 @@ bool StdioFileInterface::ok() const
   return m_ok;
 }
 
-size_t StdioFileInterface::tell()
+uint64_t StdioFileInterface::tell()
 {
-  return ftell(m_file);
+#if LAF_WINDOWS
+  return _ftelli64(m_file);
+#else
+  return ftello(m_file);
+#endif
 }
 
-void StdioFileInterface::seek(size_t absPos)
+void StdioFileInterface::seek(uint64_t absPos)
 {
-  fseek(m_file, absPos, SEEK_SET);
+#if LAF_WINDOWS
+  _fseeki64(m_file, absPos, SEEK_SET);
+#else
+  fseeko(m_file, absPos, SEEK_SET);
+#endif
 }
 
 uint8_t StdioFileInterface::read8()

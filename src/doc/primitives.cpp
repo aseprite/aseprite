@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2023 Igara Studio S.A.
+// Copyright (c) 2018-present Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -15,6 +15,7 @@
 #include "doc/brush.h"
 #include "doc/dispatch.h"
 #include "doc/image.h"
+#include "doc/image_bits.h"
 #include "doc/palette.h"
 #include "doc/remap.h"
 #include "doc/rgbmap.h"
@@ -611,6 +612,27 @@ void preprocess_transparent_pixels(Image* image)
       break;
     }
   }
+}
+
+int count_rgba_colors(const Image* image, std::unordered_set<color_t>& colors, int maxColors)
+{
+  ASSERT(image->pixelFormat() == IMAGE_RGB);
+  if (image->pixelFormat() != IMAGE_RGB)
+    return 0;
+
+  int colorCount = 0;
+  const LockImageBits<RgbTraits> bits(image);
+  for (auto it = bits.begin(), end = bits.end(); it != end; ++it) {
+    const color_t c = *it;
+    if (rgba_geta(c) == 0)
+      continue;
+    if (colors.insert(c).second) {
+      ++colorCount;
+      if (maxColors > 0 && colorCount >= maxColors)
+        break;
+    }
+  }
+  return colorCount;
 }
 
 } // namespace doc

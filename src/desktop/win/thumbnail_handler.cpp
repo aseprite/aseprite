@@ -50,7 +50,7 @@ public:
 
   bool ok() const override { return m_ok; }
 
-  size_t tell() override
+  uint64_t tell() override
   {
     LARGE_INTEGER delta;
     delta.QuadPart = 0;
@@ -64,7 +64,7 @@ public:
     return newPos.QuadPart;
   }
 
-  void seek(size_t absPos) override
+  void seek(uint64_t absPos) override
   {
     LARGE_INTEGER pos;
     pos.QuadPart = absPos;

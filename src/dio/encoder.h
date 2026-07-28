@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2026 Igara Studio S.A.
+// Copyright (c) 2026-present Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -35,9 +35,9 @@ protected:
   EncodeDelegate* delegate() { return m_delegate; }
   FileInterface* f() { return m_f; }
 
-  size_t tell() { return m_f->tell(); }
+  uint64_t tell() { return m_f->tell(); }
 
-  void seek(size_t absPos) { m_f->seek(absPos); }
+  void seek(uint64_t absPos) { m_f->seek(absPos); }
 
   void write8(const uint8_t value) { m_f->write8(value); }
   size_t writeBytes(uint8_t* buf, size_t n) { return m_f->writeBytes(buf, n); }

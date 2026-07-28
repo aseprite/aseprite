@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2022 Igara Studio S.A.
+// Copyright (c) 2022-present Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -35,10 +35,17 @@ std::unique_ptr<Palette> load_col_file(const char* filename)
     return nullptr;
 
   // Get file size.
-  std::fseek(f, 0, SEEK_END);
-  std::size_t size = std::ftell(f);
-  std::div_t d = std::div(size - 8, 3);
-  std::fseek(f, 0, SEEK_SET);
+#ifdef _WIN32
+  _fseeki64(f, 0, SEEK_END);
+  const std::size_t size = _ftelli64(f);
+  const std::div_t d = std::div(size - 8, 3);
+  _fseeki64(f, 0, SEEK_SET);
+#else
+  fseeko(f, 0, SEEK_END);
+  const std::size_t size = ftello(f);
+  const std::div_t d = std::div(size - 8, 3);
+  fseeko(f, 0, SEEK_SET);
+#endif
 
   bool pro = (size == 768) ? false : true; // is Animator Pro format?
   if (!(size) || (pro && d.rem)) {         // Invalid format
