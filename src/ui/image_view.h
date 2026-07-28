@@ -22,6 +22,8 @@ class ImageView : public Widget {
 public:
   ImageView(const os::Ref<os::Surface>& sur, WidgetAlign align);
 
+  void setSurface(const os::Ref<os::Surface>& surface) { m_sur = surface; }
+
 protected:
   void onSizeHint(SizeHintEvent& ev) override;
   void onPaint(PaintEvent& ev) override;

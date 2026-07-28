@@ -28,6 +28,7 @@
 #include "app/pref/preferences.h"
 #include "app/recent_files.h"
 #include "app/resource_finder.h"
+#include "app/script/about_extension_window.h"
 #include "app/tools/tool_box.h"
 #include "app/tx.h"
 #include "app/ui/best_fit_criteria_selector.h"
@@ -42,7 +43,6 @@
 #include "base/fs.h"
 #include "base/string.h"
 #include "base/version.h"
-#include "doc/image.h"
 #include "fmt/format.h"
 #include "os/system.h"
 #include "os/window.h"
@@ -58,7 +58,11 @@
   #include "app/sentry_wrapper.h"
 #endif
 
-#include "about_extension.xml.h"
+#ifdef ENABLE_SCRIPTING
+  #include "app/script/engine.h"
+  #include "app/script/permission_storage.h"
+#endif
+
 #include "options.xml.h"
 
 namespace app {
@@ -70,6 +74,7 @@ const char* kSectionBgId = "section_bg";
 const char* kSectionGridId = "section_grid";
 const char* kSectionThemeId = "section_theme";
 const char* kSectionExtensionsId = "section_extensions";
+const char* kSectionSecurityId = "section_security";
 const char* kSectionTabletId = "section_tablet";
 const char* kSectionFileExplorerId = "section_file_explorer";
 
@@ -111,6 +116,14 @@ public:
       if (const auto& comboTooltip = tooltipManager->getTooltipFor(comboBox->getEntryWidget());
           !comboTooltip.empty())
         m_text += " " + comboTooltip;
+    }
+    else if (widget->type() == ui::kTreeWidget) {
+      auto* tree = static_cast<Tree*>(widget);
+
+      for (const TreeNode* node = tree->root(); node; node = node->nextInTree()) {
+        m_text += " ";
+        m_text += node->text();
+      }
     }
     else if (const auto& tooltip = tooltipManager->getTooltipFor(widget); !tooltip.empty())
       m_text += " " + tooltip;
@@ -224,81 +237,6 @@ class OptionsWindow : public app::gen::Options {
     LangInfo m_langInfo;
   };
 
-  class AboutExtensionWindow : public gen::AboutExtension {
-  public:
-    explicit AboutExtensionWindow(const Extension* ext)
-    {
-      const auto& about = ext->readAbout();
-
-      if (!ext->canBeUninstalled())
-        setText(Strings::about_extension_title_builtin());
-
-      name()->setText(about.name);
-      version()->setText(about.version);
-
-      if (about.description.empty())
-        description()->setVisible(false);
-      else {
-        auto* desc = description();
-        desc->setText(about.description);
-      }
-
-      if (about.url.empty()) {
-        urlContainer()->setVisible(false);
-      }
-      else {
-        url()->setText(about.url);
-        url()->setUrl(about.url);
-      }
-
-      openFolder()->Click.connect([ext] { launcher::open_folder(ext->path()); });
-
-      if (about.displayName.empty() || about.displayName == about.name) {
-        displayName()->setText(about.name);
-        name()->setVisible(false);
-        versionSeparator()->setVisible(false);
-      }
-      else {
-        displayName()->setText(about.displayName);
-      }
-
-      if (about.author.has_value()) {
-        const auto& contributor = about.author.value();
-        Widget* label;
-        if (contributor.url.empty()) {
-          label = new Label(contributor.toString());
-        }
-        else {
-          label = new LinkLabel(contributor.url, contributor.toString());
-          tooltipManager()->addTooltipFor(label, contributor.url, BOTTOM);
-        }
-        authorContainer()->addChild(label);
-      }
-      else {
-        authorContainer()->setVisible(false);
-      }
-
-      if (!about.contributors.empty()) {
-        for (const auto& contributor : about.contributors) {
-          Widget* label;
-          if (!contributor.url.empty()) {
-            label = new LinkLabel(contributor.url, contributor.toString());
-            tooltipManager()->addTooltipFor(label, contributor.url, BOTTOM);
-          }
-          else {
-            label = new Label(contributor.toString());
-          }
-          contributors()->addChild(label);
-        }
-      }
-      else {
-        contributorsContainer()->setVisible(false);
-      }
-
-      layout();
-    };
-  };
-
   class ExtensionItem : public ListItem {
   public:
     ExtensionItem(Extension* extension) : ListItem(extension->displayName()), m_extension(extension)
@@ -356,14 +294,7 @@ class OptionsWindow : public app::gen::Options {
     void openAbout() const
     {
       ASSERT(m_extension);
-      try {
-        AboutExtensionWindow about(m_extension);
-        about.openWindowInForeground();
-      }
-      catch (const std::exception&) {
-        if (Alert::show(Strings::alerts_cannot_read_extension()) == 1)
-          launcher::open_folder(m_extension->path());
-      }
+      AboutExtensionWindow::show(m_extension);
     }
 
   private:
@@ -605,6 +536,26 @@ public:
     disableExtension()->Click.connect([this] { onDisableExtension(); });
     uninstallExtension()->Click.connect([this] { onUninstallExtension(); });
     openExtensionAbout()->Click.connect([this] { onOpenExtensionAbout(); });
+
+    // Permissions
+#ifdef ENABLE_SCRIPTING
+    permissionsTree()->Change.connect([this] { onPermissionsChange(); });
+    permissionsTree()->RightClickItem.connect([this] { onPermissionsRightClickItem(); });
+    allowDenyPermission()->ItemChange.connect([this](ButtonSet::Item*) {
+      onAllowDenyPermission(allowDenyPermission()->selectedItem() == 0);
+    });
+    revokePermission()->Click.connect([this] { onRevokePermission(); });
+    revokeAllPermissions()->Click.connect([this] { onRevokeAllPermissions(); });
+#else
+    for (auto* item : sectionListbox()->children()) {
+      if (auto* listItem = dynamic_cast<ListItem*>(item)) {
+        if (listItem->getValue() == kSectionSecurityId) {
+          listItem->setVisible(false);
+          break;
+        }
+      }
+    }
+#endif
 
     // Aseprite Format preferences
     celFormat()->Change.connect([this] { onCelFormatChange(); });
@@ -1490,6 +1441,9 @@ private:
       onResetColorManagement();
       onResetGrid();
       onResetTimelineSel();
+#ifdef ENABLE_SCRIPTING
+      onRevokeAllPermissions(false);
+#endif
 
       // If we're not on the default theme, restore it.
       m_restoreThisTheme = m_pref.theme.selected.defaultValue();
@@ -1558,6 +1512,9 @@ private:
     // Load extension
     else if (item->getValue() == kSectionExtensionsId)
       loadExtensions();
+    // Load permissions
+    else if (item->getValue() == kSectionSecurityId)
+      loadPermissions();
 
     panel()->showChild(findChild(item->getValue().c_str()));
   }
@@ -1986,6 +1943,206 @@ private:
     extensionsList()->layout();
   }
 
+#ifdef ENABLE_SCRIPTING
+  class PermTreeNode : public TreeNode {
+  public:
+    enum class Type : uint8_t {
+      // permission, allowed
+      Permission,
+      // permission, match, allowed
+      Match,
+      FullAccess,
+      // script, isExtension
+      Script
+    };
+
+    explicit PermTreeNode(const Type type,
+                          const std::string& text,
+                          const SkinPartPtr& icon = nullptr)
+      : TreeNode(text, icon)
+      , m_type(type)
+      , m_allowed(false)
+      , m_isExtension(false) {};
+
+    Type type() const { return m_type; }
+
+    script::Permission permission() const
+    {
+      ASSERT(m_type == Type::Permission || m_type == Type::Match);
+      return m_permission;
+    }
+
+    void setPermission(const script::Permission permission)
+    {
+      ASSERT(m_type == Type::Permission || m_type == Type::Match);
+      m_permission = permission;
+    }
+
+    bool isAllowed() const
+    {
+      ASSERT(m_type == Type::Permission || m_type == Type::Match);
+      return m_allowed;
+    }
+
+    void setIsAllowed(const bool allowed)
+    {
+      ASSERT(m_type == Type::Permission || m_type == Type::Match);
+      m_allowed = allowed;
+    }
+
+    const std::string& match() const
+    {
+      ASSERT(m_type == Type::Match);
+      return m_match;
+    }
+
+    void setMatch(const std::string& match)
+    {
+      ASSERT(m_type == Type::Match);
+      m_match = match;
+    }
+
+    bool isExtension() const
+    {
+      ASSERT(m_type == Type::Script);
+      return m_isExtension;
+    }
+
+    void setIsExtension(const bool isExtension)
+    {
+      ASSERT(m_type == Type::Script);
+      m_isExtension = isExtension;
+    }
+
+    const std::string& script() const
+    {
+      ASSERT(m_type == Type::Script);
+      return m_script;
+    }
+
+    void setScript(const std::string& script)
+    {
+      ASSERT(m_type == Type::Script);
+      m_script = script;
+    }
+
+  private:
+    Type m_type;
+    script::Permission m_permission = script::Permission::Unknown;
+    bool m_allowed;
+    std::string m_match;
+    bool m_isExtension;
+    std::string m_script;
+  };
+
+#endif
+
+  void loadPermissions()
+  {
+#ifdef ENABLE_SCRIPTING
+    if (permissionsTree()->root())
+      return;
+
+    ResourceFinder rf;
+    rf.includeUserDir("scripts");
+    const std::string& scriptsDir = rf.getFirstOrCreateDefault();
+
+    const auto* theme = SkinTheme::get(this);
+    const auto fileIcon = theme->parts.iconTreeFile();
+    const auto extIcon = theme->parts.iconTreeExtension();
+    const auto allowIcon = theme->parts.iconTreeCheck();
+    const auto denyIcon = theme->parts.iconTreeStop();
+    const auto urldIcon = theme->parts.palOptions();
+
+    try {
+      auto root = std::make_unique<TreeNode>(Strings::options_section_security_permissions());
+      const auto* storage = script::PermissionStorage::instance();
+      for (const auto& script : storage->scripts()) {
+        auto name = script;
+        auto icon = fileIcon;
+        bool isExtension = false;
+        if (script.rfind(scriptsDir, 0) == 0) {
+          name = script.substr(scriptsDir.size() + 1);
+        }
+        else if (script.rfind(script::Engine::kExtensionPrefix, 0) == 0) {
+          name = script.substr(std::strlen(script::Engine::kExtensionPrefix));
+          icon = extIcon;
+          isExtension = true;
+        }
+
+        auto scriptNode = std::make_unique<PermTreeNode>(PermTreeNode::Type::Script, name, icon);
+        scriptNode->setIsExtension(isExtension);
+        scriptNode->setScript(script);
+
+        if (storage->readFullAccess(script)) {
+          auto fullAccess = std::make_unique<PermTreeNode>(PermTreeNode::Type::FullAccess,
+                                                           Strings::options_full_access(),
+                                                           theme->parts.iconTreeAlert());
+          fullAccess->setTooltip(Strings::options_full_access_tooltip(
+            isExtension ? Strings::script_access_extension() : Strings::script_access_script()));
+          scriptNode->addChild(fullAccess.release());
+          root->addChild(scriptNode.release());
+          continue;
+        }
+
+        for (const auto& permission : storage->stored(script)) {
+          const std::string permissionString(script::permission_to_string(permission));
+          const std::string& permName = Strings::instance()->translate(
+            fmt::format("script_access.permission_{}", permissionString).c_str());
+          std::unique_ptr<PermTreeNode> permNode;
+
+          if (script::permission_supports_matching(permission)) {
+            permNode = std::make_unique<PermTreeNode>(PermTreeNode::Type::Permission,
+                                                      permName + ":",
+                                                      urldIcon);
+            for (const auto& [match, allowed] : storage->matches(script, permission)) {
+              auto* matchNode =
+                new PermTreeNode(PermTreeNode::Type::Match, match, allowed ? allowIcon : denyIcon);
+              matchNode->setMatch(match);
+              matchNode->setIsAllowed(allowed);
+              permNode->addChild(matchNode);
+            }
+
+            if (!permNode->hasChildren())
+              continue; // No URLs in this one, no need to add it.
+          }
+          else {
+            const bool allowed = storage->read(script, permission).value_or(false);
+            permNode = std::make_unique<PermTreeNode>(PermTreeNode::Type::Permission,
+                                                      permName,
+                                                      (allowed ? allowIcon : denyIcon));
+            permNode->setIsAllowed(allowed);
+          }
+
+          permNode->setPermission(permission);
+          scriptNode->addChild(permNode.release());
+        }
+
+        if (scriptNode->hasChildren())
+          root->addChild(scriptNode.release());
+      }
+
+      revokeAllPermissions()->setEnabled(root->hasChildren());
+
+      if (!root->hasChildren()) {
+        auto* noPermissionsNode = new TreeNode(Strings::options_no_permissions(), denyIcon);
+        noPermissionsNode->setTooltip(Strings::options_no_permissions_tooltip());
+        root->addChild(noPermissionsNode);
+      }
+
+      permissionsTree()->setRoot(root.release());
+    }
+    catch (const std::exception& e) {
+      auto* errorNode = new TreeNode(Strings::options_permission_error(),
+                                     theme->parts.iconTreeAlert());
+      LOG(ERROR, "Failed to read permissions.json: '%s'\n", e.what());
+      permissionsTree()->setRoot(errorNode);
+    }
+
+    onPermissionsChange();
+#endif
+  }
+
   void onThemeChange()
   {
     ThemeItem* item = dynamic_cast<ThemeItem*>(themeList()->getSelectedChild());
@@ -2241,6 +2398,206 @@ private:
       item->openAbout();
   }
 
+#ifdef ENABLE_SCRIPTING
+  void onPermissionsChange()
+  {
+    revokePermission()->setEnabled(false);
+    allowDenyPermission()->setEnabled(false);
+
+    auto* node = dynamic_cast<PermTreeNode*>(permissionsTree()->selected());
+    if (!node)
+      return;
+
+    const auto type = node->type();
+    revokePermission()->setEnabled(true);
+
+    if ((type == PermTreeNode::Type::Permission || type == PermTreeNode::Type::Match) &&
+        !node->hasChildren()) {
+      allowDenyPermission()->setEnabled(true);
+      const bool allowed = node->isAllowed();
+      allowDenyPermission()->getItem(0)->setSelected(allowed);
+      allowDenyPermission()->getItem(1)->setSelected(!allowed);
+    }
+    else {
+      allowDenyPermission()->setSelectedItem(nullptr);
+    }
+  }
+
+  void onPermissionsRightClickItem()
+  {
+    auto* node = dynamic_cast<PermTreeNode*>(permissionsTree()->selected());
+    if (!node)
+      return;
+
+    const auto type = node->type();
+    const bool canRevoke =
+      (type == PermTreeNode::Type::Permission || type == PermTreeNode::Type::Match ||
+       type == PermTreeNode::Type::FullAccess || type == PermTreeNode::Type::Script);
+    const bool hasPath = (type == PermTreeNode::Type::Script || type == PermTreeNode::Type::Match);
+    const bool canAllowDeny = ((type == PermTreeNode::Type::Permission && !node->hasChildren()) ||
+                               type == PermTreeNode::Type::Match);
+    Menu menu;
+
+    MenuItem open(Strings::directory_tree_open());
+    MenuItem openFolder(Strings::directory_tree_open_folder());
+    MenuItem allow(Strings::options_allow());
+    MenuItem deny(Strings::options_deny());
+    MenuItem revoke(Strings::options_revoke());
+    MenuItem aboutExtension(Strings::options_open_extension_about());
+
+    if (hasPath) {
+      menu.addChild(&open);
+      menu.addChild(&openFolder);
+
+      if (canRevoke || canAllowDeny)
+        menu.addChild(new MenuSeparator);
+    }
+    if (canAllowDeny) {
+      menu.addChild(&allow);
+      menu.addChild(&deny);
+
+      if (canRevoke)
+        menu.addChild(new MenuSeparator);
+    }
+    if (canRevoke)
+      menu.addChild(&revoke);
+
+    if (hasPath) {
+      std::string path = node->text();
+
+      if (type == PermTreeNode::Type::Script) {
+        if (!node->isExtension()) {
+          path = node->script();
+        }
+        else {
+          open.setEnabled(false);
+          const auto* extension = App::instance()->extensions().find(node->text());
+          ASSERT(extension);
+          if (!extension)
+            return;
+          path = extension->path();
+          menu.insertChild(0, &aboutExtension);
+          menu.removeChild(&open);
+          menu.removeChild(&openFolder);
+          aboutExtension.Click.connect([extension] { AboutExtensionWindow::show(extension); });
+        }
+      }
+
+      // Dealing with wildcards, probably fragile, but you can't do much beyond directory
+      // wildcards atm unless it's manual
+      if (path.size() >= 2 && path.find('*') != std::string::npos) {
+        open.setEnabled(false);
+
+        if (path.compare(path.size() - 2, 2, "/*") == 0) {
+          path.erase(path.size() - 2);
+        }
+      }
+      else {
+        open.setEnabled(base::is_file(path));
+        openFolder.setEnabled(base::is_directory(path));
+      }
+
+      open.Click.connect([path] { base::launcher::open_file(path); });
+      openFolder.Click.connect([path] { base::launcher::open_folder(path); });
+    }
+    if (canRevoke)
+      revoke.Click.connect([this] { onRevokePermission(); });
+    if (canAllowDeny) {
+      const bool allowed = node->isAllowed();
+      allow.setEnabled(!allowed);
+      deny.setEnabled(allowed);
+
+      allow.Click.connect([this] { onAllowDenyPermission(true); });
+      deny.Click.connect([this] { onAllowDenyPermission(false); });
+    }
+
+    const auto& items = menu.children();
+    if (items.empty())
+      return;
+
+    for (auto* item : items)
+      item->processMnemonicFromText();
+
+    menu.showPopup(mousePosInDisplay(), display());
+  }
+
+  void onAllowDenyPermission(bool value)
+  {
+    auto* node = dynamic_cast<PermTreeNode*>(permissionsTree()->selected());
+    if (!node)
+      return;
+
+    const auto type = node->type();
+    auto* storage = script::PermissionStorage::instance();
+    switch (type) {
+      case PermTreeNode::Type::Permission: {
+        const auto script = static_cast<PermTreeNode*>(node->parent())->script();
+        storage->write(script, node->permission(), value);
+        break;
+      }
+      case PermTreeNode::Type::Match: {
+        const auto& script = static_cast<PermTreeNode*>(node->parent()->parent())->script();
+        const auto permission = static_cast<PermTreeNode*>(node->parent())->permission();
+        storage->writeForMatch(script, permission, node->match(), value);
+        break;
+      }
+      default: return;
+    }
+
+    node->setIsAllowed(value);
+    const auto* theme = SkinTheme::get(this);
+    node->setIcon(value ? theme->parts.iconTreeCheck() : theme->parts.iconTreeStop());
+    permissionsTree()->invalidate();
+    onPermissionsChange();
+  }
+
+  void onRevokePermission()
+  {
+    const auto* node = dynamic_cast<PermTreeNode*>(permissionsTree()->selected());
+    if (!node)
+      return;
+
+    const auto type = node->type();
+    auto* storage = script::PermissionStorage::instance();
+
+    switch (type) {
+      case PermTreeNode::Type::Permission: {
+        const auto& script = static_cast<PermTreeNode*>(node->parent())->script();
+        storage->reset(script, node->permission());
+        break;
+      }
+      case PermTreeNode::Type::Match: {
+        const auto& script = static_cast<PermTreeNode*>(node->parent()->parent())->script();
+        const auto permission = static_cast<PermTreeNode*>(node->parent())->permission();
+        storage->reset(script, permission, node->match());
+        break;
+      }
+      case PermTreeNode::Type::FullAccess: {
+        const auto& script = static_cast<PermTreeNode*>(node->parent())->script();
+        storage->writeFullAccess(script, false);
+        break;
+      }
+      case PermTreeNode::Type::Script: {
+        storage->reset(node->script());
+        break;
+      }
+    }
+
+    permissionsTree()->setRoot(nullptr);
+    loadPermissions();
+  }
+
+  void onRevokeAllPermissions(const bool askConfirmation = true)
+  {
+    if (askConfirmation && Alert::show(Strings::alerts_permissions_revoke_all()) != 1)
+      return;
+
+    script::PermissionStorage::instance()->reset();
+    permissionsTree()->setRoot(nullptr);
+    loadPermissions();
+  }
+#endif
+
   void onCelFormatChange()
   {
     auto format = gen::CelContentFormat(celFormat()->getSelectedItemIndex());
@@ -2292,6 +2649,7 @@ private:
       onChangeGridScope();
       loadThemes();
       loadExtensions();
+      loadPermissions();
       everythingPreloaded = true;
     }
 
