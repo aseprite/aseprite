@@ -25,6 +25,7 @@
             <listitem text="@.section_undo" value="section_undo" />
             <listitem text="@.section_theme" value="section_theme" />
             <listitem text="@.section_extensions" value="section_extensions" />
+            <listitem text="@.section_security" value="section_security" />
             <listitem text="@.section_aseprite_format" value="section_aseprite_format" />
             <listitem text="@.section_experimental" value="section_experimental" />
             <separator text="@.section_windows_specific" horizontal="true" style="separator_in_view" id="section_windows_specific_separator" />
@@ -624,6 +625,23 @@
           </hbox>
         </vbox>
 
+        <!-- Security -->
+        <vbox id="section_security">
+          <view expansive="true" maxsize="true">
+            <tree id="permissions_tree" />
+          </view>
+          <hbox id="security_buttons">
+            <link text="@.learn_more" url="https://www.aseprite.org/docs/preferences#security" />
+            <boxfiller />
+            <buttonset id="allow_deny_permission" columns="2" enabled="false">
+              <item text="@.allow" style="buttonset_item_text" />
+              <item text="@.deny" style="buttonset_item_text" />
+            </buttonset>
+            <button id="revoke_permission" text="@.revoke" enabled="false" minwidth="60" />
+            <button id="revoke_all_permissions" text="@.revoke_all" enabled="false" minwidth="60" />
+          </hbox>
+        </vbox>
+
         <!-- Aseprite Format -->
         <vbox id="section_aseprite_format">
           <separator text="@.section_aseprite_format" horizontal="true" />
@@ -725,14 +743,16 @@
         </vbox>
 
         <!-- Developer -->
-        <vbox id="section_developer" i18nwarnings="false">
+        <vbox id="section_developer">
           <separator text="@.section_developer" horizontal="true" />
           <check id="gpu_acceleration"
                  text="@.gpu_acceleration"
                  tooltip="@.gpu_acceleration_tooltip" />
-          <check text="Debug paint messages"
+          <check text="@.devmode_debug_paint_messages"
+                 id="devmode_debug_paint_messages"
                  pref="developer.debug_paint_messages" />
-          <check text="Paint widgets baseline"
+          <check text="@.devmode_paint_widget_baseline"
+                 id="devmode_paint_widget_baseline"
                  pref="developer.paint_widget_baseline" />
           <check text="Debug view scroll"
                  pref="developer.debug_view_scroll" />
@@ -747,6 +767,15 @@
             <check text="Debug tiles"
                    pref="render.debug_tiles" />
           </hbox>
+          <separator text="@.devmode_scripting" horizontal="true" />
+          <check text="@.devmode_disable_integrity_check"
+                 id="devmode_disable_integrity_check"
+                 tooltip="@.devmode_disable_integrity_check_tooltip"
+                 pref="developer.disable_integrity_check" />
+          <check text="@.devmode_allow_cli_scripts_full_access"
+                 id="devmode_allow_cli_scripts_full_access"
+                 pref="general.allow_cli_scripts_full_access"
+                 tooltip="@.devmode_allow_cli_scripts_full_access_tooltip" />
         </vbox>
 
         <!-- Reset -->

@@ -181,7 +181,7 @@ endif()
 if(ENABLE_SCRIPTING)
   target_link_libraries(app-lib lua lauxlib lualib)
   target_compile_definitions(app-lib PUBLIC -DENABLE_SCRIPTING)
-  target_link_libraries(app-lib cppdap)
+  target_link_libraries(app-lib cppdap blake3)
 
   if(ENABLE_WEBSOCKET)
     target_link_libraries(app-lib ixwebsocket)
@@ -228,6 +228,8 @@ if(ENABLE_SCRIPTING)
     script/luacpp.cpp
     script/palette_class.cpp
     script/palettes_class.cpp
+    script/permission_dialog.cpp
+    script/permission_storage.cpp
     script/pixel_color_object.cpp
     script/plugin_class.cpp
     script/point_class.cpp
@@ -236,7 +238,6 @@ if(ENABLE_SCRIPTING)
     script/range_class.cpp
     script/rectangle_class.cpp
     script/script_input_chain.cpp
-    script/security.cpp
     script/selection_class.cpp
     script/site_class.cpp
     script/size_class.cpp

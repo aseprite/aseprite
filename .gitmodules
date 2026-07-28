@@ -87,3 +87,6 @@
 [submodule "third_party/mbedtls"]
 	path = third_party/mbedtls
 	url = https://github.com/aseprite/mbedtls.git
+[submodule "third_party/BLAKE3"]
+	path = third_party/BLAKE3
+	url = https://github.com/aseprite/BLAKE3.git
