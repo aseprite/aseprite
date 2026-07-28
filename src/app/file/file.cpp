@@ -1109,18 +1109,34 @@ void FileOp::postLoad()
     // Creates a suitable palette for RGB images
     if (m_createPaletteFromRgba && sprite->pixelFormat() == IMAGE_RGB &&
         sprite->getPalettes().size() <= 1 && sprite->palette(frame_t(0))->isBlack()) {
-      std::shared_ptr<Palette> palette(
-        render::create_palette_from_sprite(sprite,
-                                           frame_t(0),
-                                           sprite->lastFrame(),
-                                           true,
-                                           nullptr,
-                                           nullptr,
-                                           m_config.newBlend,
-                                           m_config.rgbMapAlgorithm));
+      const int maxColors = 16384;
+      std::unordered_set<color_t> colors;
+      for (const Cel* cel : sprite->cels()) {
+        if (cel->image())
+          count_rgba_colors(cel->image(), colors, maxColors);
+        if (colors.size() >= maxColors)
+          break;
+      }
 
-      sprite->resetPalettes();
-      sprite->setPalette(palette.get(), false);
+      if (!colors.empty() && colors.size() < maxColors) {
+        std::shared_ptr<Palette> palette(
+          render::create_palette_from_sprite(sprite,
+                                             frame_t(0),
+                                             sprite->lastFrame(),
+                                             true,
+                                             nullptr,
+                                             nullptr,
+                                             m_config.newBlend,
+                                             m_config.rgbMapAlgorithm));
+      }
+      else {
+        std::shared_ptr<Palette> palette(new Palette(frame_t(0), colors.size()));
+        int i = 0;
+        for (const color_t c : colors)
+          palette->setEntry(i++, c);
+        sprite->resetPalettes();
+        sprite->setPalette(palette.get(), false);
+      }
     }
   }
 

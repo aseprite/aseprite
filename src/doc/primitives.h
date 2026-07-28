@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2023 Igara Studio S.A.
+// Copyright (c) 2018-present Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -13,6 +13,8 @@
 #include "doc/color.h"
 #include "doc/image_buffer.h"
 #include "gfx/fwd.h"
+
+#include <unordered_set>
 
 namespace doc {
 class Brush;
@@ -78,6 +80,12 @@ uint32_t calculate_image_hash(const Image* image, const gfx::Rect& bounds);
 // Sets RGB values to 0 when alpha=0 (to match images with alpha=0
 // in tilesets/calculate_image_hash)
 void preprocess_transparent_pixels(Image* image);
+
+// Counts RGBA colors from an image.
+// Transparent pixels (alpha == 0) are skipped.
+// Stops up to maxColors (0 = no limit).
+// Returns the number of different pixels colors available.
+int count_rgba_colors(const Image* image, std::unordered_set<color_t>& colors, int maxColors = 0);
 
 } // namespace doc
 

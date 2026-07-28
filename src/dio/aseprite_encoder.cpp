@@ -217,34 +217,33 @@ void AsepriteEncoder::writeHeader(const AsepriteHeader* header)
 
 void AsepriteEncoder::writeHeaderFileSize(AsepriteHeader* header)
 {
-  header->size = tell() - header->pos;
+  header->size = tell() - header->pos; // TODO truncates to uint32_t for files >4.30GB
 
   seek(header->pos);
   write32(header->size);
 
-  seek(header->pos + header->size);
+  seek(header->pos + header->size); // TODO wrong position for files >4.30GB, works only because
+                                    // nothing writes after this
 }
 
 void AsepriteEncoder::prepareFrameHeader(AsepriteFrameHeader* frame_header)
 {
-  const int pos = tell();
-
-  frame_header->size = pos;
+  frame_header->pos = tell();
+  frame_header->size = 0;
   frame_header->magic = ASE_FILE_FRAME_MAGIC;
   frame_header->chunks = 0;
   frame_header->duration = 0;
 
-  seek(pos + 16);
+  seek(frame_header->pos + 16);
 }
 
 void AsepriteEncoder::writeFrameHeader(AsepriteFrameHeader* frame_header)
 {
-  const int pos = frame_header->size;
-  const int end = tell();
+  const uint64_t end = tell();
 
-  frame_header->size = end - pos;
+  frame_header->size = end - frame_header->pos;
 
-  seek(pos);
+  seek(frame_header->pos);
 
   write32(frame_header->size);
   write16(frame_header->magic);
@@ -364,8 +363,8 @@ void AsepriteEncoder::writeChunkStart(AsepriteFrameHeader* frame_header,
 
 void AsepriteEncoder::writeChunkEnd(AsepriteChunk* chunk)
 {
-  const int chunk_end = tell();
-  const int chunk_size = chunk_end - chunk->start;
+  const uint64_t chunk_end = tell();
+  const uint64_t chunk_size = chunk_end - chunk->start;
 
   seek(chunk->start);
   write32(chunk_size);
@@ -1138,7 +1137,7 @@ void AsepriteEncoder::writeTilesetChunk(AsepriteFrameHeader* frame_header,
 
   // Flag 2 = tileset
   if (flags & ASE_TILESET_FLAG_EMBEDDED) {
-    const size_t beg = tell();
+    const uint64_t beg = tell();
 
     // Save the cached tileset compressed data
     if (!tileset->compressedData().empty() &&
@@ -1171,7 +1170,7 @@ void AsepriteEncoder::writeTilesetChunk(AsepriteFrameHeader* frame_header,
       if (compressedDataPtr)
         tileset->setCompressedData(compressedData);
 
-      const size_t end = tell();
+      const uint64_t end = tell();
       seek(beg);
       write32(end - beg - 4); // Save the compressed data length
       seek(end);
@@ -1281,7 +1280,7 @@ void AsepriteEncoder::writePropertiesMaps(const AsepriteExternalFiles& ext_files
 {
   ASSERT(nmaps > 0);
 
-  const long startPos = tell();
+  const uint64_t startPos = tell();
   // We zero the size in bytes of all properties maps stored in this
   // chunk for now. (actual value is calculated after serialization
   // of all properties maps, at which point this field is overwritten)
@@ -1316,7 +1315,7 @@ void AsepriteEncoder::writePropertiesMaps(const AsepriteExternalFiles& ext_files
     write32(extensionId);
     writePropertyValue(properties, depth);
   }
-  const long endPos = tell();
+  const uint64_t endPos = tell();
   // We can overwrite the properties maps size now
   seek(startPos);
   write32(endPos - startPos);

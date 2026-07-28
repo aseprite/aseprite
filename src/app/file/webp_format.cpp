@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 // Copyright (C) 2015  Gabriel Rauter
 //
@@ -84,11 +84,18 @@ bool WebPFormat::onLoad(FileOp* fop)
   FileHandle handle(open_file_with_exception(fop->filename(), "rb"));
   FILE* fp = handle.get();
 
-  long len = 0;
-  if (fseek(fp, 0, SEEK_END) == 0) {
-    len = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
+  size_t len = 0;
+#if LAF_WINDOWS
+  if (_fseeki64(fp, 0, SEEK_END) == 0) {
+    len = _ftelli64(fp);
+    _fseeki64(fp, 0, SEEK_SET);
   }
+#else
+  if (fseeko(fp, 0, SEEK_END) == 0) {
+    len = ftello(fp);
+    fseeko(fp, 0, SEEK_SET);
+  }
+#endif
 
   if (len < 4) {
     fop->setError("The specified file is not a WebP file\n");
