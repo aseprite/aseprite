@@ -219,8 +219,7 @@ int Sprite_saveAs_base(lua_State* L, std::string& absFn)
     appCtx->setActiveDocument(doc);
 
     absFn = base::get_absolute_path(fn);
-    if (!ask_access(L, absFn.c_str(), FileAccessMode::Write, ResourceType::File))
-      return luaL_error(L, "script doesn't have access to write file %s", absFn.c_str());
+    get_engine(L)->accessGate(Permission::SpriteWrite, absFn);
 
     Command* saveCommand = Commands::instance()->byId(CommandId::SaveFileCopyAs());
 
@@ -276,8 +275,7 @@ int Sprite_loadPalette(lua_State* L)
   const char* fn = luaL_checkstring(L, 2);
   if (fn && sprite) {
     std::string absFn = base::get_absolute_path(fn);
-    if (!ask_access(L, absFn.c_str(), FileAccessMode::Read, ResourceType::File))
-      return luaL_error(L, "script doesn't have access to open file %s", absFn.c_str());
+    get_engine(L)->accessGate(Permission::SpriteRead, absFn);
 
     Doc* doc = static_cast<Doc*>(sprite->document());
     std::unique_ptr<doc::Palette> palette(load_palette(absFn.c_str()));

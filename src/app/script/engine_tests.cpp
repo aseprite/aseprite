@@ -4,6 +4,9 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
+#include "tests/utils.h"
+#include "ver/info.h"
+
 #include <gtest/gtest.h>
 
 const char* g_exeName = nullptr;
@@ -14,10 +17,12 @@ const char* g_exeName = nullptr;
   #include "app/commands/commands.h"
   #include "app/context.h"
   #include "app/doc.h"
+  #include "app/ini_file.h"
+  #include "app/pref/preferences.h"
   #include "app/script/engine.h"
   #include "app/script/luacpp.h"
   #include "base/fs.h"
-  #include "base/time.h"
+  #include "base/replace_string.h"
   #include "fmt/args.h"
   #include "os/os.h"
 
@@ -30,28 +35,10 @@ using namespace script;
     const os::SystemRef system = os::System::make();                                               \
     const char* argv[] = { g_exeName, "--batch", __VA_ARGS__ };                                    \
     const AppOptions options(std::size(argv), argv);                                               \
+    TestTempFile tempIni("", "ini");                                                               \
+    ConfigModule::setConfigFilename(tempIni.filename);                                             \
     App app;                                                                                       \
     app.initialize(options);
-
-// TODO: Move to a general file
-class TestTempFile {
-public:
-  explicit TestTempFile(const std::string& content = "", const std::string& ext = "")
-  {
-    static int i = 0;
-    static const std::string dir = testing::TempDir();
-    filename = base::join_path(
-      dir,
-      fmt::format("tmp_{}_{}{}", base::current_tick(), i, ext.empty() ? "" : "." + ext));
-    std::ofstream out(filename);
-    out << content;
-    i++;
-  }
-
-  ~TestTempFile() { base::delete_file(filename); }
-
-  std::string filename;
-};
 
 TEST(Engine, Init)
 {
@@ -218,17 +205,95 @@ TEST(Engine, Security)
   INIT_ENGINE_TEST()
 
   auto engine = std::make_shared<Engine>();
-  const TestTempFile tmp{};
-  std::vector<std::string> print;
-  engine->ConsolePrint.connect([&print](const std::string& string) { print.push_back(string); });
+  const TestTempFile lua{ "os.execute(\"cd\")", "lua" };
+  std::vector<std::string> err;
+  engine->ConsoleError.connect([&err](const std::string& string) { err.push_back(string); });
+
+  app.preferences().general.allowCliScriptsFullAccess(false);
+
+  EXPECT_EQ(app.preferences().developer.disableIntegrityCheck(), false);
+
+  const TestTempFile extensionsJSON("{}", "json");
+  PermissionStorage storage(extensionsJSON.filename);
+  set_permission_storage(&storage);
+
+  storage.writeForMatch(lua.filename, Permission::Execute, "cd", true);
 
   engine->setPrintEvalResult(true);
-  engine->evalCode(fmt::format(R"(
-    io.open("{}")
-  )",
-                               tmp.filename));
+  engine->evalUserFile(lua.filename);
+  EXPECT_TRUE(err.empty());
 
-  EXPECT_TRUE(print.empty());
+  storage.writeForMatch(lua.filename, Permission::Execute, "cd", false);
+  engine->evalUserFile(lua.filename);
+
+  EXPECT_EQ(err.size(), 1);
+  EXPECT_TRUE(err[0].find("'cd'") != std::string::npos);
+
+  storage.writeForMatch(lua.filename, Permission::Execute, "cd", true);
+  {
+    std::ofstream(lua.filename, std::ios_base::app) << "\n-- Modified";
+  }
+  engine->evalUserFile(lua.filename);
+  EXPECT_EQ(err.size(), 2);
+
+  storage.writeForMatch(lua.filename, Permission::Execute, "cd", true);
+  engine->evalUserFile(lua.filename);
+  EXPECT_EQ(err.size(), 2);
+
+  // Same file included through dofile
+  auto dofilename = lua.filename;
+  #ifdef LAF_WINDOWS
+  base::replace_string(dofilename, "\\", "\\\\");
+  #endif
+  const TestTempFile lua2{ fmt::format("dofile('{}')", dofilename), "lua" };
+  engine->evalUserFile(lua2.filename);
+  EXPECT_EQ(err.size(), 2);
+  set_permission_storage(nullptr);
+}
+
+TEST(Engine, TempFiles)
+{
+  INIT_ENGINE_TEST()
+
+  const TestTempFile lua{ "local path = os.tmpname()\nprint(path)", "lua" };
+  auto engine = std::make_shared<Engine>();
+  std::vector<std::string> print;
+  std::vector<std::string> err;
+  engine->ConsolePrint.connect([&print](const std::string& string) { print.push_back(string); });
+  engine->ConsoleError.connect([&err](const std::string& string) { err.push_back(string); });
+
+  const TestTempFile extensionsJSON("{}", "json");
+  PermissionStorage storage(extensionsJSON.filename);
+  set_permission_storage(&storage);
+
+  app.preferences().general.allowCliScriptsFullAccess(false);
+
+  engine->evalUserFile(lua.filename);
+
+  EXPECT_EQ(err.size(), 1);
+  EXPECT_EQ(print.size(), 0);
+
+  storage.write(lua.filename, Permission::TemporaryFile, true);
+
+  engine->evalUserFile(lua.filename);
+
+  EXPECT_EQ(err.size(), 1);
+  EXPECT_EQ(print.size(), 1);
+
+  EXPECT_TRUE(base::is_file(print[0]));
+
+  auto arbitraryFilename = fmt::format("test_{}.txt", base::current_tick());
+  engine->evalCode(fmt::format("print(os.tmpname('{}'))", arbitraryFilename));
+
+  auto path = base::join_path(base::get_temp_path(), get_app_name());
+  EXPECT_TRUE(base::is_file(base::join_path(path, arbitraryFilename)));
+
+  engine.reset();
+
+  EXPECT_FALSE(base::is_file(print[0]));
+  EXPECT_FALSE(base::is_file(base::join_path(base::get_temp_path(), arbitraryFilename)));
+
+  set_permission_storage(nullptr);
 }
 
 TEST(Engine, LingeringObjects)

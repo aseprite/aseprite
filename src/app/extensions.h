@@ -261,6 +261,8 @@ public:
   iterator begin() { return m_extensions.begin(); }
   iterator end() { return m_extensions.end(); }
 
+  Extension* find(const std::string& name) const;
+
   void enableExtension(Extension* extension, bool state);
   void uninstallExtension(Extension* extension, DeletePluginPref delPref);
   ExtensionInfo getCompressedExtensionInfo(const std::string& zipFn) const;

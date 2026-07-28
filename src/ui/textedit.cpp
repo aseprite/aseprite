@@ -106,6 +106,11 @@ void TextEdit::selectAll()
   m_selection.set(startCaret, endCaret);
 }
 
+void TextEdit::selectionClear()
+{
+  m_selection.clear();
+}
+
 void TextEdit::setReadOnly(bool readOnly)
 {
   m_readOnly = readOnly;
