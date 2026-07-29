@@ -605,12 +605,12 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
 
   // This is to separate different kind of widgets without label in
   // different rows. Separator widgets will always create a new row.
-  if (dlg->sameRow && widget->type() != ui::kSeparatorWidget && 
+  if (dlg->sameRow && widget->type() != ui::kSeparatorWidget &&
       dlg->lastWidgetType != ui::kSeparatorWidget) {
     dlg->lastWidgetType = widget->type();
   }
   else if (dlg->lastWidgetType != widget->type() || dlg->autoNewRow ||
-      widget->type() == ui::kSeparatorWidget) {
+           widget->type() == ui::kSeparatorWidget) {
     dlg->lastWidgetType = widget->type();
     dlg->hbox = nullptr;
   }
@@ -720,7 +720,7 @@ int Dialog_newrow(lua_State* L)
     if (lua_is_key_true(L, 2, "always")) {
       dlg->autoNewRow = true;
       // sameRow has higher prioity, uncheck it
-      dlg->autoSameRow= false; 
+      dlg->autoSameRow = false;
     }
     lua_pop(L, 1);
   }
@@ -2056,7 +2056,7 @@ const luaL_Reg Dialog_methods[] = {
   { "showMenu",  Dialog_showMenu  },
   { "close",     Dialog_close     },
   { "newrow",    Dialog_newrow    },
-  { "samerow",   Dialog_samerow    },
+  { "samerow",   Dialog_samerow   },
   { "separator", Dialog_separator },
   { "label",     Dialog_label     },
   { "button",    Dialog_button    },
