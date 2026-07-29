@@ -1217,6 +1217,8 @@ void Manager::removeQueuedMessageIf(std::function<bool(Message*)> pred)
       }
     }
   }
+
+  concurrent_msg_queue.erase_if(pred);
 }
 
 void Manager::removeMessagesFor(Widget* widget)
