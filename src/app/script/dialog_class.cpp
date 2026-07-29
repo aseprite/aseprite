@@ -128,6 +128,8 @@ struct Dialog {
   // Pointer to current grid (might be the main grid or a tab's grid).
   ui::Grid* currentGrid;
   ui::HBox* hbox = nullptr;
+  bool sameRow = false;
+  bool autoSameRow = false;
   bool autoNewRow = false;
   WidgetsList mainWidgets;
   std::map<std::string, ui::Widget*, std::less<>> dataWidgets;
@@ -603,11 +605,16 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
 
   // This is to separate different kind of widgets without label in
   // different rows. Separator widgets will always create a new row.
-  if (dlg->lastWidgetType != widget->type() || dlg->autoNewRow ||
+  if (dlg->sameRow && widget->type() != ui::kSeparatorWidget && 
+      dlg->lastWidgetType != ui::kSeparatorWidget) {
+    dlg->lastWidgetType = widget->type();
+  }
+  else if (dlg->lastWidgetType != widget->type() || dlg->autoNewRow ||
       widget->type() == ui::kSeparatorWidget) {
     dlg->lastWidgetType = widget->type();
     dlg->hbox = nullptr;
   }
+  dlg->sameRow = dlg->autoSameRow;
 
   if (lua_istable(L, 2)) {
     // Widget ID (used to fill the Dialog_get_data table then)
@@ -710,8 +717,28 @@ int Dialog_newrow(lua_State* L)
   dlg->autoNewRow = false;
   if (lua_istable(L, 2)) {
     // Dialog:newrow{ always }
-    if (lua_is_key_true(L, 2, "always"))
+    if (lua_is_key_true(L, 2, "always")) {
       dlg->autoNewRow = true;
+      // sameRow has higher prioity, uncheck it
+      dlg->autoSameRow= false; 
+    }
+    lua_pop(L, 1);
+  }
+
+  lua_pushvalue(L, 1);
+  return 1;
+}
+
+int Dialog_samerow(lua_State* L)
+{
+  auto dlg = get_obj<Dialog>(L, 1);
+
+  dlg->sameRow = true;
+  dlg->autoSameRow = false;
+  if (lua_istable(L, 2)) {
+    // Dialog:samerow{ always }
+    if (lua_is_key_true(L, 2, "always"))
+      dlg->autoSameRow = true;
     lua_pop(L, 1);
   }
 
@@ -2029,6 +2056,7 @@ const luaL_Reg Dialog_methods[] = {
   { "showMenu",  Dialog_showMenu  },
   { "close",     Dialog_close     },
   { "newrow",    Dialog_newrow    },
+  { "samerow",   Dialog_samerow    },
   { "separator", Dialog_separator },
   { "label",     Dialog_label     },
   { "button",    Dialog_button    },
