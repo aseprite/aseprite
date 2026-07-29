@@ -136,10 +136,10 @@ void HomeView::dataRecoverySessionsAreReady()
 void HomeView::closeDataRecoveryView()
 {
 #ifdef ENABLE_DATA_RECOVERY
-  if (m_dataRecoveryView) {
+  if (m_dataRecoveryView && m_dataRecoveryView->parent()) {
     App::instance()->workspace()->removeView(m_dataRecoveryView.get());
-    m_dataRecoveryView.reset();
   }
+  m_dataRecoveryView.reset();
 #endif
 }
 
