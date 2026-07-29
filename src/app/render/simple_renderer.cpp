@@ -12,6 +12,7 @@
 
 #include "app/ui/editor/editor_render.h"
 #include "app/util/conversion_to_surface.h"
+#include "ui/system.h"
 
 namespace app {
 
@@ -117,8 +118,14 @@ void SimpleRenderer::renderSprite(os::Surface* dstSurface,
                                   const doc::frame_t frame,
                                   const gfx::ClipF& area)
 {
-  ImageRef dstImage(
-    Image::create(IMAGE_RGB, area.size.w, area.size.h, EditorRender::getRenderImageBuffer()));
+  doc::ImageBufferPtr buffer;
+
+  // We cannot share the EditorRender::getRenderImageBuffer() buffer
+  // between background threads.
+  if (ui::is_ui_thread())
+    buffer = EditorRender::getRenderImageBuffer();
+
+  ImageRef dstImage(Image::create(IMAGE_RGB, area.size.w, area.size.h, buffer));
   m_render.renderSprite(dstImage.get(), sprite, frame, area);
 
   convert_image_to_surface(dstImage.get(),
@@ -136,8 +143,11 @@ void SimpleRenderer::renderCheckeredBackground(os::Surface* dstSurface,
                                                const doc::Sprite* sprite,
                                                const gfx::Clip& area)
 {
-  ImageRef dstImage(
-    Image::create(IMAGE_RGB, area.size.w, area.size.h, EditorRender::getRenderImageBuffer()));
+  doc::ImageBufferPtr buffer;
+  if (ui::is_ui_thread())
+    buffer = EditorRender::getRenderImageBuffer();
+
+  ImageRef dstImage(Image::create(IMAGE_RGB, area.size.w, area.size.h, buffer));
 
   m_render.renderCheckeredBackground(dstImage.get(), area);
 

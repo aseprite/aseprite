@@ -59,6 +59,7 @@
 #include "base/chrono.h"
 #include "base/convert_to.h"
 #include "base/scoped_value.h"
+#include "base/thread_pool.h"
 #include "doc/blend_internals.h"
 #include "doc/doc.h"
 #include "doc/mask_boundaries.h"
@@ -809,6 +810,23 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
         }
       }
 
+      // Assign a surface for each tile to be rendered
+      {
+        static std::vector<os::SurfaceRef> tmpSurfaces;
+        const size_t ntiles = cachedTiles.size();
+        if (tmpSurfaces.size() < ntiles)
+          tmpSurfaces.resize(ntiles);
+
+        for (size_t i = 0; i < ntiles; ++i) {
+          auto& tmpSurface = tmpSurfaces[i];
+          if (!tmpSurface)
+            tmpSurface = os::System::instance()->makeRgbaSurface(tileSize.w, tileSize.h);
+          tmpSurface->setColorSpace(m_document->osColorSpace());
+
+          cachedTiles[i].surface = tmpSurface;
+        }
+      }
+
       // Render tiles
       {
         m_renderEngine->setProjection(m_proj);
@@ -832,37 +850,46 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
         }
         m_renderEngine->setSampling(sampling);
 
-        static os::SurfaceRef tmpSurface = nullptr;
+        const bool useThreads = (cachedTiles.size() >= 4);
+        if (useThreads) {
+          static base::thread_pool pool(4);
+          for (CacheTile& cacheTile : cachedTiles) {
+            ASSERT(cacheTile.surface != nullptr);
 
-        // Create a temporary surface to draw one tile on it
-        if (!tmpSurface || tmpSurface->width() != tileSize.w ||
-            tmpSurface->height() != tileSize.h) {
-          tmpSurface = os::System::instance()->makeRgbaSurface(tileSize.w, tileSize.h);
-        }
-        tmpSurface->setColorSpace(m_document->osColorSpace());
-
-        for (CacheTile& cacheTile : cachedTiles) {
-          cacheTile.surface = tmpSurface;
-          tmpSurface->clear();
-          m_renderEngine->renderSprite(cacheTile.surface.get(),
-                                       m_sprite,
-                                       m_frame,
-                                       gfx::Clip(0, 0, cacheTile.src));
-
-          {
-            os::Paint p;
-            p.srcEdges(os::Paint::SrcEdges::Fast);
-            p.blendMode(os::BlendMode::SrcOver);
-            g->drawSurface(cacheTile.surface.get(),
-                           cacheTile.surface->bounds(),
-                           cacheTile.dst,
-                           sampling,
-                           &p);
-            g->drawText(fmt::format("{}", cacheTile.tileNum),
-                        gfx::rgba(0, 0, 0, 64),
-                        gfx::ColorNone,
-                        cacheTile.dst.origin() + gfx::Point(cacheTile.dst.size()) / 2);
+            pool.execute([this, g, sampling, tileSize, &cacheTile] {
+              cacheTile.surface->clear();
+              m_renderEngine->renderSprite(cacheTile.surface.get(),
+                                           m_sprite,
+                                           m_frame,
+                                           gfx::Clip(0, 0, cacheTile.src));
+            });
           }
+          pool.wait_all();
+        }
+        else {
+          for (CacheTile& cacheTile : cachedTiles) {
+            cacheTile.surface->clear();
+            m_renderEngine->renderSprite(cacheTile.surface.get(),
+                                         m_sprite,
+                                         m_frame,
+                                         gfx::Clip(0, 0, cacheTile.src));
+          }
+        }
+
+        // Paint tiles in the editor
+        for (CacheTile& cacheTile : cachedTiles) {
+          os::Paint p;
+          p.srcEdges(os::Paint::SrcEdges::Fast);
+          p.blendMode(os::BlendMode::SrcOver);
+          g->drawSurface(cacheTile.surface.get(),
+                         cacheTile.surface->bounds(),
+                         cacheTile.dst,
+                         sampling,
+                         &p);
+          g->drawText(fmt::format("{}", cacheTile.tileNum),
+                      gfx::rgba(0, 0, 0, 64),
+                      gfx::ColorNone,
+                      cacheTile.dst.origin() + gfx::Point(cacheTile.dst.size()) / 2);
         }
       }
     }
