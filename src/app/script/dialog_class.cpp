@@ -719,7 +719,7 @@ int Dialog_newrow(lua_State* L)
     // Dialog:newrow{ always }
     if (lua_is_key_true(L, 2, "always")) {
       dlg->autoNewRow = true;
-      // sameRow has higher prioity, uncheck it
+      // autoSameRow has priority when adding widget, uncheck it
       dlg->autoSameRow = false;
     }
     lua_pop(L, 1);
