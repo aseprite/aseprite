@@ -512,8 +512,6 @@ private:
   // TODO could we avoid one extra field just to do this?
   gfx::Point m_oldMainTilePos;
 
-  gfx::Rect m_perfInfoBounds;
-
   // For slices
   doc::SelectedObjects m_selectedSlices;
   // When true, modifications to slices positions/sizes will transform the

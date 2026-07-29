@@ -340,12 +340,6 @@ void Editor::getInvalidDecoratoredRegion(gfx::Region& region)
   // changes (e.g. symmetry handles).
   if ((m_flags & kShowDecorators) && m_decorator)
     m_decorator->getInvalidDecoratoredRegion(this, region);
-
-  // TODO put this in other widget
-  if (App::instance()->isDevMode() && Preferences::instance().perf.showRenderTime()) {
-    if (!m_perfInfoBounds.isEmpty())
-      region |= gfx::Region(m_perfInfoBounds);
-  }
 }
 
 void Editor::setLayer(const Layer* layer)
@@ -2679,23 +2673,16 @@ void Editor::onPaint(ui::PaintEvent& ev)
 
       // Show performance stats (TODO show performance stats in other widget)
       if (App::instance()->isDevMode() && Preferences::instance().perf.showRenderTime()) {
-        View* view = View::getView(this);
-        gfx::Rect vp = view->viewportBounds();
         std::string buf = fmt::format(
-          "{}{} {:.4g}s",
+          "{}{} {:.8f}ms",
           Preferences::instance().render.renderEngine() == gen::RenderEngine::RASTER_V1 ? "R1" :
           Preferences::instance().render.renderEngine() == gen::RenderEngine::RASTER_V2 ? "R2" :
           Preferences::instance().render.renderEngine() == gen::RenderEngine::SHADER    ? "S3" :
                                                                                           "",
           Preferences::instance().render.tileBasedRenderEngine() ? "/TILED" : "",
-          renderElapsed);
-        g->drawText(buf,
-                    gfx::rgba(255, 255, 255, 255),
-                    gfx::rgba(0, 0, 0, 255),
-                    vp.origin() - bounds().origin());
+          renderElapsed * 1000.0);
 
-        m_perfInfoBounds.setOrigin(vp.origin());
-        m_perfInfoBounds.setSize(g->measureText(buf));
+        StatusBar::instance()->setStatusText(1000, buf);
       }
 
       // Draw the mask boundaries
