@@ -1,17 +1,19 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-// #define DEBUG_SCROLL_EVENTS
-
 #ifdef HAVE_CONFIG_H
   #include "config.h"
 #endif
 
+#include "base/thread.h"
 #include "gfx/size.h"
+#include "os/surface.h"
+#include "os/window.h"
+#include "ui/devmode.h"
 #include "ui/display.h"
 #include "ui/intern.h"
 #include "ui/manager.h"
@@ -25,12 +27,6 @@
 #include "ui/theme.h"
 #include "ui/view.h"
 #include "ui/widget.h"
-
-#ifdef DEBUG_SCROLL_EVENTS
-  #include "base/thread.h"
-  #include "os/surface.h"
-  #include "os/window.h"
-#endif
 
 #include <algorithm>
 #include <queue>
@@ -335,8 +331,9 @@ void View::onSetViewScroll(const gfx::Point& pt)
   // Move the valid screen region. "delta" is the movement for the
   // scrolled region (which is inverse to the scroll position
   // delta/movement).
-  const Point delta = oldScroll - newScroll;
-  if (display && !display->nativeWindow()->gpuAcceleration()) {
+  if (has_devmode_flags(ui::DevModeFlags::MoveRegionOnViewScroll) && display &&
+      !display->nativeWindow()->gpuAcceleration()) {
+    const Point delta = oldScroll - newScroll;
     // The movable region includes the given "validRegion"
     // intersecting itself when it's in the new position, so we don't
     // overlap regions outside the "validRegion".
@@ -349,24 +346,24 @@ void View::onSetViewScroll(const gfx::Point& pt)
     ui::move_region(display, movable, delta.x, delta.y);
   }
 
-#ifdef DEBUG_SCROLL_EVENTS
   // Paint invalid region with red fill
-  if (auto nativeWindow = display->nativeWindow()) {
-    nativeWindow->invalidateRegion(gfx::Region(display->bounds()));
-    base::this_thread::sleep_for(0.002);
-    {
-      os::Surface* surface = nativeWindow->surface();
-      os::SurfaceLock lock(surface);
-      os::Paint p;
-      p.style(os::Paint::Fill);
-      p.color(gfx::rgba(255, 0, 0));
-      for (const auto& rc : invalidRegion)
-        surface->drawRect(rc, p);
+  if (has_devmode_flags(ui::DevModeFlags::DebugViewScroll)) {
+    if (auto nativeWindow = display->nativeWindow()) {
+      nativeWindow->invalidateRegion(gfx::Region(display->bounds()));
+      {
+        os::Surface* surface = nativeWindow->surface();
+        os::SurfaceLock lock(surface);
+        os::Paint p;
+        p.style(os::Paint::Fill);
+        p.color(gfx::rgba(255, 0, 0));
+        for (const auto& rc : invalidRegion)
+          surface->drawRect(rc, p);
+      }
+      execute_from_ui_thread([display, nativeWindow] {
+        nativeWindow->invalidateRegion(gfx::Region(display->bounds()));
+      });
     }
-    nativeWindow->invalidateRegion(gfx::Region(display->bounds()));
-    base::this_thread::sleep_for(0.02);
   }
-#endif
 
   // Invalidate viewport's children regions
   m_viewport.invalidateRegion(invalidRegion);

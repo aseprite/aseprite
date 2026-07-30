@@ -786,32 +786,25 @@ InputChain& App::inputChain()
 
 void App::initializeDevMode()
 {
-  auto& pref = preferences();
-  {
+  auto set_flag = [](auto& option, const DevModeFlags flag) {
     auto flags = ui::get_devmode_flags();
-    if (pref.developer.debugPaintMessages())
-      flags |= DevModeFlags::DebugPaint;
-    if (pref.developer.paintWidgetBaseline())
-      flags |= DevModeFlags::PaintBaseline;
+    if (option())
+      flags |= flag;
+    else
+      flags &= ~flag;
     ui::set_devmode_flags(flags);
-  }
+  };
 
-  pref.developer.debugPaintMessages.AfterChange.connect([this] {
-    auto flags = ui::get_devmode_flags();
-    if (preferences().developer.debugPaintMessages())
-      flags |= DevModeFlags::DebugPaint;
-    else
-      flags &= ~DevModeFlags::DebugPaint;
-    ui::set_devmode_flags(flags);
-  });
-  pref.developer.paintWidgetBaseline.AfterChange.connect([this] {
-    auto flags = ui::get_devmode_flags();
-    if (preferences().developer.paintWidgetBaseline())
-      flags |= DevModeFlags::PaintBaseline;
-    else
-      flags &= ~DevModeFlags::PaintBaseline;
-    ui::set_devmode_flags(flags);
-  });
+  auto configure_flag = [&set_flag](auto& option, const DevModeFlags flag) {
+    set_flag(option, flag);
+    option.AfterChange.connect([&option, &set_flag, flag] { set_flag(option, flag); });
+  };
+
+  auto& pref = preferences();
+  configure_flag(pref.developer.debugPaintMessages, DevModeFlags::DebugPaint);
+  configure_flag(pref.developer.paintWidgetBaseline, DevModeFlags::PaintBaseline);
+  configure_flag(pref.developer.debugViewScroll, DevModeFlags::DebugViewScroll);
+  configure_flag(pref.developer.moveRegionOnViewScroll, DevModeFlags::MoveRegionOnViewScroll);
 }
 
 // Updates palette and redraw the screen.

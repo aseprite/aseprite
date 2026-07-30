@@ -274,6 +274,8 @@
     <section id="developer">
       <option id="debug_paint_messages" type="bool" default="false" />
       <option id="paint_widget_baseline" type="bool" default="false" />
+      <option id="debug_view_scroll" type="bool" default="false" />
+      <option id="move_region_on_view_scroll" type="bool" default="true" />
     </section>
     <section id="news">
       <option id="cache_file" type="std::string" />

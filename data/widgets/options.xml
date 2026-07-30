@@ -731,11 +731,13 @@
                  text="@.gpu_acceleration"
                  tooltip="@.gpu_acceleration_tooltip" />
           <check text="Debug paint messages"
-                 id="devmode_debug_paint_messages"
                  pref="developer.debug_paint_messages" />
           <check text="Paint widgets baseline"
-                 id="devmode_paint_widget_baseline"
                  pref="developer.paint_widget_baseline" />
+          <check text="Debug view scroll"
+                 pref="developer.debug_view_scroll" />
+          <check text="Move/blit region on view scroll"
+                 pref="developer.move_region_on_view_scroll" />
           <separator text="Rendering" horizontal="true" />
           <check text="Show render performance"
                  pref="perf.show_render_time" />
