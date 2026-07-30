@@ -17,6 +17,8 @@ enum class DevModeFlags : uint8_t {
   None = 0,
   DebugPaint = 1,
   PaintBaseline = 2,
+  DebugViewScroll = 4,
+  MoveRegionOnViewScroll = 8,
 };
 
 LAF_ENUM_FLAGS(DevModeFlags);
