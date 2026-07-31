@@ -638,6 +638,7 @@ target_sources(app-lib PRIVATE
   ui/editor/pivot_helpers.cpp
   ui/editor/pixels_movement.cpp
   ui/editor/play_state.cpp
+  ui/editor/render_tile.cpp
   ui/editor/scrolling_state.cpp
   ui/editor/select_box_state.cpp
   ui/editor/select_text_box_state.cpp
