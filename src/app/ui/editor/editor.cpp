@@ -45,6 +45,7 @@
 #include "app/ui/editor/moving_pixels_state.h"
 #include "app/ui/editor/pixels_movement.h"
 #include "app/ui/editor/play_state.h"
+#include "app/ui/editor/render_tile.h"
 #include "app/ui/editor/scrolling_state.h"
 #include "app/ui/editor/standby_state.h"
 #include "app/ui/editor/zooming_state.h"
@@ -65,6 +66,7 @@
 #include "doc/mask_boundaries.h"
 #include "doc/slice.h"
 #include "fmt/format.h"
+#include "gfx/rect_io.h"
 #include "os/color_space.h"
 #include "os/sampling.h"
 #include "os/surface.h"
@@ -89,6 +91,10 @@ using namespace render;
 // TODO these should be grouped in some kind of "performance counters"
 static base::Chrono renderChrono;
 static double renderElapsed = 0.0;
+
+// Cached parts already rendered for specific documents for tile-based
+// rendering.
+static RenderTileCache g_renderTileCache;
 
 class EditorPostRenderImpl : public EditorPostRender {
 public:
@@ -547,6 +553,8 @@ void Editor::setScrollAndZoomToFitScreen()
     }
   }
 
+  setZoom(m_proj.zoom());
+
   updateEditor(false);
   setEditorScroll(gfx::Point(m_padding.x - vp.w / 2 + m_proj.applyX(canvas.w) / 2,
                              m_padding.y - vp.h / 2 + m_proj.applyY(canvas.h) / 2));
@@ -752,21 +760,13 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
       }
       m_renderEngine->setTransparentBackground();
 
-      struct CacheTile {
-        gfx::Rect src, dst;
-        int tileNum;
-        os::SurfaceRef surface;
-        CacheTile(const gfx::Rect& src, const gfx::Rect& dst, const int tileNum)
-          : src(src)
-          , dst(dst)
-          , tileNum(tileNum)
-        {
-        }
-      };
-      std::vector<CacheTile> cachedTiles;
+      // Get the cached tiles of this document, and create a
+      // "renderTiles" to paint right now.
+      CachedTiles& cachedTiles = g_renderTileCache.docCachedTiles(m_document->id());
+      std::vector<RenderTile> renderTiles;
 
       // Paint tiles
-      const gfx::Size tileSize(128, 128);
+      const gfx::Size tileSize = RenderTile::kTileSize;
       const gfx::SizeF tileSizeSrc(tileSize.w, tileSize.h);
 
       {
@@ -780,11 +780,12 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
 
         gfx::Rect visible = m_proj.apply(expose);
         gfx::Rect tilerc(tileSize);
-        int tileNum = 0;
 
         gfx::PointF firstTilePos;
-        firstTilePos.x = std::floor(visible.x / tileSizeSrc.w) * tileSizeSrc.w;
-        firstTilePos.y = std::floor(visible.y / tileSizeSrc.h) * tileSizeSrc.h;
+        int u0 = std::floor(visible.x / tileSizeSrc.w);
+        int v0 = std::floor(visible.y / tileSizeSrc.h);
+        firstTilePos.x = u0 * tileSizeSrc.w;
+        firstTilePos.y = v0 * tileSizeSrc.h;
 
         rc.x += (visible.x / tileSize.w) * tileSize.w;
         rc.y += (visible.y / tileSize.h) * tileSize.h;
@@ -803,27 +804,32 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
                                       tileSizeSrc.w,
                                       tileSizeSrc.h);
 
-              cachedTiles.push_back(CacheTile(srcrc, tilerc, tileNum));
-              ++tileNum;
+              const RenderTileId tileId = ((v0 + v) << 16) | (u0 + u);
+              auto it = cachedTiles.find(tileId);
+              if (it != cachedTiles.end()) {
+                RenderTile tile = it->second;
+                tile.dst = tilerc;
+                renderTiles.push_back(tile);
+              }
+              else {
+                RenderTile tile(tileId, srcrc, tilerc);
+                renderTiles.push_back(tile);
+              }
             }
           }
         }
       }
 
       // Assign a surface for each tile to be rendered
+      size_t dirties = 0;
       {
-        static std::vector<os::SurfaceRef> tmpSurfaces;
-        const size_t ntiles = cachedTiles.size();
-        if (tmpSurfaces.size() < ntiles)
-          tmpSurfaces.resize(ntiles);
-
-        for (size_t i = 0; i < ntiles; ++i) {
-          auto& tmpSurface = tmpSurfaces[i];
-          if (!tmpSurface)
-            tmpSurface = os::System::instance()->makeRgbaSurface(tileSize.w, tileSize.h);
-          tmpSurface->setColorSpace(m_document->osColorSpace());
-
-          cachedTiles[i].surface = tmpSurface;
+        for (RenderTile& renderTile : renderTiles) {
+          if (!renderTile.surface) {
+            renderTile.dirty = true;
+            renderTile.surface = g_renderTileCache.allocTileSurface();
+          }
+          if (renderTile.dirty)
+            ++dirties;
         }
       }
 
@@ -850,46 +856,53 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
         }
         m_renderEngine->setSampling(sampling);
 
-        const bool useThreads = (cachedTiles.size() >= 4);
+        auto renderSpriteOnTile = [this](RenderTile& renderTile) {
+          renderTile.surface->clear();
+          m_renderEngine->renderSprite(renderTile.surface.get(),
+                                       m_sprite,
+                                       m_frame,
+                                       gfx::Clip(0, 0, renderTile.src));
+          renderTile.dirty = false;
+        };
+
+        const bool useThreads = (dirties >= 4);
         if (useThreads) {
           static base::thread_pool pool(4);
-          for (CacheTile& cacheTile : cachedTiles) {
-            ASSERT(cacheTile.surface != nullptr);
+          for (auto& renderTile : renderTiles) {
+            if (!renderTile.dirty)
+              continue;
 
-            pool.execute([this, g, sampling, tileSize, &cacheTile] {
-              cacheTile.surface->clear();
-              m_renderEngine->renderSprite(cacheTile.surface.get(),
-                                           m_sprite,
-                                           m_frame,
-                                           gfx::Clip(0, 0, cacheTile.src));
-            });
+            pool.execute([&renderTile, renderSpriteOnTile] { renderSpriteOnTile(renderTile); });
           }
           pool.wait_all();
         }
         else {
-          for (CacheTile& cacheTile : cachedTiles) {
-            cacheTile.surface->clear();
-            m_renderEngine->renderSprite(cacheTile.surface.get(),
-                                         m_sprite,
-                                         m_frame,
-                                         gfx::Clip(0, 0, cacheTile.src));
+          for (RenderTile& renderTile : renderTiles) {
+            if (!renderTile.dirty)
+              continue;
+
+            renderSpriteOnTile(renderTile);
           }
         }
 
+        // Update cached tiles
+        for (const RenderTile& renderTile : renderTiles)
+          cachedTiles.emplace(renderTile.tileId, renderTile);
+
         // Paint tiles in the editor
-        for (CacheTile& cacheTile : cachedTiles) {
+        for (RenderTile& renderTile : renderTiles) {
           os::Paint p;
           p.srcEdges(os::Paint::SrcEdges::Fast);
           p.blendMode(os::BlendMode::SrcOver);
-          g->drawSurface(cacheTile.surface.get(),
-                         cacheTile.surface->bounds(),
-                         cacheTile.dst,
+          g->drawSurface(renderTile.surface.get(),
+                         renderTile.surface->bounds(),
+                         renderTile.dst,
                          sampling,
                          &p);
-          g->drawText(fmt::format("{}", cacheTile.tileNum),
-                      gfx::rgba(0, 0, 0, 64),
+          g->drawText(fmt::format("{},{}", renderTile.tileId & 0xffff, renderTile.tileId >> 16),
+                      gfx::rgba(0, 0, 0, 200),
                       gfx::ColorNone,
-                      cacheTile.dst.origin() + gfx::Point(cacheTile.dst.size()) / 2);
+                      renderTile.dst.origin() + gfx::Point(renderTile.dst.size()) / 2);
         }
       }
     }
@@ -1249,6 +1262,17 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
   // TODO clip the editorGraphics directly
   Graphics backGraphics(display);
   GraphicsPtr editorGraphics = getGraphics(clientBounds());
+
+  // Invalidate tiles as drawSpriteClipped() is called onSpritePixelsModified()
+  if (Preferences::instance().render.tileBasedRenderEngine()) {
+    CachedTiles& cachedTiles = g_renderTileCache.docCachedTiles(m_document->id());
+    for (auto& [tileId, cachedTile] : cachedTiles) {
+      const gfx::Rect srcrc = m_proj.remove(cachedTile.src);
+      if (updateRegion.contains(srcrc) != Region::Overlap::Out) {
+        cachedTile.dirty = true;
+      }
+    }
+  }
 
   for (const Rect& updateRect : updateRegion) {
     for (const Rect& screenRect : screenRegion) {
@@ -3250,6 +3274,11 @@ void Editor::notifyScrollChanged()
 
 void Editor::notifyZoomChanged()
 {
+  // TODO re-use cached tiles while zooming and replace them when the
+  //      new zoom level tiles are rendered
+  if (Preferences::instance().render.tileBasedRenderEngine())
+    g_renderTileCache.clearDocCachedTiles(m_document->id());
+
   m_observers.notifyZoomChanged(this);
 }
 
