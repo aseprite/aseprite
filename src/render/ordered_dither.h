@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2025 Igara Studio S.A.
 // Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -15,6 +15,7 @@
 #include "doc/rgbmap.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
+#include "render/dithering_matrix.h"
 #include "render/task_delegate.h"
 
 namespace render {
@@ -49,6 +50,23 @@ public:
                                           const doc::Palette* palette)
   {
     return 0;
+  }
+
+  // Special case of two colors in the palette
+  static doc::color_t ditherRgbPixelToIndexForTwoColors(const DitheringMatrix& matrix,
+                                                        const doc::color_t color,
+                                                        const int x,
+                                                        const int y,
+                                                        const int lightIndex,
+                                                        const int darkIndex,
+                                                        const doc::color_t transparentIndex)
+  {
+    // Alpha=0, output transparent color
+    if (transparentIndex >= 0 && doc::rgba_geta(color) == 0)
+      return transparentIndex;
+
+    const int luma = doc::rgba_luma(color);
+    return (luma * (matrix.maxValue() + 1) > 255 * matrix(y, x)) ? lightIndex : darkIndex;
   }
 };
 
@@ -86,6 +104,7 @@ void dither_rgb_image_to_indexed(DitheringAlgorithmBase& algorithm,
                                  doc::Image* dstImage,
                                  const doc::RgbMap* rgbmap,
                                  const doc::Palette* palette,
+                                 const bool is_background,
                                  TaskDelegate* delegate = nullptr);
 
 } // namespace render
