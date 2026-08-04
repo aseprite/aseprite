@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -28,6 +28,8 @@ namespace ui {
 int Slider::slider_press_x;
 int Slider::slider_press_value;
 bool Slider::slider_press_left;
+// Accumulator to smoothly process wheel steps on a mouse with preciseWheel.
+static double step_accum = 0.0;
 
 Slider::Slider(int min, int max, int value, SliderDelegate* delegate)
   : Widget(kSliderWidget)
@@ -247,14 +249,23 @@ bool Slider::onProcessMessage(Message* msg)
 
     case kMouseWheelMessage:
       if (isEnabled() && !isReadOnly()) {
-        int value = m_value + static_cast<MouseMessage*>(msg)->wheelDelta().x -
-                    static_cast<MouseMessage*>(msg)->wheelDelta().y;
-
-        value = std::clamp(value, m_min, m_max);
-
-        if (m_value != value) {
-          setValue(value);
-          onChange();
+        const double dz = static_cast<MouseMessage*>(msg)->wheelDelta().x -
+                          static_cast<MouseMessage*>(msg)->wheelDelta().y;
+        int step;
+        if (static_cast<MouseMessage*>(msg)->preciseWheel()) {
+          step_accum += dz * (m_max - m_min) * get_wheel_speed_factor() / 256;
+          step = step_accum;
+          step_accum -= step;
+        }
+        else {
+          step = dz;
+        }
+        if (step != 0) {
+          const int value = std::clamp(m_value + step, m_min, m_max);
+          if (m_value != value) {
+            setValue(value);
+            onChange();
+          }
         }
         return true;
       }
