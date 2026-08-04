@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -127,6 +127,7 @@ void Display::flipDisplay()
   }
 
   const os::SurfaceRef windowSurface = nativeSurface();
+  m_nativeWindow->makeCurrent();
 
   // Compose all UI layers in the dirty regions
   for (const UILayerRef& layer : m_layers) {

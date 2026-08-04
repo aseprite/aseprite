@@ -770,6 +770,12 @@ void App::updateDisplayTitleBar()
   }
 
   title += defaultTitle;
+
+  if (m_mainWindow && m_mainWindow->display() && m_mainWindow->display()->nativeWindow() &&
+      m_mainWindow->display()->nativeWindow()->gpuAcceleration()) {
+    title += " (GPU)";
+  }
+
   os::System::instance()->defaultWindow()->setTitle(title);
 }
 

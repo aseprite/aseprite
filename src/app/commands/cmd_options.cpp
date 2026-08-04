@@ -499,11 +499,8 @@ public:
     multipleWindows()->Click.connect(
       [this]() { uiWindows()->setSelectedItem(multipleWindows()->isSelected() ? 1 : 0); });
 
-#ifdef ENABLE_DEVMODE // TODO enable this on Release when Aseprite supports
-                      //      GPU-acceleration properly
-    if (!m_system->hasCapability(os::Capabilities::GpuAccelerationSwitch))
-#endif
-    {
+    if (!App::instance()->isDevMode() ||
+        !m_system->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
       gpuAcceleration()->setVisible(false);
     }
 
@@ -838,11 +835,10 @@ public:
     // Scaling
     selectScalingItems();
 
-#ifdef ENABLE_DEVMODE
-    if (m_system->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
+    if (App::instance()->isDevMode() &&
+        m_system->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
       gpuAcceleration()->setSelected(m_pref.general.gpuAcceleration());
     }
-#endif
 
     if (m_system->menus())
       showMenuBar()->setSelected(m_pref.general.showMenuBar());
@@ -1115,13 +1111,13 @@ public:
     if (reset_theme)
       ui::set_theme(ui::get_theme(), newUIScale);
 
-#ifdef ENABLE_DEVMODE
-    const bool newGpuAccel = gpuAcceleration()->isSelected();
-    if (newGpuAccel != m_pref.general.gpuAcceleration()) {
-      m_pref.general.gpuAcceleration(newGpuAccel);
-      reset_screen = true;
+    if (App::instance()->isDevMode()) {
+      const bool newGpuAccel = gpuAcceleration()->isSelected();
+      if (newGpuAccel != m_pref.general.gpuAcceleration()) {
+        m_pref.general.gpuAcceleration(newGpuAccel);
+        reset_screen = true;
+      }
     }
-#endif
 
     if (m_system->menus() && m_pref.general.showMenuBar() != showMenuBar()->isSelected()) {
       m_pref.general.showMenuBar(showMenuBar()->isSelected());
