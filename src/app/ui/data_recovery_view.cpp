@@ -37,6 +37,7 @@
 #include "ui/label.h"
 #include "ui/listitem.h"
 #include "ui/message.h"
+#include "ui/paint_event.h"
 #include "ui/resize_event.h"
 #include "ui/separator.h"
 #include "ui/size_hint_event.h"
@@ -59,14 +60,34 @@ using ClosedIds = std::set<doc::ObjectId>;
 
 class DataItem : public ListItem {
 public:
-  DataItem() {}
-  DataItem(const std::string& title) : ListItem(title) {}
+  DataItem() { initTheme(); }
+  DataItem(const std::string& text) : ListItem(text) { initTheme(); }
+  DataItem(const crash::DocumentInfo& info)
+  {
+    setInfo(info);
+    initTheme();
+  }
   ~DataItem() {}
 
   virtual bool hasBackup() const { return false; }
   virtual void restoreBackup() {}
+  virtual void onLoadDocumentInfo() {}
+
+  void setInfo(const crash::DocumentInfo& info)
+  {
+    m_info = info;
+    setText(base::get_file_name(m_info.filename));
+  }
 
 protected:
+  void onInitTheme(ui::InitThemeEvent& ev) override
+  {
+    Widget::onInitTheme(ev);
+
+    auto theme = SkinTheme::get(this);
+    setStyle(theme->styles.recentFile());
+  }
+
   void onSizeHint(SizeHintEvent& ev) override
   {
     ListItem::onSizeHint(ev);
@@ -74,30 +95,95 @@ protected:
     sz.h += 4 * guiscale();
     ev.setSizeHint(sz);
   }
+
+  void onPaint(PaintEvent& ev) override
+  {
+    // Document info is lazily initialized. So we read the backup data
+    // only when we have to show its information.
+    if (m_info.isEmpty()) {
+      onLoadDocumentInfo();
+    }
+
+    // Paint file name
+    ListItem::onPaint(ev);
+
+    // Paint other document fields
+    Graphics* g = ev.graphics();
+    PaintWidgetPartInfo pi(this);
+    auto* theme = SkinTheme::get(this);
+
+    // Paint full path
+    if (Preferences::instance().general.showFullPath() && !m_info.filename.empty()) {
+      if (!m_pathBlob) {
+        m_pathBlob = text::TextBlob::MakeWithShaper(theme->fontMgr(),
+                                                    font(),
+                                                    base::get_file_path(m_info.filename),
+                                                    nullptr,
+                                                    onGetTextShaperFeatures());
+      }
+      if (m_pathBlob) {
+        gfx::Rect bounds = clientChildrenBounds();
+        int u = textBlob()->bounds().w + 4 * guiscale();
+        bounds.x += u;
+        bounds.w -= u;
+
+        pi.textBlob = m_pathBlob;
+        theme->paintWidgetPart(g, theme->styles.recentFileDetail(), bounds, pi);
+      }
+    }
+
+    // Paint info "WxH N frames"
+    if (!m_dimBlob && m_info.width > 0 && m_info.height > 0) {
+      std::string dim = fmt::format("{}x{}", m_info.width, m_info.height);
+      if (m_info.frames > 1)
+        dim += fmt::format(" {} frames", m_info.frames);
+      m_dimBlob = text::TextBlob::MakeWithShaper(theme->fontMgr(),
+                                                 font(),
+                                                 dim,
+                                                 nullptr,
+                                                 onGetTextShaperFeatures());
+    }
+    if (m_dimBlob) {
+      gfx::Rect bounds = clientChildrenBounds();
+      bounds.x = bounds.x2() - m_dimBlob->bounds().w;
+
+      pi.textBlob = m_dimBlob;
+      theme->paintWidgetPart(g, theme->styles.recentFileDetail(), bounds, pi);
+    }
+  }
+
+  bool onProcessMessage(Message* msg) override
+  {
+    switch (msg->type()) {
+      case kMouseEnterMessage:
+      case kMouseLeaveMessage: invalidate(); break;
+    }
+    return ListItem::onProcessMessage(msg);
+  }
+
+  crash::DocumentInfo m_info;
+  text::TextBlobRef m_pathBlob;
+  text::TextBlobRef m_dimBlob;
 };
 
 class ClosedDocItem : public DataItem {
 public:
-  ClosedDocItem(ObjectId id, const std::string& title)
-    : DataItem(Strings::recover_files_in_memory(title))
-    , m_id(id)
+  ClosedDocItem(const crash::DocumentInfo& info) : DataItem(info)
   {
+    setText(Strings::recover_files_in_memory(base::get_file_name(info.filename)));
   }
-  bool hasBackup() const override { return m_id != doc::NullId; }
+  bool hasBackup() const override { return docId() != doc::NullId; }
   void restoreBackup() override
   {
     if (auto ctx = UIContext::instance())
-      ctx->reopenClosedDocById(m_id);
+      ctx->reopenClosedDocById(docId());
   }
-  ObjectId docId() const { return m_id; }
-
-private:
-  ObjectId m_id;
+  ObjectId docId() const { return m_info.docId; }
 };
 
 class NoClosedDocItem : public DataItem {
 public:
-  NoClosedDocItem() : DataItem(Strings::recover_files_no_closed_docs()) {}
+  NoClosedDocItem() { setText(Strings::recover_files_no_closed_docs()); }
 };
 
 class BackupItem : public DataItem {
@@ -181,34 +267,20 @@ public:
     updateView();
   }
 
-  void updateText()
+  void onLoadDocumentInfo() override
   {
     if (!m_task) {
       ASSERT(m_backup);
       if (!m_backup)
         return;
 
-      const std::string desc = m_backup->info().toString(
-        Preferences::instance().general.showFullPath());
-
-      if (m_session->isActiveSession())
-        setText(Strings::recover_files_on_disk(desc));
-      else
-        setText(desc);
+      // Calling info() member function will read and fill the
+      // document info.
+      setInfo(m_backup->info());
     }
   }
 
 private:
-  void onPaint(PaintEvent& ev) override
-  {
-    // The text is lazily initialized. So we read the backup data only
-    // when we have to show its information.
-    if (text().empty()) {
-      updateText();
-    }
-    ListItem::onPaint(ev);
-  }
-
   void onResize(ResizeEvent& ev) override
   {
     setBoundsQuietly(ev.bounds());
@@ -369,10 +441,9 @@ private:
     if (!m_session->isActiveSession())
       return;
 
-    const bool fullPath = Preferences::instance().general.showFullPath();
     auto* ctx = UIContext::instance();
     for (const auto& info : ctx->closedDocs().getClosedDocInfos()) {
-      auto* item = new ClosedDocItem(info.docId, info.toString(fullPath));
+      auto* item = new ClosedDocItem(info);
       listBox()->addChild(item);
 
       m_closedIds.insert(info.docId);
@@ -456,9 +527,8 @@ private:
 
     int i = listBox()->getChildIndex(this);
 
-    const bool fullPath = Preferences::instance().general.showFullPath();
     const crash::DocumentInfo info(doc::get<Doc>(docId));
-    listBox()->insertChild(i + 1, new ClosedDocItem(info.docId, info.toString(fullPath)));
+    listBox()->insertChild(i + 1, new ClosedDocItem(info));
 
     m_closedIds.insert(docId);
     updateMatchingBackupItemVisibility(docId);
@@ -623,7 +693,7 @@ DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
   m_waitToEnableRefreshTimer.Tick.connect([this] { onCheckIfWeCanEnableRefreshButton(); });
 
   m_connFullPath = Preferences::instance().general.showFullPath.AfterChange.connect(
-    [this](const bool&) { onShowFullPathPrefChange(); });
+    [this](const bool&) { invalidate(); });
   m_connBackup = dataRecovery->BackupDone.connect(
     [this](const doc::ObjectId docId) { m_runningSession->notifyDocBackupDone(docId); });
 }
@@ -878,16 +948,6 @@ void DataRecoveryView::onCheckIfWeCanEnableRefreshButton()
 
   m_listBox.layout();
   m_view.updateView();
-}
-
-void DataRecoveryView::onShowFullPathPrefChange()
-{
-  for (auto widget : m_listBox.children()) {
-    if (auto* item = dynamic_cast<BackupItem*>(widget)) {
-      if (!item->isTaskRunning())
-        item->updateText();
-    }
-  }
 }
 
 bool DataRecoveryView::thereAreCrashSessions() const

@@ -66,7 +66,6 @@ private:
   void onRefresh();
   void onChangeSelection();
   void onCheckIfWeCanEnableRefreshButton();
-  void onShowFullPathPrefChange();
   bool thereAreCrashSessions() const;
 
   crash::DataRecovery* m_dataRecovery;

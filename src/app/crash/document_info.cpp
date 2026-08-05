@@ -13,7 +13,6 @@
 #include "app/doc.h"
 #include "base/fs.h"
 #include "doc/sprite.h"
-#include "fmt/format.h"
 
 namespace app::crash {
 
@@ -28,21 +27,6 @@ DocumentInfo::DocumentInfo(const Doc* doc)
   height = sprite->height();
   frames = sprite->totalFrames();
   filename = doc->filename();
-}
-
-std::string DocumentInfo::toString(bool withFullPath) const
-{
-  return fmt::format("{} Sprite {}x{}, {} {}: {}",
-                     mode == ColorMode::RGB       ? "RGB" :
-                     mode == ColorMode::GRAYSCALE ? "Grayscale" :
-                     mode == ColorMode::INDEXED   ? "Indexed" :
-                     mode == ColorMode::BITMAP    ? "Bitmap" :
-                                                    "Unknown",
-                     width,
-                     height,
-                     frames,
-                     frames == 1 ? "frame" : "frames",
-                     withFullPath ? filename : base::get_file_name(filename));
 }
 
 } // namespace app::crash

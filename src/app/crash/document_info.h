@@ -31,8 +31,6 @@ struct DocumentInfo {
   explicit DocumentInfo(const Doc* doc);
 
   bool isEmpty() const { return docId == doc::NullId; }
-
-  std::string toString(bool withFullPath) const;
 };
 
 using DocumentInfos = std::vector<DocumentInfo>;

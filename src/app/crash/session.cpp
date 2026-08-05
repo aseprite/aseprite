@@ -82,11 +82,11 @@ std::string Session::name() const
       parts[1].insert(4, 1, '.');
       parts[1].insert(2, 1, ':');
     }
-    return fmt::format("Session date: {} time: {} (PID {}{})",
+    return fmt::format("Session {} {} | PID {}{}",
                        parts[0],
                        parts[1],
                        parts[2],
-                       isCrashedSession() ? " CRASHED" : "");
+                       isCrashedSession() ? " [CRASHED]" : "");
   }
 
   return name;

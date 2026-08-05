@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -208,6 +208,12 @@ private:
       m_serial = SerialFormat::Ver0;
 
     RECO_TRACE("RECO: internal format version=%d\n", int(m_serial));
+
+    // As filename can be from any platform, we normalize the path
+    // separator to the current platform.
+    for (int i = 0; i < filename.size(); ++i)
+      if (filename[i] == '\\' || filename[i] == '/')
+        filename[i] = base::path_separator;
 
     // Load DocumentInfo only
     if (m_loadInfo) {
