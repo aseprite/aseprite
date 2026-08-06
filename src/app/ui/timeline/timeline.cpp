@@ -115,6 +115,16 @@ struct Timeline::DrawCelData {
   CelIterator lastLink;  // Last link to the active cel
 };
 
+struct Timeline::DrawTagsData {
+  struct TagData {
+    Tag* tag = nullptr;
+    col_t fromFrame;
+    col_t toFrame;
+    bool drawText = false;
+  };
+  std::vector<TagData> tds;
+};
+
 namespace {
 
 template<typename Pred>
@@ -411,6 +421,7 @@ void Timeline::detachDocument()
   }
 
   m_adapter.reset();
+  updateByMousePos(nullptr, mousePosInClientBounds());
   invalidate();
 }
 
@@ -1697,6 +1708,10 @@ void Timeline::onPaint(ui::PaintEvent& ev)
       }
     }
 
+    // Get tags data to draw cels and tags.
+    DrawTagsData tagsData;
+    getDrawTagsData(&tagsData);
+
     // Draw each visible layer.
     if (hasLayers) {
       DrawCelData data;
@@ -1716,7 +1731,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
         if (!layerPtr) {
           // Draw empty cels
           for (frame = firstFrame; frame <= lastFrame; frame = col_t(frame + 1)) {
-            drawCel(g, layer, frame, nullptr, nullptr);
+            drawCel(g, layer, frame, nullptr, nullptr, &tagsData);
           }
           continue;
         }
@@ -1782,7 +1797,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
           const view::fr_t realFrame = m_adapter->toRealFrame(frame);
           Cel* cel = (data.it != data.end && (*data.it)->frame() == realFrame ? *data.it : nullptr);
 
-          drawCel(g, layer, frame, cel, &data);
+          drawCel(g, layer, frame, cel, &data, &tagsData);
 
           if (cel) {
             data.prevIt = data.it;
@@ -1795,7 +1810,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     }
 
     drawPaddings(g);
-    drawTags(g);
+    drawTags(g, &tagsData);
     drawRangeOutline(g);
     drawClipboardRange(g);
     drawCelOverlay(g);
@@ -2125,6 +2140,7 @@ void Timeline::getDrawableFrames(col_t* firstFrame, col_t* lastFrame)
 bool Timeline::getTagFrames(const doc::Tag* tag, col_t* fromFrame, col_t* toFrame) const
 {
   ASSERT(tag);
+  ASSERT(m_adapter);
 
   *fromFrame = m_adapter->toColFrame(fr_t(tag->fromFrame()));
   *toFrame = m_adapter->toColFrame(fr_t(tag->toFrame()));
@@ -2461,7 +2477,8 @@ void Timeline::drawCel(ui::Graphics* g,
                        const layer_t layerIndex,
                        const col_t col,
                        const Cel* cel,
-                       const DrawCelData* data)
+                       const DrawCelData* data,
+                       const DrawTagsData* tagsData)
 {
   auto* theme = skinTheme();
   auto& styles = theme->styles;
@@ -2478,6 +2495,19 @@ void Timeline::drawCel(ui::Graphics* g,
     return;
 
   const fr_t frame = m_adapter->toRealFrame(col);
+
+  bool openTag = false;
+  bool closeTag = false;
+  if (layer->isGroup()) {
+    for (const auto& td : tagsData->tds) {
+      if (td.drawText) {
+        if (frame == fr_t(td.fromFrame))
+          openTag = true;
+        if (frame == fr_t(td.toFrame + 1))
+          closeTag = true;
+      }
+    }
+  }
 
   // Draw background
 
@@ -2498,6 +2528,8 @@ void Timeline::drawCel(ui::Graphics* g,
     gfx::Border border = theme->calcBorder(this, bgStyle);
     border.top(0);
     border.bottom(0);
+    if (openTag || closeTag)
+      border.left(0);
     boundsBox.enlarge(border);
   }
 
@@ -2711,7 +2743,32 @@ void Timeline::drawCelLinkDecorators(ui::Graphics* g,
     drawPart(g, bounds, nullptr, style2, is_active, is_hover);
 }
 
-void Timeline::drawTags(ui::Graphics* g)
+void Timeline::getDrawTagsData(DrawTagsData* tagsData)
+{
+  int passes = (m_tagFocusBand >= 0 ? 2 : 1);
+  for (int pass = 0; pass < passes; ++pass) {
+    for (Tag* tag : m_sprite->tags()) {
+      int band = -1;
+      if (m_tagFocusBand >= 0) {
+        auto it = m_tagBand.find(tag);
+        if (it != m_tagBand.end()) {
+          band = it->second;
+          if ((pass == 0 && band == m_tagFocusBand) || (pass == 1 && band != m_tagFocusBand))
+            continue;
+        }
+      }
+
+      DrawTagsData::TagData td;
+      if (getTagFrames(tag, &td.fromFrame, &td.toFrame)) {
+        td.tag = tag;
+        td.drawText = (m_tagFocusBand < 0 || pass == 1);
+        tagsData->tds.push_back(td);
+      }
+    }
+  }
+}
+
+void Timeline::drawTags(ui::Graphics* g, const DrawTagsData* tagsData)
 {
   IntersectClip clip(g, getPartBounds(Hit(PART_TAGS)));
   if (!clip)
@@ -2732,106 +2789,86 @@ void Timeline::drawTags(ui::Graphics* g)
     g->fillRect(theme->colors.timelineBandHighlight(), bandBounds);
   }
 
-  int passes = (m_tagFocusBand >= 0 ? 2 : 1);
-  for (int pass = 0; pass < passes; ++pass) {
-    for (Tag* tag : m_sprite->tags()) {
-      int band = -1;
-      if (m_tagFocusBand >= 0) {
-        auto it = m_tagBand.find(tag);
-        if (it != m_tagBand.end()) {
-          band = it->second;
-          if ((pass == 0 && band == m_tagFocusBand) || (pass == 1 && band != m_tagFocusBand))
-            continue;
-        }
+  for (const auto& td : tagsData->tds) {
+    const Tag* tag = td.tag;
+
+    gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), td.fromFrame));
+    gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), td.toFrame));
+    gfx::Rect bounds = bounds1.createUnion(bounds2);
+    gfx::Rect tagBounds = getPartBounds(Hit(PART_TAG, 0, kNoCol, tag->id()));
+    bounds.h = bounds.y2() - tagBounds.y2();
+    bounds.y = tagBounds.y2();
+
+    int dx = 0, dw = 0;
+    if (m_dropTarget.outside && m_dropTarget.hhit != DropTarget::HNone &&
+        m_dropRange.type() == DocRange::kFrames) {
+      switch (m_dropTarget.hhit) {
+        case DropTarget::Before:
+          if (m_dropRange.firstFrame() == td.fromFrame) {
+            dx = +frameBoxWidth() / 4;
+            dw = -frameBoxWidth() / 4;
+          }
+          else if (m_dropRange.firstFrame() - 1 == td.toFrame) {
+            dw = -frameBoxWidth() / 4;
+          }
+          break;
+        case DropTarget::After:
+          if (m_dropRange.lastFrame() == td.toFrame) {
+            dw = -frameBoxWidth() / 4;
+          }
+          else if (m_dropRange.lastFrame() + 1 == td.fromFrame) {
+            dx = +frameBoxWidth() / 4;
+            dw = -frameBoxWidth() / 4;
+          }
+          break;
       }
+    }
+    bounds.x += dx;
+    bounds.w += dw;
+    tagBounds.x += dx;
 
-      col_t fromFrame, toFrame;
-      if (!getTagFrames(tag, &fromFrame, &toFrame))
-        continue;
+    const gfx::Color tagColor = (td.drawText ? tag->color() : theme->colors.timelineBandBg());
+    gfx::Color bg = tagColor;
 
-      gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), fromFrame));
-      gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), toFrame));
-      gfx::Rect bounds = bounds1.createUnion(bounds2);
-      gfx::Rect tagBounds = getPartBounds(Hit(PART_TAG, 0, kNoCol, tag->id()));
-      bounds.h = bounds.y2() - tagBounds.y2();
-      bounds.y = tagBounds.y2();
+    // Draw the tag braces
+    drawTagBraces(g, bg, bounds, bounds);
+    if ((m_clk.part == PART_TAG_LEFT && m_clk.tag == tag->id()) ||
+        (m_clk.part != PART_TAG_LEFT && m_hot.part == PART_TAG_LEFT && m_hot.tag == tag->id())) {
+      if (m_clk.part == PART_TAG_LEFT)
+        bg = color_utils::blackandwhite_neg(tagColor);
+      else
+        bg = Timeline::highlightColor(tagColor);
+      drawTagBraces(g, bg, bounds, gfx::Rect(bounds.x, bounds.y, frameBoxWidth() / 2, bounds.h));
+    }
+    else if ((m_clk.part == PART_TAG_RIGHT && m_clk.tag == tag->id()) ||
+             (m_clk.part != PART_TAG_RIGHT && m_hot.part == PART_TAG_RIGHT &&
+              m_hot.tag == tag->id())) {
+      if (m_clk.part == PART_TAG_RIGHT)
+        bg = color_utils::blackandwhite_neg(tagColor);
+      else
+        bg = Timeline::highlightColor(tagColor);
+      drawTagBraces(
+        g,
+        bg,
+        bounds,
+        gfx::Rect(bounds.x2() - frameBoxWidth() / 2, bounds.y, frameBoxWidth() / 2, bounds.h));
+    }
 
-      int dx = 0, dw = 0;
-      if (m_dropTarget.outside && m_dropTarget.hhit != DropTarget::HNone &&
-          m_dropRange.type() == DocRange::kFrames) {
-        switch (m_dropTarget.hhit) {
-          case DropTarget::Before:
-            if (m_dropRange.firstFrame() == fromFrame) {
-              dx = +frameBoxWidth() / 4;
-              dw = -frameBoxWidth() / 4;
-            }
-            else if (m_dropRange.firstFrame() - 1 == toFrame) {
-              dw = -frameBoxWidth() / 4;
-            }
-            break;
-          case DropTarget::After:
-            if (m_dropRange.lastFrame() == toFrame) {
-              dw = -frameBoxWidth() / 4;
-            }
-            else if (m_dropRange.lastFrame() + 1 == fromFrame) {
-              dx = +frameBoxWidth() / 4;
-              dw = -frameBoxWidth() / 4;
-            }
-            break;
-        }
-      }
-      bounds.x += dx;
-      bounds.w += dw;
-      tagBounds.x += dx;
+    // Draw tag text
+    if (td.drawText) {
+      bounds = tagBounds;
 
-      const gfx::Color tagColor = (m_tagFocusBand < 0 || pass == 1) ?
-                                    tag->color() :
-                                    theme->colors.timelineBandBg();
-      gfx::Color bg = tagColor;
+      if (m_clk.part == PART_TAG && m_clk.tag == tag->id())
+        bg = color_utils::blackandwhite_neg(tagColor);
+      else if (m_hot.part == PART_TAG && m_hot.tag == tag->id())
+        bg = Timeline::highlightColor(tagColor);
+      else
+        bg = tagColor;
+      g->fillRect(bg, bounds);
 
-      // Draw the tag braces
-      drawTagBraces(g, bg, bounds, bounds);
-      if ((m_clk.part == PART_TAG_LEFT && m_clk.tag == tag->id()) ||
-          (m_clk.part != PART_TAG_LEFT && m_hot.part == PART_TAG_LEFT && m_hot.tag == tag->id())) {
-        if (m_clk.part == PART_TAG_LEFT)
-          bg = color_utils::blackandwhite_neg(tagColor);
-        else
-          bg = Timeline::highlightColor(tagColor);
-        drawTagBraces(g, bg, bounds, gfx::Rect(bounds.x, bounds.y, frameBoxWidth() / 2, bounds.h));
-      }
-      else if ((m_clk.part == PART_TAG_RIGHT && m_clk.tag == tag->id()) ||
-               (m_clk.part != PART_TAG_RIGHT && m_hot.part == PART_TAG_RIGHT &&
-                m_hot.tag == tag->id())) {
-        if (m_clk.part == PART_TAG_RIGHT)
-          bg = color_utils::blackandwhite_neg(tagColor);
-        else
-          bg = Timeline::highlightColor(tagColor);
-        drawTagBraces(
-          g,
-          bg,
-          bounds,
-          gfx::Rect(bounds.x2() - frameBoxWidth() / 2, bounds.y, frameBoxWidth() / 2, bounds.h));
-      }
-
-      // Draw tag text
-      if (m_tagFocusBand < 0 || pass == 1) {
-        bounds = tagBounds;
-
-        if (m_clk.part == PART_TAG && m_clk.tag == tag->id())
-          bg = color_utils::blackandwhite_neg(tagColor);
-        else if (m_hot.part == PART_TAG && m_hot.tag == tag->id())
-          bg = Timeline::highlightColor(tagColor);
-        else
-          bg = tagColor;
-        g->fillRect(bg, bounds);
-
-        bounds.y += 2 * ui::guiscale();
-        bounds.x += 2 * ui::guiscale();
-        g->drawText(tag->name(),
-                    color_utils::blackandwhite_neg(bg),
-                    gfx::ColorNone,
-                    bounds.origin());
-      }
+      bounds.y += 2 * ui::guiscale();
+      bounds.x += 2 * ui::guiscale();
+      g->drawText(tag->name(), color_utils::blackandwhite_neg(bg), gfx::ColorNone, bounds.origin());
     }
   }
 
@@ -3331,6 +3368,12 @@ view::col_t Timeline::getFrameInXPos(const int x) const
 
 void Timeline::invalidateHit(const Hit& hit)
 {
+  // If there is no document or adapter it means that the document was
+  // changed and we're trying to invalidate an invalid "hit" area from
+  // the timeline.
+  if (!m_document || !m_adapter)
+    return;
+
   if (hit.band >= 0) {
     Hit hit2 = hit;
     hit2.part = PART_TAG_BAND;
@@ -3487,7 +3530,7 @@ void Timeline::updateByMousePos(ui::Message* msg, const gfx::Point& mousePos)
 Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
 {
   Hit hit(PART_NOTHING);
-  if (!m_document)
+  if (!m_document || !m_adapter)
     return hit;
 
   if (m_clk.part == PART_SEPARATOR) {
@@ -3732,8 +3775,10 @@ void Timeline::setHot(const Hit& hit)
     if (isMovingCel()) {
       invalidate();
     }
-    // Invalidate the old and new 'hot' thing.
-    else {
+    // Invalidate the old and new 'hot' thing. The old hit region with
+    // the mouse (m_hot) is valid only if there is document and
+    // adapter in the timeline.
+    else if (m_document && m_adapter) {
       invalidateHit(m_hot);
       invalidateHit(hit);
     }

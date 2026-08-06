@@ -263,8 +263,13 @@ bool Session::saveDocumentChanges(Doc* doc)
     }
   }
 
+#if 0 // TODO We cannot use this fix as we are in a background thread,
+      //      so asking for the editor state here is impossible.
+
   // Fix cel position if we're just making the backup in a ToolLoop
   ScopedToolLoopFix fix(doc->sprite());
+
+#endif
 
   // Save document information
   return write_document(dir, doc, &reader);

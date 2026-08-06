@@ -227,6 +227,18 @@ void Doc::notifyGeneralUpdate()
   notify_observers<DocEvent&>(&DocObserver::onGeneralUpdate, ev);
 }
 
+void Doc::notifyBeforeSave()
+{
+  DocEvent ev(this);
+  notify_observers<DocEvent&>(&DocObserver::onBeforeSave, ev);
+}
+
+void Doc::notifyAfterSave()
+{
+  DocEvent ev(this);
+  notify_observers<DocEvent&>(&DocObserver::onAfterSave, ev);
+}
+
 void Doc::notifyColorSpaceChanged()
 {
   updateOSColorSpace(true);
