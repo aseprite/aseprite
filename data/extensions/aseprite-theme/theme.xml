@@ -110,7 +110,7 @@
         <color id="status_bar_text" value="#2e3234"/>
         <color id="status_bar_face" value="#7d929e"/>
         <color id="flag_normal" value="#d3cbbe"/>
-        <color id="flag_active" value="#ff0000"/>
+        <color id="flag_active" value="#d82f45"/>
         <color id="flag_clicked" value="#7d929e"/>
         <color id="select_box_ruler" value="#0000ff"/>
         <color id="select_box_grid" value="#64c864"/>
@@ -876,8 +876,8 @@
         </style>
         <style id="workspace_panel">
             <background color="workspace"/>
-            <background-border part="workspace_border" />
-            <newlayer />
+            <background-border part="workspace_border"/>
+            <newlayer/>
             <background color="workspace_panel_face"/>
         </style>
         <style id="timeline">
@@ -1235,7 +1235,7 @@
             <icon part="check_selected" align="center middle"/>
         </style>
         <style id="recents_menu_item" height="12">
-            <background color="menuitem_highlight_face" state="mouse" />
+            <background color="menuitem_highlight_face" state="mouse"/>
             <text color="text" x="3" align="left"/>
             <text color="disabled" x="3" align="left" state="disabled"/>
             <text color="menuitem_highlight_text" x="3" align="left" state="mouse"/>
