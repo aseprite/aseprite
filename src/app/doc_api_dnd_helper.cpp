@@ -43,12 +43,12 @@ void setup_insertion_layer(Doc* destDoc,
                            doc::layer_t layerIndex,
                            InsertionPoint& insert,
                            Layer*& layer,
-                           LayerGroup*& group)
+                           Layer*& group)
 {
   const LayerList& allLayers = destDoc->sprite()->allLayers();
   layer = allLayers[layerIndex];
   if (insert == InsertionPoint::BeforeLayer && layer->isGroup()) {
-    group = static_cast<LayerGroup*>(layer);
+    group = layer;
     // The user is trying to drop layers into an empty group, so there is no after
     // nor before layer...
     if (group->layersCount() == 0) {
@@ -79,7 +79,7 @@ void DocApi::dropDocumentsOnTimeline(app::Doc* destDoc,
   // inserted after or before it.
   Layer* refLayer = nullptr;
   // Parent group of the reference layer layer.
-  LayerGroup* group = nullptr;
+  Layer* group = nullptr;
   // Keep track of the current insertion point.
   setup_insertion_layer(destDoc, layerIndex, insert, refLayer, group);
 

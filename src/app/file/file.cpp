@@ -664,14 +664,19 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
       // If the error is fatal, we cannot ignore a no-op, we always
       // show the alert dialog.
       if (fatal) {
-        ui::Alert::show(Strings::alerts_file_format_doesnt_support_error(format->name(), warnings));
+        ui::Alert::show(
+          Strings::alerts_file_format_doesnt_support_error(format->name(),
+                                                           base::get_file_extension(filename),
+                                                           warnings));
         ret = 1;
       }
       else {
         ret = OptionalAlert::show(
           Preferences::instance().saveFile.showFileFormatDoesntSupportAlert,
           1, // Yes is the default option when the alert dialog is disabled
-          Strings::alerts_file_format_doesnt_support_warning(format->name(), warnings));
+          Strings::alerts_file_format_doesnt_support_warning(format->name(),
+                                                             base::get_file_extension(filename),
+                                                             warnings));
       }
 
       // Operation can't be done (by fatal error) or the user cancel
@@ -1066,6 +1071,12 @@ void FileOp::createDocument(Sprite* spr)
 
   ASSERT(m_document == NULL);
   m_document = new Doc(spr);
+}
+
+void FileOp::setDocument(Doc* doc)
+{
+  ASSERT(m_document == NULL);
+  m_document = doc;
 }
 
 void FileOp::postLoad()

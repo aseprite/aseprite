@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2024 Igara Studio S.A.
+// Copyright (c) 2018-2025 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -72,7 +72,7 @@ public:
   // when width() < rowPixels()).
   int rowPixels() const { return m_rowBytes / bytesPerPixel(); }
 
-  virtual int getMemSize() const override;
+  int getMemSize() const override;
 
   template<typename ImageTraits>
   ImageBits<ImageTraits> lockBits(LockType lockType, const gfx::Rect& bounds)

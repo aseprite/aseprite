@@ -631,7 +631,7 @@ bool DocView::onClear(Context* ctx)
 
   // TODO This code is similar to clipboard::cut()
   {
-    Tx tx(writer, "Clear");
+    Tx tx(writer, Strings::commands_Clear());
     const bool deselectMask = (visibleMask &&
                                !Preferences::instance().selection.keepSelectionAfterClear());
 

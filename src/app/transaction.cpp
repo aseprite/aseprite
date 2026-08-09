@@ -88,6 +88,8 @@ void Transaction::commit()
   ASSERT(m_cmds);
   TX_TRACE("TX: Commit <%s>\n", m_cmds->label().c_str());
 
+  m_doc->notifyBeforeCommitTransaction();
+
   m_cmds->updateSpritePositionAfter();
   const SpritePosition sprPos = m_cmds->spritePositionAfterExecute();
 

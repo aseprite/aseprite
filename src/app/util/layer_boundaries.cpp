@@ -14,6 +14,7 @@
 #include "app/cmd/set_mask.h"
 #include "app/console.h"
 #include "app/context_access.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/tx.h"
 #include "app/ui_context.h"
@@ -58,7 +59,7 @@ void select_layer_boundaries(Layer* layer, const frame_t frame, const SelectLaye
       }
     }
 
-    Tx tx(writer, "Select Layer Boundaries", DoesntModifyDocument);
+    Tx tx(writer, Strings::tx_select_layer_boundaries(), DoesntModifyDocument);
     tx(new cmd::SetMask(doc, &newMask));
     tx.commit();
 

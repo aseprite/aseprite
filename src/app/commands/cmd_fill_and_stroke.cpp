@@ -15,6 +15,7 @@
 #include "app/color_utils.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
+#include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
 #include "app/tx.h"
 #include "app/ui/editor/editor.h"
@@ -76,7 +77,7 @@ void FillCommand::onExecute(Context* ctx)
     color = color_utils::color_for_layer(pref.colorBar.fgColor(), layer);
 
   {
-    Tx tx(writer, "Fill Selection with Foreground Color");
+    Tx tx(writer, Strings::commands_Fill());
     {
       ExpandCelCanvas expand(site, layer, TiledMode::NONE, tx, ExpandCelCanvas::None);
 

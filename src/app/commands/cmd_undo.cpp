@@ -96,17 +96,16 @@ void UndoCommand::onExecute(Context* context)
   else
     docRangeStream = undo->nextRedoDocRange();
 
-  StatusBar* statusbar = StatusBar::instance();
-  if (statusbar) {
+  if (auto* statusBar = StatusBar::instance()) {
     std::string msg;
     if (m_type == Undo)
       msg = "Undid " + undo->nextUndoLabel();
     else
       msg = "Redid " + undo->nextRedoLabel();
     if (Preferences::instance().undo.showTooltip())
-      statusbar->showTip(1000, msg);
+      statusBar->showTip(1000, msg);
     else
-      statusbar->setStatusText(0, msg);
+      statusBar->setStatusText(0, msg);
   }
 
   // Effectively undo/redo.

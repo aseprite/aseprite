@@ -30,6 +30,8 @@ public:
 
   void addTooltipFor(Widget* widget, const std::string& text, int arrowAlign = 0);
   void removeTooltipFor(Widget* widget);
+  void setDelay(int delay);
+  std::string getTooltipFor(Widget* widget);
 
 protected:
   bool onProcessMessage(Message* msg) override;
@@ -47,6 +49,8 @@ private:
   };
 
   typedef std::map<Widget*, TipInfo> Tips;
+
+  int m_delay;
   Tips m_tips;                            // All tips.
   std::unique_ptr<TipWindow> m_tipWindow; // Frame to show tooltips.
   std::unique_ptr<Timer> m_timer;         // Timer to control the tooltip delay.

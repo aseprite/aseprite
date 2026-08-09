@@ -96,6 +96,21 @@ FileFormatsManager::~FileFormatsManager()
 void FileFormatsManager::registerFormat(FileFormat* fileFormat)
 {
   m_formats.push_back(fileFormat);
+
+  if (fileFormat->dioFormat() >= dio::FileFormat::FIRST_CUSTOM) {
+    // Only sort custom formats but keep .ase first regardless.
+    std::sort(m_formats.begin() + 1, m_formats.end(), [](const FileFormat* a, const FileFormat* b) {
+      return base::string_to_lower(a->name()) < base::string_to_lower(b->name());
+    });
+  }
+}
+
+void FileFormatsManager::unregisterFormat(FileFormat* fileFormat)
+{
+  m_formats.erase(std::remove_if(std::begin(m_formats),
+                                 std::end(m_formats),
+                                 [fileFormat](FileFormat* f) { return f == fileFormat; }),
+                  std::end(m_formats));
 }
 
 FileFormatsList::iterator FileFormatsManager::begin()

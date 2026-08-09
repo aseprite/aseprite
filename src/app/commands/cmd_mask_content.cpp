@@ -15,6 +15,7 @@
 #include "app/color_utils.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/tools/tool_box.h"
 #include "app/tx.h"
@@ -79,7 +80,7 @@ void MaskContentCommand::onExecute(Context* context)
       newMask.replace(cel->bounds());
     }
 
-    Tx tx(writer, "Select Content", DoesntModifyDocument);
+    Tx tx(writer, Strings::commands_MaskContent(), DoesntModifyDocument);
     tx(new cmd::SetMask(document, &newMask));
     document->resetTransformation();
     tx.commit();

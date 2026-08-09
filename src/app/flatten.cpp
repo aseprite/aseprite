@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019 Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -69,7 +69,7 @@ static bool has_cels(const Layer* layer, frame_t frame)
     case ObjectType::LayerImage: return (layer->cel(frame) ? true : false);
 
     case ObjectType::LayerGroup: {
-      for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers()) {
+      for (const Layer* child : layer->layers()) {
         if (has_cels(child, frame))
           return true;
       }

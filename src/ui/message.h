@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -8,6 +8,9 @@
 #ifndef UI_MESSAGE_H_INCLUDED
 #define UI_MESSAGE_H_INCLUDED
 #pragma once
+
+// Uncomment this to debug kPaintMessages
+// #define DEBUG_PAINT_MESSAGES 1
 
 #include "base/codepoint.h"
 #include "base/paths.h"
@@ -163,9 +166,18 @@ public:
   int count() const { return m_count; }
   const gfx::Rect& rect() const { return m_rect; }
 
+#if DEBUG_PAINT_MESSAGES
+  // For debugging purposes only
+  bool delayed() const { return m_delayed; }
+  void delayed(const bool v) { m_delayed = v; }
+#endif
+
 private:
   int m_count;      // Cound=0 if it's last msg of draw-chain
   gfx::Rect m_rect; // Area to draw
+#if DEBUG_PAINT_MESSAGES
+  bool m_delayed = false; // Second PaintMessage after painting the debugging placeholder
+#endif
 };
 
 class MouseMessage : public Message {

@@ -7,10 +7,11 @@ The active team of developers is:
 * [Gaspar Capello](https://github.com/Gasparoken)
 * [Martín Capello](https://github.com/martincapello)
 * [Christian Kaiser](https://github.com/ckaiser)
+
+Previous team members that contributed with code, docs, scripts,
+graphics:
+
 * [Dante Paola](https://github.com/Liebranca)
-
-Previous team members that contributed with code/docs/scripts/graphics:
-
 * [Kacper Woźniak](https://github.com/thkwznk)
 * [Joshua Ogunyinka](https://github.com/iamOgunyinka)
 * [David Campo](https://github.com/dncampo)
@@ -38,7 +39,7 @@ were created by:
 The default Aseprite font was created by David Capello, and the
 default Aseprite theme was introduced in v0.8, originally created by:
 
-* Ilija Melentijevic
+* [Ilija Melentijevic](https://ilkke.net/)
 
 A modified dark version of this theme was introduced in v1.3-beta1, created by:
 

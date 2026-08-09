@@ -132,8 +132,14 @@ void RemoveLayerCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Doc* document(writer.document());
   Sprite* sprite(writer.sprite());
+
+  // Show the tooltip feedback only if we are not inside a transaction
+  // (e.g. we can be already in a transaction if we are running in a
+  // Lua script app.transaction()).
+  const bool showTooltip = (document->transaction() == nullptr);
+
   {
-    Tx tx(writer, "Remove Layer");
+    Tx tx(writer, Strings::commands_RemoveLayer());
     DocApi api = document->getApi(tx);
     // We need to remove all the tilesets after the tilemaps are deleted
     // and in descending tileset index order, otherwise the tileset indexes
@@ -162,6 +168,9 @@ void RemoveLayerCommand::onExecute(Context* context)
                                              tsiToDelete)) {
         return;
       }
+
+      if (deletedTopLevelLayers <= 1 && selLayers.size() == 1)
+        layerName = (*selLayers.begin())->name();
 
       for (Layer* layer : selLayers) {
         api.removeLayer(layer);
@@ -200,12 +209,12 @@ void RemoveLayerCommand::onExecute(Context* context)
   if (context->isUIAvailable()) {
     update_screen_for_document(document);
 
-    StatusBar::instance()->invalidate();
-    if (!layerName.empty()) {
-      StatusBar::instance()->showTip(1000, Strings::remove_layer_x_removed(layerName));
-    }
-    else {
-      StatusBar::instance()->showTip(1000, Strings::remove_layer_layers_removed());
+    auto* statusBar = StatusBar::instance();
+    if (showTooltip && statusBar) {
+      if (!layerName.empty())
+        statusBar->showTip(1000, Strings::remove_layer_x_removed(layerName));
+      else
+        statusBar->showTip(1000, Strings::remove_layer_layers_removed());
     }
   }
 }

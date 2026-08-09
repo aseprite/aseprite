@@ -109,7 +109,7 @@ int Layer_get_layers(lua_State* L)
 {
   auto layer = get_docobj<Layer>(L, 1);
   if (layer->isGroup())
-    push_group_layers(L, static_cast<LayerGroup*>(layer));
+    push_group_layers(L, layer);
   else
     lua_pushnil(L);
   return 1;

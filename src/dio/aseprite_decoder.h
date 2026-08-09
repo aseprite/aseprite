@@ -35,10 +35,6 @@ class UserData;
 
 namespace dio {
 
-struct AsepriteHeader;
-struct AsepriteFrameHeader;
-class AsepriteExternalFiles;
-
 class AsepriteDecoder : public Decoder {
 public:
   bool decode() override;
@@ -58,8 +54,7 @@ private:
                              doc::Sprite* sprite,
                              doc::Layer** previous_layer,
                              int* current_level);
-  doc::Cel* readCelChunk(doc::Sprite* sprite,
-                         doc::frame_t frame,
+  doc::Cel* readCelChunk(doc::frame_t frame,
                          doc::PixelFormat pixelFormat,
                          const AsepriteHeader* header,
                          const size_t chunk_end);

@@ -20,7 +20,7 @@
       </vbox>
     </hbox>
     <splitter horizontal="true" noborders="true" childspacing="2"
-              expansive="true" by="percetage" position="50"
+              expansive="true" by="percentage" position="50"
               style="workspace_splitter">
       <splitter vertical="true" noborders="true" childspacing="2"
                 style="workspace_splitter">

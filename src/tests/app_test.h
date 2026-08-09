@@ -15,7 +15,12 @@
 
 #include <gtest/gtest.h>
 
-#ifdef TEST_GUI
+#ifdef TEST_APP
+  #include "app/app.h"
+  #include "app/cli/app_options.h"
+#endif
+
+#if defined(TEST_GUI) || defined(TEST_APP)
   #include "os/os.h"
   #include "ui/ui.h"
 #endif
@@ -37,7 +42,7 @@ int main(int argc, char* argv[])
   int exitcode;
   ::testing::InitGoogleTest(&argc, argv);
 
-#ifdef TEST_GUI
+#if defined(TEST_GUI) || defined(TEST_APP)
   {
     os::SystemRef system = os::System::make();
     ui::UISystem uiSystem;
@@ -45,10 +50,17 @@ int main(int argc, char* argv[])
     ui::Theme uiTheme;
     ui::set_theme(&uiTheme, 1);
 #endif
+#ifdef TEST_APP
+    auto* exeName = argv[0];
+    const char* argv[] = { exeName, "--batch" };
+    const app::AppOptions options(std::size(argv), argv);
+    app::App app;
+    app.initialize(options);
+#endif
 
     exitcode = RUN_ALL_TESTS();
 
-#ifdef TEST_GUI
+#if defined(TEST_GUI) || defined(TEST_APP)
   }
 #endif
 

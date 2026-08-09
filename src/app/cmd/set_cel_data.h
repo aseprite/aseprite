@@ -12,8 +12,6 @@
 #include "app/cmd/with_cel.h"
 #include "doc/cel_data.h"
 
-#include <sstream>
-
 namespace app { namespace cmd {
 using namespace doc;
 

@@ -79,17 +79,20 @@ encouraged to create mockups for any issue you see and attach them.
 
 ## Pre-commit hooks
 
-We use [pre-commit](https://pre-commit.com/) as way to set up hooks, you can install it with:
+We use [prek](https://prek.j178.dev/) as way to set up hooks, which is
+a [pre-commit](https://pre-commit.com/) port built in Rust. See
+instructions to install prek in your platform [here](https://prek.j178.dev/installation/).
+Once you have `prek` already installed, you can
 
 ```
-pip install pre-commit
-pre-commit install
+prek install
 ```
 
-If you need to run it manually, use `pre-commit run`.
+If you need to run it manually, use `prek run`.
 
-To run `clang-tidy`, you can use `pre-commit run --hook-stage manual clang-tidy`.
-Make sure to check the suggestions and to not apply them arbitrarily, since some might not be 100% applicable to what you're doing.
+To run `clang-tidy`, you can use `prek run --hook-stage manual clang-tidy`.
+Make sure to check the suggestions and to not apply them arbitrarily,
+since some might not be 100% applicable to what you're doing.
 
 ## Code submission policy
 

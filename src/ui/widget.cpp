@@ -5,7 +5,6 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-// #define REPORT_SIGNALS
 // #define PAINT_BASELINE 1
 
 #ifdef HAVE_CONFIG_H
@@ -1866,7 +1865,7 @@ void Widget::onVisible(bool visible)
 
 void Widget::onEnable(bool enabled)
 {
-  // Do nothing
+  EnabledChange(enabled);
 }
 
 void Widget::onSelect(bool selected)

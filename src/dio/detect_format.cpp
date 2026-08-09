@@ -26,13 +26,39 @@
 #define PSD_STAMP        "8BPS"
 #define QOI_STAMP        "qoif"
 
+#include <unordered_map>
+
+static std::unordered_map<std::string, dio::FileFormat> g_customFormats;
+
 namespace dio {
+
+bool register_custom_format_extension(const std::string& ext, const FileFormat format)
+{
+  if (detect_format_by_file_extension("file." + ext) != FileFormat::UNKNOWN)
+    return false;
+
+  g_customFormats.try_emplace(ext, format);
+  return true;
+}
+
+void unregister_custom_format_extension(const std::string& ext, const FileFormat format)
+{
+  if (g_customFormats[ext] == format)
+    g_customFormats.erase(ext);
+}
 
 FileFormat detect_format(const std::string& filename)
 {
-  FileFormat ff = detect_format_by_file_content(filename);
-  if (ff == FileFormat::UNKNOWN)
-    ff = detect_format_by_file_extension(filename);
+  FileFormat ff = detect_format_by_file_extension(filename);
+
+  if (ff < FileFormat::FIRST_CUSTOM) {
+    // For non-custom formats, we use content detection and override the detection if we find
+    // something valid, to account for incorrect extensions.
+    const FileFormat contentFormat = detect_format_by_file_content(filename);
+    if (contentFormat > FileFormat::UNKNOWN)
+      ff = contentFormat;
+  }
+
   return ff;
 }
 
@@ -160,6 +186,10 @@ FileFormat detect_format_by_file_extension(const std::string& filename)
 
   if (ext == "qoi")
     return FileFormat::QOI_IMAGE;
+
+  const auto it = g_customFormats.find(ext);
+  if (it != g_customFormats.end())
+    return it->second;
 
   return FileFormat::UNKNOWN;
 }

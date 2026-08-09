@@ -15,6 +15,7 @@
 #include "app/console.h"
 #include "app/doc_exporter.h"
 #include "app/doc_range.h"
+#include "app/file/file_format.h"
 #include "app/pref/preferences.h"
 #include "app/script/blend_mode.h"
 #include "app/script/luacpp.h"
@@ -463,7 +464,21 @@ Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(fa
   setfield_integer(L, "RIGHT", ui::RIGHT);
   setfield_integer(L, "TOP", ui::TOP);
   setfield_integer(L, "BOTTOM", ui::BOTTOM);
+  lua_pop(L, 1);
 
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, "FormatSupport");
+  setfield_integer(L, "RGB", FILE_SUPPORT_RGB);
+  setfield_integer(L, "RGBA", FILE_SUPPORT_RGBA);
+  setfield_integer(L, "GRAY", FILE_SUPPORT_GRAY);
+  setfield_integer(L, "GRAYA", FILE_SUPPORT_GRAYA);
+  setfield_integer(L, "INDEXED", FILE_SUPPORT_INDEXED);
+  setfield_integer(L, "LAYER", FILE_SUPPORT_LAYERS);
+  setfield_integer(L, "FRAME", FILE_SUPPORT_FRAMES);
+  // TODO: Do we want to combine these?
+  setfield_integer(L, "PALETTE", FILE_SUPPORT_PALETTES | FILE_SUPPORT_BIG_PALETTES);
+  setfield_integer(L, "PALETTE_ALPHA", FILE_SUPPORT_PALETTE_WITH_ALPHA);
   lua_pop(L, 1);
 
   // Register classes/prototypes

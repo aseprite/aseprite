@@ -41,11 +41,11 @@ public:
 
   // Finds a match with any of the given words using Levenshtein distance
   // Expects lower case input, unlike operator()
-  bool fuzzyWords(const std::vector<std::string>& words, size_t threshold = 3) const
+  bool fuzzyWords(const std::vector<std::string>& lowerWords, size_t threshold = 3) const
   {
     std::size_t matches = 0;
     for (const auto& part : m_parts) {
-      for (const auto& word : words) {
+      for (const auto& word : lowerWords) {
         if (levenshteinDistance(part, word) < threshold)
           ++matches;
       }
@@ -57,6 +57,11 @@ public:
   bool operator()(const std::string& item) const
   {
     const std::string& lowerItem = base::string_to_lower(item);
+    return word(lowerItem);
+  }
+
+  bool word(const std::string& lowerItem) const
+  {
     std::size_t matches = 0;
 
     for (const auto& part : m_parts) {

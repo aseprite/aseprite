@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -64,6 +64,7 @@ public:
   void setSpriteSheetType(SpriteSheetType type) { m_sheetType = type; }
   void setIgnoreEmptyCels(bool ignore) { m_ignoreEmptyCels = ignore; }
   void setMergeDuplicates(bool merge) { m_mergeDuplicates = merge; }
+  void setPowerOfTwoSize(bool power2Size) { m_powerOfTwoSize = power2Size; }
   void setBorderPadding(int padding) { m_borderPadding = padding; }
   void setShapePadding(int padding) { m_shapePadding = padding; }
   void setInnerPadding(int padding) { m_innerPadding = padding; }
@@ -162,6 +163,7 @@ private:
   int m_innerPadding;
   bool m_ignoreEmptyCels;
   bool m_mergeDuplicates;
+  bool m_powerOfTwoSize;
   bool m_trimSprite;
   bool m_trimCels;
   bool m_trimByGrid;

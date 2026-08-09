@@ -15,6 +15,7 @@
 #include "app/cmd/remap_colors.h"
 #include "app/commands/commands.h"
 #include "app/context_access.h"
+#include "app/i18n/strings.h"
 #include "app/site.h"
 #include "app/tx.h"
 #include "app/util/clipboard.h"
@@ -110,7 +111,7 @@ bool ScriptInputChain::onClear(Context* ctx)
     cels.push_back(site.cel());
     if (cels.empty()) // No cels to modify
       return false;
-    Tx tx(writer, "Clear");
+    Tx tx(writer, Strings::commands_Clear());
     ctx->clipboard()->clearMaskFromCels(tx, document, site, cels, true);
     tx.commit();
     return true;

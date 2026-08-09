@@ -5,6 +5,7 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
+#define TEST_APP
 #include "tests/app_test.h"
 
 #include "app/context.h"
@@ -14,7 +15,6 @@
 #include "app/doc_range_ops.h"
 #include "app/doc_undo.h"
 #include "app/test_context.h"
-#include "app/transaction.h"
 #include "doc/doc.h"
 
 using namespace app;

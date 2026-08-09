@@ -353,6 +353,7 @@ protected:
   void onBeforeLayerEditableChange(DocEvent& ev, bool newState) override;
   void onBeforeSlicesDuplication(DocEvent& ev) override;
   void onSliceDuplicated(DocEvent& ev) override;
+  void onBeforeCommitTransaction(DocEvent& ev) override;
 
   // ActiveToolObserver impl
   void onActiveToolChange(tools::Tool* tool) override;

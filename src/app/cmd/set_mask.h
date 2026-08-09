@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,7 +13,6 @@
 #include "app/cmd/with_document.h"
 
 #include <memory>
-#include <sstream>
 
 namespace doc {
 class Mask;

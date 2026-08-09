@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-2025  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -14,10 +14,8 @@
 #include "doc/cel.h"
 #include "doc/cels_range.h"
 #include "doc/image.h"
-#include "doc/image_io.h"
 #include "doc/image_ref.h"
 #include "doc/sprite.h"
-#include "doc/subobjects_io.h"
 #include "doc/tilesets.h"
 
 namespace app { namespace cmd {

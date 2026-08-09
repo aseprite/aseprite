@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -21,6 +21,16 @@ namespace app { namespace script {
 using namespace doc;
 
 namespace {
+
+int Tileset_gc(lua_State* L)
+{
+  auto tileset = get_docobj<Tileset>(L, 1);
+  // A tileset without sprite is a "standalone" tileset (e.g. a
+  // tileset from the clipboard without a specific owner)
+  if (!tileset->sprite())
+    delete tileset;
+  return 0;
+}
 
 int Tileset_eq(lua_State* L)
 {
@@ -99,6 +109,7 @@ int Tileset_set_baseIndex(lua_State* L)
 }
 
 const luaL_Reg Tileset_methods[] = {
+  { "__gc",    Tileset_gc      },
   { "__eq",    Tileset_eq      },
   { "__len",   Tileset_len     },
   { "getTile", Tileset_getTile },

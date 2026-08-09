@@ -10,7 +10,6 @@
 // #define REPORT_PAINT_MESSAGES     1
 // #define REPORT_TIMER_MESSAGES     1
 // #define REPORT_FOCUS_MOVEMENT     1
-// #define DEBUG_PAINT_MESSAGES      1
 // #define LIMIT_DISPATCH_TIME       1
 #define GARBAGE_TRACE(...) // TRACE(__VA_ARGS__)
 #define CAPTURE_TRACE(...) // TRACE(__VA_ARGS__)
@@ -46,13 +45,6 @@
 #include <thread>
 #include <utility>
 #include <vector>
-
-#if defined(_WIN32) && defined(DEBUG_PAINT_MESSAGES)
-  #define WIN32_LEAN_AND_MEAN
-  #include <windows.h>
-  #undef min
-  #undef max
-#endif
 
 namespace ui {
 
@@ -1191,81 +1183,77 @@ void Manager::freeWidget(Widget* widget)
   ASSERT(!Manager::widgetAssociatedToManager(widget));
 }
 
-void Manager::removeMessagesFor(Widget* widget)
+void Manager::removeQueuedMessageIf(std::function<bool(Message*)> pred)
 {
   ASSERT(manager_thread == std::this_thread::get_id());
 
-  for (Message* msg : msg_queue)
-    msg->removeRecipient(widget);
+  Messages queues[] = {
+    msg_queue,
+    used_msg_queue,
+  };
 
-  for (Message* msg : used_msg_queue)
+  for (Messages& queue : queues) {
+    for (auto it = queue.begin(), end = queue.end(); it != end;) {
+      Message* msg = *it;
+      if (pred(msg)) {
+        it = queue.erase(it);
+        end = queue.end();
+      }
+      else {
+        ++it;
+      }
+    }
+  }
+}
+
+void Manager::removeMessagesFor(Widget* widget)
+{
+  removeQueuedMessageIf([widget](Message* msg) {
     msg->removeRecipient(widget);
+    return false;
+  });
 }
 
 void Manager::removeMessagesFor(Widget* widget, MessageType type)
 {
-  ASSERT(manager_thread == std::this_thread::get_id());
-
-  for (Message* msg : msg_queue)
+  removeQueuedMessageIf([widget, type](Message* msg) {
     if (msg->type() == type)
       msg->removeRecipient(widget);
-
-  for (Message* msg : used_msg_queue)
-    if (msg->type() == type)
-      msg->removeRecipient(widget);
+    return false;
+  });
 }
 
 void Manager::removeMessagesForTimer(Timer* timer)
 {
-  ASSERT(manager_thread == std::this_thread::get_id());
-
-  for (Message* msg : msg_queue) {
+  removeQueuedMessageIf([timer](Message* msg) {
     if (msg->type() == kTimerMessage && static_cast<TimerMessage*>(msg)->timer() == timer) {
       msg->removeRecipient(msg->recipient());
       static_cast<TimerMessage*>(msg)->_resetTimer();
     }
-  }
-
-  for (Message* msg : used_msg_queue) {
-    if (msg->type() == kTimerMessage && static_cast<TimerMessage*>(msg)->timer() == timer) {
-      msg->removeRecipient(msg->recipient());
-      static_cast<TimerMessage*>(msg)->_resetTimer();
-    }
-  }
+    return false;
+  });
 }
 
 void Manager::removeMessagesForDisplay(Display* display)
 {
-  ASSERT(manager_thread == std::this_thread::get_id());
-
-  for (Message* msg : msg_queue) {
+  removeQueuedMessageIf([display](Message* msg) {
     if (msg->display() == display) {
       msg->removeRecipient(msg->recipient());
       msg->setDisplay(nullptr);
     }
-  }
-
-  for (Message* msg : used_msg_queue) {
-    if (msg->display() == display) {
-      msg->removeRecipient(msg->recipient());
-      msg->setDisplay(nullptr);
-    }
-  }
+    return false;
+  });
 }
 
 void Manager::removePaintMessagesForDisplay(Display* display)
 {
-  ASSERT(manager_thread == std::this_thread::get_id());
-
-  for (auto it = msg_queue.begin(); it != msg_queue.end();) {
-    Message* msg = *it;
+  removeQueuedMessageIf([display](Message* msg) {
     if (msg->type() == kPaintMessage && msg->display() == display) {
       delete msg;
-      it = msg_queue.erase(it);
+      return true;
     }
-    else
-      ++it;
-  }
+    return false;
+  });
 }
 
 void Manager::addMessageFilter(int message, Widget* widget)
@@ -2048,26 +2036,26 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
 
     if (surface->clipRect(paintMsg->rect())) {
 #if DEBUG_PAINT_MESSAGES
-      {
-        os::SurfaceLock lock(surface.get());
-        os::Paint p;
-        p.color(gfx::rgba(0, 0, 255));
-        p.style(os::Paint::Fill);
-        surface->drawRect(paintMsg->rect(), p);
+      if (!paintMsg->delayed()) {
+        // Paint a blue rectangle where the widget will be finally
+        // painted.
+        GraphicsPtr g = widget->getGraphics(widget->toClient(paintMsg->rect()));
+        g->fillRect(gfx::rgba(0, 0, 255), widget->clientBounds());
 
-        display->nativeWindow()->invalidateRegion(gfx::Region(paintMsg->rect()));
+        PaintMessage* delayedPaint = new PaintMessage(*paintMsg);
+        delayedPaint->delayed(true);
 
-  #ifdef _WIN32 // TODO add a display->nativeWindow()->updateNow() method ??
-        HWND hwnd = (HWND)display->nativeWindow()->nativeHandle();
-        UpdateWindow(hwnd);
-  #else
-        base::this_thread::sleep_for(0.002);
-  #endif
+        // Use the concurrent_msg_queue to send the message in a
+        // second generateMessages() call and give some time to the OS
+        // to process/display the blue rectangle.
+        concurrent_msg_queue.push(delayedPaint);
       }
-#endif
-
       // Call the message handler
-      used = widget->sendMessage(msg);
+      else
+#endif
+      {
+        used = widget->sendMessage(msg);
+      }
     }
 
     // Restore clip region for paint messages.

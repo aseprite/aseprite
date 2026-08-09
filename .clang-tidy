@@ -5,6 +5,9 @@
 # with (int, int) or (string, string) so it does't make sense to enable
 # this option.
 #
+# clang-analyzer-optin.core.EnumCastOutOfRange: We disable this check
+# as we use some enums as flags.
+#
 # readability-braces-around-statements: We use a lot of:
 #   if (cond)
 #     stmt;
@@ -52,6 +55,7 @@ Checks: >
   readability-*,
   -bugprone-easily-swappable-parameters,
   -bugprone-narrowing-conversions,
+  -clang-analyzer-optin.core.EnumCastOutOfRange,
   -misc-include-cleaner,
   -misc-use-anonymous-namespace,
   -readability-braces-around-statements,

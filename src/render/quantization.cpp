@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2019-2022  Igara Studio S.A.
+// Copyright (c) 2019-present  Igara Studio S.A.
 // Copyright (c) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -432,7 +432,8 @@ void PaletteOptimizer::feedWithImage(const Image* image,
           m_histogram.addSamples(color, 1);
         }
       }
-    } break;
+      break;
+    }
 
     case IMAGE_GRAYSCALE: {
       const LockImageBits<GrayscaleTraits> bits(image, bounds);
@@ -450,7 +451,8 @@ void PaletteOptimizer::feedWithImage(const Image* image,
             1);
         }
       }
-    } break;
+      break;
+    }
 
     case IMAGE_INDEXED: ASSERT(false); break;
   }

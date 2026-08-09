@@ -17,7 +17,7 @@ jobs:
         os: [windows-latest, macos-latest, ubuntu-latest]
         build_type: [RelWithDebInfo, Debug]
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         submodules: 'recursive'
     - name: Install Dependencies
@@ -30,8 +30,10 @@ jobs:
           libx11-dev libxcursor-dev libxi-dev libxrandr-dev libgl1-mesa-dev \
           libfontconfig1-dev
     - uses: aseprite/get-ninja@main
-    - uses: ilammy/msvc-dev-cmd@v1
+    - uses: TheMrMilchmann/setup-msvc-dev@v4
       if: runner.os == 'Windows'
+      with:
+        arch: x64
     - name: Building
       shell: bash
       run: |

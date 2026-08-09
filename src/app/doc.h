@@ -101,6 +101,7 @@ public:
 
   const DocUndo* undoHistory() const { return m_undo.get(); }
   DocUndo* undoHistory() { return m_undo.get(); }
+  void resetUndoHistory();
 
   bool isUndoing() const;
 
@@ -127,6 +128,8 @@ public:
   // Notifications
 
   void notifyGeneralUpdate();
+  void notifyBeforeSave();
+  void notifyAfterSave();
   void notifyColorSpaceChanged();
   void notifyPaletteChanged();
   void notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region, frame_t frame);
@@ -144,6 +147,7 @@ public:
   void notifyAfterAddTile(LayerTilemap* layer, frame_t frame, tile_index ti);
   void notifyBeforeSlicesDuplication();
   void notifySliceDuplicated(Slice* slice);
+  void notifyBeforeCommitTransaction();
 
   //////////////////////////////////////////////////////////////////////
   // File related properties

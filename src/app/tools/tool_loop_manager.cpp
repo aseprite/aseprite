@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -268,6 +268,9 @@ void ToolLoopManager::doLoopStep(bool lastStep)
     // last trace only) or to draw the final result in contour tool
     // (the final result is filled).
     m_toolLoop->invalidateDstImage();
+    // Also reset the point shape variable for a new stroke. Useful
+    // for Selection tools + TilePointShape.
+    m_toolLoop->getPointShape()->prepareForStroke(m_toolLoop);
   }
 
   m_toolLoop->validateDstImage(m_dirtyArea);

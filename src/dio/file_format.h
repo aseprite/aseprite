@@ -35,7 +35,16 @@ enum class FileFormat {
   CSS_STYLE,
   PSD_IMAGE,
   QOI_IMAGE,
+
+  FIRST_CUSTOM = 1000,
+  LAST_CUSTOM = 9999
 };
+
+inline FileFormat register_custom_format()
+{
+  static int type = static_cast<int>(FileFormat::FIRST_CUSTOM);
+  return static_cast<FileFormat>(type++);
+}
 
 } // namespace dio
 

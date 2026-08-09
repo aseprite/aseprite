@@ -1,5 +1,5 @@
 // Desktop Integration
-// Copyright (c) 2022-2025  Igara Studio S.A.
+// Copyright (c) 2022-present  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -36,13 +36,13 @@ class StreamAdaptor : public dio::FileInterface {
 public:
   StreamAdaptor(NSData* data) : m_data(data), m_ok(m_data != nullptr), m_pos(0) {}
 
-  bool ok() const { return m_ok; }
+  bool ok() const override { return m_ok; }
 
-  size_t tell() { return m_pos; }
+  size_t tell() override { return m_pos; }
 
-  void seek(size_t absPos) { m_pos = absPos; }
+  void seek(size_t absPos) override { m_pos = absPos; }
 
-  uint8_t read8()
+  uint8_t read8() override
   {
     if (!m_ok)
       return 0;
@@ -55,7 +55,7 @@ public:
     }
   }
 
-  size_t readBytes(uint8_t* buf, size_t n)
+  size_t readBytes(uint8_t* buf, size_t n) override
   {
     if (!m_ok)
       return 0;
@@ -73,9 +73,15 @@ public:
     }
   }
 
-  void write8(uint8_t value)
+  void write8(uint8_t value) override
   {
     // Do nothing, we don't write in the file
+  }
+
+  size_t writeBytes(uint8_t* buf, size_t n) override
+  {
+    // Do nothing, we don't write in the file
+    return 0;
   }
 
   NSData* m_data;

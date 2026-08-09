@@ -1,5 +1,5 @@
 // Desktop Integration
-// Copyright (C) 2021-2022  Igara Studio S.A.
+// Copyright (C) 2021-present  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -48,9 +48,9 @@ class StreamAdaptor : public dio::FileInterface {
 public:
   StreamAdaptor(IStream* stream) : m_stream(stream), m_ok(m_stream != nullptr) {}
 
-  bool ok() const { return m_ok; }
+  bool ok() const override { return m_ok; }
 
-  size_t tell()
+  size_t tell() override
   {
     LARGE_INTEGER delta;
     delta.QuadPart = 0;
@@ -64,7 +64,7 @@ public:
     return newPos.QuadPart;
   }
 
-  void seek(size_t absPos)
+  void seek(size_t absPos) override
   {
     LARGE_INTEGER pos;
     pos.QuadPart = absPos;
@@ -75,7 +75,7 @@ public:
       m_ok = false;
   }
 
-  uint8_t read8()
+  uint8_t read8() override
   {
     if (!m_ok)
       return 0;
@@ -90,7 +90,7 @@ public:
     return byte;
   }
 
-  size_t readBytes(uint8_t* buf, size_t n)
+  size_t readBytes(uint8_t* buf, size_t n) override
   {
     if (!m_ok)
       return 0;
@@ -102,9 +102,15 @@ public:
     return count;
   }
 
-  void write8(uint8_t value)
+  void write8(uint8_t value) override
   {
     // Do nothing, we don't write in the file
+  }
+
+  size_t writeBytes(uint8_t* buf, size_t n) override
+  {
+    // Do nothing, we don't write in the file
+    return 0;
   }
 
   IStream* m_stream;

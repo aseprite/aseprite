@@ -19,6 +19,7 @@
 #include "app/console.h"
 #include "app/context.h"
 #include "app/context_access.h"
+#include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
 #include "app/site.h"
 #include "app/tx.h"
@@ -158,7 +159,7 @@ void PasteTextCommand::onExecute(Context* ctx)
     }
 
     ContextWriter writer(ctx);
-    Tx tx(writer, "Paste Text");
+    Tx tx(writer, Strings::commands_PasteText());
     ImageRef finalImage = image;
     if (writer.cel()->image()) {
       gfx::Rect celRect(point, image->size());

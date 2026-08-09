@@ -18,6 +18,7 @@
 #include "app/context_access.h"
 #include "app/doc_event.h"
 #include "app/doc_range.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/tx.h"
 #include "app/ui/timeline/timeline.h"
@@ -205,7 +206,7 @@ private:
                          newUserData != m_cel->data()->userData()))) {
       try {
         ContextWriter writer(UIContext::instance());
-        Tx tx(writer, "Set Cel Properties");
+        Tx tx(writer, Strings::cel_properties_set_action());
 
         DocRange range;
         if (m_range.enabled()) {
@@ -390,8 +391,8 @@ CelPropertiesCommand::CelPropertiesCommand() : Command(CommandId::CelProperties(
 
 bool CelPropertiesCommand::onEnabled(Context* context)
 {
-  return context->isUIAvailable() && context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                                                         ContextFlags::ActiveLayerIsImage);
+  return context->isUIAvailable() &&
+         context->checkFlags(ContextFlags::ActiveDocumentIsWritable | ContextFlags::HasActiveCel);
 }
 
 void CelPropertiesCommand::onExecute(Context* context)

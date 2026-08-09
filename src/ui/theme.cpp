@@ -231,6 +231,9 @@ Theme::TextColors Theme::getTextColors(Widget* widget)
   c.background = Paint(kBgColor);
   c.selectedText = Paint(kBgColor);
   c.selectedBackground = Paint(kFgColor);
+  c.disabledText = Paint(kFgColor);
+  c.disabledBackground = Paint(kBgColor);
+  c.placeholderText = Paint(kFgColor);
   return c;
 }
 

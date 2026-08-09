@@ -12,6 +12,7 @@
 #include "app/cmd/set_mask.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/tx.h"
@@ -48,7 +49,7 @@ void MaskAllCommand::onExecute(Context* context)
   Mask newMask;
   newMask.replace(sprite->bounds());
 
-  Tx tx(writer, "Select All", DoesntModifyDocument);
+  Tx tx(writer, Strings::commands_MaskAll(), DoesntModifyDocument);
   tx(new cmd::SetMask(document, &newMask));
   document->resetTransformation();
   tx.commit();

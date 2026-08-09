@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2025  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -18,9 +18,11 @@
 #include "doc/file/hex_file.h"
 #include "doc/image.h"
 #include "doc/image_io.h"
+#include "doc/mask.h"
 #include "doc/mask_io.h"
 #include "doc/palette.h"
 #include "doc/palette_io.h"
+#include "doc/tileset.h"
 #include "doc/tileset_io.h"
 #include "gfx/size.h"
 #include "os/system.h"
@@ -202,16 +204,8 @@ bool Clipboard::setNativeBitmap(const doc::Image* image,
   return true;
 }
 
-bool Clipboard::getNativeBitmap(doc::Image** image,
-                                doc::Mask** mask,
-                                doc::Palette** palette,
-                                doc::Tileset** tileset)
+bool Clipboard::getNativeBitmap(NativeData& data)
 {
-  *image = nullptr;
-  *mask = nullptr;
-  *palette = nullptr;
-  *tileset = nullptr;
-
   clip::lock l(native_window_handle());
   if (!l.locked())
     return false;
@@ -228,14 +222,14 @@ bool Clipboard::getNativeBitmap(doc::Image** image,
 
         int bits = read32(is);
         if (bits & 1)
-          *image = doc::read_image(is, false);
+          data.image.reset(doc::read_image(is, false));
         if (bits & 2)
-          *mask = doc::read_mask(is);
+          data.mask.reset(doc::read_mask(is));
         if (bits & 4)
-          *palette = doc::read_palette(is);
+          data.palette.reset(doc::read_palette(is));
         if (bits & 8)
-          *tileset = doc::read_tileset(is, nullptr, false);
-        if (image)
+          data.tileset.reset(doc::read_tileset(is, nullptr, false));
+        if (data.image)
           return true;
       }
     }
@@ -320,7 +314,7 @@ bool Clipboard::getNativeBitmap(doc::Image** image,
     }
   }
 
-  *image = dst.release();
+  data.image = std::move(dst);
   return true;
 }
 

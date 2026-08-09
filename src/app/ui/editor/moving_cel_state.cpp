@@ -17,6 +17,7 @@
 #include "app/context_access.h"
 #include "app/doc_api.h"
 #include "app/doc_range.h"
+#include "app/i18n/strings.h"
 #include "app/snap_to_grid.h"
 #include "app/tx.h"
 #include "app/ui/editor/editor.h"
@@ -154,7 +155,7 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
   if (modified) {
     {
       ContextWriter writer(m_reader, 1000);
-      Tx tx(writer, "Cel Movement", ModifyDocument);
+      Tx tx(writer, Strings::tx_cel_movement(), ModifyDocument);
       DocApi api = document->getApi(tx);
       gfx::Point intOffset = intCelOffset();
       bool snapToGrid = (Preferences::instance().selection.snapToGrid() &&

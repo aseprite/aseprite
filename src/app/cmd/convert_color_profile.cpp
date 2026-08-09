@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -86,7 +86,7 @@ void convert_color_profile(doc::Sprite* sprite, const gfx::ColorSpaceRef& newCS)
   if (sprite->pixelFormat() != doc::IMAGE_INDEXED) {
     for (Cel* cel : sprite->uniqueCels()) {
       ImageRef old_image = cel->imageRef();
-      if (old_image.get()->pixelFormat() != IMAGE_TILEMAP) {
+      if (old_image && old_image->pixelFormat() != IMAGE_TILEMAP) {
         ImageRef new_image = convert_image_color_space(old_image.get(), newCS, conversion.get());
 
         sprite->replaceImage(old_image->id(), new_image);
@@ -177,7 +177,7 @@ ConvertColorProfile::ConvertColorProfile(doc::Sprite* sprite, const gfx::ColorSp
   if (sprite->pixelFormat() != doc::IMAGE_INDEXED) {
     for (Cel* cel : sprite->uniqueCels()) {
       ImageRef old_image = cel->imageRef();
-      if (old_image.get()->pixelFormat() != IMAGE_TILEMAP) {
+      if (old_image && old_image->pixelFormat() != IMAGE_TILEMAP) {
         ImageRef new_image = convert_image_color_space(old_image.get(), newCS, conversion.get());
 
         m_seq.add(new cmd::ReplaceImage(sprite, old_image, new_image));

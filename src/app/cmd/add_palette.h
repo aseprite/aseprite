@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2025  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -10,9 +11,7 @@
 
 #include "app/cmd.h"
 #include "app/cmd/with_sprite.h"
-#include "doc/frame.h"
-
-#include <sstream>
+#include "doc/palette.h"
 
 namespace doc {
 class Palette;
@@ -30,12 +29,10 @@ public:
 protected:
   void onExecute() override;
   void onUndo() override;
-  size_t onMemSize() const override { return sizeof(*this) + m_size; }
+  size_t onMemSize() const override { return sizeof(*this) + m_palette.getMemSize(); }
 
 private:
-  size_t m_size;
-  std::stringstream m_stream;
-  frame_t m_frame;
+  Palette m_palette;
 };
 
 }} // namespace app::cmd

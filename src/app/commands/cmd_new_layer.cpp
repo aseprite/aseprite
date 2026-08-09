@@ -58,6 +58,8 @@ struct NewLayerParams : public NewParams {
   Param<bool> group{ this, false, "group" };
   Param<bool> reference{ this, false, "reference" };
   Param<bool> tilemap{ this, false, "tilemap" };
+  // Alternative for group/reference/tilemap params and used for future layer types
+  Param<std::string> type{ this, {}, "type" };
   Param<gfx::Rect> gridBounds{ this, gfx::Rect(), "gridBounds" };
   Param<bool> ask{ this, false, "ask" };
   Param<bool> fromFile{
@@ -105,11 +107,11 @@ void NewLayerCommand::onLoadParams(const Params& commandParams)
   CommandWithNewParams<NewLayerParams>::onLoadParams(commandParams);
 
   m_type = Type::Layer;
-  if (params().group())
+  if (params().group() || params().type() == "group")
     m_type = Type::Group;
-  else if (params().reference())
+  else if (params().reference() || params().type() == "reference")
     m_type = Type::ReferenceLayer;
-  else if (params().tilemap())
+  else if (params().tilemap() || params().type() == "tilemap")
     m_type = Type::TilemapLayer;
   else
     m_type = Type::Layer;
@@ -244,12 +246,12 @@ void NewLayerCommand::onExecute(Context* context)
     }
   }
 
-  LayerGroup* parent = sprite->root();
+  Layer* parent = sprite->root();
   Layer* activeLayer = reader.layer();
   SelectedLayers selLayers = site.selectedLayers();
   if (activeLayer) {
     if (activeLayer->isGroup() && activeLayer->isExpanded() && m_type != Type::Group) {
-      parent = static_cast<LayerGroup*>(activeLayer);
+      parent = activeLayer;
       activeLayer = nullptr;
     }
     else {
@@ -324,7 +326,7 @@ void NewLayerCommand::onExecute(Context* context)
 
     // Put all selected layers inside the group
     if (m_type == Type::Group && site.inTimeline()) {
-      LayerGroup* commonParent = nullptr;
+      Layer* commonParent = nullptr;
       layer_t sameParents = 0;
       for (Layer* l : selLayers) {
         if (!commonParent || commonParent == l->parent()) {
@@ -335,7 +337,7 @@ void NewLayerCommand::onExecute(Context* context)
 
       if (sameParents == selLayers.size()) {
         for (Layer* newChild : selLayers.toBrowsableLayerList()) {
-          tx(new cmd::MoveLayer(newChild, layer, static_cast<LayerGroup*>(layer)->lastLayer()));
+          tx(new cmd::MoveLayer(newChild, layer, layer->lastLayer()));
         }
       }
     }
@@ -518,7 +520,7 @@ int NewLayerCommand::getMaxLayerNum(const Layer* layer) const
     max = std::strtol(layer->name().c_str() + prefix.size(), NULL, 10);
 
   if (layer->isGroup()) {
-    for (const Layer* child : static_cast<const LayerGroup*>(layer)->layers()) {
+    for (const Layer* child : layer->layers()) {
       int tmp = getMaxLayerNum(child);
       max = std::max(tmp, max);
     }

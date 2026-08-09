@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2019-2025  Igara Studio S.A.
+# Copyright (C) 2019-present  Igara Studio S.A.
 # Copyright (C) 2001-2018  David Capello
 
 ######################################################################
@@ -42,6 +42,7 @@ endif()
 
 # Disable observable tests
 set(OBSERVABLE_TESTS OFF CACHE BOOL "Compile observable tests")
+set(OBSERVABLE_FAST_LIST ON CACHE BOOL "Use fast list (non-thread safe) instead of safe (thread-safe) one by default")
 add_subdirectory(observable)
 include_directories(observable)
 
