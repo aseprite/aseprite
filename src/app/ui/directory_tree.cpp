@@ -34,7 +34,7 @@ void DirectoryTreeNode::onToggleCollapse()
     m_loaded = true;
   }
 
-  setCollapsed(!isCollapsed());
+  TreeNode::onToggleCollapse();
 }
 
 bool DirectoryTreeNode::onHasChildren() const
