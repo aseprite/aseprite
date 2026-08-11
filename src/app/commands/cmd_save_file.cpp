@@ -225,6 +225,10 @@ void SaveFileBaseCommand::saveDocumentInBackground(const Context* context,
     if (resizeOnTheFly == ResizeOnTheFly::On)
       fop->setOnTheFlyScale(scale);
 
+    if (markAsSaved == MarkAsSaved::On) {
+      document->notifyBeforeSave();
+    }
+
     if (fop->fileFormat() && fop->fileFormat()->dioFormat() >= dio::FileFormat::FIRST_CUSTOM) {
       // Custom formats must run on the main thread
       fop->operate();
@@ -256,6 +260,7 @@ void SaveFileBaseCommand::saveDocumentInBackground(const Context* context,
       document->markAsSaved();
       document->setFilename(filename);
       document->incrementVersion();
+      document->notifyAfterSave();
     }
 
     if (context->isUIAvailable() && params().ui()) {

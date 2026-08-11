@@ -122,6 +122,8 @@ public:
   enum : EventType {
     Unknown = -1,
     Change,
+    BeforeSave,
+    AfterSave,
     FilenameChange,
     AfterAddTile,
     LayerBlendMode,
@@ -137,6 +139,8 @@ public:
 
   // DocObserver impl
   void onCloseDocument(Doc* doc) override;
+  void onBeforeSave(DocEvent& ev) override;
+  void onAfterSave(DocEvent& ev) override;
   void onFileNameChanged(Doc* doc) override;
   void onAfterAddTile(DocEvent& ev) override;
 

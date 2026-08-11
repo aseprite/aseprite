@@ -1226,13 +1226,14 @@ private:
       case kFocusEnterMessage:
         // Resets the search when we focus any widget that has mouse interaction, unless it's in the
         // section list
-        if (msg->recipient() == sectionListbox() ||
-            (msg->recipient()->type() == kListItemWidget &&
-             msg->recipient()->parent() == sectionListbox()) ||
-            msg->recipient() == search() || msg->recipient()->hasFlags(IGNORE_MOUSE))
-          return false;
-
         if (!search()->text().empty()) {
+          if (auto* recipient = msg->recipient();
+              recipient &&
+              (recipient == sectionListbox() ||
+               (recipient->type() == kListItemWidget && recipient->parent() == sectionListbox()) ||
+               recipient == search() || recipient->hasFlags(IGNORE_MOUSE)))
+            return false;
+
           search()->clear();
           onSearch();
         }

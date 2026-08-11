@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -117,7 +117,8 @@ public:
         int color = (m_type == WithFg ? loop->getFgColor() : loop->getBgColor());
         loop->setPrimaryColor(color);
         loop->setSecondaryColor(color);
-      } break;
+        break;
+      }
     }
 
     // TODO support different ink types for tilemaps (even custom brushes,

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -219,14 +219,16 @@ bool ButtonBase::onProcessMessage(Message* msg)
                 onRightClick();
               else
                 generateButtonSelectSignal();
-            } break;
+              break;
+            }
 
             case kCheckWidget: {
               // Fire onClick() event
               onClick();
 
               invalidate();
-            } break;
+              break;
+            }
 
             case kRadioWidget: {
               setSelected(false);
@@ -234,7 +236,8 @@ bool ButtonBase::onProcessMessage(Message* msg)
 
               // Fire onClick() event
               onClick();
-            } break;
+              break;
+            }
           }
         }
         return true;
