@@ -84,11 +84,22 @@ void Display::configureBackLayer()
 
   os::SurfaceRef layerSurface = layer->surface();
   if (!layerSurface || layerSurface == displaySurface ||
-      layerSurface->width() != displaySurface->width() ||
-      layerSurface->height() != displaySurface->height()) {
-    layerSurface = os::System::instance()->makeSurface(displaySurface->width(),
-                                                       displaySurface->height(),
-                                                       displaySurface->colorSpace());
+      layerSurface->size() != displaySurface->size()) {
+#if 0 // TODO makeOffscreenRenderTarget() generates a lot of flickering
+    //      when for scale != 1 and in multiple windows, still some
+    //      bugs to fix.
+    if (nativeWindow()->gpuContext()) {
+      layerSurface = nativeWindow()->gpuContext()
+        ->makeOffscreenRenderTarget(displaySurface->size(),
+                                    displaySurface->colorSpace());
+    }
+    else
+#endif
+    {
+      layerSurface = os::System::instance()->makeSurface(displaySurface->width(),
+                                                         displaySurface->height(),
+                                                         displaySurface->colorSpace());
+    }
     layer->setSurface(layerSurface);
   }
 }
