@@ -39,6 +39,7 @@ enum WidgetType : int {
   kSplitterWidget,
   kTextBoxWidget,
   kTextEditWidget,
+  kTreeWidget,
   kViewScrollbarWidget,
   kViewViewportWidget,
   kViewWidget,

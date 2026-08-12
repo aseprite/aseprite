@@ -325,6 +325,10 @@ Events::EventType SpriteEvents::eventType(const char* eventName) const
 {
   if (std::strcmp(eventName, "change") == 0)
     return Change;
+  else if (std::strcmp(eventName, "beforesave") == 0)
+    return BeforeSave;
+  else if (std::strcmp(eventName, "save") == 0)
+    return AfterSave;
   else if (std::strcmp(eventName, "filenamechange") == 0)
     return FilenameChange;
   else if (std::strcmp(eventName, "afteraddtile") == 0)
@@ -344,6 +348,16 @@ Events::EventType SpriteEvents::eventType(const char* eventName) const
 void SpriteEvents::onCloseDocument(Doc* doc)
 {
   SpriteClosed();
+}
+
+void SpriteEvents::onBeforeSave(DocEvent& ev)
+{
+  call(BeforeSave);
+}
+
+void SpriteEvents::onAfterSave(DocEvent& ev)
+{
+  call(AfterSave);
 }
 
 void SpriteEvents::onFileNameChanged(Doc* doc)

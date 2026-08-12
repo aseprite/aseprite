@@ -517,7 +517,8 @@ void App::run(const bool runGuiManager)
 #ifdef ENABLE_UPDATER
     // Launch the thread to check for updates.
     app::CheckUpdateThreadLauncher checkUpdate(m_mainWindow->getCheckUpdateDelegate());
-    checkUpdate.launch();
+    if (runGuiManager)
+      checkUpdate.launch();
 #endif
 
 #if !ENABLE_SENTRY

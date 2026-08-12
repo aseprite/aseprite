@@ -24,19 +24,17 @@ namespace app {
 void MoveThing::onLoadParams(const Params& params)
 {
   std::string v = params.get("direction");
-  if (v == "left")
-    direction = Left;
-  else if (v == "right")
+  if (v == "right")
     direction = Right;
   else if (v == "up")
     direction = Up;
   else if (v == "down")
     direction = Down;
+  else
+    direction = Left;
 
   v = params.get("units");
-  if (v == "pixel")
-    units = Pixel;
-  else if (v == "tile-width")
+  if (v == "tile-width")
     units = TileWidth;
   else if (v == "tile-height")
     units = TileHeight;
@@ -50,6 +48,8 @@ void MoveThing::onLoadParams(const Params& params)
     units = ViewportWidth;
   else if (v == "viewport-height")
     units = ViewportHeight;
+  else
+    units = Pixel;
 
   int q = params.get_as<int>("quantity");
   quantity = std::max<int>(0, q);

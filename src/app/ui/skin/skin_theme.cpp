@@ -1235,6 +1235,8 @@ void SkinTheme::initWidget(Widget* widget)
 
     case kTextEditWidget: widget->setStyle(styles.textedit()); break;
 
+    case kTreeWidget:     widget->setStyle(styles.tree()); break;
+
     case kViewWidget:
       widget->setChildSpacing(0);
       widget->setBgColor(colors.windowFace());

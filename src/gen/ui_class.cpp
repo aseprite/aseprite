@@ -112,6 +112,8 @@ static Item convert_to_item(XMLElement* elem)
     return item.typeIncl("ui::Entry", "ui/entry.h");
   if (name == "textedit")
     return item.typeIncl("ui::TextEdit", "ui/textedit.h");
+  if (name == "tree")
+    return item.typeIncl("app::Tree", "app/ui/tree.h");
   if (name == "expr")
     return item.typeIncl("app::ExprEntry", "app/ui/expr_entry.h");
   if (name == "filename")
