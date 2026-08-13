@@ -81,7 +81,7 @@ public:
 
     ui::set_theme(ui::get_theme(), newUIScale);
 
-    Manager::getDefault()->updateAllDisplays(newScreenScale, pref.general.gpuAcceleration());
+    Manager::getDefault()->updateAllDisplays(newScreenScale, pref.general.gpu());
   }
 };
 

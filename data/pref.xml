@@ -153,7 +153,7 @@
       <option id="language" type="std::string" default="&quot;en&quot;" />
       <option id="screen_scale" type="int" default="0" />
       <option id="ui_scale" type="int" default="1" />
-      <option id="gpu_acceleration" type="bool" default="false" />
+      <option id="gpu" type="bool" default="false" />
       <option id="show_home" type="bool" default="true" />
       <option id="visible_timeline" type="bool" default="false" />
       <option id="autoshow_timeline" type="bool" default="true" />

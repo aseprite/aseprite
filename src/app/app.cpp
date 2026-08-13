@@ -371,7 +371,7 @@ int App::initialize(const AppOptions& options)
     // OpenBatchOfFiles) shows a dialog to open a sequence of files,
     // the dialog is centered correctly to the manager bounds.
     const int scale = Preferences::instance().general.screenScale();
-    const bool gpu = Preferences::instance().general.gpuAcceleration();
+    const bool gpu = Preferences::instance().general.gpu();
     manager->updateAllDisplays(scale, gpu);
 #endif
   }

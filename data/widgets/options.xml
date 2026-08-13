@@ -76,9 +76,6 @@
             <link text="@.font_warning" id="font_warning" visible="false" />
           </grid>
           <separator horizontal="true" />
-          <check id="gpu_acceleration"
-                 text="@.gpu_acceleration"
-                 tooltip="@.gpu_acceleration_tooltip" />
           <check id="show_menu_bar"
                  text="@.show_menu_bar" />
           <check id="show_aseprite_file_dialog"
@@ -721,6 +718,9 @@
         <!-- Developer -->
         <vbox id="section_developer" i18nwarnings="false">
           <separator text="@.section_developer" horizontal="true" />
+          <check id="gpu_acceleration"
+                 text="@.gpu_acceleration"
+                 tooltip="@.gpu_acceleration_tooltip" />
           <check text="Debug paint messages"
                  id="devmode_debug_paint_messages"
                  pref="developer.debug_paint_messages" />

@@ -837,7 +837,7 @@ public:
 
     if (App::instance()->isDevMode() &&
         m_system->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
-      gpuAcceleration()->setSelected(m_pref.general.gpuAcceleration());
+      gpuAcceleration()->setSelected(m_pref.general.gpu());
     }
 
     if (m_system->menus())
@@ -1112,9 +1112,9 @@ public:
       ui::set_theme(ui::get_theme(), newUIScale);
 
     if (App::instance()->isDevMode()) {
-      const bool newGpuAccel = gpuAcceleration()->isSelected();
-      if (newGpuAccel != m_pref.general.gpuAcceleration()) {
-        m_pref.general.gpuAcceleration(newGpuAccel);
+      const bool newGpu = gpuAcceleration()->isSelected();
+      if (newGpu != m_pref.general.gpu()) {
+        m_pref.general.gpu(newGpu);
         reset_screen = true;
       }
     }
@@ -1342,7 +1342,7 @@ private:
   void updateScreenScaling()
   {
     ui::Manager* manager = ui::Manager::getDefault();
-    manager->updateAllDisplays(m_pref.general.screenScale(), m_pref.general.gpuAcceleration());
+    manager->updateAllDisplays(m_pref.general.screenScale(), m_pref.general.gpu());
   }
 
   void onApply()

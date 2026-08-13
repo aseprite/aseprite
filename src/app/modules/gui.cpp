@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2026  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -177,7 +177,7 @@ int init_module_gui()
   auto& pref = Preferences::instance();
   bool maximized = false;
   std::string lastError = "Unknown error";
-  bool gpuAccel = pref.general.gpuAcceleration();
+  bool gpuAccel = pref.general.gpu();
 
   if (!create_main_window(gpuAccel, maximized, lastError)) {
     // If we've created the native window with hardware acceleration,
@@ -185,7 +185,7 @@ int init_module_gui()
     if (gpuAccel && system->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
       if (create_main_window(false, maximized, lastError)) {
         // Disable hardware acceleration
-        pref.general.gpuAcceleration(false);
+        pref.general.gpu(false);
       }
     }
   }
