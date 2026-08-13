@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2024-2025  Igara Studio S.A.
+// Copyright (C) 2024-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -60,15 +60,11 @@ void TextEdit::copy()
   if (m_selection.isEmpty())
     return;
 
-  const int startPos = m_selection.start().absolutePos();
-  set_clipboard_text(text().substr(startPos, m_selection.end().absolutePos() - startPos));
+  set_clipboard_text(selectedText());
 }
 
 void TextEdit::paste()
 {
-  if (!m_caret.isValid())
-    m_caret = Caret(&m_lines, 0, 0); // TODO: Can we just ensure this doesn't happen?
-
   std::string clipboard;
   if (!get_clipboard_text(clipboard) || clipboard.empty())
     return;
@@ -76,31 +72,20 @@ void TextEdit::paste()
   deleteSelection();
   base::replace_string(clipboard, "\r\n", "\n");
 
-  std::string newText = text();
-  newText.insert(m_caret.absolutePos(), clipboard);
-
-  if (!m_lines.empty() && clipboard.find('\n') == std::string::npos) {
-    Line& line = m_caret.lineObj();
-    line.insertText(m_caret.pos(), clipboard);
-    line.buildBlob(this);
-    setTextQuiet(newText);
+  if (insertText(clipboard)) {
+    updateViewSize();
     Change();
+    ensureCaretVisible();
   }
-  else {
-    setText(newText);
-  }
-
-  m_caret.advanceBy(clipboard.size());
-  ensureCaretVisible();
 }
 
 void TextEdit::selectAll()
 {
-  if (text().empty() || m_lines.empty())
+  if (m_textContent.empty() || m_lines.empty())
     return;
 
   const Caret startCaret(&m_lines);
-  Caret endCaret(startCaret);
+  Caret endCaret(&m_lines);
   endCaret.set(m_lines.size() - 1, m_lines.back().glyphCount);
 
   m_selection.set(startCaret, endCaret);
@@ -134,9 +119,9 @@ bool TextEdit::onProcessMessage(Message* msg)
     }
     case kFocusEnterMessage: {
       startTimer();
-      m_drawCaret = true; // Immediately draw the caret for fast UI feedback.
+      m_drawCaret = true;
       invalidate();
-      onCaretPosChange();
+      updateCaretPosOnScreen();
       break;
     }
     case kFocusLeaveMessage: {
@@ -148,8 +133,9 @@ bool TextEdit::onProcessMessage(Message* msg)
       stopTimer();
       m_lockedSelectionStart.clear();
       m_drawCaret = false;
-      invalidate();
-      onCaretPosChange();
+
+      invalidateRect(m_caretRect);
+      updateCaretPosOnScreen();
       break;
     }
     case kKeyDownMessage: {
@@ -243,12 +229,9 @@ bool TextEdit::onKeyDown(const KeyMessage* keymsg)
   const KeyScancode scancode = keymsg->scancode();
   if (scancode == kKeyEnter || scancode == kKeyEnterPad) {
     deleteSelection();
-
-    std::string newText = text();
-    newText.insert(m_caret.absolutePos(), "\n");
-    setText(newText);
-
-    m_caret.set(m_caret.line() + 1, 0);
+    insertText("\n");
+    updateViewSize();
+    ensureCaretVisible();
     return true;
   }
 
@@ -313,7 +296,8 @@ void TextEdit::onPaint(PaintEvent& ev)
     backgroundPaint = m_colors.disabledBackground;
   }
 
-  g->drawRect(g->getClipBounds(), backgroundPaint);
+  const gfx::Rect rect = view->viewportBounds().offset(-bounds().origin());
+  g->drawRect(rect, backgroundPaint);
 
   gfx::PointF point(clientChildrenBounds().origin());
   const gfx::Rect clipBounds = g->getClipBounds();
@@ -440,7 +424,7 @@ void TextEdit::onExecuteCmd(const Cmd cmd,
 
 gfx::Rect TextEdit::caretBounds() const
 {
-  Line& line = m_caret.lineObj();
+  const Line& line = m_caret.lineObj();
 
   gfx::Point origin = clientChildrenBounds().origin();
   gfx::Rect rc(origin, theme()->getCaretSize(const_cast<TextEdit*>(this)));
@@ -453,10 +437,10 @@ gfx::Rect TextEdit::caretBounds() const
   }
 
   gfx::PointF point(origin);
-  for (const auto& line : m_lines) {
-    if (line.i >= m_caret.line())
+  for (const auto& l : m_lines) {
+    if (l.i >= m_caret.line())
       break;
-    point.y += line.height;
+    point.y += l.height;
   }
 
   rc.h = std::max(rc.h, line.height);
@@ -472,7 +456,7 @@ gfx::Point TextEdit::caretPosOnScreen() const
   return nativeWindow->pointToScreen(caretBounds().point2() + bounds().origin());
 }
 
-void TextEdit::onCaretPosChange()
+void TextEdit::updateCaretPosOnScreen()
 {
   if (hasFocus())
     os::System::instance()->setTextInput(true, caretPosOnScreen());
@@ -625,7 +609,8 @@ void TextEdit::insertCharacter(base::codepoint_t character)
 
   if (m_lines.empty()) {
     // Fast path for the first char.
-    setText(unicodeStr);
+    m_textContent = unicodeStr;
+    rebuildLines();
     m_caret.setPos(m_caret.pos() + 1);
     return;
   }
@@ -638,16 +623,14 @@ void TextEdit::insertCharacter(base::codepoint_t character)
   Line& line = m_caret.lineObj();
   const int oldglyphs = line.glyphCount;
   line.insertText(m_caret.pos(), unicodeStr);
-  line.buildBlob(this);
+  buildLineBlob(m_caret.line());
   const int delta = line.glyphCount - oldglyphs;
 
-  std::string newText = text();
-  newText.insert(absPos, unicodeStr);
-  setTextQuiet(newText);
-  Change();
-
+  m_textContent.insert(absPos, unicodeStr);
   m_caret.setPos(m_caret.pos() + delta);
-  onCaretPosChange();
+  updateCaretPosOnScreen();
+  updateViewSize();
+  onTextChanged();
 }
 
 void TextEdit::deleteSelection()
@@ -655,9 +638,8 @@ void TextEdit::deleteSelection()
   if (m_selection.isEmpty() || !m_selection.isValid())
     return;
 
-  std::string newText = text();
-  newText.erase(newText.begin() + m_selection.start().absolutePos(),
-                newText.begin() + m_selection.end().absolutePos());
+  m_textContent.erase(m_textContent.begin() + m_selection.start().absolutePos(),
+                      m_textContent.begin() + m_selection.end().absolutePos());
 
   if (m_selection.start().line() == m_selection.end().line()) {
     Line& line = m_selection.start().lineObj();
@@ -669,21 +651,18 @@ void TextEdit::deleteSelection()
 
     line.text.erase(line.text.begin() + line.utfSize[m_selection.start().pos()].begin,
                     line.text.begin() + end);
-    line.buildBlob(this);
-
-    updateViewSize();
-
     // Only rebuilds the one line
-    setTextQuiet(newText);
-    Change();
+    buildLineBlob(m_selection.start().line());
   }
   else {
-    setText(newText);
+    rebuildLines();
   }
 
   m_caret = m_selection.start();
   m_selection.clear();
-  onCaretPosChange();
+  updateCaretPosOnScreen();
+  updateViewSize();
+  onTextChanged();
 }
 
 void TextEdit::ensureCaretVisible()
@@ -719,39 +698,14 @@ void TextEdit::ensureCaretVisible()
     scroll.y = (caret.y - bounds().y - vp.h + caret.h);
 
   view->setViewScroll(scroll);
-  onCaretPosChange();
+  updateCaretPosOnScreen();
 }
 
 void TextEdit::onSetText()
 {
-  std::vector<std::string_view> newLines;
-  newLines.reserve(m_lines.size()); // Assume lines will be around the same size as before, if any
-
-  // Recalculate all the lines based on the widget's text
-  m_lines.clear();
-
-  base::split_string(text(), newLines, "\n");
-  m_lines.reserve(newLines.size());
-
-  for (const auto& lineString : newLines) {
-    Line newLine;
-    newLine.text = lineString;
-    newLine.buildBlob(this);
-    newLine.i = m_lines.size();
-    m_lines.push_back(newLine);
-  }
-
+  setTextContent(text());
   updateViewSize();
-
-  Change();
   Widget::onSetText();
-
-  // Keep the caret in a valid position.
-  if (!m_caret.isValid()) {
-    int line = std::clamp(m_caret.line(), 0, int(m_lines.size()) - 1);
-    m_caret = Caret(&m_lines, line, std::clamp(m_caret.pos(), 0, m_lines[line].glyphCount));
-  }
-  onCaretPosChange();
 }
 
 void TextEdit::onSetFont()
@@ -802,32 +756,85 @@ void TextEdit::updateViewSize()
   }
 }
 
-void TextEdit::Line::buildBlob(const Widget* forWidget)
+void TextEdit::setTextContent(const std::string& text)
 {
-  utfSize.clear();
-
-  if (text.empty()) {
-    blob = nullptr;
-    width = 0;
-    glyphCount = 0;
-    height = forWidget->font()->metrics(nullptr);
-    return;
-  }
-
-  Utf8RangeBuilder rangeBuilder(text.size());
-  blob = text::TextBlob::MakeWithShaper(forWidget->theme()->fontMgr(),
-                                        forWidget->font(),
-                                        text,
-                                        &rangeBuilder);
-
-  utfSize = std::move(rangeBuilder.ranges);
-  glyphCount = utfSize.size();
-
-  width = blob->bounds().w;
-  height = std::max(blob->bounds().h, forWidget->font()->metrics(nullptr));
+  m_textContent = text;
+  rebuildLines();
+  onTextChanged();
 }
 
-// Insert text into this line based on a caret position, taking into account utf8 size.
+std::string TextEdit::selectedText() const
+{
+  if (m_selection.isEmpty() || !m_selection.isValid())
+    return std::string();
+
+  const int startPos = m_selection.start().absolutePos();
+  const int endPos = m_selection.end().absolutePos();
+  return m_textContent.substr(startPos, endPos - startPos);
+}
+
+bool TextEdit::insertText(const std::string& str)
+{
+  if (str.empty())
+    return false;
+
+  if (!m_caret.isValid())
+    m_caret = Caret(&m_lines, 0, 0);
+
+  deleteSelection();
+
+  std::string cleanedStr = str;
+  // Replace \r\n with \n
+  size_t pos = 0;
+  while ((pos = cleanedStr.find("\r\n", pos)) != std::string::npos) {
+    cleanedStr.replace(pos, 2, "\n");
+  }
+
+  const int targetAbsPos = m_caret.absolutePos() + cleanedStr.size();
+
+  m_textContent.insert(m_caret.absolutePos(), cleanedStr);
+
+  if (!m_lines.empty() && cleanedStr.find('\n') == std::string::npos) {
+    // Single line insert - optimize by just rebuilding the current line
+    Line& line = m_caret.lineObj();
+    line.insertText(m_caret.pos(), cleanedStr);
+    buildLineBlob(m_caret.line());
+    onTextChanged();
+    m_caret.advanceBy(cleanedStr.size());
+  }
+  else {
+    // Multi-line insert - rebuild everything
+    rebuildLines();
+
+    // Find the new caret position from the target absolute position
+    int absPos = 0;
+    for (int i = 0; i < m_lines.size(); ++i) {
+      const Line& line = m_lines[i];
+      const int lineTextSize = line.text.size();
+      const int lineEndPos = absPos + lineTextSize;
+
+      if (targetAbsPos <= lineEndPos) {
+        // Caret is on this line - convert byte offset to glyph position
+        const int byteOffset = targetAbsPos - absPos;
+        int glyphPos = 0;
+        for (int j = 0; j < line.glyphCount; ++j) {
+          if (line.utfSize[j].begin >= byteOffset)
+            break;
+          glyphPos = j + 1;
+        }
+        m_caret.set(i, glyphPos);
+        break;
+      }
+
+      absPos = lineEndPos + 1; // +1 for the newline character
+    }
+
+    onTextChanged();
+  }
+
+  return true;
+}
+
 void TextEdit::Line::insertText(int pos, const std::string& str)
 {
   if (pos == 0)
@@ -840,6 +847,9 @@ void TextEdit::Line::insertText(int pos, const std::string& str)
 
 gfx::RectF TextEdit::Line::getBounds(const int glyph) const
 {
+  if (!blob)
+    return gfx::RectF();
+
   int advance = 0;
   gfx::Rect result;
   blob->visitRuns([&advance, &result, glyph](const text::TextBlob::RunInfo& run) {
@@ -854,10 +864,9 @@ gfx::RectF TextEdit::Line::getBounds(const int glyph) const
 
 gfx::RectF TextEdit::Line::getBounds(const int startGlyph, const int endGlyph) const
 {
-  if (startGlyph == endGlyph)
-    return {};
-
   ASSERT(endGlyph > startGlyph);
+  if (startGlyph == endGlyph || !blob)
+    return gfx::RectF();
 
   int advance = 0; // The amount of glyphs we've advanced through.
   gfx::Rect resultBounds;
@@ -1017,7 +1026,7 @@ bool TextEdit::Caret::isWordPart() const
     return false;
 
   const auto& utfPos = lineObj().utfSize[m_pos];
-  const std::string_view word = text().substr(utfPos.begin, utfPos.end - utfPos.begin);
+  const std::string_view word = textView().substr(utfPos.begin, utfPos.end - utfPos.begin);
   return (!word.empty() && std::isspace(word[0]) == 0 && std::ispunct(word[0]) == 0);
 }
 
@@ -1114,6 +1123,70 @@ void TextEdit::Selection::clear()
 {
   m_start.clear();
   m_end.clear();
+}
+
+void TextEdit::rebuildLines()
+{
+  std::vector<std::string_view> newLines;
+  newLines.reserve(m_lines.size());
+  m_lines.clear();
+  base::split_string(m_textContent, newLines, "\n");
+  m_lines.reserve(newLines.size());
+
+  for (const auto& lineString : newLines) {
+    Line newLine;
+    newLine.text = std::string(lineString);
+    newLine.i = m_lines.size();
+    m_lines.push_back(newLine);
+  }
+
+  // At least one line
+  if (m_lines.empty()) {
+    Line emptyLine;
+    emptyLine.i = 0;
+    m_lines.push_back(emptyLine);
+  }
+
+  for (int i = 0; i < m_lines.size(); ++i)
+    buildLineBlob(i);
+
+  // Keep the caret in a valid position
+  if (!m_caret.isValid()) {
+    const int line = std::clamp(m_caret.line(), 0, int(m_lines.size()) - 1);
+    m_caret = Caret(&m_lines, line, std::clamp(m_caret.pos(), 0, m_lines[line].glyphCount));
+  }
+
+  updateCaretPosOnScreen();
+}
+
+void TextEdit::buildLineBlob(int lineIndex)
+{
+  Line& line = m_lines[lineIndex];
+  line.utfSize.clear();
+
+  if (line.text.empty()) {
+    line.blob = nullptr;
+    line.width = 0;
+    line.glyphCount = 0;
+    line.height = font()->metrics(nullptr);
+    return;
+  }
+
+  Utf8RangeBuilder rangeBuilder(line.text.size());
+  line.blob = text::TextBlob::MakeWithShaper(theme()->fontMgr(), font(), line.text, &rangeBuilder);
+
+  line.utfSize = std::move(rangeBuilder.ranges);
+  line.glyphCount = line.utfSize.size();
+
+  line.width = line.blob->bounds().w;
+  line.height = std::max(int(line.blob->bounds().h), int(font()->metrics(nullptr)));
+}
+
+void TextEdit::onTextChanged()
+{
+  // Sync Widget's m_text with our m_textContent
+  setTextQuiet(m_textContent);
+  Change();
 }
 
 } // namespace ui
