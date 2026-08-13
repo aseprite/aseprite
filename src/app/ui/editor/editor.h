@@ -424,6 +424,8 @@ private:
   void startAutoScrollTimer();
   void stopAutoScrollTimer();
 
+  bool handleDevModeKeys(const ui::KeyMessage* msg);
+
   // Stack of states. The top element in the stack is the current state (m_state).
   EditorStatesHistory m_statesHistory;
   EditorStatesHistory m_deletedStates;
