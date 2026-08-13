@@ -343,6 +343,8 @@ void ColorButton::onSaveLayout(ui::SaveLayoutEvent& ev)
     else
       ev.stream() << 1 << ' ' << m_window->bounds() << ' ' << 0;
   }
+  else
+    ev.stream() << 0;
 }
 
 bool ColorButton::isPopupVisible()
