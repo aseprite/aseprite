@@ -2535,42 +2535,8 @@ bool Editor::onProcessMessage(Message* msg)
 
     case kKeyDownMessage:
       // Switch renderer
-      if (App::instance()->isDevMode() && static_cast<KeyMessage*>(msg)->scancode() == kKeyF1) {
-        // TODO replace this experimental flag with a new enum (or
-        //      maybe there is no need for user option now that the
-        //      new engine allows to disable the bilinear mipmapping
-        //      interpolation) as we still need the "old" engine to
-        //      render reference layers
-        auto& renderEngine = Preferences::instance().render.renderEngine;
-        auto& tileBased = Preferences::instance().render.tileBasedRenderEngine;
-
-        if (msg->modifiers() == 0) {
-          switch (renderEngine()) {
-            case gen::RenderEngine::RASTER_V1: renderEngine(gen::RenderEngine::RASTER_V2); break;
-            case gen::RenderEngine::RASTER_V2: renderEngine(gen::RenderEngine::SHADER); break;
-            case gen::RenderEngine::SHADER:    renderEngine(gen::RenderEngine::RASTER_V1); break;
-          }
-          m_renderEngine->updateFromPref();
-        }
-        else if (msg->altPressed()) {
-          tileBased(!tileBased());
-        }
-
-        std::string tip;
-        switch (m_renderEngine->type()) {
-          case EditorRender::Type::kSimpleRenderer:
-            tip = fmt::format("Raster Renderer ({})",
-                              (renderEngine() == gen::RenderEngine::RASTER_V2) ? "v2" : "v1");
-            break;
-          case EditorRender::Type::kShaderRenderer: tip = "Shader Renderer"; break;
-        }
-        if (tileBased())
-          tip += " (Tile-Based)";
-        StatusBar::instance()->showTip(1000, tip);
-
-        app_refresh_screen();
+      if (App::instance()->isDevMode() && handleDevModeKeys(static_cast<KeyMessage*>(msg)))
         return true;
-      }
 
       if (m_sprite && (isActive() || hasMouse())) {
         EditorStatePtr holdState(m_state);
@@ -3497,6 +3463,57 @@ int Editor::otherLayersOpacity() const
     return Preferences::instance().experimental.nonactiveLayersOpacityPreview();
   else
     return Preferences::instance().experimental.nonactiveLayersOpacity();
+}
+
+bool Editor::handleDevModeKeys(const ui::KeyMessage* msg)
+{
+  switch (msg->scancode()) {
+    case kKeyF1: {
+      // TODO replace this experimental flag with a new enum (or
+      //      maybe there is no need for user option now that the
+      //      new engine allows to disable the bilinear mipmapping
+      //      interpolation) as we still need the "old" engine to
+      //      render reference layers
+      auto& renderEngine = Preferences::instance().render.renderEngine;
+      auto& tileBased = Preferences::instance().render.tileBasedRenderEngine;
+
+      if (msg->modifiers() == 0) {
+        switch (renderEngine()) {
+          case gen::RenderEngine::RASTER_V1: renderEngine(gen::RenderEngine::RASTER_V2); break;
+          case gen::RenderEngine::RASTER_V2: renderEngine(gen::RenderEngine::SHADER); break;
+          case gen::RenderEngine::SHADER:    renderEngine(gen::RenderEngine::RASTER_V1); break;
+        }
+        m_renderEngine->updateFromPref();
+      }
+      else if (msg->altPressed()) {
+        tileBased(!tileBased());
+      }
+
+      std::string tip;
+      switch (m_renderEngine->type()) {
+        case EditorRender::Type::kSimpleRenderer:
+          tip = fmt::format("Raster Renderer ({})",
+                            (renderEngine() == gen::RenderEngine::RASTER_V2) ? "v2" : "v1");
+          break;
+        case EditorRender::Type::kShaderRenderer: tip = "Shader Renderer"; break;
+      }
+      if (tileBased())
+        tip += " (Tile-Based)";
+      StatusBar::instance()->showTip(1000, tip);
+
+      app_refresh_screen();
+      return true;
+    }
+
+    case kKeyF5:
+      // Alt+F5 to invalidate current editor
+      if (msg->altPressed()) {
+        invalidate();
+        return true;
+      }
+      break;
+  }
+  return false;
 }
 
 // static

@@ -70,6 +70,7 @@ In `-dev` mode (running `aseprite -dev`):
 
 * `F1`: Switch between raster v1, v2, and shader renderers.
 * `Alt+F1`: Switch between tiled-based renderer.
+* `Alt+F5`: Invalidate and redraw current editor, e.g. to test rendering performance.
 
 In Debug mode (`_DEBUG`):
 
