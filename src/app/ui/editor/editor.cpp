@@ -768,6 +768,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
       // Paint tiles
       const gfx::Size tileSize = RenderTile::kTileSize;
       const gfx::SizeF tileSizeSrc(tileSize.w, tileSize.h);
+      const bool debugTiles = pref.render.debugTiles();
 
       {
         paint.style(os::Paint::Stroke);
@@ -797,7 +798,8 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
             tilerc.x = rc.x + x;
             tilerc.y = rc.y + y;
             if (tilerc.intersects(dest)) {
-              g->drawRect(tilerc, paint);
+              if (debugTiles)
+                g->drawRect(tilerc, paint);
 
               auto srcrc = gfx::RectF(firstTilePos.x + u * tileSizeSrc.w,
                                       firstTilePos.y + v * tileSizeSrc.h,
@@ -899,10 +901,12 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
                          renderTile.dst,
                          sampling,
                          &p);
-          g->drawText(fmt::format("{},{}", renderTile.tileId & 0xffff, renderTile.tileId >> 16),
-                      gfx::rgba(0, 0, 0, 200),
-                      gfx::ColorNone,
-                      renderTile.dst.origin() + gfx::Point(renderTile.dst.size()) / 2);
+          if (debugTiles) {
+            g->drawText(fmt::format("{},{}", renderTile.tileId & 0xffff, renderTile.tileId >> 16),
+                        gfx::rgba(0, 0, 0, 200),
+                        gfx::ColorNone,
+                        renderTile.dst.origin() + gfx::Point(renderTile.dst.size()) / 2);
+          }
         }
       }
     }
