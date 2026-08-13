@@ -47,6 +47,7 @@ enum class ClipboardFormat {
   Tilemap,
   Tileset,
   Slices,
+  Text,
 };
 
 class Clipboard : public ui::ClipboardDelegate {

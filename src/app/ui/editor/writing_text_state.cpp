@@ -82,7 +82,10 @@ public:
     Final,        // Final to be rendered in the cel
   };
 
-  TextEditor(Editor* editor, const Site& site, const gfx::Rect& bounds)
+  TextEditor(Editor* editor,
+             const Site& site,
+             const gfx::Rect& bounds,
+             const std::string& initialText = std::string())
     : m_editor(editor)
     , m_doc(site.document())
     , m_extraCel(new ExtraCel)
@@ -96,6 +99,10 @@ public:
     FontInfo fontInfo = App::instance()->contextBar()->fontInfo();
     if (auto font = Fonts::instance()->fontFromInfo(fontInfo))
       setFont(font);
+
+    if (!initialText.empty()) {
+      setText(initialText);
+    }
   }
 
   ~TextEditor()
@@ -558,11 +565,13 @@ private:
   bool m_textDirty = true;
 };
 
-WritingTextState::WritingTextState(Editor* editor, const gfx::Rect& bounds)
+WritingTextState::WritingTextState(Editor* editor,
+                                   const gfx::Rect& bounds,
+                                   const std::string& initialText)
   : m_delayedMouseMove(this, editor, 5)
   , m_editor(editor)
   , m_bounds(bounds)
-  , m_textEdit(new TextEditor(editor, editor->getSite(), bounds))
+  , m_textEdit(new TextEditor(editor, editor->getSite(), bounds, initialText))
 {
   m_beforeCmdConn = UIContext::instance()->BeforeCommandExecution.connect(
     &WritingTextState::onBeforeCommandExecution,

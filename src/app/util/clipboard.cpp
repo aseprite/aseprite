@@ -302,13 +302,15 @@ bool Clipboard::copyFromDocument(const Site& site, bool merged)
 
 ClipboardFormat Clipboard::format() const
 {
-  // Check if the native clipboard has an image
-  if (use_native_clipboard() && hasNativeBitmap()) {
-    return ClipboardFormat::Image;
+  if (use_native_clipboard()) {
+    // Check if the native clipboard has an image
+    if (hasNativeBitmap())
+      return ClipboardFormat::Image;
+    // Check if the native clipboard has text
+    if (clip::has(clip::text_format()))
+      return ClipboardFormat::Text;
   }
-  else {
-    return m_data->format();
-  }
+  return m_data->format();
 }
 
 void Clipboard::getDocumentRangeInfo(Doc** document, DocRange* range)
