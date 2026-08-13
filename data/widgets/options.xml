@@ -733,6 +733,10 @@
                  pref="perf.show_render_time" />
           <check text="Paint using new tile-based rendering"
                  pref="render.tile_based_render_engine" />
+          <hbox indent="check_box">
+            <check text="Debug tiles"
+                   pref="render.debug_tiles" />
+          </hbox>
         </vbox>
 
         <!-- Reset -->
