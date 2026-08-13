@@ -13,39 +13,169 @@
   #error ENABLE_SCRIPTING must be defined
 #endif
 
-#include "app/script/engine.h"
-#include "lua.h"
+#include <string>
 
-namespace app { namespace script {
+#include "script_access.xml.h"
 
-enum class FileAccessMode {
-  Execute = 1,
-  Write = 2,
-  Read = 4,
-  OpenSocket = 8,
-  LoadLib = 16,
-  Full = Execute | Write | Read | OpenSocket | LoadLib,
+#include "nlohmann/json.hpp"
+
+namespace app::script {
+
+enum class Permission : uint8_t {
+  Unknown,
+  Network,
+  SpriteRead,
+  SpriteWrite,
+  IORead,
+  IOWrite,
+  ClipboardRead,
+  ClipboardWrite,
+  TemporaryFile,
+  Preferences,
+  Debug,
+  Bytecode,
+  Execute,
+  LoadLib,
 };
 
-enum class ResourceType {
-  File,
-  Command,
-  WebSocket,
-  Clipboard,
+class PermissionStorage {
+public:
+  PermissionStorage();
+  explicit PermissionStorage(const std::string& path);
+
+  static PermissionStorage* instance();
+
+  std::optional<bool> read(const std::string& script, Permission permission) const;
+  std::optional<bool> readMatch(const std::string& script,
+                                Permission permission,
+                                const std::string& match) const;
+  bool readFullAccess(const std::string& script) const;
+
+  void write(const std::string& script, Permission permission, bool value);
+  void writeForMatch(const std::string& script,
+                     Permission permission,
+                     const std::string& match,
+                     bool value);
+  void writeFullAccess(const std::string& script, bool access);
+
+  bool passesIntegrityCheck(const std::string& script);
+  void reset(const std::string& script = std::string());
+  void reset(const std::string& script, Permission permission);
+  void reset(const std::string& script, Permission permission, const std::string& match);
+
+  std::vector<std::string> scripts() const;
+  std::vector<Permission> stored(const std::string& script) const;
+  std::vector<std::pair<std::string, bool>> matches(const std::string& script,
+                                                    Permission permission) const;
+
+private:
+  void load();
+  void flush();
+
+  nlohmann::json m_json;
+  std::string m_path;
+  bool m_pendingFlush = false;
 };
 
-void overwrite_unsecure_functions(lua_State* L);
+class PermissionDialog : public app::gen::ScriptAccess {
+public:
+  enum class Remember : uint8_t { Nothing, Permission, Match, Directory, FullAccess, AllOfType };
+  PermissionDialog(const std::string& origin,
+                   const std::string& extensionName,
+                   Permission permission,
+                   const std::string& match);
 
-lua_CFunction get_original_io_open();
+  std::pair<bool, Remember> ask();
 
-bool ask_access(lua_State* L,
-                const char* filename,
-                const FileAccessMode mode,
-                const ResourceType resourceType,
-                // Generally =2 when the access is requested from a
-                // function, or =3 if it's requested from a property.
-                const int stackLevel = 2);
+private:
+  void showPopup();
+  bool m_isExtension;
+  ui::Timer m_timer;
+  base::tick_t m_scaryAllowCooldown;
+};
 
-}} // namespace app::script
+void set_permission_storage(PermissionStorage* storage);
+
+using namespace std::string_view_literals;
+constexpr std::string_view permission_to_string(const Permission p)
+{
+  switch (p) {
+    case Permission::Network:        return "network"sv;
+    case Permission::SpriteRead:     return "sprite_read"sv;
+    case Permission::SpriteWrite:    return "sprite_write"sv;
+    case Permission::IORead:         return "io_read"sv;
+    case Permission::IOWrite:        return "io_write"sv;
+    case Permission::ClipboardRead:  return "clipboard_read"sv;
+    case Permission::ClipboardWrite: return "clipboard_write"sv;
+    case Permission::TemporaryFile:  return "temporary_file"sv;
+    case Permission::Preferences:    return "preferences"sv;
+    case Permission::Debug:          return "debug"sv;
+    case Permission::Bytecode:       return "bytecode"sv;
+    case Permission::Execute:        return "execute"sv;
+    case Permission::LoadLib:        return "loadlib"sv;
+    default:                         return "unknown"sv;
+  }
+}
+
+constexpr Permission string_to_permission(const std::string_view s)
+{
+  if (s == "network"sv)
+    return Permission::Network;
+  if (s == "sprite_read"sv)
+    return Permission::SpriteRead;
+  if (s == "sprite_write"sv)
+    return Permission::SpriteWrite;
+  if (s == "io_read"sv)
+    return Permission::IORead;
+  if (s == "io_write"sv)
+    return Permission::IOWrite;
+  if (s == "clipboard_read"sv)
+    return Permission::ClipboardRead;
+  if (s == "clipboard_write"sv)
+    return Permission::ClipboardWrite;
+  if (s == "temporary_file"sv)
+    return Permission::TemporaryFile;
+  if (s == "preferences"sv)
+    return Permission::Preferences;
+  if (s == "debug"sv)
+    return Permission::Debug;
+  if (s == "bytecode"sv)
+    return Permission::Bytecode;
+  if (s == "execute"sv)
+    return Permission::Execute;
+  if (s == "loadlib"sv)
+    return Permission::LoadLib;
+
+  return Permission::Unknown;
+}
+
+constexpr bool permission_supports_matching(const Permission p)
+{
+  switch (p) {
+    case Permission::Network:
+    case Permission::SpriteRead:
+    case Permission::SpriteWrite:
+    case Permission::IORead:
+    case Permission::IOWrite:
+    case Permission::Preferences:
+    case Permission::Execute:
+    case Permission::LoadLib:     return true;
+    default:                      return false;
+  }
+}
+
+constexpr bool permission_is_scary(const Permission p)
+{
+  switch (p) {
+    case Permission::IORead:
+    case Permission::IOWrite:
+    case Permission::Bytecode:
+    case Permission::Execute:
+    case Permission::LoadLib:  return true;
+    default:                   return false;
+  }
+}
+
+} // namespace app::script
 
 #endif

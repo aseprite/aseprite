@@ -176,7 +176,7 @@ endif()
 if(ENABLE_SCRIPTING)
   target_link_libraries(app-lib lua lauxlib lualib)
   target_compile_definitions(app-lib PUBLIC -DENABLE_SCRIPTING)
-  target_link_libraries(app-lib cppdap)
+  target_link_libraries(app-lib cppdap blake3)
 
   if(ENABLE_WEBSOCKET)
     target_link_libraries(app-lib ixwebsocket)

@@ -61,8 +61,7 @@ namespace app { namespace script {
 int load_sprite_from_file(lua_State* L, const char* filename, const LoadSpriteFromFileParam param)
 {
   std::string absFn = base::get_absolute_path(filename);
-  if (!ask_access(L, absFn.c_str(), FileAccessMode::Read, ResourceType::File))
-    return luaL_error(L, "script doesn't have access to open file %s", absFn.c_str());
+  get_engine(L)->accessGate(Permission::SpriteRead, absFn);
 
   app::Context* ctx = App::instance()->context();
   Doc* oldDoc = ctx->activeDocument();
