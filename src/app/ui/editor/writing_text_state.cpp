@@ -164,6 +164,18 @@ private:
         }
         break;
       }
+      case kMouseWheelMessage: {
+        auto* mouseMsg = static_cast<MouseMessage*>(msg);
+        if (m_editor->getState()->onMouseWheel(m_editor, mouseMsg))
+          return true;
+        break;
+      }
+      case kTouchMagnifyMessage: {
+        auto* touchMsg = static_cast<TouchMessage*>(msg);
+        if (m_editor->getState()->onTouchMagnify(m_editor, touchMsg))
+          return true;
+        break;
+      }
     }
     return TextEdit::onProcessMessage(msg);
   }
