@@ -18,22 +18,14 @@ bool StdioFileInterface::ok() const
   return m_ok;
 }
 
-uint64_t StdioFileInterface::tell()
+base::fileoff_t StdioFileInterface::tell()
 {
-#if LAF_WINDOWS
-  return _ftelli64(m_file);
-#else
-  return ftello(m_file);
-#endif
+  return base::base_ftell(m_file);
 }
 
-void StdioFileInterface::seek(uint64_t absPos)
+void StdioFileInterface::seek(const base::fileoff_t absPos)
 {
-#if LAF_WINDOWS
-  _fseeki64(m_file, absPos, SEEK_SET);
-#else
-  fseeko(m_file, absPos, SEEK_SET);
-#endif
+  base::base_fseek(m_file, absPos, SEEK_SET);
 }
 
 uint8_t StdioFileInterface::read8()

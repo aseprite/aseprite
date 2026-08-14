@@ -15,6 +15,8 @@
 #include "base/file_size.h"
 #include "base/fs.h"
 
+#include <limits>
+
 namespace app { namespace script {
 
 namespace {
@@ -97,8 +99,13 @@ int AppFS_isDirectory(lua_State* L)
 int AppFS_fileSize(lua_State* L)
 {
   const char* fn = lua_tostring(L, 1);
-  if (fn)
-    lua_pushinteger(L, base::file_size(fn));
+  if (fn) {
+    const auto size = base::file_size(fn);
+    if (size <= std::numeric_limits<lua_Integer>::max())
+      lua_pushinteger(L, size);
+    else
+      lua_pushnumber(L, size);
+  }
   else
     lua_pushnil(L);
   return 1;

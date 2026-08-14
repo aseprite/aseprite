@@ -67,6 +67,7 @@ To read the sprite:
 A 128-byte header (same as FLC/FLI header, but with other magic number):
 
     DWORD       File size
+                It is 0xFFFFFFFF if the size is bigger than 4GB
     WORD        Magic number (0xA5E0)
     WORD        Frames
     WORD        Width in pixels

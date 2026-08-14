@@ -22,6 +22,7 @@
 #include "app/pref/preferences.h"
 #include "base/convert_to.h"
 #include "base/file_handle.h"
+#include "base/file_size.h"
 #include "doc/doc.h"
 #include "ui/manager.h"
 
@@ -84,19 +85,7 @@ bool WebPFormat::onLoad(FileOp* fop)
   FileHandle handle(open_file_with_exception(fop->filename(), "rb"));
   FILE* fp = handle.get();
 
-  size_t len = 0;
-#if LAF_WINDOWS
-  if (_fseeki64(fp, 0, SEEK_END) == 0) {
-    len = _ftelli64(fp);
-    _fseeki64(fp, 0, SEEK_SET);
-  }
-#else
-  if (fseeko(fp, 0, SEEK_END) == 0) {
-    len = ftello(fp);
-    fseeko(fp, 0, SEEK_SET);
-  }
-#endif
-
+  const auto len = base::file_size(fp);
   if (len < 4) {
     fop->setError("The specified file is not a WebP file\n");
     return false;

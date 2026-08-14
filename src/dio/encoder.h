@@ -35,9 +35,8 @@ protected:
   EncodeDelegate* delegate() { return m_delegate; }
   FileInterface* f() { return m_f; }
 
-  uint64_t tell() { return m_f->tell(); }
-
-  void seek(uint64_t absPos) { m_f->seek(absPos); }
+  base::fileoff_t tell() { return m_f->tell(); }
+  void seek(const base::fileoff_t absPos) { m_f->seek(absPos); }
 
   void write8(const uint8_t value) { m_f->write8(value); }
   size_t writeBytes(uint8_t* buf, size_t n) { return m_f->writeBytes(buf, n); }

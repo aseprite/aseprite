@@ -217,13 +217,19 @@ void AsepriteEncoder::writeHeader(const AsepriteHeader* header)
 
 void AsepriteEncoder::writeHeaderFileSize(AsepriteHeader* header)
 {
-  header->size = tell() - header->pos; // TODO truncates to uint32_t for files >4.30GB
+  const auto end = tell();
+
+  // Truncate to the largest 32-bit value for files bigger than 4GB
+  auto size = end - header->pos;
+  if (size > 0xFFFFFFFF)
+    size = 0xFFFFFFFF;
+
+  header->size = size;
 
   seek(header->pos);
   write32(header->size);
 
-  seek(header->pos + header->size); // TODO wrong position for files >4.30GB, works only because
-                                    // nothing writes after this
+  seek(end);
 }
 
 void AsepriteEncoder::prepareFrameHeader(AsepriteFrameHeader* frame_header)
@@ -239,7 +245,7 @@ void AsepriteEncoder::prepareFrameHeader(AsepriteFrameHeader* frame_header)
 
 void AsepriteEncoder::writeFrameHeader(AsepriteFrameHeader* frame_header)
 {
-  const uint64_t end = tell();
+  const auto end = tell();
 
   frame_header->size = end - frame_header->pos;
 
@@ -363,8 +369,8 @@ void AsepriteEncoder::writeChunkStart(AsepriteFrameHeader* frame_header,
 
 void AsepriteEncoder::writeChunkEnd(AsepriteChunk* chunk)
 {
-  const uint64_t chunk_end = tell();
-  const uint64_t chunk_size = chunk_end - chunk->start;
+  const auto chunk_end = tell();
+  const auto chunk_size = chunk_end - chunk->start;
 
   seek(chunk->start);
   write32(chunk_size);
@@ -1136,7 +1142,7 @@ void AsepriteEncoder::writeTilesetChunk(AsepriteFrameHeader* frame_header,
 
   // Flag 2 = tileset
   if (flags & ASE_TILESET_FLAG_EMBEDDED) {
-    const uint64_t beg = tell();
+    const auto beg = tell();
 
     // Save the cached tileset compressed data
     if (!tileset->compressedData().empty() &&
@@ -1169,7 +1175,7 @@ void AsepriteEncoder::writeTilesetChunk(AsepriteFrameHeader* frame_header,
       if (compressedDataPtr)
         tileset->setCompressedData(compressedData);
 
-      const uint64_t end = tell();
+      const auto end = tell();
       seek(beg);
       write32(end - beg - 4); // Save the compressed data length
       seek(end);
@@ -1279,7 +1285,7 @@ void AsepriteEncoder::writePropertiesMaps(const AsepriteExternalFiles& ext_files
 {
   ASSERT(nmaps > 0);
 
-  const uint64_t startPos = tell();
+  const auto startPos = tell();
   // We zero the size in bytes of all properties maps stored in this
   // chunk for now. (actual value is calculated after serialization
   // of all properties maps, at which point this field is overwritten)
@@ -1314,7 +1320,7 @@ void AsepriteEncoder::writePropertiesMaps(const AsepriteExternalFiles& ext_files
     write32(extensionId);
     writePropertyValue(properties, depth);
   }
-  const uint64_t endPos = tell();
+  const auto endPos = tell();
   // We can overwrite the properties maps size now
   seek(startPos);
   write32(endPos - startPos);

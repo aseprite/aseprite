@@ -9,6 +9,8 @@
 #define DIO_FILE_INTERFACE_H_INCLUDED
 #pragma once
 
+#include "base/file_size.h"
+
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
@@ -23,10 +25,10 @@ public:
   virtual bool ok() const = 0;
 
   // Current position in the file
-  virtual uint64_t tell() = 0;
+  virtual base::fileoff_t tell() = 0;
 
   // Jump to the given position in the file
-  virtual void seek(uint64_t absPos) = 0;
+  virtual void seek(base::fileoff_t absPos) = 0;
 
   // Returns the next byte in the file or 0 if ok() = false
   virtual uint8_t read8() = 0;
@@ -41,8 +43,8 @@ class StdioFileInterface : public FileInterface {
 public:
   StdioFileInterface(FILE* file);
   bool ok() const override;
-  uint64_t tell() override;
-  void seek(uint64_t absPos) override;
+  base::fileoff_t tell() override;
+  void seek(base::fileoff_t absPos) override;
   uint8_t read8() override;
   size_t readBytes(uint8_t* buf, size_t n) override;
   void write8(uint8_t value) override;
