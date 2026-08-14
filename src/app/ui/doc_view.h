@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -76,7 +76,6 @@ public:
 
   // DocObserver implementation
   void onGeneralUpdate(DocEvent& ev) override;
-  void onSpritePixelsModified(DocEvent& ev) override;
   void onLayerMergedDown(DocEvent& ev) override;
   void onAddLayer(DocEvent& ev) override;
   void onAddFrame(DocEvent& ev) override;

@@ -746,17 +746,25 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
     if (clip) {
       os::Paint paint;
 
-      // Render background
-      {
-        EditorRender bgRenderer;
-        bgRenderer.setType(EditorRender::kShaderRenderer);
-        bgRenderer.setProjection(m_proj);
-        bgRenderer.setupBackground(m_document, IMAGE_RGB);
-        bgRenderer.renderCheckeredBackground(g->getInternalSurface(),
-                                             m_sprite,
-                                             gfx::Clip(dest.x + g->getInternalDeltaX(),
-                                                       dest.y + g->getInternalDeltaY(),
-                                                       m_proj.apply(expose)));
+      // Render background (using a ShaderRenderer)
+      const LayerImage* bgLayer = m_sprite->backgroundLayer();
+      if (!bgLayer || !bgLayer->isVisible()) {
+        auto renderBg = [this, g, dest, expose](EditorRender* e) {
+          e->setProjection(m_proj);
+          e->setupBackground(m_document, IMAGE_RGB);
+          e->renderCheckeredBackground(g->getInternalSurface(),
+                                       m_sprite,
+                                       gfx::Clip(dest.x + g->getInternalDeltaX(),
+                                                 dest.y + g->getInternalDeltaY(),
+                                                 m_proj.apply(expose)));
+        };
+        if (m_renderEngine->type() == EditorRender::kShaderRenderer)
+          renderBg(m_renderEngine.get());
+        else {
+          EditorRender bgRenderer;
+          bgRenderer.setType(EditorRender::kShaderRenderer);
+          renderBg(&bgRenderer);
+        }
       }
       m_renderEngine->setTransparentBackground();
 
@@ -835,27 +843,28 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
         }
       }
 
-      // Render tiles
-      {
-        m_renderEngine->setProjection(m_proj);
-
-        os::Sampling sampling(os::Sampling::Filter::Nearest);
-        if (m_proj.scaleX() < 1.0) {
-          switch (pref.editor.downsampling()) {
-            case gen::Downsampling::NEAREST:
-              sampling = os::Sampling(os::Sampling::Filter::Nearest);
-              break;
-            case gen::Downsampling::BILINEAR:
-              sampling = os::Sampling(os::Sampling::Filter::Linear);
-              break;
-            case gen::Downsampling::BILINEAR_MIPMAP:
-              sampling = os::Sampling(os::Sampling::Filter::Linear, os::Sampling::Mipmap::Nearest);
-              break;
-            case gen::Downsampling::TRILINEAR_MIPMAP:
-              sampling = os::Sampling(os::Sampling::Filter::Linear, os::Sampling::Mipmap::Linear);
-              break;
-          }
+      // Sampling for downscaling
+      os::Sampling sampling(os::Sampling::Filter::Nearest);
+      if (m_proj.scaleX() < 1.0) {
+        switch (pref.editor.downsampling()) {
+          case gen::Downsampling::NEAREST:
+            sampling = os::Sampling(os::Sampling::Filter::Nearest);
+            break;
+          case gen::Downsampling::BILINEAR:
+            sampling = os::Sampling(os::Sampling::Filter::Linear);
+            break;
+          case gen::Downsampling::BILINEAR_MIPMAP:
+            sampling = os::Sampling(os::Sampling::Filter::Linear, os::Sampling::Mipmap::Nearest);
+            break;
+          case gen::Downsampling::TRILINEAR_MIPMAP:
+            sampling = os::Sampling(os::Sampling::Filter::Linear, os::Sampling::Mipmap::Linear);
+            break;
         }
+      }
+
+      // Render tiles on background
+      if (dirties > 0) {
+        m_renderEngine->setProjection(m_proj);
         m_renderEngine->setSampling(sampling);
 
         auto renderSpriteOnTile = [this](RenderTile& renderTile) {
@@ -871,42 +880,38 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
         if (useThreads) {
           static base::thread_pool pool(4);
           for (auto& renderTile : renderTiles) {
-            if (!renderTile.dirty)
-              continue;
-
-            pool.execute([&renderTile, renderSpriteOnTile] { renderSpriteOnTile(renderTile); });
+            if (renderTile.dirty)
+              pool.execute([&renderTile, renderSpriteOnTile] { renderSpriteOnTile(renderTile); });
           }
           pool.wait_all();
         }
         else {
           for (RenderTile& renderTile : renderTiles) {
-            if (!renderTile.dirty)
-              continue;
-
-            renderSpriteOnTile(renderTile);
+            if (renderTile.dirty)
+              renderSpriteOnTile(renderTile);
           }
         }
 
-        // Update cached tiles
+        // Re-cache rendered tiles updating the cachedTiles map
         for (const RenderTile& renderTile : renderTiles)
-          cachedTiles.emplace(renderTile.tileId, renderTile);
+          cachedTiles[renderTile.tileId] = renderTile;
+      }
 
-        // Paint tiles in the editor
-        for (RenderTile& renderTile : renderTiles) {
-          os::Paint p;
-          p.srcEdges(os::Paint::SrcEdges::Fast);
-          p.blendMode(os::BlendMode::SrcOver);
-          g->drawSurface(renderTile.surface.get(),
-                         renderTile.surface->bounds(),
-                         renderTile.dst,
-                         sampling,
-                         &p);
-          if (debugTiles) {
-            g->drawText(fmt::format("{},{}", renderTile.tileId & 0xffff, renderTile.tileId >> 16),
-                        gfx::rgba(0, 0, 0, 200),
-                        gfx::ColorNone,
-                        renderTile.dst.origin() + gfx::Point(renderTile.dst.size()) / 2);
-          }
+      // Paint tiles in the editor
+      for (RenderTile& renderTile : renderTiles) {
+        os::Paint p;
+        p.srcEdges(os::Paint::SrcEdges::Fast);
+        p.blendMode(os::BlendMode::SrcOver);
+        g->drawSurface(renderTile.surface.get(),
+                       renderTile.surface->bounds(),
+                       renderTile.dst,
+                       sampling,
+                       &p);
+        if (debugTiles) {
+          g->drawText(fmt::format("{},{}", renderTile.tileId & 0xffff, renderTile.tileId >> 16),
+                      gfx::rgba(0, 0, 0, 200),
+                      gfx::ColorNone,
+                      renderTile.dst.origin() + gfx::Point(renderTile.dst.size()) / 2);
         }
       }
     }
@@ -1266,17 +1271,6 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
   // TODO clip the editorGraphics directly
   Graphics backGraphics(display);
   GraphicsPtr editorGraphics = getGraphics(clientBounds());
-
-  // Invalidate tiles as drawSpriteClipped() is called onSpritePixelsModified()
-  if (Preferences::instance().render.tileBasedRenderEngine()) {
-    CachedTiles& cachedTiles = g_renderTileCache.docCachedTiles(m_document->id());
-    for (auto& [tileId, cachedTile] : cachedTiles) {
-      const gfx::Rect srcrc = m_proj.remove(cachedTile.src);
-      if (updateRegion.contains(srcrc) != Region::Overlap::Out) {
-        cachedTile.dirty = true;
-      }
-    }
-  }
 
   for (const Rect& updateRect : updateRegion) {
     for (const Rect& screenRect : screenRegion) {
@@ -2797,6 +2791,26 @@ void Editor::onShowExtrasChange()
   invalidate();
 }
 
+void Editor::onSpritePixelsModified(DocEvent& ev)
+{
+  if (!isVisible() && frame() != ev.frame())
+    return;
+
+  // Invalidate cached tiles
+  if (Preferences::instance().render.tileBasedRenderEngine()) {
+    CachedTiles& cachedTiles = g_renderTileCache.docCachedTiles(m_document->id());
+    for (auto& [tileId, cachedTile] : cachedTiles) {
+      const gfx::Rect srcrc = m_proj.remove(cachedTile.src);
+      if (ev.region().contains(srcrc) != Region::Overlap::Out) {
+        cachedTile.dirty = true;
+      }
+    }
+  }
+
+  // Redraw sprite in the given region
+  drawSpriteClipped(ev.region());
+}
+
 void Editor::onColorSpaceChanged(DocEvent& ev)
 {
   // As the document has a new color space, we've to redraw the
@@ -3236,8 +3250,9 @@ void Editor::notifyZoomChanged()
 {
   // TODO re-use cached tiles while zooming and replace them when the
   //      new zoom level tiles are rendered
-  if (Preferences::instance().render.tileBasedRenderEngine())
+  if (Preferences::instance().render.tileBasedRenderEngine()) {
     g_renderTileCache.clearDocCachedTiles(m_document->id());
+  }
 
   m_observers.notifyZoomChanged(this);
 }
@@ -3488,6 +3503,9 @@ bool Editor::handleDevModeKeys(const ui::KeyMessage* msg)
       else if (msg->altPressed()) {
         tileBased(!tileBased());
       }
+
+      // Invalidate all cached tiles.
+      g_renderTileCache.clearDocCachedTiles(m_document->id());
 
       std::string tip;
       switch (m_renderEngine->type()) {

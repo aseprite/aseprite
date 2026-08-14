@@ -415,12 +415,6 @@ void DocView::onGeneralUpdate(DocEvent& ev)
     m_editor->updateEditor(true);
 }
 
-void DocView::onSpritePixelsModified(DocEvent& ev)
-{
-  if (m_editor->isVisible() && m_editor->frame() == ev.frame())
-    m_editor->drawSpriteClipped(ev.region());
-}
-
 void DocView::onLayerMergedDown(DocEvent& ev)
 {
   m_editor->setLayer(ev.targetLayer());
