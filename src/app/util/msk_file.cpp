@@ -25,7 +25,7 @@ using namespace doc;
 // Loads a MSK file (Animator and Animator Pro format)
 Mask* load_msk_file(const char* filename)
 {
-  int orig_size = base::file_size(filename);
+  const auto orig_size = base::file_size(filename);
   int i, c, u, v, byte, magic, size;
   Mask* mask = NULL;
 

@@ -6,6 +6,7 @@
 // Read LICENSE.txt for more information.
 
 #include "base/base.h"
+#include "base/file_size.h"
 #include "dio/decode_delegate.h"
 #include "dio/decode_file.h"
 #include "dio/file_interface.h"
@@ -50,7 +51,7 @@ public:
 
   bool ok() const override { return m_ok; }
 
-  uint64_t tell() override
+  base::fileoff_t tell() override
   {
     LARGE_INTEGER delta;
     delta.QuadPart = 0;
@@ -64,7 +65,7 @@ public:
     return newPos.QuadPart;
   }
 
-  void seek(uint64_t absPos) override
+  void seek(const base::fileoff_t absPos) override
   {
     LARGE_INTEGER pos;
     pos.QuadPart = absPos;

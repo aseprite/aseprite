@@ -11,6 +11,8 @@
 
 #include "base/base.h"
 #include "base/cfile.h"
+#include "base/file_handle.h"
+#include "base/file_size.h"
 #include "doc/color_scales.h"
 #include "doc/image.h"
 #include "doc/palette.h"
@@ -30,28 +32,21 @@ std::unique_ptr<Palette> load_col_file(const char* filename)
 {
   int c, r, g, b;
 
-  FILE* f = std::fopen(filename, "rb");
+  FileHandle fh(open_file(filename, "rb"));
+  FILE* f = fh.get();
   if (!f)
     return nullptr;
 
   // Get file size.
-#ifdef _WIN32
-  _fseeki64(f, 0, SEEK_END);
-  const std::size_t size = _ftelli64(f);
-  const std::div_t d = std::div(size - 8, 3);
-  _fseeki64(f, 0, SEEK_SET);
-#else
-  fseeko(f, 0, SEEK_END);
-  const std::size_t size = ftello(f);
-  const std::div_t d = std::div(size - 8, 3);
-  fseeko(f, 0, SEEK_SET);
-#endif
+  const auto size = file_size(f);
+  if (size > 0xFFFFFFFF) // Unexpected file size
+    return nullptr;
+
+  const std::div_t d = std::div((int)size - 8, 3);
 
   bool pro = (size == 768) ? false : true; // is Animator Pro format?
-  if (!(size) || (pro && d.rem)) {         // Invalid format
-    fclose(f);
-    return NULL;
-  }
+  if (!(size) || (pro && d.rem))           // Invalid format
+    return nullptr;
 
   // Animator format
   std::unique_ptr<Palette> pal = nullptr;
@@ -81,10 +76,8 @@ std::unique_ptr<Palette> load_col_file(const char* filename)
     version = fgetw(f); // Version file
 
     // Unknown format
-    if (magic != PROCOL_MAGIC_NUMBER || version != 0) {
-      fclose(f);
+    if (magic != PROCOL_MAGIC_NUMBER || version != 0)
       return nullptr;
-    }
 
     pal = std::make_unique<Palette>(frame_t(0), std::min(d.quot, 256));
 
@@ -100,14 +93,14 @@ std::unique_ptr<Palette> load_col_file(const char* filename)
     }
   }
 
-  fclose(f);
   return pal;
 }
 
 // Saves an Animator Pro COL file
 bool save_col_file(const Palette* pal, const char* filename)
 {
-  FILE* f = fopen(filename, "wb");
+  FileHandle fh(open_file(filename, "wb"));
+  FILE* f = fh.get();
   if (!f)
     return false;
 
@@ -126,7 +119,6 @@ bool save_col_file(const Palette* pal, const char* filename)
       break;
   }
 
-  fclose(f);
   return true;
 }
 

@@ -11,6 +11,7 @@
 #include "app/file/file.h"
 #include "app/file/file_format.h"
 #include "base/file_handle.h"
+#include "base/file_size.h"
 
 #define QOI_NO_STDIO
 #define QOI_IMPLEMENTATION
@@ -49,19 +50,9 @@ bool QoiFormat::onLoad(FileOp* fop)
   FileHandle handle(open_file_with_exception(fop->filename(), "rb"));
   FILE* f = handle.get();
 
-#if LAF_WINDOWS
-  _fseeki64(f, 0, SEEK_END);
-  auto size = _ftelli64(f);
+  const auto size = base::file_size(f);
   if (size <= 0)
     return false;
-  _fseeki64(f, 0, SEEK_SET);
-#else
-  fseeko(f, 0, SEEK_END);
-  auto size = ftello(f);
-  if (size <= 0)
-    return false;
-  fseeko(f, 0, SEEK_SET);
-#endif
 
   auto data = QOI_MALLOC(size);
   if (!data)

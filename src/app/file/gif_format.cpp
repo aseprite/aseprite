@@ -38,14 +38,6 @@
 
 #include <gif_lib.h>
 
-#ifdef _WIN32
-  #include <io.h>
-  #define posix_lseek _lseek
-#else
-  #include <unistd.h>
-  #define posix_lseek lseek
-#endif
-
 #if GIFLIB_MAJOR < 5
   #define GifMakeMapObject MakeMapObject
   #define GifFreeMapObject FreeMapObject
@@ -187,7 +179,7 @@ static inline doc::color_t colormap2rgba(ColorMapObject* colormap, int i)
 // merged with new colormaps.
 class GifDecoder {
 public:
-  GifDecoder(FileOp* fop, GifFileType* gifFile, int fd, size_t filesize)
+  GifDecoder(FileOp* fop, GifFileType* gifFile, int fd, const base::filesize_t filesize)
     : m_fop(fop)
     , m_gifFile(gifFile)
     , m_fd(fd)
@@ -234,7 +226,7 @@ public:
         break;
 
       if (m_filesize > 0) {
-        int pos = posix_lseek(m_fd, 0, SEEK_CUR);
+        const auto pos = base::base_lseek(m_fd, 0, SEEK_CUR);
         m_fop->setProgress(double(pos) / double(m_filesize));
       }
     }
@@ -843,7 +835,7 @@ private:
   FileOp* m_fop;
   GifFileType* m_gifFile;
   int m_fd;
-  size_t m_filesize;
+  base::filesize_t m_filesize;
   std::unique_ptr<Sprite> m_sprite;
   gfx::Rect m_spriteBounds;
   LayerImage* m_layer;
@@ -868,7 +860,7 @@ bool GifFormat::onLoad(FileOp* fop)
 {
   // The filesize is used only to report some progress when we decode
   // the GIF file.
-  size_t filesize = base::file_size(fop->filename());
+  const auto filesize = base::file_size(fop->filename());
 
 #if GIFLIB_MAJOR >= 5
   int errCode = 0;

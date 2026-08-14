@@ -101,7 +101,7 @@ bool AsepriteDecoder::decode()
   // Read frame by frame to end-of-file
   for (frame_t frame = 0; frame < nframes; ++frame) {
     // Start frame position
-    const uint64_t frame_pos = tell();
+    const auto frame_pos = tell();
     delegate()->progress((float)frame_pos / (float)header.size);
 
     // Read frame header
@@ -117,7 +117,7 @@ bool AsepriteDecoder::decode()
       // Read chunks
       for (uint32_t c = 0; c < frame_header.chunks; c++) {
         // Start chunk position
-        const uint64_t chunk_pos = tell();
+        const auto chunk_pos = tell();
         delegate()->progress((float)chunk_pos / (float)header.size);
 
         // Read chunk information
@@ -307,7 +307,7 @@ bool AsepriteDecoder::decode()
 
 bool AsepriteDecoder::readHeader(AsepriteHeader* header)
 {
-  const uint64_t headerPos = tell();
+  const auto headerPos = tell();
 
   header->size = read32();
   header->magic = read16();
@@ -676,7 +676,7 @@ void read_compressed_image_templ(FileInterface* f,
                                  DecodeDelegate* delegate,
                                  Image* image,
                                  const AsepriteHeader* header,
-                                 const size_t chunk_end)
+                                 const base::fileoff_t chunk_end)
 {
   PixelIO<ImageTraits> pixel_io;
   z_stream zstream;
@@ -697,7 +697,7 @@ void read_compressed_image_templ(FileInterface* f,
   int y = 0;
 
   while (true) {
-    size_t input_bytes;
+    base::fileoff_t input_bytes;
 
     if (f->tell() + compressed.size() > chunk_end) {
       input_bytes = chunk_end - f->tell(); // Remaining bytes
@@ -774,7 +774,7 @@ void read_compressed_image(FileInterface* f,
                            DecodeDelegate* delegate,
                            Image* image,
                            const AsepriteHeader* header,
-                           const size_t chunk_end)
+                           const base::fileoff_t chunk_end)
 {
   // Try to read pixel data
   try {
@@ -812,7 +812,7 @@ void read_compressed_image(FileInterface* f,
 Cel* AsepriteDecoder::readCelChunk(frame_t frame,
                                    PixelFormat pixelFormat,
                                    const AsepriteHeader* header,
-                                   const size_t chunk_end)
+                                   const base::fileoff_t chunk_end)
 {
   // Read chunk data
   const layer_t layer_index = read16();
@@ -1264,8 +1264,8 @@ Tileset* AsepriteDecoder::readTilesetChunk(Sprite* sprite,
   if (flags & ASE_TILESET_FLAG_EMBEDDED) {
     if (ntiles > 0) {
       const uint32_t dataSize = read32(); // Size of compressed data
-      const uint64_t dataBeg = tell();
-      const uint64_t dataEnd = dataBeg + dataSize;
+      const auto dataBeg = tell();
+      const auto dataEnd = dataBeg + dataSize;
 
       base::buffer compressed;
       if (delegate()->cacheCompressedTilesets() && dataSize > 0) {
@@ -1309,9 +1309,9 @@ Tileset* AsepriteDecoder::readTilesetChunk(Sprite* sprite,
 void AsepriteDecoder::readPropertiesMaps(UserData::PropertiesMaps& propertiesMaps,
                                          const AsepriteExternalFiles& extFiles)
 {
-  auto startPos = tell();
-  auto size = read32();
-  auto numMaps = read32();
+  const auto startPos = tell();
+  const auto size = read32();
+  const auto numMaps = read32();
   try {
     for (int i = 0; i < numMaps; ++i) {
       auto id = read32();
@@ -1457,7 +1457,7 @@ void AsepriteDecoder::readTilesData(Tileset* tileset, const AsepriteExternalFile
 {
   // Read as many user data chunks as tiles are in the tileset
   for (tile_index i = 0; i < tileset->size(); i++) {
-    const uint64_t chunk_pos = tell();
+    const auto chunk_pos = tell();
     // Read chunk information
     const int chunk_size = read32();
     const int chunk_type = read16();
