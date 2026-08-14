@@ -342,6 +342,7 @@ protected:
   void onShowExtrasChange();
 
   // DocObserver impl
+  void onSpritePixelsModified(DocEvent& ev) override;
   void onColorSpaceChanged(DocEvent& ev) override;
   void onExposeSpritePixels(DocEvent& ev) override;
   void onSpritePixelRatioChanged(DocEvent& ev) override;

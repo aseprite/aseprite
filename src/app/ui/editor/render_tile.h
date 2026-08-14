@@ -23,10 +23,12 @@ using RenderTileId = uint32_t;
 struct RenderTile {
   constexpr static gfx::Size kTileSize = gfx::Size(128, 128);
 
-  RenderTileId tileId;
+  RenderTileId tileId = 0;
   gfx::Rect src, dst;
   os::SurfaceRef surface;
   bool dirty = true;
+
+  RenderTile() {}
 
   RenderTile(const RenderTileId tileId, const gfx::Rect& src, const gfx::Rect& dst)
     : tileId(tileId)
@@ -34,6 +36,9 @@ struct RenderTile {
     , dst(dst)
   {
   }
+
+  RenderTile(const RenderTile&) = default;
+  RenderTile& operator=(const RenderTile&) = default;
 };
 
 using CachedTiles = std::map<RenderTileId, RenderTile>;
