@@ -944,6 +944,15 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
             topLeft,
             bottomRight);
         }
+
+        if (mode & int(app::gen::SymmetryMode::YIN_YANG)) {
+          const gfx::Color guideColor = symmetryButtons & int(app::gen::SymmetryMode::YIN_YANG) ?
+                                          color :
+                                          semiTransparentColor;
+
+          g->fillRect(guideColor,
+                      gfx::Rect(enclosingRect.x + x - 1, enclosingRect.y + y - 1, 3, 3));
+        }
       }
     }
   }
