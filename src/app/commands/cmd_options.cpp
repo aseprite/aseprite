@@ -1134,6 +1134,8 @@ public:
 
     if (reset_screen)
       updateScreenScaling();
+
+    App::instance()->updateDisplayTitleBar();
   }
 
   void restoreTheme()
