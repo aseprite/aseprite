@@ -8,7 +8,7 @@
 
 namespace doc {
 
-Pattern::Pattern(uint8_t* bits, int width, int height)
+Pattern::Pattern(std::vector<uint8_t> bits, int width, int height)
 {
   m_image.reset(Image::create(PixelFormat::IMAGE_BITMAP, width, height));
   for (int i = 0; i < height; ++i) {
