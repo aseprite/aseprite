@@ -469,7 +469,7 @@ void ColorBar::setEditMode(bool state)
   // The item icon/style will be set depending on m_editMode state.
   ButtonSet::Item* item = m_editPal.getItem(0);
   item->initTheme();
-  item->invalidate();
+  item->invalidateItem();
 
   // Deselect color entries when we cancel editing
   if (!state)

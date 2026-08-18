@@ -28,7 +28,7 @@ public:
     os::Surface* iconSurface() const override { return m_icon ? m_icon->bitmap(0) : nullptr; }
     skin::SkinPartPtr icon() const { return m_icon; }
     ButtonSet* buttonSet();
-    void invalidate();
+    void invalidateItem();
 
   protected:
     void onPaint(ui::PaintEvent& ev) override;

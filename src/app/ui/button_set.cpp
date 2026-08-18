@@ -57,7 +57,7 @@ ButtonSet::Item::Item() : Widget(buttonset_item_type()), m_icon(NULL)
 void ButtonSet::Item::setIcon(const SkinPartPtr& icon)
 {
   m_icon = icon;
-  invalidate();
+  invalidateItem();
 }
 
 ButtonSet* ButtonSet::Item::buttonSet()
@@ -95,7 +95,7 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
   }
 }
 
-void ButtonSet::Item::invalidate()
+void ButtonSet::Item::invalidateItem()
 {
   Widget::invalidate();
   if (buttonSet() && buttonSet()->hasOverlappingItems()) {
@@ -131,7 +131,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
     case kFocusLeaveMessage:
       if (isEnabled()) {
         // TODO theme specific stuff
-        invalidate();
+        invalidateItem();
       }
       break;
 
@@ -163,7 +163,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
 
       captureMouse();
       buttonSet()->onSelectItem(this, true, msg);
-      invalidate();
+      invalidateItem();
 
       if (static_cast<MouseMessage*>(msg)->left() && !buttonSet()->m_triggerOnMouseUp) {
         onClick();
@@ -177,7 +177,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
           g_itemBeforeCapture = -1;
 
         releaseMouse();
-        invalidate();
+        invalidateItem();
 
         if (static_cast<MouseMessage*>(msg)->left()) {
           if (buttonSet()->m_triggerOnMouseUp) {
@@ -218,7 +218,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
     case ui::kMouseEnterMessage:
       if (!isEnabled())
         return true;
-      invalidate();
+      invalidateItem();
       break;
   }
   return Widget::onProcessMessage(msg);
