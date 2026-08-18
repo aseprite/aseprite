@@ -11,10 +11,13 @@
 
 #include "app/app.h"
 #include "app/cmd/set_grid_bounds.h"
+#include "app/cmd/set_grid_type.h"
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/doc.h"
+#include "app/find_widget.h"
+#include "app/load_widget.h"
 #include "app/pref/preferences.h"
 #include "app/tx.h"
 #include "app/ui/status_bar.h"
@@ -104,6 +107,7 @@ void GridSettingsCommand::onExecute(Context* context)
 
   Site site = context->activeSite();
   Rect bounds = site.gridBounds();
+  doc::Grid::Type type = site.gridType();
 
   window.gridX()->setTextf("%d", bounds.x);
   window.gridY()->setTextf("%d", bounds.y);
@@ -119,9 +123,12 @@ void GridSettingsCommand::onExecute(Context* context)
     if (window.gridH()->textInt() <= 0)
       window.gridH()->setText("1");
   });
+  int typeIndex = window.gridType()->findItemIndex(grid_type_to_string(type));
+  window.gridType()->setSelectedItemIndex(typeIndex);
   window.openWindowInForeground();
 
   if (window.closer() == window.ok()) {
+    const gfx::Rect oldBounds(bounds);
     bounds.x = window.gridX()->textInt();
     bounds.y = window.gridY()->textInt();
     bounds.w = window.gridW()->textInt();
@@ -129,10 +136,20 @@ void GridSettingsCommand::onExecute(Context* context)
     bounds.w = std::max(bounds.w, 1);
     bounds.h = std::max(bounds.h, 1);
 
-    ContextWriter writer(context);
-    Tx tx(writer, friendlyName(), ModifyDocument);
-    tx(new cmd::SetGridBounds(site.sprite(), bounds));
-    tx.commit();
+    const doc::Grid::Type oldType = type;
+    typeIndex = window.gridType()->getSelectedItemIndex();
+    type = string_to_grid_type(window.gridType()->getItemText(typeIndex));
+
+    if (bounds != oldBounds || type != oldType) {
+      ContextWriter writer(context);
+      Tx tx(writer, friendlyName(), ModifyDocument);
+      if (bounds != oldBounds)
+        tx(new cmd::SetGridBounds(site.sprite(), bounds));
+      if (type != oldType)
+        tx(new cmd::SetGridType(site.sprite(), type));
+
+      tx.commit();
+    }
 
     auto& docPref = Preferences::instance().document(site.document());
     if (!docPref.show.grid()) // Make grid visible

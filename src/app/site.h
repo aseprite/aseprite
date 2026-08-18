@@ -13,6 +13,7 @@
 #include "app/tileset_mode.h"
 #include "doc/cel_list.h"
 #include "doc/frame.h"
+#include "doc/grid.h"
 #include "doc/palette_picks.h"
 #include "doc/selected_objects.h"
 #include "gfx/fwd.h"
@@ -99,6 +100,7 @@ public:
   doc::Tileset* tileset() const;
   doc::Grid grid() const;
   gfx::Rect gridBounds() const;
+  doc::Grid::Type gridType() const;
 
   void tilemapMode(const TilemapMode mode) { m_tilemapMode = mode; }
   void tilesetMode(const TilesetMode mode) { m_tilesetMode = mode; }

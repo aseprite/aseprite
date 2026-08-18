@@ -92,11 +92,12 @@ Grid Site::grid() const
     doc::Grid grid = static_cast<LayerTilemap*>(m_layer)->tileset()->grid();
     if (const Cel* cel = m_layer->cel(m_frame))
       grid.origin(grid.origin() + cel->position());
+    grid.type(gridType());
     return grid;
   }
 
   gfx::Rect rc = gridBounds();
-  doc::Grid grid = Grid(rc.size());
+  doc::Grid grid = Grid(rc.size(), gridType());
   grid.origin(gfx::Point(rc.x % rc.w, rc.y % rc.h));
   return grid;
 }
@@ -127,6 +128,14 @@ gfx::Rect Site::gridBounds() const
   }
 
   return doc::Sprite::DefaultGridBounds();
+}
+
+doc::Grid::Type Site::gridType() const
+{
+  if (m_sprite)
+    return m_sprite->gridType();
+
+  return doc::Sprite::DefaultGridType();
 }
 
 bool Site::shouldTrimCel(Cel* cel) const

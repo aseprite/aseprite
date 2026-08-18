@@ -60,6 +60,7 @@ private:
   gfx::RectF calcFullBounds() const;
   void calcPivot();
   bool restoreCelStartPosition() const;
+  doc::Grid getDisplacedGrid() const;
   void snapOffsetToGrid(gfx::Point& offset) const;
   void snapBoundsToGrid(gfx::RectF& celBounds) const;
   // ContextObserver
