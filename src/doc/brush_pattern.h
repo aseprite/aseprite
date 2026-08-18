@@ -12,6 +12,7 @@
 #include "doc/image_ref.h"
 
 #include <memory>
+#include <vector>
 
 namespace doc {
 
@@ -30,7 +31,7 @@ enum class BrushPattern {
 
 class Pattern {
 public:
-  Pattern(uint8_t* bits, int width, int height);
+  Pattern(std::vector<uint8_t> bits, int width, int height);
 
   doc::ImageRef image() const { return m_image; }
 
