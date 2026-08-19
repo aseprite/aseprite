@@ -4,8 +4,8 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifndef APP_UI_EDITOR_RENDER_TILE_H_INCLUDED
-#define APP_UI_EDITOR_RENDER_TILE_H_INCLUDED
+#ifndef APP_RENDER_RENDER_TILE_H_INCLUDED
+#define APP_RENDER_RENDER_TILE_H_INCLUDED
 #pragma once
 
 #include "doc/object_id.h"
@@ -66,4 +66,4 @@ private:
 
 } // namespace app
 
-#endif // APP_UI_EDITOR_RENDER_TILE_H_INCLUDED
+#endif // APP_RENDER_RENDER_TILE_H_INCLUDED

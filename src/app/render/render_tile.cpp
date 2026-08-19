@@ -8,7 +8,7 @@
   #include "config.h"
 #endif
 
-#include "app/ui/editor/render_tile.h"
+#include "app/render/render_tile.h"
 
 #include "os/system.h"
 
