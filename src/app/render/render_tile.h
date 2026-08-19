@@ -49,19 +49,20 @@ public:
   // free one available from m_freeTiles).
   os::SurfaceRef allocTileSurface();
 
-  CachedTiles& docCachedTiles(doc::ObjectId docId);
+  // Returns the set of cached tiles for the given Sprite ID.
+  CachedTiles& cachedTiles(doc::ObjectId id);
 
   // Clear the doc CachedTiles and moves all the surfaces to the list
   // of free surfaces m_freeTiles.
-  void clearDocCachedTiles(doc::ObjectId docId);
+  void clearCachedTiles(doc::ObjectId id);
 
 private:
-  struct DocCache {
+  struct Cache {
     CachedTiles cachedTiles;
   };
 
   std::vector<os::SurfaceRef> m_freeTiles;
-  std::map<doc::ObjectId, std::unique_ptr<DocCache>> m_docs;
+  std::map<doc::ObjectId, std::unique_ptr<Cache>> m_sprites;
 };
 
 } // namespace app

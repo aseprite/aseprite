@@ -8,6 +8,7 @@
 #define APP_RENDER_RENDERER_H_INCLUDED
 #pragma once
 
+#include "gfx/region.h"
 #include "os/sampling.h"
 #include "render/render.h"
 
@@ -20,7 +21,13 @@ namespace os {
 class Surface;
 }
 
+namespace ui {
+class Graphics;
+}
+
 namespace app {
+
+class Editor;
 
 // Abstract class to render images from any editor to be displayed
 // in the screen mainly (to render images in files you can continue
@@ -59,6 +66,9 @@ public:
   // ----------------------------------------------------------------------
   // Basic configuration
 
+  virtual const render::Projection& projection() const = 0;
+  virtual const render::BgOptions& bgOptions() const = 0;
+
   virtual void setRefLayersVisiblity(bool visible) = 0;
   virtual void setNonactiveLayersOpacity(int opacity) = 0;
   virtual void setNewBlendMethod(bool newBlend) = 0;
@@ -93,6 +103,14 @@ public:
   // ----------------------------------------------------------------------
   // Compositing
 
+  virtual void renderCanvas(Editor* editor, // TODO remove Editor dependency
+                            ui::Graphics* g,
+                            const doc::Sprite* sprite,
+                            doc::frame_t frame,
+                            const gfx::Rect& dest,
+                            const gfx::Rect& expose,
+                            bool exposeWithProj) = 0;
+
   virtual void renderSprite(os::Surface* dstSurface,
                             const doc::Sprite* sprite,
                             const doc::frame_t frame,
@@ -100,13 +118,9 @@ public:
   virtual void renderCheckeredBackground(os::Surface* dstSurface,
                                          const doc::Sprite* sprite,
                                          const gfx::Clip& area) = 0;
-  virtual void renderImage(doc::Image* dstImage,
-                           const doc::Image* srcImage,
-                           const doc::Palette* pal,
-                           const int x,
-                           const int y,
-                           const int opacity,
-                           const doc::BlendMode blendMode) = 0;
+
+  virtual void invalidateRenderCache(const doc::Sprite* sprite) {}
+  virtual void invalidateRenderCache(const doc::Sprite* sprite, const gfx::Region& spriteRegion) {}
 };
 
 } // namespace app

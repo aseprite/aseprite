@@ -18,6 +18,7 @@
   #include "os/common/generic_surface.h"
   #include "os/skia/skia_helpers.h"
   #include "os/skia/skia_surface.h"
+  #include "ui/graphics.h"
 
   #include "include/core/SkCanvas.h"
   #include "include/effects/SkRuntimeEffect.h"
@@ -198,6 +199,25 @@ void ShaderRenderer::setOnionskin(const render::OnionskinOptions& options)
 void ShaderRenderer::disableOnionskin()
 {
   // TODO impl
+}
+
+void ShaderRenderer::renderCanvas(Editor* editor,
+                                  ui::Graphics* g,
+                                  const doc::Sprite* sprite,
+                                  const doc::frame_t frame,
+                                  const gfx::Rect& dest,
+                                  const gfx::Rect& expose,
+                                  const bool exposeWithProj)
+{
+  ASSERT(!exposeWithProj);
+
+  renderCheckeredBackground(g->getInternalSurface(),
+                            sprite,
+                            gfx::Clip(dest.x + g->getInternalDeltaX(),
+                                      dest.y + g->getInternalDeltaY(),
+                                      projection().apply(expose)));
+
+  CommonRenderer::renderCanvas(editor, g, sprite, frame, dest, expose, exposeWithProj);
 }
 
 void ShaderRenderer::renderSprite(os::Surface* dstSurface,
@@ -459,17 +479,6 @@ void ShaderRenderer::renderCheckeredBackground(os::Surface* dstSurface,
     canvas->drawRect(SkRect::MakeXYWH(area.src.x, area.src.y, area.size.w, area.size.h), p);
   }
   canvas->restore();
-}
-
-void ShaderRenderer::renderImage(doc::Image* dstImage,
-                                 const doc::Image* srcImage,
-                                 const doc::Palette* pal,
-                                 const int x,
-                                 const int y,
-                                 const int opacity,
-                                 const doc::BlendMode blendMode)
-{
-  // TODO impl
 }
 
 void ShaderRenderer::drawImage(SkCanvas* canvas,

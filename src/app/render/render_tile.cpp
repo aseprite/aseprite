@@ -25,21 +25,21 @@ os::SurfaceRef RenderTileCache::allocTileSurface()
   return surface;
 }
 
-CachedTiles& RenderTileCache::docCachedTiles(const doc::ObjectId docId)
+CachedTiles& RenderTileCache::cachedTiles(const doc::ObjectId id)
 {
-  auto it = m_docs.find(docId);
-  if (it != m_docs.end())
+  auto it = m_sprites.find(id);
+  if (it != m_sprites.end())
     return it->second->cachedTiles;
 
-  auto docCache = std::make_unique<DocCache>();
-  CachedTiles& cachedTiles = docCache->cachedTiles;
-  m_docs.emplace(docId, std::move(docCache));
+  auto cache = std::make_unique<Cache>();
+  CachedTiles& cachedTiles = cache->cachedTiles;
+  m_sprites.emplace(id, std::move(cache));
   return cachedTiles;
 }
 
-void RenderTileCache::clearDocCachedTiles(doc::ObjectId docId)
+void RenderTileCache::clearCachedTiles(const doc::ObjectId id)
 {
-  CachedTiles& cachedTiles = RenderTileCache::docCachedTiles(docId);
+  CachedTiles& cachedTiles = RenderTileCache::cachedTiles(id);
   for (auto& [tileId, cachedTile] : cachedTiles) {
     m_freeTiles.push_back(cachedTile.surface);
     cachedTile.surface = nullptr;

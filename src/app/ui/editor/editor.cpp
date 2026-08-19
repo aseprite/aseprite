@@ -27,7 +27,6 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
-#include "app/render/render_tile.h"
 #include "app/snap_to_grid.h"
 #include "app/tools/active_tool.h"
 #include "app/tools/controller.h"
@@ -60,7 +59,6 @@
 #include "base/chrono.h"
 #include "base/convert_to.h"
 #include "base/scoped_value.h"
-#include "base/thread_pool.h"
 #include "doc/blend_internals.h"
 #include "doc/doc.h"
 #include "doc/mask_boundaries.h"
@@ -91,10 +89,6 @@ using namespace render;
 // TODO these should be grouped in some kind of "performance counters"
 static base::Chrono renderChrono;
 static double renderElapsed = 0.0;
-
-// Cached parts already rendered for specific documents for tile-based
-// rendering.
-static RenderTileCache g_renderTileCache;
 
 class EditorPostRenderImpl : public EditorPostRender {
 public:
@@ -645,8 +639,6 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
   // the original cel) before it can be used by the RenderEngine.
   m_document->notifyExposeSpritePixels(m_sprite, gfx::Region(expose));
 
-  const auto& renderProperties = m_renderEngine->properties();
-
   // Configure render engine options
   const auto& pref = Preferences::instance();
   m_renderEngine->setComposeGroups(pref.experimental.composeGroups());
@@ -720,287 +712,44 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
 
   // rc2 is the rectangle used to create a temporal rendered image of the sprite
   const auto renderEngine = Preferences::instance().render.renderEngine();
-  const bool renderWithoutProj = (renderEngine == gen::RenderEngine::SHADER) ||
-                                 (renderEngine == gen::RenderEngine::RASTER_V2
-                                  // Reference layers + zoom > 100% need the old render engine for
-                                  // sub-pixel rendering.
-                                  && (!m_sprite->hasVisibleReferenceLayers() ||
-                                      (m_proj.scaleX() <= 1.0 && m_proj.scaleY() <= 1.0)));
 
-  gfx::Rect rc2;
-  if (renderWithoutProj) {
-    rc2 = expose; // New engine, exposed rectangle (without zoom)
-    dest.x = dx + m_padding.x + m_proj.applyX(rc2.x);
-    dest.y = dy + m_padding.y + m_proj.applyY(rc2.y);
-    dest.w = m_proj.applyX(rc2.w);
-    dest.h = m_proj.applyY(rc2.h);
+  bool exposeWithProj;
+  if ((renderEngine == gen::RenderEngine::SHADER) ||
+      (renderEngine == gen::RenderEngine::RASTER_V2
+       // Reference layers + zoom > 100% need the old render engine for
+       // sub-pixel rendering.
+       && (!m_sprite->hasVisibleReferenceLayers() ||
+           (m_proj.scaleX() <= 1.0 && m_proj.scaleY() <= 1.0)))) {
+    exposeWithProj = false;
+    dest.x = dx + m_padding.x + m_proj.applyX(expose.x);
+    dest.y = dy + m_padding.y + m_proj.applyY(expose.y);
+    dest.w = m_proj.applyX(expose.w);
+    dest.h = m_proj.applyY(expose.h);
   }
   else {
-    rc2 = rc; // Old engine, same rectangle with zoom
+    expose = rc; // Old engine, expose same rectangle with zoom
+    exposeWithProj = true;
     dest.w = rc.w;
     dest.h = rc.h;
   }
 
-  if (pref.render.tileBasedRenderEngine()) {
+  try {
     IntersectClip clip(g, dest);
     if (clip) {
-      os::Paint paint;
-
-      // Render background (using a ShaderRenderer)
-      const LayerImage* bgLayer = m_sprite->backgroundLayer();
-      if (!bgLayer || !bgLayer->isVisible()) {
-        auto renderBg = [this, g, dest, expose](EditorRender* e) {
-          e->setProjection(m_proj);
-          e->setupBackground(m_document, IMAGE_RGB);
-          e->renderCheckeredBackground(g->getInternalSurface(),
-                                       m_sprite,
-                                       gfx::Clip(dest.x + g->getInternalDeltaX(),
-                                                 dest.y + g->getInternalDeltaY(),
-                                                 m_proj.apply(expose)));
-        };
-        if (m_renderEngine->type() == EditorRender::kShaderRenderer)
-          renderBg(m_renderEngine.get());
-        else {
-          EditorRender bgRenderer;
-          bgRenderer.setType(EditorRender::kShaderRenderer);
-          renderBg(&bgRenderer);
-        }
-      }
-      m_renderEngine->setTransparentBackground();
-
-      // Get the cached tiles of this document, and create a
-      // "renderTiles" to paint right now.
-      CachedTiles& cachedTiles = g_renderTileCache.docCachedTiles(m_document->id());
-      std::vector<RenderTile> renderTiles;
-
-      // Paint tiles
-      const gfx::Size tileSize = RenderTile::kTileSize;
-      const gfx::SizeF tileSizeSrc(tileSize.w, tileSize.h);
-      const bool debugTiles = pref.render.debugTiles();
-
-      {
-        paint.style(os::Paint::Stroke);
-        paint.color(gfx::rgba(0, 0, 255, 128));
-        paint.blendMode(os::BlendMode::SrcOver);
-
-        gfx::Rect rc(canvasSize());
-        rc = editorToScreen(rc);
-        rc.offset(-bounds().origin());
-
-        gfx::Rect visible = m_proj.apply(expose);
-        gfx::Rect tilerc(tileSize);
-
-        gfx::PointF firstTilePos;
-        int u0 = std::floor(visible.x / tileSizeSrc.w);
-        int v0 = std::floor(visible.y / tileSizeSrc.h);
-        firstTilePos.x = u0 * tileSizeSrc.w;
-        firstTilePos.y = v0 * tileSizeSrc.h;
-
-        rc.x += (visible.x / tileSize.w) * tileSize.w;
-        rc.y += (visible.y / tileSize.h) * tileSize.h;
-        rc.w = ((std::max(rc.w, visible.w) + tileSize.w) / tileSize.w) * tileSize.w;
-        rc.h = ((std::max(rc.h, visible.h) + tileSize.h) / tileSize.h) * tileSize.w;
-
-        for (int y = 0, v = 0; y < dest.h + tileSize.h; y += tileSize.h, ++v) {
-          for (int x = 0, u = 0; x < dest.w + tileSize.w; x += tileSize.w, ++u) {
-            tilerc.x = rc.x + x;
-            tilerc.y = rc.y + y;
-            if (tilerc.intersects(dest)) {
-              if (debugTiles)
-                g->drawRect(tilerc, paint);
-
-              auto srcrc = gfx::RectF(firstTilePos.x + u * tileSizeSrc.w,
-                                      firstTilePos.y + v * tileSizeSrc.h,
-                                      tileSizeSrc.w,
-                                      tileSizeSrc.h);
-
-              const RenderTileId tileId = ((v0 + v) << 16) | (u0 + u);
-              auto it = cachedTiles.find(tileId);
-              if (it != cachedTiles.end()) {
-                RenderTile tile = it->second;
-                tile.dst = tilerc;
-                renderTiles.push_back(tile);
-              }
-              else {
-                RenderTile tile(tileId, srcrc, tilerc);
-                renderTiles.push_back(tile);
-              }
-            }
-          }
-        }
-      }
-
-      // Assign a surface for each tile to be rendered
-      size_t dirties = 0;
-      {
-        for (RenderTile& renderTile : renderTiles) {
-          if (!renderTile.surface) {
-            renderTile.dirty = true;
-            renderTile.surface = g_renderTileCache.allocTileSurface();
-          }
-          if (renderTile.dirty)
-            ++dirties;
-        }
-      }
-
-      // Sampling for downscaling
-      os::Sampling sampling(os::Sampling::Filter::Nearest);
-      if (m_proj.scaleX() < 1.0) {
-        switch (pref.editor.downsampling()) {
-          case gen::Downsampling::NEAREST:
-            sampling = os::Sampling(os::Sampling::Filter::Nearest);
-            break;
-          case gen::Downsampling::BILINEAR:
-            sampling = os::Sampling(os::Sampling::Filter::Linear);
-            break;
-          case gen::Downsampling::BILINEAR_MIPMAP:
-            sampling = os::Sampling(os::Sampling::Filter::Linear, os::Sampling::Mipmap::Nearest);
-            break;
-          case gen::Downsampling::TRILINEAR_MIPMAP:
-            sampling = os::Sampling(os::Sampling::Filter::Linear, os::Sampling::Mipmap::Linear);
-            break;
-        }
-      }
-
-      // Render tiles on background
-      if (dirties > 0) {
-        m_renderEngine->setProjection(m_proj);
-        m_renderEngine->setSampling(sampling);
-
-        auto renderSpriteOnTile = [this](RenderTile& renderTile) {
-          renderTile.surface->clear();
-          m_renderEngine->renderSprite(renderTile.surface.get(),
-                                       m_sprite,
-                                       m_frame,
-                                       gfx::Clip(0, 0, renderTile.src));
-          renderTile.dirty = false;
-        };
-
-        const bool useThreads = (dirties >= 4);
-        if (useThreads) {
-          static base::thread_pool pool(4);
-          for (auto& renderTile : renderTiles) {
-            if (renderTile.dirty)
-              pool.execute([&renderTile, renderSpriteOnTile] { renderSpriteOnTile(renderTile); });
-          }
-          pool.wait_all();
-        }
-        else {
-          for (RenderTile& renderTile : renderTiles) {
-            if (renderTile.dirty)
-              renderSpriteOnTile(renderTile);
-          }
-        }
-
-        // Re-cache rendered tiles updating the cachedTiles map
-        for (const RenderTile& renderTile : renderTiles)
-          cachedTiles[renderTile.tileId] = renderTile;
-      }
-
-      // Paint tiles in the editor
-      for (RenderTile& renderTile : renderTiles) {
-        os::Paint p;
-        p.srcEdges(os::Paint::SrcEdges::Fast);
-        p.blendMode(os::BlendMode::SrcOver);
-        g->drawSurface(renderTile.surface.get(),
-                       renderTile.surface->bounds(),
-                       renderTile.dst,
-                       sampling,
-                       &p);
-        if (debugTiles) {
-          g->drawText(fmt::format("{},{}", renderTile.tileId & 0xffff, renderTile.tileId >> 16),
-                      gfx::rgba(0, 0, 0, 200),
-                      gfx::ColorNone,
-                      renderTile.dst.origin() + gfx::Point(renderTile.dst.size()) / 2);
-        }
-      }
-    }
-  }
-  else {
-    // Convert the render to a os::Surface
-    static os::SurfaceRef rendered = nullptr; // TODO move this to other centralized place
-    try {
       m_renderEngine->setupBackground(m_document, IMAGE_RGB);
-
-      // Render background first (e.g. new ShaderRenderer will paint the
-      // background on the screen first and then composite the rendered
-      // sprite on it.)
-      if (renderProperties.renderBgOnScreen) {
-        m_renderEngine->setProjection(m_proj);
-        m_renderEngine->renderCheckeredBackground(g->getInternalSurface(),
-                                                  m_sprite,
-                                                  gfx::Clip(dest.x + g->getInternalDeltaX(),
-                                                            dest.y + g->getInternalDeltaY(),
-                                                            m_proj.apply(rc2)));
-      }
-
-      // Create a temporary surface to draw the sprite on it
-      if (!rendered || rendered->width() < rc2.w || rendered->height() < rc2.h) {
-        const int maxw = std::max(rc2.w, rendered ? rendered->width() : 0);
-        const int maxh = std::max(rc2.h, rendered ? rendered->height() : 0);
-        rendered = os::System::instance()->makeRgbaSurface(maxw, maxh);
-      }
-      rendered->setColorSpace(m_document->osColorSpace());
-
-      m_renderEngine->setProjection(renderWithoutProj ? render::Projection() : m_proj);
-      m_renderEngine->renderSprite(rendered.get(), m_sprite, m_frame, gfx::Clip(0, 0, rc2));
-
-      // If the checkered background is visible in this sprite, we save
-      // all settings of the background for this document.
-      if (!m_sprite->isOpaque())
-        m_docPref.bg.forceSection();
-    }
-    catch (const std::exception& e) {
-      Console::showException(e);
+      m_renderEngine->setProjection(m_proj);
+      m_renderEngine->renderCanvas(this, g, m_sprite, m_frame, dest, expose, exposeWithProj);
     }
 
-    if (rendered && rendered->nativeHandle()) {
-      os::Paint p;
-      if (renderWithoutProj) {
-        os::Sampling sampling;
-        p.srcEdges(os::Paint::SrcEdges::Fast); // Enable mipmaps if possible
-
-        if (m_proj.scaleX() < 1.0) {
-          switch (pref.editor.downsampling()) {
-            case gen::Downsampling::NEAREST:
-              sampling = os::Sampling(os::Sampling::Filter::Nearest);
-              break;
-            case gen::Downsampling::BILINEAR:
-              sampling = os::Sampling(os::Sampling::Filter::Linear);
-              break;
-            case gen::Downsampling::BILINEAR_MIPMAP:
-              sampling = os::Sampling(os::Sampling::Filter::Linear, os::Sampling::Mipmap::Nearest);
-              break;
-            case gen::Downsampling::TRILINEAR_MIPMAP:
-              sampling = os::Sampling(os::Sampling::Filter::Linear, os::Sampling::Mipmap::Linear);
-              break;
-          }
-        }
-
-        if (renderProperties.requiresRgbaBackbuffer)
-          p.blendMode(os::BlendMode::SrcOver);
-        else
-          p.blendMode(os::BlendMode::Src);
-
-        gfx::Rect destClip = dest;
-        if (m_proj.scaleX() < 1.0)
-          --destClip.w;
-        if (m_proj.scaleY() < 1.0)
-          --destClip.h;
-
-        IntersectClip clip(g, destClip);
-        if (clip)
-          g->drawSurface(rendered.get(), gfx::Rect(0, 0, rc2.w, rc2.h), dest, sampling, &p);
-      }
-      else {
-        g->drawSurface(rendered.get(),
-                       gfx::Rect(0, 0, dest.w, dest.h),
-                       gfx::Rect(dest.x, dest.y, dest.w, dest.h),
-                       os::Sampling(os::Sampling::Filter::Nearest),
-                       &p);
-      }
-    }
+    // If the checkered background is visible in this sprite, we save
+    // all settings of the background for this document.
+    if (!m_sprite->isOpaque())
+      m_docPref.bg.forceSection();
   }
+  catch (const std::exception& e) {
+    Console::showException(e);
+  }
+
   m_renderEngine->removeExtraImage();
   m_renderEngine->removeExtraCelInfoMap();
 
@@ -2796,16 +2545,8 @@ void Editor::onSpritePixelsModified(DocEvent& ev)
   if (!isVisible() && frame() != ev.frame())
     return;
 
-  // Invalidate cached tiles
-  if (Preferences::instance().render.tileBasedRenderEngine()) {
-    CachedTiles& cachedTiles = g_renderTileCache.docCachedTiles(m_document->id());
-    for (auto& [tileId, cachedTile] : cachedTiles) {
-      const gfx::Rect srcrc = m_proj.remove(cachedTile.src);
-      if (ev.region().contains(srcrc) != Region::Overlap::Out) {
-        cachedTile.dirty = true;
-      }
-    }
-  }
+  // Invalidate cached tiles.
+  m_renderEngine->invalidateRenderCache(m_sprite, ev.region());
 
   // Redraw sprite in the given region
   drawSpriteClipped(ev.region());
@@ -3250,9 +2991,7 @@ void Editor::notifyZoomChanged()
 {
   // TODO re-use cached tiles while zooming and replace them when the
   //      new zoom level tiles are rendered
-  if (Preferences::instance().render.tileBasedRenderEngine()) {
-    g_renderTileCache.clearDocCachedTiles(m_document->id());
-  }
+  m_renderEngine->invalidateRenderCache(m_sprite);
 
   m_observers.notifyZoomChanged(this);
 }
@@ -3498,14 +3237,12 @@ bool Editor::handleDevModeKeys(const ui::KeyMessage* msg)
           case gen::RenderEngine::RASTER_V2: renderEngine(gen::RenderEngine::SHADER); break;
           case gen::RenderEngine::SHADER:    renderEngine(gen::RenderEngine::RASTER_V1); break;
         }
-        m_renderEngine->updateFromPref();
       }
       else if (msg->altPressed()) {
         tileBased(!tileBased());
       }
 
-      // Invalidate all cached tiles.
-      g_renderTileCache.clearDocCachedTiles(m_document->id());
+      m_renderEngine->updateFromPref();
 
       std::string tip;
       switch (m_renderEngine->type()) {
