@@ -143,19 +143,19 @@ void TileBasedRenderer::renderCanvas(Editor* editor,
 {
   const auto& pref = Preferences::instance(); // TODO move these options to Renderer
   const render::Projection proj = projection();
+  const gfx::Rect visible = (exposeWithProj ? expose : proj.apply(expose));
   os::Paint paint;
 
   // Render background (using a ShaderRenderer)
   // TODO create a new class to just render the background
   const doc::LayerImage* bgLayer = sprite->backgroundLayer();
   if (!bgLayer || !bgLayer->isVisible()) {
-    auto renderBg = [proj, g, sprite, dest, expose](Renderer* r) {
+    auto renderBg = [proj, g, sprite, dest, visible](Renderer* r) {
       r->setProjection(proj);
-      r->renderCheckeredBackground(g->getInternalSurface(),
-                                   sprite,
-                                   gfx::Clip(dest.x + g->getInternalDeltaX(),
-                                             dest.y + g->getInternalDeltaY(),
-                                             proj.apply(expose)));
+      r->renderCheckeredBackground(
+        g->getInternalSurface(),
+        sprite,
+        gfx::Clip(dest.x + g->getInternalDeltaX(), dest.y + g->getInternalDeltaY(), visible));
     };
     if (properties().renderBgOnScreen)
       renderBg(this);
@@ -189,7 +189,6 @@ void TileBasedRenderer::renderCanvas(Editor* editor,
     rc = editor->editorToScreen(rc);
     rc.offset(-editor->bounds().origin());
 
-    gfx::Rect visible = (exposeWithProj ? expose : proj.apply(expose));
     gfx::Rect tilerc(tileSize);
 
     gfx::PointF firstTilePos;
