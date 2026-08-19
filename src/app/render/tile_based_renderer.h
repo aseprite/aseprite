@@ -1,27 +1,28 @@
 // Aseprite
-// Copyright (C) 2022-present  Igara Studio S.A.
+// Copyright (C) 2026-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifndef APP_RENDER_SIMPLE_RENDERER_H_INCLUDED
-#define APP_RENDER_SIMPLE_RENDERER_H_INCLUDED
+#ifndef APP_RENDER_TILE_BASED_RENDERER_H_INCLUDED
+#define APP_RENDER_TILE_BASED_RENDERER_H_INCLUDED
 #pragma once
 
-#include "app/render/common_renderer.h"
+#include "app/render/render_tile.h"
+#include "app/render/renderer.h"
 
 namespace app {
 
-// Represents the way to render sprites on Aseprite (Old and "New")
-// which use the render::Render class to render sprites with the
-// CPU-only.
-class SimpleRenderer : public CommonRenderer {
+class TileBasedRenderer : public Renderer {
 public:
-  SimpleRenderer();
+  TileBasedRenderer(std::unique_ptr<Renderer>&& tilesRenderer);
+  ~TileBasedRenderer();
 
-  const Properties& properties() const override { return m_properties; }
-  const render::BgOptions& bgOptions() const override { return m_render.bgOptions(); }
-  const render::Projection& projection() const override { return m_render.projection(); }
+  Renderer* tilesRenderer() { return m_tilesRenderer.get(); }
+
+  const Properties& properties() const override;
+  const render::BgOptions& bgOptions() const override;
+  const render::Projection& projection() const override;
 
   void setRefLayersVisiblity(bool visible) override;
   void setNonactiveLayersOpacity(int opacity) override;
@@ -51,6 +52,14 @@ public:
   void setOnionskin(const render::OnionskinOptions& options) override;
   void disableOnionskin() override;
 
+  void renderCanvas(Editor* editor,
+                    ui::Graphics* g,
+                    const doc::Sprite* sprite,
+                    doc::frame_t frame,
+                    const gfx::Rect& dest,
+                    const gfx::Rect& expose,
+                    bool exposeWithProj) override;
+
   void renderSprite(os::Surface* dstSurface,
                     const doc::Sprite* sprite,
                     const doc::frame_t frame,
@@ -59,11 +68,18 @@ public:
                                  const doc::Sprite* sprite,
                                  const gfx::Clip& area) override;
 
+  // Used to invalidate cached tiles.
+  void invalidateRenderCache(const doc::Sprite* sprite) override;
+  void invalidateRenderCache(const doc::Sprite* sprite, const gfx::Region& spriteRegion) override;
+
 private:
-  Properties m_properties;
-  render::Render m_render;
+  // Sub-renderer used to paint tiles.
+  std::unique_ptr<Renderer> m_tilesRenderer;
+
+  // Cached parts already rendered for specific sprites.
+  RenderTileCache m_renderTileCache;
 };
 
 } // namespace app
 
-#endif
+#endif // APP_RENDER_TILE_BASED_RENDERER_H_INCLUDED

@@ -15,27 +15,39 @@
 #include "app/pref/preferences.h"
 #include "app/render/shader_renderer.h"
 #include "app/render/simple_renderer.h"
+#include "app/render/tile_based_renderer.h"
 
 namespace app {
 
 static doc::ImageBufferPtr g_renderBuffer;
 
 EditorRender::EditorRender()
-  // TODO create a switch in the preferences
-  : m_renderer(std::make_unique<SimpleRenderer>())
 {
-  m_renderer->setNewBlendMethod(Preferences::instance().experimental.newBlend());
-  m_renderer->setComposeGroups(Preferences::instance().experimental.composeGroups());
+  updateFromPref();
 }
 
 EditorRender::~EditorRender()
 {
 }
 
+void EditorRender::updateFromPref()
+{
+  switch (Preferences::instance().render.renderEngine()) {
+    case gen::RenderEngine::RASTER_V1:
+    case gen::RenderEngine::RASTER_V2: setType(Type::kSimpleRenderer); break;
+    case gen::RenderEngine::SHADER:    setType(Type::kShaderRenderer); break;
+  }
+}
+
 EditorRender::Type EditorRender::type() const
 {
-#if SK_ENABLE_SKSL && ENABLE_DEVMODE
-  if (dynamic_cast<ShaderRenderer*>(m_renderer.get()))
+  Renderer* renderer = m_renderer.get();
+
+  if (auto* tileBased = dynamic_cast<TileBasedRenderer*>(renderer))
+    renderer = tileBased->tilesRenderer();
+
+#if SK_ENABLE_SKSL
+  if (dynamic_cast<ShaderRenderer*>(renderer))
     return Type::kShaderRenderer;
 #endif
   return Type::kSimpleRenderer;
@@ -43,17 +55,25 @@ EditorRender::Type EditorRender::type() const
 
 void EditorRender::setType(const Type type)
 {
-#if SK_ENABLE_SKSL && ENABLE_DEVMODE
+  std::unique_ptr<Renderer> renderer;
+
+#if SK_ENABLE_SKSL
   if (type == Type::kShaderRenderer) {
-    m_renderer = std::make_unique<ShaderRenderer>();
+    renderer = std::make_unique<ShaderRenderer>();
   }
   else
 #endif
   {
-    m_renderer = std::make_unique<SimpleRenderer>();
+    renderer = std::make_unique<SimpleRenderer>();
   }
 
-  m_renderer->setNewBlendMethod(Preferences::instance().experimental.newBlend());
+  renderer->setNewBlendMethod(Preferences::instance().experimental.newBlend());
+  renderer->setComposeGroups(Preferences::instance().experimental.composeGroups());
+
+  if (Preferences::instance().render.tileBasedRenderEngine())
+    m_renderer = std::make_unique<TileBasedRenderer>(std::move(renderer));
+  else
+    m_renderer = std::move(renderer);
 }
 
 void EditorRender::setRefLayersVisiblity(const bool visible)
@@ -79,6 +99,11 @@ void EditorRender::setComposeGroups(const bool composeGroups)
 void EditorRender::setProjection(const render::Projection& projection)
 {
   m_renderer->setProjection(projection);
+}
+
+void EditorRender::setSampling(const os::Sampling& sampling)
+{
+  m_renderer->setSampling(sampling);
 }
 
 void EditorRender::setupBackground(Doc* doc, doc::PixelFormat pixelFormat)
@@ -185,6 +210,17 @@ void EditorRender::disableOnionskin()
   m_renderer->disableOnionskin();
 }
 
+void EditorRender::renderCanvas(Editor* editor,
+                                ui::Graphics* g,
+                                const doc::Sprite* sprite,
+                                const doc::frame_t frame,
+                                const gfx::Rect& dest,
+                                const gfx::Rect& expose,
+                                const bool exposeWithProj)
+{
+  m_renderer->renderCanvas(editor, g, sprite, frame, dest, expose, exposeWithProj);
+}
+
 void EditorRender::renderSprite(os::Surface* dstSurface,
                                 const doc::Sprite* sprite,
                                 doc::frame_t frame,
@@ -200,16 +236,16 @@ void EditorRender::renderCheckeredBackground(os::Surface* dstSurface,
   m_renderer->renderCheckeredBackground(dstSurface, sprite, area);
 }
 
-void EditorRender::renderImage(doc::Image* dst_image,
-                               const doc::Image* src_image,
-                               const doc::Palette* pal,
-                               const int x,
-                               const int y,
-                               const int opacity,
-                               const doc::BlendMode blendMode)
+void EditorRender::invalidateRenderCache(const doc::Sprite* sprite)
 {
-  m_renderer->renderImage(dst_image, src_image, pal, x, y, opacity, blendMode);
+  m_renderer->invalidateRenderCache(sprite);
 }
+
+void EditorRender::invalidateRenderCache(const doc::Sprite* sprite, const gfx::Region& spriteRegion)
+{
+  m_renderer->invalidateRenderCache(sprite, spriteRegion);
+}
+
 // static
 doc::ImageBufferPtr EditorRender::getRenderImageBuffer()
 {

@@ -72,6 +72,9 @@ class Render {
 public:
   Render();
 
+  const BgOptions& bgOptions() const { return m_bg; }
+  const Projection& projection() const { return m_proj; }
+
   void setRefLayersVisiblity(const bool visible);
   void setNonactiveLayersOpacity(const int opacity);
   void setNewBlend(const bool newBlend);

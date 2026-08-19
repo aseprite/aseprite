@@ -10,7 +10,7 @@
 
 #if SK_ENABLE_SKSL
 
-  #include "app/render/renderer.h"
+  #include "app/render/common_renderer.h"
   #include "doc/palette.h"
 
   #include "include/core/SkRefCnt.h"
@@ -26,15 +26,14 @@ namespace app {
 
 // Use SkSL to compose images with Skia shaders on the CPU (with the
 // SkSL VM) or GPU-accelerated (with native OpenGL/Metal/etc. shaders).
-//
-// TODO This is an ongoing effort, not yet ready for production, and
-//      only accessible when ENABLE_DEVMODE is defined.
-class ShaderRenderer : public Renderer {
+class ShaderRenderer : public CommonRenderer {
 public:
   ShaderRenderer();
   ~ShaderRenderer();
 
   const Properties& properties() const override { return m_properties; }
+  const render::BgOptions& bgOptions() const override { return m_bgOptions; }
+  const render::Projection& projection() const override { return m_proj; }
 
   void setRefLayersVisiblity(const bool visible) override;
   void setNonactiveLayersOpacity(const int opacity) override;
@@ -42,6 +41,7 @@ public:
   void setComposeGroups(const bool composeGroups) override;
   void setBgOptions(const render::BgOptions& bg) override;
   void setProjection(const render::Projection& projection) override;
+  void setSampling(const os::Sampling& sampling) override;
 
   void setSelectedLayer(const doc::Layer* layer) override;
   void setPreviewImage(const doc::Layer* layer,
@@ -63,6 +63,14 @@ public:
   void setOnionskin(const render::OnionskinOptions& options) override;
   void disableOnionskin() override;
 
+  void renderCanvas(Editor* editor,
+                    ui::Graphics* g,
+                    const doc::Sprite* sprite,
+                    doc::frame_t frame,
+                    const gfx::Rect& dest,
+                    const gfx::Rect& expose,
+                    bool exposeWithProj) override;
+
   void renderSprite(os::Surface* dstSurface,
                     const doc::Sprite* sprite,
                     const doc::frame_t frame,
@@ -70,13 +78,6 @@ public:
   void renderCheckeredBackground(os::Surface* dstSurface,
                                  const doc::Sprite* sprite,
                                  const gfx::Clip& area) override;
-  void renderImage(doc::Image* dstImage,
-                   const doc::Image* srcImage,
-                   const doc::Palette* pal,
-                   const int x,
-                   const int y,
-                   const int opacity,
-                   const doc::BlendMode blendMode) override;
 
 private:
   void renderPlan(SkCanvas* canvas,
@@ -84,6 +85,11 @@ private:
                   const doc::RenderPlan& plan,
                   const doc::frame_t frame,
                   const gfx::ClipF& area);
+  void drawImage(SkCanvas* canvas,
+                 const doc::Image* srcImage,
+                 const gfx::RectF& bounds,
+                 const int opacity,
+                 const doc::BlendMode blendMode);
   void drawImage(SkCanvas* canvas,
                  const doc::Image* srcImage,
                  const int x,
@@ -97,6 +103,7 @@ private:
   Properties m_properties;
   render::BgOptions m_bgOptions;
   render::Projection m_proj;
+  os::Sampling m_sampling;
   sk_sp<SkRuntimeEffect> m_bgEffect;
   sk_sp<SkRuntimeEffect> m_indexedEffect;
   sk_sp<SkRuntimeEffect> m_grayscaleEffect;
@@ -110,6 +117,14 @@ private:
   const doc::Tileset* m_previewTileset = nullptr;
   gfx::Point m_previewPos;
   doc::BlendMode m_previewBlendMode = doc::BlendMode::NORMAL;
+
+  // TODO create a render::ExtraCel to share this with render::Render
+  const doc::Layer* m_currentLayer = nullptr;
+  doc::frame_t m_currentFrame;
+  render::ExtraType m_extraType;
+  const doc::Cel* m_extraCel = nullptr;
+  const doc::Image* m_extraImage = nullptr;
+  doc::BlendMode m_extraBlendMode;
 
   // Palette of 256 colors (useful for the indexed shader to set all
   // colors outside the valid range as transparent RGBA=0 values)

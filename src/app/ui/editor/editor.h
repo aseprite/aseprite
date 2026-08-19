@@ -110,7 +110,6 @@ public:
   static void destroyEditorSharedInternals();
 
   bool isActive() const { return (m_activeEditor == this); }
-  bool isUsingNewRenderEngine() const;
 
   DocView* getDocView() { return m_docView; }
   void setDocView(DocView* docView) { m_docView = docView; }
@@ -342,6 +341,7 @@ protected:
   void onShowExtrasChange();
 
   // DocObserver impl
+  void onSpritePixelsModified(DocEvent& ev) override;
   void onColorSpaceChanged(DocEvent& ev) override;
   void onExposeSpritePixels(DocEvent& ev) override;
   void onSpritePixelRatioChanged(DocEvent& ev) override;
@@ -423,6 +423,8 @@ private:
   gfx::PointF calculateAutoScrollDelta() const;
   void startAutoScrollTimer();
   void stopAutoScrollTimer();
+
+  bool handleDevModeKeys(const ui::KeyMessage* msg);
 
   // Stack of states. The top element in the stack is the current state (m_state).
   EditorStatesHistory m_statesHistory;
@@ -512,10 +514,6 @@ private:
   // Used to restore scroll when the tiled mode is changed.
   // TODO could we avoid one extra field just to do this?
   gfx::Point m_oldMainTilePos;
-
-#if ENABLE_DEVMODE
-  gfx::Rect m_perfInfoBounds;
-#endif
 
   // For slices
   doc::SelectedObjects m_selectedSlices;

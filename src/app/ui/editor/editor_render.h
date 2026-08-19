@@ -35,6 +35,10 @@ namespace os {
 class Surface;
 }
 
+namespace ui {
+class Graphics;
+}
+
 namespace app {
 class Doc;
 
@@ -48,8 +52,10 @@ public:
   EditorRender();
   ~EditorRender();
 
+  void updateFromPref();
+
   Type type() const;
-  void setType(const Type type);
+  void setType(Type type);
 
   const Renderer::Properties& properties() const { return m_renderer->properties(); }
 
@@ -59,6 +65,7 @@ public:
   void setComposeGroups(bool composeGroups);
 
   void setProjection(const render::Projection& projection);
+  void setSampling(const os::Sampling& sampling);
 
   void setupBackground(Doc* doc, doc::PixelFormat pixelFormat);
   void setTransparentBackground();
@@ -86,6 +93,15 @@ public:
   void setOnionskin(const render::OnionskinOptions& options);
   void disableOnionskin();
 
+  void renderCanvas(Editor* editor,
+                    ui::Graphics* g,
+                    const doc::Sprite* sprite,
+                    doc::frame_t frame,
+                    const gfx::Rect& dest,
+                    const gfx::Rect& expose,
+                    bool exposeWithProj);
+
+  // TODO only required for FullscreenPreviewCommand?
   void renderSprite(os::Surface* dstSurface,
                     const doc::Sprite* sprite,
                     doc::frame_t frame,
@@ -93,13 +109,9 @@ public:
   void renderCheckeredBackground(os::Surface* dstSurface,
                                  const doc::Sprite* sprite,
                                  const gfx::Clip& area);
-  void renderImage(doc::Image* dst_image,
-                   const doc::Image* src_image,
-                   const doc::Palette* pal,
-                   const int x,
-                   const int y,
-                   const int opacity,
-                   const doc::BlendMode blendMode);
+
+  void invalidateRenderCache(const doc::Sprite* sprite);
+  void invalidateRenderCache(const doc::Sprite* sprite, const gfx::Region& spriteRegion);
 
   static doc::ImageBufferPtr getRenderImageBuffer();
 
