@@ -390,6 +390,19 @@ class OptionsWindow : public app::gen::Options {
     std::string m_themeId;
   };
 
+  class ThemeVariantComboItem : public ListItem {
+  public:
+    ThemeVariantComboItem(const std::string& id, const std::string& variant) : m_themeId(id)
+    {
+      setText(variant);
+    }
+
+    const std::string& themeId() { return m_themeId; }
+
+  private:
+    std::string m_themeId;
+  };
+
 public:
   OptionsWindow(Context* context, int& curSection)
     : m_system(os::System::instance())
@@ -1239,40 +1252,46 @@ private:
 
   void fillThemeVariants()
   {
-    ButtonSet* list = nullptr;
-    for (Extension* ext : App::instance()->extensions()) {
+    if (themeVariants()->children().size() > 1) {
+      auto* prev = themeVariants()->lastChild();
+      themeVariants()->removeChild(prev);
+      prev->deferDelete();
+    }
+
+    size_t count = 0;
+    for (const auto* ext : App::instance()->extensions()) {
       if (ext->isCurrentTheme()) {
-        // Number of variants
-        int c = 0;
-        for (auto it : ext->themes()) {
-          if (!it.second.variant.empty())
-            ++c;
-        }
+        count = ext->themes().size();
+        if (count < 2)
+          break; // No variants
 
-        if (c >= 2) {
-          list = new ButtonSet(c);
-          for (auto it : ext->themes()) {
-            if (!it.second.variant.empty()) {
-              auto item = list->addItem(new ThemeVariantItem(this, it.first, it.second.variant));
-
-              if (it.first == Preferences::instance().theme.selected())
-                list->setSelectedItem(item, false);
-            }
+        if (count > 3) {
+          auto* dropdown = new ComboBox();
+          for (const auto& [id, info] : ext->themes()) {
+            const auto index = dropdown->addItem(new ThemeVariantComboItem(id, info.variant));
+            if (id == Preferences::instance().theme.selected())
+              dropdown->setSelectedItemIndex(index);
           }
+          dropdown->Change.connect([this, dropdown] {
+            auto* item = static_cast<ThemeVariantComboItem*>(dropdown->getSelectedItem());
+            setUITheme(item->themeId(), false, false);
+          });
+          themeVariants()->addChild(dropdown);
+        }
+        else {
+          auto* switcher = new ButtonSet(count);
+          for (const auto& [id, info] : ext->themes()) {
+            auto* item = switcher->addItem(new ThemeVariantItem(this, id, info.variant));
+            if (id == Preferences::instance().theme.selected())
+              switcher->setSelectedItem(item, false);
+          }
+          themeVariants()->addChild(switcher);
         }
         break;
       }
     }
-    if (list) {
-      themeVariants()->addChild(list);
-    }
-    if (m_themeVars) {
-      themeVariants()->removeChild(m_themeVars);
-      m_themeVars->deferDelete();
-    }
-    m_themeVars = list;
-    themeModeLabel()->setBuddy(m_themeVars);
-    themeVariants()->setVisible(list ? true : false);
+    themeModeLabel()->setBuddy(themeVariants()->lastChild());
+    themeVariants()->setVisible(count >= 2);
     themeVariants()->initTheme();
   }
 
@@ -2554,7 +2573,6 @@ private:
   std::string m_templateTextForDisplayCS;
   RgbMapAlgorithmSelector m_rgbmapAlgorithmSelector;
   BestFitCriteriaSelector m_bestFitCriteriaSelector;
-  ButtonSet* m_themeVars = nullptr;
   SamplingSelector* m_samplingSelector = nullptr;
   text::FontRef m_font;
   text::FontRef m_miniFont;
