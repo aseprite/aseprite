@@ -571,6 +571,7 @@ target_sources(app-lib PRIVATE
   modules/palettes.cpp
   pref/preferences.cpp
   recent_files.cpp
+  render/render_tile.cpp
   render/shader_renderer.cpp
   render/simple_renderer.cpp
   res/palettes_loader_delegate.cpp
@@ -638,7 +639,6 @@ target_sources(app-lib PRIVATE
   ui/editor/pivot_helpers.cpp
   ui/editor/pixels_movement.cpp
   ui/editor/play_state.cpp
-  ui/editor/render_tile.cpp
   ui/editor/scrolling_state.cpp
   ui/editor/select_box_state.cpp
   ui/editor/select_text_box_state.cpp
