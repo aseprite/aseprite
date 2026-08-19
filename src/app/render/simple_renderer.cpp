@@ -162,15 +162,4 @@ void SimpleRenderer::renderCheckeredBackground(os::Surface* dstSurface,
                            area.size.h);
 }
 
-void SimpleRenderer::renderImage(doc::Image* dstImage,
-                                 const doc::Image* srcImage,
-                                 const doc::Palette* pal,
-                                 const int x,
-                                 const int y,
-                                 const int opacity,
-                                 const doc::BlendMode blendMode)
-{
-  m_render.renderImage(dstImage, srcImage, pal, x, y, opacity, blendMode);
-}
-
 } // namespace app
