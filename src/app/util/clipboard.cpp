@@ -289,6 +289,9 @@ bool Clipboard::copyFromDocument(const Site& site, bool merged)
   if (!image)
     return false;
 
+  if (image->pixelFormat() == IMAGE_INDEXED && site.layer() && site.layer()->isBackground())
+    image->setMaskColor(-1);
+
   setData(image,
           (mask ? new Mask(*mask) : nullptr),
           (pal ? new Palette(*pal) : nullptr),

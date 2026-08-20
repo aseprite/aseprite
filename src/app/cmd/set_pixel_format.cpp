@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -96,6 +96,17 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
   }
 
   SuperDelegate superDel(nimages, delegate);
+
+  if (sprite->pixelFormat() == IMAGE_INDEXED) {
+    // If an indexed sprite has a background layer (which only supports
+    // opaque colors), set the image's maskColor on all background cels
+    // to a value outside the valid index range (0-255). This prevents
+    // RGB/grayscale conversion from treating any index as transparent.
+    const int maskIndex = (sprite->backgroundLayer() ? -1 : sprite->transparentColor());
+    for (Cel* cel : sprite->uniqueCels())
+      if (cel->layer()->isBackground())
+        cel->image()->setMaskColor(maskIndex);
+  }
 
   // Convert cel images
   for (Cel* cel : sprite->uniqueCels()) {
