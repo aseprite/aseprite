@@ -37,6 +37,9 @@
 #include "ui/base.h"
 #include "ui/cursor_type.h"
 #include "ui/mouse_button.h"
+#if ENABLE_FFI
+#include <cffi.h>
+#endif
 
 #include <fstream>
 #include <sstream>
@@ -528,6 +531,11 @@ Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(fa
   register_version_class(L);
 #if ENABLE_WEBSOCKET
   register_websocket_class(L);
+#endif
+
+  // Register FFI module
+#if ENABLE_FFI
+  register_ffi_object(L);
 #endif
 
   // Check that we have a clean start (without dirty in the stack)
