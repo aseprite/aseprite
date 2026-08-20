@@ -402,23 +402,23 @@
           </hbox>
 
           <grid columns="5">
-            <label text="@.grid_x" for="grid_x" />
+            <label text="@.grid_x" id="grid_x_label" for="grid_x" />
             <expr id="grid_x" text="" />
-            <label text="@.grid_y" for="grid_y" />
+            <label text="@.grid_y" id="grid_y_label" for="grid_y" />
             <expr id="grid_y" text="" />
             <hbox />
 
-            <label text="@.grid_width" for="grid_w" />
+            <label text="@.grid_width" id="grid_w_label" for="grid_w" />
             <expr id="grid_w" text="" />
-            <label text="@.grid_height" for="grid_h" />
+            <label text="@.grid_height" id="grid_h_label" for="grid_h" />
             <expr id="grid_h" text="" />
             <hbox />
 
-            <label text="@.grid_color" for="grid_color" />
+            <label text="@.grid_color" id="grid_color_label" for="grid_color" />
             <colorpicker id="grid_color" rgba="true" cell_hspan="3" />
             <hbox />
 
-            <label text="@.grid_opacity" for="grid_opacity_row" />
+            <label text="@.grid_opacity" id="grid_opacity_label" for="grid_opacity_row" />
             <hbox id="grid_opacity_row" cell_hspan="3">
               <slider id="grid_opacity" min="1" max="255" width="128" />
               <check id="grid_auto_opacity" text="@.grid_auto" />
@@ -430,10 +430,10 @@
             <separator horizontal="true" expansive="true" />
           </hbox>
           <grid columns="2">
-            <label text="@.grid_color" for="pixel_grid_color" />
+            <label text="@.grid_color" id="pixel_grid_color_label" for="pixel_grid_color" />
             <colorpicker id="pixel_grid_color" rgba="true" />
 
-            <label text="@.grid_opacity" for="pixel_grid_opacity_row" />
+            <label text="@.grid_opacity" id="pixel_grid_opacity_label" for="pixel_grid_opacity_row" />
             <hbox id="pixel_grid_opacity_row">
               <slider id="pixel_grid_opacity" min="1" max="255" width="128" />
               <check id="pixel_grid_auto_opacity" text="@.grid_auto" />
