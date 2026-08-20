@@ -426,6 +426,30 @@
           </grid>
 
           <hbox>
+            <check id="grid_subdivisions_visible" text="@.grid_subdivisions_visible" />
+            <separator horizontal="true" expansive="true" />
+          </hbox>
+          <grid columns="5">
+            <label text="@.grid_subdivisions_x" for="grid_subdivisions_x" />
+            <expr id="grid_subdivisions_x" text="" />
+            <label text="@.grid_subdivisions_y" for="grid_subdivisions_y" />
+            <expr id="grid_subdivisions_y" text="" />
+            <hbox />
+
+            <label text="@.grid_color" for="grid_subdivisions_color" />
+            <colorpicker id="grid_subdivisions_color" rgba="true" cell_hspan="3" />
+            <hbox />
+
+            <label text="@.grid_opacity" for="grid_subdivisions_opacity" />
+            <slider id="grid_subdivisions_opacity" cell_hspan="3" min="1" max="255" width="128" />
+            <check id="grid_subdivisions_auto_opacity" text="@.grid_auto" />
+
+            <label text="" />
+            <check id="grid_subdivisions_dashed" text="@.grid_subdivisions_dashed" cell_hspan="3" />
+            <hbox />
+          </grid>
+
+          <hbox>
             <check id="pixel_grid_visible" text="@.grid_pixel_grid_visible" />
             <separator horizontal="true" expansive="true" />
           </hbox>
