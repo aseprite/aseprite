@@ -348,6 +348,7 @@ target_sources(app-lib PRIVATE
   cmd/set_tileset_base_index.cpp
   cmd/set_tileset_match_flags.cpp
   cmd/set_tileset_name.cpp
+  cmd/toggle_all_layers.cpp
   cmd/set_total_frames.cpp
   cmd/set_transparent_color.cpp
   cmd/set_user_data.cpp
@@ -487,6 +488,7 @@ target_sources(app-lib PRIVATE
   commands/cmd_symmetry_mode.cpp
   commands/cmd_tiled_mode.cpp
   commands/cmd_timeline.cpp
+  commands/cmd_toggle_all_layers.cpp
   commands/cmd_toggle_preview.cpp
   commands/cmd_toggle_tiles_mode.cpp
   commands/cmd_toggle_timeline_thumbnails.cpp
