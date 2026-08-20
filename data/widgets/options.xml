@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2026  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-present  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <window id="options" text="@.title" help="preferences">
@@ -341,6 +341,15 @@
 
             <label text="@.brush_preview" for="brush_preview" />
             <combobox id="brush_preview">
+              <listitem text="@.brush_preview_none" value="0" />
+              <listitem text="@.brush_preview_edges" value="1" />
+              <listitem text="@.brush_preview_full" value="2" />
+              <listitem text="@.brush_preview_fullall" value="3" />
+              <listitem text="@.brush_preview_fullnedges" value="4" />
+            </combobox>
+
+            <label text="@.tile_preview" for="tile_preview" />
+            <combobox id="tile_preview">
               <listitem text="@.brush_preview_none" value="0" />
               <listitem text="@.brush_preview_edges" value="1" />
               <listitem text="@.brush_preview_full" value="2" />
