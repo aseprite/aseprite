@@ -486,6 +486,7 @@ target_sources(app-lib PRIVATE
   commands/cmd_symmetry_mode.cpp
   commands/cmd_tiled_mode.cpp
   commands/cmd_timeline.cpp
+  commands/cmd_toggle_connectivity.cpp
   commands/cmd_toggle_preview.cpp
   commands/cmd_toggle_tiles_mode.cpp
   commands/cmd_toggle_timeline_thumbnails.cpp
