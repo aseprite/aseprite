@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,7 +22,7 @@
 #include "app/pref/preferences.h"
 #include "app/util/autocrop.h"
 #include "base/file_handle.h"
-#include "base/fs.h"
+#include "base/file_size.h"
 #include "doc/doc.h"
 #include "doc/octree_map.h"
 #include "gfx/clip.h"

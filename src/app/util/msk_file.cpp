@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,7 +12,7 @@
 #include "app/util/pic_file.h"
 #include "base/cfile.h"
 #include "base/file_handle.h"
-#include "base/fs.h"
+#include "base/file_size.h"
 #include "doc/image.h"
 #include "doc/mask.h"
 

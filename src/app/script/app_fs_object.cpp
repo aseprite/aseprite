@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,6 +12,7 @@
 #include "app/resource_finder.h"
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
+#include "base/file_size.h"
 #include "base/fs.h"
 
 namespace app { namespace script {
