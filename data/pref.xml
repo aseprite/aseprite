@@ -102,6 +102,7 @@
     <enum id="PaintingCursorType">
       <value id="SIMPLE_CROSSHAIR" value="0" />
       <value id="CROSSHAIR_ON_SPRITE" value="1" />
+      <value id="CROSSHAIR_ON_SPRITE_WITHOUT_UI_SCALE" value="2" />
     </enum>
     <enum id="TimelinePosition">
       <value id="BOTTOM" value="0" />

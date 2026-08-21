@@ -337,6 +337,7 @@
             <combobox id="painting_cursor_type">
               <listitem text="@.simple_crosshair" value="0" />
               <listitem text="@.crosshair_on_sprite" value="1" />
+              <listitem text="@.crosshair_on_sprite_without_ui_scale" value="2" />
             </combobox>
 
             <label text="@.brush_preview" for="brush_preview" />

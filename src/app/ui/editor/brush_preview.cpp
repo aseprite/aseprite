@@ -45,6 +45,7 @@
 #include "render/render.h"
 #include "ui/layer.h"
 #include "ui/manager.h"
+#include "ui/scale.h"
 #include "ui/system.h"
 
 #include <array>
@@ -679,12 +680,16 @@ void BrushPreview::createCrosshairCursor(ui::Graphics* g, const gfx::Color curso
 {
   ASSERT(!(m_type & NATIVE_CROSSHAIR));
 
+  const bool withUIScale = (Preferences::instance().cursor.paintingCursorType() ==
+                            gen::PaintingCursorType::CROSSHAIR_ON_SPRITE);
+  const int uiScale = (withUIScale ? ui::guiscale() : 1);
+
   gfx::Rect cursorBounds;
   gfx::Point cursorCenter;
 
   // Depending on the editor zoom, maybe we need subpixel movement (a
   // little dot inside the active pixel)
-  const bool requireLittleCenterDot = (m_editor->zoom().scale() >= 4.0);
+  const bool requireLittleCenterDot = (m_editor->zoom().scale() >= 4.0 * uiScale);
 
   if (m_type & CROSSHAIR) {
     // Regular crosshair of 7x7
@@ -704,7 +709,7 @@ void BrushPreview::createCrosshairCursor(ui::Graphics* g, const gfx::Color curso
   }
 
   os::Window* window = m_editor->display()->nativeWindow();
-  const int scale = window->scale();
+  const int scale = window->scale() * uiScale;
   os::CursorRef cursor = nullptr;
 
   // Invalidate the entire cache if the scale has changed
@@ -723,7 +728,8 @@ void BrushPreview::createCrosshairCursor(ui::Graphics* g, const gfx::Color curso
       for (int v = 0; v < 7; v++) {
         for (int u = 0; u < 7; u++) {
           if (g_crosshair_pattern[v * 7 + u]) {
-            color_t c = g->getPixel(m_screenPosition.x - 3 + u, m_screenPosition.y - 3 + v);
+            color_t c = g->getPixel(m_screenPosition.x + uiScale * (u - 3),
+                                    m_screenPosition.y + uiScale * (v - 3));
             c = color_utils::blackandwhite_neg(c);
             if (rgba_getr(c) == 255) { // White
               k |= (1 << bit);
