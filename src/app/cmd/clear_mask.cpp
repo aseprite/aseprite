@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -40,7 +40,6 @@ ClearMask::ClearMask(Cel* cel) : WithCel(cel)
   }
 
   Image* image = cel->image();
-  assert(image);
   if (!image)
     return;
 
@@ -49,7 +48,7 @@ ClearMask::ClearMask(Cel* cel) : WithCel(cel)
   gfx::Rect maskBounds;
   if (image->pixelFormat() == IMAGE_TILEMAP) {
     auto grid = cel->grid();
-    imageBounds = gfx::Rect(grid.canvasToTile(cel->position()), cel->image()->size());
+    imageBounds = gfx::Rect(grid.canvasToTile(cel->position()), image->size());
     maskBounds = grid.canvasToTile(mask->bounds());
     m_bgcolor = doc::notile; // TODO configurable empty tile
   }
@@ -93,6 +92,9 @@ void ClearMask::clear()
     return;
 
   Cel* cel = this->cel();
+  if (!cel->image())
+    return;
+
   Doc* doc = static_cast<Doc*>(cel->document());
   Mask* mask = doc->mask();
 

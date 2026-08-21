@@ -565,7 +565,7 @@ private:
           continue;
 
         for (Cel* cel : spr->uniqueCels()) {
-          if (cel->image()->pixelFormat() == IMAGE_TILEMAP &&
+          if (cel->image() && cel->image()->pixelFormat() == IMAGE_TILEMAP &&
               static_cast<LayerTilemap*>(cel->layer())->tileset() == tileset) {
             doc::fix_old_tilemap(cel->image(), tileset, tile_i_mask, tile_f_mask);
           }

@@ -1326,6 +1326,9 @@ void Editor::drawTileNumbers(ui::Graphics* g, const Cel* cel)
     int ti_offset = static_cast<LayerTilemap*>(cel->layer())->tileset()->baseIndex() - 1;
 
     const doc::Image* image = cel->image();
+    if (!image)
+      return;
+
     std::string text;
     for (int y = 0; y < image->height(); ++y) {
       for (int x = 0; x < image->width(); ++x) {

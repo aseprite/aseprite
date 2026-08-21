@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -74,7 +74,7 @@ void CopyCel::onExecute()
   while (dstSprite->totalFrames() <= m_dstFrame)
     executeAndAdd(new cmd::AddFrame(dstSprite, dstSprite->totalFrames()));
 
-  Image* srcImage = (srcCel ? srcCel->image() : NULL);
+  Image* srcImage = (srcCel ? srcCel->image() : nullptr);
   ImageRef dstImage;
   dstCel = dstLayer->cel(m_dstFrame);
   if (dstCel)
@@ -85,7 +85,6 @@ void CopyCel::onExecute()
   // For background layer
   if (dstLayer->isBackground()) {
     ASSERT(dstCel);
-    ASSERT(dstImage);
     if (!dstCel || !dstImage || !srcCel || !srcImage)
       return;
 

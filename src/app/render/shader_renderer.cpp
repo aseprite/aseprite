@@ -266,11 +266,13 @@ void ShaderRenderer::renderPlan(SkCanvas* canvas,
               celBounds = cel->bounds();
           }
 
-          int t;
-          int opacity = cel->opacity();
-          opacity = MUL_UN8(opacity, imgLayer->opacity(), t);
+          if (celImage) {
+            int t;
+            int opacity = cel->opacity();
+            opacity = MUL_UN8(opacity, imgLayer->opacity(), t);
 
-          drawImage(canvas, celImage, celBounds.x, celBounds.y, opacity, imgLayer->blendMode());
+            drawImage(canvas, celImage, celBounds.x, celBounds.y, opacity, imgLayer->blendMode());
+          }
         }
         break;
       }
@@ -318,31 +320,33 @@ void ShaderRenderer::renderPlan(SkCanvas* canvas,
         if (tilesToDraw.h < 1)
           tilesToDraw.h = 1;
 
-        tilesToDraw &= celImage->bounds();
+        if (celImage) {
+          tilesToDraw &= celImage->bounds();
 
-        for (int v = tilesToDraw.y; v < tilesToDraw.y2(); ++v) {
-          for (int u = tilesToDraw.x; u < tilesToDraw.x2(); ++u) {
-            auto tileBoundsOnCanvas = grid.tileToCanvas(gfx::Rect(u, v, 1, 1));
-            if (!celImage->bounds().contains(u, v))
-              continue;
-
-            const tile_t t = celImage->getPixel(u, v);
-            if (t != doc::notile) {
-              const tile_index i = tile_geti(t);
-              const ImageRef tileImage = tileset->get(i);
-              if (!tileImage)
+          for (int v = tilesToDraw.y; v < tilesToDraw.y2(); ++v) {
+            for (int u = tilesToDraw.x; u < tilesToDraw.x2(); ++u) {
+              auto tileBoundsOnCanvas = grid.tileToCanvas(gfx::Rect(u, v, 1, 1));
+              if (!celImage->bounds().contains(u, v))
                 continue;
 
-              int t;
-              int opacity = cel->opacity();
-              opacity = MUL_UN8(opacity, tilemapLayer->opacity(), t);
+              const tile_t t = celImage->getPixel(u, v);
+              if (t != doc::notile) {
+                const tile_index i = tile_geti(t);
+                const ImageRef tileImage = tileset->get(i);
+                if (!tileImage)
+                  continue;
 
-              drawImage(canvas,
-                        tileImage.get(),
-                        tileBoundsOnCanvas.x,
-                        tileBoundsOnCanvas.y,
-                        opacity,
-                        tilemapLayer->blendMode());
+                int t;
+                int opacity = cel->opacity();
+                opacity = MUL_UN8(opacity, tilemapLayer->opacity(), t);
+
+                drawImage(canvas,
+                          tileImage.get(),
+                          tileBoundsOnCanvas.x,
+                          tileBoundsOnCanvas.y,
+                          opacity,
+                          tilemapLayer->blendMode());
+              }
             }
           }
         }
