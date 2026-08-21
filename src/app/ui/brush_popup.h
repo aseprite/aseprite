@@ -24,7 +24,10 @@ public:
   void regenerate(ui::Display* display, const gfx::Point& pos);
 
   static os::SurfaceRef createSurfaceForBrush(const doc::BrushRef& brush,
-                                              const bool useOriginalImage = false);
+                                              int maxSize,
+                                              bool useOriginalImage = false);
+
+  static os::SurfaceRef createSurfaceForPattern(const doc::PatternRef& pattern, int maxSize);
 
 private:
   void onStandardBrush();
@@ -32,6 +35,7 @@ private:
 
   ui::VBox m_box;
   ButtonSet m_standardBrushes;
+  ButtonSet m_brushPatterns;
   ButtonSet* m_customBrushes;
 };
 

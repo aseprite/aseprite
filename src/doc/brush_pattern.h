@@ -9,7 +9,15 @@
 #define DOC_BRUSH_PATTERN_H_INCLUDED
 #pragma once
 
+#include "doc/image_ref.h"
+
+#include <memory>
+#include <vector>
+
 namespace doc {
+
+class Pattern;
+using PatternRef = std::shared_ptr<Pattern>;
 
 enum class BrushPattern {
   ALIGNED_TO_SRC = 0,
@@ -19,6 +27,16 @@ enum class BrushPattern {
   DEFAULT = ALIGNED_TO_SRC, // Default for preferences
   DEFAULT_FOR_UI = ALIGNED_TO_SRC,
   DEFAULT_FOR_SCRIPTS = PAINT_BRUSH,
+};
+
+class Pattern {
+public:
+  Pattern(std::vector<uint8_t> bits, int width, int height);
+
+  doc::ImageRef image() const { return m_image; }
+
+private:
+  doc::ImageRef m_image = nullptr;
 };
 
 } // namespace doc
