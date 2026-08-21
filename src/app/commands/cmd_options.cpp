@@ -749,6 +749,7 @@ public:
 
     // Brush preview
     brushPreview()->setSelectedItemIndex((int)m_pref.cursor.brushPreview());
+    tilePreview()->setSelectedItemIndex((int)m_pref.cursor.tilePreview());
 
     // Guide colors
     layerEdgesColor()->setColor(m_pref.guides.layerEdgesColor());
@@ -938,6 +939,8 @@ public:
     m_pref.cursor.cursorColor(cursorColor()->getColor());
     m_pref.cursor.brushPreview(
       static_cast<app::gen::BrushPreview>(brushPreview()->getSelectedItemIndex()));
+    m_pref.cursor.tilePreview(
+      static_cast<app::gen::BrushPreview>(tilePreview()->getSelectedItemIndex()));
     m_pref.cursor.useNativeCursor(nativeCursor()->isSelected());
     m_pref.cursor.cursorScale(base::convert_to<int>(cursorScale()->getValue()));
     m_pref.guides.layerEdgesColor(layerEdgesColor()->getColor());

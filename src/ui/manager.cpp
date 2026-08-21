@@ -2345,7 +2345,7 @@ void Manager::broadcastKeyMsg(Message* msg)
     msg->setRecipient(capture_widget);
   }
   // Send the msg to the focused widget
-  else if (focus_widget) {
+  else if (focus_widget && focus_widget->isVisible()) {
     msg->setRecipient(focus_widget);
   }
   // Finally, send the message to the manager, it'll know what to do

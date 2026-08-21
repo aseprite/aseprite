@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -89,10 +89,6 @@ public:
 private:
   doc::BrushRef getCurrentBrush();
   static doc::color_t getBrushColor(doc::Sprite* sprite, doc::Layer* layer);
-
-  // Offset re-calculation of brush boundaries only for TilemapMode::Tiles.
-  // Used within 'generateBoundaries' function.
-  void calculateTileBoundariesOrigin(const doc::Grid& grid, const gfx::Point& spritePos);
 
   bool createUILayer(const gfx::Rect& brushBounds);
   void createBoundaries(const Site& site, const gfx::Point& spritePos);
