@@ -176,6 +176,8 @@ public:
 
   void drawEntryCaret(ui::Graphics* g, ui::Entry* widget, int x, int y);
 
+  std::pair<int, int> readPreferredScaling(const std::string& themeId);
+
 protected:
   void onRegenerateTheme() override;
 
