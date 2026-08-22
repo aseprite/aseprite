@@ -27,14 +27,20 @@ public:
   // TODO probably this collection should be in another kind of class.
   base::paths& pinnedFonts() { return m_paths[kPinnedFonts]; }
 
-  RecentFiles(const int limit);
+  explicit RecentFiles(int limit);
   ~RecentFiles();
 
   void addRecentFile(const std::string& filename);
+  void addPinnedFile(const std::string& filename);
   void removeRecentFile(const std::string& filename);
+  void removePinnedFile(const std::string& filename);
   void removeRecentFolder(const std::string& dir);
-  void setLimit(const int newLimit);
+  void setLimit(int newLimit);
   void clear();
+  void clearFolders();
+
+  void pinFolder(const std::string& dir);
+  void unpinFolder(const std::string& dir);
 
   void setFiles(const base::paths& pinnedFiles, const base::paths& recentFiles);
   void setFolders(const base::paths& pinnedFolders, const base::paths& recentFolders);

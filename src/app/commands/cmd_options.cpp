@@ -2162,15 +2162,8 @@ private:
       if (themeName != m_pref.theme.selected()) {
         auto theme = skin::SkinTheme::get(this);
 
-        // Change theme name from preferences
-        m_pref.theme.selected(themeName);
-
-        // Change the UI theme
-        ui::set_theme(theme, m_pref.general.uiScale());
-
-        // Ask for new scaling
-        const int newUIScale = theme->preferredUIScaling();
-        const int newScreenScale = theme->preferredScreenScaling();
+        // Read new scaling
+        const auto [newUIScale, newScreenScale] = theme->readPreferredScaling(themeName);
 
         if (updateScaling &&
             ((newUIScale > 0 && m_pref.general.uiScale() != newUIScale) ||
@@ -2184,22 +2177,43 @@ private:
               100 * m_pref.general.uiScale(),
               100 * (newUIScale > 0 ? newUIScale : m_pref.general.uiScale())));
 
-          if (result == 1) {
-            // Preferred UI Scaling factor
-            if (newUIScale > 0 && newUIScale != m_pref.general.uiScale()) {
-              m_pref.general.uiScale(newUIScale);
-              ui::set_theme(theme, m_pref.general.uiScale());
-            }
+          switch (result) {
+            case 1: {
+              // Preferred UI Scaling factor
+              if (newUIScale > 0 && newUIScale != m_pref.general.uiScale()) {
+                m_pref.general.uiScale(newUIScale);
+              }
 
-            // Preferred Screen Scaling
-            if (newScreenScale > 0 && newScreenScale != m_pref.general.screenScale()) {
-              m_pref.general.screenScale(newScreenScale);
-              updateScreenScaling();
-            }
+              // Preferred Screen Scaling
+              if (newScreenScale > 0 && newScreenScale != m_pref.general.screenScale()) {
+                m_pref.general.screenScale(newScreenScale);
+              }
 
-            selectScalingItems();
+              selectScalingItems();
+              break;
+            }
+            case 3:  return;
+            default: break;
           }
         }
+
+        m_pref.theme.selected(themeName);
+
+        ui::set_theme(theme, m_pref.general.uiScale());
+
+        ui::execute_now_or_enqueue([this] {
+          updateScreenScaling();
+          fillThemeFonts();
+          updateFontPreviews();
+
+          // Force to recalculate all sizes
+          setBounds(gfx::Rect(0, 0, 0, 0));
+
+          remapWindow();
+          centerWindow();
+
+          manager()->invalidate();
+        });
 
         if (recreateVariantsFields)
           fillThemeVariants();

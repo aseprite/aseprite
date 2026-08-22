@@ -169,7 +169,7 @@ private:
 
 class MenuSeparator : public Separator {
 public:
-  MenuSeparator() : Separator("", HORIZONTAL) {}
+  MenuSeparator(const std::string& text = "") : Separator(text, HORIZONTAL) {}
 };
 
 class MenuBoxWindow : public Window {

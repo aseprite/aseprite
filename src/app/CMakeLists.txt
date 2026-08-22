@@ -670,6 +670,7 @@ target_sources(app-lib PRIVATE
   ui/home_view.cpp
   ui/icon_button.cpp
   ui/incompat_file_window.cpp
+  ui/inline_search.cpp
   ui/input_chain.cpp
   ui/key.cpp
   ui/keyboard_shortcuts.cpp
@@ -689,7 +690,7 @@ target_sources(app-lib PRIVATE
   ui/popup_window_pin.cpp
   ui/pref_widget.cpp
   ui/preview_editor.cpp
-  ui/recent_listbox.cpp
+  ui/recent_grid.cpp
   ui/resources_listbox.cpp
   ui/rgbmap_algorithm_selector.cpp
   ui/sampling_selector.cpp

@@ -61,10 +61,7 @@ Grid::Grid(int columns, bool same_width_columns)
 
 Grid::~Grid()
 {
-  // Delete all cells.
-  for (std::size_t row = 0; row < m_cells.size(); ++row)
-    for (std::size_t col = 0; col < m_cells[row].size(); ++col)
-      delete m_cells[row][col];
+  clear();
 }
 
 /**
@@ -242,6 +239,17 @@ void Grid::onSizeHint(SizeHintEvent& ev)
   sz.h += border().height();
 
   ev.setSizeHint(sz);
+}
+
+void Grid::clear()
+{
+  for (std::size_t row = 0; row < m_cells.size(); ++row)
+    for (std::size_t col = 0; col < m_cells[row].size(); ++col)
+      delete m_cells[row][col];
+
+  m_colstrip.clear();
+  m_rowstrip.clear();
+  m_cells.clear();
 }
 
 void Grid::sumStripSize(const std::vector<Strip>& strip, int& size)

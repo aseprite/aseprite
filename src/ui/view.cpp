@@ -246,9 +246,11 @@ bool View::onProcessMessage(Message* msg)
 
 void View::onInitTheme(InitThemeEvent& ev)
 {
-  m_viewport.initTheme();
-  m_scrollbar_h.initTheme();
-  m_scrollbar_v.initTheme();
+  if (!m_scrollbar_h.parent())
+    m_scrollbar_h.initTheme();
+
+  if (!m_scrollbar_h.parent())
+    m_scrollbar_h.initTheme();
 
   Widget::onInitTheme(ev);
 }

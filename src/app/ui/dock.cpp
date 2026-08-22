@@ -452,12 +452,6 @@ void Dock::onInitTheme(ui::InitThemeEvent& ev)
   Widget::onInitTheme(ev);
   setBorder(gfx::Border(0));
   setChildSpacing(4 * ui::guiscale());
-
-  for (int i = 0; i < kSides; ++i) {
-    Widget* widget = m_sides[i];
-    if (widget)
-      widget->initTheme();
-  }
 }
 
 bool Dock::onProcessMessage(ui::Message* msg)

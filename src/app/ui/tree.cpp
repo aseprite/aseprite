@@ -6,7 +6,6 @@
 
 #include "app/ui/tree.h"
 
-#include "base/time.h"
 #include "skin/skin_theme.h"
 #include "text/font_metrics.h"
 #include "ui/paint_event.h"
@@ -122,7 +121,7 @@ TreeNode* TreeNode::prevInTree() const
   return nullptr;
 }
 
-Tree::Tree() : Widget(kTreeWidget), m_root(nullptr), m_selected(nullptr), m_lastCharTick(0)
+Tree::Tree() : Widget(kTreeWidget), m_root(nullptr), m_selected(nullptr)
 {
   enableFlags(CTRL_RIGHT_CLICK);
   setFocusStop(true);
@@ -428,20 +427,12 @@ bool Tree::onKeyDown(const KeyMessage* keyMsg)
   }
 
   // Text filtering
-  if (!keyMsg->isDeadKey() && keyMsg->unicodeChar() >= 32) {
-    const bool inTime = (base::current_tick() - m_lastCharTick) < 1500;
-    if (!inTime) {
-      m_findString.clear();
-      m_lastCharTick = base::current_tick();
-    }
-
-    m_findString += base::string_to_lower(base::codepoint_to_utf8(keyMsg->unicodeChar()));
-
+  if (m_inline.search(keyMsg)) {
     TreeNode* start = root();
     if (m_selected)
-      start = inTime ? m_selected : m_selected->nextInTree();
+      start = m_inline.wasInTime() ? m_selected : m_selected->nextInTree();
     for (TreeNode* node = start; node; node = node->nextInTree()) {
-      if (!node->text().empty() && base::string_to_lower(node->text()).find(m_findString) == 0) {
+      if (!node->text().empty() && m_inline.match(node->text())) {
         setSelected(node, true);
         return true;
       }

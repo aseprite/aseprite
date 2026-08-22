@@ -17,22 +17,15 @@
 
 #include "home_view.xml.h"
 
-#include <memory>
-
 namespace ui {
 class View;
-}
+class Menu;
+} // namespace ui
 
 namespace app {
 
-class DataRecoveryView;
 class NewsListBox;
-class RecentFilesListBox;
-class RecentFoldersListBox;
-
-namespace crash {
-class DataRecovery;
-}
+class RecentGrid;
 
 class HomeView : public app::gen::HomeView,
                  public TabView,
@@ -45,13 +38,6 @@ class HomeView : public app::gen::HomeView,
 {
 public:
   HomeView();
-  ~HomeView();
-
-  // When crash::DataRecovery finish to search for sessions, this
-  // function is called.
-  void dataRecoverySessionsAreReady();
-
-  void closeDataRecoveryView();
 
 #if ENABLE_SENTRY
   void updateConsentCheckbox();
@@ -65,7 +51,6 @@ public:
   // WorkspaceView implementation
   ui::Widget* getContentWidget() override { return this; }
   bool onCloseView(Workspace* workspace, bool quitting) override;
-  void onAfterRemoveView(Workspace* workspace) override;
   void onTabPopup(Workspace* workspace) override;
   void onWorkspaceViewSelected() override;
   InputChainElement* onGetInputChainElement() override { return this; }
@@ -83,24 +68,28 @@ public:
   void onCancel(Context* ctx) override;
 
 protected:
-  void onResize(ui::ResizeEvent& ev) override;
+#ifdef ENABLE_NEWS
+  void setShowNews(bool showNews);
+#endif
 #ifdef ENABLE_UPDATER
   // CheckUpdateDelegate impl
   void onCheckingUpdates() override;
   void onUpToDate() override;
   void onNewUpdate(const std::string& url, const std::string& version) override;
 #endif
+  void buildRecentList(ui::Menu* menu, const base::paths& list, bool pinned) const;
+  void onRecentFolders() const;
 
 private:
   void onNewFile();
   void onOpenFile();
   void onRecoverSprites();
 
-  RecentFilesListBox* m_files;
-  RecentFoldersListBox* m_folders;
+  bool m_showNews;
+  obs::scoped_connection m_recentFilesConn;
+
+  RecentGrid* m_recents;
   NewsListBox* m_news;
-  crash::DataRecovery* m_dataRecovery;
-  std::unique_ptr<DataRecoveryView> m_dataRecoveryView;
 };
 
 } // namespace app

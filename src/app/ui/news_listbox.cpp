@@ -142,8 +142,6 @@ std::string parse_html(const std::string& str)
   return result;
 }
 
-} // namespace
-
 class NewsItem : public LinkLabel {
 public:
   NewsItem(const std::string& link, const std::string& title, const std::string& desc)
@@ -167,6 +165,12 @@ protected:
     }
 
     ev.setSizeHint(gfx::Size(0, sz.h));
+  }
+
+  void onInitTheme(InitThemeEvent& ev) override
+  {
+    LinkLabel::onInitTheme(ev);
+    m_titleBlob.reset();
   }
 
   void onPaint(PaintEvent& ev) override
@@ -216,6 +220,8 @@ protected:
   void onClick() override { static_cast<NewsListBox*>(parent())->reload(); }
 };
 
+} // namespace
+
 NewsListBox::NewsListBox() : m_timer(250, this), m_loader(nullptr)
 {
   m_timer.Tick.connect(&NewsListBox::onTick, this);
@@ -241,8 +247,9 @@ void NewsListBox::reload()
   if (m_loader || m_timer.isRunning())
     return;
 
-  while (auto child = lastChild())
-    removeChild(child);
+  removeAllChildren();
+
+  addChild(new NewsItem("", Strings::news_listbox_loading(), ""));
 
   View* view = View::getView(this);
   if (view)
@@ -287,6 +294,8 @@ void NewsListBox::onTick()
 void NewsListBox::parseFile(const std::string& filename)
 {
   View* view = View::getView(this);
+
+  removeAllChildren();
 
   XMLDocumentRef doc;
   try {

@@ -317,9 +317,6 @@ void Window::remapWindow()
 
   expandWindow(sizeHint());
 
-  // load layout
-  loadLayout();
-
   invalidate();
 }
 
@@ -426,7 +423,11 @@ bool Window::isTopLevel()
 bool Window::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
-    case kOpenMessage:      m_closer = nullptr; break;
+    case kOpenMessage: {
+      loadLayout();
+      m_closer = nullptr;
+      break;
+    }
 
     case kCloseMessage:     saveLayout(); break;
 
