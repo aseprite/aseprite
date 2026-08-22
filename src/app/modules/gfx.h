@@ -38,6 +38,12 @@ void draw_checkered_grid(ui::Graphics* g,
                          const gfx::Size& tile,
                          DocumentPreferences& docPref);
 
+void draw_checkered_grid(ui::Graphics* g,
+                         const gfx::Rect& rc,
+                         const gfx::Size& tile,
+                         const gfx::Color c1,
+                         const gfx::Color c2);
+
 void draw_color(ui::Graphics* g,
                 const gfx::Rect& rc,
                 const app::Color& color,

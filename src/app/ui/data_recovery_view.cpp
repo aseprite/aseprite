@@ -22,7 +22,6 @@
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/task.h"
-#include "app/ui/data_recovery_view.h"
 #include "app/ui/drop_down_button.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
@@ -33,7 +32,6 @@
 #include "fmt/format.h"
 #include "ui/alert.h"
 #include "ui/button.h"
-#include "ui/entry.h"
 #include "ui/label.h"
 #include "ui/listitem.h"
 #include "ui/message.h"
@@ -128,6 +126,7 @@ protected:
         bounds.w -= u;
 
         pi.textBlob = m_pathBlob;
+        pi.baseline = textBaseline();
         theme->paintWidgetPart(g, theme->styles.recentFileDetail(), bounds, pi);
       }
     }
@@ -692,14 +691,12 @@ DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
   m_listBox.DoubleClickItem.connect([this] { onOpen(); });
   m_waitToEnableRefreshTimer.Tick.connect([this] { onCheckIfWeCanEnableRefreshButton(); });
 
+  m_connRefresh =
+    m_dataRecovery->SessionsListIsReady.connect(&DataRecoveryView::refreshListNotification, this);
   m_connFullPath = Preferences::instance().general.showFullPath.AfterChange.connect(
     [this](const bool&) { invalidate(); });
   m_connBackup = dataRecovery->BackupDone.connect(
     [this](const doc::ObjectId docId) { m_runningSession->notifyDocBackupDone(docId); });
-}
-
-DataRecoveryView::~DataRecoveryView()
-{
 }
 
 void DataRecoveryView::refreshListNotification()

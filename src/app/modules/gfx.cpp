@@ -41,8 +41,6 @@ namespace app {
 using namespace app::skin;
 using namespace gfx;
 
-namespace {
-
 void draw_checkered_grid(ui::Graphics* g,
                          const gfx::Rect& rc,
                          const gfx::Size& tile,
@@ -74,8 +72,6 @@ void draw_checkered_grid(ui::Graphics* g,
       g->fillRect(((u++) & 1) ? c1 : c2, gfx::Rect(x, y, rc.x2() - x, rc.y2() - y));
   }
 }
-
-} // anonymous namespace
 
 gfx::Color grid_color1()
 {

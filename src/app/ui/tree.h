@@ -7,13 +7,11 @@
 #ifndef APP_UI_TREE_H_INCLUDED
 #define APP_UI_TREE_H_INCLUDED
 
+#include "app/ui/inline_search.h"
 #include "app/ui/skin/skin_part.h"
 #include "app_tooltips.h"
-#include "base/time.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
-
-#include <variant>
 
 namespace app {
 
@@ -114,9 +112,7 @@ private:
   std::unique_ptr<TreeNode> m_root;
   TreeNode* m_selected;
 
-  base::tick_t m_lastCharTick;
-  std::string m_findString;
-
+  InlineSearch m_inline;
   std::unique_ptr<AppTooltipManager> m_tooltipManager;
 
   struct {

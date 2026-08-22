@@ -38,6 +38,8 @@ protected:
   void onResize(ResizeEvent& ev) override;
   void onSizeHint(SizeHintEvent& ev) override;
 
+  void clear();
+
   // Separation between rows of grid cells. Negative values will overlap rows.
   int m_rowgap;
   // Separation between columns of grid cells. Negative values will overlap columns.

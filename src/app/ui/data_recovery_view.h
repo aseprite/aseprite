@@ -29,8 +29,7 @@ class DataRecoveryView : public ui::VBox,
                          public TabView,
                          public WorkspaceView {
 public:
-  DataRecoveryView(crash::DataRecovery* dataRecovery);
-  ~DataRecoveryView();
+  explicit DataRecoveryView(crash::DataRecovery* dataRecovery);
 
   // Called after the "Refresh" button is pressed (onRefresh) and
   // the crash::DataRecovery::SessionsListIsReady signal is received.
@@ -80,10 +79,10 @@ private:
   class SessionSeparator;
   SessionSeparator* m_runningSession = nullptr;
 
-  // Connection to to showFullPath.AfterChange signal to update the
+  obs::scoped_connection m_connRefresh;
+  // Connection to  showFullPath.AfterChange signal to update the
   // items text when the setting is changed.
   obs::scoped_connection m_connFullPath;
-
   obs::scoped_connection m_connBackup;
 };
 

@@ -13,7 +13,6 @@
 
 #include "app/app.h"
 #include "app/app_menus.h"
-#include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/crash/data_recovery.h"
 #include "app/i18n/strings.h"
@@ -33,7 +32,6 @@
 #include "app/ui/main_menu_bar.h"
 #include "app/ui/notifications.h"
 #include "app/ui/preview_editor.h"
-#include "app/ui/skin/skin_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/timeline/timeline.h"
@@ -41,16 +39,16 @@
 #include "app/ui/workspace.h"
 #include "app/ui/workspace_tabs.h"
 #include "app/ui_context.h"
-#include "base/fs.h"
 #include "os/event.h"
 #include "os/event_queue.h"
 #include "os/system.h"
 #include "ui/app_state.h"
 #include "ui/drag_event.h"
 #include "ui/message.h"
-#include "ui/splitter.h"
-#include "ui/system.h"
-#include "ui/view.h"
+
+#ifdef ENABLE_DATA_RECOVERY
+  #include "app/ui/data_recovery_view.h"
+#endif
 
 namespace app {
 
@@ -255,6 +253,17 @@ HomeView* MainWindow::getHomeView()
   return m_homeView.get();
 }
 
+DataRecoveryView* MainWindow::getDataRecoveryView()
+{
+#ifdef ENABLE_DATA_RECOVERY
+  if (!m_dataRecoveryView)
+    m_dataRecoveryView = std::make_unique<DataRecoveryView>(App::instance()->dataRecovery());
+  return m_dataRecoveryView.get();
+#else
+  return nullptr;
+#endif
+}
+
 #ifdef ENABLE_UPDATER
 CheckUpdateDelegate* MainWindow::getCheckUpdateDelegate()
 {
@@ -303,6 +312,18 @@ void MainWindow::showHome()
     m_workspace->addView(m_homeView.get(), 0);
   }
   m_tabsBar->selectTab(m_homeView.get());
+}
+
+void MainWindow::showDataRecovery()
+{
+#ifdef ENABLE_DATA_RECOVERY
+  if (!App::instance()->dataRecovery())
+    return;
+  if (!getDataRecoveryView()->parent()) {
+    m_workspace->addView(m_dataRecoveryView.get());
+  }
+  m_tabsBar->selectTab(m_dataRecoveryView.get());
+#endif
 }
 
 void MainWindow::showDefaultStatusBar()
@@ -460,14 +481,14 @@ void MainWindow::setCustomizeDock(bool enable)
   m_customizableDock->setCustomizing(enable);
 }
 
-void MainWindow::dataRecoverySessionsAreReady()
-{
-  getHomeView()->dataRecoverySessionsAreReady();
-}
-
 void MainWindow::closeDataRecoveryView()
 {
-  getHomeView()->closeDataRecoveryView();
+#ifdef ENABLE_DATA_RECOVERY
+  if (m_dataRecoveryView && m_dataRecoveryView->parent()) {
+    App::instance()->workspace()->removeView(m_dataRecoveryView.get());
+  }
+  m_dataRecoveryView.reset();
+#endif
 }
 
 bool MainWindow::onProcessMessage(ui::Message* msg)

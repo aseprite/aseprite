@@ -17,21 +17,17 @@
 #include "app/commands/params.h"
 #include "app/crash/data_recovery.h"
 #include "app/i18n/strings.h"
+#include "app/pref/preferences.h"
+#include "app/recent_files.h"
 #include "app/ui/data_recovery_view.h"
 #include "app/ui/main_window.h"
-#include "app/ui/recent_listbox.h"
+#include "app/ui/recent_grid.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/workspace.h"
-#include "app/ui/workspace_tabs.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
-#include "base/exception.h"
-#include "fmt/format.h"
-#include "ui/label.h"
-#include "ui/resize_event.h"
-#include "ui/system.h"
-#include "ui/textbox.h"
+#include "base/launcher.h"
 #include "ui/view.h"
 #include "ver/info.h"
 
@@ -53,105 +49,139 @@ namespace app {
 using namespace ui;
 using namespace app::skin;
 
-HomeView::HomeView()
-  : m_files(new RecentFilesListBox)
-  , m_folders(new RecentFoldersListBox)
-#ifdef ENABLE_NEWS
-  , m_news(new NewsListBox)
-#endif
-  , m_dataRecovery(App::instance()->dataRecovery())
-  , m_dataRecoveryView(nullptr)
+HomeView::HomeView() : m_showNews(false), m_recents(new RecentGrid), m_news(nullptr)
 {
-  newFile()->Click.connect([this] { onNewFile(); });
-  openFile()->Click.connect([this] { onOpenFile(); });
-  if (m_dataRecovery)
-    recoverSprites()->Click.connect([this] { onRecoverSprites(); });
-  else
-    recoverSprites()->setVisible(false);
-
-  filesView()->attachToView(m_files);
-  foldersView()->attachToView(m_folders);
 #ifdef ENABLE_NEWS
-  newsView()->attachToView(m_news);
+  const auto& preferences = App::instance()->preferences();
+  setShowNews(preferences.home.showNews());
 #endif
 
-  checkUpdate()->setVisible(false);
-  shareCrashdb()->setVisible(false);
+  newFile()->Click.connect(&HomeView::onNewFile, this);
+  openFile()->Click.connect(&HomeView::onOpenFile, this);
+#ifdef ENABLE_DATA_RECOVERY
+  if (auto* recovery = App::instance()->dataRecovery()) {
+    recoverSprites()->setEnabled(false);
+    recovery->SessionsListIsReady.connect([this, recovery] {
+      if (!recoverSprites()->isEnabled() && recovery->hasRecoverySessions()) {
+        recoverSprites()->setStyle(SkinTheme::get(this)->styles.workspaceAttentionLink());
+        layout();
+      }
+      recoverSprites()->setEnabled(true);
+    });
+    recoverSprites()->Click.connect(&HomeView::onRecoverSprites, this);
+  }
+  else {
+    recoverSprites()->setVisible(false);
+  }
+#else
+  recoverSprites()->setVisible(false);
+#endif
+
+  recentsView()->attachToView(m_recents);
+  recentsView()->InitTheme.connect([this] {
+    const auto* theme = SkinTheme::get(this);
+    const int barSize = theme->dimensions.miniScrollbarSize();
+    recentsView()->horizontalBar()->setBarWidth(barSize);
+    recentsView()->verticalBar()->setBarWidth(barSize);
+    recentsView()->horizontalBar()->setStyle(theme->styles.transparentScrollbar());
+    recentsView()->verticalBar()->setStyle(theme->styles.transparentScrollbar());
+    recentsView()->horizontalBar()->setThumbStyle(theme->styles.transparentScrollbarThumb());
+    recentsView()->verticalBar()->setThumbStyle(theme->styles.transparentScrollbarThumb());
+  });
+
+  recentsSection()->InitTheme.connect([this] {
+    const auto* theme = SkinTheme::get(this);
+    const auto& pref = Preferences::instance();
+    // Attempt to preserve compatibility with themes that don't have the workspaceBorder part by
+    // styling it as a normal panel
+    if (pref.theme.selected.defaultValue() != pref.theme.selected() &&
+        theme->parts.workspaceBorder()->isDefault()) {
+      recentsSection()->setStyle(theme->styles.workspaceView());
+    }
+    else {
+      recentsSection()->setStyle(theme->styles.workspacePanel());
+    }
+    invalidate();
+  });
+
+  auto setRecentsMode = [recents = m_recents](const int index) {
+    switch (index) {
+      case 0:  recents->setMode(RecentGrid::Mode::List); break;
+      case 1:  recents->setMode(RecentGrid::Mode::SmallThumbnail); break;
+      case 2:  recents->setMode(RecentGrid::Mode::BigThumbnail); break;
+      default: break;
+    }
+  };
+  mode()->setSelectedItem(std::clamp<int>(preferences.home.mode(), 0, 2));
+  setRecentsMode(mode()->selectedItem());
+  mode()->ItemChange.connect([this, setRecentsMode](const ButtonSet::Item* item) {
+    const int index = mode()->getItemIndex(item);
+    setRecentsMode(index);
+    App::instance()->preferences().home.mode(index);
+  });
+
+  auto updateWithRecentFiles = [this] {
+    const auto* recents = App::instance()->recentFiles();
+    recentFolders()->setEnabled(!recents->recentFolders().empty());
+    mode()->setEnabled(!recents->recentFiles().empty() || !recents->pinnedFiles().empty());
+  };
+  m_recentFilesConn = App::instance()->recentFiles()->Changed.connect(updateWithRecentFiles);
+  updateWithRecentFiles();
+  recentFolders()->ItemChange.connect([this](const ButtonSet::Item*) {
+    Menu menu;
+    auto* title = new MenuSeparator;
+    title->setText(Strings::home_view_recent_folders());
+    menu.addChild(title);
+    for (const auto& path : App::instance()->recentFiles()->recentFolders()) {
+      auto* menuItem = new MenuItem(path); // TODO: Make pretty_path generic and use that?
+      menuItem->Click.connect([path] { base::launcher::open_folder(path); });
+      menu.addChild(menuItem);
+    }
+    const auto& bounds = recentFolders()->bounds();
+    menu.showPopup(gfx::Point(bounds.x, bounds.y2()), display());
+    recentFolders()->setSelectedItem(nullptr);
+  });
+
+#ifdef ENABLE_NEWS
+  news()->Click.connect([this] { setShowNews(!m_showNews); });
+  closeSidepanel()->Click.connect([this] { setShowNews(false); });
+#else
+  news()->Click.connect([] { base::launcher::open_url("https://blog.aseprite.org/"); });
+#endif
 
 #if ENABLE_SENTRY
   // Show this option in home tab only when we require consent for the
   // first time and there is crash data available to report
+
   if (Sentry::requireConsent() && Sentry::areThereCrashesToReport()) {
-    shareCrashdb()->setVisible(true);
+    shareContainer()->setVisible(true);
     shareCrashdb()->Click.connect([this] {
       if (shareCrashdb()->isSelected())
         Sentry::giveConsent();
       else
         Sentry::revokeConsent();
     });
+
+    InitTheme.connect([this] {
+      auto b = border();
+      b.bottom(0);
+      setBorder(b);
+    });
   }
 #endif
 
-  InitTheme.connect([this] {
-    auto theme = SkinTheme::get(this);
-    setBgColor(theme->colors.workspace());
-    setChildSpacing(8 * guiscale());
-  });
   initTheme();
-}
-
-HomeView::~HomeView()
-{
-#ifdef ENABLE_DATA_RECOVERY
-  if (m_dataRecoveryView) {
-    ASSERT(!m_dataRecoveryView->parent());
-    m_dataRecoveryView.reset();
-  }
-#endif
-}
-
-void HomeView::dataRecoverySessionsAreReady()
-{
-#ifdef ENABLE_DATA_RECOVERY
-
-  #ifdef ENABLE_TRIAL_MODE
-  DRM_INVALID
-  {
-    return;
-  }
-  #endif
-
-  if (App::instance()->dataRecovery()->hasRecoverySessions()) {
-    // We highlight the "Recover Files" options because we came from a crash
-    auto theme = SkinTheme::get(this);
-    recoverSprites()->setStyle(theme->styles.workspaceUpdateLink());
-    layout();
-  }
-  if (m_dataRecoveryView) {
-    m_dataRecoveryView->refreshListNotification();
-  }
-#endif
-}
-
-void HomeView::closeDataRecoveryView()
-{
-#ifdef ENABLE_DATA_RECOVERY
-  if (m_dataRecoveryView && m_dataRecoveryView->parent()) {
-    App::instance()->workspace()->removeView(m_dataRecoveryView.get());
-  }
-  m_dataRecoveryView.reset();
-#endif
 }
 
 #if ENABLE_SENTRY
 void HomeView::updateConsentCheckbox()
 {
   if (Sentry::requireConsent()) {
-    shareCrashdb()->setVisible(true);
+    shareContainer()->setVisible(true);
     shareCrashdb()->setSelected(false);
   }
   else if (Sentry::consentGiven()) {
-    shareCrashdb()->setVisible(false);
+    shareContainer()->setVisible(false);
     shareCrashdb()->setSelected(true);
   }
   layout();
@@ -177,13 +207,6 @@ bool HomeView::onCloseView(Workspace* workspace, bool quitting)
 {
   workspace->removeView(this);
   return true;
-}
-
-void HomeView::onAfterRemoveView(Workspace* workspace)
-{
-  if (m_dataRecoveryView && m_dataRecoveryView->parent()) {
-    workspace->removeView(m_dataRecoveryView.get());
-  }
 }
 
 void HomeView::onTabPopup(Workspace* workspace)
@@ -261,6 +284,21 @@ void HomeView::onCancel(Context* ctx)
   // Do nothing
 }
 
+bool HomeView::onProcessMessage(ui::Message* msg)
+{
+  switch (msg->type()) {
+    case kKeyDownMessage: {
+      const auto* keyMsg = static_cast<KeyMessage*>(msg);
+      if (keyMsg->scancode() == kKeyTab && manager() &&
+          App::instance()->workspace()->activeView() == this) {
+        return manager()->processFocusMovementMessage(msg);
+      }
+      break;
+    }
+  }
+  return gen::HomeView::onProcessMessage(msg);
+}
+
 void HomeView::onNewFile()
 {
   Command* command = Commands::instance()->byId(CommandId::NewFile());
@@ -273,61 +311,75 @@ void HomeView::onOpenFile()
   UIContext::instance()->executeCommandFromMenuOrShortcut(command);
 }
 
-void HomeView::onResize(ui::ResizeEvent& ev)
-{
-  headerPlaceholder()->setVisible(ev.bounds().h > 200 * ui::guiscale());
-  foldersPlaceholder()->setVisible(ev.bounds().h > 150 * ui::guiscale());
 #ifdef ENABLE_NEWS
-  newsPlaceholder()->setVisible(ev.bounds().w > 200 * ui::guiscale());
-#else
-  newsPlaceholder()->setVisible(false);
-#endif
+void HomeView::setShowNews(const bool showNews)
+{
+  if (m_showNews == showNews)
+    return;
 
-  ui::VBox::onResize(ev);
+  m_showNews = showNews;
+  if (m_showNews && !m_news) {
+    m_news = new NewsListBox;
+    m_news->InitTheme.connect([this] {
+      m_news->setBorder(gfx::Border(6 * guiscale()));
+      m_news->setChildSpacing(6 * guiscale());
+    });
+    m_news->initTheme();
+    m_news->setExpansive(true);
+    sidepanelBox()->addChild(m_news);
+  }
+  App::instance()->preferences().home.showNews(m_showNews);
+  sidepanel()->setVisible(m_showNews);
+
+  newsSeparator()->setVisible(!m_showNews);
+  news()->setVisible(!m_showNews);
+
+  layout();
 }
+#endif
 
 #ifdef ENABLE_UPDATER
 
 void HomeView::onCheckingUpdates()
 {
-  checkUpdate()->setText(Strings::home_view_checking_updates());
-  checkUpdate()->setVisible(true);
-
+  notification()->setVisible(true);
+  updateLink()->setText(Strings::home_view_checking_updates());
   layout();
 }
 
 void HomeView::onUpToDate()
 {
-  checkUpdate()->setVisible(false);
-
+  notification()->setVisible(false);
   layout();
 }
 
 void HomeView::onNewUpdate(const std::string& url, const std::string& version)
 {
-  checkUpdate()->setText(Strings::home_view_new_version_available(get_app_name(), version));
+  notification()->setVisible(true);
+  updateLink()->setText(Strings::home_view_new_version_available(get_app_name(), version));
   #ifdef ENABLE_DRM
   DRM_INVALID
   {
-    checkUpdate()->setUrl(url);
+    updateLink()->setUrl(url);
   }
   else
   {
-    checkUpdate()->setUrl("");
-    checkUpdate()->Click.connect([version] {
+    updateLink()->setUrl("");
+    updateLink()->Click.connect([version] {
       app::AsepriteUpdate dlg(version);
       dlg.openWindowInForeground();
     });
   }
   #else
-  checkUpdate()->setUrl(url);
+  updateLink()->setUrl(url);
   #endif
-  checkUpdate()->setVisible(true);
-  checkUpdate()->InitTheme.connect([this] {
-    auto theme = SkinTheme::get(this);
-    checkUpdate()->setStyle(theme->styles.workspaceUpdateLink());
+
+  // Update the news button to highlight that there's an update, even if the sidebar is disabled.
+  news()->InitTheme.connect([this] {
+    const auto* theme = SkinTheme::get(this);
+    news()->setStyle(theme->styles.workspaceAttentionLink());
   });
-  checkUpdate()->initTheme();
+  news()->initTheme();
 
   layout();
 }
@@ -337,7 +389,6 @@ void HomeView::onNewUpdate(const std::string& url, const std::string& version)
 void HomeView::onRecoverSprites()
 {
 #ifdef ENABLE_DATA_RECOVERY
-
   #ifdef ENABLE_TRIAL_MODE
   DRM_INVALID
   {
@@ -345,28 +396,10 @@ void HomeView::onRecoverSprites()
   }
   #endif
 
-  ASSERT(m_dataRecovery); // "Recover Files" button is hidden when
-                          // data recovery is disabled (m_dataRecovery == nullptr)
-  if (!m_dataRecovery)
-    return;
+  App::instance()->mainWindow()->showDataRecovery();
 
-  if (!m_dataRecoveryView) {
-    m_dataRecoveryView = std::make_unique<DataRecoveryView>(m_dataRecovery);
-
-    // Restore the "Recover Files" link style when the
-    // DataRecoveryView is empty (so there is no more warning icon on
-    // it).
-    m_dataRecoveryView->Empty.connect([this] {
-      auto theme = SkinTheme::get(this);
-      recoverSprites()->setStyle(theme->styles.workspaceLink());
-      layout();
-    });
-  }
-
-  if (!m_dataRecoveryView->parent())
-    App::instance()->workspace()->addView(m_dataRecoveryView.get());
-
-  App::instance()->mainWindow()->getTabsBar()->selectTab(m_dataRecoveryView.get());
+  recoverSprites()->setStyle(SkinTheme::get(this)->styles.workspaceLink());
+  layout();
 #endif
 }
 

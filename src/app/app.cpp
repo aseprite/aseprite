@@ -176,14 +176,6 @@ public:
   #endif
 
     m_recovery = std::make_unique<app::crash::DataRecovery>(ctx);
-    m_recovery->SessionsListIsReady.connect([] {
-      ui::assert_ui_thread();
-      auto app = App::instance();
-      if (app && app->mainWindow()) {
-        // Notify that the list of sessions is ready.
-        app->mainWindow()->dataRecoverySessionsAreReady();
-      }
-    });
 #endif
   }
 
