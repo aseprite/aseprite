@@ -217,34 +217,39 @@ void AsepriteEncoder::writeHeader(const AsepriteHeader* header)
 
 void AsepriteEncoder::writeHeaderFileSize(AsepriteHeader* header)
 {
-  header->size = tell() - header->pos;
+  const auto end = tell();
+
+  // Truncate to the largest 32-bit value for files bigger than 4GB
+  auto size = end - header->pos;
+  if (size > 0xFFFFFFFF)
+    size = 0xFFFFFFFF;
+
+  header->size = size;
 
   seek(header->pos);
   write32(header->size);
 
-  seek(header->pos + header->size);
+  seek(end);
 }
 
 void AsepriteEncoder::prepareFrameHeader(AsepriteFrameHeader* frame_header)
 {
-  const int pos = tell();
-
-  frame_header->size = pos;
+  frame_header->pos = tell();
+  frame_header->size = 0;
   frame_header->magic = ASE_FILE_FRAME_MAGIC;
   frame_header->chunks = 0;
   frame_header->duration = 0;
 
-  seek(pos + 16);
+  seek(frame_header->pos + 16);
 }
 
 void AsepriteEncoder::writeFrameHeader(AsepriteFrameHeader* frame_header)
 {
-  const int pos = frame_header->size;
-  const int end = tell();
+  const auto end = tell();
 
-  frame_header->size = end - pos;
+  frame_header->size = end - frame_header->pos;
 
-  seek(pos);
+  seek(frame_header->pos);
 
   write32(frame_header->size);
   write16(frame_header->magic);
@@ -364,8 +369,8 @@ void AsepriteEncoder::writeChunkStart(AsepriteFrameHeader* frame_header,
 
 void AsepriteEncoder::writeChunkEnd(AsepriteChunk* chunk)
 {
-  const int chunk_end = tell();
-  const int chunk_size = chunk_end - chunk->start;
+  const auto chunk_end = tell();
+  const auto chunk_size = chunk_end - chunk->start;
 
   seek(chunk->start);
   write32(chunk_size);
@@ -655,7 +660,7 @@ void AsepriteEncoder::writeCelChunk(AsepriteFrameHeader* frame_header,
     link = nullptr;
     for (frame_t i = firstFrame; i <= cel->frame(); ++i) {
       link = layer->cel(i);
-      if (link && link->image()->id() == cel->image()->id())
+      if (link && link->dataId() == cel->dataId())
         break;
     }
     if (link == cel)
@@ -676,9 +681,7 @@ void AsepriteEncoder::writeCelChunk(AsepriteFrameHeader* frame_header,
 
   switch (cel_type) {
     case ASE_FILE_RAW_CEL: {
-      const Image* image = cel->image();
-
-      if (image) {
+      if (const Image* image = cel->image()) {
         // Width and height
         write16(image->width());
         write16(image->height());
@@ -707,9 +710,7 @@ void AsepriteEncoder::writeCelChunk(AsepriteFrameHeader* frame_header,
       break;
 
     case ASE_FILE_COMPRESSED_CEL: {
-      const Image* image = cel->image();
-      ASSERT(image);
-      if (image) {
+      if (const Image* image = cel->image()) {
         // Width and height
         write16(image->width());
         write16(image->height());
@@ -727,11 +728,12 @@ void AsepriteEncoder::writeCelChunk(AsepriteFrameHeader* frame_header,
 
     case ASE_FILE_COMPRESSED_TILEMAP: {
       const Image* image = cel->image();
-      ASSERT(image);
-      ASSERT(image->pixelFormat() == IMAGE_TILEMAP);
+      if (image) {
+        ASSERT(image->pixelFormat() == IMAGE_TILEMAP);
+      }
 
-      write16(image->width());
-      write16(image->height());
+      write16(image ? image->width() : 0);
+      write16(image ? image->height() : 0);
       write16(32); // TODO use different bpp when possible
       write32(tile_i_mask);
       write32(tile_f_xflip);
@@ -739,8 +741,10 @@ void AsepriteEncoder::writeCelChunk(AsepriteFrameHeader* frame_header,
       write32(tile_f_dflip);
       writePadding(10);
 
-      ImageScanlines scan(image);
-      write_compressed_image(f(), &scan, IMAGE_TILEMAP);
+      if (image) {
+        ImageScanlines scan(image);
+        write_compressed_image(f(), &scan, IMAGE_TILEMAP);
+      }
     }
   }
 }
@@ -1138,7 +1142,7 @@ void AsepriteEncoder::writeTilesetChunk(AsepriteFrameHeader* frame_header,
 
   // Flag 2 = tileset
   if (flags & ASE_TILESET_FLAG_EMBEDDED) {
-    const size_t beg = tell();
+    const auto beg = tell();
 
     // Save the cached tileset compressed data
     if (!tileset->compressedData().empty() &&
@@ -1171,7 +1175,7 @@ void AsepriteEncoder::writeTilesetChunk(AsepriteFrameHeader* frame_header,
       if (compressedDataPtr)
         tileset->setCompressedData(compressedData);
 
-      const size_t end = tell();
+      const auto end = tell();
       seek(beg);
       write32(end - beg - 4); // Save the compressed data length
       seek(end);
@@ -1281,7 +1285,7 @@ void AsepriteEncoder::writePropertiesMaps(const AsepriteExternalFiles& ext_files
 {
   ASSERT(nmaps > 0);
 
-  const long startPos = tell();
+  const auto startPos = tell();
   // We zero the size in bytes of all properties maps stored in this
   // chunk for now. (actual value is calculated after serialization
   // of all properties maps, at which point this field is overwritten)
@@ -1316,7 +1320,7 @@ void AsepriteEncoder::writePropertiesMaps(const AsepriteExternalFiles& ext_files
     write32(extensionId);
     writePropertyValue(properties, depth);
   }
-  const long endPos = tell();
+  const auto endPos = tell();
   // We can overwrite the properties maps size now
   seek(startPos);
   write32(endPos - startPos);

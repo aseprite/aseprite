@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -15,6 +15,7 @@
 #include "app/cmd/configure_background.h"
 #include "app/cmd/copy_rect.h"
 #include "app/cmd/replace_image.h"
+#include "app/cmd/set_cel_image.h"
 #include "app/cmd/set_cel_opacity.h"
 #include "app/cmd/set_cel_position.h"
 #include "app/doc.h"
@@ -53,18 +54,19 @@ void BackgroundFromLayer::onExecute()
   CelList cels;
   layer->getCels(cels);
   for (Cel* cel : cels) {
-    Image* cel_image = cel->image();
-    ASSERT(cel_image);
-    ASSERT(cel_image->pixelFormat() != IMAGE_TILEMAP);
-
     clear_image(bg_image.get(), bgcolor);
-    render::composite_image(bg_image.get(),
-                            cel_image,
-                            sprite->palette(cel->frame()),
-                            cel->x(),
-                            cel->y(),
-                            std::clamp(cel->opacity(), 0, 255),
-                            static_cast<LayerImage*>(layer)->blendMode());
+
+    Image* cel_image = cel->image();
+    if (cel_image) {
+      ASSERT(cel_image->pixelFormat() != IMAGE_TILEMAP);
+      render::composite_image(bg_image.get(),
+                              cel_image,
+                              sprite->palette(cel->frame()),
+                              cel->x(),
+                              cel->y(),
+                              std::clamp(cel->opacity(), 0, 255),
+                              static_cast<LayerImage*>(layer)->blendMode());
+    }
 
     // now we have to copy the new image (bg_image) to the cel...
     executeAndAdd(new cmd::SetCelPosition(cel, 0, 0));
@@ -75,7 +77,7 @@ void BackgroundFromLayer::onExecute()
 
     // Same size of cel image and background image, we can just
     // replace pixels.
-    if (bg_image->width() == cel_image->width() && bg_image->height() == cel_image->height()) {
+    if (cel_image && bg_image->size() == cel_image->size()) {
       executeAndAdd(new CopyRect(cel_image, bg_image.get(), gfx::Clip(0, 0, cel_image->bounds())));
     }
     // In other case we have to replace the whole image (this is the
@@ -83,7 +85,10 @@ void BackgroundFromLayer::onExecute()
     // to a canvas size cel in the background)
     else {
       ImageRef bg_image2(Image::createCopy(bg_image.get()));
-      executeAndAdd(new cmd::ReplaceImage(sprite, cel->imageRef(), bg_image2));
+      if (cel->image())
+        executeAndAdd(new cmd::ReplaceImage(sprite, cel->imageRef(), bg_image2));
+      else
+        executeAndAdd(new cmd::SetCelImage(cel, bg_image2));
     }
   }
 
@@ -91,7 +96,7 @@ void BackgroundFromLayer::onExecute()
   for (frame_t frame(0); frame < sprite->totalFrames(); ++frame) {
     Cel* cel = layer->cel(frame);
     if (!cel) {
-      ImageRef cel_image(Image::create(sprite->pixelFormat(), sprite->width(), sprite->height()));
+      ImageRef cel_image(Image::create(sprite->spec()));
       clear_image(cel_image.get(), bgcolor);
 
       // Create the new cel and add it to the new background layer

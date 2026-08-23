@@ -371,7 +371,7 @@ int App::initialize(const AppOptions& options)
     // OpenBatchOfFiles) shows a dialog to open a sequence of files,
     // the dialog is centered correctly to the manager bounds.
     const int scale = Preferences::instance().general.screenScale();
-    const bool gpu = Preferences::instance().general.gpuAcceleration();
+    const bool gpu = Preferences::instance().general.gpu();
     manager->updateAllDisplays(scale, gpu);
 #endif
   }
@@ -770,6 +770,12 @@ void App::updateDisplayTitleBar()
   }
 
   title += defaultTitle;
+
+  if (m_mainWindow && m_mainWindow->display() && m_mainWindow->display()->nativeWindow() &&
+      m_mainWindow->display()->nativeWindow()->gpuAcceleration()) {
+    title += " (GPU)";
+  }
+
   os::System::instance()->defaultWindow()->setTitle(title);
 }
 

@@ -96,6 +96,7 @@ public:
   void clearCel(Layer* layer, frame_t frame);
   void clearCel(Cel* cel);
   void clearCelAndAllLinks(Cel* cel);
+  void setCelImage(Sprite* sprite, Cel* cel, const ImageRef& newImage);
   void setCelPosition(Sprite* sprite, Cel* cel, int x, int y);
   void setCelOpacity(Sprite* sprite, Cel* cel, int newOpacity);
   void moveCel(Layer* srcLayer, frame_t srcFrame, Layer* dstLayer, frame_t dstFrame);

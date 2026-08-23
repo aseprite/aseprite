@@ -59,6 +59,7 @@
 #include "base/chrono.h"
 #include "base/convert_to.h"
 #include "base/scoped_value.h"
+#include "doc/blend_internals.h"
 #include "doc/doc.h"
 #include "doc/mask_boundaries.h"
 #include "doc/slice.h"
@@ -732,6 +733,23 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
                                     m_frame);
     }
 
+    // Build map for per-cel extra rendering (multi-cel transformations)
+    // We use cel->data() as key to support linked cels.
+    render::ExtraCelInfoMap extraCelInfoMap;
+    if (extraCel && !extraCel->celMap().empty()) {
+      for (const auto& [cel, data] : extraCel->celMap()) {
+        if (data.transformedImage) {
+          int t;
+          extraCelInfoMap[cel->data()] = { data.transformedBounds,
+                                           data.transformedImage.get(),
+                                           MUL_UN8(cel->opacity(), cel->layer()->opacity(), t),
+                                           cel->layer()->blendMode() };
+        }
+      }
+      if (!extraCelInfoMap.empty())
+        m_renderEngine->setExtraCelInfoMap(&extraCelInfoMap);
+    }
+
     // Render background first (e.g. new ShaderRenderer will paint the
     // background on the screen first and then composite the rendered
     // sprite on it.)
@@ -756,6 +774,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
     m_renderEngine->renderSprite(rendered.get(), m_sprite, m_frame, gfx::Clip(0, 0, rc2));
 
     m_renderEngine->removeExtraImage();
+    m_renderEngine->removeExtraCelInfoMap();
 
     // If the checkered background is visible in this sprite, we save
     // all settings of the background for this document.
@@ -1307,6 +1326,9 @@ void Editor::drawTileNumbers(ui::Graphics* g, const Cel* cel)
     int ti_offset = static_cast<LayerTilemap*>(cel->layer())->tileset()->baseIndex() - 1;
 
     const doc::Image* image = cel->image();
+    if (!image)
+      return;
+
     std::string text;
     for (int y = 0; y < image->height(); ++y) {
       for (int x = 0; x < image->width(); ++x) {
@@ -3003,6 +3025,13 @@ void Editor::pasteImage(const Image* image, const Mask* mask, const gfx::Point* 
 
   Site site = getSite();
 
+  // Do nothing when the image format to paste isn't compatible with
+  // the current layer + TilemapMode.
+  if ((image->pixelFormat() != IMAGE_TILEMAP && site.layer()->isTilemap() &&
+       site.tilemapMode() == TilemapMode::Tiles) ||
+      (image->pixelFormat() == IMAGE_TILEMAP && site.tilemapMode() == TilemapMode::Pixels))
+    return;
+
   // Snap to grid a pasted tilemap
   // TODO should we move this to PixelsMovement or MovingPixelsState?
   if (site.tilemapMode() == TilemapMode::Tiles) {
@@ -3044,6 +3073,14 @@ void Editor::startFlipTransformation(doc::algorithm::FlipType flipType)
     movingPixels->flip(flipType);
   else if (auto standby = dynamic_cast<StandbyState*>(m_state.get()))
     standby->startFlipTransformation(this, flipType);
+}
+
+void Editor::startShiftTransformation(int dx, int dy)
+{
+  if (auto movingPixels = dynamic_cast<MovingPixelsState*>(m_state.get()))
+    movingPixels->shift(dx, dy);
+  else if (auto standby = dynamic_cast<StandbyState*>(m_state.get()))
+    standby->startShiftTransformation(this, dx, dy);
 }
 
 void Editor::updateTransformation(const Transformation& transform)

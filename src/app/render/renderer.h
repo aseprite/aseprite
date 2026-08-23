@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2023  Igara Studio S.A.
+// Copyright (C) 2022-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -83,6 +83,8 @@ public:
                              const doc::Layer* currentLayer,
                              const doc::frame_t currentFrame) = 0;
   virtual void removeExtraImage() = 0;
+  virtual void setExtraCelInfoMap(const render::ExtraCelInfoMap* map) = 0;
+  virtual void removeExtraCelInfoMap() = 0;
   virtual void setOnionskin(const render::OnionskinOptions& options) = 0;
   virtual void disableOnionskin() = 0;
 

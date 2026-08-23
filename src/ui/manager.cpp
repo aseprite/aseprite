@@ -1449,7 +1449,7 @@ void Manager::_openWindow(Window* window, bool center)
     // In other case, we can try to create a display/native window for
     // the UI window.
     if (get_multiple_displays() && window->shouldCreateNativeWindow()) {
-      const int scale = parentDisplay->nativeWindow()->scale();
+      const int scale = parentDisplay->nativeWindow()->baseScale();
       const int gpu = parentDisplay->nativeWindow()->gpuAcceleration();
 
       os::WindowSpec spec;
@@ -2345,7 +2345,7 @@ void Manager::broadcastKeyMsg(Message* msg)
     msg->setRecipient(capture_widget);
   }
   // Send the msg to the focused widget
-  else if (focus_widget) {
+  else if (focus_widget && focus_widget->isVisible()) {
     msg->setRecipient(focus_widget);
   }
   // Finally, send the message to the manager, it'll know what to do

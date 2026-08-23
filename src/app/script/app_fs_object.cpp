@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -12,7 +12,10 @@
 #include "app/resource_finder.h"
 #include "app/script/luacpp.h"
 #include "app/script/security.h"
+#include "base/file_size.h"
 #include "base/fs.h"
+
+#include <limits>
 
 namespace app { namespace script {
 
@@ -96,8 +99,13 @@ int AppFS_isDirectory(lua_State* L)
 int AppFS_fileSize(lua_State* L)
 {
   const char* fn = lua_tostring(L, 1);
-  if (fn)
-    lua_pushinteger(L, base::file_size(fn));
+  if (fn) {
+    const auto size = base::file_size(fn);
+    if (size <= std::numeric_limits<lua_Integer>::max())
+      lua_pushinteger(L, size);
+    else
+      lua_pushnumber(L, size);
+  }
   else
     lua_pushnil(L);
   return 1;

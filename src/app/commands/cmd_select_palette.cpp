@@ -90,7 +90,7 @@ void SelectPaletteColorsCommand::selectTiles(const Layer* layer,
 
   // For each tile on each cel's tilemap
   for (frame_t frame : selectedFrames) {
-    if (Cel* cel = layer->cel(frame)) {
+    if (Cel* cel = layer->cel(frame); cel && cel->image()) {
       for (const doc::tile_t t : LockImageBits<TilemapTraits>(cel->image())) {
         tile_index ti = doc::tile_geti(t);
         if (ti >= 0 && ti < usedTiles.size())
@@ -141,8 +141,7 @@ void SelectPaletteColorsCommand::onExecute(Context* context)
     // Loop throught selected layers and frames
     for (auto& layer : selectedLayers) {
       for (frame_t frame : selectedFrames) {
-        const Cel* cel = layer->cel(frame);
-        if (cel && cel->image()) {
+        if (const Cel* cel = layer->cel(frame); cel && cel->image()) {
           const Image* image = cel->image();
 
           // Tilemap layer case

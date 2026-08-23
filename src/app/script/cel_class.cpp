@@ -11,6 +11,7 @@
 
 #include "app/cmd/remove_cel.h"
 #include "app/cmd/replace_image.h"
+#include "app/cmd/set_cel_image.h"
 #include "app/cmd/set_cel_opacity.h"
 #include "app/cmd/set_cel_position.h"
 #include "app/cmd/set_cel_zindex.h"
@@ -125,10 +126,17 @@ int Cel_set_image(lua_State* L)
   if (may_get_obj<Image>(L, 2)) {
     const auto* srcImage = get_image_from_arg(L, 2);
     const ImageRef newImage(Image::createCopy(srcImage));
-    tx(new cmd::ReplaceImage(cel->sprite(), cel->imageRef(), newImage));
+    if (cel->image())
+      tx(new cmd::ReplaceImage(cel->sprite(), cel->imageRef(), newImage));
+    else
+      tx(new cmd::SetCelImage(cel, newImage));
   }
-  else if (lua_isnil(L, 2))
-    tx(new cmd::RemoveCel(cel));
+  else if (lua_isnil(L, 2)) {
+    if (cel->keepEmptyCel())
+      tx(new cmd::SetCelImage(cel, nullptr));
+    else
+      tx(new cmd::RemoveCel(cel));
+  }
   tx.commit();
   return 0;
 }

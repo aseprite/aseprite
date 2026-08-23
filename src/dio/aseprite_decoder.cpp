@@ -101,7 +101,7 @@ bool AsepriteDecoder::decode()
   // Read frame by frame to end-of-file
   for (frame_t frame = 0; frame < nframes; ++frame) {
     // Start frame position
-    const size_t frame_pos = tell();
+    const auto frame_pos = tell();
     delegate()->progress((float)frame_pos / (float)header.size);
 
     // Read frame header
@@ -117,7 +117,7 @@ bool AsepriteDecoder::decode()
       // Read chunks
       for (uint32_t c = 0; c < frame_header.chunks; c++) {
         // Start chunk position
-        const size_t chunk_pos = tell();
+        const auto chunk_pos = tell();
         delegate()->progress((float)chunk_pos / (float)header.size);
 
         // Read chunk information
@@ -307,7 +307,7 @@ bool AsepriteDecoder::decode()
 
 bool AsepriteDecoder::readHeader(AsepriteHeader* header)
 {
-  const size_t headerPos = tell();
+  const auto headerPos = tell();
 
   header->size = read32();
   header->magic = read16();
@@ -676,7 +676,7 @@ void read_compressed_image_templ(FileInterface* f,
                                  DecodeDelegate* delegate,
                                  Image* image,
                                  const AsepriteHeader* header,
-                                 const size_t chunk_end)
+                                 const base::fileoff_t chunk_end)
 {
   PixelIO<ImageTraits> pixel_io;
   z_stream zstream;
@@ -697,7 +697,7 @@ void read_compressed_image_templ(FileInterface* f,
   int y = 0;
 
   while (true) {
-    size_t input_bytes;
+    base::fileoff_t input_bytes;
 
     if (f->tell() + compressed.size() > chunk_end) {
       input_bytes = chunk_end - f->tell(); // Remaining bytes
@@ -774,7 +774,7 @@ void read_compressed_image(FileInterface* f,
                            DecodeDelegate* delegate,
                            Image* image,
                            const AsepriteHeader* header,
-                           const size_t chunk_end)
+                           const base::fileoff_t chunk_end)
 {
   // Try to read pixel data
   try {
@@ -812,7 +812,7 @@ void read_compressed_image(FileInterface* f,
 Cel* AsepriteDecoder::readCelChunk(frame_t frame,
                                    PixelFormat pixelFormat,
                                    const AsepriteHeader* header,
-                                   const size_t chunk_end)
+                                   const base::fileoff_t chunk_end)
 {
   // Read chunk data
   const layer_t layer_index = read16();
@@ -852,16 +852,16 @@ Cel* AsepriteDecoder::readCelChunk(frame_t frame,
       int w = read16();
       int h = read16();
 
+      ImageRef image;
       if (w > 0 && h > 0) {
         // Read pixel data
-        const ImageRef image(Image::create(pixelFormat, w, h));
+        image.reset(Image::create(pixelFormat, w, h));
         read_raw_image(f(), delegate(), image.get(), header);
-
-        cel = std::make_unique<Cel>(frame, image);
-        cel->setPosition(x, y);
-        cel->setOpacity(opacity);
-        cel->setZIndex(zIndex);
       }
+      cel = std::make_unique<Cel>(frame, image);
+      cel->setPosition(x, y);
+      cel->setOpacity(opacity);
+      cel->setZIndex(zIndex);
       break;
     }
 
@@ -896,15 +896,16 @@ Cel* AsepriteDecoder::readCelChunk(frame_t frame,
       int w = read16();
       int h = read16();
 
+      ImageRef image;
       if (w > 0 && h > 0) {
-        const ImageRef image(Image::create(pixelFormat, w, h));
+        image.reset(Image::create(pixelFormat, w, h));
         read_compressed_image(f(), delegate(), image.get(), header, chunk_end);
-
-        cel = std::make_unique<Cel>(frame, image);
-        cel->setPosition(x, y);
-        cel->setOpacity(opacity);
-        cel->setZIndex(zIndex);
       }
+
+      cel = std::make_unique<Cel>(frame, image);
+      cel->setPosition(x, y);
+      cel->setOpacity(opacity);
+      cel->setZIndex(zIndex);
       break;
     }
 
@@ -929,8 +930,9 @@ Cel* AsepriteDecoder::readCelChunk(frame_t frame,
         break;
       }
 
+      ImageRef image;
       if (w > 0 && h > 0) {
-        ImageRef image(Image::create(IMAGE_TILEMAP, w, h));
+        image.reset(Image::create(IMAGE_TILEMAP, w, h));
         image->setMaskColor(notile);
         image->clear(notile);
         read_compressed_image(f(), delegate(), image.get(), header, chunk_end);
@@ -975,12 +977,12 @@ Cel* AsepriteDecoder::readCelChunk(frame_t frame,
 
             return tile;
           });
-
-        cel = std::make_unique<Cel>(frame, image);
-        cel->setPosition(x, y);
-        cel->setOpacity(opacity);
-        cel->setZIndex(zIndex);
       }
+
+      cel = std::make_unique<Cel>(frame, image);
+      cel->setPosition(x, y);
+      cel->setOpacity(opacity);
+      cel->setZIndex(zIndex);
       break;
     }
 
@@ -1263,9 +1265,9 @@ Tileset* AsepriteDecoder::readTilesetChunk(Sprite* sprite,
 
   if (flags & ASE_TILESET_FLAG_EMBEDDED) {
     if (ntiles > 0) {
-      const size_t dataSize = read32(); // Size of compressed data
-      const size_t dataBeg = tell();
-      const size_t dataEnd = dataBeg + dataSize;
+      const uint32_t dataSize = read32(); // Size of compressed data
+      const auto dataBeg = tell();
+      const auto dataEnd = dataBeg + dataSize;
 
       base::buffer compressed;
       if (delegate()->cacheCompressedTilesets() && dataSize > 0) {
@@ -1309,9 +1311,9 @@ Tileset* AsepriteDecoder::readTilesetChunk(Sprite* sprite,
 void AsepriteDecoder::readPropertiesMaps(UserData::PropertiesMaps& propertiesMaps,
                                          const AsepriteExternalFiles& extFiles)
 {
-  auto startPos = tell();
-  auto size = read32();
-  auto numMaps = read32();
+  const auto startPos = tell();
+  const auto size = read32();
+  const auto numMaps = read32();
   try {
     for (int i = 0; i < numMaps; ++i) {
       auto id = read32();
@@ -1457,7 +1459,7 @@ void AsepriteDecoder::readTilesData(Tileset* tileset, const AsepriteExternalFile
 {
   // Read as many user data chunks as tiles are in the tileset
   for (tile_index i = 0; i < tileset->size(); i++) {
-    const size_t chunk_pos = tell();
+    const auto chunk_pos = tell();
     // Read chunk information
     const int chunk_size = read32();
     const int chunk_type = read16();

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,6 +11,7 @@
 #include "app/file/file.h"
 #include "app/file/file_format.h"
 #include "base/file_handle.h"
+#include "base/file_size.h"
 
 #define QOI_NO_STDIO
 #define QOI_IMPLEMENTATION
@@ -49,11 +50,9 @@ bool QoiFormat::onLoad(FileOp* fop)
   FileHandle handle(open_file_with_exception(fop->filename(), "rb"));
   FILE* f = handle.get();
 
-  fseek(f, 0, SEEK_END);
-  auto size = ftell(f);
+  const auto size = base::file_size(f);
   if (size <= 0)
     return false;
-  fseek(f, 0, SEEK_SET);
 
   auto data = QOI_MALLOC(size);
   if (!data)

@@ -76,9 +76,6 @@
             <link text="@.font_warning" id="font_warning" visible="false" />
           </grid>
           <separator horizontal="true" />
-          <check id="gpu_acceleration"
-                 text="@.gpu_acceleration"
-                 tooltip="@.gpu_acceleration_tooltip" />
           <check id="show_menu_bar"
                  text="@.show_menu_bar" />
           <check id="show_aseprite_file_dialog"
@@ -359,10 +356,20 @@
             <combobox id="painting_cursor_type">
               <listitem text="@.simple_crosshair" value="0" />
               <listitem text="@.crosshair_on_sprite" value="1" />
+              <listitem text="@.crosshair_on_sprite_without_ui_scale" value="2" />
             </combobox>
 
             <label text="@.brush_preview" for="brush_preview" />
             <combobox id="brush_preview">
+              <listitem text="@.brush_preview_none" value="0" />
+              <listitem text="@.brush_preview_edges" value="1" />
+              <listitem text="@.brush_preview_full" value="2" />
+              <listitem text="@.brush_preview_fullall" value="3" />
+              <listitem text="@.brush_preview_fullnedges" value="4" />
+            </combobox>
+
+            <label text="@.tile_preview" for="tile_preview" />
+            <combobox id="tile_preview">
               <listitem text="@.brush_preview_none" value="0" />
               <listitem text="@.brush_preview_edges" value="1" />
               <listitem text="@.brush_preview_full" value="2" />
@@ -721,6 +728,9 @@
         <!-- Developer -->
         <vbox id="section_developer" i18nwarnings="false">
           <separator text="@.section_developer" horizontal="true" />
+          <check id="gpu_acceleration"
+                 text="@.gpu_acceleration"
+                 tooltip="@.gpu_acceleration_tooltip" />
           <check text="Debug paint messages"
                  id="devmode_debug_paint_messages"
                  pref="developer.debug_paint_messages" />

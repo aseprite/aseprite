@@ -46,7 +46,10 @@ Cel::~Cel()
 // static
 Cel* Cel::MakeCopy(const frame_t newFrame, const Cel* other)
 {
-  Cel* cel = new Cel(newFrame, ImageRef(Image::createCopy(other->image())));
+  ImageRef newImage;
+  if (other->image())
+    newImage.reset(Image::createCopy(other->image()));
+  Cel* cel = new Cel(newFrame, newImage);
 
   cel->setPosition(other->position());
   cel->setOpacity(other->opacity());

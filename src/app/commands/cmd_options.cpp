@@ -499,11 +499,8 @@ public:
     multipleWindows()->Click.connect(
       [this]() { uiWindows()->setSelectedItem(multipleWindows()->isSelected() ? 1 : 0); });
 
-#ifdef ENABLE_DEVMODE // TODO enable this on Release when Aseprite supports
-                      //      GPU-acceleration properly
-    if (!m_system->hasCapability(os::Capabilities::GpuAccelerationSwitch))
-#endif
-    {
+    if (!App::instance()->isDevMode() ||
+        !m_system->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
       gpuAcceleration()->setVisible(false);
     }
 
@@ -752,6 +749,7 @@ public:
 
     // Brush preview
     brushPreview()->setSelectedItemIndex((int)m_pref.cursor.brushPreview());
+    tilePreview()->setSelectedItemIndex((int)m_pref.cursor.tilePreview());
 
     // Guide colors
     layerEdgesColor()->setColor(m_pref.guides.layerEdgesColor());
@@ -838,11 +836,10 @@ public:
     // Scaling
     selectScalingItems();
 
-#ifdef ENABLE_DEVMODE
-    if (m_system->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
-      gpuAcceleration()->setSelected(m_pref.general.gpuAcceleration());
+    if (App::instance()->isDevMode() &&
+        m_system->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
+      gpuAcceleration()->setSelected(m_pref.general.gpu());
     }
-#endif
 
     if (m_system->menus())
       showMenuBar()->setSelected(m_pref.general.showMenuBar());
@@ -942,6 +939,8 @@ public:
     m_pref.cursor.cursorColor(cursorColor()->getColor());
     m_pref.cursor.brushPreview(
       static_cast<app::gen::BrushPreview>(brushPreview()->getSelectedItemIndex()));
+    m_pref.cursor.tilePreview(
+      static_cast<app::gen::BrushPreview>(tilePreview()->getSelectedItemIndex()));
     m_pref.cursor.useNativeCursor(nativeCursor()->isSelected());
     m_pref.cursor.cursorScale(base::convert_to<int>(cursorScale()->getValue()));
     m_pref.guides.layerEdgesColor(layerEdgesColor()->getColor());
@@ -1115,13 +1114,13 @@ public:
     if (reset_theme)
       ui::set_theme(ui::get_theme(), newUIScale);
 
-#ifdef ENABLE_DEVMODE
-    const bool newGpuAccel = gpuAcceleration()->isSelected();
-    if (newGpuAccel != m_pref.general.gpuAcceleration()) {
-      m_pref.general.gpuAcceleration(newGpuAccel);
-      reset_screen = true;
+    if (App::instance()->isDevMode()) {
+      const bool newGpu = gpuAcceleration()->isSelected();
+      if (newGpu != m_pref.general.gpu()) {
+        m_pref.general.gpu(newGpu);
+        reset_screen = true;
+      }
     }
-#endif
 
     if (m_system->menus() && m_pref.general.showMenuBar() != showMenuBar()->isSelected()) {
       m_pref.general.showMenuBar(showMenuBar()->isSelected());
@@ -1346,7 +1345,7 @@ private:
   void updateScreenScaling()
   {
     ui::Manager* manager = ui::Manager::getDefault();
-    manager->updateAllDisplays(m_pref.general.screenScale(), m_pref.general.gpuAcceleration());
+    manager->updateAllDisplays(m_pref.general.screenScale(), m_pref.general.gpu());
   }
 
   void onApply()

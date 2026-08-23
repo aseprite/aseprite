@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -84,11 +84,22 @@ void Display::configureBackLayer()
 
   os::SurfaceRef layerSurface = layer->surface();
   if (!layerSurface || layerSurface == displaySurface ||
-      layerSurface->width() != displaySurface->width() ||
-      layerSurface->height() != displaySurface->height()) {
-    layerSurface = os::System::instance()->makeSurface(displaySurface->width(),
-                                                       displaySurface->height(),
-                                                       displaySurface->colorSpace());
+      layerSurface->size() != displaySurface->size()) {
+#if 0 // TODO makeOffscreenRenderTarget() generates a lot of flickering
+    //      when for scale != 1 and in multiple windows, still some
+    //      bugs to fix.
+    if (nativeWindow()->gpuContext()) {
+      layerSurface = nativeWindow()->gpuContext()
+        ->makeOffscreenRenderTarget(displaySurface->size(),
+                                    displaySurface->colorSpace());
+    }
+    else
+#endif
+    {
+      layerSurface = os::System::instance()->makeSurface(displaySurface->width(),
+                                                         displaySurface->height(),
+                                                         displaySurface->colorSpace());
+    }
     layer->setSurface(layerSurface);
   }
 }
@@ -127,6 +138,7 @@ void Display::flipDisplay()
   }
 
   const os::SurfaceRef windowSurface = nativeSurface();
+  m_nativeWindow->makeCurrent();
 
   // Compose all UI layers in the dirty regions
   for (const UILayerRef& layer : m_layers) {

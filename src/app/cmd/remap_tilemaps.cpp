@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -60,7 +60,7 @@ void RemapTilemaps::incrementVersions(Tileset* tileset)
 {
   Sprite* spr = tileset->sprite();
   for (const Cel* cel : spr->uniqueCels()) {
-    if (cel->layer()->isTilemap() &&
+    if (cel->image() && cel->layer()->isTilemap() &&
         static_cast<LayerTilemap*>(cel->layer())->tileset() == tileset) {
       cel->image()->incrementVersion();
     }

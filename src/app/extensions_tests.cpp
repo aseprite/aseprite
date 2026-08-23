@@ -21,6 +21,7 @@ const char* g_exeName = nullptr;
   #include "archive.h"
   #include "archive_entry.h"
   #include "base/convert_to.h"
+  #include "base/file_size.h"
   #include "base/fs.h"
   #include "cli/app_options.h"
   #include "doc/layer.h"
@@ -120,7 +121,7 @@ public:
       archive_entry_set_pathname(e.get(), base::get_relative_path(fn, m_path).c_str());
       archive_entry_set_perm(e.get(), 0644);
       archive_entry_set_filetype(e.get(), AE_IFREG);
-      archive_entry_set_size(e.get(), base::file_size(fn));
+      archive_entry_set_size(e.get(), base::file_size(fn)); // receives a la_int64_t
       archive_write_header(a.get(), e.get());
 
       std::ifstream ifs(fn, std::ios::binary);

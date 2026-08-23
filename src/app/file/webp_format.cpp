@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 // Copyright (C) 2015  Gabriel Rauter
 //
@@ -22,6 +22,7 @@
 #include "app/pref/preferences.h"
 #include "base/convert_to.h"
 #include "base/file_handle.h"
+#include "base/file_size.h"
 #include "doc/doc.h"
 #include "ui/manager.h"
 
@@ -84,12 +85,7 @@ bool WebPFormat::onLoad(FileOp* fop)
   FileHandle handle(open_file_with_exception(fop->filename(), "rb"));
   FILE* fp = handle.get();
 
-  long len = 0;
-  if (fseek(fp, 0, SEEK_END) == 0) {
-    len = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-  }
-
+  const auto len = base::file_size(fp);
   if (len < 4) {
     fop->setError("The specified file is not a WebP file\n");
     return false;
@@ -167,7 +163,7 @@ bool WebPFormat::onLoad(FileOp* fop)
     }
 
     Cel* cel = layer->cel(f);
-    if (cel) {
+    if (cel && cel->image()) {
       const uint32_t* src = (const uint32_t*)frame_rgba;
       for (int y = 0; y < h; ++y, src += w) {
         memcpy(cel->image()->getPixelAddress(0, y), src, w * sizeof(uint32_t));

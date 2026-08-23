@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2024  Igara Studio S.A.
+// Copyright (C) 2024-2026  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -41,23 +41,21 @@ ClearSlices::ClearSlices(const Site& site,
     if (!cel)
       continue;
 
+    Image* image = cel->image();
+    if (!image)
+      continue;
+
     SlicesContent sc(cel);
     for (const auto& sk : slicesKeys) {
       sc.mask.add(sk.bounds());
     }
     gfx::Rect maskBounds = sc.mask.bounds();
-
-    Image* image = cel->image();
-    assert(image);
-    if (!image)
-      continue;
-
     gfx::Rect imageBounds = cel->bounds();
 
     color_t bgcolor = doc->bgColor(layer);
     if (image->pixelFormat() == IMAGE_TILEMAP) {
       auto grid = cel->grid();
-      imageBounds = gfx::Rect(grid.canvasToTile(cel->position()), cel->image()->size());
+      imageBounds = gfx::Rect(grid.canvasToTile(cel->position()), image->size());
       maskBounds = grid.canvasToTile(maskBounds);
       bgcolor = doc::notile; // TODO configurable empty tile
     }
@@ -99,6 +97,8 @@ void ClearSlices::clear()
     if (!sc.copy)
       continue;
 
+    ASSERT(sc.cel()->image());
+
     if (sc.cel()->layer()->isTilemap() && m_tilemapMode == TilemapMode::Pixels) {
       Doc* doc = static_cast<Doc*>(sc.cel()->document());
       color_t bgcolor = doc->bgColor(sc.cel()->layer());
@@ -136,6 +136,8 @@ void ClearSlices::restore()
   for (auto& sc : m_slicesContents) {
     if (!sc.copy)
       continue;
+
+    ASSERT(sc.cel()->image());
 
     copy_image(sc.cel()->image(), sc.copy.get(), sc.cropPos.x, sc.cropPos.y);
   }

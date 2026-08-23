@@ -1094,15 +1094,13 @@ static os::SurfaceRef sliceSheet(os::SurfaceRef sheet, os::SurfaceRef sur, const
     if (!sur)
       sur = os::System::instance()->makeRgbaSurface(bounds.w, bounds.h);
 
-    os::SurfaceLock lockSrc(sheet.get());
-    os::SurfaceLock lockDst(sur.get());
     sheet->blitTo(sur.get(), bounds.x, bounds.y, 0, 0, bounds.w, bounds.h);
 
     // The new surface is immutable because we're going to re-use the
     // surface if we reload the theme.
     //
     // TODO Add sub-surfaces (SkBitmap::extractSubset())
-    // sur->setImmutable();
+    sur->setImmutable();
   }
   else {
     ASSERT(!sur);

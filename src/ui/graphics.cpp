@@ -45,6 +45,7 @@ Graphics::Graphics(Display* display, const os::SurfaceRef& surface, int dx, int 
   , m_dx(dx)
   , m_dy(dy)
 {
+  m_display->nativeWindow()->makeCurrent();
 }
 
 Graphics::Graphics(Display* display)
@@ -53,6 +54,7 @@ Graphics::Graphics(Display* display)
   , m_dx(0)
   , m_dy(0)
 {
+  m_display->nativeWindow()->makeCurrent();
 }
 
 Graphics::Graphics(const os::SurfaceRef& surface)

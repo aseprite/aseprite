@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018-2025 Igara Studio S.A.
+// Copyright (c) 2018-present Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,6 +9,7 @@
 #define DIO_ASEPRITE_COMMON_H_INCLUDED
 #pragma once
 
+#include "base/file_size.h"
 #include "base/ints.h"
 
 #include <map>
@@ -33,8 +34,9 @@
 #define ASE_FILE_CHUNK_TAGS              0x2018
 #define ASE_FILE_CHUNK_PALETTE           0x2019
 #define ASE_FILE_CHUNK_USER_DATA         0x2020
-#define ASE_FILE_CHUNK_SLICES                                                                      \
-  0x2021 // Deprecated chunk (used on dev versions only between v1.2-beta7 and v1.2-beta8)
+// ASE_FILE_CHUNK_SLICES is a deprecated chunk (used on dev versions
+// only between v1.2-beta7 and v1.2-beta8)
+#define ASE_FILE_CHUNK_SLICES             0x2021
 #define ASE_FILE_CHUNK_SLICE              0x2022
 #define ASE_FILE_CHUNK_TILESET            0x2023
 
@@ -80,9 +82,9 @@
 namespace dio {
 
 struct AsepriteHeader {
-  long pos; // TODO used by the encoder in app project
+  base::fileoff_t pos; // TODO used by the encoder in app project
 
-  uint32_t size;
+  uint32_t size; // For file sizes bigger than 4GB it's set to 0xFFFFFFFF
   uint16_t magic;
   uint16_t frames;
   uint16_t width;
@@ -104,6 +106,7 @@ struct AsepriteHeader {
 };
 
 struct AsepriteFrameHeader {
+  base::fileoff_t pos;
   uint32_t size;
   uint16_t magic;
   uint32_t chunks;
@@ -112,7 +115,7 @@ struct AsepriteFrameHeader {
 
 struct AsepriteChunk {
   int type;
-  int start;
+  base::fileoff_t start;
 };
 
 class AsepriteExternalFiles {

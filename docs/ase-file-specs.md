@@ -67,6 +67,7 @@ To read the sprite:
 A 128-byte header (same as FLC/FLI header, but with other magic number):
 
     DWORD       File size
+                It is 0xFFFFFFFF if the size is bigger than 4GB
     WORD        Magic number (0xA5E0)
     WORD        Frames
     WORD        Width in pixels
@@ -208,7 +209,10 @@ entire layers layout:
 
 ### Cel Chunk (0x2005)
 
-This chunk determine where to put a cel in the specified layer/frame.
+This chunk determine where to put a cel in the specified
+layer/frame. *Width* and *Height* fields for any kind of cel type can
+be zero, which means the cel doesn't have an associated image (so
+there is no pixel/tile data to read).
 
     WORD        Layer index (see NOTE.2)
     SHORT       X position
@@ -225,19 +229,19 @@ This chunk determine where to put a cel in the specified layer/frame.
                 -N = show this cel N layers back
     BYTE[5]     For future (set to zero)
     + For cel type = 0 (Raw Image Data)
-      WORD      Width in pixels
-      WORD      Height in pixels
+      WORD      Width in pixels (can be 0 if there is no data, same for all cel types)
+      WORD      Height in pixels (can be 0)
       PIXEL[]   Raw pixel data: row by row from top to bottom,
                 for each scanline read pixels from left to right.
     + For cel type = 1 (Linked Cel)
       WORD      Frame position to link with
     + For cel type = 2 (Compressed Image)
-      WORD      Width in pixels
-      WORD      Height in pixels
+      WORD      Width in pixels (can be 0)
+      WORD      Height in pixels (can be 0)
       PIXEL[]   "Raw Cel" data compressed with ZLIB method (see NOTE.3)
     + For cel type = 3 (Compressed Tilemap)
-      WORD      Width in number of tiles
-      WORD      Height in number of tiles
+      WORD      Width in number of tiles (can be 0)
+      WORD      Height in number of tiles (can be 0)
       WORD      Bits per tile (at the moment it's always 32-bit per tile)
       DWORD     Bitmask for tile ID (e.g. 0x1fffffff for 32-bit tiles)
       DWORD     Bitmask for X flip

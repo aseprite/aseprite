@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2023 Igara Studio S.A.
+// Copyright (c) 2023-2026 Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -74,7 +74,7 @@ bool get_tile_pixel(
   tile_index& tf,
   color_t& tileImageColor)
 {
-  if (!cel || !cel->layer()->isTilemap() || !cel->image()->isTilemap())
+  if (!cel || !cel->layer()->isTilemap() || !cel->image() || !cel->image()->isTilemap())
     return false;
 
   Tileset* tileset = static_cast<LayerTilemap*>(cel->layer())->tileset();

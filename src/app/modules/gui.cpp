@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2026  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -159,7 +159,7 @@ static bool create_main_window(bool gpuAccel, bool& maximized, std::string& last
     // Change the default Screen Scale value to the one configured in
     // the main window by default.
     if (scale == 0)
-      Preferences::instance().general.screenScale.setValueAndDefault(main_window->scale());
+      Preferences::instance().general.screenScale.setValueAndDefault(main_window->baseScale());
 
     main_window->setGpuAcceleration(gpuAccel);
 
@@ -177,7 +177,7 @@ int init_module_gui()
   auto& pref = Preferences::instance();
   bool maximized = false;
   std::string lastError = "Unknown error";
-  bool gpuAccel = pref.general.gpuAcceleration();
+  bool gpuAccel = pref.general.gpu();
 
   if (!create_main_window(gpuAccel, maximized, lastError)) {
     // If we've created the native window with hardware acceleration,
@@ -185,7 +185,7 @@ int init_module_gui()
     if (gpuAccel && system->hasCapability(os::Capabilities::GpuAccelerationSwitch)) {
       if (create_main_window(false, maximized, lastError)) {
         // Disable hardware acceleration
-        pref.general.gpuAcceleration(false);
+        pref.general.gpu(false);
       }
     }
   }
@@ -592,7 +592,7 @@ bool CustomizedGuiManager::onProcessDevModeKeyDown(KeyMessage* msg)
   if (msg->ctrlPressed() && msg->scancode() == kKeyF1) {
     try {
       os::Window* window = display()->nativeWindow();
-      int screenScale = window->scale();
+      int screenScale = window->baseScale();
       int uiScale = ui::guiscale();
 
       if (msg->shiftPressed()) {
@@ -627,7 +627,7 @@ bool CustomizedGuiManager::onProcessDevModeKeyDown(KeyMessage* msg)
       if (uiScale != ui::guiscale()) {
         ui::set_theme(ui::get_theme(), uiScale);
       }
-      if (screenScale != window->scale()) {
+      if (screenScale != window->baseScale()) {
         updateAllDisplays(screenScale, window->gpuAcceleration());
       }
     }
