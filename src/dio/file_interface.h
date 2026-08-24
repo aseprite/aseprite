@@ -25,7 +25,7 @@ public:
   virtual bool ok() const = 0;
 
   // Current position in the file
-  virtual base::fileoff_t tell() = 0;
+  virtual base::fileoff_t tell() const = 0;
 
   // Jump to the given position in the file
   virtual void seek(base::fileoff_t absPos) = 0;
@@ -43,7 +43,7 @@ class StdioFileInterface : public FileInterface {
 public:
   StdioFileInterface(FILE* file);
   bool ok() const override;
-  base::fileoff_t tell() override;
+  base::fileoff_t tell() const override;
   void seek(base::fileoff_t absPos) override;
   uint8_t read8() override;
   size_t readBytes(uint8_t* buf, size_t n) override;

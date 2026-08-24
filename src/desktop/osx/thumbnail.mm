@@ -38,9 +38,9 @@ public:
 
   bool ok() const override { return m_ok; }
 
-  size_t tell() override { return m_pos; }
+  base::fileoff_t tell() const override { return m_pos; }
 
-  void seek(size_t absPos) override { m_pos = absPos; }
+  void seek(const base::fileoff_t absPos) override { m_pos = absPos; }
 
   uint8_t read8() override
   {

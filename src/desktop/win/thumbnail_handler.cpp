@@ -51,7 +51,7 @@ public:
 
   bool ok() const override { return m_ok; }
 
-  base::fileoff_t tell() override
+  base::fileoff_t tell() const override
   {
     LARGE_INTEGER delta;
     delta.QuadPart = 0;

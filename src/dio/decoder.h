@@ -39,7 +39,8 @@ protected:
   DecodeDelegate* delegate() { return m_delegate; }
   FileInterface* f() { return m_f; }
 
-  base::fileoff_t tell() { return m_f->tell(); }
+  bool ok() const { return m_f->ok(); }
+  base::fileoff_t tell() const { return m_f->tell(); }
   void seek(const base::fileoff_t absPos) { m_f->seek(absPos); }
 
   uint8_t read8() { return m_f->read8(); }

@@ -18,7 +18,7 @@ bool StdioFileInterface::ok() const
   return m_ok;
 }
 
-base::fileoff_t StdioFileInterface::tell()
+base::fileoff_t StdioFileInterface::tell() const
 {
   return base::base_ftell(m_file);
 }

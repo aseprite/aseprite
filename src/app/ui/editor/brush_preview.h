@@ -99,8 +99,11 @@ private:
   void strokeSelectionCrossPixels(ui::Graphics* g,
                                   gfx::Point pos,
                                   const os::Paint& paint,
-                                  int thickness);
+                                  int thickness,
+                                  int uiScale);
   void strokeBrushBoundaries(ui::Graphics* g, gfx::Point pos, const os::Paint& paint);
+
+  static int uiScaleForCursor();
 
   Editor* m_editor;
   int m_type = CROSSHAIR;
