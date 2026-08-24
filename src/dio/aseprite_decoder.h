@@ -64,16 +64,20 @@ private:
   void readColorProfile(doc::Sprite* sprite);
   void readExternalFiles(AsepriteExternalFiles& extFiles);
   doc::Mask* readMaskChunk();
-  void readTagsChunk(doc::Tags* tags);
-  void readSlicesChunk(doc::Slices& slices);
-  doc::Slice* readSliceChunk(doc::Slices& slices);
-  void readUserDataChunk(doc::UserData* userData, const AsepriteExternalFiles& extFiles);
+  void readTagsChunk(doc::Tags* tags, const size_t chunk_end);
+  void readSlicesChunk(doc::Slices& slices, const size_t chunk_end);
+  doc::Slice* readSliceChunk(doc::Slices& slices, const size_t chunk_end);
+  void readUserDataChunk(doc::UserData* userData,
+                         const AsepriteExternalFiles& extFiles,
+                         const size_t chunk_end);
   doc::Tileset* readTilesetChunk(doc::Sprite* sprite,
                                  const AsepriteHeader* header,
-                                 const AsepriteExternalFiles& extFiles);
+                                 const AsepriteExternalFiles& extFiles,
+                                 const size_t chunk_end);
   void readPropertiesMaps(doc::UserData::PropertiesMaps& propertiesMaps,
-                          const AsepriteExternalFiles& extFiles);
-  const doc::UserData::Variant readPropertyValue(uint16_t type, int& depth);
+                          const AsepriteExternalFiles& extFiles,
+                          const size_t chunk_end);
+  const doc::UserData::Variant readPropertyValue(uint16_t type, int& depth, const size_t chunk_end);
   void readTilesData(doc::Tileset* tileset, const AsepriteExternalFiles& extFiles);
   base::Uuid readUuid();
 
