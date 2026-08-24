@@ -489,8 +489,9 @@ void BrushPreview::show(const gfx::Point& screenPos)
           paint.color(uiCursorColor);
 
         if (m_type & SELECTION_CROSSHAIR) {
-          gfx::Point pos(3, 3);
-          strokeSelectionCrossPixels(&g, pos, paint, 1);
+          const int uiScale = uiScaleForCursor();
+          gfx::Point pos(3 * uiScale, 3 * uiScale);
+          strokeSelectionCrossPixels(&g, pos, paint, 1, uiScale);
         }
         else if (m_type & BRUSH_BOUNDARIES) {
           gfx::Point pos;
@@ -609,7 +610,9 @@ bool BrushPreview::createUILayer(const gfx::Rect& brushBounds)
   const render::Projection& proj = m_editor->projection();
 
   if (m_type & SELECTION_CROSSHAIR) {
-    gfx::Size pixelSize(6 + std::max(1, proj.applyX(1)), 6 + std::max(1, proj.applyY(1)));
+    const int uiScale = uiScaleForCursor();
+    gfx::Size pixelSize(uiScale * 6 + std::max(1, proj.applyX(1)),
+                        uiScale * 6 + std::max(1, proj.applyY(1)));
     sizeHint = pixelSize;
   }
   else if (m_type & BRUSH_BOUNDARIES) {
@@ -680,9 +683,7 @@ void BrushPreview::createCrosshairCursor(ui::Graphics* g, const gfx::Color curso
 {
   ASSERT(!(m_type & NATIVE_CROSSHAIR));
 
-  const bool withUIScale = (Preferences::instance().cursor.paintingCursorType() ==
-                            gen::PaintingCursorType::CROSSHAIR_ON_SPRITE);
-  const int uiScale = (withUIScale ? ui::guiscale() : 1);
+  const int uiScale = uiScaleForCursor();
 
   gfx::Rect cursorBounds;
   gfx::Point cursorCenter;
@@ -844,7 +845,8 @@ void BrushPreview::createCrosshairCursor(ui::Graphics* g, const gfx::Color curso
 void BrushPreview::strokeSelectionCrossPixels(ui::Graphics* g,
                                               gfx::Point pos,
                                               const ui::Paint& paint,
-                                              const int thickness)
+                                              const int thickness,
+                                              const int uiScale)
 {
   const render::Projection& proj = m_editor->projection();
   gfx::Size size(proj.applyX(thickness / 2), proj.applyY(thickness / 2));
@@ -854,21 +856,26 @@ void BrushPreview::strokeSelectionCrossPixels(ui::Graphics* g,
   if (size2.h == 0)
     size2.h = 1;
 
-  int u0 = pos.x - size.w - 3;
-  int v0 = pos.y - size.h - 1;
+  int u0 = pos.x - size.w - 3 * uiScale;
+  int v0 = pos.y - size.h - 1 * uiScale;
   int u1 = pos.x - size.w + size2.w;
   int v1 = pos.y - size.h + size2.h;
-  g->drawHLine(u0, v0, 3, paint);
-  g->drawHLine(u1, v0, 3, paint);
-  g->drawHLine(u0, v1, 3, paint);
-  g->drawHLine(u1, v1, 3, paint);
+  for (int i = 0; i < uiScale; ++i) {
+    g->drawHLine(u0, v0 + i, 3 * uiScale, paint);
+    g->drawHLine(u1, v0 + i, 3 * uiScale, paint);
+    g->drawHLine(u0, v1 + i, 3 * uiScale, paint);
+    g->drawHLine(u1, v1 + i, 3 * uiScale, paint);
+  }
 
-  u0 = pos.x - size.w - 1;
-  v0 = pos.y - size.h - 3;
-  g->drawVLine(u0, v0, 3, paint);
-  g->drawVLine(u1, v0, 3, paint);
-  g->drawVLine(u0, v1, 3, paint);
-  g->drawVLine(u1, v1, 3, paint);
+  u0 = pos.x - size.w - 1 * uiScale;
+  v0 = pos.y - size.h - 3 * uiScale;
+  v1 += 1 * uiScale;
+  for (int i = 0; i < uiScale; ++i) {
+    g->drawVLine(u0 + i, v0, 2 * uiScale, paint);
+    g->drawVLine(u1 + i, v0, 2 * uiScale, paint);
+    g->drawVLine(u0 + i, v1, 2 * uiScale, paint);
+    g->drawVLine(u1 + i, v1, 2 * uiScale, paint);
+  }
 }
 
 // Brush edges used for Eraser tool
@@ -885,6 +892,14 @@ void BrushPreview::strokeBrushBoundaries(ui::Graphics* g, gfx::Point pos, const 
   path.offset(pos.x, pos.y);
 
   g->drawPath(path, paint);
+}
+
+// static
+int BrushPreview::uiScaleForCursor()
+{
+  const bool withUIScale = (Preferences::instance().cursor.paintingCursorType() ==
+                            gen::PaintingCursorType::CROSSHAIR_ON_SPRITE);
+  return (withUIScale ? ui::guiscale() : 1);
 }
 
 } // namespace app
