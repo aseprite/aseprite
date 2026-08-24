@@ -1071,6 +1071,18 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
           }
         }
 
+        // Border style
+        const char* borderStyle = xmlLayer->Attribute("border-style");
+        if (borderStyle) {
+          std::string borderStyleString(borderStyle);
+          if (borderStyleString.find("solid") != std::string::npos) {
+            layer.setBorderStyle(ui::Style::Layer::BorderStyle::kSolid);
+          }
+          else if (borderStyleString.find("dotted") != std::string::npos) {
+            layer.setBorderStyle(ui::Style::Layer::BorderStyle::kDotted);
+          }
+        }
+
         if (layer.type() != ui::Style::Layer::Type::kNone)
           style->addLayer(layer);
 
