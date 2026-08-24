@@ -50,7 +50,7 @@ public:
 
   bool ok() const override { return m_ok; }
 
-  size_t tell() override
+  size_t tell() const override
   {
     LARGE_INTEGER delta;
     delta.QuadPart = 0;
