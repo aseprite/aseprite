@@ -20,6 +20,7 @@
 #include "doc/tileset.h"
 #include "doc/user_data.h"
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -76,7 +77,7 @@ private:
   base::Uuid readUuid();
 
   doc::LayerList m_allLayers;
-  std::vector<uint32_t> m_tilesetFlags;
+  std::map<uint32_t, uint32_t> m_tilesetFlags;
   int m_celType = ASE_FILE_COMPRESSED_CEL;
 };
 

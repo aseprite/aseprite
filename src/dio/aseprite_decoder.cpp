@@ -29,6 +29,7 @@
 #include "zlib.h"
 
 #include <cstdio>
+#include <memory>
 #include <vector>
 
 namespace dio {
@@ -941,9 +942,8 @@ Cel* AsepriteDecoder::readCelChunk(frame_t frame,
         // zero)
         Tileset* ts = static_cast<LayerTilemap*>(layer)->tileset();
         tileset_index tsi = static_cast<LayerTilemap*>(layer)->tilesetIndex();
-        ASSERT(tsi >= 0 && tsi < m_tilesetFlags.size());
-        if (tsi >= 0 && tsi < m_tilesetFlags.size() &&
-            (m_tilesetFlags[tsi] & ASE_TILESET_FLAG_ZERO_IS_NOTILE) == 0) {
+        auto it = m_tilesetFlags.find(tsi);
+        if (it != m_tilesetFlags.end() && (it->second & ASE_TILESET_FLAG_ZERO_IS_NOTILE) == 0) {
           fix_old_tilemap(image.get(), ts, tileIDMask, flagsMask);
         }
 
@@ -1243,7 +1243,7 @@ Tileset* AsepriteDecoder::readTilesetChunk(Sprite* sprite,
   }
 
   const Grid grid(gfx::Size(w, h));
-  auto* tileset = new Tileset(sprite, grid, ntiles);
+  auto tileset = std::make_unique<Tileset>(sprite, grid, ntiles);
   tileset->setName(name);
   tileset->setBaseIndex(baseIndex);
 
@@ -1287,23 +1287,21 @@ Tileset* AsepriteDecoder::readTilesetChunk(Sprite* sprite,
 
       // If we are reading and old .aseprite file (where empty tile is not the zero]
       if ((flags & ASE_TILESET_FLAG_ZERO_IS_NOTILE) == 0)
-        fix_old_tileset(tileset);
+        fix_old_tileset(tileset.get());
 
       if (!compressed.empty())
         tileset->setCompressedData(compressed);
     }
-    sprite->tilesets()->set(id, tileset);
   }
 
   tileset->setMatchFlags((flags & ASE_TILESET_FLAG_MATCH_XFLIP ? tile_f_xflip : 0) |
                          (flags & ASE_TILESET_FLAG_MATCH_YFLIP ? tile_f_yflip : 0) |
                          (flags & ASE_TILESET_FLAG_MATCH_DFLIP ? tile_f_dflip : 0));
 
-  if (id >= m_tilesetFlags.size())
-    m_tilesetFlags.resize(id + 1, 0);
   m_tilesetFlags[id] = flags;
 
-  return tileset;
+  sprite->tilesets()->set(id, tileset.get());
+  return tileset.release();
 }
 
 void AsepriteDecoder::readPropertiesMaps(UserData::PropertiesMaps& propertiesMaps,
