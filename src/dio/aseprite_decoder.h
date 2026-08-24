@@ -9,6 +9,7 @@
 #define DIO_ASEPRITE_DECODER_H_INCLUDED
 #pragma once
 
+#include "base/ints.h"
 #include "base/uuid.h"
 #include "dio/aseprite_common.h"
 #include "dio/decoder.h"
@@ -77,7 +78,21 @@ private:
   base::Uuid readUuid();
 
   doc::LayerList m_allLayers;
-  std::map<uint32_t, uint32_t> m_tilesetFlags;
+
+  // Maps a tileset ID on-file (key) -> tileset ID in-memory (value).
+  // Generally should be key = value, but in case an .aseprite file
+  // has too much empty tileset slots, we will adjust them.
+  std::map<doc::tileset_index, doc::tileset_index> m_tsiMap;
+
+  // Store extra flags for each tileset (mainly
+  // ASE_TILESET_FLAG_ZERO_IS_NOTILE to read old .aseprite files
+  // with a previous tileset format).
+  // Key = in-memory tileset ID
+  // Value = flags
+  std::map<doc::tileset_index, uint32_t> m_tilesetFlags;
+
+  // Latest cel type decoded, used to known the preferred cel type for
+  // this file in case we have to re-encode it.
   int m_celType = ASE_FILE_COMPRESSED_CEL;
 };
 

@@ -563,7 +563,12 @@ Layer* AsepriteDecoder::readLayerChunk(AsepriteHeader* header,
     case ASE_FILE_LAYER_GROUP:   layer = new LayerGroup(sprite); break;
 
     case ASE_FILE_LAYER_TILEMAP: {
-      const tileset_index tsi = read32();
+      tileset_index tsi = read32();
+
+      // Map the on-file tileset ID -> in-memory tileset ID
+      if (auto it = m_tsiMap.find(tsi); it != m_tsiMap.end())
+        tsi = it->second;
+
       if (!sprite->tilesets()->get(tsi)) {
         delegate()->error(fmt::format("Error: tileset {0} not found", tsi));
         return nullptr;
@@ -942,8 +947,8 @@ Cel* AsepriteDecoder::readCelChunk(frame_t frame,
         // zero)
         Tileset* ts = static_cast<LayerTilemap*>(layer)->tileset();
         tileset_index tsi = static_cast<LayerTilemap*>(layer)->tilesetIndex();
-        auto it = m_tilesetFlags.find(tsi);
-        if (it != m_tilesetFlags.end() && (it->second & ASE_TILESET_FLAG_ZERO_IS_NOTILE) == 0) {
+        if (auto it = m_tilesetFlags.find(tsi);
+            it != m_tilesetFlags.end() && (it->second & ASE_TILESET_FLAG_ZERO_IS_NOTILE) == 0) {
           fix_old_tilemap(image.get(), ts, tileIDMask, flagsMask);
         }
 
@@ -1298,9 +1303,14 @@ Tileset* AsepriteDecoder::readTilesetChunk(Sprite* sprite,
                          (flags & ASE_TILESET_FLAG_MATCH_YFLIP ? tile_f_yflip : 0) |
                          (flags & ASE_TILESET_FLAG_MATCH_DFLIP ? tile_f_dflip : 0));
 
-  m_tilesetFlags[id] = flags;
+  // New tileset ID in-memory is going to be the last position in the
+  // tilesets.
+  const doc::tileset_index newTsi = sprite->tilesets()->size();
 
-  sprite->tilesets()->set(id, tileset.get());
+  m_tsiMap[id] = newTsi;
+  m_tilesetFlags[newTsi] = flags;
+
+  sprite->tilesets()->set(newTsi, tileset.get());
   return tileset.release();
 }
 
