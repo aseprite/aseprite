@@ -29,6 +29,10 @@
 #include "ui/widget.h"
 #include "ui/window.h"
 
+#if LAF_SKIA
+  #include "include/effects/SkDashPathEffect.h"
+#endif
+
 #include <algorithm>
 #include <cstring>
 
@@ -383,6 +387,20 @@ void Theme::paintTextBoxWithStyle(Graphics* g, const Widget* widget)
     Theme::drawTextBox(g, widget, nullptr, nullptr, bg, fg);
 }
 
+Paint Theme::getPaintForBorderStyle(const Style::Layer& layer)
+{
+  Paint p(layer.color());
+  p.style(os::Paint::Stroke);
+  p.strokeWidth(guiscale() * 1.0f);
+#if LAF_SKIA
+  if (layer.borderStyle() == Style::Layer::BorderStyle::kDotted) {
+    SkScalar intervals[] = { guiscale() * 1.0f, guiscale() * 1.0f };
+    p.skPaint().setPathEffect(SkDashPathEffect::Make(intervals, 0.0f));
+  }
+#endif
+  return p;
+}
+
 void Theme::paintLayer(Graphics* g,
                        const Style* style,
                        const Style::Layer& layer,
@@ -482,6 +500,10 @@ void Theme::paintLayer(Graphics* g,
           }
         }
       }
+      else if (layer.borderStyle() != Style::Layer::BorderStyle::kNone) {
+        Paint p = getPaintForBorderStyle(layer);
+        g->drawRect(rc, p);
+      }
       else if (layer.color() != gfx::ColorNone) {
         bgColor = layer.color();
         g->fillRect(layer.color(), rc);
@@ -503,6 +525,10 @@ void Theme::paintLayer(Graphics* g,
         rc.y += layer.slicesBounds().y;
         rc.w -= layer.spriteBounds().w - layer.slicesBounds().w;
         rc.h -= layer.spriteBounds().h - layer.slicesBounds().h;
+      }
+      else if (layer.borderStyle() != Style::Layer::BorderStyle::kNone) {
+        Paint p = getPaintForBorderStyle(layer);
+        g->drawRect(rc, p);
       }
       else if (layer.color() != gfx::ColorNone) {
         g->drawRect(layer.color(), rc);
