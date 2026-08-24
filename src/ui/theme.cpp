@@ -511,6 +511,7 @@ void Theme::paintLayer(Graphics* g,
       break;
 
     case Style::Layer::Type::kBorder:
+      rc.shrink(style->margin());
       if (layer.spriteSheet() && !layer.spriteBounds().isEmpty() &&
           !layer.slicesBounds().isEmpty()) {
         Theme::drawSlices(g,
