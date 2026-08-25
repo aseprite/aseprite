@@ -159,8 +159,29 @@ Image* convert_pixel_format(const Image* image,
       case DitheringAlgorithm::Old:
         dither.reset(new OrderedDither(is_background ? -1 : new_mask_color));
         break;
-      case DitheringAlgorithm::ErrorDiffusion:
-        dither.reset(new ErrorDiffusionDither(is_background ? -1 : new_mask_color));
+      case DitheringAlgorithm::FloydSteinberg:
+        dither.reset(new ErrorDiffusionDither(ErrorDiffusionType::FloydSteinberg,
+                                              is_background ? -1 : new_mask_color));
+        break;
+      case DitheringAlgorithm::JarvisJudiceNinke:
+        dither.reset(new ErrorDiffusionDither(ErrorDiffusionType::JarvisJudiceNinke,
+                                              is_background ? -1 : new_mask_color));
+        break;
+      case DitheringAlgorithm::Stucki:
+        dither.reset(new ErrorDiffusionDither(ErrorDiffusionType::Stucki,
+                                              is_background ? -1 : new_mask_color));
+        break;
+      case DitheringAlgorithm::Atkinson:
+        dither.reset(new ErrorDiffusionDither(ErrorDiffusionType::Atkinson,
+                                              is_background ? -1 : new_mask_color));
+        break;
+      case DitheringAlgorithm::Burkes:
+        dither.reset(new ErrorDiffusionDither(ErrorDiffusionType::Burkes,
+                                              is_background ? -1 : new_mask_color));
+        break;
+      case DitheringAlgorithm::Sierra:
+        dither.reset(new ErrorDiffusionDither(ErrorDiffusionType::Sierra,
+                                              is_background ? -1 : new_mask_color));
         break;
     }
     if (dither)

@@ -27,7 +27,6 @@ public:
   virtual ~DitheringAlgorithmBase() {}
 
   virtual int dimensions() const { return 1; }
-  virtual bool zigZag() const { return false; }
 
   virtual void start(const doc::Image* srcImage, doc::Image* dstImage, const double factor) {}
 
@@ -46,7 +45,8 @@ public:
   virtual doc::color_t ditherRgbToIndex2D(const int x,
                                           const int y,
                                           const doc::RgbMap* rgbmap,
-                                          const doc::Palette* palette)
+                                          const doc::Palette* palette,
+                                          const int direction)
   {
     return 0;
   }
