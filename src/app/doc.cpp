@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -708,7 +708,8 @@ Doc* Doc::duplicate(DuplicateType type) const
       // sprite has a background layer.
       if (sourceSprite->backgroundLayer() != NULL)
         flatLayer->configureAsBackground();
-    } break;
+      break;
+    }
   }
 
   // Copy only some flags
