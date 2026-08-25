@@ -611,8 +611,8 @@ bool BrushPreview::createUILayer(const gfx::Rect& brushBounds)
 
   if (m_type & SELECTION_CROSSHAIR) {
     const int uiScale = uiScaleForCursor();
-    gfx::Size pixelSize(uiScale * 6 + std::max(1, proj.applyX(1)),
-                        uiScale * 6 + std::max(1, proj.applyY(1)));
+    gfx::Size pixelSize(uiScale * 6 + std::max(uiScale, proj.applyX(1)),
+                        uiScale * 6 + std::max(uiScale, proj.applyY(1)));
     sizeHint = pixelSize;
   }
   else if (m_type & BRUSH_BOUNDARIES) {
@@ -849,17 +849,17 @@ void BrushPreview::strokeSelectionCrossPixels(ui::Graphics* g,
                                               const int uiScale)
 {
   const render::Projection& proj = m_editor->projection();
-  gfx::Size size(proj.applyX(thickness / 2), proj.applyY(thickness / 2));
-  gfx::Size size2(proj.applyX(thickness), proj.applyY(thickness));
-  if (size2.w == 0)
-    size2.w = 1;
-  if (size2.h == 0)
-    size2.h = 1;
+  gfx::Size size(std::max(uiScale, proj.applyX(thickness)),
+                 std::max(uiScale, proj.applyY(thickness)));
+  if (size.w == 0)
+    size.w = 1;
+  if (size.h == 0)
+    size.h = 1;
 
-  int u0 = pos.x - size.w - 3 * uiScale;
-  int v0 = pos.y - size.h - 1 * uiScale;
-  int u1 = pos.x - size.w + size2.w;
-  int v1 = pos.y - size.h + size2.h;
+  int u0 = pos.x - 3 * uiScale;
+  int v0 = pos.y - 1 * uiScale;
+  int u1 = pos.x + size.w;
+  int v1 = pos.y + size.h;
   for (int i = 0; i < uiScale; ++i) {
     g->drawHLine(u0, v0 + i, 3 * uiScale, paint);
     g->drawHLine(u1, v0 + i, 3 * uiScale, paint);
@@ -867,8 +867,8 @@ void BrushPreview::strokeSelectionCrossPixels(ui::Graphics* g,
     g->drawHLine(u1, v1 + i, 3 * uiScale, paint);
   }
 
-  u0 = pos.x - size.w - 1 * uiScale;
-  v0 = pos.y - size.h - 3 * uiScale;
+  u0 = pos.x - 1 * uiScale;
+  v0 = pos.y - 3 * uiScale;
   v1 += 1 * uiScale;
   for (int i = 0; i < uiScale; ++i) {
     g->drawVLine(u0 + i, v0, 2 * uiScale, paint);
