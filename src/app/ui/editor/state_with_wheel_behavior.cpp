@@ -145,7 +145,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
 
   processWheelAction(editor,
                      wheelAction,
-                     msg->position(),
+                     msg->screenPosition(),
                      delta,
                      dz,
                      // The possibility for big scroll steps was lost
@@ -530,7 +530,7 @@ bool StateWithWheelBehavior::onTouchMagnify(Editor* editor, ui::TouchMessage* ms
   params.set("focus",
              Preferences::instance().editor.zoomFromCenterWithWheel() ? "center" : "mouse");
   params.set("position",
-             (std::to_string(msg->position().x) + "," + std::to_string(msg->position().y)).c_str());
+             (std::to_string(msg->screenPosition().x) + "," + std::to_string(msg->screenPosition().y)).c_str());
 
   UIContext::instance()->executeCommand(Commands::instance()->byId(CommandId::Zoom()), params);
   return true;
@@ -581,18 +581,6 @@ void StateWithWheelBehavior::onBeforeRemoveLayer(Editor* editor)
 {
   // Clear the cached list of layers
   m_browsableLayers.clear();
-}
-
-void StateWithWheelBehavior::setZoom(Editor* editor,
-                                     const render::Zoom& zoom,
-                                     const gfx::Point& mousePos)
-{
-  bool center = Preferences::instance().editor.zoomFromCenterWithWheel();
-
-  editor->setZoomAndCenterInMouse(
-    zoom,
-    mousePos,
-    (center ? Editor::ZoomBehavior::CENTER : Editor::ZoomBehavior::MOUSE));
 }
 
 Color StateWithWheelBehavior::initialFgColor() const
