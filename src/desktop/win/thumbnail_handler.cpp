@@ -114,8 +114,8 @@ public:
     return 0;
   }
 
-  IStream* m_stream;
-  bool m_ok;
+  mutable IStream* m_stream;
+  mutable bool m_ok;
 };
 
 } // anonymous namespace
