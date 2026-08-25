@@ -726,7 +726,7 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
           auto dstLayers = dstSpr->allBrowsableLayers();
 
           for (frame_t srcFrame : srcRange.selectedFrames()) {
-            api.addEmptyFrame(dstSpr, dstFrame);
+            api.addEmptyFrame(dstSpr, dstFrame, false);
             api.setFrameDuration(dstSpr, dstFrame, srcSpr->frameDuration(srcFrame));
 
             auto srcIt = srcLayers.begin();
@@ -743,6 +743,42 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
 
               if (Cel* cel = srcLayer->cel(srcFrame)) {
                 api.copyCel(srcLayer, srcFrame, dstLayer, dstFrame);
+              }
+            }
+
+            // Copy any tags from these frames, if available.
+            for (Tag* tag : srcSpr->tags()) {
+              if (!tag->contains(srcFrame))
+                continue;
+
+              Tag* existingTag = nullptr;
+              for (Tag* destTag : dstSpr->tags().getInternalList()) {
+                if (destTag->toFrame() < site.frame() ||
+                    destTag->fromFrame() > site.frame() + srcRange.frames())
+                  continue; // Ignore tags that exist outside our selection range
+
+                if (destTag->name() == tag->name()) {
+                  if (existingTag && !destTag->contains(dstFrame))
+                    continue;
+
+                  existingTag = destTag;
+                }
+              }
+
+              if (existingTag) {
+                // If this tag already exists fully, bail instead of attaching
+                if (existingTag->fromFrame() == tag->fromFrame() &&
+                    existingTag->toFrame() == tag->toFrame()) {
+                  continue;
+                }
+
+                if (dstFrame == existingTag->toFrame() + 1) {
+                  // Only attach these together if they're next to each other.
+                  api.setTagRange(existingTag, existingTag->fromFrame(), dstFrame);
+                }
+              }
+              else {
+                api.copyTag(tag, dstSpr, dstFrame);
               }
             }
 
