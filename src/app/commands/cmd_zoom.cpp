@@ -19,14 +19,16 @@
 #include "ui/manager.h"
 #include "ui/system.h"
 
+#include <cstdint>
+
 #ifdef ENABLE_SCRIPTING
   #include "app/script/luacpp.h"
 #endif
 
 namespace app {
 
-enum class ZoomAction { In, Out, Set };
-enum class ZoomFocus { Default, Mouse, Center };
+enum class ZoomAction : std::uint8_t { In, Out, Set };
+enum class ZoomFocus : std::uint8_t { Default, Mouse, Center };
 
 template<>
 void Param<ZoomAction>::fromString(const std::string& value)
