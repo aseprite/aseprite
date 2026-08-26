@@ -37,6 +37,16 @@ enum class ObjectType : uint16_t {
   LayerTilemap = 14,
   Tileset = 15,
   Tilesets = 16,
+
+  LayerFill = 17,
+  LayerMask = 18,
+  LayerFx = 19,
+  LayerText = 20,
+  LayerVector = 21,
+  LayerAudio = 22,
+  LayerHitbox = 23,
+
+  LayerSubsprite = 24,
 };
 
 } // namespace doc
