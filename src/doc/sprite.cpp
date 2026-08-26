@@ -225,6 +225,18 @@ bool Sprite::isOpaque() const
   return (bg && bg->isVisible());
 }
 
+bool Sprite::isColorUsed(const doc::color_t c) const
+{
+  ASSERT(pixelFormat() == IMAGE_RGB || pixelFormat() == IMAGE_GRAYSCALE);
+  for (Cel* cel : cels()) {
+    if (cel && cel->image()) {
+      if (is_color_used(cel->image(), c))
+        return true;
+    }
+  }
+  return false;
+}
+
 bool Sprite::needAlpha() const
 {
   switch (pixelFormat()) {
