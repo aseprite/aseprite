@@ -1778,17 +1778,17 @@ void Editor::updateQuicktool(const ui::Message* msg)
     auto atm = App::instance()->activeToolManager();
     const tools::Tool* selectedTool = atm->selectedTool();
 
-    // Don't change quicktools if we are in a selection tool and using
-    // the selection modifiers (or Ctrl key to start a copy of the
-    // selection).
-    if (selectedTool->getInk(0)->isSelection()) {
-      if ((int(m_customizationDelegate->getPressedKeyAction(KeyContext::SelectionTool)) != 0) ||
-          (int(m_customizationDelegate->getPressedKeyAction(KeyContext::TranslatingSelection)) &
-           int(KeyAction::CopySelection))) {
-        if (atm->quickTool())
-          atm->newQuickToolSelectedFromEditor(nullptr);
-        return;
-      }
+    // Don't change quicktools if we are in a selection tool and
+    // the pressed keys exactly match with an selection modifier
+    // combination (as default Shift, Alt+Shift, Ctrl+Shift, Ctrl).
+    // If extra keys are pressed beyond a selection modifier
+    // combination in a selection tool context, the quicktool
+    // takes priority (for example: Ctrl+Space).
+    if (selectedTool->getInk(0)->isSelection() &&
+        m_customizationDelegate->isSelectionModifiersPressed()) {
+      if (atm->quickTool())
+        atm->newQuickToolSelectedFromEditor(nullptr);
+      return;
     }
 
     ui::Shortcut newShortcut;

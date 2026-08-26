@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -144,6 +144,11 @@ public:
     return KeyboardShortcuts::instance()->getCurrentActionModifiers(context);
   }
 
+  bool isSelectionModifiersPressed() override
+  {
+    return KeyboardShortcuts::instance()->isSelectionModifiersPressed();
+  }
+
   TagProvider* getTagProvider() override { return App::instance()->mainWindow()->getTimeline(); }
 
 protected:
@@ -219,6 +224,8 @@ public:
   }
 
   KeyAction getPressedKeyAction(KeyContext context) override { return KeyAction::None; }
+
+  bool isSelectionModifiersPressed() override { return false; }
 
   TagProvider* getTagProvider() override { return App::instance()->mainWindow()->getTimeline(); }
 };
