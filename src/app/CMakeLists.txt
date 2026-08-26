@@ -182,6 +182,11 @@ if(ENABLE_SCRIPTING)
     target_compile_definitions(app-lib PUBLIC -DENABLE_WEBSOCKET)
     target_sources(app-lib PRIVATE
       script/websocket_class.cpp)
+  endif()  
+  
+  if(ENABLE_FFI)
+    target_link_libraries(app-lib cffi-lua)
+    target_compile_definitions(app-lib PUBLIC -DENABLE_FFI)
   endif()
 
   target_sources(app-lib PRIVATE
