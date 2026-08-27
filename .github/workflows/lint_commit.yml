@@ -48,8 +48,11 @@ jobs:
             const commits = await github.paginate(opts);
 
             const errors = [];
-            for (const { sha, commit: { message } } of commits) {
+            for (const { sha, parents, commit: { message } } of commits) {
               const commitErrors = [];
+              if (parents.length > 1) {
+                commitErrors.push("Merge commits are not allowed; rebase your branch onto the target branch");
+              }
               for (const { pattern, error } of rules) {
                 if (!pattern.test(message)) {
                   commitErrors.push(error);
@@ -70,4 +73,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.LINT_COMMIT_TOKEN }}
         with:
-          msg: "Hi there!\n\nOne or more of the commit messages in this PR do not match our [code submission policy](https://github.com/aseprite/aseprite/blob/main/CONTRIBUTING.md), please check the `lint_commits` CI job for more details on which commits were flagged and why.\nPlease do not close this PR and open another, instead modify your commit message(s) with [git commit --amend](https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/changing-a-commit-message) and force push those changes to update this PR."
+          msg: "Hi there!\n\nOne or more of the commits in this PR do not match our [code submission policy](https://github.com/aseprite/aseprite/blob/main/CONTRIBUTING.md), please check the `lint_commits` CI job for more details on which commits were flagged and why.\nPlease do not close this PR and open another. Instead, rebase your branch onto the target branch to remove merge commits, modify invalid commit messages with [git commit --amend](https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/changing-a-commit-message) and force push those changes to update this PR."
