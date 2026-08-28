@@ -93,20 +93,34 @@ public:
   void setTriggerOnMouseUp(bool state);
   void setMultiMode(MultiMode mode);
 
+  bool triggerOnMouseUp() const { return m_triggerOnMouseUp; }
+
   bool hasOverlappingItems() const
   {
     return children().size() > 1 && (m_rowgap < 0 || m_colgap < 0);
   }
 
+  // Moves item1 from its position to the position of item2, rearranging the
+  // items. If the items don't belong to this buttonset the operation has no
+  // effect.
+  void moveItemTo(Item* item1, Item* item2);
+
   obs::signal<void(Item*)> ItemChange;
   obs::signal<void(Item*)> RightClick;
 
 protected:
+  static ButtonSet* originButtonset() { return m_originButtonset; }
+  static void resetOriginButtonset() { m_originButtonset = nullptr; }
+
   virtual void onItemChange(Item* item);
   virtual void onRightClick(Item* item);
   virtual void onSelectItem(Item* item, bool focusItem, ui::Message* msg);
 
 private:
+  // When this field holds the buttonset that originally captured the mouse at
+  // the first kMouseDownMessage.
+  static ButtonSet* m_originButtonset;
+
   bool m_offerCapture;
   bool m_triggerOnMouseUp;
   MultiMode m_multiMode;

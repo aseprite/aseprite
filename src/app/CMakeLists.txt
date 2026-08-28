@@ -627,6 +627,7 @@ target_sources(app-lib PRIVATE
   ui/dithering_selector.cpp
   ui/doc_view.cpp
   ui/dock.cpp
+  ui/draggable_button_set.cpp
   ui/drop_down_button.cpp
   ui/dynamics_popup.cpp
   ui/editor/brush_preview.cpp
