@@ -39,6 +39,8 @@ using namespace app::skin;
 // mouse capture is get.
 static int g_itemBeforeCapture = -1;
 
+ButtonSet* ButtonSet::m_originButtonset = nullptr;
+
 WidgetType buttonset_item_type()
 {
   static WidgetType type = kGenericWidget;
@@ -150,7 +152,12 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
     case ui::kMouseDownMessage:
       if (!isEnabled())
         return true;
-      // Only for single-item and trigerred on mouse up ButtonSets: We
+
+      if (!ButtonSet::m_originButtonset) {
+        ButtonSet::m_originButtonset = buttonSet();
+      }
+
+      // Only for single-item and triggered on mouse up ButtonSets: We
       // save the current selected item to restore it just in case the
       // user leaves the ButtonSet without releasing the mouse button
       // and the mouse capture if offered to other ButtonSet.
@@ -179,15 +186,22 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
         releaseMouse();
         invalidateItem();
 
+        bool consumed = false;
         if (static_cast<MouseMessage*>(msg)->left()) {
           if (buttonSet()->m_triggerOnMouseUp) {
             onClick();
-            return true;
+            consumed = true;
           }
         }
         else if (static_cast<MouseMessage*>(msg)->right()) {
           onRightClick();
-          return true;
+          consumed = true;
+        }
+
+        ButtonSet::resetOriginButtonset();
+
+        if (consumed) {
+          return consumed;
         }
       }
       break;
@@ -196,7 +210,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
       if (hasCapture()) {
         if (buttonSet()->m_offerCapture) {
           if (offerCapture(static_cast<ui::MouseMessage*>(msg), buttonset_item_type())) {
-            // Only for ButtonSets trigerred on mouse up.
+            // Only for ButtonSets triggered on mouse up.
             if (buttonSet()->m_triggerOnMouseUp && g_itemBeforeCapture >= 0) {
               if (g_itemBeforeCapture < (int)children().size()) {
                 Item* item = dynamic_cast<Item*>(at(g_itemBeforeCapture));
@@ -507,6 +521,15 @@ void ButtonSet::setTriggerOnMouseUp(bool state)
 void ButtonSet::setMultiMode(MultiMode mode)
 {
   m_multiMode = mode;
+}
+
+void ButtonSet::moveItemTo(Item* item1, Item* item2)
+{
+  if (item1->buttonSet() != this || item2->buttonSet() != this) {
+    return;
+  }
+
+  moveChildTo(item1, item2);
 }
 
 void ButtonSet::onItemChange(Item* item)
