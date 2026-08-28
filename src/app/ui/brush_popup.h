@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/ui/button_set.h"
+#include "app/ui/draggable_button_set.h"
 #include "doc/brushes.h"
 #include "ui/box.h"
 #include "ui/popup_window.h"
@@ -34,8 +35,8 @@ private:
   void onBrushChanges();
 
   ui::VBox m_box;
-  ButtonSet m_standardBrushes;
-  ButtonSet m_brushPatterns;
+  DraggableButtonSet m_standardBrushes;
+  DraggableButtonSet m_brushPatterns;
   ButtonSet* m_customBrushes;
 };
 
