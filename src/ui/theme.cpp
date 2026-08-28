@@ -419,6 +419,7 @@ void Theme::paintLayer(Graphics* g,
   switch (layer.type()) {
     case Style::Layer::Type::kBackground:
     case Style::Layer::Type::kBackgroundBorder:
+      rc.shrink(style->margin());
       if (layer.spriteSheet() && !layer.spriteBounds().isEmpty()) {
         if (!layer.slicesBounds().isEmpty()) {
           Theme::drawSlices(g,
@@ -508,6 +509,7 @@ void Theme::paintLayer(Graphics* g,
         bgColor = layer.color();
         g->fillRect(layer.color(), rc);
       }
+      rc.enlarge(style->margin());
       break;
 
     case Style::Layer::Type::kBorder:
