@@ -111,6 +111,8 @@
         <color id="select_box_ruler" value="#0000ff"/>
         <color id="select_box_grid" value="#64c864"/>
         <color id="palette_entries_separator" value="#000000"/>
+        <color id="new_brush" value="#8f8b83"/>
+        <color id="new_brush_hover" value="#e8e4de"/>
     </colors>
     <parts>
         <part id="cursor_normal" x="80" y="0" w="16" h="16" focusx="0" focusy="0"/>
@@ -477,6 +479,7 @@
         <part id="right_diagonal_symmetry" x="176" y="240" w="13" h="13"/>
         <part id="left_diagonal_symmetry" x="192" y="240" w="13" h="13"/>
         <part id="corner_radius_field" x="288" y="128" w="16" h="16"/>
+        <part id="icon_add_big" x="132" y="212" w="7" h="7"/>
     </parts>
     <styles>
         <style id="box"/>
@@ -1164,6 +1167,11 @@
             <icon align="bottom" state="disabled" color="disabled"/>
             <icon align="bottom" state="capture selected" color="button_selected_text"/>
         </style>
+        <style id="buttonset_item_new" border="3" border-bottom="5">
+            <background color="new_brush_hover" state="mouse"/>
+            <border border-style="dotted" color="new_brush"/>
+            <icon part="icon_add_big" color="new_brush"/>
+        </style>
         <style id="new_sprite_rgb" extends="buttonset_item_text_top_icon_bottom"/>
         <style id="new_sprite_grayscale" extends="buttonset_item_text_top_icon_bottom"/>
         <style id="new_sprite_indexed" extends="buttonset_item_text_top_icon_bottom"/>
@@ -1200,6 +1208,7 @@
             <icon color="button_selected_text"/>
         </style>
         <style id="standard_brush" extends="buttonset_item_icon_mono" width="20" height="22"/>
+        <style id="new_brush" extends="buttonset_item_new" margin-left="1" width="20" height="19"/>
         <style id="standard_pattern" extends="buttonset_item_icon_mono" width="20" height="22"/>
         <style id="outline_cell" extends="buttonset_item_icon" width="17" height="19"/>
         <style id="ani_button" extends="buttonset_item_icon" width="17"/>

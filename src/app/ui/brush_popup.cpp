@@ -24,6 +24,7 @@
 #include "app/ui/app_menuitem.h"
 #include "app/ui/button_set.h"
 #include "app/ui/context_bar.h"
+#include "app/ui/draggable_button_set.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
@@ -80,7 +81,7 @@ void show_popup_menu(PopupWindow* popupWindow,
   popupWindow->setHotRegion(gfx::Region(popupWindow->boundsOnScreen()));
 }
 
-class SelectBrushItem : public ButtonSet::Item {
+class SelectBrushItem : public DraggableButtonSet::DraggableItem {
 public:
   SelectBrushItem(const BrushSlot& brush, int slot = -1)
     : m_brushes(App::instance()->brushes())
@@ -132,7 +133,16 @@ private:
   int m_slot;
 };
 
-class SelectPatternItem : public ButtonSet::Item {
+class NewBrushItem : public DraggableButtonSet::DraggableItem {
+public:
+  NewBrushItem()
+  {
+    this->setTransparent(true);
+    initTheme();
+  }
+};
+
+class SelectPatternItem : public DraggableButtonSet::DraggableItem {
 public:
   SelectPatternItem(const BrushPatternSlot& brushPattern) : m_slot(brushPattern) { initTheme(); }
 
@@ -149,6 +159,12 @@ public:
     }
   }
 
+protected:
+  /*  void onDragItemStart(DraggableItem* item) override {};
+    void onDragItemEnter(DraggableItem* item) override {};
+    void onDragItemLeave(DraggableItem* item) override {};
+    void onDropItem(DraggableItem* item) override {};
+  */
 private:
   void onClick() override
   {
@@ -401,6 +417,7 @@ BrushPopup::BrushPopup()
   setAutoRemap(false);
 
   m_standardBrushes.setTriggerOnMouseUp(true);
+  m_brushPatterns.setTriggerOnMouseUp(true);
 
   addChild(&m_box);
 
@@ -425,6 +442,7 @@ BrushPopup::BrushPopup()
                               theme->styles.standardBrush(),
                               ui::LEFT | ui::MIDDLE);
   }
+  m_standardBrushes.addItem(new NewBrushItem(), theme->styles.newBrush(), ui::LEFT | ui::MIDDLE);
   m_standardBrushes.setTransparent(true);
 
   for (const auto& pattern : brushes.getStandardPatterns()) {
@@ -451,16 +469,16 @@ BrushPopup::BrushPopup()
 void BrushPopup::setBrush(Brush* brush)
 {
   for (auto child : m_standardBrushes.children()) {
-    SelectBrushItem* item = static_cast<SelectBrushItem*>(child);
-
-    // Same type, size, angle, thick and image
-    if (item->brush().hasBrush() && item->brush().brush()->type() == brush->type() &&
-        item->brush().brush()->size() == brush->size() &&
-        item->brush().brush()->angle() == brush->angle() &&
-        item->brush().brush()->thick() == brush->thick() &&
-        (brush->type() != kImageBrushType || item->brush().brush()->image() == brush->image())) {
-      m_standardBrushes.setSelectedItem(item);
-      return;
+    if (SelectBrushItem* item = dynamic_cast<SelectBrushItem*>(child)) {
+      // Same type, size, angle, thick and image
+      if (item->brush().hasBrush() && item->brush().brush()->type() == brush->type() &&
+          item->brush().brush()->size() == brush->size() &&
+          item->brush().brush()->angle() == brush->angle() &&
+          item->brush().brush()->thick() == brush->thick() &&
+          (brush->type() != kImageBrushType || item->brush().brush()->image() == brush->image())) {
+        m_standardBrushes.setSelectedItem(item);
+        return;
+      }
     }
   }
   m_standardBrushes.deselectItems();
