@@ -28,6 +28,7 @@
 #include "app/ui/dock.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_view.h"
+#include "app/ui/floating_toolbox.h"
 #include "app/ui/home_view.h"
 #include "app/ui/layout_selector.h"
 #include "app/ui/main_menu_bar.h"
@@ -129,6 +130,7 @@ void MainWindow::initialize()
   m_tabsBar = std::make_unique<WorkspaceTabs>(this);
   m_workspace = std::make_unique<Workspace>();
   m_previewEditor = std::make_unique<PreviewEditorWindow>();
+  m_floatingToolset = std::make_unique<FloatingToolbox>();
   m_colorBar = std::make_unique<ColorBar>(m_tooltipManager);
   m_contextBar = std::make_unique<ContextBar>(m_tooltipManager, m_colorBar.get());
 
@@ -223,6 +225,7 @@ MainWindow::~MainWindow()
     m_homeView.reset();
   }
   m_contextBar.reset();
+  m_floatingToolset.reset();
   m_previewEditor.reset();
 
   // Destroy the workspace first so ~Editor can dettach slots from
@@ -484,6 +487,8 @@ void MainWindow::onInitTheme(ui::InitThemeEvent& ev)
   noBorderNoChildSpacing();
   if (m_previewEditor)
     m_previewEditor->initTheme();
+  if (m_floatingToolset)
+    m_floatingToolset->initTheme();
 
   auto* theme = static_cast<skin::SkinTheme*>(this->theme());
   m_dock->setBgColor(theme->colors.windowFace());

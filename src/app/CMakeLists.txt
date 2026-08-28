@@ -487,6 +487,7 @@ target_sources(app-lib PRIVATE
   commands/cmd_symmetry_mode.cpp
   commands/cmd_tiled_mode.cpp
   commands/cmd_timeline.cpp
+  commands/cmd_floating_toolbox.cpp
   commands/cmd_toggle_preview.cpp
   commands/cmd_toggle_tiles_mode.cpp
   commands/cmd_toggle_timeline_thumbnails.cpp
@@ -700,6 +701,8 @@ target_sources(app-lib PRIVATE
   ui/timeline/ani_controls.cpp
   ui/timeline/doc_providers.cpp
   ui/timeline/timeline.cpp
+  ui/floating_window.cpp
+  ui/floating_toolbox.cpp
   ui/toolbar.cpp
   ui/tree.cpp
   ui/directory_tree.cpp

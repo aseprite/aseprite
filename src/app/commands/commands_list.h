@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -174,6 +174,7 @@ FOR_EACH_COMMAND(ToggleOtherLayersOpacity)
 FOR_EACH_COMMAND(TogglePlayAll)
 FOR_EACH_COMMAND(TogglePlayOnce)
 FOR_EACH_COMMAND(TogglePlaySubtags)
+FOR_EACH_COMMAND(FloatingToolbox)
 FOR_EACH_COMMAND(TogglePreview)
 FOR_EACH_COMMAND(ToggleRewindOnStop)
 FOR_EACH_COMMAND(ToggleTilesMode)

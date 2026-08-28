@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2025  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-present  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <!-- Keyboard shortcuts -->
@@ -1057,6 +1057,7 @@
         <item command="Timeline" text="@.view_timeline">
           <param name="switch" value="true" />
         </item>
+        <item command="FloatingToolbox" text="@.view_floating_toolbox" />
         <menu text="@.view_preview">
           <item command="TogglePreview" text="@.view_preview" />
           <separator />

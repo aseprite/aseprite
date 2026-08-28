@@ -37,6 +37,7 @@ class Layout;
 class LayoutSelector;
 class MainMenuBar;
 class Notifications;
+class FloatingToolbox;
 class PreviewEditorWindow;
 class StatusBar;
 class Timeline;
@@ -67,6 +68,7 @@ public:
   ColorBar* colorBar() { return m_colorBar.get(); }
   ToolBar* toolBar() { return m_toolBar.get(); }
   PreviewEditorWindow* getPreviewEditor() { return m_previewEditor.get(); }
+  FloatingToolbox* getFloatingToolbox() { return m_floatingToolset.get(); }
 #ifdef ENABLE_UPDATER
   CheckUpdateDelegate* getCheckUpdateDelegate();
 #endif
@@ -155,6 +157,7 @@ private:
   std::unique_ptr<Timeline> m_timeline;
   std::unique_ptr<Workspace> m_workspace;
   std::unique_ptr<PreviewEditorWindow> m_previewEditor;
+  std::unique_ptr<FloatingToolbox> m_floatingToolset;
   std::unique_ptr<HomeView> m_homeView;
   std::unique_ptr<INotificationDelegate> m_scalePanic;
   std::unique_ptr<BrowserView> m_browserView;
