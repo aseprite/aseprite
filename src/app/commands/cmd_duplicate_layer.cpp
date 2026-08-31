@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2025  David Capello
 //
 // This program is distributed under the terms of
@@ -46,7 +47,10 @@ void DuplicateLayerCommand::onExecute(Context* context)
     Tx tx(writer, Strings::commands_DuplicateLayer());
     LayerImage* sourceLayer = static_cast<LayerImage*>(writer.layer());
     DocApi api = document->getApi(tx);
-    api.duplicateLayerAfter(sourceLayer, sourceLayer->parent(), sourceLayer);
+    api.duplicateLayerAfter(sourceLayer,
+                            sourceLayer->parent(),
+                            sourceLayer,
+                            DocApi::ShareTilesets::Yes); // TODO configurable
     tx.commit();
   }
 

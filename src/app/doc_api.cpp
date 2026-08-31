@@ -691,41 +691,40 @@ void DocApi::restackLayerBefore(Layer* layer, Layer* parent, Layer* beforeThis)
   restackLayerAfter(layer, parent, afterThis);
 }
 
-Layer* DocApi::copyLayerWithSprite(doc::Layer* layer, doc::Sprite* sprite)
+Layer* DocApi::copyLayerForSprite(doc::Layer* layer,
+                                  doc::Sprite* sprite,
+                                  const ShareTilesets shareTilesets)
 {
-  std::unique_ptr<doc::Layer> clone;
+  // Clone the original "layer" but with "sprite" as the owner (can be
+  // the same sprite).
+  std::unique_ptr<doc::Layer> clone(layer->clone(sprite));
 
   switch (layer->type()) {
-    case ObjectType::LayerImage:   clone = std::make_unique<LayerImage>(sprite); break;
-
-    case ObjectType::LayerGroup:   clone = std::make_unique<LayerGroup>(sprite); break;
-
     case ObjectType::LayerTilemap: {
-      auto* srcTilemap = static_cast<LayerTilemap*>(layer);
-      tileset_index tilesetIndex = srcTilemap->tilesetIndex();
+      auto* srcTilemap = static_cast<const LayerTilemap*>(layer);
+      tileset_index tsi = srcTilemap->tilesetIndex();
+
       // If the caller is trying to make a copy of a tilemap layer specifying a
       // different sprite as its owner, then we must copy the tilesets of the
       // given tilemap layer into the new owner.
-      if (sprite != srcTilemap->sprite()) {
+      if (sprite != srcTilemap->sprite() || (shareTilesets == ShareTilesets::No)) {
         auto* srcTilesetCopy = Tileset::MakeCopyCopyingImagesForSprite(srcTilemap->tileset(),
                                                                        sprite);
         auto* addTileset = new cmd::AddTileset(sprite, srcTilesetCopy);
         m_transaction.execute(addTileset);
-        tilesetIndex = addTileset->tilesetIndex();
+        tsi = addTileset->tilesetIndex();
       }
 
-      clone = std::make_unique<LayerTilemap>(sprite, tilesetIndex);
+      static_cast<LayerTilemap*>(clone.get())->setTilesetIndex(tsi);
       break;
     }
-
-    default: throw std::runtime_error("Invalid layer type");
   }
 
   if (auto* doc = dynamic_cast<app::Doc*>(sprite->document())) {
     LayerList children;
     doc->copyOneLayerContent(layer, doc, clone.get(), children);
     for (auto child : children) {
-      Layer* childClone = copyLayerWithSprite(child, sprite);
+      Layer* childClone = copyLayerForSprite(child, sprite, shareTilesets);
       if (childClone)
         clone->addLayer(childClone);
     }
@@ -737,10 +736,11 @@ Layer* DocApi::copyLayerWithSprite(doc::Layer* layer, doc::Sprite* sprite)
 Layer* DocApi::duplicateLayerAfter(Layer* sourceLayer,
                                    Layer* parent,
                                    Layer* afterLayer,
+                                   const ShareTilesets shareTilesets,
                                    const std::string& nameSuffix)
 {
   ASSERT(parent);
-  Layer* newLayerPtr = copyLayerWithSprite(sourceLayer, parent->sprite());
+  Layer* newLayerPtr = copyLayerForSprite(sourceLayer, parent->sprite(), shareTilesets);
 
   newLayerPtr->setName(Strings::general_copy_of(newLayerPtr->name()));
 
@@ -752,11 +752,12 @@ Layer* DocApi::duplicateLayerAfter(Layer* sourceLayer,
 Layer* DocApi::duplicateLayerBefore(Layer* sourceLayer,
                                     Layer* parent,
                                     Layer* beforeLayer,
+                                    const ShareTilesets shareTilesets,
                                     const std::string& nameSuffix)
 {
   ASSERT(parent);
   Layer* afterThis = (beforeLayer ? beforeLayer->getPreviousBrowsable() : nullptr);
-  Layer* newLayer = duplicateLayerAfter(sourceLayer, parent, afterThis);
+  Layer* newLayer = duplicateLayerAfter(sourceLayer, parent, afterThis, shareTilesets);
   if (newLayer)
     restackLayerBefore(newLayer, parent, beforeLayer);
   return newLayer;

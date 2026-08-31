@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -63,6 +63,10 @@ using namespace docapi;
 //
 class DocApi {
 public:
+  // When cloning layers, it indicates if we should share the tileset
+  // between the copy or create a new copy of the tileset.
+  enum class ShareTilesets { No, Yes };
+
   DocApi(Doc* document, Transaction& transaction);
 
   // Sprite API
@@ -122,11 +126,15 @@ public:
   Layer* duplicateLayerAfter(Layer* sourceLayer,
                              Layer* parent,
                              Layer* afterLayer,
-                             const std::string& nameSuffix = std::string());
+                             ShareTilesets shareTilesets,
+                             const std::string& nameSuffix = {});
   Layer* duplicateLayerBefore(Layer* sourceLayer,
                               Layer* parent,
                               Layer* beforeLayer,
-                              const std::string& nameSuffix = std::string());
+                              ShareTilesets shareTilesets,
+                              const std::string& nameSuffix = {});
+
+  Layer* copyLayerForSprite(doc::Layer* layer, doc::Sprite* sprite, ShareTilesets shareTilesets);
 
   // Images API
   void replaceImage(Sprite* sprite, const ImageRef& oldImage, const ImageRef& newImage);
@@ -160,8 +168,6 @@ private:
                   const frame_t delta,
                   const DropFramePlace dropFramePlace,
                   const TagsHandling tagsHandling);
-
-  Layer* copyLayerWithSprite(doc::Layer* layer, doc::Sprite* sprite);
 
   class HandleLinkedCels {
   public:
