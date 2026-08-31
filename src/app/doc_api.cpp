@@ -86,8 +86,8 @@ DocApi::HandleLinkedCels::HandleLinkedCels(DocApi& api,
   , m_created(false)
 {
   if (Cel* srcCel = srcLayer->cel(srcFrame)) {
-    auto it = m_api.m_linkedCels.find(srcCel->data()->id());
-    if (it != m_api.m_linkedCels.end()) {
+    auto it = m_api.data()->linkedCels.find(srcCel->data()->id());
+    if (it != m_api.data()->linkedCels.end()) {
       Cel* dstRelated = it->second;
       if (dstRelated && dstRelated->layer() == dstLayer) {
         // Create a link
@@ -112,7 +112,7 @@ DocApi::HandleLinkedCels::~HandleLinkedCels()
 {
   if (m_srcDataId != doc::NullId) {
     if (Cel* dstCel = m_dstLayer->cel(m_dstFrame))
-      m_api.m_linkedCels[m_srcDataId] = dstCel;
+      m_api.data()->linkedCels[m_srcDataId] = dstCel;
   }
 }
 
@@ -120,6 +120,13 @@ DocApi::DocApi(Doc* document, Transaction& transaction)
   : m_document(document)
   , m_transaction(transaction)
 {
+}
+
+DocApi::Data* DocApi::data()
+{
+  if (!m_data)
+    m_data = std::make_unique<Data>();
+  return m_data.get();
 }
 
 void DocApi::setSpriteSize(Sprite* sprite, int w, int h)
@@ -708,11 +715,32 @@ Layer* DocApi::copyLayerForSprite(doc::Layer* layer,
       // different sprite as its owner, then we must copy the tilesets of the
       // given tilemap layer into the new owner.
       if (sprite != srcTilemap->sprite() || (shareTilesets == ShareTilesets::No)) {
-        auto* srcTilesetCopy = Tileset::MakeCopyCopyingImagesForSprite(srcTilemap->tileset(),
-                                                                       sprite);
-        auto* addTileset = new cmd::AddTileset(sprite, srcTilesetCopy);
-        m_transaction.execute(addTileset);
-        tsi = addTileset->tilesetIndex();
+        if (data()->lastDuplicateSprite != sprite) {
+          data()->lastDuplicateSprite = sprite;
+          data()->mappedTilesets.clear();
+        }
+
+        const Tileset* srcTileset = srcTilemap->tileset();
+        auto it = data()->mappedTilesets.find(srcTileset->id());
+        if (it != data()->mappedTilesets.end()) {
+          tsi = it->second;
+        }
+        else {
+          Tileset* tilesetCopy = Tileset::MakeCopyCopyingImagesForSprite(srcTileset, sprite);
+
+          auto* addTileset = new cmd::AddTileset(sprite, tilesetCopy);
+          m_transaction.execute(addTileset);
+
+          tsi = addTileset->tilesetIndex();
+
+          // Cache duplicated tileset in case we are going to
+          // copyLayerForSprite() several times between different
+          // sprites. So can we match the same shared tilesets between
+          // the original sprite and the duplicated layers in the new
+          // sprite.
+          if (sprite != srcTilemap->sprite())
+            data()->mappedTilesets[srcTileset->id()] = tsi;
+        }
       }
 
       static_cast<LayerTilemap*>(clone.get())->setTilesetIndex(tsi);
