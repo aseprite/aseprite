@@ -786,31 +786,46 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
           while (dstSpr->totalFrames() < maxFrame + 1)
             api.addEmptyFrame(dstSpr, dstSpr->totalFrames());
 
-          for (Layer* srcLayer : srcLayers) {
-            Layer* afterThis;
-            if (srcLayer->isBackground() && !dstDoc->sprite()->backgroundLayer())
-              afterThis = nullptr;
-            else
-              afterThis = dstSpr->root()->lastLayer();
+          std::vector<std::pair<Layer*, LayerList>> dstLayerAndSrcChildren;
+          dstLayerAndSrcChildren.push_back(std::make_pair(dstSpr->root(), srcLayers));
 
-            Layer* newLayer = nullptr;
-            if (srcLayer->isTilemap()) {
-              Tileset* srcTileset = static_cast<LayerTilemap*>(srcLayer)->tileset();
-              Tileset* tilesetCopy = Tileset::MakeCopyCopyingImagesForSprite(srcTileset, dstSpr);
-              const tileset_index tsi = dstSpr->tilesets()->size();
-              tx(new cmd::AddTileset(dstSpr, tilesetCopy));
-              newLayer = new LayerTilemap(dstSpr, tsi);
+          while (!dstLayerAndSrcChildren.empty()) {
+            auto kv = dstLayerAndSrcChildren.front();
+            dstLayerAndSrcChildren.erase(dstLayerAndSrcChildren.begin());
+            Layer* dstLayer = kv.first;
+
+            for (Layer* srcLayer : kv.second) {
+              Layer* afterThis;
+              if (srcLayer->isBackground() && !dstDoc->sprite()->backgroundLayer())
+                afterThis = nullptr;
+              else
+                afterThis = dstLayer->lastLayer();
+
+              Layer* newLayer = nullptr;
+              if (srcLayer->isTilemap()) {
+                Tileset* srcTileset = static_cast<LayerTilemap*>(srcLayer)->tileset();
+                Tileset* tilesetCopy = Tileset::MakeCopyCopyingImagesForSprite(srcTileset, dstSpr);
+
+                auto* addTileset = new cmd::AddTileset(dstSpr, tilesetCopy);
+                tx(addTileset);
+
+                const tileset_index tsi = addTileset->tilesetIndex();
+                newLayer = new LayerTilemap(dstSpr, tsi);
+              }
+              else if (srcLayer->isImage())
+                newLayer = new LayerImage(dstSpr);
+              else if (srcLayer->isGroup())
+                newLayer = new LayerGroup(dstSpr);
+              else
+                continue;
+
+              api.addLayer(dstLayer, newLayer, afterThis);
+
+              LayerList children;
+              srcDoc->copyOneLayerContent(srcLayer, dstDoc, newLayer, children);
+              if (!children.empty())
+                dstLayerAndSrcChildren.emplace_back(newLayer, children);
             }
-            else if (srcLayer->isImage())
-              newLayer = new LayerImage(dstSpr);
-            else if (srcLayer->isGroup())
-              newLayer = new LayerGroup(dstSpr);
-            else
-              continue;
-
-            api.addLayer(dstSpr->root(), newLayer, afterThis);
-
-            srcDoc->copyLayerContent(srcLayer, dstDoc, newLayer);
           }
 
           tx.commit();
