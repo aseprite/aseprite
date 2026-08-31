@@ -606,42 +606,24 @@ void Doc::copyLayerContent(const Layer* sourceLayer, Doc* destDoc, Layer* destLa
   LayerList childrenToCopy;
   copyOneLayerContent(sourceLayer, destDoc, destLayer, childrenToCopy);
 
+  if (sourceLayer->isTilemap()) {
+    // This works out-of-the-box only because we're duplicating a
+    // sprite, as the tileset index is exactly the same as the
+    // original sprite. In other case we should adjust the cloned
+    // tileset index for tilemap layers.
+    const tileset_index tsi = static_cast<const LayerTilemap*>(sourceLayer)->tilesetIndex();
+    static_cast<LayerTilemap*>(destLayer)->setTilesetIndex(tsi);
+  }
+
+  // Copy the LayerGroup content (children layer)
   for (const Layer* sourceChild : childrenToCopy) {
-    std::unique_ptr<Layer> destChild(nullptr);
+    std::unique_ptr<Layer> destChild(sourceChild->clone(destDoc->sprite()));
 
-    if (sourceChild->isImage()) {
-      if (sourceChild->isTilemap()) {
-        auto* tilemapLayer = static_cast<const LayerTilemap*>(sourceChild);
-        // This works only when we're duplicating a sprite, because
-        // the tileset index is exactly the same.
-        const tileset_index tsi = tilemapLayer->tilesetIndex();
-        destChild.reset(new LayerTilemap(destLayer->sprite(), tsi));
-      }
-      else {
-        destChild.reset(new LayerImage(destLayer->sprite()));
-      }
-
-      copyLayerContent(sourceChild, destDoc, destChild.get());
-    }
-    else if (sourceChild->isGroup()) {
-      destChild.reset(new LayerGroup(destLayer->sprite()));
-      copyLayerContent(sourceChild, destDoc, destChild.get());
-    }
-    else {
-      ASSERT(false);
-    }
-
-    ASSERT(destChild != NULL);
+    copyLayerContent(sourceChild, destDoc, destChild.get());
 
     // Add the new layer in the sprite.
-
-    Layer* newLayer = destChild.release();
-    Layer* afterThis = destLayer->lastLayer();
-
-    destLayer->addLayer(newLayer);
+    destLayer->addLayer(destChild.get());
     destChild.release();
-
-    destLayer->stackLayer(newLayer, afterThis);
   }
 }
 

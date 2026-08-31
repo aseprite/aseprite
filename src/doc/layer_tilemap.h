@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2025  Igara Studio S.A.
+// Copyright (c) 2019-present  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -19,6 +19,10 @@ class LayerTilemap final : public LayerImage {
 public:
   LayerTilemap(Sprite* sprite, tileset_index tsi);
   ~LayerTilemap();
+
+  // Clone layer without tileset index (as the "sprite" argument might
+  // be different to this->sprite()).
+  LayerTilemap* clone(Sprite* sprite) const override { return new LayerTilemap(sprite, 0); }
 
   Grid grid() const override;
 
