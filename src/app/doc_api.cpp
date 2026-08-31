@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -722,7 +722,13 @@ Layer* DocApi::copyLayerWithSprite(doc::Layer* layer, doc::Sprite* sprite)
   }
 
   if (auto* doc = dynamic_cast<app::Doc*>(sprite->document())) {
-    doc->copyLayerContent(layer, doc, clone.get());
+    LayerList children;
+    doc->copyOneLayerContent(layer, doc, clone.get(), children);
+    for (auto child : children) {
+      Layer* childClone = copyLayerWithSprite(child, sprite);
+      if (childClone)
+        clone->addLayer(childClone);
+    }
   }
 
   return clone.release();
