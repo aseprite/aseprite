@@ -11,6 +11,7 @@
 
 #include "app/app.h"
 #include "app/cmd/add_slice.h"
+#include "app/cmd/add_tileset.h"
 #include "app/cmd/clear_mask.h"
 #include "app/cmd/deselect_mask.h"
 #include "app/cmd/set_mask.h"
@@ -618,7 +619,10 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
         // TODO add post-command parameters (issue #2324)
 
         // Change to MovingTilemapState
-        editor->pasteImage(m_data->tilemap.get(), m_data->mask.get(), position);
+        editor->pasteImage(m_data->tilemap.get(),
+                           m_data->mask.get(),
+                           position,
+                           m_data->tileset.get());
       }
       else {
         // TODO non-interactive version (for scripts)
@@ -769,37 +773,33 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
           srcLayersSet.removeChildrenIfParentIsSelected();
           LayerList srcLayers = srcLayersSet.toBrowsableLayerList();
 
-          // Expand frames of dstDoc if it's needed.
-          frame_t maxFrame = 0;
+          Layer* dstLayer = dstSpr->root();
           for (Layer* srcLayer : srcLayers) {
-            if (!srcLayer->isImage())
-              continue;
+            // Expand frames of dstDoc if it's needed.
+            frame_t maxFrame = 0;
+            for (Layer* srcLayer : srcLayers) {
+              if (!srcLayer->isImage())
+                continue;
 
-            Cel* lastCel = static_cast<LayerImage*>(srcLayer)->getLastCel();
-            if (lastCel && maxFrame < lastCel->frame())
-              maxFrame = lastCel->frame();
-          }
-          while (dstSpr->totalFrames() < maxFrame + 1)
-            api.addEmptyFrame(dstSpr, dstSpr->totalFrames());
+              Cel* lastCel = static_cast<LayerImage*>(srcLayer)->getLastCel();
+              if (lastCel && maxFrame < lastCel->frame())
+                maxFrame = lastCel->frame();
+            }
+            while (dstSpr->totalFrames() < maxFrame + 1)
+              api.addEmptyFrame(dstSpr, dstSpr->totalFrames());
 
-          for (Layer* srcLayer : srcLayers) {
+            // Copy layer
             Layer* afterThis;
             if (srcLayer->isBackground() && !dstDoc->sprite()->backgroundLayer())
               afterThis = nullptr;
             else
-              afterThis = dstSpr->root()->lastLayer();
+              afterThis = dstLayer->lastLayer();
 
-            Layer* newLayer = nullptr;
-            if (srcLayer->isImage())
-              newLayer = new LayerImage(dstSpr);
-            else if (srcLayer->isGroup())
-              newLayer = new LayerGroup(dstSpr);
-            else
-              continue;
-
-            api.addLayer(dstSpr->root(), newLayer, afterThis);
-
-            srcDoc->copyLayerContent(srcLayer, dstDoc, newLayer);
+            Layer* newLayer = api.copyLayerForSprite(srcLayer,
+                                                     dstSpr,
+                                                     // TODO configurable
+                                                     DocApi::ShareTilesets::No);
+            api.addLayer(dstLayer, newLayer, afterThis);
           }
 
           tx.commit();

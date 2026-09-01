@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -65,6 +65,7 @@ public:
   Layer& operator=(const Layer& other) = delete;
 
   virtual ~Layer();
+  virtual Layer* clone(Sprite* sprite) const = 0;
 
   int getMemSize() const override;
   void suspendObject() override;
@@ -233,6 +234,7 @@ public:
   LayerImage(ObjectType type, Sprite* sprite);
   explicit LayerImage(Sprite* sprite);
   virtual ~LayerImage();
+  LayerImage* clone(Sprite* sprite) const override { return new LayerImage(sprite); }
 
   void configureAsBackground();
 };
@@ -244,6 +246,7 @@ class LayerGroup final : public Layer {
 public:
   explicit LayerGroup(Sprite* sprite);
   virtual ~LayerGroup();
+  LayerGroup* clone(Sprite* sprite) const override { return new LayerGroup(sprite); }
 };
 
 } // namespace doc

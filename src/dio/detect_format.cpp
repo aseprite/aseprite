@@ -178,11 +178,15 @@ FileFormat detect_format_by_file_extension(const std::string& filename)
   if (ext == "css")
     return FileFormat::CSS_STYLE;
 
+#ifdef ENABLE_WEBP
   if (ext == "webp")
     return FileFormat::WEBP_ANIMATION;
+#endif
 
+#ifdef ENABLE_PSD
   if (ext == "psd" || ext == "psb")
     return FileFormat::PSD_IMAGE;
+#endif
 
   if (ext == "qoi")
     return FileFormat::QOI_IMAGE;

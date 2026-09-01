@@ -151,6 +151,7 @@ target_sources(app-lib PRIVATE
   file/svg_format.cpp
   file/tga_format.cpp)
 if(ENABLE_WEBP AND WEBP_FOUND)
+  target_compile_definitions(dio-lib PUBLIC -DENABLE_WEBP)
   target_compile_definitions(app-lib PUBLIC -DENABLE_WEBP)
   target_sources(app-lib PRIVATE
     file/webp_format.cpp)

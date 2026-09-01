@@ -539,7 +539,10 @@ void Doc::resetTransformation()
 //////////////////////////////////////////////////////////////////////
 // Copying
 
-void Doc::copyLayerContent(const Layer* sourceLayer, Doc* destDoc, Layer* destLayer) const
+void Doc::copyOneLayerContent(const Layer* sourceLayer,
+                              Doc* destDoc,
+                              Layer* destLayer,
+                              LayerList& childrenToCopy) const
 {
   LayerFlags dstFlags = sourceLayer->flags();
 
@@ -559,40 +562,7 @@ void Doc::copyLayerContent(const Layer* sourceLayer, Doc* destDoc, Layer* destLa
   destLayer->setOpacity(sourceLayer->opacity());
 
   if (sourceLayer->isGroup() && destLayer->isGroup()) {
-    for (Layer* sourceChild : sourceLayer->layers()) {
-      std::unique_ptr<Layer> destChild(nullptr);
-
-      if (sourceChild->isImage()) {
-        if (sourceChild->isTilemap()) {
-          auto* tilemapLayer = static_cast<LayerTilemap*>(sourceChild);
-          destChild.reset(new LayerTilemap(destLayer->sprite(), tilemapLayer->tilesetIndex()));
-        }
-        else {
-          destChild.reset(new LayerImage(destLayer->sprite()));
-        }
-
-        copyLayerContent(sourceChild, destDoc, destChild.get());
-      }
-      else if (sourceChild->isGroup()) {
-        destChild.reset(new LayerGroup(destLayer->sprite()));
-        copyLayerContent(sourceChild, destDoc, destChild.get());
-      }
-      else {
-        ASSERT(false);
-      }
-
-      ASSERT(destChild != NULL);
-
-      // Add the new layer in the sprite.
-
-      Layer* newLayer = destChild.release();
-      Layer* afterThis = destLayer->lastLayer();
-
-      destLayer->addLayer(newLayer);
-      destChild.release();
-
-      destLayer->stackLayer(newLayer, afterThis);
-    }
+    childrenToCopy = sourceLayer->layers();
   }
   else if (sourceLayer->type() == destLayer->type()) {
     // Copy cels
@@ -628,6 +598,32 @@ void Doc::copyLayerContent(const Layer* sourceLayer, Doc* destDoc, Layer* destLa
   }
   else {
     ASSERT(false && "Trying to copy two incompatible layers");
+  }
+}
+
+void Doc::copyLayerContent(const Layer* sourceLayer, Doc* destDoc, Layer* destLayer) const
+{
+  LayerList childrenToCopy;
+  copyOneLayerContent(sourceLayer, destDoc, destLayer, childrenToCopy);
+
+  if (sourceLayer->isTilemap()) {
+    // This works out-of-the-box only because we're duplicating a
+    // sprite, as the tileset index is exactly the same as the
+    // original sprite. In other case we should adjust the cloned
+    // tileset index for tilemap layers.
+    const tileset_index tsi = static_cast<const LayerTilemap*>(sourceLayer)->tilesetIndex();
+    static_cast<LayerTilemap*>(destLayer)->setTilesetIndex(tsi);
+  }
+
+  // Copy the LayerGroup content (children layer)
+  for (const Layer* sourceChild : childrenToCopy) {
+    std::unique_ptr<Layer> destChild(sourceChild->clone(destDoc->sprite()));
+
+    copyLayerContent(sourceChild, destDoc, destChild.get());
+
+    // Add the new layer in the sprite.
+    destLayer->addLayer(destChild.get());
+    destChild.release();
   }
 }
 

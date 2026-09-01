@@ -2952,7 +2952,10 @@ void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
   }
 }
 
-void Editor::pasteImage(const Image* image, const Mask* mask, const gfx::Point* position)
+void Editor::pasteImage(const Image* image,
+                        const Mask* mask,
+                        const gfx::Point* position,
+                        const Tileset* srcTileset)
 {
   ASSERT(image);
 
@@ -3050,6 +3053,10 @@ void Editor::pasteImage(const Image* image, const Mask* mask, const gfx::Point* 
 
   PixelsMovementPtr pixelsMovement(
     new PixelsMovement(UIContext::instance(), site, image, &mask2, "Paste", &m_tiledModeHelper));
+
+  // Adjust image when copying between tilemap layers
+  if (site.tilemapMode() == TilemapMode::Tiles && srcTileset != nullptr)
+    pixelsMovement->remapTilesForPaste(srcTileset);
 
   setState(EditorStatePtr(new MovingPixelsState(this, NULL, pixelsMovement, NoHandle)));
 }

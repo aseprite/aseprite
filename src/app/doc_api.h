@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,6 +20,7 @@
 #include "gfx/rect.h"
 
 #include <map>
+#include <memory>
 
 namespace doc {
 class Cel;
@@ -63,6 +64,10 @@ using namespace docapi;
 //
 class DocApi {
 public:
+  // When cloning layers, it indicates if we should share the tileset
+  // between the copy or create a new copy of the tileset.
+  enum class ShareTilesets { No, Yes };
+
   DocApi(Doc* document, Transaction& transaction);
 
   // Sprite API
@@ -123,11 +128,15 @@ public:
   Layer* duplicateLayerAfter(Layer* sourceLayer,
                              Layer* parent,
                              Layer* afterLayer,
-                             const std::string& nameSuffix = std::string());
+                             ShareTilesets shareTilesets,
+                             const std::string& nameSuffix = {});
   Layer* duplicateLayerBefore(Layer* sourceLayer,
                               Layer* parent,
                               Layer* beforeLayer,
-                              const std::string& nameSuffix = std::string());
+                              ShareTilesets shareTilesets,
+                              const std::string& nameSuffix = {});
+
+  Layer* copyLayerForSprite(doc::Layer* layer, doc::Sprite* sprite, ShareTilesets shareTilesets);
 
   // Images API
   void replaceImage(Sprite* sprite, const ImageRef& oldImage, const ImageRef& newImage);
@@ -162,8 +171,6 @@ private:
                   const DropFramePlace dropFramePlace,
                   const TagsHandling tagsHandling);
 
-  Layer* copyLayerWithSprite(doc::Layer* layer, doc::Sprite* sprite);
-
   class HandleLinkedCels {
   public:
     HandleLinkedCels(DocApi& api,
@@ -184,13 +191,24 @@ private:
 
   bool copyFromLinkedCels(Cel** srcCel, doc::ObjectId& srcDataId);
 
+  // Data for special operations.
+  struct Data {
+    // Map used in copyCel() to re-create the original set of linked
+    // cels from the src layers when we copy a block of cels.
+    // map: ObjectId of CelData -> Cel*
+    std::map<doc::ObjectId, doc::Cel*> linkedCels;
+
+    // Already duplicated tilesets to map source shared-tilesets when
+    // duplicating layers to other sprites.
+    doc::Sprite* lastDuplicateSprite = nullptr;
+    std::map<doc::ObjectId, doc::tileset_index> mappedTilesets;
+  };
+
+  Data* data();
+
   Doc* m_document;
   Transaction& m_transaction;
-
-  // Map used in copyCel() to re-create the original set of linked
-  // cels from the src layers when we copy a block of cels.
-  // map: ObjectId of CelData -> Cel*
-  std::map<doc::ObjectId, doc::Cel*> m_linkedCels;
+  std::unique_ptr<Data> m_data;
 };
 
 } // namespace app
