@@ -144,7 +144,6 @@ void TileBasedRenderer::renderCanvas(Editor* editor,
   const auto& pref = Preferences::instance(); // TODO move these options to Renderer
   const render::Projection proj = projection();
   const gfx::Rect visible = (exposeWithProj ? expose : proj.apply(expose));
-  os::Paint paint;
 
   // Render background (using a ShaderRenderer)
   // TODO create a new class to just render the background
@@ -180,10 +179,6 @@ void TileBasedRenderer::renderCanvas(Editor* editor,
   const bool debugTiles = pref.render.debugTiles();
 
   {
-    paint.style(os::Paint::Stroke);
-    paint.color(gfx::rgba(0, 0, 255, 128));
-    paint.blendMode(os::BlendMode::SrcOver);
-
     // TODO remove dependency with Editor widget
     gfx::Rect rc(editor->canvasSize());
     rc = editor->editorToScreen(rc);
@@ -207,9 +202,6 @@ void TileBasedRenderer::renderCanvas(Editor* editor,
         tilerc.x = rc.x + x;
         tilerc.y = rc.y + y;
         if (tilerc.intersects(dest)) {
-          if (debugTiles)
-            g->drawRect(tilerc, paint);
-
           auto srcrc = gfx::RectF(firstTilePos.x + u * tileSizeSrc.w,
                                   firstTilePos.y + v * tileSizeSrc.h,
                                   tileSizeSrc.w,
@@ -309,6 +301,12 @@ void TileBasedRenderer::renderCanvas(Editor* editor,
                    sampling,
                    &p);
     if (debugTiles) {
+      // Paint tile edges
+      p.style(os::Paint::Stroke);
+      p.color(gfx::rgba(0, 0, 255, 64));
+      g->drawRect(renderTile.dst, p);
+
+      // Paint tile ID
       g->drawText(fmt::format("{},{}", renderTile.tileId & 0xffff, renderTile.tileId >> 16),
                   gfx::rgba(0, 0, 0, 200),
                   gfx::ColorNone,
