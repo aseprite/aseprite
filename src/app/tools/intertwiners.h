@@ -781,24 +781,25 @@ private:
     loop->getTiledModeHelper().wrapPosition(rgn);
     loop->getTiledModeHelper().collapseRegionByTiledMode(rgn);
 
-    for (auto a : rgn) {
+    for (auto& a : rgn) {
       a.offset(-loop->getCelOrigin());
+
+      ImageRef i(crop_image(loop->getDstImage(), a, loop->getDstImage()->maskColor()));
 
       if (m_tempTileset) {
         forEachTilePos(loop,
                        m_dstGrid.tilesInCanvasRegion(gfx::Region(a)),
-                       [loop](const doc::ImageRef existentTileImage, const gfx::Point tilePos) {
-                         loop->getDstImage()->copy(existentTileImage.get(),
-                                                   gfx::Clip(tilePos.x,
-                                                             tilePos.y,
-                                                             0,
-                                                             0,
-                                                             existentTileImage->width(),
-                                                             existentTileImage->height()));
+                       [loop, i](const doc::ImageRef existentTileImage, const gfx::Point tilePos) {
+                         i->copy(existentTileImage.get(),
+                                 gfx::Clip(tilePos.x,
+                                           tilePos.y,
+                                           0,
+                                           0,
+                                           existentTileImage->width(),
+                                           existentTileImage->height()));
                        });
       }
 
-      ImageRef i(crop_image(loop->getDstImage(), a, loop->getDstImage()->maskColor()));
       m_savedAreas.push_back(SavedArea{ i, pt, a });
     }
   }
