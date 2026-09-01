@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2026  Igara Studio S.A.
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -25,10 +25,11 @@ public:
 protected:
   void onExecute() override;
   void onUndo() override;
-  void onFireNotifications() override;
   size_t onMemSize() const override { return sizeof(*this); }
 
 private:
+  void setPosition(const gfx::Point& newPos);
+
   gfx::Point m_old, m_new;
 };
 

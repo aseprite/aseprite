@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2026  Igara Studio S.A.
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -28,24 +28,28 @@ SetCelPosition::SetCelPosition(Cel* cel, const gfx::Point& newPosition)
 
 void SetCelPosition::onExecute()
 {
-  cel()->data()->setPosition(m_new);
-  cel()->data()->incrementVersion();
+  setPosition(m_new);
 }
 
 void SetCelPosition::onUndo()
 {
-  cel()->data()->setPosition(m_old);
-  cel()->data()->incrementVersion();
+  setPosition(m_old);
 }
 
-void SetCelPosition::onFireNotifications()
+void SetCelPosition::setPosition(const gfx::Point& newPos)
 {
   Cel* cel = this->cel();
   Doc* doc = static_cast<Doc*>(cel->document());
   DocEvent ev(doc);
   ev.sprite(cel->sprite());
   ev.cel(cel);
-  doc->notify_observers<DocEvent&>(&DocObserver::onCelPositionChanged, ev);
+
+  doc->notify_observers<DocEvent&>(&DocObserver::onBeforeCelPositionChange, ev);
+
+  cel->data()->setPosition(newPos);
+  cel->data()->incrementVersion();
+
+  doc->notify_observers<DocEvent&>(&DocObserver::onAfterCelPositionChange, ev);
 }
 
 }} // namespace app::cmd

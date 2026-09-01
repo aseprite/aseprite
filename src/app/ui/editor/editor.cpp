@@ -2548,11 +2548,8 @@ void Editor::onSpritePixelsModified(DocEvent& ev)
   if (!isVisible() && frame() != ev.frame())
     return;
 
-  // Invalidate cached tiles.
-  m_renderEngine->invalidateRenderCache(m_sprite, ev.region());
-
   // Redraw sprite in the given region
-  drawSpriteClipped(ev.region());
+  invalidateCanvasRegion(ev.region());
 }
 
 void Editor::onColorSpaceChanged(DocEvent& ev)
@@ -2643,6 +2640,24 @@ void Editor::onBeforeCommitTransaction(DocEvent& ev)
     if (!movingPixels->ownsTransaction())
       dropMovingPixels();
   }
+}
+
+void Editor::onBeforeCelPositionChange(DocEvent& ev)
+{
+  onAfterCelPositionChange(ev);
+}
+
+void Editor::onAfterCelPositionChange(DocEvent& ev)
+{
+  Cel* cel = ev.cel();
+  ASSERT(cel);
+  if (!isVisible() || ev.sprite() != m_sprite || !cel)
+    return;
+
+  gfx::Region region(cel->bounds());
+
+  // Redraw sprite in the given region
+  invalidateCanvasRegion(region);
 }
 
 void Editor::setCursor(const gfx::Point& mouseDisplayPos)
@@ -3172,15 +3187,31 @@ void Editor::dropMovingPixels()
   backToPreviousState();
 }
 
-void Editor::invalidateCanvas()
+void Editor::invalidateCanvasRegion(const gfx::Region& updateRegion)
 {
   if (!isVisible())
     return;
 
-  if (m_sprite)
-    invalidateRect(editorToScreen(getVisibleSpriteBounds()));
-  else
+  if (!m_sprite) {
     invalidate();
+    return;
+  }
+
+  // Invalidate cached tiles (for TileBasedRenderer mainly)
+  if (m_renderEngine)
+    m_renderEngine->invalidateRenderCache(m_sprite, updateRegion);
+
+  // Convert canvas coordinates to screen
+  gfx::Region screenRegion;
+  for (const Rect& updateRect : updateRegion)
+    screenRegion |= gfx::Region(editorToScreen(updateRect));
+
+  invalidateRegion(screenRegion);
+}
+
+void Editor::invalidateCanvas()
+{
+  invalidateCanvasRegion(gfx::Region(getVisibleSpriteBounds()));
 }
 
 void Editor::invalidateIfActive()

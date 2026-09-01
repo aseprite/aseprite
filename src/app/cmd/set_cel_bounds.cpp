@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -27,24 +28,28 @@ SetCelBoundsF::SetCelBoundsF(Cel* cel, const gfx::RectF& bounds)
 
 void SetCelBoundsF::onExecute()
 {
-  cel()->setBoundsF(m_newBounds);
-  cel()->incrementVersion();
+  setBounds(m_newBounds);
 }
 
 void SetCelBoundsF::onUndo()
 {
-  cel()->setBoundsF(m_oldBounds);
-  cel()->incrementVersion();
+  setBounds(m_oldBounds);
 }
 
-void SetCelBoundsF::onFireNotifications()
+void SetCelBoundsF::setBounds(const gfx::RectF& newBounds)
 {
   Cel* cel = this->cel();
   Doc* doc = static_cast<Doc*>(cel->document());
   DocEvent ev(doc);
   ev.sprite(cel->sprite());
   ev.cel(cel);
-  doc->notify_observers<DocEvent&>(&DocObserver::onCelPositionChanged, ev);
+
+  doc->notify_observers<DocEvent&>(&DocObserver::onBeforeCelPositionChange, ev);
+
+  cel->setBoundsF(newBounds);
+  cel->incrementVersion();
+
+  doc->notify_observers<DocEvent&>(&DocObserver::onAfterCelPositionChange, ev);
 }
 
 }} // namespace app::cmd

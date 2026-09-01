@@ -356,6 +356,8 @@ protected:
   void onBeforeSlicesDuplication(DocEvent& ev) override;
   void onSliceDuplicated(DocEvent& ev) override;
   void onBeforeCommitTransaction(DocEvent& ev) override;
+  void onBeforeCelPositionChange(DocEvent& ev) override;
+  void onAfterCelPositionChange(DocEvent& ev) override;
 
   // ActiveToolObserver impl
   void onActiveToolChange(tools::Tool* tool) override;
@@ -414,6 +416,7 @@ private:
 
   gfx::Point calcExtraPadding(const render::Projection& proj);
 
+  void invalidateCanvasRegion(const gfx::Region& updateRegion);
   void invalidateCanvas();
   void invalidateIfActive();
   void updateAutoCelGuides(ui::Message* msg);
