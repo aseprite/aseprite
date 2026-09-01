@@ -1,0 +1,82 @@
+name: release-windows
+on:
+  push:
+    tags:
+    - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_name:
+        description: 'Name to use for the release/zip (defaults to git describe)'
+        required: false
+        type: string
+jobs:
+  release-windows:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        submodules: 'recursive'
+        fetch-depth: 0
+    - name: Install Skia
+      shell: bash
+      run: |
+        this_dir=$(cygpath "${{ github.workspace }}")
+        skia_url=$(source $this_dir/laf/misc/skia-url.sh | xargs)
+        skia_file=$(basename $skia_url)
+        curl --ssl-revoke-best-effort -L -o "$skia_file" "$skia_url"
+        unzip "$skia_file" -d skia
+    - uses: aseprite/get-ninja@main
+    - uses: TheMrMilchmann/setup-msvc-dev@v4
+      with:
+        arch: x64
+    - name: Determine version
+      id: version
+      shell: bash
+      run: |
+        if [[ -n "${{ inputs.release_name }}" ]] ; then
+          version="${{ inputs.release_name }}"
+        else
+          version=$(git describe --tags --always --dirty)
+          version="${version#v}"
+        fi
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+    - name: Generating Makefiles
+      shell: bash
+      run: |
+        cmake -S . -B build -G Ninja \
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+          -DENABLE_TESTS=OFF \
+          -DENABLE_SCRIPTING=ON \
+          -DENABLE_CCACHE=OFF \
+          -DLAF_BACKEND=skia \
+          -DSKIA_DIR=$(realpath skia) \
+          -DSKIA_LIBRARY_DIR=$(realpath skia/out/Release-x64)
+    - name: Compiling
+      shell: bash
+      run: |
+        cd build && ninja aseprite
+    - name: Packaging
+      shell: bash
+      run: |
+        version="${{ steps.version.outputs.version }}"
+        pkg_dir="Aseprite-${version}-win"
+        mkdir -p "$pkg_dir"
+        cp -r build/bin/. "$pkg_dir/"
+        rm -f "$pkg_dir"/*.pdb "$pkg_dir"/*.ilk "$pkg_dir"/*.exp "$pkg_dir"/*.lib
+        cp EULA.txt "$pkg_dir/"
+        cp docs/LICENSES.md "$pkg_dir/"
+        7z a "${pkg_dir}.zip" "$pkg_dir"
+        echo "pkg_zip=${pkg_dir}.zip" >> "$GITHUB_ENV"
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.pkg_zip }}
+        path: ${{ env.pkg_zip }}
+        retention-days: 30
+    - name: Create draft release
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v2
+      with:
+        draft: true
+        files: ${{ env.pkg_zip }}
