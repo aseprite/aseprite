@@ -29,6 +29,7 @@
 #include "zlib.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <cstdio>
 #include <memory>
 #include <vector>
@@ -125,7 +126,16 @@ bool AsepriteDecoder::decode()
         // Read chunk information
         const size_t chunk_size = read32();
         const int chunk_type = read16();
+        // Chunk size includes the 4-byte size + 2-byte type fields.
+        if (chunk_size < 6) {
+          delegate()->error(fmt::format("Invalid chunk size {0}", chunk_size));
+          break;
+        }
         const size_t chunk_end = chunk_pos + chunk_size;
+        if (chunk_end < chunk_pos) { // overflow
+          delegate()->error("Invalid chunk size (overflow)");
+          break;
+        }
 
         switch (chunk_type) {
           case ASE_FILE_CHUNK_FLI_COLOR:
@@ -707,16 +717,12 @@ void read_compressed_image_templ(FileInterface* f,
   while (true) {
     size_t input_bytes;
 
-    if (f->tell() + compressed.size() > chunk_end) {
-      input_bytes = chunk_end - f->tell(); // Remaining bytes
-      ASSERT(input_bytes < compressed.size());
+    const size_t pos = f->tell();
+    if (pos >= chunk_end)
+      break; // Done, we consumed all chunk (or chunk_end is behind us)
 
-      if (input_bytes == 0)
-        break; // Done, we consumed all chunk
-    }
-    else {
-      input_bytes = compressed.size();
-    }
+    const size_t remaining = chunk_end - pos;
+    input_bytes = std::min(remaining, compressed.size());
 
     size_t bytes_read = f->readBytes(&compressed[0], input_bytes);
 
@@ -1252,8 +1258,10 @@ Tileset* AsepriteDecoder::readTilesetChunk(Sprite* sprite,
   readPadding(14);
   const std::string name = readString();
 
-  // Errors
-  if (ntiles < 0 || w < 1 || h < 1) {
+  // Errors. ntiles is unsigned, so the old "ntiles < 0" check was dead.
+  constexpr tile_index kMaxTiles = 1 << 20;
+  if (w < 1 || h < 1 || ntiles > kMaxTiles ||
+      uint64_t(w) * uint64_t(h) * uint64_t(ntiles) > (uint64_t(1024) * 1024 * 128)) {
     delegate()->error(
       fmt::format("Error: Invalid tileset (number of tiles={0}, tile size={1}x{2})", ntiles, w, h));
     return nullptr;
@@ -1291,7 +1299,16 @@ Tileset* AsepriteDecoder::readTilesetChunk(Sprite* sprite,
         seek(dataBeg);
       }
 
-      const ImageRef alltiles(Image::create(sprite->pixelFormat(), w, h * ntiles));
+      const int allH = int(uint64_t(h) * uint64_t(ntiles));
+      if (allH < 1) {
+        delegate()->error("Error: Invalid tileset image height");
+        return nullptr;
+      }
+      const ImageRef alltiles(Image::create(sprite->pixelFormat(), w, allH));
+      if (!alltiles) {
+        delegate()->error("Error: Not enough memory for tileset image");
+        return nullptr;
+      }
       alltiles->setMaskColor(sprite->transparentColor());
 
       read_compressed_image(f(), delegate(), alltiles.get(), header, dataEnd);

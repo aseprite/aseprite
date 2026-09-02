@@ -72,6 +72,48 @@ constexpr const char* kPackageJson = "package.json";
 constexpr const char* kInfoJson = "__info.json";
 constexpr const char* kPrefLua = "__pref.lua";
 
+bool is_safe_extension_name(const std::string& name)
+{
+  if (name.empty() || name == "." || name == "..")
+    return false;
+  for (char c : name) {
+    if (base::is_path_separator(c) || c == ':' || c == '\0')
+      return false;
+  }
+  return true;
+}
+
+bool is_safe_zip_entry(const std::string& fn)
+{
+  if (fn.empty() || base::is_absolute_path(fn))
+    return false;
+  std::string part;
+  for (std::size_t i = 0; i <= fn.size(); ++i) {
+    if (i == fn.size() || base::is_path_separator(fn[i])) {
+      if (part == "..")
+        return false;
+      part.clear();
+    }
+    else {
+      part.push_back(fn[i]);
+    }
+  }
+  return true;
+}
+
+bool path_stays_under(const std::string& path, const std::string& root)
+{
+  const std::string abs = base::normalize_path(base::get_absolute_path(path));
+  std::string absRoot = base::normalize_path(base::get_absolute_path(root));
+  if (abs.empty() || absRoot.empty())
+    return false;
+  absRoot = base::remove_path_separator(absRoot);
+  if (abs == absRoot)
+    return true;
+  const std::string prefix = absRoot + base::path_separator;
+  return abs.size() > prefix.size() && abs.compare(0, prefix.size(), prefix) == 0;
+}
+
 class ReadArchive {
 public:
   ReadArchive(const std::string& filename) : m_arch(nullptr), m_open(false)
@@ -160,6 +202,10 @@ public:
   WriteArchive() : m_arch(nullptr), m_open(false)
   {
     m_arch = archive_write_disk_new();
+    archive_write_disk_set_options(m_arch,
+                                   ARCHIVE_EXTRACT_SECURE_NODOTDOT |
+                                     ARCHIVE_EXTRACT_SECURE_SYMLINKS |
+                                     ARCHIVE_EXTRACT_SECURE_NOABSOLUTEPATHS);
     m_open = true;
   }
 
@@ -341,6 +387,15 @@ void Extension::removeCommand(const std::string& id)
       ++it;
     }
   }
+}
+
+bool Extension::hasCommand(const std::string& id) const
+{
+  for (const auto& item : m_plugin.items) {
+    if (item.type == PluginItem::Command && item.id == id)
+      return true;
+  }
+  return false;
 }
 
 void Extension::addMenuGroup(const std::string& id)
@@ -826,7 +881,27 @@ static void serialize_table(lua_State* L, int idx, std::string& result)
         else {
           result.push_back('[');
           result.push_back('"');
-          result += k;
+          for (const char* p = k; *p; ++p) {
+            switch (*p) {
+              case '\"':
+                result.push_back('\\');
+                result.push_back('\"');
+                break;
+              case '\\':
+                result.push_back('\\');
+                result.push_back('\\');
+                break;
+              case '\n':
+                result.push_back('\\');
+                result.push_back('n');
+                break;
+              case '\r':
+                result.push_back('\\');
+                result.push_back('r');
+                break;
+              default: result.push_back(*p); break;
+            }
+          }
           result.push_back('"');
           result.push_back(']');
         }
@@ -1219,7 +1294,9 @@ void Extensions::uninstallExtension(Extension* extension, const DeletePluginPref
 ExtensionInfo Extensions::getCompressedExtensionInfo(const std::string& zipFn) const
 {
   ExtensionInfo info;
-  info.dstPath = base::join_path(m_userExtensionsPath, base::get_file_title(zipFn));
+  const std::string zipTitle = base::get_file_title(zipFn);
+  info.dstPath = base::join_path(m_userExtensionsPath,
+                                 is_safe_extension_name(zipTitle) ? zipTitle : "unnamed-extension");
 
   // First of all we read the package.json file inside the .zip to
   // know 1) the extension name, 2) that the .json file can be parsed
@@ -1267,7 +1344,8 @@ ExtensionInfo Extensions::getCompressedExtensionInfo(const std::string& zipFn) c
       }
       info.name = json["name"].string_value();
       info.version = json["version"].string_value();
-      info.dstPath = base::join_path(m_userExtensionsPath, info.name);
+      if (is_safe_extension_name(info.name))
+        info.dstPath = base::join_path(m_userExtensionsPath, info.name);
     }
     break;
   }
@@ -1277,6 +1355,9 @@ ExtensionInfo Extensions::getCompressedExtensionInfo(const std::string& zipFn) c
 Extension* Extensions::installCompressedExtension(const std::string& zipFn,
                                                   const ExtensionInfo& info)
 {
+  if (!path_stays_under(info.dstPath, m_userExtensionsPath))
+    throw base::Exception("Invalid extension destination path");
+
   base::paths installedFiles;
 
   // Uncompress zipFn in info.dstPath
@@ -1313,9 +1394,18 @@ Extension* Extensions::installCompressedExtension(const std::string& zipFn,
           continue;
       }
 
+      if (!is_safe_zip_entry(fn)) {
+        LOG("EXT: Rejecting unsafe zip entry <%s>\n", fn.c_str());
+        continue;
+      }
+
       installedFiles.push_back(fn);
 
       const std::string fullFn = base::join_path(info.dstPath, fn);
+      if (!path_stays_under(fullFn, info.dstPath)) {
+        LOG("EXT: Rejecting zip entry that escapes <%s>\n", info.dstPath.c_str());
+        continue;
+      }
 #if _WIN32
       archive_entry_copy_pathname_w(entry, base::from_utf8(fullFn).c_str());
 #else
@@ -1488,6 +1578,10 @@ Extension* Extensions::loadExtension(const std::string& path,
 
         // The path must be always relative to the extension
         scriptPath = base::join_path(path, scriptPath);
+        if (!path_stays_under(scriptPath, path)) {
+          LOG("EXT: Ignoring script path outside the extension <%s>\n", scriptPath.c_str());
+          continue;
+        }
 
         LOG("EXT: New script path=%s\n", scriptPath.c_str());
 
@@ -1500,10 +1594,13 @@ Extension* Extensions::loadExtension(const std::string& path,
 
       // The path must be always relative to the extension
       scriptPath = base::join_path(path, scriptPath);
-
-      LOG("EXT: New script path=%s\n", scriptPath.c_str());
-
-      extension->addScript(scriptPath);
+      if (path_stays_under(scriptPath, path)) {
+        LOG("EXT: New script path=%s\n", scriptPath.c_str());
+        extension->addScript(scriptPath);
+      }
+      else {
+        LOG("EXT: Ignoring script path outside the extension <%s>\n", scriptPath.c_str());
+      }
     }
 
     extension->MenuItemRemoveWidget.connect([](Widget* item) {

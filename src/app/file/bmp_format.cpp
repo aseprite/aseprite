@@ -24,6 +24,8 @@
 #include "doc/doc.h"
 #include "fmt/format.h"
 
+#include <cstdint>
+
 namespace app {
 
 // Max supported .bmp size (to filter out invalid image sizes)
@@ -1014,13 +1016,13 @@ bool BmpFormat::onLoad(FileOp* fop)
       return false;
     }
 
-    uint32_t size = infoheader.biWidth * uint32_t(ABS(int(infoheader.biHeight)));
+    uint64_t size = uint64_t(infoheader.biWidth) * uint64_t(ABS(int(infoheader.biHeight)));
     if (infoheader.biBitCount >= 8)
-      size *= (infoheader.biBitCount / 8);
+      size *= uint64_t(infoheader.biBitCount / 8);
     else if (8 / infoheader.biBitCount > 0)
-      size /= (8 / infoheader.biBitCount);
+      size /= uint64_t(8 / infoheader.biBitCount);
 
-    if (size > kMaxBmpSize) {
+    if (size > uint64_t(kMaxBmpSize)) {
       fop->setError(fmt::format("BMP size unsupported ({:.2f} MB > {:.2f} MB).\n",
                                 size / 1024.0 / 1024.0,
                                 kMaxBmpSize / 1024.0 / 1024.0)

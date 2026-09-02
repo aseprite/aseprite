@@ -738,6 +738,8 @@ private:
     int ncolors = (colormap ? colormap->ColorCount : 1);
     int w = m_spriteBounds.w;
     int h = m_spriteBounds.h;
+    if (w < 1 || h < 1)
+      throw Exception("Invalid GIF canvas size.\n");
 
     m_sprite.reset(new Sprite(ImageSpec(ColorMode::INDEXED, w, h), ncolors));
     m_sprite->setTransparentColor(m_bgIndex);

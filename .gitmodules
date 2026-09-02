@@ -29,7 +29,7 @@
 	url = https://github.com/aseprite/undo.git
 [submodule "laf"]
 	path = laf
-	url = https://github.com/aseprite/laf.git
+	url = https://github.com/giobuilds/laf.git
 [submodule "third_party/cmark"]
 	path = third_party/cmark
 	url = https://github.com/aseprite/cmark.git

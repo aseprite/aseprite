@@ -124,11 +124,15 @@ int dofile(lua_State* L)
       fname = altFname;
   }
 
+  const std::string absFilename = base::get_absolute_path(fname);
+  if (!ask_access(L, absFilename.c_str(), FileAccessMode::Read, ResourceType::File))
+    return luaL_error(L, "the script doesn't have access to file '%s'", absFilename.c_str());
+
   lua_settop(L, 1);
   if (luaL_loadfile(L, fname.c_str()) != LUA_OK)
     return lua_error(L);
   {
-    AddScriptFilename add(fname);
+    AddScriptFilename add(absFilename.empty() ? fname : absFilename);
     lua_callk(L, 0, LUA_MULTRET, 0, dofilecont);
   }
   return dofilecont(L, 0, 0);
@@ -145,6 +149,12 @@ int loadfile(lua_State* L)
   // the program.
   if (auto app = App::instance(); app && app->isGui() && !lua_isstring(L, 1)) {
     return luaL_error(L, "loadfile() for stdin cannot be used running in GUI mode");
+  }
+
+  if (lua_isstring(L, 1)) {
+    const std::string absFilename = base::get_absolute_path(lua_tostring(L, 1));
+    if (!ask_access(L, absFilename.c_str(), FileAccessMode::Read, ResourceType::File))
+      return luaL_error(L, "the script doesn't have access to file '%s'", absFilename.c_str());
   }
 
   return orig_loadfile(L);
@@ -532,6 +542,13 @@ Engine::Engine() : L(luaL_newstate()), m_delegate(nullptr), m_printLastResult(fa
 
   // Check that we have a clean start (without dirty in the stack)
   ASSERT(lua_gettop(L) == top);
+}
+
+std::string Engine::currentScriptFilename()
+{
+  if (current_script_dirs.empty())
+    return std::string();
+  return current_script_dirs.top();
 }
 
 Engine::~Engine()

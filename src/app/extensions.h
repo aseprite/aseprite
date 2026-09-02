@@ -135,6 +135,7 @@ public:
 #ifdef ENABLE_SCRIPTING
   void addCommand(const std::string& id);
   void removeCommand(const std::string& id);
+  bool hasCommand(const std::string& id) const;
 
   void addMenuGroup(const std::string& id);
   void removeMenuGroup(const std::string& id);

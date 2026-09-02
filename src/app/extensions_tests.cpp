@@ -470,6 +470,57 @@ end)" },
   EXPECT_FALSE(base::is_directory(info.dstPath));
 }
 
+TEST(Extensions, ZipSlipRejected)
+{
+  INIT_EXTENSION_TEST();
+
+  const std::string zipPath = "zipslip-test.aseprite-extension";
+  if (base::is_file(zipPath))
+    base::delete_file(zipPath);
+
+  {
+    const auto a =
+      std::unique_ptr<archive, void (*)(archive*)>(archive_write_new(), [](struct archive* a) {
+        EXPECT_EQ(archive_write_close(a), ARCHIVE_OK);
+        EXPECT_EQ(archive_write_free(a), ARCHIVE_OK);
+      });
+    ASSERT_EQ(archive_write_set_format_zip(a.get()), ARCHIVE_OK);
+    ASSERT_EQ(archive_write_open_filename(a.get(), zipPath.c_str()), ARCHIVE_OK);
+
+    auto add = [&](const char* pathname, const std::string& data) {
+      const auto e = std::unique_ptr<struct archive_entry, void (*)(struct archive_entry*)>(
+        archive_entry_new(),
+        &archive_entry_free);
+      archive_entry_set_pathname(e.get(), pathname);
+      archive_entry_set_perm(e.get(), 0644);
+      archive_entry_set_filetype(e.get(), AE_IFREG);
+      archive_entry_set_size(e.get(), data.size());
+      ASSERT_EQ(archive_write_header(a.get(), e.get()), ARCHIVE_OK);
+      ASSERT_GE(archive_write_data(a.get(), data.data(), data.size()), 0);
+    };
+
+    add("evil/package.json",
+        R"({"name":"zipslip-test","displayName":"Zip Slip","contributes":{"scripts":"./script.lua"}})");
+    add("evil/script.lua", "function init(plugin) end");
+    add("evil/../../zipslip-pwned.txt", "pwned");
+  }
+
+  auto info = app.extensions().getCompressedExtensionInfo(zipPath);
+  app.extensions().installCompressedExtension(zipPath, info);
+
+  EXPECT_FALSE(base::is_file("zipslip-pwned.txt"));
+  EXPECT_FALSE(base::is_file(base::join_path(base::get_file_path(info.dstPath), "../zipslip-pwned.txt")));
+
+  Extension* testExt = nullptr;
+  for (auto* ext : app.extensions()) {
+    if (ext->name() == "zipslip-test")
+      testExt = ext;
+  }
+  ASSERT_TRUE(testExt != nullptr);
+  app.extensions().uninstallExtension(testExt, DeletePluginPref::Yes);
+  base::delete_file(zipPath);
+}
+
 TEST(Extensions, CustomFormatsLoad)
 {
   const ExtFiles extensionFiles = {

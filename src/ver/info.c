@@ -10,11 +10,7 @@
 #define PACKAGE   "Aseprite"
 #define COPYRIGHT "Copyright (C) 2001-2025 Igara Studio S.A."
 
-#if defined(_WIN32) || defined(__APPLE__)
-  #define HTTP "https"
-#else
-  #define HTTP "http"
-#endif
+#define HTTP "https"
 
 #ifdef CUSTOM_WEBSITE_URL
   #define WEBSITE CUSTOM_WEBSITE_URL /* To test web server */

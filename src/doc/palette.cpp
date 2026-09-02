@@ -124,7 +124,10 @@ void Palette::setFrame(frame_t frame)
 
 void Palette::setEntry(int i, color_t color)
 {
-  ASSERT(i >= 0 && i < size());
+  if (i < 0 || i >= size()) {
+    ASSERT(false);
+    return;
+  }
 
   m_colors[i] = color;
   ++m_modifications;

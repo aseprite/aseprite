@@ -111,16 +111,17 @@ endif()
 
 # SSL/TLS support
 if(REQUIRE_CURL AND NOT USE_SHARED_CURL)
-  # Disable OpenSSL (use native libraries only)
-  set(CMAKE_USE_OPENSSL OFF CACHE BOOL "Use OpenSSL code. Experimental")
   set(CMAKE_USE_LIBSSH2 OFF CACHE BOOL "Use libSSH2")
 
   if(WIN32)
+    set(CMAKE_USE_OPENSSL OFF CACHE BOOL "Use OpenSSL code. Experimental")
     set(CMAKE_USE_SCHANNEL ON CACHE BOOL "enable Windows native SSL/TLS")
   elseif(APPLE)
+    set(CMAKE_USE_OPENSSL OFF CACHE BOOL "Use OpenSSL code. Experimental")
     set(CMAKE_USE_SECTRANSP ON CACHE BOOL "enable Apple OS native SSL/TLS")
   else()
-    # TODO Linux?
+    # Linux has no native TLS API equivalent to SChannel/SecureTransport.
+    set(CMAKE_USE_OPENSSL ON CACHE BOOL "Use OpenSSL for TLS on Linux" FORCE)
   endif()
 endif()
 

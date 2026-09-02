@@ -87,7 +87,12 @@ std::string get_key(const std::string& source)
 
 std::string get_script_filename(lua_State* L, int stackLevel)
 {
-  std::string script;
+  // Prefer the filename of the evalFile/dofile that is actually running.
+  // lua_Debug.source is attacker-controlled via load(code, chunkname).
+  std::string script = Engine::currentScriptFilename();
+  if (!script.empty())
+    return script;
+
   lua_Debug ar;
   if (!lua_getstack(L, stackLevel - 1, &ar))
     return script;
@@ -100,6 +105,32 @@ std::string get_script_filename(lua_State* L, int stackLevel)
     script = ar.source + 1;
 
   return script;
+}
+
+FileAccessMode io_mode_from_string(const char* mode)
+{
+  FileAccessMode result = FileAccessMode::Read;
+  if (!mode)
+    return result;
+  if (std::strchr(mode, 'w') || std::strchr(mode, 'a') || std::strchr(mode, '+'))
+    result = FileAccessMode::Write;
+  return result;
+}
+
+int secure_lua_searcher(lua_State* L)
+{
+  lua_pushvalue(L, lua_upvalueindex(1));
+  lua_pushvalue(L, 1);
+  lua_call(L, 1, 2);
+  if (lua_isfunction(L, -2) && lua_isstring(L, -1)) {
+    std::string fn = lua_tostring(L, -1);
+    const std::string abs = base::get_absolute_path(fn);
+    if (!abs.empty())
+      fn = abs;
+    if (!ask_access(L, fn.c_str(), FileAccessMode::Read, ResourceType::File))
+      return luaL_error(L, "the script doesn't have access to file '%s'", fn.c_str());
+  }
+  return 2;
 }
 
 int unsupported(lua_State* L)
@@ -118,11 +149,7 @@ int unsupported(lua_State* L)
 int secure_io_open(lua_State* L)
 {
   std::string absFilename = base::get_absolute_path(luaL_checkstring(L, 1));
-
-  FileAccessMode mode = FileAccessMode::Read; // Read is the default access
-  if (lua_tostring(L, 2) && std::strchr(lua_tostring(L, 2), 'w') != nullptr) {
-    mode = FileAccessMode::Write;
-  }
+  const FileAccessMode mode = io_mode_from_string(lua_tostring(L, 2));
 
   if (!ask_access(L, absFilename.c_str(), mode, ResourceType::File)) {
     return luaL_error(L, "the script doesn't have access to file '%s'", absFilename.c_str());
@@ -247,11 +274,8 @@ int secure_os_rename(lua_State* L)
     return file_result(L, false, EACCES, absSourceFilename);
 
   try {
-    // If the destination file already exists, we should ask for permission to overwrite it.
-    if (!base::get_canonical_path(absDestFilename).empty() &&
-        !ask_access(L, absDestFilename.data(), FileAccessMode::Write, ResourceType::File)) {
+    if (!ask_access(L, absDestFilename.data(), FileAccessMode::Write, ResourceType::File))
       return file_result(L, false, EACCES, absDestFilename);
-    }
 
     base::move_file(absSourceFilename, absDestFilename);
     return file_result(L, true);
@@ -301,6 +325,29 @@ void overwrite_unsecure_functions(lua_State* L)
 
     lua_pop(L, 1);
   }
+
+  // Native modules: wrap package.loadlib (above) and also disable the
+  // C searchers / cpath, which dlopen without going through loadlib.
+  lua_getglobal(L, "package");
+  lua_getfield(L, -1, "searchers");
+  if (lua_istable(L, -1)) {
+    lua_pushnil(L);
+    lua_rawseti(L, -2, 4); // searcher_Croot
+    lua_pushnil(L);
+    lua_rawseti(L, -2, 3); // searcher_C
+    lua_rawgeti(L, -1, 2); // Lua file searcher
+    if (lua_isfunction(L, -1)) {
+      lua_pushcclosure(L, secure_lua_searcher, 1);
+      lua_rawseti(L, -2, 2);
+    }
+    else {
+      lua_pop(L, 1);
+    }
+  }
+  lua_pop(L, 1); // searchers
+  lua_pushstring(L, "");
+  lua_setfield(L, -2, "cpath");
+  lua_pop(L, 1); // package
 }
 
 bool ask_access(lua_State* L,

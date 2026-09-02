@@ -14,6 +14,8 @@
 #include "app/script/security.h"
 #include "base/fs.h"
 
+#include <string>
+
 namespace app { namespace script {
 
 namespace {
@@ -76,30 +78,42 @@ int AppFS_get_userConfigPath(lua_State* L)
 int AppFS_isFile(lua_State* L)
 {
   const char* fn = lua_tostring(L, 1);
-  if (fn)
-    lua_pushboolean(L, base::is_file(fn));
-  else
+  if (!fn) {
     lua_pushboolean(L, false);
+    return 1;
+  }
+  const std::string abs = base::get_absolute_path(fn);
+  if (!ask_access(L, abs.c_str(), FileAccessMode::Read, ResourceType::File))
+    return luaL_error(L, "the script doesn't have access to file '%s'", abs.c_str());
+  lua_pushboolean(L, base::is_file(fn));
   return 1;
 }
 
 int AppFS_isDirectory(lua_State* L)
 {
   const char* fn = lua_tostring(L, 1);
-  if (fn)
-    lua_pushboolean(L, base::is_directory(fn));
-  else
+  if (!fn) {
     lua_pushboolean(L, false);
+    return 1;
+  }
+  const std::string abs = base::get_absolute_path(fn);
+  if (!ask_access(L, abs.c_str(), FileAccessMode::Read, ResourceType::File))
+    return luaL_error(L, "the script doesn't have access to file '%s'", abs.c_str());
+  lua_pushboolean(L, base::is_directory(fn));
   return 1;
 }
 
 int AppFS_fileSize(lua_State* L)
 {
   const char* fn = lua_tostring(L, 1);
-  if (fn)
-    lua_pushinteger(L, base::file_size(fn));
-  else
+  if (!fn) {
     lua_pushnil(L);
+    return 1;
+  }
+  const std::string abs = base::get_absolute_path(fn);
+  if (!ask_access(L, abs.c_str(), FileAccessMode::Read, ResourceType::File))
+    return luaL_error(L, "the script doesn't have access to file '%s'", abs.c_str());
+  lua_pushinteger(L, base::file_size(fn));
   return 1;
 }
 
@@ -107,12 +121,15 @@ int AppFS_listFiles(lua_State* L)
 {
   const char* path = lua_tostring(L, 1);
   lua_newtable(L);
-  if (path) {
-    int i = 0;
-    for (const auto& fn : base::list_files(path)) {
-      lua_pushstring(L, fn.c_str());
-      lua_seti(L, -2, ++i);
-    }
+  if (!path)
+    return 1;
+  const std::string abs = base::get_absolute_path(path);
+  if (!ask_access(L, abs.c_str(), FileAccessMode::Read, ResourceType::File))
+    return luaL_error(L, "the script doesn't have access to file '%s'", abs.c_str());
+  int i = 0;
+  for (const auto& fn : base::list_files(path)) {
+    lua_pushstring(L, fn.c_str());
+    lua_seti(L, -2, ++i);
   }
   return 1;
 }
@@ -125,8 +142,9 @@ int AppFS_makeDirectory(lua_State* L)
     return 1;
   }
 
-  if (!ask_access(L, path, FileAccessMode::Write, ResourceType::File))
-    return luaL_error(L, "the script doesn't have access to create the directory '%s'", path);
+  const std::string abs = base::get_absolute_path(path);
+  if (!ask_access(L, abs.c_str(), FileAccessMode::Write, ResourceType::File))
+    return luaL_error(L, "the script doesn't have access to create the directory '%s'", abs.c_str());
 
   try {
     // TODO don't throw exception from base::make_directory() function
@@ -147,8 +165,11 @@ int AppFS_makeAllDirectories(lua_State* L)
     return 1;
   }
 
-  if (!ask_access(L, path, FileAccessMode::Write, ResourceType::File))
-    return luaL_error(L, "the script doesn't have access to create all directories '%s'", path);
+  const std::string abs = base::get_absolute_path(path);
+  if (!ask_access(L, abs.c_str(), FileAccessMode::Write, ResourceType::File))
+    return luaL_error(L,
+                      "the script doesn't have access to create all directories '%s'",
+                      abs.c_str());
 
   try {
     base::make_all_directories(path);
@@ -170,8 +191,9 @@ int AppFS_removeDirectory(lua_State* L)
     return 1;
   }
 
-  if (!ask_access(L, path, FileAccessMode::Write, ResourceType::File))
-    return luaL_error(L, "the script doesn't have access to remove the directory '%s'", path);
+  const std::string abs = base::get_absolute_path(path);
+  if (!ask_access(L, abs.c_str(), FileAccessMode::Write, ResourceType::File))
+    return luaL_error(L, "the script doesn't have access to remove the directory '%s'", abs.c_str());
 
   try {
     base::remove_directory(path);

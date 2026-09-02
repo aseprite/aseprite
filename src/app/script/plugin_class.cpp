@@ -13,6 +13,7 @@
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/console.h"
+#include "app/extensions.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
 #include "app/ui/app_menuitem.h"
@@ -119,6 +120,11 @@ private:
 
 void deleteCommandIfExistent(Extension* ext, const std::string& id)
 {
+  // Only remove commands this extension previously registered. Never
+  // delete built-in commands (SaveFile, OpenFile, ...).
+  if (!ext->hasCommand(id))
+    return;
+
   auto cmd = Commands::instance()->byId(id.c_str());
   if (cmd) {
     Commands::instance()->remove(cmd);
@@ -189,6 +195,10 @@ int Plugin_newCommand(lua_State* L)
     type = lua_getfield(L, 2, "onclick");
     if (type == LUA_TFUNCTION) {
       int onclickRef = luaL_ref(L, LUA_REGISTRYINDEX);
+
+      auto existing = Commands::instance()->byId(id.c_str());
+      if (existing && !plugin->ext->hasCommand(id))
+        return luaL_error(L, "cannot overwrite built-in command '%s'", id.c_str());
 
       // Delete the command if it already exist (e.g. we are
       // overwriting a previous registered command)

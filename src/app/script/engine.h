@@ -113,6 +113,9 @@ public:
   void startDebugger(DebuggerDelegate* debuggerDelegate);
   void stopDebugger();
 
+  // Filename of the script currently executing via evalFile/dofile, or empty.
+  static std::string currentScriptFilename();
+
 private:
   void onConsoleError(const char* text);
   void onConsolePrint(const char* text);
