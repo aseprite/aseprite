@@ -199,6 +199,9 @@ void BrushPreview::show(const gfx::Point& screenPos)
                 brushCenter;
   }
 
+  // Get current projection
+  const render::Projection& proj = m_editor->projection();
+
   // Get the current tool
   tools::Ink* ink = m_editor->getCurrentEditorInk();
 
@@ -418,6 +421,10 @@ void BrushPreview::show(const gfx::Point& screenPos)
       }
     }
 
+    // Add an extra pixel when zoom < 100% to avoid leaving a trail
+    // when moving the cursor.
+    extraCelBoundsInCanvas.inflate(proj.removeX(1), proj.removeY(1));
+
     document->notifySpritePixelsModified(sprite,
                                          gfx::Region(m_lastBounds = extraCelBoundsInCanvas),
                                          m_lastFrame = site.frame());
@@ -439,7 +446,6 @@ void BrushPreview::show(const gfx::Point& screenPos)
     // Create (or re-use) the UILayer
     if ((m_type & SELECTION_CROSSHAIR) || (m_type & BRUSH_BOUNDARIES)) {
       bool cached = createUILayer(brushBounds);
-      const render::Projection& proj = m_editor->projection();
 
       if (m_uiLayer->surface()) {
         gfx::Rect layerBounds = m_uiLayer->surface()->bounds();
