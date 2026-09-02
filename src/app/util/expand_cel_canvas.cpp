@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -188,6 +188,9 @@ ExpandCelCanvas::~ExpandCelCanvas()
   try {
     if (!m_committed && !m_closed)
       rollback();
+
+    // TODO reduce the region to invalidate to its minimum
+    m_document->notifySpritePixelsModified(m_sprite, gfx::Region(m_sprite->bounds()), m_frame);
   }
   catch (...) {
     // Do nothing
