@@ -164,9 +164,6 @@ void BrushPreview::show(const gfx::Point& screenPos)
   // Get drawable region
   m_editor->getDrawableRegion(m_clippingRegion, ui::Widget::kCutTopWindows);
 
-  // Remove the invalidated region in the editor.
-  m_clippingRegion.createSubtraction(m_clippingRegion, m_editor->getUpdateRegion());
-
   // Get cursor color
   const auto& pref = Preferences::instance();
   app::Color appCursorColor = pref.cursor.cursorColor();
@@ -465,7 +462,6 @@ void BrushPreview::show(const gfx::Point& screenPos)
         }
 
         m_uiLayer->setPosition(layerBounds.origin());
-        m_uiLayer->setClipRegion(m_clippingRegion);
       }
 
       display->addLayer(m_uiLayer);
@@ -524,6 +520,9 @@ void BrushPreview::show(const gfx::Point& screenPos)
     }
   }
 
+  if (m_uiLayer)
+    m_uiLayer->setClipRegion(m_clippingRegion);
+
   // Cursor in the editor (model)
   m_onScreen = true;
   m_editorPosition = spritePos;
@@ -579,16 +578,6 @@ void BrushPreview::hide()
   m_clippingRegion.clear();
 }
 
-void BrushPreview::discardBrushPreview()
-{
-  Doc* document = m_editor->document();
-  ASSERT(document);
-
-  if (document && m_onScreen && m_withRealPreview) {
-    document->setExtraCel(ExtraCelRef(nullptr));
-  }
-}
-
 void BrushPreview::redraw()
 {
   if (m_onScreen) {
@@ -596,11 +585,6 @@ void BrushPreview::redraw()
     hide();
     show(screenPos);
   }
-}
-
-void BrushPreview::invalidateRegion(const gfx::Region& region)
-{
-  m_clippingRegion.createSubtraction(m_clippingRegion, region);
 }
 
 bool BrushPreview::createUILayer(const gfx::Rect& brushBounds)

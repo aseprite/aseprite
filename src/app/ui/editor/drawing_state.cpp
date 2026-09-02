@@ -253,12 +253,6 @@ bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
 
 bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
-  // It's needed to avoid some glitches with brush boundaries.
-  //
-  // TODO we should be able to avoid this if we correctly invalidate
-  // the BrushPreview::m_clippingRegion
-  HideBrushPreview hide(editor->brushPreview());
-
   // Don't process onScrollChange() messages if autoScroll() changes
   // the scroll.
   base::ScopedValue disableScroll(m_processScrollChange, false);

@@ -82,9 +82,6 @@ public:
   void show(const gfx::Point& screenPos);
   void hide();
   void redraw();
-  void discardBrushPreview();
-
-  void invalidateRegion(const gfx::Region& region);
 
 private:
   doc::BrushRef getCurrentBrush();

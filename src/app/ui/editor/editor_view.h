@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -26,7 +27,6 @@ public:
 protected:
   void onPaint(ui::PaintEvent& ev) override;
   void onResize(ui::ResizeEvent& ev) override;
-  void onSetViewScroll(const gfx::Point& pt) override;
   void onScrollRegion(ui::ScrollRegionEvent& ev) override;
   void onScrollChange() override;
 

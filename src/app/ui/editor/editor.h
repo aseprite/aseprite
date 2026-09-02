@@ -333,7 +333,6 @@ protected:
   void onSizeHint(ui::SizeHintEvent& ev) override;
   void onResize(ui::ResizeEvent& ev) override;
   void onPaint(ui::PaintEvent& ev) override;
-  void onInvalidateRegion(const gfx::Region& region) override;
   void onSamplingChange();
   void onFgColorChange();
   void onContextBarBrushChange();

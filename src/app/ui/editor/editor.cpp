@@ -406,6 +406,9 @@ void Editor::setFrame(frame_t frame)
 
   m_observers.notifyBeforeFrameChanged(this);
   {
+    // This "HideBrushPreview" avoid a flicker when switching to other
+    // frame, so the ExtraCel is already ready with the preview in the
+    // new frame when Editor::onPaint() is called.
     HideBrushPreview hide(m_brushPreview);
     m_frame = frame;
   }
@@ -1077,7 +1080,6 @@ void Editor::drawMaskSafe()
     getDrawableRegion(region, kCutTopWindows);
     region.offset(-bounds().origin());
 
-    HideBrushPreview hide(m_brushPreview);
     GraphicsPtr g = getGraphics(clientBounds());
 
     if (haveSegs) {
@@ -1761,7 +1763,6 @@ Rect Editor::getVisibleSpriteBounds()
 // Changes the scroll to see the given point as the center of the editor.
 void Editor::centerInSpritePoint(const gfx::PointF& spritePos)
 {
-  HideBrushPreview hide(m_brushPreview);
   View* view = View::getView(this);
   Rect vp = view->viewportBounds();
 
@@ -2402,20 +2403,6 @@ void Editor::onResize(ui::ResizeEvent& ev)
 
 void Editor::onPaint(ui::PaintEvent& ev)
 {
-  std::unique_ptr<HideBrushPreview> hide;
-  if (m_flashing == Flashing::None) {
-    // If we are drawing the editor for a tooltip background or any
-    // other semi-transparent widget (e.g. popups), we destroy the brush
-    // preview/extra cel to avoid drawing a part of the brush in the
-    // transparent widget background.
-    if (ev.isTransparentBg()) {
-      m_brushPreview.discardBrushPreview();
-    }
-    else {
-      hide.reset(new HideBrushPreview(m_brushPreview));
-    }
-  }
-
   Graphics* g = ev.graphics();
   gfx::Rect rc = clientBounds();
   auto theme = SkinTheme::get(this);
@@ -2469,12 +2456,6 @@ void Editor::onPaint(ui::PaintEvent& ev)
       defer_invalid_rect(g->getClipBounds().offset(bounds().origin()));
     }
   }
-}
-
-void Editor::onInvalidateRegion(const gfx::Region& region)
-{
-  Widget::onInvalidateRegion(region);
-  m_brushPreview.invalidateRegion(region);
 }
 
 // When the current tool is changed
@@ -2789,7 +2770,6 @@ void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
                                      const gfx::Point& mousePos,
                                      ZoomBehavior zoomBehavior)
 {
-  HideBrushPreview hide(m_brushPreview);
   View* view = View::getView(this);
   Rect vp = view->viewportBounds();
   Projection proj = m_proj;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -384,13 +384,6 @@ public:
   {
     if (!m_editor)
       return;
-
-    // This is necessary here so the "on sprite crosshair" is hidden,
-    // we update screen pixels with the new sprite, and then we show
-    // the crosshair saving the updated pixels. It fixes problems with
-    // filled shape tools when we release the button, or paint-bucket
-    // when we press the button.
-    HideBrushPreview hide(m_editor->brushPreview());
 
     m_document->notifySpritePixelsModified(m_sprite, dirtyArea, m_frame);
   }
