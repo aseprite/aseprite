@@ -18,6 +18,7 @@
 #include "app/pref/preferences.h"
 #include "app/recent_files.h"
 #include "app/ui/draggable_widget.h"
+#include "app/ui/drop_target_widget.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
 #include "base/fs.h"
@@ -40,7 +41,8 @@ using namespace skin;
 //////////////////////////////////////////////////////////////////////
 // RecentFileItem
 
-class RecentFileItem : public DraggableWidget<LinkLabel> {
+class RecentFileItem : public DraggableWidget<LinkLabel>,
+                       public DropTargetWidget {
 public:
   RecentFileItem(const std::string& file, const bool pinned)
     : DraggableWidget<LinkLabel>("")
@@ -166,11 +168,7 @@ protected:
     }
   }
 
-  void onClick() override
-  {
-    if (!wasDragged())
-      static_cast<RecentListBox*>(parent())->onClick(m_fullpath);
-  }
+  void onClick() override { static_cast<RecentListBox*>(parent())->onClick(m_fullpath); }
 
   void onReorderWidgets(const gfx::Point& mousePos, bool inside) override
   {
@@ -182,10 +180,12 @@ protected:
     }
   }
 
-  void onFinalDrop(bool inside) override
+  void onDragWidgetEnd(const gfx::Point& mousePos, bool inside, bool cancelled) override
   {
-    if (!wasDragged())
+    if (cancelled) {
+      static_cast<RecentListBox*>(parent())->rebuildList();
       return;
+    }
 
     if (inside) {
       // Pin all elements to keep the order
@@ -207,6 +207,8 @@ protected:
 
     if (!inside)
       deferDelete();
+
+    setSelected(false);
   }
 
 private:
