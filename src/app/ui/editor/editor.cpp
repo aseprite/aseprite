@@ -3252,15 +3252,29 @@ bool Editor::handleDevModeKeys(const ui::KeyMessage* msg)
       auto& renderEngine = Preferences::instance().render.renderEngine;
       auto& tileBased = Preferences::instance().render.tileBasedRenderEngine;
 
+      // F1 = Toggle between Raster v2 <-> Tile-Based Shader (current
+      //      render engines with possible future render engine)
       if (msg->modifiers() == 0) {
+        if (renderEngine() == gen::RenderEngine::RASTER_V2) {
+          renderEngine(gen::RenderEngine::SHADER);
+          tileBased(true);
+        }
+        else {
+          renderEngine(gen::RenderEngine::RASTER_V2);
+          tileBased(false);
+        }
+      }
+      // Alt+F1 = Toggle tile-based renderer
+      else if (msg->altPressed()) {
+        tileBased(!tileBased());
+      }
+      // Ctrl+F1 = Rotate between render engine versions v1 -> v2 -> shader
+      else if (msg->ctrlPressed()) {
         switch (renderEngine()) {
           case gen::RenderEngine::RASTER_V1: renderEngine(gen::RenderEngine::RASTER_V2); break;
           case gen::RenderEngine::RASTER_V2: renderEngine(gen::RenderEngine::SHADER); break;
           case gen::RenderEngine::SHADER:    renderEngine(gen::RenderEngine::RASTER_V1); break;
         }
-      }
-      else if (msg->altPressed()) {
-        tileBased(!tileBased());
       }
 
       m_renderEngine->updateFromPref();
