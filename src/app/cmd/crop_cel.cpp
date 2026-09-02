@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2016  David Capello
 //
 // This program is distributed under the terms of
@@ -11,10 +11,12 @@
 
 #include "app/cmd/crop_cel.h"
 
+#include "app/doc.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/layer_tilemap.h"
 #include "doc/primitives.h"
+#include "gfx/region.h"
 
 namespace app { namespace cmd {
 
@@ -41,6 +43,21 @@ void CropCel::onExecute()
 void CropCel::onUndo()
 {
   cropImage(m_oldOrigin, m_oldBounds);
+}
+
+void CropCel::onFireNotifications()
+{
+  Cel* cel = this->cel();
+  if (!cel)
+    return;
+
+  Doc* doc = static_cast<Doc*>(cel->document());
+  if (!doc)
+    return;
+
+  gfx::Region rgn(gfx::Rect(m_oldBounds).offset(m_newOrigin));
+  rgn |= gfx::Region(gfx::Rect(m_newBounds).offset(m_oldOrigin));
+  doc->notifySpritePixelsModified(cel->sprite(), rgn, cel->frame());
 }
 
 // Crops the cel image leaving the same ID in the image.

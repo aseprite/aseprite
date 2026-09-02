@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -40,6 +40,7 @@ protected:
   void onExecute() override;
   void onUndo() override;
   void onRedo() override;
+  void onFireNotifications() override;
   size_t onMemSize() const override { return sizeof(*this) + m_buffer.size(); }
 
 private:
@@ -48,6 +49,7 @@ private:
 
   bool m_alreadyCopied;
   gfx::Region m_region;
+  gfx::Point m_dstPos;
   base::buffer m_buffer;
 };
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023, 2026  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -286,9 +286,18 @@ void MovingCelState::onCommitMouseMove(Editor* editor, const gfx::PointF& newCur
   if (snapToGrid)
     snapOffsetToGrid(intOffset);
 
+  gfx::Region modifiedRegion;
+
   for (size_t i = 0; i < m_celList.size(); ++i) {
     Cel* cel = m_celList[i];
     gfx::RectF celBounds = m_celStarts[i];
+
+    // We have to invalidate regions even if cel->frame() !=
+    // editor->frame(), just in case other editor is visible.
+    //
+    // TODO create an easy way to keep track of modified regions per
+    //      frame of visible editors only to update then later
+    modifiedRegion |= gfx::Region(cel->bounds());
 
     if (cel->layer()->isReference()) {
       celBounds.x += m_celOffset.x;
@@ -308,10 +317,12 @@ void MovingCelState::onCommitMouseMove(Editor* editor, const gfx::PointF& newCur
       celBounds.y += intOffset.y;
       cel->setBounds(gfx::Rect(celBounds));
     }
+
+    modifiedRegion |= gfx::Region(cel->bounds());
   }
 
-  // Redraw the new cel position.
-  editor->invalidate();
+  // Redraw the new cel bounds.
+  editor->document()->notifySpritePixelsModified(editor->sprite(), modifiedRegion, editor->frame());
 
   // Redraw status bar with the new position of cels (without this the
   // previous position before this onCommitMouseMove() is still

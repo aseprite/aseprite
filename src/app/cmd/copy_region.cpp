@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -11,7 +11,9 @@
 
 #include "app/cmd/copy_region.h"
 
+#include "app/context.h"
 #include "app/doc.h"
+#include "app/site.h"
 #include "app/util/buffer_region.h"
 #include "doc/image.h"
 #include "doc/sprite.h"
@@ -26,6 +28,7 @@ CopyRegion::CopyRegion(Image* dst,
                        bool alreadyCopied)
   : WithImage(dst)
   , m_alreadyCopied(alreadyCopied)
+  , m_dstPos(dstPos)
 {
   ASSERT(!region.isEmpty());
 
@@ -68,6 +71,18 @@ void CopyRegion::onUndo()
 void CopyRegion::onRedo()
 {
   swap();
+}
+
+void CopyRegion::onFireNotifications()
+{
+  // TODO save sprite in this cmd?
+  Site site = context()->activeSite();
+  if (!site.document() || !site.sprite())
+    return;
+
+  gfx::Region rgn = m_region;
+  rgn.offset(-m_dstPos);
+  site.document()->notifySpritePixelsModified(site.sprite(), rgn, site.frame());
 }
 
 void CopyRegion::swap()

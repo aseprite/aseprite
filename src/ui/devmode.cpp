@@ -12,7 +12,8 @@
 
 namespace ui {
 
-static DevModeFlags g_devmode_flags = DevModeFlags::None;
+// MoveRegionOnViewScroll is enabled by default
+static DevModeFlags g_devmode_flags = DevModeFlags::MoveRegionOnViewScroll;
 
 void set_devmode_flags(const DevModeFlags flags)
 {

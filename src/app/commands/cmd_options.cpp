@@ -513,10 +513,6 @@ public:
     samplingPlaceholder()->addChild(
       m_samplingSelector = new SamplingSelector(SamplingSelector::Behavior::ChangeOnSave));
 
-    m_samplingSelector->setEnabled(newRenderEngine()->isSelected());
-    newRenderEngine()->Click.connect(
-      [this] { m_samplingSelector->setEnabled(newRenderEngine()->isSelected()); });
-
     // Right-click
     static_assert(int(app::gen::RightClickMode::PAINT_BGCOLOR) == 0, "");
     static_assert(int(app::gen::RightClickMode::PICK_FGCOLOR) == 1, "");

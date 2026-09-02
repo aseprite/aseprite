@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -66,7 +66,8 @@ public:
   virtual void onCelMoved(DocEvent& ev) {}
   virtual void onCelCopied(DocEvent& ev) {}
   virtual void onCelFrameChanged(DocEvent& ev) {}
-  virtual void onCelPositionChanged(DocEvent& ev) {}
+  virtual void onBeforeCelPositionChange(DocEvent& ev) {}
+  virtual void onAfterCelPositionChange(DocEvent& ev) {}
   virtual void onCelOpacityChange(DocEvent& ev) {}
   virtual void onCelZIndexChange(DocEvent& ev) {}
 

@@ -572,8 +572,11 @@ target_sources(app-lib PRIVATE
   modules/palettes.cpp
   pref/preferences.cpp
   recent_files.cpp
+  render/common_renderer.cpp
+  render/render_tile.cpp
   render/shader_renderer.cpp
   render/simple_renderer.cpp
+  render/tile_based_renderer.cpp
   res/palettes_loader_delegate.cpp
   res/resources_loader.cpp
   resource_finder.cpp

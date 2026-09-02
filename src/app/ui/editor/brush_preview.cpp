@@ -164,9 +164,6 @@ void BrushPreview::show(const gfx::Point& screenPos)
   // Get drawable region
   m_editor->getDrawableRegion(m_clippingRegion, ui::Widget::kCutTopWindows);
 
-  // Remove the invalidated region in the editor.
-  m_clippingRegion.createSubtraction(m_clippingRegion, m_editor->getUpdateRegion());
-
   // Get cursor color
   const auto& pref = Preferences::instance();
   app::Color appCursorColor = pref.cursor.cursorColor();
@@ -201,6 +198,9 @@ void BrushPreview::show(const gfx::Point& screenPos)
                              PreferSnapTo::ClosestGridVertex) +
                 brushCenter;
   }
+
+  // Get current projection
+  const render::Projection& proj = m_editor->projection();
 
   // Get the current tool
   tools::Ink* ink = m_editor->getCurrentEditorInk();
@@ -421,6 +421,10 @@ void BrushPreview::show(const gfx::Point& screenPos)
       }
     }
 
+    // Add an extra pixel when zoom < 100% to avoid leaving a trail
+    // when moving the cursor.
+    extraCelBoundsInCanvas.inflate(proj.removeX(1), proj.removeY(1));
+
     document->notifySpritePixelsModified(sprite,
                                          gfx::Region(m_lastBounds = extraCelBoundsInCanvas),
                                          m_lastFrame = site.frame());
@@ -442,7 +446,6 @@ void BrushPreview::show(const gfx::Point& screenPos)
     // Create (or re-use) the UILayer
     if ((m_type & SELECTION_CROSSHAIR) || (m_type & BRUSH_BOUNDARIES)) {
       bool cached = createUILayer(brushBounds);
-      const render::Projection& proj = m_editor->projection();
 
       if (m_uiLayer->surface()) {
         gfx::Rect layerBounds = m_uiLayer->surface()->bounds();
@@ -465,7 +468,6 @@ void BrushPreview::show(const gfx::Point& screenPos)
         }
 
         m_uiLayer->setPosition(layerBounds.origin());
-        m_uiLayer->setClipRegion(m_clippingRegion);
       }
 
       display->addLayer(m_uiLayer);
@@ -524,6 +526,9 @@ void BrushPreview::show(const gfx::Point& screenPos)
     }
   }
 
+  if (m_uiLayer)
+    m_uiLayer->setClipRegion(m_clippingRegion);
+
   // Cursor in the editor (model)
   m_onScreen = true;
   m_editorPosition = spritePos;
@@ -579,16 +584,6 @@ void BrushPreview::hide()
   m_clippingRegion.clear();
 }
 
-void BrushPreview::discardBrushPreview()
-{
-  Doc* document = m_editor->document();
-  ASSERT(document);
-
-  if (document && m_onScreen && m_withRealPreview) {
-    document->setExtraCel(ExtraCelRef(nullptr));
-  }
-}
-
 void BrushPreview::redraw()
 {
   if (m_onScreen) {
@@ -596,11 +591,6 @@ void BrushPreview::redraw()
     hide();
     show(screenPos);
   }
-}
-
-void BrushPreview::invalidateRegion(const gfx::Region& region)
-{
-  m_clippingRegion.createSubtraction(m_clippingRegion, region);
 }
 
 bool BrushPreview::createUILayer(const gfx::Rect& brushBounds)

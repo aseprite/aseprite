@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -91,16 +91,6 @@ void EditorView::onResize(ResizeEvent& ev)
       }
       case KeepCenter: editor->centerInSpritePoint(oldPos); break;
     }
-  }
-}
-
-void EditorView::onSetViewScroll(const gfx::Point& pt)
-{
-  Editor* editor = this->editor();
-  if (editor) {
-    // Hide the brush preview to avoid leaving a cursor trail.
-    HideBrushPreview hide(editor->brushPreview());
-    View::onSetViewScroll(pt);
   }
 }
 
