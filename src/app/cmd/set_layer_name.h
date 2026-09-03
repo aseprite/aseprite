@@ -20,6 +20,8 @@ using namespace doc;
 class SetLayerName : public Cmd,
                      public WithLayer {
 public:
+  CMDTYPE('r', 'n', 'L', 'y');
+
   SetLayerName(Layer* layer, const std::string& name);
 
 protected:

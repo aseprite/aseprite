@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -22,6 +22,12 @@ static std::mutex g_mutex;
 static ObjectId newId = 0;
 // TODO Profile this and see if an unordered_map is better
 static std::map<ObjectId, Object*> objects;
+
+ObjectId new_id()
+{
+  const std::lock_guard lock(g_mutex);
+  return ++newId;
+}
 
 Object::Object(ObjectType type) : m_type(type)
 {
@@ -58,6 +64,13 @@ const ObjectId Object::id() const
     m_id = ++newId;
     objects.insert(std::make_pair(m_id, const_cast<Object*>(this)));
   }
+  return m_id;
+}
+
+const ObjectId Object::io_id() const
+{
+  if (m_suspendedId != NullId)
+    return m_suspendedId;
   return m_id;
 }
 

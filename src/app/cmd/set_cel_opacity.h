@@ -18,6 +18,8 @@ using namespace doc;
 class SetCelOpacity : public Cmd,
                       public WithCel {
 public:
+  CMDTYPE('o', 'p', 'C', 'l');
+
   SetCelOpacity(Cel* cel, int opacity);
 
 protected:

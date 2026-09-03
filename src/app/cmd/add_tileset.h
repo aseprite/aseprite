@@ -25,6 +25,8 @@ class AddTileset : public Cmd,
                    public WithSprite,
                    public WithTileset {
 public:
+  CMDTYPE('a', 'd', 'T', 's');
+
   AddTileset(doc::Sprite* sprite, doc::Tileset* tileset);
   AddTileset(doc::Sprite* sprite, const doc::tileset_index tsi);
 

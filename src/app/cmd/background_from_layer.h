@@ -9,8 +9,8 @@
 #define APP_CMD_BACKGROUND_FROM_LAYER_H_INCLUDED
 #pragma once
 
+#include "app/cmd/sequence.h"
 #include "app/cmd/with_layer.h"
-#include "app/cmd_sequence.h"
 
 namespace app { namespace cmd {
 using namespace doc;
@@ -18,6 +18,8 @@ using namespace doc;
 class BackgroundFromLayer : public CmdSequence,
                             public WithLayer {
 public:
+  CMDTYPE('f', 'r', 'L', 'y');
+
   BackgroundFromLayer(Layer* layer);
 
 protected:

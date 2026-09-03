@@ -19,6 +19,8 @@ using namespace doc;
 class SetTagRange : public Cmd,
                     public WithTag {
 public:
+  CMDTYPE('r', 'a', 'T', 'g');
+
   SetTagRange(Tag* tag, frame_t from, frame_t to);
 
 protected:

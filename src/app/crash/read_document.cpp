@@ -142,6 +142,19 @@ private:
     return loadObject<Sprite*>("spr", sprId, &Reader::readSprite);
   }
 
+  // SubObjectsIO impl
+  Sprite* sprite() const override { return m_sprite; }
+
+  void addImageRef(const ImageRef& image) override
+  {
+    // TODO impl this to replace readLayer() with read_layer()
+  }
+
+  void addCelDataRef(const CelDataRef& celdata) override
+  {
+    // TODO impl this to replace readLayer() with read_layer()
+  }
+
   ImageRef getImageRef(ObjectId imageId)
   {
     if (m_images.find(imageId) != m_images.end())

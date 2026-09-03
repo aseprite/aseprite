@@ -19,6 +19,8 @@ using namespace doc;
 class SetTotalFrames : public Cmd,
                        public WithSprite {
 public:
+  CMDTYPE('s', 'f', 'S', 'p');
+
   SetTotalFrames(Sprite* sprite, frame_t frames);
 
 protected:

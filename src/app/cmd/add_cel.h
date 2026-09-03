@@ -26,6 +26,9 @@ class AddCel : public Cmd,
                public WithLayer,
                public WithCel {
 public:
+  CMDTYPE2('a', 'd', 'C', 'l', AddCel);
+
+  AddCel() {}
   AddCel(Layer* layer, Cel* cel);
 
 protected:
@@ -33,6 +36,7 @@ protected:
   void onUndo(Context* ctx) override;
   void onRedo(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this) + m_suspendedCel.size(); }
+  void onSerialize(CmdSerial& s) override;
 
 private:
   void addCel(Layer* layer, Cel* cel);

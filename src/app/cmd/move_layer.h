@@ -17,6 +17,8 @@ using namespace doc;
 
 class MoveLayer : public Cmd {
 public:
+  CMDTYPE('m', 'v', 'L', 'y');
+
   MoveLayer(Layer* layer, Layer* newParent, Layer* afterThis);
 
 protected:
@@ -24,6 +26,7 @@ protected:
   void onUndo(Context* ctx) override;
   void onFireNotifications(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this); }
+  void onSerialize(CmdSerial& s) override;
 
 private:
   WithLayer m_layer;

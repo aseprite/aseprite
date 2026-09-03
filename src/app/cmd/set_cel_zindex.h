@@ -17,6 +17,8 @@ using namespace doc;
 class SetCelZIndex : public Cmd,
                      public WithCel {
 public:
+  CMDTYPE('z', 'i', 'C', 'l');
+
   SetCelZIndex(Cel* cel, int zindex);
 
 protected:

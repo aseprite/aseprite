@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -206,6 +206,14 @@ void SaveFileBaseCommand::saveDocumentInBackground(const Context* context,
     bounds = document->sprite()->bounds();
   }
 
+  SaveUndoHistory saveUndoHistory;
+  if (params().saveUndoHistory.isSet()) {
+    saveUndoHistory = params().saveUndoHistory();
+  }
+  else {
+    saveUndoHistory = Preferences::instance().undo.saveHistory();
+  }
+
   FileOpROI roi(document,
                 bounds,
                 params().slice(),
@@ -217,7 +225,8 @@ void SaveFileBaseCommand::saveDocumentInBackground(const Context* context,
                                                                   roi,
                                                                   filename,
                                                                   params().filenameFormat(),
-                                                                  params().ignoreEmpty()));
+                                                                  params().ignoreEmpty(),
+                                                                  saveUndoHistory));
   if (!fop)
     return;
 

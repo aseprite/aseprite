@@ -17,6 +17,8 @@ using namespace doc;
 class SetTagRepeat : public Cmd,
                      public WithTag {
 public:
+  CMDTYPE('r', 't', 'T', 'g');
+
   SetTagRepeat(Tag* tag, int repeat);
 
 protected:

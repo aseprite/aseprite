@@ -24,6 +24,8 @@ using namespace doc;
 class AddPalette : public Cmd,
                    public WithSprite {
 public:
+  CMDTYPE('a', 'd', 'P', 'l');
+
   AddPalette(Sprite* sprite, Palette* pal);
 
 protected:

@@ -11,7 +11,7 @@
 
 #include "app/transaction.h"
 
-#include "app/cmd_transaction.h"
+#include "app/cmd/transaction.h"
 #include "app/context_access.h"
 #include "app/doc.h"
 #include "app/doc_undo.h"
@@ -46,7 +46,7 @@ Transaction::Transaction(Context* ctx, Doc* doc, const std::string& label, Modif
   m_doc->add_observer(this);
   m_undo = m_doc->undoHistory();
 
-  m_cmds = new CmdTransaction(label, modification == Modification::ModifyDocument);
+  m_cmds = new cmd::CmdTransaction(label, modification == Modification::ModifyDocument);
 
   // Here we are executing an empty CmdTransaction, just to save the
   // SpritePosition. Sub-cmds are executed then one by one, in
@@ -125,7 +125,7 @@ void Transaction::rollbackAndStartAgain()
   newCmds->execute(m_ctx);
 }
 
-void Transaction::rollback(CmdTransaction* newCmds)
+void Transaction::rollback(cmd::CmdTransaction* newCmds)
 {
   ASSERT(m_cmds);
   TX_TRACE("TX: Rollback <%s>\n", m_cmds->label().c_str());

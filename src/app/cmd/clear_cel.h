@@ -10,8 +10,8 @@
 #pragma once
 
 #include "app/cmd.h"
+#include "app/cmd/sequence.h"
 #include "app/cmd/with_cel.h"
-#include "app/cmd_sequence.h"
 
 namespace app { namespace cmd {
 using namespace doc;
@@ -19,6 +19,8 @@ using namespace doc;
 class ClearCel : public Cmd,
                  public WithCel {
 public:
+  CMDTYPE2('c', 'l', 'C', 'l', ClearCel);
+
   ClearCel(Cel* cel);
 
 protected:
@@ -26,6 +28,7 @@ protected:
   void onUndo(Context* ctx) override;
   void onRedo(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this) + m_seq.memSize(); }
+  void onSerialize(CmdSerial& s) override;
 
 private:
   CmdSequence m_seq;

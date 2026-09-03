@@ -9,8 +9,8 @@
 #define APP_CMD_COPY_FRAME_H_INCLUDED
 #pragma once
 
+#include "app/cmd/sequence.h"
 #include "app/cmd/with_sprite.h"
-#include "app/cmd_sequence.h"
 #include "doc/frame.h"
 
 namespace app { namespace cmd {
@@ -19,6 +19,8 @@ using namespace doc;
 class CopyFrame : public CmdSequence,
                   public WithSprite {
 public:
+  CMDTYPE('c', 'p', 'F', 'r');
+
   CopyFrame(Sprite* sprite, frame_t fromFrame, frame_t newFrame);
 
 protected:

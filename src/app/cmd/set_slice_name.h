@@ -20,6 +20,8 @@ using namespace doc;
 class SetSliceName : public Cmd,
                      public WithSlice {
 public:
+  CMDTYPE('r', 'n', 'S', 'l');
+
   SetSliceName(Slice* slice, const std::string& name);
 
 protected:

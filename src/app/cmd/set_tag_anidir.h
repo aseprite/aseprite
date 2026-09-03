@@ -19,6 +19,8 @@ using namespace doc;
 class SetTagAniDir : public Cmd,
                      public WithTag {
 public:
+  CMDTYPE('d', 'i', 'T', 'g');
+
   SetTagAniDir(Tag* tag, doc::AniDir anidir);
 
 protected:

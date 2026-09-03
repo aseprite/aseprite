@@ -30,8 +30,10 @@ class Tileset;
 } // namespace doc
 
 namespace app {
-class CmdSequence;
 class Context;
+namespace cmd {
+class CmdSequence;
+}
 
 typedef std::function<doc::ImageRef(const doc::ImageRef& origTile,
                                     const gfx::Rect& tileBoundsInCanvas)>
@@ -47,14 +49,14 @@ doc::ImageRef crop_cel_image(const doc::Cel* cel, const doc::color_t bgcolor);
 
 // The "cmds" is used in case that new tiles must be added in the
 // dstLayer tilesets.
-doc::Cel* create_cel_copy(CmdSequence* cmds,
+doc::Cel* create_cel_copy(cmd::CmdSequence* cmds,
                           const doc::Cel* srcCel,
                           const doc::Sprite* dstSprite,
                           doc::Layer* dstLayer,
                           const doc::frame_t dstFrame);
 
 // Draws an image creating new tiles.
-void draw_image_into_new_tilemap_cel(CmdSequence* cmds,
+void draw_image_into_new_tilemap_cel(cmd::CmdSequence* cmds,
                                      doc::LayerTilemap* dstLayer,
                                      doc::Cel* dstCel,
                                      const doc::Image* srcImage,
@@ -64,7 +66,7 @@ void draw_image_into_new_tilemap_cel(CmdSequence* cmds,
                                      doc::ImageRef& newTilemap);
 
 void modify_tilemap_cel_region(Context* ctx,
-                               CmdSequence* cmds,
+                               cmd::CmdSequence* cmds,
                                doc::Cel* cel,
                                doc::Tileset* previewTileset, // Temporary tileset that can be used
                                                              // for preview
@@ -74,20 +76,20 @@ void modify_tilemap_cel_region(Context* ctx,
                                const gfx::Region& forceRegion = gfx::Region());
 
 void clear_mask_from_cel(Context* ctx,
-                         CmdSequence* cmds,
+                         cmd::CmdSequence* cmds,
                          doc::Cel* cel,
                          const TilemapMode tilemapMode,
                          const TilesetMode tilesetMode);
 
 void move_tiles_in_tileset(Context* ctx,
-                           CmdSequence* cmds,
+                           cmd::CmdSequence* cmds,
                            doc::Tileset* tileset,
                            doc::PalettePicks& picks,
                            int& currentEntry,
                            int beforeIndex);
 
 void copy_tiles_in_tileset(Context* ctx,
-                           CmdSequence* cmds,
+                           cmd::CmdSequence* cmds,
                            doc::Tileset* tileset,
                            doc::PalettePicks& picks,
                            int& currentEntry,

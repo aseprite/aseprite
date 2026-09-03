@@ -16,6 +16,8 @@ using namespace doc;
 
 class RemovePalette : public AddPalette {
 public:
+  CMDTYPE('d', 'e', 'P', 'l');
+
   RemovePalette(Sprite* sprite, Palette* pal);
 
 protected:

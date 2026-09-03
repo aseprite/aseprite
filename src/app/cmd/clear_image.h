@@ -20,12 +20,15 @@ using namespace doc;
 class ClearImage : public Cmd,
                    public WithImage {
 public:
+  CMDTYPE2('c', 'l', 'I', 'm', ClearImage);
+
   ClearImage(Image* image, color_t color);
 
 protected:
   void onExecute(Context* ctx) override;
   void onUndo(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this) + (m_copy ? m_copy->getMemSize() : 0); }
+  void onSerialize(CmdSerial& s) override;
 
 private:
   ImageRef m_copy;

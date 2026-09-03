@@ -10,8 +10,8 @@
 #pragma once
 
 #include "app/cmd.h"
+#include "app/cmd/sequence.h"
 #include "app/cmd/with_image.h"
-#include "app/cmd_sequence.h"
 #include "doc/image_ref.h"
 #include "gfx/fwd.h"
 
@@ -26,6 +26,8 @@ using namespace doc;
 
 class ClearRect : public Cmd {
 public:
+  CMDTYPE('c', 'l', 'R', 'c');
+
   ClearRect(Cel* cel, const gfx::Rect& bounds);
   ClearRect(Cel* cel, const gfx::Rect& bounds, color_t color);
 

@@ -21,6 +21,8 @@ namespace app { namespace cmd {
 class SetGridBounds : public Cmd,
                       public WithSprite {
 public:
+  CMDTYPE('b', 'o', 'G', 'r');
+
   SetGridBounds(doc::Sprite* sprite, const gfx::Rect& bounds);
 
 protected:

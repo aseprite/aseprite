@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2022 Igara Studio S.A.
+// Copyright (c) 2022-present Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -29,7 +29,7 @@ using namespace base::serialization::little_endian;
 
 void write_celdata(std::ostream& os, const CelData* celdata)
 {
-  write32(os, celdata->id());
+  write32(os, celdata->io_id());
   write32(os, celdata->bounds().x);
   write32(os, celdata->bounds().y);
   write32(os, celdata->bounds().w);

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2025  Igara Studio S.A.
+// Copyright (C) 2025-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,7 +8,9 @@
 #define APP_CMD_WITH_SUSPEND_H_INCLUDED
 #pragma once
 
+#include "app/cmd_serial.h"
 #include "doc/object.h"
+#include "doc/object_io.h"
 
 #include <type_traits>
 
@@ -50,6 +52,32 @@ public:
     m_size = 0;
 
     return object;
+  }
+
+  void serializeObject(CmdSerial& s)
+  {
+    doc::ObjectId id = (m_object ? m_object->io_id() : 0);
+    s.serializeObjectId(id);
+
+    if (m_object) {
+      if (s.encoding()) {
+        std::stringstream stream;
+        doc::write_object<T>(stream, m_object);
+        s(stream);
+      }
+    }
+    else {
+      if (s.decoding() && id != 0) {
+        ASSERT(m_object == nullptr);
+
+        std::stringstream stream;
+        s(stream);
+
+        m_object = doc::read_object<T>(stream, &s);
+        if (m_object)
+          m_size = m_object->getMemSize();
+      }
+    }
   }
 
 private:

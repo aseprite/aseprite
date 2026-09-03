@@ -24,6 +24,8 @@ using namespace doc;
 class SetMask : public Cmd,
                 public WithDocument {
 public:
+  CMDTYPE('c', 'p', 'S', 'e');
+
   SetMask(Doc* doc, const Mask* newMask);
 
   // Used to change the new mask used in the onRedo()

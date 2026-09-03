@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -28,7 +28,7 @@ void write_tag(std::ostream& os, const Tag* tag)
 {
   std::string name = tag->name();
 
-  write32(os, tag->id());
+  write32(os, tag->io_id());
   write32(os, tag->fromFrame());
   write32(os, tag->toFrame());
   write8(os, (int)tag->aniDir());

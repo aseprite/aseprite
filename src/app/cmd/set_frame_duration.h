@@ -19,6 +19,8 @@ using namespace doc;
 class SetFrameDuration : public Cmd,
                          public WithSprite {
 public:
+  CMDTYPE('d', 'u', 'F', 'r');
+
   SetFrameDuration(Sprite* sprite, frame_t frame, int duration);
 
 protected:
@@ -26,6 +28,7 @@ protected:
   void onUndo(Context* ctx) override;
   void onFireNotifications(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this); }
+  void onSerialize(CmdSerial& s) override;
 
 private:
   frame_t m_frame;

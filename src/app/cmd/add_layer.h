@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2025-present  Igara Studio S.A.
+// Copyright (C) 2025-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -19,6 +19,9 @@ using namespace doc;
 
 class AddLayer : public Cmd {
 public:
+  CMDTYPE2('a', 'd', 'L', 'y', AddLayer);
+
+  AddLayer() {}
   AddLayer(Layer* group, Layer* newLayer, Layer* afterThis);
 
 protected:
@@ -26,6 +29,7 @@ protected:
   void onUndo(Context* ctx) override;
   void onRedo(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this) + m_suspendedLayer.size(); }
+  void onSerialize(CmdSerial& s) override;
 
 private:
   void addLayer(Layer* group, Layer* newLayer, Layer* afterThis);

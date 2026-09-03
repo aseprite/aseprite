@@ -22,6 +22,8 @@ class AddSlice : public Cmd,
                  public WithSprite,
                  public WithSlice {
 public:
+  CMDTYPE('a', 'd', 'S', 'l');
+
   AddSlice(Sprite* sprite, Slice* slice);
 
 protected:

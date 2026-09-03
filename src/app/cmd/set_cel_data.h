@@ -19,6 +19,8 @@ using namespace doc;
 class SetCelData : public Cmd,
                    public WithCel {
 public:
+  CMDTYPE('u', 'd', 'C', 'l');
+
   SetCelData(Cel* cel, const CelDataRef& newData);
 
 protected:

@@ -26,6 +26,8 @@ using namespace doc;
 class CopyRegion : public Cmd,
                    public WithImage {
 public:
+  CMDTYPE2('c', 'p', 'R', 'g', CopyRegion);
+
   // If alreadyCopied is false, it means that onExecute() will copy
   // pixels from src to dst. If it's true, it means that "onExecute"
   // should do nothing, because modified pixels are alreadt on "dst"
@@ -42,6 +44,7 @@ protected:
   void onRedo(Context* ctx) override;
   void onFireNotifications(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this) + m_buffer.size(); }
+  void onSerialize(CmdSerial& s) override;
 
 private:
   void swap();
@@ -55,6 +58,8 @@ private:
 
 class CopyTileRegion : public CopyRegion {
 public:
+  CMDTYPE('c', 'p', 'T', 'r');
+
   CopyTileRegion(Image* dst,
                  const Image* src,
                  const gfx::Region& region,

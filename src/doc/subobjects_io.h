@@ -20,6 +20,9 @@ class Sprite;
 class SubObjectsIO {
 public:
   virtual ~SubObjectsIO() {}
+  virtual Sprite* sprite() const = 0;
+  virtual void addImageRef(const ImageRef& image) = 0;
+  virtual void addCelDataRef(const CelDataRef& celdata) = 0;
   virtual ImageRef getImageRef(ObjectId imageId) = 0;
   virtual CelDataRef getCelDataRef(ObjectId celdataId) = 0;
 };
@@ -29,11 +32,10 @@ class SubObjectsFromSprite : public SubObjectsIO {
 public:
   SubObjectsFromSprite(Sprite* sprite);
 
-  Sprite* sprite() const { return m_sprite; }
-
-  void addImageRef(const ImageRef& image);
-  void addCelDataRef(const CelDataRef& celdata);
-
+  // SubObjectsIO impl
+  Sprite* sprite() const override { return m_sprite; }
+  void addImageRef(const ImageRef& image) override;
+  void addCelDataRef(const CelDataRef& celdata) override;
   ImageRef getImageRef(ObjectId imageId) override;
   CelDataRef getCelDataRef(ObjectId celdataId) override;
 

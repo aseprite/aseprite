@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023, 2025  Igara Studio S.A.
+// Copyright (C) 2023-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,6 +20,8 @@ namespace app { namespace cmd {
 
 class SetUserDataProperty : public Cmd {
 public:
+  CMDTYPE('p', 'r', 'U', 'd');
+
   SetUserDataProperty(doc::WithUserData* obj,
                       const std::string& group,
                       const std::string& field,

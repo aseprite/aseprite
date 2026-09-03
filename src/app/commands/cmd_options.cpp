@@ -859,6 +859,7 @@ public:
     // Undo preferences
     limitUndo()->setSelected(m_pref.undo.sizeLimit() != 0);
     onLimitUndoCheck();
+    undoSaveHistory()->setSelectedItemIndex((int)m_pref.undo.saveHistory());
 
     onChangeBgScope();
     onChangeGridScope();
@@ -1029,11 +1030,13 @@ public:
     // Alerts preferences
     m_pref.openFile.openSequence(gen::SequenceDecision(openSequence()->getSelectedItemIndex()));
 
+    // Undo options
     int undo_size_limit_value;
     undo_size_limit_value = undoSizeLimit()->textInt();
     undo_size_limit_value = std::clamp(undo_size_limit_value, 0, 999999);
 
     m_pref.undo.sizeLimit(undo_size_limit_value);
+    m_pref.undo.saveHistory((SaveUndoHistory)undoSaveHistory()->getSelectedItemIndex());
 
     // Aseprite format preferences
     m_pref.asepriteFormat.celFormat(gen::CelContentFormat(celFormat()->getSelectedItemIndex()));

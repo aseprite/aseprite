@@ -19,6 +19,8 @@ using namespace doc;
 class SetTransparentColor : public Cmd,
                             public WithSprite {
 public:
+  CMDTYPE('c', 'p', 'T', 'c');
+
   SetTransparentColor(Sprite* sprite, color_t newMask);
 
 protected:

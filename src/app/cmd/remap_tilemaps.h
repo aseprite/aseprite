@@ -18,6 +18,8 @@ using namespace doc;
 class RemapTilemaps : public Cmd,
                       public WithTileset {
 public:
+  CMDTYPE('r', 'e', 'T', 'm');
+
   RemapTilemaps(Tileset* tileset, const Remap& remap);
 
 protected:

@@ -10,8 +10,8 @@
 #pragma once
 
 #include "app/cmd.h"
+#include "app/cmd/sequence.h"
 #include "app/cmd/with_sprite.h"
-#include "app/cmd_sequence.h"
 #include "doc/frame.h"
 
 namespace app { namespace cmd {
@@ -20,6 +20,8 @@ using namespace doc;
 class RemoveFrame : public Cmd,
                     public WithSprite {
 public:
+  CMDTYPE2('d', 'e', 'F', 'r', RemoveFrame);
+
   RemoveFrame(Sprite* sprite, frame_t frame);
 
 protected:

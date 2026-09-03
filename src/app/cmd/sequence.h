@@ -13,10 +13,12 @@
 
 #include <vector>
 
-namespace app {
+namespace app { namespace cmd {
 
 class CmdSequence : public Cmd {
 public:
+  CMDTYPE2('[', ' ', ' ', ' ', CmdSequence);
+
   CmdSequence();
   ~CmdSequence();
 
@@ -32,11 +34,13 @@ protected:
   void onUndo(Context* ctx) override;
   void onRedo(Context* ctx) override;
   size_t onMemSize() const override;
+  bool onIsSerializable() const override;
+  void onSerialize(CmdSerial& s) override;
 
 private:
   std::vector<Cmd*> m_cmds;
 };
 
-} // namespace app
+}} // namespace app::cmd
 
 #endif

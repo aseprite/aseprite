@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -29,7 +29,7 @@ using namespace base::serialization::little_endian;
 
 bool write_tileset(std::ostream& os, const Tileset* tileset, CancelIO* cancel)
 {
-  write32(os, tileset->id());
+  write32(os, tileset->io_id());
   write32(os, tileset->size());
   write_grid(os, tileset->grid());
 

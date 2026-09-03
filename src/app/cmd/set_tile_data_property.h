@@ -18,6 +18,8 @@ namespace app { namespace cmd {
 class SetTileDataProperty : public Cmd,
                             public WithTileset {
 public:
+  CMDTYPE('p', 'r', 'T', 'i');
+
   SetTileDataProperty(doc::Tileset* ts,
                       doc::tile_index ti,
                       const std::string& group,

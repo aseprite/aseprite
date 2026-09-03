@@ -19,6 +19,8 @@ using namespace doc;
 class SetCelPosition : public Cmd,
                        public WithCel {
 public:
+  CMDTYPE('p', 'o', 'C', 'l');
+
   SetCelPosition(Cel* cel, const gfx::Point& newPosition);
   SetCelPosition(Cel* cel, int x, int y) : SetCelPosition(cel, gfx::Point(x, y)) {}
 
