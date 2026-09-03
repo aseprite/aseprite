@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -15,7 +15,7 @@
 
 namespace app { namespace cmd {
 
-WithSprite::WithSprite(doc::Sprite* sprite) : m_spriteId(sprite->id())
+WithSprite::WithSprite(doc::Sprite* sprite) : m_spriteId(sprite ? sprite->id() : doc::NullId)
 {
 }
 

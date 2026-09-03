@@ -25,6 +25,9 @@ class AddTileset : public Cmd,
                    public WithSprite,
                    public WithTileset {
 public:
+  CMDTYPE('a', 'd', 'T', 's', AddTileset);
+
+  AddTileset() {}
   AddTileset(doc::Sprite* sprite, doc::Tileset* tileset);
   AddTileset(doc::Sprite* sprite, const doc::tileset_index tsi);
 
@@ -40,7 +43,7 @@ private:
   void addTileset(doc::Tileset* tileset);
 
   WithSuspended<doc::Tileset*> m_suspendedTileset;
-  doc::tileset_index m_tilesetIndex;
+  doc::tileset_index m_tilesetIndex = -1;
 };
 
 }} // namespace app::cmd

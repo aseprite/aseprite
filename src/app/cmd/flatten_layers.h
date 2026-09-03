@@ -9,8 +9,8 @@
 #define APP_CMD_FLATTEN_LAYERS_H_INCLUDED
 #pragma once
 
+#include "app/cmd/sequence.h"
 #include "app/cmd/with_sprite.h"
-#include "app/cmd_sequence.h"
 #include "doc/object_ids.h"
 #include "doc/selected_layers.h"
 

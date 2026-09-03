@@ -120,7 +120,7 @@ public:
 
   operator Transaction&() { return *m_transaction; }
 
-  operator CmdTransaction*() { return m_transaction->cmds(); }
+  operator cmd::CmdTransaction*() { return m_transaction->cmds(); }
 
 private:
   Doc* m_doc;

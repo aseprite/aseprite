@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -16,7 +17,7 @@ namespace app { namespace cmd {
 
 using namespace doc;
 
-WithLayer::WithLayer(Layer* layer) : m_layerId(layer ? layer->id() : 0)
+WithLayer::WithLayer(Layer* layer) : m_layerId(layer ? layer->id() : NullId)
 {
 }
 

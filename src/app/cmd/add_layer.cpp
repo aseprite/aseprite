@@ -14,6 +14,7 @@
 #include "app/doc.h"
 #include "app/doc_event.h"
 #include "doc/layer.h"
+#include "doc/layer_io.h"
 
 namespace app { namespace cmd {
 
@@ -52,6 +53,15 @@ void AddLayer::onRedo(Context* ctx)
   Layer* afterThis = m_afterThis.layer();
 
   addLayer(group, newLayer, afterThis);
+}
+
+void AddLayer::onSerialize(CmdSerial& s)
+{
+  Cmd::onSerialize(s);
+  m_group.serializeLayerId(s);
+  m_newLayer.serializeLayerId(s);
+  m_afterThis.serializeLayerId(s);
+  m_suspendedLayer.serializeObject(s);
 }
 
 void AddLayer::addLayer(Layer* group, Layer* newLayer, Layer* afterThis)

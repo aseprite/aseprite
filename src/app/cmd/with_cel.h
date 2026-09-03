@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -8,6 +9,7 @@
 #define APP_CMD_WITH_CEL_H_INCLUDED
 #pragma once
 
+#include "app/cmd_serial.h"
 #include "doc/object_id.h"
 
 namespace doc {
@@ -19,8 +21,14 @@ using namespace doc;
 
 class WithCel {
 public:
-  WithCel(Cel* cel);
+  WithCel(Cel* cel = nullptr);
   Cel* cel();
+
+  void serializeCelId(CmdSerial& s)
+  {
+    s.serializeObjectId(m_celId);
+    PRINTARGS("serializeCelId", m_celId);
+  }
 
 private:
   ObjectId m_celId;

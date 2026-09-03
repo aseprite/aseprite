@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -17,7 +17,7 @@ namespace app { namespace cmd {
 
 using namespace doc;
 
-WithTag::WithTag(Tag* tag) : m_tagId(tag->id())
+WithTag::WithTag(Tag* tag) : m_tagId(tag ? tag->id() : NullId)
 {
 }
 

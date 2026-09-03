@@ -19,6 +19,9 @@ using namespace doc;
 class FlipMask : public Cmd,
                  public WithDocument {
 public:
+  CMDTYPE('f', 'p', 'S', 'e', FlipMask);
+
+  FlipMask() {}
   FlipMask(Doc* doc, doc::algorithm::FlipType flipType);
 
 protected:
@@ -29,7 +32,7 @@ protected:
 private:
   void swap();
 
-  doc::algorithm::FlipType m_flipType;
+  doc::algorithm::FlipType m_flipType = doc::algorithm::FlipHorizontal;
 };
 
 }} // namespace app::cmd
