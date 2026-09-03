@@ -28,7 +28,7 @@
 #include "base/string.h"
 #include "base/thread.h"
 #include "base/time.h"
-#include "doc/cancel_io.h"
+#include "doc/io.h"
 #include "fmt/format.h"
 #include "ui/app_state.h"
 #include "ver/info.h"

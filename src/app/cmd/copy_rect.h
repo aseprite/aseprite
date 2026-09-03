@@ -25,6 +25,8 @@ using namespace doc;
 class CopyRect : public Cmd,
                  public WithImage {
 public:
+  CMDTYPE('I', 'M', 'r', 'c', CopyRect);
+
   CopyRect(Image* dst, const Image* src, const gfx::Clip& clip);
 
 protected:

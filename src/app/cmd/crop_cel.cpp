@@ -60,6 +60,16 @@ void CropCel::onFireNotifications(Context* ctx)
   doc->notifySpritePixelsModified(cel->sprite(), rgn, cel->frame());
 }
 
+void CropCel::onSerialize(CmdSerial& s)
+{
+  Cmd::onSerialize(s);
+  serializeCelId(s);
+  s(m_oldOrigin);
+  s(m_newOrigin);
+  s(m_oldBounds);
+  s(m_newBounds);
+}
+
 // Crops the cel image leaving the same ID in the image.
 void CropCel::cropImage(const gfx::Point& origin, const gfx::Rect& bounds)
 {

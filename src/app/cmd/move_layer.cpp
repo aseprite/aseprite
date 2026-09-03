@@ -97,4 +97,14 @@ void MoveLayer::onFireNotifications(Context* ctx)
   doc->notify_observers<DocEvent&>(&DocObserver::onLayerRestacked, ev);
 }
 
+void MoveLayer::onSerialize(CmdSerial& s)
+{
+  Cmd::onSerialize(s);
+  m_layer.serializeLayerId(s);
+  m_oldParent.serializeLayerId(s);
+  m_oldAfterThis.serializeLayerId(s);
+  m_newParent.serializeLayerId(s);
+  m_newAfterThis.serializeLayerId(s);
+}
+
 }} // namespace app::cmd

@@ -80,4 +80,14 @@ void RemoveFrame::onUndo(Context* ctx)
   doc->notify_observers<DocEvent&>(&DocObserver::onAddFrame, ev);
 }
 
+void RemoveFrame::onSerialize(CmdSerial& s)
+{
+  Cmd::onSerialize(s);
+  serializeSpriteId(s);
+  s(m_frame);
+  s(m_frameDuration);
+  s(m_frameRemoved);
+  m_seq.serialize(s);
+}
+
 }} // namespace app::cmd

@@ -14,8 +14,8 @@
 #include "base/buffer.h"
 #include "base/exception.h"
 #include "base/serialization.h"
-#include "doc/cancel_io.h"
 #include "doc/image.h"
+#include "doc/image_impl.h"
 #include "zlib.h"
 
 #include <algorithm>
@@ -120,7 +120,7 @@ bool write_image_pixels(std::ostream& os, const Image* image, CancelIO* cancel)
   return true;
 }
 
-Image* read_image(std::istream& is, const bool setId)
+Image* read_image(std::istream& is, const IdMapperIO& mapper)
 {
   ObjectId id = read32(is);
   int pixelFormat = read8(is);     // Pixel format
@@ -140,8 +140,7 @@ Image* read_image(std::istream& is, const bool setId)
                                       is));
 
   image->setMaskColor(maskColor);
-  if (setId)
-    image->setId(id);
+  image->setId(mapper.mapId(id, ObjectType::Image));
   return image.release();
 }
 
@@ -236,14 +235,14 @@ void read_image_pixels(std::istream& is, Image* image)
 
 void copy_image_pixels(std::istream& is, std::ostream& os)
 {
-  int avail_bytes = read32(is);
-  write32(os, avail_bytes);
+  int nbytes = read32(is);
+  write32(os, nbytes);
 
   // TODO probably we should validate compressed buffer right here
   base::buffer buf(4096);
   int n;
-  for (int i = 0; i < avail_bytes; i += n) {
-    n = std::min<int>(buf.size(), avail_bytes - i);
+  for (int i = 0; i < nbytes; i += n) {
+    n = std::min<int>(buf.size(), nbytes - i);
     is.read((char*)buf.data(), n);
     os.write((char*)buf.data(), n);
   }

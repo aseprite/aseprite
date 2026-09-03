@@ -13,7 +13,6 @@
 
 #include "app/cmd/add_cel.h"
 #include "app/cmd/add_layer.h"
-#include "app/cmd/configure_background.h"
 #include "app/cmd/move_layer.h"
 #include "app/cmd/remove_cel.h"
 #include "app/cmd/remove_layer.h"

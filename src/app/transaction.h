@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,7 +9,7 @@
 #define APP_TRANSACTION_H_INCLUDED
 #pragma once
 
-#include "app/cmd_transaction.h"
+#include "app/cmd/transaction.h"
 #include "app/doc_observer.h"
 #include "base/exception.h"
 
@@ -97,7 +97,7 @@ public:
   //      pointers-like structure only
   void execute(Cmd* cmd);
 
-  CmdTransaction* cmds() { return m_cmds; }
+  cmd::CmdTransaction* cmds() { return m_cmds; }
 
 private:
   // List of changes during the execution of this transaction
@@ -110,7 +110,7 @@ private:
     kColorChange = 2
   };
 
-  void rollback(CmdTransaction* newCmds);
+  void rollback(cmd::CmdTransaction* newCmds);
 
   // DocObserver impl
   void onSelectionChanged(DocEvent& ev) override;
@@ -120,7 +120,7 @@ private:
   Context* m_ctx;
   Doc* m_doc;
   DocUndo* m_undo;
-  CmdTransaction* m_cmds;
+  cmd::CmdTransaction* m_cmds;
   Changes m_changes;
 };
 

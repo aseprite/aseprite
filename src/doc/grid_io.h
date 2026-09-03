@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,7 +8,7 @@
 #define DOC_GRID_IO_H_INCLUDED
 #pragma once
 
-#include <iosfwd>
+#include "doc/io.h"
 
 namespace doc {
 

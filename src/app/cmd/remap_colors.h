@@ -19,6 +19,8 @@ using namespace doc;
 class RemapColors : public Cmd,
                     public WithSprite {
 public:
+  CMDTYPE('P', 'A', 'm', 'p', RemapColors);
+
   RemapColors(Sprite* sprite, const Remap& remap);
 
 protected:

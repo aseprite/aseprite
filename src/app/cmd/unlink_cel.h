@@ -18,6 +18,8 @@ using namespace doc;
 class UnlinkCel : public Cmd,
                   public WithCel {
 public:
+  CMDTYPE('C', 'E', 'u', 'n', UnlinkCel);
+
   UnlinkCel(Cel* cel);
 
 protected:

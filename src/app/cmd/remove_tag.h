@@ -16,6 +16,9 @@ using namespace doc;
 
 class RemoveTag : public AddTag {
 public:
+  CMDTYPE('T', 'G', 'd', 'e', RemoveTag);
+
+  RemoveTag() {}
   RemoveTag(Sprite* sprite, Tag* tag);
 
 protected:

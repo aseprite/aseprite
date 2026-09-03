@@ -23,6 +23,8 @@ namespace app { namespace cmd {
 class SetUserData : public Cmd,
                     public WithDocument {
 public:
+  CMDTYPE('U', 'D', 'c', 'p', SetUserData);
+
   SetUserData(doc::WithUserData* obj, const doc::UserData& userData, app::Doc* doc);
 
 protected:

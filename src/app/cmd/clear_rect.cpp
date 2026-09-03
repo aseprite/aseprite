@@ -43,15 +43,14 @@ void ClearRect::initialize(Cel* cel, const gfx::Rect& bounds, color_t color)
   if (!image)
     return;
 
-  m_offsetX = bounds.x - cel->x();
-  m_offsetY = bounds.y - cel->y();
+  m_offset.x = bounds.x - cel->x();
+  m_offset.y = bounds.y - cel->y();
 
-  gfx::Rect bounds2 = image->bounds().createIntersection(
-    gfx::Rect(m_offsetX, m_offsetY, bounds.w, bounds.h));
+  gfx::Rect bounds2 = image->bounds().createIntersection(gfx::Rect(m_offset, bounds.size()));
   if (bounds.isEmpty())
     return;
 
-  m_dstImage.reset(new WithImage(image));
+  m_dstImage = WithImage(image);
   m_bgcolor = color;
 
   m_copy.reset(crop_image(image, bounds2.x, bounds2.y, bounds2.w, bounds2.h, m_bgcolor));
@@ -59,38 +58,42 @@ void ClearRect::initialize(Cel* cel, const gfx::Rect& bounds, color_t color)
 
 void ClearRect::onExecute(Context* ctx)
 {
-  m_seq.execute(ctx);
-  if (m_dstImage)
-    clear();
+  clear();
 }
 
 void ClearRect::onUndo(Context* ctx)
 {
-  if (m_dstImage)
-    restore();
-  m_seq.undo(ctx);
+  restore();
 }
 
 void ClearRect::onRedo(Context* ctx)
 {
-  m_seq.redo(ctx);
-  if (m_dstImage)
-    clear();
+  clear();
+}
+
+void ClearRect::onSerialize(CmdSerial& s)
+{
+  Cmd::onSerialize(s);
+  m_dstImage.serializeImageId(s);
+  s(m_copy);
+  s(m_offset.x);
+  s(m_offset.y);
+  s(m_bgcolor);
 }
 
 void ClearRect::clear()
 {
-  fill_rect(m_dstImage->image(),
-            m_offsetX,
-            m_offsetY,
-            m_offsetX + m_copy->width() - 1,
-            m_offsetY + m_copy->height() - 1,
+  fill_rect(m_dstImage.image(),
+            m_offset.x,
+            m_offset.y,
+            m_offset.x + m_copy->width() - 1,
+            m_offset.y + m_copy->height() - 1,
             m_bgcolor);
 }
 
 void ClearRect::restore()
 {
-  copy_image(m_dstImage->image(), m_copy.get(), m_offsetX, m_offsetY);
+  copy_image(m_dstImage.image(), m_copy.get(), m_offset.x, m_offset.y);
 }
 
 }} // namespace app::cmd

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -16,7 +17,7 @@ namespace cmd {
 
 class WithDocument {
 public:
-  WithDocument(Doc* doc);
+  WithDocument(Doc* doc = nullptr);
   Doc* document();
 
 private:
