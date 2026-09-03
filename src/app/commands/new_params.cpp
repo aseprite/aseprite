@@ -71,6 +71,19 @@ void Param<std::string>::fromString(const std::string& value)
 }
 
 template<>
+void Param<gfx::Point>::fromString(const std::string& value)
+{
+  gfx::Point point;
+  std::vector<std::string> parts;
+  base::split_string(value, parts, ",");
+  if (parts.size() == 2) {
+    point.x = base::convert_to<int>(parts[0]);
+    point.y = base::convert_to<int>(parts[1]);
+  }
+  setValue(point);
+}
+
+template<>
 void Param<gfx::Size>::fromString(const std::string& value)
 {
   gfx::Size size;
@@ -329,6 +342,12 @@ void Param<std::string>::fromLua(lua_State* L, int index)
     setValue(s);
   else
     setValue(std::string());
+}
+
+template<>
+void Param<gfx::Point>::fromLua(lua_State* L, int index)
+{
+  setValue(script::convert_args_into_point(L, index));
 }
 
 template<>

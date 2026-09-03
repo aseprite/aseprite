@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2024  Igara Studio S.A.
+// Copyright (C) 2021-2026  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -10,8 +10,7 @@
 #endif
 
 #include "app/app.h"
-#include "app/commands/command.h"
-#include "app/commands/params.h"
+#include "app/commands/new_params.h"
 #include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
@@ -20,58 +19,92 @@
 #include "ui/manager.h"
 #include "ui/system.h"
 
+#include <cstdint>
+
+#ifdef ENABLE_SCRIPTING
+  #include "app/script/luacpp.h"
+#endif
+
 namespace app {
 
-class ZoomCommand : public Command {
-public:
-  enum class Action { In, Out, Set };
-  enum class Focus { Default, Mouse, Center };
+enum class ZoomAction : std::uint8_t { In, Out, Set };
+enum class ZoomFocus : std::uint8_t { Default, Mouse, Center };
 
+template<>
+void Param<ZoomAction>::fromString(const std::string& value)
+{
+  if (value == "in")
+    setValue(ZoomAction::In);
+  else if (value == "out")
+    setValue(ZoomAction::Out);
+  else if (value == "set")
+    setValue(ZoomAction::Set);
+}
+
+#ifdef ENABLE_SCRIPTING
+template<>
+void Param<ZoomAction>::fromLua(lua_State* L, int index)
+{
+  fromString(lua_tostring(L, index));
+}
+#endif
+
+template<>
+void Param<ZoomFocus>::fromString(const std::string& value)
+{
+  if (value == "center")
+    setValue(ZoomFocus::Center);
+  else if (value == "mouse")
+    setValue(ZoomFocus::Mouse);
+  else
+    setValue(ZoomFocus::Default);
+}
+
+#ifdef ENABLE_SCRIPTING
+template<>
+void Param<ZoomFocus>::fromLua(lua_State* L, int index)
+{
+  fromString(lua_tostring(L, index));
+}
+#endif
+
+template<>
+void Param<render::Zoom>::fromString(const std::string& value)
+{
+  if (!value.empty())
+    setValue(render::Zoom::fromScale(std::strtod(value.c_str(), NULL) / 100.0));
+}
+
+#ifdef ENABLE_SCRIPTING
+template<>
+void Param<render::Zoom>::fromLua(lua_State* L, int index)
+{
+  if (lua_isnumber(L, index))
+    setValue(render::Zoom::fromScale(lua_tonumber(L, index) / 100.0));
+  else if (lua_isstring(L, index))
+    fromString(lua_tostring(L, index));
+}
+#endif
+
+struct ZoomParams : public NewParams {
+  Param<ZoomAction> action{ this, ZoomAction::In, "action" };
+  Param<render::Zoom> percentage{ this, render::Zoom(1, 1), "percentage" };
+  Param<ZoomFocus> focus{ this, ZoomFocus::Default, "focus" };
+  Param<gfx::Point> position{ this, gfx::Point(0, 0), "position" };
+};
+
+class ZoomCommand : public CommandWithNewParams<ZoomParams> {
+public:
   ZoomCommand();
 
 protected:
-  bool onNeedsParams() const override { return true; }
-  void onLoadParams(const Params& params) override;
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
   std::string onGetFriendlyName() const override;
-
-private:
-  Action m_action;
-  render::Zoom m_zoom;
-  Focus m_focus;
 };
 
-ZoomCommand::ZoomCommand()
-  : Command(CommandId::Zoom())
-  , m_action(Action::In)
-  , m_zoom(1, 1)
-  , m_focus(Focus::Default)
+ZoomCommand::ZoomCommand() : CommandWithNewParams<ZoomParams>(CommandId::Zoom())
 {
-}
-
-void ZoomCommand::onLoadParams(const Params& params)
-{
-  std::string action = params.get("action");
-  if (action == "in")
-    m_action = Action::In;
-  else if (action == "out")
-    m_action = Action::Out;
-  else if (action == "set")
-    m_action = Action::Set;
-
-  std::string percentage = params.get("percentage");
-  if (!percentage.empty()) {
-    m_zoom = render::Zoom::fromScale(std::strtod(percentage.c_str(), NULL) / 100.0);
-    m_action = Action::Set;
-  }
-
-  m_focus = Focus::Default;
-  std::string focus = params.get("focus");
-  if (focus == "center")
-    m_focus = Focus::Center;
-  else if (focus == "mouse")
-    m_focus = Focus::Mouse;
 }
 
 bool ZoomCommand::onEnabled(Context* context)
@@ -83,7 +116,8 @@ void ZoomCommand::onExecute(Context* context)
 {
   // Use the current editor by default.
   auto editor = Editor::activeEditor();
-  gfx::Point mousePos = ui::get_mouse_position();
+  gfx::Point mousePos = (params().position.isSet() ? params().position() :
+                                                     ui::get_mouse_position());
 
   // Try to use the editor above the mouse.
   ui::Widget* pick = ui::Manager::getDefault()->pickFromScreenPos(mousePos);
@@ -92,36 +126,49 @@ void ZoomCommand::onExecute(Context* context)
 
   render::Zoom zoom = editor->zoom();
 
-  switch (m_action) {
-    case Action::In:  zoom.in(); break;
-    case Action::Out: zoom.out(); break;
-    case Action::Set: zoom = m_zoom; break;
+  ZoomAction action = params().action();
+  if (params().percentage.isSet())
+    action = ZoomAction::Set;
+
+  switch (action) {
+    case ZoomAction::In:  zoom.in(); break;
+    case ZoomAction::Out: zoom.out(); break;
+    case ZoomAction::Set:
+      if (params().percentage.isSet())
+        zoom = params().percentage();
+      break;
   }
 
-  Focus focus = m_focus;
-  if (focus == Focus::Default) {
+  ZoomFocus focus = params().focus();
+  if (focus == ZoomFocus::Default) {
     if (Preferences::instance().editor.zoomFromCenterWithKeys()) {
-      focus = Focus::Center;
+      focus = ZoomFocus::Center;
     }
     else {
-      focus = Focus::Mouse;
+      focus = ZoomFocus::Mouse;
     }
   }
 
   editor->setZoomAndCenterInMouse(
     zoom,
     editor->display()->nativeWindow()->pointFromScreen(mousePos),
-    (focus == Focus::Center ? Editor::ZoomBehavior::CENTER : Editor::ZoomBehavior::MOUSE));
+    (focus == ZoomFocus::Center ? Editor::ZoomBehavior::CENTER : Editor::ZoomBehavior::MOUSE));
 }
 
 std::string ZoomCommand::onGetFriendlyName() const
 {
   std::string text;
 
-  switch (m_action) {
-    case Action::In:  text = Strings::commands_Zoom_In(); break;
-    case Action::Out: text = Strings::commands_Zoom_Out(); break;
-    case Action::Set: text = Strings::commands_Zoom_Set(int(100.0 * m_zoom.scale())); break;
+  ZoomAction action = params().action();
+  if (params().percentage.isSet())
+    action = ZoomAction::Set;
+
+  switch (action) {
+    case ZoomAction::In:  text = Strings::commands_Zoom_In(); break;
+    case ZoomAction::Out: text = Strings::commands_Zoom_Out(); break;
+    case ZoomAction::Set:
+      text = Strings::commands_Zoom_Set(int(100.0 * params().percentage().scale()));
+      break;
   }
 
   return text;
