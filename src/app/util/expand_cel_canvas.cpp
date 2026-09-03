@@ -18,9 +18,9 @@
 #include "app/cmd/copy_rect.h"
 #include "app/cmd/copy_region.h"
 #include "app/cmd/patch_cel.h"
+#include "app/cmd/sequence.h"
 #include "app/cmd/set_cel_image.h"
 #include "app/cmd/set_cel_position.h"
-#include "app/cmd_sequence.h"
 #include "app/context.h"
 #include "app/doc.h"
 #include "app/site.h"
@@ -73,7 +73,7 @@ namespace app {
 ExpandCelCanvas::ExpandCelCanvas(Site site,
                                  Layer* layer,
                                  const TiledMode tiledMode,
-                                 CmdSequence* cmds,
+                                 cmd::CmdSequence* cmds,
                                  const Flags flags)
   : m_document(site.document())
   , m_sprite(site.sprite())

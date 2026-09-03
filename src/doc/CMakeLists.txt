@@ -46,6 +46,7 @@ add_library(doc-lib
   image_impl.cpp
   image_io.cpp
   image_iterators2.cpp
+  io.cpp
   layer.cpp
   layer_io.cpp
   layer_list.cpp
@@ -72,7 +73,6 @@ add_library(doc-lib
   sprite.cpp
   sprites.cpp
   string_io.cpp
-  subobjects_io.cpp
   tag.cpp
   tag_io.cpp
   tags.cpp

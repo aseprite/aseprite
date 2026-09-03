@@ -26,6 +26,7 @@ public:
   const ObjectType type() const { return m_type; }
   const ObjectId id() const;
   const ObjectVersion version() const { return m_version; }
+  bool isSuspended() const { return m_suspended; }
 
   void setId(ObjectId id);
   void setVersion(ObjectVersion version);

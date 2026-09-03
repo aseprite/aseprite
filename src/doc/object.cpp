@@ -12,6 +12,7 @@
 #include "doc/object.h"
 
 #include "base/debug.h"
+#include "base/exception.h"
 
 #include <map>
 #include <mutex>
@@ -26,24 +27,13 @@ struct ObjectsStore {
 
   void add(ObjectId id, Object* obj)
   {
-#ifdef _DEBUG
-    if (objects.find(id) != objects.end()) {
-      Object* obj = objects.find(id)->second;
-      if (obj) {
-        TRACEARGS("ASSERT FAILED: Object with id",
-                  id,
-                  "of kind",
-                  int(obj->type()),
-                  "version",
-                  obj->version(),
-                  "should not exist");
-      }
-      else {
-        TRACEARGS("ASSERT FAILED: Object with id", id, "registered as nullptr should not exist");
-      }
+    auto it = objects.find(id);
+    if (it != objects.end()) {
+      if (it->second == obj)
+        return; // Do nothing, already in store
+
+      throw base::Exception("Trying to re-add an existing object in the store with ID %d", id);
     }
-    ASSERT(objects.find(id) == objects.end());
-#endif
     objects.insert(std::make_pair(id, obj));
   }
 
@@ -51,14 +41,18 @@ struct ObjectsStore {
   {
     ASSERT(id != NullId);
     auto it = objects.find(id);
-    ASSERT(it != objects.end());
-    ASSERT(it->second == obj);
     if (it != objects.end())
       objects.erase(it);
   }
 };
 
 static ObjectsStore g_store;
+
+ObjectId new_id()
+{
+  const std::lock_guard lock(g_store.mutex);
+  return ++g_store.newId;
+}
 
 Object::Object(ObjectType type) : m_type(type)
 {
@@ -85,12 +79,17 @@ int Object::getMemSize() const
 
 const ObjectId Object::id() const
 {
-  // The first time the ID is request (for non-suspended objects), we
-  // store the object in the "objects" hash table.
-  if (!m_id && !m_suspended) {
+  // The first time the ID is requested, we generate it.
+  if (!m_id) {
     const std::lock_guard lock(g_store.mutex);
     m_id = ++g_store.newId;
-    g_store.add(m_id, const_cast<Object*>(this));
+
+    // For non-suspended objects, we add the object in the store.  But
+    // it can happen than a specific object (e.g. a CelData) requires
+    // an ID, but it's suspended, because we're just serializing it to
+    // be stored in the undo history.
+    if (!m_suspended)
+      g_store.add(m_id, const_cast<Object*>(this));
   }
   return m_id; // This can be NullId for suspended objects.
 }
@@ -114,7 +113,7 @@ void Object::setIdInternal(const ObjectId id, const bool removeFromStore, const 
 
 void Object::setId(const ObjectId id)
 {
-  setIdInternal(id, m_id != NullId && !m_suspended, id != NullId && !m_suspended);
+  setIdInternal(id, m_id != NullId, id != NullId && !m_suspended);
 }
 
 void Object::setVersion(ObjectVersion version)
@@ -124,14 +123,18 @@ void Object::setVersion(ObjectVersion version)
 
 void Object::suspendObject()
 {
-  ASSERT(!m_suspended);
+  if (m_suspended)
+    return;
+
   setIdInternal(m_id, m_id != NullId, false);
   m_suspended = true;
 }
 
 void Object::restoreObject()
 {
-  ASSERT(m_suspended);
+  if (!m_suspended)
+    return;
+
   setIdInternal(m_id, false, m_id != NullId);
   m_suspended = false;
 }

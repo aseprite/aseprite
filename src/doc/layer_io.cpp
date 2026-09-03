@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2026 Igara Studio S.A.
+// Copyright (c) 2019-present Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -22,7 +22,6 @@
 #include "doc/layer_tilemap.h"
 #include "doc/sprite.h"
 #include "doc/string_io.h"
-#include "doc/subobjects_io.h"
 #include "doc/user_data_io.h"
 #include "doc/uuid_io.h"
 
@@ -110,13 +109,17 @@ void write_layer(std::ostream& os, const Layer* layer)
   write_uuid(os, layer->uuid());
 }
 
-Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const SerialFormat serial)
+Layer* read_layer(std::istream& is,
+                  const IdMapperIO& mapper,
+                  SubObjectsIO* subObjects,
+                  const SerialFormat serial)
 {
   ObjectId id = read32(is);
   std::string name = read_string(is);
   uint32_t flags = read32(is);      // Flags
   uint16_t layer_type = read16(is); // Type
   std::unique_ptr<Layer> layer;
+  IdFromStreamMapperIO fromStream;
 
   switch (static_cast<ObjectType>(layer_type)) {
     case ObjectType::LayerImage:
@@ -138,14 +141,14 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const Seri
       // Read images
       const int images = read16(is); // Number of images
       for (int c = 0; c < images; ++c) {
-        ImageRef image(read_image(is));
+        ImageRef image(read_image(is, fromStream));
         subObjects->addImageRef(image);
       }
 
       // Read celdatas
       const int celdatas = read16(is);
       for (int c = 0; c < celdatas; ++c) {
-        CelDataRef celdata(read_celdata(is, subObjects, true, serial));
+        CelDataRef celdata(read_celdata(is, fromStream, subObjects, serial));
         subObjects->addCelDataRef(celdata);
       }
 
@@ -153,7 +156,7 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const Seri
       const int cels = read16(is); // Number of cels
       for (int c = 0; c < cels; ++c) {
         // Read the cel
-        Cel* cel = read_cel(is, subObjects);
+        Cel* cel = read_cel(is, fromStream, subObjects);
         ASSERT(cel);
 
         // Add the cel in the layer
@@ -175,7 +178,7 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const Seri
       // Number of sub-layers
       const int layers = read16(is);
       for (int c = 0; c < layers; c++) {
-        Layer* child = read_layer(is, subObjects, serial);
+        Layer* child = read_layer(is, fromStream, subObjects, serial);
         if (child)
           static_cast<LayerGroup*>(layer.get())->addLayer(child);
         else
@@ -198,7 +201,7 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const Seri
 
   layer->setName(name);
   layer->setFlags(static_cast<LayerFlags>(flags));
-  layer->setId(id);
+  layer->setId(mapper.mapId(id, static_cast<ObjectType>(layer_type)));
   layer->setUserData(userData);
   if (serial >= SerialFormat::Ver3)
     layer->setUuid(uuid);

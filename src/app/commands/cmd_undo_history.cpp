@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2025  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,7 +11,7 @@
 
 #include "app/app.h"
 #include "app/cmd.h"
-#include "app/cmd_transaction.h"
+#include "app/cmd/transaction.h"
 #include "app/commands/command.h"
 #include "app/console.h"
 #include "app/context.h"

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -156,17 +156,21 @@ void ActiveSiteHandler::onRemoveFrame(DocEvent& ev)
   // Adjust current frame of the data that are in a frame more
   // advanced that the removed one.
   if (data.frame > ev.frame()) {
-    --data.frame;
+    if (data.frame > 0)
+      --data.frame;
   }
   // If the data was in the previous "last frame" (current value of
   // totalFrames()), we've to adjust it to the new last frame
   // (lastFrame())
   else if (data.frame >= ev.sprite()->totalFrames()) {
-    data.frame = ev.sprite()->lastFrame();
+    if (data.frame < ev.sprite()->lastFrame())
+      data.frame = ev.sprite()->lastFrame();
   }
 
-  if (data.frame < ev.frame())
-    --data.frame;
+  if (data.frame < ev.frame()) {
+    if (data.frame > 0)
+      --data.frame;
+  }
 }
 
 } // namespace app

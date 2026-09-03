@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -33,6 +33,8 @@ void save_image_region_in_buffer(const gfx::Region& region,
   auto it = buffer.begin();
   for (const auto& rc : region) {
     for (int y = 0; y < rc.h; ++y) {
+      ASSERT(it < buffer.end());
+
       auto p = (const uint8_t*)image->getPixelAddress(rc.x - imagePos.x, rc.y - imagePos.y + y);
       const size_t rowBytes = bytesPerPixel * rc.w;
       std::copy(p, p + rowBytes, it);
@@ -47,10 +49,17 @@ void swap_image_region_with_buffer(const gfx::Region& region,
 {
   const size_t bytesPerPixel = image->bytesPerPixel();
   auto it = buffer.begin();
+  const auto end = buffer.end();
   for (const auto& rc : region) {
     for (int y = 0; y < rc.h; ++y) {
       auto p = (uint8_t*)image->getPixelAddress(rc.x, rc.y + y);
       const size_t rowBytes = bytesPerPixel * rc.w;
+
+      if (it + rowBytes > end) {
+        LOG(ERROR, "Small buffer (%d bytes) to swap given region image\n", buffer.size());
+        break;
+      }
+
       std::swap_ranges(it, it + rowBytes, p);
       it += rowBytes;
     }

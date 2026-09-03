@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -11,17 +11,21 @@
 
 #include "app/cmd/with_sprite.h"
 
+#include "app/cmd_exception.h"
 #include "doc/sprite.h"
 
 namespace app { namespace cmd {
 
-WithSprite::WithSprite(doc::Sprite* sprite) : m_spriteId(sprite->id())
+WithSprite::WithSprite(doc::Sprite* sprite) : m_spriteId(sprite ? sprite->id() : doc::NullId)
 {
 }
 
 doc::Sprite* WithSprite::sprite()
 {
-  return doc::get<doc::Sprite>(m_spriteId);
+  doc::Sprite* sprite = doc::get<doc::Sprite>(m_spriteId);
+  if (!sprite)
+    throw CmdException(fmt::format("Invalid undo information: sprite ID {} not found", m_spriteId));
+  return sprite;
 }
 
 }} // namespace app::cmd

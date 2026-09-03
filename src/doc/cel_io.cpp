@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2023-2026 Igara Studio S.A.
+// Copyright (c) 2023-present Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -13,7 +13,6 @@
 
 #include "base/serialization.h"
 #include "doc/cel.h"
-#include "doc/subobjects_io.h"
 
 #include <iostream>
 #include <memory>
@@ -31,7 +30,7 @@ void write_cel(std::ostream& os, const Cel* cel)
   write16(os, uint16_t(int16_t(cel->zIndex())));
 }
 
-Cel* read_cel(std::istream& is, SubObjectsIO* subObjects, bool setId)
+Cel* read_cel(std::istream& is, const IdMapperIO& mapper, SubObjectsIO* subObjects)
 {
   ObjectId id = read32(is);
   frame_t frame(read16(is));
@@ -49,8 +48,7 @@ Cel* read_cel(std::istream& is, SubObjectsIO* subObjects, bool setId)
 
   auto cel = std::make_unique<Cel>(frame, celData);
   cel->setZIndex(zIndex);
-  if (setId)
-    cel->setId(id);
+  cel->setId(mapper.mapId(id, ObjectType::Cel));
   return cel.release();
 }
 

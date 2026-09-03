@@ -15,6 +15,7 @@
 #include "app/doc_event.h"
 #include "base/serialization.h"
 #include "doc/cel.h"
+#include "doc/cel_io.h"
 #include "doc/layer.h"
 
 namespace app { namespace cmd {
@@ -58,6 +59,14 @@ void AddCel::onRedo(Context* ctx)
   ASSERT(cel);
 
   addCel(layer, cel);
+}
+
+void AddCel::onSerialize(CmdSerial& s)
+{
+  Cmd::onSerialize(s);
+  serializeLayerId(s);
+  serializeCelId(s);
+  m_suspendedCel.serializeObject(s);
 }
 
 void AddCel::addCel(Layer* layer, Cel* cel)

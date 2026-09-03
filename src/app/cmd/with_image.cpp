@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -10,19 +11,23 @@
 
 #include "app/cmd/with_image.h"
 
+#include "app/cmd_exception.h"
 #include "doc/image.h"
 
 namespace app { namespace cmd {
 
 using namespace doc;
 
-WithImage::WithImage(Image* image) : m_imageId(image->id())
+WithImage::WithImage(Image* image) : m_imageId(image ? image->id() : NullId)
 {
 }
 
 Image* WithImage::image()
 {
-  return get<Image>(m_imageId);
+  Image* image = get<Image>(m_imageId);
+  if (!image)
+    throw CmdException(fmt::format("Invalid undo information: image ID {} not found", m_imageId));
+  return image;
 }
 
 }} // namespace app::cmd

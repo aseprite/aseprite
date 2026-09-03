@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,11 +11,9 @@
 #include "doc/tileset_io.h"
 
 #include "base/serialization.h"
-#include "doc/cancel_io.h"
 #include "doc/grid_io.h"
 #include "doc/image_io.h"
 #include "doc/string_io.h"
-#include "doc/subobjects_io.h"
 #include "doc/tileset.h"
 #include "doc/user_data_io.h"
 #include "doc/util.h"
@@ -55,7 +53,7 @@ bool write_tileset(std::ostream& os, const Tileset* tileset, CancelIO* cancel)
 
 Tileset* read_tileset(std::istream& is,
                       Sprite* sprite,
-                      const bool setId,
+                      const IdMapperIO& mapper,
                       TilesetSerialFormat* tilesetVer,
                       const SerialFormat serial)
 {
@@ -63,11 +61,10 @@ Tileset* read_tileset(std::istream& is,
   const tileset_index ntiles = read32(is);
   const Grid grid = read_grid(is);
   auto* tileset = new Tileset(sprite, grid, sprite ? ntiles : 0);
-  if (setId)
-    tileset->setId(id);
+  tileset->setId(mapper.mapId(id, ObjectType::Tileset));
 
   for (tileset_index ti = 0; ti < ntiles; ++ti) {
-    const ImageRef image(read_image(is, setId));
+    const ImageRef image(read_image(is, mapper));
 
     if (sprite)
       tileset->set(ti, image);

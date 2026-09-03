@@ -36,7 +36,6 @@
 #include "doc/slice_io.h"
 #include "doc/sprite.h"
 #include "doc/string_io.h"
-#include "doc/subobjects_io.h"
 #include "doc/tag.h"
 #include "doc/tag_io.h"
 #include "doc/tileset.h"
@@ -142,7 +141,20 @@ private:
     return loadObject<Sprite*>("spr", sprId, &Reader::readSprite);
   }
 
-  ImageRef getImageRef(ObjectId imageId)
+  // SubObjectsIO impl
+  Sprite* sprite() const override { return m_sprite; }
+
+  void addImageRef(const ImageRef& image) override
+  {
+    // TODO impl this to replace readLayer() with read_layer()
+  }
+
+  void addCelDataRef(const CelDataRef& celdata) override
+  {
+    // TODO impl this to replace readLayer() with read_layer()
+  }
+
+  ImageRef getImageRef(const ObjectId imageId) override
   {
     if (m_images.find(imageId) != m_images.end())
       return m_images[imageId];
@@ -151,7 +163,7 @@ private:
     return m_images[imageId] = image;
   }
 
-  CelDataRef getCelDataRef(ObjectId celdataId)
+  CelDataRef getCelDataRef(const ObjectId celdataId) override
   {
     if (m_celdatas.find(celdataId) != m_celdatas.end())
       return m_celdatas[celdataId];
@@ -512,26 +524,29 @@ private:
     return lay.release();
   }
 
-  Cel* readCel(std::ifstream& s) { return read_cel(s, this, false); }
+  Cel* readCel(std::ifstream& s) { return read_cel(s, NullIdMapperIO(), this); }
 
-  CelData* readCelData(std::ifstream& s) { return read_celdata(s, this, false, m_serial); }
+  CelData* readCelData(std::ifstream& s)
+  {
+    return read_celdata(s, NullIdMapperIO(), this, m_serial);
+  }
 
-  Image* readImage(std::ifstream& s) { return read_image(s, false); }
+  Image* readImage(std::ifstream& s) { return read_image(s, NullIdMapperIO()); }
 
   Palette* readPalette(std::ifstream& s) { return read_palette(s); }
 
   Tileset* readTileset(std::ifstream& s)
   {
     TilesetSerialFormat tilesetVer = TilesetSerialFormat::Ver0;
-    Tileset* tileset = read_tileset(s, m_sprite, false, &tilesetVer, m_serial);
+    Tileset* tileset = read_tileset(s, m_sprite, NullIdMapperIO(), &tilesetVer, m_serial);
     if (tileset && tilesetVer < TilesetSerialFormat::Ver1)
       m_updateOldTilemapWithTileset.insert(tileset->id());
     return tileset;
   }
 
-  Tag* readTag(std::ifstream& s) { return read_tag(s, false, m_serial); }
+  Tag* readTag(std::ifstream& s) { return read_tag(s, NullIdMapperIO(), m_serial); }
 
-  Slice* readSlice(std::ifstream& s) { return read_slice(s, false, m_serial); }
+  Slice* readSlice(std::ifstream& s) { return read_slice(s, NullIdMapperIO(), m_serial); }
 
   // Fix issues that the restoration process could produce.
   void fixUndetectedDocumentIssues(Doc* doc)
@@ -648,7 +663,7 @@ Doc* read_document_with_raw_images(const std::string& dir, RawImagesAs as, base:
 
     ImageRef img;
     if (read32(s) == MAGIC_NUMBER)
-      img.reset(read_image(s, false));
+      img.reset(read_image(s, NullIdMapperIO()));
 
     if (img) {
       lay->addCel(new Cel(frame, img));
