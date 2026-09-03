@@ -1494,32 +1494,28 @@ bool Timeline::onProcessMessage(Message* msg)
         if (msg->ctrlPressed() || // TODO configurable
             msg->cmdPressed()) {
           double dz = delta.x + delta.y;
-
-          if (precise) {
-            dz /= 1.5;
-            if (dz < -1.0)
-              dz = -1.0;
-            else if (dz > 1.0)
-              dz = 1.0;
-          }
-
-          setZoomAndUpdate(m_zoom - dz, true);
+          if (precise)
+            dz = std::clamp(dz, -1.0, 1.0);
+          const int step = ui::adjustWheelStep(dz, precise, 8);
+          if (step != 0)
+            setZoomAndUpdate(m_zoom - step, true);
         }
         else {
-          if (!precise) {
-            delta.x *= frameBoxWidth();
-            delta.y *= layerBoxHeight();
+          const double speed = ui::get_wheel_speed_factor();
 
+          if (!precise) {
             if (delta.x == 0 && // On macOS shift already changes the wheel axis
                 msg->shiftPressed()) {
               if (std::fabs(delta.y) > delta.x)
                 std::swap(delta.x, delta.y);
             }
 
-            if (msg->altPressed()) {
-              delta.x *= 3;
-              delta.y *= 3;
-            }
+            delta.x = delta.x * frameBoxWidth();
+            delta.y = delta.y * layerBoxHeight();
+          }
+          else {
+            delta.x = delta.x * speed;
+            delta.y = delta.y * speed;
           }
           setViewScroll(viewScroll() + delta);
         }

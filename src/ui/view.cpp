@@ -38,6 +38,9 @@ namespace ui {
 
 using namespace gfx;
 
+static double wheelScrollAccumX = 0.0;
+static double wheelScrollAccumY = 0.0;
+
 View::View() : Widget(kViewWidget), m_scrollbar_h(HORIZONTAL, this), m_scrollbar_v(VERTICAL, this)
 {
   m_hasBars = true;
@@ -212,24 +215,35 @@ void View::scrollByMessage(const Widget* widget, Message* message, std::optional
     return;
 
   auto mouseMsg = static_cast<MouseMessage*>(message);
-
-  if (!multiplier.has_value())
-    multiplier = widget->textHeight() * 3;
-
+  const double speed = get_wheel_speed_factor();
   gfx::Point scroll = view->viewScroll();
+  gfx::Point delta;
 
-  if (mouseMsg->preciseWheel())
-    scroll += mouseMsg->wheelDelta();
-  else
-    scroll += mouseMsg->wheelDelta() * (*multiplier);
+  if (mouseMsg->preciseWheel()) {
+    const gfx::Point wd = mouseMsg->wheelDelta();
+    wheelScrollAccumX += wd.x * speed;
+    wheelScrollAccumY += wd.y * speed;
+    delta.x = wheelScrollAccumX;
+    delta.y = wheelScrollAccumY;
+    wheelScrollAccumX -= delta.x;
+    wheelScrollAccumY -= delta.y;
+  }
+  else {
+    const gfx::Point wd = mouseMsg->wheelDelta();
+    delta.x = wd.x * view->visibleSize().w * speed / 10;
+    delta.y = wd.y * view->visibleSize().h * speed / 10;
+  }
 
-  view->setViewScroll(scroll);
+  view->setViewScroll(scroll + delta);
 }
 
 bool View::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
     case kFocusEnterMessage:
+      wheelScrollAccumX = 0.0;
+      wheelScrollAccumY = 0.0;
+      [[fallthrough]];
     case kFocusLeaveMessage:
       // TODO This is theme specific stuff
       // Redraw the borders each time the focus enters or leaves the view.
