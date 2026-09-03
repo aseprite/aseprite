@@ -19,7 +19,6 @@ namespace app { namespace cmd {
 
 AddTile::AddTile(doc::Tileset* tileset, const doc::ImageRef& image, const doc::UserData& userData)
   : WithTileset(tileset)
-  , m_tileIndex(doc::notile)
   , m_imageRef(image)
   , m_userData(userData)
 {

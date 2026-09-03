@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -30,7 +30,9 @@ class Tileset;
 } // namespace doc
 
 namespace app {
+namespace cmd {
 class CmdSequence;
+}
 class Doc;
 class Site;
 
@@ -63,7 +65,7 @@ public:
   ExpandCelCanvas(Site site,
                   Layer* layer,
                   const TiledMode tiledMode,
-                  CmdSequence* cmds,
+                  cmd::CmdSequence* cmds,
                   const Flags flags);
   ~ExpandCelCanvas();
 
@@ -130,7 +132,7 @@ private:
   std::unique_ptr<Tileset> m_dstTileset;
   bool m_closed;
   bool m_committed;
-  CmdSequence* m_cmds;
+  cmd::CmdSequence* m_cmds;
   gfx::Region m_validSrcRegion;
   gfx::Region m_validDstRegion;
 

@@ -21,32 +21,39 @@ using namespace doc;
 
 SetCelPosition::SetCelPosition(Cel* cel, const gfx::Point& newPosition)
   : WithCel(cel)
-  , m_old(cel->position())
-  , m_new(newPosition)
+  , m_value(newPosition)
 {
 }
 
 void SetCelPosition::onExecute(Context* ctx)
 {
-  setPosition(m_new);
+  swap();
 }
 
 void SetCelPosition::onUndo(Context* ctx)
 {
-  setPosition(m_old);
+  swap();
 }
 
-void SetCelPosition::setPosition(const gfx::Point& newPos)
+void SetCelPosition::onSerialize(CmdSerial& s)
+{
+  Cmd::onSerialize(s);
+  serializeCelId(s);
+  s(m_value);
+}
+
+void SetCelPosition::swap()
 {
   Cel* cel = this->cel();
   Doc* doc = static_cast<Doc*>(cel->document());
   DocEvent ev(doc);
   ev.sprite(cel->sprite());
   ev.cel(cel);
-
   doc->notify_observers<DocEvent&>(&DocObserver::onBeforeCelPositionChange, ev);
 
-  cel->data()->setPosition(newPos);
+  auto current = cel->data()->position();
+  std::swap(current, m_value);
+  cel->data()->setPosition(current);
   cel->data()->incrementVersion();
 
   doc->notify_observers<DocEvent&>(&DocObserver::onAfterCelPositionChange, ev);

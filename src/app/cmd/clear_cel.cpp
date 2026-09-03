@@ -50,4 +50,11 @@ void ClearCel::onRedo(Context* ctx)
   m_seq.redo(ctx);
 }
 
+void ClearCel::onSerialize(CmdSerial& s)
+{
+  Cmd::onSerialize(s);
+  serializeCelId(s);
+  m_seq.serialize(s);
+}
+
 }} // namespace app::cmd

@@ -87,6 +87,16 @@ void ClearMask::onRedo(Context* ctx)
   clear();
 }
 
+void ClearMask::onSerialize(CmdSerial& s)
+{
+  Cmd::onSerialize(s);
+  serializeCelId(s);
+  m_seq.serialize(s);
+  s(m_cropPos);
+  s(m_bgcolor);
+  s(m_copy);
+}
+
 void ClearMask::clear()
 {
   if (!m_copy)

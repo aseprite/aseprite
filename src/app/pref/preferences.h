@@ -12,6 +12,7 @@
 #include "app/color.h"
 #include "app/commands/filters/cels_target.h"
 #include "app/docs_observer.h"
+#include "app/file/undo/undo_history.h"
 #include "app/pref/option.h"
 #include "app/sprite_sheet_data_format.h"
 #include "app/sprite_sheet_type.h"

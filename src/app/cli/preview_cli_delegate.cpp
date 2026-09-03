@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -150,7 +150,8 @@ void PreviewCliDelegate::saveFile(Context* ctx, const CliOpenFile& cof)
                                                                   cof.roi(),
                                                                   cof.filename,
                                                                   cof.filenameFormat,
-                                                                  cof.ignoreEmpty));
+                                                                  cof.ignoreEmpty,
+                                                                  SaveUndoHistory::No));
 
   if (fop) {
     base::paths files;

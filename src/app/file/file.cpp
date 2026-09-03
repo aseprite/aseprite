@@ -246,7 +246,8 @@ int save_document(Context* context, Doc* document)
     FileOpROI(document, document->sprite()->bounds(), "", "", FramesSequence(), false),
     document->filename(),
     "",
-    false));
+    false,
+    SaveUndoHistory::No));
   if (!fop)
     return -1;
 
@@ -517,7 +518,8 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
                                             const FileOpROI& roi,
                                             const std::string& filename,
                                             const std::string& filenameFormatArg,
-                                            const bool ignoreEmptyFrames)
+                                            const bool ignoreEmptyFrames,
+                                            const SaveUndoHistory saveUndoHistory)
 {
   std::unique_ptr<FileOp> fop(new FileOp(FileOpSave, const_cast<Context*>(context), nullptr));
 
@@ -525,6 +527,7 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
   fop->m_document = const_cast<Doc*>(roi.document());
   fop->m_roi = roi;
   fop->m_ignoreEmpty = ignoreEmptyFrames;
+  fop->m_config.saveUndoHistory = saveUndoHistory;
 
   // Get the extension of the filename (in lower case)
   LOG("FILE: Saving document \"%s\"\n", filename.c_str());

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-present Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -158,7 +158,8 @@ public:
                                              const FileOpROI& roi,
                                              const std::string& filename,
                                              const std::string& filenameFormat,
-                                             const bool ignoreEmptyFrames);
+                                             bool ignoreEmptyFrames,
+                                             SaveUndoHistory saveUndoHistory);
 
   static bool checkIfFormatSupportResizeOnTheFly(const std::string& filename);
 
@@ -307,6 +308,7 @@ private:
                                       // GIF/FLI/ASE).
   bool m_createPaletteFromRgba;
   bool m_ignoreEmpty;
+  bool m_saveUndoHistory = false;
   bool m_avoidBackgroundLayer;
 
   // True if the file contained a color profile when it was loaded.

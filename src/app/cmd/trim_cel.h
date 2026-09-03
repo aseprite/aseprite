@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2016  David Capello
 //
 // This program is distributed under the terms of
@@ -8,7 +9,7 @@
 #define APP_CMD_TRIM_CEL_H_INCLUDED
 #pragma once
 
-#include "app/cmd_sequence.h"
+#include "app/cmd/sequence.h"
 
 namespace doc {
 class Cel;

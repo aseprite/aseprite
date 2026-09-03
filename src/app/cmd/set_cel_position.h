@@ -19,6 +19,8 @@ using namespace doc;
 class SetCelPosition : public Cmd,
                        public WithCel {
 public:
+  CMDTYPE('p', 'o', 'C', 'l', SetCelPosition);
+
   SetCelPosition(Cel* cel, const gfx::Point& newPosition);
   SetCelPosition(Cel* cel, int x, int y) : SetCelPosition(cel, gfx::Point(x, y)) {}
 
@@ -26,11 +28,12 @@ protected:
   void onExecute(Context* ctx) override;
   void onUndo(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this); }
+  void onSerialize(CmdSerial& s) override;
 
 private:
-  void setPosition(const gfx::Point& newPos);
+  void swap();
 
-  gfx::Point m_old, m_new;
+  gfx::Point m_value;
 };
 
 }} // namespace app::cmd

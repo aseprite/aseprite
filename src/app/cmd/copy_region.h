@@ -26,6 +26,10 @@ using namespace doc;
 class CopyRegion : public Cmd,
                    public WithImage {
 public:
+  CMDTYPE('c', 'p', 'R', 'g', CopyRegion);
+
+  CopyRegion() {}
+
   // If alreadyCopied is false, it means that onExecute() will copy
   // pixels from src to dst. If it's true, it means that "onExecute"
   // should do nothing, because modified pixels are alreadt on "dst"
@@ -42,12 +46,13 @@ protected:
   void onRedo(Context* ctx) override;
   void onFireNotifications(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this) + m_buffer.size(); }
+  void onSerialize(CmdSerial& s) override;
 
 private:
   void swap();
   virtual void rehash() {}
 
-  bool m_alreadyCopied;
+  bool m_alreadyCopied = false;
   gfx::Region m_region;
   gfx::Point m_dstPos;
   base::buffer m_buffer;
@@ -55,6 +60,9 @@ private:
 
 class CopyTileRegion : public CopyRegion {
 public:
+  CMDTYPE('c', 'p', 'T', 'r', CopyTileRegion);
+
+  CopyTileRegion() {}
   CopyTileRegion(Image* dst,
                  const Image* src,
                  const gfx::Region& region,
@@ -66,8 +74,8 @@ public:
 private:
   void rehash() override;
 
-  doc::tile_index m_tileIndex;
-  doc::ObjectId m_tilesetId;
+  doc::tile_index m_tileIndex = doc::notile;
+  doc::ObjectId m_tilesetId = doc::NullId;
 };
 
 }} // namespace app::cmd

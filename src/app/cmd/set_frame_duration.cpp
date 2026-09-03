@@ -47,4 +47,12 @@ void SetFrameDuration::onFireNotifications(Context* ctx)
   doc->notify_observers<DocEvent&>(&DocObserver::onFrameDurationChanged, ev);
 }
 
+void SetFrameDuration::onSerialize(CmdSerial& s)
+{
+  Cmd::onSerialize(s);
+  s(m_frame);
+  s(m_oldDuration);
+  s(m_newDuration);
+}
+
 }} // namespace app::cmd
