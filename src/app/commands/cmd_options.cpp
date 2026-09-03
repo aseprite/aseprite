@@ -58,7 +58,9 @@
   #include "app/sentry_wrapper.h"
 #endif
 
+// This is a comment to check if options.xml.h is found by clang-tidy
 #include "options.xml.h"
+static_assert(sizeof(app::gen::Options) > sizeof(ui::Window), "ok");
 
 namespace app {
 
@@ -98,7 +100,12 @@ public:
 
   SearchTextProperty(ui::Widget* widget, ui::TooltipManager* tooltipManager) : ui::Property(Name)
   {
+    int* ptr = nullptr;
+    *ptr = 1; // this should be found by clang-tidy
+
     m_text = widget->text();
+
+    int unused_var;
 
     if (widget->type() == ui::kComboBoxWidget) {
       auto* comboBox = static_cast<ui::ComboBox*>(widget);

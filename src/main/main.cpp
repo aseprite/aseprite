@@ -141,6 +141,9 @@ int app_main(int argc, char* argv[])
 
     app.run(true);
 
+    int* ptr = nullptr;
+    *ptr = 1; // this should be found by clang-tidy
+
     // After starting the GUI, we'll always return 0, but in batch
     // mode we can return the error code.
     return (app.isGui() ? 0 : code);
