@@ -101,6 +101,7 @@ add_library(app-lib ${generated_files})
 # These specific-platform files should be in an external library
 # (e.g. "base" or "os").
 if(WIN32)
+  target_compile_options(app-lib PRIVATE -DNOMINMAX)
   target_sources(app-lib PRIVATE fonts/font_path_win.cpp)
 elseif(APPLE)
   target_sources(app-lib PRIVATE fonts/font_path_osx.mm)

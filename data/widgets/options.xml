@@ -657,6 +657,8 @@
                  pref="experimental.flash_layer" />
           <check id="use_selection_tool_loop" text="@.use_selection_tool_loop"
                  pref="experimental.use_selection_tool_loop" />
+          <check id="safe_save" text="@.safe_save"
+                 pref="experimental.safe_save" />
           <hbox>
             <label for="tooltip_delay" text="@.tooltip_delay" />
             <expr id="tooltip_delay" suffix="@.tooltip_delay_unit" />
