@@ -87,6 +87,10 @@ add_custom_command(
   DEPENDS ${GEN_DEP} ${widget_files} ${string_files} "${SOURCE_DATA_DIR}/gui.xml")
 list(APPEND generated_files ${output_fn})
 
+# A custom target to generate all files (mainly for .xml.h files that
+# might be required for other tools like clang-tidy)
+add_custom_target(generate_files DEPENDS ${generated_files})
+
 # libarchive definitions
 add_definitions(-DLIBARCHIVE_STATIC)
 
