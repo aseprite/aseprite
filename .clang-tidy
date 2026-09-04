@@ -78,4 +78,6 @@ CheckOptions:
     value: true
   - key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
     value: true
+  - key: misc-unused-parameters.IgnoreVirtual
+    value: true
 ...
