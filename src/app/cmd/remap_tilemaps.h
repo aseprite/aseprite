@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -21,8 +21,8 @@ public:
   RemapTilemaps(Tileset* tileset, const Remap& remap);
 
 protected:
-  void onExecute() override;
-  void onUndo() override;
+  void onExecute(Context* ctx) override;
+  void onUndo(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this) + m_remap.getMemSize(); }
 
 private:

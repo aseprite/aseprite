@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -22,8 +22,8 @@ public:
   CopyCel(Layer* srcLayer, frame_t srcFrame, Layer* dstLayer, frame_t dstFrame, bool continuous);
 
 protected:
-  void onExecute() override;
-  void onFireNotifications() override;
+  void onExecute(Context* ctx) override;
+  void onFireNotifications(Context* ctx) override;
 
 private:
   WithLayer m_srcLayer, m_dstLayer;

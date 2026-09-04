@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -25,9 +25,9 @@ public:
   AddTag(Sprite* sprite, Tag* tag);
 
 protected:
-  void onExecute() override;
-  void onUndo() override;
-  void onRedo() override;
+  void onExecute(Context* ctx) override;
+  void onUndo(Context* ctx) override;
+  void onRedo(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this) + m_suspendedTag.size(); }
 
 private:

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -30,10 +30,10 @@ public:
   doc::tile_index tileIndex() const { return m_tileIndex; }
 
 protected:
-  void onExecute() override;
-  void onUndo() override;
-  void onRedo() override;
-  void onFireNotifications() override;
+  void onExecute(Context* ctx) override;
+  void onUndo(Context* ctx) override;
+  void onRedo(Context* ctx) override;
+  void onFireNotifications(Context* ctx) override;
   size_t onMemSize() const override
   {
     // TODO add m_userData size

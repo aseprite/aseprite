@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -32,7 +32,7 @@ public:
   CmdTransaction* moveToEmptyCopy();
 
   void setNewDocRange(const view::RealRange& range);
-  void updateSpritePositionAfter();
+  void updateSpritePositionAfter(Context* ctx);
 
   SpritePosition spritePositionBeforeExecute() const { return m_spritePositionBefore; }
   SpritePosition spritePositionAfterExecute() const { return m_spritePositionAfter; }
@@ -41,16 +41,16 @@ public:
   std::istream* documentRangeAfterExecute() const;
 
 protected:
-  void onExecute() override;
-  void onUndo() override;
-  void onRedo() override;
+  void onExecute(Context* ctx) override;
+  void onUndo(Context* ctx) override;
+  void onRedo(Context* ctx) override;
   std::string onLabel() const override;
   size_t onMemSize() const override;
 
 private:
-  SpritePosition calcSpritePosition() const;
-  bool isDocRangeEnabled() const;
-  view::RealRange calcDocRange() const;
+  SpritePosition calcSpritePosition(Context* ctx) const;
+  bool isDocRangeEnabled(Context* ctx) const;
+  view::RealRange calcDocRange(Context* ctx) const;
 
   struct Ranges {
     std::stringstream m_before;

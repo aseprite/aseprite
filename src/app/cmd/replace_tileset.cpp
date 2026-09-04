@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2025  Igara Studio S.A.
+// Copyright (C) 2021-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -29,7 +29,7 @@ ReplaceTileset::ReplaceTileset(doc::Sprite* sprite,
 {
 }
 
-void ReplaceTileset::onExecute()
+void ReplaceTileset::onExecute(Context* ctx)
 {
   Sprite* spr = sprite();
   doc::Tileset* actualTileset = spr->tilesets()->get(m_tsi);

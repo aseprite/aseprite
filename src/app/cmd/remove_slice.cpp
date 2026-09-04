@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -18,19 +19,19 @@ RemoveSlice::RemoveSlice(Sprite* sprite, Slice* slice) : AddSlice(sprite, slice)
 {
 }
 
-void RemoveSlice::onExecute()
+void RemoveSlice::onExecute(Context* ctx)
 {
-  AddSlice::onUndo();
+  AddSlice::onUndo(ctx);
 }
 
-void RemoveSlice::onUndo()
+void RemoveSlice::onUndo(Context* ctx)
 {
-  AddSlice::onRedo();
+  AddSlice::onRedo(ctx);
 }
 
-void RemoveSlice::onRedo()
+void RemoveSlice::onRedo(Context* ctx)
 {
-  AddSlice::onUndo();
+  AddSlice::onUndo(ctx);
 }
 
 }} // namespace app::cmd

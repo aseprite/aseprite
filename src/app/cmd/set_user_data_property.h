@@ -26,8 +26,8 @@ public:
                       doc::UserData::Variant&& newValue);
 
 protected:
-  void onExecute() override;
-  void onUndo() override;
+  void onExecute(Context* ctx) override;
+  void onUndo(Context* ctx) override;
   size_t onMemSize() const override
   {
     return sizeof(*this); // TODO + variant size

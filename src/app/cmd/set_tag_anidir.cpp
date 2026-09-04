@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -22,13 +22,13 @@ SetTagAniDir::SetTagAniDir(Tag* tag, doc::AniDir anidir)
 {
 }
 
-void SetTagAniDir::onExecute()
+void SetTagAniDir::onExecute(Context* ctx)
 {
   tag()->setAniDir(m_newAniDir);
   tag()->incrementVersion();
 }
 
-void SetTagAniDir::onUndo()
+void SetTagAniDir::onUndo(Context* ctx)
 {
   tag()->setAniDir(m_oldAniDir);
   tag()->incrementVersion();

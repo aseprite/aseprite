@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -24,12 +24,12 @@ ShiftMaskedCel::ShiftMaskedCel(Cel* cel, int dx, int dy) : WithCel(cel), m_dx(dx
 {
 }
 
-void ShiftMaskedCel::onExecute()
+void ShiftMaskedCel::onExecute(Context* ctx)
 {
   shift(m_dx, m_dy);
 }
 
-void ShiftMaskedCel::onUndo()
+void ShiftMaskedCel::onUndo(Context* ctx)
 {
   shift(-m_dx, -m_dy);
 }

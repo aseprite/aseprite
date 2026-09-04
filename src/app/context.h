@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -22,6 +22,7 @@
 #include "obs/observable.h"
 #include "obs/signal.h"
 #include "os/surface.h"
+#include "undo/undo_context.h"
 #include "view/range.h"
 
 #include <memory>
@@ -107,7 +108,8 @@ private:
 };
 
 class Context : public obs::observable<ContextObserver>,
-                public DocsObserver {
+                public DocsObserver,
+                public undo::UndoContext {
 public:
   Context();
   virtual ~Context();

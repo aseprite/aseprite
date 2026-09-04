@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio SA
+// Copyright (C) 2023-present  Igara Studio SA
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,27 +26,22 @@ public:
   void execute(Context* ctx);
 
   // undo::UndoCommand impl
-  void undo() override;
-  void redo() override;
+  void undo(undo::UndoContext* ctx) override;
+  void redo(undo::UndoContext* ctx) override;
   void dispose() override;
 
   std::string label() const;
   size_t memSize() const;
 
-  Context* context() const { return m_ctx; }
-
 protected:
-  virtual void onExecute();
-  virtual void onUndo();
-  virtual void onRedo();
-  virtual void onFireNotifications();
+  virtual void onExecute(Context* ctx);
+  virtual void onUndo(Context* ctx);
+  virtual void onRedo(Context* ctx);
+  virtual void onFireNotifications(Context* ctx);
   virtual std::string onLabel() const;
   virtual size_t onMemSize() const;
 
 private:
-  // TODO I think we could just remove this field (but we'll need to
-  //      include the Context* in all onEvent() member functions)
-  Context* m_ctx;
 #if _DEBUG
   enum class State { NotExecuted, Executed, Undone, Redone };
   State m_state;

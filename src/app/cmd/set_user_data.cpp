@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -26,21 +26,21 @@ SetUserData::SetUserData(doc::WithUserData* obj, const doc::UserData& userData, 
 {
 }
 
-void SetUserData::onExecute()
+void SetUserData::onExecute(Context* ctx)
 {
   auto obj = doc::get<doc::WithUserData>(m_objId);
   obj->setUserData(m_newUserData);
   obj->incrementVersion();
 }
 
-void SetUserData::onUndo()
+void SetUserData::onUndo(Context* ctx)
 {
   auto obj = doc::get<doc::WithUserData>(m_objId);
   obj->setUserData(m_oldUserData);
   obj->incrementVersion();
 }
 
-void SetUserData::onFireNotifications()
+void SetUserData::onFireNotifications(Context* ctx)
 {
   auto obj = doc::get<doc::WithUserData>(m_objId);
   app::Doc* doc = document();

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -24,21 +24,21 @@ SetLayerTileset::SetLayerTileset(doc::LayerTilemap* layer, doc::tileset_index ne
 {
 }
 
-void SetLayerTileset::onExecute()
+void SetLayerTileset::onExecute(Context* ctx)
 {
   auto layer = static_cast<LayerTilemap*>(this->layer());
   layer->setTilesetIndex(m_newTsi);
   layer->incrementVersion();
 }
 
-void SetLayerTileset::onUndo()
+void SetLayerTileset::onUndo(Context* ctx)
 {
   auto layer = static_cast<LayerTilemap*>(this->layer());
   layer->setTilesetIndex(m_oldTsi);
   layer->incrementVersion();
 }
 
-void SetLayerTileset::onFireNotifications()
+void SetLayerTileset::onFireNotifications(Context* ctx)
 {
   auto layer = static_cast<LayerTilemap*>(this->layer());
   Doc* doc = static_cast<Doc*>(layer->sprite()->document());

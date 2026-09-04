@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -23,7 +23,7 @@ SetTilesetMatchFlags::SetTilesetMatchFlags(Tileset* tileset, const tile_flags ma
 {
 }
 
-void SetTilesetMatchFlags::onExecute()
+void SetTilesetMatchFlags::onExecute(Context* ctx)
 {
   auto ts = tileset();
   ts->setMatchFlags(m_newMatchFlags);
@@ -31,7 +31,7 @@ void SetTilesetMatchFlags::onExecute()
   ts->sprite()->incrementVersion();
 }
 
-void SetTilesetMatchFlags::onUndo()
+void SetTilesetMatchFlags::onUndo(Context* ctx)
 {
   auto ts = tileset();
   ts->setMatchFlags(m_oldMatchFlags);

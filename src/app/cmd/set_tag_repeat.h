@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,8 +20,8 @@ public:
   SetTagRepeat(Tag* tag, int repeat);
 
 protected:
-  void onExecute() override;
-  void onUndo() override;
+  void onExecute(Context* ctx) override;
+  void onUndo(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this); }
 
 private:

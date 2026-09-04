@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -23,21 +24,21 @@ SetTransparentColor::SetTransparentColor(Sprite* sprite, color_t newMask)
 {
 }
 
-void SetTransparentColor::onExecute()
+void SetTransparentColor::onExecute(Context* ctx)
 {
   Sprite* spr = sprite();
   spr->setTransparentColor(m_newMaskColor);
   spr->incrementVersion();
 }
 
-void SetTransparentColor::onUndo()
+void SetTransparentColor::onUndo(Context* ctx)
 {
   Sprite* spr = sprite();
   spr->setTransparentColor(m_oldMaskColor);
   spr->incrementVersion();
 }
 
-void SetTransparentColor::onFireNotifications()
+void SetTransparentColor::onFireNotifications(Context* ctx)
 {
   Sprite* sprite = this->sprite();
   auto doc = static_cast<Doc*>(sprite->document());

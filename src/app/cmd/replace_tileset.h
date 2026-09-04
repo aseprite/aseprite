@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2025  Igara Studio S.A.
+// Copyright (C) 2021-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -21,9 +21,9 @@ public:
   ReplaceTileset(doc::Sprite* sprite, const doc::tileset_index tsi, doc::Tileset* newTileset);
 
 protected:
-  void onExecute() override;
-  void onUndo() override { onExecute(); }
-  void onRedo() override { onExecute(); }
+  void onExecute(Context* ctx) override;
+  void onUndo(Context* ctx) override { onExecute(ctx); }
+  void onRedo(Context* ctx) override { onExecute(ctx); }
   size_t onMemSize() const override { return sizeof(*this) + m_suspendedTileset.size(); }
 
 private:

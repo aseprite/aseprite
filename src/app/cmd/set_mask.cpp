@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -29,12 +29,12 @@ void SetMask::setNewMask(const Mask* newMask)
   setMask(m_newMask.get());
 }
 
-void SetMask::onExecute()
+void SetMask::onExecute(Context* ctx)
 {
   setMask(m_newMask.get());
 }
 
-void SetMask::onUndo()
+void SetMask::onUndo(Context* ctx)
 {
   setMask(m_oldMask.get());
 }

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +12,7 @@
 #include "app/cmd/add_frame.h"
 
 #include "app/cmd/add_cel.h"
+#include "app/context.h"
 #include "app/doc.h"
 #include "app/doc_event.h"
 #include "doc/cel.h"
@@ -29,7 +31,7 @@ AddFrame::AddFrame(Sprite* sprite, frame_t newFrame)
 {
 }
 
-void AddFrame::onExecute()
+void AddFrame::onExecute(Context* ctx)
 {
   Sprite* sprite = this->sprite();
   auto doc = static_cast<Doc*>(sprite->document());
@@ -38,7 +40,7 @@ void AddFrame::onExecute()
   sprite->incrementVersion();
 
   if (m_addCel) {
-    m_addCel->redo();
+    m_addCel->redo(ctx);
   }
   else {
     LayerImage* bglayer = sprite->backgroundLayer();
@@ -47,7 +49,7 @@ void AddFrame::onExecute()
       clear_image(bgimage.get(), doc->bgColor(bglayer));
       Cel* cel = new Cel(m_newFrame, bgimage);
       m_addCel.reset(new cmd::AddCel(bglayer, cel));
-      m_addCel->execute(context());
+      m_addCel->execute(ctx);
     }
   }
 
@@ -58,13 +60,13 @@ void AddFrame::onExecute()
   doc->notify_observers<DocEvent&>(&DocObserver::onAddFrame, ev);
 }
 
-void AddFrame::onUndo()
+void AddFrame::onUndo(Context* ctx)
 {
   Sprite* sprite = this->sprite();
   auto doc = static_cast<Doc*>(sprite->document());
 
   if (m_addCel)
-    m_addCel->undo();
+    m_addCel->undo(ctx);
 
   sprite->removeFrame(m_newFrame);
   sprite->incrementVersion();

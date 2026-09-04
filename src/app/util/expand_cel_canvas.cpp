@@ -213,6 +213,9 @@ void ExpandCelCanvas::commit()
     return;
   }
 
+  Context* ctx = m_document->context();
+  ASSERT(ctx);
+
   // Was the cel created in the start of the tool-loop?
   if ((m_celCreated) ||
       // Was the cel without an image when the tool-loop started?
@@ -256,15 +259,15 @@ void ExpandCelCanvas::commit()
             m_cel->setPosition(newPosition);
           }
           else {
-            m_cmds->executeAndAdd(new cmd::SetCelImage(m_cel, newImage));
-            m_cmds->executeAndAdd(new cmd::SetCelPosition(m_cel, newPosition));
+            m_cmds->executeAndAdd(ctx, new cmd::SetCelImage(m_cel, newImage));
+            m_cmds->executeAndAdd(ctx, new cmd::SetCelPosition(m_cel, newPosition));
           }
         }
 
         // Add the cel again into the layer with a transaction.
         if (m_celCreated) {
           m_layer->removeCel(m_cel);
-          m_cmds->executeAndAdd(new cmd::AddCel(m_layer, m_cel));
+          m_cmds->executeAndAdd(ctx, new cmd::AddCel(m_layer, m_cel));
         }
       }
       else {
@@ -276,7 +279,7 @@ void ExpandCelCanvas::commit()
           m_cel = nullptr;
         }
         else {
-          m_cmds->executeAndAdd(new cmd::SetCelImage(m_cel, nullptr));
+          m_cmds->executeAndAdd(ctx, new cmd::SetCelImage(m_cel, nullptr));
         }
       }
     }
@@ -338,7 +341,8 @@ void ExpandCelCanvas::commit()
         // of relative to the m_cel).
         regionToPatch->offset(m_bounds.origin());
 
-        modify_tilemap_cel_region(m_cmds,
+        modify_tilemap_cel_region(ctx,
+                                  m_cmds,
                                   m_cel,
                                   nullptr,
                                   *regionToPatch,
@@ -363,7 +367,8 @@ void ExpandCelCanvas::commit()
                                          m_dstTileset->get(ti)->bounds(),
                                          diffRgn);
           if (!diffRgn.isEmpty()) {
-            m_cmds->executeAndAdd(new cmd::CopyTileRegion(srcTileset->get(ti).get(),
+            m_cmds->executeAndAdd(ctx,
+                                  new cmd::CopyTileRegion(srcTileset->get(ti).get(),
                                                           m_dstTileset->get(ti).get(),
                                                           diffRgn,
                                                           gfx::Point(0, 0),
@@ -382,6 +387,7 @@ void ExpandCelCanvas::commit()
         ASSERT(m_celImage.get() == m_cel->image());
 
         m_cmds->executeAndAdd(
+          ctx,
           new cmd::CopyRegion(m_cel->image(), m_dstImage.get(), *regionToPatch, m_bounds.origin()));
       }
       else if (m_tilemapMode == TilemapMode::Tiles) {
@@ -393,12 +399,14 @@ void ExpandCelCanvas::commit()
         EXP_TRACE(" - Tilemap bounds to patch", regionInCanvas.bounds());
 
         m_cmds->executeAndAdd(
+          ctx,
           new cmd::PatchCel(m_cel, m_dstImage.get(), regionInCanvas, m_grid.origin()));
       }
       else {
         ASSERT(m_celImage.get() == m_cel->image());
 
         m_cmds->executeAndAdd(
+          ctx,
           new cmd::PatchCel(m_cel, m_dstImage.get(), *regionToPatch, m_bounds.origin()));
       }
     }
@@ -658,6 +666,7 @@ void ExpandCelCanvas::validateDestTileset(const gfx::Region& rgn, const gfx::Reg
   if (m_dstTileset) {
     gfx::Region regionToPatch = rgn;
     modify_tilemap_cel_region(
+      m_document->context(),
       m_cmds,
       m_cel,
       m_dstTileset.get(),

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -23,21 +23,21 @@ AssignColorProfile::AssignColorProfile(doc::Sprite* sprite, const gfx::ColorSpac
 {
 }
 
-void AssignColorProfile::onExecute()
+void AssignColorProfile::onExecute(Context* ctx)
 {
   doc::Sprite* spr = sprite();
   spr->setColorSpace(m_newCS);
   spr->incrementVersion();
 }
 
-void AssignColorProfile::onUndo()
+void AssignColorProfile::onUndo(Context* ctx)
 {
   doc::Sprite* spr = sprite();
   spr->setColorSpace(m_oldCS);
   spr->incrementVersion();
 }
 
-void AssignColorProfile::onFireNotifications()
+void AssignColorProfile::onFireNotifications(Context* ctx)
 {
   doc::Sprite* sprite = this->sprite();
   Doc* doc = static_cast<Doc*>(sprite->document());

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -25,19 +25,19 @@ SetCelZIndex::SetCelZIndex(Cel* cel, int zindex)
 {
 }
 
-void SetCelZIndex::onExecute()
+void SetCelZIndex::onExecute(Context* ctx)
 {
   cel()->setZIndex(m_newZIndex);
   cel()->incrementVersion();
 }
 
-void SetCelZIndex::onUndo()
+void SetCelZIndex::onUndo(Context* ctx)
 {
   cel()->setZIndex(m_oldZIndex);
   cel()->incrementVersion();
 }
 
-void SetCelZIndex::onFireNotifications()
+void SetCelZIndex::onFireNotifications(Context* ctx)
 {
   Cel* cel = this->cel();
   Doc* doc = static_cast<Doc*>(cel->document());

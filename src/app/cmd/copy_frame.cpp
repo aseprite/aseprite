@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -28,14 +28,14 @@ CopyFrame::CopyFrame(Sprite* sprite, frame_t fromFrame, frame_t newFrame)
 {
 }
 
-void CopyFrame::onExecute()
+void CopyFrame::onExecute(Context* ctx)
 {
   Sprite* sprite = this->sprite();
   frame_t fromFrame = m_fromFrame;
   int msecs = sprite->frameDuration(fromFrame);
 
-  executeAndAdd(new cmd::AddFrame(sprite, m_newFrame));
-  executeAndAdd(new cmd::SetFrameDuration(sprite, m_newFrame, msecs));
+  executeAndAdd(ctx, new cmd::AddFrame(sprite, m_newFrame));
+  executeAndAdd(ctx, new cmd::SetFrameDuration(sprite, m_newFrame, msecs));
 
   // Do not copy cels (cmd::CopyCel must be called from outside)
 }

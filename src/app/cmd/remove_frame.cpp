@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +12,7 @@
 #include "app/cmd/remove_frame.h"
 
 #include "app/cmd/remove_cel.h"
+#include "app/context.h"
 #include "app/doc.h"
 #include "app/doc_event.h"
 #include "doc/cels_range.h"
@@ -31,17 +33,17 @@ RemoveFrame::RemoveFrame(Sprite* sprite, frame_t frame)
     m_seq.add(new cmd::RemoveCel(cel));
 }
 
-void RemoveFrame::onExecute()
+void RemoveFrame::onExecute(Context* ctx)
 {
   Sprite* sprite = this->sprite();
   Doc* doc = static_cast<Doc*>(sprite->document());
 
   if (m_firstTime) {
     m_firstTime = false;
-    m_seq.execute(context());
+    m_seq.execute(ctx);
   }
   else
-    m_seq.redo();
+    m_seq.redo(ctx);
 
   int oldTotalFrames = sprite->totalFrames();
 
@@ -60,7 +62,7 @@ void RemoveFrame::onExecute()
   doc->notify_observers<DocEvent&>(&DocObserver::onRemoveFrame, ev);
 }
 
-void RemoveFrame::onUndo()
+void RemoveFrame::onUndo(Context* ctx)
 {
   Sprite* sprite = this->sprite();
   Doc* doc = static_cast<Doc*>(sprite->document());
@@ -69,7 +71,7 @@ void RemoveFrame::onUndo()
     sprite->addFrame(m_frame);
   sprite->setFrameDuration(m_frame, m_frameDuration);
   sprite->incrementVersion();
-  m_seq.undo();
+  m_seq.undo(ctx);
 
   // Notify observers about the new frame.
   DocEvent ev(doc);

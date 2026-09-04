@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -38,7 +38,7 @@ BackgroundFromLayer::BackgroundFromLayer(Layer* layer) : WithLayer(layer)
   ASSERT(layer->sprite()->backgroundLayer() == NULL);
 }
 
-void BackgroundFromLayer::onExecute()
+void BackgroundFromLayer::onExecute(Context* ctx)
 {
   Layer* layer = this->layer();
   ASSERT(!layer->isTilemap()); // TODO support background tilemaps
@@ -69,16 +69,17 @@ void BackgroundFromLayer::onExecute()
     }
 
     // now we have to copy the new image (bg_image) to the cel...
-    executeAndAdd(new cmd::SetCelPosition(cel, 0, 0));
+    executeAndAdd(ctx, new cmd::SetCelPosition(cel, 0, 0));
 
     // change opacity to 255
     if (cel->opacity() < 255)
-      executeAndAdd(new cmd::SetCelOpacity(cel, 255));
+      executeAndAdd(ctx, new cmd::SetCelOpacity(cel, 255));
 
     // Same size of cel image and background image, we can just
     // replace pixels.
     if (cel_image && bg_image->size() == cel_image->size()) {
-      executeAndAdd(new CopyRect(cel_image, bg_image.get(), gfx::Clip(0, 0, cel_image->bounds())));
+      executeAndAdd(ctx,
+                    new CopyRect(cel_image, bg_image.get(), gfx::Clip(0, 0, cel_image->bounds())));
     }
     // In other case we have to replace the whole image (this is the
     // most common case, a smaller transparent cel that is converted
@@ -86,9 +87,9 @@ void BackgroundFromLayer::onExecute()
     else {
       ImageRef bg_image2(Image::createCopy(bg_image.get()));
       if (cel->image())
-        executeAndAdd(new cmd::ReplaceImage(sprite, cel->imageRef(), bg_image2));
+        executeAndAdd(ctx, new cmd::ReplaceImage(sprite, cel->imageRef(), bg_image2));
       else
-        executeAndAdd(new cmd::SetCelImage(cel, bg_image2));
+        executeAndAdd(ctx, new cmd::SetCelImage(cel, bg_image2));
     }
   }
 
@@ -101,11 +102,11 @@ void BackgroundFromLayer::onExecute()
 
       // Create the new cel and add it to the new background layer
       cel = new Cel(frame, cel_image);
-      executeAndAdd(new cmd::AddCel(layer, cel));
+      executeAndAdd(ctx, new cmd::AddCel(layer, cel));
     }
   }
 
-  executeAndAdd(new cmd::ConfigureBackground(layer));
+  executeAndAdd(ctx, new cmd::ConfigureBackground(layer));
 }
 
 }} // namespace app::cmd

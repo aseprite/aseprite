@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -24,19 +25,19 @@ SetLayerBlendMode::SetLayerBlendMode(LayerImage* layer, BlendMode blendMode)
 {
 }
 
-void SetLayerBlendMode::onExecute()
+void SetLayerBlendMode::onExecute(Context* ctx)
 {
   static_cast<LayerImage*>(layer())->setBlendMode(m_newBlendMode);
   layer()->incrementVersion();
 }
 
-void SetLayerBlendMode::onUndo()
+void SetLayerBlendMode::onUndo(Context* ctx)
 {
   static_cast<LayerImage*>(layer())->setBlendMode(m_oldBlendMode);
   layer()->incrementVersion();
 }
 
-void SetLayerBlendMode::onFireNotifications()
+void SetLayerBlendMode::onFireNotifications(Context* ctx)
 {
   Layer* layer = this->layer();
   Doc* doc = static_cast<Doc*>(layer->sprite()->document());

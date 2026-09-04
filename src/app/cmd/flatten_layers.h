@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019 Igara Studio S.A.
+// Copyright (C) 2019-present Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -31,7 +31,7 @@ public:
   FlattenLayers(doc::Sprite* sprite, const doc::SelectedLayers& layers, const Options options);
 
 protected:
-  void onExecute() override;
+  void onExecute(Context* ctx) override;
 
 private:
   doc::ObjectIds m_layerIds;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -24,7 +24,7 @@ AddTag::AddTag(Sprite* sprite, Tag* tag) : WithSprite(sprite), WithTag(tag)
 {
 }
 
-void AddTag::onExecute()
+void AddTag::onExecute(Context* ctx)
 {
   Sprite* sprite = this->sprite();
   Tag* tag = this->tag();
@@ -40,7 +40,7 @@ void AddTag::onExecute()
   doc->notify_observers<DocEvent&>(&DocObserver::onAddTag, ev);
 }
 
-void AddTag::onUndo()
+void AddTag::onUndo(Context* ctx)
 {
   Sprite* sprite = this->sprite();
   Tag* tag = this->tag();
@@ -60,7 +60,7 @@ void AddTag::onUndo()
   m_suspendedTag.suspend(tag);
 }
 
-void AddTag::onRedo()
+void AddTag::onRedo(Context* ctx)
 {
   Sprite* sprite = this->sprite();
   Tag* tag = m_suspendedTag.restore();

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -21,7 +21,7 @@ ReselectMask::ReselectMask(Doc* doc) : WithDocument(doc)
 {
 }
 
-void ReselectMask::onExecute()
+void ReselectMask::onExecute(Context* ctx)
 {
   Doc* doc = document();
 
@@ -34,7 +34,7 @@ void ReselectMask::onExecute()
   doc->notifySelectionChanged();
 }
 
-void ReselectMask::onUndo()
+void ReselectMask::onUndo(Context* ctx)
 {
   Doc* doc = document();
 

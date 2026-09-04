@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -54,7 +54,7 @@ FlattenLayers::FlattenLayers(doc::Sprite* sprite,
     m_layerIds.push_back(layer->id());
 }
 
-void FlattenLayers::onExecute()
+void FlattenLayers::onExecute(Context* ctx)
 {
   Sprite* sprite = this->sprite();
   auto doc = static_cast<Doc*>(sprite->document());
@@ -163,7 +163,7 @@ void FlattenLayers::onExecute()
       Cel* cel = flatLayer->cel(frame);
       if (!shrink) {
         if (!newFlatLayer && cel)
-          executeAndAdd(new cmd::RemoveCel(cel));
+          executeAndAdd(ctx, new cmd::RemoveCel(cel));
 
         continue;
       }
@@ -176,26 +176,26 @@ void FlattenLayers::onExecute()
         // TODO Keep cel links when possible
 
         if (cel->links())
-          executeAndAdd(new cmd::UnlinkCel(cel));
+          executeAndAdd(ctx, new cmd::UnlinkCel(cel));
 
         const ImageRef cel_image = cel->imageRef();
 
         // Reset cel properties when flattening in-place
         if (!newFlatLayer) {
           if (cel->opacity() != 255)
-            executeAndAdd(new cmd::SetCelOpacity(cel, 255));
+            executeAndAdd(ctx, new cmd::SetCelOpacity(cel, 255));
 
           if (cel->zIndex() != 0)
-            executeAndAdd(new cmd::SetCelZIndex(cel, 0));
+            executeAndAdd(ctx, new cmd::SetCelZIndex(cel, 0));
 
-          executeAndAdd(new cmd::SetCelPosition(cel, area.x + bounds.x, area.y + bounds.y));
+          executeAndAdd(ctx, new cmd::SetCelPosition(cel, area.x + bounds.x, area.y + bounds.y));
         }
 
         // Modify destination cel
         if (cel_image)
-          executeAndAdd(new cmd::ReplaceImage(sprite, cel_image, new_image));
+          executeAndAdd(ctx, new cmd::ReplaceImage(sprite, cel_image, new_image));
         else
-          executeAndAdd(new cmd::SetCelImage(cel, new_image));
+          executeAndAdd(ctx, new cmd::SetCelImage(cel, new_image));
       }
       // Add new cel on null
       else {
@@ -209,7 +209,7 @@ void FlattenLayers::onExecute()
           flatLayer->addCel(cel);
         }
         else {
-          executeAndAdd(new cmd::AddCel(flatLayer, cel));
+          executeAndAdd(ctx, new cmd::AddCel(flatLayer, cel));
         }
       }
     }
@@ -221,15 +221,15 @@ void FlattenLayers::onExecute()
 
   // Add new flatten layer
   if (newFlatLayer) {
-    executeAndAdd(new cmd::AddLayer(list.front()->parent(), flatLayer, list.front()));
+    executeAndAdd(ctx, new cmd::AddLayer(list.front()->parent(), flatLayer, list.front()));
   }
   // Reset layer properties when flattening in-place
   else {
     if (flatLayer->opacity() != 255)
-      executeAndAdd(new cmd::SetLayerOpacity(flatLayer, 255));
+      executeAndAdd(ctx, new cmd::SetLayerOpacity(flatLayer, 255));
 
     if (flatLayer->blendMode() != doc::BlendMode::NORMAL)
-      executeAndAdd(new cmd::SetLayerBlendMode(flatLayer, doc::BlendMode::NORMAL));
+      executeAndAdd(ctx, new cmd::SetLayerBlendMode(flatLayer, doc::BlendMode::NORMAL));
   }
 
   // Delete flattened layers.
@@ -237,7 +237,7 @@ void FlattenLayers::onExecute()
     // layer can be == flatLayer when we are flattening on the
     // background layer.
     if (layer != flatLayer) {
-      executeAndAdd(new cmd::RemoveLayer(layer));
+      executeAndAdd(ctx, new cmd::RemoveLayer(layer));
     }
   }
 }

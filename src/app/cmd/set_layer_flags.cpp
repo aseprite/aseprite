@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -19,13 +20,13 @@ SetLayerFlags::SetLayerFlags(Layer* layer, LayerFlags flags)
 {
 }
 
-void SetLayerFlags::onExecute()
+void SetLayerFlags::onExecute(Context* ctx)
 {
   layer()->setFlags(m_newFlags);
   layer()->incrementVersion();
 }
 
-void SetLayerFlags::onUndo()
+void SetLayerFlags::onUndo(Context* ctx)
 {
   layer()->setFlags(m_oldFlags);
   layer()->incrementVersion();

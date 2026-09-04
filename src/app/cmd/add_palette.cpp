@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -21,7 +22,7 @@ AddPalette::AddPalette(Sprite* sprite, Palette* pal) : WithSprite(sprite), m_pal
 {
 }
 
-void AddPalette::onExecute()
+void AddPalette::onExecute(Context* ctx)
 {
   Sprite* sprite = this->sprite();
 
@@ -29,7 +30,7 @@ void AddPalette::onExecute()
   sprite->incrementVersion();
 }
 
-void AddPalette::onUndo()
+void AddPalette::onUndo(Context* ctx)
 {
   Sprite* sprite = this->sprite();
 

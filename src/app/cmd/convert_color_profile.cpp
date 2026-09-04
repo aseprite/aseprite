@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -13,6 +13,7 @@
 #include "app/cmd/assign_color_profile.h"
 #include "app/cmd/replace_image.h"
 #include "app/cmd/set_palette.h"
+#include "app/context.h"
 #include "app/doc.h"
 #include "doc/cels_range.h"
 #include "doc/palette.h"
@@ -207,19 +208,19 @@ ConvertColorProfile::ConvertColorProfile(doc::Sprite* sprite, const gfx::ColorSp
   m_seq.add(new cmd::AssignColorProfile(sprite, newCS));
 }
 
-void ConvertColorProfile::onExecute()
+void ConvertColorProfile::onExecute(Context* ctx)
 {
-  m_seq.execute(context());
+  m_seq.execute(ctx);
 }
 
-void ConvertColorProfile::onUndo()
+void ConvertColorProfile::onUndo(Context* ctx)
 {
-  m_seq.undo();
+  m_seq.undo(ctx);
 }
 
-void ConvertColorProfile::onRedo()
+void ConvertColorProfile::onRedo(Context* ctx)
 {
-  m_seq.redo();
+  m_seq.redo(ctx);
 }
 
 }} // namespace app::cmd

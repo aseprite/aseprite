@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -29,13 +29,13 @@ RemapTileset::RemapTileset(Tileset* tileset, const Remap& remap)
 {
 }
 
-void RemapTileset::onExecute()
+void RemapTileset::onExecute(Context* ctx)
 {
   Tileset* tileset = this->tileset();
   applyRemap(tileset, m_remap);
 }
 
-void RemapTileset::onUndo()
+void RemapTileset::onUndo(Context* ctx)
 {
   Tileset* tileset = this->tileset();
   applyRemap(tileset, m_remap.invert());

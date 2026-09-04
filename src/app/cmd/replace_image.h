@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -21,9 +22,9 @@ public:
   ReplaceImage(Sprite* sprite, const ImageRef& oldImage, const ImageRef& newImage);
 
 protected:
-  void onExecute() override;
-  void onUndo() override;
-  void onRedo() override;
+  void onExecute(Context* ctx) override;
+  void onUndo(Context* ctx) override;
+  void onRedo(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this) + (m_copy ? m_copy->getMemSize() : 0); }
 
 private:
@@ -33,7 +34,7 @@ private:
   ObjectId m_newImageId;
 
   // Reference used only to keep the copy of the new image from the
-  // ReplaceImage() ctor until the ReplaceImage::onExecute() call.
+  // ReplaceImage() ctor until the ReplaceImage::onExecute(Context* ctx) call.
   // Then the reference is not used anymore.
   ImageRef m_newImage;
   ImageRef m_copy;

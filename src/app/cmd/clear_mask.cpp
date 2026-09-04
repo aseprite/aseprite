@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2026  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +12,7 @@
 #include "app/cmd/clear_mask.h"
 
 #include "app/cmd/clear_cel.h"
+#include "app/context.h"
 #include "app/doc.h"
 #include "doc/algorithm/fill_selection.h"
 #include "doc/cel.h"
@@ -68,21 +69,21 @@ ClearMask::ClearMask(Cel* cel) : WithCel(cel)
   m_copy.reset(crop_image(image, cropBounds, m_bgcolor));
 }
 
-void ClearMask::onExecute()
+void ClearMask::onExecute(Context* ctx)
 {
-  m_seq.execute(context());
+  m_seq.execute(ctx);
   clear();
 }
 
-void ClearMask::onUndo()
+void ClearMask::onUndo(Context* ctx)
 {
   restore();
-  m_seq.undo();
+  m_seq.undo(ctx);
 }
 
-void ClearMask::onRedo()
+void ClearMask::onRedo(Context* ctx)
 {
-  m_seq.redo();
+  m_seq.redo(ctx);
   clear();
 }
 

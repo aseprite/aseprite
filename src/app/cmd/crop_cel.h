@@ -22,9 +22,9 @@ public:
   CropCel(doc::Cel* cel, const gfx::Rect& newBounds);
 
 protected:
-  void onExecute() override;
-  void onUndo() override;
-  void onFireNotifications() override;
+  void onExecute(Context* ctx) override;
+  void onUndo(Context* ctx) override;
+  void onFireNotifications(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this); }
 
 private:

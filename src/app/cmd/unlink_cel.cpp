@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -28,7 +29,7 @@ UnlinkCel::UnlinkCel(Cel* cel)
   ASSERT(cel->links());
 }
 
-void UnlinkCel::onExecute()
+void UnlinkCel::onExecute(Context* ctx)
 {
   Cel* cel = this->cel();
   CelDataRef oldCelData = cel->sprite()->getCelDataRef(m_oldCelDataId);
@@ -56,7 +57,7 @@ void UnlinkCel::onExecute()
   cel->incrementVersion();
 }
 
-void UnlinkCel::onUndo()
+void UnlinkCel::onUndo(Context* ctx)
 {
   Cel* cel = this->cel();
   CelDataRef oldCelData = cel->sprite()->getCelDataRef(m_oldCelDataId);

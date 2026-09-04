@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -22,7 +23,7 @@ ClearImage::ClearImage(Image* image, color_t color) : WithImage(image), m_color(
 {
 }
 
-void ClearImage::onExecute()
+void ClearImage::onExecute(Context* ctx)
 {
   Image* image = this->image();
 
@@ -33,7 +34,7 @@ void ClearImage::onExecute()
   image->incrementVersion();
 }
 
-void ClearImage::onUndo()
+void ClearImage::onUndo(Context* ctx)
 {
   Image* image = this->image();
 

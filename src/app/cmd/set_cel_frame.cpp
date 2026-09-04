@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -27,21 +28,21 @@ SetCelFrame::SetCelFrame(Cel* cel, frame_t frame)
 {
 }
 
-void SetCelFrame::onExecute()
+void SetCelFrame::onExecute(Context* ctx)
 {
   Cel* cel = this->cel();
   cel->layer()->moveCel(cel, m_newFrame);
   cel->incrementVersion();
 }
 
-void SetCelFrame::onUndo()
+void SetCelFrame::onUndo(Context* ctx)
 {
   Cel* cel = this->cel();
   cel->layer()->moveCel(cel, m_oldFrame);
   cel->incrementVersion();
 }
 
-void SetCelFrame::onFireNotifications()
+void SetCelFrame::onFireNotifications(Context* ctx)
 {
   Cel* cel = this->cel();
   Doc* doc = static_cast<Doc*>(cel->sprite()->document());

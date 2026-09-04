@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -29,7 +30,7 @@ SetCelData::SetCelData(Cel* cel, const CelDataRef& newData)
 {
 }
 
-void SetCelData::onExecute()
+void SetCelData::onExecute(Context* ctx)
 {
   Cel* cel = this->cel();
   if (!cel->links())
@@ -40,7 +41,7 @@ void SetCelData::onExecute()
   m_newData.reset();
 }
 
-void SetCelData::onUndo()
+void SetCelData::onUndo(Context* ctx)
 {
   Cel* cel = this->cel();
 
@@ -62,7 +63,7 @@ void SetCelData::onUndo()
   cel->incrementVersion();
 }
 
-void SetCelData::onRedo()
+void SetCelData::onRedo(Context* ctx)
 {
   Cel* cel = this->cel();
   if (!cel->links())

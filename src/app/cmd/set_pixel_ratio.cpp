@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2016-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,21 +27,21 @@ SetPixelRatio::SetPixelRatio(Sprite* sprite, PixelRatio pixelRatio)
 {
 }
 
-void SetPixelRatio::onExecute()
+void SetPixelRatio::onExecute(Context* ctx)
 {
   Sprite* spr = sprite();
   spr->setPixelRatio(m_newRatio);
   spr->incrementVersion();
 }
 
-void SetPixelRatio::onUndo()
+void SetPixelRatio::onUndo(Context* ctx)
 {
   Sprite* spr = sprite();
   spr->setPixelRatio(m_oldRatio);
   spr->incrementVersion();
 }
 
-void SetPixelRatio::onFireNotifications()
+void SetPixelRatio::onFireNotifications(Context* ctx)
 {
   Sprite* sprite = this->sprite();
   Doc* doc = static_cast<Doc*>(sprite->document());

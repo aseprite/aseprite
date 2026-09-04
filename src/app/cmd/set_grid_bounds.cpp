@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -27,12 +27,12 @@ SetGridBounds::SetGridBounds(Sprite* sprite, const gfx::Rect& bounds)
 {
 }
 
-void SetGridBounds::onExecute()
+void SetGridBounds::onExecute(Context* ctx)
 {
   setGrid(m_newBounds);
 }
 
-void SetGridBounds::onUndo()
+void SetGridBounds::onUndo(Context* ctx)
 {
   setGrid(m_oldBounds);
 }
@@ -49,7 +49,7 @@ void SetGridBounds::setGrid(const gfx::Rect& grid)
   spr->incrementVersion();
 }
 
-void SetGridBounds::onFireNotifications()
+void SetGridBounds::onFireNotifications(Context* ctx)
 {
   Sprite* sprite = this->sprite();
   Doc* doc = static_cast<Doc*>(sprite->document());

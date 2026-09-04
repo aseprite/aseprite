@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -25,7 +26,7 @@ RemapColors::RemapColors(Sprite* sprite, const Remap& remap) : WithSprite(sprite
 {
 }
 
-void RemapColors::onExecute()
+void RemapColors::onExecute(Context* ctx)
 {
   Sprite* spr = sprite();
   if (spr->pixelFormat() == IMAGE_INDEXED) {
@@ -34,7 +35,7 @@ void RemapColors::onExecute()
   }
 }
 
-void RemapColors::onUndo()
+void RemapColors::onUndo(Context* ctx)
 {
   Sprite* spr = this->sprite();
   if (spr->pixelFormat() == IMAGE_INDEXED) {

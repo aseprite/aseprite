@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -24,19 +25,19 @@ SetLayerName::SetLayerName(Layer* layer, const std::string& name)
 {
 }
 
-void SetLayerName::onExecute()
+void SetLayerName::onExecute(Context* ctx)
 {
   layer()->setName(m_newName);
   layer()->incrementVersion();
 }
 
-void SetLayerName::onUndo()
+void SetLayerName::onUndo(Context* ctx)
 {
   layer()->setName(m_oldName);
   layer()->incrementVersion();
 }
 
-void SetLayerName::onFireNotifications()
+void SetLayerName::onFireNotifications(Context* ctx)
 {
   Layer* layer = this->layer();
   Doc* doc = static_cast<Doc*>(layer->sprite()->document());

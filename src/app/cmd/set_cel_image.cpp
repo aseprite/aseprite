@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2025-2026  Igara Studio S.A.
+// Copyright (C) 2025-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -23,7 +23,7 @@ SetCelImage::SetCelImage(Cel* cel, const ImageRef& newImage)
 {
 }
 
-void SetCelImage::onExecute()
+void SetCelImage::onExecute(Context* ctx)
 {
   Cel* cel = this->cel();
   ImageRef oldImage = cel->imageRef();
@@ -37,7 +37,7 @@ void SetCelImage::onExecute()
   m_newImage.reset();
 }
 
-void SetCelImage::onUndo()
+void SetCelImage::onUndo(Context* ctx)
 {
   Cel* cel = this->cel();
   ImageRef currentImage = cel->imageRef();
@@ -56,9 +56,9 @@ void SetCelImage::onUndo()
     m_suspendedImage.suspend(currentImage);
 }
 
-void SetCelImage::onRedo()
+void SetCelImage::onRedo(Context* ctx)
 {
-  onUndo();
+  onUndo(ctx);
 }
 
 }} // namespace app::cmd

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -24,7 +24,7 @@ AddSlice::AddSlice(Sprite* sprite, Slice* slice) : WithSprite(sprite), WithSlice
 {
 }
 
-void AddSlice::onExecute()
+void AddSlice::onExecute(Context* ctx)
 {
   Sprite* sprite = this->sprite();
   Slice* slice = this->slice();
@@ -32,7 +32,7 @@ void AddSlice::onExecute()
   addSlice(sprite, slice);
 }
 
-void AddSlice::onUndo()
+void AddSlice::onUndo(Context* ctx)
 {
   Sprite* sprite = this->sprite();
   Slice* slice = this->slice();
@@ -41,7 +41,7 @@ void AddSlice::onUndo()
   m_suspendedSlice.suspend(slice);
 }
 
-void AddSlice::onRedo()
+void AddSlice::onRedo(Context* ctx)
 {
   Sprite* sprite = this->sprite();
   Slice* slice = m_suspendedSlice.restore();

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,9 +20,9 @@ public:
   AssignColorProfile(doc::Sprite* sprite, const gfx::ColorSpaceRef& cs);
 
 protected:
-  void onExecute() override;
-  void onUndo() override;
-  void onFireNotifications() override;
+  void onExecute(Context* ctx) override;
+  void onUndo(Context* ctx) override;
+  void onFireNotifications(Context* ctx) override;
   size_t onMemSize() const override
   {
     return sizeof(*this) + 2 * sizeof(gfx::ColorSpace) + m_oldCS->iccSize() + m_newCS->iccSize();

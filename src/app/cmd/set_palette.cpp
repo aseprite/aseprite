@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -67,7 +67,7 @@ SetPalette::SetPalette(Sprite* sprite, frame_t frame, const Palette* newPalette)
   }
 }
 
-void SetPalette::onExecute()
+void SetPalette::onExecute(Context* ctx)
 {
   Sprite* sprite = this->sprite();
   Palette* palette = sprite->palette(m_frame);
@@ -82,7 +82,7 @@ void SetPalette::onExecute()
   palette->incrementVersion();
 }
 
-void SetPalette::onUndo()
+void SetPalette::onUndo(Context* ctx)
 {
   Sprite* sprite = this->sprite();
   Palette* palette = sprite->palette(m_frame);
@@ -97,7 +97,7 @@ void SetPalette::onUndo()
   palette->incrementVersion();
 }
 
-void SetPalette::onFireNotifications()
+void SetPalette::onFireNotifications(Context* ctx)
 {
   doc::Sprite* sprite = this->sprite();
   Doc* doc = static_cast<Doc*>(sprite->document());

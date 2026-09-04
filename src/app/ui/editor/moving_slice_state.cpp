@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -487,7 +487,8 @@ gfx::Rect MovingSliceState::selectedSlicesBounds() const
 
 void MovingSliceState::clearSlices()
 {
-  ContextWriter writer(UIContext::instance(), 1000);
+  Context* ctx = UIContext::instance();
+  ContextWriter writer(ctx, 1000);
   if (writer.cel()) {
     std::vector<SliceKey> slicesKeys;
     slicesKeys.reserve(m_items.size());
@@ -496,7 +497,7 @@ void MovingSliceState::clearSlices()
     }
 
     CmdTransaction* cmds = m_tx;
-    cmds->executeAndAdd(new cmd::ClearSlices(m_site, m_selectedLayers, m_frame, slicesKeys));
+    cmds->executeAndAdd(ctx, new cmd::ClearSlices(m_site, m_selectedLayers, m_frame, slicesKeys));
   }
 }
 

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -219,7 +219,8 @@ void FilterManagerImpl::apply()
     gfx::Rect output;
     if (algorithm::shrink_bounds2(m_src.get(), m_dst.get(), m_bounds, output)) {
       if (m_cel->layer()->isTilemap()) {
-        modify_tilemap_cel_region(*m_tx,
+        modify_tilemap_cel_region(m_writer->context(),
+                                  *m_tx,
                                   m_cel,
                                   nullptr,
                                   gfx::Region(output),
