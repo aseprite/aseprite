@@ -10,9 +10,9 @@
 #pragma once
 
 #include "app/cmd.h"
+#include "app/cmd/sequence.h"
 #include "app/cmd/with_cel.h"
 #include "app/cmd/with_image.h"
-#include "app/cmd_sequence.h"
 #include "doc/image_ref.h"
 #include "gfx/rect.h"
 
@@ -24,6 +24,8 @@ using namespace doc;
 class ClearMask : public Cmd,
                   public WithCel {
 public:
+  CMDTYPE2('c', 'l', 'S', 'e', ClearMask);
+
   ClearMask(Cel* cel);
 
 protected:
@@ -34,15 +36,16 @@ protected:
   {
     return sizeof(*this) + m_seq.memSize() + (m_copy ? m_copy->getMemSize() : 0);
   }
+  void onSerialize(CmdSerial& s) override;
 
 private:
   void clear();
   void restore();
 
   CmdSequence m_seq;
-  ImageRef m_copy;
   gfx::Point m_cropPos;
   color_t m_bgcolor;
+  ImageRef m_copy;
 };
 
 }} // namespace app::cmd

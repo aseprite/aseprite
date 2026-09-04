@@ -362,6 +362,7 @@ doc::tile_t get_value_from_lua(lua_State* L, int index)
 
 FOR_ENUM(app::CelsTarget)
 FOR_ENUM(app::colsel::ColorSelector::Type)
+FOR_ENUM(app::SaveUndoHistory)
 FOR_ENUM(app::SpriteSheetDataFormat)
 FOR_ENUM(app::SpriteSheetType)
 FOR_ENUM(app::TilesetMode)

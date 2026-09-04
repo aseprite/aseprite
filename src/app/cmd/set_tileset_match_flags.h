@@ -18,6 +18,8 @@ using namespace doc;
 class SetTilesetMatchFlags : public Cmd,
                              public WithTileset {
 public:
+  CMDTYPE('f', 'l', 'T', 's');
+
   SetTilesetMatchFlags(Tileset* tileset, const tile_flags matchFlags);
 
 protected:

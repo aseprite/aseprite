@@ -13,7 +13,7 @@
 
 #include "app/app.h"
 #include "app/cmd.h"
-#include "app/cmd_transaction.h"
+#include "app/cmd/transaction.h"
 #include "app/console.h"
 #include "app/context.h"
 #include "app/doc_undo_observer.h"
@@ -27,7 +27,7 @@
 #include <stdexcept>
 
 #define UNDO_TRACE(...)
-#define STATE_CMD(state) (static_cast<CmdTransaction*>(state->cmd()))
+#define STATE_CMD(state) (static_cast<cmd::CmdTransaction*>(state->cmd()))
 
 namespace app {
 
@@ -40,7 +40,7 @@ void DocUndo::setContext(Context* ctx)
   m_ctx = ctx;
 }
 
-void DocUndo::add(CmdTransaction* cmd)
+void DocUndo::add(cmd::CmdTransaction* cmd)
 {
   ASSERT(cmd);
 

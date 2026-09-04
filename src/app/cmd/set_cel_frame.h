@@ -19,6 +19,8 @@ using namespace doc;
 class SetCelFrame : public Cmd,
                     public WithCel {
 public:
+  CMDTYPE('s', 'f', 'C', 'l');
+
   SetCelFrame(Cel* cel, frame_t frame);
 
 protected:

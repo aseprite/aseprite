@@ -20,6 +20,8 @@ using namespace doc;
 class SetTagName : public Cmd,
                    public WithTag {
 public:
+  CMDTYPE('r', 'n', 'T', 'g');
+
   SetTagName(Tag* tag, const std::string& name);
 
 protected:

@@ -186,6 +186,7 @@
       <option id="goto_modified" type="bool" default="true" />
       <option id="allow_nonlinear_history" type="bool" default="false" />
       <option id="show_tooltip" type="bool" default="true" />
+      <option id="save_history" type="app::SaveUndoHistory" default="app::SaveUndoHistory::No" />
     </section>
     <section id="editor">
       <option id="zoom_with_wheel" type="bool" default="true" />

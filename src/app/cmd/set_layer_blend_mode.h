@@ -23,6 +23,8 @@ using namespace doc;
 class SetLayerBlendMode : public Cmd,
                           public WithLayer {
 public:
+  CMDTYPE('b', 'm', 'L', 'y');
+
   SetLayerBlendMode(LayerImage* layer, BlendMode blendMode);
 
 protected:

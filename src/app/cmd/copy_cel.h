@@ -9,8 +9,8 @@
 #define APP_CMD_COPY_CEL_H_INCLUDED
 #pragma once
 
+#include "app/cmd/sequence.h"
 #include "app/cmd/with_layer.h"
-#include "app/cmd_sequence.h"
 #include "doc/color.h"
 #include "doc/frame.h"
 
@@ -19,6 +19,8 @@ using namespace doc;
 
 class CopyCel : public CmdSequence {
 public:
+  CMDTYPE('c', 'p', 'C', 'l');
+
   CopyCel(Layer* srcLayer, frame_t srcFrame, Layer* dstLayer, frame_t dstFrame, bool continuous);
 
 protected:

@@ -24,6 +24,8 @@ namespace app { namespace cmd {
 class AddTile : public Cmd,
                 public WithTileset {
 public:
+  CMDTYPE('a', 'd', 'T', 'i');
+
   AddTile(doc::Tileset* tileset, const doc::ImageRef& image, const doc::UserData& userData = {});
   AddTile(doc::Tileset* tileset, const doc::tile_index ti);
 

@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2026-present Igara Studio S.A.
 // Copyright (c) 2017-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -25,7 +26,7 @@ using namespace base::serialization::little_endian;
 
 void write_slice(std::ostream& os, const Slice* slice)
 {
-  write32(os, slice->id());
+  write32(os, slice->io_id());
   write_string(os, slice->name());
   write_user_data(os, slice->userData());
 

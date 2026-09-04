@@ -9,8 +9,8 @@
 #define APP_CMD_SET_PIXEL_FORMAT_H_INCLUDED
 #pragma once
 
+#include "app/cmd/sequence.h"
 #include "app/cmd/with_sprite.h"
-#include "app/cmd_sequence.h"
 #include "doc/color.h"
 #include "doc/fit_criteria.h"
 #include "doc/frame.h"
@@ -32,6 +32,8 @@ namespace app { namespace cmd {
 class SetPixelFormat : public Cmd,
                        public WithSprite {
 public:
+  CMDTYPE('c', 'm', 'S', 'p');
+
   SetPixelFormat(doc::Sprite* sprite,
                  const doc::PixelFormat newFormat,
                  const render::Dithering& dithering,

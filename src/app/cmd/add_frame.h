@@ -26,12 +26,15 @@ using namespace doc;
 class AddFrame : public Cmd,
                  public WithSprite {
 public:
+  CMDTYPE2('a', 'd', 'F', 'r', AddFrame);
+
   AddFrame(Sprite* sprite, frame_t frame);
 
 protected:
   void onExecute(Context* ctx) override;
   void onUndo(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this) + (m_addCel ? m_addCel->memSize() : 0); }
+  void onSerialize(CmdSerial& s) override;
 
 private:
   void moveFrames(Layer* layer, frame_t fromThis, frame_t delta);

@@ -19,6 +19,8 @@ namespace app { namespace cmd {
 class CropCel : public Cmd,
                 public WithCel {
 public:
+  CMDTYPE2('c', 'r', 'o', 'p', CropCel);
+
   CropCel(doc::Cel* cel, const gfx::Rect& newBounds);
 
 protected:
@@ -26,6 +28,7 @@ protected:
   void onUndo(Context* ctx) override;
   void onFireNotifications(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this); }
+  void onSerialize(CmdSerial& s) override;
 
 private:
   void cropImage(const gfx::Point& origin, const gfx::Rect& bounds);

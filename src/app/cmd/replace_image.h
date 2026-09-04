@@ -19,6 +19,8 @@ using namespace doc;
 class ReplaceImage : public Cmd,
                      public WithSprite {
 public:
+  CMDTYPE('=', 'I', 'm', ' ');
+
   ReplaceImage(Sprite* sprite, const ImageRef& oldImage, const ImageRef& newImage);
 
 protected:

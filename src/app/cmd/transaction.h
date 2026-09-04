@@ -9,19 +9,21 @@
 #define APP_CMD_TRANSACTION_H_INCLUDED
 #pragma once
 
-#include "app/cmd_sequence.h"
+#include "app/cmd/sequence.h"
 #include "app/sprite_position.h"
 #include "view/range.h"
 
 #include <memory>
 #include <sstream>
 
-namespace app {
+namespace app { namespace cmd {
 
 // Cmds created on each Transaction.
 // The whole DocUndo contains a list of these CmdTransaction.
 class CmdTransaction : public CmdSequence {
 public:
+  CMDTYPE2('T', 'x', ' ', ' ', CmdTransaction);
+
   CmdTransaction(const std::string& label, bool changeSavedState);
 
   bool doesChangeSavedState() const { return m_changeSavedState; }
@@ -46,6 +48,7 @@ protected:
   void onRedo(Context* ctx) override;
   std::string onLabel() const override;
   size_t onMemSize() const override;
+  void onSerialize(CmdSerial& s) override;
 
 private:
   SpritePosition calcSpritePosition(Context* ctx) const;
@@ -64,6 +67,6 @@ private:
   bool m_changeSavedState;
 };
 
-} // namespace app
+}} // namespace app::cmd
 
 #endif

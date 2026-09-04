@@ -531,6 +531,14 @@
                    pref="undo.allow_nonlinear_history" />
             <check text="@.undo_show_tooltip" id="undo_show_tooltip"
                    pref="undo.show_tooltip" />
+            <hbox>
+              <label text="@.undo_save_history" for="save_undo_history" />
+              <combobox id="undo_save_history">
+                <listitem text="@.undo_save_history_no" value="0" />
+                <listitem text="@.undo_save_history_embed" value="1" />
+                <listitem text="@.undo_save_history_external" value="2" />
+              </combobox>
+            </hbox>
           </vbox>
         </vbox>
 

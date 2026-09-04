@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2026 Igara Studio S.A.
+// Copyright (c) 2019-present Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -39,7 +39,7 @@ using namespace base::serialization::little_endian;
 
 void write_layer(std::ostream& os, const Layer* layer)
 {
-  write32(os, layer->id());
+  write32(os, layer->io_id());
   write_string(os, layer->name());
   write32(os, static_cast<int>(layer->flags())); // Flags
   write16(os, static_cast<int>(layer->type()));  // Type
@@ -110,7 +110,7 @@ void write_layer(std::ostream& os, const Layer* layer)
   write_uuid(os, layer->uuid());
 }
 
-Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const SerialFormat serial)
+Layer* read_layer(std::istream& is, SubObjectsIO* subObjects, const SerialFormat serial)
 {
   ObjectId id = read32(is);
   std::string name = read_string(is);

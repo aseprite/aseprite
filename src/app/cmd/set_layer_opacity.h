@@ -22,6 +22,8 @@ using namespace doc;
 class SetLayerOpacity : public Cmd,
                         public WithLayer {
 public:
+  CMDTYPE('o', 'p', 'L', 'y');
+
   SetLayerOpacity(LayerImage* layer, int opacity);
 
 protected:

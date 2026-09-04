@@ -9,8 +9,8 @@
 #pragma once
 
 #include "app/cmd.h"
+#include "app/cmd/sequence.h"
 #include "app/cmd/with_sprite.h"
-#include "app/cmd_sequence.h"
 #include "gfx/color_space.h"
 
 namespace gfx {
@@ -27,6 +27,8 @@ namespace app { namespace cmd {
 class ConvertColorProfile : public Cmd,
                             public WithSprite {
 public:
+  CMDTYPE('t', 'o', 'C', 's');
+
   ConvertColorProfile(doc::Sprite* sprite, const gfx::ColorSpaceRef& newCS);
 
 protected:

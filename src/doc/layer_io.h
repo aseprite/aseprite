@@ -16,7 +16,7 @@
 
 namespace doc {
 class Layer;
-class SubObjectsFromSprite;
+class SubObjectsIO;
 
 // Thrown when a invalid layer type is read from the istream.
 class InvalidLayerType : public base::Exception {
@@ -26,7 +26,7 @@ public:
 
 void write_layer(std::ostream& os, const Layer* layer);
 Layer* read_layer(std::istream& is,
-                  SubObjectsFromSprite* subObjects,
+                  SubObjectsIO* subObjects,
                   SerialFormat serial = SerialFormat::LastVer);
 
 } // namespace doc

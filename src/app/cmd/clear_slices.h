@@ -9,8 +9,8 @@
 #pragma once
 
 #include "app/cmd.h"
+#include "app/cmd/sequence.h"
 #include "app/cmd/with_cel.h"
-#include "app/cmd_sequence.h"
 #include "app/tilemap_mode.h"
 #include "app/tileset_mode.h"
 #include "doc/cel.h"
@@ -32,6 +32,8 @@ using namespace doc;
 // layers list for the specified frame.
 class ClearSlices : public Cmd {
 public:
+  CMDTYPE('c', 'l', 'S', 'l');
+
   ClearSlices(const Site& site,
               const LayerList& layers,
               frame_t frame,

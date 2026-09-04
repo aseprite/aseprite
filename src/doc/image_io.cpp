@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2025  Igara Studio S.A.
+// Copyright (c) 2019-present  Igara Studio S.A.
 // Copyright (c) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -30,7 +30,7 @@ using namespace base::serialization::little_endian;
 
 bool write_image(std::ostream& os, const Image* image, CancelIO* cancel)
 {
-  write32(os, image->id());
+  write32(os, image->io_id());
   write8(os, image->pixelFormat()); // Pixel format
   write16(os, image->width());      // Width
   write16(os, image->height());     // Height

@@ -19,6 +19,8 @@ using namespace doc;
 class SetMaskPosition : public Cmd,
                         public WithDocument {
 public:
+  CMDTYPE('p', 'o', 'S', 'e');
+
   SetMaskPosition(Doc* doc, const gfx::Point& pos);
 
 protected:

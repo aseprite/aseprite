@@ -9,8 +9,8 @@
 #define APP_CMD_MOVE_CEL_H_INCLUDED
 #pragma once
 
+#include "app/cmd/sequence.h"
 #include "app/cmd/with_layer.h"
-#include "app/cmd_sequence.h"
 #include "doc/color.h"
 #include "doc/frame.h"
 

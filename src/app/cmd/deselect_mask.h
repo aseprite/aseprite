@@ -24,6 +24,8 @@ using namespace doc;
 class DeselectMask : public Cmd,
                      public WithDocument {
 public:
+  CMDTYPE('d', 'e', 'S', 'e');
+
   DeselectMask(Doc* doc);
 
 protected:

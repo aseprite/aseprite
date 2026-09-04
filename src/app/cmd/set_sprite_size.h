@@ -18,6 +18,8 @@ using namespace doc;
 class SetSpriteSize : public Cmd,
                       public WithSprite {
 public:
+  CMDTYPE('s', 'z', 'S', 'p');
+
   SetSpriteSize(Sprite* sprite, int newWidth, int newHeight);
 
 protected:

@@ -19,6 +19,8 @@ using namespace doc;
 class SetLayerFlags : public Cmd,
                       public WithLayer {
 public:
+  CMDTYPE('f', 'l', 'L', 'y');
+
   SetLayerFlags(Layer* layer, LayerFlags flags);
 
 protected:

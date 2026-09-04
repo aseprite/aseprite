@@ -22,6 +22,8 @@ using namespace doc;
 class SetLayerTileset : public Cmd,
                         public WithLayer {
 public:
+  CMDTYPE('t', 's', 'L', 'y');
+
   SetLayerTileset(doc::LayerTilemap* layer, doc::tileset_index tsi);
 
 protected:

@@ -24,6 +24,8 @@ using namespace doc;
 class ReselectMask : public Cmd,
                      public WithDocument {
 public:
+  CMDTYPE('r', 'e', 'S', 'e');
+
   ReselectMask(Doc* doc);
 
 protected:

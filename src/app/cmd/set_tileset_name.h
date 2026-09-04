@@ -19,6 +19,8 @@ using namespace doc;
 class SetTilesetName : public Cmd,
                        public WithTileset {
 public:
+  CMDTYPE('r', 'n', 'T', 's');
+
   SetTilesetName(Tileset* tileset, const std::string& name);
 
 protected:

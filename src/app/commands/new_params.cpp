@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -135,6 +135,18 @@ void Param<app::SpriteSheetDataFormat>::fromString(const std::string& value)
     setValue(app::SpriteSheetDataFormat::JsonArray);
   else
     setValue(app::SpriteSheetDataFormat::JsonHash);
+}
+
+template<>
+void Param<app::SaveUndoHistory>::fromString(const std::string& value)
+{
+  // JsonArray, json-array, json_array, etc.
+  if (base::utf8_icmp(value, "embed") == 0)
+    setValue(app::SaveUndoHistory::Embed);
+  else if (base::utf8_icmp(value, "external") == 0)
+    setValue(app::SaveUndoHistory::External);
+  else
+    setValue(app::SaveUndoHistory::No);
 }
 
 template<>
@@ -368,6 +380,15 @@ void Param<app::SpriteSheetDataFormat>::fromLua(lua_State* L, int index)
     fromString(lua_tostring(L, index));
   else
     setValue((app::SpriteSheetDataFormat)lua_tointeger(L, index));
+}
+
+template<>
+void Param<app::SaveUndoHistory>::fromLua(lua_State* L, int index)
+{
+  if (lua_type(L, index) == LUA_TSTRING)
+    fromString(lua_tostring(L, index));
+  else
+    setValue((app::SaveUndoHistory)lua_tointeger(L, index));
 }
 
 template<>

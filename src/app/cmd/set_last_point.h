@@ -19,12 +19,20 @@ using namespace doc;
 class SetLastPoint : public Cmd,
                      public WithDocument {
 public:
+  CMDTYPE('L', 'a', 'P', 't');
+
   SetLastPoint(Doc* doc, const gfx::Point& pos);
 
 protected:
   void onExecute(Context* ctx) override;
   void onUndo(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this); }
+
+  bool onIsSerializable() const override
+  {
+    // Don't serialize (this Cmd is for UI purposes only)
+    return false;
+  }
 
 private:
   void setLastPoint(const gfx::Point& pos);

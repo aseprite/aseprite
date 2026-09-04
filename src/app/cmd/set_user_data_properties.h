@@ -20,6 +20,8 @@ namespace app { namespace cmd {
 
 class SetUserDataProperties : public Cmd {
 public:
+  CMDTYPE('p', 's', 'U', 'd');
+
   SetUserDataProperties(doc::WithUserData* obj,
                         const std::string& group,
                         doc::UserData::Properties&& newProperties);

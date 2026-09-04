@@ -19,6 +19,8 @@ using namespace doc;
 class SetSpriteTileManagementPlugin : public Cmd,
                                       public WithSprite {
 public:
+  CMDTYPE('p', 'l', 'S', 'p');
+
   SetSpriteTileManagementPlugin(Sprite* sprite, const std::string& value);
 
 protected:

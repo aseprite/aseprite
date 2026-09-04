@@ -78,4 +78,13 @@ void AddFrame::onUndo(Context* ctx)
   doc->notify_observers<DocEvent&>(&DocObserver::onRemoveFrame, ev);
 }
 
+void AddFrame::onSerialize(CmdSerial& s)
+{
+  Cmd::onSerialize(s);
+  serializeSpriteId(s);
+  s(m_newFrame);
+  if (m_addCel) // TODO how to decode this?
+    m_addCel->serialize(s);
+}
+
 }} // namespace app::cmd
