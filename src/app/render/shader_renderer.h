@@ -70,11 +70,11 @@ public:
                     const gfx::Rect& dest,
                     const gfx::Rect& expose,
                     bool exposeWithProj) override;
-
-  void renderSprite(os::Surface* dstSurface,
-                    const doc::Sprite* sprite,
-                    const doc::frame_t frame,
-                    const gfx::ClipF& area) override;
+  void prepareSpritePalette(const doc::Sprite* sprite, doc::frame_t frame) override;
+  void renderSpriteArea(os::Surface* dstSurface,
+                        const doc::Sprite* sprite,
+                        const doc::frame_t frame,
+                        const gfx::ClipF& area) override;
   void renderCheckeredBackground(os::Surface* dstSurface,
                                  const doc::Sprite* sprite,
                                  const gfx::Clip& area) override;

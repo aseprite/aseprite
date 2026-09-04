@@ -113,10 +113,10 @@ void SimpleRenderer::disableOnionskin()
   m_render.disableOnionskin();
 }
 
-void SimpleRenderer::renderSprite(os::Surface* dstSurface,
-                                  const doc::Sprite* sprite,
-                                  const doc::frame_t frame,
-                                  const gfx::ClipF& area)
+void SimpleRenderer::renderSpriteArea(os::Surface* dstSurface,
+                                      const doc::Sprite* sprite,
+                                      const doc::frame_t frame,
+                                      const gfx::ClipF& area)
 {
   doc::ImageBufferPtr buffer;
 

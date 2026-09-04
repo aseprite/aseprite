@@ -220,10 +220,7 @@ void ShaderRenderer::renderCanvas(Editor* editor,
   CommonRenderer::renderCanvas(editor, g, sprite, frame, dest, expose, exposeWithProj);
 }
 
-void ShaderRenderer::renderSprite(os::Surface* dstSurface,
-                                  const doc::Sprite* sprite,
-                                  const doc::frame_t frame,
-                                  const gfx::ClipF& area)
+void ShaderRenderer::prepareSpritePalette(const doc::Sprite* sprite, const doc::frame_t frame)
 {
   m_sprite = sprite;
 
@@ -243,6 +240,14 @@ void ShaderRenderer::renderSprite(os::Surface* dstSurface,
   else {
     m_bgLayer = nullptr;
   }
+}
+
+void ShaderRenderer::renderSpriteArea(os::Surface* dstSurface,
+                                      const doc::Sprite* sprite,
+                                      const doc::frame_t frame,
+                                      const gfx::ClipF& area)
+{
+  ASSERT(m_sprite == sprite);
 
   SkCanvas* canvas = &static_cast<os::SkiaSurface*>(dstSurface)->canvas();
   canvas->save();

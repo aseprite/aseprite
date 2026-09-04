@@ -218,6 +218,7 @@ void EditorRender::renderCanvas(Editor* editor,
                                 const gfx::Rect& expose,
                                 const bool exposeWithProj)
 {
+  m_renderer->prepareSpritePalette(sprite, frame);
   m_renderer->renderCanvas(editor, g, sprite, frame, dest, expose, exposeWithProj);
 }
 
@@ -226,7 +227,8 @@ void EditorRender::renderSprite(os::Surface* dstSurface,
                                 doc::frame_t frame,
                                 const gfx::ClipF& area)
 {
-  m_renderer->renderSprite(dstSurface, sprite, frame, area);
+  m_renderer->prepareSpritePalette(sprite, frame);
+  m_renderer->renderSpriteArea(dstSurface, sprite, frame, area);
 }
 
 void EditorRender::renderCheckeredBackground(os::Surface* dstSurface,

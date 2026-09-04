@@ -51,10 +51,10 @@ public:
   void setOnionskin(const render::OnionskinOptions& options) override;
   void disableOnionskin() override;
 
-  void renderSprite(os::Surface* dstSurface,
-                    const doc::Sprite* sprite,
-                    const doc::frame_t frame,
-                    const gfx::ClipF& area) override;
+  void renderSpriteArea(os::Surface* dstSurface,
+                        const doc::Sprite* sprite,
+                        const doc::frame_t frame,
+                        const gfx::ClipF& area) override;
   void renderCheckeredBackground(os::Surface* dstSurface,
                                  const doc::Sprite* sprite,
                                  const gfx::Clip& area) override;

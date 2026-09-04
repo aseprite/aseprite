@@ -30,6 +30,9 @@ void CommonRenderer::renderCanvas(Editor* editor,
   const auto& renderProperties = properties();
   const render::Projection proj = projection();
 
+  // Prepare auxiliary structures for renderSpriteArea
+  prepareSpritePalette(sprite, frame);
+
   // Create a temporary surface to draw the sprite on it
   {
     gfx::Size needed = (exposeWithProj ? dest.size() : expose.size());
@@ -43,7 +46,8 @@ void CommonRenderer::renderCanvas(Editor* editor,
 
   if (!exposeWithProj)
     setProjection(render::Projection());
-  renderSprite(m_rendered.get(), sprite, frame, gfx::Clip(0, 0, expose));
+
+  renderSpriteArea(m_rendered.get(), sprite, frame, gfx::Clip(0, 0, expose));
 
   if (m_rendered && m_rendered->nativeHandle()) {
     os::Paint p;

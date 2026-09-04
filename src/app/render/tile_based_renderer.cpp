@@ -260,12 +260,16 @@ void TileBasedRenderer::renderCanvas(Editor* editor,
     m_tilesRenderer->setProjection(proj);
     m_tilesRenderer->setSampling(sampling);
 
+    // Do one time from main thread: prepare the palette for shaders
+    // (indexed -> RGB conversion).
+    m_tilesRenderer->prepareSpritePalette(sprite, frame);
+
     auto renderSpriteOnTile = [this, sprite, frame](RenderTile& renderTile) {
       renderTile.surface->clear();
-      m_tilesRenderer->renderSprite(renderTile.surface.get(),
-                                    sprite,
-                                    frame,
-                                    gfx::Clip(0, 0, renderTile.src));
+      m_tilesRenderer->renderSpriteArea(renderTile.surface.get(),
+                                        sprite,
+                                        frame,
+                                        gfx::Clip(0, 0, renderTile.src));
       renderTile.dirty = false;
     };
 
@@ -315,12 +319,12 @@ void TileBasedRenderer::renderCanvas(Editor* editor,
   }
 }
 
-void TileBasedRenderer::renderSprite(os::Surface* dstSurface,
-                                     const doc::Sprite* sprite,
-                                     const doc::frame_t frame,
-                                     const gfx::ClipF& area)
+void TileBasedRenderer::renderSpriteArea(os::Surface* dstSurface,
+                                         const doc::Sprite* sprite,
+                                         const doc::frame_t frame,
+                                         const gfx::ClipF& area)
 {
-  m_tilesRenderer->renderSprite(dstSurface, sprite, frame, area);
+  m_tilesRenderer->renderSpriteArea(dstSurface, sprite, frame, area);
 }
 
 void TileBasedRenderer::renderCheckeredBackground(os::Surface* dstSurface,

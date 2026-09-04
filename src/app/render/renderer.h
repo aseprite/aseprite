@@ -37,9 +37,9 @@ public:
   struct Properties {
     // True if the background should be rendered first with a
     // renderCheckeredBackground() call (in other case
-    // renderSprite() will render the background too). This allows
-    // to draw a background directly on the screen and then the
-    // sprite in a backbuffer.
+    // renderSpriteArea() will render the background too). This allows
+    // to draw a background directly on the screen and then the sprite
+    // in a backbuffer.
     bool renderBgOnScreen = false;
 
     // True if the backbuffer should has alpha channel, i.e. to
@@ -47,7 +47,7 @@ public:
     // the sprite painted in the backbuffer.
     bool requiresRgbaBackbuffer = false;
 
-    // True if renderSprite() composite an unpremultiplied RGBA
+    // True if renderSpriteArea() composite an unpremultiplied RGBA
     // surface when we draw on a transparent background.
     bool outputsUnpremultiplied = false;
 
@@ -103,6 +103,8 @@ public:
   // ----------------------------------------------------------------------
   // Compositing
 
+  virtual void prepareSpritePalette(const doc::Sprite* sprite, doc::frame_t frame) {}
+
   virtual void renderCanvas(Editor* editor, // TODO remove Editor dependency
                             ui::Graphics* g,
                             const doc::Sprite* sprite,
@@ -111,10 +113,10 @@ public:
                             const gfx::Rect& expose,
                             bool exposeWithProj) = 0;
 
-  virtual void renderSprite(os::Surface* dstSurface,
-                            const doc::Sprite* sprite,
-                            const doc::frame_t frame,
-                            const gfx::ClipF& area) = 0;
+  virtual void renderSpriteArea(os::Surface* dstSurface,
+                                const doc::Sprite* sprite,
+                                const doc::frame_t frame,
+                                const gfx::ClipF& area) = 0;
   virtual void renderCheckeredBackground(os::Surface* dstSurface,
                                          const doc::Sprite* sprite,
                                          const gfx::Clip& area) = 0;
