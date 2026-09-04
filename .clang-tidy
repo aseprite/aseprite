@@ -59,6 +59,7 @@ Checks: >
   -misc-const-correctness,
   -misc-include-cleaner,
   -misc-use-anonymous-namespace,
+  -portability-avoid-pragma-once,
   -readability-braces-around-statements,
   -readability-convert-member-functions-to-static,
   -readability-function-cognitive-complexity,
