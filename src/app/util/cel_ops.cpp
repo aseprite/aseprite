@@ -269,7 +269,8 @@ void create_region_with_differences(const Image* a,
   }
 }
 
-static void remove_unused_tiles_from_tileset(CmdSequence* cmds,
+static void remove_unused_tiles_from_tileset(Context* ctx,
+                                             CmdSequence* cmds,
                                              doc::Tileset* tileset,
                                              std::vector<size_t>& tilesHistogram,
                                              const std::vector<bool>& modifiedTileIndexes);
@@ -549,7 +550,7 @@ void draw_image_into_new_tilemap_cel(CmdSequence* cmds,
       auto addTile = new cmd::AddTile(tileset, tileImage);
 
       if (cmds)
-        cmds->executeAndAdd(addTile);
+        cmds->executeAndAdd(doc->context(), addTile);
       else {
         // TODO a little hacky
         addTile->execute(doc->context());
@@ -580,7 +581,8 @@ void draw_image_into_new_tilemap_cel(CmdSequence* cmds,
   dstCel->setPosition(grid.tileToCanvas(tilemapBounds.origin()));
 }
 
-void modify_tilemap_cel_region(CmdSequence* cmds,
+void modify_tilemap_cel_region(Context* ctx,
+                               CmdSequence* cmds,
                                doc::Cel* cel,
                                doc::Tileset* tileset,
                                const gfx::Region& region,
@@ -719,6 +721,7 @@ void modify_tilemap_cel_region(CmdSequence* cmds,
         // Common case: Re-utilize the same tile in Auto mode.
         tileIndex = ti;
         cmds->executeAndAdd(
+          ctx,
           new cmd::CopyTileRegion(existentTileImage.get(),
                                   tileImage.get(),
                                   gfx::Region(tileImage->bounds()), // TODO calculate better region
@@ -729,7 +732,7 @@ void modify_tilemap_cel_region(CmdSequence* cmds,
       }
       else {
         auto addTile = new cmd::AddTile(tileset, tileImage);
-        cmds->executeAndAdd(addTile);
+        cmds->executeAndAdd(ctx, addTile);
 
         tileIndex = addTile->tileIndex();
       }
@@ -764,18 +767,19 @@ void modify_tilemap_cel_region(CmdSequence* cmds,
     if (newTilemap->size() != cel->image()->size()) {
       gfx::Point newPos = grid.tileToCanvas(newTilemapBounds.origin());
       if (cel->position() != newPos) {
-        cmds->executeAndAdd(new cmd::SetCelPosition(cel, newPos));
+        cmds->executeAndAdd(ctx, new cmd::SetCelPosition(cel, newPos));
       }
-      cmds->executeAndAdd(new cmd::ReplaceImage(cel->sprite(), cel->imageRef(), newTilemap));
+      cmds->executeAndAdd(ctx, new cmd::ReplaceImage(cel->sprite(), cel->imageRef(), newTilemap));
     }
     else if (!tilePtsRgn.isEmpty()) {
       cmds->executeAndAdd(
+        ctx,
         new cmd::CopyRegion(cel->image(), newTilemap.get(), tilePtsRgn, gfx::Point(0, 0)));
     }
 
     // Remove unused tiles
     if (tilesetMode == TilesetMode::Auto) {
-      remove_unused_tiles_from_tileset(cmds, tileset, tilesHistogram, modifiedTileIndexes);
+      remove_unused_tiles_from_tileset(ctx, cmds, tileset, tilesHistogram, modifiedTileIndexes);
     }
 
     doc->notifyTilesetChanged(tileset);
@@ -887,7 +891,8 @@ void modify_tilemap_cel_region(CmdSequence* cmds,
       for (auto& mod : mods) {
         // TODO avoid creating several CopyTileRegion for the same tile,
         //      merge all mods for the same tile in some way
-        cmds->executeAndAdd(new cmd::CopyTileRegion(mod.tileDstImage.get(),
+        cmds->executeAndAdd(ctx,
+                            new cmd::CopyTileRegion(mod.tileDstImage.get(),
                                                     mod.tileImage.get(),
                                                     mod.tileRgn,
                                                     gfx::Point(0, 0),
@@ -905,7 +910,8 @@ void modify_tilemap_cel_region(CmdSequence* cmds,
 #endif
 }
 
-void clear_mask_from_cel(CmdSequence* cmds,
+void clear_mask_from_cel(Context* ctx,
+                         CmdSequence* cmds,
                          doc::Cel* cel,
                          const TilemapMode tilemapMode,
                          const TilesetMode tilesetMode)
@@ -920,7 +926,7 @@ void clear_mask_from_cel(CmdSequence* cmds,
     // Simple case (there is no visible selection, so we remove the
     // whole cel)
     if (!doc->isMaskVisible()) {
-      cmds->executeAndAdd(new cmd::ClearCel(cel));
+      cmds->executeAndAdd(ctx, new cmd::ClearCel(cel));
       return;
     }
 
@@ -928,6 +934,7 @@ void clear_mask_from_cel(CmdSequence* cmds,
     doc::Mask* mask = doc->mask();
 
     modify_tilemap_cel_region(
+      ctx,
       cmds,
       cel,
       nullptr,
@@ -941,11 +948,12 @@ void clear_mask_from_cel(CmdSequence* cmds,
       });
   }
   else {
-    cmds->executeAndAdd(new cmd::ClearMask(cel));
+    cmds->executeAndAdd(ctx, new cmd::ClearMask(cel));
   }
 }
 
-static void remove_unused_tiles_from_tileset(CmdSequence* cmds,
+static void remove_unused_tiles_from_tileset(Context* ctx,
+                                             CmdSequence* cmds,
                                              doc::Tileset* tileset,
                                              std::vector<size_t>& tilesHistogram,
                                              const std::vector<bool>& modifiedTileIndexes)
@@ -995,7 +1003,7 @@ static void remove_unused_tiles_from_tileset(CmdSequence* cmds,
               ti,
               (ti < tilesHistogram.size() ? tilesHistogram[ti] : 0));
     if (ti < tilesHistogram.size() && tilesHistogram[ti] == 0 && modifiedTileIndexes[ti]) {
-      cmds->executeAndAdd(new cmd::RemoveTile(tileset, tj));
+      cmds->executeAndAdd(ctx, new cmd::RemoveTile(tileset, tj));
       // Map to nothing, so the map can be invertible
       remap.notile(ti);
     }
@@ -1010,11 +1018,12 @@ static void remove_unused_tiles_from_tileset(CmdSequence* cmds,
       OPS_TRACE(" - remap tile[%d] -> %d\n", ti, remap[ti]);
     }
 #endif
-    cmds->executeAndAdd(new cmd::RemapTilemaps(tileset, remap));
+    cmds->executeAndAdd(ctx, new cmd::RemapTilemaps(tileset, remap));
   }
 }
 
-void move_tiles_in_tileset(CmdSequence* cmds,
+void move_tiles_in_tileset(Context* ctx,
+                           CmdSequence* cmds,
                            doc::Tileset* tileset,
                            doc::PalettePicks& picks,
                            int& currentEntry,
@@ -1035,11 +1044,11 @@ void move_tiles_in_tileset(CmdSequence* cmds,
   int n = beforeIndex - tileset->size();
   if (n > 0) {
     while (n-- > 0)
-      cmds->executeAndAdd(new cmd::AddTile(tileset, tileset->makeEmptyTile()));
+      cmds->executeAndAdd(ctx, new cmd::AddTile(tileset, tileset->makeEmptyTile()));
   }
 
   Remap remap = create_remap_to_move_picks(picks, beforeIndex);
-  cmds->executeAndAdd(new cmd::RemapTileset(tileset, remap));
+  cmds->executeAndAdd(ctx, new cmd::RemapTileset(tileset, remap));
 
   // New selection
   auto oldPicks = picks;
@@ -1048,7 +1057,8 @@ void move_tiles_in_tileset(CmdSequence* cmds,
   currentEntry = remap[currentEntry];
 }
 
-void copy_tiles_in_tileset(CmdSequence* cmds,
+void copy_tiles_in_tileset(Context* ctx,
+                           CmdSequence* cmds,
                            doc::Tileset* tileset,
                            doc::PalettePicks& picks,
                            int& currentEntry,
@@ -1095,10 +1105,10 @@ void copy_tiles_in_tileset(CmdSequence* cmds,
       // Fill the gap between the end of the tileset and the
       // "beforeIndex" with empty tiles
       while (tileset->size() < i)
-        cmds->executeAndAdd(new cmd::AddTile(tileset, tileset->makeEmptyTile()));
+        cmds->executeAndAdd(ctx, new cmd::AddTile(tileset, tileset->makeEmptyTile()));
       tileset->insert(i, newTiles[j], newDatas[j]);
       j++;
-      cmds->executeAndAdd(new cmd::AddTile(tileset, i));
+      cmds->executeAndAdd(ctx, new cmd::AddTile(tileset, i));
     }
   }
 }

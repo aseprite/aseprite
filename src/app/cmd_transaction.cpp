@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -43,9 +43,9 @@ void CmdTransaction::setNewDocRange(const view::RealRange& range)
     range.write(m_ranges->m_after);
 }
 
-void CmdTransaction::updateSpritePositionAfter()
+void CmdTransaction::updateSpritePositionAfter(Context* ctx)
 {
-  m_spritePositionAfter = calcSpritePosition();
+  m_spritePositionAfter = calcSpritePosition(ctx);
 
   // We cannot capture m_ranges->m_after from the Timeline here
   // because the document range in the Timeline is updated after the
@@ -75,27 +75,27 @@ std::istream* CmdTransaction::documentRangeAfterExecute() const
     return nullptr;
 }
 
-void CmdTransaction::onExecute()
+void CmdTransaction::onExecute(Context* ctx)
 {
   // Save the current site and doc range
-  m_spritePositionBefore = calcSpritePosition();
-  if (isDocRangeEnabled()) {
+  m_spritePositionBefore = calcSpritePosition(ctx);
+  if (isDocRangeEnabled(ctx)) {
     m_ranges.reset(new Ranges);
-    calcDocRange().write(m_ranges->m_before);
+    calcDocRange(ctx).write(m_ranges->m_before);
   }
 
   // Execute the sequence of "cmds"
-  CmdSequence::onExecute();
+  CmdSequence::onExecute(ctx);
 }
 
-void CmdTransaction::onUndo()
+void CmdTransaction::onUndo(Context* ctx)
 {
-  CmdSequence::onUndo();
+  CmdSequence::onUndo(ctx);
 }
 
-void CmdTransaction::onRedo()
+void CmdTransaction::onRedo(Context* ctx)
 {
-  CmdSequence::onRedo();
+  CmdSequence::onRedo(ctx);
 }
 
 std::string CmdTransaction::onLabel() const
@@ -112,26 +112,26 @@ size_t CmdTransaction::onMemSize() const
   return size;
 }
 
-SpritePosition CmdTransaction::calcSpritePosition() const
+SpritePosition CmdTransaction::calcSpritePosition(Context* ctx) const
 {
   // This check was added to allow executing transactions on documents that are
   // not part of any context. For instance, when dragging and dropping a
   // document on the timeline, the dragged document doesn't have any context (
   // it is not associated with any editor).
-  if (!context())
+  if (!ctx)
     return SpritePosition();
-  Site site = context()->activeSite();
+  Site site = ctx->activeSite();
   return SpritePosition(site.layer(), site.frame());
 }
 
-bool CmdTransaction::isDocRangeEnabled() const
+bool CmdTransaction::isDocRangeEnabled(Context* ctx) const
 {
-  return (context() ? context()->range().enabled() : false);
+  return (ctx ? ctx->range().enabled() : false);
 }
 
-view::RealRange CmdTransaction::calcDocRange() const
+view::RealRange CmdTransaction::calcDocRange(Context* ctx) const
 {
-  return (context() ? context()->range() : view::RealRange());
+  return (ctx ? ctx->range() : view::RealRange());
 }
 
 } // namespace app

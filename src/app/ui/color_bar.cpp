@@ -1198,9 +1198,9 @@ void ColorBar::onTilesViewDragAndDrop(doc::Tileset* tileset,
     ContextWriter writer(ctx, 500);
     Tx tx(writer, Strings::color_bar_drag_and_drop_tiles(), ModifyDocument);
     if (isCopy)
-      copy_tiles_in_tileset(tx, tileset, picks, currentEntry, beforeIndex);
+      copy_tiles_in_tileset(ctx, tx, tileset, picks, currentEntry, beforeIndex);
     else
-      move_tiles_in_tileset(tx, tileset, picks, currentEntry, beforeIndex);
+      move_tiles_in_tileset(ctx, tx, tileset, picks, currentEntry, beforeIndex);
     tx.commit();
 
     m_scrollableTilesView.updateView();

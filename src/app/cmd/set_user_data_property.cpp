@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023-2025  Igara Studio S.A.
+// Copyright (C) 2023-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -25,7 +25,7 @@ SetUserDataProperty::SetUserDataProperty(doc::WithUserData* obj,
 {
 }
 
-void SetUserDataProperty::onExecute()
+void SetUserDataProperty::onExecute(Context* ctx)
 {
   auto obj = doc::get<doc::WithUserData>(m_objId);
   auto& properties = obj->userData().properties(m_group);
@@ -37,9 +37,9 @@ void SetUserDataProperty::onExecute()
   obj->incrementVersion();
 }
 
-void SetUserDataProperty::onUndo()
+void SetUserDataProperty::onUndo(Context* ctx)
 {
-  onExecute();
+  onExecute(ctx);
 }
 
 }} // namespace app::cmd

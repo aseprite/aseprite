@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -25,19 +26,19 @@ SetCelOpacity::SetCelOpacity(Cel* cel, int opacity)
 {
 }
 
-void SetCelOpacity::onExecute()
+void SetCelOpacity::onExecute(Context* ctx)
 {
   cel()->setOpacity(m_newOpacity);
   cel()->data()->incrementVersion();
 }
 
-void SetCelOpacity::onUndo()
+void SetCelOpacity::onUndo(Context* ctx)
 {
   cel()->setOpacity(m_oldOpacity);
   cel()->data()->incrementVersion();
 }
 
-void SetCelOpacity::onFireNotifications()
+void SetCelOpacity::onFireNotifications(Context* ctx)
 {
   Cel* cel = this->cel();
   Doc* doc = static_cast<Doc*>(cel->document());

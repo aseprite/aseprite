@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -32,14 +32,14 @@ AddTileset::AddTileset(doc::Sprite* sprite, const doc::tileset_index tsi)
 {
 }
 
-void AddTileset::onExecute()
+void AddTileset::onExecute(Context* ctx)
 {
   Tileset* tileset = this->tileset();
 
   addTileset(tileset);
 }
 
-void AddTileset::onUndo()
+void AddTileset::onUndo(Context* ctx)
 {
   doc::Tileset* tileset = this->tileset();
   m_suspendedTileset.suspend(tileset);
@@ -51,7 +51,7 @@ void AddTileset::onUndo()
   sprite->tilesets()->incrementVersion();
 }
 
-void AddTileset::onRedo()
+void AddTileset::onRedo(Context* ctx)
 {
   doc::Tileset* tileset = m_suspendedTileset.restore();
 

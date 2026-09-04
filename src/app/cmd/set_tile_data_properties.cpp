@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023-2025  Igara Studio S.A.
+// Copyright (C) 2023-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -25,7 +25,7 @@ SetTileDataProperties::SetTileDataProperties(doc::Tileset* ts,
 {
 }
 
-void SetTileDataProperties::onExecute()
+void SetTileDataProperties::onExecute(Context* ctx)
 {
   auto ts = tileset();
   auto& properties = ts->getTileData(m_ti).properties(m_group);
@@ -37,9 +37,9 @@ void SetTileDataProperties::onExecute()
   ts->incrementVersion();
 }
 
-void SetTileDataProperties::onUndo()
+void SetTileDataProperties::onUndo(Context* ctx)
 {
-  onExecute();
+  onExecute(ctx);
 }
 
 }} // namespace app::cmd

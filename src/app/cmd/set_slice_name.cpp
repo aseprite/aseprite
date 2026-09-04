@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,21 +26,21 @@ SetSliceName::SetSliceName(Slice* slice, const std::string& name)
 {
 }
 
-void SetSliceName::onExecute()
+void SetSliceName::onExecute(Context* ctx)
 {
   Slice* slice = this->slice();
   slice->setName(m_newName);
   slice->incrementVersion();
 }
 
-void SetSliceName::onUndo()
+void SetSliceName::onUndo(Context* ctx)
 {
   Slice* slice = this->slice();
   slice->setName(m_oldName);
   slice->incrementVersion();
 }
 
-void SetSliceName::onFireNotifications()
+void SetSliceName::onFireNotifications(Context* ctx)
 {
   Slice* slice = this->slice();
   Sprite* sprite = slice->owner()->sprite();

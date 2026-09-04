@@ -26,12 +26,12 @@ SetCelBoundsF::SetCelBoundsF(Cel* cel, const gfx::RectF& bounds)
 {
 }
 
-void SetCelBoundsF::onExecute()
+void SetCelBoundsF::onExecute(Context* ctx)
 {
   setBounds(m_newBounds);
 }
 
-void SetCelBoundsF::onUndo()
+void SetCelBoundsF::onUndo(Context* ctx)
 {
   setBounds(m_oldBounds);
 }

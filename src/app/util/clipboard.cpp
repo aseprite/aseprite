@@ -331,10 +331,12 @@ void Clipboard::clearMaskFromCels(Tx& tx,
                                   const CelList& cels,
                                   const bool deselectMask)
 {
+  Context* ctx = doc->context();
+
   for (Cel* cel : cels) {
     ObjectId celId = cel->id();
 
-    clear_mask_from_cel(tx, cel, site.tilemapMode(), site.tilesetMode());
+    clear_mask_from_cel(ctx, tx, cel, site.tilemapMode(), site.tilesetMode());
 
     // Get cel again just in case the cmd::ClearMask() called cmd::ClearCel()
     cel = doc::get<Cel>(celId);

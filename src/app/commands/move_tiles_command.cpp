@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2019-2023  Igara Studio S.A.
+// Copyright (c) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -64,9 +64,9 @@ protected:
     int currentEntry = picks.firstPick();
 
     if (m_copy)
-      copy_tiles_in_tileset(tx, tileset, picks, currentEntry, beforeIndex);
+      copy_tiles_in_tileset(ctx, tx, tileset, picks, currentEntry, beforeIndex);
     else
-      move_tiles_in_tileset(tx, tileset, picks, currentEntry, beforeIndex);
+      move_tiles_in_tileset(ctx, tx, tileset, picks, currentEntry, beforeIndex);
 
     tx.commit();
 

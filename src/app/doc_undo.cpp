@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2023  Igara Studio S.A.
+// Copyright (C) 2022-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -87,12 +87,12 @@ void DocUndo::add(CmdTransaction* cmd)
 
 bool DocUndo::canUndo() const
 {
-  return m_undoHistory.canUndo();
+  return m_undoHistory.canUndo(m_ctx);
 }
 
 bool DocUndo::canRedo() const
 {
-  return m_undoHistory.canRedo();
+  return m_undoHistory.canRedo(m_ctx);
 }
 
 void DocUndo::undo()
@@ -105,7 +105,7 @@ void DocUndo::undo()
     ASSERT(state);
     const Cmd* cmd = STATE_CMD(state);
     m_totalUndoSize -= cmd->memSize();
-    m_undoHistory.undo();
+    m_undoHistory.undo(m_ctx);
     m_totalUndoSize += cmd->memSize();
   }
   // This notification could execute a script that modifies the sprite
@@ -127,7 +127,7 @@ void DocUndo::redo()
     ASSERT(state);
     const Cmd* cmd = STATE_CMD(state);
     m_totalUndoSize -= cmd->memSize();
-    m_undoHistory.redo();
+    m_undoHistory.redo(m_ctx);
     m_totalUndoSize += cmd->memSize();
   }
   notify_observers(&DocUndoObserver::onCurrentUndoStateChange, this);
@@ -274,7 +274,7 @@ void DocUndo::moveToState(const undo::UndoState* state)
   ASSERT(!m_undoing);
   base::ScopedValue undoing(m_undoing, true);
 
-  m_undoHistory.moveTo(state);
+  m_undoHistory.moveTo(state, m_ctx);
 
   // After onCurrentUndoStateChange don't use the "state" argument, it
   // might be deleted because some script might have modified the

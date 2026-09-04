@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -23,7 +23,7 @@ SetTilesetBaseIndex::SetTilesetBaseIndex(Tileset* tileset, int baseIndex)
 {
 }
 
-void SetTilesetBaseIndex::onExecute()
+void SetTilesetBaseIndex::onExecute(Context* ctx)
 {
   auto ts = tileset();
   ts->setBaseIndex(m_newBaseIndex);
@@ -31,7 +31,7 @@ void SetTilesetBaseIndex::onExecute()
   ts->sprite()->incrementVersion();
 }
 
-void SetTilesetBaseIndex::onUndo()
+void SetTilesetBaseIndex::onUndo(Context* ctx)
 {
   auto ts = tileset();
   ts->setBaseIndex(m_oldBaseIndex);

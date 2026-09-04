@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -38,17 +38,17 @@ CopyRect::CopyRect(Image* dst, const Image* src, const gfx::Clip& clip)
   }
 }
 
-void CopyRect::onExecute()
+void CopyRect::onExecute(Context* ctx)
 {
   swap();
 }
 
-void CopyRect::onUndo()
+void CopyRect::onUndo(Context* ctx)
 {
   swap();
 }
 
-void CopyRect::onRedo()
+void CopyRect::onRedo(Context* ctx)
 {
   swap();
 }

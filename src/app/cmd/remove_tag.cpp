@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -19,19 +19,19 @@ RemoveTag::RemoveTag(Sprite* sprite, Tag* tag) : AddTag(sprite, tag)
 {
 }
 
-void RemoveTag::onExecute()
+void RemoveTag::onExecute(Context* ctx)
 {
-  AddTag::onUndo();
+  AddTag::onUndo(ctx);
 }
 
-void RemoveTag::onUndo()
+void RemoveTag::onUndo(Context* ctx)
 {
-  AddTag::onRedo();
+  AddTag::onRedo(ctx);
 }
 
-void RemoveTag::onRedo()
+void RemoveTag::onRedo(Context* ctx)
 {
-  AddTag::onUndo();
+  AddTag::onUndo(ctx);
 }
 
 }} // namespace app::cmd

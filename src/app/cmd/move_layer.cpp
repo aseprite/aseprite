@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2025  Igara Studio S.A.
+// Copyright (C) 2025-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -29,7 +29,7 @@ MoveLayer::MoveLayer(Layer* layer, Layer* newParent, Layer* afterThis)
 {
 }
 
-void MoveLayer::onExecute()
+void MoveLayer::onExecute(Context* ctx)
 {
   Layer* layer = m_layer.layer();
   Layer* afterThis = m_newAfterThis.layer();
@@ -58,7 +58,7 @@ void MoveLayer::onExecute()
   layer->sprite()->incrementVersion();
 }
 
-void MoveLayer::onUndo()
+void MoveLayer::onUndo(Context* ctx)
 {
   Layer* layer = m_layer.layer();
   Layer* afterThis = m_oldAfterThis.layer();
@@ -87,7 +87,7 @@ void MoveLayer::onUndo()
   layer->sprite()->incrementVersion();
 }
 
-void MoveLayer::onFireNotifications()
+void MoveLayer::onFireNotifications(Context* ctx)
 {
   Layer* layer = m_layer.layer();
   Doc* doc = static_cast<Doc*>(layer->sprite()->document());

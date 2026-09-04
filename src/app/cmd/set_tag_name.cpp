@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -26,19 +26,19 @@ SetTagName::SetTagName(doc::Tag* tag, const std::string& name)
 {
 }
 
-void SetTagName::onExecute()
+void SetTagName::onExecute(Context* ctx)
 {
   tag()->setName(m_newName);
   tag()->incrementVersion();
 }
 
-void SetTagName::onUndo()
+void SetTagName::onUndo(Context* ctx)
 {
   tag()->setName(m_oldName);
   tag()->incrementVersion();
 }
 
-void SetTagName::onFireNotifications()
+void SetTagName::onFireNotifications(Context* ctx)
 {
   Tag* tag = this->tag();
   Sprite* sprite = tag->owner()->sprite();

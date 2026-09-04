@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +10,8 @@
 #endif
 
 #include "app/cmd_sequence.h"
+
+#include "app/context.h"
 
 namespace app {
 
@@ -52,22 +54,22 @@ void CmdSequence::addAndExecute(Context* ctx, Cmd* cmd)
   }
 }
 
-void CmdSequence::onExecute()
+void CmdSequence::onExecute(Context* ctx)
 {
   for (auto it = m_cmds.begin(), end = m_cmds.end(); it != end; ++it)
-    (*it)->execute(context());
+    (*it)->execute(ctx);
 }
 
-void CmdSequence::onUndo()
+void CmdSequence::onUndo(Context* ctx)
 {
   for (auto it = m_cmds.rbegin(), end = m_cmds.rend(); it != end; ++it)
-    (*it)->undo();
+    (*it)->undo(ctx);
 }
 
-void CmdSequence::onRedo()
+void CmdSequence::onRedo(Context* ctx)
 {
   for (auto it = m_cmds.begin(), end = m_cmds.end(); it != end; ++it)
-    (*it)->redo();
+    (*it)->redo(ctx);
 }
 
 size_t CmdSequence::onMemSize() const
@@ -80,9 +82,9 @@ size_t CmdSequence::onMemSize() const
   return size;
 }
 
-void CmdSequence::executeAndAdd(Cmd* cmd)
+void CmdSequence::executeAndAdd(Context* ctx, Cmd* cmd)
 {
-  addAndExecute(context(), cmd);
+  addAndExecute(ctx, cmd);
 }
 
 } // namespace app

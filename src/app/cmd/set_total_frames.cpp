@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -23,21 +24,21 @@ SetTotalFrames::SetTotalFrames(Sprite* sprite, frame_t frames)
 {
 }
 
-void SetTotalFrames::onExecute()
+void SetTotalFrames::onExecute(Context* ctx)
 {
   Sprite* spr = sprite();
   spr->setTotalFrames(m_newFrames);
   spr->incrementVersion();
 }
 
-void SetTotalFrames::onUndo()
+void SetTotalFrames::onUndo(Context* ctx)
 {
   Sprite* spr = sprite();
   spr->setTotalFrames(m_oldFrames);
   spr->incrementVersion();
 }
 
-void SetTotalFrames::onFireNotifications()
+void SetTotalFrames::onFireNotifications(Context* ctx)
 {
   Sprite* sprite = this->sprite();
   Doc* doc = static_cast<Doc*>(sprite->document());

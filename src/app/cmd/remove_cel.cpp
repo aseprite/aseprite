@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -21,19 +22,19 @@ RemoveCel::RemoveCel(Cel* cel) : AddCel(cel->layer(), cel)
 {
 }
 
-void RemoveCel::onExecute()
+void RemoveCel::onExecute(Context* ctx)
 {
-  AddCel::onUndo();
+  AddCel::onUndo(ctx);
 }
 
-void RemoveCel::onUndo()
+void RemoveCel::onUndo(Context* ctx)
 {
-  AddCel::onRedo();
+  AddCel::onRedo(ctx);
 }
 
-void RemoveCel::onRedo()
+void RemoveCel::onRedo(Context* ctx)
 {
-  AddCel::onUndo();
+  AddCel::onUndo(ctx);
 }
 
 }} // namespace app::cmd

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -21,13 +21,13 @@ SetTagRepeat::SetTagRepeat(Tag* tag, int repeat)
 {
 }
 
-void SetTagRepeat::onExecute()
+void SetTagRepeat::onExecute(Context* ctx)
 {
   tag()->setRepeat(m_newRepeat);
   tag()->incrementVersion();
 }
 
-void SetTagRepeat::onUndo()
+void SetTagRepeat::onUndo(Context* ctx)
 {
   tag()->setRepeat(m_oldRepeat);
   tag()->incrementVersion();

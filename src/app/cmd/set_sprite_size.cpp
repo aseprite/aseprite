@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -27,21 +28,21 @@ SetSpriteSize::SetSpriteSize(Sprite* sprite, int newWidth, int newHeight)
   ASSERT(m_newHeight > 0);
 }
 
-void SetSpriteSize::onExecute()
+void SetSpriteSize::onExecute(Context* ctx)
 {
   Sprite* spr = sprite();
   spr->setSize(m_newWidth, m_newHeight);
   spr->incrementVersion();
 }
 
-void SetSpriteSize::onUndo()
+void SetSpriteSize::onUndo(Context* ctx)
 {
   Sprite* spr = sprite();
   spr->setSize(m_oldWidth, m_oldHeight);
   spr->incrementVersion();
 }
 
-void SetSpriteSize::onFireNotifications()
+void SetSpriteSize::onFireNotifications(Context* ctx)
 {
   Sprite* sprite = this->sprite();
   Doc* doc = static_cast<Doc*>(sprite->document());

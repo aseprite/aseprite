@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2023  Igara Studio S.A.
+// Copyright (c) 2023-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -24,21 +24,21 @@ SetSpriteTileManagementPlugin::SetSpriteTileManagementPlugin(Sprite* sprite,
 {
 }
 
-void SetSpriteTileManagementPlugin::onExecute()
+void SetSpriteTileManagementPlugin::onExecute(Context* ctx)
 {
   Sprite* spr = sprite();
   spr->setTileManagementPlugin(m_newValue);
   spr->incrementVersion();
 }
 
-void SetSpriteTileManagementPlugin::onUndo()
+void SetSpriteTileManagementPlugin::onUndo(Context* ctx)
 {
   Sprite* spr = sprite();
   spr->setTileManagementPlugin(m_oldValue);
   spr->incrementVersion();
 }
 
-void SetSpriteTileManagementPlugin::onFireNotifications()
+void SetSpriteTileManagementPlugin::onFireNotifications(Context* ctx)
 {
   Sprite* spr = sprite();
   Doc* doc = static_cast<Doc*>(spr->document());

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2023  Igara Studio S.A.
+// Copyright (c) 2023-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -22,9 +22,9 @@ public:
   SetSpriteTileManagementPlugin(Sprite* sprite, const std::string& value);
 
 protected:
-  void onExecute() override;
-  void onUndo() override;
-  void onFireNotifications() override;
+  void onExecute(Context* ctx) override;
+  void onUndo(Context* ctx) override;
+  void onFireNotifications(Context* ctx) override;
   size_t onMemSize() const override
   {
     return sizeof(*this) + m_oldValue.size() + m_newValue.size();

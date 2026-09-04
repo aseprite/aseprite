@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -20,19 +21,19 @@ RemoveLayer::RemoveLayer(Layer* layer) : AddLayer(layer->parent(), layer, layer-
 {
 }
 
-void RemoveLayer::onExecute()
+void RemoveLayer::onExecute(Context* ctx)
 {
-  AddLayer::onUndo();
+  AddLayer::onUndo(ctx);
 }
 
-void RemoveLayer::onUndo()
+void RemoveLayer::onUndo(Context* ctx)
 {
-  AddLayer::onRedo();
+  AddLayer::onRedo(ctx);
 }
 
-void RemoveLayer::onRedo()
+void RemoveLayer::onRedo(Context* ctx)
 {
-  AddLayer::onUndo();
+  AddLayer::onUndo(ctx);
 }
 
 }} // namespace app::cmd

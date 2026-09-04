@@ -35,17 +35,17 @@ CropCel::CropCel(Cel* cel, const gfx::Rect& newBounds)
   ASSERT(m_newBounds != m_oldBounds);
 }
 
-void CropCel::onExecute()
+void CropCel::onExecute(Context* ctx)
 {
   cropImage(m_newOrigin, m_newBounds);
 }
 
-void CropCel::onUndo()
+void CropCel::onUndo(Context* ctx)
 {
   cropImage(m_oldOrigin, m_oldBounds);
 }
 
-void CropCel::onFireNotifications()
+void CropCel::onFireNotifications(Context* ctx)
 {
   Cel* cel = this->cel();
   if (!cel)

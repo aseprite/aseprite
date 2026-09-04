@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,6 +16,7 @@
 #include "app/cmd/set_cel_opacity.h"
 #include "app/cmd/set_palette.h"
 #include "app/cmd/set_transparent_color.h"
+#include "app/context.h"
 #include "app/doc.h"
 #include "app/doc_event.h"
 #include "doc/cel.h"
@@ -193,25 +194,25 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
   }
 }
 
-void SetPixelFormat::onExecute()
+void SetPixelFormat::onExecute(Context* ctx)
 {
-  m_pre.execute(context());
+  m_pre.execute(ctx);
   setFormat(m_newFormat);
-  m_post.execute(context());
+  m_post.execute(ctx);
 }
 
-void SetPixelFormat::onUndo()
+void SetPixelFormat::onUndo(Context* ctx)
 {
-  m_post.undo();
+  m_post.undo(ctx);
   setFormat(m_oldFormat);
-  m_pre.undo();
+  m_pre.undo(ctx);
 }
 
-void SetPixelFormat::onRedo()
+void SetPixelFormat::onRedo(Context* ctx)
 {
-  m_pre.redo();
+  m_pre.redo(ctx);
   setFormat(m_newFormat);
-  m_post.redo();
+  m_post.redo(ctx);
 }
 
 void SetPixelFormat::setFormat(PixelFormat format)

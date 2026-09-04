@@ -23,8 +23,8 @@ public:
   SetCelPosition(Cel* cel, int x, int y) : SetCelPosition(cel, gfx::Point(x, y)) {}
 
 protected:
-  void onExecute() override;
-  void onUndo() override;
+  void onExecute(Context* ctx) override;
+  void onUndo(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this); }
 
 private:

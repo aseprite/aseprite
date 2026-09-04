@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -90,7 +90,7 @@ void Transaction::commit()
 
   m_doc->notifyBeforeCommitTransaction();
 
-  m_cmds->updateSpritePositionAfter();
+  m_cmds->updateSpritePositionAfter(m_ctx);
   const SpritePosition sprPos = m_cmds->spritePositionAfterExecute();
 
   m_undo->add(m_cmds);
@@ -130,7 +130,7 @@ void Transaction::rollback(CmdTransaction* newCmds)
   ASSERT(m_cmds);
   TX_TRACE("TX: Rollback <%s>\n", m_cmds->label().c_str());
 
-  m_cmds->undo();
+  m_cmds->undo(m_ctx);
 
   delete m_cmds;
   m_cmds = newCmds;

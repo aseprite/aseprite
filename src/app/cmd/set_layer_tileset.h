@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -25,9 +25,9 @@ public:
   SetLayerTileset(doc::LayerTilemap* layer, doc::tileset_index tsi);
 
 protected:
-  void onExecute() override;
-  void onUndo() override;
-  void onFireNotifications() override;
+  void onExecute(Context* ctx) override;
+  void onUndo(Context* ctx) override;
+  void onFireNotifications(Context* ctx) override;
 
   size_t onMemSize() const override { return sizeof(*this); }
 

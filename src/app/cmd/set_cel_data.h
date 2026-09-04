@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -21,9 +22,9 @@ public:
   SetCelData(Cel* cel, const CelDataRef& newData);
 
 protected:
-  void onExecute() override;
-  void onUndo() override;
-  void onRedo() override;
+  void onExecute(Context* ctx) override;
+  void onUndo(Context* ctx) override;
+  void onRedo(Context* ctx) override;
   size_t onMemSize() const override
   {
     return sizeof(*this) + (m_dataCopy ? m_dataCopy->getMemSize() : 0);
@@ -38,7 +39,7 @@ private:
   CelDataRef m_dataCopy;
 
   // Reference used only to keep the copy of the new CelData from
-  // the SetCelData() ctor until the SetCelData::onExecute() call.
+  // the SetCelData() ctor until the SetCelData::onExecute(Context* ctx) call.
   // Then the reference is not used anymore.
   CelDataRef m_newData;
 };

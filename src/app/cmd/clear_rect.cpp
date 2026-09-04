@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2025  Igara Studio S.A.
+// Copyright (C) 2025-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +11,7 @@
 
 #include "app/cmd/clear_rect.h"
 
+#include "app/context.h"
 #include "app/doc.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -56,23 +57,23 @@ void ClearRect::initialize(Cel* cel, const gfx::Rect& bounds, color_t color)
   m_copy.reset(crop_image(image, bounds2.x, bounds2.y, bounds2.w, bounds2.h, m_bgcolor));
 }
 
-void ClearRect::onExecute()
+void ClearRect::onExecute(Context* ctx)
 {
-  m_seq.execute(context());
+  m_seq.execute(ctx);
   if (m_dstImage)
     clear();
 }
 
-void ClearRect::onUndo()
+void ClearRect::onUndo(Context* ctx)
 {
   if (m_dstImage)
     restore();
-  m_seq.undo();
+  m_seq.undo(ctx);
 }
 
-void ClearRect::onRedo()
+void ClearRect::onRedo(Context* ctx)
 {
-  m_seq.redo();
+  m_seq.redo(ctx);
   if (m_dstImage)
     clear();
 }

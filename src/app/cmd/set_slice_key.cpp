@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -26,7 +27,7 @@ SetSliceKey::SetSliceKey(Slice* slice, const doc::frame_t frame, const doc::Slic
     m_oldSliceKey = *it->value();
 }
 
-void SetSliceKey::onExecute()
+void SetSliceKey::onExecute(Context* ctx)
 {
   if (!m_newSliceKey.isEmpty())
     slice()->insert(m_frame, m_newSliceKey);
@@ -37,7 +38,7 @@ void SetSliceKey::onExecute()
   slice()->owner()->sprite()->incrementVersion();
 }
 
-void SetSliceKey::onUndo()
+void SetSliceKey::onUndo(Context* ctx)
 {
   if (!m_oldSliceKey.isEmpty())
     slice()->insert(m_frame, m_oldSliceKey);

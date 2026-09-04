@@ -404,7 +404,11 @@ void PixelsMovement::cutMask()
     // Cut from all selected cels, not just the current one
     for (Cel* cel : m_selectedCels) {
       if (cel)
-        clear_mask_from_cel(m_tx, cel, m_site.tilemapMode(), m_site.tilesetMode());
+        clear_mask_from_cel(m_document->context(),
+                            m_tx,
+                            cel,
+                            m_site.tilemapMode(),
+                            m_site.tilesetMode());
     }
   }
 
@@ -1769,7 +1773,11 @@ void PixelsMovement::reproduceAllTransformationsWithInnerCmds()
   for (const InnerCmd& c : m_innerCmds) {
     switch (c.type) {
       case InnerCmd::Clear:
-        clear_mask_from_cel(m_tx, m_site.cel(), m_site.tilemapMode(), m_site.tilesetMode());
+        clear_mask_from_cel(m_document->context(),
+                            m_tx,
+                            m_site.cel(),
+                            m_site.tilemapMode(),
+                            m_site.tilesetMode());
         break;
       case InnerCmd::Flip: flipOriginalImage(c.data.flip.type); break;
       case InnerCmd::Shift:

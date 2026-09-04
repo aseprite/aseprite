@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -21,8 +22,8 @@ public:
   SetLastPoint(Doc* doc, const gfx::Point& pos);
 
 protected:
-  void onExecute() override;
-  void onUndo() override;
+  void onExecute(Context* ctx) override;
+  void onUndo(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this); }
 
 private:

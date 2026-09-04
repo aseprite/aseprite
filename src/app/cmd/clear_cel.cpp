@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +13,7 @@
 
 #include "app/cmd/clear_image.h"
 #include "app/cmd/remove_cel.h"
+#include "app/context.h"
 #include "app/doc.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
@@ -33,19 +35,19 @@ ClearCel::ClearCel(Cel* cel) : WithCel(cel)
   }
 }
 
-void ClearCel::onExecute()
+void ClearCel::onExecute(Context* ctx)
 {
-  m_seq.execute(context());
+  m_seq.execute(ctx);
 }
 
-void ClearCel::onUndo()
+void ClearCel::onUndo(Context* ctx)
 {
-  m_seq.undo();
+  m_seq.undo(ctx);
 }
 
-void ClearCel::onRedo()
+void ClearCel::onRedo(Context* ctx)
 {
-  m_seq.redo();
+  m_seq.redo(ctx);
 }
 
 }} // namespace app::cmd

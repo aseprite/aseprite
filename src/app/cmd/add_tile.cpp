@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -33,7 +33,7 @@ AddTile::AddTile(doc::Tileset* tileset, const doc::tile_index ti)
 {
 }
 
-void AddTile::onExecute()
+void AddTile::onExecute(Context* ctx)
 {
   doc::Tileset* tileset = this->tileset();
   ASSERT(tileset);
@@ -47,7 +47,7 @@ void AddTile::onExecute()
   }
 }
 
-void AddTile::onUndo()
+void AddTile::onUndo(Context* ctx)
 {
   doc::Tileset* tileset = this->tileset();
   ASSERT(tileset);
@@ -62,7 +62,7 @@ void AddTile::onUndo()
   tileset->incrementVersion();
 }
 
-void AddTile::onRedo()
+void AddTile::onRedo(Context* ctx)
 {
   doc::Tileset* tileset = this->tileset();
 
@@ -73,7 +73,7 @@ void AddTile::onRedo()
   addTile(tileset, m_imageRef, m_userData);
 }
 
-void AddTile::onFireNotifications()
+void AddTile::onFireNotifications(Context* ctx)
 {
   doc::Tileset* tileset = this->tileset();
 
