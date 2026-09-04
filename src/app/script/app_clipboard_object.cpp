@@ -9,16 +9,15 @@
 #endif
 
 #include "app/modules/palettes.h"
+#include "app/script/docobj.h"
+#include "app/script/engine.h"
 #include "app/script/luacpp.h"
+#include "app/script/permissions.h"
 #include "app/util/clipboard.h"
 #include "clip/clip.h"
 #include "doc/mask.h"
 #include "doc/palette.h"
 #include "doc/tileset.h"
-#include "engine.h"
-
-#include "docobj.h"
-#include "security.h"
 
 namespace app { namespace script {
 
@@ -26,20 +25,9 @@ namespace {
 
 struct Clipboard {};
 
-const char* kCannotReadClipboard = "the script doesn't have access to get the clipboard content";
-const char* kCannotWriteClipboard = "the script doesn't have access to modify the clipboard";
-
-#define CLIPBOARD_READ_GATE(n)                                                                     \
-  if (!ask_access(L, nullptr, FileAccessMode::Read, ResourceType::Clipboard, (n)))                 \
-    return luaL_error(L, kCannotReadClipboard);
-
-#define CLIPBOARD_WRITE_GATE(n)                                                                    \
-  if (!ask_access(L, nullptr, FileAccessMode::Write, ResourceType::Clipboard, (n)))                \
-    return luaL_error(L, kCannotWriteClipboard);
-
 int Clipboard_clear(lua_State* L)
 {
-  CLIPBOARD_WRITE_GATE(2);
+  get_engine(L)->accessGate(Permission::ClipboardWrite);
 
   if (!clip::clear())
     return luaL_error(L, "failed to clear the clipboard");
@@ -61,7 +49,7 @@ int Clipboard_hasImage(lua_State* L)
 
 int Clipboard_get_image(lua_State* L)
 {
-  CLIPBOARD_READ_GATE(3);
+  get_engine(L)->accessGate(Permission::ClipboardRead);
 
   app::Clipboard::NativeData data;
   const bool result = app::Clipboard::instance()->getNativeBitmap(data);
@@ -80,7 +68,7 @@ int Clipboard_get_image(lua_State* L)
 
 int Clipboard_get_text(lua_State* L)
 {
-  CLIPBOARD_READ_GATE(3);
+  get_engine(L)->accessGate(Permission::ClipboardRead);
 
   std::string str;
   if (clip::get_text(str))
@@ -93,7 +81,7 @@ int Clipboard_get_text(lua_State* L)
 
 int Clipboard_set_image(lua_State* L)
 {
-  CLIPBOARD_WRITE_GATE(3);
+  get_engine(L)->accessGate(Permission::ClipboardWrite);
 
   auto* image = may_get_image_from_arg(L, 2);
   if (!image)
@@ -113,7 +101,7 @@ int Clipboard_set_image(lua_State* L)
 
 int Clipboard_set_text(lua_State* L)
 {
-  CLIPBOARD_WRITE_GATE(3);
+  get_engine(L)->accessGate(Permission::ClipboardWrite);
 
   const char* text = lua_tostring(L, 2);
   if (!clip::set_text(text ? text : ""))
@@ -124,7 +112,7 @@ int Clipboard_set_text(lua_State* L)
 
 int Clipboard_get_content(lua_State* L)
 {
-  CLIPBOARD_READ_GATE(3);
+  get_engine(L)->accessGate(Permission::ClipboardRead);
 
   app::Clipboard::NativeData data;
   const bool bitmapResult = app::Clipboard::instance()->getNativeBitmap(data);
@@ -169,7 +157,7 @@ int Clipboard_get_content(lua_State* L)
 
 int Clipboard_set_content(lua_State* L)
 {
-  CLIPBOARD_WRITE_GATE(3);
+  get_engine(L)->accessGate(Permission::ClipboardWrite);
 
   doc::Image* image = nullptr;
   doc::Mask* mask = nullptr;
