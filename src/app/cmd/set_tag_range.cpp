@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -28,19 +28,19 @@ SetTagRange::SetTagRange(Tag* tag, frame_t from, frame_t to)
 {
 }
 
-void SetTagRange::onExecute()
+void SetTagRange::onExecute(Context* ctx)
 {
   tag()->setFrameRange(m_newFrom, m_newTo);
   tag()->incrementVersion();
 }
 
-void SetTagRange::onUndo()
+void SetTagRange::onUndo(Context* ctx)
 {
   tag()->setFrameRange(m_oldFrom, m_oldTo);
   tag()->incrementVersion();
 }
 
-void SetTagRange::onFireNotifications()
+void SetTagRange::onFireNotifications(Context* ctx)
 {
   Tag* tag = this->tag();
   Sprite* sprite = tag->owner()->sprite();

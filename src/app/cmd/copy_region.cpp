@@ -57,26 +57,26 @@ CopyTileRegion::CopyTileRegion(Image* dst,
 {
 }
 
-void CopyRegion::onExecute()
+void CopyRegion::onExecute(Context* ctx)
 {
   if (!m_alreadyCopied)
     swap();
 }
 
-void CopyRegion::onUndo()
+void CopyRegion::onUndo(Context* ctx)
 {
   swap();
 }
 
-void CopyRegion::onRedo()
+void CopyRegion::onRedo(Context* ctx)
 {
   swap();
 }
 
-void CopyRegion::onFireNotifications()
+void CopyRegion::onFireNotifications(Context* ctx)
 {
   // TODO save sprite in this cmd?
-  Site site = context()->activeSite();
+  Site site = ctx->activeSite();
   if (!site.document() || !site.sprite())
     return;
 

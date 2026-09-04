@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -21,7 +22,7 @@ public:
   CopyFrame(Sprite* sprite, frame_t fromFrame, frame_t newFrame);
 
 protected:
-  void onExecute() override;
+  void onExecute(Context* ctx) override;
   size_t onMemSize() const override
   {
     return sizeof(*this) + CmdSequence::onMemSize() - sizeof(CmdSequence);

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -23,12 +23,12 @@ SetMaskPosition::SetMaskPosition(Doc* doc, const gfx::Point& pos)
 {
 }
 
-void SetMaskPosition::onExecute()
+void SetMaskPosition::onExecute(Context* ctx)
 {
   setMaskPosition(m_newPosition);
 }
 
-void SetMaskPosition::onUndo()
+void SetMaskPosition::onUndo(Context* ctx)
 {
   setMaskPosition(m_oldPosition);
 }

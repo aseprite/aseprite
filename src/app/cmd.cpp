@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -9,6 +10,8 @@
 #endif
 
 #include "app/cmd.h"
+
+#include "app/context.h"
 #include "base/debug.h"
 #include "base/mem_utils.h"
 
@@ -34,36 +37,34 @@ void Cmd::execute(Context* ctx)
   CMD_TRACE("CMD: Executing cmd '%s'\n", typeid(*this).name());
   ASSERT(m_state == State::NotExecuted);
 
-  m_ctx = ctx;
-
-  onExecute();
-  onFireNotifications();
+  onExecute(ctx);
+  onFireNotifications(ctx);
 
 #if _DEBUG
   m_state = State::Executed;
 #endif
 }
 
-void Cmd::undo()
+void Cmd::undo(undo::UndoContext* ctx)
 {
   CMD_TRACE("CMD: Undo cmd '%s'\n", typeid(*this).name());
   ASSERT(m_state == State::Executed || m_state == State::Redone);
 
-  onUndo();
-  onFireNotifications();
+  onUndo(static_cast<Context*>(ctx));
+  onFireNotifications(static_cast<Context*>(ctx));
 
 #if _DEBUG
   m_state = State::Undone;
 #endif
 }
 
-void Cmd::redo()
+void Cmd::redo(undo::UndoContext* ctx)
 {
   CMD_TRACE("CMD: Redo cmd '%s'\n", typeid(*this).name());
   ASSERT(m_state == State::Undone);
 
-  onRedo();
-  onFireNotifications();
+  onRedo(static_cast<Context*>(ctx));
+  onFireNotifications(static_cast<Context*>(ctx));
 
 #if _DEBUG
   m_state = State::Redone;
@@ -89,23 +90,23 @@ size_t Cmd::memSize() const
   return onMemSize();
 }
 
-void Cmd::onExecute()
+void Cmd::onExecute(Context* ctx)
 {
   // Do nothing
 }
 
-void Cmd::onUndo()
+void Cmd::onUndo(Context* ctx)
 {
   // Do nothing
 }
 
-void Cmd::onRedo()
+void Cmd::onRedo(Context* ctx)
 {
   // By default onRedo() uses onExecute() implementation
-  onExecute();
+  onExecute(ctx);
 }
 
-void Cmd::onFireNotifications()
+void Cmd::onFireNotifications(Context* ctx)
 {
   // Do nothing
 }

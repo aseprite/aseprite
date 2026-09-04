@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -24,19 +25,19 @@ SetLayerOpacity::SetLayerOpacity(LayerImage* layer, int opacity)
 {
 }
 
-void SetLayerOpacity::onExecute()
+void SetLayerOpacity::onExecute(Context* ctx)
 {
   static_cast<LayerImage*>(layer())->setOpacity(m_newOpacity);
   layer()->incrementVersion();
 }
 
-void SetLayerOpacity::onUndo()
+void SetLayerOpacity::onUndo(Context* ctx)
 {
   static_cast<LayerImage*>(layer())->setOpacity(m_oldOpacity);
   layer()->incrementVersion();
 }
 
-void SetLayerOpacity::onFireNotifications()
+void SetLayerOpacity::onFireNotifications(Context* ctx)
 {
   Layer* layer = this->layer();
   Doc* doc = static_cast<Doc*>(layer->sprite()->document());

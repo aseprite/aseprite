@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2025  Igara Studio S.A.
+// Copyright (C) 2025-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -30,9 +30,9 @@ public:
   ClearRect(Cel* cel, const gfx::Rect& bounds, color_t color);
 
 protected:
-  void onExecute() override;
-  void onUndo() override;
-  void onRedo() override;
+  void onExecute(Context* ctx) override;
+  void onUndo(Context* ctx) override;
+  void onRedo(Context* ctx) override;
   size_t onMemSize() const override
   {
     return sizeof(*this) + m_seq.memSize() + (m_copy ? m_copy->getMemSize() : 0);

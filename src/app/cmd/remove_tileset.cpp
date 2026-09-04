@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -21,19 +21,19 @@ RemoveTileset::RemoveTileset(Sprite* sprite, const tileset_index si) : AddTilese
 {
 }
 
-void RemoveTileset::onExecute()
+void RemoveTileset::onExecute(Context* ctx)
 {
-  AddTileset::onUndo();
+  AddTileset::onUndo(ctx);
 }
 
-void RemoveTileset::onUndo()
+void RemoveTileset::onUndo(Context* ctx)
 {
-  AddTileset::onRedo();
+  AddTileset::onRedo(ctx);
 }
 
-void RemoveTileset::onRedo()
+void RemoveTileset::onRedo(Context* ctx)
 {
-  AddTileset::onUndo();
+  AddTileset::onUndo(ctx);
 }
 
 }} // namespace app::cmd

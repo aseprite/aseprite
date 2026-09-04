@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -21,12 +22,12 @@ SetLastPoint::SetLastPoint(Doc* doc, const gfx::Point& pos)
 {
 }
 
-void SetLastPoint::onExecute()
+void SetLastPoint::onExecute(Context* ctx)
 {
   setLastPoint(m_newPoint);
 }
 
-void SetLastPoint::onUndo()
+void SetLastPoint::onUndo(Context* ctx)
 {
   setLastPoint(m_oldPoint);
 }

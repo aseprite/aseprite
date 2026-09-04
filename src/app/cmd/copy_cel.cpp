@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -44,7 +44,7 @@ CopyCel::CopyCel(Layer* srcLayer,
 {
 }
 
-void CopyCel::onExecute()
+void CopyCel::onExecute(Context* ctx)
 {
   Layer* srcLayer = m_srcLayer.layer();
   Layer* dstLayer = m_dstLayer.layer();
@@ -66,13 +66,13 @@ void CopyCel::onExecute()
   // copy of srcCel.
   if (dstCel) {
     if (dstCel->links())
-      executeAndAdd(new cmd::UnlinkCel(dstCel));
-    executeAndAdd(new cmd::ClearCel(dstCel));
+      executeAndAdd(ctx, new cmd::UnlinkCel(dstCel));
+    executeAndAdd(ctx, new cmd::ClearCel(dstCel));
   }
 
   // Add empty frames until newFrame
   while (dstSprite->totalFrames() <= m_dstFrame)
-    executeAndAdd(new cmd::AddFrame(dstSprite, dstSprite->totalFrames()));
+    executeAndAdd(ctx, new cmd::AddFrame(dstSprite, dstSprite->totalFrames()));
 
   Image* srcImage = (srcCel ? srcCel->image() : nullptr);
   ImageRef dstImage;
@@ -91,13 +91,13 @@ void CopyCel::onExecute()
     ASSERT(!dstLayer->isTilemap()); // TODO support background tilemaps
 
     if (createLink) {
-      executeAndAdd(new cmd::SetCelData(dstCel, srcCel->dataRef()));
+      executeAndAdd(ctx, new cmd::SetCelData(dstCel, srcCel->dataRef()));
     }
     // Rasterize tilemap into the regular image background layer
     else if (srcLayer->isTilemap()) {
       ImageRef tmp(Image::createCopy(dstImage.get()));
       render::rasterize(tmp.get(), srcCel, 0, 0, false);
-      executeAndAdd(new cmd::CopyRect(dstImage.get(), tmp.get(), gfx::Clip(tmp->bounds())));
+      executeAndAdd(ctx, new cmd::CopyRect(dstImage.get(), tmp.get(), gfx::Clip(tmp->bounds())));
     }
     else {
       BlendMode blend = (srcLayer->isBackground() ? BlendMode::SRC : BlendMode::NORMAL);
@@ -110,13 +110,13 @@ void CopyCel::onExecute()
                               srcCel->y(),
                               255,
                               blend);
-      executeAndAdd(new cmd::CopyRect(dstImage.get(), tmp.get(), gfx::Clip(tmp->bounds())));
+      executeAndAdd(ctx, new cmd::CopyRect(dstImage.get(), tmp.get(), gfx::Clip(tmp->bounds())));
     }
   }
   // For transparent layers
   else {
     if (dstCel)
-      executeAndAdd(new cmd::RemoveCel(dstCel));
+      executeAndAdd(ctx, new cmd::RemoveCel(dstCel));
 
     if (srcCel) {
       if (createLink)
@@ -124,14 +124,14 @@ void CopyCel::onExecute()
       else
         dstCel = create_cel_copy(this, srcCel, dstSprite, dstLayer, m_dstFrame);
 
-      executeAndAdd(new cmd::AddCel(dstLayer, dstCel));
+      executeAndAdd(ctx, new cmd::AddCel(dstLayer, dstCel));
     }
   }
 }
 
-void CopyCel::onFireNotifications()
+void CopyCel::onFireNotifications(Context* ctx)
 {
-  CmdSequence::onFireNotifications();
+  CmdSequence::onFireNotifications(ctx);
 
   // The m_srcLayer can be nullptr now because the layer from where we
   // copied this cel might not exist anymore (e.g. if we copied the

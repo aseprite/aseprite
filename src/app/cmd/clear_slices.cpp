@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2024-2026  Igara Studio S.A.
+// Copyright (C) 2024-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,6 +10,7 @@
 
 #include "app/cmd/clear_slices.h"
 
+#include "app/context.h"
 #include "app/doc.h"
 #include "app/site.h"
 #include "app/util/cel_ops.h"
@@ -73,25 +74,25 @@ ClearSlices::ClearSlices(const Site& site,
   }
 }
 
-void ClearSlices::onExecute()
+void ClearSlices::onExecute(Context* ctx)
 {
-  m_seq.execute(context());
-  clear();
+  m_seq.execute(ctx);
+  clear(ctx);
 }
 
-void ClearSlices::onUndo()
+void ClearSlices::onUndo(Context* ctx)
 {
   restore();
-  m_seq.undo();
+  m_seq.undo(ctx);
 }
 
-void ClearSlices::onRedo()
+void ClearSlices::onRedo(Context* ctx)
 {
-  m_seq.redo();
-  clear();
+  m_seq.redo(ctx);
+  clear(ctx);
 }
 
-void ClearSlices::clear()
+void ClearSlices::clear(Context* ctx)
 {
   for (auto& sc : m_slicesContents) {
     if (!sc.copy)
@@ -104,6 +105,7 @@ void ClearSlices::clear()
       color_t bgcolor = doc->bgColor(sc.cel()->layer());
 
       modify_tilemap_cel_region(
+        ctx,
         &m_seq,
         sc.cel(),
         nullptr,

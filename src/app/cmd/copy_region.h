@@ -37,10 +37,10 @@ public:
              bool alreadyCopied = false);
 
 protected:
-  void onExecute() override;
-  void onUndo() override;
-  void onRedo() override;
-  void onFireNotifications() override;
+  void onExecute(Context* ctx) override;
+  void onUndo(Context* ctx) override;
+  void onRedo(Context* ctx) override;
+  void onFireNotifications(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this) + m_buffer.size(); }
 
 private:

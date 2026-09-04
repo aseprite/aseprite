@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2021  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -31,6 +31,7 @@ class Tileset;
 
 namespace app {
 class CmdSequence;
+class Context;
 
 typedef std::function<doc::ImageRef(const doc::ImageRef& origTile,
                                     const gfx::Rect& tileBoundsInCanvas)>
@@ -62,7 +63,8 @@ void draw_image_into_new_tilemap_cel(CmdSequence* cmds,
                                      const gfx::Rect& canvasBounds,
                                      doc::ImageRef& newTilemap);
 
-void modify_tilemap_cel_region(CmdSequence* cmds,
+void modify_tilemap_cel_region(Context* ctx,
+                               CmdSequence* cmds,
                                doc::Cel* cel,
                                doc::Tileset* previewTileset, // Temporary tileset that can be used
                                                              // for preview
@@ -71,18 +73,21 @@ void modify_tilemap_cel_region(CmdSequence* cmds,
                                const GetTileImageFunc& getTileImage,
                                const gfx::Region& forceRegion = gfx::Region());
 
-void clear_mask_from_cel(CmdSequence* cmds,
+void clear_mask_from_cel(Context* ctx,
+                         CmdSequence* cmds,
                          doc::Cel* cel,
                          const TilemapMode tilemapMode,
                          const TilesetMode tilesetMode);
 
-void move_tiles_in_tileset(CmdSequence* cmds,
+void move_tiles_in_tileset(Context* ctx,
+                           CmdSequence* cmds,
                            doc::Tileset* tileset,
                            doc::PalettePicks& picks,
                            int& currentEntry,
                            int beforeIndex);
 
-void copy_tiles_in_tileset(CmdSequence* cmds,
+void copy_tiles_in_tileset(Context* ctx,
+                           CmdSequence* cmds,
                            doc::Tileset* tileset,
                            doc::PalettePicks& picks,
                            int& currentEntry,

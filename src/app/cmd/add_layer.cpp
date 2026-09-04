@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2025  Igara Studio S.A.
+// Copyright (C) 2025-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,7 +26,7 @@ AddLayer::AddLayer(Layer* group, Layer* newLayer, Layer* afterThis)
 {
 }
 
-void AddLayer::onExecute()
+void AddLayer::onExecute(Context* ctx)
 {
   Layer* group = m_group.layer();
   Layer* newLayer = m_newLayer.layer();
@@ -35,7 +35,7 @@ void AddLayer::onExecute()
   addLayer(group, newLayer, afterThis);
 }
 
-void AddLayer::onUndo()
+void AddLayer::onUndo(Context* ctx)
 {
   Layer* group = m_group.layer();
   Layer* layer = m_newLayer.layer();
@@ -45,7 +45,7 @@ void AddLayer::onUndo()
   m_suspendedLayer.suspend(layer);
 }
 
-void AddLayer::onRedo()
+void AddLayer::onRedo(Context* ctx)
 {
   Layer* group = m_group.layer();
   Layer* newLayer = m_suspendedLayer.restore();

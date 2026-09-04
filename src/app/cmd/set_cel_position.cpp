@@ -26,12 +26,12 @@ SetCelPosition::SetCelPosition(Cel* cel, const gfx::Point& newPosition)
 {
 }
 
-void SetCelPosition::onExecute()
+void SetCelPosition::onExecute(Context* ctx)
 {
   setPosition(m_new);
 }
 
-void SetCelPosition::onUndo()
+void SetCelPosition::onUndo(Context* ctx)
 {
   setPosition(m_old);
 }

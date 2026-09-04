@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -22,13 +22,13 @@ SetTagColor::SetTagColor(Tag* tag, doc::color_t color)
 {
 }
 
-void SetTagColor::onExecute()
+void SetTagColor::onExecute(Context* ctx)
 {
   tag()->setColor(m_newColor);
   tag()->incrementVersion();
 }
 
-void SetTagColor::onUndo()
+void SetTagColor::onUndo(Context* ctx)
 {
   tag()->setColor(m_oldColor);
   tag()->incrementVersion();

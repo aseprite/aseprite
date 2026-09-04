@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2024  Igara Studio S.A.
+// Copyright (C) 2024-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -38,9 +38,9 @@ public:
               const std::vector<SliceKey>& slicesKeys);
 
 protected:
-  void onExecute() override;
-  void onUndo() override;
-  void onRedo() override;
+  void onExecute(Context* ctx) override;
+  void onUndo(Context* ctx) override;
+  void onRedo(Context* ctx) override;
   size_t onMemSize() const override
   {
     size_t sliceContentsSize = 0;
@@ -61,7 +61,7 @@ private:
     size_t memSize() const { return sizeof(*this) + (copy ? copy->getMemSize() : 0); }
   };
 
-  void clear();
+  void clear(Context* ctx);
   void restore();
 
   CmdSequence m_seq;

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -29,7 +30,7 @@ public:
            const gfx::Point& patchPos);
 
 protected:
-  void onExecute() override;
+  void onExecute(Context* ctx) override;
 
   const doc::Image* m_patch;
   const gfx::Region& m_region;

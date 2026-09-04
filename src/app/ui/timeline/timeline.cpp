@@ -4260,7 +4260,7 @@ void Timeline::dropRange(DropOp op)
     // TODO improve this workaround
     Cmd* cmd = m_document->undoHistory()->lastExecutedCmd();
     if (auto cmdTx = dynamic_cast<CmdTransaction*>(cmd))
-      cmdTx->updateSpritePositionAfter();
+      cmdTx->updateSpritePositionAfter(UIContext::instance());
   }
   catch (const std::exception& ex) {
     Console::showException(ex);

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -19,9 +19,9 @@ public:
   RemoveTag(Sprite* sprite, Tag* tag);
 
 protected:
-  void onExecute() override;
-  void onUndo() override;
-  void onRedo() override;
+  void onExecute(Context* ctx) override;
+  void onUndo(Context* ctx) override;
+  void onRedo(Context* ctx) override;
 };
 
 }} // namespace app::cmd

@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -22,12 +23,12 @@ FlipImage::FlipImage(Image* image, const gfx::Rect& bounds, doc::algorithm::Flip
 {
 }
 
-void FlipImage::onExecute()
+void FlipImage::onExecute(Context* ctx)
 {
   swap();
 }
 
-void FlipImage::onUndo()
+void FlipImage::onUndo(Context* ctx)
 {
   swap();
 }

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023-2026  Igara Studio S.A.
+// Copyright (C) 2023-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -30,7 +30,7 @@ ReplaceImage::ReplaceImage(Sprite* sprite, const ImageRef& oldImage, const Image
 {
 }
 
-void ReplaceImage::onExecute()
+void ReplaceImage::onExecute(Context* ctx)
 {
   // Save old image in m_copy. We cannot keep an ImageRef to this
   // image, because there are other undo branches that could try to
@@ -43,7 +43,7 @@ void ReplaceImage::onExecute()
   m_newImage.reset();
 }
 
-void ReplaceImage::onUndo()
+void ReplaceImage::onUndo(Context* ctx)
 {
   ImageRef newImage = sprite()->getImageRef(m_newImageId);
   ASSERT(newImage);
@@ -54,7 +54,7 @@ void ReplaceImage::onUndo()
   m_copy.reset(Image::createCopy(newImage.get()));
 }
 
-void ReplaceImage::onRedo()
+void ReplaceImage::onRedo(Context* ctx)
 {
   ImageRef oldImage = sprite()->getImageRef(m_oldImageId);
   ASSERT(oldImage);

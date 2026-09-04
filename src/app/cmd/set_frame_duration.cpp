@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -24,19 +25,19 @@ SetFrameDuration::SetFrameDuration(Sprite* sprite, frame_t frame, int duration)
 {
 }
 
-void SetFrameDuration::onExecute()
+void SetFrameDuration::onExecute(Context* ctx)
 {
   sprite()->setFrameDuration(m_frame, m_newDuration);
   sprite()->incrementVersion();
 }
 
-void SetFrameDuration::onUndo()
+void SetFrameDuration::onUndo(Context* ctx)
 {
   sprite()->setFrameDuration(m_frame, m_oldDuration);
   sprite()->incrementVersion();
 }
 
-void SetFrameDuration::onFireNotifications()
+void SetFrameDuration::onFireNotifications(Context* ctx)
 {
   Sprite* sprite = this->sprite();
   Doc* doc = static_cast<Doc*>(sprite->document());

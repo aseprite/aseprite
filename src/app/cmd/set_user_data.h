@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -26,9 +26,9 @@ public:
   SetUserData(doc::WithUserData* obj, const doc::UserData& userData, app::Doc* doc);
 
 protected:
-  void onExecute() override;
-  void onUndo() override;
-  void onFireNotifications() override;
+  void onExecute(Context* ctx) override;
+  void onUndo(Context* ctx) override;
+  void onFireNotifications(Context* ctx) override;
   size_t onMemSize() const override
   {
     return sizeof(*this) + m_oldUserData.size() + m_newUserData.size();

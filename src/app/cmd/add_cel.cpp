@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2026  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -27,7 +27,7 @@ AddCel::AddCel(Layer* layer, Cel* cel) : WithLayer(layer), WithCel(cel)
 {
 }
 
-void AddCel::onExecute()
+void AddCel::onExecute(Context* ctx)
 {
   Layer* layer = this->layer();
   Cel* cel = this->cel();
@@ -37,7 +37,7 @@ void AddCel::onExecute()
   addCel(layer, cel);
 }
 
-void AddCel::onUndo()
+void AddCel::onUndo(Context* ctx)
 {
   Layer* layer = this->layer();
   Cel* cel = this->cel();
@@ -50,7 +50,7 @@ void AddCel::onUndo()
   m_suspendedCel.suspend(cel);
 }
 
-void AddCel::onRedo()
+void AddCel::onRedo(Context* ctx)
 {
   Layer* layer = this->layer();
   Cel* cel = m_suspendedCel.restore();

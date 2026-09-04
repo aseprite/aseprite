@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2026  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2016  David Capello
 //
 // This program is distributed under the terms of
@@ -34,7 +34,7 @@ PatchCel::PatchCel(doc::Cel* dstCel,
   ASSERT(!patchedRegion.isEmpty());
 }
 
-void PatchCel::onExecute()
+void PatchCel::onExecute(Context* ctx)
 {
   Cel* cel = this->cel();
   ASSERT(cel->image());
@@ -54,17 +54,18 @@ void PatchCel::onExecute()
   }
 
   if (cel->bounds() != newBounds)
-    executeAndAdd(new CropCel(cel, newBounds));
+    executeAndAdd(ctx, new CropCel(cel, newBounds));
 
   if (cel->image()->pixelFormat() == IMAGE_TILEMAP) {
     executeAndAdd(
+      ctx,
       new CopyRegion(cel->image(), m_patch, regionInTiles, -grid.canvasToTile(cel->position())));
   }
   else {
-    executeAndAdd(new CopyRegion(cel->image(), m_patch, m_region, m_pos - cel->position()));
+    executeAndAdd(ctx, new CopyRegion(cel->image(), m_patch, m_region, m_pos - cel->position()));
   }
 
-  executeAndAdd(new TrimCel(cel));
+  executeAndAdd(ctx, new TrimCel(cel));
 
   m_patch = nullptr;
 }
