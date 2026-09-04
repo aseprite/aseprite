@@ -265,6 +265,7 @@ target_sources(app-lib PRIVATE
   app.cpp
   app_brushes.cpp
   app_menus.cpp
+  brush_pattern_slot.cpp
   check_update.cpp
   cli/app_options.cpp
   cli/cli_open_file.cpp
@@ -626,6 +627,7 @@ target_sources(app-lib PRIVATE
   ui/dithering_selector.cpp
   ui/doc_view.cpp
   ui/dock.cpp
+  ui/draggable_button_set.cpp
   ui/drop_down_button.cpp
   ui/dynamics_popup.cpp
   ui/editor/brush_preview.cpp

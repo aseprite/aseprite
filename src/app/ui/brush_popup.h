@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/ui/button_set.h"
+#include "app/ui/draggable_button_set.h"
 #include "doc/brushes.h"
 #include "ui/box.h"
 #include "ui/popup_window.h"
@@ -24,14 +25,18 @@ public:
   void regenerate(ui::Display* display, const gfx::Point& pos);
 
   static os::SurfaceRef createSurfaceForBrush(const doc::BrushRef& brush,
-                                              const bool useOriginalImage = false);
+                                              int maxSize,
+                                              bool useOriginalImage = false);
+
+  static os::SurfaceRef createSurfaceForPattern(const doc::PatternRef& pattern, int maxSize);
 
 private:
   void onStandardBrush();
   void onBrushChanges();
 
   ui::VBox m_box;
-  ButtonSet m_standardBrushes;
+  DraggableButtonSet m_standardBrushes;
+  DraggableButtonSet m_brushPatterns;
   ButtonSet* m_customBrushes;
 };
 

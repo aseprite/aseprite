@@ -23,7 +23,9 @@
 #include "ui/size_hint_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
+#include "ui/view.h"
 #include "ui/widget.h"
+#include "ui/window.h"
 
 #include <algorithm>
 #include <cstdarg>
@@ -36,6 +38,8 @@ using namespace app::skin;
 // Last selected item for ButtonSet activated on mouse up when the
 // mouse capture is get.
 static int g_itemBeforeCapture = -1;
+
+ButtonSet* ButtonSet::m_originButtonset = nullptr;
 
 WidgetType buttonset_item_type()
 {
@@ -55,7 +59,7 @@ ButtonSet::Item::Item() : Widget(buttonset_item_type()), m_icon(NULL)
 void ButtonSet::Item::setIcon(const SkinPartPtr& icon)
 {
   m_icon = icon;
-  invalidate();
+  invalidateItem();
 }
 
 ButtonSet* ButtonSet::Item::buttonSet()
@@ -63,22 +67,50 @@ ButtonSet* ButtonSet::Item::buttonSet()
   return static_cast<ButtonSet*>(parent());
 }
 
-void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
+void ButtonSet::Item::expandForOverlappingItems(gfx::Rect& bounds)
 {
-  if (style()) {
-    gfx::Rect rc = clientBounds();
-    Grid::Info info = buttonSet()->getChildInfo(this);
-    bool isLastCol = (info.col + info.hspan >= info.grid_cols);
-    bool isLastRow = (info.row + info.vspan >= info.grid_rows);
-    // When gaps are negative we need to compensate client bounds size so the painting is based on a
-    // complete button, and not just the part not overlapped.
-    if (buttonSet()->m_colgap < 0 && !isLastCol)
-      rc.w -= buttonSet()->m_colgap;
-    if (buttonSet()->m_rowgap < 0 && !isLastRow)
-      rc.h -= buttonSet()->m_rowgap;
+  if (buttonSet() && !buttonSet()->hasOverlappingItems())
+    return;
 
-    theme()->paintWidget(ev.graphics(), this, style(), rc);
+  Grid::Info info = buttonSet()->getChildInfo(this);
+  bool isLastCol = (info.col + info.hspan >= info.grid_cols);
+  bool isLastRow = (info.row + info.vspan >= info.grid_rows);
+  // When gaps are negative and this item is not in the last column or row
+  // we need to compensate the passed bounds size so the area comprehends the
+  // full button and not just the part not overlapped.
+  if (buttonSet()->m_colgap < 0 && !isLastCol)
+    bounds.w -= buttonSet()->m_colgap;
+  if (buttonSet()->m_rowgap < 0 && !isLastRow)
+    bounds.h -= buttonSet()->m_rowgap;
+}
+
+void ButtonSet::Item::invalidateItem()
+{
+  Widget::invalidate();
+  if (buttonSet() && buttonSet()->hasOverlappingItems()) {
+    // We must invalidate the rest of the buttonset children, otherwise overlapping
+    // buttons wouldn't be painted properly (i.e. a button on top could overlap
+    // to one below it).
+    for (auto* child : buttonSet()->children()) {
+      if (child != this) {
+        child->invalidate();
+      }
+    }
   }
+}
+
+void ButtonSet::Item::onInvalidateRegion(const gfx::Region& region)
+{
+  gfx::Region rgn = region;
+  // We have to adjust the invalidated region only when the buttonset contains
+  // overlapped items.
+  if (buttonSet() && buttonSet()->hasOverlappingItems()) {
+    auto b = bounds();
+    expandForOverlappingItems(b);
+    rgn = gfx::Region(b);
+  }
+
+  Widget::onInvalidateRegion(rgn);
 }
 
 bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
@@ -88,7 +120,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
     case kFocusLeaveMessage:
       if (isEnabled()) {
         // TODO theme specific stuff
-        invalidate();
+        invalidateItem();
       }
       break;
 
@@ -107,7 +139,12 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
     case ui::kMouseDownMessage:
       if (!isEnabled())
         return true;
-      // Only for single-item and trigerred on mouse up ButtonSets: We
+
+      if (!ButtonSet::m_originButtonset) {
+        ButtonSet::m_originButtonset = buttonSet();
+      }
+
+      // Only for single-item and triggered on mouse up ButtonSets: We
       // save the current selected item to restore it just in case the
       // user leaves the ButtonSet without releasing the mouse button
       // and the mouse capture if offered to other ButtonSet.
@@ -120,7 +157,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
 
       captureMouse();
       buttonSet()->onSelectItem(this, true, msg);
-      invalidate();
+      invalidateItem();
 
       if (static_cast<MouseMessage*>(msg)->left() && !buttonSet()->m_triggerOnMouseUp) {
         onClick();
@@ -134,17 +171,24 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
           g_itemBeforeCapture = -1;
 
         releaseMouse();
-        invalidate();
+        invalidateItem();
 
+        bool consumed = false;
         if (static_cast<MouseMessage*>(msg)->left()) {
           if (buttonSet()->m_triggerOnMouseUp) {
             onClick();
-            return true;
+            consumed = true;
           }
         }
         else if (static_cast<MouseMessage*>(msg)->right()) {
           onRightClick();
-          return true;
+          consumed = true;
+        }
+
+        ButtonSet::resetOriginButtonset();
+
+        if (consumed) {
+          return consumed;
         }
       }
       break;
@@ -153,7 +197,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
       if (hasCapture()) {
         if (buttonSet()->m_offerCapture) {
           if (offerCapture(static_cast<ui::MouseMessage*>(msg), buttonset_item_type())) {
-            // Only for ButtonSets trigerred on mouse up.
+            // Only for ButtonSets triggered on mouse up.
             if (buttonSet()->m_triggerOnMouseUp && g_itemBeforeCapture >= 0) {
               if (g_itemBeforeCapture < (int)children().size()) {
                 Item* item = dynamic_cast<Item*>(at(g_itemBeforeCapture));
@@ -175,7 +219,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
     case ui::kMouseEnterMessage:
       if (!isEnabled())
         return true;
-      invalidate();
+      invalidateItem();
       break;
   }
   return Widget::onProcessMessage(msg);
@@ -207,40 +251,53 @@ ButtonSet::ButtonSet(const int columns, const bool same_width_columns)
   initTheme();
 }
 
-ButtonSet::Item* ButtonSet::addItem(const std::string& text, ui::Style* style)
+ButtonSet::Item* ButtonSet::addItem(const std::string& text,
+                                    ui::Style* style,
+                                    const WidgetAlign align)
 {
-  return addItem(text, 1, 1, style);
+  return addItem(text, 1, 1, style, align);
 }
 
-ButtonSet::Item* ButtonSet::addItem(const std::string& text, int hspan, int vspan, ui::Style* style)
+ButtonSet::Item* ButtonSet::addItem(const std::string& text,
+                                    int hspan,
+                                    int vspan,
+                                    ui::Style* style,
+                                    const WidgetAlign align)
 {
   Item* item = new Item();
   item->setText(text);
-  addItem(item, hspan, vspan, style);
+  addItem(item, hspan, vspan, style, align);
   return item;
 }
 
-ButtonSet::Item* ButtonSet::addItem(const skin::SkinPartPtr& icon, ui::Style* style)
+ButtonSet::Item* ButtonSet::addItem(const skin::SkinPartPtr& icon,
+                                    ui::Style* style,
+                                    const WidgetAlign align)
 {
-  return addItem(icon, 1, 1, style);
+  return addItem(icon, 1, 1, style, align);
 }
 
 ButtonSet::Item* ButtonSet::addItem(const skin::SkinPartPtr& icon,
                                     int hspan,
                                     int vspan,
-                                    ui::Style* style)
+                                    ui::Style* style,
+                                    const WidgetAlign align)
 {
   Item* item = new Item();
   item->setIcon(icon);
-  addItem(item, hspan, vspan, style);
+  addItem(item, hspan, vspan, style, align);
   return item;
 }
-ButtonSet::Item* ButtonSet::addItem(Item* item, ui::Style* style)
+ButtonSet::Item* ButtonSet::addItem(Item* item, ui::Style* style, const WidgetAlign align)
 {
-  return addItem(item, 1, 1, style);
+  return addItem(item, 1, 1, style, align);
 }
 
-ButtonSet::Item* ButtonSet::addItem(Item* item, int hspan, int vspan, ui::Style* style)
+ButtonSet::Item* ButtonSet::addItem(Item* item,
+                                    int hspan,
+                                    int vspan,
+                                    ui::Style* style,
+                                    const WidgetAlign align)
 {
   item->InitTheme.connect([item, style] {
     ui::Style* s = style;
@@ -254,7 +311,7 @@ ButtonSet::Item* ButtonSet::addItem(Item* item, int hspan, int vspan, ui::Style*
     }
     item->setStyle(s);
   });
-  addChildInCell(item, hspan, vspan, HORIZONTAL | VERTICAL);
+  addChildInCell(item, hspan, vspan, align);
   return item;
 }
 
@@ -362,6 +419,15 @@ void ButtonSet::setTriggerOnMouseUp(bool state)
 void ButtonSet::setMultiMode(MultiMode mode)
 {
   m_multiMode = mode;
+}
+
+void ButtonSet::moveItemTo(Item* item1, Item* item2)
+{
+  if (item1->buttonSet() != this || item2->buttonSet() != this) {
+    return;
+  }
+
+  moveChildTo(item1, item2);
 }
 
 void ButtonSet::onItemChange(Item* item)
