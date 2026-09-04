@@ -31,12 +31,10 @@ public:
     void invalidateItem();
 
   protected:
-    void onPaint(ui::PaintEvent& ev) override;
     bool onProcessMessage(ui::Message* msg) override;
     virtual void onClick();
     virtual void onRightClick();
     virtual void onInvalidateRegion(const gfx::Region& region) override;
-    virtual void getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags) override;
 
   private:
     // Expands the passed rectangle only if needed as a result of overlapping items.

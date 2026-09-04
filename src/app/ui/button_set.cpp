@@ -84,19 +84,6 @@ void ButtonSet::Item::expandForOverlappingItems(gfx::Rect& bounds)
     bounds.h -= buttonSet()->m_rowgap;
 }
 
-void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
-{
-  if (style()) {
-    gfx::Rect rc = clientBounds();
-    // When gaps (m_colgap or m_rowgap) are negative we need to compensate client
-    // bounds size so the painting is based on a complete button, and not just
-    // the part not overlapped.
-    expandForOverlappingItems(rc);
-
-    theme()->paintWidget(ev.graphics(), this, style(), rc);
-  }
-}
-
 void ButtonSet::Item::invalidateItem()
 {
   Widget::invalidate();
@@ -236,95 +223,6 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
       break;
   }
   return Widget::onProcessMessage(msg);
-}
-
-void ButtonSet::Item::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
-{
-  // We have to adjust the drawable region only when the buttonset items are
-  // overlapped.
-  if (buttonSet() && buttonSet()->hasOverlappingItems()) {
-    Window* window = this->window();
-    Display* display = this->display();
-
-    getRegion(region);
-
-    // Adjust the region because some items might not have an adjacent item that
-    // overlap them (i.e. when the last row have less items than the number of
-    // columns of the ButtonSet). In those cases the items need to be fully painted.
-    auto rbounds = region.bounds();
-    expandForOverlappingItems(rbounds);
-    region.createUnion(region, gfx::Region(rbounds));
-
-    // Cut the top windows areas
-    if (flags & kCutTopWindows) {
-      const auto& uiWindows = display->getWindows();
-
-      // Reverse iterator
-      auto it = std::find(uiWindows.rbegin(), uiWindows.rend(), window);
-
-      if (!uiWindows.empty() && window != uiWindows.front() && it != uiWindows.rend()) {
-        // Subtract the rectangles of each window
-        for (++it; it != uiWindows.rend(); ++it) {
-          if (!(*it)->isVisible())
-            continue;
-
-          gfx::Region reg1;
-          (*it)->getRegion(reg1);
-          region -= reg1;
-        }
-      }
-    }
-
-    // Clip the areas where are children
-    if (!(flags & kUseChildArea) && !children().empty()) {
-      gfx::Region reg1;
-      gfx::Region reg2(childrenBounds());
-
-      for (auto child : children()) {
-        if (child->isVisible()) {
-          gfx::Region reg3;
-          child->getRegion(reg3);
-
-          if (child->hasFlags(DECORATIVE)) {
-            reg1 = bounds();
-            reg1.createIntersection(reg1, reg3);
-          }
-          else {
-            reg1.createIntersection(reg2, reg3);
-          }
-          region -= reg1;
-        }
-      }
-    }
-
-    // Intersect with the parent area
-    if (!hasFlags(DECORATIVE)) {
-      Widget* p = this->parent();
-      while (p && p->type() != kManagerWidget) {
-        region &= gfx::Region(p->childrenBounds());
-        p = p->parent();
-      }
-    }
-    else {
-      Widget* p = parent();
-      if (p) {
-        region &= gfx::Region(p->bounds());
-      }
-    }
-
-    // Limit to the displayable area
-    View* view = View::getView(display->containedWidget());
-    gfx::Rect cpos;
-    if (view)
-      cpos = static_cast<View*>(view)->viewportBounds();
-    else
-      cpos = display->containedWidget()->bounds();
-
-    region &= gfx::Region(cpos);
-  }
-  else {
-    Widget::getDrawableRegion(region, flags);
-  }
 }
 
 void ButtonSet::Item::onClick()
