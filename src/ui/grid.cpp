@@ -212,11 +212,6 @@ void Grid::onResize(ResizeEvent& ev)
         if (y + h > rect.y + rect.h - border().bottom())
           h = rect.y + rect.h - border().bottom() - y;
 
-        if (m_colgap < 0 && col + cell->hspan - 1 < (int)m_colstrip.size() - 1)
-          w += m_colgap;
-        if (m_rowgap < 0 && row + cell->vspan - 1 < (int)m_rowstrip.size() - 1)
-          h += m_rowgap;
-
         cell->child->setBounds(Rect(x, y, w, h));
       }
 
