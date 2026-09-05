@@ -111,7 +111,7 @@ half4 main(vec2 fragcoord) {
      angle = PI * angle / 180.0;
     }
     nd = (floor(nd * 6.0 + 1.0) - 1) / 5.0;
-    float blueAngleDegrees = floor(90.0 * (6.0 - floor(nd * 6.0)) / 5.0);
+    float blueAngleDegrees = 90.0 * (1.0 - nd);
     blueAngle = PI * blueAngleDegrees / 180.0;
 
     rgba.r = 0.5 + 0.5 * nd * cos(angle);
@@ -250,7 +250,7 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax, const int 
         if (normalizedDistance < 1.0 / 6.0)
           angle = 0;
         normalizedDistance = (std::floor((normalizedDistance) * 6.0 + 1.0) - 1) / 5.0;
-        int blueAngleDegrees = 90.0 * (6.0 - std::floor(normalizedDistance * 6.0)) / 5.0;
+        const int blueAngleDegrees = 90.0 * (1.0 - normalizedDistance);
         blueAngle = PI * blueAngleDegrees / 180.0;
 
         r = 128 + int(128.0 * normalizedDistance * std::cos(angle));
