@@ -150,6 +150,7 @@ void ConvertLayerCommand::onExecute(Context* ctx)
     tilesetInfo.allowNewTileset = true;
     tilesetInfo.allowExistentTileset = false;
     tilesetInfo.grid = grid0;
+    tilesetInfo.matchFlags = matchFlags;
 
     gen::TilesetSelectorWindow window;
     TilesetSelector tilesetSel(sprite, tilesetInfo);
