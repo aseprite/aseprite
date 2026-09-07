@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1101,20 +1101,26 @@ void FileOp::postLoad()
   }
 
   Sprite* sprite = m_document->sprite();
-  if (sprite) {
-    // Creates a suitable palette for RGB images
-    if (m_createPaletteFromRgba && sprite->pixelFormat() == IMAGE_RGB &&
-        sprite->getPalettes().size() <= 1 && sprite->palette(frame_t(0))->isBlack()) {
-      std::shared_ptr<Palette> palette(
-        render::create_palette_from_sprite(sprite,
-                                           frame_t(0),
-                                           sprite->lastFrame(),
-                                           true,
-                                           nullptr,
-                                           nullptr,
-                                           m_config.newBlend,
-                                           m_config.rgbMapAlgorithm));
+  if (sprite && m_createPaletteFromRgba && sprite->getPalettes().size() <= 1 &&
+      sprite->palette(frame_t(0))->isBlack()) {
+    std::shared_ptr<Palette> palette;
 
+    switch (sprite->pixelFormat()) {
+      // Creates a suitable palette for RGB images
+      case IMAGE_RGB:
+        palette.reset(render::create_palette_from_sprite(sprite,
+                                                         frame_t(0),
+                                                         sprite->lastFrame(),
+                                                         true,
+                                                         nullptr,
+                                                         nullptr,
+                                                         m_config.newBlend,
+                                                         m_config.rgbMapAlgorithm));
+        break;
+      // Set grayscale palette
+      case IMAGE_GRAYSCALE: palette.reset(Palette::createGrayscale()); break;
+    }
+    if (palette) {
       sprite->resetPalettes();
       sprite->setPalette(palette.get(), false);
     }
