@@ -138,6 +138,8 @@ inline void setfield_uinteger(lua_State* L, const char* key, const T& value)
     lua_pushcfunction(L, generic_mt_newindex);                                                     \
     lua_setfield(L, -2, "__newindex");                                                             \
     luaL_setfuncs(L, T##_methods, 0);                                                              \
+    lua_pushstring(L, #T);                                                                         \
+    lua_setfield(L, -2, "__typename");                                                             \
     lua_pop(L, 1);                                                                                 \
   }
 

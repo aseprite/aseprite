@@ -72,7 +72,9 @@ public:
   void accessGate(Permission permission, const std::string& match = std::string());
 
   // Checks if the Engine has any tracked objects or attached events
-  bool hasLingeringObjects();
+  bool hasLingeringObjects() const;
+
+  bool isTemporaryFile(const std::string& filename) const;
 
   void handleException(const std::exception& ex);
 
