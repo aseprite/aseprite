@@ -37,6 +37,7 @@ private:
   bool m_ui;
   bool m_repeatCheckbox;
   bool m_oneFrame;
+  bool m_addToRecents;
   base::paths m_usedFiles;
   gen::SequenceDecision m_seqDecision;
 };
