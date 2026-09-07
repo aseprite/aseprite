@@ -174,6 +174,10 @@ void register_tool_class(lua_State* L);
 void register_uuid_class(lua_State* L);
 void register_version_class(lua_State* L);
 void register_websocket_class(lua_State* L);
+void register_app_net_object(lua_State* L);
+void register_app_base64_object(lua_State* L);
+void register_app_url_object(lua_State* L);
+
 void set_app_params(lua_State* L, const Params& params);
 
 constexpr auto engine_registration_functions = {
@@ -229,7 +233,10 @@ constexpr auto engine_registration_functions = {
   register_tool_class,
   register_uuid_class,
   register_version_class,
-#if ENABLE_WEBSOCKET
+  register_app_base64_object,
+#if ENABLE_SCRIPT_NET
+  register_app_net_object,
+  register_app_url_object,
   register_websocket_class,
 #endif
 };

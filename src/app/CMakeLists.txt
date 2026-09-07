@@ -184,9 +184,8 @@ if(ENABLE_SCRIPTING)
   target_compile_definitions(app-lib PUBLIC -DENABLE_SCRIPTING)
   target_link_libraries(app-lib cppdap blake3)
 
-  if(ENABLE_WEBSOCKET)
-    target_link_libraries(app-lib ixwebsocket)
-    target_compile_definitions(app-lib PUBLIC -DENABLE_WEBSOCKET)
+  if(ENABLE_SCRIPT_NET)
+    target_compile_definitions(app-lib PUBLIC -DENABLE_SCRIPT_NET)
     target_sources(app-lib PRIVATE
       script/websocket_class.cpp)
   endif()
@@ -195,6 +194,7 @@ if(ENABLE_SCRIPTING)
     commands/cmd_open_script_folder.cpp
     commands/cmd_run_script.cpp
     commands/debugger.cpp
+    script/app_base64_object.cpp
     script/app_command_object.cpp
     script/app_clipboard_object.cpp
     script/app_fs_object.cpp
@@ -227,6 +227,7 @@ if(ENABLE_SCRIPTING)
     script/layer_class.cpp
     script/layers_class.cpp
     script/luacpp.cpp
+    script/net_object.cpp
     script/palette_class.cpp
     script/palettes_class.cpp
     script/permission_dialog.cpp

@@ -841,6 +841,8 @@ void app_refresh_screen()
   // Invalidate the whole screen.
   if (auto* man = ui::Manager::getDefault())
     man->invalidate();
+
+  app_rebuild_documents_tabs();
 }
 
 // TODO remove app_rebuild_documents_tabs() and replace it by
