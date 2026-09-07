@@ -261,6 +261,9 @@ public:
   const gfx::Point& position() const { return m_pos; }
   double magnification() const { return m_magnification; }
 
+  // Absolute position of this message on the screen.
+  gfx::Point screenPosition() const;
+
 private:
   gfx::Point m_pos; // Mouse position
   double m_magnification;
