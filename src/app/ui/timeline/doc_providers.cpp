@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2025  Igara Studio S.A.
+// Copyright (C) 2025-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -26,8 +26,7 @@ std::unique_ptr<Doc> DocProviderFromPaths::nextDoc()
   m_paths.erase(m_paths.begin());
 
   Console console;
-  int flags = FILE_LOAD_DATA_FILE | FILE_LOAD_AVOID_BACKGROUND_LAYER | FILE_LOAD_CREATE_PALETTE |
-              FILE_LOAD_SEQUENCE_YES;
+  int flags = FILE_LOAD_DATA_FILE | FILE_LOAD_CREATE_PALETTE | FILE_LOAD_SEQUENCE_YES;
 
   std::unique_ptr<FileOp> fop(FileOp::createLoadDocumentOperation(m_context, path, flags));
 
