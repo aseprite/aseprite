@@ -1655,6 +1655,7 @@ void Timeline::onResize(ui::ResizeEvent& ev)
     oneTagHeight()));
 
   updateScrollBars();
+  Resize();
 }
 
 void Timeline::onPaint(ui::PaintEvent& ev)
