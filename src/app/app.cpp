@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -72,6 +72,10 @@
 #include "ui/ui.h"
 #include "updater/user_agent.h"
 #include "ver/info.h"
+
+#if ENABLE_SENTRY
+  #include "app/sentry_wrapper.h"
+#endif
 
 #if LAF_MACOS
   #include "os/osx/system.h"
@@ -455,17 +459,14 @@ struct DeleteAllDocs {
       docs.push_back(doc);
 
     for (Doc* doc : docs) {
-      // First we close the document. In this way we receive recent
-      // notifications related to the document as a app::Doc. If
-      // we delete the document directly, we destroy the app::Doc
-      // too early, and then doc::~Document() call
-      // DocsObserver::onRemoveDocument(). In this way, observers
-      // could think that they have a fully created app::Doc when
-      // in reality it's a doc::Document (in the middle of a
-      // destruction process).
-      //
-      // TODO: This problem is because we're extending doc::Document,
-      // in the future, we should remove app::Doc.
+      // First we close the document and then we can delete it. In
+      // this way we receive recent notifications related to the
+      // document as a app::Doc. If we delete the document directly,
+      // we destroy the app::Doc too early, then doc::~Document()
+      // calls DocsObserver::onRemoveDocument(), and observers could
+      // think that they have a fully created app::Doc when in reality
+      // it's just a doc::Document (in the middle of a destruction
+      // process).
       doc->close();
       delete doc;
     }
@@ -479,132 +480,144 @@ void App::run(const bool runGuiManager)
   CloseMainWindow closeMainWindow(m_mainWindow);
   DeleteAllDocs deleteAllDocsAtExit(context());
 
-  // Run the GUI
-  if (isGui()) {
-    auto manager = ui::Manager::getDefault();
+  try {
+    // Run the GUI
+    if (isGui()) {
+      auto manager = ui::Manager::getDefault();
 #if LAF_WINDOWS
-    // How to interpret one finger on Windows tablets.
-    manager->display()->nativeWindow()->setInterpretOneFingerGestureAsMouseMovement(
-      preferences().experimental.oneFingerAsMouseMovement());
+      // How to interpret one finger on Windows tablets.
+      manager->display()->nativeWindow()->setInterpretOneFingerGestureAsMouseMovement(
+        preferences().experimental.oneFingerAsMouseMovement());
   #if ENABLE_WEBP && LAF_SKIA
-    // In Windows we use a custom webp decoder for drag & drop operations.
-    os::set_decode_webp(util::decode_webp);
+      // In Windows we use a custom webp decoder for drag & drop operations.
+      os::set_decode_webp(util::decode_webp);
   #endif
 #endif
 
 #if LAF_LINUX
-    // Setup app icon for Linux window managers
-    try {
-      os::Window* window = os::System::instance()->defaultWindow();
-      os::SurfaceList icons;
+      // Setup app icon for Linux window managers
+      try {
+        os::Window* window = os::System::instance()->defaultWindow();
+        os::SurfaceList icons;
 
-      for (const int size : { 32, 64, 128 }) {
-        ResourceFinder rf;
-        rf.includeDataDir(fmt::format("icons/ase{0}.png", size).c_str());
-        if (rf.findFirst()) {
-          os::SurfaceRef surf = os::System::instance()->loadRgbaSurface(rf.filename().c_str());
-          if (surf) {
-            surf->setImmutable();
-            icons.push_back(surf);
+        for (const int size : { 32, 64, 128 }) {
+          ResourceFinder rf;
+          rf.includeDataDir(fmt::format("icons/ase{0}.png", size).c_str());
+          if (rf.findFirst()) {
+            os::SurfaceRef surf = os::System::instance()->loadRgbaSurface(rf.filename().c_str());
+            if (surf) {
+              surf->setImmutable();
+              icons.push_back(surf);
+            }
           }
         }
-      }
 
-      window->setIcons(icons);
-    }
-    catch (const std::exception&) {
-      // Just ignore the exception, we couldn't change the app icon, no
-      // big deal.
-    }
+        window->setIcons(icons);
+      }
+      catch (const std::exception&) {
+        // Just ignore the exception, we couldn't change the app icon, no
+        // big deal.
+      }
 #endif
 
-    // Initialize Steam API
+      // Initialize Steam API
 #ifdef ENABLE_STEAM
-    std::unique_ptr<steam::SteamAPI> steam;
-    if (m_inAppSteam) {
-      steam = std::make_unique<steam::SteamAPI>();
-      if (steam->isInitialized())
-        os::System::instance()->activateApp();
-    }
-    else {
-      // We tried to load the Steam SDK without calling
-      // SteamAPI_InitSafe() to check if we could run the program
-      // without "in game" indication but still capturing screenshots
-      // on Steam, and that wasn't the case.
-    }
+      std::unique_ptr<steam::SteamAPI> steam;
+      if (m_inAppSteam) {
+        steam = std::make_unique<steam::SteamAPI>();
+        if (steam->isInitialized())
+          os::System::instance()->activateApp();
+      }
+      else {
+        // We tried to load the Steam SDK without calling
+        // SteamAPI_InitSafe() to check if we could run the program
+        // without "in game" indication but still capturing screenshots
+        // on Steam, and that wasn't the case.
+      }
 #endif
 
 #if defined(_DEBUG) || defined(ENABLE_DEVMODE)
-    // On OS X, when we compile Aseprite on devmode, we're using it
-    // outside an app bundle, so we must active the app explicitly.
-    os::System::instance()->activateApp();
+      // On OS X, when we compile Aseprite on devmode, we're using it
+      // outside an app bundle, so we must active the app explicitly.
+      os::System::instance()->activateApp();
 #endif
 
 #ifdef ENABLE_UPDATER
-    // Launch the thread to check for updates.
-    app::CheckUpdateThreadLauncher checkUpdate(m_mainWindow->getCheckUpdateDelegate());
-    checkUpdate.launch();
+      // Launch the thread to check for updates.
+      app::CheckUpdateThreadLauncher checkUpdate(m_mainWindow->getCheckUpdateDelegate());
+      checkUpdate.launch();
 #endif
 
 #if !ENABLE_SENTRY
-    app::SendCrash sendCrash;
-    sendCrash.search();
+      app::SendCrash sendCrash;
+      sendCrash.search();
 #endif
 
-    // Keep the console alive the whole program execute (just in case
-    // we've to print errors).
-    Console console;
+      // Keep the console alive the whole program execute (just in case
+      // we've to print errors).
+      Console console;
 #ifdef ENABLE_SCRIPTING
-    // Use the app::Console() for script errors
-    ConsoleEngineDelegate delegate(console);
-    script::ScopedEngineDelegate setEngineDelegate(m_engine.get(), &delegate);
+      // Use the app::Console() for script errors
+      ConsoleEngineDelegate delegate(console);
+      script::ScopedEngineDelegate setEngineDelegate(m_engine.get(), &delegate);
 #endif
 
-    // Run the GUI main message loop
-    if (runGuiManager) {
-      try {
-        manager->run();
-        set_app_state(AppState::kClosing);
-      }
-      catch (...) {
-        set_app_state(AppState::kClosingWithException);
-        throw;
+      // Run the GUI main message loop
+      if (runGuiManager) {
+        try {
+          manager->run();
+          set_app_state(AppState::kClosing);
+        }
+        catch (...) {
+          set_app_state(AppState::kClosingWithException);
+          throw;
+        }
       }
     }
-  }
 
 #ifdef ENABLE_SCRIPTING
-  // Start shell to execute scripts.
-  if (m_isShell) {
-    m_engine->printLastResult(); // TODO is this needed?
-    Shell shell;
-    shell.run(*m_engine);
-  }
+    // Start shell to execute scripts.
+    if (m_isShell) {
+      m_engine->printLastResult(); // TODO is this needed?
+      Shell shell;
+      shell.run(*m_engine);
+    }
 #endif // ENABLE_SCRIPTING
 
-  // ----------------------------------------------------------------------
+    // ----------------------------------------------------------------------
 
 #ifdef ENABLE_SCRIPTING
-  // Call the exit() function from all plugins
-  extensions().executeExitActions();
+    // Call the exit() function from all plugins
+    extensions().executeExitActions();
 #endif
 
-  if (isGui()) {
-    ExitGui();
+    if (isGui()) {
+      ExitGui();
 
-    // Select no document
-    static_cast<UIContext*>(context())->setActiveView(nullptr);
+      // Select no document
+      static_cast<UIContext*>(context())->setActiveView(nullptr);
 
-    // Delete backups (this is a normal shutdown, we are not handling
-    // exceptions, and we are not in a destructor).
-    m_modules->deleteDataRecovery();
-  }
+      // Delete backups (this is a normal shutdown, we are not handling
+      // exceptions, and we are not in a destructor).
+      m_modules->deleteDataRecovery();
+    }
 #if !LAF_SKIA
-  else if (m_showCliOnlyWarning) {
-    std::printf("You have a CLI-only Aseprite version\n"
-                "To enable GUI support build with LAF_BACKEND=skia\n");
-  }
+    else if (m_showCliOnlyWarning) {
+      std::printf("You have a CLI-only Aseprite version\n"
+                  "To enable GUI support build with LAF_BACKEND=skia\n");
+    }
 #endif
+  }
+  // This is here just in case ~DeleteAllDocs or ~CloseMainWindow
+  // throw another exception when we are unwiding this one. In other
+  // case main() will handle the exception and log it with Sentry too.
+  catch (const std::exception& ex) {
+    LOG(ERROR, "APP::run: Unhandled exception: %s\n", ex.what());
+#if ENABLE_SENTRY
+    Sentry::addBreadcrumb(ex.what());
+#endif
+    throw;
+  }
 }
 
 // Finishes the Aseprite application.

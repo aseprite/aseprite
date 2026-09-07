@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (c) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -68,6 +68,7 @@ void Docs::remove(Doc* doc)
   m_docs.erase(it);
 
   notify_observers(&DocsObserver::onRemoveDocument, doc);
+  notify_observers(&DocsObserver::onDeleteDocumentPreferences, doc);
 
   doc->setContext(NULL);
 }
