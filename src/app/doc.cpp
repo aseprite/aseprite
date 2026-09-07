@@ -396,6 +396,11 @@ void Doc::markAsSaved()
   m_undo->markSavedState();
 }
 
+void Doc::removeSavedMark()
+{
+  m_flags &= ~kAssociatedToFile;
+}
+
 void Doc::impossibleToBackToSavedState()
 {
   m_undo->impossibleToBackToSavedState();

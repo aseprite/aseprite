@@ -43,6 +43,7 @@
 #include "app/doc_undo.h"
 #include "app/doc_undo_observer.h"
 #include "app/file/palette_file.h"
+#include "app/i18n/strings.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
@@ -914,7 +915,19 @@ int Sprite_set_filename(lua_State* L)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   const char* fn = lua_tostring(L, 2);
-  sprite->document()->setFilename(fn ? std::string(fn) : std::string());
+  const std::string filename = fn ? fn : std::string();
+
+  if (filename.empty()) {
+    // Resets the sprite to a "just created" state.
+    Doc* doc = static_cast<Doc*>(sprite->document());
+    doc->resetUndoHistory();
+    doc->removeSavedMark();
+    doc->impossibleToBackToSavedState();
+    doc->setFilename(Strings::commands_NewFile_Sprite());
+  }
+  else {
+    sprite->document()->setFilename(filename);
+  }
   return 0;
 }
 
