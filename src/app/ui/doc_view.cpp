@@ -57,6 +57,10 @@
 #include "ui/system.h"
 #include "ui/view.h"
 
+#if ENABLE_SENTRY
+  #include "app/sentry_wrapper.h"
+#endif
+
 #include <cmath>
 #include <typeinfo>
 
@@ -184,6 +188,10 @@ protected:
       return Editor::onProcessMessage(msg);
     }
     catch (const std::exception& ex) {
+      LOG(ERROR, "EDITOR: Unhandled exception: %s\n", ex.what());
+#if ENABLE_SENTRY
+      Sentry::addBreadcrumb(ex.what());
+#endif
       showUnhandledException(ex, msg);
       return false;
     }

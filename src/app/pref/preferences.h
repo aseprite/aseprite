@@ -80,7 +80,7 @@ public:
 
 protected:
   // DocsObserver impl
-  void onRemoveDocument(Doc* doc) override;
+  void onDeleteDocumentPreferences(Doc* doc) override;
 
 private:
   void load();

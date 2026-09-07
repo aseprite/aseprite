@@ -1105,38 +1105,45 @@ void FileOp::postLoad()
   }
 
   Sprite* sprite = m_document->sprite();
-  if (sprite) {
-    // Creates a suitable palette for RGB images
-    if (m_createPaletteFromRgba && sprite->pixelFormat() == IMAGE_RGB &&
-        sprite->getPalettes().size() <= 1 && sprite->palette(frame_t(0))->isBlack()) {
-      const int maxColors = 16384;
-      std::unordered_set<color_t> colors;
-      for (const Cel* cel : sprite->cels()) {
-        if (cel->image())
-          count_rgba_colors(cel->image(), colors, maxColors);
-        if (colors.size() >= maxColors)
-          break;
-      }
+  if (sprite && m_createPaletteFromRgba && sprite->getPalettes().size() <= 1 &&
+      sprite->palette(frame_t(0))->isBlack()) {
+    std::shared_ptr<Palette> palette;
 
-      if (!colors.empty() && colors.size() < maxColors) {
-        std::shared_ptr<Palette> palette(
-          render::create_palette_from_sprite(sprite,
-                                             frame_t(0),
-                                             sprite->lastFrame(),
-                                             true,
-                                             nullptr,
-                                             nullptr,
-                                             m_config.newBlend,
-                                             m_config.rgbMapAlgorithm));
+    switch (sprite->pixelFormat()) {
+      // Creates a suitable palette for RGB images
+      case IMAGE_RGB: {
+        constexpr const int kMaxColors = 16384;
+        std::unordered_set<color_t> colors;
+        for (const Cel* cel : sprite->cels()) {
+          if (cel->image())
+            count_rgba_colors(cel->image(), colors, kMaxColors);
+          if (colors.size() >= kMaxColors)
+            break;
+        }
+        if (!colors.empty() && colors.size() < kMaxColors) {
+          palette.reset(render::create_palette_from_sprite(sprite,
+                                                           frame_t(0),
+                                                           sprite->lastFrame(),
+                                                           true,
+                                                           nullptr,
+                                                           nullptr,
+                                                           m_config.newBlend,
+                                                           m_config.rgbMapAlgorithm));
+        }
+        else {
+          palette.reset(new Palette(frame_t(0), colors.size()));
+          int i = 0;
+          for (const color_t c : colors)
+            palette->setEntry(i++, c);
+        }
+        break;
       }
-      else {
-        std::shared_ptr<Palette> palette(new Palette(frame_t(0), colors.size()));
-        int i = 0;
-        for (const color_t c : colors)
-          palette->setEntry(i++, c);
-        sprite->resetPalettes();
-        sprite->setPalette(palette.get(), false);
-      }
+      // Set grayscale palette
+      case IMAGE_GRAYSCALE: palette.reset(Palette::createGrayscale()); break;
+    }
+    if (palette) {
+      sprite->resetPalettes();
+      sprite->setPalette(palette.get(), false);
     }
   }
 
