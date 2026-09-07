@@ -1350,7 +1350,7 @@ Extension* Extensions::installCompressedExtension(const std::string& zipFn,
   std::set<std::string> installedFiles;
 
   // Uncompress zipFn in info.dstPath
-  {
+  try {
     ReadArchive in(zipFn);
     WriteArchive out;
 
@@ -1361,7 +1361,7 @@ Extension* Extensions::installCompressedExtension(const std::string& zipFn,
         continue;
 
       // Fix the entry filename to write the file in the disk
-      std::string fn = entryFnPtr;
+      std::string fn = base::normalize_path(entryFnPtr);
 
       LOG("EXT: Original filename in zip <%s>...\n", fn.c_str());
 
@@ -1386,7 +1386,12 @@ Extension* Extensions::installCompressedExtension(const std::string& zipFn,
       installedFiles.emplace(base::get_file_path(fn));
       installedFiles.emplace(fn);
 
-      const std::string fullFn = base::join_path(info.dstPath, fn);
+      const std::string fullFn = base::normalize_path(base::join_path(info.dstPath, fn));
+
+      // Prevent path traversal
+      if (fullFn.rfind(info.dstPath, 0) != 0)
+        throw base::Exception("Invalid file in extension archive");
+
 #if _WIN32
       archive_entry_copy_pathname_w(entry, base::from_utf8(fullFn).c_str());
 #else
@@ -1397,6 +1402,21 @@ Extension* Extensions::installCompressedExtension(const std::string& zipFn,
 
       out.writeEntry(in, entry);
     }
+  }
+  catch (const std::exception& e) {
+    // Unwind installation as best we can
+    for (const auto& file : installedFiles) {
+      const auto fn = base::join_path(info.dstPath, file);
+      if (base::is_file(fn))
+        base::delete_file(fn);
+    }
+    // Attempt to delete the directory, but keep any user files.
+    try {
+      base::remove_directory(info.dstPath);
+    }
+    catch (...) {
+    }
+    throw base::Exception("Installation error: %s", e.what());
   }
 
   // Save the list of installed files in "__info.json" file
