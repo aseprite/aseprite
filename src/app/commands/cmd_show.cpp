@@ -36,12 +36,15 @@ protected:
       docPref.show.selectionEdges(false);
       docPref.show.layerEdges(false);
       docPref.show.grid(false);
+      docPref.show.gridSubdivisions(false);
       docPref.show.pixelGrid(false);
     }
     else {
       docPref.show.selectionEdges(true);
       docPref.show.layerEdges(docPref.show.layerEdges() || globPref.show.layerEdges());
       docPref.show.grid(docPref.show.grid() || globPref.show.grid());
+      docPref.show.gridSubdivisions(docPref.show.gridSubdivisions() ||
+                                    globPref.show.gridSubdivisions());
       docPref.show.pixelGrid(docPref.show.pixelGrid() || globPref.show.pixelGrid());
     }
   }
@@ -80,6 +83,24 @@ protected:
   {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     docPref.show.grid(!docPref.show.grid());
+  }
+};
+
+class ShowGridSubdivisionsCommand : public Command {
+public:
+  ShowGridSubdivisionsCommand() : Command(CommandId::ShowGridSubdivisions()) {}
+
+protected:
+  bool onChecked(Context* ctx) override
+  {
+    const DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
+    return docPref.show.gridSubdivisions();
+  }
+
+  void onExecute(Context* ctx) override
+  {
+    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
+    docPref.show.gridSubdivisions(!docPref.show.gridSubdivisions());
   }
 };
 
@@ -224,6 +245,11 @@ Command* CommandFactory::createShowExtrasCommand()
 Command* CommandFactory::createShowGridCommand()
 {
   return new ShowGridCommand;
+}
+
+Command* CommandFactory::createShowGridSubdivisionsCommand()
+{
+  return new ShowGridSubdivisionsCommand;
 }
 
 Command* CommandFactory::createShowPixelGridCommand()
