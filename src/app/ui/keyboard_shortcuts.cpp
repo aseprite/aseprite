@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -664,6 +664,21 @@ KeyAction KeyboardShortcuts::getCurrentActionModifiers(KeyContext context)
   }
 
   return flags;
+}
+
+bool KeyboardShortcuts::isSelectionModifiersPressed()
+{
+  for (const KeyPtr& key : m_keys) {
+    if (key->type() == KeyType::Action &&
+        (key->action() == KeyAction::AddSelection ||
+         key->action() == KeyAction::SubtractSelection ||
+         key->action() == KeyAction::IntersectSelection ||
+         key->action() == KeyAction::CopySelection) &&
+        key->isPressed()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 WheelAction KeyboardShortcuts::getWheelActionFromMouseMessage(const KeyContext context,
