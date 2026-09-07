@@ -28,6 +28,7 @@
 #include "app/script/luacpp.h"
 #include "app/script/permissions.h"
 #include "app/site.h"
+#include "app/task.h"
 #include "app/tools/active_tool.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool_box.h"
@@ -52,16 +53,16 @@
 #include "ui/scale.h"
 #include "ver/info.h"
 
-#include <cstring>
-#include <iostream>
 #include <vector>
 
 namespace app { namespace script {
 
 int load_sprite_from_file(lua_State* L, const char* filename, const LoadSpriteFromFileParam param)
 {
-  std::string absFn = base::get_absolute_path(filename);
-  get_engine(L)->accessGate(Permission::SpriteRead, absFn);
+  std::string absFn = base::normalize_path(base::get_absolute_path(filename));
+
+  auto* engine = get_engine(L);
+  engine->accessGate(Permission::SpriteRead, absFn);
 
   app::Context* ctx = App::instance()->context();
   Doc* oldDoc = ctx->activeDocument();
@@ -72,6 +73,9 @@ int load_sprite_from_file(lua_State* L, const char* filename, const LoadSpriteFr
   if (param == LoadSpriteFromFileParam::OneFrameAsSprite ||
       param == LoadSpriteFromFileParam::OneFrameAsImage)
     params.set("oneframe", "true");
+
+  params.set("recents", engine->isTemporaryFile(filename) ? "false" : "true");
+
   ctx->executeCommand(openCommand, params);
 
   Doc* newDoc = ctx->activeDocument();
