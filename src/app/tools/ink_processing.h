@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -1044,10 +1044,16 @@ public:
   {
   }
 
-  void processScanline(int x1, int y, int x2, ToolLoop* loop) override
+  void initIterators(ToolLoop* loop, int x1, int y)
   {
+    base::initIterators(loop, x1, y);
     m_tmpAddress = (RgbTraits::address_t)m_tmpImage->getPixelAddress(x1, y);
-    base::processScanline(x1, y, x2, loop);
+  }
+
+  void moveIterators()
+  {
+    base::moveIterators();
+    ++m_tmpAddress;
   }
 
   void prepareForStrokes(ToolLoop* loop, Strokes& strokes) override
@@ -1080,7 +1086,6 @@ template<>
 void GradientInkProcessing<RgbTraits>::processPixel(int x, int y)
 {
   *m_dstAddress = rgba_blender_normal(*m_srcAddress, *m_tmpAddress, m_opacity);
-  ++m_tmpAddress;
 }
 
 template<>
@@ -1106,7 +1111,6 @@ void GradientInkProcessing<GrayscaleTraits>::processPixel(int x, int y)
   int v = doc::rgba_getr(c);
 
   *m_dstAddress = graya_blender_normal(*m_srcAddress, doc::graya(v, a), m_opacity);
-  ++m_tmpAddress;
 }
 
 template<>
@@ -1130,8 +1134,6 @@ void GradientInkProcessing<IndexedTraits>::processPixel(int x, int y)
   c = rgba_blender_normal(c0, c, m_opacity);
 
   *m_dstAddress = m_rgbmap->mapColor(c);
-
-  ++m_tmpAddress;
 }
 
 //////////////////////////////////////////////////////////////////////
