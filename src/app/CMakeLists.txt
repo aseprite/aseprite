@@ -97,6 +97,7 @@ add_definitions(-DLIBARCHIVE_STATIC)
 # app-lib target
 
 add_library(app-lib ${generated_files})
+add_dependencies(app-lib generate_files)
 
 # These specific-platform files should be in an external library
 # (e.g. "base" or "os").
