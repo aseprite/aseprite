@@ -1167,7 +1167,7 @@
             <icon align="bottom" state="disabled" color="disabled"/>
             <icon align="bottom" state="capture selected" color="button_selected_text"/>
         </style>
-        <style id="buttonset_item_new" border="3" border-bottom="5">
+        <style id="buttonset_item_new">
             <background color="new_brush_hover" state="mouse"/>
             <border border-style="dotted" color="new_brush"/>
             <icon part="icon_add_big" color="new_brush"/>
