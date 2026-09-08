@@ -20,6 +20,7 @@ public:
   struct Info {
     int col, row;
     int hspan, vspan;
+    WidgetAlign align;
     int grid_cols, grid_rows;
     Info() : col(0), row(0), hspan(0), vspan(0), grid_cols(0), grid_rows(0) {}
   };
@@ -34,6 +35,8 @@ public:
   void setColumns(int columns);
 
 protected:
+  void layoutCells();
+
   // Events
   void onResize(ResizeEvent& ev) override;
   void onSizeHint(SizeHintEvent& ev) override;

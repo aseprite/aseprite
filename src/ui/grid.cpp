@@ -23,6 +23,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <map>
 
 namespace ui {
 
@@ -65,6 +66,28 @@ Grid::~Grid()
   for (std::size_t row = 0; row < m_cells.size(); ++row)
     for (std::size_t col = 0; col < m_cells[row].size(); ++col)
       delete m_cells[row][col];
+}
+
+void Grid::layoutCells()
+{
+  std::map<Widget*, Info> wInfo;
+  for (Widget* w : children()) {
+    auto info = getChildInfo(w);
+    wInfo[w] = info;
+  }
+
+  for (std::size_t row = 0; row < m_cells.size(); ++row)
+    for (std::size_t col = 0; col < m_cells[row].size(); ++col) {
+      m_cells[row][col]->child = nullptr;
+      m_cells[row][col]->parent = nullptr;
+    }
+
+  for (Widget* w : children()) {
+    auto info = wInfo[w];
+    putWidgetInCell(w, info.hspan, info.vspan, info.align);
+  }
+
+  layout();
 }
 
 /**
@@ -115,6 +138,7 @@ Grid::Info Grid::getChildInfo(Widget* child)
         info.row = row;
         info.hspan = cell->hspan;
         info.vspan = cell->vspan;
+        info.align = cell->align;
         info.grid_cols = m_colstrip.size();
         info.grid_rows = m_rowstrip.size();
         return info;

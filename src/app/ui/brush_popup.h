@@ -10,12 +10,13 @@
 #pragma once
 
 #include "app/ui/button_set.h"
-#include "app/ui/draggable_button_set.h"
 #include "doc/brushes.h"
 #include "ui/box.h"
 #include "ui/popup_window.h"
 
 namespace app {
+
+class DraggableItem;
 
 class BrushPopup : public ui::PopupWindow {
 public:
@@ -34,10 +35,14 @@ private:
   void onStandardBrush();
   void onBrushChanges();
 
+  static DraggableItem* m_draggedItem;
+
   ui::VBox m_box;
-  DraggableButtonSet m_standardBrushes;
-  DraggableButtonSet m_brushPatterns;
+  ButtonSet m_standardBrushes;
+  ButtonSet m_brushPatterns;
   ButtonSet* m_customBrushes;
+
+  friend class DraggableItem;
 };
 
 } // namespace app

@@ -428,6 +428,7 @@ void ButtonSet::moveItemTo(Item* item1, Item* item2)
   }
 
   moveChildTo(item1, item2);
+  layoutCells();
 }
 
 void ButtonSet::onItemChange(Item* item)

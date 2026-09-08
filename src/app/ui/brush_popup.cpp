@@ -24,7 +24,8 @@
 #include "app/ui/app_menuitem.h"
 #include "app/ui/button_set.h"
 #include "app/ui/context_bar.h"
-#include "app/ui/draggable_button_set.h"
+#include "app/ui/draggable_widget.h"
+#include "app/ui/drop_target_widget.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
@@ -48,6 +49,7 @@
 #include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/separator.h"
+#include "ui/widget.h"
 
 #include "brush_slot_params.xml.h"
 
@@ -59,6 +61,57 @@ using namespace app::skin;
 using namespace doc;
 using namespace ui;
 
+class DraggableItem : public DraggableWidget<ButtonSet::Item>,
+                      public DropTargetWidget {
+private:
+  bool onCanStartDrag() override { return !BrushPopup::m_draggedItem; }
+
+  bool onCanDropWidgetOutside() override { return false; }
+
+  void onReorderWidgets(const gfx::Point& mousePos, bool inside) override
+  {
+    Manager* mgr = manager();
+    Widget* pick = (mgr ? mgr->pick(mousePos) : nullptr);
+    if (auto* item = dynamic_cast<Item*>(pick)) {
+      auto* bs = this->buttonSet();
+      bs->moveItemTo(this, item);
+    }
+  }
+
+  void onDragWidgetEnd(const gfx::Point& mousePos, bool inside, bool cancelled) override
+  {
+    BrushPopup::m_draggedItem = nullptr;
+  }
+
+  bool onDragWidget(const gfx::Point& mousePos, bool inside) override
+  {
+    if (!BrushPopup::m_draggedItem) {
+      BrushPopup::m_draggedItem = this;
+    }
+    DraggableWidget::onDragWidget(mousePos, inside);
+    return true;
+  }
+
+  bool onDragWidgetOver(const gfx::Point& mousePos, Widget* widget) override
+  {
+    DropTargetWidget::onDragWidgetOver(mousePos, widget);
+    return false;
+  }
+
+  void onDragWidgetEnter(const gfx::Point& mousePos) override
+  {
+    DropTargetWidget::onDragWidgetEnter(mousePos);
+    setSelected(true);
+    invalidateItem();
+  }
+
+  void onDragWidgetLeave(const gfx::Point& mousePos) override
+  {
+    DropTargetWidget::onDragWidgetLeave(mousePos);
+    setSelected(false);
+    invalidateItem();
+  }
+};
 namespace {
 
 void show_popup_menu(PopupWindow* popupWindow,
@@ -81,7 +134,7 @@ void show_popup_menu(PopupWindow* popupWindow,
   popupWindow->setHotRegion(gfx::Region(popupWindow->boundsOnScreen()));
 }
 
-class SelectBrushItem : public DraggableButtonSet::DraggableItem {
+class SelectBrushItem : public DraggableItem {
 public:
   SelectBrushItem(const BrushSlot& brush, int slot = -1)
     : m_brushes(App::instance()->brushes())
@@ -133,7 +186,7 @@ private:
   int m_slot;
 };
 
-class NewBrushItem : public DraggableButtonSet::DraggableItem {
+class NewBrushItem : public DraggableItem {
 public:
   NewBrushItem()
   {
@@ -142,7 +195,7 @@ public:
   }
 };
 
-class SelectPatternItem : public DraggableButtonSet::DraggableItem {
+class SelectPatternItem : public DraggableItem {
 public:
   SelectPatternItem(const BrushPatternSlot& brushPattern) : m_slot(brushPattern) { initTheme(); }
 
@@ -159,12 +212,6 @@ public:
     }
   }
 
-protected:
-  /*  void onDragItemStart(DraggableItem* item) override {};
-    void onDragItemEnter(DraggableItem* item) override {};
-    void onDragItemLeave(DraggableItem* item) override {};
-    void onDropItem(DraggableItem* item) override {};
-  */
 private:
   void onClick() override
   {
@@ -405,6 +452,8 @@ private:
 };
 
 } // anonymous namespace
+
+DraggableItem* BrushPopup::m_draggedItem = nullptr;
 
 BrushPopup::BrushPopup()
   : PopupWindow("", ClickBehavior::CloseOnClickOutsideHotRegion)
