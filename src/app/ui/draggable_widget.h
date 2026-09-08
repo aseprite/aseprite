@@ -134,16 +134,6 @@ public:
               target->onDragWidgetEnter(mousePos);
             }
           }
-
-          if (target) {
-            /*
-            bool over = target->onDragWidgetOver(mousePos, this);
-            if (over) {
-              ui::set_mouse_cursor(ui::CursorType::kForbiddenCursor);
-            }
-              */
-          }
-
           m_lastTarget = target;
 
           // If the drag is consumed, then avoid Base processing.
