@@ -283,6 +283,11 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
 void DrawingState::onCommitMouseMove(Editor* editor, const gfx::PointF& spritePos)
 {
   if (m_toolLoop && m_toolLoopManager && !m_toolLoopManager->isCanceled()) {
+    m_lastPointer = tools::Pointer(gfx::Point(spritePos),
+                                   m_lastPointer.velocity(),
+                                   m_lastPointer.button(),
+                                   m_lastPointer.type(),
+                                   m_lastPointer.pressure());
     handleMouseMovement();
   }
 }
