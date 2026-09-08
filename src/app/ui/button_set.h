@@ -20,6 +20,8 @@ namespace app {
 
 class ButtonSet : public ui::Grid {
 public:
+  static const ButtonSet* originButtonset() { return m_originButtonset; }
+
   class Item : public ui::Widget,
                public ui::Style::Layer::IconSurfaceProvider {
   public:
@@ -107,16 +109,14 @@ public:
   obs::signal<void(Item*)> RightClick;
 
 protected:
-  static ButtonSet* originButtonset() { return m_originButtonset; }
-  static void resetOriginButtonset() { m_originButtonset = nullptr; }
-
   virtual void onItemChange(Item* item);
   virtual void onRightClick(Item* item);
   virtual void onSelectItem(Item* item, bool focusItem, ui::Message* msg);
 
 private:
-  // When this field holds the buttonset that originally captured the mouse at
-  // the first kMouseDownMessage.
+  // ButtonSet that originally captured the mouse at the first kMouseDownMessage,
+  // usefull to know which ButtonSet was first pressed when m_triggerOnMouseUp is
+  // true.
   static ButtonSet* m_originButtonset;
 
   bool m_offerCapture;

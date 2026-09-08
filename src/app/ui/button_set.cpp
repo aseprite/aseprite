@@ -166,6 +166,8 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
       break;
 
     case ui::kMouseUpMessage:
+      m_originButtonset = nullptr;
+
       if (hasCapture()) {
         if (g_itemBeforeCapture >= 0)
           g_itemBeforeCapture = -1;
@@ -184,8 +186,6 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
           onRightClick();
           consumed = true;
         }
-
-        ButtonSet::resetOriginButtonset();
 
         if (consumed) {
           return consumed;
