@@ -71,16 +71,6 @@ private:
 
   bool onCanDropWidgetOutside() override { return false; }
 
-  void onReorderWidgets(const gfx::Point& mousePos, bool inside) override
-  {
-    Manager* mgr = manager();
-    Widget* pick = (mgr ? mgr->pick(mousePos) : nullptr);
-    if (auto* item = dynamic_cast<Item*>(pick)) {
-      auto* bs = this->buttonSet();
-      bs->moveItemTo(this, item);
-    }
-  }
-
   bool onDragWidgetEnd(const gfx::Point& mousePos, bool inside, bool cancelled) override
   {
     BrushPopup::m_draggedItem = nullptr;
@@ -92,7 +82,6 @@ private:
     if (!BrushPopup::m_draggedItem) {
       BrushPopup::m_draggedItem = this;
     }
-    DraggableWidget::onDragWidget(mousePos, inside);
     return true;
   }
 
@@ -105,6 +94,7 @@ private:
   void onDragWidgetEnter(const gfx::Point& mousePos) override
   {
     DropTargetWidget::onDragWidgetEnter(mousePos);
+    buttonSet()->moveItemTo(BrushPopup::m_draggedItem, this);
     setSelected(true);
     invalidateItem();
   }
@@ -196,6 +186,16 @@ public:
   {
     this->setTransparent(true);
     initTheme();
+  }
+
+private:
+  bool onCanStartDrag() override { return false; }
+
+  void onDragWidgetEnter(const gfx::Point& mousePos) override
+  {
+    DropTargetWidget::onDragWidgetEnter(mousePos);
+    setSelected(true);
+    invalidateItem();
   }
 };
 
