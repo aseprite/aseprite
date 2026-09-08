@@ -256,21 +256,25 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
           scale = 15.0;
         }
 
-        double newHue = m_color.getHsvHue() +
-                        scale * (+static_cast<MouseMessage*>(msg)->wheelDelta().x -
-                                 static_cast<MouseMessage*>(msg)->wheelDelta().y);
+        const double dz = scale * (static_cast<MouseMessage*>(msg)->wheelDelta().x -
+                                   static_cast<MouseMessage*>(msg)->wheelDelta().y);
 
-        while (newHue < 0.0)
-          newHue += 360.0;
-        newHue = std::fmod(newHue, 360.0);
+        const int step =
+          ui::adjustWheelStep(dz, static_cast<MouseMessage*>(msg)->preciseWheel(), 16);
+        if (step != 0) {
+          double newHue = m_color.getHsvHue() + step;
+          while (newHue < 0.0)
+            newHue += 360.0;
+          newHue = std::fmod(newHue, 360.0);
 
-        if (newHue != m_color.getHsvHue()) {
-          app::Color newColor = app::Color::fromHsv(newHue,
-                                                    m_color.getHsvSaturation(),
-                                                    m_color.getHsvValue(),
-                                                    currentAlphaForNewColor());
+          if (newHue != m_color.getHsvHue()) {
+            const app::Color newColor = app::Color::fromHsv(newHue,
+                                                            m_color.getHsvSaturation(),
+                                                            m_color.getHsvValue(),
+                                                            currentAlphaForNewColor());
 
-          ColorChange(newColor, kButtonNone);
+            ColorChange(newColor, kButtonNone);
+          }
         }
       }
       break;

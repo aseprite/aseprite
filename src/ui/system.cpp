@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -42,6 +42,9 @@ static CursorType mouse_cursor_type = kOutsideDisplay;
 static const Cursor* mouse_cursor_custom = nullptr;
 static Display* mouse_display = nullptr;
 static bool use_native_mouse_cursor = true;
+
+// Mouse wheel speed
+static double wheel_speed_factor = 1.0;
 
 // Mouse information
 static int mouse_cursor_scale = 1;
@@ -215,6 +218,30 @@ bool get_clipboard_text(std::string& text)
     return delegate->getClipboardText(text);
   else
     return false;
+}
+
+void set_wheel_speed_factor(double factor)
+{
+  wheel_speed_factor = factor;
+}
+
+double get_wheel_speed_factor()
+{
+  return wheel_speed_factor;
+}
+
+// Accumulator to smoothly process wheel steps on a mouse with preciseWheel.
+static double step_accum = 0.0;
+
+int adjustWheelStep(double dz, bool precise, double divisor)
+{
+  if (precise) {
+    step_accum += dz * wheel_speed_factor / divisor;
+    const int step = step_accum;
+    step_accum -= step;
+    return step;
+  }
+  return int(dz);
 }
 
 void set_use_native_cursors(bool state)

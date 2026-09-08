@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -17,6 +17,7 @@
 #include "app/i18n/strings.h"
 #include "app/match_words.h"
 #include "app/modules/gui.h"
+#include "app/pref/preferences.h"
 #include "app/resource_finder.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
@@ -37,6 +38,7 @@
 #include "ui/separator.h"
 #include "ui/size_hint_event.h"
 #include "ui/splitter.h"
+#include "ui/system.h"
 
 #include "keyboard_shortcuts.xml.h"
 
@@ -508,6 +510,7 @@ public:
     slideZoom()->setVisible(false);
 #endif
 
+    wheelScrollSpeed()->setValue(ui::get_wheel_speed_factor() * 100);
     wheelBehavior()->setSelectedItem(m_keys.hasMouseWheelCustomization() ? 1 : 0);
     if (isDefaultWheelBehavior()) {
       m_keys.setDefaultMouseWheelKeys(wheelZoom()->isSelected());
@@ -1056,6 +1059,9 @@ void KeyboardShortcutsCommand::onExecute(Context* context)
       msg.setPropagateToChildren(true);
       window.sendMessage(&msg);
     }
+
+    Preferences::instance().editor.wheelScrollSpeed(window.wheelScrollSpeed()->getValue());
+    ui::set_wheel_speed_factor(window.wheelScrollSpeed()->getValue() / 100.0);
 
     // Save keyboard shortcuts in configuration file
     {

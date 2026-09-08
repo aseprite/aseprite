@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -173,28 +173,34 @@ void StateWithWheelBehavior::processWheelAction(Editor* editor,
       break;
 
     case WheelAction::FgColor: {
-      int lastIndex = get_current_palette()->size() - 1;
-      int newIndex = initialFgColor().getIndex() + int(dz);
-      newIndex = std::clamp(newIndex, 0, lastIndex);
-      changeFgColor(app::Color::fromIndex(newIndex));
+      const int step = ui::adjustWheelStep(dz, preciseWheel == PreciseWheel::On, 16);
+      if (step != 0) {
+        int lastIndex = get_current_palette()->size() - 1;
+        int newIndex = std::clamp(initialFgColor().getIndex() + step, 0, lastIndex);
+        changeFgColor(app::Color::fromIndex(newIndex));
+      }
       break;
     }
 
     case WheelAction::BgColor: {
-      int lastIndex = get_current_palette()->size() - 1;
-      int newIndex = initialBgColor().getIndex() + int(dz);
-      newIndex = std::clamp(newIndex, 0, lastIndex);
-      ColorBar::instance()->setBgColor(app::Color::fromIndex(newIndex));
+      const int step = ui::adjustWheelStep(dz, preciseWheel == PreciseWheel::On, 16);
+      if (step != 0) {
+        int lastIndex = get_current_palette()->size() - 1;
+        int newIndex = std::clamp(initialBgColor().getIndex() + step, 0, lastIndex);
+        ColorBar::instance()->setBgColor(app::Color::fromIndex(newIndex));
+      }
       break;
     }
 
     case WheelAction::FgTile: {
       auto tilesView = ColorBar::instance()->getTilesView();
       if (tilesView->tileset()) {
-        int lastIndex = tilesView->tileset()->size() - 1;
-        int newIndex = initialFgTileIndex() + int(dz);
-        newIndex = std::clamp(newIndex, 0, lastIndex);
-        ColorBar::instance()->setFgTile(newIndex);
+        const int step = ui::adjustWheelStep(dz, preciseWheel == PreciseWheel::On, 16);
+        if (step != 0) {
+          const int lastIndex = tilesView->tileset()->size() - 1;
+          int newIndex = std::clamp(initialFgTileIndex() + step, 0, lastIndex);
+          ColorBar::instance()->setFgTile(newIndex);
+        }
       }
       break;
     }
@@ -202,10 +208,12 @@ void StateWithWheelBehavior::processWheelAction(Editor* editor,
     case WheelAction::BgTile: {
       auto tilesView = ColorBar::instance()->getTilesView();
       if (tilesView->tileset()) {
-        int lastIndex = tilesView->tileset()->size() - 1;
-        int newIndex = initialBgTileIndex() + int(dz);
-        newIndex = std::clamp(newIndex, 0, lastIndex);
-        ColorBar::instance()->setBgTile(newIndex);
+        const int step = ui::adjustWheelStep(dz, preciseWheel == PreciseWheel::On, 16);
+        if (step != 0) {
+          const int lastIndex = tilesView->tileset()->size() - 1;
+          int newIndex = std::clamp(initialBgTileIndex() + step, 0, lastIndex);
+          ColorBar::instance()->setBgTile(newIndex);
+        }
       }
       break;
     }
@@ -236,17 +244,13 @@ void StateWithWheelBehavior::processWheelAction(Editor* editor,
     case WheelAction::Zoom: {
       render::Zoom zoom = initialZoom(editor);
 
-      if (preciseWheel == PreciseWheel::On) {
-        dz /= 1.5;
-        if (dz < -1.0)
-          dz = -1.0;
-        else if (dz > 1.0)
-          dz = 1.0;
+      if (preciseWheel == PreciseWheel::On)
+        dz = std::clamp(dz, -1.0, 1.0);
+      const int step = ui::adjustWheelStep(dz, preciseWheel == PreciseWheel::On, 4);
+      if (step != 0) {
+        zoom = render::Zoom::fromLinearScale(zoom.linearScale() - step);
+        setZoom(editor, zoom, position);
       }
-
-      zoom = render::Zoom::fromLinearScale(zoom.linearScale() - int(dz));
-
-      setZoom(editor, zoom, position);
       break;
     }
 
@@ -254,23 +258,23 @@ void StateWithWheelBehavior::processWheelAction(Editor* editor,
     case WheelAction::VScroll: {
       View* view = View::getView(editor);
       gfx::Point scroll = initialScroll(editor);
+      const double speed = ui::get_wheel_speed_factor();
 
       if (preciseWheel == PreciseWheel::Off) {
         gfx::Rect vp = view->viewportBounds();
 
-        if (wheelAction == WheelAction::HScroll) {
-          delta.x = int(dz * vp.w);
-        }
-        else {
-          delta.y = int(dz * vp.h);
-        }
+        if (wheelAction == WheelAction::HScroll)
+          // 10 is an experimental value
+          delta.x = dz * vp.w * speed / 10;
+        else
+          delta.y = dz * vp.h * speed / 10;
 
-        if (scrollBigSteps == ScrollBigSteps::On) {
-          delta /= 2;
-        }
-        else {
-          delta /= 10;
-        }
+        if (scrollBigSteps == ScrollBigSteps::On)
+          delta *= 5;
+      }
+      else {
+        delta.x = delta.x * speed;
+        delta.y = delta.y * speed;
       }
 
       editor->setEditorScroll(scroll + delta);
