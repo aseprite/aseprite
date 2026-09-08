@@ -170,14 +170,16 @@ protected:
 
   void onClick() override { static_cast<RecentListBox*>(parent())->onClick(m_fullpath); }
 
-  void onReorderWidgets(const gfx::Point& mousePos, bool inside) override
+  bool onDragWidget(const gfx::Point& mousePos, bool inside) override
   {
+    // Reorder items
     auto parent = this->parent();
     auto other = manager()->pick(mousePos);
     if (other && other != this && other->parent() == parent) {
       parent->moveChildTo(this, other);
       parent->layout();
     }
+    return false;
   }
 
   bool onDragWidgetEnd(const gfx::Point& mousePos, bool inside, bool cancelled) override

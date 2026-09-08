@@ -123,9 +123,10 @@ public:
             }
           }
 
+          bool consumed = onDragWidget(mousePos, inside);
+
           auto* pick = this->manager()->pick(mousePos);
           auto* target = dynamic_cast<DropTargetWidget*>(pick);
-
           if (m_lastTarget != target) {
             if (m_lastTarget) {
               m_lastTarget->onDragWidgetLeave(mousePos);
@@ -137,7 +138,7 @@ public:
           m_lastTarget = target;
 
           // If the drag is consumed, then avoid Base processing.
-          if (onDragWidget(mousePos, inside))
+          if (consumed)
             return true;
         }
         break;
@@ -166,13 +167,6 @@ public:
   }
 
   bool isDragging() const { return m_isDragging; }
-
-protected:
-  virtual bool onDragWidget(const gfx::Point& mousePos, bool inside)
-  {
-    onReorderWidgets(mousePos, inside);
-    return false;
-  }
 
 private:
   void createFloatingUILayer()
@@ -258,7 +252,7 @@ private:
   virtual bool onCanStartDrag() { return true; }
   virtual bool onCanCancelDrag() { return true; }
   virtual bool onCanDropWidgetOutside() { return true; }
-  virtual void onReorderWidgets(const gfx::Point& mousePos, bool inside) {}
+  virtual bool onDragWidget(const gfx::Point& mousePos, bool inside) { return true; }
   virtual bool onDragWidgetEnd(const gfx::Point& mousePos, bool inside, bool cancelled)
   {
     return true;
