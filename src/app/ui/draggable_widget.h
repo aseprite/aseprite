@@ -157,8 +157,9 @@ public:
         }
 
         dragEndCleanup();
-        onDragWidgetEnd(mousePos, getParentBounds().contains(mousePos), false);
-        return true;
+        bool consumed = onDragWidgetEnd(mousePos, getParentBounds().contains(mousePos), false);
+        if (consumed)
+          return true;
       }
     }
     return Base::onProcessMessage(msg);
@@ -258,7 +259,10 @@ private:
   virtual bool onCanCancelDrag() { return true; }
   virtual bool onCanDropWidgetOutside() { return true; }
   virtual void onReorderWidgets(const gfx::Point& mousePos, bool inside) {}
-  virtual void onDragWidgetEnd(const gfx::Point& mousePos, bool inside, bool cancelled) {}
+  virtual bool onDragWidgetEnd(const gfx::Point& mousePos, bool inside, bool cancelled)
+  {
+    return true;
+  }
 
   // True if we should create the floating UILayer after leaving the
   // widget bounds.

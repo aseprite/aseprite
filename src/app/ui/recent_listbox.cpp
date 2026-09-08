@@ -180,11 +180,11 @@ protected:
     }
   }
 
-  void onDragWidgetEnd(const gfx::Point& mousePos, bool inside, bool cancelled) override
+  bool onDragWidgetEnd(const gfx::Point& mousePos, bool inside, bool cancelled) override
   {
     if (cancelled) {
       static_cast<RecentListBox*>(parent())->rebuildList();
-      return;
+      return true;
     }
 
     if (inside) {
@@ -209,6 +209,8 @@ protected:
       deferDelete();
 
     setSelected(false);
+
+    return true;
   }
 
 private:
