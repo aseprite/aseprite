@@ -64,7 +64,10 @@ using namespace ui;
 class DraggableItem : public DraggableWidget<ButtonSet::Item>,
                       public DropTargetWidget {
 private:
-  bool onCanStartDrag() override { return !BrushPopup::m_draggedItem; }
+  bool onCanStartDrag() override
+  {
+    return !BrushPopup::m_draggedItem && ButtonSet::originButtonset() == buttonSet();
+  }
 
   bool onCanDropWidgetOutside() override { return false; }
 
@@ -78,9 +81,10 @@ private:
     }
   }
 
-  void onDragWidgetEnd(const gfx::Point& mousePos, bool inside, bool cancelled) override
+  bool onDragWidgetEnd(const gfx::Point& mousePos, bool inside, bool cancelled) override
   {
     BrushPopup::m_draggedItem = nullptr;
+    return false;
   }
 
   bool onDragWidget(const gfx::Point& mousePos, bool inside) override
