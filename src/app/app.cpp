@@ -31,6 +31,7 @@
 #include "app/gui_xml.h"
 #include "app/i18n/strings.h"
 #include "app/ini_file.h"
+#include "app/log.h"
 #include "app/modules.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
@@ -104,7 +105,7 @@
 
 // We need to include this as the last header (to undef ERROR), as
 // sentry_wrapper.h can include <windows.h>.
-#include "app/log.h"
+#include "base/log.h"
 
 namespace app {
 
