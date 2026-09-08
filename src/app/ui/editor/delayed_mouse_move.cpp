@@ -123,6 +123,7 @@ bool DelayedMouseMove::updateSpritePos(const ui::MouseMessage* msg)
   // touch the viewport borders.
   const gfx::Point mousePos = m_editor->autoScroll(msg, AutoScroll::MouseDir);
   const gfx::PointF spritePos = m_editor->screenToEditorF(mousePos);
+  m_delegate->onUpdateMousePosition(m_editor, mousePos);
 
   // Avoid redrawing everything if the position in the canvas didn't
   // change.

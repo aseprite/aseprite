@@ -267,11 +267,7 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
   m_velocity.updateWithDisplayPoint(msg->position());
 
   // Update pointer with new mouse position
-  m_lastPointer = tools::Pointer(gfx::Point(m_delayedMouseMove.spritePos()),
-                                 m_velocity.velocity(),
-                                 button_from_msg(msg),
-                                 msg->pointerType(),
-                                 msg->pressure());
+  m_lastPointer = pointer_from_msg(editor, msg, m_velocity.velocity());
 
   // Use DelayedMouseMove for tools like line, rectangle, etc. (that
   // use the only the last mouse position) to filter out rapid mouse
@@ -280,14 +276,18 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
   return true;
 }
 
+void DrawingState::onUpdateMousePosition(Editor* editor, const gfx::Point& mousePos)
+{
+  m_lastPointer = tools::Pointer(editor->screenToEditor(mousePos),
+                                 m_lastPointer.velocity(),
+                                 m_lastPointer.button(),
+                                 m_lastPointer.type(),
+                                 m_lastPointer.pressure());
+}
+
 void DrawingState::onCommitMouseMove(Editor* editor, const gfx::PointF& spritePos)
 {
   if (m_toolLoop && m_toolLoopManager && !m_toolLoopManager->isCanceled()) {
-    m_lastPointer = tools::Pointer(gfx::Point(spritePos),
-                                   m_lastPointer.velocity(),
-                                   m_lastPointer.button(),
-                                   m_lastPointer.type(),
-                                   m_lastPointer.pressure());
     handleMouseMovement();
   }
 }

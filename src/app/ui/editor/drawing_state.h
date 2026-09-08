@@ -77,6 +77,7 @@ private:
   void destroyLoop(Editor* editor);
 
   // DelayedMouseMoveDelegate impl
+  void onUpdateMousePosition(Editor* editor, const gfx::Point& mousePos) override;
   void onCommitMouseMove(Editor* editor, const gfx::PointF& spritePos) override;
 
   Editor* m_editor;

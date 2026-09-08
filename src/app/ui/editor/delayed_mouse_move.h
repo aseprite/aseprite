@@ -23,6 +23,8 @@ class Editor;
 class DelayedMouseMoveDelegate {
 public:
   virtual ~DelayedMouseMoveDelegate() {}
+  // Called after auto-scroll, before a movement can be committed.
+  virtual void onUpdateMousePosition(Editor* editor, const gfx::Point& mousePos) {}
   virtual void onCommitMouseMove(Editor* editor, const gfx::PointF& spritePos) = 0;
 };
 
