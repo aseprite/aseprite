@@ -2689,7 +2689,9 @@ bool Editor::isInsideSelection()
   gfx::Point spritePos = screenToEditor(mousePosInDisplay());
   spritePos -= mainTilePosition();
 
-  KeyAction action = m_customizationDelegate->getPressedKeyAction(KeyContext::SelectionTool);
+  const KeyAction action = (m_customizationDelegate ? m_customizationDelegate->getPressedKeyAction(
+                                                        KeyContext::SelectionTool) :
+                                                      KeyAction::None);
   return (action == KeyAction::None) && m_document && m_document->isMaskVisible() &&
          m_document->mask()->containsPoint(spritePos.x, spritePos.y);
 }
