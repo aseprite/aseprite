@@ -145,6 +145,9 @@ public:
       }
 
       case ui::kMouseUpMessage: {
+        // We must set this to false here too, because when just clicking a widget
+        // there is no MouseMoveMessage and no dragging takes place.
+        m_createFloatingUILayer = false;
         if (!m_isDragging)
           break;
 
@@ -228,7 +231,6 @@ private:
       destroyFloatingUILayer();
       ASSERT(!m_createFloatingUILayer);
     }
-    m_createFloatingUILayer = false;
     ui::set_mouse_cursor(ui::kArrowCursor);
   }
 
