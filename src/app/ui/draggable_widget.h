@@ -44,22 +44,20 @@ public:
           const ui::MouseMessage* mouseMsg = static_cast<ui::MouseMessage*>(msg);
           const gfx::Point mousePos = mouseMsg->position();
 
-          if (!onCanDropWidgetOutside() /*&& !getParentBounds().contains(mousePos)*/) {
-            if (m_lastTarget) {
-              bool over = m_lastTarget->onDragWidgetOver(mousePos, this);
-              if (over) {
-                ui::set_mouse_cursor(ui::CursorType::kForbiddenCursor);
-              }
-              else {
-                ui::set_mouse_cursor(ui::kMoveCursor);
-              }
+          if (onCanDropWidgetOutside()) {
+            ui::set_mouse_cursor(ui::kMoveCursor);
+          }
+          else if (m_lastTarget) {
+            bool over = m_lastTarget->onDragWidgetOver(mousePos, this);
+            if (over) {
+              ui::set_mouse_cursor(ui::CursorType::kForbiddenCursor);
             }
             else {
-              ui::set_mouse_cursor(ui::kForbiddenCursor);
+              ui::set_mouse_cursor(ui::kMoveCursor);
             }
           }
           else {
-            ui::set_mouse_cursor(ui::kMoveCursor);
+            ui::set_mouse_cursor(ui::kForbiddenCursor);
           }
           return true;
         }
