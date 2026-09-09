@@ -15,6 +15,7 @@
 #include "app/doc.h"
 #include "app/site.h"
 #include "app/util/buffer_region.h"
+#include "base/base64.h"
 #include "doc/image.h"
 #include "doc/sprite.h"
 #include "doc/tileset.h"
@@ -83,6 +84,15 @@ void CopyRegion::onFireNotifications(Context* ctx)
   gfx::Region rgn = m_region;
   rgn.offset(-m_dstPos);
   site.document()->notifySpritePixelsModified(site.sprite(), rgn, site.frame());
+}
+
+void CopyRegion::onSerialize(CmdSerial& s)
+{
+  Cmd::onSerialize(s);
+  serializeImageId(s);
+  s(m_region);
+  s(m_dstPos);
+  s(m_buffer);
 }
 
 void CopyRegion::swap()

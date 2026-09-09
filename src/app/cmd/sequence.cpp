@@ -9,11 +9,11 @@
   #include "config.h"
 #endif
 
-#include "app/cmd_sequence.h"
+#include "app/cmd/sequence.h"
 
 #include "app/context.h"
 
-namespace app {
+namespace app { namespace cmd {
 
 CmdSequence::CmdSequence()
 {
@@ -56,8 +56,8 @@ void CmdSequence::addAndExecute(Context* ctx, Cmd* cmd)
 
 void CmdSequence::onExecute(Context* ctx)
 {
-  for (auto it = m_cmds.begin(), end = m_cmds.end(); it != end; ++it)
-    (*it)->execute(ctx);
+  for (auto* cmd : m_cmds)
+    cmd->execute(ctx);
 }
 
 void CmdSequence::onUndo(Context* ctx)
@@ -68,17 +68,15 @@ void CmdSequence::onUndo(Context* ctx)
 
 void CmdSequence::onRedo(Context* ctx)
 {
-  for (auto it = m_cmds.begin(), end = m_cmds.end(); it != end; ++it)
-    (*it)->redo(ctx);
+  for (auto* cmd : m_cmds)
+    cmd->redo(ctx);
 }
 
 size_t CmdSequence::onMemSize() const
 {
   size_t size = sizeof(*this);
-
-  for (auto it = m_cmds.begin(), end = m_cmds.end(); it != end; ++it)
-    size += (*it)->memSize();
-
+  for (const auto* cmd : m_cmds)
+    size += cmd->memSize();
   return size;
 }
 
@@ -87,4 +85,38 @@ void CmdSequence::executeAndAdd(Context* ctx, Cmd* cmd)
   addAndExecute(ctx, cmd);
 }
 
-} // namespace app
+bool CmdSequence::onIsSerializable() const
+{
+  for (Cmd* cmd : m_cmds) {
+    if (cmd->isSerializable())
+      return true;
+  }
+  return false;
+}
+
+void CmdSequence::onSerialize(CmdSerial& s)
+{
+  bool first = true;
+  s.seqBegin();
+  if (s.encoding()) {
+    for (Cmd* cmd : m_cmds) {
+      if (!cmd->isSerializable())
+        continue;
+
+      if (first)
+        first = false;
+      else
+        s.seqSeparator();
+      cmd->serialize(s);
+    }
+  }
+  else {
+    while (Cmd* cmd = Cmd::Decode(s)) {
+      m_cmds.push_back(cmd);
+      s.seqSeparator();
+    }
+  }
+  s.seqEnd();
+}
+
+}} // namespace app::cmd

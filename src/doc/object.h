@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2025  Igara Studio S.A.
+// Copyright (c) 2025-present  Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -24,6 +24,7 @@ public:
 
   const ObjectType type() const { return m_type; }
   const ObjectId id() const;
+  const ObjectId io_id() const;
   const ObjectVersion version() const { return m_version; }
 
   void setId(ObjectId id);

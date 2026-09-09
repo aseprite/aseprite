@@ -16,6 +16,8 @@ using namespace doc;
 
 class RemoveCel : public AddCel {
 public:
+  CMDTYPE('d', 'e', 'C', 'l', RemoveCel);
+
   RemoveCel(Cel* cel);
 
 protected:

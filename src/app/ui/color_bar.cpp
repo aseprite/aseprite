@@ -20,9 +20,9 @@
 #include "app/cmd/remap_tileset.h"
 #include "app/cmd/remove_tile.h"
 #include "app/cmd/replace_image.h"
+#include "app/cmd/sequence.h"
 #include "app/cmd/set_palette.h"
 #include "app/cmd/set_transparent_color.h"
-#include "app/cmd_sequence.h"
 #include "app/color.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
@@ -1769,8 +1769,8 @@ void ColorBar::updateCurrentSpritePalette(const char* operationName)
             undo->lastExecutedCmd()->label() == operationName) {
           // Implant the cmd in the last CmdSequence if it's
           // related about color palette modifications
-          ASSERT(dynamic_cast<CmdSequence*>(undo->lastExecutedCmd()));
-          static_cast<CmdSequence*>(undo->lastExecutedCmd())->add(cmd.get());
+          ASSERT(dynamic_cast<cmd::CmdSequence*>(undo->lastExecutedCmd()));
+          static_cast<cmd::CmdSequence*>(undo->lastExecutedCmd())->add(cmd.get());
           // Release the unique pointer because it's already in the
           // last executed command CmdSequence::m_cmds container, and
           // execute it.

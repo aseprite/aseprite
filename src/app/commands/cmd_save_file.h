@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2024  Igara Studio S.A.
+// Copyright (C) 2021-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -11,6 +11,7 @@
 
 #include "app/commands/command.h"
 #include "app/commands/new_params.h"
+#include "app/file/undo/undo_history.h"
 #include "doc/anidir.h"
 #include "doc/frames_sequence.h"
 #include "gfx/point.h"
@@ -56,6 +57,7 @@ struct SaveFileParams : public NewParams {
     { "toFrame", "to-frame" }
   };
   Param<bool> ignoreEmpty{ this, false, "ignoreEmpty" };
+  Param<SaveUndoHistory> saveUndoHistory{ this, SaveUndoHistory::No, "saveUndoHistory" };
   Param<double> scale{ this, 1.0, "scale" };
   Param<gfx::Rect> bounds{ this, gfx::Rect(), "bounds" };
   Param<bool> playSubtags{ this, false, "playSubtags" };
@@ -82,8 +84,8 @@ protected:
   void saveDocumentInBackground(const Context* context,
                                 Doc* document,
                                 const std::string& filename,
-                                const MarkAsSaved markAsSaved,
-                                const ResizeOnTheFly resizeOnTheFly = ResizeOnTheFly::Off,
+                                MarkAsSaved markAsSaved,
+                                ResizeOnTheFly resizeOnTheFly = ResizeOnTheFly::Off,
                                 const gfx::PointF& scale = gfx::PointF(1.0, 1.0));
 
   doc::FramesSequence m_framesSeq;

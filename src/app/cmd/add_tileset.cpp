@@ -21,7 +21,6 @@ using namespace doc;
 AddTileset::AddTileset(doc::Sprite* sprite, doc::Tileset* tileset)
   : WithSprite(sprite)
   , WithTileset(tileset)
-  , m_tilesetIndex(-1)
 {
 }
 

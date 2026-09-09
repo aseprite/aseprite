@@ -27,7 +27,7 @@ PatchCel::PatchCel(doc::Cel* dstCel,
                    const gfx::Point& patchPos)
   : WithCel(dstCel)
   , m_patch(patch)
-  , m_region(patchedRegion)
+  , m_region(&patchedRegion)
   , m_pos(patchPos)
 {
   ASSERT(dstCel->image());
@@ -39,18 +39,20 @@ void PatchCel::onExecute(Context* ctx)
   Cel* cel = this->cel();
   ASSERT(cel->image());
 
+  ASSERT(m_region);
+
   gfx::Rect newBounds;
   gfx::Region regionInTiles;
   doc::Grid grid;
   if (cel->image()->pixelFormat() == IMAGE_TILEMAP) {
-    newBounds = cel->bounds() | m_region.bounds();
+    newBounds = cel->bounds() | m_region->bounds();
     auto tileset = static_cast<LayerTilemap*>(cel->layer())->tileset();
     grid = tileset->grid();
     grid.origin(m_pos);
-    regionInTiles = grid.canvasToTile(m_region);
+    regionInTiles = grid.canvasToTile(*m_region);
   }
   else {
-    newBounds = cel->bounds() | gfx::Rect(m_region.bounds()).offset(m_pos);
+    newBounds = cel->bounds() | gfx::Rect(m_region->bounds()).offset(m_pos);
   }
 
   if (cel->bounds() != newBounds)
@@ -62,7 +64,7 @@ void PatchCel::onExecute(Context* ctx)
       new CopyRegion(cel->image(), m_patch, regionInTiles, -grid.canvasToTile(cel->position())));
   }
   else {
-    executeAndAdd(ctx, new CopyRegion(cel->image(), m_patch, m_region, m_pos - cel->position()));
+    executeAndAdd(ctx, new CopyRegion(cel->image(), m_patch, *m_region, m_pos - cel->position()));
   }
 
   executeAndAdd(ctx, new TrimCel(cel));

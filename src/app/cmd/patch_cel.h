@@ -9,8 +9,8 @@
 #define APP_CMD_PATCH_CEL_H_INCLUDED
 #pragma once
 
+#include "app/cmd/sequence.h"
 #include "app/cmd/with_cel.h"
-#include "app/cmd_sequence.h"
 #include "gfx/fwd.h"
 #include "gfx/point.h"
 
@@ -24,6 +24,8 @@ namespace app { namespace cmd {
 class PatchCel : public CmdSequence,
                  public WithCel {
 public:
+  CMDTYPE('p', 'a', 'C', 'l', PatchCel);
+
   PatchCel(doc::Cel* dstCel,
            const doc::Image* patch,
            const gfx::Region& patchedRegion,
@@ -32,8 +34,8 @@ public:
 protected:
   void onExecute(Context* ctx) override;
 
-  const doc::Image* m_patch;
-  const gfx::Region& m_region;
+  const doc::Image* m_patch = nullptr;
+  const gfx::Region* m_region = nullptr;
   gfx::Point m_pos;
 };
 
