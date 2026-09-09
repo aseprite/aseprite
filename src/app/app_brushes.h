@@ -9,7 +9,9 @@
 #define APP_APP_BRUSHES_H_INCLUDED
 #pragma once
 
+#include "app/brush_pattern_slot.h"
 #include "app/brush_slot.h"
+#include "doc/brush_patterns.h"
 #include "doc/brushes.h"
 #include "obs/signal.h"
 
@@ -23,6 +25,7 @@ public:
   // Number of slot (a range from 1 to AppBrushes::size() inclusive)
   typedef int slot_id;
   typedef std::vector<BrushSlot> BrushSlots;
+  typedef std::vector<BrushPatternSlot> BrushPatternSlots;
 
   AppBrushes();
   ~AppBrushes();
@@ -36,9 +39,11 @@ public:
   void removeAllBrushSlots();
   bool hasBrushSlot(slot_id slot) const;
   const doc::Brushes& getStandardBrushes() { return m_standard; }
+  const doc::BrushPatterns& getStandardPatterns() { return m_stdPatterns; }
   BrushSlot getBrushSlot(slot_id slot) const;
   void setBrushSlot(slot_id slot, const BrushSlot& brush);
   const BrushSlots& getBrushSlots() const { return m_slots; }
+  const BrushPatternSlots& getPatternSlots() const { return m_patternSlots; }
 
   void lockBrushSlot(slot_id slot);
   void unlockBrushSlot(slot_id slot);
@@ -54,6 +59,8 @@ private:
   void save(const std::string& filename) const;
 
   doc::Brushes m_standard;
+  doc::BrushPatterns m_stdPatterns;
+  BrushPatternSlots m_patternSlots;
   BrushSlots m_slots;
   std::string m_userBrushesFilename;
 };

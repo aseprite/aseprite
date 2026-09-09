@@ -174,6 +174,7 @@ protected:
 
 private:
   void regenerateTheme();
+  Paint getPaintForBorderStyle(const Style::Layer& layer);
   void paintLayer(Graphics* g,
                   const Style* style,
                   const Style::Layer& layer,

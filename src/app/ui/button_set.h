@@ -20,6 +20,8 @@ namespace app {
 
 class ButtonSet : public ui::Grid {
 public:
+  static const ButtonSet* originButtonset() { return m_originButtonset; }
+
   class Item : public ui::Widget,
                public ui::Style::Layer::IconSurfaceProvider {
   public:
@@ -28,14 +30,20 @@ public:
     os::Surface* iconSurface() const override { return m_icon ? m_icon->bitmap(0) : nullptr; }
     skin::SkinPartPtr icon() const { return m_icon; }
     ButtonSet* buttonSet();
+    void invalidateItem();
 
   protected:
-    void onPaint(ui::PaintEvent& ev) override;
     bool onProcessMessage(ui::Message* msg) override;
     virtual void onClick();
     virtual void onRightClick();
+    virtual void onInvalidateRegion(const gfx::Region& region) override;
 
   private:
+    // Expands the passed rectangle only if needed as a result of overlapping items.
+    // This is a helper function used to properly paint overlapped items in a
+    // ButtonSet.
+    void expandForOverlappingItems(gfx::Rect& bounds);
+
     skin::SkinPartPtr m_icon;
   };
 
@@ -47,15 +55,30 @@ public:
 
   ButtonSet(int columns, bool same_width_columns = false);
 
-  Item* addItem(const std::string& text, ui::Style* style);
-  Item* addItem(const std::string& text, int hspan = 1, int vspan = 1, ui::Style* style = nullptr);
-  Item* addItem(const skin::SkinPartPtr& icon, ui::Style* style);
+  Item* addItem(const std::string& text,
+                ui::Style* style,
+                ui::WidgetAlign align = ui::HORIZONTAL | ui::VERTICAL);
+  Item* addItem(const std::string& text,
+                int hspan = 1,
+                int vspan = 1,
+                ui::Style* style = nullptr,
+                ui::WidgetAlign align = ui::HORIZONTAL | ui::VERTICAL);
+  Item* addItem(const skin::SkinPartPtr& icon,
+                ui::Style* style,
+                ui::WidgetAlign align = ui::HORIZONTAL | ui::VERTICAL);
   Item* addItem(const skin::SkinPartPtr& icon,
                 int hspan = 1,
                 int vspan = 1,
-                ui::Style* style = nullptr);
-  Item* addItem(Item* item, ui::Style* style);
-  Item* addItem(Item* item, int hspan = 1, int vspan = 1, ui::Style* style = nullptr);
+                ui::Style* style = nullptr,
+                ui::WidgetAlign align = ui::HORIZONTAL | ui::VERTICAL);
+  Item* addItem(Item* item,
+                ui::Style* style,
+                ui::WidgetAlign align = ui::HORIZONTAL | ui::VERTICAL);
+  Item* addItem(Item* item,
+                int hspan = 1,
+                int vspan = 1,
+                ui::Style* style = nullptr,
+                ui::WidgetAlign align = ui::HORIZONTAL | ui::VERTICAL);
   Item* getItem(int index);
   int getItemIndex(const Item* item) const;
 
@@ -70,6 +93,18 @@ public:
   void setTriggerOnMouseUp(bool state);
   void setMultiMode(MultiMode mode);
 
+  bool triggerOnMouseUp() const { return m_triggerOnMouseUp; }
+
+  bool hasOverlappingItems() const
+  {
+    return children().size() > 1 && (m_rowgap < 0 || m_colgap < 0);
+  }
+
+  // Moves item1 from its position to the position of item2, rearranging the
+  // items. If the items don't belong to this buttonset the operation has no
+  // effect.
+  void moveItemTo(Item* item1, Item* item2);
+
   obs::signal<void(Item*)> ItemChange;
   obs::signal<void(Item*)> RightClick;
 
@@ -79,6 +114,11 @@ protected:
   virtual void onSelectItem(Item* item, bool focusItem, ui::Message* msg);
 
 private:
+  // ButtonSet that originally captured the mouse at the first kMouseDownMessage,
+  // usefull to know which ButtonSet was first pressed when m_triggerOnMouseUp is
+  // true.
+  static ButtonSet* m_originButtonset;
+
   bool m_offerCapture;
   bool m_triggerOnMouseUp;
   MultiMode m_multiMode;

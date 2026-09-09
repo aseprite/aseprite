@@ -54,6 +54,9 @@ public:
       kCapture = 16
     };
 
+    // How the border of this layer must be drawn
+    enum BorderStyle : uint8_t { kNone, kSolid, kDotted };
+
     class IconSurfaceProvider {
     public:
       virtual os::Surface* iconSurface() const = 0;
@@ -62,6 +65,7 @@ public:
     Type type() const { return m_type; }
     StyleFlags flags() const { return m_flags; }
     WidgetAlign align() const { return m_align; }
+    BorderStyle borderStyle() const { return m_borderStyle; }
 
     gfx::Color color() const { return m_color; }
     os::Surface* icon() const { return m_icon.get(); }
@@ -73,6 +77,7 @@ public:
     void setType(const Type type) { m_type = type; }
     void setFlags(const StyleFlags flags) { m_flags = flags; }
     void setAlign(const WidgetAlign align) { m_align = align; }
+    void setBorderStyle(const BorderStyle borderStyle) { m_borderStyle = borderStyle; }
     void setColor(gfx::Color color) { m_color = color; }
     void setIcon(const os::SurfaceRef& icon) { m_icon = icon; }
     void setSpriteSheet(const os::SurfaceRef& spriteSheet) { m_spriteSheet = spriteSheet; }
@@ -84,6 +89,7 @@ public:
     Type m_type = Type::kNone;
     StyleFlags m_flags = kNoFlag;
     WidgetAlign m_align = CENTER | MIDDLE;
+    BorderStyle m_borderStyle = BorderStyle::kNone;
     gfx::Color m_color = gfx::ColorNone;
     os::SurfaceRef m_icon = nullptr;
     os::SurfaceRef m_spriteSheet = nullptr;
