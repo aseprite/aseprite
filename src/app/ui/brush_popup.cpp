@@ -85,24 +85,16 @@ private:
     return true;
   }
 
-  bool onDragWidgetOver(const gfx::Point& mousePos, Widget* widget) override
-  {
-    DropTargetWidget::onDragWidgetOver(mousePos, widget);
-    return false;
-  }
-
   void onDragWidgetEnter(const gfx::Point& mousePos) override
   {
     DropTargetWidget::onDragWidgetEnter(mousePos);
     buttonSet()->moveItemTo(BrushPopup::m_draggedItem, this);
-    setSelected(true);
     invalidateItem();
   }
 
   void onDragWidgetLeave(const gfx::Point& mousePos) override
   {
     DropTargetWidget::onDragWidgetLeave(mousePos);
-    setSelected(false);
     invalidateItem();
   }
 };
@@ -156,6 +148,15 @@ public:
   const BrushSlot& brush() const { return m_brush; }
 
 private:
+  DropEffect effectsAllowed() override { return DropEffect::CopyMove; }
+
+  bool onDragWidgetOver(const gfx::Point& mousePos, Widget* widget, DropEffect& dropEffect) override
+  {
+    DropTargetWidget::onDragWidgetOver(mousePos, widget, dropEffect);
+    dropEffect = DropEffect::Move;
+    return false;
+  }
+
   void onClick() override
   {
     ContextBar* contextBar = App::instance()->contextBar();
@@ -191,15 +192,21 @@ public:
 private:
   bool onCanStartDrag() override { return false; }
 
+  bool onDragWidgetOver(const gfx::Point& mousePos, Widget* widget, DropEffect& dropEffect) override
+  {
+    DropTargetWidget::onDragWidgetOver(mousePos, widget, dropEffect);
+    dropEffect = DropEffect::Copy;
+    return false;
+  }
+
   void onDragWidgetEnter(const gfx::Point& mousePos) override
   {
     DropTargetWidget::onDragWidgetEnter(mousePos);
-    setSelected(true);
     invalidateItem();
   }
 };
 
-class SelectPatternItem : public DraggableItem {
+class SelectPatternItem : public ButtonSet::Item {
 public:
   SelectPatternItem(const BrushPatternSlot& brushPattern) : m_slot(brushPattern) { initTheme(); }
 
