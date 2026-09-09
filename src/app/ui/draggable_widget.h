@@ -11,6 +11,7 @@
 #include "app/ui/drop_target_widget.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "ui/cursor_type.h"
 #include "ui/display.h"
 #include "ui/graphics.h"
 #include "ui/keys.h"
@@ -48,12 +49,20 @@ public:
             ui::set_mouse_cursor(ui::kMoveCursor);
           }
           else if (m_lastTarget) {
-            bool over = m_lastTarget->onDragWidgetOver(mousePos, this);
-            if (over) {
+            DropEffect effect = DropEffect::None;
+            bool over = m_lastTarget->onDragWidgetOver(mousePos, this, effect);
+            if (over || !(effectsAllowed() & effect)) {
               ui::set_mouse_cursor(ui::CursorType::kForbiddenCursor);
+              return true;
+            }
+
+            if (effect == DropEffect::Copy)
+              ui::set_mouse_cursor(ui::kArrowPlusCursor);
+            else if (effect == DropEffect::Move) {
+              ui::set_mouse_cursor(ui::kMoveCursor);
             }
             else {
-              ui::set_mouse_cursor(ui::kMoveCursor);
+              ui::set_mouse_cursor(ui::kForbiddenCursor);
             }
           }
           else {
@@ -154,7 +163,8 @@ public:
 
         auto* pick = this->manager()->pick(mousePos);
         auto* target = dynamic_cast<DropTargetWidget*>(pick);
-        if (target && Base::hasCapture() && !target->onDragWidgetOver(mousePos, this)) {
+        DropEffect dropEffect = DropEffect::None;
+        if (target && Base::hasCapture() && !target->onDragWidgetOver(mousePos, this, dropEffect)) {
           target->onDropWidget(mousePos, this, getParentBounds().contains(mousePos));
         }
 
@@ -249,6 +259,9 @@ private:
       return view->updateView();
   }
 
+  // Returns the effects supported by the dragged widget once it is dropped. Can
+  // return a bitwise combination of values.
+  virtual DropEffect effectsAllowed() { return DropEffect::None; }
   virtual bool onCanStartDrag() { return true; }
   virtual bool onCanCancelDrag() { return true; }
   virtual bool onCanDropWidgetOutside() { return true; }
