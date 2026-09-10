@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -105,8 +105,13 @@ ToolBar::ToolBar() : Widget(kGenericWidget), m_openedRecently(false), m_tipTimer
 
   ToolBox* toolbox = App::instance()->toolBox();
   for (Tool* tool : *toolbox) {
-    if (m_selectedInGroup.find(tool->getGroup()) == m_selectedInGroup.end())
+    if (m_selectedInGroup.find(tool->getGroup()) == m_selectedInGroup.end() && tool->isVisible())
       m_selectedInGroup[tool->getGroup()] = tool;
+  }
+
+  for (auto it = toolbox->begin_group(); it != toolbox->end_group(); ++it) {
+    if ((*it)->isVisible())
+      m_visibleGroups.push_back(*it);
   }
 
   App::instance()->activeToolManager()->add_observer(this);
@@ -115,6 +120,28 @@ ToolBar::ToolBar() : Widget(kGenericWidget), m_openedRecently(false), m_tipTimer
 ToolBar::~ToolBar()
 {
   App::instance()->activeToolManager()->remove_observer(this);
+}
+
+void ToolBar::refreshVisibleGroups()
+{
+  m_visibleGroups.clear();
+  m_selectedInGroup.clear();
+  ToolBox* toolbox = App::instance()->toolBox();
+  for (auto it = toolbox->begin_group(); it != toolbox->end_group(); ++it) {
+    if ((*it)->isVisible())
+      m_visibleGroups.push_back(*it);
+  }
+
+  for (Tool* tool : *toolbox) {
+    if (m_selectedInGroup.find(tool->getGroup()) == m_selectedInGroup.end() && tool->isVisible())
+      m_selectedInGroup[tool->getGroup()] = tool;
+  }
+
+  Tool* activeTool = App::instance()->activeToolManager()->activeTool();
+  if (activeTool && activeTool->isVisible())
+    m_selectedInGroup[activeTool->getGroup()] = activeTool;
+
+  invalidate();
 }
 
 bool ToolBar::isToolVisible(Tool* tool)
@@ -128,14 +155,12 @@ bool ToolBar::onProcessMessage(Message* msg)
     case kMouseDownMessage: {
       auto mouseMsg = static_cast<const MouseMessage*>(msg);
       const Point mousePos = mouseMsg->positionForDisplay(display());
-      ToolBox* toolbox = App::instance()->toolBox();
       int hidden = getHiddenGroups();
-      int groups = toolbox->getGroupsCount() - hidden;
+      int groups = m_visibleGroups.size() - hidden;
       Rect toolrc;
 
-      ToolGroupList::iterator it = toolbox->begin_group();
-      for (int c = 0; c < groups; ++c, ++it) {
-        ToolGroup* tool_group = *it;
+      for (int c = 0; c < groups; ++c) {
+        ToolGroup* tool_group = m_visibleGroups[c];
         Tool* tool = m_selectedInGroup[tool_group];
 
         toolrc = getToolGroupBounds(c);
@@ -186,17 +211,14 @@ bool ToolBar::onProcessMessage(Message* msg)
     case kMouseMoveMessage: {
       auto mouseMsg = static_cast<const MouseMessage*>(msg);
       const Point mousePos = mouseMsg->positionForDisplay(display());
-      ToolBox* toolbox = App::instance()->toolBox();
       int hidden = getHiddenGroups();
-      int groups = toolbox->getGroupsCount() - hidden;
+      int groups = m_visibleGroups.size() - hidden;
       Tool* new_hot_tool = NULL;
       int new_hot_index = NoneIndex;
       Rect toolrc;
 
-      ToolGroupList::iterator it = toolbox->begin_group();
-
-      for (int c = 0; c < groups; ++c, ++it) {
-        ToolGroup* tool_group = *it;
+      for (int c = 0; c < groups; ++c) {
+        ToolGroup* tool_group = m_visibleGroups[c];
         Tool* tool = m_selectedInGroup[tool_group];
 
         toolrc = getToolGroupBounds(c);
@@ -328,8 +350,7 @@ void ToolBar::onResize(ui::ResizeEvent& ev)
 {
   Widget::onResize(ev);
 
-  auto* toolbox = App::instance()->toolBox();
-  auto lastToolBounds = getToolGroupBounds(toolbox->getGroupsCount());
+  auto lastToolBounds = getToolGroupBounds(m_visibleGroups.size());
   m_minHeight = lastToolBounds.y2() -
                 origin().y
                 // Preview and timeline buttons
@@ -341,10 +362,8 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
   gfx::Rect bounds = clientBounds();
   Graphics* g = ev.graphics();
   auto theme = SkinTheme::get(this);
-  ToolBox* toolbox = App::instance()->toolBox();
   Tool* activeTool = App::instance()->activeTool();
-  ToolGroupList::iterator it = toolbox->begin_group();
-  int groups = toolbox->getGroupsCount();
+  int groups = m_visibleGroups.size();
   Rect toolrc;
   SkinPartPtr nw;
   os::Surface* icon;
@@ -353,9 +372,12 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
 
   int hiddenGroups = getHiddenGroups();
   int visibleGroupCount = groups - hiddenGroups;
-  for (int c = 0; c < visibleGroupCount; ++c, ++it) {
-    ToolGroup* tool_group = *it;
+  for (int c = 0; c < visibleGroupCount; ++c) {
+    ToolGroup* tool_group = m_visibleGroups[c];
     Tool* tool = m_selectedInGroup[tool_group];
+
+    if (!tool)
+      continue;
 
     if (activeTool == tool || m_hotIndex == c) {
       nw = theme->parts.toolbuttonHot();
@@ -412,12 +434,8 @@ bool ToolBar::isDockedAtLeftSide() const
 
 int ToolBar::getToolGroupIndex(ToolGroup* group)
 {
-  ToolBox* toolbox = App::instance()->toolBox();
-  ToolGroupList::iterator it = toolbox->begin_group();
-  int groups = toolbox->getGroupsCount();
-
-  for (int c = 0; c < groups; ++c, ++it) {
-    if (group == *it)
+  for (int c = 0; c < m_visibleGroups.size(); ++c) {
+    if (group == m_visibleGroups[c])
       return c;
   }
 
@@ -447,20 +465,17 @@ void ToolBar::openPopupWindow(GroupType group_type, int group_index, tools::Tool
   switch (group_type) {
     case GroupType::Regular:
       for (Tool* tool : *toolbox) {
-        if (tool->getGroup() == tool_group)
+        if (tool->getGroup() == tool_group && tool->isVisible())
           tools.push_back(tool);
       }
       break;
 
     case GroupType::Overflow: {
-      ToolGroupList::iterator it = toolbox->begin_group();
-      for (int i = 0; i < toolbox->getGroupsCount(); ++i, ++it) {
-        if (i < toolbox->getGroupsCount() - getHiddenGroups())
-          continue;
-
-        ToolGroup* it_group = *it;
+      int visibleCount = m_visibleGroups.size() - getHiddenGroups();
+      for (int i = visibleCount; i < (int)m_visibleGroups.size(); ++i) {
+        ToolGroup* it_group = m_visibleGroups[i];
         for (Tool* tool : *toolbox) {
-          if (tool->getGroup() == it_group)
+          if (tool->getGroup() == it_group && tool->isVisible())
             tools.push_back(tool);
         }
       }
@@ -519,8 +534,7 @@ void ToolBar::closePopupWindow()
 
 Rect ToolBar::getToolGroupBounds(int group_index)
 {
-  ToolBox* toolbox = App::instance()->toolBox();
-  int groups = toolbox->getGroupsCount();
+  int groups = m_visibleGroups.size();
   Size iconsize = getToolIconSize(this);
   Rect rc(bounds());
   rc.shrink(border());
@@ -571,7 +585,7 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
     return;
 
   int hidden = getHiddenGroups();
-  int groups = App::instance()->toolBox()->getGroupsCount() - hidden;
+  int groups = m_visibleGroups.size() - hidden;
 
   std::string tooltip;
   if (!tool && hidden > 0 && group_index >= groups) {
@@ -703,12 +717,11 @@ void ToolBar::drawToolIcon(Graphics* g, int group_index, SkinPartPtr skin, os::S
 
 int ToolBar::getHiddenGroups() const
 {
-  auto* toolbox = App::instance()->toolBox();
   const int height = size().h;
   if (height < m_minHeight) {
     int hidden = (m_minHeight - height) / (getToolIconSize(this).h - 1 * guiscale());
     if (hidden >= 1)
-      return std::clamp(hidden + 1, 2, toolbox->getGroupsCount());
+      return std::clamp(hidden + 1, 2, (int)m_visibleGroups.size());
   }
   return 0;
 }
@@ -762,8 +775,7 @@ bool ToolBar::ToolStrip::onProcessMessage(Message* msg)
           if (m_group)
             m_toolbar->openTipWindow(m_group, m_hotTool);
           else {
-            int groups = App::instance()->toolBox()->getGroupsCount() -
-                         m_toolbar->getHiddenGroups();
+            int groups = m_toolbar->m_visibleGroups.size() - m_toolbar->getHiddenGroups();
             m_toolbar->openTipWindow(groups, m_hotTool);
           }
         }

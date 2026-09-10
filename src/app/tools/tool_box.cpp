@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -209,6 +209,71 @@ Intertwine* ToolBox::getIntertwinerById(const std::string& id)
 PointShape* ToolBox::getPointShapeById(const std::string& id)
 {
   return m_pointshapers[id];
+}
+
+void ToolBox::applyToolsetLayout(const XMLElement* toolsetElem)
+{
+  if (!toolsetElem)
+    return;
+
+  auto* toolsElem = toolsetElem->FirstChildElement("tools");
+  if (!toolsElem)
+    return;
+
+  ToolGroupList reorderedGroups;
+  ToolList reorderedTools;
+
+  for (auto* groupElem = toolsElem->FirstChildElement("group"); groupElem;
+       groupElem = groupElem->NextSiblingElement("group")) {
+    const char* groupId = groupElem->Attribute("id");
+    if (!groupId)
+      continue;
+
+    ToolGroup* group = nullptr;
+    for (auto* g : m_groups) {
+      if (g->id() == groupId) {
+        group = g;
+        break;
+      }
+    }
+
+    if (!group) {
+      group = new ToolGroup(groupId);
+      m_groups.push_back(group);
+    }
+
+    group->setVisible(groupElem->BoolAttribute("visible", true));
+    reorderedGroups.push_back(group);
+
+    for (auto* toolElem = groupElem->FirstChildElement("tool"); toolElem;
+         toolElem = toolElem->NextSiblingElement("tool")) {
+      const char* toolId = toolElem->Attribute("id");
+      if (!toolId)
+        continue;
+
+      for (auto* tool : m_tools) {
+        if (tool->getId() == toolId) {
+          tool->setVisible(toolElem->BoolAttribute("visible", true));
+          tool->setGroup(group);
+          reorderedTools.push_back(tool);
+          break;
+        }
+      }
+    }
+  }
+
+  for (auto* group : m_groups) {
+    if (std::find(reorderedGroups.begin(), reorderedGroups.end(), group) == reorderedGroups.end())
+      reorderedGroups.push_back(group);
+  }
+
+  for (auto* tool : m_tools) {
+    if (std::find(reorderedTools.begin(), reorderedTools.end(), tool) == reorderedTools.end())
+      reorderedTools.push_back(tool);
+  }
+
+  m_groups = reorderedGroups;
+  m_tools = reorderedTools;
 }
 
 void ToolBox::loadTools()

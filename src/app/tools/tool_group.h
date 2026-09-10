@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -19,8 +20,12 @@ public:
 
   const std::string& id() const { return m_id; }
 
+  bool isVisible() const { return m_visible; }
+  void setVisible(bool visible) { m_visible = visible; }
+
 private:
   std::string m_id;
+  bool m_visible = true;
 };
 
 }} // namespace app::tools

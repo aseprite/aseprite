@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2025  Igara Studio S.A.
+// Copyright (C) 2021-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -51,6 +51,7 @@ public:
   LayoutSelector(ui::TooltipManager* tooltipManager, ui::Widget* notifications);
   ~LayoutSelector();
 
+  Layouts& layouts() { return m_layouts; }
   LayoutPtr activeLayout() const;
   const std::string& activeLayoutId() const { return m_activeLayoutId; }
 

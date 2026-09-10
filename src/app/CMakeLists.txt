@@ -710,6 +710,7 @@ target_sources(app-lib PRIVATE
   ui/timeline/doc_providers.cpp
   ui/timeline/timeline.cpp
   ui/toolbar.cpp
+  ui/toolset_tree.cpp
   ui/tree.cpp
   ui/directory_tree.cpp
   ui/user_data_view.cpp
