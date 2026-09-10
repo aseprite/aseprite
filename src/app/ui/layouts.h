@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2022-2024  Igara Studio S.A.
+// Copyright (c) 2022-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -29,6 +29,9 @@ public:
   bool addLayout(const LayoutPtr& layout);
   void removeLayout(const LayoutPtr& layout);
 
+  tinyxml2::XMLElement* toolsetElement();
+  void setToolsetElement(const tinyxml2::XMLElement* elem);
+
   void saveUserLayouts();
   void reload();
 
@@ -45,6 +48,7 @@ private:
 
   List m_layouts;
   std::string m_userLayoutsFilename;
+  tinyxml2::XMLDocument m_toolsetDoc;
 };
 
 } // namespace app

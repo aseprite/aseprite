@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2022-2024  Igara Studio S.A.
+// Copyright (c) 2022-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -117,7 +117,13 @@ void Layouts::load(const std::string& fn)
     if (auto layout = Layout::MakeFromXmlElement(layoutElem)) {
       m_layouts.push_back(layout);
     }
-    layoutElem = layoutElem->NextSiblingElement();
+    layoutElem = layoutElem->NextSiblingElement("layout");
+  }
+
+  if (auto* toolsetElem =
+        handle.FirstChildElement("layouts").FirstChildElement("toolset").ToElement()) {
+    m_toolsetDoc.Clear();
+    m_toolsetDoc.InsertEndChild(toolsetElem->DeepClone(&m_toolsetDoc));
   }
 }
 
@@ -130,9 +136,24 @@ void Layouts::save(const std::string& fn) const
     layoutsElem->InsertEndChild(layout->xmlElement()->DeepClone(doc.get()));
   }
 
+  if (auto* toolsetElem = m_toolsetDoc.FirstChildElement("toolset"))
+    layoutsElem->InsertEndChild(toolsetElem->DeepClone(doc.get()));
+
   doc->InsertEndChild(doc->NewDeclaration(R"(xml version="1.0" encoding="utf-8")"));
   doc->InsertEndChild(layoutsElem);
   save_xml(doc.get(), fn);
+}
+
+XMLElement* Layouts::toolsetElement()
+{
+  return m_toolsetDoc.FirstChildElement("toolset");
+}
+
+void Layouts::setToolsetElement(const XMLElement* elem)
+{
+  m_toolsetDoc.Clear();
+  if (elem)
+    m_toolsetDoc.InsertEndChild(elem->DeepClone(&m_toolsetDoc));
 }
 
 // static
