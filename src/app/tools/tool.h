@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2025  Igara Studio S.A.
+// Copyright (C) 2021-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -32,6 +32,7 @@ public:
   virtual ~Tool() {}
 
   const ToolGroup* getGroup() const { return m_group; }
+  void setGroup(ToolGroup* group) { m_group = group; }
   const std::string& getId() const { return m_id; }
   const std::string& getText() const { return m_text; }
   const std::string& getTips() const { return m_tips; }
@@ -70,6 +71,9 @@ public:
     m_button[button].m_trace_policy = trace_policy;
   }
 
+  bool isVisible() const { return m_visible; }
+  void setVisible(bool visible) { m_visible = visible; }
+
   bool prefAlreadyResetFromScript() const { return m_prefAlreadyResetFromScript; }
   void markPrefAlreadyResetFromScript() { m_prefAlreadyResetFromScript = true; }
 
@@ -86,6 +90,8 @@ private:
   // once, but if the script then modifies the preferences, they
   // are not reset again.
   bool m_prefAlreadyResetFromScript = false;
+
+  bool m_visible = true;
 
   struct {
     Fill m_fill;

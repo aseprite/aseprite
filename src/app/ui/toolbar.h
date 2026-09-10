@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2025  Igara Studio S.A.
+// Copyright (C) 2021-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -19,6 +19,7 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 namespace ui {
 class CloseEvent;
@@ -52,6 +53,7 @@ public:
   void selectTool(tools::Tool* tool);
   void selectToolGroup(tools::ToolGroup* toolGroup);
 
+  void refreshVisibleGroups();
   void openTipWindow(tools::ToolGroup* toolGroup, tools::Tool* tool);
   void closeTipWindow();
 
@@ -121,6 +123,8 @@ private:
   int m_minHeight;
 
   obs::connection m_closeConn;
+
+  std::vector<tools::ToolGroup*> m_visibleGroups;
 };
 
 } // namespace app

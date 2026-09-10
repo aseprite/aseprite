@@ -20,6 +20,7 @@
 #include "app/ini_file.h"
 #include "app/notification_delegate.h"
 #include "app/pref/preferences.h"
+#include "app/tools/tool_box.h"
 #include "app/ui/app_tooltips.h"
 #include "app/ui/browser_view.h"
 #include "app/ui/color_bar.h"
@@ -123,6 +124,9 @@ void MainWindow::initialize()
 
   // Setup the main menubar
   m_menuBar->setMenu(AppMenus::instance()->getRootMenu());
+
+  if (auto* toolsetElem = m_layoutSelector->layouts().toolsetElement())
+    App::instance()->toolBox()->applyToolsetLayout(toolsetElem);
 
   m_statusBar = std::make_unique<StatusBar>(m_tooltipManager);
   m_toolBar = std::make_unique<ToolBar>();

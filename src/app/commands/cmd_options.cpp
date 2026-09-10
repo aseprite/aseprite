@@ -40,6 +40,7 @@
 #include "app/ui/sampling_selector.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui/toolbar.h"
 #include "app/ui/toolset_tree.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
@@ -1167,6 +1168,8 @@ public:
     for (auto* group = m_toolsetLayout->root()->firstChild(); group; group = group->next()) {
       auto* groupElem = doc.NewElement("group");
       groupElem->SetAttribute("id", group->id().c_str());
+      if (group->isRemovable())
+        groupElem->SetAttribute("name", group->text().c_str());
       groupElem->SetAttribute("visible", group->isVisible());
       if (group->isRemovable())
         groupElem->SetAttribute("removable", true);
@@ -1187,6 +1190,9 @@ public:
     auto& layouts = App::instance()->mainWindow()->layoutSelector()->layouts();
     layouts.setToolsetElement(doc.FirstChildElement("toolset"));
     layouts.saveUserLayouts();
+
+    App::instance()->toolBox()->applyToolsetLayout(doc.FirstChildElement("toolset"));
+    ToolBar::instance()->refreshVisibleGroups();
   }
 
   void restoreTheme()
@@ -1922,7 +1928,8 @@ private:
         if (!groupId)
           continue;
 
-        auto* toolGroup = new ToolsetTreeNode(groupNameFormatting(groupId));
+        const char* groupName = groupElem->Attribute("name");
+        auto* toolGroup = new ToolsetTreeNode(groupName ? groupName : groupNameFormatting(groupId));
         toolGroup->setId(groupId);
         toolGroup->setVisible(groupElem->BoolAttribute("visible", true));
         toolGroup->setRemovable(groupElem->BoolAttribute("removable", false));
