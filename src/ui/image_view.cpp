@@ -31,13 +31,21 @@ ImageView::ImageView(const os::SurfaceRef& sur, const WidgetAlign align)
 void ImageView::onSizeHint(SizeHintEvent& ev)
 {
   gfx::Rect box;
-  getTextIconInfo(&box, nullptr, nullptr, align(), m_sur->width(), m_sur->height());
+  getTextIconInfo(&box,
+                  nullptr,
+                  nullptr,
+                  align(),
+                  m_sur ? m_sur->width() : 0,
+                  m_sur ? m_sur->height() : 0);
 
   ev.setSizeHint(gfx::Size(box.w + border().width(), box.h + border().height()));
 }
 
 void ImageView::onPaint(PaintEvent& ev)
 {
+  if (!m_sur)
+    return;
+
   Graphics* g = ev.graphics();
   gfx::Rect bounds = clientBounds();
   gfx::Rect icon;

@@ -39,6 +39,9 @@ static std::vector<cfg::CfgFile*> g_configs;
 
 ConfigModule::ConfigModule()
 {
+  if (!g_configFilename.empty())
+    return;
+
   ResourceFinder rf;
   rf.includeUserDir("aseprite.ini");
 
@@ -93,8 +96,13 @@ ConfigModule::ConfigModule()
 
 #endif
 
-  set_config_file(fn.c_str());
-  g_configFilename = fn;
+  setConfigFilename(fn);
+}
+
+void ConfigModule::setConfigFilename(const std::string& filename)
+{
+  set_config_file(filename.c_str());
+  g_configFilename = filename;
 }
 
 ConfigModule::~ConfigModule()
@@ -106,6 +114,7 @@ ConfigModule::~ConfigModule()
   for (auto cfg : g_configs)
     delete cfg;
   g_configs.clear();
+  g_configFilename.clear();
 }
 
 //////////////////////////////////////////////////////////////////////

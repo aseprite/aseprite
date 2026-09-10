@@ -411,6 +411,8 @@
         <part id="icon_tree_file" x="200" y="192" w="5" h="5"/>
         <part id="icon_tree_folder" x="192" y="192" w="5" h="5"/>
         <part id="icon_tree_stop" x="200" y="208" w="5" h="5"/>
+        <part id="icon_tree_extension" x="192" y="216" w="5" h="5"/>
+        <part id="icon_tree_alert" x="200" y="216" w="5" h="5"/>
         <part id="tool_rectangular_marquee" x="144" y="0" w="16" h="16"/>
         <part id="tool_elliptical_marquee" x="160" y="0" w="16" h="16"/>
         <part id="tool_lasso" x="176" y="0" w="16" h="16"/>
@@ -1147,7 +1149,7 @@
             <text color="button_selected_text" state="capture selected"/>
             <text color="background" x="1" y="1" state="disabled"/>
             <newlayer/>
-            <text color="disabled" state="disabled" align="top"/>
+            <text color="disabled" state="disabled" />
         </style>
         <style id="buttonset_item_text_top" extends="buttonset_item">
             <text color="button_normal_text" align="top"/>
