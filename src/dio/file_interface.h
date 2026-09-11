@@ -1,4 +1,5 @@
 // Aseprite Document IO Library
+// Copyright (c) 2026-present Igara Studio S.A.
 // Copyright (c) 2017-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -22,7 +23,7 @@ public:
   virtual bool ok() const = 0;
 
   // Current position in the file
-  virtual size_t tell() = 0;
+  virtual size_t tell() const = 0;
 
   // Jump to the given position in the file
   virtual void seek(size_t absPos) = 0;
@@ -33,17 +34,19 @@ public:
 
   // Writes one byte in the file (or do nothing if ok() = false)
   virtual void write8(uint8_t value) = 0;
+  virtual size_t writeBytes(uint8_t* buf, size_t n) = 0;
 };
 
 class StdioFileInterface : public FileInterface {
 public:
   StdioFileInterface(FILE* file);
   bool ok() const override;
-  size_t tell() override;
+  size_t tell() const override;
   void seek(size_t absPos) override;
   uint8_t read8() override;
   size_t readBytes(uint8_t* buf, size_t n) override;
   void write8(uint8_t value) override;
+  size_t writeBytes(uint8_t* buf, size_t n) override;
 
 private:
   FILE* m_file;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2023  Igara Studio S.A.
+// Copyright (c) 2023-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -19,9 +19,9 @@ namespace app {
 // Shows the window to offer a solution for forward compatibility
 // (don't save/overwrite files that were saved with future Aseprite
 // versions/unknown data in the original .aseprite file).
-class IncompatFileWindow : public app::gen::IncompatFile {
+class IncompatFileWindow final : public app::gen::IncompatFile {
 public:
-  void show(std::string incompatibilities = std::string());
+  void show(std::string incompatibilities = {});
 };
 
 } // namespace app

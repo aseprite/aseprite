@@ -38,6 +38,7 @@ Tag::Tag(const Tag& other)
   , m_aniDir(other.m_aniDir)
   , m_repeat(other.m_repeat)
 {
+  setUserData(other.userData());
 }
 
 Tag::~Tag()

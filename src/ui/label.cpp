@@ -21,7 +21,7 @@
 
 namespace ui {
 
-Label::Label(const std::string& text) : Widget(kLabelWidget), m_buddy(nullptr)
+Label::Label(const std::string& text) : Widget(kLabelWidget), m_buddy(nullptr), m_buddySync(false)
 {
   enableFlags(IGNORE_MOUSE);
   setAlign(LEFT | MIDDLE);
@@ -34,10 +34,16 @@ Widget* Label::buddy()
   if (m_buddy || m_buddyId.empty())
     return m_buddy;
 
-  if (parent()) {
-    // This can miss some cases where the hierarchy is not direct
-    setBuddy(parent()->findChild(m_buddyId.c_str()));
-  }
+  // This can miss some cases where the hierarchy is not direct
+  Widget* search = parent();
+  do {
+    ASSERT(search);
+    if (!search)
+      break;
+
+    setBuddy(search->findChild(m_buddyId.c_str()));
+    search = search->parent();
+  } while (!m_buddy);
 
   return m_buddy;
 }
@@ -48,6 +54,8 @@ void Label::setBuddy(Widget* buddy)
 
   if (m_buddy)
     disableFlags(IGNORE_MOUSE);
+
+  refreshBuddySync();
 }
 
 void Label::setBuddy(const std::string& buddyId)
@@ -82,6 +90,22 @@ bool Label::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void Label::onEnable(bool enabled)
+{
+  if (m_buddy && m_buddySync)
+    m_buddy->setEnabled(enabled);
+
+  Widget::onEnable(enabled);
+}
+
+void Label::refreshBuddySync()
+{
+  if (m_buddy && m_buddySync)
+    m_buddyEnabledConn = m_buddy->EnabledChange.connect([this](bool state) { setEnabled(state); });
+  else
+    m_buddyEnabledConn.disconnect();
 }
 
 } // namespace ui

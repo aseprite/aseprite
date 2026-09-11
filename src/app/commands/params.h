@@ -7,6 +7,7 @@
 #ifndef APP_COMMANDS_PARAMS_H
 #define APP_COMMANDS_PARAMS_H
 
+#include <initializer_list>
 #include <map>
 #include <sstream>
 #include <string>
@@ -18,6 +19,9 @@ public:
   typedef std::map<std::string, std::string> Map;
   typedef Map::iterator iterator;
   typedef Map::const_iterator const_iterator;
+
+  Params() = default;
+  Params(std::initializer_list<Map::value_type> params) : m_params(params) {}
 
   iterator begin() { return m_params.begin(); }
   iterator end() { return m_params.end(); }

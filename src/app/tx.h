@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -115,6 +115,8 @@ public:
 
   // If the command cannot be executed, it will be deleted anyway.
   void operator()(Cmd* cmd) { m_transaction->execute(cmd); }
+
+  bool isOwner() const { return m_owner; }
 
   operator Transaction&() { return *m_transaction; }
 

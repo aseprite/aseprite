@@ -76,6 +76,33 @@ In release mode you can use a similar function:
 
 * `PRINTARGS` prints in the terminal/console each given argument
 
+# Trace Macros
+
+You can uncomment/enable some special macros to debug specific
+features when you are trying to fix a part of the program:
+
+* `src/ui/manager.cpp`:
+  * `REPORT_MESSAGES`: Prints a string each time a message is removed
+    from the queue, and is sent to a widget. You can enable specific
+    flags to debug mouse/paint/timer messages:
+    * `REPORT_MOUSE_MESSAGES`
+    * `REPORT_PAINT_MESSAGES`
+    * `REPORT_TIMER_MESSAGES`
+  * `REPORT_FOCUS_MOVEMENT`: Prints the list of widgets that
+    participate in the focus movement.
+  * `LIMIT_DISPATCH_TIME`: Limit the amount of time we can pump UI
+    messages until we ask for new events to the OS.
+  * `GARBAGE_TRACE`: Prints debug messages to keep track when a
+    deferDelete() is finally executed.
+  * `CAPTURE_TRACE`: Prints debug messages when the mouse is
+    captured/released.
+* `src/ui/message.h`:
+  * `DEBUG_PAINT_MESSAGES`: Prints a blue rectangle on the screen
+    before sending the final `kPaintMessage`.
+* `src/ui/widget.cpp`:
+  * `PAINT_BASELINE`: Paints a dotted line where the baseline is
+    located for every single widget.
+
 # Detect Platform
 
 You can check the platform using some `laf` macros:

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -664,14 +664,19 @@ FileOp* FileOp::createSaveDocumentOperation(const Context* context,
       // If the error is fatal, we cannot ignore a no-op, we always
       // show the alert dialog.
       if (fatal) {
-        ui::Alert::show(Strings::alerts_file_format_doesnt_support_error(format->name(), warnings));
+        ui::Alert::show(
+          Strings::alerts_file_format_doesnt_support_error(format->name(),
+                                                           base::get_file_extension(filename),
+                                                           warnings));
         ret = 1;
       }
       else {
         ret = OptionalAlert::show(
           Preferences::instance().saveFile.showFileFormatDoesntSupportAlert,
           1, // Yes is the default option when the alert dialog is disabled
-          Strings::alerts_file_format_doesnt_support_warning(format->name(), warnings));
+          Strings::alerts_file_format_doesnt_support_warning(format->name(),
+                                                             base::get_file_extension(filename),
+                                                             warnings));
       }
 
       // Operation can't be done (by fatal error) or the user cancel
@@ -1068,6 +1073,12 @@ void FileOp::createDocument(Sprite* spr)
   m_document = new Doc(spr);
 }
 
+void FileOp::setDocument(Doc* doc)
+{
+  ASSERT(m_document == NULL);
+  m_document = doc;
+}
+
 void FileOp::postLoad()
 {
   if (m_document == NULL)
@@ -1090,20 +1101,26 @@ void FileOp::postLoad()
   }
 
   Sprite* sprite = m_document->sprite();
-  if (sprite) {
-    // Creates a suitable palette for RGB images
-    if (m_createPaletteFromRgba && sprite->pixelFormat() == IMAGE_RGB &&
-        sprite->getPalettes().size() <= 1 && sprite->palette(frame_t(0))->isBlack()) {
-      std::shared_ptr<Palette> palette(
-        render::create_palette_from_sprite(sprite,
-                                           frame_t(0),
-                                           sprite->lastFrame(),
-                                           true,
-                                           nullptr,
-                                           nullptr,
-                                           m_config.newBlend,
-                                           m_config.rgbMapAlgorithm));
+  if (sprite && m_createPaletteFromRgba && sprite->getPalettes().size() <= 1 &&
+      sprite->palette(frame_t(0))->isBlack()) {
+    std::shared_ptr<Palette> palette;
 
+    switch (sprite->pixelFormat()) {
+      // Creates a suitable palette for RGB images
+      case IMAGE_RGB:
+        palette.reset(render::create_palette_from_sprite(sprite,
+                                                         frame_t(0),
+                                                         sprite->lastFrame(),
+                                                         true,
+                                                         nullptr,
+                                                         nullptr,
+                                                         m_config.newBlend,
+                                                         m_config.rgbMapAlgorithm));
+        break;
+      // Set grayscale palette
+      case IMAGE_GRAYSCALE: palette.reset(Palette::createGrayscale()); break;
+    }
+    if (palette) {
       sprite->resetPalettes();
       sprite->setPalette(palette.get(), false);
     }

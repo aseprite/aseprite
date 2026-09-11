@@ -81,6 +81,7 @@ public:
   doc::Tag* tag() const { return m_tag; }
   doc::frame_t fromFrame() const { return m_framesSeq.firstFrame(); }
   doc::frame_t toFrame() const { return m_framesSeq.lastFrame(); }
+  gfx::Rect bounds() const { return m_bounds; }
   const doc::FramesSequence& framesSequence() const { return m_framesSeq; }
 
   doc::frame_t frames() const { return (doc::frame_t)m_framesSeq.size(); }
@@ -165,6 +166,7 @@ public:
 
   bool isSequence() const { return !m_seq.filename_list.empty(); }
   bool isOneFrame() const { return m_oneframe; }
+  bool ignoreEmpty() const { return m_ignoreEmpty; }
   bool preserveColorProfile() const { return m_config.preserveColorProfile; }
   const FileFormat* fileFormat() const { return m_format; }
 
@@ -178,6 +180,7 @@ public:
     m_document = nullptr;
     return doc;
   }
+  void setDocument(Doc* doc);
 
   const FileOpROI& roi() const { return m_roi; }
 

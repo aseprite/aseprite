@@ -379,6 +379,9 @@ some special cases:
    this case there is an User Data Chunk at the first frame after the
    Palette Chunk.
 
+For nested properties, there is a limit of 128 levels of depth of
+sub-properties inside vectors and maps.
+
 The data of this chunk is as follows:
 
     DWORD       Flags

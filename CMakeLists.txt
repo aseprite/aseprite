@@ -124,9 +124,14 @@ if(REQUIRE_CURL AND NOT USE_SHARED_CURL)
   endif()
 endif()
 
-# By default we'll try to use Skia back-end
+# Default laf backend depends in the SKIA_DIR is specified (similar to
+# laf/CMakeLists.txt logic)
 if(NOT LAF_BACKEND)
-  set(LAF_BACKEND "skia")
+  if(SKIA_DIR)
+    set(LAF_BACKEND "skia")
+  else()
+    set(LAF_BACKEND "none")
+  endif()
 endif()
 
 if(ENABLE_DRM AND NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/drm/CMakeLists.txt)

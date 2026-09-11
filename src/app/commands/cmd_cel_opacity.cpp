@@ -66,7 +66,7 @@ void CelOpacityCommand::onExecute(Context* context)
     return;
 
   {
-    Tx tx(writer, "Set Cel Opacity");
+    Tx tx(writer, onGetFriendlyName());
 
     for (Cel* c : site.selectedUniqueCels()) {
       if (!c->layer()->isBackground() && c->layer()->isEditable() && m_opacity != c->opacity()) {

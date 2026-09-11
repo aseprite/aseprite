@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2025  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -11,11 +12,10 @@
 #include "app/cmd.h"
 #include "app/cmd/with_cel.h"
 #include "app/cmd/with_layer.h"
-
-#include <sstream>
+#include "app/cmd/with_suspended.h"
+#include "doc/cel.h"
 
 namespace doc {
-class Cel;
 class Layer;
 } // namespace doc
 
@@ -32,14 +32,13 @@ protected:
   void onExecute() override;
   void onUndo() override;
   void onRedo() override;
-  size_t onMemSize() const override { return sizeof(*this) + m_size; }
+  size_t onMemSize() const override { return sizeof(*this) + m_suspendedCel.size(); }
 
 private:
   void addCel(Layer* layer, Cel* cel);
   void removeCel(Layer* layer, Cel* cel);
 
-  size_t m_size;
-  std::stringstream m_stream;
+  WithSuspended<doc::Cel*> m_suspendedCel;
 };
 
 }} // namespace app::cmd

@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-2026 Igara Studio S.A.
 // Copyright (c) 2017-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -133,6 +133,16 @@ public:
     else
       return 0;
   }
+
+  void write_pixel(FileInterface* f, doc::TilemapTraits::pixel_t c)
+  {
+    // Little endian
+    f->write8((c & 0x000000ff));
+    f->write8((c & 0x0000ff00) >> 8);
+    f->write8((c & 0x00ff0000) >> 16);
+    f->write8((c & 0xff000000) >> 24);
+  }
+
   void read_scanline(doc::TilemapTraits::address_t address, int w, uint8_t* buffer)
   {
     for (int x = 0; x < w; ++x, ++address) {
@@ -141,6 +151,15 @@ public:
       b3 = *(buffer++);
       b4 = *(buffer++);
       *address = ((b4 << 24) | (b3 << 16) | (b2 << 8) | b1);
+    }
+  }
+  void write_scanline(doc::TilemapTraits::address_t address, int w, uint8_t* buffer)
+  {
+    for (int x = 0; x < w; ++x, ++address) {
+      *(buffer++) = ((*address) & 0x000000ffl);
+      *(buffer++) = ((*address) & 0x0000ff00l) >> 8;
+      *(buffer++) = ((*address) & 0x00ff0000l) >> 16;
+      *(buffer++) = ((*address) & 0xff000000l) >> 24;
     }
   }
 };

@@ -28,6 +28,9 @@ public:
   // anything in the document could be changed.
   virtual void onGeneralUpdate(DocEvent& ev) {}
 
+  virtual void onBeforeSave(DocEvent& ev) {}
+  virtual void onAfterSave(DocEvent& ev) {}
+
   virtual void onColorSpaceChanged(DocEvent& ev) {}
   virtual void onPixelFormatChanged(DocEvent& ev) {}
   virtual void onPaletteChanged(DocEvent& ev) {}
@@ -124,6 +127,9 @@ public:
   // Warning: This must be triggered from the UI thread (because
   // scripts will listen this event).
   virtual void onAfterAddTile(DocEvent& ev) {}
+
+  // When we are about to commit a transaction
+  virtual void onBeforeCommitTransaction(DocEvent& ev) {}
 };
 
 } // namespace app

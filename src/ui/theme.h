@@ -67,6 +67,9 @@ public:
     Paint background;
     Paint selectedText;
     Paint selectedBackground;
+    Paint placeholderText;
+    Paint disabledText;
+    Paint disabledBackground;
   };
 
   Theme();

@@ -412,6 +412,7 @@ public:
 
   // Signals
   obs::signal<void()> InitTheme;
+  obs::signal<void(bool)> EnabledChange;
 
 protected:
   // ===============================================================

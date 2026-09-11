@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2025  Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,6 +10,7 @@
 #pragma once
 
 #include "doc/object_id.h"
+#include "doc/object_ids.h"
 #include "doc/object_type.h"
 #include "doc/object_version.h"
 
@@ -33,14 +35,24 @@ public:
   // object use.
   virtual int getMemSize() const;
 
+  // Removes or restore the ID of this object (and all its children)
+  // to keep this object in a "suspended" state (e.g. in the undo
+  // history) or to recover the object from a suspended state.
+  virtual void suspendObject();
+  virtual void restoreObject();
+
 private:
   ObjectType m_type;
 
   // Unique identifier for this object (it is assigned by
   // Objects class).
-  mutable ObjectId m_id;
+  mutable ObjectId m_id = NullId;
 
-  ObjectVersion m_version;
+  // ID saved when the objects is "deleted" but stored in the undo
+  // history. It's a way to save the previous ID and restore it.
+  ObjectId m_suspendedId = NullId;
+
+  ObjectVersion m_version = 0;
 
   // Disable copy assignment
   Object& operator=(const Object&);

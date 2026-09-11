@@ -42,6 +42,7 @@ Slice::Slice(const Slice& other)
   , m_name(other.m_name)
   , m_keys(other.m_keys)
 {
+  setUserData(other.userData());
 }
 
 Slice::~Slice()

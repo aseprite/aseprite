@@ -18,6 +18,7 @@
 #include "app/modules/gui.h"
 #include "app/resource_finder.h"
 #include "app/ui/alpha_slider.h"
+#include "app/ui/app_tooltips.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/drop_down_button.h"
@@ -57,18 +58,6 @@ static int int_attr(const XMLElement* elem, const char* attribute_name, int defa
 
 WidgetLoader::WidgetLoader() : m_tooltipManager(NULL)
 {
-}
-
-WidgetLoader::~WidgetLoader()
-{
-  for (TypeCreatorsMap::iterator it = m_typeCreators.begin(), end = m_typeCreators.end(); it != end;
-       ++it)
-    it->second->dispose();
-}
-
-void WidgetLoader::addWidgetType(const char* tagName, IWidgetTypeCreator* creator)
-{
-  m_typeCreators[tagName] = creator;
 }
 
 Widget* WidgetLoader::loadWidget(const char* fileName, const char* widgetId, ui::Widget* widget)
@@ -126,16 +115,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
 {
   const std::string elem_name = elem->Value();
 
-  // TODO error handling: add a message if the widget is bad specified
-
-  // Try to use one of the creators.
-  TypeCreatorsMap::iterator it = m_typeCreators.find(elem_name);
-
-  if (it != m_typeCreators.end()) {
-    if (!widget)
-      widget = it->second->createWidgetFromXml(elem);
-  }
-  else if (elem_name == "panel") {
+  if (elem_name == "panel") {
     if (!widget)
       widget = new Panel();
   }
@@ -192,28 +172,19 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
     }
   }
   else if (elem_name == "check") {
-    const char* looklike = elem->Attribute("looklike");
     const char* pref = elem->Attribute("pref");
 
     ASSERT(!widget || !pref); // widget && pref is not supported
 
-    if (looklike != NULL && strcmp(looklike, "button") == 0) {
-      ASSERT(!pref); // not supported yet
-
-      if (!widget)
-        widget = new CheckBox("", kButtonWidget);
-    }
-    else {
-      if (!widget) {
-        // Automatic bind <check> widget with bool preference option
-        if (pref) {
-          std::unique_ptr<BoolPrefWidget<CheckBox>> prefWidget(new BoolPrefWidget<CheckBox>(""));
-          prefWidget->setPref(pref);
-          widget = prefWidget.release();
-        }
-        else {
-          widget = new CheckBox("");
-        }
+    if (!widget) {
+      // Automatic bind <check> widget with bool preference option
+      if (pref) {
+        std::unique_ptr<BoolPrefWidget<CheckBox>> prefWidget(new BoolPrefWidget<CheckBox>(""));
+        prefWidget->setPref(pref);
+        widget = prefWidget.release();
+      }
+      else {
+        widget = new CheckBox("");
       }
     }
 
@@ -235,7 +206,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
 
     const char* suffix = elem->Attribute("suffix");
     if (suffix)
-      ((ComboBox*)widget)->getEntryWidget()->setSuffix(suffix);
+      ((ComboBox*)widget)->getEntryWidget()->setSuffix(m_xmlTranslator(elem, "suffix"));
   }
   else if (elem_name == "entry" || elem_name == "expr") {
     const char* maxsize = elem->Attribute("maxsize");
@@ -252,7 +223,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
       ((Entry*)widget)->setReadOnly(true);
 
     if (suffix)
-      ((Entry*)widget)->setSuffix(suffix);
+      ((Entry*)widget)->setSuffix(m_xmlTranslator(elem, "suffix"));
 
     if (elem->Attribute("placeholder"))
       ((Entry*)widget)->setPlaceholder(m_xmlTranslator(elem, "placeholder"));
@@ -269,6 +240,12 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
   }
   else if (elem_name == "textedit") {
     widget = new TextEdit();
+    const bool readonly = bool_attr(elem, "readonly", false);
+
+    if (elem->Attribute("placeholder"))
+      ((TextEdit*)widget)->setPlaceholder(m_xmlTranslator(elem, "placeholder"));
+    if (readonly)
+      ((TextEdit*)widget)->setReadOnly(true);
   }
   else if (elem_name == "grid") {
     const char* columns = elem->Attribute("columns");
@@ -314,6 +291,11 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
 
     widget->setAlign((center ? CENTER : (right ? RIGHT : LEFT)) |
                      (top ? TOP : (bottom ? BOTTOM : MIDDLE)));
+
+    const char* buddy = elem->Attribute("for");
+    if (buddy != NULL) {
+      ((LinkLabel*)widget)->setBuddy(buddy);
+    }
   }
   else if (elem_name == "listbox") {
     if (!widget)
@@ -354,17 +336,11 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
   }
   else if (elem_name == "radio") {
     const char* group = elem->Attribute("group");
-    const char* looklike = elem->Attribute("looklike");
 
     int radio_group = (group ? strtol(group, NULL, 10) : 1);
 
     if (!widget) {
-      if (looklike != NULL && strcmp(looklike, "button") == 0) {
-        widget = new RadioButton("", radio_group, kButtonWidget);
-      }
-      else {
-        widget = new RadioButton("", radio_group);
-      }
+      widget = new RadioButton("", radio_group);
     }
     else {
       RadioButton* radio = dynamic_cast<RadioButton*>(widget);
@@ -473,8 +449,12 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
   else if (elem_name == "buttonset") {
     const char* columns = elem->Attribute("columns");
 
-    if (!widget && columns)
-      widget = new ButtonSet(strtol(columns, NULL, 10));
+    if (!widget) {
+      if (columns)
+        widget = new ButtonSet(strtol(columns, nullptr, 10));
+      else
+        throw std::runtime_error("<buttonset> without columns");
+    }
 
     if (ButtonSet* buttonset = dynamic_cast<ButtonSet*>(widget)) {
       if (bool_attr(elem, "multiple", false))
@@ -542,14 +522,22 @@ Widget* WidgetLoader::convertXmlElementToWidget(const XMLElement* elem,
     if (!widget)
       widget = new SearchEntry;
 
+    auto* searchEntry = static_cast<SearchEntry*>(widget);
+
     if (elem->Attribute("placeholder"))
-      ((SearchEntry*)widget)->setPlaceholder(m_xmlTranslator(elem, "placeholder"));
+      searchEntry->setPlaceholder(m_xmlTranslator(elem, "placeholder"));
     else
-      ((SearchEntry*)widget)->setPlaceholder(Strings::general_search());
+      searchEntry->setPlaceholder(Strings::general_search());
+
+    searchEntry->setClearOnEsc(bool_attr(elem, "clearonesc", false));
+    searchEntry->setDebounce(int_attr(elem, "debounce", 0));
   }
   else if (elem_name == "font") {
     if (!widget)
       widget = new FontEntry(false);
+  }
+  else {
+    throw base::Exception("Invalid widget specified");
   }
 
   // Was the widget created?
@@ -605,7 +593,8 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const XMLElement* elem,
 
   if (elem->Attribute("tooltip") && root) {
     if (!m_tooltipManager) {
-      m_tooltipManager = new ui::TooltipManager();
+      m_tooltipManager = new app::AppTooltipManager();
+      m_tooltipManager->setId("tooltip_manager");
       root->addChild(m_tooltipManager);
     }
 

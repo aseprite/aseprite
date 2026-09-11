@@ -21,12 +21,27 @@ public:
   void setBuddy(Widget* buddy);
   void setBuddy(const std::string& buddyId);
 
+  // Keeps the label's enabled state synchronized with the buddy
+  void setBuddySyncEnabled(bool sync)
+  {
+    if (m_buddySync != sync) {
+      m_buddySync = sync;
+      refreshBuddySync();
+    }
+  }
+  bool buddySyncEnabled() const { return m_buddySync; }
+
 protected:
   bool onProcessMessage(Message* msg) override;
+  void onEnable(bool enabled) override;
 
 private:
+  void refreshBuddySync();
+
   Widget* m_buddy;
+  bool m_buddySync;
   std::string m_buddyId;
+  obs::scoped_connection m_buddyEnabledConn;
 };
 
 } // namespace ui

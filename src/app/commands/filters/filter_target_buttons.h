@@ -9,11 +9,11 @@
 #pragma once
 
 #include "app/commands/filters/cels_target.h"
+#include "app/ui/app_tooltips.h"
 #include "app/ui/button_set.h"
 #include "app/ui/skin/skin_part.h"
 #include "filters/target.h"
 #include "obs/signal.h"
-#include "ui/tooltips.h"
 
 namespace ui {
 class ButtonBase;
@@ -58,7 +58,7 @@ private:
   Item* m_gray;
   Item* m_index;
   Item* m_cels;
-  ui::TooltipManager m_tooltips;
+  app::AppTooltipManager m_tooltips;
 };
 
 } // namespace app

@@ -451,3 +451,33 @@ end
 EOF
 $ASEPRITE -b -script-param file=$d/tilesets.png \
           -script "$d/compare.lua" || exit 1
+
+
+# Testing -power-of-two-size flag
+# https://github.com/aseprite/aseprite/issues/2289
+d=$t/issue-2289
+# Without this flag:
+$ASEPRITE -b "sprites/point4frames.aseprite" \
+          -trim \
+          -sheet-pack \
+          -data "$d/atlas.json" \
+          -sheet "$d/sheet.png" || exit 1
+cat >$d/size_verification.lua <<EOF
+local sheet = Sprite{ fromFile="$d/sheet.png" }
+assert(sheet.width == 10)
+assert(sheet.height == 5)
+EOF
+$ASEPRITE -b -script "$d/size_verification.lua" || exit 1
+# With the -power-of-two-size flag:
+$ASEPRITE -b "sprites/point4frames.aseprite" \
+          -trim \
+          -sheet-pack \
+          -power-of-two-size \
+          -data "$d/atlas.json" \
+          -sheet "$d/sheet.png" || exit 1
+cat >$d/size_verification.lua <<EOF
+local sheet = Sprite{ fromFile="$d/sheet.png" }
+assert(sheet.width == 16)
+assert(sheet.height == 8)
+EOF
+$ASEPRITE -b -script "$d/size_verification.lua" || exit 1

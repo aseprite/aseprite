@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -19,6 +19,7 @@
 #include "app/console.h"
 #include "app/context.h"
 #include "app/context_access.h"
+#include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
 #include "app/site.h"
 #include "app/tx.h"
@@ -150,12 +151,15 @@ void PasteTextCommand::onExecute(Context* ctx)
 
     if (ui) {
       // TODO: Do we want to make this selectable result available when not using UI?
-      Editor::activeEditor()->pasteImage(image.get(), nullptr, &point);
+      Editor::activeEditor()->pasteImage(
+        image.get(),
+        nullptr,
+        (params().x.isSet() || params().y.isSet()) ? &point : nullptr);
       return;
     }
 
     ContextWriter writer(ctx);
-    Tx tx(writer, "Paste Text");
+    Tx tx(writer, Strings::commands_PasteText());
     ImageRef finalImage = image;
     if (writer.cel()->image()) {
       gfx::Rect celRect(point, image->size());

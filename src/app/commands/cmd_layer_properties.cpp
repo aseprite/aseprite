@@ -377,6 +377,8 @@ private:
       return;
 
     auto tilemap = static_cast<LayerTilemap*>(m_layer);
+    expandWindow(gfx::Size(bounds().w, sizeHint().h));
+
     auto tileset = tilemap->tileset();
 
     // Information about the tileset to be used for new tilemaps
@@ -442,8 +444,11 @@ private:
       name()->setText(m_layer->name().c_str());
       name()->setEnabled(true);
 
-      if (m_layer->isImage() ||
-          (m_layer->isGroup() && Preferences::instance().experimental.composeGroups())) {
+      const bool imageProps =
+        ((m_layer->isImage() ||
+          (m_layer->isGroup() && Preferences::instance().experimental.composeGroups())));
+
+      if (imageProps) {
         mode()->setSelectedItem(nullptr);
         for (auto item : *mode()) {
           if (auto blendModeItem = dynamic_cast<BlendModeItem*>(item)) {
@@ -457,10 +462,11 @@ private:
         opacity()->setValue(m_layer->opacity());
         opacity()->setEnabled(!m_layer->isBackground());
       }
-      else {
-        mode()->setEnabled(false);
-        opacity()->setEnabled(false);
-      }
+
+      modeLabel()->setVisible(imageProps);
+      mode()->setVisible(imageProps);
+      opacityLabel()->setVisible(imageProps);
+      opacity()->setVisible(imageProps);
 
       color_t c = m_layer->userData().color();
       m_userDataView.color()->setColor(
@@ -486,6 +492,8 @@ private:
       tileset()->setVisible(tilemapVisibility);
       tileset()->parent()->layout();
     }
+
+    expandWindow(gfx::Size(bounds().w, sizeHint().h));
   }
 
   Timer m_timer;

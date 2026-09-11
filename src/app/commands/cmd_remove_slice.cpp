@@ -98,7 +98,7 @@ void RemoveSliceCommand::onExecute(Context* context)
     ContextWriter writer(reader);
     Doc* document(writer.document());
     Sprite* sprite(writer.sprite());
-    Tx tx(writer, "Remove Slice");
+    Tx tx(writer, Strings::commands_RemoveSlice());
 
     for (auto slice : slicesToDelete.iterateAs<Slice>()) {
       ASSERT(slice);
@@ -117,15 +117,12 @@ void RemoveSliceCommand::onExecute(Context* context)
     document->notifyGeneralUpdate();
   }
 
-  if (context->isUIAvailable()) {
-    StatusBar::instance()->invalidate();
-    if (!sliceName.empty()) {
-      StatusBar::instance()->showTip(1000, Strings::remove_slice_x_removed(sliceName));
-    }
-    else {
-      StatusBar::instance()->showTip(1000,
-                                     Strings::remove_slice_n_slices_removed(slicesToDelete.size()));
-    }
+  auto* statusBar = StatusBar::instance();
+  if (statusBar && context->isUIAvailable()) {
+    if (!sliceName.empty())
+      statusBar->showTip(1000, Strings::remove_slice_x_removed(sliceName));
+    else
+      statusBar->showTip(1000, Strings::remove_slice_n_slices_removed(slicesToDelete.size()));
   }
 }
 

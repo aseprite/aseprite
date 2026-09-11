@@ -1,0 +1,139 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2018-2025  Igara Studio S.A. -->
+<gui i18nwarnings="false">
+  <window id="zoo" text="Widget Zoo">
+    <vbox expansive="true">
+      <hbox>
+        <button id="reset" icon="arrow_circle_cw" tooltip="Reset" />
+        <separator horizontal="true" expansive="true" />
+        <buttonset id="config_tabs" columns="3">
+          <item text="Normal" selected="true" />
+          <item text="Disabled" />
+          <item text="ReadOnly" />
+        </buttonset>
+        <separator horizontal="true" expansive="true" />
+        <button id="theme_selector" icon="combobox_arrow_down" tooltip="Select Theme" />
+      </hbox>
+
+      <boxfiller height="4"></boxfiller>
+        <grid id="main_container" childspacing="6" columns="3" expansive="true">
+          <!-- Buttons -->
+          <vbox expansive="true" width="100">
+            <separator text="Buttons" horizontal="true" />
+            <hbox>
+              <button text="Button" />
+              <button text="Mini" style="mini_button"></button>
+              <button icon="debug_continue" tooltip="Icon Button" />
+              <boxfiller />
+            </hbox>
+            <filename buttononly="true" />
+            <colorpicker />
+            <dropdownbutton text="Dropdown Button" />
+            <buttonset columns="3">
+              <item text="1" />
+              <item icon="debug_continue" />
+              <item text="2" />
+            </buttonset>
+            <buttonset columns="2" multiple="true">
+              <item text="1" selected="true" />
+              <item text="2" />
+              <item text="3" />
+              <item text="4" selected="true" />
+            </buttonset>
+          </vbox>
+
+          <!-- CheckBoxes -->
+          <vbox expansive="true" width="100">
+            <separator text="CheckBoxes" horizontal="true" />
+            <check text="Checkbox" />
+            <check text="Checkbox" selected="true" />
+            <radio text="RadioBox" group="2" />
+            <radio text="RadioBox" group="2" selected="true" />
+          </vbox>
+
+          <!-- Entries -->
+          <vbox expansive="true" width="100">
+            <separator text="Text Entry" horizontal="true" />
+            <hbox>
+              <label text="for" for="entry" />
+              <entry id="entry" maxsize="255" text=""  expansive="true" />
+            </hbox>
+            <entry id="entry_suf" maxsize="255" text="with" suffix="suffix" />
+            <expr id="entry_expr" maxsize="10" placeholder="expr" />
+            <expr id="entry_expr_suf" maxsize="10" suffix="px" decimals="2" text="5" placeholder="expr with sfx" />
+            <view height="30">
+              <textedit id="text_edit" text="" placeholder="TextEdit" />
+            </view>
+            <filename id="filename" />
+            <search id="search" />
+          </vbox>
+
+          <!-- ComboBoxes -->
+          <vbox expansive="true">
+            <separator text="ComboBoxes" horizontal="true" />
+            <combobox id="static_combo_box" suffix="with suffix">
+              <listitem text="Combobox" />
+              <listitem text="Combobox" />
+              <listitem text="Combobox" />
+            </combobox>
+            <combobox id="editable_combo_box" editable="true">
+              <listitem text="Editable Combobox" />
+              <listitem text="Editable Combobox" />
+              <listitem text="Editable Combobox" />
+            </combobox>
+            <boxfiller />
+          </vbox>
+
+          <!-- Separators -->
+          <vbox expansive="true">
+            <separator text="Separators" horizontal="true" />
+            <hbox>
+              <separator minheight="24" />
+              <separator horizontal="true" expansive="true" />
+              <separator />
+            </hbox>
+          </vbox>
+
+          <!-- Sliders -->
+          <vbox expansive="true">
+            <separator text="Sliders" horizontal="true" />
+            <slider id="slider" min="1" max="9999" />
+            <alphaslider id="slider_alpha" min="0" max="100" style="mini_slider" />
+            <opacityslider id="slider_opacity" min="1" max="9999" />
+            <boxfiller />
+          </vbox>
+
+          <!-- TextBox -->
+          <vbox expansive="true">
+            <separator text="TextBox" horizontal="true" />
+            <view height="35">
+              <textbox text="textbox view" width="100" />
+            </view>
+          </vbox>
+
+          <!-- Labels -->
+          <vbox expansive="true">
+            <separator text="Labels" horizontal="true" />
+            <label text="Normal Label" />
+            <link text="Link Label" url="https://www.aseprite.org/" />
+          </vbox>
+
+          <!-- Images -->
+          <vbox expansive="true">
+            <separator text="Images" horizontal="true" />
+            <hbox>
+              <image id="image_icon" icon="warning_box" />
+              <image id="image_file" file="icons/ext16.png" />
+            </hbox>
+          </vbox>
+
+          <!-- Font -->
+          <vbox expansive="true" cell_hspan="3">
+            <separator text="Fonts" horizontal="true" />
+            <font id="font_picker" />
+            <boxfiller />
+          </vbox>
+        </grid>
+    </vbox>
+  </window>
+</gui>

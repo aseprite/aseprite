@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2023 Igara Studio S.A.
+// Copyright (c) 2019-2025 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -42,14 +42,12 @@ CelsRange::iterator::iterator(const Sprite* sprite,
   // Get first cel
   Layer* layer = sprite->root()->firstLayerInWholeHierarchy();
   while (layer && !m_cel) {
-    if (layer->isImage()) {
-      m_frameIterator = m_selFrames.begin();
-      auto endFrame = m_selFrames.end();
-      for (; m_frameIterator != endFrame; ++m_frameIterator) {
-        m_cel = layer->cel(*m_frameIterator);
-        if (m_cel)
-          break;
-      }
+    m_frameIterator = m_selFrames.begin();
+    auto endFrame = m_selFrames.end();
+    for (; m_frameIterator != endFrame; ++m_frameIterator) {
+      m_cel = layer->cel(*m_frameIterator);
+      if (m_cel)
+        break;
     }
 
     if (!m_cel)
@@ -72,21 +70,19 @@ CelsRange::iterator& CelsRange::iterator::operator++()
   Layer* layer = m_cel->layer();
   m_cel = nullptr;
   while (layer && !m_cel) {
-    if (layer->isImage()) {
-      for (; m_frameIterator != endFrame; ++m_frameIterator) {
-        m_cel = layer->cel(*m_frameIterator);
-        if (m_cel) {
-          if (m_flags == CelsRange::UNIQUE) {
-            if (m_visited.find(m_cel->data()->id()) == m_visited.end()) {
-              m_visited.insert(m_cel->data()->id());
-              break;
-            }
-            else
-              m_cel = nullptr;
+    for (; m_frameIterator != endFrame; ++m_frameIterator) {
+      m_cel = layer->cel(*m_frameIterator);
+      if (m_cel) {
+        if (m_flags == CelsRange::UNIQUE) {
+          if (m_visited.find(m_cel->data()->id()) == m_visited.end()) {
+            m_visited.insert(m_cel->data()->id());
+            break;
           }
           else
-            break;
+            m_cel = nullptr;
         }
+        else
+          break;
       }
     }
 

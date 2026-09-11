@@ -1,11 +1,10 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-// #define REPORT_SIGNALS
 // #define PAINT_BASELINE 1
 
 #ifdef HAVE_CONFIG_H
@@ -1659,8 +1658,15 @@ bool Widget::onProcessMessage(Message* msg)
       break;
     }
 
-    case kMouseDownMessage:
     case kMouseUpMessage:
+      // In a kMouseUpMessage without button, the capture was lost by
+      // force because the user changed to another app.
+      if (hasCapture() && static_cast<const MouseMessage*>(msg)->button() == kButtonNone)
+        releaseMouse();
+
+      [[fallthrough]];
+
+    case kMouseDownMessage:
     case kMouseMoveMessage:
     case kMouseWheelMessage:
       // Propagate the message to the parent.
@@ -1859,7 +1865,7 @@ void Widget::onVisible(bool visible)
 
 void Widget::onEnable(bool enabled)
 {
-  // Do nothing
+  EnabledChange(enabled);
 }
 
 void Widget::onSelect(bool selected)

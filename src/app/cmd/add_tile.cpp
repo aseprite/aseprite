@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-2025  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -11,7 +11,6 @@
 #include "app/cmd/add_tile.h"
 
 #include "app/doc.h"
-#include "doc/image_io.h"
 #include "doc/sprite.h"
 #include "doc/tileset.h"
 #include "doc/tilesets.h"
@@ -20,8 +19,6 @@ namespace app { namespace cmd {
 
 AddTile::AddTile(doc::Tileset* tileset, const doc::ImageRef& image, const doc::UserData& userData)
   : WithTileset(tileset)
-  , WithImage(image.get())
-  , m_size(0)
   , m_tileIndex(doc::notile)
   , m_imageRef(image)
   , m_userData(userData)
@@ -30,10 +27,8 @@ AddTile::AddTile(doc::Tileset* tileset, const doc::ImageRef& image, const doc::U
 
 AddTile::AddTile(doc::Tileset* tileset, const doc::tile_index ti)
   : WithTileset(tileset)
-  , WithImage(tileset->get(ti).get())
-  , m_size(0)
   , m_tileIndex(ti)
-  , m_imageRef(nullptr)
+  , m_imageRef(tileset->get(ti))
   , m_userData(tileset->getTileData(ti))
 {
 }
@@ -44,14 +39,11 @@ void AddTile::onExecute()
   ASSERT(tileset);
 
   if (m_tileIndex != doc::notile) {
-    ASSERT(!m_imageRef);
     tileset->sprite()->incrementVersion();
     tileset->incrementVersion();
   }
   else {
-    ASSERT(m_imageRef);
     addTile(tileset, m_imageRef, m_userData);
-    m_imageRef.reset();
   }
 }
 
@@ -60,8 +52,9 @@ void AddTile::onUndo()
   doc::Tileset* tileset = this->tileset();
   ASSERT(tileset);
 
-  write_image(m_stream, image());
-  m_size = size_t(m_stream.tellp());
+  ASSERT(m_imageRef);
+  m_suspendedImage.suspend(m_imageRef);
+  m_imageRef.reset();
 
   tileset->erase(m_tileIndex);
 
@@ -74,15 +67,10 @@ void AddTile::onRedo()
   doc::Tileset* tileset = this->tileset();
 
   ASSERT(!m_imageRef);
-  m_imageRef.reset(read_image(m_stream));
+  m_imageRef = m_suspendedImage.restore();
   ASSERT(m_imageRef);
 
   addTile(tileset, m_imageRef, m_userData);
-  m_imageRef.reset();
-
-  m_stream.str(std::string());
-  m_stream.clear();
-  m_size = 0;
 }
 
 void AddTile::onFireNotifications()

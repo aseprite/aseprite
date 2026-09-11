@@ -172,7 +172,8 @@ static int flooder(const Image* image,
         if (!color_equal_32((int)*(address + right), src_color, tolerance) || MASKED(right, y))
           break;
       }
-    } break;
+      break;
+    }
 
     case IMAGE_GRAYSCALE: {
       uint16_t* address = reinterpret_cast<uint16_t*>(image->getPixelAddress(0, y));
@@ -192,7 +193,8 @@ static int flooder(const Image* image,
         if (!color_equal_16((int)*(address + right), src_color, tolerance) || MASKED(right, y))
           break;
       }
-    } break;
+      break;
+    }
 
     case IMAGE_INDEXED: {
       uint8_t* address = image->getPixelAddress(0, y);
@@ -212,7 +214,8 @@ static int flooder(const Image* image,
         if (!color_equal_8((int)*(address + right), src_color, tolerance) || MASKED(right, y))
           break;
       }
-    } break;
+      break;
+    }
 
     case IMAGE_TILEMAP: {
       // TODO add support for mask
@@ -234,7 +237,8 @@ static int flooder(const Image* image,
         if (!color_equal_32_raw((int)*(address + right), src_color))
           break;
       }
-    } break;
+      break;
+    }
 
     default:
       // Check start pixel

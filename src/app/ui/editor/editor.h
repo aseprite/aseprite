@@ -245,7 +245,8 @@ public:
 
   void pasteImage(const Image* image,
                   const Mask* mask = nullptr,
-                  const gfx::Point* position = nullptr);
+                  const gfx::Point* position = nullptr,
+                  const Tileset* srcTileset = nullptr);
 
   void startSelectionTransformation(const gfx::Point& move, double angle);
   void startFlipTransformation(doc::algorithm::FlipType flipType);
@@ -353,6 +354,7 @@ protected:
   void onBeforeLayerEditableChange(DocEvent& ev, bool newState) override;
   void onBeforeSlicesDuplication(DocEvent& ev) override;
   void onSliceDuplicated(DocEvent& ev) override;
+  void onBeforeCommitTransaction(DocEvent& ev) override;
 
   // ActiveToolObserver impl
   void onActiveToolChange(tools::Tool* tool) override;

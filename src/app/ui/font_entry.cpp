@@ -73,7 +73,7 @@ bool FontEntry::FontFace::onProcessMessage(Message* msg)
 
     case kMouseDownMessage:
     case kFocusEnterMessage:
-      if (!isEnabled())
+      if (!isEnabled() || isReadOnly())
         break;
 
       if (!m_popup) {
@@ -231,6 +231,7 @@ void FontEntry::FontFace::onCloseIconPressed()
 FontEntry::FontSize::FontSize()
 {
   setEditable(true);
+  setEnabled(false);
 }
 
 void FontEntry::FontSize::updateForFont(const FontInfo& info)
@@ -258,6 +259,8 @@ void FontEntry::FontSize::updateForFont(const FontInfo& info)
     else
       addItem(fmt::format("{}", i));
   }
+
+  setEnabled(true);
 }
 
 void FontEntry::FontSize::onEntryChange()
@@ -460,6 +463,7 @@ void FontEntry::setInfo(const FontInfo& info, const From fromField)
     m_style.getItem(1)->setSelected(m_info.style().slant() != text::FontStyle::Slant::Upright);
   }
 
+  setTextQuiet(m_info.humanString());
   FontChange(m_info, fromField);
 }
 

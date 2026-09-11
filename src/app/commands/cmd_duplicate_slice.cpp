@@ -82,10 +82,15 @@ void DuplicateSliceCommand::onExecute(Context* context)
   }
 
   ContextWriter writer(context);
-  Tx tx(writer, "Duplicate Slice");
   Sprite* sprite = writer.site().sprite();
-
   Doc* doc = static_cast<Doc*>(sprite->document());
+
+  // Show the tooltip feedback only if we are not inside a transaction
+  // (e.g. we can be already in a transaction if we are running in a
+  // Lua script app.transaction()).
+  const bool showTooltip = (doc->transaction() == nullptr);
+
+  Tx tx(writer, Strings::commands_DuplicateSlice());
   doc->notifyBeforeSlicesDuplication();
   for (auto* s : selectedSlices) {
     Slice* slice = new Slice(*s);
@@ -102,14 +107,12 @@ void DuplicateSliceCommand::onExecute(Context* context)
   if (selectedSlices.size() == 1)
     sliceName = selectedSlices[0]->name();
 
-  StatusBar::instance()->invalidate();
-  if (!sliceName.empty()) {
-    StatusBar::instance()->showTip(1000, Strings::duplicate_slice_x_duplicated(sliceName));
-  }
-  else {
-    StatusBar::instance()->showTip(
-      1000,
-      Strings::duplicate_slice_n_slices_duplicated(selectedSlices.size()));
+  auto* statusBar = StatusBar::instance();
+  if (showTooltip && statusBar && context->isUIAvailable()) {
+    if (!sliceName.empty())
+      statusBar->showTip(1000, Strings::duplicate_slice_x_duplicated(sliceName));
+    else
+      statusBar->showTip(1000, Strings::duplicate_slice_n_slices_duplicated(selectedSlices.size()));
   }
 }
 

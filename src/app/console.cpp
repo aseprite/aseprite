@@ -53,6 +53,8 @@ public:
     // the initialization.
     if (auto* mainWin = App::instance()->mainWindow()) {
       m_mainWindowClosedConn = mainWin->Close.connect([this] { closeWindow(nullptr); });
+      // Ensure we are parented to the main window when we are opened
+      setParentDisplay(mainWin->display());
     }
 
     // When the window is closed, we clear the text

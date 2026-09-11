@@ -10,6 +10,7 @@
 #endif
 
 #include "app/cmd/set_frame_duration.h"
+#include "app/i18n/strings.h"
 #include "app/script/docobj.h"
 #include "app/script/engine.h"
 #include "app/script/luacpp.h"
@@ -98,7 +99,7 @@ int Frame_set_duration(lua_State* L)
   auto obj = get_obj<FrameObj>(L, 1);
   auto sprite = obj->sprite(L);
   double duration = lua_tonumber(L, 2) * 1000.0;
-  Tx tx(sprite);
+  Tx tx(sprite, Strings::tx_set_frame_duration());
   tx(new cmd::SetFrameDuration(sprite, obj->frame, int(duration)));
   tx.commit();
   return 1;

@@ -17,6 +17,7 @@
 #include "app/console.h"
 #include "app/doc.h"
 #include "app/file/file.h"
+#include "app/file/file_format.h"
 #include "app/file_selector.h"
 #include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
@@ -25,6 +26,7 @@
 #include "app/ui_context.h"
 #include "app/util/open_file_job.h"
 #include "base/fs.h"
+#include "dio/file_format.h"
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
@@ -170,8 +172,14 @@ void OpenFileCommand::onExecute(Context* context)
         m_usedFiles.push_back(fn);
       }
 
-      OpenFileJob task(fop.get(), m_ui);
-      task.showProgressWindow();
+      if (fop->fileFormat()->dioFormat() >= dio::FileFormat::FIRST_CUSTOM) {
+        // Custom formats must run on the main thread
+        fop->operate();
+      }
+      else {
+        OpenFileJob task(fop.get(), m_ui);
+        task.showProgressWindow();
+      }
 
       // Post-load processing, it is called from the GUI because may require user intervention.
       fop->postLoad();

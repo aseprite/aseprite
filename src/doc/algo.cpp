@@ -500,11 +500,11 @@ void algo_ellipsefill(int x0,
     } // x step
   } while (x0 <= x1);
 
-  while (y0 + vPixels - y1 + 1 < h) {           // too early stop of flat ellipses a=1
-    proc(x0 - 1, ++y0 + vPixels, x0 - 1, data); // -> finish tip of ellipse
-    proc(x1 + 1 + hPixels, y0 + vPixels, x1 + 1 + hPixels, data);
-    proc(x0 - 1, --y1, x0 - 1, data);
-    proc(x1 + 1 + hPixels, y1, x1 + 1 + hPixels, data);
+  while (y0 + vPixels - y1 + 1 <= h) {        // too early stop of flat ellipses a=1
+    proc(x0 - 1, y0 + vPixels, x0 - 1, data); // -> finish tip of ellipse
+    proc(x1 + 1 + hPixels, y0++ + vPixels, x1 + 1 + hPixels, data);
+    proc(x0 - 1, y1, x0 - 1, data);
+    proc(x1 + 1 + hPixels, y1--, x1 + 1 + hPixels, data);
   }
 
   if (vPixels > 0) {

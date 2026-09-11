@@ -24,6 +24,7 @@
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/tx.h"
+#include "app/ui/app_tooltips.h"
 #include "app/ui/color_button.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/user_data_view.h"
@@ -307,7 +308,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
       window.transparentColorPlaceholder()->addChild(color_button);
 
       // TODO add a way to get or create an existent TooltipManager
-      TooltipManager* tooltipManager = new TooltipManager;
+      auto* tooltipManager = new app::AppTooltipManager;
       window.addChild(tooltipManager);
       tooltipManager->addTooltipFor(color_button,
                                     Strings::sprite_properties_transparent_color_tooltip(),

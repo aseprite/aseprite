@@ -12,8 +12,6 @@
 #include "app/cmd/with_sprite.h"
 #include "doc/image_ref.h"
 
-#include <sstream>
-
 namespace app { namespace cmd {
 using namespace doc;
 

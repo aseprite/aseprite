@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,6 +20,7 @@
 #include "gfx/rect.h"
 
 #include <map>
+#include <memory>
 
 namespace doc {
 class Cel;
@@ -63,6 +64,10 @@ using namespace docapi;
 //
 class DocApi {
 public:
+  // When cloning layers, it indicates if we should share the tileset
+  // between the copy or create a new copy of the tileset.
+  enum class ShareTilesets { No, Yes };
+
   DocApi(Doc* document, Transaction& transaction);
 
   // Sprite API
@@ -91,36 +96,46 @@ public:
                  const TagsHandling tagsHandling);
 
   // Cels API
-  void addCel(LayerImage* layer, Cel* cel);
+  void addCel(Layer* layer, Cel* cel);
   Cel* addCel(LayerImage* layer, frame_t frameNumber, const ImageRef& image);
   void clearCel(Layer* layer, frame_t frame);
   void clearCel(Cel* cel);
   void clearCelAndAllLinks(Cel* cel);
   void setCelPosition(Sprite* sprite, Cel* cel, int x, int y);
   void setCelOpacity(Sprite* sprite, Cel* cel, int newOpacity);
-  void moveCel(LayerImage* srcLayer, frame_t srcFrame, LayerImage* dstLayer, frame_t dstFrame);
-  void copyCel(LayerImage* srcLayer,
+  void moveCel(Layer* srcLayer, frame_t srcFrame, Layer* dstLayer, frame_t dstFrame);
+  void copyCel(Layer* srcLayer,
                frame_t srcFrame,
-               LayerImage* dstLayer,
+               Layer* dstLayer,
                frame_t dstFrame,
                const bool* forceContinuous = nullptr);
-  void swapCel(LayerImage* layer, frame_t frame1, frame_t frame2);
+  void swapCel(Layer* layer, frame_t frame1, frame_t frame2);
 
   // Layers API
-  LayerImage* newLayer(LayerGroup* parent, const std::string& name);
-  LayerImage* newLayerAfter(LayerGroup* parent, const std::string& name, Layer* afterThis);
-  LayerGroup* newGroup(LayerGroup* parent, const std::string& name);
-  LayerGroup* newGroupAfter(LayerGroup* parent, const std::string& name, Layer* afterThis);
-  LayerTilemap* newTilemapAfter(LayerGroup* parent,
+  LayerImage* newLayer(Layer* parent, const std::string& name);
+  LayerImage* newLayerAfter(Layer* parent, const std::string& name, Layer* afterThis);
+  LayerGroup* newGroup(Layer* parent, const std::string& name);
+  LayerGroup* newGroupAfter(Layer* parent, const std::string& name, Layer* afterThis);
+  LayerTilemap* newTilemapAfter(Layer* parent,
                                 const std::string& name,
                                 tileset_index tsi,
                                 Layer* afterThis);
-  void addLayer(LayerGroup* parent, Layer* newLayer, Layer* afterThis);
+  void addLayer(Layer* parent, Layer* newLayer, Layer* afterThis);
   void removeLayer(Layer* layer);
-  void restackLayerAfter(Layer* layer, LayerGroup* parent, Layer* afterThis);
-  void restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeThis);
-  Layer* duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer* afterLayer);
-  Layer* duplicateLayerBefore(Layer* sourceLayer, LayerGroup* parent, Layer* beforeLayer);
+  void restackLayerAfter(Layer* layer, Layer* parent, Layer* afterThis);
+  void restackLayerBefore(Layer* layer, Layer* parent, Layer* beforeThis);
+  Layer* duplicateLayerAfter(Layer* sourceLayer,
+                             Layer* parent,
+                             Layer* afterLayer,
+                             ShareTilesets shareTilesets,
+                             const std::string& nameSuffix = {});
+  Layer* duplicateLayerBefore(Layer* sourceLayer,
+                              Layer* parent,
+                              Layer* beforeLayer,
+                              ShareTilesets shareTilesets,
+                              const std::string& nameSuffix = {});
+
+  Layer* copyLayerForSprite(doc::Layer* layer, doc::Sprite* sprite, ShareTilesets shareTilesets);
 
   // Images API
   void replaceImage(Sprite* sprite, const ImageRef& oldImage, const ImageRef& newImage);
@@ -155,14 +170,12 @@ private:
                   const DropFramePlace dropFramePlace,
                   const TagsHandling tagsHandling);
 
-  Layer* copyLayerWithSprite(doc::Layer* layer, doc::Sprite* sprite);
-
   class HandleLinkedCels {
   public:
     HandleLinkedCels(DocApi& api,
-                     doc::LayerImage* srcLayer,
+                     doc::Layer* srcLayer,
                      const doc::frame_t srcFrame,
-                     doc::LayerImage* dstLayer,
+                     doc::Layer* dstLayer,
                      const doc::frame_t dstFrame);
     ~HandleLinkedCels();
     bool linkWasCreated() { return m_created; }
@@ -177,13 +190,24 @@ private:
 
   bool copyFromLinkedCels(Cel** srcCel, doc::ObjectId& srcDataId);
 
+  // Data for special operations.
+  struct Data {
+    // Map used in copyCel() to re-create the original set of linked
+    // cels from the src layers when we copy a block of cels.
+    // map: ObjectId of CelData -> Cel*
+    std::map<doc::ObjectId, doc::Cel*> linkedCels;
+
+    // Already duplicated tilesets to map source shared-tilesets when
+    // duplicating layers to other sprites.
+    doc::Sprite* lastDuplicateSprite = nullptr;
+    std::map<doc::ObjectId, doc::tileset_index> mappedTilesets;
+  };
+
+  Data* data();
+
   Doc* m_document;
   Transaction& m_transaction;
-
-  // Map used in copyCel() to re-create the original set of linked
-  // cels from the src layers when we copy a block of cels.
-  // map: ObjectId of CelData -> Cel*
-  std::map<doc::ObjectId, doc::Cel*> m_linkedCels;
+  std::unique_ptr<Data> m_data;
 };
 
 } // namespace app

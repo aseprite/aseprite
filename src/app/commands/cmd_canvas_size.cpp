@@ -13,6 +13,7 @@
 #include "app/commands/new_params.h"
 #include "app/context_access.h"
 #include "app/doc_api.h"
+#include "app/i18n/strings.h"
 #include "app/modules/gui.h"
 #include "app/tx.h"
 #include "app/ui/color_bar.h"
@@ -363,7 +364,7 @@ void CanvasSizeCommand::onExecute(Context* context)
     ContextWriter writer(reader);
     Doc* doc = writer.document();
     Sprite* sprite = writer.sprite();
-    Tx tx(writer, "Canvas Size");
+    Tx tx(writer, Strings::commands_CanvasSize());
     DocApi api = doc->getApi(tx);
     api.cropSprite(sprite, bounds, params.trimOutside());
     tx.commit();

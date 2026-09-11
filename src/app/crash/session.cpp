@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -19,6 +19,7 @@
 #include "app/crash/write_document.h"
 #include "app/doc.h"
 #include "app/doc_access.h"
+#include "app/ui/editor/scoped_tool_loop_fix.h"
 #include "app/ui_context.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
@@ -261,6 +262,14 @@ bool Session::saveDocumentChanges(Doc* doc)
         of << "open";
     }
   }
+
+#if 0 // TODO We cannot use this fix as we are in a background thread,
+      //      so asking for the editor state here is impossible.
+
+  // Fix cel position if we're just making the backup in a ToolLoop
+  ScopedToolLoopFix fix(doc->sprite());
+
+#endif
 
   // Save document information
   return write_document(dir, doc, &reader);

@@ -60,6 +60,7 @@ Tileset::Tileset(Sprite* sprite, const Tileset* other)
     set(ti, ImageRef(Image::createCopy(image.get())));
     setTileData(ti, other->getTileData(ti));
   }
+  setUserData(other->userData());
 }
 
 // static

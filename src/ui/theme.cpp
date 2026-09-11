@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -231,6 +231,9 @@ Theme::TextColors Theme::getTextColors(Widget* widget)
   c.background = Paint(kBgColor);
   c.selectedText = Paint(kBgColor);
   c.selectedBackground = Paint(kFgColor);
+  c.disabledText = Paint(kFgColor);
+  c.disabledBackground = Paint(kBgColor);
+  c.placeholderText = Paint(kFgColor);
   return c;
 }
 
@@ -889,11 +892,10 @@ void Theme::drawTextBox(Graphics* g,
   View* view = (g ? View::getView(widget) : nullptr);
   char* text = const_cast<char*>(widget->text().c_str());
   char *beg, *end;
-  int x1, y1;
   int x, y, chr, len;
   gfx::Point scroll;
-  int textheight = widget->textHeight();
   const text::FontRef& font = widget->font();
+  const int lineheight = font->lineHeight();
   char *beg_end, *old_end;
   int width;
   gfx::Rect vp;
@@ -906,8 +908,9 @@ void Theme::drawTextBox(Graphics* g,
     vp = widget->clientBounds();
     scroll.x = scroll.y = 0;
   }
-  x1 = widget->clientBounds().x + widget->border().left();
-  y1 = widget->clientBounds().y + widget->border().top();
+
+  const int x1 = widget->clientBounds().x + widget->border().left();
+  const int y1 = widget->clientBounds().y + widget->border().top();
 
   // Fill background
   if (g)
@@ -939,9 +942,9 @@ void Theme::drawTextBox(Graphics* g,
       else {
         width = vp.w;
       }
-      width -= widget->border().width();
 #endif
     }
+    width -= widget->border().width();
   }
 
   // Draw line-by-line
@@ -1013,7 +1016,7 @@ void Theme::drawTextBox(Graphics* g,
     if (w)
       *w = std::max(*w, len);
 
-    y += textheight;
+    y += lineheight;
 
     if (end) {
       *end = chr;

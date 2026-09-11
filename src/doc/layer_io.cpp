@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2025 Igara Studio S.A.
+// Copyright (c) 2019-2026 Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -47,13 +47,13 @@ void write_layer(std::ostream& os, const Layer* layer)
   switch (layer->type()) {
     case ObjectType::LayerImage:
     case ObjectType::LayerTilemap: {
-      const LayerImage* imgLayer = static_cast<const LayerImage*>(layer);
-      CelConstIterator it, begin = imgLayer->getCelBegin();
-      CelConstIterator end = imgLayer->getCelEnd();
+      CelConstIterator it;
+      const CelConstIterator begin = layer->getCelBegin();
+      const CelConstIterator end = layer->getCelEnd();
 
       // Blend mode & opacity
-      write16(os, (int)imgLayer->blendMode());
-      write8(os, imgLayer->opacity());
+      write16(os, (int)layer->blendMode());
+      write8(os, layer->opacity());
 
       // Images
       int images = 0;
@@ -61,7 +61,8 @@ void write_layer(std::ostream& os, const Layer* layer)
       for (it = begin; it != end; ++it) {
         const Cel* cel = *it;
         if (!cel->link()) {
-          ++images;
+          if (cel->image())
+            ++images;
           ++celdatas;
         }
       }
@@ -69,7 +70,7 @@ void write_layer(std::ostream& os, const Layer* layer)
       write16(os, images);
       for (it = begin; it != end; ++it) {
         const Cel* cel = *it;
-        if (!cel->link())
+        if (!cel->link() && cel->image())
           write_image(os, cel->image());
       }
 
@@ -81,7 +82,7 @@ void write_layer(std::ostream& os, const Layer* layer)
       }
 
       // Cels
-      write16(os, imgLayer->getCelsCount());
+      write16(os, layer->getCelsCount());
       for (it = begin; it != end; ++it) {
         const Cel* cel = *it;
         write_cel(os, cel);
@@ -120,59 +121,59 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects, const Seri
   switch (static_cast<ObjectType>(layer_type)) {
     case ObjectType::LayerImage:
     case ObjectType::LayerTilemap: {
-      LayerImage* imgLayer;
-      if ((static_cast<ObjectType>(layer_type)) == ObjectType::LayerTilemap) {
-        imgLayer = new LayerTilemap(subObjects->sprite(), 0);
-      }
-      else {
-        imgLayer = new LayerImage(subObjects->sprite());
-      }
-
       // Create layer
-      layer.reset(imgLayer);
+      switch ((static_cast<ObjectType>(layer_type))) {
+        case ObjectType::LayerImage:
+          layer = std::make_unique<LayerImage>(subObjects->sprite());
+          break;
+        case ObjectType::LayerTilemap:
+          layer = std::make_unique<LayerTilemap>(subObjects->sprite(), 0);
+          break;
+      }
 
       // Blend mode & opacity
-      imgLayer->setBlendMode((BlendMode)read16(is));
-      imgLayer->setOpacity(read8(is));
+      layer->setBlendMode((BlendMode)read16(is));
+      layer->setOpacity(read8(is));
 
       // Read images
-      int images = read16(is); // Number of images
+      const int images = read16(is); // Number of images
       for (int c = 0; c < images; ++c) {
         ImageRef image(read_image(is));
         subObjects->addImageRef(image);
       }
 
       // Read celdatas
-      int celdatas = read16(is);
+      const int celdatas = read16(is);
       for (int c = 0; c < celdatas; ++c) {
         CelDataRef celdata(read_celdata(is, subObjects, true, serial));
         subObjects->addCelDataRef(celdata);
       }
 
       // Read cels
-      int cels = read16(is); // Number of cels
+      const int cels = read16(is); // Number of cels
       for (int c = 0; c < cels; ++c) {
         // Read the cel
         Cel* cel = read_cel(is, subObjects);
+        ASSERT(cel);
 
         // Add the cel in the layer
-        imgLayer->addCel(cel);
+        layer->addCel(cel);
       }
 
       // Create the layer tilemap
-      if (imgLayer->isTilemap()) {
-        doc::tileset_index tsi = read32(is); // Tileset index
-        static_cast<LayerTilemap*>(imgLayer)->setTilesetIndex(tsi);
+      if (layer->isTilemap()) {
+        const doc::tileset_index tsi = read32(is); // Tileset index
+        static_cast<LayerTilemap*>(layer.get())->setTilesetIndex(tsi);
       }
       break;
     }
 
     case ObjectType::LayerGroup: {
       // Create the layer group
-      layer.reset(new LayerGroup(subObjects->sprite()));
+      layer = std::make_unique<LayerGroup>(subObjects->sprite());
 
       // Number of sub-layers
-      int layers = read16(is);
+      const int layers = read16(is);
       for (int c = 0; c < layers; c++) {
         Layer* child = read_layer(is, subObjects, serial);
         if (child)

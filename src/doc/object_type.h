@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-2026  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -9,9 +9,11 @@
 #define DOC_OBJECT_TYPE_H_INCLUDED
 #pragma once
 
+#include "base/ints.h"
+
 namespace doc {
 
-enum class ObjectType {
+enum class ObjectType : uint16_t {
   Unknown = 0,
   Image = 1,
   Palette = 2,

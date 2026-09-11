@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -100,8 +100,12 @@ int app_main(int argc, char* argv[])
   base::CoInit com; // To create COM objects
 #endif
 
-  // Main thread name
+  // On Linux we don't change the main thread name because this will
+  // change the process name, which is quite confusing (you will see
+  // "main" as a the running process instead of "aseprite").
+#if LAF_WINDOWS || LAF_MACOS
   base::this_thread::set_name("main");
+#endif
 
 #if ENABLE_SENTRY
   app::Sentry sentry;

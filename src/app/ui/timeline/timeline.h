@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -225,6 +225,7 @@ protected:
 
 private:
   struct DrawCelData;
+  struct DrawTagsData;
 
   struct Hit {
     int part;
@@ -311,7 +312,8 @@ private:
                const layer_t layerIdx,
                const col_t col,
                const Cel* cel,
-               const DrawCelData* data);
+               const DrawCelData* data,
+               const DrawTagsData* tagsData);
   void drawCelLinkDecorators(ui::Graphics* g,
                              const gfx::Rect& bounds,
                              const Cel* cel,
@@ -319,7 +321,8 @@ private:
                              const bool is_active,
                              const bool is_hover,
                              const DrawCelData* data);
-  void drawTags(ui::Graphics* g);
+  void getDrawTagsData(DrawTagsData* tagsData);
+  void drawTags(ui::Graphics* g, const DrawTagsData* tagsData);
   void drawTagBraces(ui::Graphics* g,
                      gfx::Color tagColor,
                      const gfx::Rect& bounds,

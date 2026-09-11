@@ -13,6 +13,7 @@
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
+#include "app/i18n/strings.h"
 #include "app/tx.h"
 #include "doc/palette.h"
 
@@ -78,7 +79,7 @@ void PaletteSizeCommand::onExecute(Context* context)
   palette.resize(std::clamp(ncolors, 1, std::numeric_limits<int>::max()));
 
   ContextWriter writer(reader);
-  Tx tx(writer, "Palette Size", ModifyDocument);
+  Tx tx(writer, Strings::commands_PaletteSize(), ModifyDocument);
   tx(new cmd::SetPalette(writer.sprite(), frame, &palette));
   tx.commit();
 }

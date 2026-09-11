@@ -31,9 +31,9 @@ struct MoveThing {
     ViewportHeight
   };
 
-  Direction direction;
-  Units units;
-  int quantity;
+  Direction direction = Left;
+  Units units = Pixel;
+  int quantity = 0;
 
   void onLoadParams(const Params& params);
   std::string getFriendlyString() const;

@@ -69,7 +69,7 @@ void CropSpriteCommand::onExecute(Context* context)
     bounds = m_bounds;
 
   {
-    Tx tx(writer, "Sprite Crop");
+    Tx tx(writer, Strings::tx_sprite_crop());
     document->getApi(tx).cropSprite(sprite, bounds);
     tx.commit();
   }

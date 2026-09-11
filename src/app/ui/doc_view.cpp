@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -50,6 +50,10 @@
 #include "ui/shortcut.h"
 #include "ui/system.h"
 #include "ui/view.h"
+
+#if ENABLE_SENTRY
+  #include "app/sentry_wrapper.h"
+#endif
 
 #include <typeinfo>
 
@@ -108,6 +112,12 @@ public:
   {
     m_previewDelegate->onScrollOtherEditor(this);
 
+    if (isActive())
+      StatusBar::instance()->updateFromEditor(this);
+  }
+
+  void onZoomChanged(Editor* editor) override
+  {
     if (isActive())
       StatusBar::instance()->updateFromEditor(this);
   }
@@ -171,6 +181,10 @@ protected:
       return Editor::onProcessMessage(msg);
     }
     catch (const std::exception& ex) {
+      LOG(ERROR, "EDITOR: Unhandled exception: %s\n", ex.what());
+#if ENABLE_SENTRY
+      Sentry::addBreadcrumb(ex.what());
+#endif
       showUnhandledException(ex, msg);
       return false;
     }
@@ -625,7 +639,7 @@ bool DocView::onClear(Context* ctx)
 
   // TODO This code is similar to clipboard::cut()
   {
-    Tx tx(writer, "Clear");
+    Tx tx(writer, Strings::commands_Clear());
     const bool deselectMask = (visibleMask &&
                                !Preferences::instance().selection.keepSelectionAfterClear());
 

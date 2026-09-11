@@ -70,14 +70,20 @@ bool MoveMaskCommand::onEnabled(Context* context)
 
 void MoveMaskCommand::onExecute(Context* context)
 {
+  if (m_moveThing.quantity <= 0)
+    return;
+
   gfx::Point delta = m_moveThing.getDelta(context);
+  const auto& moveString = m_moveThing.getFriendlyString();
 
   switch (m_target) {
     case Boundaries: {
       ContextWriter writer(context);
       Doc* document(writer.document());
       {
-        Tx tx(writer, "Move Selection", DoesntModifyDocument);
+        Tx tx(writer,
+              Strings::commands_MoveMask(Strings::commands_MoveMask_Boundaries(), moveString),
+              DoesntModifyDocument);
         gfx::Point pt = document->mask()->bounds().origin();
         document->getApi(tx).setMaskPosition(pt.x + delta.x, pt.y + delta.y);
         tx.commit();
@@ -92,7 +98,8 @@ void MoveMaskCommand::onExecute(Context* context)
         ContextWriter writer(context);
         if (writer.cel()) {
           // Rotate content
-          Tx tx(writer, "Shift Pixels");
+          Tx tx(writer,
+                Strings::commands_MoveMask(Strings::commands_MoveMask_Content(), moveString));
           tx(new cmd::ShiftMaskedCel(writer.cel(), delta.x, delta.y));
           tx.commit();
         }

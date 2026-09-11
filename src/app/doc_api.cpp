@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -75,9 +75,9 @@
 namespace app {
 
 DocApi::HandleLinkedCels::HandleLinkedCels(DocApi& api,
-                                           doc::LayerImage* srcLayer,
+                                           doc::Layer* srcLayer,
                                            const doc::frame_t srcFrame,
-                                           doc::LayerImage* dstLayer,
+                                           doc::Layer* dstLayer,
                                            const doc::frame_t dstFrame)
   : m_api(api)
   , m_srcDataId(doc::NullId)
@@ -86,8 +86,8 @@ DocApi::HandleLinkedCels::HandleLinkedCels(DocApi& api,
   , m_created(false)
 {
   if (Cel* srcCel = srcLayer->cel(srcFrame)) {
-    auto it = m_api.m_linkedCels.find(srcCel->data()->id());
-    if (it != m_api.m_linkedCels.end()) {
+    auto it = m_api.data()->linkedCels.find(srcCel->data()->id());
+    if (it != m_api.data()->linkedCels.end()) {
       Cel* dstRelated = it->second;
       if (dstRelated && dstRelated->layer() == dstLayer) {
         // Create a link
@@ -112,7 +112,7 @@ DocApi::HandleLinkedCels::~HandleLinkedCels()
 {
   if (m_srcDataId != doc::NullId) {
     if (Cel* dstCel = m_dstLayer->cel(m_dstFrame))
-      m_api.m_linkedCels[m_srcDataId] = dstCel;
+      m_api.data()->linkedCels[m_srcDataId] = dstCel;
   }
 }
 
@@ -120,6 +120,13 @@ DocApi::DocApi(Doc* document, Transaction& transaction)
   : m_document(document)
   , m_transaction(transaction)
 {
+}
+
+DocApi::Data* DocApi::data()
+{
+  if (!m_data)
+    m_data = std::make_unique<Data>();
+  return m_data.get();
 }
 
 void DocApi::setSpriteSize(Sprite* sprite, int w, int h)
@@ -352,11 +359,8 @@ void DocApi::copyFrame(Sprite* sprite,
   if (fromFrame >= newFrame)
     ++fromFrame;
 
-  for (Layer* layer : sprite->allLayers()) {
-    if (layer->isImage()) {
-      copyCel(static_cast<LayerImage*>(layer), fromFrame, static_cast<LayerImage*>(layer), newFrame);
-    }
-  }
+  for (Layer* layer : sprite->allLayers())
+    copyCel(layer, fromFrame, layer, newFrame);
 
   adjustTags(sprite, newFrame0, +1, dropFramePlace, tagsHandling);
 }
@@ -475,14 +479,14 @@ void DocApi::moveFrameLayer(Layer* layer, frame_t frame, frame_t beforeFrame)
     }
 
     case ObjectType::LayerGroup: {
-      for (Layer* child : static_cast<LayerGroup*>(layer)->layers())
+      for (Layer* child : layer->layers())
         moveFrameLayer(child, frame, beforeFrame);
       break;
     }
   }
 }
 
-void DocApi::addCel(LayerImage* layer, Cel* cel)
+void DocApi::addCel(Layer* layer, Cel* cel)
 {
   ASSERT(layer);
   ASSERT(cel);
@@ -541,7 +545,7 @@ void DocApi::clearCelAndAllLinks(Cel* cel)
   }
 }
 
-void DocApi::moveCel(LayerImage* srcLayer, frame_t srcFrame, LayerImage* dstLayer, frame_t dstFrame)
+void DocApi::moveCel(Layer* srcLayer, frame_t srcFrame, Layer* dstLayer, frame_t dstFrame)
 {
   ASSERT(srcLayer != dstLayer || srcFrame != dstFrame);
   if (srcLayer == dstLayer && srcFrame == dstFrame)
@@ -558,9 +562,9 @@ void DocApi::moveCel(LayerImage* srcLayer, frame_t srcFrame, LayerImage* dstLaye
     new cmd::MoveCel(srcLayer, srcFrame, dstLayer, dstFrame, dstLayer->isContinuous()));
 }
 
-void DocApi::copyCel(LayerImage* srcLayer,
+void DocApi::copyCel(Layer* srcLayer,
                      frame_t srcFrame,
-                     LayerImage* dstLayer,
+                     Layer* dstLayer,
                      frame_t dstFrame,
                      const bool* forceContinuous)
 {
@@ -580,7 +584,7 @@ void DocApi::copyCel(LayerImage* srcLayer,
                      (forceContinuous ? *forceContinuous : dstLayer->isContinuous())));
 }
 
-void DocApi::swapCel(LayerImage* layer, frame_t frame1, frame_t frame2)
+void DocApi::swapCel(Layer* layer, frame_t frame1, frame_t frame2)
 {
   ASSERT(frame1 != frame2);
 
@@ -599,7 +603,7 @@ void DocApi::swapCel(LayerImage* layer, frame_t frame1, frame_t frame2)
     setCelFramePosition(cel2, frame1);
 }
 
-LayerImage* DocApi::newLayer(LayerGroup* parent, const std::string& name)
+LayerImage* DocApi::newLayer(Layer* parent, const std::string& name)
 {
   LayerImage* newLayer = new LayerImage(parent->sprite());
   newLayer->setName(name);
@@ -608,7 +612,7 @@ LayerImage* DocApi::newLayer(LayerGroup* parent, const std::string& name)
   return newLayer;
 }
 
-LayerImage* DocApi::newLayerAfter(LayerGroup* parent, const std::string& name, Layer* afterThis)
+LayerImage* DocApi::newLayerAfter(Layer* parent, const std::string& name, Layer* afterThis)
 {
   LayerImage* newLayer = new LayerImage(parent->sprite());
   newLayer->setName(name);
@@ -620,7 +624,7 @@ LayerImage* DocApi::newLayerAfter(LayerGroup* parent, const std::string& name, L
   return newLayer;
 }
 
-LayerGroup* DocApi::newGroup(LayerGroup* parent, const std::string& name)
+LayerGroup* DocApi::newGroup(Layer* parent, const std::string& name)
 {
   LayerGroup* newLayerGroup = new LayerGroup(parent->sprite());
   newLayerGroup->setName(name);
@@ -629,7 +633,7 @@ LayerGroup* DocApi::newGroup(LayerGroup* parent, const std::string& name)
   return newLayerGroup;
 }
 
-LayerGroup* DocApi::newGroupAfter(LayerGroup* parent, const std::string& name, Layer* afterThis)
+LayerGroup* DocApi::newGroupAfter(Layer* parent, const std::string& name, Layer* afterThis)
 {
   LayerGroup* newLayerGroup = new LayerGroup(parent->sprite());
   newLayerGroup->setName(name);
@@ -641,7 +645,7 @@ LayerGroup* DocApi::newGroupAfter(LayerGroup* parent, const std::string& name, L
   return newLayerGroup;
 }
 
-LayerTilemap* DocApi::newTilemapAfter(LayerGroup* parent,
+LayerTilemap* DocApi::newTilemapAfter(Layer* parent,
                                       const std::string& name,
                                       tileset_index tsi,
                                       Layer* afterThis)
@@ -656,7 +660,7 @@ LayerTilemap* DocApi::newTilemapAfter(LayerGroup* parent,
   return newTilemap;
 }
 
-void DocApi::addLayer(LayerGroup* parent, Layer* newLayer, Layer* afterThis)
+void DocApi::addLayer(Layer* parent, Layer* newLayer, Layer* afterThis)
 {
   m_transaction.execute(new cmd::AddLayer(parent, newLayer, afterThis));
 }
@@ -668,7 +672,7 @@ void DocApi::removeLayer(Layer* layer)
   m_transaction.execute(new cmd::RemoveLayer(layer));
 }
 
-void DocApi::restackLayerAfter(Layer* layer, LayerGroup* parent, Layer* afterThis)
+void DocApi::restackLayerAfter(Layer* layer, Layer* parent, Layer* afterThis)
 {
   ASSERT(parent);
 
@@ -678,7 +682,7 @@ void DocApi::restackLayerAfter(Layer* layer, LayerGroup* parent, Layer* afterThi
   m_transaction.execute(new cmd::MoveLayer(layer, parent, afterThis));
 }
 
-void DocApi::restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeThis)
+void DocApi::restackLayerBefore(Layer* layer, Layer* parent, Layer* beforeThis)
 {
   ASSERT(parent);
 
@@ -694,42 +698,77 @@ void DocApi::restackLayerBefore(Layer* layer, LayerGroup* parent, Layer* beforeT
   restackLayerAfter(layer, parent, afterThis);
 }
 
-Layer* DocApi::copyLayerWithSprite(doc::Layer* layer, doc::Sprite* sprite)
+Layer* DocApi::copyLayerForSprite(doc::Layer* layer,
+                                  doc::Sprite* sprite,
+                                  const ShareTilesets shareTilesets)
 {
-  std::unique_ptr<doc::Layer> clone;
-  if (layer->isTilemap()) {
-    auto* srcTilemap = static_cast<LayerTilemap*>(layer);
-    tileset_index tilesetIndex = srcTilemap->tilesetIndex();
-    // If the caller is trying to make a copy of a tilemap layer specifying a
-    // different sprite as its owner, then we must copy the tilesets of the
-    // given tilemap layer into the new owner.
-    if (sprite != srcTilemap->sprite()) {
-      auto* srcTilesetCopy = Tileset::MakeCopyCopyingImagesForSprite(srcTilemap->tileset(), sprite);
-      auto* addTileset = new cmd::AddTileset(sprite, srcTilesetCopy);
-      m_transaction.execute(addTileset);
-      tilesetIndex = addTileset->tilesetIndex();
-    }
+  // Clone the original "layer" but with "sprite" as the owner (can be
+  // the same sprite).
+  std::unique_ptr<doc::Layer> clone(layer->clone(sprite));
 
-    clone = std::make_unique<LayerTilemap>(sprite, tilesetIndex);
+  switch (layer->type()) {
+    case ObjectType::LayerTilemap: {
+      auto* srcTilemap = static_cast<const LayerTilemap*>(layer);
+      tileset_index tsi = srcTilemap->tilesetIndex();
+
+      // If the caller is trying to make a copy of a tilemap layer specifying a
+      // different sprite as its owner, then we must copy the tilesets of the
+      // given tilemap layer into the new owner.
+      if (sprite != srcTilemap->sprite() || (shareTilesets == ShareTilesets::No)) {
+        if (data()->lastDuplicateSprite != sprite) {
+          data()->lastDuplicateSprite = sprite;
+          data()->mappedTilesets.clear();
+        }
+
+        const Tileset* srcTileset = srcTilemap->tileset();
+        auto it = data()->mappedTilesets.find(srcTileset->id());
+        if (it != data()->mappedTilesets.end()) {
+          tsi = it->second;
+        }
+        else {
+          Tileset* tilesetCopy = Tileset::MakeCopyCopyingImagesForSprite(srcTileset, sprite);
+
+          auto* addTileset = new cmd::AddTileset(sprite, tilesetCopy);
+          m_transaction.execute(addTileset);
+
+          tsi = addTileset->tilesetIndex();
+
+          // Cache duplicated tileset in case we are going to
+          // copyLayerForSprite() several times between different
+          // sprites. So can we match the same shared tilesets between
+          // the original sprite and the duplicated layers in the new
+          // sprite.
+          if (sprite != srcTilemap->sprite())
+            data()->mappedTilesets[srcTileset->id()] = tsi;
+        }
+      }
+
+      static_cast<LayerTilemap*>(clone.get())->setTilesetIndex(tsi);
+      break;
+    }
   }
-  else if (layer->isImage())
-    clone = std::make_unique<LayerImage>(sprite);
-  else if (layer->isGroup())
-    clone = std::make_unique<LayerGroup>(sprite);
-  else
-    throw std::runtime_error("Invalid layer type");
 
   if (auto* doc = dynamic_cast<app::Doc*>(sprite->document())) {
-    doc->copyLayerContent(layer, doc, clone.get());
+    LayerList children;
+    doc->copyOneLayerContent(layer, doc, clone.get(), children);
+    for (auto child : children) {
+      Layer* childClone = copyLayerForSprite(child, sprite, shareTilesets);
+      if (childClone)
+        clone->addLayer(childClone);
+    }
   }
 
   return clone.release();
 }
 
-Layer* DocApi::duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer* afterLayer)
+Layer* DocApi::duplicateLayerAfter(Layer* sourceLayer,
+                                   Layer* parent,
+                                   Layer* afterLayer,
+                                   const ShareTilesets shareTilesets,
+                                   const std::string& nameSuffix)
 {
   ASSERT(parent);
-  Layer* newLayerPtr = copyLayerWithSprite(sourceLayer, parent->sprite());
+  Layer* newLayerPtr = copyLayerForSprite(sourceLayer, parent->sprite(), shareTilesets);
 
   newLayerPtr->setName(Strings::general_copy_of(newLayerPtr->name()));
 
@@ -738,11 +777,15 @@ Layer* DocApi::duplicateLayerAfter(Layer* sourceLayer, LayerGroup* parent, Layer
   return newLayerPtr;
 }
 
-Layer* DocApi::duplicateLayerBefore(Layer* sourceLayer, LayerGroup* parent, Layer* beforeLayer)
+Layer* DocApi::duplicateLayerBefore(Layer* sourceLayer,
+                                    Layer* parent,
+                                    Layer* beforeLayer,
+                                    const ShareTilesets shareTilesets,
+                                    const std::string& nameSuffix)
 {
   ASSERT(parent);
   Layer* afterThis = (beforeLayer ? beforeLayer->getPreviousBrowsable() : nullptr);
-  Layer* newLayer = duplicateLayerAfter(sourceLayer, parent, afterThis);
+  Layer* newLayer = duplicateLayerAfter(sourceLayer, parent, afterThis, shareTilesets);
   if (newLayer)
     restackLayerBefore(newLayer, parent, beforeLayer);
   return newLayer;

@@ -99,8 +99,10 @@ ConfigModule::ConfigModule()
 
 ConfigModule::~ConfigModule()
 {
-  flush_config_file();
+  // Don't flush config files here, preferences are saved from ~App()
+  // directly.
 
+  // Delete all config files.
   for (auto cfg : g_configs)
     delete cfg;
   g_configs.clear();

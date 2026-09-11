@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -214,7 +214,8 @@ bool Slider::onProcessMessage(Message* msg)
               value = (value > 0 && min < 0) ? 0 : min;
             else
               value = std::stoi(valueString.substr(0, valueString.size() - 1));
-          } break;
+            break;
+          }
         }
 
         if (oldValue == value) {

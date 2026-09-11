@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2023  Igara Studio S.A.
+// Copyright (c) 2019-present  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -52,41 +52,9 @@ public:
     return -1;
   }
 
-  void set(const tileset_index tsi, Tileset* tileset)
-  {
-    if (tsi >= m_tilesets.size())
-      m_tilesets.resize(tsi + 1, nullptr);
-    m_tilesets[tsi] = tileset;
-  }
-
-  void add(const tileset_index tsi, Tileset* tileset)
-  {
-    if (tsi >= m_tilesets.size()) {
-      m_tilesets.push_back(tileset);
-    }
-    else {
-      m_tilesets.insert(m_tilesets.begin() + tsi, tileset);
-      // Update tileset indexes of the affected tilemaps. We have to shift the indexes
-      // for all the tilemaps pointing to a tileset index equals or greater than the added one.
-      shiftTilesetIndexes(tileset->sprite(), tsi, 1);
-    }
-  }
-
-  void erase(const tileset_index tsi)
-  {
-    // When tsi is the last one, other tilemaps tilesets
-    // indexes are not affected.
-    if (tsi == size() - 1) {
-      m_tilesets.erase(--m_tilesets.end());
-    }
-    else {
-      auto ts = m_tilesets[tsi];
-      m_tilesets.erase(m_tilesets.begin() + tsi);
-      // Update tileset indexes of the affected tilemaps. We have to shift the indexes
-      // for all the tilemaps pointing to a tileset index greater than the deleted one.
-      shiftTilesetIndexes(ts->sprite(), tsi + 1, -1);
-    }
-  }
+  void set(const tileset_index tsi, Tileset* tileset);
+  void add(const tileset_index tsi, Tileset* tileset);
+  void erase(const tileset_index tsi);
 
 private:
   Array m_tilesets;

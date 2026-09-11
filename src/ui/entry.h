@@ -100,7 +100,12 @@ private:
 
   // TextCmdProcessor impl
   bool onHasValidSelection() override { return m_select >= 0; }
-  bool onCanModify() override { return !isReadOnly(); }
+  bool onCanModify() override
+  {
+    if (!isEnabled())
+      return false;
+    return !isReadOnly();
+  }
   void onExecuteCmd(Cmd cmd, base::codepoint_t unicodeChar, bool expandSelection) override;
 
   void forwardWord();

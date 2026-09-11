@@ -42,6 +42,14 @@ public:
 
   FontInfo info() { return m_info; }
   void setInfo(const FontInfo& info, From from);
+  void setReadOnly(bool readOnly)
+  {
+    m_face.setReadOnly(readOnly);
+    m_size.setEnabled(!readOnly && isEnabled());
+    m_size.getEntryWidget()->setReadOnly(readOnly);
+    m_style.setEnabled(!readOnly && isEnabled());
+  }
+  bool isReadOnly() const { return m_face.isReadOnly(); }
 
   ui::Paint paint();
 

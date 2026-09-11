@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2018-2023 Igara Studio S.A.
+// Copyright (c) 2018-present Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -28,7 +28,10 @@ uint32_t AsepriteExternalFiles::insert(const uint8_t type, const std::string& fi
 
 void AsepriteExternalFiles::insert(uint32_t id, const uint8_t type, const std::string& filename)
 {
-  ASSERT(type >= 0 && type < ASE_EXTERNAL_FILE_TYPES);
+  if (type >= ASE_EXTERNAL_FILE_TYPES) {
+    ASSERT(false && "Invalid external file type");
+    return;
+  }
 
   m_items[id] = Item{ filename, type };
   m_toID[type][filename] = id;
@@ -38,7 +41,10 @@ bool AsepriteExternalFiles::getIDByFilename(const uint8_t type,
                                             const std::string& fn,
                                             uint32_t& id) const
 {
-  ASSERT(type >= 0 && type < ASE_EXTERNAL_FILE_TYPES);
+  if (type >= ASE_EXTERNAL_FILE_TYPES) {
+    ASSERT(false && "Invalid external file type");
+    return false;
+  }
 
   auto it = m_toID[type].find(fn);
   if (it == m_toID[type].end())

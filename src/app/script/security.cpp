@@ -436,4 +436,9 @@ bool ask_access(lua_State* L,
   return true;
 }
 
+lua_CFunction get_original_io_open()
+{
+  return replaced_functions[io_open].origfunc;
+}
+
 }} // namespace app::script
