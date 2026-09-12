@@ -60,11 +60,17 @@ ColorWheel::ColorWheel()
   addChild(&m_options);
 
   InitTheme.connect([this] {
-    auto theme = skin::SkinTheme::get(this);
-    m_options.setStyle(theme->styles.colorWheelOptions());
-    m_bgColor = theme->colors.editorFace();
+    if (auto theme = dynamic_cast<skin::SkinTheme*>(this->theme())) {
+      m_options.setStyle(theme->styles.colorWheelOptions());
+      m_bgColor = theme->colors.editorFace();
+    }
   });
   initTheme();
+}
+
+ColorWheel::~ColorWheel()
+{
+  removeChild(&m_options);
 }
 
 #if SK_ENABLE_SKSL
@@ -110,7 +116,7 @@ half4 main(vec2 fragcoord) {
      angle = floor((angle+15) / 30) * 30;
      angle = PI * angle / 180.0;
     }
-    nd = (floor(nd * 6.0 + 1.0) - 1) / 5.0;
+    nd = min(1.0, (floor(min(nd, 0.999999) * 6.0 + 1.0) - 1) / 5.0);
     float blueAngleDegrees = 90.0 * (1.0 - nd);
     blueAngle = PI * blueAngleDegrees / 180.0;
 
@@ -223,18 +229,19 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax, const int 
   }
 
   double d = std::sqrt(u * u + v * v);
+  const double wheelRadius = (m_wheelRadius > 0.0 ? m_wheelRadius : std::min(umax, vmax) / 2.0);
 
   // When we click the main area we can limit the distance to the
   // wheel radius to pick colors even outside the wheel radius.
-  if (hasCaptureInMainArea() && d > m_wheelRadius) {
-    d = m_wheelRadius;
+  if (hasCaptureInMainArea() && d > wheelRadius) {
+    d = wheelRadius;
   }
 
   if (m_colorModel == ColorModel::NORMAL_MAP) {
-    if (d <= m_wheelRadius) {
-      double normalizedDistance = d / m_wheelRadius;
-      double normalizedU = u / m_wheelRadius;
-      double normalizedV = v / m_wheelRadius;
+    if (d <= wheelRadius) {
+      double normalizedDistance = d / wheelRadius;
+      double normalizedU = u / wheelRadius;
+      double normalizedV = v / wheelRadius;
       double blueAngle;
       int r, g, b;
 
@@ -249,8 +256,9 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax, const int 
 
         if (normalizedDistance < 1.0 / 6.0)
           angle = 0;
-        normalizedDistance = (std::floor((normalizedDistance) * 6.0 + 1.0) - 1) / 5.0;
-        const int blueAngleDegrees = 90.0 * (1.0 - normalizedDistance);
+        normalizedDistance =
+          std::min(1.0, (std::floor(std::min(normalizedDistance, 0.999999) * 6.0 + 1.0) - 1) / 5.0);
+        const double blueAngleDegrees = 90.0 * (1.0 - normalizedDistance);
         blueAngle = PI * blueAngleDegrees / 180.0;
 
         r = 128 + int(128.0 * normalizedDistance * std::cos(angle));
@@ -275,7 +283,7 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax, const int 
   }
 
   // Pick from the wheel
-  if (d <= m_wheelRadius) {
+  if (d <= wheelRadius) {
     double a = std::atan2(-v, u);
 
     int hue = (int(180.0 * a / PI) + 180 // To avoid [-180,0) range
@@ -291,12 +299,12 @@ app::Color ColorWheel::getMainAreaColor(const int _u, const int umax, const int 
 
     int sat;
     if (m_discrete) {
-      sat = int(120.0 * d / m_wheelRadius);
+      sat = int(120.0 * d / wheelRadius);
       sat /= 20;
       sat *= 20;
     }
     else {
-      sat = int(100.0 * d / m_wheelRadius);
+      sat = int(100.0 * d / wheelRadius);
     }
 
     return app::Color::fromHsv(std::clamp(hue, 0, 360),

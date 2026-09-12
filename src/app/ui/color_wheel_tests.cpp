@@ -4,10 +4,6 @@
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
 
-#ifdef HAVE_CONFIG_H
-  #include "config.h"
-#endif
-
 #define TEST_APP
 #include "tests/app_test.h"
 
