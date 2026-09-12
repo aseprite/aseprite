@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -51,6 +51,12 @@ struct FileOpConfig {
   // and then composed with the rest of the sprite. In this case
   // blend mode and opacity fields are valid for groups too.
   bool composeGroups = false;
+
+  // True if the save process first writes to a temporary file
+  // and then renames it to replace the original file.
+  // This method should be much safer than overwriting the
+  // original file directly.
+  bool safeSave = false;
 
   void fillFromPreferences();
 };
