@@ -293,7 +293,13 @@
         <!-- Toolset -->
         <vbox id="section_toolset">
           <separator text="@.section_toolset" horizontal="true" />
-          <view id="toolset_view" maxsize="true" expansive="true" />
+          <hbox expansive="true">
+            <view id="toolset_view" maxsize="true" expansive="true" />
+            <vbox>
+              <boxfiller />
+              <button id="toolset_reset" text="@toolsets.reset" minwidth="60" />
+            </vbox>
+          </hbox>
         </vbox>
 
         <!-- Selection -->
@@ -766,6 +772,7 @@
           <check id="perfile_reset" text="@.reset_perfile" tooltip="@.reset_perfile_tooltip" />
           <check id="window_reset" text="@.reset_window" />
           <check id="brushes_reset" text="@.reset_brushes" />
+          <check id="toolset_reset_check" text="@.reset_toolset" />
           <separator horizontal="true" />
           <hbox>
             <check id="reset_toggle" text="@.reset_toggle" />

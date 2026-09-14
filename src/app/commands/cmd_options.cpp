@@ -485,6 +485,9 @@ public:
     // Timeline
     resetTimelineSel()->Click.connect([this] { onResetTimelineSel(); });
 
+    // Toolset
+    toolsetReset()->Click.connect([this] { onResetToolset(); });
+
     // Others
     enableDataRecovery()->Click.connect([this]() {
       const bool state = enableDataRecovery()->isSelected();
@@ -673,12 +676,13 @@ public:
       resetSelectedButton()->setEnabled(
         defaultReset()->isSelected() || installedReset()->isSelected() ||
         recentReset()->isSelected() || perfileReset()->isSelected() ||
-        windowReset()->isSelected() || toolsReset()->isSelected() || brushesReset()->isSelected());
+        windowReset()->isSelected() || toolsReset()->isSelected() || brushesReset()->isSelected() ||
+        toolsetResetCheck()->isSelected());
 
       resetToggle()->setSelected(defaultReset()->isSelected() && installedReset()->isSelected() &&
                                  recentReset()->isSelected() && perfileReset()->isSelected() &&
                                  windowReset()->isSelected() && toolsReset()->isSelected() &&
-                                 brushesReset()->isSelected());
+                                 brushesReset()->isSelected() && toolsetResetCheck()->isSelected());
     };
 
     defaultReset()->Click.connect(validateYesButton);
@@ -688,6 +692,7 @@ public:
     toolsReset()->Click.connect(validateYesButton);
     windowReset()->Click.connect(validateYesButton);
     brushesReset()->Click.connect(validateYesButton);
+    toolsetResetCheck()->Click.connect(validateYesButton);
     resetSelectedButton()->Click.connect([this] { onResetDefault(); });
     resetToggle()->Click.connect([this, validateYesButton] {
       bool toggle = resetToggle()->isSelected();
@@ -698,6 +703,7 @@ public:
       toolsReset()->setSelected(toggle);
       windowReset()->setSelected(toggle);
       brushesReset()->setSelected(toggle);
+      toolsetResetCheck()->setSelected(toggle);
       validateYesButton();
     });
 
@@ -1531,6 +1537,9 @@ private:
       }
     }
 
+    if (toolsetResetCheck()->isSelected())
+      onResetToolset();
+
     if (defaultReset()->isSelected()) {
       onResetAlerts();
       onResetBg();
@@ -1906,6 +1915,23 @@ private:
         c = std::toupper(c);
     }
     return name;
+  }
+
+  void onResetToolset()
+  {
+    auto& layouts = App::instance()->mainWindow()->layoutSelector()->layouts();
+    layouts.setToolsetElement(nullptr);
+    layouts.saveUserLayouts();
+
+    App::instance()->toolBox()->applyToolsetLayout(nullptr);
+
+    if (m_toolsetLayout) {
+      m_toolsetLayout->parent()->removeChild(m_toolsetLayout);
+      delete m_toolsetLayout;
+      m_toolsetLayout = nullptr;
+    }
+    loadToolsetLayout();
+    toolsetView()->layout();
   }
 
   void loadToolsetLayout()

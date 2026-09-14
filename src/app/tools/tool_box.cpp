@@ -213,8 +213,60 @@ PointShape* ToolBox::getPointShapeById(const std::string& id)
 
 void ToolBox::applyToolsetLayout(const XMLElement* toolsetElem)
 {
-  if (!toolsetElem)
+  if (!toolsetElem) {
+    // Restore to gui.xml toolset default order
+    XMLDocument* doc = GuiXml::instance()->doc();
+    XMLHandle handle(doc);
+    XMLElement* xmlGroup = handle.FirstChildElement("gui")
+                             .FirstChildElement("tools")
+                             .FirstChildElement("group")
+                             .ToElement();
+
+    ToolGroupList reorderedGroups;
+    ToolList reorderedTools;
+
+    while (xmlGroup) {
+      const char* groupId = xmlGroup->Attribute("id");
+      if (!groupId) {
+        xmlGroup = xmlGroup->NextSiblingElement("group");
+        continue;
+      }
+
+      ToolGroup* group = nullptr;
+      for (auto* g : m_groups) {
+        if (g->id() == groupId) {
+          group = g;
+          break;
+        }
+      }
+      if (group) {
+        group->setVisible(true);
+        reorderedGroups.push_back(group);
+      }
+
+      XMLElement* xmlTool = xmlGroup->FirstChildElement("tool");
+      while (xmlTool) {
+        const char* toolId = xmlTool->Attribute("id");
+        if (toolId) {
+          for (auto* tool : m_tools) {
+            if (tool->getId() == toolId) {
+              tool->setVisible(true);
+              tool->setGroup(group);
+              reorderedTools.push_back(tool);
+              break;
+            }
+          }
+        }
+        xmlTool = xmlTool->NextSiblingElement("tool");
+      }
+
+      xmlGroup = xmlGroup->NextSiblingElement("group");
+    }
+
+    m_groups = reorderedGroups;
+    m_tools = reorderedTools;
     return;
+  }
 
   auto* toolsElem = toolsetElem->FirstChildElement("tools");
   if (!toolsElem)
