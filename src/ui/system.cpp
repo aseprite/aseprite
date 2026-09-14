@@ -282,7 +282,7 @@ void execute_from_ui_thread(std::function<void()>&& func)
 
 void execute_now_or_enqueue(std::function<void()>&& func)
 {
-  if (is_ui_thread())
+  if (is_ui_thread() || !Manager::getDefault())
     func();
   else
     execute_from_ui_thread(std::move(func));

@@ -14,8 +14,8 @@ namespace app::script {
 using Engines = std::map<std::string, std::shared_ptr<Engine>>;
 class EngineManager {
 public:
-  // Creates a new Engine with Console printing.
-  static std::unique_ptr<Engine> create();
+  // Creates a new Engine with Console printing. extensionName is optional and defaults to empty
+  static std::unique_ptr<Engine> create(const std::string& extensionName = std::string());
 
   // Creates a new Engine and evals the given filename, if the filename entry point was already
   // used, the engine is reused.
