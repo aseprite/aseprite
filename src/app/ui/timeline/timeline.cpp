@@ -14,7 +14,7 @@
 #include "app/app.h"
 #include "app/app_menus.h"
 #include "app/cmd/set_tag_range.h"
-#include "app/cmd_transaction.h"
+#include "app/cmd/transaction.h"
 #include "app/color_utils.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
@@ -4259,7 +4259,7 @@ void Timeline::dropRange(DropOp op)
     // Update the sprite position after the command was executed
     // TODO improve this workaround
     Cmd* cmd = m_document->undoHistory()->lastExecutedCmd();
-    if (auto cmdTx = dynamic_cast<CmdTransaction*>(cmd))
+    if (auto cmdTx = dynamic_cast<cmd::CmdTransaction*>(cmd))
       cmdTx->updateSpritePositionAfter(UIContext::instance());
   }
   catch (const std::exception& ex) {

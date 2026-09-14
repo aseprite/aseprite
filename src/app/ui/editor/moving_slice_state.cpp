@@ -154,7 +154,7 @@ bool MovingSliceState::onMouseUp(Editor* editor, MouseMessage* msg)
 
   if (somethingChanged) {
     ContextWriter writer(UIContext::instance(), 1000);
-    CmdTransaction* cmds = m_tx;
+    cmd::CmdTransaction* cmds = m_tx;
     for (const auto& item : m_items) {
       item.slice->insert(m_keyFrame, item.oldKey);
       cmds->addAndExecute(writer.context(),
@@ -496,7 +496,7 @@ void MovingSliceState::clearSlices()
       slicesKeys.push_back(item.newKey);
     }
 
-    CmdTransaction* cmds = m_tx;
+    cmd::CmdTransaction* cmds = m_tx;
     cmds->executeAndAdd(ctx, new cmd::ClearSlices(m_site, m_selectedLayers, m_frame, slicesKeys));
   }
 }

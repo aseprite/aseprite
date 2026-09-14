@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2026  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -9,8 +9,10 @@
   #include "config.h"
 #endif
 
+#include "app/cmd.h"
 #include "app/console.h"
 #include "app/context.h"
+#include "app/doc_undo.h"
 #include "app/file/file.h"
 #include "app/file/file_format.h"
 #include "app/file/format_options.h"
@@ -25,6 +27,7 @@
 #include "doc/doc.h"
 #include "fmt/format.h"
 #include "ui/alert.h"
+#include "undo/undo_state.h"
 #include "ver/info.h"
 
 namespace app {

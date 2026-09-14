@@ -17,6 +17,8 @@ using namespace doc;
 class SetCelZIndex : public Cmd,
                      public WithCel {
 public:
+  CMDTYPE('z', 'i', 'C', 'l', SetCelZIndex);
+
   SetCelZIndex(Cel* cel, int zindex);
 
 protected:
@@ -24,10 +26,12 @@ protected:
   void onUndo(Context* ctx) override;
   void onFireNotifications(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this); }
+  void onSerialize(CmdSerial& s) override;
 
 private:
-  int m_oldZIndex;
-  int m_newZIndex;
+  void swap();
+
+  int m_value;
 };
 
 }} // namespace app::cmd

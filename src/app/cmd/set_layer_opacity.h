@@ -22,17 +22,20 @@ using namespace doc;
 class SetLayerOpacity : public Cmd,
                         public WithLayer {
 public:
+  CMDTYPE('o', 'p', 'L', 'y', SetLayerOpacity);
+
   SetLayerOpacity(LayerImage* layer, int opacity);
 
 protected:
   void onExecute(Context* ctx) override;
   void onUndo(Context* ctx) override;
-  void onFireNotifications(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this); }
+  void onSerialize(CmdSerial& s) override;
 
 private:
-  int m_oldOpacity;
-  int m_newOpacity;
+  void swap();
+
+  int m_value;
 };
 
 }} // namespace app::cmd

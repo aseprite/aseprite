@@ -19,28 +19,36 @@ namespace app { namespace cmd {
 
 using namespace doc;
 
-SetCelOpacity::SetCelOpacity(Cel* cel, int opacity)
-  : WithCel(cel)
-  , m_oldOpacity(cel->opacity())
-  , m_newOpacity(opacity)
+SetCelOpacity::SetCelOpacity(Cel* cel, const int opacity) : WithCel(cel), m_value(opacity)
 {
 }
 
 void SetCelOpacity::onExecute(Context* ctx)
 {
-  cel()->setOpacity(m_newOpacity);
-  cel()->data()->incrementVersion();
+  swap();
 }
 
 void SetCelOpacity::onUndo(Context* ctx)
 {
-  cel()->setOpacity(m_oldOpacity);
-  cel()->data()->incrementVersion();
+  swap();
 }
 
-void SetCelOpacity::onFireNotifications(Context* ctx)
+void SetCelOpacity::onSerialize(CmdSerial& s)
+{
+  Cmd::onSerialize(s);
+  serializeCelId(s);
+  s(m_value);
+}
+
+void SetCelOpacity::swap()
 {
   Cel* cel = this->cel();
+
+  auto current = cel->opacity();
+  std::swap(current, m_value);
+  cel->setOpacity(current);
+  cel->incrementVersion();
+
   Doc* doc = static_cast<Doc*>(cel->document());
   DocEvent ev(doc);
   ev.sprite(cel->sprite());

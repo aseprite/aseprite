@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This program is distributed under the terms of
@@ -19,7 +20,7 @@ using namespace doc;
 
 class WithSlice {
 public:
-  WithSlice(Slice* slice);
+  WithSlice(Slice* slice = nullptr);
   Slice* slice();
 
 private:

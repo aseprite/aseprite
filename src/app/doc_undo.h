@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2023  Igara Studio S.A.
+// Copyright (C) 2022-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -13,6 +13,7 @@
 #include "app/sprite_position.h"
 #include "base/disable_copying.h"
 #include "base/exception.h"
+#include "base/ints.h"
 #include "obs/observable.h"
 #include "undo/undo_history.h"
 
@@ -23,9 +24,12 @@ namespace app {
 using namespace doc;
 
 class Cmd;
-class CmdTransaction;
 class Context;
 class DocUndoObserver;
+
+namespace cmd {
+class CmdTransaction;
+}
 
 // Exception thrown when we want to modify the sprite (add new
 // app::Cmd objects) when we are undoing/redoing/moving throw the
@@ -47,7 +51,11 @@ public:
 
   void setContext(Context* ctx);
 
-  void add(CmdTransaction* cmd);
+  // Adds a new cmd in the "undo" history, or the "redo" history,
+  // i.e. if the command was executed and is already undone. This last
+  // case is used when we read the undo history from a file.
+  enum class AddIn : uint8_t { Undo, Redo };
+  void add(cmd::CmdTransaction* cmd, AddIn addIn);
 
   bool canUndo() const;
   bool canRedo() const;

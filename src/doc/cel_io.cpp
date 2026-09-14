@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2023-2026 Igara Studio S.A.
+// Copyright (c) 2023-present Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -25,9 +25,9 @@ using namespace base::serialization::little_endian;
 
 void write_cel(std::ostream& os, const Cel* cel)
 {
-  write32(os, cel->id());
+  write32(os, cel->io_id());
   write16(os, cel->frame());
-  write32(os, cel->dataId());
+  write32(os, cel->io_dataId());
   write16(os, uint16_t(int16_t(cel->zIndex())));
 }
 

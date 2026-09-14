@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -9,6 +9,7 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/file/undo/undo_history.h"
 #include "app/pref/preferences.h"
 #include "doc/rgbmap_algorithm.h"
 #include "gfx/color_space.h"
@@ -51,6 +52,11 @@ struct FileOpConfig {
   // and then composed with the rest of the sprite. In this case
   // blend mode and opacity fields are valid for groups too.
   bool composeGroups = false;
+
+  // Indicates if we should save or not the UndoHistory, and if we do,
+  // if it should be inside the .aseprite file or as an external
+  // .aseprite-undo file.
+  SaveUndoHistory saveUndoHistory = SaveUndoHistory::No;
 
   void fillFromPreferences();
 };
