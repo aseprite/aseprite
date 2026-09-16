@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -18,10 +18,47 @@
 
 namespace doc {
 
-static std::mutex g_mutex;
-static ObjectId newId = 0;
-// TODO Profile this and see if an unordered_map is better
-static std::map<ObjectId, Object*> objects;
+struct ObjectsStore {
+  std::mutex mutex;
+  ObjectId newId = 0;
+  // TODO Profile this and see if an unordered_map is better
+  std::map<ObjectId, Object*> objects;
+
+  void add(ObjectId id, Object* obj)
+  {
+#ifdef _DEBUG
+    if (objects.find(id) != objects.end()) {
+      Object* obj = objects.find(id)->second;
+      if (obj) {
+        TRACEARGS("ASSERT FAILED: Object with id",
+                  id,
+                  "of kind",
+                  int(obj->type()),
+                  "version",
+                  obj->version(),
+                  "should not exist");
+      }
+      else {
+        TRACEARGS("ASSERT FAILED: Object with id", id, "registered as nullptr should not exist");
+      }
+    }
+    ASSERT(objects.find(id) == objects.end());
+#endif
+    objects.insert(std::make_pair(id, obj));
+  }
+
+  void remove(ObjectId id, Object* obj)
+  {
+    ASSERT(id != NullId);
+    auto it = objects.find(id);
+    ASSERT(it != objects.end());
+    ASSERT(it->second == obj);
+    if (it != objects.end())
+      objects.erase(it);
+  }
+};
+
+static ObjectsStore g_store;
 
 Object::Object(ObjectType type) : m_type(type)
 {
@@ -30,8 +67,8 @@ Object::Object(ObjectType type) : m_type(type)
 Object::Object(const Object& other)
   : m_type(other.m_type)
   , m_id(NullId) // We don't copy the ID
-  , m_suspendedId(NullId)
   , m_version(0) // We don't copy the version
+  , m_suspended(false)
 {
 }
 
@@ -48,54 +85,36 @@ int Object::getMemSize() const
 
 const ObjectId Object::id() const
 {
-  // We cannot ask for the ID from a "suspended" object.
-  ASSERT(m_suspendedId == NullId);
-
-  // The first time the ID is request, we store the object in the
-  // "objects" hash table.
-  if (!m_id) {
-    const std::lock_guard lock(g_mutex);
-    m_id = ++newId;
-    objects.insert(std::make_pair(m_id, const_cast<Object*>(this)));
+  // The first time the ID is request (for non-suspended objects), we
+  // store the object in the "objects" hash table.
+  if (!m_id && !m_suspended) {
+    const std::lock_guard lock(g_store.mutex);
+    m_id = ++g_store.newId;
+    g_store.add(m_id, const_cast<Object*>(this));
   }
-  return m_id;
+  return m_id; // This can be NullId for suspended objects.
 }
 
-void Object::setId(ObjectId id)
+void Object::setIdInternal(const ObjectId id, const bool removeFromStore, const bool addToStore)
 {
-  const std::lock_guard lock(g_mutex);
+  const std::lock_guard lock(g_store.mutex);
 
-  if (m_id) {
-    auto it = objects.find(m_id);
-    ASSERT(it != objects.end());
-    ASSERT(it->second == this);
-    if (it != objects.end())
-      objects.erase(it);
+  if (removeFromStore) {
+    ASSERT(m_id != NullId);
+    g_store.remove(m_id, this);
   }
 
   m_id = id;
 
-  if (m_id) {
-#ifdef _DEBUG
-    if (objects.find(m_id) != objects.end()) {
-      Object* obj = objects.find(m_id)->second;
-      if (obj) {
-        TRACEARGS("ASSERT FAILED: Object with id",
-                  m_id,
-                  "of kind",
-                  int(obj->type()),
-                  "version",
-                  obj->version(),
-                  "should not exist");
-      }
-      else {
-        TRACEARGS("ASSERT FAILED: Object with id", m_id, "registered as nullptr should not exist");
-      }
-    }
-    ASSERT(objects.find(m_id) == objects.end());
-#endif
-    objects.insert(std::make_pair(m_id, this));
+  if (addToStore) {
+    ASSERT(m_id != NullId);
+    g_store.add(m_id, this);
   }
+}
+
+void Object::setId(const ObjectId id)
+{
+  setIdInternal(id, m_id != NullId && !m_suspended, id != NullId && !m_suspended);
 }
 
 void Object::setVersion(ObjectVersion version)
@@ -105,23 +124,23 @@ void Object::setVersion(ObjectVersion version)
 
 void Object::suspendObject()
 {
-  ASSERT(m_suspendedId == NullId);
-  m_suspendedId = m_id;
-  setId(NullId);
+  ASSERT(!m_suspended);
+  setIdInternal(m_id, m_id != NullId, false);
+  m_suspended = true;
 }
 
 void Object::restoreObject()
 {
-  ASSERT(m_id == NullId);
-  setId(m_suspendedId);
-  m_suspendedId = NullId;
+  ASSERT(m_suspended);
+  setIdInternal(m_id, false, m_id != NullId);
+  m_suspended = false;
 }
 
 Object* get_object(ObjectId id)
 {
-  const std::lock_guard lock(g_mutex);
-  auto it = objects.find(id);
-  if (it != objects.end())
+  const std::lock_guard lock(g_store.mutex);
+  auto it = g_store.objects.find(id);
+  if (it != g_store.objects.end())
     return it->second;
   else
     return nullptr;

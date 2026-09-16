@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2025  Igara Studio S.A.
+// Copyright (c) 2025-present  Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -35,24 +35,26 @@ public:
   // object use.
   virtual int getMemSize() const;
 
-  // Removes or restore the ID of this object (and all its children)
-  // to keep this object in a "suspended" state (e.g. in the undo
-  // history) or to recover the object from a suspended state.
+  // Removes this object (and all its children) from the "store of
+  // known objects" to keep them in a "suspended" state (e.g. in the
+  // undo history) or to recover the object from a suspended state.
   virtual void suspendObject();
   virtual void restoreObject();
 
 private:
+  void setIdInternal(ObjectId id, bool removeFromStore, bool addToStore);
+
   ObjectType m_type;
 
   // Unique identifier for this object (it is assigned by
   // Objects class).
   mutable ObjectId m_id = NullId;
 
-  // ID saved when the objects is "deleted" but stored in the undo
-  // history. It's a way to save the previous ID and restore it.
-  ObjectId m_suspendedId = NullId;
-
   ObjectVersion m_version = 0;
+
+  // True when this object is "deleted" but stored in a kind of undo
+  // history (not in the ObjectsStore).
+  bool m_suspended = false;
 
   // Disable copy assignment
   Object& operator=(const Object&);
