@@ -1827,10 +1827,6 @@ void Widget::onBroadcastMouseMessage(const gfx::Point& screenPos, WidgetsList& t
 
 void Widget::onInitTheme(InitThemeEvent& ev)
 {
-  // Reset cached font and TextBlob
-  m_font.reset();
-  m_blob.reset();
-
   // Create a copy of the children list and iterate it, just in case a
   // initTheme() modifies this list (e.g. this can happen in some
   // strange cases with viewports, where scrollbars are added/removed
