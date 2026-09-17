@@ -67,6 +67,7 @@ std::string escape_for_json(const std::string& path)
   std::string res = path;
   base::replace_string(res, "\\", "\\\\");
   base::replace_string(res, "\"", "\\\"");
+  base::replace_string(res, "\n", "\\n");
   return res;
 }
 
