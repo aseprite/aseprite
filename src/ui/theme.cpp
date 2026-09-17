@@ -103,13 +103,11 @@ PaintWidgetPartInfo::PaintWidgetPartInfo()
 {
 }
 
-PaintWidgetPartInfo::PaintWidgetPartInfo(const Widget* widget)
+PaintWidgetPartInfo::PaintWidgetPartInfo(const Widget* widget) : widget(widget)
 {
   bgColor = (!widget->isTransparent() ? widget->bgColor() : gfx::ColorNone);
   styleFlags = PaintWidgetPartInfo::getStyleFlagsForWidget(widget);
   text = &widget->text();
-  textBlob = widget->textBlob();
-  baseline = widget->textBaseline();
   mnemonic = widget->mnemonic();
   icon = nullptr;
   if (const Style::Layer::IconSurfaceProvider* iconProvider =
@@ -266,12 +264,23 @@ void Theme::paintWidgetPart(Graphics* g,
   for_each_layer(info.styleFlags,
                  style,
                  [this, g, style, &info, &rc, &outBgColor](const Style::Layer& layer) {
+                   text::TextBlobRef textBlob;
+                   float baseline = info.baseline;
+                   if (info.textBlob) {
+                     textBlob = info.textBlob;
+                   }
+                   else if (info.widget && layer.type() == Style::Layer::Type::kText) {
+                     // Avoid calling textBlob and thus creating one where we might not actually
+                     // need to paint one.
+                     textBlob = info.widget->textBlob();
+                     baseline = info.widget->textBaseline();
+                   }
                    paintLayer(g,
                               style,
                               layer,
                               (info.text ? *info.text : std::string()),
-                              info.textBlob,
-                              info.baseline,
+                              textBlob,
+                              baseline,
                               info.mnemonic,
                               info.icon,
                               rc,

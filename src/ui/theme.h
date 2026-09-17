@@ -49,6 +49,7 @@ struct PaintWidgetPartInfo {
   float baseline = 0.0f;
   int mnemonic = 0;
   os::Surface* icon = nullptr;
+  const Widget* widget = nullptr;
 
   PaintWidgetPartInfo();
   PaintWidgetPartInfo(const Widget* widget);
