@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2026  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -59,7 +59,7 @@ void Sprite::SetDefaultGridBounds(const gfx::Rect& defGridBounds)
 // Constructors/Destructor
 
 Sprite::Sprite(const ImageSpec& spec, int ncolors)
-  : WithUserData(ObjectType::Sprite)
+  : WithUserData(kType)
   , m_document(nullptr)
   , m_spec(spec)
   , m_pixelRatio(1, 1)

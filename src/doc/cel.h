@@ -33,6 +33,8 @@ class Sprite;
 // of the layer content (e.g. a text layer).
 class Cel : public Object {
 public:
+  static constexpr ObjectType kType = ObjectType::Cel;
+
   Cel(frame_t frame, const ImageRef& image);
   Cel(frame_t frame, const CelDataRef& celData);
   ~Cel();

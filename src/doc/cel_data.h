@@ -26,6 +26,8 @@ class CelData : public WithUserData {
   friend class Cel;
 
 public:
+  static constexpr ObjectType kType = ObjectType::CelData;
+
   CelData(const ImageRef& image);
   CelData(const CelData& celData);
   ~CelData();

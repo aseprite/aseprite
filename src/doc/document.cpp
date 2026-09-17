@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2026-present Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -15,7 +16,7 @@
 
 namespace doc {
 
-Document::Document() : Object(ObjectType::Document), m_sprites(this)
+Document::Document() : Object(kType), m_sprites(this)
 {
 }
 

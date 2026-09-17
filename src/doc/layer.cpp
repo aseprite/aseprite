@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -564,11 +564,11 @@ layer_t Layer::getLayerIndex(const Layer* layer) const
 //////////////////////////////////////////////////////////////////////
 // LayerImage class
 
-LayerImage::LayerImage(ObjectType type, Sprite* sprite) : Layer(type, sprite)
+LayerImage::LayerImage(const ObjectType type, Sprite* sprite) : Layer(type, sprite)
 {
 }
 
-LayerImage::LayerImage(Sprite* sprite) : LayerImage(ObjectType::LayerImage, sprite)
+LayerImage::LayerImage(Sprite* sprite) : LayerImage(kType, sprite)
 {
 }
 
@@ -597,7 +597,7 @@ void LayerImage::configureAsBackground()
 //////////////////////////////////////////////////////////////////////
 // LayerGroup class
 
-LayerGroup::LayerGroup(Sprite* sprite) : Layer(ObjectType::LayerGroup, sprite)
+LayerGroup::LayerGroup(Sprite* sprite) : Layer(kType, sprite)
 {
   setName("Group");
 }

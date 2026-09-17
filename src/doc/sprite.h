@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -58,6 +58,8 @@ typedef std::vector<Palette*> PalettesList;
 // The main structure used in the whole program to handle a sprite.
 class Sprite : public WithUserData {
 public:
+  static constexpr ObjectType kType = ObjectType::Sprite;
+
   enum class RgbMapFor { OpaqueLayer, TransparentLayer };
 
   ////////////////////////////////////////

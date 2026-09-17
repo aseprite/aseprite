@@ -17,6 +17,8 @@ namespace doc {
 // Renders a tilemap on each cel using a tileset.
 class LayerTilemap final : public LayerImage {
 public:
+  static constexpr ObjectType kType = ObjectType::LayerTilemap;
+
   LayerTilemap(Sprite* sprite, tileset_index tsi);
   ~LayerTilemap();
 

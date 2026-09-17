@@ -61,6 +61,12 @@ protected:
   Layer(ObjectType type, Sprite* sprite);
 
 public:
+  // We don't have a generic "ObjectType::Layer", but by default we
+  // can use the LayerImage as "layer type" (although in a
+  // serialization process like read/write_layer() the final type will
+  // be in the encoded representation).
+  static constexpr ObjectType kType = ObjectType::LayerImage;
+
   // Disable assigment
   Layer& operator=(const Layer& other) = delete;
 
@@ -231,6 +237,8 @@ private:
 
 class LayerImage : public Layer {
 public:
+  static constexpr ObjectType kType = ObjectType::LayerImage;
+
   LayerImage(ObjectType type, Sprite* sprite);
   explicit LayerImage(Sprite* sprite);
   virtual ~LayerImage();
@@ -244,6 +252,8 @@ public:
 
 class LayerGroup final : public Layer {
 public:
+  static constexpr ObjectType kType = ObjectType::LayerGroup;
+
   explicit LayerGroup(Sprite* sprite);
   virtual ~LayerGroup();
   LayerGroup* clone(Sprite* sprite) const override { return new LayerGroup(sprite); }

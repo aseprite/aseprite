@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2026-present Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -17,6 +18,8 @@ namespace doc {
 
 class Document : public Object {
 public:
+  static constexpr ObjectType kType = ObjectType::Document;
+
   Document();
   ~Document();
 

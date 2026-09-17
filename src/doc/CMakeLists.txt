@@ -1,5 +1,5 @@
 # Aseprite Document Library
-# Copyright (C) 2019-2026 Igara Studio S.A.
+# Copyright (C) 2019-present Igara Studio S.A.
 # Copyright (C) 2001-2018 David Capello
 
 if(WIN32)
@@ -53,7 +53,6 @@ add_library(doc-lib
   mask.cpp
   mask_boundaries.cpp
   mask_io.cpp
-  object.cpp
   object.cpp
   octree_map.cpp
   palette.cpp

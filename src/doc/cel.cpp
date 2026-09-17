@@ -22,7 +22,7 @@
 namespace doc {
 
 Cel::Cel(frame_t frame, const ImageRef& image)
-  : Object(ObjectType::Cel)
+  : Object(kType)
   , m_layer(NULL)
   , m_frame(frame)
   , m_data(new CelData(image))
@@ -31,7 +31,7 @@ Cel::Cel(frame_t frame, const ImageRef& image)
 }
 
 Cel::Cel(frame_t frame, const CelDataRef& celData)
-  : Object(ObjectType::Cel)
+  : Object(kType)
   , m_layer(NULL)
   , m_frame(frame)
   , m_data(celData)

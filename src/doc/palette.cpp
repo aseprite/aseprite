@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2020-2024 Igara Studio S.A.
+// Copyright (c) 2020-present Igara Studio S.A.
 // Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -30,7 +30,7 @@ Palette::Palette() : Palette(0, 256)
 {
 }
 
-Palette::Palette(frame_t frame, int ncolors) : Object(ObjectType::Palette)
+Palette::Palette(frame_t frame, int ncolors) : Object(kType)
 {
   ASSERT(ncolors >= 0);
 

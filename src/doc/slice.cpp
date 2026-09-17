@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2020-2022 Igara Studio S.A.
+// Copyright (c) 2020-present Igara Studio S.A.
 // Copyright (c) 2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -32,7 +32,7 @@ SliceKey::SliceKey(const gfx::Rect& bounds, const gfx::Rect& center, const gfx::
 {
 }
 
-Slice::Slice() : WithUserData(ObjectType::Slice), m_owner(nullptr), m_name("Slice")
+Slice::Slice() : WithUserData(kType), m_owner(nullptr), m_name("Slice")
 {
 }
 

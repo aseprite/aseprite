@@ -15,7 +15,7 @@
 
 namespace doc {
 
-Tilesets::Tilesets() : Object(ObjectType::Tilesets)
+Tilesets::Tilesets() : Object(kType)
 {
 }
 

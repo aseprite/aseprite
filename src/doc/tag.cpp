@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -19,7 +19,7 @@
 namespace doc {
 
 Tag::Tag(frame_t from, frame_t to)
-  : WithUserData(ObjectType::Tag)
+  : WithUserData(kType)
   , m_owner(nullptr)
   , m_from(from)
   , m_to(to)
@@ -30,7 +30,7 @@ Tag::Tag(frame_t from, frame_t to)
 }
 
 Tag::Tag(const Tag& other)
-  : WithUserData(ObjectType::Tag)
+  : WithUserData(kType)
   , m_owner(nullptr)
   , m_from(other.m_from)
   , m_to(other.m_to)

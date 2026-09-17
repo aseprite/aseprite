@@ -32,6 +32,8 @@ class RgbMap;
 
 class Image : public Object {
 public:
+  static constexpr ObjectType kType = ObjectType::Image;
+
   enum LockType {
     ReadLock,     // Read-only lock
     WriteLock,    // Write-only lock

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2025  Igara Studio S.A.
+// Copyright (c) 2019-present  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -34,9 +34,11 @@ class Tileset : public WithUserData {
   static UserData kNoUserData;
 
 public:
-  typedef std::vector<Tile> Tiles;
-  typedef Tiles::iterator iterator;
-  typedef Tiles::const_iterator const_iterator;
+  static constexpr ObjectType kType = ObjectType::Tileset;
+
+  using Tiles = std::vector<Tile>;
+  using iterator = Tiles::iterator;
+  using const_iterator = Tiles::const_iterator;
 
   // Creates a new tileset with "ntiles". The first tile will be
   // always the empty tile. So ntiles must be > 1 to contain at

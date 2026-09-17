@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2026 Igara Studio S.A.
+// Copyright (c) 2019-present Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -21,7 +21,7 @@
 namespace doc {
 
 CelData::CelData(const ImageRef& image)
-  : WithUserData(ObjectType::CelData)
+  : WithUserData(kType)
   , m_image(image)
   , m_bounds(0, 0, image ? image->width() : 0, image ? image->height() : 0)
   , m_boundsF(nullptr)
@@ -29,7 +29,7 @@ CelData::CelData(const ImageRef& image)
 }
 
 CelData::CelData(const CelData& celData)
-  : WithUserData(ObjectType::CelData)
+  : WithUserData(kType)
   , m_image(celData.m_image)
   , m_opacity(celData.m_opacity)
   , m_bounds(celData.m_bounds)

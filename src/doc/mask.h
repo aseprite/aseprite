@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2020-2025 Igara Studio S.A.
+// Copyright (c) 2020-present Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -25,6 +25,8 @@ namespace doc {
 // TODO rename Mask -> Selection
 class Mask : public Object {
 public:
+  static constexpr ObjectType kType = ObjectType::Mask;
+
   Mask();
   Mask(const Mask& mask);
   virtual ~Mask();

@@ -20,6 +20,7 @@ class Object {
 public:
   Object(ObjectType type);
   Object(const Object& other);
+  Object& operator=(const Object&) = delete;
   virtual ~Object();
 
   const ObjectType type() const { return m_type; }
@@ -55,9 +56,6 @@ private:
   // True when this object is "deleted" but stored in a kind of undo
   // history (not in the ObjectsStore).
   bool m_suspended = false;
-
-  // Disable copy assignment
-  Object& operator=(const Object&);
 };
 
 Object* get_object(ObjectId id);

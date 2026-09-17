@@ -20,10 +20,7 @@
 
 namespace doc {
 
-Image::Image(const ImageSpec& spec)
-  : Object(ObjectType::Image)
-  , m_rowBytes(spec.widthBytes())
-  , m_spec(spec)
+Image::Image(const ImageSpec& spec) : Object(kType), m_rowBytes(spec.widthBytes()), m_spec(spec)
 {
 }
 

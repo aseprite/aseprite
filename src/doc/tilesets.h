@@ -18,9 +18,11 @@ namespace doc {
 
 class Tilesets : public Object {
 public:
-  typedef std::vector<Tileset*> Array;
-  typedef Array::iterator iterator;
-  typedef Array::const_iterator const_iterator;
+  static constexpr ObjectType kType = ObjectType::Tilesets;
+
+  using Array = std::vector<Tileset*>;
+  using iterator = Array::iterator;
+  using const_iterator = Array::const_iterator;
 
   Tilesets();
   ~Tilesets();

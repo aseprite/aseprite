@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -65,9 +65,11 @@ private:
 
 class Slice : public WithUserData {
 public:
-  typedef Keyframes<SliceKey> List;
-  typedef List::iterator iterator;
-  typedef List::const_iterator const_iterator;
+  static constexpr ObjectType kType = ObjectType::Slice;
+
+  using List = Keyframes<SliceKey>;
+  using iterator = List::iterator;
+  using const_iterator = List::const_iterator;
 
   Slice();
   Slice(const Slice& other);
