@@ -57,6 +57,8 @@ public:
   TreeNode* next() const { return m_next; }
   TreeNode* firstChild() const { return m_firstChild; }
   TreeNode* lastChild() const { return m_lastChild; }
+  void setNext(TreeNode* next) { m_next = next; }
+  void setPrev(TreeNode* prev) { m_prev = prev; }
 
   bool keyDown(const KeyMessage* message) { return onKeyDown(message); };
 
@@ -65,10 +67,10 @@ protected:
   virtual bool onHasChildren() const { return m_firstChild != nullptr; }
   virtual bool onKeyDown(const KeyMessage*) { return false; }
 
-private:
-  void setNext(TreeNode* next) { m_next = next; }
-  void setPrev(TreeNode* prev) { m_prev = prev; }
+  TreeNode* m_firstChild;
+  TreeNode* m_lastChild;
 
+private:
   std::string m_text;
   std::string m_tooltip;
   SkinPartPtr m_icon;
@@ -78,8 +80,6 @@ private:
   TreeNode* m_parent;
   TreeNode* m_prev;
   TreeNode* m_next;
-  TreeNode* m_firstChild;
-  TreeNode* m_lastChild;
 };
 
 class Tree : public Widget {
@@ -92,6 +92,9 @@ public:
 
   void setSelected(TreeNode* node, bool scrollToNode = false);
   TreeNode* selected() const { return m_selected; }
+
+  bool coloredIcons() const { return m_coloredIcons; }
+  void setColoredIcons(bool colored) { m_coloredIcons = colored; }
 
   obs::signal<void()> Change;
   obs::signal<void()> DoubleClickItem;
@@ -118,6 +121,8 @@ private:
   std::string m_findString;
 
   std::unique_ptr<AppTooltipManager> m_tooltipManager;
+
+  bool m_coloredIcons = false;
 
   struct {
     int rowHeight = 0;

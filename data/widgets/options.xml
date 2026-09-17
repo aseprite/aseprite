@@ -15,6 +15,7 @@
             <listitem text="@.section_color" value="section_color" />
             <listitem text="@.section_alerts" value="section_alerts" />
             <listitem text="@.section_editor" value="section_editor" />
+            <listitem text="@.section_toolset" value="section_toolset" />
             <listitem text="@.section_rendering" value="section_rendering" />
             <listitem text="@.section_selection" value="section_selection" />
             <listitem text="@.section_timeline" value="section_timeline" />
@@ -287,6 +288,18 @@
                    text="@.compose_groups"
                    pref="experimental.compose_groups" />
             <link text="(#3225)" for="compose_groups" url="https://github.com/aseprite/aseprite/issues/3225" />
+          </hbox>
+        </vbox>
+
+        <!-- Toolset -->
+        <vbox id="section_toolset">
+          <separator text="@.section_toolset" horizontal="true" />
+          <hbox expansive="true">
+            <view id="toolset_view" maxsize="true" expansive="true" />
+            <vbox>
+              <boxfiller />
+              <button id="toolset_reset" text="@toolsets.reset" minwidth="60" />
+            </vbox>
           </hbox>
         </vbox>
 
@@ -788,6 +801,7 @@
           <check id="perfile_reset" text="@.reset_perfile" tooltip="@.reset_perfile_tooltip" />
           <check id="window_reset" text="@.reset_window" />
           <check id="brushes_reset" text="@.reset_brushes" />
+          <check id="toolset_reset_check" text="@.reset_toolset" />
           <separator horizontal="true" />
           <hbox>
             <check id="reset_toggle" text="@.reset_toggle" />

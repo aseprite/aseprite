@@ -30,15 +30,19 @@
 #include "app/resource_finder.h"
 #include "app/script/about_extension_window.h"
 #include "app/tools/tool_box.h"
+#include "app/tools/tool_group.h"
 #include "app/tx.h"
 #include "app/ui/best_fit_criteria_selector.h"
 #include "app/ui/color_button.h"
+#include "app/ui/layout_selector.h"
 #include "app/ui/main_window.h"
 #include "app/ui/pref_widget.h"
 #include "app/ui/rgbmap_algorithm_selector.h"
 #include "app/ui/sampling_selector.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui/toolbar.h"
+#include "app/ui/toolset_tree.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/string.h"
@@ -70,6 +74,7 @@ namespace app {
 namespace {
 
 const char* kSectionGeneralId = "section_general";
+const char* kSectionToolsetId = "section_toolset";
 const char* kSectionBgId = "section_bg";
 const char* kSectionGridId = "section_grid";
 const char* kSectionThemeId = "section_theme";
@@ -411,6 +416,9 @@ public:
     // Timeline
     resetTimelineSel()->Click.connect([this] { onResetTimelineSel(); });
 
+    // Toolset
+    toolsetReset()->Click.connect([this] { onResetToolset(); });
+
     // Others
     enableDataRecovery()->Click.connect([this]() {
       const bool state = enableDataRecovery()->isSelected();
@@ -619,12 +627,13 @@ public:
       resetSelectedButton()->setEnabled(
         defaultReset()->isSelected() || installedReset()->isSelected() ||
         recentReset()->isSelected() || perfileReset()->isSelected() ||
-        windowReset()->isSelected() || toolsReset()->isSelected() || brushesReset()->isSelected());
+        windowReset()->isSelected() || toolsReset()->isSelected() || brushesReset()->isSelected() ||
+        toolsetResetCheck()->isSelected());
 
       resetToggle()->setSelected(defaultReset()->isSelected() && installedReset()->isSelected() &&
                                  recentReset()->isSelected() && perfileReset()->isSelected() &&
                                  windowReset()->isSelected() && toolsReset()->isSelected() &&
-                                 brushesReset()->isSelected());
+                                 brushesReset()->isSelected() && toolsetResetCheck()->isSelected());
     };
 
     defaultReset()->Click.connect(validateYesButton);
@@ -634,6 +643,7 @@ public:
     toolsReset()->Click.connect(validateYesButton);
     windowReset()->Click.connect(validateYesButton);
     brushesReset()->Click.connect(validateYesButton);
+    toolsetResetCheck()->Click.connect(validateYesButton);
     resetSelectedButton()->Click.connect([this] { onResetDefault(); });
     resetToggle()->Click.connect([this, validateYesButton] {
       bool toggle = resetToggle()->isSelected();
@@ -644,6 +654,7 @@ public:
       toolsReset()->setSelected(toggle);
       windowReset()->setSelected(toggle);
       brushesReset()->setSelected(toggle);
+      toolsetResetCheck()->setSelected(toggle);
       validateYesButton();
     });
 
@@ -1097,6 +1108,48 @@ public:
 
     if (reset_screen)
       updateScreenScaling();
+
+    saveToolsetLayout();
+  }
+
+  void saveToolsetLayout()
+  {
+    if (!m_toolsetLayout)
+      return;
+
+    tinyxml2::XMLDocument doc;
+    auto* toolsetElem = doc.NewElement("toolset");
+    auto* toolsElem = doc.NewElement("tools");
+    toolsElem->SetAttribute("id", "_default_");
+
+    for (auto* group = m_toolsetLayout->root()->firstChild(); group; group = group->next()) {
+      auto* groupElem = doc.NewElement("group");
+      groupElem->SetAttribute("id", group->id().c_str());
+      if (group->isRemovable())
+        groupElem->SetAttribute("name", group->text().c_str());
+      groupElem->SetAttribute("visible", group->isVisible());
+      if (group->isRemovable())
+        groupElem->SetAttribute("removable", true);
+
+      for (auto* tool = group->firstChild(); tool; tool = tool->next()) {
+        auto* toolElem = doc.NewElement("tool");
+        toolElem->SetAttribute("id", tool->id().c_str());
+        toolElem->SetAttribute("visible", tool->isVisible());
+        groupElem->InsertEndChild(toolElem);
+      }
+
+      toolsElem->InsertEndChild(groupElem);
+    }
+
+    toolsetElem->InsertEndChild(toolsElem);
+    doc.InsertEndChild(toolsetElem);
+
+    auto& layouts = App::instance()->mainWindow()->layoutSelector()->layouts();
+    layouts.setToolsetElement(doc.FirstChildElement("toolset"));
+    layouts.saveUserLayouts();
+
+    App::instance()->toolBox()->applyToolsetLayout(doc.FirstChildElement("toolset"));
+    ToolBar::instance()->refreshVisibleGroups();
   }
 
   void restoreTheme()
@@ -1435,6 +1488,9 @@ private:
       }
     }
 
+    if (toolsetResetCheck()->isSelected())
+      onResetToolset();
+
     if (defaultReset()->isSelected()) {
       onResetAlerts();
       onResetBg();
@@ -1500,6 +1556,9 @@ private:
     // General section
     if (item->getValue() == kSectionGeneralId)
       loadLanguages();
+    // Load toolset tree
+    else if (item->getValue() == kSectionToolsetId)
+      loadToolsetLayout();
     // Background section
     else if (item->getValue() == kSectionBgId)
       onChangeBgScope();
@@ -1793,6 +1852,112 @@ private:
   {
     language()->deleteAllItems();
     loadLanguages();
+  }
+
+  static ToolsetTreeNode* makeToolNode(tools::Tool* tool, skin::SkinTheme* theme)
+  {
+    const skin::SkinPartPtr icon = theme->getToolPart(tool->getId().c_str());
+    auto* node = new ToolsetTreeNode(tool->getText(), icon);
+    node->setId(tool->getId());
+    return node;
+  }
+
+  static std::string groupNameFormatting(const std::string& id)
+  {
+    std::string name = id;
+    for (auto& c : name) {
+      if (c == '_')
+        c = ' ';
+      else
+        c = std::toupper(c);
+    }
+    return name;
+  }
+
+  void onResetToolset()
+  {
+    auto& layouts = App::instance()->mainWindow()->layoutSelector()->layouts();
+    layouts.setToolsetElement(nullptr);
+    layouts.saveUserLayouts();
+
+    App::instance()->toolBox()->applyToolsetLayout(nullptr);
+
+    if (m_toolsetLayout) {
+      m_toolsetLayout->parent()->removeChild(m_toolsetLayout);
+      delete m_toolsetLayout;
+      m_toolsetLayout = nullptr;
+    }
+    loadToolsetLayout();
+    toolsetView()->layout();
+  }
+
+  void loadToolsetLayout()
+  {
+    if (m_toolsetLayout)
+      return;
+
+    auto* toolbox = App::instance()->toolBox();
+    auto* theme = static_cast<skin::SkinTheme*>(this->theme());
+    auto* toolsetRoot = new ToolsetTreeNode("");
+
+    auto& layouts = App::instance()->mainWindow()->layoutSelector()->layouts();
+    auto* toolsetElem = layouts.toolsetElement();
+    auto* toolsElem = toolsetElem ? toolsetElem->FirstChildElement("tools") : nullptr;
+
+    if (toolsElem) {
+      for (auto* groupElem = toolsElem->FirstChildElement("group"); groupElem;
+           groupElem = groupElem->NextSiblingElement("group")) {
+        const char* groupId = groupElem->Attribute("id");
+        if (!groupId)
+          continue;
+
+        const char* groupName = groupElem->Attribute("name");
+        auto* toolGroup = new ToolsetTreeNode(groupName ? groupName : groupNameFormatting(groupId));
+        toolGroup->setId(groupId);
+        toolGroup->setVisible(groupElem->BoolAttribute("visible", true));
+        toolGroup->setRemovable(groupElem->BoolAttribute("removable", false));
+        toolsetRoot->addChild(toolGroup);
+
+        for (auto* toolElem = groupElem->FirstChildElement("tool"); toolElem;
+             toolElem = toolElem->NextSiblingElement("tool")) {
+          const char* toolId = toolElem->Attribute("id");
+          if (!toolId)
+            continue;
+
+          auto* tool = toolbox->getToolById(std::string(toolId));
+          if (!tool)
+            continue;
+
+          auto* toolNode = makeToolNode(tool, theme);
+          toolNode->setVisible(toolElem->BoolAttribute("visible", true));
+          if (!toolGroup->icon())
+            toolGroup->setIcon(toolNode->icon());
+          toolGroup->addChild(toolNode);
+        }
+      }
+    }
+    else {
+      for (auto it = toolbox->begin_group(); it != toolbox->end_group(); ++it) {
+        auto* groupIt = *it;
+        auto* toolGroup = new ToolsetTreeNode(groupNameFormatting(groupIt->id()));
+        toolGroup->setId(groupIt->id());
+        toolsetRoot->addChild(toolGroup);
+
+        for (auto* tool : *toolbox) {
+          if (tool->getGroup() == groupIt) {
+            auto* toolNode = makeToolNode(tool, theme);
+            if (!toolGroup->icon())
+              toolGroup->setIcon(toolNode->icon());
+            toolGroup->addChild(toolNode);
+          }
+        }
+      }
+    }
+
+    m_toolsetLayout = new ToolsetTree();
+    m_toolsetLayout->setColoredIcons(true);
+    m_toolsetLayout->setRoot(toolsetRoot);
+    toolsetView()->attachToView(m_toolsetLayout);
   }
 
   void loadLanguages()
@@ -2931,6 +3096,7 @@ private:
   RgbMapAlgorithmSelector m_rgbmapAlgorithmSelector;
   BestFitCriteriaSelector m_bestFitCriteriaSelector;
   SamplingSelector* m_samplingSelector = nullptr;
+  ToolsetTree* m_toolsetLayout = nullptr;
   text::FontRef m_font;
   text::FontRef m_miniFont;
   std::unordered_map<Widget*, bool> m_preSearchDisabledFlag;
