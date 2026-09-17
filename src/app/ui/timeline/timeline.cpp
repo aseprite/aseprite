@@ -14,6 +14,7 @@
 #include "app/app.h"
 #include "app/app_menus.h"
 #include "app/cmd/set_tag_range.h"
+#include "app/cmd/toggle_all_layers.h"
 #include "app/cmd_transaction.h"
 #include "app/color_utils.h"
 #include "app/commands/command.h"
@@ -692,21 +693,18 @@ bool Timeline::onProcessMessage(Message* msg)
           if (!m_sprite)
             break;
 
-          bool regenRows = false;
+          app::Context* context = app::App::instance()->context();
+          app::ContextWriter writer(context);
           bool newVisibleState = !allLayersVisible();
-          for (Layer* topLayer : m_sprite->root()->layers()) {
-            if (topLayer->isVisible() != newVisibleState) {
-              m_document->setLayerVisibilityWithNotifications(topLayer, newVisibleState);
+          app::Doc* doc = context->activeDocument();
+          if (!doc)
+            return true;
 
-              if (topLayer->isGroup())
-                regenRows = true;
-            }
-          }
-
-          if (regenRows) {
-            regenerateRows();
-            invalidate();
-          }
+          app::Transaction transaction(context, doc, "Toggle All Layers");
+          transaction.execute(new app::cmd::ToggleAllLayers(m_sprite, newVisibleState));
+          transaction.commit();
+          regenerateRows();
+          invalidate();
 
           // Redraw all views.
           m_document->notifyGeneralUpdate();
