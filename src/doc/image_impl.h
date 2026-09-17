@@ -27,17 +27,38 @@ template<typename ImageTraits>
 class LockImageBits;
 
 class ImageImplBase : public Image {
-protected:
-  ImageBufferPtr m_buffer;
-  std::unique_ptr<std::stringstream> m_stream;
-
-  ImageImplBase(const ImageSpec& spec, const ImageBufferPtr& buffer);
-  virtual void initialize() = 0;
-
 public:
+  // Object impl
   int getMemSize() const override;
   void suspendObject() override;
   void restoreObject() override;
+
+  // Image impl
+  std::istream* getCompressedPixels() const override { return m_stream.get(); }
+
+  void restorePixels()
+  {
+    if (m_buffer)
+      return; // Already decompressed, no-op
+    decompressPixels();
+  }
+
+protected:
+  ImageImplBase(const ImageSpec& spec, const ImageBufferPtr& buffer);
+  ImageImplBase(const ImageSpec& spec, std::istream& stream);
+  virtual void initialize() = 0;
+  virtual void onCompressPixels() = 0;
+
+  // It's not nullptr if the image is decompressed/pixels are accessible in memory.
+  ImageBufferPtr m_buffer;
+
+private:
+  // Compress or decompress pixels.
+  void compressPixels();
+  void decompressPixels();
+
+  // It's not nullptr when the image is compressed.
+  std::unique_ptr<std::stringstream> m_stream;
 };
 
 template<class Traits>
@@ -54,12 +75,14 @@ private:
   inline address_t getLineAddress(int y)
   {
     ASSERT(y >= 0 && y < height());
+    restorePixels();
     return m_rows[y];
   }
 
   inline const_address_t getLineAddress(int y) const
   {
     ASSERT(y >= 0 && y < height());
+    const_cast<ImageImpl<Traits>*>(this)->restorePixels();
     return m_rows[y];
   }
 
@@ -78,6 +101,8 @@ public:
   {
     initialize();
   }
+
+  ImageImpl(const ImageSpec& spec, std::istream& stream) : ImageImplBase(spec, stream) {}
 
   int getMemSize() const override
   {
@@ -162,9 +187,8 @@ public:
     fillRect(x1, y1, x2, y2, color);
   }
 
-  void suspendObject() override
+  void onCompressPixels() override
   {
-    ImageImplBase::suspendObject();
     m_rows = nullptr;
     m_bits = nullptr;
   }

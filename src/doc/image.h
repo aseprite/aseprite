@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2025 Igara Studio S.A.
+// Copyright (c) 2018-present Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -19,6 +19,8 @@
 #include "gfx/clip.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
+
+#include <iosfwd>
 
 namespace doc {
 
@@ -41,6 +43,7 @@ public:
                        int height,
                        const ImageBufferPtr& buffer = ImageBufferPtr());
   static Image* create(const ImageSpec& spec, const ImageBufferPtr& buffer = ImageBufferPtr());
+  static Image* createWithCompressedPixels(const ImageSpec& spec, std::istream& is);
   static Image* createCopy(const Image* image, const ImageBufferPtr& buffer = ImageBufferPtr());
 
   virtual ~Image();
@@ -92,9 +95,9 @@ public:
     // Do nothing
   }
 
-  // Warning: These functions doesn't have (and shouldn't have)
-  // bounds checks. Use the primitives defined in doc/primitives.h
-  // in case that you need bounds check.
+  // These functions don't (shouldn't) check bounds. Use the
+  // primitives defined in doc/primitives.h in case that you need
+  // bounds checking.
   virtual uint8_t* getPixelAddress(int x, int y) const = 0;
   virtual color_t getPixel(int x, int y) const = 0;
   virtual void putPixel(int x, int y, color_t color) = 0;
@@ -103,6 +106,13 @@ public:
   virtual void drawHLine(int x1, int y, int x2, color_t color) = 0;
   virtual void fillRect(int x1, int y1, int x2, int y2, color_t color) = 0;
   virtual void blendRect(int x1, int y1, int x2, int y2, color_t color, int opacity) = 0;
+
+  // An implementation can return a specific std::istream with the
+  // compressed pixels (just to use in read_image_pixels()). This
+  // might be useful to read/write compressed pixels of images that
+  // aren't needed to be modified if we open and animation, edit just
+  // one frame, and save the whole animation again.
+  virtual std::istream* getCompressedPixels() const { return nullptr; }
 
   ReadIterator readArea() const { return ReadIterator(this, this->bounds()); }
   WriteIterator writeArea() { return WriteIterator(this, this->bounds()); }

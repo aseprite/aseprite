@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2025 Igara Studio S.A.
+// Copyright (c) 2025-present Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -21,6 +21,8 @@ bool write_image_pixels(std::ostream& os, const Image* image, CancelIO* cancel =
 
 Image* read_image(std::istream& is, bool setId = true);
 void read_image_pixels(std::istream& is, Image* image);
+
+void copy_image_pixels(std::istream& is, std::ostream& os);
 
 } // namespace doc
 

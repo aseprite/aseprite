@@ -683,7 +683,8 @@ int Image_get_bytesPerPixel(lua_State* L)
 int Image_get_bytes(lua_State* L)
 {
   const auto img = get_obj<ImageObj>(L, 1)->image(L);
-  lua_pushlstring(L, (const char*)img->getPixelAddress(0, 0), img->rowBytes() * img->height());
+  const size_t len = img->rowBytes() * img->height();
+  lua_pushlstring(L, (const char*)img->getPixelAddress(0, 0), len);
   return 1;
 }
 

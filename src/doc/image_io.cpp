@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2025  Igara Studio S.A.
+// Copyright (c) 2019-present  Igara Studio S.A.
 // Copyright (c) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,6 +11,7 @@
 
 #include "doc/image_io.h"
 
+#include "base/buffer.h"
 #include "base/exception.h"
 #include "base/serialization.h"
 #include "doc/cancel_io.h"
@@ -35,7 +36,20 @@ bool write_image(std::ostream& os, const Image* image, CancelIO* cancel)
   write16(os, image->width());      // Width
   write16(os, image->height());     // Height
   write32(os, image->maskColor());  // Mask color
-  return write_image_pixels(os, image, cancel);
+
+  bool result = true;
+
+  // In case the image already have compressed pixels, we can just
+  // copy them as they are.
+  if (std::istream* pixels = image->getCompressedPixels()) {
+    // Reset the input position to copy the whole stream from the beginning.
+    pixels->seekg(0);
+    copy_image_pixels(*pixels, os);
+  }
+  else
+    result = write_image_pixels(os, image, cancel);
+
+  return result;
 }
 
 bool write_image_pixels(std::ostream& os, const Image* image, CancelIO* cancel)
@@ -119,9 +133,11 @@ Image* read_image(std::istream& is, const bool setId)
       (width < 1 || height < 1) || (width > 0xfffff || height > 0xfffff))
     return nullptr;
 
-  std::unique_ptr<Image> image(Image::create(static_cast<PixelFormat>(pixelFormat), width, height));
-
-  read_image_pixels(is, image.get());
+  std::unique_ptr<Image> image(
+    Image::createWithCompressedPixels(ImageSpec(static_cast<ColorMode>(pixelFormat), width, height),
+                                      // Pass the istream to store the compressed pixels directly
+                                      // (we're not decompressing now)
+                                      is));
 
   image->setMaskColor(maskColor);
   if (setId)
@@ -216,6 +232,21 @@ void read_image_pixels(std::istream& is, Image* image)
       throw base::Exception("ZLib error %d in inflateEnd().", err);
   }
 #endif
+}
+
+void copy_image_pixels(std::istream& is, std::ostream& os)
+{
+  int avail_bytes = read32(is);
+  write32(os, avail_bytes);
+
+  // TODO probably we should validate compressed buffer right here
+  base::buffer buf(4096);
+  int n;
+  for (int i = 0; i < avail_bytes; i += n) {
+    n = std::min<int>(buf.size(), avail_bytes - i);
+    is.read((char*)buf.data(), n);
+    os.write((char*)buf.data(), n);
+  }
 }
 
 } // namespace doc

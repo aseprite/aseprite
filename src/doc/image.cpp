@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2024 Igara Studio S.A.
+// Copyright (c) 2018-present Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -20,7 +20,10 @@
 
 namespace doc {
 
-Image::Image(const ImageSpec& spec) : Object(ObjectType::Image), m_spec(spec)
+Image::Image(const ImageSpec& spec)
+  : Object(ObjectType::Image)
+  , m_rowBytes(spec.widthBytes())
+  , m_spec(spec)
 {
 }
 
@@ -52,6 +55,23 @@ Image* Image::create(const ImageSpec& spec, const ImageBufferPtr& buffer)
     case ColorMode::INDEXED:   return new ImageImpl<IndexedTraits>(spec, buffer);
     case ColorMode::BITMAP:    return new ImageImpl<BitmapTraits>(spec, buffer);
     case ColorMode::TILEMAP:   return new ImageImpl<TilemapTraits>(spec, buffer);
+  }
+  return nullptr;
+}
+
+// static
+Image* Image::createWithCompressedPixels(const ImageSpec& spec, std::istream& is)
+{
+  ASSERT(spec.width() >= 1 && spec.height() >= 1);
+  if (spec.width() < 1 || spec.height() < 1)
+    return nullptr;
+
+  switch (spec.colorMode()) {
+    case ColorMode::RGB:       return new ImageImpl<RgbTraits>(spec, is);
+    case ColorMode::GRAYSCALE: return new ImageImpl<GrayscaleTraits>(spec, is);
+    case ColorMode::INDEXED:   return new ImageImpl<IndexedTraits>(spec, is);
+    case ColorMode::BITMAP:    return new ImageImpl<BitmapTraits>(spec, is);
+    case ColorMode::TILEMAP:   return new ImageImpl<TilemapTraits>(spec, is);
   }
   return nullptr;
 }

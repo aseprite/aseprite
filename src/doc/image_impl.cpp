@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2025 Igara Studio S.A.
+// Copyright (c) 2025-present Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -21,6 +21,13 @@ ImageImplBase::ImageImplBase(const ImageSpec& spec, const ImageBufferPtr& buffer
 {
 }
 
+ImageImplBase::ImageImplBase(const ImageSpec& spec, std::istream& stream)
+  : Image(spec)
+  , m_stream(std::make_unique<std::stringstream>())
+{
+  copy_image_pixels(stream, *m_stream);
+}
+
 int ImageImplBase::getMemSize() const
 {
   return sizeof(ImageImplBase) + size_t(m_stream ? (size_t)m_stream->tellp() : 0) +
@@ -29,26 +36,38 @@ int ImageImplBase::getMemSize() const
 
 void ImageImplBase::suspendObject()
 {
-  ASSERT(m_buffer);
-  ASSERT(!m_stream);
-
-  m_stream = std::make_unique<std::stringstream>();
-  write_image_pixels(*m_stream, this);
-  m_buffer.reset();
-
+  compressPixels();
   Image::suspendObject();
 }
 
 void ImageImplBase::restoreObject()
 {
   Image::restoreObject();
+#if 0 // Don't restore pixels now, they'll be restored "lazily" when needed
+  restorePixels();
+#endif
+}
 
+void ImageImplBase::compressPixels()
+{
+  if (m_stream)
+    return; // Already compressed, no-op
+
+  m_stream = std::make_unique<std::stringstream>();
+  write_image_pixels(*m_stream, this);
+  m_buffer.reset();
+
+  onCompressPixels();
+}
+
+void ImageImplBase::decompressPixels()
+{
   ASSERT(!m_buffer);
-  ASSERT(m_stream);
 
   initialize();
 
-  m_stream->seekp(0);
+  // Reset the input position of "m_stream" to read from the beginning.
+  m_stream->seekg(0);
   read_image_pixels(*m_stream, this);
   m_stream.reset();
 }
