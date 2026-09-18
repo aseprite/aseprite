@@ -355,12 +355,6 @@ if(ENABLE_SCRIPTING)
   target_link_libraries(lauxlib lua)
   target_link_libraries(lualib lua)
 
-  # ixwebsocket
-  if(ENABLE_WEBSOCKET)
-    set(IXWEBSOCKET_INSTALL OFF CACHE BOOL "Install IXWebSocket")
-    add_subdirectory(${THIRD_PARTY_DIR}/IXWebSocket)
-  endif()
-
   set(CPPDAP_BUILD_TESTS OFF CACHE INTERNAL "")
   set(CPPDAP_BUILD_EXAMPLES OFF CACHE INTERNAL "")
   set(CPPDAP_INSTALL_VSCODE_EXAMPLES OFF CACHE INTERNAL "")

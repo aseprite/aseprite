@@ -74,6 +74,8 @@ public:
   // Checks if the Engine has any tracked objects or attached events
   bool hasLingeringObjects();
 
+  bool isTemporaryFile(const std::string& filename);
+
   void handleException(const std::exception& ex);
 
   void lua_hook(lua_Debug* ar) const;

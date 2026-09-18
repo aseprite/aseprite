@@ -241,8 +241,12 @@ dap::Variable Debugger::makeVariable(lua_State* L, const std::string& name)
       break;
     case LUA_TSTRING:
       var.type = "string";
-      if (auto* str = lua_tostring(L, -1))
+      if (auto* str = lua_tostring(L, -1)) {
+        // TODO: Having a non-utf8 character in this string (such as raw bytes from an image or a
+        // network download) can crash nlohmann::json so we're gonna have to detect that and trim
+        // them or something like that
         var.value = str;
+      }
       break;
     case LUA_TLIGHTUSERDATA: var.type = "lightuserdata"; break;
     case LUA_TFUNCTION:      var.type = "function"; break;

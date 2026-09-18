@@ -56,6 +56,11 @@ void OpenFileCommand::onLoadParams(const Params& params)
   m_repeatCheckbox = params.get_as<bool>("repeat_checkbox");
   m_oneFrame = params.get_as<bool>("oneframe");
 
+  if (params.has_param("recents"))
+    m_addToRecents = params.get_as<bool>("recents");
+  else
+    m_addToRecents = true;
+
   std::string sequence = params.get("sequence");
   if (m_oneFrame || sequence == "skip" || sequence == "no") {
     m_seqDecision = gen::SequenceDecision::NO;
@@ -189,7 +194,9 @@ void OpenFileCommand::onExecute(Context* context)
       Doc* doc = fop->document();
       if (doc) {
         if (context->isUIAvailable()) {
-          App::instance()->recentFiles()->addRecentFile(fop->filename().c_str());
+          if (m_addToRecents)
+            App::instance()->recentFiles()->addRecentFile(fop->filename().c_str());
+
           auto& docPref = Preferences::instance().document(doc);
 
           if (fop->hasEmbeddedGridBounds() && !doc->sprite()->gridBounds().isEmpty()) {
@@ -213,7 +220,7 @@ void OpenFileCommand::onExecute(Context* context)
 
     // The file was not found or was loaded loaded with errors,
     // so we can remove it from the recent-file list
-    if (unrecent) {
+    if (unrecent && m_addToRecents) {
       if (context->isUIAvailable())
         App::instance()->recentFiles()->removeRecentFile(m_filename);
     }

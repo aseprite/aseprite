@@ -10,6 +10,7 @@
 
 #include "base/disable_copying.h"
 
+#include <cstdint>
 #include <string>
 
 namespace net {
@@ -20,11 +21,14 @@ class HttpResponse;
 
 class HttpRequest {
 public:
-  HttpRequest(const std::string& url);
+  enum class Method : uint8_t { GET, POST, PUT, PATCH, OPTIONS };
+
+  explicit HttpRequest(const std::string& url, Method method = Method::GET);
   ~HttpRequest();
 
   void setHeaders(const HttpHeaders& headers);
-  bool send(HttpResponse& response);
+  void setPostFields(const std::string& fields);
+  bool send(HttpResponse& response, int timeoutMs = 0);
   void abort();
 
 private:
@@ -32,6 +36,10 @@ private:
 
   DISABLE_COPYING(HttpRequest);
 };
+
+bool is_valid_url(std::string_view url);
+std::string url_encode(std::string_view text);
+std::string url_decode(std::string_view text);
 
 } // namespace net
 

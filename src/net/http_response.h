@@ -9,9 +9,7 @@
 #pragma once
 
 #include "base/disable_copying.h"
-
-#include <cstddef>
-#include <iosfwd>
+#include "http_headers.h"
 
 namespace net {
 
@@ -25,11 +23,19 @@ public:
   int status() const { return m_status; }
   void setStatus(int status) { m_status = status; }
 
+  const HttpHeaders& headers() const { return m_headers; }
+  void setHeaders(HttpHeaders&& headers) { m_headers = std::move(headers); }
+
+  std::string error() const { return m_error; }
+  void setError(const std::string& error) { m_error = error; }
+
   // Writes data in the stream.
   void write(const char* data, std::size_t length);
 
 private:
   int m_status;
+  HttpHeaders m_headers;
+  std::string m_error;
   std::ostream* m_stream;
 
   DISABLE_COPYING(HttpResponse);
