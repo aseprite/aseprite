@@ -63,6 +63,7 @@ void Param<ConvertLayerParam>::fromLua(lua_State* L, int index)
 
 struct ConvertLayerParams : public NewParams {
   Param<bool> ui{ this, true, "ui" };
+  Param<int> allowedFlips{ this, 0, "allowedFlips" };
   Param<ConvertLayerParam> to{ this, ConvertLayerParam::None, "to" };
 };
 
@@ -134,7 +135,7 @@ void ConvertLayerCommand::onExecute(Context* ctx)
   // Default options to convert a layer to a tilemap
   std::string tilesetName;
   int baseIndex = 1;
-  tile_flags matchFlags = 0;
+  tile_flags matchFlags = params().allowedFlips();
   Grid grid0 = site.grid();
   grid0.origin(gfx::Point(0, 0));
 
@@ -145,6 +146,7 @@ void ConvertLayerCommand::onExecute(Context* ctx)
     tilesetInfo.allowNewTileset = true;
     tilesetInfo.allowExistentTileset = false;
     tilesetInfo.grid = grid0;
+    tilesetInfo.matchFlags = matchFlags;
 
     gen::TilesetSelectorWindow window;
     TilesetSelector tilesetSel(sprite, tilesetInfo);
