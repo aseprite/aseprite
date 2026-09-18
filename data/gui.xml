@@ -585,6 +585,7 @@
       <key command="Screenshot" shortcut="F12">
         <param name="steam" value="true" />
       </key>
+      <command id="ToggleConnectivity" group="tool_commands" />
     </commands>
 
     <!-- Keyboard shortcuts to select tools -->
