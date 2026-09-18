@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2026-present Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -14,9 +15,9 @@ namespace doc {
 
 class Cel;
 
-typedef std::vector<Cel*> CelList;
-typedef CelList::iterator CelIterator;
-typedef CelList::const_iterator CelConstIterator;
+using CelList = std::vector<Cel*>;
+using CelIterator = CelList::iterator;
+using CelConstIterator = CelList::const_iterator;
 
 } // namespace doc
 

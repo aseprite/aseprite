@@ -66,6 +66,7 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <iterator>
 #include <vector>
 
 namespace app {
@@ -1749,10 +1750,10 @@ void Timeline::onPaint(ui::PaintEvent& ev)
         data.it = layerPtr->findFirstCelIteratorAfter(firstRealFrame - 1);
 
         if (firstRealFrame > 0 && data.it != data.begin)
-          data.prevIt = data.it - 1;
+          data.prevIt = std::prev(data.it);
         else
           data.prevIt = data.end;
-        data.nextIt = (data.it != data.end ? data.it + 1 : data.end);
+        data.nextIt = (data.it != data.end ? std::next(data.it) : data.end);
 
         // Calculate link range for the active cel
         data.firstLink = data.end;
