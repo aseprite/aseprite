@@ -184,8 +184,10 @@ void Widget::setTextQuiet(const std::string& text)
 
 const text::FontRef& Widget::font() const
 {
-  if (!m_font && m_theme)
+  if (!m_font && m_theme) {
     m_font = m_theme->getWidgetFont(this);
+    m_blob.reset();
+  }
   return m_font;
 }
 
@@ -219,7 +221,7 @@ void Widget::setTheme(Theme* theme)
   assert_ui_thread();
 
   m_theme = theme;
-  m_font = nullptr;
+  m_font.reset();
 
   for (auto child : children())
     child->setTheme(theme);
@@ -237,7 +239,7 @@ void Widget::setStyle(Style* style)
   m_minSize = m_theme->calcMinSize(this, style);
   m_maxSize = m_theme->calcMaxSize(this, style);
   if (style->font())
-    m_font = style->font();
+    setFont(style->font());
 }
 
 // ===============================================================
@@ -1827,6 +1829,12 @@ void Widget::onBroadcastMouseMessage(const gfx::Point& screenPos, WidgetsList& t
 
 void Widget::onInitTheme(InitThemeEvent& ev)
 {
+  // Reset cached font and TextBlob
+  if (m_font != ev.theme()->getWidgetFont(this)) {
+    m_font.reset();
+    m_blob.reset();
+  }
+
   // Create a copy of the children list and iterate it, just in case a
   // initTheme() modifies this list (e.g. this can happen in some
   // strange cases with viewports, where scrollbars are added/removed
