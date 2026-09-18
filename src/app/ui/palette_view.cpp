@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -730,19 +730,30 @@ bool PaletteView::onProcessMessage(Message* msg)
 
       gfx::Point delta = static_cast<MouseMessage*>(msg)->wheelDelta();
 
+      const double speed = ui::get_wheel_speed_factor();
+
       if (msg->onlyCtrlPressed() || msg->onlyCmdPressed()) {
-        int z = delta.x - delta.y;
-        setBoxSize(m_boxsize + z);
+        const bool precise = static_cast<MouseMessage*>(msg)->preciseWheel();
+        const int step = ui::adjustWheelStep(delta.x - delta.y, precise, 4);
+        if (step != 0)
+          setBoxSize(m_boxsize + step);
       }
       else {
         gfx::Point scroll = view->viewScroll();
+        gfx::Point scrollDelta;
 
-        if (static_cast<MouseMessage*>(msg)->preciseWheel())
-          scroll += delta;
-        else
-          scroll += delta * 3 * boxSizePx();
+        if (static_cast<MouseMessage*>(msg)->preciseWheel()) {
+          scrollDelta = delta;
+          scrollDelta.x = scrollDelta.x * speed;
+          scrollDelta.y = scrollDelta.y * speed;
+        }
+        else {
+          const gfx::Size visible = view->visibleSize();
+          scrollDelta.x = delta.x * visible.w * speed / 10;
+          scrollDelta.y = delta.y * visible.h * speed / 10;
+        }
 
-        view->setViewScroll(scroll);
+        view->setViewScroll(scroll + scrollDelta);
       }
       break;
     }
