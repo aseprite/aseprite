@@ -104,6 +104,10 @@
 #include <memory>
 #include <optional>
 
+// We need to include this as the last header (to undef ERROR), as
+// sentry_wrapper.h can include <windows.h>.
+#include "base/log.h"
+
 namespace app {
 
 using namespace ui;
@@ -287,10 +291,10 @@ int App::initialize(const AppOptions& options)
 
   bool createLogInDesktop = false;
   switch (options.verboseLevel()) {
-    case AppOptions::kNoVerbose: base::set_log_level(ERROR); break;
-    case AppOptions::kVerbose:   base::set_log_level(INFO); break;
+    case AppOptions::kNoVerbose: base::set_log_level(LogLevel::ERROR); break;
+    case AppOptions::kVerbose:   base::set_log_level(LogLevel::INFO); break;
     case AppOptions::kHighlyVerbose:
-      base::set_log_level(VERBOSE);
+      base::set_log_level(LogLevel::VERBOSE);
       createLogInDesktop = true;
       break;
   }

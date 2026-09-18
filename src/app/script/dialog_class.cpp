@@ -1797,6 +1797,7 @@ int Dialog_modify(lua_State* L)
     // to modify dialog's properties (which might generate a relayout)
     // during an ongoing resize event.
     if (relayout && !dlg->window.isResizing()) {
+      gfx::Rect prelayoutBounds = dlg->window.bounds();
       dlg->window.layout();
 
       if (dlg->autofit != ui::NOALIGN) {
@@ -1865,6 +1866,10 @@ int Dialog_modify(lua_State* L)
                      }
                    });
       }
+
+      dlg->window.invalidate();
+      if (dlg->window.manager()->display())
+        dlg->window.manager()->display()->invalidateRect(prelayoutBounds);
     }
   }
   lua_pushvalue(L, 1);
