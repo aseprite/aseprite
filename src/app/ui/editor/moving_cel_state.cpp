@@ -288,9 +288,9 @@ void MovingCelState::onCommitMouseMove(Editor* editor, const gfx::PointF& newCur
 
   gfx::Region modifiedRegion;
 
-  for (size_t i = 0; i < m_celList.size(); ++i) {
-    Cel* cel = m_celList[i];
-    gfx::RectF celBounds = m_celStarts[i];
+  size_t i = 0;
+  for (Cel* cel : m_celList) {
+    gfx::RectF celBounds = m_celStarts[i++];
 
     // We have to invalidate regions even if cel->frame() !=
     // editor->frame(), just in case other editor is visible.
@@ -445,9 +445,9 @@ bool MovingCelState::restoreCelStartPosition() const
 
   // Here we put back all cels into their original coordinates (so we
   // can add the undo information from the start position).
-  for (size_t i = 0; i < m_celList.size(); ++i) {
-    Cel* cel = m_celList[i];
-    const gfx::RectF& celStart = m_celStarts[i];
+  size_t i = 0;
+  for (Cel* cel : m_celList) {
+    const gfx::RectF& celStart = m_celStarts[i++];
 
     if (cel->layer()->isReference()) {
       if (cel->boundsF() != celStart) {
