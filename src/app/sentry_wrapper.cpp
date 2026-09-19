@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2024  Igara Studio S.A.
+// Copyright (C) 2021-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -10,14 +10,18 @@
 
 #include "app/sentry_wrapper.h"
 
+#include "app/ini_file.h"
 #include "app/resource_finder.h"
 #include "base/fs.h"
 #include "base/log.h"
 #include "base/replace_string.h"
 #include "base/string.h"
+#include "base/time.h"
 #include "ver/info.h"
 
 #include "sentry.h"
+
+#define FLUSH_TIMEOUT 2500
 
 namespace app {
 
@@ -51,6 +55,8 @@ void Sentry::init()
 
   if (sentry_init(options) == 0)
     m_init = true;
+  else
+    LOG(ERROR, "Failed to initialize Sentry.\n");
 }
 
 Sentry::~Sentry()
@@ -122,6 +128,11 @@ bool Sentry::areThereCrashesToReport()
   return false;
 }
 
+bool Sentry::isInitialized()
+{
+  return (sentry_is_enabled() == 1);
+}
+
 // static
 void Sentry::addBreadcrumb(const char* message)
 {
@@ -145,12 +156,59 @@ void Sentry::addBreadcrumb(const std::string& message,
 
   sentry_value_t c = sentry_value_new_breadcrumb(nullptr, message.c_str());
   sentry_value_t d = sentry_value_new_object();
-  for (const auto& kv : data) {
-    LOG(VERBOSE, " - [%s]=%s\n", kv.first.c_str(), kv.second.c_str());
-    sentry_value_set_by_key(d, kv.first.c_str(), sentry_value_new_string(kv.second.c_str()));
+  for (const auto& [key, value] : data) {
+    LOG(VERBOSE, " - [%s]=%s\n", key.c_str(), value.c_str());
+    sentry_value_set_by_key(d, key.c_str(), sentry_value_new_string(value.c_str()));
   }
   sentry_value_set_by_key(c, "data", d);
   sentry_add_breadcrumb(c);
+}
+
+bool Sentry::sendFeedback(const Feedback& f)
+{
+  const auto consentPrev = sentry_user_consent_get();
+  sentry_user_consent_give();
+
+  sentry_value_t feedback =
+    sentry_value_new_feedback(f.comments.c_str(), f.email.c_str(), nullptr, nullptr);
+
+  sentry_scope_t* scope = sentry_scope_new();
+  sentry_scope_set_tag(scope, "feedback.source", "feedback-dialog");
+  sentry_scope_set_tag(scope, "feedback.type", f.type.c_str());
+
+  sentry_hint_t* hint = nullptr;
+  if (f.attachExtras) {
+    hint = sentry_hint_new();
+    const auto& logFilename = base::get_log_filename();
+    if (!logFilename.empty() && base::is_file(logFilename))
+      sentry_hint_attach_file(hint, logFilename.c_str());
+    sentry_hint_attach_file(hint, app::main_config_filename().c_str());
+  }
+
+  sentry_scope_capture_feedback(scope, feedback, hint);
+  sentry_scope_free(scope);
+
+  // Reset consent to what it was previously.
+  if (consentPrev == SENTRY_USER_CONSENT_REVOKED)
+    sentry_user_consent_revoke();
+  else if (consentPrev == SENTRY_USER_CONSENT_UNKNOWN)
+    sentry_user_consent_reset();
+
+  const base::tick_t start = base::current_tick();
+  int result = sentry_flush(FLUSH_TIMEOUT);
+
+  // Sentry doesn't seem to work consistently when, for example, there's no internet. Sometimes it
+  // fails and returns zero but usually it just lets it through with no complaints. This is a
+  // slightly hacky way to work around it and still report an error to the user, when things go
+  // unusually fast (tested execution time is usually around 200 ms), we assume there's been a
+  // problem. This issue tends to happen more reliably when the failed feedback is the first one the
+  // session. Sending feedback successfully and then attempting to send one when there's no
+  // connection fails correctly on Sentry's side.
+  // TODO: Needs testing outside my system and shouldn't exist, there's gotta be a better way.
+  if (result == 0 && (base::current_tick() - start) <= 10)
+    result = 1;
+
+  return (result == 0);
 }
 
 void Sentry::setupDirs(sentry_options_t* options)

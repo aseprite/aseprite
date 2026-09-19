@@ -1180,6 +1180,7 @@
         <separator id="enter_license_separator" />
         <item command="EnterLicense" id="enter_license" text="@.help_enter_license" group="help_enter_license" />
         <separator />
+        <item command="Feedback" text="@.help_feedback" group="help_feedback" />
         <item command="About" text="@.help_about" group="help_about" />
       </menu>
     </menu>

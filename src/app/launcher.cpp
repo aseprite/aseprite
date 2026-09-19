@@ -12,7 +12,6 @@
 #include "app/launcher.h"
 
 #include "app/i18n/strings.h"
-#include "base/exception.h"
 #include "base/launcher.h"
 #include "ui/alert.h"
 

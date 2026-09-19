@@ -1,0 +1,54 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2026-present  Igara Studio S.A. -->
+<gui>
+<window id="feedback" text="@.title">
+  <vbox>
+    <vbox expansive="true" minwidth="190">
+      <buttonset id="faces" columns="3" minheight="54">
+        <item icon="aseprite_feedback_positive" tooltip="@.positive_tooltip" tooltip_dir="top" />
+        <item icon="aseprite_feedback_neutral" tooltip="@.neutral_tooltip" tooltip_dir="top"/>
+        <item icon="aseprite_feedback_negative" tooltip="@.negative_tooltip" tooltip_dir="top"/>
+      </buttonset>
+
+      <vbox id="form" visible="false" expansive="true">
+        <view minheight="40" expansive="true">
+          <textedit id="comments" />
+        </view>
+
+        <entry maxsize="255" id="email" placeholder="@.email" />
+
+        <check id="attach_extras" text="@.attach_extras" tooltip="@.attach_extras_tooltip" tooltip_dir="top"/>
+      </vbox>
+
+      <vbox id="thank_you" visible="false">
+        <hbox border="4" expansive="true">
+          <boxfiller />
+          <image icon="aseprite_face_mouse" />
+          <boxfiller />
+          <label text="@.thanks" />
+          <boxfiller />
+        </hbox>
+      </vbox>
+      <vbox id="error" visible="false">
+        <hbox border="4" expansive="true">
+          <boxfiller />
+          <image icon="warning_box" />
+          <boxfiller />
+          <label text="@.error" />
+          <boxfiller />
+        </hbox>
+      </vbox>
+    </vbox>
+
+    <vbox id="action_buttons" visible="false">
+      <separator horizontal="true" />
+      <hbox>
+        <link text="@.learn_more" url="https://www.aseprite.org/feedback" />
+        <boxfiller />
+        <button text="@.submit" id="submit_button" minwidth="60" />
+        <button text="@general.close" closewindow="true" id="close" minwidth="60" />
+      </hbox>
+    </vbox>
+  </vbox>
+</window>
+</gui>
