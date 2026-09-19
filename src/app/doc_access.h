@@ -194,6 +194,10 @@ public:
   {
     ASSERT(m_doc != nullptr);
 
+    m_doc->unlock(m_lockResult);
+    if (m_lockResult != LockResult::OK)
+      throw CannotWriteDocException();
+
     // Don't create a backup for destroyed documents (e.g. documents
     // are destroyed when they are used internally by Aseprite or by
     // a script and then closed with Sprite:close())
@@ -202,8 +206,6 @@ public:
 
     m_doc->close();
     Doc* doc = m_doc;
-    unlock();
-
     delete doc;
     m_doc = nullptr;
   }
@@ -212,11 +214,13 @@ public:
   {
     ASSERT(m_doc != nullptr);
 
+    m_doc->unlock(m_lockResult);
+    if (m_lockResult != LockResult::OK)
+      throw CannotWriteDocException();
+
     Context* ctx = (Context*)m_doc->context();
     m_doc->close();
     Doc* doc = m_doc;
-    unlock();
-
     ctx->closeDocument(doc);
     m_doc = nullptr;
   }
