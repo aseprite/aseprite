@@ -1,0 +1,99 @@
+name: Downloadable Windows build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    name: Build latest stable release (Windows x64)
+    runs-on: windows-2022
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Find latest stable Aseprite release
+        id: release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $release = gh api repos/aseprite/aseprite/releases/latest | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0) { throw 'Could not fetch the latest release' }
+          if ($release.tag_name -notmatch '^v[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?$') {
+            throw "Unexpected stable release tag: $($release.tag_name)"
+          }
+          "tag=$($release.tag_name)" >> $env:GITHUB_OUTPUT
+
+      - name: Check out stable source and dependencies
+        uses: actions/checkout@v4
+        with:
+          repository: aseprite/aseprite
+          ref: ${{ steps.release.outputs.tag }}
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Set up Visual Studio x64 compiler
+        uses: TheMrMilchmann/setup-msvc-dev@v4
+        with:
+          arch: x64
+
+      - name: Download matching Windows graphics library
+        run: |
+          set -euo pipefail
+          skia_url=$(bash laf/misc/skia-url.sh release windows x64)
+          curl --fail --location --retry 3 --ssl-revoke-best-effort "$skia_url" -o skia.zip
+          unzip -q skia.zip -d skia
+          test -f skia/out/Release-x64/skia.lib
+
+      - name: Configure and compile
+        run: |
+          set -euo pipefail
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_C_COMPILER=cl \
+            -DCMAKE_CXX_COMPILER=cl \
+            -DLAF_BACKEND=skia \
+            -DENABLE_SCRIPTING=ON \
+            -DENABLE_TESTS=OFF \
+            -DSKIA_DIR="$PWD/skia" \
+            -DSKIA_LIBRARY_DIR="$PWD/skia/out/Release-x64" \
+            -DSKIA_LIBRARY="$PWD/skia/out/Release-x64/skia.lib"
+          cmake --build build --target aseprite --parallel 4
+
+      - name: Verify executable and run CLI tests
+        run: |
+          set -euo pipefail
+          build/bin/aseprite.exe --version
+          test -d build/bin/data
+          export ASEPRITE="$PWD/build/bin/aseprite.exe"
+          cd tests
+          bash run-tests.sh
+
+      - name: Package app with supporting files
+        shell: pwsh
+        env:
+          ASEPRITE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          New-Item -ItemType Directory -Path package | Out-Null
+          Copy-Item build/bin/* package/ -Recurse
+          Get-ChildItem package -Recurse -Filter *.pdb | Remove-Item
+          Copy-Item EULA.txt package/
+          @"
+          Aseprite $env:ASEPRITE_TAG for Windows x64
+
+          Extract the entire ZIP before launching aseprite.exe.
+          Keep the data folder beside aseprite.exe.
+          Built from https://github.com/aseprite/aseprite/tree/$env:ASEPRITE_TAG
+          "@ | Set-Content package/README-Windows.txt
+
+      - name: Upload downloadable Windows app
+        uses: actions/upload-artifact@v4
+        with:
+          name: Aseprite-${{ steps.release.outputs.tag }}-Windows-x64
+          path: package/
+          if-no-files-found: error
+          retention-days: 7
