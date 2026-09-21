@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2025  Igara Studio S.A.
+// Copyright (c) 2019-present  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -55,12 +55,7 @@ Tileset::Tileset(Sprite* sprite, const Tileset* other)
   , m_grid(other->grid())
   , m_tiles(other->size())
 {
-  for (tile_index ti = 0; ti < other->size(); ++ti) {
-    const ImageRef image = other->get(ti);
-    set(ti, ImageRef(Image::createCopy(image.get())));
-    setTileData(ti, other->getTileData(ti));
-  }
-  setUserData(other->userData());
+  copyTileset(other);
 }
 
 // static
@@ -73,8 +68,7 @@ Tileset* Tileset::MakeCopyWithoutImages(const Tileset* tileset)
 Tileset* Tileset::MakeCopyWithoutImagesForSprite(const Tileset* tileset, Sprite* sprite)
 {
   std::unique_ptr<Tileset> copy(new Tileset(sprite, tileset->grid(), tileset->size()));
-  copy->setName(tileset->name());
-  copy->setUserData(tileset->userData());
+  copy->copyTileset(tileset);
   return copy.release();
 }
 
@@ -136,7 +130,7 @@ void Tileset::setCompressedData(const base::buffer& buffer) const
 int Tileset::getMemSize() const
 {
   int size = sizeof(Tileset) + m_name.size();
-  for (auto& tile : const_cast<Tileset*>(this)->m_tiles) {
+  for (const auto& tile : m_tiles) {
     ASSERT(tile.image);
     size += tile.image->getMemSize();
   }
@@ -252,6 +246,28 @@ void Tileset::erase(const tile_index ti)
   rehash();
 }
 
+bool Tileset::operator==(const Tileset& other) const
+{
+  if (m_grid.tileSize() != other.m_grid.tileSize() || m_name != other.m_name ||
+      m_matchFlags != other.m_matchFlags || m_tiles.size() != other.m_tiles.size())
+    return false;
+
+  size_t n = m_tiles.size();
+  for (size_t i = 0; i < n; ++i) {
+    if (m_tiles[i].image == nullptr && m_tiles[i].image == nullptr)
+      continue;
+
+    if (m_tiles[i].image && m_tiles[i].image) {
+      if (is_same_image(m_tiles[i].image.get(), m_tiles[i].image.get()))
+        continue;
+    }
+
+    return false;
+  }
+
+  return true;
+}
+
 ImageRef Tileset::makeEmptyTile()
 {
   ImageSpec spec = m_sprite->spec();
@@ -265,7 +281,7 @@ void Tileset::setExternal(const std::string& filename, const tileset_index& tsi)
   m_external.tileset = tsi;
 }
 
-bool Tileset::findTileIndex(const ImageRef& tileImage, tile_index& ti)
+bool Tileset::findTileIndex(const ImageRef& tileImage, tile_index& ti) const
 {
   ASSERT(tileImage);
   if (!tileImage) {
@@ -341,6 +357,25 @@ void Tileset::notifyRegenerateEmptyTile()
   rehash();
 }
 
+void Tileset::copyTileset(const Tileset* other)
+{
+  if (m_grid != other->grid())
+    m_grid = other->grid();
+
+  if (m_tiles.size() != other->size())
+    m_tiles.resize(other->size());
+
+  for (tile_index ti = 0; ti < other->size(); ++ti) {
+    const ImageRef image = other->get(ti);
+    set(ti, ImageRef(Image::createCopy(image.get())));
+    setTileData(ti, other->getTileData(ti));
+  }
+  setName(other->name());
+  setUserData(other->userData());
+  setBaseIndex(other->baseIndex());
+  setMatchFlags(other->matchFlags());
+}
+
 void Tileset::removeFromHash(const tile_index ti, const bool adjustIndexes)
 {
   auto end = m_hash.end();
@@ -410,15 +445,15 @@ void Tileset::rehash()
   discardCompressedData();
 }
 
-TilesetHashTable& Tileset::hashTable()
+TilesetHashTable& Tileset::hashTable() const
 {
   if (m_hash.empty()) {
     // Re-hash/create the whole hash table from scratch
     tile_index ti = 0;
     for (auto& tile : m_tiles)
-      hashImage(ti++, tile.image);
+      const_cast<Tileset*>(this)->hashImage(ti++, tile.image);
   }
-  return m_hash;
+  return const_cast<Tileset*>(this)->m_hash;
 }
 
 int Tileset::tilemapsCount() const
