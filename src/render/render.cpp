@@ -1086,7 +1086,7 @@ void Render::renderPlan(RenderPlan& plan,
                     image,
                     cel,
                     celImage,
-                    layer,
+                    layer->tileset(),
                     pal,
                     celBounds,
                     gfx::Clip(area.dst.x + rc.x - area.src.x, area.dst.y + rc.y - area.src.y, rc),
@@ -1100,7 +1100,7 @@ void Render::renderPlan(RenderPlan& plan,
                 renderCel(image,
                           cel,
                           celImage,
-                          layer,
+                          layer->tileset(),
                           pal,
                           celBounds,
                           area,
@@ -1168,8 +1168,7 @@ void Render::renderPlan(RenderPlan& plan,
                   m_extraCel,
                   m_sprite,
                   m_extraImage,
-                  m_currentLayer, // Current layer (useful to use get the tileset if extra cel is a
-                                  // tilemap)
+                  m_currentLayer ? m_currentLayer->tileset() : nullptr,
                   m_sprite->palette(frame),
                   m_extraCel->bounds(),
                   gfx::Clip(area.dst.x + extraArea.x - area.src.x,
@@ -1186,7 +1185,7 @@ void Render::renderCel(Image* dst_image,
                        const Cel* cel,
                        const Sprite* sprite,
                        const Image* cel_image,
-                       const Layer* cel_layer,
+                       const Tileset* tileset,
                        const Palette* pal,
                        const gfx::RectF& celBounds,
                        const gfx::Clip& area,
@@ -1203,7 +1202,7 @@ void Render::renderCel(Image* dst_image,
   renderCel(dst_image,
             cel,
             cel_image,
-            cel_layer,
+            tileset,
             pal,
             celBounds,
             area,
@@ -1215,7 +1214,7 @@ void Render::renderCel(Image* dst_image,
 void Render::renderCel(Image* dst_image,
                        const Cel* cel,
                        const Image* cel_image,
-                       const Layer* cel_layer,
+                       const Tileset* tileset,
                        const Palette* pal,
                        const gfx::RectF& celBounds,
                        const gfx::Clip& area,
@@ -1240,27 +1239,21 @@ void Render::renderCel(Image* dst_image,
     area.size.w,
     area.size.h);
 
-  if (cel_layer && cel_image->pixelFormat() == IMAGE_TILEMAP) {
-    ASSERT(cel_layer->isTilemap());
-
-    if (area.size.w < 1 || area.size.h < 1)
+  if (cel_image->pixelFormat() == IMAGE_TILEMAP) {
+    ASSERT(tileset);
+    if (!tileset || area.size.w < 1 || area.size.h < 1)
       return;
 
-    auto tilemapLayer = static_cast<const LayerTilemap*>(cel_layer);
-    doc::Grid grid = tilemapLayer->tileset()->grid();
+    doc::Grid grid = tileset->grid();
     grid.origin(grid.origin() + gfx::Point(celBounds.origin()));
 
     // Is the 'm_previewTileset' set to be used with this layer?
-    const Tileset* tileset;
     if (m_previewTileset && cel && checkIfWeShouldUsePreview(cel)) {
       tileset = m_previewTileset;
-    }
-    else {
-      tileset = tilemapLayer->tileset();
       ASSERT(tileset);
-      if (!tileset)
-        return;
     }
+    if (!tileset)
+      return;
 
     gfx::Rect tilesToDraw = grid.canvasToTile(m_proj.remove(gfx::Rect(area.src, area.size)));
 

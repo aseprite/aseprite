@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2023  Igara Studio S.A.
+// Copyright (c) 2019-present  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -175,6 +175,15 @@ std::vector<gfx::Point> Grid::tilesInCanvasRegion(const gfx::Region& rgn) const
       result.push_back(gfx::Point(it.x() + bounds.x, it.y() + bounds.y));
   }
   return result;
+}
+
+bool Grid::operator==(const Grid& other) const
+{
+  return m_tileSize == other.m_tileSize && m_origin == other.m_origin &&
+         m_tileCenter == other.m_tileCenter && m_tileOffset == other.m_tileOffset &&
+         m_oddRowOffset == other.m_oddRowOffset && m_oddColOffset == other.m_oddColOffset &&
+         hasMask() == other.hasMask() &&
+         (!m_mask || is_same_image(m_mask.get(), other.m_mask.get()));
 }
 
 } // namespace doc

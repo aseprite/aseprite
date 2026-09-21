@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 // Copyright (C) 2016  Carlo Caputo
 //
@@ -48,7 +48,7 @@ os::SurfaceRef get_cel_thumbnail(ui::Display* display,
                    cel,
                    cel->sprite(),
                    cel->image(),
-                   cel->layer(),
+                   cel->layer()->tileset(),
                    palette,
                    gfx::Rect(gfx::Point(0, 0), cel->bounds().size()),
                    gfx::Clip(gfx::Rect(gfx::Point(0, 0), newSize)),

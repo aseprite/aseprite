@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -243,7 +243,7 @@ public:
                                const gfx::Point& mousePos,
                                ZoomBehavior zoomBehavior);
 
-  void pasteImage(const Image* image,
+  void pasteImage(const ImageRef& image,
                   const Mask* mask = nullptr,
                   const gfx::Point* position = nullptr,
                   const Tileset* srcTileset = nullptr);

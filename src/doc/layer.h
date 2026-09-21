@@ -30,6 +30,7 @@ class Layer;
 class LayerGroup;
 class LayerImage;
 class Sprite;
+class Tileset;
 
 //////////////////////////////////////////////////////////////////////
 // Layer class
@@ -153,6 +154,7 @@ public:
   }
 
   virtual Grid grid() const;
+  virtual Tileset* tileset() const { return nullptr; }
 
   // Cels management
 

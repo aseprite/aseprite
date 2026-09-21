@@ -2863,7 +2863,7 @@ void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
   }
 }
 
-void Editor::pasteImage(const Image* image,
+void Editor::pasteImage(const ImageRef& image,
                         const Mask* mask,
                         const gfx::Point* position,
                         const Tileset* srcTileset)
@@ -2953,14 +2953,56 @@ void Editor::pasteImage(const Image* image,
   m_brushPreview.hide();
 
   Mask mask2(*mask);
-  position ? mask2.setOrigin(position->x, position->y) : mask2.setOrigin(x, y);
+  if (position)
+    mask2.setOrigin(position->x, position->y);
+  else
+    mask2.setOrigin(x, y);
 
-  PixelsMovementPtr pixelsMovement(
-    new PixelsMovement(UIContext::instance(), site, image, &mask2, "Paste", &m_tiledModeHelper));
+  // If we are copying a tilemap into another layer, we'll convert the
+  // tilemap into an image if both tilesets don't match.
+  ImageRef pastedImage;
+  Tileset* dstTileset = site.tileset();
+  if (image->colorMode() == ColorMode::TILEMAP && srcTileset &&
+      (!dstTileset || *srcTileset != *dstTileset ||
+       // In case we are pasting a tilemap in the same layer but in pixel mode,
+       // we rasterize the tilemap anyway.
+       site.tilemapMode() == TilemapMode::Pixels)) {
+    const auto& grid = srcTileset->grid();
+    Size dstSize = image->size();
+    dstSize = grid.tilemapSizeToCanvas(dstSize);
 
-  // Adjust image when copying between tilemap layers
-  if (site.tilemapMode() == TilemapMode::Tiles && srcTileset != nullptr)
-    pixelsMovement->remapTilesForPaste(srcTileset);
+    // Here we rasterize the tilemap.
+    const doc::PixelFormat dstPixelFormat = sprite->pixelFormat();
+    pastedImage.reset(Image::create(dstPixelFormat, dstSize.w, dstSize.h));
+    render::Render().renderCel(pastedImage.get(),
+                               // TODO there is no "source cel", we are using the "destination cel"
+                               site.cel(),
+                               sprite,
+                               image.get(),
+                               srcTileset,
+                               sprite->palette(site.frame()),
+                               pastedImage->bounds(),
+                               gfx::Clip(0, 0, pastedImage->bounds()),
+                               255,
+                               doc::BlendMode::NORMAL);
+
+    // We change to pixels mode because we are pasting the rasterized
+    // tilemap.
+    if (site.tilemapMode() == TilemapMode::Tiles) {
+      site.tilemapMode(TilemapMode::Pixels);
+      site.tilesetMode(TilesetMode::Auto);
+    }
+  }
+  else {
+    pastedImage = image;
+  }
+
+  PixelsMovementPtr pixelsMovement(new PixelsMovement(UIContext::instance(),
+                                                      site,
+                                                      pastedImage,
+                                                      &mask2,
+                                                      "Paste",
+                                                      &m_tiledModeHelper));
 
   setState(EditorStatePtr(new MovingPixelsState(this, NULL, pixelsMovement, NoHandle)));
 }
