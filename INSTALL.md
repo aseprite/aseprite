@@ -93,9 +93,9 @@ On SUSE:
     sudo zypper install gcc-c++ clang cmake ninja unzip libX11-devel libXcursor-devel libXi-devel libXrandr-devel Mesa-libGL-devel fontconfig-devel
 
 On Void:
-    
+
     sudo xbps-install -S gcc clang cmake ninja unzip libx11-devel libxcursor-devel libxi-devel libxrandr-devel MesaLib-devel fontconfig-devel libwebp-devel
-    
+
 # Automatic Building
 
 We offer a new [build script](build.sh) that automates and help you to
