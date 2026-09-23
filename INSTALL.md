@@ -94,7 +94,7 @@ On SUSE:
 
 On Void:
     
-    sudo xbps-install gcc clang cmake ninja unzip libx11-devel libxcursor-devel libxi-devel libxrandr-devel MesaLib-devel fontconfig-devel libwebp-devel
+    sudo xbps-install -S gcc clang cmake ninja unzip libx11-devel libxcursor-devel libxi-devel libxrandr-devel MesaLib-devel fontconfig-devel libwebp-devel
     
 # Automatic Building
 
