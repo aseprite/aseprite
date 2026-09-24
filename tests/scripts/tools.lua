@@ -2,7 +2,6 @@
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
-
 dofile('./test_utils.lua')
 
 local rgba = app.pixelColor.rgba
@@ -669,6 +668,35 @@ do
                1, 0, 0, 0, 0,  0, 0, 0, 0, 1,
                0, 0, 0, 1, 2,  2, 1, 0, 0, 0,
                0, 0, 1, 2, 3,  3, 2, 1, 0, 0 })
+end
+
+----------------------------------------------------------------------
+-- yin-yang symmetry test
+----------------------------------------------------------------------
+
+do
+  local s = Sprite(5, 5, ColorMode.RGB)
+  local c = rgba(255, 0, 0)
+  cel = s.cels[1]
+
+  -- Enable yin-yang symmetry (mirror rotated 180°)
+  local pref = app.preferences
+  local docPref = pref.document(s)
+  pref.symmetry_mode.enabled = true
+  docPref.symmetry.mode = 16 -- YIN_YANG = 16
+  docPref.symmetry.x_axis = 2
+  docPref.symmetry.y_axis = 2
+
+  local b = Brush { size=1 }
+  app.fgColor = c
+  app.useTool{ tool=pencil, brush=b, points={ Point(3, 1) } }
+
+  -- Drawing at (3,1) must also draw the rotated-180 pixel at (0,2)
+  expect_eq(cel.bounds, Rectangle(0, 1, 4, 2))
+  expect_img(cel.image,
+             { 0, 0, 0, c,
+               c, 0, 0, 0 })
+  app.undo()
 end
 
 ----------------------------------------------------------------------
