@@ -51,9 +51,91 @@
 #include <cstdarg>
 #include <cstring>
 
+#if LAF_LINUX || LAF_MACOS
+  #include <sys/stat.h>
+  #include <unistd.h>
+#elif LAF_WINDOWS
+  #include <windows.h>
+#endif
+
 namespace app {
 
 using namespace base;
+
+class SafeSave {
+public:
+  SafeSave(std::string& filename, FileOp* fop, bool enabled)
+    : m_filename(filename)
+    , m_fop(fop)
+    , m_enabled(enabled)
+  {
+    if (!m_enabled)
+      return;
+
+#if LAF_LINUX || LAF_MACOS
+    if (base::is_file(m_filename)) {
+      struct stat sts;
+      if (stat(m_filename.c_str(), &sts) == 0) {
+        m_restoreAttrs = true;
+        m_mode = sts.st_mode;
+      }
+    }
+#elif LAF_WINDOWS
+    if (base::is_file(m_filename))
+      m_fileAttributes = ::GetFileAttributes(base::from_utf8(m_filename).c_str());
+#endif
+
+    auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+    m_tempFilename = base::join_path(
+      base::get_file_path(m_filename),
+      fmt::format("{}_{}.tmp", base::get_file_name(m_filename), now));
+    std::swap(m_filename, m_tempFilename);
+  }
+
+  ~SafeSave()
+  {
+    if (!m_enabled)
+      return;
+    std::swap(m_filename, m_tempFilename);
+    if (!m_fop->hasError() && !m_fop->isStop()) {
+      try {
+        base::move_file(m_tempFilename, m_filename, true);
+#if LAF_LINUX || LAF_MACOS
+        if (m_restoreAttrs)
+          chmod(m_filename.c_str(), m_mode);
+#elif LAF_WINDOWS
+        if (m_fileAttributes != INVALID_FILE_ATTRIBUTES)
+          ::SetFileAttributes(base::from_utf8(m_filename).c_str(), m_fileAttributes);
+#endif
+      }
+      catch (const std::exception& e) {
+        m_fop->setError("Error overwriting file: %s\n", e.what());
+      }
+    }
+    else {
+      if (base::is_file(m_tempFilename)) {
+        try {
+          base::delete_file(m_tempFilename);
+        }
+        catch (const std::exception& e) {
+          m_fop->setError("Error deleting temporary file: %s\n", e.what());
+        }
+      }
+    }
+  }
+
+private:
+  std::string& m_filename;
+  std::string m_tempFilename;
+  FileOp* m_fop;
+  bool m_enabled;
+#if LAF_LINUX || LAF_MACOS
+  bool m_restoreAttrs = false;
+  mode_t m_mode = 0;
+#elif LAF_WINDOWS
+  DWORD m_fileAttributes = INVALID_FILE_ATTRIBUTES;
+#endif
+};
 
 class FileOp::FileAbstractImageImpl : public FileAbstractImage {
 public:
@@ -996,6 +1078,8 @@ void FileOp::operate(IFileOpProgress* progress)
           // Make directories
           makeDirectories();
 
+          SafeSave safeSave(m_filename, this, m_config.safeSave);
+
           // Call the "save" procedure... did it fail?
           if (!m_format->save(this)) {
             setError("Error saving frame %d in the file \"%s\"\n",
@@ -1021,6 +1105,8 @@ void FileOp::operate(IFileOpProgress* progress)
       if (m_abstractImage) {
         m_abstractImage->setSpecSize(m_roi.fileCanvasSize(), m_roi.fileCanvasSize());
       }
+
+      SafeSave safeSave(m_filename, this, m_config.safeSave);
 
       // Call the "save" procedure.
       if (!m_format->save(this)) {

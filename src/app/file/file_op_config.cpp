@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -28,6 +28,7 @@ void FileOpConfig::fillFromPreferences()
   fitCriteria = pref.quantization.fitCriteria();
   cacheCompressedTilesets = pref.tileset.cacheCompressedTilesets();
   composeGroups = pref.experimental.composeGroups();
+  safeSave = pref.experimental.safeSave();
 }
 
 } // namespace app
