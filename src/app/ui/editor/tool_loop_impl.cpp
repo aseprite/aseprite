@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -406,7 +406,9 @@ public:
   render::DitheringMatrix getDitheringMatrix() override
   {
     // TODO add support when UI is not enabled
-    return App::instance()->contextBar()->ditheringMatrix();
+    if (auto* ctx = App::instance()->contextBar())
+      return ctx->ditheringMatrix();
+    return render::DitheringMatrix();
   }
 
   render::DitheringAlgorithmBase* getDitheringAlgorithm() override
@@ -418,7 +420,9 @@ public:
   render::GradientType getGradientType() override
   {
     // TODO add support when UI is not enabled
-    return App::instance()->contextBar()->gradientType();
+    if (auto* ctx = App::instance()->contextBar())
+      return ctx->gradientType();
+    return render::GradientType::Linear;
   }
 
   tools::DynamicsOptions getDynamics() override { return m_dynamics; }
