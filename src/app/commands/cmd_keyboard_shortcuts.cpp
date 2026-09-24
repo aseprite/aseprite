@@ -205,13 +205,28 @@ private:
     Shortcut origShortcut = m_key->shortcuts()[index];
     SelectShortcut window(origShortcut, m_key->keycontext(), m_keys);
     window.openWindowInForeground();
-
+    bool conflict = false;
     if (window.isModified()) {
-      m_key->disableShortcut(origShortcut, KeySource::UserDefined);
-      if (!window.shortcut().isEmpty())
-        m_key->add(window.shortcut(), KeySource::UserDefined, m_keys);
+    for (KeyPtr& key : m_keys) {
+      if (key.get() != m_key.get() && key->keycontext() == m_key->keycontext() && key->hasShortcut(window.shortcut()) &&
+        // Tools can contain the same keyboard shortcut
+        (key->type() != KeyType::Tool || m_key.get() == nullptr || m_key->type() != KeyType::Tool) &&
+        // DragActions can share the same keyboard shortcut (e.g. to
+        // change different values using different DragVectors)
+        (key->type() != KeyType::DragAction || m_key.get() == nullptr ||
+        m_key->type() != KeyType::DragAction)) {
+        conflict = true;
+        break;
+      }
     }
-
+    if (conflict) {
+      if (ui::Alert::show(Strings::alerts_shortcut_overwrite_alert(window.shortcut().toString())) != 1)
+          return;
+    }
+    m_key->disableShortcut(origShortcut, KeySource::UserDefined);
+    if (!window.shortcut().isEmpty())
+      m_key->add(window.shortcut(), KeySource::UserDefined, m_keys);
+    }
     this->window()->layout();
   }
 
@@ -224,7 +239,7 @@ private:
 
     if (ui::Alert::show(Strings::alerts_delete_shortcut(shortcut.toString())) != 1)
       return;
-
+    
     m_key->disableShortcut(shortcut, KeySource::UserDefined);
     window()->layout();
   }
@@ -250,10 +265,25 @@ private:
 
         m_menuKeys[m_menuitem] = m_key;
       }
-
+      bool conflict = false;
+      for (KeyPtr& key : m_keys) {
+        if (key.get() != m_key.get() && key->keycontext() == m_key->keycontext() && key->hasShortcut(window.shortcut()) &&
+          // Tools can contain the same keyboard shortcut
+          (key->type() != KeyType::Tool || m_key.get() == nullptr || m_key->type() != KeyType::Tool) &&
+          // DragActions can share the same keyboard shortcut (e.g. to
+          // change different values using different DragVectors)
+          (key->type() != KeyType::DragAction || m_key.get() == nullptr ||
+          m_key->type() != KeyType::DragAction)) {
+          conflict = true;
+          break;
+        }
+      }
+      if (conflict) {
+        if (ui::Alert::show(Strings::alerts_shortcut_overwrite_alert(window.shortcut().toString())) != 1)
+            return;
+      }
       m_key->add(window.shortcut(), KeySource::UserDefined, m_keys);
     }
-
     this->window()->layout();
   }
 
