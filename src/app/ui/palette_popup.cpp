@@ -48,7 +48,10 @@ PalettePopup::PalettePopup()
   m_paletteListBox.FinishLoading.connect([this] { onSearchChange(); });
   m_popup->search()->Change.connect([this] { onSearchChange(); });
   m_popup->refresh()->Click.connect([this] { onRefresh(); });
-  m_popup->loadPal()->Click.connect([this] { onLoadPal(); m_popup->closeWindow(); });
+  m_popup->loadPal()->Click.connect([this] {
+    onLoadPal();
+    m_popup->closeWindow();
+  });
   m_popup->openFolder()->Click.connect([this] { onOpenFolder(); });
 
   m_popup->view()->attachToView(&m_paletteListBox);
