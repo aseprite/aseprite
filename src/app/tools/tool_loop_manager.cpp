@@ -459,7 +459,10 @@ void ToolLoopManager::adjustPointWithDynamics(const Pointer& pointer, Stroke::Pt
   }
 
   switch (m_dynamics.gradient) {
-    case DynamicSensor::Pressure: pt.gradient = p; break;
+    case DynamicSensor::Pressure:
+      if (hasP)
+        pt.gradient = p;
+      break;
     case DynamicSensor::Velocity: pt.gradient = v; break;
   }
 
