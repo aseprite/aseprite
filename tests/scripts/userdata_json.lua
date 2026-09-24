@@ -61,7 +61,7 @@ do
   -- Sprite properties
   if meta.properties then
     assert(meta.properties.user_defined_data == true)
-    assert(meta.properties["my_plugin"].foo == "sample data")
+    assert(meta.properties["my_plugin"].extension_defined_data == "sample data")
   end
 
   -- Layer properties
