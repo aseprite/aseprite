@@ -913,3 +913,94 @@ do
   app.preferences.tool("paint_bucket").floodfill.stop_at_grid = 0
   app.preferences.tool("paint_bucket").floodfill.refer_to = 0
 end
+
+----------------------------------------------------------------------
+-- square aspect constraint with non-square pixel ratios
+-- test for: https://github.com/aseprite/aseprite/issues/5659
+----------------------------------------------------------------------
+
+do
+  local function run_square_aspect_test(tc)
+    local spr = Sprite(20, 20)
+    local cel = spr.cels[1]
+    local ratio = Size{ w=tc.pixelRatioW, h=tc.pixelRatioH }
+    spr.pixelRatio = ratio
+
+    app.useTool{
+      tool=tc.tool,
+      color=tc.color,
+      squareAspect=true,
+      points={ Point(0, 0), Point(6, 6) }
+    }
+
+    assert(cel.bounds.width > 1 and cel.bounds.height > 1,
+           "shape was not drawn")
+
+    local pixelDx = cel.bounds.width-1
+    local pixelDy = cel.bounds.height-1
+    expect_eq(pixelDx, tc.expectedPixelDx)
+    expect_eq(pixelDy, tc.expectedPixelDy)
+
+    local visualW = pixelDx * ratio.w
+    local visualH = pixelDy * ratio.h
+    expect_eq(visualW, visualH)
+
+    if tc.expectedImage == "rect_frame_4x7" then
+      local c = tc.color.rgbaPixel
+      expect_img(cel.image,
+                 { c, c, c, c,
+                   c, 0, 0, c,
+                   c, 0, 0, c,
+                   c, 0, 0, c,
+                   c, 0, 0, c,
+                   c, 0, 0, c,
+                   c, c, c, c })
+    end
+
+    app.undo()
+  end
+
+  local cases = {
+    {
+      name = "rectangle 2:1",
+      tool = 'rectangle',
+      pixelRatioW = 2,
+      pixelRatioH = 1,
+      expectedPixelDx = 3,
+      expectedPixelDy = 6,
+      color = Color{ r=255, g=0, b=0 },
+      expectedImage = "rect_frame_4x7"
+    },
+    {
+      name = "ellipse 2:1",
+      tool = 'ellipse',
+      pixelRatioW = 2,
+      pixelRatioH = 1,
+      expectedPixelDx = 3,
+      expectedPixelDy = 6,
+      color = Color{ r=0, g=0, b=255 }
+    },
+    {
+      name = "rectangle 1:2",
+      tool = 'rectangle',
+      pixelRatioW = 1,
+      pixelRatioH = 2,
+      expectedPixelDx = 6,
+      expectedPixelDy = 3,
+      color = Color{ r=255, g=255, b=0 }
+    },
+    {
+      name = "line 45deg 2:1",
+      tool = 'line',
+      pixelRatioW = 2,
+      pixelRatioH = 1,
+      expectedPixelDx = 3,
+      expectedPixelDy = 6,
+      color = Color{ r=0, g=255, b=0 }
+    }
+  }
+
+  for _, tc in ipairs(cases) do
+    run_square_aspect_test(tc)
+  end
+end
