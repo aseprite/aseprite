@@ -80,6 +80,13 @@ public:
   }
 
 protected:
+  text::TextBlobRef onMakeTextBlob() const override
+  {
+    m_pathBlob.reset();
+    m_dimBlob.reset();
+    return ListItem::onMakeTextBlob();
+  }
+
   void onInitTheme(ui::InitThemeEvent& ev) override
   {
     Widget::onInitTheme(ev);
@@ -110,6 +117,7 @@ protected:
     // Paint other document fields
     Graphics* g = ev.graphics();
     PaintWidgetPartInfo pi(this);
+    pi.baseline = textBaseline();
     auto* theme = SkinTheme::get(this);
 
     // Paint full path
@@ -162,8 +170,8 @@ protected:
   }
 
   crash::DocumentInfo m_info;
-  text::TextBlobRef m_pathBlob;
-  text::TextBlobRef m_dimBlob;
+  mutable text::TextBlobRef m_pathBlob;
+  mutable text::TextBlobRef m_dimBlob;
 };
 
 class ClosedDocItem : public DataItem {
