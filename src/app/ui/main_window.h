@@ -48,6 +48,8 @@ namespace crash {
 class DataRecovery;
 }
 
+class DataRecoveryView;
+
 class MainWindow : public ui::Window,
                    public TabsDelegate {
 public:
@@ -79,6 +81,7 @@ public:
   void showNotification(INotificationDelegate* del);
   void showHomeOnOpen();
   void showHome();
+  void showDataRecovery();
   void showDefaultStatusBar();
   void showBrowser(const std::string& filename, const std::string& section = std::string());
   bool isHomeSelected() const;
@@ -95,10 +98,6 @@ public:
   void loadUserLayout(const Layout* layout);
   Dock* customizableDock() { return m_customizableDock; }
   void setCustomizeDock(bool enable);
-
-  // When crash::DataRecovery finish to search for sessions, this
-  // function is called.
-  void dataRecoverySessionsAreReady();
 
   void closeDataRecoveryView();
 
@@ -134,6 +133,7 @@ protected:
 private:
   DocView* getDocView();
   HomeView* getHomeView();
+  DataRecoveryView* getDataRecoveryView();
   void configureWorkspaceLayout();
   void saveTimelineConfiguration();
   void saveColorBarConfiguration();
@@ -158,6 +158,9 @@ private:
   std::unique_ptr<HomeView> m_homeView;
   std::unique_ptr<INotificationDelegate> m_scalePanic;
   std::unique_ptr<BrowserView> m_browserView;
+#ifdef ENABLE_DATA_RECOVERY
+  std::unique_ptr<DataRecoveryView> m_dataRecoveryView;
+#endif
   obs::scoped_connection m_timelineResizeConn;
   obs::scoped_connection m_colorBarResizeConn;
   obs::scoped_connection m_saveDockLayoutConn;

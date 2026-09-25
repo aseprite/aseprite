@@ -89,6 +89,7 @@ class app::skin::SkinTheme::BackwardCompatibility {
 
 public:
   void copyingStyles() { m_state = State::CopyingStyles; }
+  bool isCopyingStyles() const { return m_state == State::CopyingStyles; }
 
   // Called for each <style> element found in theme.xml.
   void onStyle(XMLElement* xmlStyle)
@@ -674,10 +675,14 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
       SkinPartPtr part = m_parts_by_id[part_id];
       if (!part)
         part = m_parts_by_id[part_id] = SkinPartPtr(new SkinPart);
+      else if (backward)
+        part->setDefault(!backward->isCopyingStyles());
 
       SkinPartPtr unscaledPart = m_unscaledParts_by_id[part_id];
       if (!unscaledPart)
         unscaledPart = m_unscaledParts_by_id[part_id] = SkinPartPtr(new SkinPart);
+      else if (backward)
+        unscaledPart->setDefault(!backward->isCopyingStyles());
 
       if (w > 0 && h > 0) {
         part->setSpriteBounds(gfx::Rect(x, y, w, h));
@@ -1920,6 +1925,29 @@ void SkinTheme::drawEntryCaret(ui::Graphics* g, Entry* widget, int x, int y)
 
   for (int u = x; u < x + caretSize.w; ++u)
     g->drawVLine(color, u, y + textHeight / 2 - caretSize.h / 2, caretSize.h);
+}
+
+std::pair<int, int> SkinTheme::readPreferredScaling(const std::string& themeId)
+{
+  std::string xml_filename(base::join_path(findThemePath(themeId), "theme.xml"));
+
+  XMLDocumentRef doc = open_xml(xml_filename);
+  XMLHandle handle(doc.get());
+
+  auto result = std::make_pair<int>(-1, -1);
+  {
+    XMLElement* xmlTheme = handle.FirstChildElement("theme").ToElement();
+    if (xmlTheme) {
+      const char* screenScaling = xmlTheme->Attribute("screenscaling");
+      const char* uiScaling = xmlTheme->Attribute("uiscaling");
+      if (screenScaling)
+        result.first = std::strtol(screenScaling, nullptr, 10);
+      if (uiScaling)
+        result.second = std::strtol(uiScaling, nullptr, 10);
+    }
+  }
+
+  return result;
 }
 
 SkinPartPtr SkinTheme::getToolPart(const char* toolId) const

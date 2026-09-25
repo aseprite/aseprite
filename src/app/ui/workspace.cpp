@@ -78,8 +78,6 @@ void Workspace::removeView(WorkspaceView* view)
   ASSERT(panel);
   if (panel)
     panel->removeView(view);
-
-  view->onAfterRemoveView(this);
 }
 
 bool Workspace::closeView(WorkspaceView* view, bool quitting)

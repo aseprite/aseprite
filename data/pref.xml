@@ -177,7 +177,7 @@
       <option id="timeline_position" type="TimelinePosition" default="TimelinePosition::BOTTOM" />
       <option id="timeline_layer_panel_width" type="int" default="100" />
       <option id="show_menu_bar" type="bool" default="true" />
-      <option id="recent_items" type="int" default="16" />
+      <option id="recent_items" type="int" default="32" />
       <option id="osx_async_view" type="bool" default="true" />
       <option id="allow_cli_scripts_full_access" type="bool" default="true" />
       <option id="x11_stylus_id" type="std::string" />
@@ -494,6 +494,10 @@
     </section>
     <section id="aseprite_format">
       <option id="cel_format" type="CelContentFormat" default="CelContentFormat::COMPRESSED" />
+    </section>
+    <section id="home">
+      <option id="mode" type="int" default="2" />
+      <option id="show_news" type="bool" default="true" />
     </section>
   </global>
 

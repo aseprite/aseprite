@@ -20,12 +20,14 @@ class HttpLoader;
 class NewsListBox : public ui::ListBox {
 public:
   NewsListBox();
-  ~NewsListBox();
+  ~NewsListBox() override;
 
   void reload();
 
-private:
+protected:
   bool onProcessMessage(ui::Message* msg) override;
+
+private:
   void onTick();
   void parseFile(const std::string& filename);
   bool validCache(const std::string& filename);

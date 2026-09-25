@@ -40,8 +40,6 @@ public:
   // the user cancels the operation.
   virtual bool onCloseView(Workspace* workspace, bool quitting) = 0;
 
-  virtual void onAfterRemoveView(Workspace* workspace) {}
-
   virtual void onTabPopup(Workspace* workspace) = 0;
 
   virtual InputChainElement* onGetInputChainElement() { return nullptr; }

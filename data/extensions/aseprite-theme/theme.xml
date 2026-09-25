@@ -30,6 +30,9 @@
         <dim id="brush_type_width" value="15"/>
         <dim id="color_selector_bar_size" value="8"/>
         <dim id="tree_item_spacing" value="2"/>
+        <dim id="recents_thumbnail_big" value="128"/>
+        <dim id="recents_thumbnail_small" value="64"/>
+        <dim id="recents_thumbnail_list" value="32"/>
     </dimensions>
     <colors>
         <color id="text" value="#000000"/>
@@ -86,6 +89,7 @@
         <color id="filelist_selected_row_face" value="#ff5555"/>
         <color id="filelist_disabled_row_text" value="#ffc8c8"/>
         <color id="workspace" value="#7d929e"/>
+        <color id="workspace_panel_face" value="#a1b1ba"/>
         <color id="workspace_text" value="#655561"/>
         <color id="workspace_link" value="#655561"/>
         <color id="workspace_link_hover" value="#ffff7d"/>
@@ -479,6 +483,7 @@
         <part id="right_diagonal_symmetry" x="176" y="240" w="13" h="13"/>
         <part id="left_diagonal_symmetry" x="192" y="240" w="13" h="13"/>
         <part id="corner_radius_field" x="288" y="128" w="16" h="16"/>
+        <part id="workspace_border" x="0" y="176" w1="3" w2="3" w3="3" h1="3" h2="3" h3="3"/>
     </parts>
     <styles>
         <style id="box"/>
@@ -588,14 +593,8 @@
             <text color="workspace_link" align="left"/>
             <text color="workspace_link_hover" align="left" state="mouse"/>
         </style>
-        <style id="workspace_update_link">
-            <background-border part="button_normal"/>
-            <background-border part="button_hot" state="mouse"/>
-            <background-border part="button_selected" state="selected"/>
-            <icon part="warning_box" align="right"/>
-            <text color="button_normal_text" align="left"/>
-            <text color="button_hot_text" align="left" state="mouse"/>
-            <text color="button_selected_text" align="left" state="selected"/>
+        <style id="workspace_attention_link" extends="workspace_link" padding-right="2">
+            <icon part="warning_box" align="right" x="2"/>
         </style>
         <style id="view_base">
             <background color="window_face"/>
@@ -614,6 +613,12 @@
             <border part="editor_normal"/>
             <border part="editor_selected" state="focus"/>
         </style>
+        <style id="workspace_news_header" border="4" border-left="6" border-right="6" border-bottom="0">
+            <background color="background"/>
+        </style>
+        <style id="workspace_update_notification" border="6" border-bottom="0">
+            <background color="background"/>
+        </style>
         <style id="colorbar_view">
             <border part="editor_normal"/>
             <border part="editor_selected" state="focus"/>
@@ -623,6 +628,7 @@
         <style id="menu_shade_view" extends="view">
             <background color="menuitem_hot_face" state="mouse"/>
         </style>
+        <style id="none"/>
         <style id="button">
             <background-border part="button_normal"/>
             <background-border part="button_hot" state="mouse"/>
@@ -864,6 +870,16 @@
             <background color="hot_face" state="mouse"/>
             <icon part="warning_box" align="center middle"/>
         </style>
+        <style id="workspace_separator" extends="horizontal_separator">
+            <background color="workspace"/>
+            <background-border part="separator_horz" color="workspace_text" align="middle"/>
+        </style>
+        <style id="workspace_panel">
+            <background color="workspace"/>
+            <background-border part="workspace_border" />
+            <newlayer />
+            <background color="workspace_panel_face"/>
+        </style>
         <style id="timeline">
             <background part="timeline_normal"/>
         </style>
@@ -1088,10 +1104,10 @@
             <icon part="icon_save" color="listitem_selected_text" align="left middle" x="1" state="selected"/>
             <icon part="icon_save" color="disabled" align="left middle" x="1" state="disabled"/>
         </style>
-        <style id="aseprite_face">
-            <icon part="aseprite_face"/>
-            <icon part="aseprite_face_mouse" state="mouse"/>
-            <icon part="aseprite_face_pushed" state="mouse selected"/>
+        <style id="aseprite_face" border-bottom="8">
+            <icon part="aseprite_face" align="left"/>
+            <icon part="aseprite_face_mouse" align="left" state="mouse"/>
+            <icon part="aseprite_face_pushed" align="left" state="mouse selected"/>
         </style>
         <style id="slider" border-top="4" border-bottom="5">
             <background part="slider_empty"/>
@@ -1149,7 +1165,7 @@
             <text color="button_selected_text" state="capture selected"/>
             <text color="background" x="1" y="1" state="disabled"/>
             <newlayer/>
-            <text color="disabled" state="disabled" />
+            <text color="disabled" state="disabled"/>
         </style>
         <style id="buttonset_item_text_top" extends="buttonset_item">
             <text color="button_normal_text" align="top"/>
