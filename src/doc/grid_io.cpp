@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -74,7 +74,7 @@ Grid read_grid(std::istream& is)
   grid.oddColOffset(oddColOffset);
 
   if (hasMask) {
-    ImageRef mask(read_image(is));
+    ImageRef mask(read_image(is, NullIdMapperIO()));
     if (mask)
       grid.setMask(mask);
   }

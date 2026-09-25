@@ -222,13 +222,15 @@ bool Clipboard::getNativeBitmap(NativeData& data)
 
         int bits = read32(is);
         if (bits & 1)
-          data.image.reset(doc::read_image(is, false));
+          data.image.reset(doc::read_image(is, doc::NullIdMapperIO()));
         if (bits & 2)
           data.mask.reset(doc::read_mask(is));
         if (bits & 4)
           data.palette.reset(doc::read_palette(is));
         if (bits & 8)
-          data.tileset.reset(doc::read_tileset(is, nullptr, false));
+          data.tileset.reset(doc::read_tileset(is,
+                                               nullptr,                 // sprite
+                                               doc::NullIdMapperIO())); // mapper
         if (data.image)
           return true;
       }

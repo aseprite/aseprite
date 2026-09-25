@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2025  Igara Studio S.A.
+// Copyright (C) 2025-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -8,11 +8,22 @@
 #define APP_CMD_WITH_SUSPEND_H_INCLUDED
 #pragma once
 
+#include "app/cmd_exception.h"
+#include "app/cmd_serial.h"
+#include "base/ints.h"
+#include "doc/io.h"
 #include "doc/object.h"
 
 #include <type_traits>
 
 namespace app { namespace cmd {
+
+// Functions used to serialize suspended objects into the undo history.
+void encode_suspended_object(doc::Object* obj, std::ostream& os);
+doc::Object* decode_suspended_object(const doc::ObjectType type,
+                                     std::istream& is,
+                                     const doc::IdMapperIO& mapper,
+                                     doc::SubObjectsIO* subObjects);
 
 // Auxiliary class to keep a doc::Object in memory but without IDs,
 // and to restore all its IDs when it's required.
@@ -42,7 +53,9 @@ public:
 
   T restore()
   {
-    ASSERT(m_object);
+    if (!m_object)
+      throw CmdException(fmt::format("No object ({}) to restore", typeid(T).name()));
+
     T object = m_object;
 
     m_object->restoreObject();
@@ -50,6 +63,23 @@ public:
     m_size = 0;
 
     return object;
+  }
+
+  void serializeObject(CmdSerial& s)
+  {
+    if (s.encoding()) {
+      std::stringstream stream;
+      encode_suspended_object(m_object, stream);
+      s(stream);
+    }
+    else if (s.decoding()) {
+      ASSERT(m_object == nullptr);
+
+      std::stringstream stream;
+      s(stream);
+      m_object = static_cast<T>(
+        decode_suspended_object(std::remove_pointer_t<T>::kType, stream, s, &s));
+    }
   }
 
 private:

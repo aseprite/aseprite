@@ -11,12 +11,9 @@
 
 #include "app/cmd.h"
 #include "app/cmd/with_document.h"
+#include "doc/mask.h"
 
 #include <memory>
-
-namespace doc {
-class Mask;
-}
 
 namespace app { namespace cmd {
 using namespace doc;
@@ -24,6 +21,8 @@ using namespace doc;
 class DeselectMask : public Cmd,
                      public WithDocument {
 public:
+  CMDTYPE('d', 'e', 'S', 'e', DeselectMask);
+
   DeselectMask(Doc* doc);
 
 protected:

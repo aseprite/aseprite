@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2022 Igara Studio S.A.
+// Copyright (c) 2022-present Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -13,7 +13,6 @@
 
 #include "base/serialization.h"
 #include "doc/cel_data.h"
-#include "doc/subobjects_io.h"
 #include "doc/user_data_io.h"
 #include "fixmath/fixmath.h"
 
@@ -51,8 +50,8 @@ void write_celdata(std::ostream& os, const CelData* celdata)
 }
 
 CelData* read_celdata(std::istream& is,
+                      const IdMapperIO& mapper,
                       SubObjectsIO* subObjects,
-                      const bool setId,
                       const SerialFormat serial)
 {
   ObjectId id = read32(is);
@@ -89,8 +88,10 @@ CelData* read_celdata(std::istream& is,
   celdata->setBounds(gfx::Rect(x, y, w, h));
   celdata->setOpacity(opacity);
   celdata->setUserData(userData);
-  if (setId)
-    celdata->setId(id);
+
+  auto id1 = mapper.mapId(id, ObjectType::CelData);
+  celdata->setId(id1);
+
   if (!boundsF.isEmpty())
     celdata->setBoundsF(boundsF);
   return celdata.release();

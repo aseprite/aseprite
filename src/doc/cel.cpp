@@ -36,7 +36,8 @@ Cel::Cel(frame_t frame, const CelDataRef& celData)
   , m_frame(frame)
   , m_data(celData)
 {
-  m_data->incRefs();
+  if (m_data)
+    m_data->incRefs();
 }
 
 Cel::~Cel()
