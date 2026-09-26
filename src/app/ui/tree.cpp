@@ -550,10 +550,13 @@ void Tree::onPaint(PaintEvent& ev)
         const auto buttonPoint = gfx::Point(
           point.x + (currentDepthSpacing - part->size().w - itemSpacing),
           guiscaled_center(point.y, height, part->size().h));
-        g->drawColoredRgbaSurface(part->bitmap(0),
-                                  textColors.text.color(),
-                                  buttonPoint.x,
-                                  buttonPoint.y);
+        if (m_coloredIcons)
+          g->drawRgbaSurface(part->bitmap(0), buttonPoint.x, buttonPoint.y);
+        else
+          g->drawColoredRgbaSurface(part->bitmap(0),
+                                    textColors.text.color(),
+                                    buttonPoint.x,
+                                    buttonPoint.y);
       }
 
       // Icon
@@ -561,10 +564,13 @@ void Tree::onPaint(PaintEvent& ev)
       if (node->icon()) {
         const gfx::Point nodePoint(textPoint.x + itemSpacing,
                                    guiscaled_center(textPoint.y, height, node->icon()->size().w));
-        g->drawColoredRgbaSurface(node->icon()->bitmap(0),
-                                  textColors.text.color(),
-                                  nodePoint.x,
-                                  nodePoint.y);
+        if (m_coloredIcons)
+          g->drawRgbaSurface(node->icon()->bitmap(0), nodePoint.x, nodePoint.y);
+        else
+          g->drawColoredRgbaSurface(node->icon()->bitmap(0),
+                                    textColors.text.color(),
+                                    nodePoint.x,
+                                    nodePoint.y);
         textPoint.x += node->icon()->size().w + (itemSpacing * 2);
       }
 

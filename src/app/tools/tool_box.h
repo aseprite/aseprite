@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -112,6 +112,8 @@ public:
   Intertwine* getIntertwinerById(const std::string& id);
   PointShape* getPointShapeById(const std::string& id);
   int getGroupsCount() const { return m_groups.size(); }
+
+  void applyToolsetLayout(const tinyxml2::XMLElement* toolsetElem);
 
 private:
   void loadTools();
