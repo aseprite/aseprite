@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2023 Igara Studio S.A.
+// Copyright (c) 2018-2025 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -65,6 +65,7 @@ void fill_ellipse(Image* image,
                   color_t color);
 
 bool is_plain_image(const Image* img, color_t c);
+bool is_color_used(const Image* img, color_t c);
 bool is_empty_image(const Image* img);
 
 int count_diff_between_images(const Image* i1, const Image* i2);
