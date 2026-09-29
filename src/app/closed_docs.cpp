@@ -21,7 +21,14 @@
 
 namespace app {
 
+static constexpr base::tick_t kForever = (base::tick_t(1) << 53) - 1;
+
 ClosedDocs::ClosedDocs(const Preferences& pref) : m_done(false)
+{
+  initialize(pref);
+}
+
+void ClosedDocs::initialize(const Preferences& pref)
 {
   if (pref.general.dataRecovery())
     m_dataRecoveryPeriodMSecs = int(1000.0 * 60.0 * pref.general.dataRecoveryPeriod());
@@ -30,7 +37,7 @@ ClosedDocs::ClosedDocs(const Preferences& pref) : m_done(false)
 
   if (pref.general.keepClosedSpriteOnMemory()) {
     if (pref.general.keepClosedSpriteOnMemoryFor() < 0)
-      m_keepClosedDocAliveForMSecs = std::numeric_limits<base::tick_t>::max();
+      m_keepClosedDocAliveForMSecs = kForever;
     else
       m_keepClosedDocAliveForMSecs = int(1000.0 * 60.0 *
                                          pref.general.keepClosedSpriteOnMemoryFor());
@@ -42,6 +49,7 @@ ClosedDocs::ClosedDocs(const Preferences& pref) : m_done(false)
                  "dataRecoveryPeriod",
                  m_dataRecoveryPeriodMSecs,
                  "keepClosedDocs",
+                 pref.general.keepClosedSpriteOnMemory() ? "enabled" : "disabled",
                  m_keepClosedDocAliveForMSecs);
 }
 
@@ -60,6 +68,12 @@ ClosedDocs::~ClosedDocs()
   }
 
   ASSERT(m_docs.empty());
+}
+
+void ClosedDocs::updateFromPref(const Preferences& pref)
+{
+  initialize(pref);
+  m_cv.notify_one();
 }
 
 bool ClosedDocs::hasClosedDocs()
@@ -89,7 +103,7 @@ void ClosedDocs::addClosedDoc(Doc* doc)
 
     if (!m_thread.joinable())
       m_thread = std::thread([this] { backgroundThread(); });
-    else
+    else if (m_keepClosedDocAliveForMSecs < kForever)
       m_cv.notify_one();
   }
 
@@ -167,12 +181,7 @@ void ClosedDocs::backgroundThread()
   std::unique_lock<std::mutex> lock(m_mutex);
   while (!m_done) {
     base::tick_t now = base::current_tick();
-    base::tick_t waitForMSecs = std::numeric_limits<base::tick_t>::max();
-
-    if (m_keepClosedDocAliveForMSecs == std::numeric_limits<base::tick_t>::max()) {
-      m_done = true;
-      continue;
-    }
+    base::tick_t waitForMSecs = kForever;
 
     for (auto it = m_docs.begin(); it != m_docs.end();) {
       const ClosedDoc& closedDoc = *it;
@@ -204,13 +213,16 @@ void ClosedDocs::backgroundThread()
           ++it;
         }
       }
-      else {
+      else if (m_keepClosedDocAliveForMSecs < kForever) {
         waitForMSecs = std::min(waitForMSecs, m_keepClosedDocAliveForMSecs - diff);
+        ++it;
+      }
+      else {
         ++it;
       }
     }
 
-    if (waitForMSecs < std::numeric_limits<base::tick_t>::max()) {
+    if (waitForMSecs < kForever) {
       CLOSEDOC_TRACE("CLOSEDOC: [BG] Wait for", waitForMSecs, "milliseconds");
 
       ASSERT(!m_docs.empty());
@@ -219,7 +231,10 @@ void ClosedDocs::backgroundThread()
     else {
       CLOSEDOC_TRACE("CLOSEDOC: [BG] Wait for condition variable");
 
-      ASSERT(m_docs.empty());
+      // There could be documents if the configuration is set to wait
+      // forever (this thread keeps running so the user can change the
+      // configuration and we wake up).
+      // ASSERT(m_docs.empty());
       m_cv.wait(lock);
     }
   }

@@ -45,6 +45,8 @@ public:
   ClosedDocs(const Preferences& pref);
   ~ClosedDocs();
 
+  void updateFromPref(const Preferences& pref);
+
   bool hasClosedDocs();
   void addClosedDoc(Doc* doc);
   Doc* reopenLastClosedDoc();
@@ -59,6 +61,7 @@ public:
   crash::DocumentInfos getClosedDocInfos();
 
 private:
+  void initialize(const Preferences& pref);
   void backgroundThread();
 
   struct ClosedDoc {

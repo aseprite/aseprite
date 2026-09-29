@@ -39,6 +39,7 @@
 #include "app/ui/sampling_selector.h"
 #include "app/ui/separator_in_view.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui_context.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/string.h"
@@ -884,10 +885,8 @@ public:
         newKeepClosed != m_pref.general.keepClosedSpriteOnMemoryFor()) {
       m_pref.general.keepClosedSpriteOnMemory(keepClosedSpriteOnMemory()->isSelected());
       m_pref.general.keepClosedSpriteOnMemoryFor(newKeepClosed);
-
-      warnings += "<<- " +
-                  Strings::alerts_restart_by_preferences_keep_closed_sprite_on_memory_for();
     }
+    static_cast<UIContext*>(m_context)->closedDocs().updateFromPref(m_pref);
 
     m_pref.editor.autoScrollSpeed(autoScrollSpeed()->getValue());
     m_pref.editor.rightClickMode(
