@@ -76,10 +76,15 @@ BackupObserver::~BackupObserver()
   m_ctx->remove_observer(this);
 }
 
+void BackupObserver::wakeup()
+{
+  m_wakeup.notify_one();
+}
+
 void BackupObserver::stop()
 {
   m_done = true;
-  m_wakeup.notify_one();
+  wakeup();
 }
 
 void BackupObserver::onAddDocument(Doc* document)
@@ -130,26 +135,27 @@ void BackupObserver::backgroundThread()
 {
   std::unique_lock<std::mutex> lock(m_mutex);
   base::this_thread::set_name("backup");
-
-  int normalPeriod = int(60.0 * m_config->dataRecoveryPeriod);
-  int lockedPeriod = 5;
-#ifdef TEST_BACKUPS_WITH_A_SHORT_PERIOD
-  normalPeriod = 5;
-  lockedPeriod = 5;
-#endif
-
-  int waitFor = normalPeriod;
+  bool somethingLocked = false;
 
   while (!m_done) {
+    int normalPeriod = int(60.0 * m_config->dataRecoveryPeriod);
+    int lockedPeriod = 5;
+#ifdef TEST_BACKUPS_WITH_A_SHORT_PERIOD
+    normalPeriod = 5;
+    lockedPeriod = 5;
+#endif
+    const int waitFor = (somethingLocked ? lockedPeriod : normalPeriod);
+
+    RECO_TRACE("RECO: [BG] Wait for %d seconds\n", waitFor);
     m_wakeup.wait_for(lock, std::chrono::seconds(waitFor));
 
-    RECO_TRACE("RECO: Start backup process for %d documents\n",
+    RECO_TRACE("RECO: [BG] Start backup process for %d documents\n",
                m_documents.size() + m_closedDocs.size());
 
     SwitchBackupIcon icon;
     base::Chrono chrono;
-    bool somethingLocked = false;
 
+    somethingLocked = false;
     for (Doc* doc : m_documents) {
       if (!saveDocData(doc))
         somethingLocked = true;
@@ -159,10 +165,10 @@ void BackupObserver::backgroundThread()
       for (auto it = m_closedDocs.begin(); it != m_closedDocs.end();) {
         Doc* doc = *it;
 
-        RECO_TRACE("RECO: Save backup data for %p...\n", doc);
+        RECO_TRACE("RECO: [BG] Save backup data for %p...\n", doc);
 
         if (saveDocData(doc)) {
-          RECO_TRACE("RECO: Doc %p is fully backed up\n", doc);
+          RECO_TRACE("RECO: [BG] Doc %p is fully backed up\n", doc);
 
           it = m_closedDocs.erase(it);
           doc->markAsBackedUp();
@@ -174,9 +180,7 @@ void BackupObserver::backgroundThread()
       }
     }
 
-    waitFor = (somethingLocked ? lockedPeriod : normalPeriod);
-
-    RECO_TRACE("RECO: Backup process done (%.16g)\n", chrono.elapsed());
+    RECO_TRACE("RECO: [BG] Backup process done (%.001f)\n", chrono.elapsed());
   }
 }
 

@@ -15,6 +15,7 @@
 #include "app/console.h"
 #include "app/context.h"
 #include "app/context_access.h"
+#include "app/crash/data_recovery.h"
 #include "app/extensions.h"
 #include "app/file/file.h"
 #include "app/file_selector.h"
@@ -859,15 +860,13 @@ public:
     const bool expandOnMouseover = expandMenubarOnMouseover()->isSelected();
     ui::MenuBar::setExpandOnMouseover(expandOnMouseover);
 
-    std::string warnings;
-
+    bool timeChanges = false;
     double newPeriod = base::convert_to<double>(dataRecoveryPeriod()->getValue());
     if (enableDataRecovery()->isSelected() != m_pref.general.dataRecovery() ||
         newPeriod != m_pref.general.dataRecoveryPeriod()) {
       m_pref.general.dataRecovery(enableDataRecovery()->isSelected());
       m_pref.general.dataRecoveryPeriod(newPeriod);
-
-      warnings += "<<- " + Strings::alerts_restart_by_preferences_save_recovery_data_period();
+      timeChanges = true;
     }
 
     int newLifespan = base::convert_to<int>(keepEditedSpriteDataFor()->getValue());
@@ -875,9 +874,7 @@ public:
         newLifespan != m_pref.general.keepEditedSpriteDataFor()) {
       m_pref.general.keepEditedSpriteData(keepEditedSpriteData()->isSelected());
       m_pref.general.keepEditedSpriteDataFor(newLifespan);
-
-      warnings += "<<- " +
-                  Strings::alerts_restart_by_preferences_keep_edited_sprite_data_lifespan();
+      timeChanges = true;
     }
 
     double newKeepClosed = base::convert_to<double>(keepClosedSpriteOnMemoryFor()->getValue());
@@ -885,8 +882,13 @@ public:
         newKeepClosed != m_pref.general.keepClosedSpriteOnMemoryFor()) {
       m_pref.general.keepClosedSpriteOnMemory(keepClosedSpriteOnMemory()->isSelected());
       m_pref.general.keepClosedSpriteOnMemoryFor(newKeepClosed);
+      timeChanges = true;
     }
-    static_cast<UIContext*>(m_context)->closedDocs().updateFromPref(m_pref);
+
+    if (timeChanges) {
+      App::instance()->dataRecovery()->updateConfig();
+      static_cast<UIContext*>(m_context)->closedDocs().updateFromPref(m_pref);
+    }
 
     m_pref.editor.autoScrollSpeed(autoScrollSpeed()->getValue());
     m_pref.editor.rightClickMode(
@@ -1086,10 +1088,6 @@ public:
     }
 
     m_pref.save();
-
-    if (!warnings.empty()) {
-      ui::Alert::show(Strings::alerts_restart_by_preferences(warnings));
-    }
 
     // Probably it's safe to switch this flag in runtime
     ui::set_multiple_displays(m_pref.experimental.multipleWindows());
