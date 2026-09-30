@@ -555,7 +555,7 @@ void ExpandCelCanvas::validateSourceCanvas(const gfx::Region& rgn)
                             m_cel,
                             m_sprite,
                             m_celImage.get(),
-                            m_layer,
+                            m_layer->tileset(),
                             m_sprite->palette(m_frame),
                             gfx::RectF(0, 0, m_bounds.w, m_bounds.h),
                             gfx::Clip(rc.x,

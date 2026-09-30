@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2023  Igara Studio S.A.
+// Copyright (c) 2019-present  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -78,6 +78,9 @@ public:
 
   // Returns an array of tile positions that are touching the given region in the canvas
   std::vector<gfx::Point> tilesInCanvasRegion(const gfx::Region& rgn) const;
+
+  bool operator==(const Grid& other) const;
+  bool operator!=(const Grid& other) const { return !operator==(other); }
 
 private:
   gfx::Size m_tileSize;

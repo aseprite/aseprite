@@ -2,9 +2,7 @@
 
 rem If cl.exe is not available, we try to run the vcvars64.bat
 where cl.exe >nul 2>nul
-if %errorlevel%==1 (
-   @call "%ProgramFiles%\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
-)
+if %errorlevel%==1 call :load_vcvars
 
 rem Add an extra path element which will be invalidated by Git Bash.
 rem In this way we avoid invalidating the PATH location where cl.exe is.
@@ -12,3 +10,12 @@ set PATH=.;%PATH%
 
 powershell -ExecutionPolicy Bypass -File .\build.ps1 %*
 pause
+goto :eof
+
+rem Subroutine: expand VSWHERE after set, not when the if-block is parsed.
+:load_vcvars
+set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
+for /f "usebackq delims=" %%i in (`"%VSWHERE%" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -find VC\Auxiliary\Build\vcvars64.bat`) do (
+   call "%%i"
+)
+exit /b

@@ -152,8 +152,8 @@ private:
 // This is a terrible way to find tiles, i.e. flipping several times
 // the image, instead of searching for flipped hashes. In the future
 // we could try to improve it.
-bool find_tile(doc::Tileset* tileset,
-               doc::ImageRef& tileImage,
+bool find_tile(const doc::Tileset* tileset,
+               const doc::ImageRef& tileImage,
                doc::tile_index& tileIndex,
                doc::tile_flags& tileFlags)
 {
@@ -286,7 +286,7 @@ doc::ImageRef crop_cel_image(const doc::Cel* cel, const color_t bgcolor)
                                  cel,
                                  sprite,
                                  cel->image(),
-                                 cel->layer(),
+                                 cel->layer()->tileset(),
                                  sprite->palette(cel->frame()),
                                  dstImage->bounds(),
                                  gfx::Clip(cel->position(), dstImage->bounds()),
@@ -373,7 +373,7 @@ Cel* create_cel_copy(CmdSequence* cmds,
                                    srcCel,
                                    dstSprite,
                                    srcImage,
-                                   srcCel->layer(),
+                                   srcCel->layer()->tileset(),
                                    dstSprite->palette(dstCel->frame()),
                                    gfx::Rect(gfx::Point(0, 0), srcCel->bounds().size()),
                                    gfx::Clip(0, 0, tmpImage->bounds()),
@@ -399,7 +399,7 @@ Cel* create_cel_copy(CmdSequence* cmds,
                                  srcCel,
                                  dstSprite,
                                  srcImage,
-                                 srcCel->layer(),
+                                 srcCel->layer()->tileset(),
                                  dstSprite->palette(dstCel->frame()),
                                  gfx::Rect(gfx::Point(0, 0), srcCel->bounds().size()),
                                  gfx::Clip(0, 0, dstImage->bounds()),

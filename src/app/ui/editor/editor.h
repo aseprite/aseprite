@@ -242,7 +242,7 @@ public:
                                const gfx::Point& mousePos,
                                ZoomBehavior zoomBehavior);
 
-  void pasteImage(const Image* image,
+  void pasteImage(const ImageRef& image,
                   const Mask* mask = nullptr,
                   const gfx::Point* position = nullptr,
                   const Tileset* srcTileset = nullptr);

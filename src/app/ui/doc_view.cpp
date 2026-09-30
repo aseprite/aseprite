@@ -550,9 +550,14 @@ bool DocView::onCanPaste(Context* ctx)
                       ContextFlags::ActiveLayerIsEditable | ContextFlags::ActiveLayerIsImage) &&
       !ctx->checkFlags(ContextFlags::ActiveLayerIsReference)) {
     auto format = ctx->clipboard()->format();
-    if (format == ClipboardFormat::Image || format == ClipboardFormat::Text ||
-        (format == ClipboardFormat::Tilemap &&
-         ctx->checkFlags(ContextFlags::ActiveLayerIsTilemap))) {
+    // We allow pasting an imagen and text from the clipboard (to
+    // switch to the Text tool directly).
+    if (format == ClipboardFormat::Image || format == ClipboardFormat::Text) {
+      return true;
+    }
+    else if (format == ClipboardFormat::Tilemap &&
+             (ctx->checkFlags(ContextFlags::ActiveLayerIsImage) ||
+              ctx->checkFlags(ContextFlags::ActiveLayerIsTilemap))) {
       return true;
     }
   }
