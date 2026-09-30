@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -37,12 +37,7 @@ DataRecovery::DataRecovery(Context* ctx)
   , m_backup(nullptr)
   , m_searching(false)
 {
-  auto& pref = Preferences::instance();
-  m_config.dataRecoveryPeriod = pref.general.dataRecoveryPeriod();
-  if (pref.general.keepEditedSpriteData())
-    m_config.keepEditedSpriteDataFor = pref.general.keepEditedSpriteDataFor();
-  else
-    m_config.keepEditedSpriteDataFor = 0;
+  updateConfig();
 
   ResourceFinder rf;
   rf.includeUserDir(base::join_path("sessions", ".").c_str());
@@ -78,7 +73,7 @@ DataRecovery::DataRecovery(Context* ctx)
   m_inProgress->create(pid);
   RECO_TRACE("RECO: Session in progress '%s'\n", newSessionDir.c_str());
 
-  m_backup = new BackupObserver(&m_config, m_inProgress.get(), ctx);
+  m_backup = std::make_unique<BackupObserver>(&m_config, m_inProgress.get(), ctx);
 
   g_stillAliveFlag = true;
 }
@@ -86,10 +81,11 @@ DataRecovery::DataRecovery(Context* ctx)
 DataRecovery::~DataRecovery()
 {
   g_stillAliveFlag = false;
-  m_thread.join();
+  if (m_thread.joinable())
+    m_thread.join();
 
   m_backup->stop();
-  delete m_backup;
+  m_backup.reset();
 
   // We just close the session on progress.  The session is not
   // deleted just in case that the user want to recover some files
@@ -98,6 +94,32 @@ DataRecovery::~DataRecovery()
     m_inProgress->close();
 
   m_inProgress.reset();
+}
+
+void DataRecovery::updateConfig()
+{
+  auto& pref = Preferences::instance();
+  m_config.dataRecoveryPeriod = pref.general.dataRecoveryPeriod();
+  if (pref.general.keepEditedSpriteData())
+    m_config.keepEditedSpriteDataFor = pref.general.keepEditedSpriteDataFor();
+  else
+    m_config.keepEditedSpriteDataFor = 0;
+
+  // Wake up BackupObserver background thread to readjust the waiting period.
+  if (m_backup)
+    m_backup->wakeup();
+
+  // Re-search to GC sessions (w/the new "keep edited sprite data for" period)
+  if (m_thread.joinable()) {
+    if (!m_searching)
+      m_thread.join();
+  }
+  if (!m_thread.joinable()) {
+    m_thread = std::thread([this] {
+      base::this_thread::set_name("gc-sessions");
+      gcSessions();
+    });
+  }
 }
 
 void DataRecovery::launchSearch()
@@ -182,6 +204,21 @@ void DataRecovery::searchForSessions()
     if (g_stillAliveFlag)
       SessionsListIsReady();
   });
+}
+
+void DataRecovery::gcSessions()
+{
+  std::unique_lock<std::mutex> lock(m_sessionsMutex);
+  RECO_TRACE("RECO: [BG] GC sessions\n");
+  for (auto& s : m_sessions) {
+    if (!s->isActiveSession() && (s->isEmpty() || (!s->isCrashedSession() && s->isOldSession()))) {
+      RECO_TRACE("RECO: [BG] Remove session '%s' from disk (%s)\n",
+                 s->name().c_str(),
+                 s->isEmpty() ? "is empty" : (s->isOldSession() ? "is old" : "unknown reason"));
+      s->removeFromDisk();
+    }
+  }
+  RECO_TRACE("RECO: [BG] GC sessions ends\n");
 }
 
 }} // namespace app::crash

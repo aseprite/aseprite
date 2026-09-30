@@ -389,6 +389,9 @@ public:
       auto* ctx = UIContext::instance();
       ctx->closedDocs().add_observer(this);
     }
+    else {
+      m_sessionConn = m_session->RemoveFromDisk.connect([this] { onRemoveFromDisk(); });
+    }
   }
 
   ~SessionSeparator()
@@ -556,6 +559,12 @@ private:
     deleteClosedDocItem(docId);
   }
 
+  void onRemoveFromDisk()
+  {
+    clearBackups();
+    updateView();
+  }
+
   void deleteClosedDocItem(const doc::ObjectId docId)
   {
     if (auto it = m_closedIds.find(docId); it != m_closedIds.end())
@@ -655,6 +664,7 @@ private:
   NoClosedDocItem* m_noClosedDoc = nullptr;
   bool m_isEmpty = true;
   ClosedIds m_closedIds;
+  obs::scoped_connection m_sessionConn;
 };
 
 DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)

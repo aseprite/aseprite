@@ -15,6 +15,7 @@
 #include "obs/signal.h"
 
 #include <atomic>
+#include <memory>
 #include <mutex>
 #include <thread>
 #include <vector>
@@ -30,6 +31,8 @@ public:
 
   DataRecovery(Context* context);
   ~DataRecovery();
+
+  void updateConfig();
 
   // Launches the thread to search for sessions.
   void launchSearch();
@@ -57,13 +60,16 @@ private:
   // Executed from m_thread to search for the list of sessions.
   void searchForSessions();
 
+  // Executed when the configuration is adjusted (to remove old sessions).
+  void gcSessions();
+
   std::string m_sessionsDir;
   mutable std::mutex m_sessionsMutex;
   std::thread m_thread;
   RecoveryConfig m_config;
   Sessions m_sessions;
   SessionPtr m_inProgress;
-  BackupObserver* m_backup;
+  std::unique_ptr<BackupObserver> m_backup;
   std::atomic<bool> m_searching;
 
   DISABLE_COPYING(DataRecovery);

@@ -15,6 +15,7 @@
 #include "base/process.h"
 #include "base/task.h"
 #include "doc/object_id.h"
+#include "obs/signal.h"
 
 #include <fstream>
 #include <memory>
@@ -70,6 +71,8 @@ public:
   Doc* restoreBackupDocById(const doc::ObjectId id, base::task_token* t);
   Doc* restoreBackupRawImages(const BackupPtr& backup, const RawImagesAs as, base::task_token* t);
   void deleteBackup(const BackupPtr& backup);
+
+  obs::signal<void()> RemoveFromDisk;
 
 private:
   Doc* restoreBackupDoc(const std::string& backupDir, base::task_token* t);

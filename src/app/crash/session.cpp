@@ -31,6 +31,7 @@
 #include "doc/cancel_io.h"
 #include "fmt/format.h"
 #include "ui/app_state.h"
+#include "ui/system.h"
 #include "ver/info.h"
 
 namespace app { namespace crash {
@@ -225,6 +226,15 @@ void Session::removeFromDisk()
         "RECO: Session directory cannot be removed, it's not empty.\n"
         "      Error: %s\n",
         ex.what());
+  }
+
+  // Call RemoveFromDisk signal from the UI-thread only if there are
+  // slots. If the signal is empty it means that it was a session
+  // created and destroyed from the same background thread in the
+  // initial "sessions search" process, so sending a pointer to this
+  // session to the UI (execute_from_ui_thread) will produce a crash.
+  if (RemoveFromDisk) {
+    ui::execute_from_ui_thread([this] { RemoveFromDisk(); });
   }
 }
 
