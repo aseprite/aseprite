@@ -11,6 +11,8 @@ local rgbaR = app.pixelColor.rgbaR
 local rgbaG = app.pixelColor.rgbaG
 local rgbaB = app.pixelColor.rgbaB
 
+assert(false)
+
 do -- Undo/Redo commands (like app.undo/redo())
   local s = Sprite(32, 32)
   assert(s.width == 32)
