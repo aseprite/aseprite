@@ -12,6 +12,7 @@
 #endif
 
 #include "app/app.h"
+#include "app/app_menus.h"
 #include "app/color.h"
 #include "app/color_spaces.h"
 #include "app/color_utils.h"
@@ -20,6 +21,7 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/site.h"
+#include "app/ui/app_menuitem.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/palette_view.h"
 #include "app/ui/skin/skin_theme.h"
@@ -89,6 +91,10 @@ public:
                          gfx::Rect& box,
                          gfx::Color& negColor) = 0;
   virtual doc::Tileset* tileset() const { return nullptr; }
+  virtual bool showProperties(PaletteView* paletteView, ui::MouseMessage* msg, int index) const
+  {
+    return false;
+  }
 };
 
 // This default adapter uses the default behavior to use the
@@ -340,6 +346,20 @@ public:
     }
     else
       return nullptr;
+  }
+  bool showProperties(PaletteView* paletteView, ui::MouseMessage* msg, int index) const override
+  {
+    Menu* popupMenu = AppMenus::instance()->getTilePopupMenu();
+    if (popupMenu) {
+      Params params;
+      params.set("index", base::convert_to<std::string>(index).c_str());
+      AppMenuItem::setContextParams(params);
+      popupMenu->showPopup(msg->position(), paletteView->display());
+      AppMenuItem::setContextParams(Params());
+      paletteView->invalidate();
+      return true;
+    }
+    return false;
   }
 
 private:
@@ -773,6 +793,19 @@ bool PaletteView::onProcessMessage(Message* msg)
 
     case kTouchMagnifyMessage: {
       setBoxSize(m_boxsize + m_boxsize * static_cast<ui::TouchMessage*>(msg)->magnification());
+      break;
+    }
+
+    case kDoubleClickMessage: {
+      switch (m_hot.part) {
+        case Hit::COLOR: {
+          if (m_hot.color < m_adapter->size()) {
+            MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+            if (m_adapter->showProperties(this, mouseMsg, m_hot.color))
+              return true;
+          }
+        }
+      }
       break;
     }
   }
