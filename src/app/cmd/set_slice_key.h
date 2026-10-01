@@ -20,6 +20,8 @@ using namespace doc;
 class SetSliceKey : public Cmd,
                     public WithSlice {
 public:
+  CMDTYPE('S', 'L', 's', 'k', SetSliceKey);
+
   SetSliceKey(Slice* slice, const doc::frame_t frame, const doc::SliceKey& sliceKey);
 
 protected:

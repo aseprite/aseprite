@@ -9,13 +9,13 @@
   #include "config.h"
 #endif
 
-#include "app/cmd_transaction.h"
+#include "app/cmd/transaction.h"
 
 #include "app/app.h"
 #include "app/context.h"
 #include "app/site.h"
 
-namespace app {
+namespace app { namespace cmd {
 
 CmdTransaction::CmdTransaction(const std::string& label, bool changeSavedState)
   : m_ranges(nullptr)
@@ -112,6 +112,13 @@ size_t CmdTransaction::onMemSize() const
   return size;
 }
 
+void CmdTransaction::onSerialize(CmdSerial& s)
+{
+  s.txBegin();
+  CmdSequence::onSerialize(s);
+  s.txEnd();
+}
+
 SpritePosition CmdTransaction::calcSpritePosition(Context* ctx) const
 {
   // This check was added to allow executing transactions on documents that are
@@ -134,4 +141,4 @@ view::RealRange CmdTransaction::calcDocRange(Context* ctx) const
   return (ctx ? ctx->range() : view::RealRange());
 }
 
-} // namespace app
+}} // namespace app::cmd

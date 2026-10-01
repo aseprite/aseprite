@@ -22,9 +22,6 @@
 namespace app {
 
 Cmd::Cmd()
-#if _DEBUG
-  : m_state(State::NotExecuted)
-#endif
 {
 }
 
@@ -32,43 +29,43 @@ Cmd::~Cmd()
 {
 }
 
+std::string Cmd::typeStr() const
+{
+  std::string result(5, 0);
+  cmdtype_t t = type();
+  result[0] = ((t >> 24) & 0xff);
+  result[1] = ((t >> 16) & 0xff);
+  if (((t >> 8) & 0xff) != ' ') {
+    result[2] = ((t >> 8) & 0xff);
+    if ((t & 0xff) != ' ') {
+      result[3] = (t & 0xff);
+    }
+  }
+  return result;
+}
+
 void Cmd::execute(Context* ctx)
 {
   CMD_TRACE("CMD: Executing cmd '%s'\n", typeid(*this).name());
-  ASSERT(m_state == State::NotExecuted);
 
   onExecute(ctx);
   onFireNotifications(ctx);
-
-#if _DEBUG
-  m_state = State::Executed;
-#endif
 }
 
 void Cmd::undo(undo::UndoContext* ctx)
 {
   CMD_TRACE("CMD: Undo cmd '%s'\n", typeid(*this).name());
-  ASSERT(m_state == State::Executed || m_state == State::Redone);
 
   onUndo(static_cast<Context*>(ctx));
   onFireNotifications(static_cast<Context*>(ctx));
-
-#if _DEBUG
-  m_state = State::Undone;
-#endif
 }
 
 void Cmd::redo(undo::UndoContext* ctx)
 {
   CMD_TRACE("CMD: Redo cmd '%s'\n", typeid(*this).name());
-  ASSERT(m_state == State::Undone);
 
   onRedo(static_cast<Context*>(ctx));
   onFireNotifications(static_cast<Context*>(ctx));
-
-#if _DEBUG
-  m_state = State::Redone;
-#endif
 }
 
 void Cmd::dispose()
@@ -88,6 +85,16 @@ std::string Cmd::label() const
 size_t Cmd::memSize() const
 {
   return onMemSize();
+}
+
+bool Cmd::isSerializable() const
+{
+  return onIsSerializable();
+}
+
+void Cmd::serialize(CmdSerial& s)
+{
+  onSerialize(s);
 }
 
 void Cmd::onExecute(Context* ctx)
@@ -119,6 +126,12 @@ std::string Cmd::onLabel() const
 size_t Cmd::onMemSize() const
 {
   return sizeof(*this);
+}
+
+void Cmd::onSerialize(CmdSerial& s)
+{
+  auto t = type();
+  s.cmdtype(t);
 }
 
 } // namespace app

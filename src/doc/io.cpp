@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2026-present Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -8,7 +9,7 @@
   #include "config.h"
 #endif
 
-#include "doc/subobjects_io.h"
+#include "doc/io.h"
 
 #include "doc/cel.h"
 #include "doc/cel_io.h"
@@ -53,7 +54,7 @@ void SubObjectsFromSprite::addCelDataRef(const CelDataRef& celdata)
   m_celdatas.insert(std::make_pair(celdata->id(), celdata));
 }
 
-CelDataRef SubObjectsFromSprite::getCelDataRef(ObjectId celdataId)
+CelDataRef SubObjectsFromSprite::getCelDataRef(const ObjectId celdataId)
 {
   auto it = m_celdatas.find(celdataId);
   if (it != m_celdatas.end()) {
