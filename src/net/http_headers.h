@@ -25,6 +25,7 @@ public:
   const_iterator end() const { return m_map.end(); }
 
   void setHeader(const std::string& name, const std::string& value);
+  std::string getHeader(const std::string& name) const;
 
 private:
   Map m_map;

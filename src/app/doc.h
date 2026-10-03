@@ -155,6 +155,7 @@ public:
   bool isModified() const;
   bool isAssociatedToFile() const;
   void markAsSaved();
+  void removeSavedMark();
 
   // You can use this to indicate that we've destroyed (or we cannot
   // trust) the file associated with the document (e.g. when we

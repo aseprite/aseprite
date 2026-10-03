@@ -4,7 +4,8 @@
 add_library(net-lib
   http_headers.cpp
   http_request.cpp
-  http_response.cpp)
+  http_response.cpp
+  url.cpp)
 
 target_link_libraries(net-lib
   laf-base
