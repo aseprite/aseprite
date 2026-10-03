@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2024  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-present  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2016  David Capello -->
 <gui>
   <window id="keyboard_shortcuts" text="@keyboard_shortcuts.title" help="keyboard-shortcuts">
@@ -52,6 +52,10 @@
                    pref="editor.zoom_with_slide" />
             <check text="@.invert_brush_size_wheel" id="invert_brush_size_scroll"
                    pref="editor.invert_brush_size_wheel" />
+            <hbox>
+              <label text="@options.wheel_scroll_speed" />
+              <slider id="wheel_scroll_speed" min="5" max="500" value="100" width="128" />
+            </hbox>
             <view expansive="true">
               <listbox id="wheel_actions" />
             </view>
