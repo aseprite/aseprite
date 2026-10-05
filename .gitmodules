@@ -81,3 +81,9 @@
 [submodule "third_party/TinyEXIF"]
 	path = third_party/TinyEXIF
 	url = https://github.com/aseprite/TinyEXIF.git
+[submodule "third_party/libffi"]
+	path = third_party/libffi
+	url = https://github.com/libffi/libffi.git
+[submodule "third_party/cffi-lua"]
+	path = third_party/cffi-lua
+	url = https://github.com/q66/cffi-lua
