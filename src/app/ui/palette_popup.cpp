@@ -26,6 +26,7 @@
 #include "ui/keys.h"
 #include "ui/message.h"
 #include "ui/scale.h"
+#include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/view.h"
 
@@ -65,15 +66,16 @@ void PalettePopup::showPopup(ui::Display* display, const gfx::Rect& buttonPos)
   m_popup->openFolder()->setEnabled(false);
   m_paletteListBox.selectChild(NULL);
 
-  fit_bounds(display,
-             this,
-             gfx::Rect(buttonPos.x, buttonPos.y2(), 32, 32),
-             [](const gfx::Rect& workarea,
-                gfx::Rect& bounds,
-                std::function<gfx::Rect(Widget*)> getWidgetBounds) {
-               bounds.w = workarea.w / 2;
-               bounds.h = workarea.h * 3 / 4;
-             });
+  const gfx::Rect workarea = display->containedWidget()->bounds();
+  gfx::Rect candidateBounds =
+    gfx::Rect(buttonPos.x, buttonPos.y2(), workarea.w / 2, workarea.h * 3 / 4);
+
+  if (get_multiple_displays()) {
+    candidateBounds.w = std::max(candidateBounds.w, 170 * guiscale());
+    candidateBounds.h = std::max(candidateBounds.h, 240 * guiscale());
+  }
+
+  fit_bounds(display, this, candidateBounds);
 
   openWindowInForeground();
 }
