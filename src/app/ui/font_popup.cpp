@@ -48,7 +48,6 @@
 #ifdef _WIN32
   #include <shlobj.h>
   #include <windows.h>
-  #undef max
 #endif
 
 #include <algorithm>
