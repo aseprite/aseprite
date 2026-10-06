@@ -19,7 +19,6 @@
 #include "gfx/point.h"
 #include "render/extra_type.h"
 #include "render/onionskin_options.h"
-#include "render/projection.h"
 #include "render/render.h"
 
 namespace doc {
@@ -64,7 +63,6 @@ public:
   void setNewBlendMethod(const bool newBlend);
   void setComposeGroups(bool composeGroups);
 
-  void setProjection(const render::Projection& projection);
   void setSampling(const os::Sampling& sampling);
 
   void setupBackground(Doc* doc, doc::PixelFormat pixelFormat);
@@ -93,7 +91,7 @@ public:
   void setOnionskin(const render::OnionskinOptions& options);
   void disableOnionskin();
 
-  void renderCanvas(Editor* editor,
+  void renderCanvas(CanvasView* view,
                     ui::Graphics* g,
                     const doc::Sprite* sprite,
                     doc::frame_t frame,
@@ -105,13 +103,16 @@ public:
   void renderSprite(os::Surface* dstSurface,
                     const doc::Sprite* sprite,
                     doc::frame_t frame,
-                    const gfx::ClipF& area);
+                    const gfx::ClipF& area,
+                    const render::Projection& proj);
   void renderCheckeredBackground(os::Surface* dstSurface,
                                  const doc::Sprite* sprite,
-                                 const gfx::Clip& area);
+                                 const gfx::Clip& area,
+                                 const render::Projection& proj);
 
-  void invalidateRenderCache(const doc::Sprite* sprite);
-  void invalidateRenderCache(const doc::Sprite* sprite, const gfx::Region& spriteRegion);
+  void deleteRenderCache(CanvasView* view);
+  void invalidateRenderCache(CanvasView* view);
+  void invalidateRenderCache(CanvasView* view, const gfx::Region& spriteRegion);
 
   static doc::ImageBufferPtr getRenderImageBuffer();
 

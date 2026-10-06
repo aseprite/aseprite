@@ -33,14 +33,12 @@ public:
 
   const Properties& properties() const override { return m_properties; }
   const render::BgOptions& bgOptions() const override { return m_bgOptions; }
-  const render::Projection& projection() const override { return m_proj; }
 
   void setRefLayersVisiblity(const bool visible) override;
   void setNonactiveLayersOpacity(const int opacity) override;
   void setNewBlendMethod(const bool newBlend) override;
   void setComposeGroups(const bool composeGroups) override;
   void setBgOptions(const render::BgOptions& bg) override;
-  void setProjection(const render::Projection& projection) override;
   void setSampling(const os::Sampling& sampling) override;
 
   void setSelectedLayer(const doc::Layer* layer) override;
@@ -63,7 +61,7 @@ public:
   void setOnionskin(const render::OnionskinOptions& options) override;
   void disableOnionskin() override;
 
-  void renderCanvas(Editor* editor,
+  void renderCanvas(CanvasView* view,
                     ui::Graphics* g,
                     const doc::Sprite* sprite,
                     doc::frame_t frame,
@@ -74,17 +72,20 @@ public:
   void renderSpriteArea(os::Surface* dstSurface,
                         const doc::Sprite* sprite,
                         const doc::frame_t frame,
-                        const gfx::ClipF& area) override;
+                        const gfx::ClipF& area,
+                        const render::Projection& proj) override;
   void renderCheckeredBackground(os::Surface* dstSurface,
                                  const doc::Sprite* sprite,
-                                 const gfx::Clip& area) override;
+                                 const gfx::Clip& area,
+                                 const render::Projection& proj) override;
 
 private:
   void renderPlan(SkCanvas* canvas,
                   const doc::Sprite* sprite,
                   const doc::RenderPlan& plan,
                   const doc::frame_t frame,
-                  const gfx::ClipF& area);
+                  const gfx::ClipF& area,
+                  const render::Projection& proj);
   void drawImage(SkCanvas* canvas,
                  const doc::Image* srcImage,
                  const gfx::RectF& bounds,
@@ -102,7 +103,6 @@ private:
 
   Properties m_properties;
   render::BgOptions m_bgOptions;
-  render::Projection m_proj;
   os::Sampling m_sampling;
   sk_sp<SkRuntimeEffect> m_bgEffect;
   sk_sp<SkRuntimeEffect> m_indexedEffect;

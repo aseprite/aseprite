@@ -38,11 +38,6 @@ const render::BgOptions& TileBasedRenderer::bgOptions() const
   return m_tilesRenderer->bgOptions();
 }
 
-const render::Projection& TileBasedRenderer::projection() const
-{
-  return m_tilesRenderer->projection();
-}
-
 void TileBasedRenderer::setRefLayersVisiblity(bool visible)
 {
   m_tilesRenderer->setRefLayersVisiblity(visible);
@@ -66,11 +61,6 @@ void TileBasedRenderer::setComposeGroups(bool composeGroups)
 void TileBasedRenderer::setBgOptions(const render::BgOptions& bg)
 {
   m_tilesRenderer->setBgOptions(bg);
-}
-
-void TileBasedRenderer::setProjection(const render::Projection& projection)
-{
-  m_tilesRenderer->setProjection(projection);
 }
 
 void TileBasedRenderer::setSampling(const os::Sampling& sampling)
@@ -133,7 +123,7 @@ void TileBasedRenderer::disableOnionskin()
   m_tilesRenderer->disableOnionskin();
 }
 
-void TileBasedRenderer::renderCanvas(Editor* editor,
+void TileBasedRenderer::renderCanvas(CanvasView* view,
                                      ui::Graphics* g,
                                      const doc::Sprite* sprite,
                                      const doc::frame_t frame,
@@ -142,7 +132,7 @@ void TileBasedRenderer::renderCanvas(Editor* editor,
                                      const bool exposeWithProj)
 {
   const auto& pref = Preferences::instance(); // TODO move these options to Renderer
-  const render::Projection proj = projection();
+  const auto& proj = view->cvProjection();
   const gfx::Rect visible = (exposeWithProj ? expose : proj.apply(expose));
 
   // Render background (using a ShaderRenderer)
@@ -150,11 +140,11 @@ void TileBasedRenderer::renderCanvas(Editor* editor,
   const doc::LayerImage* bgLayer = sprite->backgroundLayer();
   if (!bgLayer || !bgLayer->isVisible()) {
     auto renderBg = [proj, g, sprite, dest, visible](Renderer* r) {
-      r->setProjection(proj);
       r->renderCheckeredBackground(
         g->getInternalSurface(),
         sprite,
-        gfx::Clip(dest.x + g->getInternalDeltaX(), dest.y + g->getInternalDeltaY(), visible));
+        gfx::Clip(dest.x + g->getInternalDeltaX(), dest.y + g->getInternalDeltaY(), visible),
+        proj);
     };
     if (properties().renderBgOnScreen)
       renderBg(this);
@@ -170,7 +160,7 @@ void TileBasedRenderer::renderCanvas(Editor* editor,
 
   // Get the cached tiles of this document, and create a
   // "renderTiles" to paint right now.
-  CachedTiles& cachedTiles = m_renderTileCache.cachedTiles(sprite->id());
+  CachedTiles& cachedTiles = m_renderTileCache.cachedTiles(view);
   std::vector<RenderTile> renderTiles;
 
   // Paint tiles
@@ -179,11 +169,7 @@ void TileBasedRenderer::renderCanvas(Editor* editor,
   const bool debugTiles = pref.render.debugTiles();
 
   {
-    // TODO remove dependency with Editor widget
-    gfx::Rect rc(editor->canvasSize());
-    rc = editor->editorToScreen(rc);
-    rc.offset(-editor->bounds().origin());
-
+    gfx::Rect rc = view->cvCanvasBounds();
     gfx::Rect tilerc(tileSize);
 
     gfx::PointF firstTilePos;
@@ -207,7 +193,7 @@ void TileBasedRenderer::renderCanvas(Editor* editor,
                                   tileSizeSrc.w,
                                   tileSizeSrc.h);
 
-          const RenderTileId tileId = ((v0 + v) << 16) | (u0 + u);
+          const RenderTileId tileId = make_render_tile_id(u0 + u, v0 + v, frame);
           auto it = cachedTiles.find(tileId);
           if (it != cachedTiles.end()) {
             RenderTile tile = it->second;
@@ -257,19 +243,20 @@ void TileBasedRenderer::renderCanvas(Editor* editor,
 
   // Render tiles on background
   if (dirties > 0) {
-    m_tilesRenderer->setProjection(proj);
     m_tilesRenderer->setSampling(sampling);
 
     // Do one time from main thread: prepare the palette for shaders
     // (indexed -> RGB conversion).
     m_tilesRenderer->prepareSpritePalette(sprite, frame);
 
-    auto renderSpriteOnTile = [this, sprite, frame](RenderTile& renderTile) {
+    auto renderSpriteOnTile = [this, sprite, frame, proj](RenderTile& renderTile) {
+      ASSERT(renderTile.surface);
       renderTile.surface->clear();
       m_tilesRenderer->renderSpriteArea(renderTile.surface.get(),
                                         sprite,
                                         frame,
-                                        gfx::Clip(0, 0, renderTile.src));
+                                        gfx::Clip(0, 0, renderTile.src),
+                                        proj);
       renderTile.dirty = false;
     };
 
@@ -311,10 +298,16 @@ void TileBasedRenderer::renderCanvas(Editor* editor,
       g->drawRect(renderTile.dst, p);
 
       // Paint tile ID
-      g->drawText(fmt::format("{},{}", renderTile.tileId & 0xffff, renderTile.tileId >> 16),
-                  gfx::rgba(0, 0, 0, 200),
-                  gfx::ColorNone,
-                  renderTile.dst.origin() + gfx::Point(renderTile.dst.size()) / 2);
+      p.style(os::Paint::Fill);
+      p.color(gfx::rgba(0, 0, 0, 200));
+      text::TextBlobRef textBlob = text::TextBlob::Make(
+        g->font(),
+        fmt::format("{},{}", render_tile_u(renderTile.tileId), render_tile_v(renderTile.tileId)));
+      g->drawTextBlob(textBlob,
+                      gfx::PointF(renderTile.dst.origin() +
+                                  gfx::PointF(renderTile.dst.w / 2 - textBlob->bounds().w / 2,
+                                              renderTile.dst.h / 2)),
+                      p);
     }
   }
 }
@@ -322,28 +315,34 @@ void TileBasedRenderer::renderCanvas(Editor* editor,
 void TileBasedRenderer::renderSpriteArea(os::Surface* dstSurface,
                                          const doc::Sprite* sprite,
                                          const doc::frame_t frame,
-                                         const gfx::ClipF& area)
+                                         const gfx::ClipF& area,
+                                         const render::Projection& proj)
 {
-  m_tilesRenderer->renderSpriteArea(dstSurface, sprite, frame, area);
+  m_tilesRenderer->renderSpriteArea(dstSurface, sprite, frame, area, proj);
 }
 
 void TileBasedRenderer::renderCheckeredBackground(os::Surface* dstSurface,
                                                   const doc::Sprite* sprite,
-                                                  const gfx::Clip& area)
+                                                  const gfx::Clip& area,
+                                                  const render::Projection& proj)
 {
-  m_tilesRenderer->renderCheckeredBackground(dstSurface, sprite, area);
+  m_tilesRenderer->renderCheckeredBackground(dstSurface, sprite, area, proj);
 }
 
-void TileBasedRenderer::invalidateRenderCache(const doc::Sprite* sprite)
+void TileBasedRenderer::deleteRenderCache(CanvasView* view)
 {
-  m_renderTileCache.clearCachedTiles(sprite->id());
+  m_renderTileCache.clearCachedTiles(view, true);
 }
 
-void TileBasedRenderer::invalidateRenderCache(const doc::Sprite* sprite,
-                                              const gfx::Region& spriteRegion)
+void TileBasedRenderer::invalidateRenderCache(CanvasView* view)
 {
-  const auto& proj = projection();
-  CachedTiles& cachedTiles = m_renderTileCache.cachedTiles(sprite->id());
+  m_renderTileCache.clearCachedTiles(view, false);
+}
+
+void TileBasedRenderer::invalidateRenderCache(CanvasView* view, const gfx::Region& spriteRegion)
+{
+  const auto& proj = view->cvProjection();
+  CachedTiles& cachedTiles = m_renderTileCache.cachedTiles(view);
   for (auto& [tileId, cachedTile] : cachedTiles) {
     const gfx::Rect srcrc = proj.remove(cachedTile.src);
     if (spriteRegion.contains(srcrc) != gfx::Region::Overlap::Out) {

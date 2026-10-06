@@ -245,6 +245,8 @@ Editor::~Editor()
   while (!m_statesHistory.empty())
     backToPreviousState();
   m_deletedStates.clear();
+
+  m_renderEngine->deleteRenderCache(this);
 }
 
 void Editor::destroyEditorSharedInternals()
@@ -751,7 +753,6 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
     IntersectClip clip(g, dest);
     if (clip) {
       m_renderEngine->setupBackground(m_document, IMAGE_RGB);
-      m_renderEngine->setProjection(m_proj);
       m_renderEngine->renderCanvas(this, g, m_sprite, m_frame, dest, expose, exposeWithProj);
     }
 
@@ -2535,6 +2536,14 @@ void Editor::onShowExtrasChange()
   invalidate();
 }
 
+gfx::Rect Editor::cvCanvasBounds()
+{
+  gfx::Rect rc(canvasSize());
+  rc = editorToScreen(rc);
+  rc.offset(-bounds().origin());
+  return rc;
+}
+
 void Editor::onSpritePixelsModified(DocEvent& ev)
 {
   if (!isVisible() && frame() != ev.frame())
@@ -3051,7 +3060,7 @@ void Editor::notifyZoomChanged()
 {
   // TODO re-use cached tiles while zooming and replace them when the
   //      new zoom level tiles are rendered
-  m_renderEngine->invalidateRenderCache(m_sprite);
+  m_renderEngine->invalidateRenderCache(this);
 
   m_observers.notifyZoomChanged(this);
 }
@@ -3234,7 +3243,7 @@ void Editor::invalidateCanvasRegion(const gfx::Region& updateRegion)
 
   // Invalidate cached tiles (for TileBasedRenderer mainly)
   if (m_renderEngine)
-    m_renderEngine->invalidateRenderCache(m_sprite, updateRegion);
+    m_renderEngine->invalidateRenderCache(this, updateRegion);
 
   // Convert canvas coordinates to screen
   gfx::Region screenRegion;

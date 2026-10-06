@@ -13,6 +13,7 @@
 #if SK_ENABLE_SKSL
 
   #include "app/color_utils.h"
+  #include "app/render/canvas_view.h"
   #include "app/util/shader_helpers.h"
   #include "doc/render_plan.h"
   #include "os/common/generic_surface.h"
@@ -123,11 +124,6 @@ void ShaderRenderer::setBgOptions(const render::BgOptions& bg)
   m_bgOptions = bg;
 }
 
-void ShaderRenderer::setProjection(const render::Projection& projection)
-{
-  m_proj = projection;
-}
-
 void ShaderRenderer::setSampling(const os::Sampling& sampling)
 {
   m_sampling = sampling;
@@ -201,7 +197,7 @@ void ShaderRenderer::disableOnionskin()
   // TODO impl
 }
 
-void ShaderRenderer::renderCanvas(Editor* editor,
+void ShaderRenderer::renderCanvas(CanvasView* view,
                                   ui::Graphics* g,
                                   const doc::Sprite* sprite,
                                   const doc::frame_t frame,
@@ -211,13 +207,15 @@ void ShaderRenderer::renderCanvas(Editor* editor,
 {
   ASSERT(!exposeWithProj);
 
-  renderCheckeredBackground(g->getInternalSurface(),
-                            sprite,
-                            gfx::Clip(dest.x + g->getInternalDeltaX(),
-                                      dest.y + g->getInternalDeltaY(),
-                                      projection().apply(expose)));
+  const auto& proj = view->cvProjection();
 
-  CommonRenderer::renderCanvas(editor, g, sprite, frame, dest, expose, exposeWithProj);
+  renderCheckeredBackground(
+    g->getInternalSurface(),
+    sprite,
+    gfx::Clip(dest.x + g->getInternalDeltaX(), dest.y + g->getInternalDeltaY(), proj.apply(expose)),
+    proj);
+
+  CommonRenderer::renderCanvas(view, g, sprite, frame, dest, expose, exposeWithProj);
 }
 
 void ShaderRenderer::prepareSpritePalette(const doc::Sprite* sprite, const doc::frame_t frame)
@@ -245,7 +243,8 @@ void ShaderRenderer::prepareSpritePalette(const doc::Sprite* sprite, const doc::
 void ShaderRenderer::renderSpriteArea(os::Surface* dstSurface,
                                       const doc::Sprite* sprite,
                                       const doc::frame_t frame,
-                                      const gfx::ClipF& area)
+                                      const gfx::ClipF& area,
+                                      const render::Projection& proj)
 {
   ASSERT(m_sprite == sprite);
 
@@ -261,11 +260,11 @@ void ShaderRenderer::renderSpriteArea(os::Surface* dstSurface,
 
     // Draw cels
     canvas->translate(area.dst.x - area.src.x, area.dst.y - area.src.y);
-    canvas->scale(m_proj.scaleX(), m_proj.scaleY());
+    canvas->scale(proj.scaleX(), proj.scaleY());
 
     RenderPlan plan;
     plan.addLayer(sprite->root(), frame);
-    renderPlan(canvas, sprite, plan, frame, area);
+    renderPlan(canvas, sprite, plan, frame, area, proj);
   }
   canvas->restore();
 }
@@ -274,7 +273,8 @@ void ShaderRenderer::renderPlan(SkCanvas* canvas,
                                 const doc::Sprite* sprite,
                                 const doc::RenderPlan& plan,
                                 const doc::frame_t frame,
-                                const gfx::ClipF& area)
+                                const gfx::ClipF& area,
+                                const render::Projection& proj)
 {
   const bool render_background = true;
   const bool render_transparent = true;
@@ -313,10 +313,10 @@ void ShaderRenderer::renderPlan(SkCanvas* canvas,
 
     if (drawExtra) {
       extraArea = m_extraCel->bounds();
-      extraArea = m_proj.apply(extraArea);
-      if (m_proj.scaleX() < 1.0)
+      extraArea = proj.apply(extraArea);
+      if (proj.scaleX() < 1.0)
         extraArea.w--;
-      if (m_proj.scaleY() < 1.0)
+      if (proj.scaleY() < 1.0)
         extraArea.h--;
       if (extraArea.w < 1)
         extraArea.w = 1;
@@ -389,12 +389,12 @@ void ShaderRenderer::renderPlan(SkCanvas* canvas,
         }
 
         const gfx::Clip iarea(area);
-        gfx::Rect tilesToDraw = grid.canvasToTile(m_proj.remove(gfx::Rect(iarea.src, iarea.size)));
+        gfx::Rect tilesToDraw = grid.canvasToTile(proj.remove(gfx::Rect(iarea.src, iarea.size)));
 
-        int yPixelsPerTile = m_proj.applyY(grid.tileSize().h);
+        int yPixelsPerTile = proj.applyY(grid.tileSize().h);
         if (yPixelsPerTile > 0 && (iarea.size.h + iarea.src.y) % yPixelsPerTile > 0)
           tilesToDraw.h += 1;
-        int xPixelsPerTile = m_proj.applyX(grid.tileSize().w);
+        int xPixelsPerTile = proj.applyX(grid.tileSize().w);
         if (xPixelsPerTile > 0 && (iarea.size.w + iarea.src.x) % xPixelsPerTile > 0)
           tilesToDraw.w += 1;
 
@@ -451,8 +451,8 @@ void ShaderRenderer::renderPlan(SkCanvas* canvas,
       if (m_extraCel->opacity() > 0) {
         drawImage(canvas,
                   m_extraImage,
-                  m_proj.removeX(extraArea.x),
-                  m_proj.removeY(extraArea.y),
+                  proj.removeX(extraArea.x),
+                  proj.removeY(extraArea.y),
                   m_extraCel->opacity(),
                   m_extraBlendMode);
       }
@@ -462,7 +462,8 @@ void ShaderRenderer::renderPlan(SkCanvas* canvas,
 
 void ShaderRenderer::renderCheckeredBackground(os::Surface* dstSurface,
                                                const doc::Sprite* sprite,
-                                               const gfx::Clip& area)
+                                               const gfx::Clip& area,
+                                               const render::Projection& proj)
 {
   SkRuntimeShaderBuilder builder(m_bgEffect);
   builder.uniform("iBg1") = gfxColor_to_SkV4(color_utils::color_for_ui(
@@ -470,8 +471,8 @@ void ShaderRenderer::renderCheckeredBackground(os::Surface* dstSurface,
   builder.uniform("iBg2") = gfxColor_to_SkV4(color_utils::color_for_ui(
     app::Color::fromImage(m_bgOptions.colorPixelFormat, m_bgOptions.color2)));
 
-  float sx = (m_bgOptions.zoom ? m_proj.scaleX() : 1.0);
-  float sy = (m_bgOptions.zoom ? m_proj.scaleY() : 1.0);
+  float sx = (m_bgOptions.zoom ? proj.scaleX() : 1.0);
+  float sy = (m_bgOptions.zoom ? proj.scaleY() : 1.0);
 
   builder.uniform("iStripeSize") = SkV2{ float(m_bgOptions.stripeSize.w) * sx,
                                          float(m_bgOptions.stripeSize.h) * sy };

@@ -25,26 +25,33 @@ os::SurfaceRef RenderTileCache::allocTileSurface()
   return surface;
 }
 
-CachedTiles& RenderTileCache::cachedTiles(const doc::ObjectId id)
+CachedTiles& RenderTileCache::cachedTiles(const CanvasView* view)
 {
-  auto it = m_sprites.find(id);
-  if (it != m_sprites.end())
+  auto it = m_views.find(view);
+  if (it != m_views.end())
     return it->second->cachedTiles;
 
   auto cache = std::make_unique<Cache>();
   CachedTiles& cachedTiles = cache->cachedTiles;
-  m_sprites.emplace(id, std::move(cache));
+  m_views.emplace(view, std::move(cache));
   return cachedTiles;
 }
 
-void RenderTileCache::clearCachedTiles(const doc::ObjectId id)
+void RenderTileCache::clearCachedTiles(const CanvasView* view, bool viewIsDeleted)
 {
-  CachedTiles& cachedTiles = RenderTileCache::cachedTiles(id);
+  auto it = m_views.find(view);
+  if (it == m_views.end())
+    return;
+
+  CachedTiles& cachedTiles = it->second->cachedTiles;
   for (auto& [tileId, cachedTile] : cachedTiles) {
     m_freeTiles.push_back(cachedTile.surface);
     cachedTile.surface = nullptr;
   }
   cachedTiles.clear();
+
+  if (viewIsDeleted)
+    m_views.erase(it);
 }
 
 } // namespace app

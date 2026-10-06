@@ -13,6 +13,7 @@
 #include "app/doc.h"
 #include "app/doc_observer.h"
 #include "app/pref/preferences.h"
+#include "app/render/canvas_view.h"
 #include "app/tools/active_tool_observer.h"
 #include "app/tools/tool_loop_modifiers.h"
 #include "app/ui/color_source.h"
@@ -77,6 +78,7 @@ enum class AutoScroll {
 };
 
 class Editor : public ui::Widget,
+               public app::CanvasView,
                public app::DocObserver,
                public IColorSource,
                public ITileSource,
@@ -339,6 +341,10 @@ protected:
   void onTiledModeBeforeChange();
   void onTiledModeChange();
   void onShowExtrasChange();
+
+  // app::CanvasView impl
+  const render::Projection& cvProjection() const override { return projection(); }
+  gfx::Rect cvCanvasBounds() override;
 
   // DocObserver impl
   void onSpritePixelsModified(DocEvent& ev) override;

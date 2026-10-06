@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -194,11 +194,11 @@ protected:
       m_repaint = false;
 
       m_render->clear();
-      render.setProjection(render::Projection());
       render.renderSprite(m_render.get(),
                           m_sprite,
                           m_editor->frame(),
-                          gfx::ClipF(0, 0, 0, 0, m_sprite->width(), m_sprite->height()));
+                          gfx::ClipF(0, 0, 0, 0, m_sprite->width(), m_sprite->height()),
+                          render::Projection());
     }
 
     float x, y, w, h, u, v;
@@ -213,7 +213,6 @@ protected:
       y = SGN(y) * std::fmod(ABS(y), h);
 
     if (m_index_bg_color == -1) {
-      render.setProjection(m_proj);
       render.setupBackground(m_doc, IMAGE_RGB);
       render.renderCheckeredBackground(g->getInternalSurface(),
                                        m_sprite,
@@ -222,7 +221,8 @@ protected:
                                                  -m_pos.x,
                                                  -m_pos.y,
                                                  2 * g->getInternalSurface()->width(),
-                                                 2 * g->getInternalSurface()->height()));
+                                                 2 * g->getInternalSurface()->height()),
+                                       m_proj);
 
       // Invalidate the whole Graphics (as we've just modified its
       // internal os::Surface directly).

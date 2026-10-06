@@ -96,11 +96,6 @@ void EditorRender::setComposeGroups(const bool composeGroups)
   m_renderer->setComposeGroups(composeGroups);
 }
 
-void EditorRender::setProjection(const render::Projection& projection)
-{
-  m_renderer->setProjection(projection);
-}
-
 void EditorRender::setSampling(const os::Sampling& sampling)
 {
   m_renderer->setSampling(sampling);
@@ -210,7 +205,7 @@ void EditorRender::disableOnionskin()
   m_renderer->disableOnionskin();
 }
 
-void EditorRender::renderCanvas(Editor* editor,
+void EditorRender::renderCanvas(CanvasView* view,
                                 ui::Graphics* g,
                                 const doc::Sprite* sprite,
                                 const doc::frame_t frame,
@@ -219,33 +214,40 @@ void EditorRender::renderCanvas(Editor* editor,
                                 const bool exposeWithProj)
 {
   m_renderer->prepareSpritePalette(sprite, frame);
-  m_renderer->renderCanvas(editor, g, sprite, frame, dest, expose, exposeWithProj);
+  m_renderer->renderCanvas(view, g, sprite, frame, dest, expose, exposeWithProj);
 }
 
 void EditorRender::renderSprite(os::Surface* dstSurface,
                                 const doc::Sprite* sprite,
                                 doc::frame_t frame,
-                                const gfx::ClipF& area)
+                                const gfx::ClipF& area,
+                                const render::Projection& proj)
 {
   m_renderer->prepareSpritePalette(sprite, frame);
-  m_renderer->renderSpriteArea(dstSurface, sprite, frame, area);
+  m_renderer->renderSpriteArea(dstSurface, sprite, frame, area, proj);
 }
 
 void EditorRender::renderCheckeredBackground(os::Surface* dstSurface,
                                              const doc::Sprite* sprite,
-                                             const gfx::Clip& area)
+                                             const gfx::Clip& area,
+                                             const render::Projection& proj)
 {
-  m_renderer->renderCheckeredBackground(dstSurface, sprite, area);
+  m_renderer->renderCheckeredBackground(dstSurface, sprite, area, proj);
 }
 
-void EditorRender::invalidateRenderCache(const doc::Sprite* sprite)
+void EditorRender::deleteRenderCache(CanvasView* view)
 {
-  m_renderer->invalidateRenderCache(sprite);
+  m_renderer->deleteRenderCache(view);
 }
 
-void EditorRender::invalidateRenderCache(const doc::Sprite* sprite, const gfx::Region& spriteRegion)
+void EditorRender::invalidateRenderCache(CanvasView* view)
 {
-  m_renderer->invalidateRenderCache(sprite, spriteRegion);
+  m_renderer->invalidateRenderCache(view);
+}
+
+void EditorRender::invalidateRenderCache(CanvasView* view, const gfx::Region& spriteRegion)
+{
+  m_renderer->invalidateRenderCache(view, spriteRegion);
 }
 
 // static

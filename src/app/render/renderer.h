@@ -27,7 +27,7 @@ class Graphics;
 
 namespace app {
 
-class Editor;
+class CanvasView;
 
 // Abstract class to render images from any editor to be displayed
 // in the screen mainly (to render images in files you can continue
@@ -66,7 +66,6 @@ public:
   // ----------------------------------------------------------------------
   // Basic configuration
 
-  virtual const render::Projection& projection() const = 0;
   virtual const render::BgOptions& bgOptions() const = 0;
 
   virtual void setRefLayersVisiblity(bool visible) = 0;
@@ -74,7 +73,6 @@ public:
   virtual void setNewBlendMethod(bool newBlend) = 0;
   virtual void setComposeGroups(bool composeGroups) = 0;
   virtual void setBgOptions(const render::BgOptions& bg) = 0;
-  virtual void setProjection(const render::Projection& projection) = 0;
   virtual void setSampling(const os::Sampling& sampling) = 0;
 
   // ----------------------------------------------------------------------
@@ -105,7 +103,7 @@ public:
 
   virtual void prepareSpritePalette(const doc::Sprite* sprite, doc::frame_t frame) {}
 
-  virtual void renderCanvas(Editor* editor, // TODO remove Editor dependency
+  virtual void renderCanvas(CanvasView* view,
                             ui::Graphics* g,
                             const doc::Sprite* sprite,
                             doc::frame_t frame,
@@ -116,13 +114,16 @@ public:
   virtual void renderSpriteArea(os::Surface* dstSurface,
                                 const doc::Sprite* sprite,
                                 const doc::frame_t frame,
-                                const gfx::ClipF& area) = 0;
+                                const gfx::ClipF& area,
+                                const render::Projection& proj) = 0;
   virtual void renderCheckeredBackground(os::Surface* dstSurface,
                                          const doc::Sprite* sprite,
-                                         const gfx::Clip& area) = 0;
+                                         const gfx::Clip& area,
+                                         const render::Projection& proj) = 0;
 
-  virtual void invalidateRenderCache(const doc::Sprite* sprite) {}
-  virtual void invalidateRenderCache(const doc::Sprite* sprite, const gfx::Region& spriteRegion) {}
+  virtual void deleteRenderCache(CanvasView* view) {}
+  virtual void invalidateRenderCache(CanvasView* view) {}
+  virtual void invalidateRenderCache(CanvasView* view, const gfx::Region& spriteRegion) {}
 };
 
 } // namespace app

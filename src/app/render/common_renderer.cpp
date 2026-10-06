@@ -12,13 +12,14 @@
 
 #include "app/doc.h"
 #include "app/pref/preferences.h"
+#include "app/render/canvas_view.h"
 #include "os/system.h"
 
 namespace app {
 
 os::SurfaceRef CommonRenderer::m_rendered;
 
-void CommonRenderer::renderCanvas(Editor* editor,
+void CommonRenderer::renderCanvas(CanvasView* view,
                                   ui::Graphics* g,
                                   const doc::Sprite* sprite,
                                   const doc::frame_t frame,
@@ -28,7 +29,7 @@ void CommonRenderer::renderCanvas(Editor* editor,
 {
   const auto& pref = Preferences::instance(); // TODO move these options to Renderer
   const auto& renderProperties = properties();
-  const render::Projection proj = projection();
+  render::Projection proj = view->cvProjection();
 
   // Prepare auxiliary structures for renderSpriteArea
   prepareSpritePalette(sprite, frame);
@@ -45,9 +46,9 @@ void CommonRenderer::renderCanvas(Editor* editor,
   m_rendered->setColorSpace(static_cast<Doc*>(sprite->document())->osColorSpace());
 
   if (!exposeWithProj)
-    setProjection(render::Projection());
+    proj = render::Projection();
 
-  renderSpriteArea(m_rendered.get(), sprite, frame, gfx::Clip(0, 0, expose));
+  renderSpriteArea(m_rendered.get(), sprite, frame, gfx::Clip(0, 0, expose), proj);
 
   if (m_rendered && m_rendered->nativeHandle()) {
     os::Paint p;

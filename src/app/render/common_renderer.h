@@ -16,7 +16,7 @@ namespace app {
 // Common code to render the Editor canvas using a SimpleRenderer/ShaderRenderer
 class CommonRenderer : public Renderer {
 public:
-  void renderCanvas(Editor* editor,
+  void renderCanvas(CanvasView* view,
                     ui::Graphics* g,
                     const doc::Sprite* sprite,
                     doc::frame_t frame,

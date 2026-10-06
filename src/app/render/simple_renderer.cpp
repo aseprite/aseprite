@@ -10,6 +10,7 @@
 
 #include "app/render/simple_renderer.h"
 
+#include "app/render/canvas_view.h"
 #include "app/ui/editor/editor_render.h"
 #include "app/util/conversion_to_surface.h"
 #include "ui/system.h"
@@ -46,11 +47,6 @@ void SimpleRenderer::setComposeGroups(const bool composeGroups)
 void SimpleRenderer::setBgOptions(const render::BgOptions& bg)
 {
   m_render.setBgOptions(bg);
-}
-
-void SimpleRenderer::setProjection(const render::Projection& projection)
-{
-  m_render.setProjection(projection);
 }
 
 void SimpleRenderer::setSampling(const os::Sampling& sampling)
@@ -116,7 +112,8 @@ void SimpleRenderer::disableOnionskin()
 void SimpleRenderer::renderSpriteArea(os::Surface* dstSurface,
                                       const doc::Sprite* sprite,
                                       const doc::frame_t frame,
-                                      const gfx::ClipF& area)
+                                      const gfx::ClipF& area,
+                                      const render::Projection& proj)
 {
   doc::ImageBufferPtr buffer;
 
@@ -126,6 +123,7 @@ void SimpleRenderer::renderSpriteArea(os::Surface* dstSurface,
     buffer = EditorRender::getRenderImageBuffer();
 
   ImageRef dstImage(Image::create(IMAGE_RGB, area.size.w, area.size.h, buffer));
+  m_render.setProjection(proj);
   m_render.renderSprite(dstImage.get(), sprite, frame, area);
 
   convert_image_to_surface(dstImage.get(),
@@ -141,7 +139,8 @@ void SimpleRenderer::renderSpriteArea(os::Surface* dstSurface,
 
 void SimpleRenderer::renderCheckeredBackground(os::Surface* dstSurface,
                                                const doc::Sprite* sprite,
-                                               const gfx::Clip& area)
+                                               const gfx::Clip& area,
+                                               const render::Projection& proj)
 {
   doc::ImageBufferPtr buffer;
   if (ui::is_ui_thread())
@@ -149,6 +148,7 @@ void SimpleRenderer::renderCheckeredBackground(os::Surface* dstSurface,
 
   ImageRef dstImage(Image::create(IMAGE_RGB, area.size.w, area.size.h, buffer));
 
+  m_render.setProjection(proj);
   m_render.renderCheckeredBackground(dstImage.get(), area);
 
   convert_image_to_surface(dstImage.get(),
