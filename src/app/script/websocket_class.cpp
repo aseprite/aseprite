@@ -22,8 +22,6 @@
 
 #include <curl/curl.h>
 
-#undef min
-
 namespace app::script {
 
 namespace {

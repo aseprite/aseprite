@@ -28,6 +28,8 @@ endif()
 if(WIN32)
   # Needed to include icons in win32 .rc file
   include_directories(..)
+  # Avoid Windows header collisions
+  add_compile_definitions(NOMINMAX NODRAWTEXT NOBITMAP NOMCX NOSERVICE NOHELP WIN32_LEAN_AND_MEAN)
 endif()
 
 ######################################################################
