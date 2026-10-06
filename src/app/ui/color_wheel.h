@@ -35,6 +35,7 @@ public:
   };
 
   ColorWheel();
+  ~ColorWheel();
 
   bool isDiscrete() const { return m_discrete; }
   void setDiscrete(bool state);
@@ -75,7 +76,7 @@ private:
   std::string m_bottomShader;
   gfx::Rect m_wheelBounds;
   gfx::Color m_bgColor;
-  double m_wheelRadius;
+  double m_wheelRadius = 0.0;
   bool m_discrete;
   ColorModel m_colorModel;
   Harmony m_harmony;
