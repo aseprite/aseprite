@@ -274,7 +274,7 @@ void Tabs::setDockedStyle()
 
 void Tabs::setDropViewPreview(const gfx::Point& screenPos, TabView* view)
 {
-  int x0 = (display()->nativeWindow()->pointFromScreen(screenPos).x - bounds().x);
+  int x0 = (display()->pointFromScreen(screenPos).x - bounds().x);
   int newIndex = -1;
 
   if (!m_list.empty()) {

@@ -543,7 +543,7 @@ Widget* Widget::pick(const gfx::Point& pt, const bool checkParentsVisibility) co
 
 Widget* Widget::pickFromScreenPos(const gfx::Point& screenPos) const
 {
-  return pick(display()->nativeWindow()->pointFromScreen(screenPos));
+  return pick(display()->pointFromScreen(screenPos));
 }
 
 bool Widget::hasChild(Widget* child)
@@ -1579,7 +1579,7 @@ bool Widget::offerCapture(ui::MouseMessage* mouseMsg, const WidgetType widgetTyp
 
 gfx::Point Widget::mousePosInDisplay() const
 {
-  return display()->nativeWindow()->pointFromScreen(get_mouse_position());
+  return display()->pointFromScreen(get_mouse_position());
 }
 
 void Widget::setMnemonic(const int mnemonic, const bool requireModifiers)

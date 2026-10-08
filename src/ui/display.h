@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -44,6 +44,9 @@ public:
   gfx::Rect bounds() const { return gfx::Rect(size()); }
 
   Widget* containedWidget() const { return m_containedWidget; }
+
+  gfx::Point pointToScreen(const gfx::Point& clientPosition) const;
+  gfx::Point pointFromScreen(const gfx::Point& screenPosition) const;
 
   // Mark the given rectangle as a area to be flipped to the real
   // screen.

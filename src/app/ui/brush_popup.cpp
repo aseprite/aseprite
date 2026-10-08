@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -458,8 +458,7 @@ void BrushPopup::onBrushChanges()
     getDrawableRegion(rgn, kCutTopWindowsAndUseChildArea);
 
     Display* mainDisplay = manager()->display();
-    regenerate(mainDisplay,
-               mainDisplay->nativeWindow()->pointFromScreen(boundsOnScreen().origin()));
+    regenerate(mainDisplay, mainDisplay->pointFromScreen(boundsOnScreen().origin()));
     invalidate();
 
     parent()->invalidateRegion(rgn);

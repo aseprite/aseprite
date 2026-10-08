@@ -479,9 +479,9 @@ int Dialog_show(lua_State* L)
         // so we need to get the origin from the last native frame.
         if (get_multiple_displays()) {
           auto dlgScreenBounds = dlg->window.lastNativeFrame();
-          auto* nativeWindow = dlg->window.display()->nativeWindow();
-          dlgBounds = gfx::Rect(nativeWindow->pointFromScreen(dlgScreenBounds.origin()),
-                                nativeWindow->pointFromScreen(dlgScreenBounds.point2()));
+          auto* display = dlg->window.display();
+          dlgBounds = gfx::Rect(display->pointFromScreen(dlgScreenBounds.origin()),
+                                display->pointFromScreen(dlgScreenBounds.point2()));
         }
         fit_bounds(
           dlg->parentDisplay(),
@@ -543,7 +543,7 @@ int Dialog_showMenu(lua_State* L)
   MoveChildren moveChildren(dlg, &popup);
 
   // By default show the menu in the mouse position
-  gfx::Point pt = dlg->parentDisplay()->nativeWindow()->pointFromScreen(ui::get_mouse_position());
+  gfx::Point pt = dlg->parentDisplay()->pointFromScreen(ui::get_mouse_position());
 
   if (lua_istable(L, 2)) {
     if (lua_getfield(L, 2, "position") != LUA_TNIL) {

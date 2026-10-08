@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2024  Igara Studio S.A.
+// Copyright (C) 2021-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -110,7 +110,7 @@ void ZoomCommand::onExecute(Context* context)
 
   editor->setZoomAndCenterInMouse(
     zoom,
-    editor->display()->nativeWindow()->pointFromScreen(mousePos),
+    editor->display()->pointFromScreen(mousePos),
     (focus == Focus::Center ? Editor::ZoomBehavior::CENTER : Editor::ZoomBehavior::MOUSE));
 }
 

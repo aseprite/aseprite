@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -330,7 +330,7 @@ DropViewAtResult WorkspacePanel::dropViewAt(const gfx::Point& screenPos,
 
 int WorkspacePanel::calculateDropArea(const gfx::Point& screenPos) const
 {
-  const gfx::Point pos = display()->nativeWindow()->pointFromScreen(screenPos);
+  const gfx::Point pos = display()->pointFromScreen(screenPos);
   const gfx::Rect rc = childrenBounds();
   if (rc.contains(pos)) {
     int left = ABS(rc.x - pos.x);

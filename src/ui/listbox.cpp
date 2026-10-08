@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -204,7 +204,7 @@ bool ListBox::onProcessMessage(Message* msg)
       if (hasCapture()) {
         gfx::Point screenPos = msg->display()->nativeWindow()->pointToScreen(
           static_cast<MouseMessage*>(msg)->position());
-        gfx::Point mousePos = display()->nativeWindow()->pointFromScreen(screenPos);
+        gfx::Point mousePos = display()->pointFromScreen(screenPos);
         View* view = View::getView(this);
         bool pick_item = true;
 

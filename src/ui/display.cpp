@@ -51,8 +51,7 @@ os::SurfaceRef Display::nativeSurface() const
 {
   if (m_nativeWindow)
     return base::AddRef(m_nativeWindow->surface());
-  else
-    return nullptr;
+  return nullptr;
 }
 
 void Display::addLayer(const UILayerRef& layer)
@@ -113,6 +112,20 @@ gfx::Size Display::size() const
   const int scale = m_nativeWindow->scale();
   ASSERT(scale > 0);
   return gfx::Size(m_nativeWindow->width() / scale, m_nativeWindow->height() / scale);
+}
+
+gfx::Point Display::pointToScreen(const gfx::Point& clientPosition) const
+{
+  if (m_nativeWindow)
+    return m_nativeWindow->pointToScreen(clientPosition);
+  return clientPosition;
+}
+
+gfx::Point Display::pointFromScreen(const gfx::Point& screenPosition) const
+{
+  if (m_nativeWindow)
+    return m_nativeWindow->pointFromScreen(screenPosition);
+  return screenPosition;
 }
 
 void Display::dirtyRect(const gfx::Rect& bounds)
@@ -233,12 +246,9 @@ void Display::handleWindowZOrder(Window* window)
 
 gfx::Size Display::workareaSizeUIScale()
 {
-  if (get_multiple_displays()) {
+  if (get_multiple_displays())
     return nativeWindow()->screen()->workarea().size() / nativeWindow()->scale();
-  }
-  else {
-    return size();
-  }
+  return size();
 }
 
 } // namespace ui

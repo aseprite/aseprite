@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2024  Igara Studio S.A.
+// Copyright (C) 2022-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -28,7 +28,7 @@ using namespace ui;
 DraggingValueState::DraggingValueState(Editor* editor, const Keys& keys)
   : m_editor(editor)
   , m_keys(keys)
-  , m_initialPos(editor->display()->nativeWindow()->pointFromScreen(ui::get_mouse_position()))
+  , m_initialPos(editor->display()->pointFromScreen(ui::get_mouse_position()))
   , m_initialPosSameGroup(m_initialPos)
   , m_initialFgColor(StateWithWheelBehavior::initialFgColor())
   , m_initialBgColor(StateWithWheelBehavior::initialBgColor())
@@ -191,8 +191,7 @@ void DraggingValueState::onToolGroupChange(Editor* editor, tools::ToolGroup* gro
     // the same time. This special position is needed to avoid jumping
     // "randomly" to other tools when we change to another group (as
     // the delta from the m_initialPos is accumulated).
-    m_initialPosSameGroup = editor->display()->nativeWindow()->pointFromScreen(
-      ui::get_mouse_position());
+    m_initialPosSameGroup = editor->display()->pointFromScreen(ui::get_mouse_position());
   }
 }
 

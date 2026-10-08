@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -92,19 +92,16 @@ Shortcut KeyMessage::shortcut() const
 
 gfx::Point MouseMessage::positionForDisplay(Display* anotherDisplay) const
 {
-  if (display() == anotherDisplay) {
+  if (display() == anotherDisplay)
     return position(); // There is no need for transformation
-  }
-  else {
-    ASSERT(anotherDisplay);
-    ASSERT(anotherDisplay->nativeWindow());
-    return anotherDisplay->nativeWindow()->pointFromScreen(screenPosition());
-  }
+
+  ASSERT(anotherDisplay);
+  return anotherDisplay->pointFromScreen(screenPosition());
 }
 
 gfx::Point MouseMessage::screenPosition() const
 {
-  return display()->nativeWindow()->pointToScreen(position());
+  return display()->pointToScreen(position());
 }
 
 Shortcut MouseMessage::shortcut() const

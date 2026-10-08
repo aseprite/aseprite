@@ -468,8 +468,7 @@ void Manager::generateMessagesFromOSEvents()
 
       case os::Event::WindowLeave:
         if (capture_widget) {
-          const gfx::Point mousePos = display->nativeWindow()->pointFromScreen(
-            get_mouse_position());
+          const gfx::Point mousePos = display->pointFromScreen(get_mouse_position());
           auto* msg = newMouseMessage(kMouseUpMessage,
                                       display,
                                       nullptr,
@@ -1059,7 +1058,7 @@ void Manager::setMouse(Widget* widget)
   mouse_widget = widget;
   if (widget) {
     Display* display = mouse_widget->display();
-    gfx::Point mousePos = display->nativeWindow()->pointFromScreen(get_mouse_position());
+    gfx::Point mousePos = display->pointFromScreen(get_mouse_position());
 
     auto msg = newMouseMessage(kMouseEnterMessage,
                                display,
@@ -1337,11 +1336,11 @@ Widget* Manager::pickFromScreenPos(const gfx::Point& screenPos) const
       if (window->ownDisplay() || window->display() != mainDisplay) {
         os::Window* nativeWindow = window->display()->nativeWindow();
         if (nativeWindow->frame().contains(screenPos))
-          return window->pick(nativeWindow->pointFromScreen(screenPos));
+          return window->pick(window->display()->pointFromScreen(screenPos));
       }
     }
 
-    gfx::Point displayPos = display()->nativeWindow()->pointFromScreen(screenPos);
+    gfx::Point displayPos = display()->pointFromScreen(screenPos);
     for (auto child : children()) {
       auto window = static_cast<Window*>(child);
       if (window->display() == mainDisplay) {

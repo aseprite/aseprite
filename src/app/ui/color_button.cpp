@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -156,8 +156,8 @@ bool ColorButton::onProcessMessage(Message* msg)
         // from the display surface, and finally from the desktop. The
         // desktop must be a last resource method, because in macOS it
         // will ask for permissions to record the screen.
-        os::Window* nativeWindow = msg->display()->nativeWindow();
-        gfx::Point screenPos = nativeWindow->pointToScreen(mousePos);
+        Display* display = msg->display();
+        gfx::Point screenPos = display->pointToScreen(mousePos);
 
         Widget* picked = manager()->pickFromScreenPos(screenPos);
         if (picked == this) {
@@ -170,15 +170,16 @@ bool ColorButton::onProcessMessage(Message* msg)
 
         IColorSource* colorSource = dynamic_cast<IColorSource*>(picked);
         if (colorSource) {
-          nativeWindow = picked->display()->nativeWindow();
-          mousePos = nativeWindow->pointFromScreen(screenPos);
+          display = picked->display();
+          mousePos = display->pointFromScreen(screenPos);
         }
         else {
           gfx::Color gfxColor = gfx::ColorNone;
 
           // Get color from native window surface
+          os::Window* nativeWindow = display->nativeWindow();
           if (nativeWindow->contentRect().contains(screenPos)) {
-            mousePos = nativeWindow->pointFromScreen(screenPos);
+            mousePos = display->pointFromScreen(screenPos);
             if (nativeWindow->surface()->bounds().contains(mousePos))
               gfxColor = nativeWindow->surface()->getPixel(mousePos.x, mousePos.y);
           }
@@ -460,19 +461,16 @@ gfx::Rect ColorButton::convertBounds(const gfx::Rect& bounds) const
 {
   // Convert to desktop
   if (get_multiple_displays() && !m_desktopCoords) {
-    auto nativeWindow = display()->nativeWindow();
-    return gfx::Rect(nativeWindow->pointToScreen(bounds.origin()),
-                     nativeWindow->pointToScreen(bounds.point2()));
+    return gfx::Rect(display()->pointToScreen(bounds.origin()),
+                     display()->pointToScreen(bounds.point2()));
   }
   // Convert to display
-  else if (!get_multiple_displays() && m_desktopCoords) {
-    auto nativeWindow = display()->nativeWindow();
-    return gfx::Rect(nativeWindow->pointFromScreen(bounds.origin()),
-                     nativeWindow->pointFromScreen(bounds.point2()));
+  if (!get_multiple_displays() && m_desktopCoords) {
+    return gfx::Rect(display()->pointFromScreen(bounds.origin()),
+                     display()->pointFromScreen(bounds.point2()));
   }
   // No conversion is required
-  else
-    return bounds;
+  return bounds;
 }
 
 } // namespace app
