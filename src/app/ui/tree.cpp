@@ -510,10 +510,10 @@ void Tree::onPaint(PaintEvent& ev)
   const int itemSpacing = m_themeCache.itemSpacing;
   const int depthSpacing = m_themeCache.depthSpacing;
 
-  g->drawRect(g->getClipBounds(), backgroundPaint);
+  g->drawRect(g->localClipBounds(), backgroundPaint);
 
   gfx::PointF point(clientChildrenBounds().origin() + gfx::PointF(border().size()));
-  const gfx::Rect clipBounds = g->getClipBounds();
+  const gfx::Rect clipBounds = g->localClipBounds();
   const auto fontHeight = font()->metrics(nullptr);
   const auto fullWidth = size().w;
 

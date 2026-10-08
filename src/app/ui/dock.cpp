@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2025  Igara Studio S.A.
+// Copyright (C) 2021-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -88,7 +88,7 @@ Dock::DropzonePlaceholder::DropzonePlaceholder(Widget* dragWidget, const gfx::Po
   }
 
   {
-    Graphics g(display(), surface, 0, 0);
+    Graphics g(display(), surface);
     g.setFont(font());
 
     Paint paint;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2024-2025  Igara Studio S.A.
+// Copyright (c) 2024-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -46,7 +46,7 @@ void convert_surface_to_image(const os::Surface* surface,
                               ImageRef& image)
 {
   gfx::Rect srcBounds(src_x, src_y, w, h);
-  srcBounds = srcBounds.createIntersection(surface->getClipBounds());
+  srcBounds = srcBounds.createIntersection(surface->localClipBounds());
   if (srcBounds.isEmpty())
     return;
 

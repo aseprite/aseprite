@@ -598,7 +598,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
   gfx::Rect dest(dx + m_padding.x + rc.x, dy + m_padding.y + rc.y, 0, 0);
 
   // Clip from graphics/screen
-  const gfx::Rect& clip = g->getClipBounds();
+  const gfx::Rect& clip = g->localClipBounds();
   if (dest.x < clip.x) {
     rc.x += clip.x - dest.x;
     rc.w -= clip.x - dest.x;
@@ -2465,7 +2465,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
       // opaque background now, and defer the rendering of the sprite
       // for later.
       g->fillRect(theme->colors.editorFace(), rc);
-      defer_invalid_rect(g->getClipBounds().offset(bounds().origin()));
+      defer_invalid_rect(g->localClipBounds().offset(bounds().origin()));
     }
   }
 }

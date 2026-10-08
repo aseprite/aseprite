@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2025  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -293,7 +293,7 @@ public:
                  :
                  Strings::undo_history_initial_state());
 
-      if ((g->getClipBounds() & itemBounds).isEmpty())
+      if ((g->localClipBounds() & itemBounds).isEmpty())
         return;
 
       auto style = theme->styles.listItem();

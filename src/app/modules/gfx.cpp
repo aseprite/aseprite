@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -252,14 +252,12 @@ void draw_tile(ui::Graphics* g, const Rect& rc, const Site& site, doc::tile_t ti
   }
 
   m.postConcat(gfx::Matrix::MakeScale(float(rc.w) / w, float(rc.h) / h));
-
-  // TODO integrate getInternalDeltaX/Y translation in ui::Graphics
-  m.postConcat(
-    gfx::Matrix::MakeTrans(rc.x + g->getInternalDeltaX(), rc.y + g->getInternalDeltaY()));
+  m.postConcat(gfx::Matrix::MakeTrans(rc.x, rc.y));
+  m.postConcat(g->matrix());
 
   g->save();
   g->setMatrix(m);
-  g->drawRgbaSurface(surface.get(), -g->getInternalDeltaX(), -g->getInternalDeltaY());
+  g->drawRgbaSurface(surface.get(), 0, 0);
   g->restore();
 }
 

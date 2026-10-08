@@ -238,13 +238,13 @@ Theme::TextColors Theme::getTextColors(Widget* widget)
 void Theme::paintListBox(PaintEvent& ev)
 {
   Graphics* g = ev.graphics();
-  g->fillRect(kBgColor, g->getClipBounds());
+  g->fillRect(kBgColor, g->localClipBounds());
 }
 
 void Theme::paintViewViewport(PaintEvent& ev)
 {
   Graphics* g = ev.graphics();
-  g->fillRect(kBgColor, g->getClipBounds());
+  g->fillRect(kBgColor, g->localClipBounds());
 }
 
 void Theme::paintWidgetPart(Graphics* g,

@@ -140,11 +140,10 @@ void TileBasedRenderer::renderCanvas(CanvasView* view,
   const doc::LayerImage* bgLayer = sprite->backgroundLayer();
   if (!bgLayer || !bgLayer->isVisible()) {
     auto renderBg = [proj, g, sprite, dest, visible](Renderer* r) {
-      r->renderCheckeredBackground(
-        g->getInternalSurface(),
-        sprite,
-        gfx::Clip(dest.x + g->getInternalDeltaX(), dest.y + g->getInternalDeltaY(), visible),
-        proj);
+      r->renderCheckeredBackground(g->getInternalSurface(),
+                                   sprite,
+                                   gfx::Clip(dest.x, dest.y, visible),
+                                   proj);
     };
     if (properties().renderBgOnScreen)
       renderBg(this);

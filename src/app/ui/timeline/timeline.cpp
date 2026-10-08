@@ -1827,7 +1827,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     // The sprite is locked, so we defer the rendering of the sprite
     // for later.
     noDoc = true;
-    defer_invalid_rect(g->getClipBounds().offset(bounds().origin()));
+    defer_invalid_rect(g->localClipBounds().offset(bounds().origin()));
   }
 
 paintNoDoc:;

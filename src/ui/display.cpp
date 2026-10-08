@@ -163,23 +163,23 @@ void Display::flipDisplay()
       gfx::Rect srcRc = rc;
       srcRc.offset(-layer->position());
 
-      windowSurface->saveClip();
+      windowSurface->save();
       if (!layer->clipRegion().isEmpty())
         windowSurface->clipRegion(layer->clipRegion());
-
       windowSurface->drawSurface(layerSurface.get(), srcRc, rc, os::Sampling(), &layer->paint());
-
-      windowSurface->restoreClip();
+      windowSurface->restore();
     }
   }
 
 #if DEBUG_DIRTY_RECTS
+  windowSurface->save();
   for (const gfx::Rect& rc : m_dirtyRegion) {
     os::Paint paint;
     paint.color(gfx::rgba(255, 0, 0));
     paint.style(os::Paint::Stroke);
     windowSurface->drawRect(rc, paint);
   }
+  windowSurface->restore();
 #endif
 
   // Invalidate the dirty region in the os::Window only if the window

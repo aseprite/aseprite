@@ -47,7 +47,7 @@ class Display;
 // function.
 class Graphics {
 public:
-  Graphics(Display* display, const os::SurfaceRef& surface, int dx, int dy);
+  Graphics(Display* display, const os::SurfaceRef& surface);
   Graphics(Display* display);
   Graphics(const os::SurfaceRef& surface);
   ~Graphics();
@@ -59,13 +59,9 @@ public:
   os::Surface* getInternalSurface() { return m_surface.get(); }
   os::ColorSpace* colorSpace() { return m_surface->colorSpace().get(); }
 
-  int getInternalDeltaX() { return m_dx; }
-  int getInternalDeltaY() { return m_dy; }
-
   int getSaveCount() const;
-  gfx::Rect getClipBounds() const;
-  void saveClip();
-  void restoreClip();
+  gfx::Rect localClipBounds() const;
+  gfx::Rect deviceClipBounds() const;
   bool clipRect(const gfx::Rect& rc);
   void clipRegion(const gfx::Region& rgn);
 
@@ -166,37 +162,9 @@ private:
 
   Display* m_display;
   os::SurfaceRef m_surface;
-  int m_dx;
-  int m_dy;
   gfx::Rect m_clipBounds;
   text::FontRef m_font;
   gfx::Rect m_dirtyBounds;
-};
-
-// Class to temporary set the Graphics' clip region to the full
-// extend.
-class SetClip {
-public:
-  SetClip(Graphics* g) : m_graphics(g), m_oldClip(g->getClipBounds()), m_oldCount(g->getSaveCount())
-  {
-    if (m_oldCount > 1)
-      m_graphics->restoreClip();
-  }
-
-  ~SetClip()
-  {
-    if (m_oldCount > 1) {
-      m_graphics->saveClip();
-      m_graphics->clipRect(m_oldClip);
-    }
-  }
-
-private:
-  Graphics* m_graphics;
-  gfx::Rect m_oldClip;
-  int m_oldCount;
-
-  DISABLE_COPYING(SetClip);
 };
 
 // Class to temporary set the Graphics' clip region to a sub-rectangle
@@ -205,11 +173,11 @@ class IntersectClip {
 public:
   IntersectClip(Graphics* g, const gfx::Rect& rc) : m_graphics(g)
   {
-    m_graphics->saveClip();
+    m_graphics->save();
     m_notEmpty = m_graphics->clipRect(rc);
   }
 
-  ~IntersectClip() { m_graphics->restoreClip(); }
+  ~IntersectClip() { m_graphics->restore(); }
 
   operator bool() const { return m_notEmpty; }
 

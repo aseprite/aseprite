@@ -216,8 +216,8 @@ protected:
       render.setupBackground(m_doc, IMAGE_RGB);
       render.renderCheckeredBackground(g->getInternalSurface(),
                                        m_sprite,
-                                       gfx::Clip(g->getInternalDeltaX(),
-                                                 g->getInternalDeltaY(),
+                                       gfx::Clip(0,
+                                                 0,
                                                  -m_pos.x,
                                                  -m_pos.y,
                                                  2 * g->getInternalSurface()->width(),
@@ -226,7 +226,7 @@ protected:
 
       // Invalidate the whole Graphics (as we've just modified its
       // internal os::Surface directly).
-      g->invalidate(g->getClipBounds());
+      g->invalidate(g->localClipBounds());
     }
     else {
       auto col = m_pal->getEntry(m_index_bg_color);

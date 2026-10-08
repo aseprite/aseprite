@@ -474,7 +474,7 @@ void FileList::onPaint(ui::PaintEvent& ev)
 void FileList::paintItem(ui::Graphics* g, IFileItem* fi, const int i)
 {
   ItemInfo info = getFileItemInfo(i);
-  if ((g->getClipBounds() & info.bounds).isEmpty())
+  if ((g->localClipBounds() & info.bounds).isEmpty())
     return;
 
   auto theme = SkinTheme::get(this);

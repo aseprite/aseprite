@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2020-2025  Igara Studio S.A.
+// Copyright (c) 2020-present  Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This program is distributed under the terms of
@@ -109,15 +109,22 @@ void convert_image_to_surface_templ(const Image* image,
                                     const os::SurfaceFormatData* fd)
 {
   const LockImageBits<ImageTraits> bits(image, gfx::Rect(src_x, src_y, w, h));
-  typename LockImageBits<ImageTraits>::const_iterator src_it = bits.begin();
+  auto src_it = bits.begin();
 #ifdef _DEBUG
-  typename LockImageBits<ImageTraits>::const_iterator src_end = bits.end();
+  auto src_end = bits.end();
 #endif
 
   for (int v = 0; v < h; ++v, ++dst_y) {
+    ASSERT(v >= 0);
+    ASSERT(v < image->height());
+    ASSERT(v < dst->height());
+
     AddressType dst_address = AddressType(dst->getData(dst_x, dst_y));
     for (int u = 0; u < w; ++u) {
       ASSERT(src_it != src_end);
+      ASSERT(u >= 0);
+      ASSERT(u < image->width());
+      ASSERT(u < dst->width());
 
       *dst_address = convert_color_to_surface<ImageTraits, os::kRgbaSurfaceFormat>(*src_it,
                                                                                    palette,
@@ -236,7 +243,7 @@ void convert_image_to_surface(const doc::Image* image,
   h = srcBounds.h;
 
   gfx::Rect dstBounds(dst_x, dst_y, w, h);
-  dstBounds = dstBounds.createIntersection(surface->getClipBounds());
+  dstBounds &= surface->deviceClipBounds();
   if (dstBounds.isEmpty())
     return;
 

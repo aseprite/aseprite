@@ -15,6 +15,7 @@
 #include "base/memory.h"
 #include "base/string.h"
 #include "base/utf8_decode.h"
+#include "gfx/matrix.h"
 #include "os/surface.h"
 #include "os/system.h"
 #include "os/window.h"
@@ -1228,16 +1229,15 @@ void Widget::paint(Graphics* graphics, const gfx::Region& drawRegion, const bool
     widget->getDrawableRegion(region, kCutTopWindows);
     region.createIntersection(region, drawRegion);
 
-    Graphics graphics2(display,
-                       base::AddRef(graphics->getInternalSurface()),
-                       widget->bounds().x,
-                       widget->bounds().y);
-    graphics2.setFont(widget->font());
+    Graphics graphics2(display, base::AddRef(graphics->getInternalSurface()));
 
-    for (const gfx::Rect& rc : region) {
-      IntersectClip clip(&graphics2, Rect(rc).offset(-widget->bounds().x, -widget->bounds().y));
-      widget->paintEvent(&graphics2, isBg);
-    }
+    gfx::Matrix m;
+    m.postConcat(gfx::Matrix::MakeTrans(widget->bounds().x, widget->bounds().y));
+
+    graphics2.setMatrix(m);
+    graphics2.setFont(widget->font());
+    graphics2.clipRegion(region);
+    widget->paintEvent(&graphics2, isBg);
   }
 }
 
@@ -1278,8 +1278,7 @@ bool Widget::paintEvent(Graphics* graphics, const bool isBg)
     }
     if (parentWidget) {
       gfx::Region rgn(parentWidget->bounds());
-      rgn &= gfx::Region(graphics->getClipBounds().offset(graphics->getInternalDeltaX(),
-                                                          graphics->getInternalDeltaY()));
+      rgn &= gfx::Region(graphics->deviceClipBounds());
       parentWidget->paint(graphics, rgn, true);
     }
     else {
@@ -1400,12 +1399,22 @@ GraphicsPtr Widget::getGraphics(const gfx::Rect& clip)
   if (isDoubleBuffered() && dstSurface->isDirectToScreen()) {
     os::SurfaceRef surface =
       os::System::instance()->makeSurface(clip.w, clip.h, dstSurface->colorSpace());
-    graphics.reset(new Graphics(display, surface, -clip.x, -clip.y),
+
+    graphics.reset(new Graphics(display, surface),
                    DeleteGraphicsAndSurface(clip, surface, dstSurface));
+
+    gfx::Matrix m;
+    m.setIdentity();
+    m.postTranslate(-clip.x, -clip.y);
+    graphics->setMatrix(m);
   }
   // In other case, we can draw directly onto the screen.
   else {
-    graphics.reset(new Graphics(display, dstSurface, bounds().x, bounds().y));
+    graphics = std::make_shared<Graphics>(display, dstSurface);
+
+    gfx::Matrix m = graphics->matrix();
+    m.postTranslate(bounds().x, bounds().y);
+    graphics->setMatrix(m);
   }
 
   graphics->setFont(font());

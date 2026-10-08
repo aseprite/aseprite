@@ -305,7 +305,7 @@ void TextEdit::onPaint(PaintEvent& ev)
   g->drawRect(rect, backgroundPaint);
 
   gfx::PointF point(clientChildrenBounds().origin());
-  const gfx::Rect clipBounds = g->getClipBounds();
+  const gfx::Rect clipBounds = g->localClipBounds();
 
   for (const auto& line : m_lines) {
     const bool caretLine = (line.i == m_caret.line());

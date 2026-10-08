@@ -1003,7 +1003,7 @@ void Tabs::createFloatingUILayer(Tab* tab)
   {
     Graphics g(surface);
     g.setFont(font());
-    drawTab(&g, g.getClipBounds(), tab, 0, true, true);
+    drawTab(&g, g.localClipBounds(), tab, 0, true, true);
   }
 
   surface->setImmutable();

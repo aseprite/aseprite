@@ -209,11 +209,10 @@ void ShaderRenderer::renderCanvas(CanvasView* view,
 
   const auto& proj = view->cvProjection();
 
-  renderCheckeredBackground(
-    g->getInternalSurface(),
-    sprite,
-    gfx::Clip(dest.x + g->getInternalDeltaX(), dest.y + g->getInternalDeltaY(), proj.apply(expose)),
-    proj);
+  renderCheckeredBackground(g->getInternalSurface(),
+                            sprite,
+                            gfx::Clip(dest.x, dest.y, proj.apply(expose)),
+                            proj);
 
   CommonRenderer::renderCanvas(view, g, sprite, frame, dest, expose, exposeWithProj);
 }

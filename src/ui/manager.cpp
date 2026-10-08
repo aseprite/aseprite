@@ -2046,7 +2046,7 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
     if (!surface)
       return false;
 
-    surface->saveClip();
+    surface->save();
 
     if (surface->clipRect(paintMsg->rect())) {
       if (has_devmode_flags(ui::DevModeFlags::DebugPaint) && !paintMsg->delayed()) {
@@ -2070,7 +2070,7 @@ bool Manager::sendMessageToWidget(Message* msg, Widget* widget)
     }
 
     // Restore clip region for paint messages.
-    surface->restoreClip();
+    surface->restore();
 
     // As this kPaintMessage's rectangle was updated, we can
     // remove it from "m_invalidRegion".

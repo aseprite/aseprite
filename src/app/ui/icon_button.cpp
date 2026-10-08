@@ -71,7 +71,7 @@ void IconButton::onPaint(PaintEvent& ev)
   }
 
   if (!isTransparent()) {
-    g->fillRect(bg, g->getClipBounds());
+    g->fillRect(bg, g->localClipBounds());
   }
 
   const gfx::Rect bounds = clientBounds();
