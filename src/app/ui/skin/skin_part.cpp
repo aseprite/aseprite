@@ -15,7 +15,7 @@
 
 namespace app { namespace skin {
 
-SkinPart::SkinPart()
+SkinPart::SkinPart() : m_isDefault(true)
 {
 }
 

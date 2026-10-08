@@ -72,6 +72,13 @@ void RecentFiles::addRecentFile(const std::string& filename)
   Changed();
 }
 
+void RecentFiles::addPinnedFile(const std::string& filename)
+{
+  std::string fn = normalizePath(filename);
+  addItem(m_paths[kPinnedFiles], fn);
+  Changed();
+}
+
 void RecentFiles::removeRecentFile(const std::string& filename)
 {
   std::string fn = normalizePath(filename);
@@ -81,6 +88,13 @@ void RecentFiles::removeRecentFile(const std::string& filename)
   if (!base::is_directory(dir))
     removeRecentFolder(dir);
 
+  Changed();
+}
+
+void RecentFiles::removePinnedFile(const std::string& filename)
+{
+  std::string fn = normalizePath(filename);
+  removeItem(m_paths[kPinnedFiles], fn);
   Changed();
 }
 
@@ -114,6 +128,28 @@ void RecentFiles::clear()
   m_paths[kRecentFiles].clear();
   m_paths[kRecentFolders].clear();
 
+  Changed();
+}
+
+void RecentFiles::clearFolders()
+{
+  m_paths[kRecentFolders].clear();
+  Changed();
+}
+
+void RecentFiles::pinFolder(const std::string& dir)
+{
+  std::string fn = normalizePath(dir);
+  addItem(m_paths[kPinnedFolders], fn);
+  removeItem(m_paths[kRecentFolders], fn);
+  Changed();
+}
+
+void RecentFiles::unpinFolder(const std::string& dir)
+{
+  std::string fn = normalizePath(dir);
+  removeItem(m_paths[kPinnedFolders], fn);
+  addItem(m_paths[kRecentFolders], fn);
   Changed();
 }
 
