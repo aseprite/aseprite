@@ -10,8 +10,8 @@
 #pragma once
 
 #include "app/cmd.h"
+#include "app/cmd/sequence.h"
 #include "app/cmd/with_image.h"
-#include "app/cmd_sequence.h"
 #include "doc/image_ref.h"
 #include "gfx/fwd.h"
 
@@ -26,6 +26,8 @@ using namespace doc;
 
 class ClearRect : public Cmd {
 public:
+  CMDTYPE('I', 'M', 'c', 'r', ClearRect);
+
   ClearRect(Cel* cel, const gfx::Rect& bounds);
   ClearRect(Cel* cel, const gfx::Rect& bounds, color_t color);
 
@@ -33,20 +35,17 @@ protected:
   void onExecute(Context* ctx) override;
   void onUndo(Context* ctx) override;
   void onRedo(Context* ctx) override;
-  size_t onMemSize() const override
-  {
-    return sizeof(*this) + m_seq.memSize() + (m_copy ? m_copy->getMemSize() : 0);
-  }
+  size_t onMemSize() const override { return sizeof(*this) + (m_copy ? m_copy->getMemSize() : 0); }
+  void onSerialize(CmdSerial& s) override;
 
 private:
   void initialize(Cel* cel, const gfx::Rect& bounds, color_t color);
   void clear();
   void restore();
 
-  CmdSequence m_seq;
-  std::unique_ptr<WithImage> m_dstImage;
+  WithImage m_dstImage;
   ImageRef m_copy;
-  int m_offsetX, m_offsetY;
+  gfx::Point m_offset;
   color_t m_bgcolor;
 };
 

@@ -16,6 +16,8 @@ using namespace doc;
 
 class RemoveSlice : public AddSlice {
 public:
+  CMDTYPE('S', 'L', 'd', 'e', RemoveSlice);
+
   RemoveSlice(Sprite* sprite, Slice* slice);
 
 protected:

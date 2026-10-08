@@ -17,6 +17,8 @@ namespace app { namespace cmd {
 class AssignColorProfile : public Cmd,
                            public WithSprite {
 public:
+  CMDTYPE('S', 'P', 'a', 'c', AssignColorProfile);
+
   AssignColorProfile(doc::Sprite* sprite, const gfx::ColorSpaceRef& cs);
 
 protected:

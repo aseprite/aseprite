@@ -17,6 +17,8 @@ using namespace doc;
 class SetTilesetBaseIndex : public Cmd,
                             public WithTileset {
 public:
+  CMDTYPE('T', 'S', 'b', 'i', SetTilesetBaseIndex);
+
   SetTilesetBaseIndex(Tileset* tileset, int baseIndex);
 
 protected:

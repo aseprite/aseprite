@@ -18,6 +18,8 @@ namespace app { namespace cmd {
 class ReplaceTileset : public Cmd,
                        public WithSprite {
 public:
+  CMDTYPE('T', 'S', 'r', 'e', ReplaceTileset);
+
   ReplaceTileset(doc::Sprite* sprite, const doc::tileset_index tsi, doc::Tileset* newTileset);
 
 protected:

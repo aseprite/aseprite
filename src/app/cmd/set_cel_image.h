@@ -20,6 +20,8 @@ namespace app { namespace cmd {
 class SetCelImage : public Cmd,
                     public WithCel {
 public:
+  CMDTYPE('C', 'E', 'i', 'm', SetCelImage);
+
   SetCelImage(doc::Cel* cel, const doc::ImageRef& newImage);
 
 protected:

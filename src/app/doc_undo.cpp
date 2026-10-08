@@ -13,7 +13,7 @@
 
 #include "app/app.h"
 #include "app/cmd.h"
-#include "app/cmd_transaction.h"
+#include "app/cmd/transaction.h"
 #include "app/console.h"
 #include "app/context.h"
 #include "app/doc_undo_observer.h"
@@ -27,7 +27,7 @@
 #include <stdexcept>
 
 #define UNDO_TRACE(...)
-#define STATE_CMD(state) (static_cast<CmdTransaction*>(state->cmd()))
+#define STATE_CMD(state) (static_cast<cmd::CmdTransaction*>((state)->cmd()))
 
 namespace app {
 
@@ -40,7 +40,7 @@ void DocUndo::setContext(Context* ctx)
   m_ctx = ctx;
 }
 
-void DocUndo::add(CmdTransaction* cmd)
+void DocUndo::add(cmd::CmdTransaction* cmd, const AddIn addIn)
 {
   ASSERT(cmd);
 
@@ -54,12 +54,19 @@ void DocUndo::add(CmdTransaction* cmd)
              base::get_pretty_memory_size(cmd->memSize()).c_str(),
              base::get_pretty_memory_size(m_totalUndoSize).c_str());
 
+  // If we add to the command to the undo history, we have to move the
+  // current state, if it's in the redo history, we keep the current
+  // state as it is.
+  const bool moveCur = (addIn == AddIn::Undo);
+
   // A linear undo history is the default behavior
-  if (!App::instance() || !App::instance()->preferences().undo.allowNonlinearHistory()) {
+  if (moveCur &&
+      // TODO don't use preferences here
+      (!App::instance() || !App::instance()->preferences().undo.allowNonlinearHistory())) {
     clearRedo();
   }
 
-  m_undoHistory.add(cmd);
+  m_undoHistory.add(cmd, m_undoHistory.lastState(), moveCur);
   m_totalUndoSize += cmd->memSize();
 
   notify_observers(&DocUndoObserver::onAddUndoState, this);

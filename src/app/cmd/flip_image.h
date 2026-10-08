@@ -26,6 +26,8 @@ using namespace doc;
 class FlipImage : public Cmd,
                   public WithImage {
 public:
+  CMDTYPE('I', 'M', 'f', 'p', FlipImage);
+
   FlipImage(Image* image, const gfx::Rect& bounds, doc::algorithm::FlipType flipType);
 
 protected:

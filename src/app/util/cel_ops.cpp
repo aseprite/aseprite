@@ -19,8 +19,8 @@
 #include "app/cmd/remap_tileset.h"
 #include "app/cmd/remove_tile.h"
 #include "app/cmd/replace_image.h"
+#include "app/cmd/sequence.h"
 #include "app/cmd/set_cel_position.h"
-#include "app/cmd_sequence.h"
 #include "app/doc.h"
 #include "doc/algorithm/fill_selection.h"
 #include "doc/algorithm/flip_image.h"
@@ -270,7 +270,7 @@ void create_region_with_differences(const Image* a,
 }
 
 static void remove_unused_tiles_from_tileset(Context* ctx,
-                                             CmdSequence* cmds,
+                                             cmd::CmdSequence* cmds,
                                              doc::Tileset* tileset,
                                              std::vector<size_t>& tilesHistogram,
                                              const std::vector<bool>& modifiedTileIndexes);
@@ -305,7 +305,7 @@ doc::ImageRef crop_cel_image(const doc::Cel* cel, const color_t bgcolor)
   return doc::ImageRef(doc::Image::create(sprite->spec()));
 }
 
-Cel* create_cel_copy(CmdSequence* cmds,
+Cel* create_cel_copy(cmd::CmdSequence* cmds,
                      const Cel* srcCel,
                      const Sprite* dstSprite,
                      Layer* dstLayer,
@@ -501,7 +501,7 @@ Cel* create_cel_copy(CmdSequence* cmds,
   return dstCel.release();
 }
 
-void draw_image_into_new_tilemap_cel(CmdSequence* cmds,
+void draw_image_into_new_tilemap_cel(cmd::CmdSequence* cmds,
                                      doc::LayerTilemap* dstLayer,
                                      doc::Cel* dstCel,
                                      const doc::Image* srcImage,
@@ -582,7 +582,7 @@ void draw_image_into_new_tilemap_cel(CmdSequence* cmds,
 }
 
 void modify_tilemap_cel_region(Context* ctx,
-                               CmdSequence* cmds,
+                               cmd::CmdSequence* cmds,
                                doc::Cel* cel,
                                doc::Tileset* tileset,
                                const gfx::Region& region,
@@ -911,7 +911,7 @@ void modify_tilemap_cel_region(Context* ctx,
 }
 
 void clear_mask_from_cel(Context* ctx,
-                         CmdSequence* cmds,
+                         cmd::CmdSequence* cmds,
                          doc::Cel* cel,
                          const TilemapMode tilemapMode,
                          const TilesetMode tilesetMode)
@@ -953,7 +953,7 @@ void clear_mask_from_cel(Context* ctx,
 }
 
 static void remove_unused_tiles_from_tileset(Context* ctx,
-                                             CmdSequence* cmds,
+                                             cmd::CmdSequence* cmds,
                                              doc::Tileset* tileset,
                                              std::vector<size_t>& tilesHistogram,
                                              const std::vector<bool>& modifiedTileIndexes)
@@ -1023,7 +1023,7 @@ static void remove_unused_tiles_from_tileset(Context* ctx,
 }
 
 void move_tiles_in_tileset(Context* ctx,
-                           CmdSequence* cmds,
+                           cmd::CmdSequence* cmds,
                            doc::Tileset* tileset,
                            doc::PalettePicks& picks,
                            int& currentEntry,
@@ -1058,7 +1058,7 @@ void move_tiles_in_tileset(Context* ctx,
 }
 
 void copy_tiles_in_tileset(Context* ctx,
-                           CmdSequence* cmds,
+                           cmd::CmdSequence* cmds,
                            doc::Tileset* tileset,
                            doc::PalettePicks& picks,
                            int& currentEntry,

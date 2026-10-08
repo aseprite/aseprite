@@ -44,4 +44,8 @@ void ClearImage::onUndo(Context* ctx)
   image->incrementVersion();
 }
 
+void ClearImage::onSerialize(CmdSerial& s)
+{
+}
+
 }} // namespace app::cmd

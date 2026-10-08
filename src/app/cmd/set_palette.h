@@ -27,6 +27,8 @@ using namespace doc;
 class SetPalette : public Cmd,
                    public WithSprite {
 public:
+  CMDTYPE('P', 'A', 'c', 'p', SetPalette);
+
   SetPalette(Sprite* sprite, frame_t frame, const Palette* newPalette);
 
 protected:

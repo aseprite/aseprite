@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,9 +9,8 @@
 #pragma once
 
 #include "base/ints.h"
+#include "doc/io.h"
 #include "doc/serial_format.h"
-
-#include <iosfwd>
 
 namespace doc {
 
@@ -34,7 +33,6 @@ enum class TilesetSerialFormat : uint8_t {
   LastVer = Ver3
 };
 
-class CancelIO;
 class Sprite;
 class Tileset;
 
@@ -42,7 +40,7 @@ bool write_tileset(std::ostream& os, const Tileset* tileset, CancelIO* cancel = 
 
 Tileset* read_tileset(std::istream& is,
                       Sprite* sprite,
-                      bool setId = true,
+                      const IdMapperIO& mapper,
                       TilesetSerialFormat* tilesetSerial = nullptr,
                       SerialFormat serial = SerialFormat::LastVer);
 
