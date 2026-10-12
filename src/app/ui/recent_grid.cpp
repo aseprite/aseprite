@@ -202,12 +202,13 @@ void RecentGrid::rebuildGrid(const bool force)
   if (m_lastColumnCount == columnCount && !force)
     return;
 
+  Manager* mgr = manager();
   std::map<std::string, RecentFile*> prevWidgets;
   int focusIndex = -1;
 
   for (auto* child : children()) {
     auto* prev = static_cast<RecentFile*>(child);
-    if (manager()->getFocus() == prev)
+    if (mgr->getFocus() == prev)
       focusIndex = getChildIndex(prev);
     prevWidgets.try_emplace(prev->path(), prev);
   }
@@ -253,7 +254,7 @@ void RecentGrid::rebuildGrid(const bool force)
 
   if (focusIndex >= 0 && !children().empty()) {
     focusIndex = std::max(focusIndex, int(children().size() - 1));
-    manager()->setFocus(children()[focusIndex]);
+    mgr->setFocus(children()[focusIndex]);
   }
 
   m_thumbnailTimer.start();
@@ -265,6 +266,11 @@ void RecentGrid::rebuildGrid(const bool force)
   layout();
   if (view)
     view->updateView();
+
+  // Update which specific widget the mouse is hovering to update the
+  // pin/unpin icon of a RecentFile if the user has just clicked those
+  // options.
+  mgr->_updateMouseWidgets();
 }
 
 } // namespace app
