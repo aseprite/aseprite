@@ -38,6 +38,7 @@
 #include "render/quantization.h"
 #include "render/render.h"
 #include "render/task_delegate.h"
+#include "ui/button.h"
 #include "ui/listitem.h"
 #include "ui/size_hint_event.h"
 
@@ -173,6 +174,7 @@ public:
     , m_imageBuffer(new doc::ImageBuffer)
     , m_selectedItem(nullptr)
     , m_ditheringSelector(nullptr)
+    , m_zigZagCheck(nullptr)
     , m_mapAlgorithmSelector(nullptr)
     , m_bestFitCriteriaSelector(nullptr)
     , m_imageJustCreated(true)
@@ -200,6 +202,8 @@ public:
       m_ditheringSelector = new DitheringSelector(DitheringSelector::SelectBoth);
       m_ditheringSelector->setExpansive(true);
 
+      m_zigZagCheck = new CheckBox(Strings::commands_ChangePixelFormat_ZigZag());
+
       m_mapAlgorithmSelector = new RgbMapAlgorithmSelector;
       m_mapAlgorithmSelector->setExpansive(true);
 
@@ -213,6 +217,9 @@ public:
           m_ditheringSelector->setSelectedItemIndex(index);
       }
 
+      // Select default zig zag
+      m_zigZagCheck->setSelected(pref.quantization.zigZag());
+
       // Select default RgbMap algorithm
       m_mapAlgorithmSelector->algorithm(pref.quantization.rgbmapAlgorithm());
 
@@ -220,6 +227,7 @@ public:
       m_bestFitCriteriaSelector->criteria(pref.quantization.fitCriteria());
 
       ditheringPlaceholder()->addChild(m_ditheringSelector);
+      ditheringPlaceholder()->addChild(m_zigZagCheck);
       rgbmapAlgorithmPlaceholder()->addChild(m_mapAlgorithmSelector);
       bestFitCriteriaPlaceholder()->addChild(m_bestFitCriteriaSelector);
 
@@ -229,6 +237,7 @@ public:
 
       // Signals
       m_ditheringSelector->Change.connect([this] { onIndexParamChange(); });
+      m_zigZagCheck->Click.connect([this] { onIndexParamChange(); });
       m_mapAlgorithmSelector->Change.connect([this] { onIndexParamChange(); });
       m_bestFitCriteriaSelector->Change.connect([this] { onIndexParamChange(); });
       factor()->Change.connect([this] { onIndexParamChange(); });
@@ -277,6 +286,7 @@ public:
     if (m_ditheringSelector) {
       d.algorithm(m_ditheringSelector->ditheringAlgorithm());
       d.matrix(m_ditheringSelector->ditheringMatrix());
+      d.zigzag(m_zigZagCheck->isSelected());
     }
     d.factor(double(factor()->getValue()) / 100.0);
     return d;
@@ -313,16 +323,16 @@ public:
   {
     auto& pref = Preferences::instance();
 
-    // Save the dithering method used for the future
+    // Save the dithering method and zig-zag setting used for the future
     if (m_ditheringSelector) {
       if (auto item = m_ditheringSelector->getSelectedItem()) {
         pref.quantization.ditheringAlgorithm(item->text());
 
-        if (m_ditheringSelector->ditheringAlgorithm() ==
-            render::DitheringAlgorithm::ErrorDiffusion) {
+        if (DitheringAlgorithmIsDiffusion(m_ditheringSelector->ditheringAlgorithm()))
           pref.quantization.ditheringFactor(factor()->getValue());
-        }
       }
+
+      pref.quantization.zigZag(m_zigZagCheck->isEnabled());
     }
 
     if (m_mapAlgorithmSelector || m_bestFitCriteriaSelector)
@@ -360,9 +370,10 @@ private:
     if (m_ditheringSelector) {
       const bool toIndexed = (dstColorMode == doc::ColorMode::INDEXED);
       m_ditheringSelector->setVisible(toIndexed);
+      m_zigZagCheck->setVisible(toIndexed);
 
-      const bool errorDiff = (m_ditheringSelector->ditheringAlgorithm() ==
-                              render::DitheringAlgorithm::ErrorDiffusion);
+      const bool errorDiff =
+        (render::DitheringAlgorithmIsDiffusion(m_ditheringSelector->ditheringAlgorithm()));
       amount()->setVisible(toIndexed && errorDiff);
     }
 
@@ -456,6 +467,7 @@ private:
   std::unique_ptr<ConvertThread> m_bgThread;
   ConversionItem* m_selectedItem;
   DitheringSelector* m_ditheringSelector;
+  CheckBox* m_zigZagCheck;
   RgbMapAlgorithmSelector* m_mapAlgorithmSelector;
   BestFitCriteriaSelector* m_bestFitCriteriaSelector;
   bool m_imageJustCreated;
@@ -482,6 +494,11 @@ struct ChangePixelFormatParams : public NewParams {
     this,
     1.0,
     { "ditheringFactor", "dithering-factor" }
+  };
+  Param<bool> zigZag{
+    this,
+    true,
+    { "zigZag", "zig-zag" }
   };
   Param<doc::RgbMapAlgorithm> rgbmap{ this, RgbMapAlgorithm::DEFAULT, "rgbmap" };
   Param<gen::ToGrayAlgorithm> toGray{ this, gen::ToGrayAlgorithm::DEFAULT, "toGray" };
@@ -564,10 +581,13 @@ void ChangePixelFormatCommand::onExecute(Context* ctx)
     if (window.closer() != window.ok())
       return;
 
+    const auto d = window.dithering();
+
     params().colorMode(window.selectedColorMode());
-    params().dithering(window.dithering().algorithm());
-    matrix = window.dithering().matrix();
-    params().factor(window.dithering().factor());
+    params().dithering(d.algorithm());
+    matrix = d.matrix();
+    params().factor(d.factor());
+    params().zigZag(d.zigzag());
     params().rgbmap(window.rgbMapAlgorithm());
     params().fitCriteria(window.fitCriteria());
     params().toGray(window.toGray());
@@ -611,13 +631,14 @@ void ChangePixelFormatCommand::onExecute(Context* ctx)
     }
 
     job.startJobWithCallback([this, &job, sprite, &matrix](Tx& tx) {
-      tx(new cmd::SetPixelFormat(sprite,
-                                 (PixelFormat)params().colorMode(),
-                                 render::Dithering(params().dithering(), matrix, params().factor()),
-                                 params().rgbmap(),
-                                 get_gray_func(params().toGray()),
-                                 &job, // SpriteJob is a render::TaskDelegate
-                                 params().fitCriteria()));
+      tx(new cmd::SetPixelFormat(
+        sprite,
+        (PixelFormat)params().colorMode(),
+        render::Dithering(params().dithering(), matrix, params().zigZag(), params().factor()),
+        params().rgbmap(),
+        get_gray_func(params().toGray()),
+        &job, // SpriteJob is a render::TaskDelegate
+        params().fitCriteria()));
     });
     job.waitJob();
   }
@@ -647,8 +668,23 @@ std::string ChangePixelFormatCommand::onGetFriendlyName() const
           case render::DitheringAlgorithm::Old:
             conversion = Strings::commands_ChangePixelFormat_Indexed_OldDithering();
             break;
-          case render::DitheringAlgorithm::ErrorDiffusion:
-            conversion = Strings::commands_ChangePixelFormat_Indexed_ErrorDiffusion();
+          case render::DitheringAlgorithm::FloydSteinberg:
+            conversion = Strings::commands_ChangePixelFormat_Indexed_FloydSteinberg();
+            break;
+          case render::DitheringAlgorithm::JarvisJudiceNinke:
+            conversion = Strings::commands_ChangePixelFormat_Indexed_JarvisJudiceNinke();
+            break;
+          case render::DitheringAlgorithm::Stucki:
+            conversion = Strings::commands_ChangePixelFormat_Indexed_Stucki();
+            break;
+          case render::DitheringAlgorithm::Atkinson:
+            conversion = Strings::commands_ChangePixelFormat_Indexed_Atkinson();
+            break;
+          case render::DitheringAlgorithm::Burkes:
+            conversion = Strings::commands_ChangePixelFormat_Indexed_Burkes();
+            break;
+          case render::DitheringAlgorithm::Sierra:
+            conversion = Strings::commands_ChangePixelFormat_Indexed_Sierra();
             break;
         }
         break;
