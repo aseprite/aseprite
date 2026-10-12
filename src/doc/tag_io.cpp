@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -37,7 +37,7 @@ void write_tag(std::ostream& os, const Tag* tag)
   write32(os, tag->repeat());
 }
 
-Tag* read_tag(std::istream& is, const bool setId, const SerialFormat serial)
+Tag* read_tag(std::istream& is, const IdMapperIO& mapper, const SerialFormat serial)
 {
   ObjectId id = read32(is);
   frame_t from = read32(is);
@@ -68,8 +68,7 @@ Tag* read_tag(std::istream& is, const bool setId, const SerialFormat serial)
     tag->setUserData(userData);
     tag->setRepeat(repeat);
   }
-  if (setId)
-    tag->setId(id);
+  tag->setId(mapper.mapId(id, ObjectType::Tag));
   return tag.release();
 }
 

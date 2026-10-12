@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -19,7 +19,6 @@
 #include "base/fstream_path.h"
 #include "base/serialization.h"
 #include "base/string.h"
-#include "doc/cancel_io.h"
 #include "doc/cel.h"
 #include "doc/cel_data_io.h"
 #include "doc/cel_io.h"

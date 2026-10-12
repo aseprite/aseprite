@@ -20,26 +20,36 @@ namespace app { namespace cmd {
 
 SetLayerOpacity::SetLayerOpacity(LayerImage* layer, int opacity)
   : WithLayer(layer)
-  , m_oldOpacity(layer->opacity())
-  , m_newOpacity(opacity)
+  , m_value(opacity)
 {
 }
 
 void SetLayerOpacity::onExecute(Context* ctx)
 {
-  static_cast<LayerImage*>(layer())->setOpacity(m_newOpacity);
-  layer()->incrementVersion();
+  swap();
 }
 
 void SetLayerOpacity::onUndo(Context* ctx)
 {
-  static_cast<LayerImage*>(layer())->setOpacity(m_oldOpacity);
-  layer()->incrementVersion();
+  swap();
 }
 
-void SetLayerOpacity::onFireNotifications(Context* ctx)
+void SetLayerOpacity::onSerialize(CmdSerial& s)
+{
+  Cmd::onSerialize(s);
+  serializeLayerId(s);
+  s(m_value);
+}
+
+void SetLayerOpacity::swap()
 {
   Layer* layer = this->layer();
+
+  auto current = layer->opacity();
+  std::swap(current, m_value);
+  layer->setOpacity(current);
+  layer->incrementVersion();
+
   Doc* doc = static_cast<Doc*>(layer->sprite()->document());
   DocEvent ev(doc);
   ev.sprite(layer->sprite());

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This program is distributed under the terms of
@@ -11,19 +11,23 @@
 
 #include "app/cmd/with_tag.h"
 
+#include "app/cmd_exception.h"
 #include "doc/tag.h"
 
 namespace app { namespace cmd {
 
 using namespace doc;
 
-WithTag::WithTag(Tag* tag) : m_tagId(tag->id())
+WithTag::WithTag(Tag* tag) : m_tagId(tag ? tag->id() : NullId)
 {
 }
 
 Tag* WithTag::tag()
 {
-  return get<Tag>(m_tagId);
+  Tag* tag = get<Tag>(m_tagId);
+  if (!tag)
+    throw CmdException(fmt::format("Invalid undo information: tag ID {} not found", m_tagId));
+  return tag;
 }
 
 }} // namespace app::cmd

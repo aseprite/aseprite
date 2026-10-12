@@ -23,6 +23,8 @@ using namespace doc;
 class SetPixelRatio : public Cmd,
                       public WithSprite {
 public:
+  CMDTYPE('S', 'P', 'p', 'x', SetPixelRatio);
+
   SetPixelRatio(Sprite* sprite, PixelRatio pixelRatio);
 
 protected:

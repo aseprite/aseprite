@@ -18,6 +18,8 @@ namespace app { namespace cmd {
 class SetTileData : public Cmd,
                     public WithTileset {
 public:
+  CMDTYPE('T', 'I', 'd', 'a', SetTileData);
+
   SetTileData(doc::Tileset* ts, doc::tile_index ti, const doc::UserData& ud);
 
 protected:

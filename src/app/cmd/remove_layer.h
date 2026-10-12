@@ -16,6 +16,8 @@ using namespace doc;
 
 class RemoveLayer : public AddLayer {
 public:
+  CMDTYPE('L', 'A', 'd', 'e', RemoveLayer);
+
   RemoveLayer(Layer* layer);
 
 protected:

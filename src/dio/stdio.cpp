@@ -52,7 +52,7 @@ void StdioFileInterface::write8(uint8_t value)
     m_ok = false;
 }
 
-size_t StdioFileInterface::writeBytes(uint8_t* buf, size_t n)
+size_t StdioFileInterface::writeBytes(const uint8_t* buf, size_t n)
 {
   size_t r = fwrite(buf, 1, n, m_file);
   if (r != n)

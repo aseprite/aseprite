@@ -22,6 +22,9 @@ class AddTag : public Cmd,
                public WithSprite,
                public WithTag {
 public:
+  CMDTYPE('T', 'G', 'a', 'd', AddTag);
+
+  AddTag() {}
   AddTag(Sprite* sprite, Tag* tag);
 
 protected:

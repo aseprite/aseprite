@@ -58,4 +58,12 @@ void SetGridBounds::onFireNotifications(Context* ctx)
   doc->notify_observers<DocEvent&>(&DocObserver::onSpriteGridBoundsChanged, ev);
 }
 
+void SetGridBounds::onSerialize(CmdSerial& s)
+{
+  Cmd::onSerialize(s);
+  serializeSpriteId(s);
+  s(m_oldBounds);
+  s(m_newBounds);
+}
+
 }} // namespace app::cmd

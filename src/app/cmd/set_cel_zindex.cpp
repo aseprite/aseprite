@@ -18,23 +18,18 @@ namespace app { namespace cmd {
 
 using namespace doc;
 
-SetCelZIndex::SetCelZIndex(Cel* cel, int zindex)
-  : WithCel(cel)
-  , m_oldZIndex(cel->zIndex())
-  , m_newZIndex(zindex)
+SetCelZIndex::SetCelZIndex(Cel* cel, const int zindex) : WithCel(cel), m_value(zindex)
 {
 }
 
 void SetCelZIndex::onExecute(Context* ctx)
 {
-  cel()->setZIndex(m_newZIndex);
-  cel()->incrementVersion();
+  swap();
 }
 
 void SetCelZIndex::onUndo(Context* ctx)
 {
-  cel()->setZIndex(m_oldZIndex);
-  cel()->incrementVersion();
+  swap();
 }
 
 void SetCelZIndex::onFireNotifications(Context* ctx)
@@ -45,6 +40,22 @@ void SetCelZIndex::onFireNotifications(Context* ctx)
   ev.sprite(cel->sprite());
   ev.cel(cel);
   doc->notify_observers<DocEvent&>(&DocObserver::onCelZIndexChange, ev);
+}
+
+void SetCelZIndex::onSerialize(CmdSerial& s)
+{
+  Cmd::onSerialize(s);
+  serializeCelId(s);
+  s(m_value);
+}
+
+void SetCelZIndex::swap()
+{
+  Cel* cel = this->cel();
+  auto current = cel->zIndex();
+  std::swap(current, m_value);
+  cel->setZIndex(current);
+  cel->incrementVersion();
 }
 
 }} // namespace app::cmd

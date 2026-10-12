@@ -19,6 +19,8 @@ using namespace doc;
 class SetCelBoundsF : public Cmd,
                       public WithCel {
 public:
+  CMDTYPE('C', 'E', 'b', 'o', SetCelBoundsF);
+
   SetCelBoundsF(Cel* cel, const gfx::RectF& bounds);
 
 protected:

@@ -524,6 +524,11 @@ The data of this chunk is as follows:
       PIXEL[]   Compressed Tileset image (see NOTE.3):
                   (Tile Width) x (Tile Height x Number of Tiles)
 
+### Undo Chunk (0x2024)
+
+The content of this chunk should match the [Undo History Spec](undo-history-spec.md)
+binary format.
+
 ## Notes
 
 ### NOTE.1

@@ -21,6 +21,8 @@ namespace app { namespace cmd {
 class SetGridBounds : public Cmd,
                       public WithSprite {
 public:
+  CMDTYPE('S', 'P', 'g', 'r', SetGridBounds);
+
   SetGridBounds(doc::Sprite* sprite, const gfx::Rect& bounds);
 
 protected:
@@ -28,6 +30,7 @@ protected:
   void onUndo(Context* ctx) override;
   void onFireNotifications(Context* ctx) override;
   size_t onMemSize() const override { return sizeof(*this); }
+  void onSerialize(CmdSerial& s) override;
 
 private:
   void setGrid(const gfx::Rect& grid);

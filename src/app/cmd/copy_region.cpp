@@ -85,6 +85,15 @@ void CopyRegion::onFireNotifications(Context* ctx)
   site.document()->notifySpritePixelsModified(site.sprite(), rgn, site.frame());
 }
 
+void CopyRegion::onSerialize(CmdSerial& s)
+{
+  Cmd::onSerialize(s);
+  serializeImageId(s);
+  s(m_region);
+  s(m_dstPos);
+  s(m_buffer);
+}
+
 void CopyRegion::swap()
 {
   Image* image = this->image();

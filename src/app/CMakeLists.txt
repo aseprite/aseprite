@@ -321,6 +321,7 @@ target_sources(app-lib PRIVATE
   cmd/replace_image.cpp
   cmd/replace_tileset.cpp
   cmd/reselect_mask.cpp
+  cmd/sequence.cpp
   cmd/set_cel_bounds.cpp
   cmd/set_cel_data.cpp
   cmd/set_cel_frame.cpp
@@ -362,6 +363,7 @@ target_sources(app-lib PRIVATE
   cmd/set_user_data_properties.cpp
   cmd/set_user_data_property.cpp
   cmd/shift_masked_cel.cpp
+  cmd/transaction.cpp
   cmd/trim_cel.cpp
   cmd/unlink_cel.cpp
   cmd/with_cel.cpp
@@ -370,10 +372,11 @@ target_sources(app-lib PRIVATE
   cmd/with_layer.cpp
   cmd/with_slice.cpp
   cmd/with_sprite.cpp
+  cmd/with_suspended.cpp
   cmd/with_tag.cpp
   cmd/with_tileset.cpp
-  cmd_sequence.cpp
-  cmd_transaction.cpp
+  cmd_decode.cpp
+  cmd_serial.cpp
   color.cpp
   color_picker.cpp
   color_spaces.cpp
@@ -556,6 +559,7 @@ target_sources(app-lib PRIVATE
   file/file_op_config.cpp
   file/palette_file.cpp
   file/split_filename.cpp
+  file/undo_history_io.cpp
   file_selector.cpp
   file_system.cpp
   filename_formatter.cpp
@@ -588,6 +592,7 @@ target_sources(app-lib PRIVATE
   res/resources_loader.cpp
   resource_finder.cpp
   restore_visible_layers.cpp
+  serial_span.cpp
   shade.cpp
   site.cpp
   snap_to_grid.cpp

@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2026-present Igara Studio S.A.
 // Copyright (c) 2017-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -37,7 +38,7 @@ void write_slice(std::ostream& os, const Slice* slice)
   }
 }
 
-Slice* read_slice(std::istream& is, const bool setId, const SerialFormat serial)
+Slice* read_slice(std::istream& is, const IdMapperIO& mapper, const SerialFormat serial)
 {
   ObjectId id = read32(is);
   std::string name = read_string(is);
@@ -52,8 +53,7 @@ Slice* read_slice(std::istream& is, const bool setId, const SerialFormat serial)
     slice->insert(fr, read_slicekey(is));
   }
 
-  if (setId)
-    slice->setId(id);
+  slice->setId(mapper.mapId(id, ObjectType::Slice));
   return slice.release();
 }
 
