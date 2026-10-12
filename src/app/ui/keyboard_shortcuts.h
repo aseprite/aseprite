@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2025  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -77,6 +77,7 @@ public:
                                    const tools::Tool* currentTool,
                                    ui::Shortcut& pressedShortcut) const;
   KeyAction getCurrentActionModifiers(KeyContext context);
+  bool isSelectionModifiersPressed();
   WheelAction getWheelActionFromMouseMessage(KeyContext context, const ui::Message* msg);
   Keys getDragActionsFromMessage(const ui::Message* msg);
   bool hasMouseWheelCustomization() const;
