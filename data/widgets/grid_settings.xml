@@ -16,9 +16,18 @@
     <label text="@.height" for="grid_h" />
     <expr id="grid_h" text="" />
 
+    <separator text="@.subdivisions" horizontal="true" cell_hspan="4" />
+
+    <label text="@.subdiv_x" for="subdiv_x" />
+    <expr id="subdiv_x" text="" />
+
+    <label text="@.subdiv_y" for="subdiv_y" />
+    <expr id="subdiv_y" text="" />
+
     <separator horizontal="true" cell_hspan="4" />
 
     <box horizontal="true" homogeneous="true" cell_hspan="4" cell_align="right">
+      <button text="@general.apply" id="apply" minwidth="60" />
       <button text="@general.ok" closewindow="true" id="ok" magnet="true" minwidth="60" />
       <button text="@general.cancel" closewindow="true" />
     </box>
