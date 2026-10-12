@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2020-2025 Igara Studio S.A.
+// Copyright (c) 2020-present Igara Studio S.A.
 // Copyright (c) 2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -128,9 +128,14 @@ public:
 
   gfx::Matrix scaleMatrix() const { return gfx::Matrix::MakeScale(scaleX(), scaleY()); }
 
+  bool hasAngle() const { return m_angle != 0.0; }
+  double angle() const { return m_angle; }
+  void setAngle(const double angle) { m_angle = angle; }
+
 private:
   doc::PixelRatio m_pixelRatio;
   Zoom m_zoom;
+  double m_angle = 0.0;
 };
 
 } // namespace render

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2022-2025  Igara Studio S.A.
+// Copyright (C) 2022-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -35,6 +35,9 @@ public:
   // If set to true, the max value allowed by the IntEntry won't be bounded by the
   // current slider's max range.
   void maxValueUnbounded(bool mvu) { m_maxValueUnbounded = mvu; }
+
+  // Signals
+  obs::signal<void()> ValueChange;
 
 protected:
   bool onProcessMessage(Message* msg) override;
