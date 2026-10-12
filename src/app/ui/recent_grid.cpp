@@ -252,10 +252,8 @@ void RecentGrid::rebuildGrid(const bool force)
   for (const auto& [_, prev] : prevWidgets)
     prev->deferDelete();
 
-  if (focusIndex >= 0) {
-    if (children().size() == focusIndex)
-      --focusIndex;
-
+  if (focusIndex >= 0 && !children().empty()) {
+    focusIndex = std::max(focusIndex, int(children().size() - 1));
     manager()->setFocus(children()[focusIndex]);
   }
 
