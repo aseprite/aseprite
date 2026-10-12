@@ -165,6 +165,8 @@ public:
     return ui::TOP | ui::BOTTOM | ui::LEFT | ui::RIGHT | ui::EXPANSIVE;
   }
 
+  obs::signal<void()> Resize;
+
 protected:
   bool onProcessMessage(ui::Message* msg) override;
   void onInitTheme(ui::InitThemeEvent& ev) override;
