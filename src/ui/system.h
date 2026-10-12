@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -65,6 +65,10 @@ gfx::Point get_mouse_position();
 // Sets the mouse position relative to a specific display (or
 // relative to the desktop if it's nullptr)
 void set_mouse_position(const gfx::Point& newPos, Display* display);
+
+void set_wheel_speed_factor(double factor);
+double get_wheel_speed_factor();
+int adjustWheelStep(double dz, bool precise, double divisor);
 
 void execute_from_ui_thread(std::function<void()>&& func);
 // If it is called from the UI thread just executes the function, if it is
