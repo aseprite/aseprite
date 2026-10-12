@@ -9,6 +9,8 @@
   #include "config.h"
 #endif
 
+#include "app/ui/recent_grid.h"
+
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
@@ -17,6 +19,7 @@
 #include "app/pref/preferences.h"
 #include "app/recent_files.h"
 #include "app/thumbnail_generator.h"
+#include "app/ui/recent_file.h"
 #include "app/ui_context.h"
 #include "base/fs.h"
 #include "skin/skin_theme.h"
@@ -25,10 +28,6 @@
 #include "ui/menu.h"
 #include "ui/theme.h"
 #include "ui/view.h"
-
-#include "app/ui/recent_grid.h"
-
-#include "app/ui/recent_file.h"
 
 namespace app {
 
