@@ -1689,19 +1689,6 @@ gfx::Point Editor::screenToEditor(const gfx::Point& pt) const
   return pt2;
 }
 
-gfx::Point Editor::screenToEditorCeiling(const gfx::Point& pt) const
-{
-  View* view = View::getView(this);
-  Rect vp = view->viewportBounds();
-  Point scroll = view->viewScroll();
-
-  Point pt2(pt.x - vp.x + scroll.x, pt.y - vp.y + scroll.y);
-  pt2 = Point(m_invMatrix.mapPoint(PointF(pt2)));
-  pt2 = Point(m_proj.removeXCeiling(pt2.x - m_padding.x),
-              m_proj.removeXCeiling(pt2.y - m_padding.y));
-  return pt2;
-}
-
 gfx::PointF Editor::screenToEditorF(const gfx::Point& pt) const
 {
   View* view = View::getView(this);
@@ -1745,22 +1732,29 @@ gfx::PointF Editor::editorToScreenF(const gfx::PointF& pt, const ToScreen to) co
 
 Rect Editor::screenToEditor(const Rect& rc) const
 {
-  if (m_matrix.isIdentity())
-    return gfx::Rect(screenToEditor(rc.origin()), screenToEditorCeiling(rc.point2()));
+  if (m_matrix.isIdentity()) {
+    PointF pt1 = screenToEditorF(rc.origin());
+    PointF pt2 = screenToEditorF(rc.point2());
+    return Rect(Point(std::floor(pt1.x), std::floor(pt1.y)),
+                Point(std::ceil(pt2.x), std::ceil(pt2.y)));
+  }
 
   Point pts[4] = { Point(rc.x, rc.y),
                    Point(rc.x2(), rc.y),
                    Point(rc.x, rc.y2()),
                    Point(rc.x2(), rc.y2()) };
-  gfx::Rect bounds;
-  for (const auto& pt : pts)
-    bounds |= gfx::Rect(screenToEditor(pt), gfx::Size(1, 1));
+  Rect bounds;
+  for (const auto& pt : pts) {
+    PointF ptf = screenToEditorF(pt);
+    bounds |= Rect(Point(std::floor(ptf.x), std::floor(ptf.y)),
+                   Point(std::ceil(ptf.x), std::ceil(ptf.y)));
+  }
   return bounds;
 }
 
 Rect Editor::editorToScreen(const Rect& rc, const ToScreen to) const
 {
-  if (m_matrix.isIdentity())
+  if (m_matrix.isIdentity() || to == ToScreen::Paint)
     return gfx::Rect(editorToScreen(rc.origin(), to), editorToScreen(rc.point2(), to));
 
   Point pts[4] = { Point(rc.x, rc.y),
@@ -1775,8 +1769,9 @@ Rect Editor::editorToScreen(const Rect& rc, const ToScreen to) const
 
 gfx::RectF Editor::editorToScreenF(const gfx::RectF& rc, const ToScreen to) const
 {
-  if (m_matrix.isIdentity())
+  if (m_matrix.isIdentity() || to == ToScreen::Paint) {
     return gfx::RectF(editorToScreenF(rc.origin(), to), editorToScreenF(rc.point2(), to));
+  }
 
   PointF pts[4] = { PointF(rc.x, rc.y),
                     PointF(rc.x2(), rc.y),
