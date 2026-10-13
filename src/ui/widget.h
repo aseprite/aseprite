@@ -217,6 +217,7 @@ public:
   void addChild(Widget* child);
   void removeChild(Widget* child);
   void removeAllChildren();
+  void removeAndDeferDeleteAllChildren();
   void replaceChild(Widget* oldChild, Widget* newChild);
   void insertChild(int index, Widget* child);
   void moveChildTo(Widget* thisChild, Widget* toThisPosition);

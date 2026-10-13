@@ -642,7 +642,16 @@ void Widget::removeChild(Widget* child)
 void Widget::removeAllChildren()
 {
   while (!m_children.empty())
-    removeChild(--m_children.end());
+    removeChild(m_children.back());
+}
+
+void Widget::removeAndDeferDeleteAllChildren()
+{
+  while (!m_children.empty()) {
+    Widget* child = m_children.back();
+    child->deferDelete();
+    removeChild(child);
+  }
 }
 
 void Widget::replaceChild(Widget* oldChild, Widget* newChild)

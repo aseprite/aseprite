@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2025  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -247,7 +247,7 @@ void NewsListBox::reload()
   if (m_loader || m_timer.isRunning())
     return;
 
-  removeAllChildren();
+  removeAndDeferDeleteAllChildren();
 
   addChild(new NewsItem("", Strings::news_listbox_loading(), ""));
 
@@ -284,7 +284,9 @@ void NewsListBox::onTick()
 
   if (fn.empty()) {
     addChild(new ProblemsItem());
-    View::getView(this)->updateView();
+    layout();
+    if (View* view = View::getView(this))
+      view->updateView();
     return;
   }
 
@@ -295,7 +297,7 @@ void NewsListBox::parseFile(const std::string& filename)
 {
   View* view = View::getView(this);
 
-  removeAllChildren();
+  removeAndDeferDeleteAllChildren();
 
   XMLDocumentRef doc;
   try {
@@ -303,6 +305,7 @@ void NewsListBox::parseFile(const std::string& filename)
   }
   catch (...) {
     addChild(new ProblemsItem());
+    layout();
     if (view)
       view->updateView();
     return;
@@ -352,6 +355,7 @@ void NewsListBox::parseFile(const std::string& filename)
   if (linkXml && linkXml->GetText())
     addChild(new NewsItem(linkXml->GetText(), Strings::news_listbox_more(), ""));
 
+  layout();
   if (view)
     view->updateView();
 
