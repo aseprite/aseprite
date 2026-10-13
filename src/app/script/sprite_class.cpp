@@ -478,7 +478,12 @@ int Sprite_newCel(lua_State* L)
     DocApi api = doc->getApi(tx);
     api.clearCel(layer, frame);
     if (cel->image() && srcImage) {
-      tx(new cmd::CopyRegion(cel->image(), srcImage, gfx::Region(srcImage->bounds()), pos, false));
+      tx(new cmd::CopyRegion(sprite,
+                             cel->image(),
+                             srcImage,
+                             gfx::Region(srcImage->bounds()),
+                             pos,
+                             false));
     }
     tx.commit();
   }

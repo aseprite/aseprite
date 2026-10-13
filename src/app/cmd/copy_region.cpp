@@ -21,12 +21,14 @@
 
 namespace app { namespace cmd {
 
-CopyRegion::CopyRegion(Image* dst,
+CopyRegion::CopyRegion(Sprite* sprite,
+                       Image* dst,
                        const Image* src,
                        const gfx::Region& region,
                        const gfx::Point& dstPos,
                        bool alreadyCopied)
-  : WithImage(dst)
+  : WithSprite(sprite)
+  , WithImage(dst)
   , m_alreadyCopied(alreadyCopied)
   , m_dstPos(dstPos)
 {
@@ -44,14 +46,15 @@ CopyRegion::CopyRegion(Image* dst,
   save_image_region_in_buffer(m_region, src, dstPos, m_buffer);
 }
 
-CopyTileRegion::CopyTileRegion(Image* dst,
+CopyTileRegion::CopyTileRegion(Sprite* sprite,
+                               Image* dst,
                                const Image* src,
                                const gfx::Region& region,
                                const gfx::Point& dstPos,
                                bool alreadyCopied,
                                const doc::tile_index tileIndex,
                                const doc::Tileset* tileset)
-  : CopyRegion(dst, src, region, dstPos, alreadyCopied)
+  : CopyRegion(sprite, dst, src, region, dstPos, alreadyCopied)
   , m_tileIndex(tileIndex)
   , m_tilesetId(tileset ? tileset->id() : NullId)
 {
@@ -75,14 +78,19 @@ void CopyRegion::onRedo(Context* ctx)
 
 void CopyRegion::onFireNotifications(Context* ctx)
 {
-  // TODO save sprite in this cmd?
-  Site site = ctx->activeSite();
-  if (!site.document() || !site.sprite())
+  Image* image = this->image();
+  if (!image)
     return;
 
-  gfx::Region rgn = m_region;
-  rgn.offset(-m_dstPos);
-  site.document()->notifySpritePixelsModified(site.sprite(), rgn, site.frame());
+  Sprite* sprite = this->sprite();
+  if (!sprite)
+    return;
+
+  Doc* doc = static_cast<Doc*>(sprite->document());
+  if (!doc)
+    return;
+
+  doc->notifyImagePixelsModified(sprite, m_region, image);
 }
 
 void CopyRegion::swap()

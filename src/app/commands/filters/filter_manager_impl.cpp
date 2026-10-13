@@ -236,7 +236,11 @@ void FilterManagerImpl::apply()
                                   });
       }
       else if (m_cel->layer()->isBackground()) {
-        (*m_tx)(new cmd::CopyRegion(m_cel->image(), m_dst.get(), gfx::Region(output), position()));
+        (*m_tx)(new cmd::CopyRegion(m_cel->sprite(),
+                                    m_cel->image(),
+                                    m_dst.get(),
+                                    gfx::Region(output),
+                                    position()));
       }
       else {
         // Patch "m_cel"

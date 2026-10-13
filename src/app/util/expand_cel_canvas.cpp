@@ -368,7 +368,8 @@ void ExpandCelCanvas::commit()
                                          diffRgn);
           if (!diffRgn.isEmpty()) {
             m_cmds->executeAndAdd(ctx,
-                                  new cmd::CopyTileRegion(srcTileset->get(ti).get(),
+                                  new cmd::CopyTileRegion(srcTileset->sprite(),
+                                                          srcTileset->get(ti).get(),
                                                           m_dstTileset->get(ti).get(),
                                                           diffRgn,
                                                           gfx::Point(0, 0),
@@ -386,9 +387,12 @@ void ExpandCelCanvas::commit()
         // TODO support for tilemap backgrounds?
         ASSERT(m_celImage.get() == m_cel->image());
 
-        m_cmds->executeAndAdd(
-          ctx,
-          new cmd::CopyRegion(m_cel->image(), m_dstImage.get(), *regionToPatch, m_bounds.origin()));
+        m_cmds->executeAndAdd(ctx,
+                              new cmd::CopyRegion(m_cel->sprite(),
+                                                  m_cel->image(),
+                                                  m_dstImage.get(),
+                                                  *regionToPatch,
+                                                  m_bounds.origin()));
       }
       else if (m_tilemapMode == TilemapMode::Tiles) {
         ASSERT(m_celImage.get() != m_cel->image());

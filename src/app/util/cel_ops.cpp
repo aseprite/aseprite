@@ -607,7 +607,8 @@ void modify_tilemap_cel_region(Context* ctx,
 
   doc::LayerTilemap* tilemapLayer = static_cast<doc::LayerTilemap*>(cel->layer());
 
-  Doc* doc = static_cast<Doc*>(tilemapLayer->sprite()->document());
+  Sprite* sprite = tilemapLayer->sprite();
+  Doc* doc = static_cast<Doc*>(sprite->document());
   bool addUndoToTileset = false;
   if (!tileset) {
     tileset = tilemapLayer->tileset();
@@ -722,7 +723,8 @@ void modify_tilemap_cel_region(Context* ctx,
         tileIndex = ti;
         cmds->executeAndAdd(
           ctx,
-          new cmd::CopyTileRegion(existentTileImage.get(),
+          new cmd::CopyTileRegion(sprite,
+                                  existentTileImage.get(),
                                   tileImage.get(),
                                   gfx::Region(tileImage->bounds()), // TODO calculate better region
                                   gfx::Point(0, 0),
@@ -772,9 +774,12 @@ void modify_tilemap_cel_region(Context* ctx,
       cmds->executeAndAdd(ctx, new cmd::ReplaceImage(cel->sprite(), cel->imageRef(), newTilemap));
     }
     else if (!tilePtsRgn.isEmpty()) {
-      cmds->executeAndAdd(
-        ctx,
-        new cmd::CopyRegion(cel->image(), newTilemap.get(), tilePtsRgn, gfx::Point(0, 0)));
+      cmds->executeAndAdd(ctx,
+                          new cmd::CopyRegion(cel->sprite(),
+                                              cel->image(),
+                                              newTilemap.get(),
+                                              tilePtsRgn,
+                                              gfx::Point(0, 0)));
     }
 
     // Remove unused tiles
@@ -892,7 +897,8 @@ void modify_tilemap_cel_region(Context* ctx,
         // TODO avoid creating several CopyTileRegion for the same tile,
         //      merge all mods for the same tile in some way
         cmds->executeAndAdd(ctx,
-                            new cmd::CopyTileRegion(mod.tileDstImage.get(),
+                            new cmd::CopyTileRegion(sprite,
+                                                    mod.tileDstImage.get(),
                                                     mod.tileImage.get(),
                                                     mod.tileRgn,
                                                     gfx::Point(0, 0),

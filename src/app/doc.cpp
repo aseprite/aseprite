@@ -255,6 +255,15 @@ void Doc::notifyPaletteChanged()
   notify_observers<DocEvent&>(&DocObserver::onPaletteChanged, ev);
 }
 
+void Doc::notifyImagePixelsModified(Sprite* sprite, const gfx::Region& region, doc::Image* image)
+{
+  DocEvent ev(this);
+  ev.sprite(sprite);
+  ev.region(region);
+  ev.image(image);
+  notify_observers<DocEvent&>(&DocObserver::onImagePixelsModified, ev);
+}
+
 void Doc::notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region, frame_t frame)
 {
   DocEvent ev(this);

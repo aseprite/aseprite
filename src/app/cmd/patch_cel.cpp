@@ -57,12 +57,17 @@ void PatchCel::onExecute(Context* ctx)
     executeAndAdd(ctx, new CropCel(cel, newBounds));
 
   if (cel->image()->pixelFormat() == IMAGE_TILEMAP) {
-    executeAndAdd(
-      ctx,
-      new CopyRegion(cel->image(), m_patch, regionInTiles, -grid.canvasToTile(cel->position())));
+    executeAndAdd(ctx,
+                  new CopyRegion(cel->sprite(),
+                                 cel->image(),
+                                 m_patch,
+                                 regionInTiles,
+                                 -grid.canvasToTile(cel->position())));
   }
   else {
-    executeAndAdd(ctx, new CopyRegion(cel->image(), m_patch, m_region, m_pos - cel->position()));
+    executeAndAdd(
+      ctx,
+      new CopyRegion(cel->sprite(), cel->image(), m_patch, m_region, m_pos - cel->position()));
   }
 
   executeAndAdd(ctx, new TrimCel(cel));

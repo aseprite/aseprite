@@ -176,7 +176,8 @@ void PasteTextCommand::onExecute(Context* ctx)
                          0,
                          255,
                          doc::BlendMode::NORMAL);
-      tx(new cmd::CopyRegion(writer.cel()->image(),
+      tx(new cmd::CopyRegion(sprite,
+                             writer.cel()->image(),
                              finalImage.get(),
                              gfx::Region(finalImage->bounds()),
                              point));

@@ -334,7 +334,8 @@ int Image_drawImage(lua_State* L)
     //      but we need something that does the render and compares
     //      the minimal modified area.
     Tx tx(cel->sprite());
-    tx(new cmd::CopyRegion(dst,
+    tx(new cmd::CopyRegion(cel->sprite(),
+                           dst,
                            tmp_src.get(),
                            gfx::Region(bounds),
                            gfx::Point(pos.x + bounds.x, pos.y + bounds.y)));

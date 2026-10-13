@@ -11,6 +11,7 @@
 
 #include "app/cmd.h"
 #include "app/cmd/with_image.h"
+#include "app/cmd/with_sprite.h"
 #include "base/buffer.h"
 #include "doc/tile.h"
 #include "gfx/point.h"
@@ -24,13 +25,15 @@ namespace app { namespace cmd {
 using namespace doc;
 
 class CopyRegion : public Cmd,
+                   public WithSprite,
                    public WithImage {
 public:
   // If alreadyCopied is false, it means that onExecute() will copy
   // pixels from src to dst. If it's true, it means that "onExecute"
   // should do nothing, because modified pixels are alreadt on "dst"
   // (so we use "src" as the original image).
-  CopyRegion(Image* dst,
+  CopyRegion(Sprite* sprite,
+             Image* dst,
              const Image* src,
              const gfx::Region& region,
              const gfx::Point& dstPos,
@@ -55,7 +58,8 @@ private:
 
 class CopyTileRegion : public CopyRegion {
 public:
-  CopyTileRegion(Image* dst,
+  CopyTileRegion(Sprite* sprite,
+                 Image* dst,
                  const Image* src,
                  const gfx::Region& region,
                  const gfx::Point& dstPos,

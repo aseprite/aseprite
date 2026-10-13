@@ -132,6 +132,7 @@ public:
   void notifyAfterSave();
   void notifyColorSpaceChanged();
   void notifyPaletteChanged();
+  void notifyImagePixelsModified(Sprite* sprite, const gfx::Region& region, doc::Image* image);
   void notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region, frame_t frame);
   void notifyExposeSpritePixels(Sprite* sprite, const gfx::Region& region);
   void notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer);

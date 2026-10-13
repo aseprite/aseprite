@@ -347,6 +347,7 @@ protected:
   gfx::Rect cvCanvasBounds() override;
 
   // DocObserver impl
+  void onImagePixelsModified(DocEvent& ev) override;
   void onSpritePixelsModified(DocEvent& ev) override;
   void onColorSpaceChanged(DocEvent& ev) override;
   void onExposeSpritePixels(DocEvent& ev) override;

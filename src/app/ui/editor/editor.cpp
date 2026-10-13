@@ -2544,6 +2544,29 @@ gfx::Rect Editor::cvCanvasBounds()
   return rc;
 }
 
+void Editor::onImagePixelsModified(DocEvent& ev)
+{
+  if (!ui::is_ui_thread()) {
+    // This can happen when we're applying a filter in a background thread.
+    return;
+  }
+
+  if (!isVisible())
+    return;
+
+  // TODO Profile & improve the performance of this algorithm if needed.
+  gfx::Region rgn;
+  for (const Cel* cel : m_sprite->cels(m_frame)) {
+    if (cel->image() == ev.image()) {
+      gfx::Region r = ev.region();
+      r.offset(cel->position());
+      rgn |= r;
+    }
+  }
+  if (!rgn.isEmpty())
+    invalidateCanvasRegion(rgn);
+}
+
 void Editor::onSpritePixelsModified(DocEvent& ev)
 {
   if (!isVisible() && frame() != ev.frame())
