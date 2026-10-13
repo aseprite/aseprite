@@ -72,18 +72,6 @@ public:
     return m_zoom.remove<T>(y) / T(m_pixelRatio.h);
   }
 
-  template<typename T>
-  T removeXCeiling(T x) const
-  {
-    return T(m_zoom.removeCeiling(x)) / T(m_pixelRatio.w);
-  }
-
-  template<typename T>
-  T removeYCeiling(T y) const
-  {
-    return T(m_zoom.removeCeiling(y)) / T(m_pixelRatio.h);
-  }
-
   // Used in 'editor.cpp' to do some math between x,y values.
   // Useful for calculating diagonal symmetry axis positions when pixel ratio is other than 1:1
   template<typename T>

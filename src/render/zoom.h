@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2019 Igara Studio S.A.
+// Copyright (c) 2019-present Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -33,8 +33,6 @@ public:
   {
     return (x * m_den / m_num);
   }
-
-  int removeCeiling(int x) const;
 
   gfx::Rect apply(const gfx::Rect& r) const;
   gfx::Rect remove(const gfx::Rect& r) const;
@@ -74,14 +72,6 @@ inline int Zoom::remove(int x) const
   if (x < 0)
     return (x * m_den / m_num) - 1;
   return (x * m_den / m_num);
-}
-
-inline int Zoom::removeCeiling(int x) const
-{
-  int v = x * m_den;
-  if (x < 0)
-    return (v / m_num);
-  return (v / m_num) + (v % m_num != 0);
 }
 
 inline gfx::Rect Zoom::apply(const gfx::Rect& r) const

@@ -182,7 +182,6 @@ public:
   };
 
   gfx::Point screenToEditor(const gfx::Point& pt) const;
-  gfx::Point screenToEditorCeiling(const gfx::Point& pt) const;
   gfx::PointF screenToEditorF(const gfx::Point& pt) const;
   gfx::Point editorToScreen(const gfx::Point& pt, ToScreen to = ToScreen::Final) const;
   gfx::PointF editorToScreenF(const gfx::PointF& pt, ToScreen to = ToScreen::Final) const;
