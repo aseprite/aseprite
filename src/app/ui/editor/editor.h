@@ -30,6 +30,7 @@
 #include "doc/selected_objects.h"
 #include "filters/tiled_mode.h"
 #include "gfx/fwd.h"
+#include "gfx/matrix.h"
 #include "obs/connection.h"
 #include "os/color_space.h"
 #include "render/projection.h"
@@ -161,6 +162,7 @@ public:
   void setScrollAndZoomToFitScreen();
   void setEditorScroll(const gfx::Point& scroll);
   void setEditorZoom(const render::Zoom& zoom);
+  void setEditorAngle(double angle);
 
   // Updates the Editor's view.
   void updateEditor(const bool restoreScrollPos);
@@ -173,16 +175,19 @@ public:
   // Convert ui::Display coordinates (pixel relative to the top-left
   // corner of the in the display content bounds) from/to
   // editor/sprite coordinates (pixel in the canvas).
-  //
-  // TODO we should rename these functions to displayToEditor() and editorToDisplay()
+
+  enum class ToScreen : uint8_t {
+    Paint, // Without applying the ui::Graphics transformation (so the coordinate will be painted)
+    Final  // Applying the ui::Graphics transformation (so the coordinate is used as mouse/screen)
+  };
+
   gfx::Point screenToEditor(const gfx::Point& pt) const;
-  gfx::Point screenToEditorCeiling(const gfx::Point& pt) const;
   gfx::PointF screenToEditorF(const gfx::Point& pt) const;
-  gfx::Point editorToScreen(const gfx::Point& pt) const;
-  gfx::PointF editorToScreenF(const gfx::PointF& pt) const;
+  gfx::Point editorToScreen(const gfx::Point& pt, ToScreen to = ToScreen::Final) const;
+  gfx::PointF editorToScreenF(const gfx::PointF& pt, ToScreen to = ToScreen::Final) const;
   gfx::Rect screenToEditor(const gfx::Rect& rc) const;
-  gfx::Rect editorToScreen(const gfx::Rect& rc) const;
-  gfx::RectF editorToScreenF(const gfx::RectF& rc) const;
+  gfx::Rect editorToScreen(const gfx::Rect& rc, ToScreen to = ToScreen::Final) const;
+  gfx::RectF editorToScreenF(const gfx::RectF& rc, ToScreen to = ToScreen::Final) const;
 
   void add_observer(EditorObserver* observer);
   void remove_observer(EditorObserver* observer);
@@ -421,6 +426,7 @@ private:
   void drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, int dx, int dy);
 
   gfx::Point calcExtraPadding(const render::Projection& proj);
+  void calcMatrices();
 
   void invalidateCanvasRegion(const gfx::Region& updateRegion);
   void invalidateCanvas();
@@ -452,6 +458,8 @@ private:
   Layer* m_layer;            // Active layer in the editor
   frame_t m_frame;           // Active frame in the editor
   render::Projection m_proj; // Zoom/pixel ratio in the editor
+  gfx::Matrix m_matrix;
+  gfx::Matrix m_invMatrix;
   DocumentPreferences& m_docPref;
   // Helper functions affected by the current Tiled Mode.
   app::TiledModeHelper m_tiledModeHelper;
