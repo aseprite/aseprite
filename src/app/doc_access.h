@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -28,18 +28,28 @@ class CannotReadDocException : public LockedDocException {
 public:
   CannotReadDocException() throw()
     : LockedDocException("Cannot read the sprite.\n"
-                         "It is being modified by another command.\n"
-                         "Try again.")
+                         "It is being modified by another action.\n"
+                         "Try again later.")
   {
   }
 };
 
 class CannotWriteDocException : public LockedDocException {
 public:
-  CannotWriteDocException() throw()
-    : LockedDocException("Cannot modify the sprite.\n"
-                         "It is being used by another command.\n"
-                         "Try again.")
+  CannotWriteDocException(const char* msg = "Cannot modify the sprite.\n"
+                                            "It is being used by another action.\n"
+                                            "Try again later.") throw()
+    : LockedDocException(msg)
+  {
+  }
+};
+
+class CannotDestroyDocException : public CannotWriteDocException {
+public:
+  CannotDestroyDocException() throw()
+    : CannotWriteDocException("Cannot close the sprite.\n"
+                              "It is being used by another action.\n"
+                              "Try again later.")
   {
   }
 };
@@ -89,7 +99,7 @@ class DocReader : public DocAccess {
 public:
   DocReader() {}
 
-  explicit DocReader(Doc* doc, int timeout) : DocAccess(doc)
+  DocReader(Doc* doc, int timeout) : DocAccess(doc)
   {
     if (m_doc) {
       m_lockResult = m_doc->readLock(timeout);
@@ -98,7 +108,7 @@ public:
     }
   }
 
-  explicit DocReader(const DocReader& copy, int timeout) : DocAccess(copy)
+  DocReader(const DocReader& copy, int timeout) : DocAccess(copy)
   {
     if (m_doc) {
       m_lockResult = m_doc->readLock(timeout);
@@ -132,7 +142,7 @@ class DocWriter : public DocAccess {
 public:
   DocWriter() : m_from_reader(false), m_locked(false) {}
 
-  explicit DocWriter(Doc* doc, int timeout) : DocAccess(doc), m_from_reader(false), m_locked(false)
+  DocWriter(Doc* doc, int timeout) : DocAccess(doc), m_from_reader(false), m_locked(false)
   {
     if (m_doc) {
       m_lockResult = m_doc->writeLock(timeout);
@@ -145,7 +155,7 @@ public:
 
   // Constructor that can be used to elevate the given reader-lock to
   // writer permission.
-  explicit DocWriter(const DocReader& doc, int timeout)
+  DocWriter(const DocReader& doc, int timeout)
     : DocAccess(doc)
     , m_from_reader(true)
     , m_locked(false)
@@ -188,7 +198,11 @@ private:
 // Used to destroy the active document in the context.
 class DocDestroyer : public DocWriter {
 public:
-  explicit DocDestroyer(Context* context, Doc* doc, int timeout) : DocWriter(doc, timeout) {}
+  DocDestroyer(Context* context, Doc* doc, int timeout) : DocWriter(doc, timeout)
+  {
+    if (m_lockResult != LockResult::OK)
+      throw CannotDestroyDocException();
+  }
 
   void destroyDocument()
   {
