@@ -1399,3 +1399,43 @@ do
                      0,   0,     1|d,   (1|x|d),
                      0,   0,     1|y|d, (1|x|y|d) })
 end
+
+-----------------------------------------------------------------------
+-- Test that manual mode cannot create tiles or cels on an empty tilemap
+-----------------------------------------------------------------------
+
+do
+  local spr = Sprite(8, 8, ColorMode.INDEXED)
+  spr.gridBounds = Rectangle(0, 0, 2, 2)
+  app.command.NewLayer{ tilemap=true }
+  local tilemapLay = spr.layers[2]
+  assert(#tilemapLay.cels == 0)
+
+  app.useTool{
+  tool='pencil',
+  color=1,
+  layer=tilemapLay,
+  tilesetMode=TilesetMode.MANUAL,
+  points={ Point(0, 0) }}
+  assert(#tilemapLay.cels == 0) -- MANUAL mode cannot create new tiles or cels
+
+  app.useTool{
+    tool='pencil',
+    color=1,
+    layer=tilemapLay,
+    tilesetMode=TilesetMode.STACK, -- STACK creates a new tile and cel
+    points={ Point(0, 0) }}
+
+  local tileset = tilemapLay.tileset
+  local cel = tilemapLay.cels[1]
+
+  app.useTool{
+    tool='pencil',
+    color=2,
+    cel=cel,
+    tilesetMode=TilesetMode.MANUAL,
+    points={ Point(1, 1) }}
+  assert(#tileset == 2) -- no new tiles created
+  expect_img(tileset:getTile(1), { 1,0,
+                                   0,2 })
+end
