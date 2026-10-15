@@ -589,7 +589,6 @@ protected:
     }
 
     lua_pop(L, 1);
-    fop->document()->markAsSaved();
     return true;
   }
   #endif
