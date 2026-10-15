@@ -168,6 +168,38 @@ TEST(KeyboardShortcuts, FramesSelection)
   EXPECT_COMMAND_FOR_KEY(SetLoopSection, kKeyF2, KeyContext::FramesSelection);
 }
 
+TEST(KeyboardShortcuts, KeyboardOnlyCommandDoesNotWinOnMouseDown)
+{
+  ks->clear();
+
+  // Define a keyboard-only shortcut (Shift with no key/button):
+  // This should NOT trigger on mouse events.
+  KeyPtr keyboardOnlyCommand = ks->command(CommandId::Zoom(), {}, KeyContext::Any);
+  keyboardOnlyCommand->add(ui::Shortcut(kKeyShiftModifier, kKeyNil, 0),
+                           KeySource::UserDefined,
+                           *ks);
+
+  // Define a mouse shortcut (Shift + Left Mouse Button):
+  // This should trigger on mouse events with Shift pressed.
+  KeyPtr mouseCommand = ks->command(CommandId::Undo(), {}, KeyContext::Any);
+  mouseCommand->add(ui::Shortcut(kKeyShiftModifier, kButtonLeft), KeySource::UserDefined, *ks);
+
+  // Simulate a mouse down event with Shift pressed.
+  MouseMessage mouseMsg(kMouseDownMessage,
+                        PointerType::Unknown,
+                        kButtonLeft,
+                        kKeyShiftModifier,
+                        gfx::Point(0, 0));
+
+  // The keyboard-only shortcut must NOT be selected for this mouse event.
+  // Only the mouse shortcut should match.
+  KeyPtr bestCommand =
+    ks->findBestKeyFromMessage(&mouseMsg, KeyContext::Any, std::make_optional(KeyType::Command));
+  ASSERT_TRUE(bestCommand != nullptr);
+  EXPECT_EQ(KeyType::Command, bestCommand->type());
+  EXPECT_EQ(CommandId::Undo(), bestCommand->command()->id());
+}
+
 int app_main(int argc, char* argv[])
 {
   os::SystemRef system = os::System::make();
