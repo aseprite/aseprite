@@ -73,6 +73,12 @@ void Symmetry::generateStrokes(const Stroke& stroke, Strokes& strokes, ToolLoop*
       break;
     }
 
+    case gen::SymmetryMode::YIN_YANG: {
+      calculateSymmetricalStroke(stroke, stroke2, loop, doc::SymmetryIndex::ROTATED_180);
+      strokes.push_back(stroke2);
+      break;
+    }
+
     case gen::SymmetryMode::ALL: {
       calculateSymmetricalStroke(stroke, stroke2, loop, doc::SymmetryIndex::FLIPPED_X);
       strokes.push_back(stroke2);
@@ -163,6 +169,11 @@ void Symmetry::calculateSymmetricalStroke(const Stroke& refStroke,
         pt2.x = 2 * (m_x + brushCenter.x) - pt.x - brushSize.w;
         if (isDoubleDiagonalSymmetry)
           pt2.y = 2 * (m_y + brushCenter.y) - pt.y - brushSize.h;
+        break;
+      }
+      case doc::SymmetryIndex::ROTATED_180: {
+        pt2.x = 2 * m_x - pt.x - (brushSize.w % 2 ? 1 : 0);
+        pt2.y = 2 * m_y - pt.y - (brushSize.h % 2 ? 1 : 0);
         break;
       }
       default: pt2.y = 2 * (m_y + brushCenter.y) - pt.y - brushSize.h; break;
