@@ -192,6 +192,7 @@ end)" },
 
   app.extensions().enableExtension(testExt, true);
   EXPECT_FALSE(Commands::instance()->byId("BasicTestCommand") == nullptr);
+  EXPECT_FALSE(true);
 }
 
 TEST(Extensions, Complex)
