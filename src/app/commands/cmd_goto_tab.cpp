@@ -11,10 +11,10 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
+#include "app/commands/params.h"
+#include "app/i18n/strings.h"
 #include "app/ui/workspace.h"
 #include <string>
-#include "app/i18n/strings.h"
-#include "app/commands/params.h"
 
 namespace app {
 
@@ -68,20 +68,22 @@ bool GotoPreviousTabCommand::onEnabled(Context* context)
 void GotoPreviousTabCommand::onExecute(Context* context)
 {
   App::instance()->workspace()->selectPreviousTab();
-}class GotoTabIndexCommand : public Command{
-  public:
-    GotoTabIndexCommand();
+}
+class GotoTabIndexCommand : public Command {
+public:
+  GotoTabIndexCommand();
 
-  protected:
-    bool onNeedsParams() const override { return true; }
-    void onLoadParams(const Params& params) override;
-    bool onEnabled(Context* context) override;
-    void onExecute(Context* context) override;
-    std::string onGetFriendlyName() const override;
-  private:
-    int m_index;
+protected:
+  bool onNeedsParams() const override { return true; }
+  void onLoadParams(const Params& params) override;
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
+
+private:
+  int m_index;
 };
-GotoTabIndexCommand::GotoTabIndexCommand() : Command( CommandId::GotoTabIndex())
+GotoTabIndexCommand::GotoTabIndexCommand() : Command(CommandId::GotoTabIndex())
 {
 }
 
@@ -107,9 +109,9 @@ void GotoTabIndexCommand::onExecute(Context* context)
 std::string GotoTabIndexCommand::onGetFriendlyName() const
 {
   std::string text;
-  switch(m_index) {
-    case 9 : text = Strings::commands_GotoLastTab();break;
-    default : text = Strings::commands_GotoTabIndex(m_index);break;
+  switch (m_index) {
+    case 9:  text = Strings::commands_GotoLastTab(); break;
+    default: text = Strings::commands_GotoTabIndex(m_index); break;
   }
   return text;
 }
