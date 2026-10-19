@@ -48,6 +48,7 @@ public:
   bool canSelectOtherTab() const;
   void selectNextTab();
   void selectPreviousTab();
+  void selectTabIndex(int index);
   void duplicateActiveView();
 
   void updateTabs();

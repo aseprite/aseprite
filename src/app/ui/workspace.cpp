@@ -134,6 +134,11 @@ void Workspace::selectPreviousTab()
   m_activePanel->tabs()->selectPreviousTab();
 }
 
+void Workspace::selectTabIndex(int index)
+{
+  m_activePanel->tabs()->selectTabIndex(index);
+}
+
 void Workspace::duplicateActiveView()
 {
   WorkspaceView* view = activeView();
