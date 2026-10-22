@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2021-2023 Igara Studio S.A.
+// Copyright (c) 2021-present Igara Studio S.A.
 // Copyright (c) 2016-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -26,6 +26,7 @@ enum class FileFormat {
   HEX_PALETTE,
   ICO_IMAGES,
   JPEG_IMAGE,
+  JPEG_XL_ANIMATION,
   PAL_PALETTE,
   PCX_IMAGE,
   PNG_IMAGE,

@@ -87,3 +87,6 @@
 [submodule "third_party/BLAKE3"]
 	path = third_party/BLAKE3
 	url = https://github.com/aseprite/BLAKE3.git
+[submodule "third_party/libjxl"]
+	path = third_party/libjxl
+	url = https://github.com/aseprite/libjxl.git

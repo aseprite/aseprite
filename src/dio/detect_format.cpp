@@ -1,5 +1,5 @@
 // Aseprite Document IO Library
-// Copyright (c) 2021-2023 Igara Studio S.A.
+// Copyright (c) 2021-present Igara Studio S.A.
 // Copyright (c) 2016-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -159,6 +159,11 @@ FileFormat detect_format_by_file_extension(const std::string& filename)
 
   if (ext == "jpg" || ext == "jpeg")
     return FileFormat::JPEG_IMAGE;
+
+#ifdef ENABLE_JXL
+  if (ext == "jxl")
+    return FileFormat::JPEG_XL_ANIMATION;
+#endif
 
   if (ext == "pal")
     return FileFormat::PAL_PALETTE;

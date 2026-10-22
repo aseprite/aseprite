@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2023  Igara Studio S.A.
+// Copyright (C) 2021-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -33,6 +33,10 @@ extern FileFormat* CreatePngFormat();
 extern FileFormat* CreateQoiFormat();
 extern FileFormat* CreateSvgFormat();
 extern FileFormat* CreateTgaFormat();
+
+#ifdef ENABLE_JXL
+extern FileFormat* CreateJpegXlFormat();
+#endif
 
 #ifdef ENABLE_PSD
 extern FileFormat* CreatePsdFormat();
@@ -69,17 +73,17 @@ FileFormatsManager::FileFormatsManager()
   registerFormat(CreateGifFormat());
   registerFormat(CreateIcoFormat());
   registerFormat(CreateJpegFormat());
+#ifdef ENABLE_JXL
+  registerFormat(CreateJpegXlFormat());
+#endif
   registerFormat(CreatePcxFormat());
   registerFormat(CreatePngFormat());
-
 #ifdef ENABLE_PSD
   registerFormat(CreatePsdFormat());
 #endif
-
   registerFormat(CreateQoiFormat());
   registerFormat(CreateSvgFormat());
   registerFormat(CreateTgaFormat());
-
 #ifdef ENABLE_WEBP
   registerFormat(CreateWebPFormat());
 #endif

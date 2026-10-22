@@ -157,9 +157,14 @@ target_sources(app-lib PRIVATE
   file/tga_format.cpp)
 if(ENABLE_WEBP AND WEBP_FOUND)
   target_compile_definitions(dio-lib PUBLIC -DENABLE_WEBP)
-  target_compile_definitions(app-lib PUBLIC -DENABLE_WEBP)
   target_sources(app-lib PRIVATE
     file/webp_format.cpp)
+endif()
+if(ENABLE_JXL)
+  target_link_libraries(app-lib jxl jxl_threads)
+  target_compile_definitions(dio-lib PUBLIC -DENABLE_JXL)
+  target_sources(app-lib PRIVATE
+    file/jxl_format.cpp)
 endif()
 if(ENABLE_PSD)
   target_link_libraries(app-lib psd)
