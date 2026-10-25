@@ -305,3 +305,27 @@ do
 
   assert(a.isValid == false)
 end
+
+-- Save and reload a sprite with an empty palette (0 colors)
+-- Related to https://github.com/aseprite/aseprite/issues/5673
+do
+  local spr = Sprite(32, 32)
+  local cel = spr.cels[1]
+
+  local emptyPal = Palette(1)
+  emptyPal:resize(0)
+  assert(#emptyPal == 0)
+  spr:setPalette(emptyPal)
+
+  local filename = "_test_empty_palette.aseprite"
+  spr:saveAs(filename)
+
+  -- File must open without corruption
+  local spr2 = app.open(filename)
+  assert(spr2 ~= nil)
+  assert(spr2.width == 32)
+  assert(spr2.height == 32)
+  assert(#spr2.cels == 1)
+
+  spr2:close()
+end
