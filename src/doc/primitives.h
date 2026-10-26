@@ -69,7 +69,13 @@ void fill_ellipse(Image* image,
 bool is_plain_image(const Image* img, color_t c);
 bool is_empty_image(const Image* img);
 
+// Uses same_color() for comparison, so two pixels with alpha=0
+// are considered equal regardless of their RGB values.
 int count_diff_between_images(const Image* i1, const Image* i2);
+
+// Uses bitwise comparison (a == b), so all RGBA channels must
+// match exactly, even when alpha = 0.
+int count_diff_between_images_exact_match(const Image* i1, const Image* i2);
 bool is_same_image(const Image* i1, const Image* i2);
 bool is_same_image_slow(const Image* i1, const Image* i2);
 
