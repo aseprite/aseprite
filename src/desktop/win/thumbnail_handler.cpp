@@ -50,7 +50,7 @@ public:
 
   bool ok() const override { return m_ok; }
 
-  size_t tell() override
+  size_t tell() const override
   {
     LARGE_INTEGER delta;
     delta.QuadPart = 0;
@@ -113,8 +113,8 @@ public:
     return 0;
   }
 
-  IStream* m_stream;
-  bool m_ok;
+  mutable IStream* m_stream;
+  mutable bool m_ok;
 };
 
 } // anonymous namespace

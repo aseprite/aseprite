@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -234,7 +234,7 @@ void Preferences::removeDocument(Doc* doc)
   }
 }
 
-void Preferences::onRemoveDocument(Doc* doc)
+void Preferences::onDeleteDocumentPreferences(Doc* doc)
 {
   removeDocument(doc);
 }

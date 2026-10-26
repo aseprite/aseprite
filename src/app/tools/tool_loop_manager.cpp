@@ -305,6 +305,7 @@ void ToolLoopManager::snapToGrid(Stroke::Pt& pt)
     return;
 
   gfx::Point point(pt.x, pt.y);
+  point -= m_toolLoop->getBrush()->center();
   point = snap_to_grid(m_toolLoop->getGridBounds(), point, PreferSnapTo::ClosestGridVertex);
   point += m_toolLoop->getBrush()->center();
   pt.x = point.x;

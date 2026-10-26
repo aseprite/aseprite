@@ -56,9 +56,12 @@ Checks: >
   -bugprone-easily-swappable-parameters,
   -bugprone-narrowing-conversions,
   -clang-analyzer-optin.core.EnumCastOutOfRange,
+  -misc-const-correctness,
   -misc-include-cleaner,
   -misc-use-anonymous-namespace,
+  -portability-avoid-pragma-once,
   -readability-braces-around-statements,
+  -readability-convert-member-functions-to-static,
   -readability-function-cognitive-complexity,
   -readability-identifier-length,
   -readability-isolate-declaration,
@@ -74,5 +77,7 @@ CheckOptions:
   - key: readability-simplify-boolean-expr.IgnoreMacros
     value: true
   - key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+    value: true
+  - key: misc-unused-parameters.IgnoreVirtual
     value: true
 ...

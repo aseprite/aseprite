@@ -1,4 +1,4 @@
--- Copyright (C) 2022-2023  Igara Studio S.A.
+-- Copyright (C) 2022-present  Igara Studio S.A.
 --
 -- This file is released under the terms of the MIT license.
 -- Read LICENSE.txt for more information.
@@ -309,6 +309,23 @@ do
   expect_img(tileset:getTile(5), { 0, 0,
                                    0, 0 })
 
+  -- Test saving/loading tileset
+  spr:saveAs('_test_tileset_1.aseprite')
+  local spr2 = Sprite{ fromFile='_test_tileset_1.aseprite' }
+
+  local tileset2 = spr2.tilesets[1]
+  expect_img(tileset2:getTile(0), { 0, 0,
+                                    0, 0 })
+  expect_img(tileset2:getTile(1), { 0, 0,
+                                    0, 0 })
+  expect_img(tileset2:getTile(2), { 1, 1,
+                                    0, 0 })
+  expect_img(tileset2:getTile(3), { 2, 0,
+                                    0, 2 })
+  expect_img(tileset2:getTile(4), { 0, 0,
+                                    0, 0 })
+  expect_img(tileset2:getTile(5), { 0, 0,
+                                    0, 0 })
 end
 
 -- Test that we use the sprite grid size by default to create new tilesets

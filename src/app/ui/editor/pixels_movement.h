@@ -72,7 +72,7 @@ public:
 
   PixelsMovement(Context* context,
                  Site site,
-                 const Image* moveThis,
+                 const ImageRef& moveThis,
                  const Mask* mask,
                  const char* operationName,
                  const TiledModeHelper* tiledModeHelper = nullptr);

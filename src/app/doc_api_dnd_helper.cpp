@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2025  Igara Studio S.A.
+// Copyright (C) 2025-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -129,10 +129,10 @@ void DocApi::dropDocumentsOnTimeline(app::Doc* destDoc,
     for (auto* srcLayer : srcDoc->sprite()->root()->layers()) {
       srcLayer->displaceFrames(0, frame);
       if (insert == InsertionPoint::AfterLayer) {
-        refLayer = duplicateLayerAfter(srcLayer, group, refLayer);
+        refLayer = duplicateLayerAfter(srcLayer, group, refLayer, DocApi::ShareTilesets::No);
       }
       else {
-        refLayer = duplicateLayerBefore(srcLayer, group, refLayer);
+        refLayer = duplicateLayerBefore(srcLayer, group, refLayer, DocApi::ShareTilesets::No);
         insert = InsertionPoint::AfterLayer;
       }
     }

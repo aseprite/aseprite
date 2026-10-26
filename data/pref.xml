@@ -102,6 +102,7 @@
     <enum id="PaintingCursorType">
       <value id="SIMPLE_CROSSHAIR" value="0" />
       <value id="CROSSHAIR_ON_SPRITE" value="1" />
+      <value id="CROSSHAIR_ON_SPRITE_WITHOUT_UI_SCALE" value="2" />
     </enum>
     <enum id="TimelinePosition">
       <value id="BOTTOM" value="0" />
@@ -228,6 +229,7 @@
       <option id="painting_cursor_type" type="PaintingCursorType" default="PaintingCursorType::CROSSHAIR_ON_SPRITE" />
       <option id="brush_preview" type="BrushPreview" default="BrushPreview::FULL" />
       <option id="brush_preview_in_preview" type="bool" default="false" />
+      <option id="tile_preview" type="BrushPreview" default="BrushPreview::FULL" />
       <option id="snap_to_grid" type="bool" default="false" />
     </section>
     <section id="preview">

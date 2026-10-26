@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -45,6 +45,7 @@
 #include "render/render.h"
 #include "ui/layer.h"
 #include "ui/manager.h"
+#include "ui/scale.h"
 #include "ui/system.h"
 
 #include <array>
@@ -155,8 +156,9 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
   Doc* document = m_editor->document();
   Sprite* sprite = m_editor->sprite();
-  Site site = m_editor->getSite();
+  const Site site = m_editor->getSite();
   Layer* layer = (m_editor->layer() && m_editor->layer()->isImage() ? m_editor->layer() : nullptr);
+  const doc::Grid grid = site.grid();
   ASSERT(sprite);
 
   // Get drawable region
@@ -178,10 +180,13 @@ void BrushPreview::show(const gfx::Point& screenPos)
   // Get current tilemap mode
   const TilemapMode tilemapMode = site.tilemapMode();
 
-  gfx::Rect origBrushBounds = ((isFloodfill && brush->type() != BrushType::kImageBrushType) ||
-                                   tilemapMode == TilemapMode::Tiles ?
-                                 gfx::Rect(0, 0, 1, 1) :
-                                 brush->bounds());
+  gfx::Rect origBrushBounds;
+  if (isFloodfill && brush->type() != BrushType::kImageBrushType)
+    origBrushBounds = gfx::Rect(0, 0, 1, 1);
+  else if (tilemapMode == TilemapMode::Tiles)
+    origBrushBounds = gfx::Rect(grid.tileSize());
+  else
+    origBrushBounds = brush->bounds();
   gfx::Rect brushBounds = origBrushBounds;
 
   // Cursor in the screen (view)
@@ -190,9 +195,11 @@ void BrushPreview::show(const gfx::Point& screenPos)
   // Get cursor position in the editor
   gfx::Point spritePos = m_editor->screenToEditor(screenPos);
   if (pref.cursor.snapToGrid() && m_editor->docPref().grid.snap()) {
-    spritePos =
-      snap_to_grid(m_editor->docPref().grid.bounds(), spritePos, PreferSnapTo::ClosestGridVertex) +
-      gfx::Point(brushBounds.w / 2, brushBounds.h / 2);
+    gfx::Point brushCenter(brushBounds.w / 2, brushBounds.h / 2);
+    spritePos = snap_to_grid(m_editor->docPref().grid.bounds(),
+                             spritePos - brushCenter,
+                             PreferSnapTo::ClosestGridVertex) +
+                brushCenter;
   }
 
   // Get the current tool
@@ -220,16 +227,20 @@ void BrushPreview::show(const gfx::Point& screenPos)
   if (ink->isSelection() || ink->isSlice()) {
     m_type = SELECTION_CROSSHAIR;
   }
-  else if ((tilemapMode == TilemapMode::Pixels) &&
-           (brush->type() == kImageBrushType ||
-            ((isFloodfill ? 1 : brush->size()) > (1.0 / m_editor->zoom().scale()))) &&
-           ( // Use cursor bounds for inks that are effects (eraser, blur, etc.)
-             (ink->isEffect()) ||
-             // or when the brush color is transparent and we are not in the background layer
-             (!ink->isShading() && (layer && layer->isTransparent()) &&
-              ((sprite->pixelFormat() == IMAGE_INDEXED && brush_color == mask_index) ||
-               (sprite->pixelFormat() == IMAGE_RGB && rgba_geta(brush_color) == 0) ||
-               (sprite->pixelFormat() == IMAGE_GRAYSCALE && graya_geta(brush_color) == 0))))) {
+  else if (((tilemapMode == TilemapMode::Pixels) &&
+            (brush->type() == kImageBrushType ||
+             ((isFloodfill ? 1 : brush->size()) > (1.0 / m_editor->zoom().scale()))) &&
+            ( // Use cursor bounds for inks that are effects (eraser, blur, etc.)
+              (ink->isEffect()) ||
+              // or when the brush color is transparent and we are not in the background layer
+              (!ink->isShading() && (layer && layer->isTransparent()) &&
+               ((sprite->pixelFormat() == IMAGE_INDEXED && brush_color == mask_index) ||
+                (sprite->pixelFormat() == IMAGE_RGB && rgba_geta(brush_color) == 0) ||
+                (sprite->pixelFormat() == IMAGE_GRAYSCALE && graya_geta(brush_color) == 0))))) ||
+           // Painting with tile 0 or Eraser tool in Tiles mode should show tile boundaries
+           ((tilemapMode == TilemapMode::Tiles) &&
+            ((ink->isPaint() && Preferences::instance().colorBar.fgTile() == 0) ||
+             ink->isEffect()))) {
     m_type = BRUSH_BOUNDARIES;
   }
   else {
@@ -239,7 +250,9 @@ void BrushPreview::show(const gfx::Point& screenPos)
   bool showPreview = false;
   bool showPreviewWithEdges = false;
   bool cancelEdges = false;
-  auto brushPreview = pref.cursor.brushPreview();
+
+  auto brushPreview = (tilemapMode == TilemapMode::Tiles ? pref.cursor.tilePreview() :
+                                                           pref.cursor.brushPreview());
   if (!m_editor->docPref().show.brushPreview())
     brushPreview = app::gen::BrushPreview::NONE;
 
@@ -301,6 +314,9 @@ void BrushPreview::show(const gfx::Point& screenPos)
   // Draw pixel/brush preview
   if (showPreview) {
     brushBounds.offset(spritePos);
+    if (tilemapMode == TilemapMode::Tiles)
+      brushBounds.setOrigin(grid.tileToCanvas(grid.canvasToTile(brushBounds.origin())));
+
     gfx::Rect extraCelBoundsInCanvas = brushBounds;
 
     // Tiled mode might require a bigger extra cel (to show the tiled)
@@ -328,7 +344,6 @@ void BrushPreview::show(const gfx::Point& screenPos)
     gfx::Rect extraCelBounds;
     if (tilemapMode == TilemapMode::Tiles) {
       ASSERT(layer->isTilemap());
-      doc::Grid grid = site.grid();
       extraCelBounds = grid.canvasToTile(extraCelBoundsInCanvas);
       extraCelBoundsInCanvas = grid.tileToCanvas(extraCelBounds);
     }
@@ -438,9 +453,15 @@ void BrushPreview::show(const gfx::Point& screenPos)
                                 gfx::Point(proj.applyX(1) / 2, proj.applyY(1) / 2));
         }
         else if (m_type & BRUSH_BOUNDARIES) {
-          layerBounds.setOrigin(m_editor->editorToScreen(spritePos) -
-                                gfx::Point(layerBounds.w / 2 - proj.applyX(layerBounds.w % 2),
-                                           layerBounds.h / 2 - proj.applyY(layerBounds.h % 2)));
+          if (tilemapMode == TilemapMode::Tiles) {
+            layerBounds.setOrigin(
+              m_editor->editorToScreen(grid.tileToCanvas(grid.canvasToTile(spritePos))));
+          }
+          else {
+            layerBounds.setOrigin(m_editor->editorToScreen(spritePos) -
+                                  gfx::Point(layerBounds.w / 2 - proj.applyX(layerBounds.w % 2),
+                                             layerBounds.h / 2 - proj.applyY(layerBounds.h % 2)));
+          }
         }
 
         m_uiLayer->setPosition(layerBounds.origin());
@@ -470,12 +491,16 @@ void BrushPreview::show(const gfx::Point& screenPos)
           paint.color(uiCursorColor);
 
         if (m_type & SELECTION_CROSSHAIR) {
-          gfx::Point pos(3, 3);
-          strokeSelectionCrossPixels(&g, pos, paint, 1);
+          const int uiScale = uiScaleForCursor();
+          gfx::Point pos(3 * uiScale, 3 * uiScale);
+          strokeSelectionCrossPixels(&g, pos, paint, 1, uiScale);
         }
         else if (m_type & BRUSH_BOUNDARIES) {
-          gfx::Point pos(layerBounds.w / 2 - proj.applyX(layerBounds.w % 2),
-                         layerBounds.h / 2 - proj.applyY(layerBounds.h % 2));
+          gfx::Point pos;
+          if (tilemapMode == TilemapMode::Pixels) {
+            pos = gfx::Point(layerBounds.w / 2 - proj.applyX(layerBounds.w % 2),
+                             layerBounds.h / 2 - proj.applyY(layerBounds.h % 2));
+          }
           strokeBrushBoundaries(&g, pos, paint);
         }
 
@@ -578,14 +603,6 @@ void BrushPreview::invalidateRegion(const gfx::Region& region)
   m_clippingRegion.createSubtraction(m_clippingRegion, region);
 }
 
-void BrushPreview::calculateTileBoundariesOrigin(const doc::Grid& grid, const gfx::Point& spritePos)
-{
-  m_brushBoundaries.offset(-m_brushBoundaries.begin()[0].bounds().x,
-                           -m_brushBoundaries.begin()[0].bounds().y);
-  gfx::Point canvasPos = grid.tileToCanvas(grid.canvasToTile(spritePos));
-  m_brushBoundaries.offset(canvasPos.x - spritePos.x, canvasPos.y - spritePos.y);
-}
-
 bool BrushPreview::createUILayer(const gfx::Rect& brushBounds)
 {
   if (!m_uiLayer)
@@ -595,7 +612,9 @@ bool BrushPreview::createUILayer(const gfx::Rect& brushBounds)
   const render::Projection& proj = m_editor->projection();
 
   if (m_type & SELECTION_CROSSHAIR) {
-    gfx::Size pixelSize(6 + std::max(1, proj.applyX(1)), 6 + std::max(1, proj.applyY(1)));
+    const int uiScale = uiScaleForCursor();
+    gfx::Size pixelSize(uiScale * 6 + std::max(uiScale, proj.applyX(1)),
+                        uiScale * 6 + std::max(uiScale, proj.applyY(1)));
     sizeHint = pixelSize;
   }
   else if (m_type & BRUSH_BOUNDARIES) {
@@ -623,16 +642,11 @@ void BrushPreview::createBoundaries(const Site& site, const gfx::Point& spritePo
   Layer* currentLayer = site.layer();
   TilemapMode tilemapMode = site.tilemapMode();
 
-  if (tilemapMode == TilemapMode::Pixels && tilemapMode == m_lastTilemapMode &&
-      !m_brushBoundaries.isEmpty() && m_brushGen == brush->gen()) {
-    return;
-  }
-  else if (tilemapMode == TilemapMode::Tiles && tilemapMode == m_lastTilemapMode &&
-           m_lastLayer == currentLayer) {
-    // When tilemapMode is 'Tiles' is needed an offset
-    // re-calculation of the brush boundaries, even
-    // if it's no need to update the mask.
-    calculateTileBoundariesOrigin(site.grid(), spritePos);
+  // Re-use current boundaries if they are still valid.
+  if ((tilemapMode == TilemapMode::Pixels ||
+       (tilemapMode == TilemapMode::Tiles && m_lastLayer == currentLayer)) &&
+      tilemapMode == m_lastTilemapMode && !m_brushBoundaries.isEmpty() &&
+      m_brushGen == brush->gen()) {
     return;
   }
 
@@ -662,8 +676,6 @@ void BrushPreview::createBoundaries(const Site& site, const gfx::Point& spritePo
     if (!isOnePixel)
       m_brushBoundaries.offset(-brush->center().x, -brush->center().y);
   }
-  else
-    calculateTileBoundariesOrigin(site.grid(), spritePos);
 
   if (deleteMask)
     delete mask;
@@ -673,12 +685,14 @@ void BrushPreview::createCrosshairCursor(ui::Graphics* g, const gfx::Color curso
 {
   ASSERT(!(m_type & NATIVE_CROSSHAIR));
 
+  const int uiScale = uiScaleForCursor();
+
   gfx::Rect cursorBounds;
   gfx::Point cursorCenter;
 
   // Depending on the editor zoom, maybe we need subpixel movement (a
   // little dot inside the active pixel)
-  const bool requireLittleCenterDot = (m_editor->zoom().scale() >= 4.0);
+  const bool requireLittleCenterDot = (m_editor->zoom().scale() >= 4.0 * uiScale);
 
   if (m_type & CROSSHAIR) {
     // Regular crosshair of 7x7
@@ -698,7 +712,7 @@ void BrushPreview::createCrosshairCursor(ui::Graphics* g, const gfx::Color curso
   }
 
   os::Window* window = m_editor->display()->nativeWindow();
-  const int scale = window->scale();
+  const int scale = window->scale() * uiScale;
   os::CursorRef cursor = nullptr;
 
   // Invalidate the entire cache if the scale has changed
@@ -717,7 +731,8 @@ void BrushPreview::createCrosshairCursor(ui::Graphics* g, const gfx::Color curso
       for (int v = 0; v < 7; v++) {
         for (int u = 0; u < 7; u++) {
           if (g_crosshair_pattern[v * 7 + u]) {
-            color_t c = g->getPixel(m_screenPosition.x - 3 + u, m_screenPosition.y - 3 + v);
+            color_t c = g->getPixel(m_screenPosition.x + uiScale * (u - 3),
+                                    m_screenPosition.y + uiScale * (v - 3));
             c = color_utils::blackandwhite_neg(c);
             if (rgba_getr(c) == 255) { // White
               k |= (1 << bit);
@@ -832,31 +847,37 @@ void BrushPreview::createCrosshairCursor(ui::Graphics* g, const gfx::Color curso
 void BrushPreview::strokeSelectionCrossPixels(ui::Graphics* g,
                                               gfx::Point pos,
                                               const ui::Paint& paint,
-                                              const int thickness)
+                                              const int thickness,
+                                              const int uiScale)
 {
   const render::Projection& proj = m_editor->projection();
-  gfx::Size size(proj.applyX(thickness / 2), proj.applyY(thickness / 2));
-  gfx::Size size2(proj.applyX(thickness), proj.applyY(thickness));
-  if (size2.w == 0)
-    size2.w = 1;
-  if (size2.h == 0)
-    size2.h = 1;
+  gfx::Size size(std::max(uiScale, proj.applyX(thickness)),
+                 std::max(uiScale, proj.applyY(thickness)));
+  if (size.w == 0)
+    size.w = 1;
+  if (size.h == 0)
+    size.h = 1;
 
-  int u0 = pos.x - size.w - 3;
-  int v0 = pos.y - size.h - 1;
-  int u1 = pos.x - size.w + size2.w;
-  int v1 = pos.y - size.h + size2.h;
-  g->drawHLine(u0, v0, 3, paint);
-  g->drawHLine(u1, v0, 3, paint);
-  g->drawHLine(u0, v1, 3, paint);
-  g->drawHLine(u1, v1, 3, paint);
+  int u0 = pos.x - 3 * uiScale;
+  int v0 = pos.y - 1 * uiScale;
+  int u1 = pos.x + size.w;
+  int v1 = pos.y + size.h;
+  for (int i = 0; i < uiScale; ++i) {
+    g->drawHLine(u0, v0 + i, 3 * uiScale, paint);
+    g->drawHLine(u1, v0 + i, 3 * uiScale, paint);
+    g->drawHLine(u0, v1 + i, 3 * uiScale, paint);
+    g->drawHLine(u1, v1 + i, 3 * uiScale, paint);
+  }
 
-  u0 = pos.x - size.w - 1;
-  v0 = pos.y - size.h - 3;
-  g->drawVLine(u0, v0, 3, paint);
-  g->drawVLine(u1, v0, 3, paint);
-  g->drawVLine(u0, v1, 3, paint);
-  g->drawVLine(u1, v1, 3, paint);
+  u0 = pos.x - 1 * uiScale;
+  v0 = pos.y - 3 * uiScale;
+  v1 += 1 * uiScale;
+  for (int i = 0; i < uiScale; ++i) {
+    g->drawVLine(u0 + i, v0, 2 * uiScale, paint);
+    g->drawVLine(u1 + i, v0, 2 * uiScale, paint);
+    g->drawVLine(u0 + i, v1, 2 * uiScale, paint);
+    g->drawVLine(u1 + i, v1, 2 * uiScale, paint);
+  }
 }
 
 // Brush edges used for Eraser tool
@@ -873,6 +894,14 @@ void BrushPreview::strokeBrushBoundaries(ui::Graphics* g, gfx::Point pos, const 
   path.offset(pos.x, pos.y);
 
   g->drawPath(path, paint);
+}
+
+// static
+int BrushPreview::uiScaleForCursor()
+{
+  const bool withUIScale = (Preferences::instance().cursor.paintingCursorType() ==
+                            gen::PaintingCursorType::CROSSHAIR_ON_SPRITE);
+  return (withUIScale ? ui::guiscale() : 1);
 }
 
 } // namespace app

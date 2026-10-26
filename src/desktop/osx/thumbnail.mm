@@ -38,7 +38,7 @@ public:
 
   bool ok() const override { return m_ok; }
 
-  size_t tell() override { return m_pos; }
+  size_t tell() const override { return m_pos; }
 
   void seek(size_t absPos) override { m_pos = absPos; }
 

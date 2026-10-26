@@ -232,6 +232,15 @@ Editor::~Editor()
   setCustomizationDelegate(NULL);
 
   m_antsTimer.stop();
+
+  // Delete all EditorStates so we onBeforePopState() each state, and
+  // disconnect all observers from each state. This might be needed
+  // mainly when an unhandled exception is thrown and we don't want to
+  // create another crash from the stack unwinding keeping invalid
+  // observer connections/slots.
+  while (!m_statesHistory.empty())
+    backToPreviousState();
+  m_deletedStates.clear();
 }
 
 void Editor::destroyEditorSharedInternals()
@@ -317,7 +326,9 @@ void Editor::setStateInternal(const EditorStatePtr& newState)
     m_state = m_statesHistory.top();
   }
 
-  ASSERT(m_state);
+  // This can happen from ~Editor() when all states are be deleted.
+  if (!m_state)
+    return;
 
   // Change to the new state.
   m_state->onEnterState(this);
@@ -2678,7 +2689,9 @@ bool Editor::isInsideSelection()
   gfx::Point spritePos = screenToEditor(mousePosInDisplay());
   spritePos -= mainTilePosition();
 
-  KeyAction action = m_customizationDelegate->getPressedKeyAction(KeyContext::SelectionTool);
+  const KeyAction action = (m_customizationDelegate ? m_customizationDelegate->getPressedKeyAction(
+                                                        KeyContext::SelectionTool) :
+                                                      KeyAction::None);
   return (action == KeyAction::None) && m_document && m_document->isMaskVisible() &&
          m_document->mask()->containsPoint(spritePos.x, spritePos.y);
 }
@@ -2850,7 +2863,10 @@ void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
   }
 }
 
-void Editor::pasteImage(const Image* image, const Mask* mask, const gfx::Point* position)
+void Editor::pasteImage(const ImageRef& image,
+                        const Mask* mask,
+                        const gfx::Point* position,
+                        const Tileset* srcTileset)
 {
   ASSERT(image);
 
@@ -2937,10 +2953,56 @@ void Editor::pasteImage(const Image* image, const Mask* mask, const gfx::Point* 
   m_brushPreview.hide();
 
   Mask mask2(*mask);
-  position ? mask2.setOrigin(position->x, position->y) : mask2.setOrigin(x, y);
+  if (position)
+    mask2.setOrigin(position->x, position->y);
+  else
+    mask2.setOrigin(x, y);
 
-  PixelsMovementPtr pixelsMovement(
-    new PixelsMovement(UIContext::instance(), site, image, &mask2, "Paste", &m_tiledModeHelper));
+  // If we are copying a tilemap into another layer, we'll convert the
+  // tilemap into an image if both tilesets don't match.
+  ImageRef pastedImage;
+  Tileset* dstTileset = site.tileset();
+  if (image->colorMode() == ColorMode::TILEMAP && srcTileset &&
+      (!dstTileset || *srcTileset != *dstTileset ||
+       // In case we are pasting a tilemap in the same layer but in pixel mode,
+       // we rasterize the tilemap anyway.
+       site.tilemapMode() == TilemapMode::Pixels)) {
+    const auto& grid = srcTileset->grid();
+    Size dstSize = image->size();
+    dstSize = grid.tilemapSizeToCanvas(dstSize);
+
+    // Here we rasterize the tilemap.
+    const doc::PixelFormat dstPixelFormat = sprite->pixelFormat();
+    pastedImage.reset(Image::create(dstPixelFormat, dstSize.w, dstSize.h));
+    render::Render().renderCel(pastedImage.get(),
+                               // TODO there is no "source cel", we are using the "destination cel"
+                               site.cel(),
+                               sprite,
+                               image.get(),
+                               srcTileset,
+                               sprite->palette(site.frame()),
+                               pastedImage->bounds(),
+                               gfx::Clip(0, 0, pastedImage->bounds()),
+                               255,
+                               doc::BlendMode::NORMAL);
+
+    // We change to pixels mode because we are pasting the rasterized
+    // tilemap.
+    if (site.tilemapMode() == TilemapMode::Tiles) {
+      site.tilemapMode(TilemapMode::Pixels);
+      site.tilesetMode(TilesetMode::Auto);
+    }
+  }
+  else {
+    pastedImage = image;
+  }
+
+  PixelsMovementPtr pixelsMovement(new PixelsMovement(UIContext::instance(),
+                                                      site,
+                                                      pastedImage,
+                                                      &mask2,
+                                                      "Paste",
+                                                      &m_tiledModeHelper));
 
   setState(EditorStatePtr(new MovingPixelsState(this, NULL, pixelsMovement, NoHandle)));
 }

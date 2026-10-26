@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (c) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -29,6 +29,11 @@ public:
   virtual void onAddDocument(Doc* doc) {}
   virtual void onBeforeRemoveDocument(Doc* doc) {}
   virtual void onRemoveDocument(Doc* doc) {}
+
+  // Called to delete the preferences of the document (could be in
+  // onRemoveDocument, but sometimes observers of onRemoveDocument
+  // needs these preferences, so the preferences must be the last thing to delete).
+  virtual void onDeleteDocumentPreferences(Doc* doc) {}
 };
 
 } // namespace app

@@ -33,12 +33,12 @@ fi
 if [ "$1" == "--reset" ] ; then
     echo ""
     echo "Resetting $pwd/.build directory"
-    if [ -f "$pwd/.build/builds_dir" ] ; then rm $pwd/.build/builds_dir ; fi
-    if [ -f "$pwd/.build/log" ] ; then rm $pwd/.build/log ; fi
-    if [ -f "$pwd/.build/main_skia_dir" ] ; then rm $pwd/.build/main_skia_dir ; fi
-    if [ -f "$pwd/.build/beta_skia_dir" ] ; then rm $pwd/.build/beta_skia_dir ; fi
-    if [ -f "$pwd/.build/userkind" ] ; then rm $pwd/.build/userkind ; fi
-    if [ -d "$pwd/.build" ] ; then rmdir $pwd/.build ; fi
+    if [ -f "$pwd/.build/builds_dir" ] ; then rm "$pwd/.build/builds_dir" ; fi
+    if [ -f "$pwd/.build/log" ] ; then rm "$pwd/.build/log" ; fi
+    if [ -f "$pwd/.build/main_skia_dir" ] ; then rm "$pwd/.build/main_skia_dir" ; fi
+    if [ -f "$pwd/.build/beta_skia_dir" ] ; then rm "$pwd/.build/beta_skia_dir" ; fi
+    if [ -f "$pwd/.build/userkind" ] ; then rm "$pwd/.build/userkind" ; fi
+    if [ -d "$pwd/.build" ] ; then rmdir "$pwd/.build" ; fi
     echo "Done"
     exit 0
 fi
@@ -139,7 +139,7 @@ fi
 # developers we have more options (debug mode, etc.).
 if [ ! -f "$pwd/.build/userkind" ] ; then
     if [ $auto ] ; then
-        echo "user" > $pwd/.build/userkind
+        echo "user" > "$pwd/.build/userkind"
     else
         echo ""
         echo "Select what kind of user you are (press U or D key and then Enter):"
@@ -150,9 +150,9 @@ if [ ! -f "$pwd/.build/userkind" ] ; then
         read -p "[U/D]? "
         REPLY=$(echo $REPLY | tr '[:upper:]' '[:lower:]')
         if [[ "$REPLY" == "d" || "$REPLY" == "dev" || "$REPLY" == "developer" ]] ; then
-            echo "developer" > $pwd/.build/userkind
+            echo "developer" > "$pwd/.build/userkind"
         elif [[ "$REPLY" == "u" || "$REPLY" == "user" ]] ; then
-            echo "user" > $pwd/.build/userkind
+            echo "user" > "$pwd/.build/userkind"
         else
             echo "Use U or D keys (and press Enter) to select kind of user/build process"
             exit 1
@@ -160,7 +160,7 @@ if [ ! -f "$pwd/.build/userkind" ] ; then
     fi
 fi
 
-userkind=$(cat $pwd/.build/userkind)
+userkind=$(cat "$pwd/.build/userkind")
 if [ "$userkind" == "developer" ] ; then
     echo "======================= BUILDING FOR DEVELOPER ======================="
 else
@@ -197,7 +197,7 @@ if [ ! -f "$pwd/.build/builds_dir" ] ; then
             fi
         else
             # Default location for developers
-            builds_dir=$HOME/builds
+            builds_dir="$HOME/builds"
 
             echo ""
             echo "Select a folder where to leave all builds:"
@@ -221,12 +221,12 @@ if [ ! -f "$pwd/.build/builds_dir" ] ; then
     echo "$builds_dir" > "$pwd/.build/builds_dir"
 fi
 # Overwrite $builds_dir variable from the config content.
-builds_dir="$(cat $pwd/.build/builds_dir)"
+builds_dir="$(cat "$pwd/.build/builds_dir")"
 
 # List all builds.
 builds_list="$(mktemp)"
 n=1
-for file in $(ls $builds_dir/*/CMakeCache.txt 2>/dev/null | sort) ; do
+for file in $(ls "$builds_dir"/*/CMakeCache.txt 2>/dev/null | sort) ; do
     if cat "$file" | grep -q "CMAKE_PROJECT_NAME:STATIC=aseprite" ; then
         if [ $n -eq 1 ] ; then
             echo "-- AVAILABLE BUILDS --"
@@ -304,10 +304,10 @@ else
 
     else # Build the selected dir
         n=1
-        for file in $(cat $builds_list) ; do
+        for file in $(cat "$builds_list") ; do
             if [ "$n" == "$build_n" ] ; then
-                active_build_dir=$(dirname $file)
-                build_type=$(cat $active_build_dir/CMakeCache.txt | grep CMAKE_BUILD_TYPE | cut -d "=" -f2)
+                active_build_dir=$(dirname "$file")
+                build_type=$(cat "$active_build_dir/CMakeCache.txt" | grep CMAKE_BUILD_TYPE | cut -d "=" -f2)
                 break
             fi
             n=$(($n+1))
@@ -321,7 +321,7 @@ if [ "$active_build_dir" == "" ] ; then
 fi
 
 if [ -f "$active_build_dir/CMakeCache.txt" ] ; then
-    source_dir=$(cat $active_build_dir/CMakeCache.txt | grep aseprite_SOURCE_DIR | cut -d "=" -f2)
+    source_dir=$(cat "$active_build_dir/CMakeCache.txt" | grep aseprite_SOURCE_DIR | cut -d "=" -f2)
 else
     source_dir="$pwd"
 fi
@@ -390,12 +390,12 @@ if [ ! -f "$pwd/.build/$file_skia_dir" ] ; then
                     skia_dir="$skia_dir_read"
                 fi
             fi
-            mkdir -p $skia_dir || exit 1
+            mkdir -p "$skia_dir" || exit 1
         fi
     fi
-    echo $skia_dir > "$pwd/.build/$file_skia_dir"
+    echo "$skia_dir" > "$pwd/.build/$file_skia_dir"
 fi
-skia_dir=$(cat $pwd/.build/$file_skia_dir)
+skia_dir=$(cat "$pwd/.build/$file_skia_dir")
 if [ ! -d "$skia_dir" ] ; then
     mkdir "$skia_dir"
 fi
@@ -501,5 +501,5 @@ echo ""
 
 # Run Aseprite in --auto mode
 if [[ $auto && ! $norun ]] ; then
-    $active_build_dir/bin/aseprite$exe
+    "$active_build_dir/bin/aseprite$exe"
 fi

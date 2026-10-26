@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2019-2023 Igara Studio S.A.
+// Copyright (c) 2019-present Igara Studio S.A.
 // Copyright (c) 2001-2018 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -117,7 +117,7 @@ public:
                  const Cel* cel,
                  const Sprite* sprite,
                  const Image* cel_image,
-                 const Layer* cel_layer,
+                 const Tileset* tileset,
                  const Palette* pal,
                  const gfx::RectF& celBounds,
                  const gfx::Clip& area,
@@ -154,7 +154,7 @@ private:
   void renderCel(Image* dst_image,
                  const Cel* cel,
                  const Image* cel_image,
-                 const Layer* cel_layer,
+                 const Tileset* tileset,
                  const Palette* pal,
                  const gfx::RectF& celBounds,
                  const gfx::Clip& area,

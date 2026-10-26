@@ -9,6 +9,7 @@
 #define DIO_ASEPRITE_DECODER_H_INCLUDED
 #pragma once
 
+#include "base/ints.h"
 #include "base/uuid.h"
 #include "dio/aseprite_common.h"
 #include "dio/decoder.h"
@@ -20,6 +21,7 @@
 #include "doc/tileset.h"
 #include "doc/user_data.h"
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -62,21 +64,39 @@ private:
   void readColorProfile(doc::Sprite* sprite);
   void readExternalFiles(AsepriteExternalFiles& extFiles);
   doc::Mask* readMaskChunk();
-  void readTagsChunk(doc::Tags* tags);
-  void readSlicesChunk(doc::Slices& slices);
-  doc::Slice* readSliceChunk(doc::Slices& slices);
-  void readUserDataChunk(doc::UserData* userData, const AsepriteExternalFiles& extFiles);
+  void readTagsChunk(doc::Tags* tags, const size_t chunk_end);
+  void readSlicesChunk(doc::Slices& slices, const size_t chunk_end);
+  doc::Slice* readSliceChunk(doc::Slices& slices, const size_t chunk_end);
+  void readUserDataChunk(doc::UserData* userData,
+                         const AsepriteExternalFiles& extFiles,
+                         const size_t chunk_end);
   doc::Tileset* readTilesetChunk(doc::Sprite* sprite,
                                  const AsepriteHeader* header,
-                                 const AsepriteExternalFiles& extFiles);
+                                 const AsepriteExternalFiles& extFiles,
+                                 const size_t chunk_end);
   void readPropertiesMaps(doc::UserData::PropertiesMaps& propertiesMaps,
-                          const AsepriteExternalFiles& extFiles);
-  const doc::UserData::Variant readPropertyValue(uint16_t type, int& depth);
+                          const AsepriteExternalFiles& extFiles,
+                          const size_t chunk_end);
+  const doc::UserData::Variant readPropertyValue(uint16_t type, int& depth, const size_t chunk_end);
   void readTilesData(doc::Tileset* tileset, const AsepriteExternalFiles& extFiles);
   base::Uuid readUuid();
 
   doc::LayerList m_allLayers;
-  std::vector<uint32_t> m_tilesetFlags;
+
+  // Maps a tileset ID on-file (key) -> tileset ID in-memory (value).
+  // Generally should be key = value, but in case an .aseprite file
+  // has too much empty tileset slots, we will adjust them.
+  std::map<doc::tileset_index, doc::tileset_index> m_tsiMap;
+
+  // Store extra flags for each tileset (mainly
+  // ASE_TILESET_FLAG_ZERO_IS_NOTILE to read old .aseprite files
+  // with a previous tileset format).
+  // Key = in-memory tileset ID
+  // Value = flags
+  std::map<doc::tileset_index, uint32_t> m_tilesetFlags;
+
+  // Latest cel type decoded, used to known the preferred cel type for
+  // this file in case we have to re-encode it.
   int m_celType = ASE_FILE_COMPRESSED_CEL;
 };
 

@@ -438,8 +438,9 @@ public:
     }
 
     if (dataFilename()->fullFilename().empty() ||
-        imageFilename()->fullFilename() == kSpecifiedFilename)
+        dataFilename()->fullFilename() == kSpecifiedFilename) {
       dataFilename()->setFilename(base + ".json");
+    }
 
     exportButton()->Click.connect([this] { onExport(); });
     sheetType()->Change.connect([this] { onSheetTypeChange(); });

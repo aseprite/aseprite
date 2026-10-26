@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -152,7 +152,7 @@ void PasteTextCommand::onExecute(Context* ctx)
     if (ui) {
       // TODO: Do we want to make this selectable result available when not using UI?
       Editor::activeEditor()->pasteImage(
-        image.get(),
+        image,
         nullptr,
         (params().x.isSet() || params().y.isSet()) ? &point : nullptr);
       return;

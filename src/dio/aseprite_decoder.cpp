@@ -28,7 +28,9 @@
 #include "gfx/color_space.h"
 #include "zlib.h"
 
+#include <algorithm>
 #include <cstdio>
+#include <memory>
 #include <vector>
 
 namespace dio {
@@ -121,8 +123,9 @@ bool AsepriteDecoder::decode()
         delegate()->progress((float)chunk_pos / (float)header.size);
 
         // Read chunk information
-        const int chunk_size = read32();
+        const size_t chunk_size = read32();
         const int chunk_type = read16();
+        const size_t chunk_end = chunk_pos + chunk_size;
 
         switch (chunk_type) {
           case ASE_FILE_CHUNK_FLI_COLOR:
@@ -164,7 +167,7 @@ bool AsepriteDecoder::decode()
           }
 
           case ASE_FILE_CHUNK_CEL: {
-            Cel* cel = readCelChunk(frame, sprite->pixelFormat(), &header, chunk_pos + chunk_size);
+            Cel* cel = readCelChunk(frame, sprite->pixelFormat(), &header, chunk_end);
             if (cel) {
               last_cel = cel;
               last_object_with_user_data = cel->data();
@@ -211,7 +214,7 @@ bool AsepriteDecoder::decode()
             break;
 
           case ASE_FILE_CHUNK_TAGS:
-            readTagsChunk(&sprite->tags());
+            readTagsChunk(&sprite->tags(), chunk_end);
             tag_it = sprite->tags().begin();
             tag_end = sprite->tags().end();
 
@@ -222,12 +225,12 @@ bool AsepriteDecoder::decode()
             break;
 
           case ASE_FILE_CHUNK_SLICES: {
-            readSlicesChunk(sprite->slices());
+            readSlicesChunk(sprite->slices(), chunk_end);
             break;
           }
 
           case ASE_FILE_CHUNK_SLICE: {
-            Slice* slice = readSliceChunk(sprite->slices());
+            Slice* slice = readSliceChunk(sprite->slices(), chunk_end);
             if (slice)
               last_object_with_user_data = slice;
             break;
@@ -235,7 +238,7 @@ bool AsepriteDecoder::decode()
 
           case ASE_FILE_CHUNK_USER_DATA: {
             UserData userData;
-            readUserDataChunk(&userData, extFiles);
+            readUserDataChunk(&userData, extFiles, chunk_end);
 
             if (last_object_with_user_data) {
               last_object_with_user_data->setUserData(userData);
@@ -277,7 +280,7 @@ bool AsepriteDecoder::decode()
           }
 
           case ASE_FILE_CHUNK_TILESET: {
-            Tileset* tileset = readTilesetChunk(sprite.get(), &header, extFiles);
+            Tileset* tileset = readTilesetChunk(sprite.get(), &header, extFiles, chunk_end);
             if (tileset)
               last_object_with_user_data = tileset;
             break;
@@ -290,7 +293,7 @@ bool AsepriteDecoder::decode()
         }
 
         // Skip chunk size
-        seek(chunk_pos + chunk_size);
+        seek(chunk_end);
       }
     }
 
@@ -562,7 +565,12 @@ Layer* AsepriteDecoder::readLayerChunk(AsepriteHeader* header,
     case ASE_FILE_LAYER_GROUP:   layer = new LayerGroup(sprite); break;
 
     case ASE_FILE_LAYER_TILEMAP: {
-      const tileset_index tsi = read32();
+      tileset_index tsi = read32();
+
+      // Map the on-file tileset ID -> in-memory tileset ID
+      if (auto it = m_tsiMap.find(tsi); it != m_tsiMap.end())
+        tsi = it->second;
+
       if (!sprite->tilesets()->get(tsi)) {
         delegate()->error(fmt::format("Error: tileset {0} not found", tsi));
         return nullptr;
@@ -941,9 +949,8 @@ Cel* AsepriteDecoder::readCelChunk(frame_t frame,
         // zero)
         Tileset* ts = static_cast<LayerTilemap*>(layer)->tileset();
         tileset_index tsi = static_cast<LayerTilemap*>(layer)->tilesetIndex();
-        ASSERT(tsi >= 0 && tsi < m_tilesetFlags.size());
-        if (tsi >= 0 && tsi < m_tilesetFlags.size() &&
-            (m_tilesetFlags[tsi] & ASE_TILESET_FLAG_ZERO_IS_NOTILE) == 0) {
+        if (auto it = m_tilesetFlags.find(tsi);
+            it != m_tilesetFlags.end() && (it->second & ASE_TILESET_FLAG_ZERO_IS_NOTILE) == 0) {
           fix_old_tilemap(image.get(), ts, tileIDMask, flagsMask);
         }
 
@@ -1104,14 +1111,14 @@ Mask* AsepriteDecoder::readMaskChunk()
   return mask;
 }
 
-void AsepriteDecoder::readTagsChunk(Tags* tags)
+void AsepriteDecoder::readTagsChunk(Tags* tags, const size_t chunk_end)
 {
   const size_t ntags = read16();
 
   read32(); // 8 reserved bytes
   read32();
 
-  for (size_t c = 0; c < ntags; ++c) {
+  for (size_t c = 0; c < ntags && tell() < chunk_end; ++c) {
     const frame_t from = read16();
     const frame_t to = read16();
     int aniDir = read8();
@@ -1141,11 +1148,17 @@ void AsepriteDecoder::readTagsChunk(Tags* tags)
     tag->setName(name);
     tag->setAniDir((AniDir)aniDir);
     tag->setRepeat(repeat);
-    tags->add(tag);
+
+    if (ok())
+      tags->add(tag);
+    else
+      break;
   }
 }
 
-void AsepriteDecoder::readUserDataChunk(UserData* userData, const AsepriteExternalFiles& extFiles)
+void AsepriteDecoder::readUserDataChunk(UserData* userData,
+                                        const AsepriteExternalFiles& extFiles,
+                                        const size_t chunk_end)
 {
   size_t flags = read32();
 
@@ -1163,18 +1176,18 @@ void AsepriteDecoder::readUserDataChunk(UserData* userData, const AsepriteExtern
   }
 
   if (flags & ASE_USER_DATA_FLAG_HAS_PROPERTIES) {
-    readPropertiesMaps(userData->propertiesMaps(), extFiles);
+    readPropertiesMaps(userData->propertiesMaps(), extFiles, chunk_end);
   }
 }
 
-void AsepriteDecoder::readSlicesChunk(Slices& slices)
+void AsepriteDecoder::readSlicesChunk(Slices& slices, const size_t chunk_end)
 {
   size_t nslices = read32(); // Number of slices
   read32();                  // 8 bytes reserved
   read32();
 
-  for (size_t i = 0; i < nslices; ++i) {
-    Slice* slice = readSliceChunk(slices);
+  for (size_t i = 0; i < nslices && ok() && tell() < chunk_end; ++i) {
+    Slice* slice = readSliceChunk(slices, chunk_end);
     // Set the user data
     if (slice) {
       // Default slice color
@@ -1183,18 +1196,18 @@ void AsepriteDecoder::readSlicesChunk(Slices& slices)
   }
 }
 
-Slice* AsepriteDecoder::readSliceChunk(Slices& slices)
+Slice* AsepriteDecoder::readSliceChunk(Slices& slices, const size_t chunk_end)
 {
   const size_t nkeys = read32();   // Number of keys
   const int flags = read32();      // Flags
   read32();                        // 4 bytes reserved
   std::string name = readString(); // Name
 
-  std::unique_ptr<Slice> slice(std::make_unique<Slice>());
+  auto slice = std::make_unique<Slice>();
   slice->setName(name);
 
   // For each key
-  for (size_t j = 0; j < nkeys; ++j) {
+  for (size_t j = 0; j < nkeys && tell() < chunk_end; ++j) {
     gfx::Rect bounds, center;
     gfx::Point pivot = SliceKey::NoPivot;
     const frame_t frame = read32();
@@ -1215,7 +1228,10 @@ Slice* AsepriteDecoder::readSliceChunk(Slices& slices)
       pivot.y = ((int32_t)read32());
     }
 
-    slice->insert(frame, SliceKey(bounds, center, pivot));
+    if (ok())
+      slice->insert(frame, SliceKey(bounds, center, pivot));
+    else
+      break;
   }
 
   slices.add(slice.get());
@@ -1224,7 +1240,8 @@ Slice* AsepriteDecoder::readSliceChunk(Slices& slices)
 
 Tileset* AsepriteDecoder::readTilesetChunk(Sprite* sprite,
                                            const AsepriteHeader* header,
-                                           const AsepriteExternalFiles& extFiles)
+                                           const AsepriteExternalFiles& extFiles,
+                                           const size_t chunk_end)
 {
   const tileset_index id = read32();
   const uint32_t flags = read32();
@@ -1243,7 +1260,7 @@ Tileset* AsepriteDecoder::readTilesetChunk(Sprite* sprite,
   }
 
   const Grid grid(gfx::Size(w, h));
-  auto* tileset = new Tileset(sprite, grid, ntiles);
+  auto tileset = std::make_unique<Tileset>(sprite, grid, ntiles);
   tileset->setName(name);
   tileset->setBaseIndex(baseIndex);
 
@@ -1265,7 +1282,7 @@ Tileset* AsepriteDecoder::readTilesetChunk(Sprite* sprite,
     if (ntiles > 0) {
       const size_t dataSize = read32(); // Size of compressed data
       const size_t dataBeg = tell();
-      const size_t dataEnd = dataBeg + dataSize;
+      const size_t dataEnd = std::min(dataBeg + dataSize, chunk_end);
 
       base::buffer compressed;
       if (delegate()->cacheCompressedTilesets() && dataSize > 0) {
@@ -1287,34 +1304,40 @@ Tileset* AsepriteDecoder::readTilesetChunk(Sprite* sprite,
 
       // If we are reading and old .aseprite file (where empty tile is not the zero]
       if ((flags & ASE_TILESET_FLAG_ZERO_IS_NOTILE) == 0)
-        fix_old_tileset(tileset);
+        fix_old_tileset(tileset.get());
 
       if (!compressed.empty())
         tileset->setCompressedData(compressed);
     }
-    sprite->tilesets()->set(id, tileset);
   }
 
   tileset->setMatchFlags((flags & ASE_TILESET_FLAG_MATCH_XFLIP ? tile_f_xflip : 0) |
                          (flags & ASE_TILESET_FLAG_MATCH_YFLIP ? tile_f_yflip : 0) |
                          (flags & ASE_TILESET_FLAG_MATCH_DFLIP ? tile_f_dflip : 0));
 
-  if (id >= m_tilesetFlags.size())
-    m_tilesetFlags.resize(id + 1, 0);
-  m_tilesetFlags[id] = flags;
+  // New tileset ID in-memory is going to be the last position in the
+  // tilesets.
+  const doc::tileset_index newTsi = sprite->tilesets()->size();
 
-  return tileset;
+  m_tsiMap[id] = newTsi;
+  m_tilesetFlags[newTsi] = flags;
+
+  sprite->tilesets()->set(newTsi, tileset.get());
+  return tileset.release();
 }
 
 void AsepriteDecoder::readPropertiesMaps(UserData::PropertiesMaps& propertiesMaps,
-                                         const AsepriteExternalFiles& extFiles)
+                                         const AsepriteExternalFiles& extFiles,
+                                         const size_t chunk_end)
 {
-  auto startPos = tell();
-  auto size = read32();
-  auto numMaps = read32();
+  const auto propsPos = tell();
+  const auto size = read32();
+  const auto propsEnd = propsPos + size;
+  const auto end = std::min(propsEnd, chunk_end);
+  const auto numMaps = read32();
   try {
-    for (int i = 0; i < numMaps; ++i) {
-      auto id = read32();
+    for (int i = 0; i < numMaps && tell() < end; ++i) {
+      const auto id = read32();
       std::string extensionId; // extensionId = empty by default (when id == 0)
       if (id && !extFiles.getFilenameByID(id, extensionId)) {
         // This shouldn't happen, but if it does, we put the properties
@@ -1323,7 +1346,7 @@ void AsepriteDecoder::readPropertiesMaps(UserData::PropertiesMaps& propertiesMap
         delegate()->error(fmt::format("Error: Invalid extension ID (id={0} not found)", id));
       }
       int depth = 0;
-      auto properties = readPropertyValue(USER_DATA_PROPERTY_TYPE_PROPERTIES, depth);
+      auto properties = readPropertyValue(USER_DATA_PROPERTY_TYPE_PROPERTIES, depth, chunk_end);
       propertiesMaps[extensionId] = get_value<UserData::Properties>(properties);
     }
   }
@@ -1331,10 +1354,12 @@ void AsepriteDecoder::readPropertiesMaps(UserData::PropertiesMaps& propertiesMap
     delegate()->incompatibilityError(fmt::format("Error reading custom properties: {0}", e.what()));
   }
 
-  seek(startPos + size);
+  seek(propsEnd);
 }
 
-const UserData::Variant AsepriteDecoder::readPropertyValue(uint16_t type, int& depth)
+const UserData::Variant AsepriteDecoder::readPropertyValue(uint16_t type,
+                                                           int& depth,
+                                                           const size_t chunk_end)
 {
   if (depth > 128)
     throw base::Exception("More than 128 property levels in user data is not supported");
@@ -1425,19 +1450,19 @@ const UserData::Variant AsepriteDecoder::readPropertyValue(uint16_t type, int& d
         }
 
         base::ScopedValue depthInc(depth, depth + 1);
-        value.push_back(readPropertyValue(elemType, depth));
+        value.push_back(readPropertyValue(elemType, depth, chunk_end));
       }
       return value;
     }
     case USER_DATA_PROPERTY_TYPE_PROPERTIES: {
       auto numProps = read32();
       UserData::Properties value;
-      for (int j = 0; j < numProps; ++j) {
+      for (uint32_t j = 0; j < numProps && tell() < chunk_end; ++j) {
         auto name = readString();
         auto type = read16();
 
         base::ScopedValue depthInc(depth, depth + 1);
-        value[name] = readPropertyValue(type, depth);
+        value[name] = readPropertyValue(type, depth, chunk_end);
       }
       return value;
     }
@@ -1456,7 +1481,7 @@ const UserData::Variant AsepriteDecoder::readPropertyValue(uint16_t type, int& d
 void AsepriteDecoder::readTilesData(Tileset* tileset, const AsepriteExternalFiles& extFiles)
 {
   // Read as many user data chunks as tiles are in the tileset
-  for (tile_index i = 0; i < tileset->size(); i++) {
+  for (tile_index i = 0; i < tileset->size() && ok(); i++) {
     const size_t chunk_pos = tell();
     // Read chunk information
     const int chunk_size = read32();
@@ -1471,10 +1496,12 @@ void AsepriteDecoder::readTilesData(Tileset* tileset, const AsepriteExternalFile
       return;
     }
 
+    const size_t chunk_end = chunk_pos + chunk_size;
+
     UserData tileData;
-    readUserDataChunk(&tileData, extFiles);
+    readUserDataChunk(&tileData, extFiles, chunk_end);
     tileset->setTileData(i, tileData);
-    seek(chunk_pos + chunk_size);
+    seek(chunk_end);
   }
 }
 

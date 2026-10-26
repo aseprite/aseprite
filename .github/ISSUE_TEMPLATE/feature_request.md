@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-**Did other user suggested a similar idea?**
+**Did other users suggest similar ideas?**
 - [ ] No
 - [ ] Yes/Links to similar ideas
   > You can try to find a similar feature requests before in:

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -12,6 +12,7 @@
 #include "app/ui/editor/pixels_movement.h"
 
 #include "app/app.h"
+#include "app/cmd/add_tile.h"
 #include "app/cmd/clear_mask.h"
 #include "app/cmd/deselect_mask.h"
 #include "app/cmd/set_mask.h"
@@ -110,7 +111,7 @@ PixelsMovement::InnerCmd PixelsMovement::InnerCmd::MakeStamp(const Transformatio
 
 PixelsMovement::PixelsMovement(Context* context,
                                Site site,
-                               const Image* moveThis,
+                               const ImageRef& moveThis,
                                const Mask* mask,
                                const char* operationName,
                                const TiledModeHelper* tiledModeHelper)
@@ -121,7 +122,7 @@ PixelsMovement::PixelsMovement(Context* context,
   , m_isDragging(false)
   , m_adjustPivot(false)
   , m_handle(NoHandle)
-  , m_originalImage(Image::createCopy(moveThis))
+  , m_originalImage(moveThis)
   , m_opaque(false)
   , m_maskColor(m_site.sprite()->transparentColor())
   , m_tiledModeHelper(tiledModeHelper)

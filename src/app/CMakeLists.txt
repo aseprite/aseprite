@@ -87,6 +87,10 @@ add_custom_command(
   DEPENDS ${GEN_DEP} ${widget_files} ${string_files} "${SOURCE_DATA_DIR}/gui.xml")
 list(APPEND generated_files ${output_fn})
 
+# A custom target to generate all files (mainly for .xml.h files that
+# might be required for other tools like clang-tidy)
+add_custom_target(generate_files DEPENDS ${generated_files})
+
 # libarchive definitions
 add_definitions(-DLIBARCHIVE_STATIC)
 
@@ -151,6 +155,7 @@ target_sources(app-lib PRIVATE
   file/svg_format.cpp
   file/tga_format.cpp)
 if(ENABLE_WEBP AND WEBP_FOUND)
+  target_compile_definitions(dio-lib PUBLIC -DENABLE_WEBP)
   target_compile_definitions(app-lib PUBLIC -DENABLE_WEBP)
   target_sources(app-lib PRIVATE
     file/webp_format.cpp)
