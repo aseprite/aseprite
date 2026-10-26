@@ -40,7 +40,8 @@ class JpegXlFormat : public FileFormat {
   int onGetFlags() const override
   {
     return FILE_SUPPORT_LOAD | FILE_SUPPORT_SAVE | FILE_SUPPORT_RGB | FILE_SUPPORT_RGBA |
-           FILE_SUPPORT_FRAMES | FILE_ENCODE_ABSTRACT_IMAGE;
+           FILE_SUPPORT_GRAY | FILE_SUPPORT_GRAYA | FILE_SUPPORT_FRAMES |
+           FILE_ENCODE_ABSTRACT_IMAGE;
   }
 
   bool onLoad(FileOp* fop) override;
@@ -100,6 +101,9 @@ bool JpegXlFormat::onLoad(FileOp* fop)
   // Create sprite with one layer
   std::unique_ptr<doc::Sprite> sprite;
   doc::LayerImage* layer = nullptr;
+  auto colorMode = ColorMode::RGB;
+  bool is_opaque = false;
+  bool is_gray = false;
 
   for (;;) {
     JxlDecoderStatus status = JxlDecoderProcessInput(dec.get());
@@ -119,8 +123,13 @@ bool JpegXlFormat::onLoad(FileOp* fop)
         }
         w = info.xsize;
         h = info.ysize;
+        is_opaque = (info.num_extra_channels == 0);
+        is_gray = (info.num_color_channels < 3);
+        colorMode = (is_gray ? ColorMode::GRAYSCALE : ColorMode::RGB);
+        format.num_channels = (is_gray ? 1 : 3) + (is_opaque ? 0 : 1);
+
         if (!sprite) {
-          sprite = std::make_unique<doc::Sprite>(doc::ImageSpec(ColorMode::RGB, w, h), 256);
+          sprite = std::make_unique<doc::Sprite>(doc::ImageSpec(colorMode, w, h), 256);
           layer = new doc::LayerImage(sprite.get());
           sprite->root()->addLayer(layer);
         }
@@ -164,10 +173,10 @@ bool JpegXlFormat::onLoad(FileOp* fop)
           return false;
         }
 
-        if (buffer_size != w * h * 4) {
+        if (buffer_size != w * h * format.num_channels) {
           fop->setError("Invalid out buffer size %d %d\n",
                         static_cast<int>(buffer_size),
-                        static_cast<int>(w * h * 4));
+                        static_cast<int>(w * h * format.num_channels));
           return false;
         }
 
@@ -192,15 +201,44 @@ bool JpegXlFormat::onLoad(FileOp* fop)
       }
 
       case JXL_DEC_FULL_IMAGE: {
-        ImageRef image(Image::create(IMAGE_RGB, w, h));
-        Cel* cel = new Cel(frames++, image);
+        if (!sprite || !layer) {
+          fop->setError("Invalid decoder state, full image before basic info\n");
+          return false;
+        }
+
+        doc::ImageRef image(doc::Image::create((PixelFormat)colorMode, w, h));
+        doc::Cel* cel = new doc::Cel(frames++, image);
         layer->addCel(cel);
 
-        auto* src = pixels.data();
-        for (int y = 0; y < h; ++y) {
-          auto* dst = (uint32_t*)image.get()->getPixelAddress(0, y);
-          for (int x = 0; x < w; ++x, ++dst, src += 4)
-            *dst = doc::rgba(src[0], src[1], src[2], src[3]);
+        const auto* src = pixels.data();
+        switch (colorMode) {
+          case doc::ColorMode::RGB:
+            for (int y = 0; y < h; ++y) {
+              auto* dst = (uint32_t*)image.get()->getPixelAddress(0, y);
+              if (is_opaque) {
+                for (int x = 0; x < w; ++x, ++dst, src += 3)
+                  *dst = doc::rgba(src[0], src[1], src[2], 255);
+              }
+              else {
+                for (int x = 0; x < w; ++x, ++dst, src += 4)
+                  *dst = doc::rgba(src[0], src[1], src[2], src[3]);
+              }
+            }
+            break;
+
+          case ColorMode::GRAYSCALE:
+            for (int y = 0; y < h; ++y) {
+              auto* dst = (uint16_t*)image.get()->getPixelAddress(0, y);
+              if (is_opaque) {
+                for (int x = 0; x < w; ++x, ++dst, ++src)
+                  *dst = doc::graya(*src, 255);
+              }
+              else {
+                for (int x = 0; x < w; ++x, ++dst, src += 2)
+                  *dst = doc::graya(src[0], src[1]);
+              }
+            }
+            break;
         }
         break;
       }
@@ -222,8 +260,9 @@ done:;
   if (!sprite)
     return false;
 
-  // TODO configure layer as background for opaque images
-  // layer->configureAsBackground();
+  // Configure layer as background for opaque images
+  if (layer && is_opaque)
+    layer->configureAsBackground();
 
   fop->createDocument(sprite.release());
   return true;
@@ -239,6 +278,9 @@ bool JpegXlFormat::onSave(FileOp* fop)
   const FileAbstractImage* sprite = fop->abstractImageToSave();
   const size_t w = sprite->width();
   const size_t h = sprite->height();
+  const auto colorMode = sprite->spec().colorMode();
+  const bool is_opaque = sprite->isOpaque();
+  const bool is_gray = (colorMode == ColorMode::GRAYSCALE);
 
   JxlEncoderPtr enc = JxlEncoderMake(nullptr);
   JxlThreadParallelRunnerPtr runner =
@@ -250,7 +292,8 @@ bool JpegXlFormat::onSave(FileOp* fop)
     return false;
   }
 
-  JxlPixelFormat format = { 4, JXL_TYPE_UINT8, JXL_NATIVE_ENDIAN, 0 };
+  JxlPixelFormat format = { 0, JXL_TYPE_UINT8, JXL_NATIVE_ENDIAN, 0 };
+  format.num_channels = (is_gray ? 1 : 3) + (is_opaque ? 0 : 1);
 
   JxlBasicInfo info;
   JxlEncoderInitBasicInfo(&info);
@@ -258,14 +301,14 @@ bool JpegXlFormat::onSave(FileOp* fop)
   info.ysize = h;
   info.bits_per_sample = 8;
   info.exponent_bits_per_sample = 0;
-  info.num_color_channels = 3;
-  info.num_extra_channels = 1;
-  info.alpha_bits = 8;
+  info.num_color_channels = (is_gray ? 1 : 3);
+  info.num_extra_channels = (is_opaque ? 0 : 1);
+  info.alpha_bits = (is_opaque ? 0 : 8);
   info.alpha_exponent_bits = 0;
   info.alpha_premultiplied = JXL_FALSE;
   info.exponent_bits_per_sample = 0;
-  info.uses_original_profile = JXL_FALSE;
-  info.have_animation = (sprite->frames() > 1 ? JXL_TRUE : JXL_FALSE);
+  info.uses_original_profile = JXL_TRUE;
+  info.have_animation = JXL_TRUE; // Always true to save the frame duration
   info.animation.tps_numerator = 1000;
   info.animation.tps_denominator = 1;
 
@@ -276,8 +319,7 @@ bool JpegXlFormat::onSave(FileOp* fop)
   }
 
   JxlColorEncoding color_encoding = {};
-  JXL_BOOL is_gray = JXL_FALSE;
-  JxlColorEncodingSetToSRGB(&color_encoding, is_gray);
+  JxlColorEncodingSetToSRGB(&color_encoding, is_gray ? JXL_TRUE : JXL_FALSE);
   res = JxlEncoderSetColorEncoding(enc.get(), &color_encoding);
   // TODO Use JxlEncoderSetICCProfile(enc.get(), const uint8_t* icc_profile, size_t size);
   if (res != JXL_ENC_SUCCESS) {
@@ -291,17 +333,17 @@ bool JpegXlFormat::onSave(FileOp* fop)
     return false;
   }
   JxlEncoderSetFrameLossless(frame_settings, JXL_TRUE);
-  JxlEncoderFrameSettingsSetOption(frame_settings, JXL_ENC_FRAME_SETTING_STRIP_ALPHA, JXL_FALSE);
+  if (!is_opaque)
+    JxlEncoderFrameSettingsSetOption(frame_settings, JXL_ENC_FRAME_SETTING_STRIP_ALPHA, JXL_FALSE);
 
   JxlFrameHeader frame_header;
   JxlEncoderInitFrameHeader(&frame_header);
 
-  ImageRef image(Image::create(IMAGE_RGB, w, h));
-  #if DOC_USE_ALIGNED_PIXELS
-  format.align = base_alignment;
-  #else
-  format.align = 0;
-  #endif
+  ImageRef image(Image::create((PixelFormat)colorMode, w, h));
+
+  base::buffer pixels;
+  size_t buffer_size = w * h * format.num_channels;
+  pixels.resize(buffer_size);
 
   for (frame_t frame : fop->roi().framesSequence()) {
     clear_image(image.get(), image->maskColor());
@@ -311,10 +353,54 @@ bool JpegXlFormat::onSave(FileOp* fop)
     frame_header.duration = sprite->frameDuration(frame);
 
     JxlEncoderSetFrameHeader(frame_settings, &frame_header);
+
+    auto* dst = pixels.data();
+    switch (colorMode) {
+      case doc::ColorMode::RGB:
+        for (int y = 0; y < h; ++y) {
+          auto* src = (uint32_t*)image.get()->getPixelAddress(0, y);
+
+          if (is_opaque) {
+            for (int x = 0; x < w; ++x, ++src) {
+              *(dst++) = doc::rgba_getr(*src);
+              *(dst++) = doc::rgba_getg(*src);
+              *(dst++) = doc::rgba_getb(*src);
+            }
+          }
+          else {
+            for (int x = 0; x < w; ++x, ++src) {
+              *(dst++) = doc::rgba_getr(*src);
+              *(dst++) = doc::rgba_getg(*src);
+              *(dst++) = doc::rgba_getb(*src);
+              *(dst++) = doc::rgba_geta(*src);
+            }
+          }
+        }
+        break;
+
+      case ColorMode::GRAYSCALE:
+        for (int y = 0; y < h; ++y) {
+          auto* src = (uint16_t*)image.get()->getPixelAddress(0, y);
+
+          if (is_opaque) {
+            for (int x = 0; x < w; ++x, ++src) {
+              *(dst++) = doc::graya_getv(*src);
+            }
+          }
+          else {
+            for (int x = 0; x < w; ++x, ++src) {
+              *(dst++) = doc::graya_getv(*src);
+              *(dst++) = doc::graya_geta(*src);
+            }
+          }
+        }
+        break;
+    }
+
     res = JxlEncoderAddImageFrame(frame_settings,
                                   &format,
-                                  static_cast<const void*>(image->getPixelAddress(0, 0)),
-                                  image->rowBytes() * h);
+                                  static_cast<const void*>(pixels.data()),
+                                  pixels.size());
     if (res != JXL_ENC_SUCCESS) {
       fop->setError("JxlEncoderAddImageFrame failed. Error=%d\n", res);
       return false;
