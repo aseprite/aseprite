@@ -377,11 +377,7 @@ SkinTheme* SkinTheme::get(const ui::Widget* widget)
   return static_cast<SkinTheme*>(widget->theme());
 }
 
-SkinTheme::SkinTheme()
-  : m_fonts(m_fontMgr)
-  , m_sheet(nullptr)
-  , m_preferredScreenScaling(-1)
-  , m_preferredUIScaling(-1)
+SkinTheme::SkinTheme() : m_fonts(m_fontMgr), m_sheet(nullptr), m_preferredScaling({ -1, -1 })
 {
   m_standardCursors.fill(nullptr);
 }
@@ -515,17 +511,16 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
   XMLHandle handle(doc.get());
 
   // Load Preferred scaling
-  m_preferredScreenScaling = -1;
-  m_preferredUIScaling = -1;
+  m_preferredScaling = { -1, -1 };
   {
     XMLElement* xmlTheme = handle.FirstChildElement("theme").ToElement();
     if (xmlTheme) {
       const char* screenScaling = xmlTheme->Attribute("screenscaling");
       const char* uiScaling = xmlTheme->Attribute("uiscaling");
       if (screenScaling)
-        m_preferredScreenScaling = std::strtol(screenScaling, nullptr, 10);
+        m_preferredScaling.screenScaling = std::strtol(screenScaling, nullptr, 10);
       if (uiScaling)
-        m_preferredUIScaling = std::strtol(uiScaling, nullptr, 10);
+        m_preferredScaling.uiScaling = std::strtol(uiScaling, nullptr, 10);
     }
   }
 
@@ -1918,23 +1913,23 @@ void SkinTheme::drawEntryCaret(ui::Graphics* g, Entry* widget, int x, int y)
     g->drawVLine(color, u, y + textHeight / 2 - caretSize.h / 2, caretSize.h);
 }
 
-std::pair<int, int> SkinTheme::readPreferredScaling(const std::string& themeId)
+SkinTheme::PreferredScaling SkinTheme::readPreferredScaling(const std::string& themeId) const
 {
   std::string xml_filename(base::join_path(findThemePath(themeId), "theme.xml"));
 
   XMLDocumentRef doc = open_xml(xml_filename);
   XMLHandle handle(doc.get());
 
-  auto result = std::make_pair<int>(-1, -1);
+  auto result = PreferredScaling{ -1, -1 };
   {
     XMLElement* xmlTheme = handle.FirstChildElement("theme").ToElement();
     if (xmlTheme) {
       const char* screenScaling = xmlTheme->Attribute("screenscaling");
       const char* uiScaling = xmlTheme->Attribute("uiscaling");
       if (screenScaling)
-        result.first = std::strtol(screenScaling, nullptr, 10);
+        result.screenScaling = std::strtol(screenScaling, nullptr, 10);
       if (uiScaling)
-        result.second = std::strtol(uiScaling, nullptr, 10);
+        result.uiScaling = std::strtol(uiScaling, nullptr, 10);
     }
   }
 
