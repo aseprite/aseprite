@@ -1117,8 +1117,9 @@ public:
   void restoreDefaultTheme()
   {
     setUITheme(m_pref.theme.selected.defaultValue(), false);
-    m_pref.general.screenScale.setValue(skin::SkinTheme::get(this)->preferredScreenScaling());
-    m_pref.general.uiScale.setValue(skin::SkinTheme::get(this)->preferredUIScaling());
+    const auto& [uiScaling, screenScaling] = SkinTheme::get(this)->preferredScaling();
+    m_pref.general.screenScale.setValue(screenScaling);
+    m_pref.general.uiScale.setValue(uiScaling);
     updateScreenScaling();
   }
 
@@ -2163,7 +2164,7 @@ private:
         auto theme = skin::SkinTheme::get(this);
 
         // Read new scaling
-        const auto [newUIScale, newScreenScale] = theme->readPreferredScaling(themeName);
+        const auto& [newUIScale, newScreenScale] = theme->readPreferredScaling(themeName);
 
         if (updateScaling &&
             ((newUIScale > 0 && m_pref.general.uiScale() != newUIScale) ||

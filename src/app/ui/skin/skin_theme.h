@@ -55,12 +55,16 @@ public:
   static SkinTheme* instance();
   static SkinTheme* get(const ui::Widget* widget);
 
+  struct PreferredScaling {
+    int uiScaling;
+    int screenScaling;
+  };
+
   SkinTheme();
   ~SkinTheme();
 
   const std::string& path() { return m_path; }
-  int preferredScreenScaling() const { return m_preferredScreenScaling; }
-  int preferredUIScaling() const { return m_preferredUIScaling; }
+  const PreferredScaling& preferredScaling() const { return m_preferredScaling; }
 
   const FontInfo& getDefaultFontInfo() const { return m_defaultFontInfo; }
   const FontInfo& getMiniFontInfo() const { return m_miniFontInfo; }
@@ -176,7 +180,7 @@ public:
 
   void drawEntryCaret(ui::Graphics* g, ui::Entry* widget, int x, int y);
 
-  std::pair<int, int> readPreferredScaling(const std::string& themeId);
+  PreferredScaling readPreferredScaling(const std::string& themeId) const;
 
 protected:
   void onRegenerateTheme() override;
@@ -224,8 +228,7 @@ private:
   FontInfo m_miniFontInfo;
   text::FontRef m_defaultFont;
   text::FontRef m_miniFont;
-  int m_preferredScreenScaling;
-  int m_preferredUIScaling;
+  PreferredScaling m_preferredScaling;
 };
 
 }} // namespace app::skin
