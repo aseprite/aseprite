@@ -436,6 +436,12 @@
       <option id="show_alert" type="bool" default="true" />
       <option id="quality" type="double" default="1.0" />
     </section>
+    <section id="jxl">
+      <option id="show_alert" type="bool" default="true" />
+      <option id="speed" type="int" default="0" />
+      <option id="lossy" type="bool" default="false" />
+      <option id="quality" type="int" default="100" />
+    </section>
     <section id="svg">
       <option id="show_alert" type="bool" default="true" />
       <option id="pixel_scale" type="int" default="1" />

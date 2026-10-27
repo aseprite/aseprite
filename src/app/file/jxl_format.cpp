@@ -8,12 +8,16 @@
   #include "config.h"
 #endif
 
+#include "app/console.h"
+#include "app/context.h"
 #include "app/file/file.h"
 #include "app/file/file_format.h"
 #include "base/buffer.h"
 #include "base/file_handle.h"
 #include "base/file_size.h"
 #include "doc/doc.h"
+
+#include "jxl_options.xml.h"
 
 #include <jxl/codestream_header.h>
 #include <jxl/decode.h>
@@ -31,6 +35,14 @@ namespace app {
 using namespace base;
 
 class JpegXlFormat : public FileFormat {
+  class JxlOptions : public FormatOptions {
+  public:
+    JxlOptions() {}
+    int speed = 0;
+    bool lossy = false;
+    int quality = 100;
+  };
+
   const char* onGetName() const override { return "jxl"; }
 
   void onGetExtensions(base::paths& exts) const override { exts.push_back("jxl"); }
@@ -41,13 +53,14 @@ class JpegXlFormat : public FileFormat {
   {
     return FILE_SUPPORT_LOAD | FILE_SUPPORT_SAVE | FILE_SUPPORT_RGB | FILE_SUPPORT_RGBA |
            FILE_SUPPORT_GRAY | FILE_SUPPORT_GRAYA | FILE_SUPPORT_FRAMES |
-           FILE_ENCODE_ABSTRACT_IMAGE;
+           FILE_SUPPORT_GET_FORMAT_OPTIONS | FILE_ENCODE_ABSTRACT_IMAGE;
   }
 
   bool onLoad(FileOp* fop) override;
 #ifdef ENABLE_SAVE
   bool onSave(FileOp* fop) override;
 #endif
+  FormatOptionsPtr onAskUserForFormatOptions(FileOp* fop) override;
 };
 
 FileFormat* CreateJpegXlFormat()
@@ -332,7 +345,18 @@ bool JpegXlFormat::onSave(FileOp* fop)
     fop->setError("JxlEncoderFrameSettingsCreate failed\n");
     return false;
   }
-  JxlEncoderSetFrameLossless(frame_settings, JXL_TRUE);
+  const auto jxl_options = std::static_pointer_cast<JxlOptions>(fop->formatOptions());
+  if (jxl_options->lossy) {
+    JxlEncoderSetFrameLossless(frame_settings, JXL_FALSE); // Lossy
+    JxlEncoderSetFrameDistance(frame_settings, JxlEncoderDistanceFromQuality(jxl_options->quality));
+  }
+  else {
+    JxlEncoderSetFrameLossless(frame_settings, JXL_TRUE); // Lossless
+  }
+  JxlEncoderFrameSettingsSetOption(frame_settings,
+                                   JXL_ENC_FRAME_SETTING_DECODING_SPEED,
+                                   std::clamp(jxl_options->speed, 0, 4));
+
   if (!is_opaque)
     JxlEncoderFrameSettingsSetOption(frame_settings, JXL_ENC_FRAME_SETTING_STRIP_ALPHA, JXL_FALSE);
 
@@ -437,5 +461,63 @@ bool JpegXlFormat::onSave(FileOp* fop)
 }
 
 #endif // ENABLE_SAVE
+
+// Shows the JPEG XL configuration dialog.
+FormatOptionsPtr JpegXlFormat::onAskUserForFormatOptions(FileOp* fop)
+{
+  auto opts = fop->formatOptionsOfDocument<JxlOptions>();
+  if (fop->context() && fop->context()->isUIAvailable()) {
+    try {
+      auto& pref = Preferences::instance();
+
+      if (pref.isSet(pref.jxl.speed))
+        opts->speed = pref.jxl.speed();
+
+      if (pref.isSet(pref.jxl.lossy)) {
+        opts->lossy = pref.jxl.lossy();
+        if (pref.isSet(pref.jxl.quality))
+          opts->quality = pref.jxl.quality();
+      }
+
+      if (pref.jxl.showAlert()) {
+        app::gen::JxlOptions win;
+
+        auto updateLossy = [&win] {
+          const bool state = win.lossy()->isSelected();
+          win.qualityLabel()->setEnabled(state);
+          win.quality()->setEnabled(state);
+        };
+
+        win.lossy()->Click.connect([updateLossy] { updateLossy(); });
+
+        win.speed()->setValue(opts->speed);
+        win.lossy()->setSelected(opts->lossy);
+        win.quality()->setValue(opts->quality);
+        updateLossy();
+
+        win.openWindowInForeground();
+
+        if (win.closer() == win.ok()) {
+          pref.jxl.speed(win.speed()->getValue());
+          pref.jxl.lossy(win.lossy()->isSelected());
+          pref.jxl.quality(win.quality()->getValue());
+          pref.jxl.showAlert(!win.dontShow()->isSelected());
+
+          opts->speed = pref.jxl.speed();
+          opts->lossy = pref.jxl.lossy();
+          opts->quality = pref.jxl.quality();
+        }
+        else {
+          opts.reset();
+        }
+      }
+    }
+    catch (std::exception& e) {
+      Console::showException(e);
+      return std::shared_ptr<JxlOptions>(0);
+    }
+  }
+  return opts;
+}
 
 } // namespace app
