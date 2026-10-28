@@ -1,8 +1,8 @@
-// Aseprite UI Library
+// Aseprite
 // Copyright (C) 2024  Igara Studio S.A.
 //
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+// This program is distributed under the terms of
+// the End-User License Agreement for Aseprite.
 
 #ifndef APP_UI_ALPHA_ENTRY_H_INCLUDED
 #define APP_UI_ALPHA_ENTRY_H_INCLUDED
