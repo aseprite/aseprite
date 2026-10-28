@@ -371,16 +371,11 @@ bool FileList::onProcessMessage(Message* msg)
           gfx::Point delta = static_cast<MouseMessage*>(msg)->wheelDelta();
           const bool precise = static_cast<MouseMessage*>(msg)->preciseWheel();
           double dz = delta.x + delta.y;
-
-          if (precise) {
-            dz /= 1.5;
-            if (dz < -1.0)
-              dz = -1.0;
-            else if (dz > 1.0)
-              dz = 1.0;
-          }
-
-          setZoom(zoom() - dz);
+          if (precise)
+            dz = std::clamp(dz, -1.0, 1.0);
+          const int step = ui::adjustWheelStep(dz, precise, 16);
+          if (step != 0)
+            setZoom(zoom() - step);
           break;
         }
         else {
