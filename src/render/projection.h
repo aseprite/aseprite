@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2020-2025 Igara Studio S.A.
+// Copyright (c) 2020-present Igara Studio S.A.
 // Copyright (c) 2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -72,18 +72,6 @@ public:
     return m_zoom.remove<T>(y) / T(m_pixelRatio.h);
   }
 
-  template<typename T>
-  T removeXCeiling(T x) const
-  {
-    return T(m_zoom.removeCeiling(x)) / T(m_pixelRatio.w);
-  }
-
-  template<typename T>
-  T removeYCeiling(T y) const
-  {
-    return T(m_zoom.removeCeiling(y)) / T(m_pixelRatio.h);
-  }
-
   // Used in 'editor.cpp' to do some math between x,y values.
   // Useful for calculating diagonal symmetry axis positions when pixel ratio is other than 1:1
   template<typename T>
@@ -128,9 +116,14 @@ public:
 
   gfx::Matrix scaleMatrix() const { return gfx::Matrix::MakeScale(scaleX(), scaleY()); }
 
+  bool hasAngle() const { return m_angle != 0.0; }
+  double angle() const { return m_angle; }
+  void setAngle(const double angle) { m_angle = angle; }
+
 private:
   doc::PixelRatio m_pixelRatio;
   Zoom m_zoom;
+  double m_angle = 0.0;
 };
 
 } // namespace render
