@@ -3356,7 +3356,7 @@ bool Editor::handleDevModeKeys(const ui::KeyMessage* msg)
         tileBased(!tileBased());
       }
       // Ctrl+F1 = Rotate between render engine versions v1 -> v2 -> shader
-      else if (msg->ctrlPressed()) {
+      else if (msg->ctrlPressed() || msg->cmdPressed()) {
         switch (renderEngine()) {
           case gen::RenderEngine::RASTER_V1: renderEngine(gen::RenderEngine::RASTER_V2); break;
           case gen::RenderEngine::RASTER_V2: renderEngine(gen::RenderEngine::SHADER); break;
