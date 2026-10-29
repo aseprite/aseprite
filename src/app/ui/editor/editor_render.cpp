@@ -67,7 +67,6 @@ void EditorRender::setType(const Type type)
     renderer = std::make_unique<SimpleRenderer>();
   }
 
-  renderer->setNewBlendMethod(Preferences::instance().experimental.newBlend());
   renderer->setComposeGroups(Preferences::instance().experimental.composeGroups());
 
   if (Preferences::instance().render.tileBasedRenderEngine())
@@ -84,11 +83,6 @@ void EditorRender::setRefLayersVisiblity(const bool visible)
 void EditorRender::setNonactiveLayersOpacity(const int opacity)
 {
   m_renderer->setNonactiveLayersOpacity(opacity);
-}
-
-void EditorRender::setNewBlendMethod(const bool newBlend)
-{
-  m_renderer->setNewBlendMethod(newBlend);
 }
 
 void EditorRender::setComposeGroups(const bool composeGroups)

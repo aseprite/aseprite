@@ -62,7 +62,6 @@ public:
     , m_sprite(m_doc->sprite())
     , m_spec(m_sprite->spec())
     , m_supportAnimation(fop->fileFormat()->support(FILE_SUPPORT_FRAMES))
-    , m_newBlend(fop->newBlend())
   {
     ASSERT(m_doc && m_sprite);
   }
@@ -154,7 +153,6 @@ public:
     }
 
     render::Render render;
-    render.setNewBlend(m_newBlend);
     render.setBgOptions(render::BgOptions::MakeNone());
     render.renderSprite((needResize ? m_tmpUnscaledRender.get() : dst),
                         m_sprite,
@@ -185,7 +183,6 @@ private:
   const doc::Sprite* m_sprite;
   doc::ImageSpec m_spec;
   const bool m_supportAnimation;
-  const bool m_newBlend;
   doc::ImageRef m_tmpScaledImage = nullptr;
   mutable doc::ImageRef m_tmpUnscaledRender = nullptr;
   gfx::PointF m_scale = gfx::PointF(1.0, 1.0);
@@ -964,7 +961,6 @@ void FileOp::operate(IFileOpProgress* progress)
 
       // For each frame in the sprite.
       render::Render render;
-      render.setNewBlend(m_config.newBlend);
 
       frame_t outputFrame = 0;
       for (frame_t frame : m_roi.framesSequence()) {
@@ -1127,7 +1123,6 @@ void FileOp::postLoad()
                                                            true,
                                                            nullptr,
                                                            nullptr,
-                                                           m_config.newBlend,
                                                            m_config.rgbMapAlgorithm));
         }
         else {

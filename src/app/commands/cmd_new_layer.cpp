@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -346,7 +346,6 @@ void NewLayerCommand::onExecute(Context* context)
     if (pasteDoc && layer->isImage()) {
       Sprite* pasteSpr = pasteDoc->sprite();
       render::Render render;
-      render.setNewBlend(true);
       render.setBgOptions(render::BgOptions::MakeNone());
 
       // Add more frames at the end
@@ -428,7 +427,7 @@ void NewLayerCommand::onExecute(Context* context)
       }
 
       for (frame_t frame : frames) {
-        ImageRef newImage(new_image_from_mask(site, mask, true, merged));
+        ImageRef newImage(new_image_from_mask(site, mask, merged));
         if (!newImage)
           continue;
 

@@ -658,7 +658,6 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g,
   // Configure render engine options
   const auto& pref = Preferences::instance();
   m_renderEngine->setComposeGroups(pref.experimental.composeGroups());
-  m_renderEngine->setNewBlendMethod(pref.experimental.newBlend());
   m_renderEngine->setRefLayersVisiblity(true);
   m_renderEngine->setSelectedLayer(m_layer);
   m_renderEngine->setNonactiveLayersOpacity(otherLayersOpacity());

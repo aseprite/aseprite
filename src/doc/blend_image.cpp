@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2024  Igara Studio S.A.
+// Copyright (c) 2024-present  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -29,7 +29,7 @@ void blend_image_templ(Image* dst,
     if (pal == nullptr)
       return;
   }
-  BlenderHelper<DstTraits, SrcTraits> blender(dst, src, pal, blendMode, true);
+  BlenderHelper<DstTraits, SrcTraits> blender(dst, src, pal, blendMode);
   LockImageBits<DstTraits> dstBits(dst);
   const LockImageBits<SrcTraits> srcBits(src);
   auto dstIt = dstBits.begin_area(area.dstBounds());

@@ -1,5 +1,5 @@
 // Aseprite Rener Library
-// Copyright (c) 2019-2021  Igara Studio S.A.
+// Copyright (c) 2019-present  Igara Studio S.A.
 // Copyright (c) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -49,7 +49,6 @@ doc::Palette* create_palette_from_sprite(const doc::Sprite* sprite,
                                          doc::Palette* newPalette, // Can be NULL to create a new
                                                                    // palette
                                          TaskDelegate* delegate,
-                                         const bool newBlend,
                                          RgbMapAlgorithm mapAlgo,
                                          const bool calculateWithTransparent = true);
 

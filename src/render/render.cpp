@@ -44,7 +44,7 @@ struct composite_image_without_scale {
     ASSERT(DstTraits::pixel_format == p.dst->pixelFormat());
     ASSERT(SrcTraits::pixel_format == p.src->pixelFormat());
 
-    BlenderHelper<DstTraits, SrcTraits> blender(p.dst, p.src, p.pal, p.blendMode, p.newBlend);
+    BlenderHelper<DstTraits, SrcTraits> blender(p.dst, p.src, p.pal, p.blendMode);
 
     gfx::Clip area(p.areaF);
     if (!area.clip(p.dst->width(), p.dst->height(), p.src->width(), p.src->height()))
@@ -102,7 +102,7 @@ struct composite_image_scale_up {
                    int(p.sy * double(p.src->height()))))
       return;
 
-    BlenderHelper<DstTraits, SrcTraits> blender(p.dst, p.src, p.pal, p.blendMode, p.newBlend);
+    BlenderHelper<DstTraits, SrcTraits> blender(p.dst, p.src, p.pal, p.blendMode);
     int px_w = int(p.sx);
     int px_h = int(p.sy);
 
@@ -228,7 +228,7 @@ struct composite_image_scale_down {
                    int(p.sy * double(p.src->height()))))
       return;
 
-    BlenderHelper<DstTraits, SrcTraits> blender(p.dst, p.src, p.pal, p.blendMode, p.newBlend);
+    BlenderHelper<DstTraits, SrcTraits> blender(p.dst, p.src, p.pal, p.blendMode);
     int step_w = int(std::round(1.0 / p.sx));
     int step_h = int(std::round(1.0 / p.sy));
     if (step_w < 1 || step_h < 1)
@@ -286,7 +286,7 @@ struct composite_image_general {
     if (!area.clip(p.dst->width(), p.dst->height(), p.sx * p.src->width(), p.sy * p.src->height()))
       return;
 
-    BlenderHelper<DstTraits, SrcTraits> blender(p.dst, p.src, p.pal, p.blendMode, p.newBlend);
+    BlenderHelper<DstTraits, SrcTraits> blender(p.dst, p.src, p.pal, p.blendMode);
 
     gfx::Rect dstBounds(area.dstBounds().x,
                         area.dstBounds().y,
@@ -356,7 +356,7 @@ struct composite_image_general_with_tile_flags {
     if (!area.clip(p.dst->width(), p.dst->height(), p.sx * p.src->width(), p.sy * p.src->height()))
       return;
 
-    BlenderHelper<DstTraits, SrcTraits> blender(p.dst, p.src, p.pal, p.blendMode, p.newBlend);
+    BlenderHelper<DstTraits, SrcTraits> blender(p.dst, p.src, p.pal, p.blendMode);
 
     gfx::Rect dstBounds(area.dstBounds().x,
                         area.dstBounds().y,
@@ -493,7 +493,6 @@ Render::Render()
   , m_extraType(ExtraType::NONE)
   , m_extraCel(nullptr)
   , m_extraImage(nullptr)
-  , m_newBlendMethod(true)
   , m_globalOpacity(255)
   , m_selectedLayerForOpacity(nullptr)
   , m_selectedLayer(nullptr)
@@ -516,11 +515,6 @@ void Render::setRefLayersVisiblity(const bool visible)
 void Render::setNonactiveLayersOpacity(const int opacity)
 {
   m_nonactiveLayersOpacity = opacity;
-}
-
-void Render::setNewBlend(const bool newBlend)
-{
-  m_newBlendMethod = newBlend;
 }
 
 void Render::setComposeGroups(const bool composeGroup)
@@ -662,8 +656,7 @@ void Render::renderSprite(Image* dstImage,
     }
   }
 
-  // New Blending Method:
-  if (m_newBlendMethod) {
+  {
     // Clear dstImage with the bg_color (if the background is not a
     // special background pattern like the checkered background, this
     // is enough as a base color).
@@ -691,11 +684,6 @@ void Render::renderSprite(Image* dstImage,
                       255,
                       BlendMode::DST_OVER);
     }
-  }
-  // Old Blending Method:
-  else {
-    renderBackground(dstImage, bgLayer, bg_color, area);
-    renderSpriteLayers(dstImage, area, frame, compositeImage);
   }
 
   // Draw onion skin in front of the sprite.
@@ -924,7 +912,6 @@ void Render::renderImage(Image* dst_image,
   params.blendMode = blendMode;
   params.sx = m_proj.scaleX();
   params.sy = m_proj.scaleY();
-  params.newBlend = m_newBlendMethod;
   params.tileFlags = tileFlags;
 
   compositeImage(params);
@@ -1365,7 +1352,6 @@ void Render::renderImage(Image* dst_image,
   params.blendMode = blendMode;
   params.sx = m_proj.scaleX() * celBounds.w / double(cel_image->width());
   params.sy = m_proj.scaleY() * celBounds.h / double(cel_image->height());
-  params.newBlend = m_newBlendMethod;
   params.tileFlags = tileFlags;
 
   compositeImage(params);

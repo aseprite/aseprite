@@ -105,7 +105,6 @@ struct ImageObj {
 void render_sprite(Image* dst, const Sprite* sprite, const frame_t frame, const int x, const int y)
 {
   render::Render render;
-  render.setNewBlend(true);
   render.setComposeGroups(Preferences::instance().experimental.composeGroups());
   render.renderSprite(dst, sprite, frame, gfx::Clip(x, y, 0, 0, sprite->width(), sprite->height()));
 }

@@ -20,12 +20,11 @@ class FlattenLayers : public CmdSequence,
                       public WithSprite {
 public:
   struct Options {
-    bool newBlendMethod : 1;
     bool inplace : 1;
     bool mergeDown : 1;
     bool dynamicCanvas : 1;
 
-    Options() : newBlendMethod(false), inplace(false), mergeDown(false), dynamicCanvas(false) {}
+    Options() : inplace(false), mergeDown(false), dynamicCanvas(false) {}
   };
 
   FlattenLayers(doc::Sprite* sprite, const doc::SelectedLayers& layers, const Options options);

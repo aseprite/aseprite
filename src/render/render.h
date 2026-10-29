@@ -62,7 +62,6 @@ struct CompositeParams {
   BlendMode blendMode = BlendMode::NORMAL;
   double sx = 1.0;
   double sy = 1.0;
-  bool newBlend = true;
   tile_flags tileFlags = notile;
 };
 
@@ -81,7 +80,6 @@ public:
 
   void setRefLayersVisiblity(const bool visible);
   void setNonactiveLayersOpacity(const int opacity);
-  void setNewBlend(const bool newBlend);
   void setComposeGroups(bool composeGroup);
   void setProjection(const Projection& projection);
   void setBgOptions(const BgOptions& bg);
@@ -217,7 +215,6 @@ private:
   const Cel* m_extraCel;
   const Image* m_extraImage;
   BlendMode m_extraBlendMode;
-  bool m_newBlendMethod;
   BgOptions m_bg;
   int m_globalOpacity;
   const Layer* m_selectedLayerForOpacity;

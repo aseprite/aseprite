@@ -121,7 +121,6 @@ void FlattenLayers::onExecute(Context* ctx)
   }
 
   render::Render render;
-  render.setNewBlend(m_options.newBlendMethod);
   render.setBgOptions(render::BgOptions::MakeNone());
 
   {

@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2019-2025 Igara Studio S.A.
+// Copyright (c) 2019-present Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -29,7 +29,6 @@ color_t get_sprite_pixel(const Sprite* sprite,
                          const double y,
                          const frame_t frame,
                          const Projection& proj,
-                         const bool newBlend,
                          const bool composeGroups);
 
 } // namespace render

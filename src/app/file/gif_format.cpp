@@ -1043,7 +1043,6 @@ public:
                                            false,
                                            &newPalette,
                                            nullptr,
-                                           m_fop->newBlend(),
                                            RgbMapAlgorithm::OCTREE, // TODO configurable?
                                            false); // Do not add the transparent color yet
 

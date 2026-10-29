@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -52,7 +52,7 @@ void NewSpriteFromSelectionCommand::onExecute(Context* context)
   const Doc* doc = site.document();
   const Sprite* sprite = site.sprite();
   const Mask* mask = doc->mask();
-  ImageRef image(new_image_from_mask(site, mask, true));
+  ImageRef image(new_image_from_mask(site, mask));
   if (!image)
     return;
 

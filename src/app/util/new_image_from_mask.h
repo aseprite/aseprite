@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024 Igara Studio S.A.
+// Copyright (C) 2019-present Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -20,15 +20,11 @@ class Layer;
 namespace app {
 class Site;
 
-doc::Image* new_image_from_mask(const Site& site, const bool newBlend);
-doc::Image* new_image_from_mask(const Site& site,
-                                const doc::Mask* mask,
-                                const bool newBlend,
-                                bool merged = false);
+doc::Image* new_image_from_mask(const Site& site);
+doc::Image* new_image_from_mask(const Site& site, const doc::Mask* mask, bool merged = false);
 doc::Image* new_image_from_mask(const doc::Layer& layer,
                                 doc::frame_t frame,
-                                const doc::Mask* srcMask,
-                                const bool newBlend);
+                                const doc::Mask* srcMask);
 doc::Image* new_tilemap_from_mask(const Site& site, const doc::Mask* mask);
 
 void copy_masked_zones(doc::Image* dst,

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -576,7 +576,6 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
     gfx::Rect frameBounds = params.frameBounds();
     const gfx::Size padding = params.padding();
     render::Render render;
-    render.setNewBlend(Preferences::instance().experimental.newBlend());
 
     if (frameBounds.isEmpty())
       frameBounds = sprite->bounds();

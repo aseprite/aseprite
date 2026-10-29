@@ -357,10 +357,6 @@ public:
 
     render::Render render;
 
-    // 1) We cannot use the Preferences because this is called from a non-UI thread
-    // 2) We should use the new blend mode always when we're saving files
-    // render.setNewBlend(Preferences::instance().experimental.newBlend());
-
     if (extrude) {
       const gfx::Rect& trim = m_trimmedBounds;
 

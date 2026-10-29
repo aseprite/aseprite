@@ -1,4 +1,5 @@
 // Aseprite Document Library
+// Copyright (c) 2026-present Igara Studio S.A.
 // Copyright (c) 2001-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -8,11 +9,13 @@
 #define DOC_BLEND_MODE_H_INCLUDED
 #pragma once
 
+#include "base/ints.h"
+
 #include <string>
 
 namespace doc {
 
-enum class BlendMode {
+enum class BlendMode : int32_t {
   // Special internal/undocumented alpha compositing and blend modes
   UNSPECIFIED = -1,
   SRC = -2,

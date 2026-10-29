@@ -207,10 +207,7 @@ PixelsMovement::PixelsMovement(Context* context,
       }
       else {
         data.originalImage.reset(
-          new_image_from_mask(*cel->layer(),
-                              cel->frame(),
-                              m_initialMask.get(),
-                              Preferences::instance().experimental.newBlend()));
+          new_image_from_mask(*cel->layer(), cel->frame(), m_initialMask.get()));
       }
 
       m_extraCel->celMap()[cel] = std::move(data);
@@ -1733,9 +1730,7 @@ void PixelsMovement::reproduceAllTransformationsWithInnerCmds()
     m_originalImage.reset(new_tilemap_from_mask(m_site, m_initialMask.get()));
   }
   else
-    m_originalImage.reset(new_image_from_mask(m_site,
-                                              m_initialMask.get(),
-                                              Preferences::instance().experimental.newBlend()));
+    m_originalImage.reset(new_image_from_mask(m_site, m_initialMask.get()));
 
   for (const InnerCmd& c : m_innerCmds) {
     switch (c.type) {

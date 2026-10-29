@@ -260,7 +260,6 @@
     </section>
     <section id="experimental">
       <option id="multiple_windows" type="bool" default="false" />
-      <option id="new_blend" type="bool" default="true" />
       <option id="compose_groups" type="bool" default="false" />
       <option id="use_native_clipboard" type="bool" default="true" />
       <option id="use_native_file_dialog" type="bool" default="true" />

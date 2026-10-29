@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -272,7 +272,6 @@ bool IcoFormat::onSave(FileOp* fop)
     Image::create(sprite->pixelFormat(), sprite->width(), sprite->height()));
 
   render::Render render;
-  render.setNewBlend(fop->newBlend());
 
   for (n = frame_t(0); n < num; ++n) {
     render.renderSprite(image.get(), sprite, n);

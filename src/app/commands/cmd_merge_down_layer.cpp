@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2020  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -72,9 +72,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
   range.selectLayer(writer.layer());
   range.selectLayer(dst_layer);
 
-  const bool newBlend = Preferences::instance().experimental.newBlend();
   cmd::FlattenLayers::Options options;
-  options.newBlendMethod = newBlend;
   options.inplace = true;
   options.mergeDown = true;
   options.dynamicCanvas = true;

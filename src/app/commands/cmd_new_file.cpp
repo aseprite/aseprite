@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -249,7 +249,6 @@ void NewFileCommand::onExecute(Context* ctx)
                                            true,
                                            &clipboardPalette,
                                            nullptr,
-                                           true,
                                            Preferences::instance().quantization.rgbmapAlgorithm());
       }
       sprite->setPalette(&clipboardPalette, false);

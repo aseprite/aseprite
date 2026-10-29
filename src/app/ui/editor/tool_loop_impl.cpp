@@ -502,7 +502,6 @@ public:
         m_floodfillSrcImage->clear(m_sprite->transparentColor());
 
         render::Render render;
-        render.setNewBlend(Preferences::instance().experimental.newBlend());
         render.renderSprite(m_floodfillSrcImage, m_sprite, m_frame, gfx::Clip(m_sprite->bounds()));
       }
       else if (Cel* cel = m_layer->cel(m_frame); cel && cel->image()) {

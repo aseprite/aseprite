@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -212,7 +212,6 @@ bool FliFormat::onSave(FileOp* fop)
   // Create the bitmaps
   ImageRef bmp(Image::create(IMAGE_INDEXED, sprite->width(), sprite->height()));
   render::Render render;
-  render.setNewBlend(fop->newBlend());
 
   // Write frame by frame
   flic::Frame fliFrame;

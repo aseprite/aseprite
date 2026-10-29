@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -26,10 +26,6 @@ struct FileOpConfig {
   app::gen::ColorProfileBehavior filesWithProfile = app::gen::ColorProfileBehavior::EMBEDDED;
   app::gen::ColorProfileBehavior missingProfile = app::gen::ColorProfileBehavior::ASSIGN;
   gfx::ColorSpaceRef workingCS = gfx::ColorSpace::MakeSRGB();
-
-  // True if we should render each frame to save it with the new
-  // blend mode.h
-  bool newBlend = true;
 
   app::Color defaultSliceColor = app::Color::fromRgb(0, 0, 255);
 

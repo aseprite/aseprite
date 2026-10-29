@@ -41,7 +41,6 @@ Palette* create_palette_from_sprite(const Sprite* sprite,
                                     const bool withAlpha,
                                     Palette* palette,
                                     TaskDelegate* delegate,
-                                    const bool newBlend,
                                     RgbMapAlgorithm mapAlgo,
                                     const bool calculateWithTransparent)
 {
@@ -75,7 +74,6 @@ Palette* create_palette_from_sprite(const Sprite* sprite,
   ImageRef flat_image(Image::create(IMAGE_RGB, sprite->width(), sprite->height()));
 
   render::Render render;
-  render.setNewBlend(newBlend);
 
   // Feed the optimizer with all rendered frames
   for (frame_t frame = fromFrame; frame <= toFrame; ++frame) {

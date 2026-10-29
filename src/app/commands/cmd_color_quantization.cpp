@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -164,44 +164,34 @@ void ColorQuantizationCommand::onExecute(Context* ctx)
     Palette tmpPalette(frame, entries.picks());
 
     SpriteJob job(ctx, doc, "Color Quantization", ui);
-    const bool newBlend = pref.experimental.newBlend();
-    job.startJobWithCallback([sprite,
-                              withAlpha,
-                              curPalette,
-                              &tmpPalette,
-                              &job,
-                              &entries,
-                              newBlend,
-                              algorithm,
-                              createPal,
-                              site,
-                              frame](Tx& tx) {
-      render::create_palette_from_sprite(sprite,
-                                         0,
-                                         sprite->lastFrame(),
-                                         withAlpha,
-                                         &tmpPalette,
-                                         &job, // SpriteJob is a render::TaskDelegate
-                                         newBlend,
-                                         algorithm);
+    job.startJobWithCallback(
+      [sprite, withAlpha, curPalette, &tmpPalette, &job, &entries, algorithm, createPal, site, frame](
+        Tx& tx) {
+        render::create_palette_from_sprite(sprite,
+                                           0,
+                                           sprite->lastFrame(),
+                                           withAlpha,
+                                           &tmpPalette,
+                                           &job, // SpriteJob is a render::TaskDelegate
+                                           algorithm);
 
-      std::unique_ptr<Palette> newPalette(new Palette(createPal ? tmpPalette : *site.palette()));
+        std::unique_ptr<Palette> newPalette(new Palette(createPal ? tmpPalette : *site.palette()));
 
-      if (createPal) {
-        entries = PalettePicks(newPalette->size());
-        entries.all();
-      }
+        if (createPal) {
+          entries = PalettePicks(newPalette->size());
+          entries.all();
+        }
 
-      int i = 0, j = 0;
-      for (bool state : entries) {
-        if (state)
-          newPalette->setEntry(i, tmpPalette.getEntry(j++));
-        ++i;
-      }
+        int i = 0, j = 0;
+        for (bool state : entries) {
+          if (state)
+            newPalette->setEntry(i, tmpPalette.getEntry(j++));
+          ++i;
+        }
 
-      if (*curPalette != *newPalette)
-        tx(new cmd::SetPalette(sprite, frame, newPalette.get()));
-    });
+        if (*curPalette != *newPalette)
+          tx(new cmd::SetPalette(sprite, frame, newPalette.get()));
+      });
     job.waitJob();
     if (job.isCanceled())
       return;

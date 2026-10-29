@@ -23,16 +23,13 @@ namespace app {
 
 using namespace doc;
 
-Image* new_image_from_mask(const Site& site, const bool newBlend)
+Image* new_image_from_mask(const Site& site)
 {
   const Mask* srcMask = site.document()->mask();
-  return new_image_from_mask(site, srcMask, newBlend);
+  return new_image_from_mask(site, srcMask);
 }
 
-doc::Image* new_image_from_mask(const Site& site,
-                                const doc::Mask* srcMask,
-                                const bool newBlend,
-                                bool merged)
+doc::Image* new_image_from_mask(const Site& site, const doc::Mask* srcMask, const bool merged)
 {
   const Sprite* srcSprite = site.sprite();
   ASSERT(srcSprite);
@@ -56,7 +53,6 @@ doc::Image* new_image_from_mask(const Site& site,
   int x = 0, y = 0;
   if (merged || site.layer()->isTilemap()) {
     render::Render render;
-    render.setNewBlend(newBlend);
     if (merged)
       render.renderSprite(dst.get(), srcSprite, site.frame(), gfx::Clip(0, 0, srcBounds));
     else {
@@ -87,10 +83,7 @@ doc::Image* new_image_from_mask(const Site& site,
   return dst.release();
 }
 
-doc::Image* new_image_from_mask(const Layer& layer,
-                                frame_t frame,
-                                const doc::Mask* srcMask,
-                                const bool newBlend)
+doc::Image* new_image_from_mask(const Layer& layer, const frame_t frame, const doc::Mask* srcMask)
 {
   const Sprite* srcSprite = layer.sprite();
   ASSERT(srcSprite);
@@ -115,7 +108,6 @@ doc::Image* new_image_from_mask(const Layer& layer,
   auto* cel = layer.cel(frame);
   if (layer.isTilemap()) {
     render::Render render;
-    render.setNewBlend(newBlend);
     ASSERT(layer.isTilemap());
     if (cel && cel->image()) {
       render.renderCel(dst.get(),

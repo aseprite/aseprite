@@ -708,8 +708,7 @@ Doc* Doc::duplicate(DuplicateType type) const
         sourceSprite->root(),
         gfx::Rect(0, 0, sourceSprite->width(), sourceSprite->height()),
         frame_t(0),
-        sourceSprite->lastFrame(),
-        Preferences::instance().experimental.newBlend());
+        sourceSprite->lastFrame());
 
       // Add and select the new flat layer
       spriteCopy->root()->addLayer(flatLayer);

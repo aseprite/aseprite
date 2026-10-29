@@ -117,10 +117,7 @@ void MovingSliceState::initializeItemsContent()
         image.reset(new_tilemap_from_mask(m_site, &mask));
       }
       else {
-        image.reset(new_image_from_mask(*layer,
-                                        m_frame,
-                                        &mask,
-                                        Preferences::instance().experimental.newBlend()));
+        image.reset(new_image_from_mask(*layer, m_frame, &mask));
       }
 
       item.pushContent(image);

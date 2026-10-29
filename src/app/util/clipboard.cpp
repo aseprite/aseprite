@@ -285,8 +285,7 @@ bool Clipboard::copyFromDocument(const Site& site, bool merged)
     return true;
   }
 
-  ImageRef image(
-    new_image_from_mask(site, mask, Preferences::instance().experimental.newBlend(), merged));
+  ImageRef image(new_image_from_mask(site, mask, merged));
   if (!image)
     return false;
 

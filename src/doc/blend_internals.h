@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2024-2025 Igara Studio S.A.
+// Copyright (c) 2024-present Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -31,14 +31,10 @@ class BlenderHelper {
   color_t m_maskColor;
 
 public:
-  BlenderHelper(Image* dst,
-                const Image* src,
-                const Palette* pal,
-                const BlendMode blendMode,
-                const bool newBlend)
+  BlenderHelper(Image* dst, const Image* src, const Palette* pal, const BlendMode blendMode)
   {
     m_blendMode = blendMode;
-    m_blendFunc = SrcTraits::get_blender(blendMode, newBlend);
+    m_blendFunc = SrcTraits::get_blender(blendMode);
     m_maskColor = src->maskColor();
   }
 
@@ -65,14 +61,10 @@ class BlenderHelper<RgbTraits, GrayscaleTraits> {
   color_t m_maskColor;
 
 public:
-  BlenderHelper(Image* dst,
-                const Image* src,
-                const Palette* pal,
-                const BlendMode blendMode,
-                const bool newBlend)
+  BlenderHelper(Image* dst, const Image* src, const Palette* pal, const BlendMode blendMode)
   {
     m_blendMode = blendMode;
-    m_blendFunc = RgbTraits::get_blender(blendMode, newBlend);
+    m_blendFunc = RgbTraits::get_blender(blendMode);
     m_maskColor = src->maskColor();
   }
 
@@ -99,14 +91,10 @@ class BlenderHelper<RgbTraits, IndexedTraits> {
   color_t m_maskColor;
 
 public:
-  BlenderHelper(Image* dst,
-                const Image* src,
-                const Palette* pal,
-                const BlendMode blendMode,
-                const bool newBlend)
+  BlenderHelper(Image* dst, const Image* src, const Palette* pal, const BlendMode blendMode)
   {
     m_blendMode = blendMode;
-    m_blendFunc = RgbTraits::get_blender(blendMode, newBlend);
+    m_blendFunc = RgbTraits::get_blender(blendMode);
     m_maskColor = src->maskColor();
     m_pal = pal;
   }
@@ -136,13 +124,9 @@ class BlenderHelper<GrayscaleTraits, RgbTraits> {
   BlendFunc m_blendFunc;
 
 public:
-  BlenderHelper(Image* dst,
-                const Image* src,
-                const Palette* pal,
-                const BlendMode blendMode,
-                const bool newBlend)
+  BlenderHelper(Image* dst, const Image* src, const Palette* pal, const BlendMode blendMode)
   {
-    m_blendFunc = RgbTraits::get_blender(blendMode, newBlend);
+    m_blendFunc = RgbTraits::get_blender(blendMode);
   }
 
   inline GrayscaleTraits::pixel_t operator()(GrayscaleTraits::pixel_t dst,
@@ -165,14 +149,10 @@ class BlenderHelper<IndexedTraits, RgbTraits> {
   color_t m_maskColor;
 
 public:
-  BlenderHelper(Image* dst,
-                const Image* src,
-                const Palette* pal,
-                const BlendMode blendMode,
-                const bool newBlend)
+  BlenderHelper(Image* dst, const Image* src, const Palette* pal, const BlendMode blendMode)
   {
     m_blendMode = blendMode;
-    m_blendFunc = RgbTraits::get_blender(blendMode, newBlend);
+    m_blendFunc = RgbTraits::get_blender(blendMode);
     m_pal = pal;
 
     if (m_blendMode == BlendMode::SRC)
@@ -203,11 +183,7 @@ class BlenderHelper<IndexedTraits, IndexedTraits> {
   int m_paletteSize;
 
 public:
-  BlenderHelper(Image* dst,
-                const Image* src,
-                const Palette* pal,
-                const BlendMode blendMode,
-                const bool newBlend)
+  BlenderHelper(Image* dst, const Image* src, const Palette* pal, const BlendMode blendMode)
   {
     m_blendMode = blendMode;
     m_maskColor = src->maskColor();

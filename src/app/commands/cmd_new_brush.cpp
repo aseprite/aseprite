@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -136,8 +136,7 @@ void NewBrushCommand::onQuickboxCancel(Editor* editor)
 
 void NewBrushCommand::createBrush(const Site& site, const Mask* mask)
 {
-  doc::ImageRef image(
-    new_image_from_mask(site, mask, Preferences::instance().experimental.newBlend()));
+  doc::ImageRef image(new_image_from_mask(site, mask));
   if (!image)
     return;
 

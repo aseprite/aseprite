@@ -167,7 +167,6 @@ void PasteTextCommand::onExecute(Context* ctx)
       finalImage.reset(
         doc::crop_image(writer.cel()->image(), celRect, writer.cel()->image()->maskColor()));
       render::Render render;
-      render.setNewBlend(pref.experimental.newBlend());
       render.setBgOptions(render::BgOptions::MakeTransparent());
       render.renderImage(finalImage.get(),
                          image.get(),

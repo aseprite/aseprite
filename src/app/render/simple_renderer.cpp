@@ -34,11 +34,6 @@ void SimpleRenderer::setNonactiveLayersOpacity(const int opacity)
   m_render.setNonactiveLayersOpacity(opacity);
 }
 
-void SimpleRenderer::setNewBlendMethod(const bool newBlend)
-{
-  m_render.setNewBlend(newBlend);
-}
-
 void SimpleRenderer::setComposeGroups(const bool composeGroups)
 {
   m_render.setComposeGroups(composeGroups);

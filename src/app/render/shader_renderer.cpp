@@ -109,11 +109,6 @@ void ShaderRenderer::setNonactiveLayersOpacity(const int opacity)
   // TODO impl
 }
 
-void ShaderRenderer::setNewBlendMethod(const bool newBlend)
-{
-  // TODO impl
-}
-
 void ShaderRenderer::setComposeGroups(const bool composeGroups)
 {
   // TODO impl

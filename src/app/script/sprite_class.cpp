@@ -334,7 +334,6 @@ int Sprite_flatten(lua_State* L)
 
   Tx tx(sprite);
   cmd::FlattenLayers::Options options;
-  options.newBlendMethod = true;
   tx(new cmd::FlattenLayers(sprite, range.selectedLayers(), options));
   tx.commit();
   return 0;

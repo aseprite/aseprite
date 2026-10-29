@@ -24,7 +24,6 @@ public:
 
   void setRefLayersVisiblity(bool visible) override;
   void setNonactiveLayersOpacity(int opacity) override;
-  void setNewBlendMethod(bool newBlend) override;
   void setComposeGroups(bool composeGroups) override;
   void setBgOptions(const render::BgOptions& bg) override;
   void setSampling(const os::Sampling& sampling) override;

@@ -48,11 +48,6 @@ void TileBasedRenderer::setNonactiveLayersOpacity(int opacity)
   m_tilesRenderer->setNonactiveLayersOpacity(opacity);
 }
 
-void TileBasedRenderer::setNewBlendMethod(bool newBlend)
-{
-  m_tilesRenderer->setNewBlendMethod(newBlend);
-}
-
 void TileBasedRenderer::setComposeGroups(bool composeGroups)
 {
   m_tilesRenderer->setComposeGroups(composeGroups);

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2024 Igara Studio S.A.
+// Copyright (c) 2018-present Igara Studio S.A.
 // Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -44,10 +44,7 @@ struct RgbTraits {
     return doc_align_size(width_bytes(pixels_per_row));
   }
 
-  static inline BlendFunc get_blender(BlendMode blend_mode, bool newBlend)
-  {
-    return get_rgba_blender(blend_mode, newBlend);
-  }
+  static inline BlendFunc get_blender(BlendMode blend_mode) { return get_rgba_blender(blend_mode); }
 
   static inline bool same_color(const pixel_t a, const pixel_t b)
   {
@@ -88,9 +85,9 @@ struct GrayscaleTraits {
     return doc_align_size(width_bytes(pixels_per_row));
   }
 
-  static inline BlendFunc get_blender(BlendMode blend_mode, bool newBlend)
+  static inline BlendFunc get_blender(BlendMode blend_mode)
   {
-    return get_graya_blender(blend_mode, newBlend);
+    return get_graya_blender(blend_mode);
   }
 
   static inline bool same_color(const pixel_t a, const pixel_t b)
@@ -132,9 +129,9 @@ struct IndexedTraits {
     return doc_align_size(width_bytes(pixels_per_row));
   }
 
-  static inline BlendFunc get_blender(BlendMode blend_mode, bool newBlend)
+  static inline BlendFunc get_blender(BlendMode blend_mode)
   {
-    return get_indexed_blender(blend_mode, newBlend);
+    return get_indexed_blender(blend_mode);
   }
 
   static inline bool same_color(const pixel_t a, const pixel_t b) { return a == b; }
@@ -199,9 +196,9 @@ struct BitmapTraits {
     return doc_align_size(width_bytes(pixels_per_row));
   }
 
-  static inline BlendFunc get_blender(BlendMode blend_mode, bool newBlend)
+  static inline BlendFunc get_blender(BlendMode blend_mode)
   {
-    return get_indexed_blender(blend_mode, newBlend);
+    return get_indexed_blender(blend_mode);
   }
 
   static inline bool same_color(const pixel_t a, const pixel_t b)
@@ -238,9 +235,9 @@ struct TilemapTraits {
     return doc_align_size(width_bytes(pixels_per_row));
   }
 
-  static inline BlendFunc get_blender(BlendMode blend_mode, bool newBlend)
+  static inline BlendFunc get_blender(BlendMode blend_mode)
   {
-    return get_indexed_blender(blend_mode, newBlend);
+    return get_indexed_blender(blend_mode);
   }
 
   static inline bool same_color(const pixel_t a, const pixel_t b) { return a == b; }

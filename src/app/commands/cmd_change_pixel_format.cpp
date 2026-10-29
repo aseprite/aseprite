@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -70,8 +70,7 @@ public:
                 const doc::ColorMode colorMode,
                 const render::Dithering& dithering,
                 const gen::ToGrayAlgorithm toGray,
-                const gfx::Point& pos,
-                const bool newBlend)
+                const gfx::Point& pos)
     : m_image(dstImage)
     , m_pos(pos)
     , m_running(true)
@@ -82,9 +81,8 @@ public:
                 frame,
                 colorMode,
                 dithering,
-                toGray,
-                newBlend]() { // Copy the matrix
-      run(sprite, frame, colorMode, dithering, toGray, newBlend);
+                toGray]() { // Copy the matrix
+      run(sprite, frame, colorMode, dithering, toGray);
     })
   {
   }
@@ -104,13 +102,11 @@ private:
            const doc::frame_t frame,
            const doc::ColorMode colorMode,
            const render::Dithering& dithering,
-           const gen::ToGrayAlgorithm toGray,
-           const bool newBlend)
+           const gen::ToGrayAlgorithm toGray)
   {
     doc::ImageRef tmp(Image::create(sprite->pixelFormat(), m_image->width(), m_image->height()));
 
     render::Render render;
-    render.setNewBlend(newBlend);
     render.renderSprite(tmp.get(),
                         sprite,
                         frame,
@@ -401,8 +397,7 @@ private:
                                        dstColorMode,
                                        dithering(),
                                        toGray(),
-                                       visibleBounds.origin(),
-                                       Preferences::instance().experimental.newBlend()));
+                                       visibleBounds.origin()));
 
     m_timer.start();
   }
@@ -600,9 +595,7 @@ void ChangePixelFormatCommand::onExecute(Context* ctx)
     //      https://github.com/aseprite/aseprite/issues/378
     if (flatten) {
       Tx tx(Tx::LockDoc, ctx, doc);
-      const bool newBlend = Preferences::instance().experimental.newBlend();
       cmd::FlattenLayers::Options options;
-      options.newBlendMethod = newBlend;
 
       SelectedLayers selLayers;
       for (auto layer : sprite->root()->layers())

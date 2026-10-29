@@ -750,7 +750,7 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
       tmpImage.reset(new_tilemap_from_mask(site, effectiveMask));
     }
     else {
-      tmpImage.reset(new_image_from_mask(site, Preferences::instance().experimental.newBlend()));
+      tmpImage.reset(new_image_from_mask(site));
     }
 
     ASSERT(tmpImage);
