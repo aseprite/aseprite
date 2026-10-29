@@ -36,481 +36,435 @@ namespace {
 // Scaled composite
 
 template<class DstTraits, class SrcTraits>
-void composite_image_without_scale(Image* dst,
-                                   const Image* src,
-                                   const Palette* pal,
-                                   const gfx::ClipF& areaF,
-                                   const int opacity,
-                                   const BlendMode blendMode,
-                                   const double sx,
-                                   const double sy,
-                                   const bool newBlend,
-                                   const tile_flags) // Ignored
-{
-  ASSERT(dst);
-  ASSERT(src);
-  ASSERT(DstTraits::pixel_format == dst->pixelFormat());
-  ASSERT(SrcTraits::pixel_format == src->pixelFormat());
+struct composite_image_without_scale {
+  static void call(const CompositeParams& p)
+  {
+    ASSERT(p.dst);
+    ASSERT(p.src);
+    ASSERT(DstTraits::pixel_format == p.dst->pixelFormat());
+    ASSERT(SrcTraits::pixel_format == p.src->pixelFormat());
 
-  BlenderHelper<DstTraits, SrcTraits> blender(dst, src, pal, blendMode, newBlend);
+    BlenderHelper<DstTraits, SrcTraits> blender(p.dst, p.src, p.pal, p.blendMode, p.newBlend);
 
-  gfx::Clip area(areaF);
-  if (!area.clip(dst->width(), dst->height(), src->width(), src->height()))
-    return;
+    gfx::Clip area(p.areaF);
+    if (!area.clip(p.dst->width(), p.dst->height(), p.src->width(), p.src->height()))
+      return;
 
-  gfx::Rect srcBounds = area.srcBounds();
-  gfx::Rect dstBounds = area.dstBounds();
-  int bottom = dstBounds.y2() - 1;
+    gfx::Rect srcBounds = area.srcBounds();
+    ASSERT(!srcBounds.isEmpty());
+    if (srcBounds.isEmpty())
+      return;
 
-  ASSERT(!srcBounds.isEmpty());
+    gfx::Rect dstBounds = area.dstBounds();
+    ASSERT(!dstBounds.isEmpty());
+    if (dstBounds.isEmpty())
+      return;
 
-  // Lock all necessary bits
-  const LockImageBits<SrcTraits> srcBits(src, srcBounds);
-  LockImageBits<DstTraits> dstBits(dst, dstBounds);
-  auto src_it = srcBits.begin();
-#ifdef _DEBUG
-  auto src_end = srcBits.end();
-#endif
-  typename LockImageBits<DstTraits>::iterator dst_it, dst_end;
+    const int opacity = p.opacity;
 
-  // For each line to draw of the source image...
-  dstBounds.h = 1;
-  for (int y = 0; y < srcBounds.h; ++y) {
-    dst_it = dstBits.begin_area(dstBounds);
-    dst_end = dstBits.end_area(dstBounds);
+    // Iterators
+    auto src_it = p.src->readArea(srcBounds);
+    auto dst_it = p.dst->writeArea(dstBounds);
 
-    for (int x = 0; x < srcBounds.w; ++x) {
-      ASSERT(src_it >= srcBits.begin() && src_it < src_end);
-      ASSERT(dst_it >= dstBits.begin() && dst_it < dst_end);
-      *dst_it = blender(*dst_it, *src_it, opacity);
-      ++src_it;
-      ++dst_it;
+    ASSERT(srcBounds.w == dstBounds.w);
+    const int min_w = std::min(srcBounds.w, dstBounds.w);
+
+    // For each line to draw of the source image...
+    while (src_it.nextLine() && dst_it.nextLine()) {
+      const auto* src_p = src_it.addr<SrcTraits>();
+      auto* dst_p = dst_it.addr<DstTraits>();
+
+      for (int x = 0; x < min_w; ++x) {
+        p.src->assertInside(src_p);
+        p.dst->assertInside(dst_p);
+
+        *dst_p = blender(*dst_p, *src_p, opacity);
+        ++src_p;
+        ++dst_p;
+      }
     }
-
-    if (++dstBounds.y > bottom)
-      break;
   }
-}
+};
 
 template<class DstTraits, class SrcTraits>
-void composite_image_scale_up(Image* dst,
-                              const Image* src,
-                              const Palette* pal,
-                              const gfx::ClipF& areaF,
-                              const int opacity,
-                              const BlendMode blendMode,
-                              const double sx,
-                              const double sy,
-                              const bool newBlend,
-                              const tile_flags) // Ignored
-{
-  ASSERT(dst);
-  ASSERT(src);
-  ASSERT(DstTraits::pixel_format == dst->pixelFormat());
-  ASSERT(SrcTraits::pixel_format == src->pixelFormat());
+struct composite_image_scale_up {
+  static void call(const CompositeParams& p)
+  {
+    ASSERT(p.dst);
+    ASSERT(p.src);
+    ASSERT(DstTraits::pixel_format == p.dst->pixelFormat());
+    ASSERT(SrcTraits::pixel_format == p.src->pixelFormat());
 
-  gfx::Clip area(areaF);
-  if (!area.clip(dst->width(),
-                 dst->height(),
-                 int(sx * double(src->width())),
-                 int(sy * double(src->height()))))
-    return;
+    gfx::Clip area(p.areaF);
+    if (!area.clip(p.dst->width(),
+                   p.dst->height(),
+                   int(p.sx * double(p.src->width())),
+                   int(p.sy * double(p.src->height()))))
+      return;
 
-  BlenderHelper<DstTraits, SrcTraits> blender(dst, src, pal, blendMode, newBlend);
-  int px_x, px_y;
-  int px_w = int(sx);
-  int px_h = int(sy);
+    BlenderHelper<DstTraits, SrcTraits> blender(p.dst, p.src, p.pal, p.blendMode, p.newBlend);
+    int px_w = int(p.sx);
+    int px_h = int(p.sy);
 
-  // We've received crash reports about these values being 0 when it's
-  // called from Render::renderImage() when the projection is scaled
-  // to the cel bounds (this can happen only when a reference layer is
-  // scaled, but when a reference layer is visible we shouldn't be
-  // here, we should be using the composite_image_general(), see the
-  // "finegrain" var in Render::getImageComposition()).
-  ASSERT(px_w > 0);
-  ASSERT(px_h > 0);
-  if (px_w <= 0 || px_h <= 0)
-    return;
+    // We've received crash reports about these values being 0 when it's
+    // called from Render::renderImage() when the projection is scaled
+    // to the cel bounds (this can happen only when a reference layer is
+    // scaled, but when a reference layer is visible we shouldn't be
+    // here, we should be using the composite_image_general(), see the
+    // "finegrain" var in Render::getImageComposition()).
+    ASSERT(px_w > 0);
+    ASSERT(px_h > 0);
+    if (px_w <= 0 || px_h <= 0)
+      return;
 
-  int first_px_w = px_w - (area.src.x % px_w);
-  int first_px_h = px_h - (area.src.y % px_h);
+    int first_px_w = px_w - (area.src.x % px_w);
+    int first_px_h = px_h - (area.src.y % px_h);
 
-  gfx::Rect srcBounds = area.srcBounds();
-  srcBounds.w = (srcBounds.x + srcBounds.w) / px_w - srcBounds.x / px_w;
-  srcBounds.h = (srcBounds.y + srcBounds.h) / px_h - srcBounds.y / px_h;
-  srcBounds.x /= px_w;
-  srcBounds.y /= px_h;
-  if ((area.src.x + area.size.w) % px_w > 0)
-    ++srcBounds.w;
-  if ((area.src.y + area.size.h) % px_h > 0)
-    ++srcBounds.h;
-  if (srcBounds.isEmpty())
-    return;
+    gfx::Rect srcBounds = area.srcBounds();
+    srcBounds.w = srcBounds.x2() / px_w - srcBounds.x / px_w;
+    srcBounds.h = srcBounds.y2() / px_h - srcBounds.y / px_h;
+    srcBounds.x /= px_w;
+    srcBounds.y /= px_h;
+    if ((area.src.x + area.size.w) % px_w > 0)
+      ++srcBounds.w;
+    if ((area.src.y + area.size.h) % px_h > 0)
+      ++srcBounds.h;
+    if (srcBounds.isEmpty())
+      return;
 
-  gfx::Rect dstBounds = area.dstBounds();
-  int bottom = dstBounds.y2() - 1;
-  int line_h;
+    gfx::Rect dstBounds = area.dstBounds();
+    const int opacity = p.opacity;
 
-  // the scanline variable is used to blend src/dst pixels one time for each pixel
-  typedef std::vector<typename DstTraits::pixel_t> Scanline;
-  Scanline scanline(srcBounds.w);
-  typename Scanline::iterator scanline_it;
+    // The scanline variable is used to blend src/dst pixels one time for each pixel
+    using Scanline = std::vector<typename DstTraits::pixel_t>;
+    Scanline scanline(srcBounds.w);
+    typename Scanline::iterator scanline_it;
 #ifdef _DEBUG
-  typename Scanline::iterator scanline_end = scanline.end();
+    typename Scanline::iterator scanline_end = scanline.end();
 #endif
 
-  // Lock all necessary bits
-  const LockImageBits<SrcTraits> srcBits(src, srcBounds);
-  LockImageBits<DstTraits> dstBits(dst, dstBounds);
-  typename LockImageBits<SrcTraits>::const_iterator src_it = srcBits.begin();
-#ifdef _DEBUG
-  typename LockImageBits<SrcTraits>::const_iterator src_end = srcBits.end();
-#endif
-  typename LockImageBits<DstTraits>::iterator dst_it, dst_end;
+    // Iterators
+    auto src_it = p.src->readArea(srcBounds);
+    auto dst_it = p.dst->writeArea(dstBounds);
+    if (!dst_it.nextLine())
+      return;
 
-  // For each line to draw of the source image...
-  dstBounds.h = 1;
-  for (int y = 0; y < srcBounds.h; ++y) {
-    dst_it = dstBits.begin_area(dstBounds);
-    dst_end = dstBits.end_area(dstBounds);
+    // For each line to draw of the source image...
+    for (int y = 0; src_it.nextLine(); ++y) {
+      // Read 'src' and 'dst' and blend them, put the result in 'scanline'
+      auto* dst_p = dst_it.addr<DstTraits>();
+      auto* dst_end = dst_p + dstBounds.w;
+      {
+        const auto* src_p = src_it.addr<SrcTraits>();
 
-    // Read 'src' and 'dst' and blend them, put the result in `scanline'
-    scanline_it = scanline.begin();
-    for (int x = 0; x < srcBounds.w; ++x) {
-      ASSERT(src_it >= srcBits.begin() && src_it < src_end);
-      ASSERT(dst_it >= dstBits.begin() && dst_it < dst_end);
-      ASSERT(scanline_it >= scanline.begin() && scanline_it < scanline_end);
+        scanline_it = scanline.begin();
+        for (int x = 0; x < srcBounds.w && dst_p < dst_end; ++x) {
+          auto* dst_px_end = std::min(dst_p + (x == 0 ? first_px_w : px_w), dst_end);
+          p.src->assertInside(src_p);
+          p.dst->assertInside(dst_px_end - 1);
+          ASSERT(scanline_it < scanline_end);
 
-      *scanline_it = blender(*dst_it, *src_it, opacity);
-      ++src_it;
-
-      int delta;
-      if (x == 0)
-        delta = first_px_w;
-      else
-        delta = px_w;
-
-      while (dst_it != dst_end && delta-- > 0)
-        ++dst_it;
-
-      ++scanline_it;
-    }
-
-    // Get the 'height' of the line to be painted in 'dst'
-    if ((y == 0) && (first_px_h > 0))
-      line_h = first_px_h;
-    else
-      line_h = px_h;
-
-    // Draw the line in 'dst'
-    for (px_y = 0; px_y < line_h; ++px_y) {
-      dst_it = dstBits.begin_area(dstBounds);
-      dst_end = dstBits.end_area(dstBounds);
-      scanline_it = scanline.begin();
-
-      int x = 0;
-
-      // first pixel
-      for (px_x = 0; px_x < first_px_w; ++px_x) {
-        ASSERT(scanline_it != scanline_end);
-        ASSERT(dst_it != dst_end);
-
-        *dst_it = *scanline_it;
-
-        ++dst_it;
-        if (dst_it == dst_end)
-          goto done_with_line;
+          *scanline_it = blender(*dst_p, *src_p, opacity);
+          dst_p = dst_px_end;
+          ++src_p;
+          ++scanline_it;
+        }
       }
 
-      ++scanline_it;
-      ++x;
+      // Draw the merged 'scanline' on 'dst', 'row_h' times
+      int row_h = (y == 0 ? first_px_h : px_h);
+      for (int px_y = 0; px_y < row_h; ++px_y) {
+        dst_p = dst_it.addr<DstTraits>();
+        dst_end = dst_p + dstBounds.w;
+        scanline_it = scanline.begin();
 
-      // the rest of the line
-      for (; x < srcBounds.w; ++x) {
-        for (px_x = 0; px_x < px_w; ++px_x) {
-          ASSERT(dst_it != dst_end);
+        // First pixel
+        int x = 0;
+        ASSERT(first_px_w > 0);
+        {
+          auto* dst_px_end = std::min(dst_p + first_px_w, dst_end);
+          p.dst->assertInside(dst_p);
+          p.dst->assertInside(dst_px_end - 1);
+          ASSERT(scanline_it < scanline_end);
 
-          *dst_it = *scanline_it;
-
-          ++dst_it;
-          if (dst_it == dst_end)
-            goto done_with_line;
+          std::fill(dst_p, dst_px_end, *scanline_it);
+          dst_p = dst_px_end;
+          ++scanline_it;
+          ++x;
         }
 
-        ++scanline_it;
+        // Other pixels
+        for (; x < srcBounds.w; ++x) {
+          auto* dst_px_end = std::min(dst_p + px_w, dst_end);
+          p.dst->assertInside(dst_p);
+          p.dst->assertInside(dst_px_end - 1);
+          ASSERT(scanline_it < scanline_end);
+
+          std::fill(dst_p, dst_px_end, *scanline_it);
+          dst_p = dst_px_end;
+          ++scanline_it;
+        }
+
+        if (!dst_it.nextLine())
+          return;
+      }
+    }
+  }
+};
+
+template<class DstTraits, class SrcTraits>
+struct composite_image_scale_down {
+  static void call(const CompositeParams& p)
+  {
+    ASSERT(p.dst);
+    ASSERT(p.src);
+    ASSERT(DstTraits::pixel_format == p.dst->pixelFormat());
+    ASSERT(SrcTraits::pixel_format == p.src->pixelFormat());
+
+    gfx::Clip area(p.areaF);
+    if (!area.clip(p.dst->width(),
+                   p.dst->height(),
+                   int(p.sx * double(p.src->width())),
+                   int(p.sy * double(p.src->height()))))
+      return;
+
+    BlenderHelper<DstTraits, SrcTraits> blender(p.dst, p.src, p.pal, p.blendMode, p.newBlend);
+    int step_w = int(std::round(1.0 / p.sx));
+    int step_h = int(std::round(1.0 / p.sy));
+    if (step_w < 1 || step_h < 1)
+      return;
+
+    gfx::Rect srcBounds = area.srcBounds();
+    srcBounds.w = srcBounds.x2() * step_w - srcBounds.x * step_w;
+    srcBounds.h = srcBounds.y2() * step_h - srcBounds.y * step_h;
+    srcBounds.x *= step_w;
+    srcBounds.y *= step_h;
+    if (srcBounds.isEmpty())
+      return;
+
+    gfx::Rect dstBounds = area.dstBounds();
+    const int opacity = p.opacity;
+
+    // Iterators
+    auto src_it = p.src->readArea(srcBounds);
+    auto dst_it = p.dst->writeArea(dstBounds);
+    if (!src_it.nextLine())
+      return;
+
+    // For each line to draw of the source image...
+    for (int y = 0; y < dstBounds.h && dst_it.nextLine(); ++y) {
+      const auto* src_p = src_it.addr<SrcTraits>();
+      auto* dst_p = dst_it.addr<DstTraits>();
+
+      for (int x = 0; x < dstBounds.w; ++x) {
+        p.src->assertInside(src_p);
+        p.dst->assertInside(dst_p);
+
+        *dst_p = blender(*dst_p, *src_p, opacity);
+
+        src_p += step_w; // Skip columns
+        ++dst_p;
       }
 
-    done_with_line:;
-      if (++dstBounds.y > bottom)
-        goto done_with_blit;
+      // Skip rows
+      if (!src_it.nextLine(step_h))
+        break;
     }
   }
-
-done_with_blit:;
-}
+};
 
 template<class DstTraits, class SrcTraits>
-void composite_image_scale_down(Image* dst,
-                                const Image* src,
-                                const Palette* pal,
-                                const gfx::ClipF& areaF,
-                                const int opacity,
-                                const BlendMode blendMode,
-                                const double sx,
-                                const double sy,
-                                const bool newBlend,
-                                const tile_flags) // Ignored
-{
-  ASSERT(dst);
-  ASSERT(src);
-  ASSERT(DstTraits::pixel_format == dst->pixelFormat());
-  ASSERT(SrcTraits::pixel_format == src->pixelFormat());
+struct composite_image_general {
+  static void call(const CompositeParams& p)
+  {
+    ASSERT(p.dst);
+    ASSERT(p.src);
+    ASSERT(DstTraits::pixel_format == p.dst->pixelFormat());
+    ASSERT(SrcTraits::pixel_format == p.src->pixelFormat());
 
-  gfx::Clip area(areaF);
-  if (!area.clip(dst->width(),
-                 dst->height(),
-                 int(sx * double(src->width())),
-                 int(sy * double(src->height()))))
-    return;
+    gfx::ClipF area(p.areaF);
+    if (!area.clip(p.dst->width(), p.dst->height(), p.sx * p.src->width(), p.sy * p.src->height()))
+      return;
 
-  BlenderHelper<DstTraits, SrcTraits> blender(dst, src, pal, blendMode, newBlend);
-  int step_w = int(std::round(1.0 / sx));
-  int step_h = int(std::round(1.0 / sy));
-  if (step_w < 1 || step_h < 1)
-    return;
+    BlenderHelper<DstTraits, SrcTraits> blender(p.dst, p.src, p.pal, p.blendMode, p.newBlend);
 
-  gfx::Rect srcBounds = area.srcBounds();
-  srcBounds.w = (srcBounds.x + srcBounds.w) * step_w - srcBounds.x * step_w;
-  srcBounds.h = (srcBounds.y + srcBounds.h) * step_h - srcBounds.y * step_h;
-  srcBounds.x *= step_w;
-  srcBounds.y *= step_h;
-  if (srcBounds.isEmpty())
-    return;
+    gfx::Rect dstBounds(area.dstBounds().x,
+                        area.dstBounds().y,
+                        int(std::ceil(area.dstBounds().w)),
+                        int(std::ceil(area.dstBounds().h)));
+    gfx::RectF srcBounds = area.srcBounds();
+    const int opacity = p.opacity;
 
-  gfx::Rect dstBounds = area.dstBounds();
+    dstBounds &= p.dst->bounds();
 
-  // Lock all necessary bits
-  const LockImageBits<SrcTraits> srcBits(src, srcBounds);
-  LockImageBits<DstTraits> dstBits(dst, dstBounds);
-  auto src_it = srcBits.begin();
-  auto dst_it = dstBits.begin();
-#ifdef _DEBUG
-  auto src_end = srcBits.end();
-  auto dst_end = dstBits.end();
+    int dstY = dstBounds.y;
+    double srcXStart = srcBounds.x / p.sx;
+    double srcXDelta = 1.0 / p.sx;
+    int srcWidth = p.src->width();
+
+    for (int y = 0; y < dstBounds.h; ++y, ++dstY) {
+      int srcY = int((srcBounds.y + double(y)) / p.sy);
+      double srcX = srcXStart;
+      int oldSrcX;
+
+      // Out of bounds
+      if (srcY >= p.src->height())
+        break;
+
+      ASSERT(srcY >= 0 && srcY < p.src->height());
+      ASSERT(dstY >= 0 && dstY < p.dst->height());
+
+      auto dstPtr = get_pixel_address_fast<DstTraits>(p.dst, dstBounds.x, dstY);
+      auto srcPtr = get_pixel_address_fast<SrcTraits>(p.src, int(srcX), srcY);
+
+#if _DEBUG
+      int dstX = dstBounds.x;
 #endif
 
-  // Adjust to src_it for each line
-  int adjust_per_line = (dstBounds.w * step_w) * (step_h - 1);
+      for (int x = 0; x < dstBounds.w; ++dstPtr) {
+        ASSERT(dstX >= 0 && dstX < p.dst->width());
+        ASSERT(srcX >= 0 && srcX < p.src->width());
 
-  // For each line to draw of the source image...
-  for (int y = 0; y < dstBounds.h; ++y) {
-    for (int x = 0; x < dstBounds.w; ++x) {
-      ASSERT(src_it >= srcBits.begin() && src_it < src_end);
-      ASSERT(dst_it >= dstBits.begin() && dst_it < dst_end);
+        *dstPtr = blender(*dstPtr, *srcPtr, opacity);
+        ++x;
 
-      *dst_it = blender(*dst_it, *src_it, opacity);
+        oldSrcX = int(srcX);
+        srcX = srcXStart + srcXDelta * x;
+        // Out of bounds
+        if (srcX >= srcWidth)
+          break;
+        srcPtr += int(srcX - oldSrcX);
 
-      // Skip columns
-      src_it += step_w;
-      ++dst_it;
+#if _DEBUG
+        ++dstX;
+#endif
+      }
     }
-
-    // Skip rows
-    src_it += adjust_per_line;
   }
-}
+};
 
 template<class DstTraits, class SrcTraits>
-void composite_image_general(Image* dst,
-                             const Image* src,
-                             const Palette* pal,
-                             const gfx::ClipF& areaF,
-                             const int opacity,
-                             const BlendMode blendMode,
-                             const double sx,
-                             const double sy,
-                             const bool newBlend,
-                             const tile_flags) // Ignored
+struct composite_image_general_with_tile_flags {
+  static void call(const CompositeParams& p)
+  {
+    ASSERT(p.dst);
+    ASSERT(p.src);
+    ASSERT(DstTraits::pixel_format == p.dst->pixelFormat());
+    ASSERT(SrcTraits::pixel_format == p.src->pixelFormat());
+
+    gfx::ClipF area(p.areaF);
+    if (!area.clip(p.dst->width(), p.dst->height(), p.sx * p.src->width(), p.sy * p.src->height()))
+      return;
+
+    BlenderHelper<DstTraits, SrcTraits> blender(p.dst, p.src, p.pal, p.blendMode, p.newBlend);
+
+    gfx::Rect dstBounds(area.dstBounds().x,
+                        area.dstBounds().y,
+                        int(std::ceil(area.dstBounds().w)),
+                        int(std::ceil(area.dstBounds().h)));
+    gfx::Rect srcBounds = area.srcBounds();
+    const gfx::Rect srcImgBounds = p.src->bounds();
+    const gfx::Size srcMinSize = p.src->size();
+    const int opacity = p.opacity;
+
+    dstBounds &= p.dst->bounds();
+
+    if (p.tileFlags & tile_f_xflip) {
+      srcBounds.x = p.sx * srcImgBounds.x2() - srcBounds.x2();
+    }
+    if (p.tileFlags & tile_f_yflip) {
+      srcBounds.y = p.sy * srcImgBounds.y2() - srcBounds.y2();
+    }
+
+    int dstY = dstBounds.y;
+
+    for (int y = 0; y < dstBounds.h; ++y, ++dstY) {
+      ASSERT(dstY >= 0 && dstY < p.dst->height());
+
+      auto dstPtr = get_pixel_address_fast<DstTraits>(p.dst, dstBounds.x, dstY);
+
+#if _DEBUG
+      int dstX = dstBounds.x;
+#endif
+
+      for (int x = 0; x < dstBounds.w; ++x, ++dstPtr) {
+        int srcX;
+        int srcY;
+        if (p.tileFlags & tile_f_xflip) {
+          srcX = (srcBounds.x2() - 1 - x) / p.sx;
+        }
+        else {
+          srcX = (srcBounds.x + x) / p.sx;
+        }
+        if (p.tileFlags & tile_f_yflip) {
+          srcY = (srcBounds.y2() - 1 - y) / p.sy;
+        }
+        else {
+          srcY = (srcBounds.y + y) / p.sy;
+        }
+
+        gfx::Size minSize;
+        if (p.tileFlags & tile_f_dflip) {
+          std::swap(srcX, srcY);
+          minSize.w = minSize.h = std::min(srcMinSize.w, srcMinSize.h);
+        }
+        else {
+          minSize = srcMinSize;
+        }
+
+        ASSERT(dstX >= 0 && dstX < p.dst->width());
+
+        if (srcX >= 0 && srcX < minSize.w && srcY >= 0 && srcY < minSize.h) {
+          auto srcPtr = get_pixel_address_fast<SrcTraits>(p.src, srcX, srcY);
+          *dstPtr = blender(*dstPtr, *srcPtr, opacity);
+        }
+        else {
+          *dstPtr = 0;
+        }
+#if _DEBUG
+        ++dstX;
+#endif
+      }
+    }
+  }
+};
+
+template<template<class, class> class Func>
+CompositeImageFunc composite_formats(const PixelFormat dstFormat, const PixelFormat srcFormat)
 {
-  ASSERT(dst);
-  ASSERT(src);
-  ASSERT(DstTraits::pixel_format == dst->pixelFormat());
-  ASSERT(SrcTraits::pixel_format == src->pixelFormat());
-
-  gfx::ClipF area(areaF);
-  if (!area.clip(dst->width(), dst->height(), sx * src->width(), sy * src->height()))
-    return;
-
-  BlenderHelper<DstTraits, SrcTraits> blender(dst, src, pal, blendMode, newBlend);
-
-  gfx::Rect dstBounds(area.dstBounds().x,
-                      area.dstBounds().y,
-                      int(std::ceil(area.dstBounds().w)),
-                      int(std::ceil(area.dstBounds().h)));
-  gfx::RectF srcBounds = area.srcBounds();
-
-  dstBounds &= dst->bounds();
-
-  int dstY = dstBounds.y;
-  double srcXStart = srcBounds.x / sx;
-  double srcXDelta = 1.0 / sx;
-  int srcWidth = src->width();
-  for (int y = 0; y < dstBounds.h; ++y, ++dstY) {
-    int srcY = int((srcBounds.y + double(y)) / sy);
-    double srcX = srcXStart;
-    int oldSrcX;
-
-    // Out of bounds
-    if (srcY >= src->height())
+  switch (srcFormat) {
+    case IMAGE_RGB:
+      switch (dstFormat) {
+        case IMAGE_RGB:       return Func<RgbTraits, RgbTraits>::call;
+        case IMAGE_GRAYSCALE: return Func<GrayscaleTraits, RgbTraits>::call;
+        case IMAGE_INDEXED:   return Func<IndexedTraits, RgbTraits>::call;
+      }
       break;
 
-    ASSERT(srcY >= 0 && srcY < src->height());
-    ASSERT(dstY >= 0 && dstY < dst->height());
-
-    auto dstPtr = get_pixel_address_fast<DstTraits>(dst, dstBounds.x, dstY);
-    auto srcPtr = get_pixel_address_fast<SrcTraits>(src, int(srcX), srcY);
-
-#if _DEBUG
-    int dstX = dstBounds.x;
-#endif
-
-    for (int x = 0; x < dstBounds.w; ++dstPtr) {
-      ASSERT(dstX >= 0 && dstX < dst->width());
-      ASSERT(srcX >= 0 && srcX < src->width());
-
-      *dstPtr = blender(*dstPtr, *srcPtr, opacity);
-      ++x;
-
-      oldSrcX = int(srcX);
-      srcX = srcXStart + srcXDelta * x;
-      // Out of bounds
-      if (srcX >= srcWidth)
-        break;
-      srcPtr += int(srcX - oldSrcX);
-
-#if _DEBUG
-      ++dstX;
-#endif
-    }
-  }
-}
-
-template<class DstTraits, class SrcTraits>
-void composite_image_general_with_tile_flags(Image* dst,
-                                             const Image* src,
-                                             const Palette* pal,
-                                             const gfx::ClipF& areaF,
-                                             const int opacity,
-                                             const BlendMode blendMode,
-                                             const double sx,
-                                             const double sy,
-                                             const bool newBlend,
-                                             const tile_flags tileFlags)
-{
-  ASSERT(dst);
-  ASSERT(src);
-  ASSERT(DstTraits::pixel_format == dst->pixelFormat());
-  ASSERT(SrcTraits::pixel_format == src->pixelFormat());
-
-  gfx::ClipF area(areaF);
-  if (!area.clip(dst->width(), dst->height(), sx * src->width(), sy * src->height()))
-    return;
-
-  BlenderHelper<DstTraits, SrcTraits> blender(dst, src, pal, blendMode, newBlend);
-
-  gfx::Rect dstBounds(area.dstBounds().x,
-                      area.dstBounds().y,
-                      int(std::ceil(area.dstBounds().w)),
-                      int(std::ceil(area.dstBounds().h)));
-  gfx::Rect srcBounds = area.srcBounds();
-  const gfx::Rect srcImgBounds = src->bounds();
-  const gfx::Size srcMinSize = src->size();
-
-  dstBounds &= dst->bounds();
-
-  if (tileFlags & tile_f_xflip) {
-    srcBounds.x = sx * srcImgBounds.x2() - srcBounds.x2();
-  }
-  if (tileFlags & tile_f_yflip) {
-    srcBounds.y = sy * srcImgBounds.y2() - srcBounds.y2();
-  }
-
-  int dstY = dstBounds.y;
-
-  for (int y = 0; y < dstBounds.h; ++y, ++dstY) {
-    ASSERT(dstY >= 0 && dstY < dst->height());
-
-    auto dstPtr = get_pixel_address_fast<DstTraits>(dst, dstBounds.x, dstY);
-
-#if _DEBUG
-    int dstX = dstBounds.x;
-#endif
-
-    for (int x = 0; x < dstBounds.w; ++x, ++dstPtr) {
-      int srcX;
-      int srcY;
-      if (tileFlags & tile_f_xflip) {
-        srcX = (srcBounds.x2() - 1 - x) / sx;
+    case IMAGE_GRAYSCALE:
+      switch (dstFormat) {
+        case IMAGE_RGB:       return Func<RgbTraits, GrayscaleTraits>::call;
+        case IMAGE_GRAYSCALE: return Func<GrayscaleTraits, GrayscaleTraits>::call;
+        case IMAGE_INDEXED:   return Func<IndexedTraits, GrayscaleTraits>::call;
       }
-      else {
-        srcX = (srcBounds.x + x) / sx;
-      }
-      if (tileFlags & tile_f_yflip) {
-        srcY = (srcBounds.y2() - 1 - y) / sy;
-      }
-      else {
-        srcY = (srcBounds.y + y) / sy;
-      }
+      break;
 
-      gfx::Size minSize;
-      if (tileFlags & tile_f_dflip) {
-        std::swap(srcX, srcY);
-        minSize.w = minSize.h = std::min(srcMinSize.w, srcMinSize.h);
+    case IMAGE_INDEXED:
+      switch (dstFormat) {
+        case IMAGE_RGB:       return Func<RgbTraits, IndexedTraits>::call;
+        case IMAGE_GRAYSCALE: return Func<GrayscaleTraits, IndexedTraits>::call;
+        case IMAGE_INDEXED:   return Func<IndexedTraits, IndexedTraits>::call;
       }
-      else {
-        minSize = srcMinSize;
-      }
+      break;
 
-      ASSERT(dstX >= 0 && dstX < dst->width());
-
-      if (srcX >= 0 && srcX < minSize.w && srcY >= 0 && srcY < minSize.h) {
-        auto srcPtr = get_pixel_address_fast<SrcTraits>(src, srcX, srcY);
-        *dstPtr = blender(*dstPtr, *srcPtr, opacity);
+    case IMAGE_TILEMAP:
+      switch (dstFormat) {
+        case IMAGE_TILEMAP: return Func<TilemapTraits, TilemapTraits>::call;
       }
-      else {
-        *dstPtr = 0;
-      }
-#if _DEBUG
-      ++dstX;
-#endif
-    }
+      break;
   }
-}
-
-template<class DstTraits, class SrcTraits>
-CompositeImageFunc get_fastest_composition_path(const Projection& proj,
-                                                const bool finegrain,
-                                                const tile_flags tileFlags)
-{
-  if (tileFlags) {
-    return composite_image_general_with_tile_flags<DstTraits, SrcTraits>;
-  }
-  else if (finegrain || !proj.zoom().isSimpleZoomLevel()) {
-    return composite_image_general<DstTraits, SrcTraits>;
-  }
-  else if (proj.scaleX() == 1.0 && proj.scaleY() == 1.0) {
-    return composite_image_without_scale<DstTraits, SrcTraits>;
-  }
-  else if (proj.isSimpleScaleUpCase()) {
-    return composite_image_scale_up<DstTraits, SrcTraits>;
-  }
-  else if (proj.isSimpleScaleDownCase()) {
-    return composite_image_scale_down<DstTraits, SrcTraits>;
-  }
-  else {
-    // Slower composite function for remaining cases not considered
-    return composite_image_general<DstTraits, SrcTraits>;
-  }
+  ASSERT(false && "Invalid pixel formats");
+  return nullptr;
 }
 
 bool has_visible_reference_layers(const LayerGroup* group)
@@ -960,17 +914,20 @@ void Render::renderImage(Image* dst_image,
   if (!compositeImage)
     return;
 
-  compositeImage(
-    dst_image,
-    src_image,
-    pal,
-    gfx::ClipF(x, y, 0, 0, m_proj.applyX(src_image->width()), m_proj.applyY(src_image->height())),
-    opacity,
-    blendMode,
-    m_proj.scaleX(),
-    m_proj.scaleY(),
-    m_newBlendMethod,
-    tileFlags);
+  CompositeParams params;
+  params.dst = dst_image;
+  params.src = src_image;
+  params.pal = pal;
+  params.areaF =
+    gfx::ClipF(x, y, 0, 0, m_proj.applyX(src_image->width()), m_proj.applyY(src_image->height()));
+  params.opacity = opacity;
+  params.blendMode = blendMode;
+  params.sx = m_proj.scaleX();
+  params.sy = m_proj.scaleY();
+  params.newBlend = m_newBlendMethod;
+  params.tileFlags = tileFlags;
+
+  compositeImage(params);
 }
 
 void Render::renderPlan(RenderPlan& plan,
@@ -1394,21 +1351,24 @@ void Render::renderImage(Image* dst_image,
       getImageComposition(dst_image->pixelFormat(), cel_image->pixelFormat(), nullptr, tileFlags);
   }
 
-  compositeImage(dst_image,
-                 cel_image,
-                 pal,
-                 gfx::ClipF(double(area.dst.x) + srcBounds.x - double(area.src.x),
+  CompositeParams params;
+  params.dst = dst_image;
+  params.src = cel_image;
+  params.pal = pal;
+  params.areaF = gfx::ClipF(double(area.dst.x) + srcBounds.x - double(area.src.x),
                             double(area.dst.y) + srcBounds.y - double(area.src.y),
                             srcBounds.x - scaledBounds.x,
                             srcBounds.y - scaledBounds.y,
                             srcBounds.w,
-                            srcBounds.h),
-                 opacity,
-                 blendMode,
-                 m_proj.scaleX() * celBounds.w / double(cel_image->width()),
-                 m_proj.scaleY() * celBounds.h / double(cel_image->height()),
-                 m_newBlendMethod,
-                 tileFlags);
+                            srcBounds.h);
+  params.opacity = opacity;
+  params.blendMode = blendMode;
+  params.sx = m_proj.scaleX() * celBounds.w / double(cel_image->width());
+  params.sy = m_proj.scaleY() * celBounds.h / double(cel_image->height());
+  params.newBlend = m_newBlendMethod;
+  params.tileFlags = tileFlags;
+
+  compositeImage(params);
 }
 
 CompositeImageFunc Render::getImageComposition(const PixelFormat dstFormat,
@@ -1427,69 +1387,23 @@ CompositeImageFunc Render::getImageComposition(const PixelFormat dstFormat,
     (layer && layer->isGroup() &&
      has_visible_reference_layers(static_cast<const LayerGroup*>(layer)));
 
-  switch (srcFormat) {
-    case IMAGE_RGB:
-      switch (dstFormat) {
-        case IMAGE_RGB:
-          return get_fastest_composition_path<RgbTraits, RgbTraits>(m_proj, finegrain, tileFlags);
-        case IMAGE_GRAYSCALE:
-          return get_fastest_composition_path<GrayscaleTraits, RgbTraits>(m_proj,
-                                                                          finegrain,
-                                                                          tileFlags);
-        case IMAGE_INDEXED:
-          return get_fastest_composition_path<IndexedTraits, RgbTraits>(m_proj,
-                                                                        finegrain,
-                                                                        tileFlags);
-      }
-      break;
+  if (tileFlags)
+    return composite_formats<composite_image_general_with_tile_flags>(dstFormat, srcFormat);
 
-    case IMAGE_GRAYSCALE:
-      switch (dstFormat) {
-        case IMAGE_RGB:
-          return get_fastest_composition_path<RgbTraits, GrayscaleTraits>(m_proj,
-                                                                          finegrain,
-                                                                          tileFlags);
-        case IMAGE_GRAYSCALE:
-          return get_fastest_composition_path<GrayscaleTraits, GrayscaleTraits>(m_proj,
-                                                                                finegrain,
-                                                                                tileFlags);
-        case IMAGE_INDEXED:
-          return get_fastest_composition_path<IndexedTraits, GrayscaleTraits>(m_proj,
-                                                                              finegrain,
-                                                                              tileFlags);
-      }
-      break;
+  if (finegrain || !m_proj.zoom().isSimpleZoomLevel())
+    return composite_formats<composite_image_general>(dstFormat, srcFormat);
 
-    case IMAGE_INDEXED:
-      switch (dstFormat) {
-        case IMAGE_RGB:
-          return get_fastest_composition_path<RgbTraits, IndexedTraits>(m_proj,
-                                                                        finegrain,
-                                                                        tileFlags);
-        case IMAGE_GRAYSCALE:
-          return get_fastest_composition_path<GrayscaleTraits, IndexedTraits>(m_proj,
-                                                                              finegrain,
-                                                                              tileFlags);
-        case IMAGE_INDEXED:
-          return get_fastest_composition_path<IndexedTraits, IndexedTraits>(m_proj,
-                                                                            finegrain,
-                                                                            tileFlags);
-      }
-      break;
+  if (m_proj.scaleX() == 1.0 && m_proj.scaleY() == 1.0)
+    return composite_formats<composite_image_without_scale>(dstFormat, srcFormat);
 
-    case IMAGE_TILEMAP:
-      switch (dstFormat) {
-        case IMAGE_TILEMAP:
-          return get_fastest_composition_path<TilemapTraits, TilemapTraits>(m_proj,
-                                                                            finegrain,
-                                                                            tileFlags);
-      }
-      break;
-  }
+  if (m_proj.isSimpleScaleUpCase())
+    return composite_formats<composite_image_scale_up>(dstFormat, srcFormat);
 
-  TRACE_RENDER_CEL("Render::getImageComposition srcFormat", srcFormat, "dstFormat", dstFormat);
-  ASSERT(false && "Invalid pixel formats");
-  return nullptr;
+  if (m_proj.isSimpleScaleDownCase())
+    return composite_formats<composite_image_scale_down>(dstFormat, srcFormat);
+
+  // Slower composite function for remaining cases not considered
+  return composite_formats<composite_image_general>(dstFormat, srcFormat);
 }
 
 bool Render::checkIfWeShouldUsePreview(const Cel* cel) const

@@ -53,16 +53,20 @@ struct ExtraCelInfo {
 // Using CelData* as key allows linked cels to find their entry
 using ExtraCelInfoMap = std::map<const CelData*, ExtraCelInfo>;
 
-typedef void (*CompositeImageFunc)(Image* dst,
-                                   const Image* src,
-                                   const Palette* pal,
-                                   const gfx::ClipF& area,
-                                   const int opacity,
-                                   const BlendMode blendMode,
-                                   const double sx,
-                                   const double sy,
-                                   const bool newBlend,
-                                   const tile_flags tileFlags);
+struct CompositeParams {
+  Image* dst = nullptr;
+  const Image* src = nullptr;
+  const Palette* pal = nullptr;
+  gfx::ClipF areaF;
+  int opacity = 255;
+  BlendMode blendMode = BlendMode::NORMAL;
+  double sx = 1.0;
+  double sy = 1.0;
+  bool newBlend = true;
+  tile_flags tileFlags = notile;
+};
+
+using CompositeImageFunc = void (*)(const CompositeParams& p);
 
 class Render {
   enum Flags {

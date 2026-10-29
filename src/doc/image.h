@@ -131,6 +131,13 @@ public:
     return WriteIterator(this, bounds, start);
   }
 
+  template<typename T>
+  void assertInside([[maybe_unused]] const T* ptr) const
+  {
+    ASSERT((uint8_t*)ptr >= getPixelAddress(0, 0));
+    ASSERT((uint8_t*)ptr <= getPixelAddress(width() - 1, height() - 1));
+  }
+
 protected:
   Image(const ImageSpec& spec);
 

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2024 Igara Studio S.A.
+// Copyright (c) 2024-present Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,6 +8,7 @@
 #define DOC_IMAGE_ITERATOR2_H_INCLUDED
 #pragma once
 
+#include "base/debug.h"
 #include "base/ints.h"
 #include "gfx/fwd.h"
 
@@ -30,15 +31,26 @@ public:
   const uint32_t* addr32() const { return (uint32_t*)m_addr; }
 
   template<typename ImageTraits>
-  typename ImageTraits::const_address_t addr() const
+  auto addr() const
   {
     return (typename ImageTraits::const_address_t)m_addr;
   }
 
+  [[nodiscard]]
   bool nextLine()
   {
+    ASSERT(m_rows >= 0);
     m_addr += m_nextRow;
-    return (m_rows-- > 0);
+    return (--m_rows >= 0);
+  }
+
+  [[nodiscard]]
+  bool nextLine(int rows)
+  {
+    ASSERT(m_rows >= 0);
+    m_addr += m_nextRow * rows;
+    m_rows -= rows;
+    return m_rows >= 0;
   }
 
 protected:
@@ -63,7 +75,7 @@ public:
   uint32_t* addr32() { return (uint32_t*)m_addr; }
 
   template<typename ImageTraits>
-  uint32_t* addr()
+  auto addr()
   {
     return (typename ImageTraits::address_t)m_addr;
   }

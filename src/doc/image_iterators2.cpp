@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2024 Igara Studio S.A.
+// Copyright (c) 2024-present Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -15,6 +15,8 @@ namespace doc {
 ReadIterator::ReadIterator(const Image* image, const gfx::Rect& bounds, const IteratorStart start)
   : m_rows(bounds.h)
 {
+  ASSERT(image->bounds().contains(bounds));
+
   switch (start) {
     case IteratorStart::TopLeft:
       m_addr = image->getPixelAddress(bounds.x, bounds.y);
