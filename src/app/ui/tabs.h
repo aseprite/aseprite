@@ -174,6 +174,7 @@ public:
   void selectTab(TabView* tabView);
   void selectNextTab();
   void selectPreviousTab();
+  void selectTabIndex(int index);
   TabView* getSelectedTab();
 
   void setDockedStyle();
