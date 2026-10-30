@@ -30,6 +30,7 @@ void CommonRenderer::renderCanvas(CanvasView* view,
   const auto& pref = Preferences::instance(); // TODO move these options to Renderer
   const auto& renderProperties = properties();
   render::Projection proj = view->cvProjection();
+  const bool downsampling = (proj.scaleX() < 1.0);
 
   // Prepare auxiliary structures for renderSpriteArea
   prepareSpritePalette(sprite, frame);
@@ -56,7 +57,7 @@ void CommonRenderer::renderCanvas(CanvasView* view,
       os::Sampling sampling;
       p.srcEdges(os::Paint::SrcEdges::Fast); // Enable mipmaps if possible
 
-      if (proj.scaleX() < 1.0) {
+      if (downsampling) {
         switch (pref.editor.downsampling()) {
           case gen::Downsampling::NEAREST:
             sampling = os::Sampling(os::Sampling::Filter::Nearest);
