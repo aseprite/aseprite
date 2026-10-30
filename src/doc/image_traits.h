@@ -11,7 +11,6 @@
 
 #include "base/memory.h"
 #include "doc/aligned_memory.h"
-#include "doc/blend_funcs.h"
 #include "doc/color.h"
 #include "doc/color_mode.h"
 #include "doc/pixel_format.h"
@@ -43,8 +42,6 @@ struct RgbTraits {
   {
     return doc_align_size(width_bytes(pixels_per_row));
   }
-
-  static inline BlendFunc get_blender(BlendMode blend_mode) { return get_rgba_blender(blend_mode); }
 
   static inline bool same_color(const pixel_t a, const pixel_t b)
   {
@@ -85,11 +82,6 @@ struct GrayscaleTraits {
     return doc_align_size(width_bytes(pixels_per_row));
   }
 
-  static inline BlendFunc get_blender(BlendMode blend_mode)
-  {
-    return get_graya_blender(blend_mode);
-  }
-
   static inline bool same_color(const pixel_t a, const pixel_t b)
   {
     if (graya_geta(a) == 0) {
@@ -127,11 +119,6 @@ struct IndexedTraits {
   static inline int rowstride_bytes(int pixels_per_row)
   {
     return doc_align_size(width_bytes(pixels_per_row));
-  }
-
-  static inline BlendFunc get_blender(BlendMode blend_mode)
-  {
-    return get_indexed_blender(blend_mode);
   }
 
   static inline bool same_color(const pixel_t a, const pixel_t b) { return a == b; }
@@ -196,11 +183,6 @@ struct BitmapTraits {
     return doc_align_size(width_bytes(pixels_per_row));
   }
 
-  static inline BlendFunc get_blender(BlendMode blend_mode)
-  {
-    return get_indexed_blender(blend_mode);
-  }
-
   static inline bool same_color(const pixel_t a, const pixel_t b)
   {
     return (a == 0 && b == 0) || (a != 0 && b != 0);
@@ -233,11 +215,6 @@ struct TilemapTraits {
   static inline int rowstride_bytes(int pixels_per_row)
   {
     return doc_align_size(width_bytes(pixels_per_row));
-  }
-
-  static inline BlendFunc get_blender(BlendMode blend_mode)
-  {
-    return get_indexed_blender(blend_mode);
   }
 
   static inline bool same_color(const pixel_t a, const pixel_t b) { return a == b; }

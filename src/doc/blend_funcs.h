@@ -11,6 +11,7 @@
 
 #include "doc/blend_mode.h"
 #include "doc/color.h"
+#include "doc/color_mode.h"
 
 namespace doc {
 
@@ -27,6 +28,18 @@ color_t graya_blender_normal(color_t backdrop, color_t src, int opacity = 255);
 BlendFunc get_rgba_blender(BlendMode blendmode);
 BlendFunc get_graya_blender(BlendMode blendmode);
 BlendFunc get_indexed_blender(BlendMode blendmode);
+
+template<typename ImageTraits>
+BlendFunc get_blender(BlendMode mode)
+{
+  if constexpr (ImageTraits::color_mode == ColorMode::RGB)
+    return get_rgba_blender(mode);
+  if constexpr (ImageTraits::color_mode == ColorMode::GRAYSCALE)
+    return get_graya_blender(mode);
+  if constexpr (ImageTraits::color_mode == ColorMode::INDEXED)
+    return get_indexed_blender(mode);
+  return nullptr;
+}
 
 } // namespace doc
 

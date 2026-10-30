@@ -34,7 +34,7 @@ public:
   BlenderHelper(Image* dst, const Image* src, const Palette* pal, const BlendMode blendMode)
   {
     m_blendMode = blendMode;
-    m_blendFunc = SrcTraits::get_blender(blendMode);
+    m_blendFunc = get_blender<SrcTraits>(blendMode);
     m_maskColor = src->maskColor();
   }
 
@@ -64,7 +64,7 @@ public:
   BlenderHelper(Image* dst, const Image* src, const Palette* pal, const BlendMode blendMode)
   {
     m_blendMode = blendMode;
-    m_blendFunc = RgbTraits::get_blender(blendMode);
+    m_blendFunc = get_blender<RgbTraits>(blendMode);
     m_maskColor = src->maskColor();
   }
 
@@ -94,7 +94,7 @@ public:
   BlenderHelper(Image* dst, const Image* src, const Palette* pal, const BlendMode blendMode)
   {
     m_blendMode = blendMode;
-    m_blendFunc = RgbTraits::get_blender(blendMode);
+    m_blendFunc = get_blender<RgbTraits>(blendMode);
     m_maskColor = src->maskColor();
     m_pal = pal;
   }
@@ -126,7 +126,7 @@ class BlenderHelper<GrayscaleTraits, RgbTraits> {
 public:
   BlenderHelper(Image* dst, const Image* src, const Palette* pal, const BlendMode blendMode)
   {
-    m_blendFunc = RgbTraits::get_blender(blendMode);
+    m_blendFunc = get_blender<RgbTraits>(blendMode);
   }
 
   inline GrayscaleTraits::pixel_t operator()(GrayscaleTraits::pixel_t dst,
@@ -152,7 +152,7 @@ public:
   BlenderHelper(Image* dst, const Image* src, const Palette* pal, const BlendMode blendMode)
   {
     m_blendMode = blendMode;
-    m_blendFunc = RgbTraits::get_blender(blendMode);
+    m_blendFunc = get_blender<RgbTraits>(blendMode);
     m_pal = pal;
 
     if (m_blendMode == BlendMode::SRC)
