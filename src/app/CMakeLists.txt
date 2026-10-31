@@ -489,6 +489,7 @@ target_sources(app-lib PRIVATE
   commands/cmd_swap_checkerboard_colors.cpp
   commands/cmd_switch_colors.cpp
   commands/cmd_symmetry_mode.cpp
+  commands/cmd_tile_properties.cpp
   commands/cmd_tiled_mode.cpp
   commands/cmd_timeline.cpp
   commands/cmd_toggle_preview.cpp
@@ -699,6 +700,7 @@ target_sources(app-lib PRIVATE
   ui/tag_window.cpp
   ui/task_widget.cpp
   ui/tile_button.cpp
+  ui/tile_window.cpp
   ui/tileset_selector.cpp
   ui/timeline/ani_controls.cpp
   ui/timeline/doc_providers.cpp
