@@ -605,6 +605,18 @@ end)" },
     EXPECT_EQ(ctx->activeDocument()->isAssociatedToFile(), false);
   }
 
+  ctx->executeCommand(Commands::instance()->byId(CommandId::SaveFileCopyAs()),
+                      {
+                        { "filename", "./save_result_copy.lua" }
+  });
+
+  EXPECT_EQ(ctx->commandResult().type(), CommandResult::kOk);
+
+  EXPECT_TRUE(base::is_file("./save_result_copy.lua"));
+
+  // Ensure document is still marked as modified after saving a copy.
+  EXPECT_EQ(ctx->activeDocument()->isModified(), true);
+
   ctx->executeCommand(Commands::instance()->byId(CommandId::SaveFile()),
                       {
                         { "filename", "./save_result.lua" }
