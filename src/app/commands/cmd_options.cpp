@@ -2163,7 +2163,7 @@ private:
         auto theme = skin::SkinTheme::get(this);
 
         // Read new scaling
-        const auto [newUIScale, newScreenScale] = theme->readPreferredScaling(themeName);
+        const auto [newScreenScale, newUIScale] = theme->readPreferredScaling(themeName);
 
         if (updateScaling &&
             ((newUIScale > 0 && m_pref.general.uiScale() != newUIScale) ||
