@@ -26,6 +26,8 @@
 #include "app/tx.h"
 #include "app/ui/doc_view.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/editor/standby_state.h"
+#include "doc/mask.h"
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
@@ -640,41 +642,169 @@ static SharedSurfaceLayers findSharedLayers(doc::Sprite* spr)
   return shared;
 }
 
-// UV rect of one face inside a sheet whose cells are cellW x cellH.
-// faceW/faceH may be smaller than the cell (faces of different sizes
-// still share the grid; the unused part of the cell stays blank).
-static gfx::Rect sharedUVRect(int face, int cellW, int cellH,
-                              int faceW, int faceH)
+// Exact UV layout: the canvas (sheet) size is derived from the
+// UV mapping, not the other way round. A column is exactly as
+// wide as its widest face, a row exactly as tall as its tallest
+// face, and the sheet is the sum of the columns/rows. Faces of
+// different sizes therefore do NOT force every cell to the
+// largest face size (the old uniform 3 x cellW, 2 x cellH grid
+// padded every smaller face and, worse, derived cell origins
+// from the sprite size, so a manual canvas resize shifted every
+// UV rect without changing any face size). The only unavoidable
+// padding is where two faces in one column/row differ in size:
+// the smaller face's rect is its own exact size, the rest of
+// its column/row belongs to its partner face.
+// Layout: Top/Front/Right = row 0, Bottom/Back/Left = row 1,
+// columns Top/Bottom, Front/Back, Right/Left (kFaceSpecs).
+static void sharedFaceSizes(doc::Sprite* spr, int w[kFaceCount], int h[kFaceCount])
 {
-  if (face < 0 || face >= kFaceCount) return gfx::Rect(0, 0, faceW, faceH);
-  return gfx::Rect(kFaceSpecs[face].gridCol * cellW,
-                   kFaceSpecs[face].gridRow * cellH,
-                   faceW, faceH);
+  const int fallbackW = spr ? std::max(1, spr->width() / 3) : 24;
+  const int fallbackH = spr ? std::max(1, spr->height() / 2) : 24;
+  for (int f = 0; f < kFaceCount; ++f) {
+    w[f] = fallbackW;
+    h[f] = fallbackH;
+    if (spr) {
+      if (doc::Slice* sl = findSliceForFace(spr, f)) {
+        if (const auto* key = sl->getByFrame(0)) {
+          if (!key->bounds().isEmpty()) {
+            w[f] = key->bounds().w;
+            h[f] = key->bounds().h;
+          }
+        }
+      }
+    }
+  }
 }
 
-// UV rect for a face in the current document. When the shared sheets
-// exist, the sprite itself is the sheet (3 cells wide, 2 cells tall),
-// so the cell size is derived from the sprite size and the face size
-// from its slice. This also repairs documents whose slices were left
-// at (0, 0) by the old per-face layout: every face would otherwise
-// sample the same top-left cell of the shared sheet.
+static void sharedLayout(const int w[kFaceCount], const int h[kFaceCount],
+                         int colW[3], int rowH[2])
+{
+  for (int c = 0; c < 3; ++c) colW[c] = 1;
+  for (int r = 0; r < 2; ++r) rowH[r] = 1;
+  for (int f = 0; f < kFaceCount; ++f) {
+    colW[kFaceSpecs[f].gridCol] = std::max(colW[kFaceSpecs[f].gridCol], w[f]);
+    rowH[kFaceSpecs[f].gridRow] = std::max(rowH[kFaceSpecs[f].gridRow], h[f]);
+  }
+}
+
+// UV rect of one face inside the exact layout above.
+static gfx::Rect sharedUVRectExact(int face, const int colW[3], const int rowH[2],
+                                   int faceW, int faceH)
+{
+  if (face < 0 || face >= kFaceCount) return gfx::Rect(0, 0, faceW, faceH);
+  int x = 0, y = 0;
+  for (int c = 0; c < kFaceSpecs[face].gridCol; ++c) x += colW[c];
+  for (int r = 0; r < kFaceSpecs[face].gridRow; ++r) y += rowH[r];
+  return gfx::Rect(x, y, faceW, faceH);
+}
+
+// UV rect for a face in the current document, from its slice size
+// and the exact layout (not from the sprite size). This also
+// repairs documents whose slices were left at (0, 0) by the old
+// per-face layout: every face would otherwise sample the same
+// top-left cell of the shared sheet.
 static gfx::Rect sharedFaceRect(doc::Sprite* spr, int face)
 {
   if (!spr || face < 0 || face >= kFaceCount)
     return gfx::Rect(0, 0, 0, 0);
-  const int cellW = std::max(1, spr->width() / 3);
-  const int cellH = std::max(1, spr->height() / 2);
-  int faceW = cellW;
-  int faceH = cellH;
-  if (doc::Slice* sl = findSliceForFace(spr, face)) {
-    if (const auto* key = sl->getByFrame(0)) {
-      if (!key->bounds().isEmpty()) {
-        faceW = key->bounds().w;
-        faceH = key->bounds().h;
+  int w[kFaceCount], h[kFaceCount];
+  sharedFaceSizes(spr, w, h);
+  int colW[3], rowH[2];
+  sharedLayout(w, h, colW, rowH);
+  return sharedUVRectExact(face, colW, rowH, w[face], h[face]);
+}
+
+// Exact sheet size for the current face sizes (0, 0 if no sprite).
+static gfx::Size sharedSheetSize(doc::Sprite* spr)
+{
+  if (!spr) return gfx::Size(0, 0);
+  int w[kFaceCount], h[kFaceCount];
+  sharedFaceSizes(spr, w, h);
+  int colW[3], rowH[2];
+  sharedLayout(w, h, colW, rowH);
+  return gfx::Size(colW[0] + colW[1] + colW[2], rowH[0] + rowH[1]);
+}
+
+// Rebuild the three shared sheets from their old UV rects
+// (taken from the current slice bounds, which are the rects the
+// pixels actually sit in today) into new UV rects of the given
+// new face sizes, and set the sprite to the exact sheet size
+// for those faces. Face pixels are copied, never scaled: a
+// larger new rect gets transparent padding, a smaller one is
+// cropped at its bottom-right, exactly like a canvas resize.
+// Used both for a face resize and for reconciling a manual
+// canvas resize (see pollAndRender in the studio view).
+static void rebuildSharedSheets(Doc* doc, const int newW[kFaceCount],
+                                const int newH[kFaceCount])
+{
+  if (!doc || !doc->sprite()) return;
+  doc::Sprite* spr = doc->sprite();
+  SharedSurfaceLayers shared = findSharedLayers(spr);
+  if (!shared.baseLayer && !shared.textureLayer) return;
+
+  int oldW[kFaceCount], oldH[kFaceCount];
+  sharedFaceSizes(spr, oldW, oldH);
+  gfx::Rect oldRect[kFaceCount];
+  for (int f = 0; f < kFaceCount; ++f) {
+    oldRect[f] = gfx::Rect(0, 0, oldW[f], oldH[f]);
+    if (doc::Slice* sl = findSliceForFace(spr, f)) {
+      if (const auto* key = sl->getByFrame(0)) {
+        if (!key->bounds().isEmpty())
+          oldRect[f] = key->bounds();
       }
     }
   }
-  return sharedUVRect(face, cellW, cellH, faceW, faceH);
+  int newColW[3], newRowH[2];
+  sharedLayout(newW, newH, newColW, newRowH);
+  const int newSheetW = newColW[0] + newColW[1] + newColW[2];
+  const int newSheetH = newRowH[0] + newRowH[1];
+
+  try {
+    Tx tx(doc, "Resize Easymetric UV Sheet", ModifyDocument);
+    DocApi api = doc->getApi(tx);
+    auto rebuildSheet = [&](doc::LayerImage* lyr) {
+      if (!lyr) return;
+      for (doc::frame_t fr = doc::frame_t(0); fr <= spr->lastFrame(); ++fr) {
+        doc::Cel* cel = lyr->cel(fr);
+        if (!cel || !cel->image()) continue;
+        doc::ImageRef resized(doc::Image::create(cel->image()->pixelFormat(),
+                                                 newSheetW, newSheetH));
+        resized->clear(0);
+        for (int f = 0; f < kFaceCount; ++f) {
+          const gfx::Rect newUv = sharedUVRectExact(f, newColW, newRowH,
+                                                    newW[f], newH[f]);
+          const int copyW = std::min(oldRect[f].w, newUv.w);
+          const int copyH = std::min(oldRect[f].h, newUv.h);
+          for (int v = 0; v < copyH; ++v) {
+            const int srcY = oldRect[f].y + v;
+            if (srcY < 0 || srcY >= cel->image()->height()) continue;
+            for (int u = 0; u < copyW; ++u) {
+              const int srcX = oldRect[f].x + u;
+              if (srcX < 0 || srcX >= cel->image()->width()) continue;
+              doc::put_pixel(resized.get(), newUv.x + u, newUv.y + v,
+                             doc::get_pixel(cel->image(), srcX, srcY));
+            }
+          }
+        }
+        api.replaceImage(spr, cel->imageRef(), resized);
+        api.setCelPosition(spr, cel, 0, 0);
+      }
+    };
+    rebuildSheet(shared.baseLayer);
+    rebuildSheet(shared.textureLayer);
+    rebuildSheet(shared.depthLayer);
+    api.setSpriteSize(spr, newSheetW, newSheetH);
+    for (int f = 0; f < kFaceCount; ++f) {
+      const gfx::Rect uv = sharedUVRectExact(f, newColW, newRowH, newW[f], newH[f]);
+      if (doc::Slice* sl = findSliceForFace(spr, f))
+        tx(new cmd::SetSliceKey(sl, 0, doc::SliceKey(uv)));
+    }
+    tx.commit();
+    doc->notifyGeneralUpdate();
+  }
+  catch (const std::exception& e) {
+    // Ignore: entering the studio will retry.
+  }
 }
 
 // Migrate a document from per-face layers to the three shared sheets.
@@ -692,9 +822,20 @@ static void setupSharedSurfaceLayers(Doc* doc, bool seedStarterIfBlank)
   doc::Sprite* spr = doc->sprite();
 
   // Already shared: nothing to migrate, just make sure the slices
-  // point at the UV rects.
+  // point at the UV rects. If the canvas was resized by hand
+  // since the sheets were built, the sprite size no longer
+  // matches the exact sheet size for the face sizes, so rebuild
+  // the sheets to that exact size first (face pixels preserved,
+  // see rebuildSharedSheets) instead of leaving padding/gaps
+  // between the canvas and the UV mapping.
   SharedSurfaceLayers existing = findSharedLayers(spr);
   if (existing.baseLayer && existing.textureLayer) {
+    const gfx::Size exact = sharedSheetSize(spr);
+    if (exact.w > 0 && (spr->width() != exact.w || spr->height() != exact.h)) {
+      int w[kFaceCount], h[kFaceCount];
+      sharedFaceSizes(spr, w, h);
+      rebuildSharedSheets(doc, w, h);
+    }
     try {
       Tx tx(doc, "Setup Shared Easymetric Layers", ModifyDocument);
       for (int f = 0; f < kFaceCount; ++f) {
@@ -767,8 +908,17 @@ static void setupSharedSurfaceLayers(Doc* doc, bool seedStarterIfBlank)
   }
   if (cellW <= 0) cellW = spr->width();
   if (cellH <= 0) cellH = spr->height();
-  const int sheetW = 3 * cellW;
-  const int sheetH = 2 * cellH;
+  // Exact layout, not a uniform grid: each column/row is sized
+  // by its own faces, so the sheet is exactly the UV mapping.
+  int faceW[kFaceCount], faceH[kFaceCount];
+  for (int f = 0; f < kFaceCount; ++f) {
+    faceW[f] = faces[f].w;
+    faceH[f] = faces[f].h;
+  }
+  int colW[3], rowH[2];
+  sharedLayout(faceW, faceH, colW, rowH);
+  const int sheetW = colW[0] + colW[1] + colW[2];
+  const int sheetH = rowH[0] + rowH[1];
 
   // Layers/groups to remove after their images have been copied.
   // The shared depth layer itself is kept: it is recreated below.
@@ -800,13 +950,13 @@ static void setupSharedSurfaceLayers(Doc* doc, bool seedStarterIfBlank)
       for (int ff = 0; ff < kFaceCount; ++ff) {
         const doc::ImageRef& src = faces[ff].*img;
         if (!src) continue;
-        const gfx::Rect uv = sharedUVRect(ff, cellW, cellH, faces[ff].w, faces[ff].h);
+        const gfx::Rect uv = sharedUVRectExact(ff, colW, rowH, faces[ff].w, faces[ff].h);
         doc::copy_image(sheet.get(), src.get(), uv.x, uv.y);
         hasPixels = true;
       }
       if (!hasPixels && seedStarterIfBlank && std::string(kind) == "base") {
         for (int ff = 0; ff < kFaceCount; ++ff) {
-          const gfx::Rect uv = sharedUVRect(ff, cellW, cellH, faces[ff].w, faces[ff].h);
+          const gfx::Rect uv = sharedUVRectExact(ff, colW, rowH, faces[ff].w, faces[ff].h);
           for (int v = 0; v < faces[ff].h; ++v)
             for (int u = 0; u < faces[ff].w; ++u)
               doc::put_pixel(sheet.get(), uv.x + u, uv.y + v,
@@ -843,7 +993,7 @@ static void setupSharedSurfaceLayers(Doc* doc, bool seedStarterIfBlank)
     }
 
     for (int f = 0; f < kFaceCount; ++f) {
-      const gfx::Rect uv = sharedUVRect(f, cellW, cellH, faces[f].w, faces[f].h);
+      const gfx::Rect uv = sharedUVRectExact(f, colW, rowH, faces[f].w, faces[f].h);
       doc::Slice* sl = findSliceForFace(spr, f);
       if (!sl) {
         sl = new doc::Slice;
@@ -890,63 +1040,38 @@ static void propagateLinkedDimensions(Doc* doc, SixSurfaceData& data, int srcFac
   if (!doc || !doc->sprite()) return;
   doc::Sprite* spr = doc->sprite();
 
-  // Shared sheets: all faces share one cell size, so resizing one
-  // face resizes the whole grid. Each UV cell's content is copied
-  // to its new cell position in the resized sheets, and the sprite
-  // becomes the new sheet size. Per-face sizes are not kept in
-  // shared mode: that is what "one sheet" means.
+  // Shared sheets, exact layout: resizing one face changes
+  // only that face's size. Its column/row may grow or shrink,
+  // so the other faces in that column/row move to their new
+  // UV origins, but their sizes and pixels do not change.
+  // That is the independence the old uniform grid broke: it
+  // forced every face to the resized face's size. The sheet
+  // (canvas) becomes exactly the sum of the new column/row
+  // sizes, via rebuildSharedSheets.
   {
     SharedSurfaceLayers shared = findSharedLayers(spr);
     if (shared.baseLayer || shared.textureLayer) {
-      const int oldCellW = std::max(1, spr->width() / 3);
-      const int oldCellH = std::max(1, spr->height() / 2);
-      const int newCellW = std::clamp(newW, 4, 256);
-      const int newCellH = std::clamp(newH, 4, 256);
-      if (newCellW != oldCellW || newCellH != oldCellH) {
-        try {
-          Tx tx(doc, "Resize Easymetric UV Sheet", ModifyDocument);
-          DocApi api = doc->getApi(tx);
-          const int newSheetW = 3 * newCellW;
-          const int newSheetH = 2 * newCellH;
-          auto resizeSheet = [&](doc::LayerImage* lyr) {
-            if (!lyr) return;
-            for (doc::frame_t fr = doc::frame_t(0); fr <= spr->lastFrame(); ++fr) {
-              doc::Cel* cel = lyr->cel(fr);
-              if (!cel || !cel->image()) continue;
-              doc::ImageRef resized(doc::Image::create(cel->image()->pixelFormat(),
-                                                       newSheetW, newSheetH));
-              resized->clear(0);
-              for (int f = 0; f < kFaceCount; ++f) {
-                const gfx::Rect oldUv = sharedUVRect(f, oldCellW, oldCellH,
-                                                     std::min(oldCellW, data.w[f]),
-                                                     std::min(oldCellH, data.h[f]));
-                const gfx::Rect newUv = sharedUVRect(f, newCellW, newCellH,
-                                                     newCellW, newCellH);
-                for (int v = 0; v < oldUv.h && v < newUv.h; ++v)
-                  for (int u = 0; u < oldUv.w && u < newUv.w; ++u)
-                    doc::put_pixel(resized.get(), newUv.x + u, newUv.y + v,
-                                   doc::get_pixel(cel->image(), oldUv.x + u, oldUv.y + v));
-              }
-              api.replaceImage(spr, cel->imageRef(), resized);
-              api.setCelPosition(spr, cel, 0, 0);
-            }
-          };
-          resizeSheet(shared.baseLayer);
-          resizeSheet(shared.textureLayer);
-          resizeSheet(shared.depthLayer);
-          api.setSpriteSize(spr, newSheetW, newSheetH);
-          for (int f = 0; f < kFaceCount; ++f) {
-            const gfx::Rect uv = sharedUVRect(f, newCellW, newCellH, newCellW, newCellH);
-            if (doc::Slice* sl = findSliceForFace(spr, f))
-              tx(new cmd::SetSliceKey(sl, 0, doc::SliceKey(uv)));
-            data.w[f] = newCellW;
-            data.h[f] = newCellH;
-          }
-          tx.commit();
-          doc->notifyGeneralUpdate();
-        }
-        catch (const std::exception& e) {
-          // Ignore
+      int newW[kFaceCount], newH[kFaceCount];
+      for (int f = 0; f < kFaceCount; ++f) {
+        newW[f] = data.w[f];
+        newH[f] = data.h[f];
+      }
+      if (srcFace >= 0 && srcFace < kFaceCount) {
+        newW[srcFace] = std::clamp(newW, 4, 256);
+        newH[srcFace] = std::clamp(newH, 4, 256);
+      }
+      int oldW[kFaceCount], oldH[kFaceCount];
+      sharedFaceSizes(spr, oldW, oldH);
+      const gfx::Size exact = sharedSheetSize(spr);
+      bool changed = false;
+      for (int f = 0; f < kFaceCount; ++f)
+        if (newW[f] != oldW[f] || newH[f] != oldH[f]) changed = true;
+      if (spr->width() != exact.w || spr->height() != exact.h) changed = true;
+      if (changed) {
+        rebuildSharedSheets(doc, newW, newH);
+        for (int f = 0; f < kFaceCount; ++f) {
+          data.w[f] = newW[f];
+          data.h[f] = newH[f];
         }
       }
       return;
@@ -2326,6 +2451,48 @@ static void bake3DToDoc(Doc* doc, int yawDeg = 45, int pitchDeg = 30)
 }
 
 // Integrated 4-Column 2-Row Workspace Multi-Pane Widget
+// Panel editor state: wheel = zoom, never View scroll, regardless
+// of the global "zoom with wheel" preference or a customised
+// mouse-wheel shortcut table (both of which made the old
+// preference-forcing fix unreliable in practice: wheel over a
+// surface panel still scrolled the panel and did not zoom).
+// StandbyState is kept as the base, so drawing, tools and the
+// temporary moving/drawing states all work as before; only
+// onMouseWheel is overridden. Zoom is anchored at the mouse
+// (not at the centre), so the View scroll only follows the
+// zoom anchor instead of jumping, and Shift+wheel (or a
+// horizontal wheel) is still horizontal scroll, so scrolling
+// is still possible on purpose. Alt+wheel keeps the base
+// colour-change behaviour.
+class EasymetricWheelZoomState : public StandbyState {
+public:
+  bool onMouseWheel(Editor* editor, ui::MouseMessage* msg) override
+  {
+    if (msg->altPressed())
+      return StandbyState::onMouseWheel(editor, msg);
+    gfx::Point delta = msg->wheelDelta();
+    if (msg->shiftPressed() || delta.x != 0) {
+      processWheelAction(editor, WheelAction::HScroll, msg->position(),
+                         gfx::Point(delta.x, 0), double(delta.x),
+                         ScrollBigSteps::Off,
+                         (msg->preciseWheel() ? PreciseWheel::On : PreciseWheel::Off),
+                         FromMouseWheel::On);
+      return true;
+    }
+    double dz = double(delta.y);
+    if (msg->preciseWheel()) {
+      dz /= 1.5;
+      if (dz < -1.0) dz = -1.0;
+      else if (dz > 1.0) dz = 1.0;
+    }
+    render::Zoom zoom = render::Zoom::fromLinearScale(
+      editor->zoom().linearScale() - int(dz));
+    editor->setZoomAndCenterInMouse(zoom, msg->position(),
+                                    Editor::ZoomBehavior::MOUSE);
+    return true;
+  }
+};
+
 class EasymetricMultiPaneView : public ui::Widget {
 public:
   EasymetricMultiPaneView(DocView* docView)
@@ -2333,19 +2500,18 @@ public:
     , m_docView(docView)
     , m_timer(33, this)
   {
-    // Wheel = zoom, not scroll, while the studio is open. The
-    // surface editors decide wheel behaviour from the global
-    // "zoom with wheel" preference, so a user who had that off
-    // for normal editing would otherwise get View scrolling
-    // instead of zooming in the surface panels. Save the old
+    // Wheel = zoom, not scroll, while the studio is open.
+    // The preference-forcing below is kept as a fallback for
+    // any editor that is not a surface panel, but the surface
+    // panels themselves now use EasymetricWheelZoomState (set
+    // below), which forces wheel = zoom regardless of the
+    // preference or a customised shortcut table. Save the old
     // value and restore it when the studio closes (destructor
     // and the Exit button both restore, idempotently), so normal
     // editing outside Easymetric is untouched. The Preview
     // widget already zooms on wheel and returns the message as
     // handled, so it never scrolls the UI either; Shift+wheel
-    // still pans it. Note: a user-customised mouse-wheel
-    // shortcut table still wins over this preference in the
-    // editor's wheel handling.
+    // still pans it.
     m_savedZoomWithWheel = Preferences::instance().editor.zoomWithWheel();
     if (!m_savedZoomWithWheel) {
       Preferences::instance().editor.zoomWithWheel(true);
@@ -2353,6 +2519,13 @@ public:
     }
 
     setExpansive(true);
+
+    // Remember the document selection so the per-face mask
+    // confinement in pollAndRender can be undone on exit.
+    if (Doc* doc0 = m_docView->document()) {
+      if (doc0->mask() && !doc0->mask()->isEmpty())
+        m_savedMask.reset(new doc::Mask(*doc0->mask()));
+    }
 
     Doc* doc = m_docView->document();
     doc::Sprite* spr = doc ? doc->sprite() : nullptr;
@@ -2377,6 +2550,11 @@ public:
 
       m_editors[f] = ed;
       m_views[f] = view;
+      // Wheel = zoom in this panel, never View scroll (see
+      // EasymetricWheelZoomState). Set after createPaneEditorView
+      // so the custom state is the base state the temporary
+      // drawing/moving states return to.
+      ed->setState(EditorStatePtr(new EasymetricWheelZoomState));
 
       if (spr) {
         SharedSurfaceLayers shared = findSharedLayers(spr);
@@ -2466,6 +2644,18 @@ public:
   {
     m_timer.stop();
     restoreWheelZoomPref();
+    if (Doc* doc = m_docView->document()) {
+      if (m_savedMask) {
+        doc->setMask(m_savedMask.get());
+        doc->setMaskVisible(true);
+      }
+      else {
+        doc::Mask empty;
+        doc->setMask(&empty);
+        doc->setMaskVisible(false);
+      }
+      doc->notifySelectionChanged();
+    }
   }
 
   void restoreWheelZoomPref()
@@ -2683,6 +2873,19 @@ protected:
   // cover everything else), so a 4*guiscale gap was easy to miss
   // and its cursor indication flickered at the edges. 6*guiscale
   // is the grab area, not just the painted bar.
+  // Columns are stored in PIXELS, not fractions of totalW.
+  // That is what makes them independent: with fractions, making
+  // the window wider (or dragging the Preview boundary, whose
+  // width was the remainder of a fraction sum) scaled every
+  // column at once, so stretching Preview shrank/grew all
+  // three surface columns. With pixel widths, the three
+  // surface columns keep exactly their stored widths when
+  // the window is resized, and only the Preview column
+  // (col 3, the remainder) absorbs the difference. Dragging
+  // a boundary changes only the two columns either side of
+  // it (see onProcessMessage). The top row height is stored
+  // the same way; the Fields row absorbs window height
+  // changes. First layout: quarter / half, as before.
   void computePaneLayout(const gfx::Rect& rc, int colX[4], int colW[4],
                          int rowY[2], int rowH[2]) const
   {
@@ -2694,9 +2897,28 @@ protected:
     const int minCol = std::min(64 * s, totalW / 4);
     const int minRow = std::min(64 * s, totalH / 2);
 
-    colW[0] = std::clamp(int(totalW * m_colFrac[0]), minCol, totalW - 3 * minCol);
-    colW[1] = std::clamp(int(totalW * m_colFrac[1]), minCol, totalW - colW[0] - 2 * minCol);
-    colW[2] = std::clamp(int(totalW * m_colFrac[2]), minCol, totalW - colW[0] - colW[1] - minCol);
+    if (!m_colInit) {
+      m_colWpx[0] = totalW / 4;
+      m_colWpx[1] = totalW / 4;
+      m_colWpx[2] = totalW / 4;
+      m_rowHpx = totalH / 2;
+      m_colInit = true;
+    }
+
+    colW[0] = std::clamp(m_colWpx[0], minCol, std::max(minCol, totalW - 3 * minCol));
+    colW[1] = std::clamp(m_colWpx[1], minCol,
+                         std::max(minCol, totalW - colW[0] - 2 * minCol));
+    colW[2] = std::clamp(m_colWpx[2], minCol,
+                         std::max(minCol, totalW - colW[0] - colW[1] - minCol));
+    // Narrow window: surface columns alone already exceed the
+    // width, so shrink them from the rightmost backwards
+    // (Preview keeps its minimum) instead of overflowing.
+    int excess = colW[0] + colW[1] + colW[2] + minCol - totalW;
+    for (int c = 2; excess > 0 && c >= 0; --c) {
+      const int shrink = std::min(excess, colW[c] - minCol);
+      colW[c] -= shrink;
+      excess -= shrink;
+    }
     colW[3] = std::max(minCol, totalW - colW[0] - colW[1] - colW[2]);
 
     colX[0] = rc.x;
@@ -2704,7 +2926,7 @@ protected:
     colX[2] = rc.x + colW[0] + bw + colW[1] + bw;
     colX[3] = rc.x + colW[0] + bw + colW[1] + bw + colW[2] + bw;
 
-    rowH[0] = std::clamp(int(totalH * m_rowFrac), minRow, totalH - minRow);
+    rowH[0] = std::clamp(m_rowHpx, minRow, std::max(minRow, totalH - minRow));
     rowH[1] = std::max(minRow, totalH - rowH[0]);
     rowY[0] = rc.y;
     rowY[1] = rc.y + rowH[0] + bh;
@@ -2759,9 +2981,14 @@ protected:
         if (hit != 0 && mouseMsg->left()) {
           m_dragSplitter = hit;
           m_dragStart = mouseMsg->position();
-          for (int i = 0; i < 3; ++i)
-            m_dragColFrac[i] = m_colFrac[i];
-          m_dragRowFrac = m_rowFrac;
+          {
+            int cx[4], cw[4], ry[2], rh[2];
+            computePaneLayout(clientBounds(), cx, cw, ry, rh);
+            for (int i = 0; i < 3; ++i)
+              m_dragColWpx[i] = cw[i];
+            m_dragPreviewW = cw[3];
+            m_dragRowHpx = rh[0];
+          }
           captureMouse();
           invalidate();
           return true;
@@ -2777,45 +3004,34 @@ protected:
           const int bh = 6 * s;
           const int totalW = std::max(16, rc.w - 3 * bw);
           const int totalH = std::max(16, rc.h - bh);
-          // Minimums must match computePaneLayout (64*guiscale, but
-          // never more than a quarter/half of the available size,
-          // or the clamp range below would be empty on small
-          // windows). The old code used 64*guiscale unconditionally
-          // and clamped each side independently, so when one side
-          // hit its minimum the pair total grew: the remainder
-          // column was then squeezed below its minimum and the
-          // panes overflowed past the right edge of the studio.
-          const double minColFrac = double(std::min(64 * s, totalW / 4)) / double(totalW);
-          const double minRowFrac = double(std::min(64 * s, totalH / 2)) / double(totalH);
+          // Pixel drag, adjacent pair only: the other columns'
+          // stored pixel widths are not touched, so stretching
+          // Preview (boundary 3) changes only Right/Left + Preview,
+          // never the other two surface columns, and a window
+          // resize (which only changes totalW) changes only
+          // Preview via computePaneLayout.
+          const int minColPx = std::min(64 * s, totalW / 4);
+          const int minRowPx = std::min(64 * s, totalH / 2);
           if (m_dragSplitter < 4) {
-            const double delta = double(mouseMsg->position().x - m_dragStart.x) / double(totalW);
+            const int deltaPx = mouseMsg->position().x - m_dragStart.x;
             const int left = m_dragSplitter - 1;
-            if (m_dragSplitter < 3) {
-              // Move the boundary between two fractional columns,
-              // keeping their pair total (and every other column)
-              // unchanged: newLeft is clamped so the right column
-              // also stays at or above its minimum.
-              const double pair = m_dragColFrac[left] + m_dragColFrac[m_dragSplitter];
-              const double newLeft = std::clamp(m_dragColFrac[left] + delta,
-                                                minColFrac, pair - minColFrac);
-              m_colFrac[left] = newLeft;
-              m_colFrac[m_dragSplitter] = pair - newLeft;
-            }
-            else {
-              // Boundary before the remainder (Preview) column:
-              // the pair is this column plus the remainder, so the
-              // remainder also stays at or above its minimum.
-              double remainderFrac = 1.0;
-              for (int i = 0; i < 3; ++i)
-                remainderFrac -= m_dragColFrac[i];
-              const double pair = m_dragColFrac[left] + remainderFrac;
-              m_colFrac[left] = std::clamp(m_dragColFrac[left] + delta,
-                                           minColFrac, pair - minColFrac);
-            }
+            int pair = 0;
+            if (m_dragSplitter < 3)
+              pair = m_dragColWpx[left] + m_dragColWpx[m_dragSplitter];
+            else
+              pair = m_dragColWpx[left] + m_dragPreviewW;
+            const int newLeft = std::clamp(m_dragColWpx[left] + deltaPx,
+                                           minColPx, pair - minColPx);
+            m_colWpx[left] = newLeft;
+            if (m_dragSplitter < 3)
+              m_colWpx[m_dragSplitter] = pair - newLeft;
+            // Boundary 3: Preview is the remainder, so it follows
+            // automatically from the new left width.
           }
           else {
-            const double delta = double(mouseMsg->position().y - m_dragStart.y) / double(totalH);
-            m_rowFrac = std::clamp(m_dragRowFrac + delta, minRowFrac, 1.0 - minRowFrac);
+            const int deltaPx = mouseMsg->position().y - m_dragStart.y;
+            m_rowHpx = std::clamp(m_dragRowHpx + deltaPx,
+                                  minRowPx, totalH - minRowPx);
           }
           layout();
           invalidate();
@@ -3438,6 +3654,79 @@ private:
     Doc* doc = m_docView->document();
     const doc::frame_t frame = (m_docView->editor() ? m_docView->editor()->frame() : doc::frame_t(0));
 
+    // Canvas <-> UV reconciliation, and per-face editing
+    // confinement (see below). Both run before extraction so
+    // the Preview samples the reconciled UV layout.
+    if (doc && doc->sprite()) {
+      doc::Sprite* spr = doc->sprite();
+      SharedSurfaceLayers shared = findSharedLayers(spr);
+      if (shared.baseLayer || shared.textureLayer) {
+        // Canvas resize -> UV mapping: if the canvas was
+        // resized by hand (sprite size no longer equals the
+        // exact sheet size for the current face sizes), scale
+        // each face size by the same ratio and rebuild the
+        // sheets, so the canvas ends up exactly the sum of
+        // the new UV rects (rounding may move it a few pixels
+        // from the hand-resized size). If the canvas already
+        // matches the exact sheet size, nothing happens here,
+        // so a face resize via the dimension controls is not
+        // double-applied.
+        const gfx::Size exact = sharedSheetSize(spr);
+        if (exact.w > 0 && (spr->width() != exact.w || spr->height() != exact.h)) {
+          int oldW[kFaceCount], oldH[kFaceCount];
+          sharedFaceSizes(spr, oldW, oldH);
+          const double sx = (exact.w > 0 && spr->width() != exact.w)
+                              ? double(spr->width()) / double(exact.w) : 1.0;
+          const double sy = (exact.h > 0 && spr->height() != exact.h)
+                              ? double(spr->height()) / double(exact.h) : 1.0;
+          int newW[kFaceCount], newH[kFaceCount];
+          for (int f = 0; f < kFaceCount; ++f) {
+            newW[f] = std::clamp(int(std::round(oldW[f] * sx)), 4, 256);
+            newH[f] = std::clamp(int(std::round(oldH[f] * sy)), 4, 256);
+          }
+          rebuildSharedSheets(doc, newW, newH);
+          initLayersAndFraming();
+          force = true;
+        }
+
+        // Per-face independence: when the active panel changes
+        // to a different surface (and that panel is in its
+        // standby state, not mid-stroke/mid-move), set the
+        // document selection to that face's UV rect, without
+        // adding an undo step. Brush painting and a Move are
+        // then confined to that face's pixels: moving Top's
+        // content does not move Front's, Back's, etc., because
+        // the other faces' pixels are outside the selection.
+        // It is set only on a face change, so a user selection
+        // inside a face (e.g. a sub-region to move) is not
+        // overwritten every poll. Limitation, stated honestly:
+        // a sub-selection dragged far enough to cross into a
+        // neighbouring UV rect will still land in that rect's
+        // sampled area, because the sheet is one image; what
+        // is guaranteed is that the other faces' pixels do
+        // not move with it. On studio exit the original
+        // selection is restored (destructor).
+        Editor* curEd = m_docView->editor();
+        int activeFace = -1;
+        for (int f = 0; f < kFaceCount; ++f)
+          if (curEd == m_editors[f]) activeFace = f;
+        if (activeFace != m_lastActiveFace) {
+          if (activeFace >= 0 && curEd &&
+              dynamic_cast<StandbyState*>(curEd->getState().get())) {
+            doc::Mask mask;
+            mask.replace(sharedFaceRect(spr, activeFace));
+            doc->setMask(&mask);
+            doc->setMaskVisible(true);
+            doc->notifySelectionChanged();
+            m_lastActiveFace = activeFace;
+          }
+          else if (activeFace < 0) {
+            m_lastActiveFace = -1;
+          }
+        }
+      }
+    }
+
     SixSurfaceData data;
     if (!extractSixSurfaces(doc, frame, data)) {
       data.init(24);
@@ -3907,16 +4196,23 @@ private:
   int m_lastFaceW[kFaceCount] = { 0, 0, 0, 0, 0, 0 };
   int m_lastFaceH[kFaceCount] = { 0, 0, 0, 0, 0, 0 };
 
-  // Splitter state: column fractions for cols 0..2 (col 3 is the
-  // remainder), top-row fraction, and hover/drag tracking. 0 in
-  // m_hoverSplitter/m_dragSplitter means no splitter.
-  double m_colFrac[3] = { 0.25, 0.25, 0.25 };
-  double m_rowFrac = 0.5;
+  // Splitter state: pixel widths for cols 0..2 (col 3 is the
+  // remainder), top-row pixel height, and hover/drag tracking.
+  // 0 in m_hoverSplitter/m_dragSplitter means no splitter.
+  // m_colWpx/m_rowHpx are mutable because computePaneLayout
+  // (const, called from paint/hit-testing) lazily initialises
+  // them on first layout; after that only a drag changes them.
+  mutable int m_colWpx[3] = { 0, 0, 0 };
+  mutable int m_rowHpx = 0;
+  mutable bool m_colInit = false;
   int m_hoverSplitter = 0;
   int m_dragSplitter = 0;
   gfx::Point m_dragStart;
-  double m_dragColFrac[3] = { 0.25, 0.25, 0.25 };
-  double m_dragRowFrac = 0.5;
+  int m_dragColWpx[3] = { 0, 0, 0 };
+  int m_dragPreviewW = 0;
+  int m_dragRowHpx = 0;
+  int m_lastActiveFace = -1;
+  doc::MaskRef m_savedMask;
 
   ui::Timer m_timer;
   uint64_t m_lastHash = 0;
