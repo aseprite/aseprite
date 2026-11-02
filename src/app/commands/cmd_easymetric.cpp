@@ -1166,6 +1166,36 @@ public:
   }
 
   obs::signal<void(int, int)> OrbitDrag;
+  obs::signal<void(double)> ZoomChanged;
+
+  // Zoom of the rendered model, relative to the fit-to-pane size.
+  // 1.0 = fit, 0.25 = quarter size, 8.0 = 8x. Wheel, +/- buttons and
+  // double-click (reset) all go through setZoom() so the value is
+  // always clamped and observers always see the same value.
+  double zoom() const { return m_zoom; }
+
+  void setZoom(double zoom)
+  {
+    const double clamped = std::clamp(zoom, 0.25, 8.0);
+    if (std::abs(clamped - m_zoom) < 1e-9)
+      return;
+    m_zoom = clamped;
+    ZoomChanged(m_zoom);
+    invalidate();
+  }
+
+  void zoomIn() { setZoom(m_zoom * 1.25); }
+  void zoomOut() { setZoom(m_zoom / 1.25); }
+
+  void resetZoom()
+  {
+    m_panX = 0;
+    m_panY = 0;
+    setZoom(1.0);
+    // setZoom() skips invalidate() when already at 1.0, but the pan
+    // reset above still needs a repaint in that case.
+    invalidate();
+  }
 
   void setSurfaces(const os::SurfaceRef& diffSurf,
                    const os::SurfaceRef& normSurf,
@@ -1205,9 +1235,26 @@ protected:
           captureMouse();
           return true;
         }
+        if (mouseMsg->right() || mouseMsg->middle()) {
+          // Pan the zoomed rendering; left-drag stays reserved for orbit.
+          m_panning = true;
+          m_panStart = mouseMsg->position();
+          m_startPanX = m_panX;
+          m_startPanY = m_panY;
+          captureMouse();
+          return true;
+        }
         break;
       }
       case ui::kMouseMoveMessage: {
+        if (m_panning) {
+          auto* mouseMsg = static_cast<ui::MouseMessage*>(msg);
+          const gfx::Point pos = mouseMsg->position();
+          m_panX = m_startPanX + (pos.x - m_panStart.x);
+          m_panY = m_startPanY + (pos.y - m_panStart.y);
+          invalidate();
+          return true;
+        }
         if (m_dragging) {
           auto* mouseMsg = static_cast<ui::MouseMessage*>(msg);
           const gfx::Point pos = mouseMsg->position();
@@ -1224,12 +1271,29 @@ protected:
         break;
       }
       case ui::kMouseUpMessage: {
-        if (m_dragging) {
+        if (m_dragging || m_panning) {
           m_dragging = false;
+          m_panning = false;
           releaseMouse();
           return true;
         }
         break;
+      }
+      case ui::kMouseWheelMessage: {
+        auto* mouseMsg = static_cast<ui::MouseMessage*>(msg);
+        const gfx::Point delta = mouseMsg->wheelDelta();
+        // Same sign convention as palette_view: delta.x - delta.y > 0
+        // means wheel-up, which zooms in.
+        const int steps = delta.x - delta.y;
+        if (steps != 0) {
+          setZoom(m_zoom * std::pow(1.25, steps));
+          return true;
+        }
+        break;
+      }
+      case ui::kDoubleClickMessage: {
+        resetZoom();
+        return true;
       }
     }
     return ui::Widget::onProcessMessage(msg);
@@ -1277,25 +1341,30 @@ protected:
         if (sw > 0 && sh > 0) {
           const double scaleX = double(cellRc.w - 8 * s) / double(sw);
           const double scaleY = double(cellRc.h - 8 * s) / double(sh);
-          const double scale = std::max(0.5, std::min(scaleX, scaleY));
+          const double scale = std::max(0.5, std::min(scaleX, scaleY)) * m_zoom;
           const int dw = std::max(1, int(sw * scale));
           const int dh = std::max(1, int(sh * scale));
-          const int dx = cellRc.x + (cellRc.w - dw) / 2;
-          const int dy = cellRc.y + (cellRc.h - dh) / 2;
+          const int dx = cellRc.x + (cellRc.w - dw) / 2 + m_panX;
+          const int dy = cellRc.y + (cellRc.h - dh) / 2 + m_panY;
 
-          g->drawSurface(activeSurfs[i].get(),
-                         gfx::Rect(0, 0, sw, sh),
-                         gfx::Rect(dx, dy, dw, dh),
-                         os::Sampling(os::Sampling::Filter::Nearest),
-                         nullptr);
+          // Keep a zoomed rendering inside its own cell instead of
+          // painting over the neighbouring map cells.
+          ui::IntersectClip clip(g, cellRc);
+          if (clip) {
+            g->drawSurface(activeSurfs[i].get(),
+                           gfx::Rect(0, 0, sw, sh),
+                           gfx::Rect(dx, dy, dw, dh),
+                           os::Sampling(os::Sampling::Filter::Nearest),
+                           nullptr);
 
-          if (i == 0) {
-            const int px = dx + int(m_pivScreenX * scale);
-            const int py = dy + int(m_pivScreenY * scale);
-            if (cellRc.contains(gfx::Point(px, py))) {
-              const gfx::Color pivCol = gfx::rgba(250, 204, 21, 230);
-              g->drawHLine(pivCol, px - 4 * s, py, 9 * s);
-              g->drawVLine(pivCol, px, py - 4 * s, 9 * s);
+            if (i == 0) {
+              const int px = dx + int(m_pivScreenX * scale);
+              const int py = dy + int(m_pivScreenY * scale);
+              if (cellRc.contains(gfx::Point(px, py))) {
+                const gfx::Color pivCol = gfx::rgba(250, 204, 21, 230);
+                g->drawHLine(pivCol, px - 4 * s, py, 9 * s);
+                g->drawVLine(pivCol, px, py - 4 * s, 9 * s);
+              }
             }
           }
         }
@@ -1308,6 +1377,18 @@ protected:
                     gfx::ColorNone,
                     gfx::Point(badgeRc.x + 3 * s, badgeRc.y + 1 * s));
       }
+    }
+
+    if (std::abs(m_zoom - 1.0) > 1e-9) {
+      const std::string zoomText = fmt::format("{}%", int(std::round(m_zoom * 100.0)));
+      const gfx::Size zoomSz = g->measureText(zoomText);
+      const gfx::Rect zoomRc(rc.x + rc.w - zoomSz.w - 9 * s, rc.y + 3 * s,
+                             zoomSz.w + 6 * s, zoomSz.h + 2 * s);
+      g->fillRect(gfx::rgba(28, 35, 43, 195), zoomRc);
+      g->drawText(zoomText,
+                  gfx::rgba(255, 255, 255),
+                  gfx::ColorNone,
+                  gfx::Point(zoomRc.x + 3 * s, zoomRc.y + 1 * s));
     }
   }
 
@@ -1326,6 +1407,13 @@ private:
   gfx::Point m_dragStart;
   int m_startYaw = 45;
   int m_startPitch = 30;
+  double m_zoom = 1.0;
+  int m_panX = 0;
+  int m_panY = 0;
+  bool m_panning = false;
+  gfx::Point m_panStart;
+  int m_startPanX = 0;
+  int m_startPanY = 0;
 };
 
 // Sleek dark-slate container matching reference UI controls
@@ -2556,6 +2644,21 @@ private:
     smartRow->addChild(convertToGroupBtn);
     m_fieldsBox->addChild(smartRow);
 
+    // Zoom row: buttons + label mirror the preview widget's zoom, so
+    // the rendering can also be zoomed without the mouse wheel.
+    auto* zoomRow = new ui::HBox;
+    zoomRow->setChildSpacing(4 * s);
+    auto* zoomOutBtn = new ui::Button("-");
+    auto* zoomResetBtn = new ui::Button("100%");
+    auto* zoomInBtn = new ui::Button("+");
+    m_zoomLabel = new ui::Label("100%");
+    zoomRow->addChild(new ui::Label("Preview Zoom:"));
+    zoomRow->addChild(zoomOutBtn);
+    zoomRow->addChild(zoomInBtn);
+    zoomRow->addChild(zoomResetBtn);
+    zoomRow->addChild(m_zoomLabel);
+    m_fieldsBox->addChild(zoomRow);
+
     // Row 7: Action Buttons (Render, Export .OBJ, Exit)
     auto* actRow = new ui::HBox;
     actRow->setChildSpacing(4 * s);
@@ -2595,6 +2698,14 @@ private:
       m_pitchSlider->setValue(newPitch);
       m_lastHash = 0;
       pollAndRender(true);
+    });
+
+    zoomOutBtn->Click.connect([this] { m_previewWidget->zoomOut(); });
+    zoomInBtn->Click.connect([this] { m_previewWidget->zoomIn(); });
+    zoomResetBtn->Click.connect([this] { m_previewWidget->resetZoom(); });
+    m_previewWidget->ZoomChanged.connect([this](double zoom) {
+      if (m_zoomLabel)
+        m_zoomLabel->setText(fmt::format("{}%", int(std::round(zoom * 100.0))));
     });
 
     pivCenterBtn->Click.connect([this] {
@@ -3328,6 +3439,7 @@ private:
   ui::CheckBox* m_mapNormalCheck;
   ui::CheckBox* m_mapDepthCheck;
   ui::ComboBox* m_renderTypeCombo;
+  ui::Label* m_zoomLabel = nullptr;
   ui::CheckBox* m_strokeCheck;
   ui::CheckBox* m_cutoutCheck;
   ui::CheckBox* m_lockBordersCheck;
