@@ -2391,13 +2391,17 @@ protected:
   // One layout source for onResize, onPaint and splitter hit-testing,
   // so the painted handles always line up with the dragged ones.
   // colW[3] is the remainder, so the four columns always fill rc.
-  // Splitter gaps are 4*guiscale wide (was 2*): wide enough to grab.
+  // Splitter gaps are 6*guiscale wide (was 4*): the gap itself
+  // is the only area that actually reaches this widget (the panes
+  // cover everything else), so a 4*guiscale gap was easy to miss
+  // and its cursor indication flickered at the edges. 6*guiscale
+  // is the grab area, not just the painted bar.
   void computePaneLayout(const gfx::Rect& rc, int colX[4], int colW[4],
                          int rowY[2], int rowH[2]) const
   {
     const int s = std::max(1, ui::guiscale());
-    const int bw = 4 * s;
-    const int bh = 4 * s;
+    const int bw = 6 * s;
+    const int bh = 6 * s;
     const int totalW = std::max(16, rc.w - 3 * bw);
     const int totalH = std::max(16, rc.h - bh);
     const int minCol = std::min(64 * s, totalW / 4);
@@ -2425,17 +2429,23 @@ protected:
   {
     const gfx::Rect rc = clientBounds();
     const int s = std::max(1, ui::guiscale());
-    const int grip = std::max(5 * s, 6);
+    const int bw = 6 * s;
+    const int bh = 6 * s;
     int colX[4], colW[4], rowY[2], rowH[2];
     computePaneLayout(rc, colX, colW, rowY, rowH);
     if (!rc.contains(pos))
       return 0;
+    // Vertical gap for column c is [colX[c]-bw, colX[c]), so its
+    // centre is colX[c]-bw/2, not colX[c] (the old code centred
+    // the hit area on the gap's right edge, so the resize cursor
+    // appeared up to half a bar inside the next pane and missed
+    // the left half of the painted bar).
     for (int c = 1; c < 4; ++c) {
-      if (std::abs(pos.x - colX[c]) <= grip)
+      if (std::abs(pos.x - (colX[c] - bw / 2)) <= bw / 2 + s)
         return c;
     }
-    const int midY = rowY[1] - 2 * s;
-    if (std::abs(pos.y - midY) <= grip)
+    const int midY = rowY[1] - bh / 2;
+    if (std::abs(pos.y - midY) <= bh / 2 + s)
       return 4;
     return 0;
   }
@@ -2476,32 +2486,49 @@ protected:
         if (m_dragSplitter != 0) {
           const gfx::Rect rc = clientBounds();
           const int s = std::max(1, ui::guiscale());
-          const int bw = 4 * s;
-          const int bh = 4 * s;
+          const int bw = 6 * s;
+          const int bh = 6 * s;
           const int totalW = std::max(16, rc.w - 3 * bw);
           const int totalH = std::max(16, rc.h - bh);
+          // Minimums must match computePaneLayout (64*guiscale, but
+          // never more than a quarter/half of the available size,
+          // or the clamp range below would be empty on small
+          // windows). The old code used 64*guiscale unconditionally
+          // and clamped each side independently, so when one side
+          // hit its minimum the pair total grew: the remainder
+          // column was then squeezed below its minimum and the
+          // panes overflowed past the right edge of the studio.
+          const double minColFrac = double(std::min(64 * s, totalW / 4)) / double(totalW);
+          const double minRowFrac = double(std::min(64 * s, totalH / 2)) / double(totalH);
           if (m_dragSplitter < 4) {
             const double delta = double(mouseMsg->position().x - m_dragStart.x) / double(totalW);
-            const double minFrac = double(64 * s) / double(totalW);
             const int left = m_dragSplitter - 1;
             if (m_dragSplitter < 3) {
               // Move the boundary between two fractional columns,
-              // keeping the other columns (and the total) unchanged.
-              double newLeft = std::clamp(m_dragColFrac[left] + delta, minFrac, 1.0 - minFrac);
-              double applied = newLeft - m_dragColFrac[left];
+              // keeping their pair total (and every other column)
+              // unchanged: newLeft is clamped so the right column
+              // also stays at or above its minimum.
+              const double pair = m_dragColFrac[left] + m_dragColFrac[m_dragSplitter];
+              const double newLeft = std::clamp(m_dragColFrac[left] + delta,
+                                                minColFrac, pair - minColFrac);
               m_colFrac[left] = newLeft;
-              m_colFrac[m_dragSplitter] = std::clamp(m_dragColFrac[m_dragSplitter] - applied,
-                                                     minFrac, 1.0 - minFrac);
+              m_colFrac[m_dragSplitter] = pair - newLeft;
             }
             else {
-              // Boundary before the remainder (Preview) column.
-              m_colFrac[left] = std::clamp(m_dragColFrac[left] + delta, minFrac, 1.0 - minFrac);
+              // Boundary before the remainder (Preview) column:
+              // the pair is this column plus the remainder, so the
+              // remainder also stays at or above its minimum.
+              double remainderFrac = 1.0;
+              for (int i = 0; i < 3; ++i)
+                remainderFrac -= m_dragColFrac[i];
+              const double pair = m_dragColFrac[left] + remainderFrac;
+              m_colFrac[left] = std::clamp(m_dragColFrac[left] + delta,
+                                           minColFrac, pair - minColFrac);
             }
           }
           else {
             const double delta = double(mouseMsg->position().y - m_dragStart.y) / double(totalH);
-            const double minFrac = double(64 * s) / double(totalH);
-            m_rowFrac = std::clamp(m_dragRowFrac + delta, minFrac, 1.0 - minFrac);
+            m_rowFrac = std::clamp(m_dragRowFrac + delta, minRowFrac, 1.0 - minRowFrac);
           }
           layout();
           invalidate();
@@ -2539,7 +2566,7 @@ protected:
     setBoundsQuietly(ev.bounds());
     const gfx::Rect rc = childrenBounds();
     const int s = ui::guiscale();
-    const int bh = 4 * s;
+    const int bh = 6 * s;
     int colX[4], colW[4], rowY[2], rowH[2];
     computePaneLayout(rc, colX, colW, rowY, rowH);
     const int totalH = std::max(16, rc.h - bh);
@@ -2579,8 +2606,8 @@ protected:
     ui::Graphics* g = ev.graphics();
     const gfx::Rect rc = clientBounds();
     const int s = ui::guiscale();
-    const int bw = 4 * s;
-    const int bh = 4 * s;
+    const int bw = 6 * s;
+    const int bh = 6 * s;
     int colX[4], colW[4], rowY[2], rowH[2];
     computePaneLayout(rc, colX, colW, rowY, rowH);
     const int midY = rowY[1] - bh / 2;
