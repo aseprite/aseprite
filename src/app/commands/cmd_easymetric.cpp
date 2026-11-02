@@ -1051,27 +1051,27 @@ static void propagateLinkedDimensions(Doc* doc, SixSurfaceData& data, int srcFac
   {
     SharedSurfaceLayers shared = findSharedLayers(spr);
     if (shared.baseLayer || shared.textureLayer) {
-      int newW[kFaceCount], newH[kFaceCount];
+      int targetW[kFaceCount], targetH[kFaceCount];
       for (int f = 0; f < kFaceCount; ++f) {
-        newW[f] = data.w[f];
-        newH[f] = data.h[f];
+        targetW[f] = data.w[f];
+        targetH[f] = data.h[f];
       }
       if (srcFace >= 0 && srcFace < kFaceCount) {
-        newW[srcFace] = std::clamp(newW, 4, 256);
-        newH[srcFace] = std::clamp(newH, 4, 256);
+        targetW[srcFace] = std::clamp(newW, 4, 256);
+        targetH[srcFace] = std::clamp(newH, 4, 256);
       }
       int oldW[kFaceCount], oldH[kFaceCount];
       sharedFaceSizes(spr, oldW, oldH);
       const gfx::Size exact = sharedSheetSize(spr);
       bool changed = false;
       for (int f = 0; f < kFaceCount; ++f)
-        if (newW[f] != oldW[f] || newH[f] != oldH[f]) changed = true;
+        if (targetW[f] != oldW[f] || targetH[f] != oldH[f]) changed = true;
       if (spr->width() != exact.w || spr->height() != exact.h) changed = true;
       if (changed) {
-        rebuildSharedSheets(doc, newW, newH);
+        rebuildSharedSheets(doc, targetW, targetH);
         for (int f = 0; f < kFaceCount; ++f) {
-          data.w[f] = newW[f];
-          data.h[f] = newH[f];
+          data.w[f] = targetW[f];
+          data.h[f] = targetH[f];
         }
       }
       return;
