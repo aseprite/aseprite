@@ -76,6 +76,11 @@ powershell -File tools\start-aseprite2.ps1
 - `build/bin/data/extensions/aseprite2-bridge` mirrored from `data/extensions/aseprite2-bridge` so dev runs immediately find it.
 
 ## Log (newest first)
+- 2026-11-02 — Noor (Muse): Implemented **zoomable Easymetric model rendering** on branch `feature/easymetric-preview-zoom` (uncommitted, not pushed; now based on `Aseprite-2.0` at `0c5b6ab`), in `src/app/commands/cmd_easymetric.cpp` only, with the upstream 0c5b6ab clipping/smart-object changes kept alongside it:
+  - `EasymetricPreviewWidget` now has `zoom()` / `setZoom()` / `zoomIn()` / `zoomOut()` / `resetZoom()` plus a `ZoomChanged` signal; zoom is clamped to 0.25x-8.0x and multiplies the previous fit-to-pane scale, so 1.0x is unchanged behaviour.
+  - Mouse wheel over the Preview pane zooms (Aseprite palette sign convention: wheel-up zooms in), right/middle-drag pans the zoomed rendering (left-drag still orbits), double-click resets zoom + pan, and a zoomed rendering is clipped to its own map cell (`ui::IntersectClip`) with a `NNN%` badge shown while zoom != 100%.
+  - Fields pane gained a "Preview Zoom:" row (- / + / 100% buttons + live % label) wired to the same widget zoom, so zoom works without a wheel.
+  - Verification: `git diff --check` clean, no new lines over 100 cols, standalone zoom-math test passed (1.0 -> 1.25 -> 1.0, clamp 0.25 / 8.0, 2 wheel steps = 1.5625x). Full MSVC build NOT run here (this VM is Linux; HANDOFF build requires MSVC via `tools\aseprite2-build.ps1` on Windows) — run that before merging.
 - 2026-11-01 — Teamwork Adversarial Reviewer Round 3 (teamwork_reviewer_r3_1): Adversarial stress testing, bug hunting, and fixes for Easymetric 6-Surface Live Studio (R1-R4):
   - **Defect 1 Fixed (Base Layer Drop on Unpacked Groups)**: In `findSurfaceLayers()`, replaced premature return `if (pair.baseLayer || pair.texLayer)` with two-pass resolution, ensuring `Surface_<Face>_Base` is resolved when texture layer is unpacked as a group.
   - **Defect 2 Fixed (Prefixed / Normalized Slice Resolution)**: Replaced strict case-sensitive name check in `findSliceForFace()` with `matchFaceIndex()`, recognizing prefixed (`surface_front`, `face_front`) and lowercase slices without creating redundant duplicate slices.
