@@ -793,7 +793,7 @@ static void setupSharedSurfaceLayers(Doc* doc, bool seedStarterIfBlank)
     api.setSpriteSize(spr, sheetW, sheetH);
 
     auto buildSheet = [&](const char* kind,
-                          const doc::ImageRef& (FaceImage::*img)) {
+                          doc::ImageRef FaceImage::*img) {
       doc::ImageRef sheet(doc::Image::create(spr->pixelFormat(), sheetW, sheetH));
       sheet->clear(0);
       bool hasPixels = false;

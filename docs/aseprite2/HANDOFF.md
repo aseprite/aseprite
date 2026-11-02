@@ -95,6 +95,11 @@ powershell -File tools\start-aseprite2.ps1
   - **Defect 4 Fixed (Slice-Bounded 2-Layer Setup)**: In `setupTwoLayerStructure()`, initialized cels using `slice->bounds().w, h` and positioned them at `slice->bounds().x, y` instead of whole-canvas `sw x sh` at `(0, 0)`.
   - **Hardened Convert to Groups**: Implemented safe `while(true)` restart in `convertSmartObjectsToGroups()` to prevent iterator/pointer invalidation during batch layer conversion.
   - **Verification**: Built with MSVC x64 + Ninja. 284/284 tests passed across all test suites (23/23 R1-R4 E2E, 67/67 Live Studio E2E, 54/54 Adversarial Stress, 140/140 Smart Object E2E).
+- 2026-11-02 — Gemini (Antigravity): Easymetric 6-Surface Live Studio Shared UV Sheets & Versioning Fix:
+  - **Unified Shared UV Sheets**: Replaced 6 per-face layer groups with single Surface_Base clipping layer and single Surface_Texture Smart Object layer over 3x2 UV grid matching user workflow specification.
+  - **Dynamic Git Versioning**: Added CMAKE_CONFIGURE_DEPENDS (.git/HEAD, .git/index) in src/ver/CMakeLists.txt ensuring window title version string updates on every commit without manual cmake reconfigure.
+  - **MSVC Pointer-to-Member Fix**: Resolved C2636 error in cmd_easymetric.cpp by replacing pointer-to-reference with value-type pointer-to-member.
+  - **Test Suite Alignment**: Aligned tests/easymetric_four_requirements_test.lua to shared UV layer model and uniform sheet dimension propagation (23/23 passed).
 - 2026-11-01 — Teamwork Reviewer & QA (teamwork_reviewer_r1): Adversarial audit, defects diagnosis, and comprehensive C++ fixes for Easymetric 6-Surface Live Studio (R1-R4):
   - **R1 3D Geometry Clipping**: Verified camera ray origin offset (`camDist = maxDepthRange * 2.5f`) and near/far bounds, eliminating triangular clipping across Diffuse, Normal, Depth channels.
   - **R2 Smart Object Hierarchy & Safety**: Fixed fake Smart Object creation by calling `ConvertLayer(to="smartobject")`, resolved headless null pointer crash via context fallback in `convertSmartObjectsToGroups()`, fixed layer discovery inside unpacked groups in `findSurfaceLayers()`, and protected editor pixel-editing lockout in `FacePaneBox`.
