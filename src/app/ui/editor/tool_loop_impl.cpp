@@ -83,6 +83,23 @@ static void fill_toolloop_params_from_tool_preferences(ToolLoopParams& params)
 //////////////////////////////////////////////////////////////////////
 // Common properties between drawing/preview ToolLoop impl
 
+static bool isEasymetricSurfaceSliceName(const std::string& name)
+{
+  if (name.empty()) return false;
+  std::string lower;
+  lower.reserve(name.size());
+  for (char c : name)
+    lower.push_back(std::tolower(static_cast<unsigned char>(c)));
+
+  if (lower.rfind("surface_", 0) == 0)
+    lower = lower.substr(8);
+  else if (lower.rfind("face_", 0) == 0)
+    lower = lower.substr(5);
+
+  return (lower == "top" || lower == "down" || lower == "bottom" ||
+          lower == "front" || lower == "back" || lower == "right" || lower == "left");
+}
+
 class ToolLoopBase : public tools::ToolLoop {
 protected:
   Editor* m_editor;
@@ -133,6 +150,9 @@ protected:
   gfx::Region m_allVisibleRgn;
 
   app::TiledModeHelper m_tiledModeHelper;
+
+  bool m_hasSurfaceIsolation = false;
+  gfx::Rect m_surfaceIsolation;
 
 public:
   ToolLoopBase(Editor* editor, Site& site, const doc::Grid& grid, ToolLoopParams& params)
@@ -277,6 +297,13 @@ public:
         App::instance()->contextBar()->createShadeRemap(m_button == tools::ToolLoop::Left));
     }
 
+    // Easymetric surface canvas boundary drawing isolation
+    if (editor && !editor->clipSpriteBounds().isEmpty() && m_sprite &&
+        editor->clipSpriteBounds() != m_sprite->bounds()) {
+      m_hasSurfaceIsolation = true;
+      m_surfaceIsolation = editor->clipSpriteBounds();
+    }
+
     updateAllVisibleRegion();
   }
 
@@ -347,8 +374,41 @@ public:
             app::gen::PixelConnectivity::EIGHT_CONNECTED);
   }
 
+  bool hasSurfaceIsolation() const override { return m_hasSurfaceIsolation; }
+  gfx::Rect getSurfaceIsolation() const override { return m_surfaceIsolation; }
+  void setSurfaceIsolation(const gfx::Rect& rc) override
+  {
+    m_hasSurfaceIsolation = true;
+    m_surfaceIsolation = rc;
+  }
+  void checkSurfaceIsolation(const gfx::Point& pt) override
+  {
+    if (m_editor && !m_editor->clipSpriteBounds().isEmpty() && m_sprite &&
+        m_editor->clipSpriteBounds() != m_sprite->bounds()) {
+      return;
+    }
+    m_hasSurfaceIsolation = false;
+    if (!m_sprite)
+      return;
+    for (auto* slice : m_sprite->slices()) {
+      if (!slice || slice->name().empty())
+        continue;
+      if (isEasymetricSurfaceSliceName(slice->name())) {
+        const auto* key = slice->getByFrame(m_frame);
+        if (key && key->bounds().contains(pt)) {
+          m_hasSurfaceIsolation = true;
+          m_surfaceIsolation = key->bounds();
+          break;
+        }
+      }
+    }
+  }
+
   bool isPointInsideCanvas(const gfx::Point& point) override
   {
+    if (m_hasSurfaceIsolation) {
+      return m_surfaceIsolation.contains(point);
+    }
     const int a = ((getTiledMode() == TiledMode::X_AXIS || getTiledMode() == TiledMode::BOTH) ? 3 :
                                                                                                 1);
     const int b = ((getTiledMode() == TiledMode::Y_AXIS || getTiledMode() == TiledMode::BOTH) ? 3 :

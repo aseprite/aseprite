@@ -11,6 +11,7 @@
 #include "app/app.h"
 #include "app/cmd/add_slice.h"
 #include "app/cmd/add_tag.h"
+#include "app/cmd/set_slice_key.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/console.h"
@@ -37,6 +38,7 @@
 #include "doc/frames_sequence.h"
 #include "doc/image.h"
 #include "doc/layer.h"
+#include "doc/layer_smart_object.h"
 #include "doc/primitives.h"
 #include "doc/slice.h"
 #include "doc/sprite.h"
@@ -240,6 +242,41 @@ struct SixSurfaceData {
     S = std::max(S, std::max(fw, fh));
   }
 
+  void propagateDimensionLink(int srcFace, int newW, int newH)
+  {
+    newW = std::clamp(newW, 4, 256);
+    newH = std::clamp(newH, 4, 256);
+
+    int X = w[kFaceFront];
+    int Y = h[kFaceFront];
+    int Z = w[kFaceRight];
+
+    switch (srcFace) {
+      case kFaceTop:
+      case kFaceDown:
+        X = newW;
+        Z = newH;
+        break;
+      case kFaceFront:
+      case kFaceBack:
+        X = newW;
+        Y = newH;
+        break;
+      case kFaceRight:
+      case kFaceLeft:
+        Z = newW;
+        Y = newH;
+        break;
+    }
+
+    setFaceSize(kFaceTop,   X, Z);
+    setFaceSize(kFaceDown,  X, Z);
+    setFaceSize(kFaceFront, X, Y);
+    setFaceSize(kFaceBack,  X, Y);
+    setFaceSize(kFaceRight, Z, Y);
+    setFaceSize(kFaceLeft,  Z, Y);
+  }
+
   uint32_t sample(int face, int u, int v) const
   {
     const int fw = w[face];
@@ -436,15 +473,34 @@ static SculptedVoxelVolume buildSculptedVolume(const SixSurfaceData& data,
   return vol;
 }
 
+static int matchFaceIndex(const std::string& name)
+{
+  if (name.empty()) return -1;
+  std::string lower;
+  lower.reserve(name.size());
+  for (char c : name)
+    lower.push_back(std::tolower(static_cast<unsigned char>(c)));
+
+  if (lower.rfind("surface_", 0) == 0)
+    lower = lower.substr(8);
+  else if (lower.rfind("face_", 0) == 0)
+    lower = lower.substr(5);
+
+  if (lower == "top") return kFaceTop;
+  if (lower == "down" || lower == "bottom") return kFaceDown;
+  if (lower == "front") return kFaceFront;
+  if (lower == "back") return kFaceBack;
+  if (lower == "right") return kFaceRight;
+  if (lower == "left") return kFaceLeft;
+  return -1;
+}
+
 static doc::Slice* findSliceForFace(doc::Sprite* spr, int face)
 {
   if (!spr || face < 0 || face >= kFaceCount)
     return nullptr;
-  const char* primary = kFaceSpecs[face].sliceName;
-  const char* display = kFaceSpecs[face].displayName;
   for (auto* slice : spr->slices()) {
-    if (slice->name() == primary || slice->name() == display ||
-        (face == kFaceDown && slice->name() == "BOTTOM")) {
+    if (slice && matchFaceIndex(slice->name()) == face) {
       return slice;
     }
   }
@@ -470,6 +526,389 @@ static doc::LayerImage* findOrCreateLayer(app::Doc* doc,
   if (auto* existing = findLayerByName(spr, name))
     return existing;
   return api.newLayer(spr->root(), name);
+}
+
+struct SurfaceLayerPair {
+  doc::LayerImage* baseLayer = nullptr;
+  doc::LayerImage* texLayer = nullptr;
+};
+
+static SurfaceLayerPair findSurfaceLayers(doc::Sprite* spr, int face)
+{
+  SurfaceLayerPair pair;
+  if (!spr || face < 0 || face >= kFaceCount)
+    return pair;
+
+  const std::string faceName = kFaceSpecs[face].sliceName;
+  const std::string baseName = "Surface_" + faceName + "_Base";
+  const std::string texName = "Surface_" + faceName + "_Texture";
+  const std::string defaultName = "Surface_" + faceName;
+  const std::string groupName = "Surface_" + faceName + "_Group";
+
+  // 1. Check if there's a group named Surface_<Face>, Surface_<Face>_Group, or Surface_<Face>_Texture (unpacked SO)
+  for (doc::Layer* lyr : spr->allLayers()) {
+    if (lyr->isGroup() && (lyr->name() == defaultName || lyr->name() == groupName || lyr->name() == texName ||
+                           (face == kFaceDown && (lyr->name() == "Surface_BOTTOM" || lyr->name() == "Surface_Bottom" || lyr->name() == "Surface_BOTTOM_Group" || lyr->name() == "Surface_Bottom_Group")))) {
+      doc::LayerGroup* grp = static_cast<doc::LayerGroup*>(lyr);
+      for (doc::Layer* child : grp->layers()) {
+        if (!child->isImage()) continue;
+        doc::LayerImage* childImg = static_cast<doc::LayerImage*>(child);
+        const std::string& cn = child->name();
+        if (cn == "Texture" || cn == "texture" || cn == texName || child->isSmartObject()) {
+          if (!pair.texLayer) pair.texLayer = childImg;
+        }
+        else if (cn == "Base" || cn == "base" || cn == baseName || !pair.baseLayer) {
+          if (!pair.baseLayer) pair.baseLayer = childImg;
+        }
+      }
+      if (pair.baseLayer && pair.texLayer)
+        return pair;
+    }
+  }
+
+  // 2. Check flat layers: Surface_<Face>_Base and Surface_<Face>_Texture
+  if (!pair.baseLayer) {
+    pair.baseLayer = findLayerByName(spr, baseName);
+    if (!pair.baseLayer && face == kFaceDown) {
+      pair.baseLayer = findLayerByName(spr, "Surface_BOTTOM_Base");
+      if (!pair.baseLayer)
+        pair.baseLayer = findLayerByName(spr, "Surface_Bottom_Base");
+    }
+  }
+  if (!pair.texLayer) {
+    pair.texLayer = findLayerByName(spr, texName);
+    if (!pair.texLayer && face == kFaceDown) {
+      pair.texLayer = findLayerByName(spr, "Surface_BOTTOM_Texture");
+      if (!pair.texLayer)
+        pair.texLayer = findLayerByName(spr, "Surface_Bottom_Texture");
+    }
+  }
+
+  // 3. Fallback: if no base layer found, check Surface_<Face>
+  if (!pair.baseLayer) {
+    pair.baseLayer = findLayerByName(spr, defaultName);
+    if (!pair.baseLayer && face == kFaceDown) {
+      pair.baseLayer = findLayerByName(spr, "Surface_BOTTOM");
+      if (!pair.baseLayer)
+        pair.baseLayer = findLayerByName(spr, "Surface_Bottom");
+    }
+  }
+
+  return pair;
+}
+
+static void propagateLinkedDimensions(Doc* doc, SixSurfaceData& data, int srcFace, int newW, int newH)
+{
+  if (!doc || !doc->sprite()) return;
+  doc::Sprite* spr = doc->sprite();
+
+  data.propagateDimensionLink(srcFace, newW, newH);
+
+  try {
+    Tx tx(doc, "Resize Easymetric Surface Dimensions", ModifyDocument);
+    DocApi api = doc->getApi(tx);
+
+    int maxW = spr->width();
+    int maxH = spr->height();
+    for (int f = 0; f < kFaceCount; ++f) {
+      if (doc::Slice* sl = findSliceForFace(spr, f)) {
+        for (auto it = sl->begin(); it != sl->end(); ++it) {
+          maxW = std::max(maxW, it->value()->bounds().x + data.w[f]);
+          maxH = std::max(maxH, it->value()->bounds().y + data.h[f]);
+        }
+      }
+      maxW = std::max(maxW, data.w[f]);
+      maxH = std::max(maxH, data.h[f]);
+    }
+    if (maxW > spr->width() || maxH > spr->height()) {
+      api.setSpriteSize(spr, maxW, maxH);
+    }
+
+    std::set<doc::ObjectId> resizedImages;
+
+    for (int f = 0; f < kFaceCount; ++f) {
+      const int targetW = data.w[f];
+      const int targetH = data.h[f];
+
+      // Update slice bounds for all keys in slice
+      doc::Slice* sl = findSliceForFace(spr, f);
+      if (!sl) {
+        sl = new doc::Slice;
+        sl->setName(kFaceSpecs[f].sliceName);
+        sl->userData().setColor(
+          doc::rgba(kFaceSpecs[f].r, kFaceSpecs[f].g, kFaceSpecs[f].b, 255));
+        sl->insert(0, doc::SliceKey(gfx::Rect(0, 0, targetW, targetH)));
+        tx(new cmd::AddSlice(spr, sl));
+      }
+      else if (sl->empty()) {
+        tx(new cmd::SetSliceKey(sl, 0, doc::SliceKey(gfx::Rect(0, 0, targetW, targetH))));
+      }
+      else {
+        for (auto it = sl->begin(); it != sl->end(); ++it) {
+          gfx::Rect curBounds = it->value()->bounds();
+          curBounds.w = targetW;
+          curBounds.h = targetH;
+          tx(new cmd::SetSliceKey(sl, it->frame(),
+            doc::SliceKey(curBounds, it->value()->center(), it->value()->pivot())));
+        }
+      }
+
+      // Update layer cels
+      SurfaceLayerPair sp = findSurfaceLayers(spr, f);
+      auto resizeLayerCel = [&](doc::LayerImage* lyr) {
+        if (!lyr) return;
+        for (doc::frame_t fr = doc::frame_t(0); fr <= spr->lastFrame(); ++fr) {
+          doc::Cel* cel = lyr->cel(fr);
+          if (!cel || !cel->image()) continue;
+          if (resizedImages.count(cel->image()->id())) continue;
+
+          if (cel->image()->width() != targetW || cel->image()->height() != targetH) {
+            doc::ImageRef resized(doc::Image::create(cel->image()->pixelFormat(), targetW, targetH));
+            resized->clear(0);
+            doc::copy_image(resized.get(), cel->image(), 0, 0);
+            resizedImages.insert(resized->id());
+            api.replaceImage(spr, cel->imageRef(), resized);
+            api.setCelPosition(spr, cel, cel->x(), cel->y());
+          }
+        }
+      };
+      resizeLayerCel(sp.baseLayer);
+      resizeLayerCel(sp.texLayer);
+    }
+
+    // Also update Surface_DEPTH if present
+    if (doc::LayerImage* depthLyr = findLayerByName(spr, "Surface_DEPTH")) {
+      const int maxFaceW = std::max({ data.w[kFaceTop], data.w[kFaceFront], data.w[kFaceRight] });
+      const int maxFaceH = std::max({ data.h[kFaceTop], data.h[kFaceFront], data.h[kFaceRight] });
+      for (doc::frame_t fr = doc::frame_t(0); fr <= spr->lastFrame(); ++fr) {
+        doc::Cel* cel = depthLyr->cel(fr);
+        if (!cel || !cel->image()) continue;
+        if (resizedImages.count(cel->image()->id())) continue;
+        if (cel->image()->width() != maxFaceW || cel->image()->height() != maxFaceH) {
+          doc::ImageRef resized(doc::Image::create(cel->image()->pixelFormat(), maxFaceW, maxFaceH));
+          resized->clear(0);
+          doc::copy_image(resized.get(), cel->image(), 0, 0);
+          resizedImages.insert(resized->id());
+          api.replaceImage(spr, cel->imageRef(), resized);
+          api.setCelPosition(spr, cel, cel->x(), cel->y());
+        }
+      }
+    }
+
+    tx.commit();
+    doc->notifyGeneralUpdate();
+  }
+  catch (const std::exception& e) {
+    // Ignore
+  }
+}
+
+static void propagateLinkedDimensions(Doc* doc, int srcFace, int newW, int newH)
+{
+  if (!doc || !doc->sprite()) return;
+  doc::Sprite* spr = doc->sprite();
+  SixSurfaceData data;
+  data.init(std::max(spr->width(), spr->height()));
+  for (int f = 0; f < kFaceCount; ++f) {
+    if (doc::Slice* sl = findSliceForFace(spr, f)) {
+      if (const auto* key = sl->getByFrame(0)) {
+        data.w[f] = key->bounds().w;
+        data.h[f] = key->bounds().h;
+        continue;
+      }
+    }
+    SurfaceLayerPair sp = findSurfaceLayers(spr, f);
+    doc::LayerImage* lyr = sp.baseLayer ? sp.baseLayer : sp.texLayer;
+    if (lyr && lyr->cel(0) && lyr->cel(0)->image()) {
+      data.w[f] = lyr->cel(0)->image()->width();
+      data.h[f] = lyr->cel(0)->image()->height();
+    }
+    else {
+      data.w[f] = spr->width();
+      data.h[f] = spr->height();
+    }
+  }
+  propagateLinkedDimensions(doc, data, srcFace, newW, newH);
+}
+
+static void setupTwoLayerStructure(Doc* doc, bool asSmartObjects)
+{
+  if (!doc || !doc->sprite()) return;
+  doc::Sprite* spr = doc->sprite();
+  const int sw = spr->width();
+  const int sh = spr->height();
+
+  try {
+    Tx tx(doc, asSmartObjects ? "Setup 2-Layer Smart Object Surfaces" : "Setup 2-Layer Group Surfaces", ModifyDocument);
+    DocApi api = doc->getApi(tx);
+
+    for (int f = 0; f < kFaceCount; ++f) {
+      const std::string faceName = kFaceSpecs[f].sliceName;
+      const std::string baseName = "Surface_" + faceName + "_Base";
+      const std::string texName = "Surface_" + faceName + "_Texture";
+      const std::string groupName = "Surface_" + faceName + "_Group";
+
+      doc::Slice* slice = findSliceForFace(spr, f);
+      int fw = sw;
+      int fh = sh;
+      int fx = 0;
+      int fy = 0;
+      if (!slice) {
+        slice = new doc::Slice;
+        slice->setName(kFaceSpecs[f].sliceName);
+        slice->userData().setColor(
+          doc::rgba(kFaceSpecs[f].r, kFaceSpecs[f].g, kFaceSpecs[f].b, 255));
+        slice->insert(0, doc::SliceKey(gfx::Rect(0, 0, sw, sh)));
+        tx(new cmd::AddSlice(spr, slice));
+      }
+      else if (const auto* key = slice->getByFrame(0)) {
+        if (!key->bounds().isEmpty()) {
+          fw = key->bounds().w;
+          fh = key->bounds().h;
+          fx = key->bounds().x;
+          fy = key->bounds().y;
+        }
+      }
+
+      SurfaceLayerPair sp = findSurfaceLayers(spr, f);
+
+      if (!asSmartObjects) {
+        doc::LayerGroup* grp = nullptr;
+        for (doc::Layer* lyr : spr->allLayers()) {
+          if (lyr->isGroup() && (lyr->name() == groupName || lyr->name() == ("Surface_" + faceName))) {
+            grp = static_cast<doc::LayerGroup*>(lyr);
+            break;
+          }
+        }
+        if (!grp) {
+          grp = api.newGroup(spr->root(), groupName);
+          grp->userData().setColor(
+            doc::rgba(kFaceSpecs[f].r, kFaceSpecs[f].g, kFaceSpecs[f].b, 255));
+        }
+
+        if (!sp.baseLayer) {
+          sp.baseLayer = api.newLayer(grp, baseName);
+          sp.baseLayer->userData().setColor(
+            doc::rgba(kFaceSpecs[f].r, kFaceSpecs[f].g, kFaceSpecs[f].b, 255));
+          doc::ImageRef bImg(doc::Image::create(spr->pixelFormat(), fw, fh));
+          bImg->clear(0);
+          for (int v = 0; v < fh; ++v)
+            for (int u = 0; u < fw; ++u)
+              doc::put_pixel(bImg.get(), u, v, starterSurfacePixel(f, u, v, fw, fh));
+          api.addCel(sp.baseLayer, doc::frame_t(0), bImg);
+          if (fx != 0 || fy != 0)
+            api.setCelPosition(spr, sp.baseLayer->cel(0), fx, fy);
+        }
+        else if (sp.baseLayer->parent() != grp) {
+          api.restackLayerAfter(sp.baseLayer, grp, grp->lastLayer());
+        }
+
+        if (!sp.texLayer) {
+          sp.texLayer = api.newLayer(grp, texName);
+          sp.texLayer->userData().setColor(
+            doc::rgba(kFaceSpecs[f].r, kFaceSpecs[f].g, kFaceSpecs[f].b, 180));
+          doc::ImageRef tImg(doc::Image::create(spr->pixelFormat(), fw, fh));
+          tImg->clear(0);
+          api.addCel(sp.texLayer, doc::frame_t(0), tImg);
+          if (fx != 0 || fy != 0)
+            api.setCelPosition(spr, sp.texLayer->cel(0), fx, fy);
+        }
+        else if (sp.texLayer->parent() != grp) {
+          api.restackLayerAfter(sp.texLayer, grp, grp->lastLayer());
+        }
+      }
+      else {
+        if (!sp.baseLayer) {
+          sp.baseLayer = api.newLayer(spr->root(), baseName);
+          sp.baseLayer->userData().setColor(
+            doc::rgba(kFaceSpecs[f].r, kFaceSpecs[f].g, kFaceSpecs[f].b, 255));
+          doc::ImageRef bImg(doc::Image::create(spr->pixelFormat(), fw, fh));
+          bImg->clear(0);
+          for (int v = 0; v < fh; ++v)
+            for (int u = 0; u < fw; ++u)
+              doc::put_pixel(bImg.get(), u, v, starterSurfacePixel(f, u, v, fw, fh));
+          api.addCel(sp.baseLayer, doc::frame_t(0), bImg);
+          if (fx != 0 || fy != 0)
+            api.setCelPosition(spr, sp.baseLayer->cel(0), fx, fy);
+        }
+
+        if (!sp.texLayer) {
+          sp.texLayer = api.newLayer(spr->root(), texName);
+          sp.texLayer->userData().setColor(
+            doc::rgba(kFaceSpecs[f].r, kFaceSpecs[f].g, kFaceSpecs[f].b, 180));
+          doc::ImageRef tImg(doc::Image::create(spr->pixelFormat(), fw, fh));
+          tImg->clear(0);
+          api.addCel(sp.texLayer, doc::frame_t(0), tImg);
+          if (fx != 0 || fy != 0)
+            api.setCelPosition(spr, sp.texLayer->cel(0), fx, fy);
+        }
+      }
+    }
+    tx.commit();
+  }
+  catch (const std::exception& e) {
+    // Ignore
+  }
+
+  // If smart objects requested, convert each texture layer to a Smart Object
+  if (asSmartObjects) {
+    Context* ctx = UIContext::instance() ? static_cast<Context*>(UIContext::instance()) :
+                                           App::instance()->context();
+    if (ctx) {
+      for (int f = 0; f < kFaceCount; ++f) {
+        SurfaceLayerPair sp = findSurfaceLayers(spr, f);
+        if (sp.texLayer && !sp.texLayer->isSmartObject()) {
+          ctx->setActiveLayer(sp.texLayer);
+          Command* cmd = Commands::instance()->byId(CommandId::ConvertLayer());
+          if (cmd) {
+            Params params;
+            params.set("to", "smartobject");
+            params.set("ui", "false");
+            ctx->executeCommand(cmd, params);
+          }
+        }
+      }
+    }
+  }
+
+  doc->notifyGeneralUpdate();
+}
+
+static void convertSmartObjectsToGroups(Doc* doc)
+{
+  if (!doc || !doc->sprite()) return;
+  doc::Sprite* spr = doc->sprite();
+
+  Context* ctx = UIContext::instance() ? static_cast<Context*>(UIContext::instance()) :
+                                         App::instance()->context();
+  if (!ctx) return;
+
+  bool convertedAny = false;
+  while (true) {
+    doc::Layer* target = nullptr;
+    for (doc::Layer* lyr : spr->allLayers()) {
+      if (lyr->isSmartObject()) {
+        target = lyr;
+        break;
+      }
+    }
+    if (!target) break;
+
+    ctx->setActiveLayer(target);
+    Command* cmd = Commands::instance()->byId(CommandId::ConvertLayer());
+    if (cmd) {
+      Params params;
+      params.set("to", "group");
+      ctx->executeCommand(cmd, params);
+      convertedAny = true;
+    }
+    else {
+      break;
+    }
+  }
+
+  if (convertedAny)
+    doc->notifyGeneralUpdate();
 }
 
 class LinkToggleButton : public ui::Button {
@@ -665,8 +1104,20 @@ protected:
   {
     if (msg->type() == ui::kMouseDownMessage) {
       if (m_docView && m_docView->document() && m_docView->document()->sprite()) {
-        const std::string lyrName = std::string("Surface_") + kFaceSpecs[m_faceIndex].sliceName;
-        if (doc::LayerImage* lyr = findLayerByName(m_docView->document()->sprite(), lyrName)) {
+        doc::Sprite* spr = m_docView->document()->sprite();
+        SurfaceLayerPair sp = findSurfaceLayers(spr, m_faceIndex);
+        doc::LayerImage* lyr = nullptr;
+        if (sp.texLayer && !sp.texLayer->isSmartObject())
+          lyr = sp.texLayer;
+        else if (sp.baseLayer)
+          lyr = sp.baseLayer;
+        else if (sp.texLayer)
+          lyr = sp.texLayer;
+        if (!lyr) {
+          const std::string lyrName = std::string("Surface_") + kFaceSpecs[m_faceIndex].sliceName;
+          lyr = findLayerByName(spr, lyrName);
+        }
+        if (lyr) {
           m_editor->setLayer(lyr);
           if (m_docView->editor() != m_editor) {
             m_docView->setActivePaneEditor(m_editor);
@@ -989,6 +1440,613 @@ static void setupSixSurfacesOnDoc(Doc* doc, bool seedStarterIfBlank)
   doc->notifyGeneralUpdate();
 }
 
+static bool extractSixSurfaces(
+  Doc* doc,
+  doc::frame_t frame,
+  SixSurfaceData& out,
+  bool useFaceDepth = true,
+  DocView* docView = nullptr,
+  const std::array<bool, 3>* colLinked = nullptr)
+{
+  if (!doc || !doc->sprite()) return false;
+  doc::Sprite* spr = doc->sprite();
+  const int sw = spr->width();
+  const int sh = spr->height();
+  out.init(std::max(sw, sh));
+
+  doc::ImageRef depthSrcImg;
+  if (useFaceDepth) {
+    if (doc::LayerImage* depthLyr = findLayerByName(spr, "Surface_DEPTH")) {
+      if (const doc::Cel* dCel = depthLyr->cel(frame)) {
+        if (dCel->image() && dCel->image()->pixelFormat() == doc::IMAGE_RGB) {
+          depthSrcImg.reset(doc::Image::create(doc::IMAGE_RGB, sw, sh));
+          depthSrcImg->clear(0);
+          doc::copy_image(depthSrcImg.get(), dCel->image(), dCel->x(), dCel->y());
+          out.hasCustomDepthLayer = true;
+        }
+      }
+    }
+  }
+
+  ExtraCelRef extra = doc->extraCel();
+
+  for (int f = 0; f < kFaceCount; ++f) {
+    doc::Slice* slice = findSliceForFace(spr, f);
+    gfx::Rect faceRect(0, 0, sw, sh);
+    if (slice) {
+      const auto* key = slice->getByFrame(frame);
+      if (key && !key->bounds().isEmpty()) {
+        faceRect = key->bounds();
+      }
+    }
+    const int fw = faceRect.w;
+    const int fh = faceRect.h;
+    out.bounds[f] = faceRect;
+    out.setFaceSize(f, fw, fh);
+    out.hasSlices = true;
+
+    SurfaceLayerPair sp = findSurfaceLayers(spr, f);
+    doc::LayerImage* baseLyr = sp.baseLayer;
+    doc::LayerImage* texLyr = sp.texLayer;
+
+    // If no dedicated surface layer found, check shared layer
+    if (!baseLyr && !texLyr) {
+      for (doc::Layer* l : spr->allLayers()) {
+        if (l->isImage() && l->isVisible()) {
+          baseLyr = static_cast<doc::LayerImage*>(l);
+          break;
+        }
+      }
+    }
+
+    const doc::Cel* baseCel = baseLyr ? baseLyr->cel(frame) : nullptr;
+    const doc::Cel* texCel = texLyr ? texLyr->cel(frame) : nullptr;
+    const doc::Image* baseImg = baseCel ? baseCel->image() : nullptr;
+    const doc::Image* texImg = texCel ? texCel->image() : nullptr;
+
+    const int baseOx = baseCel ? baseCel->x() : 0;
+    const int baseOy = baseCel ? baseCel->y() : 0;
+    const int texOx = texCel ? texCel->x() : 0;
+    const int texOy = texCel ? texCel->y() : 0;
+
+    auto getRgbaPixel = [&](const doc::Image* img, int x, int y) -> uint32_t {
+      if (!img || x < 0 || x >= img->width() || y < 0 || y >= img->height())
+        return 0;
+      switch (img->pixelFormat()) {
+        case doc::IMAGE_RGB:
+          return doc::get_pixel_fast<doc::RgbTraits>(img, x, y);
+        case doc::IMAGE_GRAYSCALE: {
+          const doc::color_t c = doc::get_pixel_fast<doc::GrayscaleTraits>(img, x, y);
+          const int val = doc::graya_getv(c);
+          return doc::rgba(val, val, val, doc::graya_geta(c));
+        }
+        case doc::IMAGE_INDEXED: {
+          const doc::color_t idx = doc::get_pixel_fast<doc::IndexedTraits>(img, x, y);
+          if (idx == spr->transparentColor())
+            return 0;
+          if (const doc::Palette* pal = spr->palette(frame))
+            return pal->getEntry(idx);
+          return 0;
+        }
+        default:
+          return 0;
+      }
+    };
+
+    bool hasPixels = false;
+
+    for (int v = 0; v < fh; ++v) {
+      const int canvasY = faceRect.y + v;
+      for (int u = 0; u < fw; ++u) {
+        const int canvasX = faceRect.x + u;
+
+        uint32_t baseCol = getRgbaPixel(baseImg, canvasX - baseOx, canvasY - baseOy);
+        uint32_t texCol = getRgbaPixel(texImg, canvasX - texOx, canvasY - texOy);
+
+        uint32_t finalCol = 0;
+        if (baseImg && texImg) {
+          // Two-layer clipping mask & smart object structure:
+          // Base layer defines alpha clipping mask.
+          // When base alpha > 16: texture layer overrides base content.
+          // When texture is transparent: falls back to base content.
+          // When texture is semi-transparent: alpha-blends over base content.
+          // When base alpha <= 16: masked out (transparent).
+          if (doc::rgba_geta(baseCol) > 16) {
+            const int aT = doc::rgba_geta(texCol);
+            if (aT == 255) {
+              finalCol = texCol;
+            }
+            else if (aT > 0) {
+              const int invA = 255 - aT;
+              finalCol = doc::rgba(
+                (doc::rgba_getr(texCol) * aT + doc::rgba_getr(baseCol) * invA) / 255,
+                (doc::rgba_getg(texCol) * aT + doc::rgba_getg(baseCol) * invA) / 255,
+                (doc::rgba_getb(texCol) * aT + doc::rgba_getb(baseCol) * invA) / 255,
+                doc::rgba_geta(baseCol));
+            }
+            else {
+              finalCol = baseCol;
+            }
+          }
+        }
+        else if (texImg) {
+          finalCol = texCol;
+        }
+        else if (baseImg) {
+          finalCol = baseCol;
+        }
+
+        if (doc::rgba_geta(finalCol) > 0) {
+          out.pixels[f][v * fw + u] = finalCol;
+          hasPixels = true;
+        }
+      }
+    }
+
+    // Check if extra cel applies to this face editor
+    if (extra && extra->type() != render::ExtraType::NONE &&
+        extra->purpose() != ExtraCel::Purpose::BrushPreview &&
+        extra->image() && extra->cel() &&
+        docView && docView->editor() &&
+        (docView->editor()->layer() == baseLyr || docView->editor()->layer() == texLyr)) {
+      const doc::Image* eImg = extra->image();
+      const int ox = extra->cel()->x();
+      const int oy = extra->cel()->y();
+      const bool editingTex = (docView->editor()->layer() == texLyr && baseImg);
+
+      for (int v = 0; v < fh; ++v) {
+        const int canvasY = faceRect.y + v;
+        const int sy = canvasY - oy;
+        if (sy < 0 || sy >= eImg->height()) continue;
+        for (int u = 0; u < fw; ++u) {
+          const int canvasX = faceRect.x + u;
+          const int sx = canvasX - ox;
+          if (sx < 0 || sx >= eImg->width()) continue;
+          const uint32_t ec = getRgbaPixel(eImg, sx, sy);
+          if (doc::rgba_geta(ec) > 0) {
+            if (editingTex) {
+              const int bx = canvasX - baseOx;
+              const int by = canvasY - baseOy;
+              uint32_t bc = getRgbaPixel(baseImg, bx, by);
+              if (doc::rgba_geta(bc) > 16) {
+                const int aT = doc::rgba_geta(ec);
+                if (aT == 255) {
+                  out.pixels[f][v * fw + u] = ec;
+                }
+                else if (aT > 0) {
+                  const int invA = 255 - aT;
+                  out.pixels[f][v * fw + u] = doc::rgba(
+                    (doc::rgba_getr(ec) * aT + doc::rgba_getr(bc) * invA) / 255,
+                    (doc::rgba_getg(ec) * aT + doc::rgba_getg(bc) * invA) / 255,
+                    (doc::rgba_getb(ec) * aT + doc::rgba_getb(bc) * invA) / 255,
+                    doc::rgba_geta(bc));
+                }
+                else {
+                  out.pixels[f][v * fw + u] = bc;
+                }
+                hasPixels = true;
+              }
+            }
+            else {
+              out.pixels[f][v * fw + u] = ec;
+              hasPixels = true;
+            }
+          }
+        }
+      }
+    }
+
+    // If custom depth layer is present, extract depth for this face
+    if (depthSrcImg) {
+      for (int v = 0; v < fh; ++v) {
+        const int canvasY = faceRect.y + v;
+        if (canvasY < 0 || canvasY >= depthSrcImg->height()) continue;
+        for (int u = 0; u < fw; ++u) {
+          const int canvasX = faceRect.x + u;
+          if (canvasX < 0 || canvasX >= depthSrcImg->width()) continue;
+          const uint32_t dc = doc::get_pixel_fast<doc::RgbTraits>(depthSrcImg.get(), canvasX, canvasY);
+          out.depthPixels[f][v * fw + u] = clampByte(
+            doc::rgba_getr(dc) * 0.299f + doc::rgba_getg(dc) * 0.587f + doc::rgba_getb(dc) * 0.114f);
+        }
+      }
+    }
+
+    if (!hasPixels) {
+      for (int v = 0; v < fh; ++v) {
+        for (int u = 0; u < fw; ++u) {
+          out.pixels[f][v * fw + u] = starterSurfacePixel(f, u, v, fw, fh);
+        }
+      }
+    }
+  }
+
+  // Unify linked opposing face pairs (Top/Down, Front/Back, Right/Left)
+  if (colLinked) {
+    for (int c = 0; c < 3; ++c) {
+      out.colLinked[c] = (*colLinked)[c];
+      if ((*colLinked)[c]) {
+        const int topFace = c * 2;
+        const int btmFace = c * 2 + 1;
+        out.pixels[btmFace] = out.pixels[topFace];
+        out.depthPixels[btmFace] = out.depthPixels[topFace];
+        out.w[btmFace] = out.w[topFace];
+        out.h[btmFace] = out.h[topFace];
+        out.bounds[btmFace] = out.bounds[topFace];
+      }
+    }
+  }
+
+  return true;
+}
+
+struct Render3DResult {
+  doc::ImageRef diffImg;
+  doc::ImageRef normImg;
+  doc::ImageRef deptImg;
+  int outW = 0;
+  int outH = 0;
+  float cxScreen = 0.0f;
+  float cyScreen = 0.0f;
+};
+
+static Render3DResult compute3DPreviewImages(
+  const SixSurfaceData& data,
+  int yawDeg,
+  int pitchDeg,
+  int pivX,
+  int pivY,
+  int pivZ,
+  int renderStyle = 0,
+  bool addOutline = true,
+  bool allowCutouts = true)
+{
+  Render3DResult res;
+  const float halfX = std::max({ data.w[kFaceFront], data.w[kFaceBack], data.w[kFaceTop], data.w[kFaceDown] }) * 0.5f;
+  const float halfY = std::max({ data.h[kFaceFront], data.h[kFaceBack], data.h[kFaceLeft], data.h[kFaceRight] }) * 0.5f;
+  const float halfZ = std::max({ data.w[kFaceLeft], data.w[kFaceRight], data.h[kFaceTop], data.h[kFaceDown] }) * 0.5f;
+  const int maxDim = std::max({ int(halfX * 2.0f), int(halfY * 2.0f), int(halfZ * 2.0f), 24 });
+  const int outW = maxDim * 2 + 16;
+  const int outH = maxDim * 2 + 16;
+
+  res.outW = outW;
+  res.outH = outH;
+
+  constexpr float kDegToRad = 3.14159265358979323846f / 180.0f;
+  const float yaw = yawDeg * kDegToRad;
+  const float pitch = pitchDeg * kDegToRad;
+  const float cy = std::cos(yaw), sy = std::sin(yaw);
+  const float cp = std::cos(pitch), sp = std::sin(pitch);
+
+  const float rxX = cy,      rxY = 0.0f, rzX = -sy;
+  const float ryX = sy * sp, ryY = cp,   ryZ = cy * sp;
+  const float vdX = sy * cp, vdY = -sp,  vdZ = cy * cp;
+
+  const float pivOffX = ((pivX - 50) * 0.01f) * (halfX * 2.0f);
+  const float pivOffY = ((pivY - 50) * 0.01f) * (halfY * 2.0f);
+  const float pivOffZ = ((pivZ - 50) * 0.01f) * (halfZ * 2.0f);
+
+  const float cxScreen = outW * 0.5f;
+  const float cyScreen = outH * 0.5f;
+  res.cxScreen = cxScreen;
+  res.cyScreen = cyScreen;
+
+  res.diffImg.reset(doc::Image::create(doc::IMAGE_RGB, outW, outH));
+  res.normImg.reset(doc::Image::create(doc::IMAGE_RGB, outW, outH));
+  res.deptImg.reset(doc::Image::create(doc::IMAGE_RGB, outW, outH));
+  res.diffImg->clear(0);
+  res.normImg->clear(0);
+  res.deptImg->clear(0);
+
+  SculptedVoxelVolume vol = buildSculptedVolume(data, pivX, pivY, pivZ);
+
+  std::vector<int> faceMap(outW * outH, -1);
+  const float maxDepthRange = float(maxDim) * 1.732f;
+  const float Lx = -0.45f, Ly = -0.60f, Lz = 0.66f;
+
+  const float camDist = maxDepthRange * 2.5f;
+  const float nearPlane = 1.0f;
+  const float farPlane = camDist * 2.0f + maxDepthRange;
+
+  for (int py = 0; py < outH; ++py) {
+    const float camY = (py - cyScreen);
+    uint32_t* __restrict diffRow =
+      reinterpret_cast<uint32_t*>(res.diffImg->getPixelAddress(0, py));
+    uint32_t* __restrict normRow =
+      reinterpret_cast<uint32_t*>(res.normImg->getPixelAddress(0, py));
+    uint32_t* __restrict deptRow =
+      reinterpret_cast<uint32_t*>(res.deptImg->getPixelAddress(0, py));
+
+    for (int px = 0; px < outW; ++px) {
+      const float camX = (px - cxScreen);
+      const float ox = (camX * rxX + camY * ryX + pivOffX) - camDist * vdX;
+      const float oy = (camX * rxY + camY * ryY + pivOffY) - camDist * vdY;
+      const float oz = (camX * rzX + camY * ryZ + pivOffZ) - camDist * vdZ;
+
+      float t0 = -1e9f, t1 = 1e9f;
+      auto clipAxis = [&](float orig, float dir, float bMin, float bMax) -> bool {
+        if (std::fabs(dir) > 1e-5f) {
+          float invD = 1.0f / dir;
+          float ta = (bMin - orig) * invD;
+          float tb = (bMax - orig) * invD;
+          if (ta > tb) std::swap(ta, tb);
+          if (ta > t0) t0 = ta;
+          if (tb < t1) t1 = tb;
+          return t0 <= t1;
+        }
+        return (orig >= bMin && orig <= bMax);
+      };
+
+      if (!clipAxis(ox, vdX, -halfX, halfX) ||
+          !clipAxis(oy, vdY, -halfY, halfY) ||
+          !clipAxis(oz, vdZ, -halfZ, halfZ) ||
+          t1 < nearPlane || t0 > farPlane || t0 > t1) {
+        continue;
+      }
+
+      const float stepSize = std::min({ (2.0f * halfX) / float(vol.vx),
+                                        (2.0f * halfY) / float(vol.vy),
+                                        (2.0f * halfZ) / float(vol.vz) }) * 0.45f;
+      float tStart = std::max(nearPlane, t0);
+      float tEnd = std::min(farPlane, t1);
+      float tHit = -1.0f;
+      int hitVx = -1, hitVy = -1, hitVz = -1;
+
+      for (float t = tStart; t <= tEnd; t += stepSize) {
+        const float pxW = ox + t * vdX;
+        const float pyW = oy + t * vdY;
+        const float pzW = oz + t * vdZ;
+
+        int vx = int((pxW + halfX) / (2.0f * halfX) * float(vol.vx));
+        int vy = int((pyW + halfY) / (2.0f * halfY) * float(vol.vy));
+        int vz = int((pzW + halfZ) / (2.0f * halfZ) * float(vol.vz));
+
+        if (vol.isSolid(vx, vy, vz)) {
+          float ta = t - stepSize;
+          float tb = t;
+          for (int b = 0; b < 3; ++b) {
+            float tm = (ta + tb) * 0.5f;
+            int mx = int((ox + tm * vdX + halfX) / (2.0f * halfX) * float(vol.vx));
+            int my = int((oy + tm * vdY + halfY) / (2.0f * halfY) * float(vol.vy));
+            int mz = int((oz + tm * vdZ + halfZ) / (2.0f * halfZ) * float(vol.vz));
+            if (vol.isSolid(mx, my, mz)) {
+              tb = tm;
+              vx = mx; vy = my; vz = mz;
+            }
+            else {
+              ta = tm;
+            }
+          }
+          tHit = tb;
+          hitVx = vx; hitVy = vy; hitVz = vz;
+          break;
+        }
+      }
+
+      if (tHit < 0.0f) continue;
+
+      float gX = float(vol.isSolid(hitVx - 1, hitVy, hitVz)) - float(vol.isSolid(hitVx + 1, hitVy, hitVz));
+      float gY = float(vol.isSolid(hitVx, hitVy - 1, hitVz)) - float(vol.isSolid(hitVx, hitVy + 1, hitVz));
+      float gZ = float(vol.isSolid(hitVx, hitVy, hitVz - 1)) - float(vol.isSolid(hitVx, hitVy, hitVz + 1));
+      float len = std::sqrt(gX * gX + gY * gY + gZ * gZ);
+      if (len > 1e-4f) {
+        gX /= len; gY /= len; gZ /= len;
+      }
+      else {
+        gX = (ox + tHit * vdX) / halfX;
+        gY = (oy + tHit * vdY) / halfY;
+        gZ = (oz + tHit * vdZ) / halfZ;
+        len = std::sqrt(gX * gX + gY * gY + gZ * gZ);
+        if (len > 1e-4f) { gX /= len; gY /= len; gZ /= len; }
+        else { gX = 0.0f; gY = 0.0f; gZ = 1.0f; }
+      }
+
+      int face = kFaceFront;
+      if (std::fabs(gZ) >= std::fabs(gX) && std::fabs(gZ) >= std::fabs(gY)) {
+        face = (gZ > 0.0f ? kFaceFront : kFaceBack);
+      }
+      else if (std::fabs(gY) >= std::fabs(gX) && std::fabs(gY) >= std::fabs(gZ)) {
+        face = (gY < 0.0f ? kFaceTop : kFaceDown);
+      }
+      else {
+        face = (gX > 0.0f ? kFaceRight : kFaceLeft);
+      }
+
+      const float hx = ox + tHit * vdX;
+      const float hy = oy + tHit * vdY;
+      const float hz = oz + tHit * vdZ;
+
+      const int fw = data.w[face];
+      const int fh = data.h[face];
+      int u = 0, v = 0;
+      switch (face) {
+        case kFaceFront:
+          u = std::clamp(int((hx + halfX) / (2.0f * halfX) * fw), 0, fw - 1);
+          v = std::clamp(int((hy + halfY) / (2.0f * halfY) * fh), 0, fh - 1);
+          break;
+        case kFaceBack:
+          u = std::clamp(int((halfX - hx) / (2.0f * halfX) * fw), 0, fw - 1);
+          v = std::clamp(int((hy + halfY) / (2.0f * halfY) * fh), 0, fh - 1);
+          break;
+        case kFaceLeft:
+          u = std::clamp(int((hz + halfZ) / (2.0f * halfZ) * fw), 0, fw - 1);
+          v = std::clamp(int((hy + halfY) / (2.0f * halfY) * fh), 0, fh - 1);
+          break;
+        case kFaceRight:
+          u = std::clamp(int((halfZ - hz) / (2.0f * halfZ) * fw), 0, fw - 1);
+          v = std::clamp(int((hy + halfY) / (2.0f * halfY) * fh), 0, fh - 1);
+          break;
+        case kFaceTop:
+          u = std::clamp(int((hx + halfX) / (2.0f * halfX) * fw), 0, fw - 1);
+          v = std::clamp(int((hz + halfZ) / (2.0f * halfZ) * fh), 0, fh - 1);
+          break;
+        case kFaceDown:
+          u = std::clamp(int((hx + halfX) / (2.0f * halfX) * fw), 0, fw - 1);
+          v = std::clamp(int((halfZ - hz) / (2.0f * halfZ) * fh), 0, fh - 1);
+          break;
+      }
+
+      const uint32_t texCol = data.sampleSymmetric(face, u, v);
+      const uint8_t a = doc::rgba_geta(texCol);
+      if (a <= 16 && renderStyle != kRenderColoredFaces) {
+        if (allowCutouts) continue;
+      }
+
+      const float dC = data.sampleDepthNorm(face, u, v);
+      const float dL = data.sampleDepthNorm(face, u - 1, v);
+      const float dR = data.sampleDepthNorm(face, u + 1, v);
+      const float dU = data.sampleDepthNorm(face, u, v - 1);
+      const float dD = data.sampleDepthNorm(face, u, v + 1);
+      const float gradScale = data.hasCustomDepthLayer ? 1.45f : 0.65f;
+      const float du = (dL - dR) * gradScale;
+      const float dv = (dD - dU) * gradScale;
+
+      float cnx = gX * rxX + gY * ryX + gZ * rzX + du;
+      float cny = -(gX * ryX + gY * ryY + gZ * ryZ) + dv;
+      float cnz = std::fabs(gX * vdX + gY * vdY + gZ * vdZ) + 0.15f;
+      const float nLen = std::sqrt(cnx * cnx + cny * cny + cnz * cnz);
+      if (nLen > 1e-4f) {
+        cnx /= nLen; cny /= nLen; cnz /= nLen;
+      }
+
+      const uint8_t nr = clampByte((cnx * 0.5f + 0.5f) * 255.0f);
+      const uint8_t ng = clampByte((cny * 0.5f + 0.5f) * 255.0f);
+      const uint8_t nb = clampByte((cnz * 0.5f + 0.5f) * 255.0f);
+      const uint32_t normPixel = doc::rgba(nr, ng, nb, 255);
+      normRow[px] = normPixel;
+
+      const float tRel = tHit - camDist;
+      const float normZ = std::clamp((tRel + maxDepthRange * 0.5f) / maxDepthRange, 0.0f, 1.0f);
+      const float faceRelief = (dC - 0.5f) * (data.hasCustomDepthLayer ? 0.35f : 0.14f);
+      const uint8_t dByte = clampByte(35.0f + std::clamp(normZ + faceRelief, 0.0f, 1.0f) * 215.0f);
+      const uint32_t deptPixel = doc::rgba(dByte, dByte, dByte, 255);
+      deptRow[px] = deptPixel;
+
+      const float ndotl = std::max(0.0f, cnx * Lx + (-cny) * Ly + cnz * Lz);
+      const float shade = std::clamp(0.84f + ndotl * 0.16f, 0.84f, 1.0f);
+
+      switch (renderStyle) {
+        case kRenderTexturedFlat:
+          diffRow[px] = doc::rgba(doc::rgba_getr(texCol),
+                                  doc::rgba_getg(texCol),
+                                  doc::rgba_getb(texCol), 255);
+          break;
+        case kRenderColoredFaces: {
+          const auto& spec = kFaceSpecs[face];
+          const float fShade = std::clamp(0.75f + ndotl * 0.25f, 0.75f, 1.0f);
+          diffRow[px] = doc::rgba(clampByte(spec.r * fShade),
+                                  clampByte(spec.g * fShade),
+                                  clampByte(spec.b * fShade), 255);
+          break;
+        }
+        case kRenderNormalShaded:
+          diffRow[px] = normPixel;
+          break;
+        case kRenderDepthShaded:
+          diffRow[px] = deptPixel;
+          break;
+        case kRenderWireframeTex: {
+          bool isVoxelEdge = (hitVx == 0 || hitVy == 0 || hitVz == 0 ||
+                              hitVx == vol.vx - 1 || hitVy == vol.vy - 1 || hitVz == vol.vz - 1 ||
+                              !vol.isSolid(hitVx - 1, hitVy, hitVz) || !vol.isSolid(hitVx + 1, hitVy, hitVz) ||
+                              !vol.isSolid(hitVx, hitVy - 1, hitVz) || !vol.isSolid(hitVx, hitVy + 1, hitVz) ||
+                              !vol.isSolid(hitVx, hitVy, hitVz - 1) || !vol.isSolid(hitVx, hitVy, hitVz + 1));
+          if (isVoxelEdge) {
+            diffRow[px] = doc::rgba(14, 165, 233, 255);
+          }
+          else {
+            diffRow[px] = doc::rgba(clampByte(doc::rgba_getr(texCol) * shade * 0.75f),
+                                    clampByte(doc::rgba_getg(texCol) * shade * 0.75f),
+                                    clampByte(doc::rgba_getb(texCol) * shade * 0.75f), 255);
+          }
+          break;
+        }
+        case kRenderTexturedLit:
+        default:
+          diffRow[px] = doc::rgba(clampByte(doc::rgba_getr(texCol) * shade),
+                                  clampByte(doc::rgba_getg(texCol) * shade),
+                                  clampByte(doc::rgba_getb(texCol) * shade), 255);
+          break;
+      }
+      faceMap[py * outW + px] = face;
+    }
+  }
+
+  if (addOutline) {
+    const uint32_t outlineCol = doc::rgba(15, 23, 42, 255);
+    const uint32_t outNormCol = doc::rgba(128, 128, 255, 255);
+    const uint32_t outDeptCol = doc::rgba(28, 28, 28, 255);
+
+    for (int y = 1; y < outH - 1; ++y) {
+      uint32_t* __restrict diffRow =
+        reinterpret_cast<uint32_t*>(res.diffImg->getPixelAddress(0, y));
+      uint32_t* __restrict normRow =
+        reinterpret_cast<uint32_t*>(res.normImg->getPixelAddress(0, y));
+      uint32_t* __restrict deptRow =
+        reinterpret_cast<uint32_t*>(res.deptImg->getPixelAddress(0, y));
+
+      for (int x = 1; x < outW - 1; ++x) {
+        const int idx = y * outW + x;
+        const int f = faceMap[idx];
+        if (f < 0) {
+          if (faceMap[idx - 1] >= 0 || faceMap[idx + 1] >= 0 ||
+              faceMap[idx - outW] >= 0 || faceMap[idx + outW] >= 0) {
+            diffRow[x] = outlineCol;
+            normRow[x] = outNormCol;
+            deptRow[x] = outDeptCol;
+          }
+        }
+        else if (f == kFaceTop &&
+                 (faceMap[idx + outW] >= 0 && faceMap[idx + outW] != kFaceTop)) {
+          const uint32_t cur = diffRow[x];
+          diffRow[x] = doc::rgba(
+            clampByte(doc::rgba_getr(cur) * 0.68f + 253.0f * 0.32f),
+            clampByte(doc::rgba_getg(cur) * 0.68f + 230.0f * 0.32f),
+            clampByte(doc::rgba_getb(cur) * 0.68f + 138.0f * 0.32f),
+            255);
+        }
+      }
+    }
+  }
+
+  return res;
+}
+
+static void bake3DToDoc(Doc* doc, int yawDeg = 45, int pitchDeg = 30)
+{
+  if (!doc || !doc->sprite()) return;
+  SixSurfaceData data;
+  extractSixSurfaces(doc, doc::frame_t(0), data, true);
+  Render3DResult res = compute3DPreviewImages(data, yawDeg, pitchDeg, 50, 50, 50, 0, true, true);
+  if (!res.diffImg || !res.normImg || !res.deptImg)
+    return;
+
+  doc::Sprite* spr = doc->sprite();
+  const doc::frame_t fr = doc::frame_t(0);
+  try {
+    Tx tx(doc, "Render Easymetric 3D + Normal + Depth Layers", ModifyDocument);
+    DocApi api = doc->getApi(tx);
+
+    auto writeLayerImg = [&](const char* layerName, const doc::Image* srcImg) {
+      doc::LayerImage* lyr = findOrCreateLayer(doc, api, spr, layerName);
+      doc::ImageRef copyImg(doc::Image::createCopy(srcImg));
+      if (doc::Cel* cel = lyr->cel(fr))
+        api.replaceImage(spr, cel->imageRef(), copyImg);
+      else
+        api.addCel(lyr, fr, copyImg);
+    };
+
+    writeLayerImg("Iso_Depth", res.deptImg.get());
+    writeLayerImg("Iso_Normal", res.normImg.get());
+    writeLayerImg("Iso_Diffuse", res.diffImg.get());
+
+    tx.commit();
+    doc->notifyGeneralUpdate();
+  }
+  catch (const std::exception& e) {
+    // Ignore
+  }
+}
+
 // Integrated 4-Column 2-Row Workspace Multi-Pane Widget
 class EasymetricMultiPaneView : public ui::Widget {
 public:
@@ -1015,9 +2073,20 @@ public:
       m_views[f] = view;
 
       if (spr) {
-        ed->setClipSpriteBounds(gfx::Rect(0, 0, spr->width(), spr->height()));
-        const std::string lyrName = std::string("Surface_") + kFaceSpecs[f].sliceName;
-        if (doc::LayerImage* lyr = findLayerByName(spr, lyrName))
+        doc::Slice* sl = findSliceForFace(spr, f);
+        if (sl && sl->getByFrame(0) && !sl->getByFrame(0)->bounds().isEmpty()) {
+          ed->setClipSpriteBounds(sl->getByFrame(0)->bounds());
+        }
+        else {
+          ed->setClipSpriteBounds(gfx::Rect(0, 0, spr->width(), spr->height()));
+        }
+        SurfaceLayerPair sp = findSurfaceLayers(spr, f);
+        doc::LayerImage* lyr = sp.texLayer ? sp.texLayer : sp.baseLayer;
+        if (!lyr) {
+          const std::string lyrName = std::string("Surface_") + kFaceSpecs[f].sliceName;
+          lyr = findLayerByName(spr, lyrName);
+        }
+        if (lyr)
           ed->setLayer(lyr);
       }
       ed->setEditorFlags(Editor::EditorFlags((ed->editorFlags() | Editor::kShowOutside) & ~Editor::kShowSlices));
@@ -1082,30 +2151,41 @@ public:
     if (!doc || !doc->sprite()) return;
     doc::Sprite* spr = doc->sprite();
 
+    SurfaceLayerPair srcPair = findSurfaceLayers(spr, srcFace);
+    SurfaceLayerPair dstPair = findSurfaceLayers(spr, dstFace);
+
     const std::string srcName = std::string("Surface_") + kFaceSpecs[srcFace].sliceName;
     const std::string dstName = std::string("Surface_") + kFaceSpecs[dstFace].sliceName;
-    doc::LayerImage* srcLyr = findLayerByName(spr, srcName);
-    doc::LayerImage* dstLyr = findLayerByName(spr, dstName);
+    doc::LayerImage* srcLyr = srcPair.baseLayer ? srcPair.baseLayer : findLayerByName(spr, srcName);
+    doc::LayerImage* dstLyr = dstPair.baseLayer ? dstPair.baseLayer : findLayerByName(spr, dstName);
     if (!srcLyr || !dstLyr) return;
 
     try {
       Tx tx(doc, "Sync Opposing Faces", ModifyDocument);
       DocApi api = doc->getApi(tx);
 
-      for (doc::frame_t fr = doc::frame_t(0); fr <= spr->lastFrame(); ++fr) {
-        doc::Cel* srcCel = srcLyr->cel(fr);
-        doc::Cel* dstCel = dstLyr->cel(fr);
-        if (srcCel && srcCel->image()) {
-          doc::ImageRef copyImg(doc::Image::createCopy(srcCel->image()));
-          if (dstCel) {
-            api.replaceImage(spr, dstCel->imageRef(), copyImg);
-            api.setCelPosition(spr, dstCel, srcCel->x(), srcCel->y());
-          }
-          else {
-            api.addCel(dstLyr, fr, copyImg);
+      auto syncLayers = [&](doc::LayerImage* sL, doc::LayerImage* dL) {
+        if (!sL || !dL) return;
+        for (doc::frame_t fr = doc::frame_t(0); fr <= spr->lastFrame(); ++fr) {
+          doc::Cel* srcCel = sL->cel(fr);
+          doc::Cel* dstCel = dL->cel(fr);
+          if (srcCel && srcCel->image()) {
+            doc::ImageRef copyImg(doc::Image::createCopy(srcCel->image()));
+            if (dstCel) {
+              api.replaceImage(spr, dstCel->imageRef(), copyImg);
+              api.setCelPosition(spr, dstCel, srcCel->x(), srcCel->y());
+            }
+            else {
+              api.addCel(dL, fr, copyImg);
+            }
           }
         }
-      }
+      };
+
+      syncLayers(srcLyr, dstLyr);
+      if (srcPair.texLayer && dstPair.texLayer)
+        syncLayers(srcPair.texLayer, dstPair.texLayer);
+
       tx.commit();
       doc->notifyGeneralUpdate();
     }
@@ -1185,10 +2265,22 @@ public:
 
     for (int f = 0; f < kFaceCount; ++f) {
       if (m_editors[f]) {
-        const std::string lyrName = std::string("Surface_") + kFaceSpecs[f].sliceName;
-        if (doc::LayerImage* lyr = findLayerByName(spr, lyrName))
+        SurfaceLayerPair sp = findSurfaceLayers(spr, f);
+        doc::LayerImage* lyr = sp.texLayer ? sp.texLayer : sp.baseLayer;
+        if (!lyr) {
+          const std::string lyrName = std::string("Surface_") + kFaceSpecs[f].sliceName;
+          lyr = findLayerByName(spr, lyrName);
+        }
+        if (lyr)
           m_editors[f]->setLayer(lyr);
-        m_editors[f]->setClipSpriteBounds(gfx::Rect(0, 0, spr->width(), spr->height()));
+
+        doc::Slice* sl = findSliceForFace(spr, f);
+        if (sl && sl->getByFrame(0) && !sl->getByFrame(0)->bounds().isEmpty()) {
+          m_editors[f]->setClipSpriteBounds(sl->getByFrame(0)->bounds());
+        }
+        else {
+          m_editors[f]->setClipSpriteBounds(gfx::Rect(0, 0, spr->width(), spr->height()));
+        }
         m_editors[f]->fitClipSpriteBounds();
       }
     }
@@ -1387,13 +2479,58 @@ private:
     m_strokeCheck->setSelected(true);
     m_cutoutCheck->setSelected(true);
 
+    m_linkDimensionsCheck = new ui::CheckBox("Link Dims");
+    m_linkDimensionsCheck->setSelected(true);
+
     symRow->addChild(m_strokeCheck);
     symRow->addChild(m_cutoutCheck);
     symRow->addChild(m_lockBordersCheck);
+    symRow->addChild(m_linkDimensionsCheck);
     symRow->addChild(m_symXCheck);
     symRow->addChild(m_symYCheck);
     symRow->addChild(centerSymBtn);
     m_fieldsBox->addChild(symRow);
+
+    // Row 5b: Linked Dimension Controls
+    auto* dimRow = new ui::HBox;
+    dimRow->setChildSpacing(4 * s);
+    auto* faceDimCombo = new ui::ComboBox;
+    faceDimCombo->addItem("Top (X/Z)");
+    faceDimCombo->addItem("Bottom (X/Z)");
+    faceDimCombo->addItem("Front (X/Y)");
+    faceDimCombo->addItem("Back (X/Y)");
+    faceDimCombo->addItem("Right (Z/Y)");
+    faceDimCombo->addItem("Left (Z/Y)");
+    faceDimCombo->setSelectedItemIndex(0);
+
+    auto* dimWSlider = new ui::Slider(4, 128, 24);
+    auto* dimHSlider = new ui::Slider(4, 128, 24);
+    dimWSlider->setExpansive(true);
+    dimHSlider->setExpansive(true);
+    auto* applyDimBtn = new ui::Button("Apply Size");
+
+    dimRow->addChild(new ui::Label("Size:"));
+    dimRow->addChild(faceDimCombo);
+    dimRow->addChild(dimWSlider);
+    dimRow->addChild(dimHSlider);
+    dimRow->addChild(applyDimBtn);
+    m_fieldsBox->addChild(dimRow);
+
+    applyDimBtn->Click.connect([this, faceDimCombo, dimWSlider, dimHSlider] {
+      Doc* doc = m_docView->document();
+      if (!doc || !doc->sprite()) return;
+      int selFace = faceDimCombo->getSelectedItemIndex();
+      int nw = dimWSlider->getValue();
+      int nh = dimHSlider->getValue();
+      SixSurfaceData data;
+      extractSixSurfaces(doc, 0, data);
+      propagateLinkedDimensions(doc, data, selFace, nw, nh);
+      initLayersAndFraming();
+      m_lastHash = 0;
+      pollAndRender(true);
+      if (auto* sb = StatusBar::instance())
+        sb->showTip(1200, "Propagated linked dimensions across surfaces");
+    });
 
     // Row 6: Per-Face Editable Depth Maps + Live Sync
     auto* depthRow = new ui::HBox;
@@ -1407,6 +2544,17 @@ private:
     depthRow->addChild(m_useFaceDepthCheck);
     depthRow->addChild(m_liveBakeCheck);
     m_fieldsBox->addChild(depthRow);
+
+    // Row 6b: 2-Layer Smart Object & Clipping Structure
+    auto* smartRow = new ui::HBox;
+    smartRow->setChildSpacing(4 * s);
+    auto* setupSmartObjectsBtn = new ui::Button("Setup 2-Layer Smart Objects");
+    auto* convertToGroupBtn = new ui::Button("Convert to Groups");
+    setupSmartObjectsBtn->setExpansive(true);
+    convertToGroupBtn->setExpansive(true);
+    smartRow->addChild(setupSmartObjectsBtn);
+    smartRow->addChild(convertToGroupBtn);
+    m_fieldsBox->addChild(smartRow);
 
     // Row 7: Action Buttons (Render, Export .OBJ, Exit)
     auto* actRow = new ui::HBox;
@@ -1482,6 +2630,38 @@ private:
       }
       if (auto* sb = StatusBar::instance())
         sb->showTip(1200, locked ? "Surface borders locked" : "Surface borders unlocked");
+    });
+
+    m_linkDimensionsCheck->Click.connect([this] {
+      if (auto* sb = StatusBar::instance()) {
+        sb->showTip(1200, m_linkDimensionsCheck->isSelected() ?
+                    "Linked surface dimensions active" :
+                    "Linked surface dimensions disabled");
+      }
+    });
+
+    setupSmartObjectsBtn->Click.connect([this] {
+      Doc* doc = m_docView->document();
+      if (doc) {
+        setupTwoLayerStructure(doc, true);
+        initLayersAndFraming();
+        m_lastHash = 0;
+        pollAndRender(true);
+        if (auto* sb = StatusBar::instance())
+          sb->showTip(1500, "Initialized 2-layer smart object surface hierarchy");
+      }
+    });
+
+    convertToGroupBtn->Click.connect([this] {
+      Doc* doc = m_docView->document();
+      if (doc) {
+        convertSmartObjectsToGroups(doc);
+        initLayersAndFraming();
+        m_lastHash = 0;
+        pollAndRender(true);
+        if (auto* sb = StatusBar::instance())
+          sb->showTip(1500, "Converted smart objects to layer groups");
+      }
     });
 
     auto applySymmetry = [this](bool recenter) {
@@ -1685,128 +2865,8 @@ private:
 
   bool extractSixSurfaces(Doc* doc, doc::frame_t frame, SixSurfaceData& out)
   {
-    if (!doc || !doc->sprite()) return false;
-    doc::Sprite* spr = doc->sprite();
-    const int sw = spr->width();
-    const int sh = spr->height();
-    out.init(std::max(sw, sh));
-
-    doc::ImageRef depthSrcImg;
-    if (m_useFaceDepthCheck && m_useFaceDepthCheck->isSelected()) {
-      if (doc::LayerImage* depthLyr = findLayerByName(spr, "Surface_DEPTH")) {
-        if (const doc::Cel* dCel = depthLyr->cel(frame)) {
-          if (dCel->image() && dCel->image()->pixelFormat() == doc::IMAGE_RGB) {
-            depthSrcImg.reset(doc::Image::create(doc::IMAGE_RGB, sw, sh));
-            depthSrcImg->clear(0);
-            doc::copy_image(depthSrcImg.get(), dCel->image(), dCel->x(), dCel->y());
-            out.hasCustomDepthLayer = true;
-          }
-        }
-      }
-    }
-
-    ExtraCelRef extra = doc->extraCel();
-
-    for (int f = 0; f < kFaceCount; ++f) {
-      out.bounds[f] = gfx::Rect(0, 0, sw, sh);
-      out.setFaceSize(f, sw, sh);
-      out.hasSlices = true;
-
-      const std::string layerName = std::string("Surface_") + kFaceSpecs[f].sliceName;
-      doc::LayerImage* lyr = findLayerByName(spr, layerName);
-      const doc::Cel* cel = lyr ? lyr->cel(frame) : nullptr;
-      const doc::Image* srcImg = cel ? cel->image() : nullptr;
-
-      bool hasPixels = false;
-      if (srcImg && srcImg->pixelFormat() == doc::IMAGE_RGB) {
-        const int ox = cel->x();
-        const int oy = cel->y();
-
-        for (int v = 0; v < sh; ++v) {
-          const int sy = v - oy;
-          if (sy < 0 || sy >= srcImg->height()) continue;
-          const uint32_t* __restrict sRow =
-            reinterpret_cast<const uint32_t*>(srcImg->getPixelAddress(0, sy));
-          for (int u = 0; u < sw; ++u) {
-            const int sx = u - ox;
-            if (sx < 0 || sx >= srcImg->width()) continue;
-            const uint32_t sc = sRow[sx];
-            if (doc::rgba_geta(sc) > 0) {
-              out.pixels[f][v * sw + u] = sc;
-              hasPixels = true;
-            }
-          }
-        }
-      }
-
-      // Check if extra cel applies to this face editor
-      if (extra && extra->type() != render::ExtraType::NONE &&
-          extra->purpose() != ExtraCel::Purpose::BrushPreview &&
-          extra->image() && extra->cel() &&
-          extra->image()->pixelFormat() == doc::IMAGE_RGB &&
-          lyr && m_docView->editor() && m_docView->editor()->layer() == lyr) {
-        const doc::Image* eImg = extra->image();
-        const int ox = extra->cel()->x();
-        const int oy = extra->cel()->y();
-        for (int v = 0; v < sh; ++v) {
-          const int sy = v - oy;
-          if (sy < 0 || sy >= eImg->height()) continue;
-          const uint32_t* __restrict eRow =
-            reinterpret_cast<const uint32_t*>(eImg->getPixelAddress(0, sy));
-          for (int u = 0; u < sw; ++u) {
-            const int sx = u - ox;
-            if (sx < 0 || sx >= eImg->width()) continue;
-            const uint32_t ec = eRow[sx];
-            if (doc::rgba_geta(ec) > 0) {
-              out.pixels[f][v * sw + u] = ec;
-              hasPixels = true;
-            }
-          }
-        }
-      }
-
-      // If custom depth layer is present, extract depth for this face
-      if (depthSrcImg) {
-        for (int v = 0; v < sh; ++v) {
-          const uint32_t* __restrict dRow =
-            reinterpret_cast<const uint32_t*>(depthSrcImg->getPixelAddress(0, v));
-          for (int u = 0; u < sw; ++u) {
-            const uint32_t dc = dRow[u];
-            if (doc::rgba_geta(dc) > 16) {
-              out.depthPixels[f][v * sw + u] =
-                clampByte(0.299f * doc::rgba_getr(dc) +
-                          0.587f * doc::rgba_getg(dc) +
-                          0.114f * doc::rgba_getb(dc));
-            }
-          }
-        }
-      }
-
-      // Fallback starter pixels if face is blank
-      if (!hasPixels) {
-        for (int v = 0; v < sh; ++v) {
-          for (int u = 0; u < sw; ++u) {
-            out.pixels[f][v * sw + u] = starterSurfacePixel(f, u, v, sw, sh);
-          }
-        }
-      }
-    }
-
-    // Unify linked opposing face pairs (Top/Down, Front/Back, Right/Left)
-    for (int c = 0; c < 3; ++c) {
-      out.colLinked[c] = m_colLinked[c];
-      if (m_colLinked[c]) {
-        const int topFace = c * 2;
-        const int btmFace = c * 2 + 1;
-        out.pixels[btmFace] = out.pixels[topFace];
-        out.depthPixels[btmFace] = out.depthPixels[topFace];
-        out.w[btmFace] = out.w[topFace];
-        out.h[btmFace] = out.h[topFace];
-        out.bounds[btmFace] = out.bounds[topFace];
-      }
-    }
-
-    return true;
+    const bool useDepth = (m_useFaceDepthCheck && m_useFaceDepthCheck->isSelected());
+    return app::extractSixSurfaces(doc, frame, out, useDepth, m_docView, &m_colLinked);
   }
 
   void pollAndRender(bool force)
@@ -1822,6 +2882,38 @@ private:
         for (int v = 0; v < 24; ++v)
           for (int u = 0; u < 24; ++u)
             data.pixels[f][v * 24 + u] = starterSurfacePixel(f, u, v, 24, 24);
+    }
+
+    // Check if any face slice dimensions changed and Link Dims is active
+    if (m_linkDimensionsCheck && m_linkDimensionsCheck->isSelected()) {
+      int changedFace = -1;
+      for (int f = 0; f < kFaceCount; ++f) {
+        if (m_lastFaceW[f] > 0 && (data.w[f] != m_lastFaceW[f] || data.h[f] != m_lastFaceH[f])) {
+          changedFace = f;
+          break;
+        }
+      }
+      if (changedFace >= 0) {
+        propagateLinkedDimensions(doc, data, changedFace, data.w[changedFace], data.h[changedFace]);
+        initLayersAndFraming();
+        for (int f = 0; f < kFaceCount; ++f) {
+          m_lastFaceW[f] = data.w[f];
+          m_lastFaceH[f] = data.h[f];
+        }
+        force = true;
+      }
+      else {
+        for (int f = 0; f < kFaceCount; ++f) {
+          m_lastFaceW[f] = data.w[f];
+          m_lastFaceH[f] = data.h[f];
+        }
+      }
+    }
+    else {
+      for (int f = 0; f < kFaceCount; ++f) {
+        m_lastFaceW[f] = data.w[f];
+        m_lastFaceH[f] = data.h[f];
+      }
     }
 
     const int yawDeg = m_yawSlider->getValue();
@@ -1892,304 +2984,17 @@ private:
                      bool showNorm,
                      bool showDept)
   {
-    const float halfX = std::max({ data.w[kFaceFront], data.w[kFaceBack], data.w[kFaceTop], data.w[kFaceDown] }) * 0.5f;
-    const float halfY = std::max({ data.h[kFaceFront], data.h[kFaceBack], data.h[kFaceLeft], data.h[kFaceRight] }) * 0.5f;
-    const float halfZ = std::max({ data.w[kFaceLeft], data.w[kFaceRight], data.h[kFaceTop], data.h[kFaceDown] }) * 0.5f;
-    const int maxDim = std::max({ int(halfX * 2.0f), int(halfY * 2.0f), int(halfZ * 2.0f), 24 });
-    const int outW = maxDim * 2 + 16;
-    const int outH = maxDim * 2 + 16;
+    Render3DResult res = compute3DPreviewImages(data, yawDeg, pitchDeg, pivX, pivY, pivZ,
+                                                renderStyle, addOutline, allowCutouts);
+    m_lastDiffImg = res.diffImg;
+    m_lastNormImg = res.normImg;
+    m_lastDeptImg = res.deptImg;
 
-    constexpr float kDegToRad = 3.14159265358979323846f / 180.0f;
-    const float yaw = yawDeg * kDegToRad;
-    const float pitch = pitchDeg * kDegToRad;
-    const float cy = std::cos(yaw), sy = std::sin(yaw);
-    const float cp = std::cos(pitch), sp = std::sin(pitch);
-
-    const float rxX = cy,      rxY = 0.0f, rzX = -sy;
-    const float ryX = sy * sp, ryY = cp,   ryZ = cy * sp;
-    const float vdX = sy * cp, vdY = -sp,  vdZ = cy * cp;
-
-    const float pivOffX = ((pivX - 50) * 0.01f) * (halfX * 2.0f);
-    const float pivOffY = ((pivY - 50) * 0.01f) * (halfY * 2.0f);
-    const float pivOffZ = ((pivZ - 50) * 0.01f) * (halfZ * 2.0f);
-
-    const float cxScreen = outW * 0.5f;
-    const float cyScreen = outH * 0.5f;
-
-    m_lastDiffImg.reset(doc::Image::create(doc::IMAGE_RGB, outW, outH));
-    m_lastNormImg.reset(doc::Image::create(doc::IMAGE_RGB, outW, outH));
-    m_lastDeptImg.reset(doc::Image::create(doc::IMAGE_RGB, outW, outH));
-    m_lastDiffImg->clear(0);
-    m_lastNormImg->clear(0);
-    m_lastDeptImg->clear(0);
-
-    SculptedVoxelVolume vol = buildSculptedVolume(data, pivX, pivY, pivZ);
-
-    std::vector<int> faceMap(outW * outH, -1);
-    const float maxDepthRange = float(maxDim) * 1.732f;
-    const float Lx = -0.45f, Ly = -0.60f, Lz = 0.66f;
-
-    for (int py = 0; py < outH; ++py) {
-      const float camY = (py - cyScreen);
-      uint32_t* __restrict diffRow =
-        reinterpret_cast<uint32_t*>(m_lastDiffImg->getPixelAddress(0, py));
-      uint32_t* __restrict normRow =
-        reinterpret_cast<uint32_t*>(m_lastNormImg->getPixelAddress(0, py));
-      uint32_t* __restrict deptRow =
-        reinterpret_cast<uint32_t*>(m_lastDeptImg->getPixelAddress(0, py));
-
-      for (int px = 0; px < outW; ++px) {
-        const float camX = (px - cxScreen);
-        const float ox = camX * rxX + camY * ryX + pivOffX;
-        const float oy = camX * rxY + camY * ryY + pivOffY;
-        const float oz = camX * rzX + camY * ryZ + pivOffZ;
-
-        float t0 = -1e9f, t1 = 1e9f;
-        auto clipAxis = [&](float orig, float dir, float bMin, float bMax) -> bool {
-          if (std::fabs(dir) > 1e-5f) {
-            float invD = 1.0f / dir;
-            float ta = (bMin - orig) * invD;
-            float tb = (bMax - orig) * invD;
-            if (ta > tb) std::swap(ta, tb);
-            if (ta > t0) t0 = ta;
-            if (tb < t1) t1 = tb;
-            return t0 <= t1;
-          }
-          return (orig >= bMin && orig <= bMax);
-        };
-
-        if (!clipAxis(ox, vdX, -halfX, halfX) ||
-            !clipAxis(oy, vdY, -halfY, halfY) ||
-            !clipAxis(oz, vdZ, -halfZ, halfZ) ||
-            t1 < 0.0f) {
-          continue;
-        }
-
-        const float stepSize = std::min({ (2.0f * halfX) / float(vol.vx),
-                                          (2.0f * halfY) / float(vol.vy),
-                                          (2.0f * halfZ) / float(vol.vz) }) * 0.45f;
-        float tStart = std::max(0.0f, t0);
-        float tHit = -1.0f;
-        int hitVx = -1, hitVy = -1, hitVz = -1;
-
-        for (float t = tStart; t <= t1; t += stepSize) {
-          const float pxW = ox + t * vdX;
-          const float pyW = oy + t * vdY;
-          const float pzW = oz + t * vdZ;
-
-          int vx = int((pxW + halfX) / (2.0f * halfX) * float(vol.vx));
-          int vy = int((pyW + halfY) / (2.0f * halfY) * float(vol.vy));
-          int vz = int((pzW + halfZ) / (2.0f * halfZ) * float(vol.vz));
-
-          if (vol.isSolid(vx, vy, vz)) {
-            float ta = t - stepSize;
-            float tb = t;
-            for (int b = 0; b < 3; ++b) {
-              float tm = (ta + tb) * 0.5f;
-              int mx = int((ox + tm * vdX + halfX) / (2.0f * halfX) * float(vol.vx));
-              int my = int((oy + tm * vdY + halfY) / (2.0f * halfY) * float(vol.vy));
-              int mz = int((oz + tm * vdZ + halfZ) / (2.0f * halfZ) * float(vol.vz));
-              if (vol.isSolid(mx, my, mz)) {
-                tb = tm;
-                vx = mx; vy = my; vz = mz;
-              }
-              else {
-                ta = tm;
-              }
-            }
-            tHit = tb;
-            hitVx = vx; hitVy = vy; hitVz = vz;
-            break;
-          }
-        }
-
-        if (tHit < 0.0f) continue;
-
-        float gX = float(vol.isSolid(hitVx - 1, hitVy, hitVz)) - float(vol.isSolid(hitVx + 1, hitVy, hitVz));
-        float gY = float(vol.isSolid(hitVx, hitVy - 1, hitVz)) - float(vol.isSolid(hitVx, hitVy + 1, hitVz));
-        float gZ = float(vol.isSolid(hitVx, hitVy, hitVz - 1)) - float(vol.isSolid(hitVx, hitVy, hitVz + 1));
-        float len = std::sqrt(gX * gX + gY * gY + gZ * gZ);
-        if (len > 1e-4f) {
-          gX /= len; gY /= len; gZ /= len;
-        }
-        else {
-          gX = (ox + tHit * vdX) / halfX;
-          gY = (oy + tHit * vdY) / halfY;
-          gZ = (oz + tHit * vdZ) / halfZ;
-          len = std::sqrt(gX * gX + gY * gY + gZ * gZ);
-          if (len > 1e-4f) { gX /= len; gY /= len; gZ /= len; }
-          else { gX = 0.0f; gY = 0.0f; gZ = 1.0f; }
-        }
-
-        int face = kFaceFront;
-        if (std::fabs(gZ) >= std::fabs(gX) && std::fabs(gZ) >= std::fabs(gY)) {
-          face = (gZ > 0.0f ? kFaceFront : kFaceBack);
-        }
-        else if (std::fabs(gY) >= std::fabs(gX) && std::fabs(gY) >= std::fabs(gZ)) {
-          face = (gY < 0.0f ? kFaceTop : kFaceDown);
-        }
-        else {
-          face = (gX > 0.0f ? kFaceRight : kFaceLeft);
-        }
-
-        const float hx = ox + tHit * vdX;
-        const float hy = oy + tHit * vdY;
-        const float hz = oz + tHit * vdZ;
-
-        const int fw = data.w[face];
-        const int fh = data.h[face];
-        int u = 0, v = 0;
-        switch (face) {
-          case kFaceFront:
-            u = std::clamp(int((hx + halfX) / (2.0f * halfX) * fw), 0, fw - 1);
-            v = std::clamp(int((hy + halfY) / (2.0f * halfY) * fh), 0, fh - 1);
-            break;
-          case kFaceBack:
-            u = std::clamp(int((halfX - hx) / (2.0f * halfX) * fw), 0, fw - 1);
-            v = std::clamp(int((hy + halfY) / (2.0f * halfY) * fh), 0, fh - 1);
-            break;
-          case kFaceLeft:
-            u = std::clamp(int((hz + halfZ) / (2.0f * halfZ) * fw), 0, fw - 1);
-            v = std::clamp(int((hy + halfY) / (2.0f * halfY) * fh), 0, fh - 1);
-            break;
-          case kFaceRight:
-            u = std::clamp(int((halfZ - hz) / (2.0f * halfZ) * fw), 0, fw - 1);
-            v = std::clamp(int((hy + halfY) / (2.0f * halfY) * fh), 0, fh - 1);
-            break;
-          case kFaceTop:
-            u = std::clamp(int((hx + halfX) / (2.0f * halfX) * fw), 0, fw - 1);
-            v = std::clamp(int((hz + halfZ) / (2.0f * halfZ) * fh), 0, fh - 1);
-            break;
-          case kFaceDown:
-            u = std::clamp(int((hx + halfX) / (2.0f * halfX) * fw), 0, fw - 1);
-            v = std::clamp(int((halfZ - hz) / (2.0f * halfZ) * fh), 0, fh - 1);
-            break;
-        }
-
-        const uint32_t texCol = data.sampleSymmetric(face, u, v);
-        const uint8_t a = doc::rgba_geta(texCol);
-        if (a <= 16 && renderStyle != kRenderColoredFaces) {
-          if (allowCutouts) continue;
-        }
-
-        const float dC = data.sampleDepthNorm(face, u, v);
-        const float dL = data.sampleDepthNorm(face, u - 1, v);
-        const float dR = data.sampleDepthNorm(face, u + 1, v);
-        const float dU = data.sampleDepthNorm(face, u, v - 1);
-        const float dD = data.sampleDepthNorm(face, u, v + 1);
-        const float gradScale = data.hasCustomDepthLayer ? 1.45f : 0.65f;
-        const float du = (dL - dR) * gradScale;
-        const float dv = (dD - dU) * gradScale;
-
-        float cnx = gX * rxX + gY * ryX + gZ * rzX + du;
-        float cny = -(gX * ryX + gY * ryY + gZ * ryZ) + dv;
-        float cnz = std::fabs(gX * vdX + gY * vdY + gZ * vdZ) + 0.15f;
-        const float nLen = std::sqrt(cnx * cnx + cny * cny + cnz * cnz);
-        if (nLen > 1e-4f) {
-          cnx /= nLen; cny /= nLen; cnz /= nLen;
-        }
-
-        const uint8_t nr = clampByte((cnx * 0.5f + 0.5f) * 255.0f);
-        const uint8_t ng = clampByte((cny * 0.5f + 0.5f) * 255.0f);
-        const uint8_t nb = clampByte((cnz * 0.5f + 0.5f) * 255.0f);
-        const uint32_t normPixel = doc::rgba(nr, ng, nb, 255);
-        normRow[px] = normPixel;
-
-        const float normZ = std::clamp((tHit + maxDepthRange * 0.5f) / maxDepthRange, 0.0f, 1.0f);
-        const float faceRelief = (dC - 0.5f) * (data.hasCustomDepthLayer ? 0.35f : 0.14f);
-        const uint8_t dByte = clampByte(35.0f + std::clamp(normZ + faceRelief, 0.0f, 1.0f) * 215.0f);
-        const uint32_t deptPixel = doc::rgba(dByte, dByte, dByte, 255);
-        deptRow[px] = deptPixel;
-
-        const float ndotl = std::max(0.0f, cnx * Lx + (-cny) * Ly + cnz * Lz);
-        const float shade = std::clamp(0.84f + ndotl * 0.16f, 0.84f, 1.0f);
-
-        switch (renderStyle) {
-          case kRenderTexturedFlat:
-            diffRow[px] = doc::rgba(doc::rgba_getr(texCol),
-                                    doc::rgba_getg(texCol),
-                                    doc::rgba_getb(texCol), 255);
-            break;
-          case kRenderColoredFaces: {
-            const auto& spec = kFaceSpecs[face];
-            const float fShade = std::clamp(0.75f + ndotl * 0.25f, 0.75f, 1.0f);
-            diffRow[px] = doc::rgba(clampByte(spec.r * fShade),
-                                    clampByte(spec.g * fShade),
-                                    clampByte(spec.b * fShade), 255);
-            break;
-          }
-          case kRenderNormalShaded:
-            diffRow[px] = normPixel;
-            break;
-          case kRenderDepthShaded:
-            diffRow[px] = deptPixel;
-            break;
-          case kRenderWireframeTex: {
-            bool isVoxelEdge = (hitVx == 0 || hitVy == 0 || hitVz == 0 ||
-                                hitVx == vol.vx - 1 || hitVy == vol.vy - 1 || hitVz == vol.vz - 1 ||
-                                !vol.isSolid(hitVx - 1, hitVy, hitVz) || !vol.isSolid(hitVx + 1, hitVy, hitVz) ||
-                                !vol.isSolid(hitVx, hitVy - 1, hitVz) || !vol.isSolid(hitVx, hitVy + 1, hitVz) ||
-                                !vol.isSolid(hitVx, hitVy, hitVz - 1) || !vol.isSolid(hitVx, hitVy, hitVz + 1));
-            if (isVoxelEdge) {
-              const auto& spec = kFaceSpecs[face];
-              diffRow[px] = doc::rgba(spec.r, spec.g, spec.b, 255);
-            }
-            else {
-              diffRow[px] = doc::rgba(clampByte(doc::rgba_getr(texCol) * shade),
-                                      clampByte(doc::rgba_getg(texCol) * shade),
-                                      clampByte(doc::rgba_getb(texCol) * shade), 255);
-            }
-            break;
-          }
-          case kRenderTexturedLit:
-          default:
-            diffRow[px] = doc::rgba(clampByte(doc::rgba_getr(texCol) * shade),
-                                    clampByte(doc::rgba_getg(texCol) * shade),
-                                    clampByte(doc::rgba_getb(texCol) * shade), 255);
-            break;
-        }
-        faceMap[py * outW + px] = face;
-      }
-    }
-
-    if (addOutline) {
-      const uint32_t outlineCol = doc::rgba(15, 23, 42, 255);
-      const uint32_t outNormCol = doc::rgba(128, 128, 255, 255);
-      const uint32_t outDeptCol = doc::rgba(28, 28, 28, 255);
-
-      for (int y = 1; y < outH - 1; ++y) {
-        uint32_t* __restrict diffRow =
-          reinterpret_cast<uint32_t*>(m_lastDiffImg->getPixelAddress(0, y));
-        uint32_t* __restrict normRow =
-          reinterpret_cast<uint32_t*>(m_lastNormImg->getPixelAddress(0, y));
-        uint32_t* __restrict deptRow =
-          reinterpret_cast<uint32_t*>(m_lastDeptImg->getPixelAddress(0, y));
-
-        for (int x = 1; x < outW - 1; ++x) {
-          const int idx = y * outW + x;
-          const int f = faceMap[idx];
-          if (f < 0) {
-            if (faceMap[idx - 1] >= 0 || faceMap[idx + 1] >= 0 ||
-                faceMap[idx - outW] >= 0 || faceMap[idx + outW] >= 0) {
-              diffRow[x] = outlineCol;
-              normRow[x] = outNormCol;
-              deptRow[x] = outDeptCol;
-            }
-          }
-          else if (f == kFaceTop &&
-                   (faceMap[idx + outW] >= 0 && faceMap[idx + outW] != kFaceTop)) {
-            const uint32_t cur = diffRow[x];
-            diffRow[x] = doc::rgba(
-              clampByte(doc::rgba_getr(cur) * 0.68f + 253.0f * 0.32f),
-              clampByte(doc::rgba_getg(cur) * 0.68f + 230.0f * 0.32f),
-              clampByte(doc::rgba_getb(cur) * 0.68f + 138.0f * 0.32f),
-              255);
-          }
-        }
-      }
-    }
+    if (!m_previewWidget)
+      return;
 
     auto makeSurface = [](const doc::Image* img) -> os::SurfaceRef {
+      if (!img) return nullptr;
       const int w = img->width();
       const int h = img->height();
       os::SurfaceRef surf = os::System::instance()->makeRgbaSurface(w, h);
@@ -2203,8 +3008,8 @@ private:
       makeSurface(m_lastDeptImg.get()),
       yawDeg,
       pitchDeg,
-      int(cxScreen),
-      int(cyScreen),
+      int(res.cxScreen),
+      int(res.cyScreen),
       showDiff,
       showNorm,
       showDept);
@@ -2530,6 +3335,10 @@ private:
   ui::CheckBox* m_symYCheck;
   ui::CheckBox* m_useFaceDepthCheck;
   ui::CheckBox* m_liveBakeCheck;
+  ui::CheckBox* m_linkDimensionsCheck;
+
+  int m_lastFaceW[kFaceCount] = { 0, 0, 0, 0, 0, 0 };
+  int m_lastFaceH[kFaceCount] = { 0, 0, 0, 0, 0, 0 };
 
   ui::Timer m_timer;
   uint64_t m_lastHash = 0;
@@ -2543,19 +3352,70 @@ public:
   EasymetricStudioCommand() : Command(CommandId::EasymetricStudio()) {}
 
 protected:
+  void onLoadParams(const Params& params) override
+  {
+    m_params = params;
+  }
+
   bool onEnabled(Context* context) override
   {
-    return context && context->isUIAvailable() && context->activeDocument();
+    return context && context->activeDocument();
   }
 
   bool onChecked(Context* context) override
   {
+    if (!UIContext::instance())
+      return false;
     DocView* view = UIContext::instance()->activeView();
     return view && view->isMultiPane();
   }
 
   void onExecute(Context* context) override
   {
+    Doc* doc = context ? static_cast<Doc*>(context->activeDocument()) : nullptr;
+    if (!doc || !doc->sprite())
+      return;
+
+    // Headless / Parameterized Execution
+    if (m_params.has_param("action")) {
+      const std::string action = m_params.get("action");
+      if (action == "linkDims") {
+        std::string faceStr = m_params.has_param("face") ? m_params.get("face") : "top";
+        int w = m_params.has_param("width") ? std::stoi(m_params.get("width")) : 32;
+        int h = m_params.has_param("height") ? std::stoi(m_params.get("height")) : 32;
+        int faceIdx = kFaceTop;
+        if (faceStr == "top" || faceStr == "TOP") faceIdx = kFaceTop;
+        else if (faceStr == "down" || faceStr == "bottom" || faceStr == "DOWN") faceIdx = kFaceDown;
+        else if (faceStr == "front" || faceStr == "FRONT") faceIdx = kFaceFront;
+        else if (faceStr == "back" || faceStr == "BACK") faceIdx = kFaceBack;
+        else if (faceStr == "right" || faceStr == "RIGHT") faceIdx = kFaceRight;
+        else if (faceStr == "left" || faceStr == "LEFT") faceIdx = kFaceLeft;
+
+        propagateLinkedDimensions(doc, faceIdx, w, h);
+      }
+      else if (action == "setupSmartObjects") {
+        setupTwoLayerStructure(doc, true);
+      }
+      else if (action == "convertToGroups") {
+        convertSmartObjectsToGroups(doc);
+      }
+      else if (action == "setupSurfaces") {
+        setupSixSurfacesOnDoc(doc, true);
+      }
+      else if (action == "setupGroups") {
+        setupTwoLayerStructure(doc, false);
+      }
+      else if (action == "bake3D" || action == "render3D") {
+        int yaw = m_params.has_param("yaw") ? std::stoi(m_params.get("yaw")) : 45;
+        int pitch = m_params.has_param("pitch") ? std::stoi(m_params.get("pitch")) : 30;
+        bake3DToDoc(doc, yaw, pitch);
+      }
+      return;
+    }
+
+    if (!context->isUIAvailable())
+      return;
+
     UIContext* uiCtx = UIContext::instance();
     DocView* docView = uiCtx ? uiCtx->activeView() : nullptr;
     if (!docView || !docView->document())
@@ -2579,6 +3439,9 @@ protected:
         sb->showTip(1500, "Easymetric 6-Surface Studio: 4-Column Workspace Grid Active");
     }
   }
+
+private:
+  Params m_params;
 };
 
 } // anonymous namespace

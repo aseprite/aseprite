@@ -75,6 +75,8 @@ void ToolLoopManager::prepareLoop(const Pointer& pointer)
   // Start with no points at all
   m_stroke.reset();
 
+  m_toolLoop->checkSurfaceIsolation(pointer.point());
+
   // Prepare the ink
   m_toolLoop->getInk()->prepareInk(m_toolLoop);
   m_toolLoop->getController()->prepareController(m_toolLoop);
@@ -94,6 +96,8 @@ void ToolLoopManager::notifyToolLoopModifiersChange()
 void ToolLoopManager::pressButton(const Pointer& pointer)
 {
   TOOL_TRACE("ToolLoopManager::pressButton", pointer.point());
+
+  m_toolLoop->checkSurfaceIsolation(pointer.point());
 
   // A little patch to memorize initial Trace Policy in the
   // current function execution.

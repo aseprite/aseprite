@@ -365,6 +365,10 @@ private:
     gfx::Rect bounds = loop->sprite()->bounds();
     bounds &= srcImage->bounds();
 
+    if (loop->hasSurfaceIsolation()) {
+      bounds &= loop->getSurfaceIsolation();
+    }
+
     if (srcImage->pixelFormat() == IMAGE_TILEMAP) { // Tiles mode
       const doc::Grid& grid = loop->getGrid();
       bounds = grid.tileToCanvas(bounds);

@@ -209,6 +209,10 @@ public:
   virtual gfx::Rect getGridBounds() = 0;
   virtual bool isPixelConnectivityEightConnected() = 0;
   virtual bool isPointInsideCanvas(const gfx::Point& point) = 0;
+  virtual bool hasSurfaceIsolation() const { return false; }
+  virtual gfx::Rect getSurfaceIsolation() const { return gfx::Rect(); }
+  virtual void setSurfaceIsolation(const gfx::Rect& rc) { }
+  virtual void checkSurfaceIsolation(const gfx::Point& pt) { }
 
   // Returns true if the figure must be filled when we release the
   // mouse (e.g. a filled rectangle, etc.)

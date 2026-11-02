@@ -44,6 +44,23 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
     y -= origin.y;
   }
 
+  // Easymetric surface canvas boundary drawing isolation
+  if (loop->hasSurfaceIsolation()) {
+    gfx::Rect iso = loop->getSurfaceIsolation();
+    if (loop->needsCelCoordinates())
+      iso.offset(-loop->getCelOrigin());
+    if (x1 > x2)
+      std::swap(x1, x2);
+    if (y < iso.y || y >= iso.y2())
+      return;
+    if (x2 < iso.x || x1 >= iso.x2())
+      return;
+    x1 = std::clamp(x1, iso.x, iso.x2() - 1);
+    x2 = std::clamp(x2, iso.x, iso.x2() - 1);
+    if (x1 > x2)
+      return;
+  }
+
   // Tiled in Y axis
   if (int(tiledMode) & int(TiledMode::Y_AXIS)) {
     size = dsth; // size = image height
