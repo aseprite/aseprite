@@ -1282,6 +1282,14 @@ protected:
       case ui::kMouseWheelMessage: {
         auto* mouseMsg = static_cast<ui::MouseMessage*>(msg);
         const gfx::Point delta = mouseMsg->wheelDelta();
+        // Shift+wheel scrolls (pans) instead of zooming, so the
+        // preview can be scrolled as well as zoomed.
+        if (mouseMsg->shiftPressed()) {
+          m_panX += delta.x * 8;
+          m_panY -= delta.y * 8;
+          invalidate();
+          return true;
+        }
         // Same sign convention as palette_view: delta.x - delta.y > 0
         // means wheel-up, which zooms in.
         const int steps = delta.x - delta.y;
@@ -2154,7 +2162,12 @@ public:
                                     gfx::rgba(kFaceSpecs[f].r, kFaceSpecs[f].g, kFaceSpecs[f].b));
       Editor* ed = nullptr;
       ui::View* view = m_docView->createPaneEditorView(&ed);
-      view->hideScrollBars();
+      // Scrollbars on: each surface panel must be scrollable
+      // horizontally and vertically on its own, instead of only
+      // fitting the whole sprite into the pane. The editor itself
+      // already zooms/scrolls on wheel input; hiding the bars hid
+      // that affordance without disabling it, so show them.
+      view->showScrollBars();
       view->setExpansive(true);
 
       m_editors[f] = ed;
@@ -2375,33 +2388,161 @@ public:
   }
 
 protected:
+  // One layout source for onResize, onPaint and splitter hit-testing,
+  // so the painted handles always line up with the dragged ones.
+  // colW[3] is the remainder, so the four columns always fill rc.
+  // Splitter gaps are 4*guiscale wide (was 2*): wide enough to grab.
+  void computePaneLayout(const gfx::Rect& rc, int colX[4], int colW[4],
+                         int rowY[2], int rowH[2]) const
+  {
+    const int s = std::max(1, ui::guiscale());
+    const int bw = 4 * s;
+    const int bh = 4 * s;
+    const int totalW = std::max(16, rc.w - 3 * bw);
+    const int totalH = std::max(16, rc.h - bh);
+    const int minCol = std::min(64 * s, totalW / 4);
+    const int minRow = std::min(64 * s, totalH / 2);
+
+    colW[0] = std::clamp(int(totalW * m_colFrac[0]), minCol, totalW - 3 * minCol);
+    colW[1] = std::clamp(int(totalW * m_colFrac[1]), minCol, totalW - colW[0] - 2 * minCol);
+    colW[2] = std::clamp(int(totalW * m_colFrac[2]), minCol, totalW - colW[0] - colW[1] - minCol);
+    colW[3] = std::max(minCol, totalW - colW[0] - colW[1] - colW[2]);
+
+    colX[0] = rc.x;
+    colX[1] = rc.x + colW[0] + bw;
+    colX[2] = rc.x + colW[0] + bw + colW[1] + bw;
+    colX[3] = rc.x + colW[0] + bw + colW[1] + bw + colW[2] + bw;
+
+    rowH[0] = std::clamp(int(totalH * m_rowFrac), minRow, totalH - minRow);
+    rowH[1] = std::max(minRow, totalH - rowH[0]);
+    rowY[0] = rc.y;
+    rowY[1] = rc.y + rowH[0] + bh;
+  }
+
+  // Splitter under the cursor, or 0: 1..3 = vertical boundary before
+  // column c, 4 = horizontal boundary between the two rows.
+  int splitterAt(const gfx::Point& pos) const
+  {
+    const gfx::Rect rc = clientBounds();
+    const int s = std::max(1, ui::guiscale());
+    const int grip = std::max(5 * s, 6);
+    int colX[4], colW[4], rowY[2], rowH[2];
+    computePaneLayout(rc, colX, colW, rowY, rowH);
+    if (!rc.contains(pos))
+      return 0;
+    for (int c = 1; c < 4; ++c) {
+      if (std::abs(pos.x - colX[c]) <= grip)
+        return c;
+    }
+    const int midY = rowY[1] - 2 * s;
+    if (std::abs(pos.y - midY) <= grip)
+      return 4;
+    return 0;
+  }
+
+  bool onProcessMessage(ui::Message* msg) override
+  {
+    switch (msg->type()) {
+      case ui::kSetCursorMessage: {
+        if (m_dragSplitter != 0) {
+          ui::set_mouse_cursor(m_dragSplitter == 4 ? ui::kSizeNSCursor : ui::kSizeWECursor);
+          return true;
+        }
+        auto* mouseMsg = static_cast<ui::MouseMessage*>(msg);
+        const int hit = splitterAt(mouseMsg->position());
+        if (hit != 0) {
+          ui::set_mouse_cursor(hit == 4 ? ui::kSizeNSCursor : ui::kSizeWECursor);
+          return true;
+        }
+        break;
+      }
+      case ui::kMouseDownMessage: {
+        auto* mouseMsg = static_cast<ui::MouseMessage*>(msg);
+        const int hit = splitterAt(mouseMsg->position());
+        if (hit != 0 && mouseMsg->left()) {
+          m_dragSplitter = hit;
+          m_dragStart = mouseMsg->position();
+          for (int i = 0; i < 3; ++i)
+            m_dragColFrac[i] = m_colFrac[i];
+          m_dragRowFrac = m_rowFrac;
+          captureMouse();
+          invalidate();
+          return true;
+        }
+        break;
+      }
+      case ui::kMouseMoveMessage: {
+        auto* mouseMsg = static_cast<ui::MouseMessage*>(msg);
+        if (m_dragSplitter != 0) {
+          const gfx::Rect rc = clientBounds();
+          const int s = std::max(1, ui::guiscale());
+          const int bw = 4 * s;
+          const int bh = 4 * s;
+          const int totalW = std::max(16, rc.w - 3 * bw);
+          const int totalH = std::max(16, rc.h - bh);
+          if (m_dragSplitter < 4) {
+            const double delta = double(mouseMsg->position().x - m_dragStart.x) / double(totalW);
+            const double minFrac = double(64 * s) / double(totalW);
+            const int left = m_dragSplitter - 1;
+            if (m_dragSplitter < 3) {
+              // Move the boundary between two fractional columns,
+              // keeping the other columns (and the total) unchanged.
+              double newLeft = std::clamp(m_dragColFrac[left] + delta, minFrac, 1.0 - minFrac);
+              double applied = newLeft - m_dragColFrac[left];
+              m_colFrac[left] = newLeft;
+              m_colFrac[m_dragSplitter] = std::clamp(m_dragColFrac[m_dragSplitter] - applied,
+                                                     minFrac, 1.0 - minFrac);
+            }
+            else {
+              // Boundary before the remainder (Preview) column.
+              m_colFrac[left] = std::clamp(m_dragColFrac[left] + delta, minFrac, 1.0 - minFrac);
+            }
+          }
+          else {
+            const double delta = double(mouseMsg->position().y - m_dragStart.y) / double(totalH);
+            const double minFrac = double(64 * s) / double(totalH);
+            m_rowFrac = std::clamp(m_dragRowFrac + delta, minFrac, 1.0 - minFrac);
+          }
+          layout();
+          invalidate();
+          return true;
+        }
+        const int hit = splitterAt(mouseMsg->position());
+        if (hit != m_hoverSplitter) {
+          m_hoverSplitter = hit;
+          invalidate();
+        }
+        break;
+      }
+      case ui::kMouseUpMessage: {
+        if (m_dragSplitter != 0) {
+          m_dragSplitter = 0;
+          releaseMouse();
+          invalidate();
+          return true;
+        }
+        break;
+      }
+      case ui::kMouseLeaveMessage: {
+        if (m_hoverSplitter != 0) {
+          m_hoverSplitter = 0;
+          invalidate();
+        }
+        break;
+      }
+    }
+    return ui::Widget::onProcessMessage(msg);
+  }
+
   void onResize(ui::ResizeEvent& ev) override
   {
     setBoundsQuietly(ev.bounds());
     const gfx::Rect rc = childrenBounds();
     const int s = ui::guiscale();
-    const int bw = 2 * s;
-    const int bh = 2 * s;
-
-    const int totalW = std::max(16, rc.w - 3 * bw);
-    const int colW0 = totalW / 4;
-    const int colW1 = totalW / 4;
-    const int colW2 = totalW / 4;
-    const int colW3 = std::max(16, totalW - (colW0 + colW1 + colW2));
-
+    const int bh = 4 * s;
+    int colX[4], colW[4], rowY[2], rowH[2];
+    computePaneLayout(rc, colX, colW, rowY, rowH);
     const int totalH = std::max(16, rc.h - bh);
-    const int rowH0 = totalH / 2;
-    const int rowH1 = std::max(16, totalH - rowH0);
-
-    const int colX[4] = {
-      rc.x,
-      rc.x + colW0 + bw,
-      rc.x + colW0 + bw + colW1 + bw,
-      rc.x + colW0 + bw + colW1 + bw + colW2 + bw
-    };
-    const int colW[4] = { colW0, colW1, colW2, colW3 };
-    const int rowY[2] = { rc.y, rc.y + rowH0 + bh };
-    const int rowH[2] = { rowH0, rowH1 };
 
     // Cols 0..2: Opposing face pairs
     for (int c = 0; c < 3; ++c) {
@@ -2426,11 +2567,11 @@ protected:
     m_panes[6]->setBounds(gfx::Rect(colX[3], rowY[0], colW[3], rowH[0]));
     m_panes[7]->setBounds(gfx::Rect(colX[3], rowY[1], colW[3], rowH[1]));
 
-    for (int f = 0; f < kFaceCount; ++f) {
-      if (m_editors[f] && m_panes[f]->isVisible()) {
-        m_editors[f]->fitClipSpriteBounds();
-      }
-    }
+    // NOTE: deliberately no fitClipSpriteBounds() here. Fitting on
+    // every resize reset each surface editor's zoom/scroll whenever
+    // a splitter was dragged or the window was resized, which is
+    // what made the panels feel unscrollable/unzoomable. Initial
+    // fitting still happens in initLayersAndFraming().
   }
 
   void onPaint(ui::PaintEvent& ev) override
@@ -2438,44 +2579,34 @@ protected:
     ui::Graphics* g = ev.graphics();
     const gfx::Rect rc = clientBounds();
     const int s = ui::guiscale();
+    const int bw = 4 * s;
+    const int bh = 4 * s;
+    int colX[4], colW[4], rowY[2], rowH[2];
+    computePaneLayout(rc, colX, colW, rowY, rowH);
+    const int midY = rowY[1] - bh / 2;
 
     // Dark charcoal surround & separator lines
     g->fillRect(gfx::rgba(28, 35, 43), rc);
 
-    const int bw = 2 * s;
-    const int bh = 2 * s;
-    const int totalW = std::max(16, rc.w - 3 * bw);
-    const int colW0 = totalW / 4;
-    const int colW1 = totalW / 4;
-    const int colW2 = totalW / 4;
-    const int colW3 = std::max(16, totalW - (colW0 + colW1 + colW2));
-    const int colW[4] = { colW0, colW1, colW2, colW3 };
-    const int colX[4] = {
-      rc.x,
-      rc.x + colW0 + bw,
-      rc.x + colW0 + bw + colW1 + bw,
-      rc.x + colW0 + bw + colW1 + bw + colW2 + bw
-    };
-
-    const int totalH = std::max(16, rc.h - bh);
-    const int rowH = totalH / 2;
-    const int midY = rc.y + rowH + bh / 2;
-
     const gfx::Color sepCol = gfx::rgba(45, 55, 66);
     const gfx::Color gripCol = gfx::rgba(80, 95, 110);
+    const gfx::Color activeCol = gfx::rgba(120, 170, 220);
 
     // Horizontal separators only for columns that are NOT linked (and Col 3)
     for (int c = 0; c < 4; ++c) {
       if (c < 3 && m_colLinked[c])
         continue;
-      g->fillRect(sepCol, gfx::Rect(colX[c], midY - bh / 2, colW[c], bh));
+      const bool active = (m_hoverSplitter == 4 || m_dragSplitter == 4);
+      g->fillRect(active ? activeCol : sepCol, gfx::Rect(colX[c], midY - bh / 2, colW[c], bh));
     }
 
-    // Vertical column separator grip dots
+    // Vertical column separators, highlighted when hovered/dragged
     for (int c = 1; c < 4; ++c) {
       const int sepX = colX[c] - bw / 2;
-      g->fillRect(gripCol, gfx::Rect(sepX - 2 * s, midY - 6 * s, 4 * s, s));
-      g->fillRect(gripCol, gfx::Rect(sepX - 2 * s, midY + 5 * s, 4 * s, s));
+      const bool active = (m_hoverSplitter == c || m_dragSplitter == c);
+      g->fillRect(active ? activeCol : sepCol, gfx::Rect(sepX - bw / 2, rc.y, bw, rc.h));
+      g->fillRect(active ? activeCol : gripCol, gfx::Rect(sepX - 2 * s, midY - 6 * s, 4 * s, s));
+      g->fillRect(active ? activeCol : gripCol, gfx::Rect(sepX - 2 * s, midY + 5 * s, 4 * s, s));
     }
   }
 
@@ -3451,6 +3582,17 @@ private:
 
   int m_lastFaceW[kFaceCount] = { 0, 0, 0, 0, 0, 0 };
   int m_lastFaceH[kFaceCount] = { 0, 0, 0, 0, 0, 0 };
+
+  // Splitter state: column fractions for cols 0..2 (col 3 is the
+  // remainder), top-row fraction, and hover/drag tracking. 0 in
+  // m_hoverSplitter/m_dragSplitter means no splitter.
+  double m_colFrac[3] = { 0.25, 0.25, 0.25 };
+  double m_rowFrac = 0.5;
+  int m_hoverSplitter = 0;
+  int m_dragSplitter = 0;
+  gfx::Point m_dragStart;
+  double m_dragColFrac[3] = { 0.25, 0.25, 0.25 };
+  double m_dragRowFrac = 0.5;
 
   ui::Timer m_timer;
   uint64_t m_lastHash = 0;
