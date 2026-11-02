@@ -597,10 +597,361 @@ static SurfaceLayerPair findSurfaceLayers(doc::Sprite* spr, int face)
   return pair;
 }
 
+
+// ---------------------------------------------------------------------------
+// Shared UV sheets: one Base, one Texture and one Depth layer for all faces.
+// ---------------------------------------------------------------------------
+// Before this change every face had its own Base/Texture layers
+// (Surface_Top_Base, Surface_Front_Texture, ...). Now Easymetric keeps
+// exactly three image layers:
+//
+//   Surface_Base     - one sheet, every face paints into its own UV rect
+//   Surface_Texture  - one sheet, same UV rects as Base
+//   Surface_DEPTH    - one sheet, same UV rects as Base (already shared
+//                      by name, but previously written at (0,0) for
+//                      every face, so faces overwrote each other)
+//
+// A face's UV rect is its grid cell in the sheet: FaceSpec already
+// carries gridCol/gridRow for the studio layout (Top/Bottom = col 0,
+// Front/Back = col 1, Right/Left = col 2; top faces = row 0, bottom
+// faces = row 1), so the UV layout is the same 3x2 grid the user sees.
+// Each surface panel is then just a window onto its UV rect of the
+// shared layers (Editor::setClipSpriteBounds), and the 3D preview
+// samples each face from its own rect instead of from its own layer.
+// Clicking a panel therefore no longer switches layers at all: it
+// switches the UV rect being edited, while the active layer stays
+// on the same shared sheet. This is the "single sheet of paper,
+// UV-mapped" model: the sheet is not copied per surface, the model
+// cuts out the rectangle it needs for each surface.
+// ---------------------------------------------------------------------------
+struct SharedSurfaceLayers {
+  doc::LayerImage* baseLayer = nullptr;
+  doc::LayerImage* textureLayer = nullptr;
+  doc::LayerImage* depthLayer = nullptr;
+};
+
+static SharedSurfaceLayers findSharedLayers(doc::Sprite* spr)
+{
+  SharedSurfaceLayers shared;
+  if (!spr) return shared;
+  shared.baseLayer = findLayerByName(spr, "Surface_Base");
+  shared.textureLayer = findLayerByName(spr, "Surface_Texture");
+  shared.depthLayer = findLayerByName(spr, "Surface_DEPTH");
+  return shared;
+}
+
+// UV rect of one face inside a sheet whose cells are cellW x cellH.
+// faceW/faceH may be smaller than the cell (faces of different sizes
+// still share the grid; the unused part of the cell stays blank).
+static gfx::Rect sharedUVRect(int face, int cellW, int cellH,
+                              int faceW, int faceH)
+{
+  if (face < 0 || face >= kFaceCount) return gfx::Rect(0, 0, faceW, faceH);
+  return gfx::Rect(kFaceSpecs[face].gridCol * cellW,
+                   kFaceSpecs[face].gridRow * cellH,
+                   faceW, faceH);
+}
+
+// UV rect for a face in the current document. When the shared sheets
+// exist, the sprite itself is the sheet (3 cells wide, 2 cells tall),
+// so the cell size is derived from the sprite size and the face size
+// from its slice. This also repairs documents whose slices were left
+// at (0, 0) by the old per-face layout: every face would otherwise
+// sample the same top-left cell of the shared sheet.
+static gfx::Rect sharedFaceRect(doc::Sprite* spr, int face)
+{
+  if (!spr || face < 0 || face >= kFaceCount)
+    return gfx::Rect(0, 0, 0, 0);
+  const int cellW = std::max(1, spr->width() / 3);
+  const int cellH = std::max(1, spr->height() / 2);
+  int faceW = cellW;
+  int faceH = cellH;
+  if (doc::Slice* sl = findSliceForFace(spr, face)) {
+    if (const auto* key = sl->getByFrame(0)) {
+      if (!key->bounds().isEmpty()) {
+        faceW = key->bounds().w;
+        faceH = key->bounds().h;
+      }
+    }
+  }
+  return sharedUVRect(face, cellW, cellH, faceW, faceH);
+}
+
+// Migrate a document from per-face layers to the three shared sheets.
+// Old per-face Base/Texture images are copied into their UV cells,
+// the old per-face layers/groups are removed, slices are moved to
+// their UV rects, and the sprite is resized to the sheet size.
+// A document that already has the shared sheets is left alone, and
+// a document with no Easymetric layers at all gets starter sheets.
+// The old depth sheet cannot be migrated per face (it was written
+// at (0, 0) for every face), so it is recreated blank; use
+// "Render Editable Face Depths" to regenerate it from the UV cells.
+static void setupSharedSurfaceLayers(Doc* doc, bool seedStarterIfBlank)
+{
+  if (!doc || !doc->sprite()) return;
+  doc::Sprite* spr = doc->sprite();
+
+  // Already shared: nothing to migrate, just make sure the slices
+  // point at the UV rects.
+  SharedSurfaceLayers existing = findSharedLayers(spr);
+  if (existing.baseLayer && existing.textureLayer) {
+    try {
+      Tx tx(doc, "Setup Shared Easymetric Layers", ModifyDocument);
+      for (int f = 0; f < kFaceCount; ++f) {
+        const gfx::Rect uv = sharedFaceRect(spr, f);
+        doc::Slice* sl = findSliceForFace(spr, f);
+        if (!sl) {
+          sl = new doc::Slice;
+          sl->setName(kFaceSpecs[f].sliceName);
+          sl->userData().setColor(
+            doc::rgba(kFaceSpecs[f].r, kFaceSpecs[f].g, kFaceSpecs[f].b, 255));
+          sl->insert(0, doc::SliceKey(uv));
+          tx(new cmd::AddSlice(spr, sl));
+        }
+        else {
+          tx(new cmd::SetSliceKey(sl, 0, doc::SliceKey(uv)));
+        }
+      }
+      tx.commit();
+      doc->notifyGeneralUpdate();
+    }
+    catch (const std::exception& e) {
+      // Ignore: the shared layers themselves are already usable.
+    }
+    return;
+  }
+
+  // Capture the old per-face images before any layer is removed.
+  struct FaceImage {
+    doc::ImageRef baseImg;
+    doc::ImageRef texImg;
+    int w = 0;
+    int h = 0;
+  };
+  std::array<FaceImage, kFaceCount> faces;
+  // Do not start from the sprite size: after a partial migration the
+  // sprite may already be sheet-sized, while the surviving per-face
+  // images are still face-sized. Face sizes win; the sprite size is
+  // only the fallback for a brand-new, empty document.
+  int cellW = 0;
+  int cellH = 0;
+  for (int f = 0; f < kFaceCount; ++f) {
+    SurfaceLayerPair sp = findSurfaceLayers(spr, f);
+    auto capture = [](doc::LayerImage* lyr) -> doc::ImageRef {
+      if (!lyr) return doc::ImageRef();
+      if (doc::Cel* cel = lyr->cel(0)) {
+        if (cel->image()) return doc::ImageRef(doc::Image::createCopy(cel->image()));
+      }
+      return doc::ImageRef();
+    };
+    faces[f].baseImg = capture(sp.baseLayer);
+    faces[f].texImg = capture(sp.texLayer);
+    const doc::Image* anyImg = faces[f].baseImg ? faces[f].baseImg.get() :
+                               (faces[f].texImg ? faces[f].texImg.get() : nullptr);
+    if (anyImg) {
+      faces[f].w = anyImg->width();
+      faces[f].h = anyImg->height();
+    }
+    else if (doc::Slice* sl = findSliceForFace(spr, f)) {
+      if (const auto* key = sl->getByFrame(0)) {
+        if (!key->bounds().isEmpty()) {
+          faces[f].w = key->bounds().w;
+          faces[f].h = key->bounds().h;
+        }
+      }
+    }
+    if (faces[f].w <= 0) faces[f].w = spr->width();
+    if (faces[f].h <= 0) faces[f].h = spr->height();
+    cellW = std::max(cellW, faces[f].w);
+    cellH = std::max(cellH, faces[f].h);
+  }
+  if (cellW <= 0) cellW = spr->width();
+  if (cellH <= 0) cellH = spr->height();
+  const int sheetW = 3 * cellW;
+  const int sheetH = 2 * cellH;
+
+  // Layers/groups to remove after their images have been copied.
+  // The shared depth layer itself is kept: it is recreated below.
+  std::vector<doc::Layer*> layersToRemove;
+  for (int f = 0; f < kFaceCount; ++f) {
+    const std::string faceName = kFaceSpecs[f].sliceName;
+    SurfaceLayerPair sp = findSurfaceLayers(spr, f);
+    if (sp.baseLayer) layersToRemove.push_back(sp.baseLayer);
+    if (sp.texLayer) layersToRemove.push_back(sp.texLayer);
+    for (doc::Layer* lyr : spr->allLayers()) {
+      if (lyr->name() == ("Surface_" + faceName) ||
+          lyr->name() == ("Surface_" + faceName + "_Group")) {
+        layersToRemove.push_back(lyr);
+      }
+    }
+  }
+
+  try {
+    Tx tx(doc, "Setup Shared Easymetric Layers (UV Sheets)", ModifyDocument);
+    DocApi api = doc->getApi(tx);
+
+    api.setSpriteSize(spr, sheetW, sheetH);
+
+    auto buildSheet = [&](const char* kind,
+                          doc::ImageRef FaceImage::*img) {
+      doc::ImageRef sheet(doc::Image::create(spr->pixelFormat(), sheetW, sheetH));
+      sheet->clear(0);
+      bool hasPixels = false;
+      for (int ff = 0; ff < kFaceCount; ++ff) {
+        const doc::ImageRef& src = faces[ff].*img;
+        if (!src) continue;
+        const gfx::Rect uv = sharedUVRect(ff, cellW, cellH, faces[ff].w, faces[ff].h);
+        doc::copy_image(sheet.get(), src.get(), uv.x, uv.y);
+        hasPixels = true;
+      }
+      if (!hasPixels && seedStarterIfBlank && std::string(kind) == "base") {
+        for (int ff = 0; ff < kFaceCount; ++ff) {
+          const gfx::Rect uv = sharedUVRect(ff, cellW, cellH, faces[ff].w, faces[ff].h);
+          for (int v = 0; v < faces[ff].h; ++v)
+            for (int u = 0; u < faces[ff].w; ++u)
+              doc::put_pixel(sheet.get(), uv.x + u, uv.y + v,
+                             starterSurfacePixel(ff, u, v, faces[ff].w, faces[ff].h));
+        }
+      }
+      return sheet;
+    };
+
+    struct SheetLayer {
+      const char* name;
+      doc::ImageRef img;
+    };
+    std::vector<SheetLayer> sheets;
+    sheets.push_back({ "Surface_Base", buildSheet("base", &FaceImage::baseImg) });
+    sheets.push_back({ "Surface_Texture", buildSheet("texture", &FaceImage::texImg) });
+    // Depth is recreated blank (see comment above); keep the layer
+    // so "Render Editable Face Depths" has somewhere to write to.
+    {
+      doc::ImageRef depthSheet(doc::Image::create(spr->pixelFormat(), sheetW, sheetH));
+      depthSheet->clear(0);
+      sheets.push_back({ "Surface_DEPTH", depthSheet });
+    }
+
+    for (const auto& sheetLayer : sheets) {
+      doc::LayerImage* lyr = findOrCreateLayer(doc, api, spr, sheetLayer.name);
+      if (doc::Cel* cel = lyr->cel(0)) {
+        api.replaceImage(spr, cel->imageRef(), sheetLayer.img);
+        api.setCelPosition(spr, cel, 0, 0);
+      }
+      else {
+        api.addCel(lyr, doc::frame_t(0), sheetLayer.img);
+      }
+    }
+
+    for (int f = 0; f < kFaceCount; ++f) {
+      const gfx::Rect uv = sharedUVRect(f, cellW, cellH, faces[f].w, faces[f].h);
+      doc::Slice* sl = findSliceForFace(spr, f);
+      if (!sl) {
+        sl = new doc::Slice;
+        sl->setName(kFaceSpecs[f].sliceName);
+        sl->userData().setColor(
+          doc::rgba(kFaceSpecs[f].r, kFaceSpecs[f].g, kFaceSpecs[f].b, 255));
+        sl->insert(0, doc::SliceKey(uv));
+        tx(new cmd::AddSlice(spr, sl));
+      }
+      else {
+        tx(new cmd::SetSliceKey(sl, 0, doc::SliceKey(uv)));
+      }
+    }
+
+    // Remove the old per-face layers/groups last, so a failure
+    // above does not leave a document with neither old nor new.
+    // Image layers first (groups become empty), then groups.
+    std::sort(layersToRemove.begin(), layersToRemove.end(),
+              [](doc::Layer* a, doc::Layer* b) {
+                return a->isImage() && !b->isImage();
+              });
+    for (doc::Layer* lyr : layersToRemove) {
+      // Skip anything that is already gone, or a shared layer.
+      bool stillThere = false;
+      for (doc::Layer* l : spr->allLayers())
+        if (l == lyr) { stillThere = true; break; }
+      if (!stillThere) continue;
+      if (lyr->name() == "Surface_Base" || lyr->name() == "Surface_Texture" ||
+          lyr->name() == "Surface_DEPTH")
+        continue;
+      api.removeLayer(lyr);
+    }
+
+    tx.commit();
+    doc->notifyGeneralUpdate();
+  }
+  catch (const std::exception& e) {
+    // Ignore: entering the studio will retry the migration.
+  }
+}
+
 static void propagateLinkedDimensions(Doc* doc, SixSurfaceData& data, int srcFace, int newW, int newH)
 {
   if (!doc || !doc->sprite()) return;
   doc::Sprite* spr = doc->sprite();
+
+  // Shared sheets: all faces share one cell size, so resizing one
+  // face resizes the whole grid. Each UV cell's content is copied
+  // to its new cell position in the resized sheets, and the sprite
+  // becomes the new sheet size. Per-face sizes are not kept in
+  // shared mode: that is what "one sheet" means.
+  {
+    SharedSurfaceLayers shared = findSharedLayers(spr);
+    if (shared.baseLayer || shared.textureLayer) {
+      const int oldCellW = std::max(1, spr->width() / 3);
+      const int oldCellH = std::max(1, spr->height() / 2);
+      const int newCellW = std::clamp(newW, 4, 256);
+      const int newCellH = std::clamp(newH, 4, 256);
+      if (newCellW != oldCellW || newCellH != oldCellH) {
+        try {
+          Tx tx(doc, "Resize Easymetric UV Sheet", ModifyDocument);
+          DocApi api = doc->getApi(tx);
+          const int newSheetW = 3 * newCellW;
+          const int newSheetH = 2 * newCellH;
+          auto resizeSheet = [&](doc::LayerImage* lyr) {
+            if (!lyr) return;
+            for (doc::frame_t fr = doc::frame_t(0); fr <= spr->lastFrame(); ++fr) {
+              doc::Cel* cel = lyr->cel(fr);
+              if (!cel || !cel->image()) continue;
+              doc::ImageRef resized(doc::Image::create(cel->image()->pixelFormat(),
+                                                       newSheetW, newSheetH));
+              resized->clear(0);
+              for (int f = 0; f < kFaceCount; ++f) {
+                const gfx::Rect oldUv = sharedUVRect(f, oldCellW, oldCellH,
+                                                     std::min(oldCellW, data.w[f]),
+                                                     std::min(oldCellH, data.h[f]));
+                const gfx::Rect newUv = sharedUVRect(f, newCellW, newCellH,
+                                                     newCellW, newCellH);
+                for (int v = 0; v < oldUv.h && v < newUv.h; ++v)
+                  for (int u = 0; u < oldUv.w && u < newUv.w; ++u)
+                    doc::put_pixel(resized.get(), newUv.x + u, newUv.y + v,
+                                   doc::get_pixel(cel->image(), oldUv.x + u, oldUv.y + v));
+              }
+              api.replaceImage(spr, cel->imageRef(), resized);
+              api.setCelPosition(spr, cel, 0, 0);
+            }
+          };
+          resizeSheet(shared.baseLayer);
+          resizeSheet(shared.textureLayer);
+          resizeSheet(shared.depthLayer);
+          api.setSpriteSize(spr, newSheetW, newSheetH);
+          for (int f = 0; f < kFaceCount; ++f) {
+            const gfx::Rect uv = sharedUVRect(f, newCellW, newCellH, newCellW, newCellH);
+            if (doc::Slice* sl = findSliceForFace(spr, f))
+              tx(new cmd::SetSliceKey(sl, 0, doc::SliceKey(uv)));
+            data.w[f] = newCellW;
+            data.h[f] = newCellH;
+          }
+          tx.commit();
+          doc->notifyGeneralUpdate();
+        }
+        catch (const std::exception& e) {
+          // Ignore
+        }
+      }
+      return;
+    }
+  }
 
   data.propagateDimensionLink(srcFace, newW, newH);
 
@@ -735,142 +1086,29 @@ static void setupTwoLayerStructure(Doc* doc, bool asSmartObjects)
 {
   if (!doc || !doc->sprite()) return;
   doc::Sprite* spr = doc->sprite();
-  const int sw = spr->width();
-  const int sh = spr->height();
 
-  try {
-    Tx tx(doc, asSmartObjects ? "Setup 2-Layer Smart Object Surfaces" : "Setup 2-Layer Group Surfaces", ModifyDocument);
-    DocApi api = doc->getApi(tx);
-
-    for (int f = 0; f < kFaceCount; ++f) {
-      const std::string faceName = kFaceSpecs[f].sliceName;
-      const std::string baseName = "Surface_" + faceName + "_Base";
-      const std::string texName = "Surface_" + faceName + "_Texture";
-      const std::string groupName = "Surface_" + faceName + "_Group";
-
-      doc::Slice* slice = findSliceForFace(spr, f);
-      int fw = sw;
-      int fh = sh;
-      int fx = 0;
-      int fy = 0;
-      if (!slice) {
-        slice = new doc::Slice;
-        slice->setName(kFaceSpecs[f].sliceName);
-        slice->userData().setColor(
-          doc::rgba(kFaceSpecs[f].r, kFaceSpecs[f].g, kFaceSpecs[f].b, 255));
-        slice->insert(0, doc::SliceKey(gfx::Rect(0, 0, sw, sh)));
-        tx(new cmd::AddSlice(spr, slice));
-      }
-      else if (const auto* key = slice->getByFrame(0)) {
-        if (!key->bounds().isEmpty()) {
-          fw = key->bounds().w;
-          fh = key->bounds().h;
-          fx = key->bounds().x;
-          fy = key->bounds().y;
-        }
-      }
-
-      SurfaceLayerPair sp = findSurfaceLayers(spr, f);
-
-      if (!asSmartObjects) {
-        doc::LayerGroup* grp = nullptr;
-        for (doc::Layer* lyr : spr->allLayers()) {
-          if (lyr->isGroup() && (lyr->name() == groupName || lyr->name() == ("Surface_" + faceName))) {
-            grp = static_cast<doc::LayerGroup*>(lyr);
-            break;
-          }
-        }
-        if (!grp) {
-          grp = api.newGroup(spr->root(), groupName);
-          grp->userData().setColor(
-            doc::rgba(kFaceSpecs[f].r, kFaceSpecs[f].g, kFaceSpecs[f].b, 255));
-        }
-
-        if (!sp.baseLayer) {
-          sp.baseLayer = api.newLayer(grp, baseName);
-          sp.baseLayer->userData().setColor(
-            doc::rgba(kFaceSpecs[f].r, kFaceSpecs[f].g, kFaceSpecs[f].b, 255));
-          doc::ImageRef bImg(doc::Image::create(spr->pixelFormat(), fw, fh));
-          bImg->clear(0);
-          for (int v = 0; v < fh; ++v)
-            for (int u = 0; u < fw; ++u)
-              doc::put_pixel(bImg.get(), u, v, starterSurfacePixel(f, u, v, fw, fh));
-          api.addCel(sp.baseLayer, doc::frame_t(0), bImg);
-          if (fx != 0 || fy != 0)
-            api.setCelPosition(spr, sp.baseLayer->cel(0), fx, fy);
-        }
-        else if (sp.baseLayer->parent() != grp) {
-          api.restackLayerAfter(sp.baseLayer, grp, grp->lastLayer());
-        }
-
-        if (!sp.texLayer) {
-          sp.texLayer = api.newLayer(grp, texName);
-          sp.texLayer->userData().setColor(
-            doc::rgba(kFaceSpecs[f].r, kFaceSpecs[f].g, kFaceSpecs[f].b, 180));
-          doc::ImageRef tImg(doc::Image::create(spr->pixelFormat(), fw, fh));
-          tImg->clear(0);
-          api.addCel(sp.texLayer, doc::frame_t(0), tImg);
-          if (fx != 0 || fy != 0)
-            api.setCelPosition(spr, sp.texLayer->cel(0), fx, fy);
-        }
-        else if (sp.texLayer->parent() != grp) {
-          api.restackLayerAfter(sp.texLayer, grp, grp->lastLayer());
-        }
-      }
-      else {
-        if (!sp.baseLayer) {
-          sp.baseLayer = api.newLayer(spr->root(), baseName);
-          sp.baseLayer->userData().setColor(
-            doc::rgba(kFaceSpecs[f].r, kFaceSpecs[f].g, kFaceSpecs[f].b, 255));
-          doc::ImageRef bImg(doc::Image::create(spr->pixelFormat(), fw, fh));
-          bImg->clear(0);
-          for (int v = 0; v < fh; ++v)
-            for (int u = 0; u < fw; ++u)
-              doc::put_pixel(bImg.get(), u, v, starterSurfacePixel(f, u, v, fw, fh));
-          api.addCel(sp.baseLayer, doc::frame_t(0), bImg);
-          if (fx != 0 || fy != 0)
-            api.setCelPosition(spr, sp.baseLayer->cel(0), fx, fy);
-        }
-
-        if (!sp.texLayer) {
-          sp.texLayer = api.newLayer(spr->root(), texName);
-          sp.texLayer->userData().setColor(
-            doc::rgba(kFaceSpecs[f].r, kFaceSpecs[f].g, kFaceSpecs[f].b, 180));
-          doc::ImageRef tImg(doc::Image::create(spr->pixelFormat(), fw, fh));
-          tImg->clear(0);
-          api.addCel(sp.texLayer, doc::frame_t(0), tImg);
-          if (fx != 0 || fy != 0)
-            api.setCelPosition(spr, sp.texLayer->cel(0), fx, fy);
-        }
-      }
-    }
-    tx.commit();
-  }
-  catch (const std::exception& e) {
-    // Ignore
-  }
-
-  // If smart objects requested, convert each texture layer to a Smart Object
+  // Shared-sheet model: there is no per-face 2-layer structure
+  // to build any more. "Setup 2-layer" now means "make sure the
+  // shared Base/Texture sheets exist", and "smart objects" means
+  // converting the ONE shared Texture sheet, not six copies of it.
+  // (Converting the shared sheet makes the whole UV sheet one
+  // smart object; per-face smart-object links no longer exist.)
+  setupSharedSurfaceLayers(doc, true);
   if (asSmartObjects) {
+    SharedSurfaceLayers shared = findSharedLayers(spr);
     Context* ctx = UIContext::instance() ? static_cast<Context*>(UIContext::instance()) :
                                            App::instance()->context();
-    if (ctx) {
-      for (int f = 0; f < kFaceCount; ++f) {
-        SurfaceLayerPair sp = findSurfaceLayers(spr, f);
-        if (sp.texLayer && !sp.texLayer->isSmartObject()) {
-          ctx->setActiveLayer(sp.texLayer);
-          Command* cmd = Commands::instance()->byId(CommandId::ConvertLayer());
-          if (cmd) {
-            Params params;
-            params.set("to", "smartobject");
-            params.set("ui", "false");
-            ctx->executeCommand(cmd, params);
-          }
-        }
+    if (ctx && shared.textureLayer && !shared.textureLayer->isSmartObject()) {
+      ctx->setActiveLayer(shared.textureLayer);
+      Command* cmd = Commands::instance()->byId(CommandId::ConvertLayer());
+      if (cmd) {
+        Params params;
+        params.set("to", "smartobject");
+        params.set("ui", "false");
+        ctx->executeCommand(cmd, params);
       }
     }
   }
-
   doc->notifyGeneralUpdate();
 }
 
@@ -1105,17 +1343,29 @@ protected:
     if (msg->type() == ui::kMouseDownMessage) {
       if (m_docView && m_docView->document() && m_docView->document()->sprite()) {
         doc::Sprite* spr = m_docView->document()->sprite();
-        SurfaceLayerPair sp = findSurfaceLayers(spr, m_faceIndex);
+        // Shared sheets: every panel edits the same Texture (or
+        // Base) layer; only the editor's clip rect (its UV rect,
+        // set in initLayersAndFraming) differs per panel.
+        SharedSurfaceLayers shared = findSharedLayers(spr);
         doc::LayerImage* lyr = nullptr;
-        if (sp.texLayer && !sp.texLayer->isSmartObject())
-          lyr = sp.texLayer;
-        else if (sp.baseLayer)
-          lyr = sp.baseLayer;
-        else if (sp.texLayer)
-          lyr = sp.texLayer;
+        if (shared.textureLayer && !shared.textureLayer->isSmartObject())
+          lyr = shared.textureLayer;
+        else if (shared.baseLayer)
+          lyr = shared.baseLayer;
+        else if (shared.textureLayer)
+          lyr = shared.textureLayer;
         if (!lyr) {
-          const std::string lyrName = std::string("Surface_") + kFaceSpecs[m_faceIndex].sliceName;
-          lyr = findLayerByName(spr, lyrName);
+          SurfaceLayerPair sp = findSurfaceLayers(spr, m_faceIndex);
+          if (sp.texLayer && !sp.texLayer->isSmartObject())
+            lyr = sp.texLayer;
+          else if (sp.baseLayer)
+            lyr = sp.baseLayer;
+          else if (sp.texLayer)
+            lyr = sp.texLayer;
+          if (!lyr) {
+            const std::string lyrName = std::string("Surface_") + kFaceSpecs[m_faceIndex].sliceName;
+            lyr = findLayerByName(spr, lyrName);
+          }
         }
         if (lyr) {
           m_editor->setLayer(lyr);
@@ -1443,97 +1693,12 @@ protected:
 
 static void setupSixSurfacesOnDoc(Doc* doc, bool seedStarterIfBlank)
 {
-  if (!doc || !doc->sprite())
-    return;
-
-  doc::Sprite* spr = doc->sprite();
-  const int sw = spr->width() > 0 ? spr->width() : 24;
-  const int sh = spr->height() > 0 ? spr->height() : 24;
-
-  try {
-    Tx tx(doc, "Setup Easymetric 6 Surfaces (Top/Bottom | Front/Back | Right/Left)", ModifyDocument);
-    DocApi api = doc->getApi(tx);
-
-    if (spr->width() <= 0 || spr->height() <= 0) {
-      api.setSpriteSize(spr, sw, sh);
-    }
-
-    const doc::frame_t fr = doc::frame_t(0);
-    const gfx::Rect box(0, 0, sw, sh);
-
-    for (int f = 0; f < kFaceCount; ++f) {
-      const std::string layerName = std::string("Surface_") + kFaceSpecs[f].sliceName;
-      doc::LayerImage* surfLayer = findOrCreateLayer(doc, api, spr, layerName);
-      surfLayer->userData().setColor(
-        doc::rgba(kFaceSpecs[f].r, kFaceSpecs[f].g, kFaceSpecs[f].b, 255));
-
-      doc::Cel* cel = surfLayer->cel(fr);
-      doc::ImageRef img;
-      if (cel && cel->image()) {
-        img.reset(doc::Image::createCopy(cel->image()));
-        if (img->width() != sw || img->height() != sh) {
-          doc::ImageRef grown(doc::Image::create(spr->pixelFormat(), sw, sh));
-          grown->clear(0);
-          doc::copy_image(grown.get(), img.get(), cel->x(), cel->y());
-          img = grown;
-          api.setCelPosition(spr, cel, 0, 0);
-        }
-      }
-      else {
-        img.reset(doc::Image::create(spr->pixelFormat(), sw, sh));
-        img->clear(0);
-      }
-
-      doc::Slice* slice = findSliceForFace(spr, f);
-      if (!slice) {
-        slice = new doc::Slice;
-        slice->setName(kFaceSpecs[f].sliceName);
-        slice->insert(0, doc::SliceKey(box));
-        slice->userData().setColor(
-          doc::rgba(kFaceSpecs[f].r, kFaceSpecs[f].g, kFaceSpecs[f].b, 255));
-        tx(new cmd::AddSlice(spr, slice));
-      }
-      else {
-        slice->setName(kFaceSpecs[f].sliceName);
-        slice->insert(0, doc::SliceKey(box));
-        slice->userData().setColor(
-          doc::rgba(kFaceSpecs[f].r, kFaceSpecs[f].g, kFaceSpecs[f].b, 255));
-      }
-
-      if (seedStarterIfBlank && spr->pixelFormat() == doc::IMAGE_RGB) {
-        bool regionHasPixels = false;
-        for (int v = 0; v < sh && !regionHasPixels; ++v) {
-          for (int u = 0; u < sw; ++u) {
-            if (doc::rgba_geta(doc::get_pixel(img.get(), u, v)) > 16) {
-              regionHasPixels = true;
-              break;
-            }
-          }
-        }
-        if (!regionHasPixels) {
-          for (int v = 0; v < sh; ++v) {
-            for (int u = 0; u < sw; ++u) {
-              doc::put_pixel(img.get(), u, v, starterSurfacePixel(f, u, v, sw, sh));
-            }
-          }
-        }
-      }
-
-      if (cel) {
-        api.replaceImage(spr, cel->imageRef(), img);
-      }
-      else {
-        api.addCel(surfLayer, fr, img);
-      }
-    }
-
-    tx.commit();
-  }
-  catch (const std::exception& e) {
-    Console::showException(e);
-  }
-
-  doc->notifyGeneralUpdate();
+  // Entering the studio now sets up the shared UV sheets, not
+  // per-face layers. setupSharedSurfaceLayers migrates any existing
+  // per-face Base/Texture images into their UV cells and removes
+  // the old layers, so opening an old document upgrades it in
+  // place instead of leaving 12+ layers behind.
+  setupSharedSurfaceLayers(doc, seedStarterIfBlank);
 }
 
 static bool extractSixSurfaces(
@@ -1566,6 +1731,12 @@ static bool extractSixSurfaces(
 
   ExtraCelRef extra = doc->extraCel();
 
+  // Shared sheets, if present, decide both the layers and the rect:
+  // each face samples its own UV rect of the same Base/Texture
+  // sheets, instead of its own per-face layers.
+  const SharedSurfaceLayers shared = findSharedLayers(spr);
+  const bool useShared = (shared.baseLayer || shared.textureLayer);
+
   for (int f = 0; f < kFaceCount; ++f) {
     doc::Slice* slice = findSliceForFace(spr, f);
     gfx::Rect faceRect(0, 0, sw, sh);
@@ -1575,15 +1746,26 @@ static bool extractSixSurfaces(
         faceRect = key->bounds();
       }
     }
+    if (useShared) {
+      // Recompute from the grid so a slice left at (0, 0) by the
+      // old layout does not make every face sample the same cell.
+      // sharedFaceRect keeps the slice's face size, only the
+      // origin moves to the face's UV cell.
+      faceRect = sharedFaceRect(spr, f);
+    }
     const int fw = faceRect.w;
     const int fh = faceRect.h;
     out.bounds[f] = faceRect;
     out.setFaceSize(f, fw, fh);
     out.hasSlices = true;
 
-    SurfaceLayerPair sp = findSurfaceLayers(spr, f);
-    doc::LayerImage* baseLyr = sp.baseLayer;
-    doc::LayerImage* texLyr = sp.texLayer;
+    doc::LayerImage* baseLyr = shared.baseLayer;
+    doc::LayerImage* texLyr = shared.textureLayer;
+    if (!useShared) {
+      SurfaceLayerPair sp = findSurfaceLayers(spr, f);
+      baseLyr = sp.baseLayer;
+      texLyr = sp.texLayer;
+    }
 
     // If no dedicated surface layer found, check shared layer
     if (!baseLyr && !texLyr) {
@@ -2151,6 +2333,25 @@ public:
     , m_docView(docView)
     , m_timer(33, this)
   {
+    // Wheel = zoom, not scroll, while the studio is open. The
+    // surface editors decide wheel behaviour from the global
+    // "zoom with wheel" preference, so a user who had that off
+    // for normal editing would otherwise get View scrolling
+    // instead of zooming in the surface panels. Save the old
+    // value and restore it when the studio closes (destructor
+    // and the Exit button both restore, idempotently), so normal
+    // editing outside Easymetric is untouched. The Preview
+    // widget already zooms on wheel and returns the message as
+    // handled, so it never scrolls the UI either; Shift+wheel
+    // still pans it. Note: a user-customised mouse-wheel
+    // shortcut table still wins over this preference in the
+    // editor's wheel handling.
+    m_savedZoomWithWheel = Preferences::instance().editor.zoomWithWheel();
+    if (!m_savedZoomWithWheel) {
+      Preferences::instance().editor.zoomWithWheel(true);
+      m_restoreZoomWithWheel = true;
+    }
+
     setExpansive(true);
 
     Doc* doc = m_docView->document();
@@ -2164,6 +2365,10 @@ public:
       ui::View* view = m_docView->createPaneEditorView(&ed);
       // Scrollbars on: each surface panel must be scrollable
       // horizontally and vertically on its own, instead of only
+      // fitting the whole sprite into the pane. Hiding the bars
+      // hid that affordance without disabling it, so show them.
+      // The wheel is reserved for zooming (see above), so
+      // scrolling needs the bars and drag, not the wheel.
       // fitting the whole sprite into the pane. The editor itself
       // already zooms/scrolls on wheel input; hiding the bars hid
       // that affordance without disabling it, so show them.
@@ -2174,18 +2379,30 @@ public:
       m_views[f] = view;
 
       if (spr) {
-        doc::Slice* sl = findSliceForFace(spr, f);
-        if (sl && sl->getByFrame(0) && !sl->getByFrame(0)->bounds().isEmpty()) {
-          ed->setClipSpriteBounds(sl->getByFrame(0)->bounds());
+        SharedSurfaceLayers shared = findSharedLayers(spr);
+        if (shared.baseLayer || shared.textureLayer) {
+          // One sheet, one UV window per panel.
+          ed->setClipSpriteBounds(sharedFaceRect(spr, f));
+        }
+        else if (doc::Slice* sl = findSliceForFace(spr, f)) {
+          if (sl->getByFrame(0) && !sl->getByFrame(0)->bounds().isEmpty()) {
+            ed->setClipSpriteBounds(sl->getByFrame(0)->bounds());
+          }
+          else {
+            ed->setClipSpriteBounds(gfx::Rect(0, 0, spr->width(), spr->height()));
+          }
         }
         else {
           ed->setClipSpriteBounds(gfx::Rect(0, 0, spr->width(), spr->height()));
         }
-        SurfaceLayerPair sp = findSurfaceLayers(spr, f);
-        doc::LayerImage* lyr = sp.texLayer ? sp.texLayer : sp.baseLayer;
+        doc::LayerImage* lyr = shared.textureLayer ? shared.textureLayer : shared.baseLayer;
         if (!lyr) {
-          const std::string lyrName = std::string("Surface_") + kFaceSpecs[f].sliceName;
-          lyr = findLayerByName(spr, lyrName);
+          SurfaceLayerPair sp = findSurfaceLayers(spr, f);
+          lyr = sp.texLayer ? sp.texLayer : sp.baseLayer;
+          if (!lyr) {
+            const std::string lyrName = std::string("Surface_") + kFaceSpecs[f].sliceName;
+            lyr = findLayerByName(spr, lyrName);
+          }
         }
         if (lyr)
           ed->setLayer(lyr);
@@ -2217,15 +2434,24 @@ public:
     m_panes[kFaceCount]->addChild(m_previewWidget);
     addChild(m_panes[kFaceCount]);
 
-    // 3. Column 4 Row 1: Fields Pane
+    // 3. Column 4 Row 1: Fields Pane, scrollable. Previously the
+    // Fields box was added directly to the pane, so when its
+    // controls grew taller than the pane the bottom ones were
+    // simply hidden with no way to reach them. Wrapping it in a
+    // View with scrollbars (and wheel scrolling, since this is a
+    // control panel, not a canvas) makes every field reachable.
     m_headers[kFaceCount + 1] = new PaneHeader("Fields");
     m_fieldsBox = new FieldsPanelBox;
+    m_fieldsView = new ui::View;
+    m_fieldsView->showScrollBars();
+    m_fieldsView->setExpansive(true);
+    m_fieldsView->attachToView(m_fieldsBox);
 
     buildFieldsControls();
 
     m_panes[kFaceCount + 1] = new ui::VBox;
     m_panes[kFaceCount + 1]->addChild(m_headers[kFaceCount + 1]);
-    m_panes[kFaceCount + 1]->addChild(m_fieldsBox);
+    m_panes[kFaceCount + 1]->addChild(m_fieldsView);
     addChild(m_panes[kFaceCount + 1]);
 
     // Timer for real-time 3D model update
@@ -2239,6 +2465,15 @@ public:
   ~EasymetricMultiPaneView() override
   {
     m_timer.stop();
+    restoreWheelZoomPref();
+  }
+
+  void restoreWheelZoomPref()
+  {
+    if (m_restoreZoomWithWheel) {
+      Preferences::instance().editor.zoomWithWheel(m_savedZoomWithWheel);
+      m_restoreZoomWithWheel = false;
+    }
   }
 
   std::vector<Editor*> surfaceEditors() const
@@ -2251,6 +2486,42 @@ public:
     Doc* doc = m_docView->document();
     if (!doc || !doc->sprite()) return;
     doc::Sprite* spr = doc->sprite();
+
+    SharedSurfaceLayers shared = findSharedLayers(spr);
+    if (shared.baseLayer || shared.textureLayer) {
+      // Shared sheets: opposing faces are different UV rects of
+      // the SAME layer, so syncing means copying the source rect
+      // into the destination rect, not replacing the whole sheet
+      // (which would also overwrite the source itself).
+      try {
+        Tx tx(doc, "Sync Opposing Faces", ModifyDocument);
+        DocApi api = doc->getApi(tx);
+        const gfx::Rect srcRect = sharedFaceRect(spr, srcFace);
+        const gfx::Rect dstRect = sharedFaceRect(spr, dstFace);
+        auto syncRect = [&](doc::LayerImage* lyr) {
+          if (!lyr) return;
+          for (doc::frame_t fr = doc::frame_t(0); fr <= spr->lastFrame(); ++fr) {
+            doc::Cel* cel = lyr->cel(fr);
+            if (!cel || !cel->image()) continue;
+            doc::ImageRef copyImg(doc::Image::createCopy(cel->image()));
+            for (int v = 0; v < srcRect.h && v < dstRect.h; ++v)
+              for (int u = 0; u < srcRect.w && u < dstRect.w; ++u)
+                doc::put_pixel(copyImg.get(), dstRect.x + u, dstRect.y + v,
+                               doc::get_pixel(copyImg.get(), srcRect.x + u, srcRect.y + v));
+            api.replaceImage(spr, cel->imageRef(), copyImg);
+          }
+        };
+        syncRect(shared.baseLayer);
+        syncRect(shared.textureLayer);
+        syncRect(shared.depthLayer);
+        tx.commit();
+        doc->notifyGeneralUpdate();
+      }
+      catch (const std::exception& e) {
+        Console::showException(e);
+      }
+      return;
+    }
 
     SurfaceLayerPair srcPair = findSurfaceLayers(spr, srcFace);
     SurfaceLayerPair dstPair = findSurfaceLayers(spr, dstFace);
@@ -2327,9 +2598,14 @@ public:
         m_docView->setActivePaneEditor(m_editors[topFace]);
       }
       if (spr) {
-        const std::string topLyrName = std::string("Surface_") + kFaceSpecs[topFace].sliceName;
-        if (doc::LayerImage* lyr = findLayerByName(spr, topLyrName))
-          m_editors[topFace]->setLayer(lyr);
+        SharedSurfaceLayers shared = findSharedLayers(spr);
+        if (shared.textureLayer)
+          m_editors[topFace]->setLayer(shared.textureLayer);
+        else {
+          const std::string topLyrName = std::string("Surface_") + kFaceSpecs[topFace].sliceName;
+          if (doc::LayerImage* lyr = findLayerByName(spr, topLyrName))
+            m_editors[topFace]->setLayer(lyr);
+        }
       }
 
       syncOpposingCels(topFace, btmFace);
@@ -2366,18 +2642,29 @@ public:
 
     for (int f = 0; f < kFaceCount; ++f) {
       if (m_editors[f]) {
-        SurfaceLayerPair sp = findSurfaceLayers(spr, f);
-        doc::LayerImage* lyr = sp.texLayer ? sp.texLayer : sp.baseLayer;
+        SharedSurfaceLayers shared = findSharedLayers(spr);
+        doc::LayerImage* lyr = shared.textureLayer ? shared.textureLayer : shared.baseLayer;
         if (!lyr) {
-          const std::string lyrName = std::string("Surface_") + kFaceSpecs[f].sliceName;
-          lyr = findLayerByName(spr, lyrName);
+          SurfaceLayerPair sp = findSurfaceLayers(spr, f);
+          lyr = sp.texLayer ? sp.texLayer : sp.baseLayer;
+          if (!lyr) {
+            const std::string lyrName = std::string("Surface_") + kFaceSpecs[f].sliceName;
+            lyr = findLayerByName(spr, lyrName);
+          }
         }
         if (lyr)
           m_editors[f]->setLayer(lyr);
 
-        doc::Slice* sl = findSliceForFace(spr, f);
-        if (sl && sl->getByFrame(0) && !sl->getByFrame(0)->bounds().isEmpty()) {
-          m_editors[f]->setClipSpriteBounds(sl->getByFrame(0)->bounds());
+        if (shared.baseLayer || shared.textureLayer) {
+          m_editors[f]->setClipSpriteBounds(sharedFaceRect(spr, f));
+        }
+        else if (doc::Slice* sl = findSliceForFace(spr, f)) {
+          if (sl->getByFrame(0) && !sl->getByFrame(0)->bounds().isEmpty()) {
+            m_editors[f]->setClipSpriteBounds(sl->getByFrame(0)->bounds());
+          }
+          else {
+            m_editors[f]->setClipSpriteBounds(gfx::Rect(0, 0, spr->width(), spr->height()));
+          }
         }
         else {
           m_editors[f]->setClipSpriteBounds(gfx::Rect(0, 0, spr->width(), spr->height()));
@@ -2945,6 +3232,7 @@ private:
     exportObjBtn->Click.connect([this] { exportToWavefrontObj(); });
     exitBtn->Click.connect([this] {
       syncAllLinkedCels();
+      restoreWheelZoomPref();
       m_docView->exitMultiPaneMode();
     });
   }
@@ -3072,10 +3360,16 @@ private:
         const float cy = (fh - 1) * 0.5f;
         const float maxR = std::max(1.0f, std::sqrt(cx * cx + cy * cy));
 
+        // Shared sheets: write each face into its own UV cell
+        // (data.bounds[f] is that cell when shared layers exist),
+        // instead of writing every face at (0, 0) where each
+        // face would overwrite the previous one.
+        const int ox = (data.bounds[f].w > 0) ? data.bounds[f].x : 0;
+        const int oy = (data.bounds[f].w > 0) ? data.bounds[f].y : 0;
         for (int v = 0; v < fh; ++v) {
-          if (v < 0 || v >= depthImg->height()) continue;
+          if (oy + v < 0 || oy + v >= depthImg->height()) continue;
           for (int u = 0; u < fw; ++u) {
-            if (u < 0 || u >= depthImg->width()) continue;
+            if (ox + u < 0 || ox + u >= depthImg->width()) continue;
             const uint32_t col = data.sample(f, u, v);
             if (doc::rgba_geta(col) <= 16) continue;
 
@@ -3083,7 +3377,7 @@ private:
             const float dist = std::sqrt((u - cx) * (u - cx) + (v - cy) * (v - cy)) / maxR;
             const float dome = std::clamp(1.0f - dist * 0.35f, 0.0f, 1.0f);
             const uint8_t hByte = clampByte((0.35f + luma * 0.45f + dome * 0.20f) * 255.0f);
-            doc::put_pixel(depthImg.get(), u, v, doc::rgba(hByte, hByte, hByte, 255));
+            doc::put_pixel(depthImg.get(), ox + u, oy + v, doc::rgba(hByte, hByte, hByte, 255));
           }
         }
       }
@@ -3558,6 +3852,9 @@ private:
   // Preview & Fields
   EasymetricPreviewWidget* m_previewWidget;
   FieldsPanelBox* m_fieldsBox;
+  ui::View* m_fieldsView = nullptr;
+  bool m_savedZoomWithWheel = true;
+  bool m_restoreZoomWithWheel = false;
 
   // Fields controls
   ui::Slider* m_yawSlider;
