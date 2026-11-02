@@ -2369,6 +2369,9 @@ public:
       // hid that affordance without disabling it, so show them.
       // The wheel is reserved for zooming (see above), so
       // scrolling needs the bars and drag, not the wheel.
+      // fitting the whole sprite into the pane. The editor itself
+      // already zooms/scrolls on wheel input; hiding the bars hid
+      // that affordance without disabling it, so show them.
       view->showScrollBars();
       view->setExpansive(true);
 
