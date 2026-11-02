@@ -8,6 +8,9 @@ option(UPDATE_VERSION_WITH_GIT "Append Git commit hash to the Aseprite 2.0 versi
 if(UPDATE_VERSION_WITH_GIT)
   find_package(Git)
   if(Git_FOUND)
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+      "${CMAKE_SOURCE_DIR}/.git/HEAD"
+      "${CMAKE_SOURCE_DIR}/.git/index")
     execute_process(
       COMMAND git rev-parse --short HEAD
       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"

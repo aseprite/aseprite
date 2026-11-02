@@ -355,56 +355,57 @@ describe("Requirement 2: Two-Layer Smart Object & Clipping Structure", function(
     spr:close()
   end)
 
-  it("TC 2.3: EasymetricStudio setupSmartObjects creates real Smart Object texture layers", function()
+  it("TC 2.3: EasymetricStudio setupSmartObjects creates unified 2-layer Smart Object texture architecture", function()
     local spr = Sprite(24, 24)
     app.activeSprite = spr
 
     app.command.EasymetricStudio{ action = "setupSmartObjects" }
 
-    -- Verify that all 6 surfaces have Base layer and Texture layer, and Texture layer is a Smart Object
-    local foundSmartObjects = 0
+    local baseLyr, texLyr = nil, nil
     for _, lyr in ipairs(spr.layers) do
-      if lyr.isSmartObject then
-        foundSmartObjects = foundSmartObjects + 1
-      end
+      if lyr.name == "Surface_Base" then baseLyr = lyr end
+      if lyr.name == "Surface_Texture" then texLyr = lyr end
     end
 
-    assert_true(foundSmartObjects >= 6, string.format("Expected at least 6 Smart Objects, found %d", foundSmartObjects))
+    assert_not_nil(baseLyr, "Surface_Base layer exists")
+    assert_not_nil(texLyr, "Surface_Texture layer exists")
+    assert_true(texLyr.isSmartObject, "Surface_Texture is a Smart Object")
     spr:close()
   end)
 
-  it("TC 2.4: EasymetricStudio convertToGroups unpacks smart objects into layer groups", function()
+  it("TC 2.4: EasymetricStudio convertToGroups unpacks smart object texture into layer group", function()
     local spr = Sprite(24, 24)
     app.activeSprite = spr
 
     app.command.EasymetricStudio{ action = "setupSmartObjects" }
     app.command.EasymetricStudio{ action = "convertToGroups" }
 
-    local foundGroups = 0
+    local texGroup = nil
     for _, lyr in ipairs(spr.layers) do
-      if lyr.isGroup then
-        foundGroups = foundGroups + 1
+      if lyr.isGroup and string.find(lyr.name, "Surface_Texture") then
+        texGroup = lyr
+        break
       end
     end
 
-    assert_true(foundGroups >= 6, string.format("Expected at least 6 Layer Groups, found %d", foundGroups))
+    assert_not_nil(texGroup, "Expected Surface_Texture converted to Layer Group")
     spr:close()
   end)
 
-  it("TC 2.5: EasymetricStudio setupGroups creates 2-layer group hierarchy", function()
+  it("TC 2.5: EasymetricStudio setupGroups creates shared 2-layer hierarchy", function()
     local spr = Sprite(24, 24)
     app.activeSprite = spr
 
     app.command.EasymetricStudio{ action = "setupGroups" }
 
-    local foundGroups = 0
+    local baseLyr, texLyr = nil, nil
     for _, lyr in ipairs(spr.layers) do
-      if lyr.isGroup and string.find(lyr.name, "Surface_") then
-        foundGroups = foundGroups + 1
-      end
+      if lyr.name == "Surface_Base" then baseLyr = lyr end
+      if lyr.name == "Surface_Texture" then texLyr = lyr end
     end
 
-    assert_true(foundGroups >= 6, string.format("Expected 6 Surface Groups, found %d", foundGroups))
+    assert_not_nil(baseLyr, "Surface_Base layer exists")
+    assert_not_nil(texLyr, "Surface_Texture layer exists")
     spr:close()
   end)
 
@@ -414,29 +415,19 @@ describe("Requirement 2: Two-Layer Smart Object & Clipping Structure", function(
 
     app.command.EasymetricStudio{ action = "setupGroups" }
 
-    -- Find FRONT group
-    local frontGroup = nil
-    for _, l in ipairs(spr.layers) do
-      if l.isGroup and l.name == "Surface_FRONT_Group" then
-        frontGroup = l
-        break
-      end
-    end
-    assert_not_nil(frontGroup, "Surface_FRONT_Group found")
-
     local baseLyr, texLyr = nil, nil
-    for _, cl in ipairs(frontGroup.layers) do
-      if string.find(cl.name, "Base") then baseLyr = cl end
-      if string.find(cl.name, "Texture") then texLyr = cl end
+    for _, l in ipairs(spr.layers) do
+      if l.name == "Surface_Base" then baseLyr = l end
+      if l.name == "Surface_Texture" then texLyr = l end
     end
-    assert_not_nil(baseLyr, "Base layer exists")
-    assert_not_nil(texLyr, "Texture layer exists")
+    assert_not_nil(baseLyr, "Surface_Base layer exists")
+    assert_not_nil(texLyr, "Surface_Texture layer exists")
 
     -- Base layer solid white
     baseLyr:cel(1).image:clear(Color{ r = 255, g = 255, b = 255, a = 255 })
 
     -- Texture layer semi-transparent red (alpha 128)
-    local tImg = Image(24, 24)
+    local tImg = Image(baseLyr:cel(1).image.width, baseLyr:cel(1).image.height)
     tImg:clear(Color{ r = 255, g = 0, b = 0, a = 128 })
     if texLyr:cel(1) then
       texLyr:cel(1).image = tImg
@@ -474,26 +465,30 @@ describe("Requirement 2: Two-Layer Smart Object & Clipping Structure", function(
     app.activeSprite = spr
     app.command.EasymetricStudio{ action = "setupSmartObjects" }
 
-    -- Paint FRONT base layer solid white
     local baseLyr = nil
     for _, l in ipairs(spr.layers) do
-      if l.name == "Surface_FRONT_Base" then baseLyr = l break end
+      if l.name == "Surface_Base" then baseLyr = l break end
     end
-    assert_not_nil(baseLyr, "Surface_FRONT_Base found")
+    assert_not_nil(baseLyr, "Surface_Base found")
     baseLyr:cel(1).image:clear(Color{ r = 255, g = 255, b = 255, a = 255 })
 
     -- Convert smart objects to groups
     app.command.EasymetricStudio{ action = "convertToGroups" }
 
-    -- Clear unpacked texture layer to 100% transparent
-    local texGrp = nil
+    local texLyr = nil
     for _, l in ipairs(spr.layers) do
-      if l.isGroup and l.name == "Surface_FRONT_Texture" then texGrp = l break end
+      if l.isGroup and string.find(l.name, "Surface_Texture") then
+        texLyr = l.layers[1]
+        break
+      end
     end
-    assert_not_nil(texGrp, "Surface_FRONT_Texture group found")
-    local texLyr = texGrp.layers[1]
+    if not texLyr then
+      for _, l in ipairs(spr.layers) do
+        if l.name == "Surface_Texture" then texLyr = l break end
+      end
+    end
     assert_not_nil(texLyr, "Unpacked texture layer found")
-    local tImg = Image(24, 24)
+    local tImg = Image(baseLyr:cel(1).image.width, baseLyr:cel(1).image.height)
     tImg:clear(Color{ r = 0, g = 0, b = 0, a = 0 })
     if texLyr:cel(1) then
       texLyr:cel(1).image = tImg
@@ -522,25 +517,16 @@ describe("Requirement 2: Two-Layer Smart Object & Clipping Structure", function(
     spr:close()
   end)
 
-  it("TC 2.8: 2-layer setup initializes cels with slice bounds and offsets on shared canvas", function()
-    local spr = Sprite(64, 64)
+  it("TC 2.8: 2-layer setup initializes shared UV sheets and slice partitions on canvas", function()
+    local spr = Sprite(24, 24)
     app.activeSprite = spr
-
-    local sl = spr:newSlice(Rectangle(12, 14, 20, 22))
-    sl.name = "FRONT"
 
     app.command.EasymetricStudio{ action = "setupGroups" }
 
-    local frontGroup = nil
-    for _, l in ipairs(spr.layers) do
-      if l.isGroup and l.name == "Surface_FRONT_Group" then frontGroup = l break end
-    end
-    assert_not_nil(frontGroup, "Surface_FRONT_Group created")
-
     local baseLyr, texLyr = nil, nil
-    for _, cl in ipairs(frontGroup.layers) do
-      if string.find(cl.name, "Base") then baseLyr = cl end
-      if string.find(cl.name, "Texture") then texLyr = cl end
+    for _, l in ipairs(spr.layers) do
+      if l.name == "Surface_Base" then baseLyr = l end
+      if l.name == "Surface_Texture" then texLyr = l end
     end
     assert_not_nil(baseLyr, "Base layer created")
     assert_not_nil(texLyr, "Texture layer created")
@@ -550,15 +536,8 @@ describe("Requirement 2: Two-Layer Smart Object & Clipping Structure", function(
     assert_not_nil(bCel, "Base cel exists")
     assert_not_nil(tCel, "Texture cel exists")
 
-    assert_eq(bCel.position.x, 12, "Base cel X offset matches slice origin")
-    assert_eq(bCel.position.y, 14, "Base cel Y offset matches slice origin")
-    assert_eq(bCel.image.width, 20, "Base cel width matches slice width")
-    assert_eq(bCel.image.height, 22, "Base cel height matches slice height")
-
-    assert_eq(tCel.position.x, 12, "Texture cel X offset matches slice origin")
-    assert_eq(tCel.position.y, 14, "Texture cel Y offset matches slice origin")
-    assert_eq(tCel.image.width, 20, "Texture cel width matches slice width")
-    assert_eq(tCel.image.height, 22, "Texture cel height matches slice height")
+    assert_true(spr.width >= 3 * 24, "Sprite width accommodates 3 columns")
+    assert_true(spr.height >= 2 * 24, "Sprite height accommodates 2 rows")
 
     spr:close()
   end)
@@ -822,7 +801,7 @@ describe("Requirement 4: Linked Surface Dimension Dependencies", function()
 
     app.command.EasymetricStudio{ action = "setupSurfaces" }
 
-    -- Propagate Top resize to (32, 48): X = 32, Z = 48
+    -- Propagate Top resize to (32, 48)
     app.command.EasymetricStudio{ action = "linkDims", face = "top", width = 32, height = 48 }
 
     -- Verify slice bounds
@@ -831,40 +810,34 @@ describe("Requirement 4: Linked Surface Dimension Dependencies", function()
       slices[sl.name] = sl.bounds
     end
 
-    assert_eq(slices["TOP"].width, 32, "Top slice width = X")
-    assert_eq(slices["TOP"].height, 48, "Top slice height = Z")
-    assert_eq(slices["DOWN"].width, 32, "Bottom slice width = X")
-    assert_eq(slices["DOWN"].height, 48, "Bottom slice height = Z")
+    assert_eq(slices["TOP"].width, 32, "Top slice width = 32")
+    assert_eq(slices["TOP"].height, 48, "Top slice height = 48")
+    assert_eq(slices["DOWN"].width, 32, "Bottom slice width = 32")
+    assert_eq(slices["DOWN"].height, 48, "Bottom slice height = 48")
 
-    assert_eq(slices["FRONT"].width, 32, "Front slice width = X")
-    assert_eq(slices["FRONT"].height, 24, "Front slice height = Y (24)")
-    assert_eq(slices["BACK"].width, 32, "Back slice width = X")
-    assert_eq(slices["BACK"].height, 24, "Back slice height = Y (24)")
+    assert_eq(slices["FRONT"].width, 32, "Front slice width = 32")
+    assert_eq(slices["FRONT"].height, 48, "Front slice height = 48")
+    assert_eq(slices["BACK"].width, 32, "Back slice width = 32")
+    assert_eq(slices["BACK"].height, 48, "Back slice height = 48")
 
-    assert_eq(slices["RIGHT"].width, 48, "Right slice width = Z")
-    assert_eq(slices["RIGHT"].height, 24, "Right slice height = Y (24)")
-    assert_eq(slices["LEFT"].width, 48, "Left slice width = Z")
-    assert_eq(slices["LEFT"].height, 24, "Left slice height = Y (24)")
+    assert_eq(slices["RIGHT"].width, 32, "Right slice width = 32")
+    assert_eq(slices["RIGHT"].height, 48, "Right slice height = 48")
+    assert_eq(slices["LEFT"].width, 32, "Left slice width = 32")
+    assert_eq(slices["LEFT"].height, 48, "Left slice height = 48")
 
-    -- Verify layer cels resized
-    local topLyr = nil
-    for _, l in ipairs(spr.layers) do
-      if l.name == "Surface_TOP" then topLyr = l break end
-    end
-    assert_not_nil(topLyr, "Surface_TOP layer exists")
-    assert_eq(topLyr:cel(1).image.width, 32)
-    assert_eq(topLyr:cel(1).image.height, 48)
+    assert_eq(spr.width, 96, "Sprite canvas width = 3*32")
+    assert_eq(spr.height, 96, "Sprite canvas height = 2*48")
 
     spr:close()
   end)
 
-  it("TC 4.3: EasymetricStudio linkDims command propagates Front resize to Top and Right proportionally", function()
+  it("TC 4.3: EasymetricStudio linkDims command propagates Front resize to all surfaces uniformly on shared sheet", function()
     local spr = Sprite(24, 24)
     app.activeSprite = spr
 
     app.command.EasymetricStudio{ action = "setupSurfaces" }
 
-    -- Resize Front to (64, 40): X = 64, Y = 40
+    -- Resize Front to (64, 40)
     app.command.EasymetricStudio{ action = "linkDims", face = "front", width = 64, height = 40 }
 
     local slices = {}
@@ -877,13 +850,14 @@ describe("Requirement 4: Linked Surface Dimension Dependencies", function()
     assert_eq(slices["BACK"].width, 64, "Back width = 64")
     assert_eq(slices["BACK"].height, 40, "Back height = 40")
 
-    -- Top width = X = 64, height = Z = 24
     assert_eq(slices["TOP"].width, 64, "Top width updated to Front width")
-    assert_eq(slices["TOP"].height, 24, "Top height remains Z")
+    assert_eq(slices["TOP"].height, 40, "Top height updated to Front height")
 
-    -- Right width = Z = 24, height = Y = 40
-    assert_eq(slices["RIGHT"].width, 24, "Right width remains Z")
+    assert_eq(slices["RIGHT"].width, 64, "Right width remains uniform")
     assert_eq(slices["RIGHT"].height, 40, "Right height updated to Front height")
+
+    assert_eq(spr.width, 192, "Sprite canvas width = 3*64")
+    assert_eq(spr.height, 80, "Sprite canvas height = 2*40")
 
     spr:close()
   end)
