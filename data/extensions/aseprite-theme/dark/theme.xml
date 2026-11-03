@@ -149,12 +149,14 @@
         <part id="cursor_rotate_nw" x="240" y="160" w="16" h="16" focusx="8" focusy="8"/>
         <part id="cursor_eyedropper" x="80" y="224" w="16" h="16" focusx="0" focusy="15"/>
         <part id="cursor_magnifier" x="80" y="240" w="16" h="16" focusx="5" focusy="5"/>
-        <part id="radio_normal" x="64" y="64" w="8" h="8"/>
-        <part id="radio_selected" x="64" y="80" w="8" h="8"/>
-        <part id="radio_disabled" x="64" y="64" w="8" h="8"/>
+        <part id="radio_normal" x="48" y="80" w="8" h="8"/>
+        <part id="radio_selected" x="56" y="80" w="8" h="8"/>
+        <part id="radio_disabled" x="48" y="80" w="8" h="8"/>
+        <part id="radio_disabled_selected" x="64" y="80" w="8" h="8"/>
         <part id="check_normal" x="48" y="64" w="8" h="8"/>
-        <part id="check_selected" x="48" y="80" w="8" h="8"/>
+        <part id="check_selected" x="56" y="64" w="8" h="8"/>
         <part id="check_disabled" x="48" y="64" w="8" h="8"/>
+        <part id="check_disabled_selected" x="64" y="64" w="8" h="8"/>
         <part id="check_focus" x="32" y="64" w1="2" w2="6" w3="2" h1="2" h2="6" h3="2"/>
         <part id="radio_focus" x="32" y="64" w1="2" w2="6" w3="2" h1="2" h2="6" h3="2"/>
         <part id="button_normal" x="48" y="0" w1="4" w2="6" w3="4" h1="4" h2="6" h3="6"/>
@@ -658,7 +660,7 @@
             <icon part="check_normal" align="left middle" x="2"/>
             <icon part="check_selected" align="left middle" x="2" state="selected"/>
             <icon part="check_disabled" align="left middle" x="2" state="disabled"/>
-            <icon part="check_selected" align="left middle" x="2" state="disabled selected"/>
+            <icon part="check_disabled_selected" align="left middle" x="2" state="disabled selected"/>
         </style>
         <style id="radio_button" border="2">
             <background color="radio_hot_face" state="mouse focus"/>
@@ -671,6 +673,7 @@
             <icon part="radio_normal" align="left middle" x="2"/>
             <icon part="radio_selected" align="left middle" x="2" state="selected"/>
             <icon part="radio_disabled" align="left middle" x="2" state="disabled"/>
+            <icon part="radio_disabled_selected" align="left middle" x="2" state="disabled selected"/>
         </style>
         <style id="mini_button" extends="button" padding-top="1" border="3" border-bottom="5">
             <background-border part="buttonset_item_normal"/>

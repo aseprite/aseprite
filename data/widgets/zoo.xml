@@ -46,9 +46,11 @@
           <vbox expansive="true" width="100">
             <separator text="CheckBoxes" horizontal="true" />
             <check text="Checkbox" />
+            <check text="Checkbox" />
             <check text="Checkbox" selected="true" />
-            <radio text="RadioBox" group="2" />
-            <radio text="RadioBox" group="2" selected="true" />
+            <radio text="RadioButton" group="2" />
+            <radio text="RadioButton" group="2" />
+            <radio text="RadioButton" group="2" selected="true" />
           </vbox>
 
           <!-- ComboBoxes -->
