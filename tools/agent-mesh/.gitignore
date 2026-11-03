@@ -1,0 +1,11 @@
+# Cloudflare Hub dependencies & build artifacts
+cloudflare-hub/node_modules/
+cloudflare-hub/.wrangler/
+
+# Python cache & runtime state
+__pycache__/
+*.pyc
+inbox_*.jsonl
+.mesh_last_id_*.txt
+.mesh_listener_*.lock
+*.log
