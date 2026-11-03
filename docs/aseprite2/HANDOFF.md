@@ -76,6 +76,26 @@ powershell -File tools\start-aseprite2.ps1
 - `build/bin/data/extensions/aseprite2-bridge` mirrored from `data/extensions/aseprite2-bridge` so dev runs immediately find it.
 
 ## Log (newest first)
+- 2026-11-03 — Antigravity (Windows): Rotated HUB_TOKEN and agent tokens on live hub (`agent-mesh-hub`).
+  - Set new `HUB_TOKEN` secret via Wrangler; purged stray secret `cVc8x...`.
+  - Removed all hardcoded token fallbacks across `cloudflare-hub/src/index.ts`, `manage-tokens.ps1`, `token_manager.py`, and test files.
+  - Revoked exposed `arin-pc` and `muse` tokens; generated new isolated tokens for project `agent-hub`.
+  - Successfully connected `arin-pc` WebSocket listener and verified bi-directional communication with `muse`.
+
+- 2026-11-03 — GPT-6 (Codex, Windows): Read the joining-agent request and project
+  instructions; completed checkout and remote-state inspection before implementation.
+  - GitHub connector confirms `Aseprite-2.0` at `a70ab7b928efc2f1b5f4cf38d5359649dcc297a6`
+    (PR #5 merged); open-PR search returned no results.
+  - Current checkout is `feature/agent-mesh-hub` at `e022ebc78`, with eight pre-existing
+    modified files under `tools/agent-mesh/` and untracked content in `third_party/fmt`.
+    Preserved all existing work; no checkout, commit, push, merge, or hub message sent.
+  - Base/Hidden plan `docs/aseprite2/EASYMETRIC_BASE_HIDDEN_PLAN.md` is absent locally
+    and from the cached plan-branch tree; GitHub contents request on
+    `feature/easymetric-base-hidden-surfaces` returned 404. Need the plan's current
+    location or a concrete first implementation task before feature work.
+  - Graphify query attempted, but `graphify-out/graph.json` does not exist. Native Git
+    remote inspection failed with Schannel `SEC_E_NO_CREDENTIALS`; used the GitHub
+    connector for remote verification. No source changes; build/tests not run.
 - 2026-11-02 — ULTRON (Muse): Fixed three issues William reported testing the merged version (Aseprite-2.0 at 7848663, PR #3 + PR #4 merged), on branch `feature/easymetric-uv-canvas-columns`, in `src/app/commands/cmd_easymetric.cpp` only:
   - **Canvas size = UV mapping, exactly:** replaced the uniform 3 x cellW, 2 x cellH grid (cell from sprite size / 3, / 2, padding every smaller face, and shifting UV origins on a manual canvas resize) with an exact per-column/row layout: each column is its widest face, each row its tallest face, sheet = sum of columns/rows (e.g. faces 32/48/16 wide -> sheet 96 wide, not 144). Resizing one face now changes only that face (other faces in its column/row move to their new UV origin, sizes/pixels unchanged), and a manual canvas resize in the studio is reconciled in pollAndRender by scaling face sizes by the same ratio and rebuilding the sheets, so the canvas ends up exactly the UV sum. Face pixels are copied, never scaled (larger rect = transparent padding, smaller = cropped).
   - **Surfaces independent in one shared layer:** when the active panel changes (in standby state), the document selection is set to that face's UV rect, without an undo step, and restored on studio exit. Brush and Move are then confined to that face's pixels, so moving Top's content does not move Front/Back/etc. Limitation: a sub-selection dragged far enough to cross into a neighbouring UV rect will still land in that rect's sampled area, because the sheet is one image; what is guaranteed is that the other faces' pixels do not move with it.

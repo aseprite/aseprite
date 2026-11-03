@@ -4,7 +4,7 @@ import json
 import sys
 
 BASE_URL = "https://agent-mesh-hub.slack-clone-arin.workers.dev"
-ADMIN_TOKEN = "cVc8xLDpHfMujg1GEkimVaDdSdhdR70k"
+ADMIN_TOKEN = os.environ.get("HUB_TOKEN") or os.environ.get("ADMIN_TOKEN", "")
 
 def req(path, method="GET", data=None, token=None):
     url = f"{BASE_URL}{path}"

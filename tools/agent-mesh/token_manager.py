@@ -19,7 +19,7 @@ if not DEFAULT_ADMIN_TOKEN:
     if hub_tok and not hub_tok.startswith("amt_"):
         DEFAULT_ADMIN_TOKEN = hub_tok
     else:
-        DEFAULT_ADMIN_TOKEN = "cVc8xLDpHfMujg1GEkimVaDdSdhdR70k"
+        DEFAULT_ADMIN_TOKEN = ""
 
 def api_request(base_url, admin_token, path, method="GET", body=None):
     url = f"{base_url}{path}"
@@ -209,6 +209,9 @@ def main():
     p_revoke.set_defaults(func=cmd_revoke)
 
     args = parser.parse_args()
+    if not args.admin_token:
+        print("[Error] Admin token required. Set HUB_TOKEN/ADMIN_TOKEN env var or pass --admin-token.", file=sys.stderr)
+        sys.exit(1)
     args.func(args)
 
 if __name__ == "__main__":

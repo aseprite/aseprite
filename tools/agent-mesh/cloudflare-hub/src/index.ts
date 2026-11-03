@@ -228,9 +228,6 @@ export class AgentMeshHub {
     if (this.env.ADMIN_TOKEN && String(this.env.ADMIN_TOKEN).trim() === trimmed) {
       return true;
     }
-    if (trimmed === "cVc8xLDpHfMujg1GEkimVaDdSdhdR70k") {
-      return true;
-    }
     return false;
   }
 

@@ -20,9 +20,9 @@ import urllib.request
 from pathlib import Path
 
 HUB_URL = "https://agent-mesh-hub.slack-clone-arin.workers.dev"
-ADMIN_TOKEN = "cVc8xLDpHfMujg1GEkimVaDdSdhdR70k"
-ARIN_TOKEN = "amt_7547ca9f1b6c4ae8b0100ee657e628ff6c53f1e6b5c74f2dac5dfcc6dadfba80"
-MUSE_TOKEN = "amt_80d2782b07124d6a9f9dcd4dd3d93fe72a707a011d9e4227bcc37d891fb1edea"
+ADMIN_TOKEN = os.environ.get("HUB_TOKEN") or os.environ.get("ADMIN_TOKEN", "")
+ARIN_TOKEN = os.environ.get("ARIN_TOKEN", "")
+MUSE_TOKEN = os.environ.get("MUSE_TOKEN", "")
 
 log_queue = queue.Queue()
 

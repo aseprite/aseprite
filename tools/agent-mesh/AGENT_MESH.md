@@ -71,7 +71,7 @@ Admin commands require `Authorization: Bearer <ADMIN_TOKEN>` or `?token=<ADMIN_T
 #### Create Token
 ```bash
 curl -X POST https://agent-mesh-hub.slack-clone-arin.workers.dev/tokens \
-  -H "Authorization: Bearer cVc8xLDpHfMujg1GEkimVaDdSdhdR70k" \
+  -H "Authorization: Bearer <YOUR_HUB_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
     "agent": "arin-pc",
@@ -83,13 +83,13 @@ curl -X POST https://agent-mesh-hub.slack-clone-arin.workers.dev/tokens \
 #### List Tokens
 ```bash
 curl -X GET https://agent-mesh-hub.slack-clone-arin.workers.dev/tokens \
-  -H "Authorization: Bearer cVc8xLDpHfMujg1GEkimVaDdSdhdR70k"
+  -H "Authorization: Bearer <YOUR_HUB_TOKEN>"
 ```
 
 #### Revoke Token
 ```bash
 curl -X POST https://agent-mesh-hub.slack-clone-arin.workers.dev/tokens/revoke \
-  -H "Authorization: Bearer cVc8xLDpHfMujg1GEkimVaDdSdhdR70k" \
+  -H "Authorization: Bearer <YOUR_HUB_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{
     "token": "amt_...",
@@ -98,7 +98,7 @@ curl -X POST https://agent-mesh-hub.slack-clone-arin.workers.dev/tokens/revoke \
 
 # Or via DELETE endpoint
 curl -X DELETE "https://agent-mesh-hub.slack-clone-arin.workers.dev/admin/tokens/amt_...?purge=true" \
-  -H "Authorization: Bearer cVc8xLDpHfMujg1GEkimVaDdSdhdR70k"
+  -H "Authorization: Bearer <YOUR_HUB_TOKEN>"
 ```
 
 ---

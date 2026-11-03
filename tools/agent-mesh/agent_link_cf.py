@@ -16,7 +16,7 @@ except ImportError:
 
 NAME = os.environ.get("AGENT_NAME", "pc-node")
 HUB_URL = os.environ.get("HUB_URL", "https://agent-mesh-hub.slack-clone-arin.workers.dev").rstrip("/")
-TOKEN = os.environ.get("AGENT_TOKEN") or os.environ.get("HUB_TOKEN", "cVc8xLDpHfMujg1GEkimVaDdSdhdR70k")
+TOKEN = os.environ.get("AGENT_TOKEN") or os.environ.get("HUB_TOKEN", "")
 PROJECTS = [p.strip() for p in os.environ.get("PROJECTS", "aseprite2").split(",") if p.strip()]
 
 def get_iso_timestamp():

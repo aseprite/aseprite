@@ -1,6 +1,6 @@
 const BASE_URL = "https://agent-mesh-hub.slack-clone-arin.workers.dev";
 const WS_URL = "wss://agent-mesh-hub.slack-clone-arin.workers.dev";
-const ADMIN_TOKEN = "cVc8xLDpHfMujg1GEkimVaDdSdhdR70k";
+const ADMIN_TOKEN = process.env.HUB_TOKEN || process.env.ADMIN_TOKEN || "";
 
 async function post(path, body) {
   const res = await fetch(`${BASE_URL}${path}`, {

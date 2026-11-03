@@ -27,7 +27,7 @@ if (-not $AdminToken) {
     } elseif ($env:HUB_TOKEN -and -not $env:HUB_TOKEN.StartsWith("amt_")) {
         $AdminToken = $env:HUB_TOKEN
     } else {
-        $AdminToken = "cVc8xLDpHfMujg1GEkimVaDdSdhdR70k"
+        throw "Admin token missing. Set `$env:HUB_TOKEN, `$env:ADMIN_TOKEN, or pass -AdminToken."
     }
 }
 
