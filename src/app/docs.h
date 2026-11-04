@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (c) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,6 +16,10 @@
 #include "obs/observable.h"
 
 #include <vector>
+
+namespace doc {
+class ImageSpec;
+}
 
 namespace app {
 
@@ -46,6 +50,7 @@ public:
   Doc* add(Doc* doc);
 
   // Easy function for testing
+  Doc* add(const doc::ImageSpec& spec, int ncolors = 256);
   Doc* add(int width, int height, doc::ColorMode colorMode = doc::ColorMode::RGB, int ncolors = 256);
 
   // Removes a document from the list without deleting it. You must

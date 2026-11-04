@@ -47,14 +47,17 @@ Doc* Docs::add(Doc* doc)
   return doc;
 }
 
-Doc* Docs::add(int width, int height, doc::ColorMode colorMode, int ncolors)
+Doc* Docs::add(const doc::ImageSpec& spec, int ncolors)
 {
-  std::unique_ptr<Doc> doc(
-    new Doc(Sprite::MakeStdSprite(ImageSpec(colorMode, width, height), ncolors)));
+  auto doc = std::make_unique<Doc>(Sprite::MakeStdSprite(spec, ncolors));
   doc->setFilename("Sprite");
   doc->setContext(m_ctx); // Change the document context to add the doc in this collection
-
   return doc.release();
+}
+
+Doc* Docs::add(int width, int height, doc::ColorMode colorMode, int ncolors)
+{
+  return add(ImageSpec(colorMode, width, height), ncolors);
 }
 
 void Docs::remove(Doc* doc)
