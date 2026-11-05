@@ -1455,6 +1455,18 @@ int Dialog_canvas(lua_State* L)
       }
       lua_pop(L, 1);
 
+      type = lua_getfield(L, 2, "onmouseenter");
+      if (type == LUA_TFUNCTION) {
+        Dialog_connect_signal(L, 1, widget->MouseEnter, fill_mousemessage_values);
+      }
+      lua_pop(L, 1);
+
+      type = lua_getfield(L, 2, "onmouseleave");
+      if (type == LUA_TFUNCTION) {
+        Dialog_connect_signal(L, 1, widget->MouseLeave, fill_mousemessage_values);
+      }
+      lua_pop(L, 1);
+
       type = lua_getfield(L, 2, "ondblclick");
       if (type == LUA_TFUNCTION) {
         Dialog_connect_signal(L, 1, widget->DoubleClick, fill_mousemessage_values);
