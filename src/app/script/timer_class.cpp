@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2023  Igara Studio S.A.
+// Copyright (C) 2022-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -52,7 +52,7 @@ private:
   lua_State* L;
 };
 
-int Timer_new(lua_State* L)
+LUA_FUNCTION(Timer_new)
 {
   auto timer = push_new<Timer>(L, L);
 
@@ -97,14 +97,14 @@ int Timer_new(lua_State* L)
   return 1;
 }
 
-int Timer_gc(lua_State* L)
+LUA_FUNCTION(Timer_gc)
 {
   auto obj = get_obj<Timer>(L, 1);
   obj->~Timer();
   return 0;
 }
 
-int Timer_start(lua_State* L)
+LUA_FUNCTION(Timer_start)
 {
   auto obj = get_obj<Timer>(L, 1);
   obj->start();
@@ -112,7 +112,7 @@ int Timer_start(lua_State* L)
   return 0;
 }
 
-int Timer_stop(lua_State* L)
+LUA_FUNCTION(Timer_stop)
 {
   auto obj = get_obj<Timer>(L, 1);
   obj->stop();
@@ -120,14 +120,14 @@ int Timer_stop(lua_State* L)
   return 0;
 }
 
-int Timer_get_interval(lua_State* L)
+LUA_FUNCTION(Timer_get_interval)
 {
   const auto timer = get_obj<Timer>(L, 1);
   lua_pushnumber(L, double(timer->interval()) / 1000.0);
   return 1;
 }
 
-int Timer_set_interval(lua_State* L)
+LUA_FUNCTION(Timer_set_interval)
 {
   const auto timer = get_obj<Timer>(L, 1);
   int interval = int(lua_tonumber(L, 2) * 1000.0);
@@ -135,7 +135,7 @@ int Timer_set_interval(lua_State* L)
   return 1;
 }
 
-int Timer_get_isRunning(lua_State* L)
+LUA_FUNCTION(Timer_get_isRunning)
 {
   const auto timer = get_obj<Timer>(L, 1);
   lua_pushboolean(L, timer->isRunning());
@@ -159,11 +159,12 @@ DEF_ITERATOR_PAIRS(Timer);
 
 DEF_MTNAME(Timer);
 
-void register_timer_class(lua_State* L)
+LUA_FUNCTION(register_timer_class)
 {
   REG_CLASS(L, Timer);
   REG_CLASS_NEW(L, Timer);
   REG_CLASS_PROPERTIES(L, Timer);
+  return 0;
 }
 
 }} // namespace app::script

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -174,19 +174,19 @@ app::Color Color_new(lua_State* L, int index)
   return color;
 }
 
-int Color_new(lua_State* L)
+LUA_FUNCTION(Color_new)
 {
   push_obj(L, Color_new(L, 1));
   return 1;
 }
 
-int Color_gc(lua_State* L)
+LUA_FUNCTION(Color_gc)
 {
   get_obj<app::Color>(L, 1)->~Color();
   return 0;
 }
 
-int Color_eq(lua_State* L)
+LUA_FUNCTION(Color_eq)
 {
   const auto a = get_obj<app::Color>(L, 1);
   const auto b = get_obj<app::Color>(L, 2);
@@ -194,77 +194,77 @@ int Color_eq(lua_State* L)
   return 1;
 }
 
-int Color_get_red(lua_State* L)
+LUA_FUNCTION(Color_get_red)
 {
   const auto color = get_obj<app::Color>(L, 1);
   lua_pushinteger(L, color->getRed());
   return 1;
 }
 
-int Color_get_green(lua_State* L)
+LUA_FUNCTION(Color_get_green)
 {
   const auto color = get_obj<app::Color>(L, 1);
   lua_pushinteger(L, color->getGreen());
   return 1;
 }
 
-int Color_get_blue(lua_State* L)
+LUA_FUNCTION(Color_get_blue)
 {
   const auto color = get_obj<app::Color>(L, 1);
   lua_pushinteger(L, color->getBlue());
   return 1;
 }
 
-int Color_get_alpha(lua_State* L)
+LUA_FUNCTION(Color_get_alpha)
 {
   const auto color = get_obj<app::Color>(L, 1);
   lua_pushinteger(L, color->getAlpha());
   return 1;
 }
 
-int Color_get_hsvHue(lua_State* L)
+LUA_FUNCTION(Color_get_hsvHue)
 {
   const auto color = get_obj<app::Color>(L, 1);
   lua_pushnumber(L, color->getHsvHue());
   return 1;
 }
 
-int Color_get_hsvSaturation(lua_State* L)
+LUA_FUNCTION(Color_get_hsvSaturation)
 {
   const auto color = get_obj<app::Color>(L, 1);
   lua_pushnumber(L, color->getHsvSaturation());
   return 1;
 }
 
-int Color_get_hsvValue(lua_State* L)
+LUA_FUNCTION(Color_get_hsvValue)
 {
   const auto color = get_obj<app::Color>(L, 1);
   lua_pushnumber(L, color->getHsvValue());
   return 1;
 }
 
-int Color_get_hslHue(lua_State* L)
+LUA_FUNCTION(Color_get_hslHue)
 {
   const auto color = get_obj<app::Color>(L, 1);
   lua_pushnumber(L, color->getHslHue());
   return 1;
 }
 
-int Color_get_hslSaturation(lua_State* L)
+LUA_FUNCTION(Color_get_hslSaturation)
 {
   const auto color = get_obj<app::Color>(L, 1);
   lua_pushnumber(L, color->getHslSaturation());
   return 1;
 }
 
-int Color_get_hslLightness(lua_State* L)
+LUA_FUNCTION(Color_get_hslLightness)
 {
   const auto color = get_obj<app::Color>(L, 1);
   lua_pushnumber(L, color->getHslLightness());
   return 1;
 }
 
-int Color_get_hue(lua_State* L)
+LUA_FUNCTION(Color_get_hue)
 {
   const auto color = get_obj<app::Color>(L, 1);
   if (color->getType() == Color::HslType)
@@ -273,7 +273,7 @@ int Color_get_hue(lua_State* L)
     return Color_get_hsvHue(L);
 }
 
-int Color_get_saturation(lua_State* L)
+LUA_FUNCTION(Color_get_saturation)
 {
   const auto color = get_obj<app::Color>(L, 1);
   if (color->getType() == Color::HslType)
@@ -282,21 +282,21 @@ int Color_get_saturation(lua_State* L)
     return Color_get_hsvSaturation(L);
 }
 
-int Color_get_gray(lua_State* L)
+LUA_FUNCTION(Color_get_gray)
 {
   auto color = get_obj<app::Color>(L, 1);
   lua_pushnumber(L, color->getGray());
   return 1;
 }
 
-int Color_get_index(lua_State* L)
+LUA_FUNCTION(Color_get_index)
 {
   auto color = get_obj<app::Color>(L, 1);
   lua_pushinteger(L, color->getIndex());
   return 1;
 }
 
-int Color_get_rgbaPixel(lua_State* L)
+LUA_FUNCTION(Color_get_rgbaPixel)
 {
   auto color = get_obj<app::Color>(L, 1);
   auto pixelColor = color_utils::color_for_target_mask(
@@ -306,7 +306,7 @@ int Color_get_rgbaPixel(lua_State* L)
   return 1;
 }
 
-int Color_get_grayPixel(lua_State* L)
+LUA_FUNCTION(Color_get_grayPixel)
 {
   auto color = get_obj<app::Color>(L, 1);
   auto pixelColor = color_utils::color_for_target_mask(
@@ -316,7 +316,7 @@ int Color_get_grayPixel(lua_State* L)
   return 1;
 }
 
-int Color_set_red(lua_State* L)
+LUA_FUNCTION(Color_set_red)
 {
   auto color = get_obj<app::Color>(L, 1);
   *color = app::Color::fromRgb(lua_tointeger(L, 2),
@@ -326,7 +326,7 @@ int Color_set_red(lua_State* L)
   return 0;
 }
 
-int Color_set_green(lua_State* L)
+LUA_FUNCTION(Color_set_green)
 {
   auto color = get_obj<app::Color>(L, 1);
   *color =
@@ -334,7 +334,7 @@ int Color_set_green(lua_State* L)
   return 0;
 }
 
-int Color_set_blue(lua_State* L)
+LUA_FUNCTION(Color_set_blue)
 {
   auto color = get_obj<app::Color>(L, 1);
   *color =
@@ -342,14 +342,14 @@ int Color_set_blue(lua_State* L)
   return 0;
 }
 
-int Color_set_alpha(lua_State* L)
+LUA_FUNCTION(Color_set_alpha)
 {
   auto color = get_obj<app::Color>(L, 1);
   color->setAlpha(lua_tointeger(L, 2));
   return 0;
 }
 
-int Color_set_hsvHue(lua_State* L)
+LUA_FUNCTION(Color_set_hsvHue)
 {
   auto color = get_obj<app::Color>(L, 1);
   *color = app::Color::fromHsv(lua_tonumber(L, 2),
@@ -359,7 +359,7 @@ int Color_set_hsvHue(lua_State* L)
   return 0;
 }
 
-int Color_set_hsvSaturation(lua_State* L)
+LUA_FUNCTION(Color_set_hsvSaturation)
 {
   auto color = get_obj<app::Color>(L, 1);
   *color = app::Color::fromHsv(color->getHsvHue(),
@@ -369,7 +369,7 @@ int Color_set_hsvSaturation(lua_State* L)
   return 0;
 }
 
-int Color_set_hsvValue(lua_State* L)
+LUA_FUNCTION(Color_set_hsvValue)
 {
   auto color = get_obj<app::Color>(L, 1);
   *color = app::Color::fromHsv(color->getHsvHue(),
@@ -379,7 +379,7 @@ int Color_set_hsvValue(lua_State* L)
   return 0;
 }
 
-int Color_set_hslHue(lua_State* L)
+LUA_FUNCTION(Color_set_hslHue)
 {
   auto color = get_obj<app::Color>(L, 1);
   *color = app::Color::fromHsl(lua_tonumber(L, 2),
@@ -389,7 +389,7 @@ int Color_set_hslHue(lua_State* L)
   return 0;
 }
 
-int Color_set_hslSaturation(lua_State* L)
+LUA_FUNCTION(Color_set_hslSaturation)
 {
   auto color = get_obj<app::Color>(L, 1);
   *color = app::Color::fromHsl(color->getHslHue(),
@@ -399,7 +399,7 @@ int Color_set_hslSaturation(lua_State* L)
   return 0;
 }
 
-int Color_set_hslLightness(lua_State* L)
+LUA_FUNCTION(Color_set_hslLightness)
 {
   auto color = get_obj<app::Color>(L, 1);
   *color = app::Color::fromHsl(color->getHslHue(),
@@ -409,7 +409,7 @@ int Color_set_hslLightness(lua_State* L)
   return 0;
 }
 
-int Color_set_hue(lua_State* L)
+LUA_FUNCTION(Color_set_hue)
 {
   const auto color = get_obj<app::Color>(L, 1);
   if (color->getType() == Color::HslType)
@@ -418,7 +418,7 @@ int Color_set_hue(lua_State* L)
     return Color_set_hsvHue(L);
 }
 
-int Color_set_saturation(lua_State* L)
+LUA_FUNCTION(Color_set_saturation)
 {
   const auto color = get_obj<app::Color>(L, 1);
   if (color->getType() == Color::HslType)
@@ -427,14 +427,14 @@ int Color_set_saturation(lua_State* L)
     return Color_set_hsvSaturation(L);
 }
 
-int Color_set_gray(lua_State* L)
+LUA_FUNCTION(Color_set_gray)
 {
   auto color = get_obj<app::Color>(L, 1);
   *color = app::Color::fromGray(lua_tointeger(L, 2), color->getAlpha());
   return 0;
 }
 
-int Color_set_index(lua_State* L)
+LUA_FUNCTION(Color_set_index)
 {
   auto color = get_obj<app::Color>(L, 1);
   *color = app::Color::fromIndex(lua_tointeger(L, 2));
@@ -473,11 +473,12 @@ DEF_ITERATOR_PAIRS(Color);
 
 DEF_MTNAME(app::Color);
 
-void register_color_class(lua_State* L)
+LUA_FUNCTION(register_color_class)
 {
   REG_CLASS(L, Color);
   REG_CLASS_NEW(L, Color);
   REG_CLASS_PROPERTIES(L, Color);
+  return 0;
 }
 
 app::Color convert_args_into_color(lua_State* L, int index)

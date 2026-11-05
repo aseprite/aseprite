@@ -138,7 +138,7 @@ private:
 
 std::set<FetchRequest*> g_requests;
 
-int AppNet_fetch(lua_State* L)
+LUA_FUNCTION(AppNet_fetch)
 {
   FetchRequest::Params params;
   std::string methodString = "get";
@@ -273,14 +273,14 @@ const luaL_Reg AppNet_methods[] = {
   { nullptr, nullptr      }
 };
 
-int App_Url_encode(lua_State* L)
+LUA_FUNCTION(App_Url_encode)
 {
   const char* input = luaL_checkstring(L, 1);
   lua_pushstring(L, net::url_encode(input).c_str());
   return 1;
 }
 
-int App_url_decode(lua_State* L)
+LUA_FUNCTION(App_url_decode)
 {
   const char* input = luaL_checkstring(L, 1);
   lua_pushstring(L, net::url_decode(input).c_str());
@@ -297,7 +297,7 @@ const luaL_Reg AppUrl_methods[] = {
 DEF_MTNAME(AppNet);
 DEF_MTNAME(AppUrl);
 
-void register_app_net_object(lua_State* L)
+LUA_FUNCTION(register_app_net_object)
 {
   REG_CLASS(L, AppNet);
   lua_getglobal(L, "app");
@@ -305,9 +305,10 @@ void register_app_net_object(lua_State* L)
   push_new<AppNet>(L);
   lua_rawset(L, -3);
   lua_pop(L, 1);
+  return 0;
 }
 
-void register_app_url_object(lua_State* L)
+LUA_FUNCTION(register_app_url_object)
 {
   REG_CLASS(L, AppUrl);
   lua_getglobal(L, "app");
@@ -315,7 +316,9 @@ void register_app_url_object(lua_State* L)
   push_new<AppUrl>(L);
   lua_rawset(L, -3);
   lua_pop(L, 1);
+  return 0;
 }
+
 } // namespace app::script
 
 #endif

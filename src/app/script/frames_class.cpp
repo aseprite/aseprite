@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -39,13 +39,13 @@ struct FramesObj {
   Sprite* sprite(lua_State* L) { return check_docobj(L, doc::get<Sprite>(spriteId)); }
 };
 
-int Frames_gc(lua_State* L)
+LUA_FUNCTION(Frames_gc)
 {
   get_obj<FramesObj>(L, 1)->~FramesObj();
   return 0;
 }
 
-int Frames_len(lua_State* L)
+LUA_FUNCTION(Frames_len)
 {
   auto obj = get_obj<FramesObj>(L, 1);
   if (obj->frames)
@@ -55,7 +55,7 @@ int Frames_len(lua_State* L)
   return 1;
 }
 
-int Frames_index(lua_State* L)
+LUA_FUNCTION(Frames_index)
 {
   auto obj = get_obj<FramesObj>(L, 1);
   auto sprite = obj->sprite(L);
@@ -86,10 +86,11 @@ const luaL_Reg Frames_methods[] = {
 
 DEF_MTNAME(FramesObj);
 
-void register_frames_class(lua_State* L)
+LUA_FUNCTION(register_frames_class)
 {
   using Frames = FramesObj;
   REG_CLASS(L, Frames);
+  return 0;
 }
 
 void push_sprite_frames(lua_State* L, Sprite* sprite)

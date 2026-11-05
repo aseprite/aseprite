@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,7 +26,7 @@ namespace {
 
 struct AppPreferences {};
 
-int Section_index(lua_State* L)
+LUA_FUNCTION(Section_index)
 {
   Section* section = get_ptr<Section>(L, 1);
 
@@ -53,7 +53,7 @@ int Section_index(lua_State* L)
   return 1;
 }
 
-int Section_newindex(lua_State* L)
+LUA_FUNCTION(Section_newindex)
 {
   Section* section = get_ptr<Section>(L, 1);
 
@@ -74,7 +74,7 @@ int Section_newindex(lua_State* L)
   return 0;
 }
 
-int ToolPref_function(lua_State* L)
+LUA_FUNCTION(ToolPref_function)
 {
   auto tool = get_tool_from_arg(L, 1);
   if (!tool)
@@ -91,7 +91,7 @@ int ToolPref_function(lua_State* L)
   return 1;
 }
 
-int DocPref_function(lua_State* L)
+LUA_FUNCTION(DocPref_function)
 {
   auto sprite = may_get_docobj<Sprite>(L, 1);
   DocumentPreferences& docPref = Preferences::instance().document(
@@ -100,7 +100,7 @@ int DocPref_function(lua_State* L)
   return 1;
 }
 
-int AppPreferences_index(lua_State* L)
+LUA_FUNCTION(AppPreferences_index)
 {
   const char* id = lua_tostring(L, 2);
   if (!id)
@@ -142,7 +142,7 @@ const luaL_Reg AppPreferences_methods[] = {
 DEF_MTNAME(Section);
 DEF_MTNAME(AppPreferences);
 
-void register_app_preferences_object(lua_State* L)
+LUA_FUNCTION(register_app_preferences_object)
 {
   REG_CLASS(L, Section);
   REG_CLASS(L, AppPreferences);
@@ -152,6 +152,8 @@ void register_app_preferences_object(lua_State* L)
   push_new<AppPreferences>(L);
   lua_rawset(L, -3);
   lua_pop(L, 1);
+
+  return 0;
 }
 
 }} // namespace app::script

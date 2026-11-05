@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -25,7 +25,7 @@ using namespace doc;
 
 namespace {
 
-int Slice_eq(lua_State* L)
+LUA_FUNCTION(Slice_eq)
 {
   const auto a = may_get_docobj<Slice>(L, 1);
   const auto b = may_get_docobj<Slice>(L, 2);
@@ -33,21 +33,21 @@ int Slice_eq(lua_State* L)
   return 1;
 }
 
-int Slice_get_sprite(lua_State* L)
+LUA_FUNCTION(Slice_get_sprite)
 {
   auto slice = get_docobj<Slice>(L, 1);
   push_docobj(L, slice->owner()->sprite());
   return 1;
 }
 
-int Slice_get_name(lua_State* L)
+LUA_FUNCTION(Slice_get_name)
 {
   auto slice = get_docobj<Slice>(L, 1);
   lua_pushstring(L, slice->name().c_str());
   return 1;
 }
 
-int Slice_get_bounds(lua_State* L)
+LUA_FUNCTION(Slice_get_bounds)
 {
   auto slice = get_docobj<Slice>(L, 1);
   if (!slice->empty())
@@ -57,7 +57,7 @@ int Slice_get_bounds(lua_State* L)
   return 1;
 }
 
-int Slice_get_center(lua_State* L)
+LUA_FUNCTION(Slice_get_center)
 {
   auto slice = get_docobj<Slice>(L, 1);
   if (!slice->empty() && slice->begin()->value()->hasCenter())
@@ -67,7 +67,7 @@ int Slice_get_center(lua_State* L)
   return 1;
 }
 
-int Slice_get_pivot(lua_State* L)
+LUA_FUNCTION(Slice_get_pivot)
 {
   auto slice = get_docobj<Slice>(L, 1);
   if (!slice->empty() && slice->begin()->value()->hasPivot())
@@ -77,7 +77,7 @@ int Slice_get_pivot(lua_State* L)
   return 1;
 }
 
-int Slice_set_name(lua_State* L)
+LUA_FUNCTION(Slice_set_name)
 {
   auto slice = get_docobj<Slice>(L, 1);
   const char* name = lua_tostring(L, 2);
@@ -89,7 +89,7 @@ int Slice_set_name(lua_State* L)
   return 0;
 }
 
-int Slice_set_bounds(lua_State* L)
+LUA_FUNCTION(Slice_set_bounds)
 {
   auto slice = get_docobj<Slice>(L, 1);
   gfx::Rect bounds = convert_args_into_rect(L, 2);
@@ -103,7 +103,7 @@ int Slice_set_bounds(lua_State* L)
   return 0;
 }
 
-int Slice_set_center(lua_State* L)
+LUA_FUNCTION(Slice_set_center)
 {
   auto slice = get_docobj<Slice>(L, 1);
   gfx::Rect center = convert_args_into_rect(L, 2);
@@ -117,7 +117,7 @@ int Slice_set_center(lua_State* L)
   return 0;
 }
 
-int Slice_set_pivot(lua_State* L)
+LUA_FUNCTION(Slice_set_pivot)
 {
   auto slice = get_docobj<Slice>(L, 1);
   gfx::Point pivot = convert_args_into_point(L, 2);
@@ -152,11 +152,12 @@ DEF_ITERATOR_PAIRS(Slice);
 
 DEF_MTNAME(Slice);
 
-void register_slice_class(lua_State* L)
+LUA_FUNCTION(register_slice_class)
 {
   using doc::Slice;
   REG_CLASS(L, Slice);
   REG_CLASS_PROPERTIES(L, Slice);
+  return 0;
 }
 
 }} // namespace app::script

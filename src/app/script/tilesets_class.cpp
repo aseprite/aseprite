@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -19,14 +19,14 @@ using namespace doc;
 
 namespace {
 
-int Tilesets_len(lua_State* L)
+LUA_FUNCTION(Tilesets_len)
 {
   auto obj = get_docobj<Tilesets>(L, 1);
   lua_pushinteger(L, obj->size());
   return 1;
 }
 
-int Tilesets_index(lua_State* L)
+LUA_FUNCTION(Tilesets_index)
 {
   auto obj = get_docobj<Tilesets>(L, 1);
   const int i = lua_tonumber(L, 2);
@@ -51,9 +51,10 @@ const luaL_Reg Tilesets_methods[] = {
 
 DEF_MTNAME(Tilesets);
 
-void register_tilesets_class(lua_State* L)
+LUA_FUNCTION(register_tilesets_class)
 {
   REG_CLASS(L, Tilesets);
+  return 0;
 }
 
 void push_tilesets(lua_State* L, Tilesets* tilesets)

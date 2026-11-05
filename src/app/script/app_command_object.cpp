@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2022  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -23,7 +23,7 @@ namespace {
 
 struct AppCommand {};
 
-int Command_call(lua_State* L)
+LUA_FUNCTION(Command_call)
 {
   app::Context* ctx = App::instance()->context();
   if (!ctx)
@@ -63,7 +63,7 @@ int Command_call(lua_State* L)
   return 1;
 }
 
-int Command_enabled(lua_State* L)
+LUA_FUNCTION(Command_enabled)
 {
   app::Context* ctx = App::instance()->context();
   if (!ctx)
@@ -74,7 +74,7 @@ int Command_enabled(lua_State* L)
   return 1;
 }
 
-int AppCommand_index(lua_State* L)
+LUA_FUNCTION(AppCommand_index)
 {
   const char* id = lua_tostring(L, 2);
   if (!id)
@@ -108,7 +108,7 @@ DEF_ITERATOR_PAIRS(Command);
 DEF_MTNAME(Command);
 DEF_MTNAME(AppCommand);
 
-void register_app_command_object(lua_State* L)
+LUA_FUNCTION(register_app_command_object)
 {
   REG_CLASS(L, Command);
   REG_CLASS_PROPERTIES(L, Command);
@@ -120,6 +120,8 @@ void register_app_command_object(lua_State* L)
   push_new<AppCommand>(L);
   lua_rawset(L, -3);
   lua_pop(L, 1);
+
+  return 0;
 }
 
 }} // namespace app::script

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2022-2023  Igara Studio S.A.
+// Copyright (c) 2022-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -74,7 +74,7 @@ void push_border_as_table(lua_State* L, const gfx::Border& border)
   lua_setfield(L, -2, "border");
 }
 
-int ThemeDimension_index(lua_State* L)
+LUA_FUNCTION(ThemeDimension_index)
 {
   auto themeDimension = get_obj<ThemeDimension>(L, 1);
 
@@ -87,7 +87,7 @@ int ThemeDimension_index(lua_State* L)
   return 1;
 }
 
-int ThemeColor_index(lua_State* L)
+LUA_FUNCTION(ThemeColor_index)
 {
   const char* id = lua_tostring(L, 2);
   if (!id)
@@ -103,7 +103,7 @@ int ThemeColor_index(lua_State* L)
   return 1;
 }
 
-int Theme_styleMetrics(lua_State* L)
+LUA_FUNCTION(Theme_styleMetrics)
 {
   auto theme = get_obj<Theme>(L, 1);
 
@@ -116,14 +116,14 @@ int Theme_styleMetrics(lua_State* L)
   return 1;
 }
 
-int Theme_get_dimension(lua_State* L)
+LUA_FUNCTION(Theme_get_dimension)
 {
   auto theme = get_obj<Theme>(L, 1);
   push_new<ThemeDimension>(L, *theme);
   return 1;
 }
 
-int Theme_get_color(lua_State* L)
+LUA_FUNCTION(Theme_get_color)
 {
   push_obj<ThemeColor>(L, ThemeColor());
   return 1;
@@ -156,12 +156,13 @@ DEF_MTNAME(Theme);
 DEF_MTNAME(ThemeDimension);
 DEF_MTNAME(ThemeColor);
 
-void register_theme_classes(lua_State* L)
+LUA_FUNCTION(register_theme_classes)
 {
   REG_CLASS(L, Theme);
   REG_CLASS(L, ThemeDimension);
   REG_CLASS(L, ThemeColor);
   REG_CLASS_PROPERTIES(L, Theme);
+  return 0;
 }
 
 void push_app_theme(lua_State* L, int uiscale)

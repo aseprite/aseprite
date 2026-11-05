@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -27,7 +27,7 @@ namespace app { namespace script {
 
 namespace {
 
-int Site_get_sprite(lua_State* L)
+LUA_FUNCTION(Site_get_sprite)
 {
   auto site = get_obj<Site>(L, 1);
   if (site->sprite())
@@ -37,7 +37,7 @@ int Site_get_sprite(lua_State* L)
   return 1;
 }
 
-int Site_get_layer(lua_State* L)
+LUA_FUNCTION(Site_get_layer)
 {
   auto site = get_obj<Site>(L, 1);
   if (site->layer())
@@ -47,7 +47,7 @@ int Site_get_layer(lua_State* L)
   return 1;
 }
 
-int Site_get_cel(lua_State* L)
+LUA_FUNCTION(Site_get_cel)
 {
   auto site = get_obj<Site>(L, 1);
   if (site->cel())
@@ -57,7 +57,7 @@ int Site_get_cel(lua_State* L)
   return 1;
 }
 
-int Site_get_frame(lua_State* L)
+LUA_FUNCTION(Site_get_frame)
 {
   auto site = get_obj<Site>(L, 1);
   if (site->sprite())
@@ -67,14 +67,14 @@ int Site_get_frame(lua_State* L)
   return 1;
 }
 
-int Site_get_frameNumber(lua_State* L)
+LUA_FUNCTION(Site_get_frameNumber)
 {
   auto site = get_obj<Site>(L, 1);
   lua_pushinteger(L, site->frame() + 1);
   return 1;
 }
 
-int Site_get_image(lua_State* L)
+LUA_FUNCTION(Site_get_image)
 {
   auto site = get_obj<Site>(L, 1);
   if (site->cel())
@@ -84,7 +84,7 @@ int Site_get_image(lua_State* L)
   return 1;
 }
 
-int Site_get_tilemapMode(lua_State* L)
+LUA_FUNCTION(Site_get_tilemapMode)
 {
   auto site = get_obj<Site>(L, 1);
   if (site)
@@ -94,7 +94,7 @@ int Site_get_tilemapMode(lua_State* L)
   return 1;
 }
 
-int Site_get_tilesetMode(lua_State* L)
+LUA_FUNCTION(Site_get_tilesetMode)
 {
   auto site = get_obj<Site>(L, 1);
   if (site)
@@ -124,10 +124,11 @@ DEF_ITERATOR_PAIRS(Site);
 
 DEF_MTNAME(app::Site);
 
-void register_site_class(lua_State* L)
+LUA_FUNCTION(register_site_class)
 {
   REG_CLASS(L, Site);
   REG_CLASS_PROPERTIES(L, Site);
+  return 0;
 }
 
 }} // namespace app::script

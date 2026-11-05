@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -30,20 +30,20 @@ struct SlicesObj {
   Sprite* sprite(lua_State* L) { return check_docobj(L, doc::get<Sprite>(spriteId)); }
 };
 
-int Slices_gc(lua_State* L)
+LUA_FUNCTION(Slices_gc)
 {
   get_obj<SlicesObj>(L, 1)->~SlicesObj();
   return 0;
 }
 
-int Slices_len(lua_State* L)
+LUA_FUNCTION(Slices_len)
 {
   auto obj = get_obj<SlicesObj>(L, 1);
   lua_pushinteger(L, obj->sprite(L)->slices().size());
   return 1;
 }
 
-int Slices_index(lua_State* L)
+LUA_FUNCTION(Slices_index)
 {
   auto obj = get_obj<SlicesObj>(L, 1);
   auto& slices = obj->sprite(L)->slices();
@@ -66,10 +66,11 @@ const luaL_Reg Slices_methods[] = {
 
 DEF_MTNAME(SlicesObj);
 
-void register_slices_class(lua_State* L)
+LUA_FUNCTION(register_slices_class)
 {
   using Slices = SlicesObj;
   REG_CLASS(L, Slices);
+  return 0;
 }
 
 void push_sprite_slices(lua_State* L, Sprite* sprite)

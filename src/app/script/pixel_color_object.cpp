@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -16,7 +17,7 @@ namespace app { namespace script {
 
 namespace {
 
-int PixelColor_rgba(lua_State* L)
+LUA_FUNCTION(PixelColor_rgba)
 {
   const int r = lua_tointeger(L, 1);
   const int g = lua_tointeger(L, 2);
@@ -26,31 +27,31 @@ int PixelColor_rgba(lua_State* L)
   return 1;
 }
 
-int PixelColor_rgbaR(lua_State* L)
+LUA_FUNCTION(PixelColor_rgbaR)
 {
   lua_pushinteger(L, doc::rgba_getr(lua_tointeger(L, 1)));
   return 1;
 }
 
-int PixelColor_rgbaG(lua_State* L)
+LUA_FUNCTION(PixelColor_rgbaG)
 {
   lua_pushinteger(L, doc::rgba_getg(lua_tointeger(L, 1)));
   return 1;
 }
 
-int PixelColor_rgbaB(lua_State* L)
+LUA_FUNCTION(PixelColor_rgbaB)
 {
   lua_pushinteger(L, doc::rgba_getb(lua_tointeger(L, 1)));
   return 1;
 }
 
-int PixelColor_rgbaA(lua_State* L)
+LUA_FUNCTION(PixelColor_rgbaA)
 {
   lua_pushinteger(L, doc::rgba_geta(lua_tointeger(L, 1)));
   return 1;
 }
 
-int PixelColor_graya(lua_State* L)
+LUA_FUNCTION(PixelColor_graya)
 {
   int v = lua_tointeger(L, 1);
   int a = (lua_isnoneornil(L, 2) ? 255 : lua_tointeger(L, 2));
@@ -58,19 +59,19 @@ int PixelColor_graya(lua_State* L)
   return 1;
 }
 
-int PixelColor_grayaV(lua_State* L)
+LUA_FUNCTION(PixelColor_grayaV)
 {
   lua_pushinteger(L, doc::graya_getv(lua_tointeger(L, 1)));
   return 1;
 }
 
-int PixelColor_grayaA(lua_State* L)
+LUA_FUNCTION(PixelColor_grayaA)
 {
   lua_pushinteger(L, doc::graya_geta(lua_tointeger(L, 1)));
   return 1;
 }
 
-int PixelColor_tile(lua_State* L)
+LUA_FUNCTION(PixelColor_tile)
 {
   const int i = lua_tointeger(L, 1);
   const int f = lua_tointeger(L, 2);
@@ -78,13 +79,13 @@ int PixelColor_tile(lua_State* L)
   return 1;
 }
 
-int PixelColor_tileI(lua_State* L)
+LUA_FUNCTION(PixelColor_tileI)
 {
   lua_pushinteger(L, doc::tile_geti(lua_tointeger(L, 1)));
   return 1;
 }
 
-int PixelColor_tileF(lua_State* L)
+LUA_FUNCTION(PixelColor_tileF)
 {
   lua_pushinteger(L, doc::tile_getf(lua_tointeger(L, 1)));
   return 1;
@@ -107,7 +108,7 @@ const luaL_Reg PixelColor_methods[] = {
 
 } // anonymous namespace
 
-void register_app_pixel_color_object(lua_State* L)
+LUA_FUNCTION(register_app_pixel_color_object)
 {
   lua_getglobal(L, "app");
   lua_newtable(L); // New table for pixelColor
@@ -122,6 +123,8 @@ void register_app_pixel_color_object(lua_State* L)
   setfield_uinteger(L, "TILE_DFLIP", doc::tile_f_dflip);
 
   lua_pop(L, 2); // Pop table & app global
+
+  return 0;
 }
 
 }} // namespace app::script
