@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -185,6 +185,24 @@ bool lua_is_key_true(lua_State* L, int tableIndex, const char* keyName);
     lua_setfield(L, -2, "__typename");                                                             \
     lua_pop(L, 1);                                                                                 \
   }
+
+// LUA_FUNCTION() can be used to check (in _DEBUG mode) that the Lua
+// stack contains the correct number of values depending on the
+// returned results, and there are no leaks.
+#if _DEBUG
+  #define LUA_FUNCTION(name)                                                                       \
+    int name##__impl(lua_State* L);                                                                \
+    int name(lua_State* L)                                                                         \
+    {                                                                                              \
+      int top = lua_gettop(L);                                                                     \
+      int ret = name##__impl(L);                                                                   \
+      ASSERT(top + ret == lua_gettop(L));                                                          \
+      return ret;                                                                                  \
+    }                                                                                              \
+    int name##__impl(lua_State* L)
+#else
+  #define LUA_FUNCTION(name) int name(lua_State* L)
+#endif
 
 }} // namespace app::script
 

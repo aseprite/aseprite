@@ -111,7 +111,7 @@ void render_sprite(Image* dst, const Sprite* sprite, const frame_t frame, const 
 
 int Image_clone(lua_State* L);
 
-int Image_new(lua_State* L)
+LUA_FUNCTION(Image_new)
 {
   doc::Image* image = nullptr;
   doc::ImageSpec spec(doc::ColorMode::RGB, 1, 1, 0);
@@ -200,7 +200,7 @@ int Image_new(lua_State* L)
   return 1;
 }
 
-int Image_clone(lua_State* L)
+LUA_FUNCTION(Image_clone)
 {
   auto obj = get_obj<ImageObj>(L, 1);
   doc::Image* cloned = doc::Image::createCopy(obj->image(L));
@@ -208,7 +208,7 @@ int Image_clone(lua_State* L)
   return 1;
 }
 
-int Image_gc(lua_State* L)
+LUA_FUNCTION(Image_gc)
 {
   auto obj = get_obj<ImageObj>(L, 1);
   obj->gc(L);
@@ -216,7 +216,7 @@ int Image_gc(lua_State* L)
   return 0;
 }
 
-int Image_eq(lua_State* L)
+LUA_FUNCTION(Image_eq)
 {
   const auto a = get_obj<ImageObj>(L, 1);
   const auto b = get_obj<ImageObj>(L, 2);
@@ -224,7 +224,7 @@ int Image_eq(lua_State* L)
   return 1;
 }
 
-int Image_clear(lua_State* L)
+LUA_FUNCTION(Image_clear)
 {
   auto obj = get_obj<ImageObj>(L, 1);
   auto img = obj->image(L);
@@ -259,7 +259,7 @@ int Image_clear(lua_State* L)
   return 0;
 }
 
-int Image_drawPixel(lua_State* L)
+LUA_FUNCTION(Image_drawPixel)
 {
   auto obj = get_obj<ImageObj>(L, 1);
   auto img = obj->image(L);
@@ -282,7 +282,7 @@ int Image_drawPixel(lua_State* L)
   return 0;
 }
 
-int Image_drawImage(lua_State* L)
+LUA_FUNCTION(Image_drawImage)
 {
   auto obj = get_obj<ImageObj>(L, 1);
   auto sprite = get_obj<ImageObj>(L, 2);
@@ -353,7 +353,7 @@ int Image_drawImage(lua_State* L)
   return 0;
 }
 
-int Image_drawSprite(lua_State* L)
+LUA_FUNCTION(Image_drawSprite)
 {
   auto obj = get_obj<ImageObj>(L, 1);
   const auto sprite = get_docobj<Sprite>(L, 2);
@@ -387,14 +387,14 @@ int Image_drawSprite(lua_State* L)
   return 0;
 }
 
-int Image_pixels(lua_State* L)
+LUA_FUNCTION(Image_pixels)
 {
   auto obj = get_obj<ImageObj>(L, 1);
   push_image_iterator_function(L, obj->image(L), 2);
   return 1;
 }
 
-int Image_getPixel(lua_State* L)
+LUA_FUNCTION(Image_getPixel)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
   const int x = lua_tointeger(L, 2);
@@ -404,7 +404,7 @@ int Image_getPixel(lua_State* L)
   return 1;
 }
 
-int Image_isEqual(lua_State* L)
+LUA_FUNCTION(Image_isEqual)
 {
   auto objA = get_obj<ImageObj>(L, 1);
   auto objB = get_obj<ImageObj>(L, 2);
@@ -413,7 +413,7 @@ int Image_isEqual(lua_State* L)
   return 1;
 }
 
-int Image_isEmpty(lua_State* L)
+LUA_FUNCTION(Image_isEmpty)
 {
   auto obj = get_obj<ImageObj>(L, 1);
   auto img = obj->image(L);
@@ -422,7 +422,7 @@ int Image_isEmpty(lua_State* L)
   return 1;
 }
 
-int Image_isPlain(lua_State* L)
+LUA_FUNCTION(Image_isPlain)
 {
   auto obj = get_obj<ImageObj>(L, 1);
   auto img = obj->image(L);
@@ -439,7 +439,7 @@ int Image_isPlain(lua_State* L)
   return 1;
 }
 
-int Image_saveAs(lua_State* L)
+LUA_FUNCTION(Image_saveAs)
 {
   auto obj = get_obj<ImageObj>(L, 1);
   Image* img = obj->image(L);
@@ -517,7 +517,7 @@ int Image_saveAs(lua_State* L)
   return 1;
 }
 
-int Image_resize(lua_State* L)
+LUA_FUNCTION(Image_resize)
 {
   auto obj = get_obj<ImageObj>(L, 1);
   doc::Image* img = obj->image(L);
@@ -612,7 +612,7 @@ int Image_resize(lua_State* L)
   return 0;
 }
 
-int Image_shrinkBounds(lua_State* L)
+LUA_FUNCTION(Image_shrinkBounds)
 {
   auto obj = get_obj<ImageObj>(L, 1);
   doc::Image* img = obj->image(L);
@@ -633,7 +633,7 @@ int Image_shrinkBounds(lua_State* L)
   return 1;
 }
 
-int Image_flip(lua_State* L)
+LUA_FUNCTION(Image_flip)
 {
   auto obj = get_obj<ImageObj>(L, 1);
   doc::Image* img = obj->image(L);
@@ -652,35 +652,35 @@ int Image_flip(lua_State* L)
   return 0;
 }
 
-int Image_get_id(lua_State* L)
+LUA_FUNCTION(Image_get_id)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
   lua_pushinteger(L, obj->imageId);
   return 1;
 }
 
-int Image_get_version(lua_State* L)
+LUA_FUNCTION(Image_get_version)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
   lua_pushinteger(L, obj->image(L)->version());
   return 1;
 }
 
-int Image_get_rowStride(lua_State* L)
+LUA_FUNCTION(Image_get_rowStride)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
   lua_pushinteger(L, obj->image(L)->rowBytes());
   return 1;
 }
 
-int Image_get_bytesPerPixel(lua_State* L)
+LUA_FUNCTION(Image_get_bytesPerPixel)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
   lua_pushinteger(L, obj->image(L)->bytesPerPixel());
   return 1;
 }
 
-int Image_get_bytes(lua_State* L)
+LUA_FUNCTION(Image_get_bytes)
 {
   const auto img = get_obj<ImageObj>(L, 1)->image(L);
   const size_t len = img->rowBytes() * img->height();
@@ -688,7 +688,7 @@ int Image_get_bytes(lua_State* L)
   return 1;
 }
 
-int Image_set_bytes(lua_State* L)
+LUA_FUNCTION(Image_set_bytes)
 {
   const auto img = get_obj<ImageObj>(L, 1)->image(L);
   size_t bytes_size, bytes_needed = img->rowBytes() * img->height();
@@ -705,49 +705,49 @@ int Image_set_bytes(lua_State* L)
   return 0;
 }
 
-int Image_get_width(lua_State* L)
+LUA_FUNCTION(Image_get_width)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
   lua_pushinteger(L, obj->image(L)->width());
   return 1;
 }
 
-int Image_get_height(lua_State* L)
+LUA_FUNCTION(Image_get_height)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
   lua_pushinteger(L, obj->image(L)->height());
   return 1;
 }
 
-int Image_get_bounds(lua_State* L)
+LUA_FUNCTION(Image_get_bounds)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
   push_obj(L, obj->image(L)->bounds());
   return 1;
 }
 
-int Image_get_colorMode(lua_State* L)
+LUA_FUNCTION(Image_get_colorMode)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
   lua_pushinteger(L, obj->image(L)->pixelFormat());
   return 1;
 }
 
-int Image_get_spec(lua_State* L)
+LUA_FUNCTION(Image_get_spec)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
   push_obj(L, obj->image(L)->spec());
   return 1;
 }
 
-int Image_get_cel(lua_State* L)
+LUA_FUNCTION(Image_get_cel)
 {
   const auto obj = get_obj<ImageObj>(L, 1);
   push_docobj<Cel>(L, obj->celId);
   return 1;
 }
 
-int Image_get_context(lua_State* L)
+LUA_FUNCTION(Image_get_context)
 {
 #if LAF_SKIA
   auto* obj = get_obj<ImageObj>(L, 1);
@@ -809,12 +809,13 @@ DEF_ITERATOR_PAIRS(Image);
 DEF_MTNAME(ImageObj);
 DEF_MTNAME_ALIAS(ImageObj, Image);
 
-void register_image_class(lua_State* L)
+LUA_FUNCTION(register_image_class)
 {
   using Image = ImageObj;
   REG_CLASS(L, Image);
   REG_CLASS_NEW(L, Image);
   REG_CLASS_PROPERTIES(L, Image);
+  return 0;
 }
 
 void push_cel_image(lua_State* L, doc::Cel* cel)

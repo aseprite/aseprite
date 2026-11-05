@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2026  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -29,7 +29,7 @@ using namespace doc;
 
 namespace {
 
-int Cel_eq(lua_State* L)
+LUA_FUNCTION(Cel_eq)
 {
   const auto a = may_get_docobj<Cel>(L, 1);
   const auto b = may_get_docobj<Cel>(L, 2);
@@ -37,21 +37,21 @@ int Cel_eq(lua_State* L)
   return 1;
 }
 
-int Cel_get_sprite(lua_State* L)
+LUA_FUNCTION(Cel_get_sprite)
 {
   const auto cel = get_docobj<Cel>(L, 1);
   push_docobj(L, cel->sprite());
   return 1;
 }
 
-int Cel_get_layer(lua_State* L)
+LUA_FUNCTION(Cel_get_layer)
 {
   const auto cel = get_docobj<Cel>(L, 1);
   push_docobj(L, (Layer*)cel->layer());
   return 1;
 }
 
-int Cel_get_frame(lua_State* L)
+LUA_FUNCTION(Cel_get_frame)
 {
   const auto cel = get_docobj<Cel>(L, 1);
   if (auto sprite = cel->sprite())
@@ -61,49 +61,49 @@ int Cel_get_frame(lua_State* L)
   return 1;
 }
 
-int Cel_get_frameNumber(lua_State* L)
+LUA_FUNCTION(Cel_get_frameNumber)
 {
   const auto cel = get_docobj<Cel>(L, 1);
   lua_pushinteger(L, cel->frame() + 1);
   return 1;
 }
 
-int Cel_get_image(lua_State* L)
+LUA_FUNCTION(Cel_get_image)
 {
   auto cel = get_docobj<Cel>(L, 1);
   push_cel_image(L, cel);
   return 1;
 }
 
-int Cel_get_position(lua_State* L)
+LUA_FUNCTION(Cel_get_position)
 {
   const auto cel = get_docobj<Cel>(L, 1);
   push_new<gfx::Point>(L, cel->position());
   return 1;
 }
 
-int Cel_get_bounds(lua_State* L)
+LUA_FUNCTION(Cel_get_bounds)
 {
   const auto cel = get_docobj<Cel>(L, 1);
   push_new<gfx::Rect>(L, cel->bounds());
   return 1;
 }
 
-int Cel_get_opacity(lua_State* L)
+LUA_FUNCTION(Cel_get_opacity)
 {
   const auto cel = get_docobj<Cel>(L, 1);
   lua_pushinteger(L, cel->opacity());
   return 1;
 }
 
-int Cel_get_zIndex(lua_State* L)
+LUA_FUNCTION(Cel_get_zIndex)
 {
   const auto cel = get_docobj<Cel>(L, 1);
   lua_pushinteger(L, cel->zIndex());
   return 1;
 }
 
-int Cel_set_frame(lua_State* L)
+LUA_FUNCTION(Cel_set_frame)
 {
   const auto cel = get_docobj<Cel>(L, 1);
   doc::frame_t frame = get_frame_number_from_arg(L, 2);
@@ -119,7 +119,7 @@ int Cel_set_frame(lua_State* L)
   return 0;
 }
 
-int Cel_set_image(lua_State* L)
+LUA_FUNCTION(Cel_set_image)
 {
   auto cel = get_docobj<Cel>(L, 1);
   Tx tx(cel->sprite());
@@ -141,7 +141,7 @@ int Cel_set_image(lua_State* L)
   return 0;
 }
 
-int Cel_set_position(lua_State* L)
+LUA_FUNCTION(Cel_set_position)
 {
   auto cel = get_docobj<Cel>(L, 1);
   const gfx::Point pos = convert_args_into_point(L, 2);
@@ -151,7 +151,7 @@ int Cel_set_position(lua_State* L)
   return 0;
 }
 
-int Cel_set_opacity(lua_State* L)
+LUA_FUNCTION(Cel_set_opacity)
 {
   auto cel = get_docobj<Cel>(L, 1);
   Tx tx(cel->sprite());
@@ -160,7 +160,7 @@ int Cel_set_opacity(lua_State* L)
   return 0;
 }
 
-int Cel_set_zIndex(lua_State* L)
+LUA_FUNCTION(Cel_set_zIndex)
 {
   auto cel = get_docobj<Cel>(L, 1);
   Tx tx(cel->sprite());
@@ -194,11 +194,12 @@ DEF_ITERATOR_PAIRS(Cel);
 
 DEF_MTNAME(Cel);
 
-void register_cel_class(lua_State* L)
+LUA_FUNCTION(register_cel_class)
 {
   using Cel = doc::Cel;
   REG_CLASS(L, Cel);
   REG_CLASS_PROPERTIES(L, Cel);
+  return 0;
 }
 
 void push_sprite_cel(lua_State* L, Cel* cel)

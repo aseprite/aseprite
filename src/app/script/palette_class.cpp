@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -61,7 +61,7 @@ struct PaletteObj {
   Palette* palette(lua_State* L) { return check_docobj(L, doc::get<Palette>(paletteId)); }
 };
 
-int Palette_new(lua_State* L)
+LUA_FUNCTION(Palette_new)
 {
   if (auto pal2 = may_get_obj<PaletteObj>(L, 1)) {
     push_new<PaletteObj>(L, nullptr, new Palette(*pal2->palette(L)));
@@ -125,7 +125,7 @@ int Palette_new(lua_State* L)
   return 1;
 }
 
-int Palette_gc(lua_State* L)
+LUA_FUNCTION(Palette_gc)
 {
   auto obj = get_obj<PaletteObj>(L, 1);
   obj->gc(L);
@@ -133,7 +133,7 @@ int Palette_gc(lua_State* L)
   return 0;
 }
 
-int Palette_len(lua_State* L)
+LUA_FUNCTION(Palette_len)
 {
   auto obj = get_obj<PaletteObj>(L, 1);
   auto pal = obj->palette(L);
@@ -141,7 +141,7 @@ int Palette_len(lua_State* L)
   return 1;
 }
 
-int Palette_eq(lua_State* L)
+LUA_FUNCTION(Palette_eq)
 {
   const auto a = get_obj<PaletteObj>(L, 1);
   const auto b = get_obj<PaletteObj>(L, 2);
@@ -149,7 +149,7 @@ int Palette_eq(lua_State* L)
   return 1;
 }
 
-int Palette_resize(lua_State* L)
+LUA_FUNCTION(Palette_resize)
 {
   auto obj = get_obj<PaletteObj>(L, 1);
   auto pal = obj->palette(L);
@@ -166,10 +166,10 @@ int Palette_resize(lua_State* L)
   }
   else
     pal->resize(ncolors);
-  return 1;
+  return 0;
 }
 
-int Palette_getColor(lua_State* L)
+LUA_FUNCTION(Palette_getColor)
 {
   auto obj = get_obj<PaletteObj>(L, 1);
   auto pal = obj->palette(L);
@@ -187,7 +187,7 @@ int Palette_getColor(lua_State* L)
   return 1;
 }
 
-int Palette_setColor(lua_State* L)
+LUA_FUNCTION(Palette_setColor)
 {
   auto obj = get_obj<PaletteObj>(L, 1);
   auto pal = obj->palette(L);
@@ -215,7 +215,7 @@ int Palette_setColor(lua_State* L)
   return 0;
 }
 
-int Palette_get_frame(lua_State* L)
+LUA_FUNCTION(Palette_get_frame)
 {
   auto obj = get_obj<PaletteObj>(L, 1);
   auto pal = obj->palette(L);
@@ -226,7 +226,7 @@ int Palette_get_frame(lua_State* L)
   return 1;
 }
 
-int Palette_saveAs(lua_State* L)
+LUA_FUNCTION(Palette_saveAs)
 {
   auto obj = get_obj<PaletteObj>(L, 1);
   auto pal = obj->palette(L);
@@ -241,7 +241,7 @@ int Palette_saveAs(lua_State* L)
   return 0;
 }
 
-int Palette_get_frameNumber(lua_State* L)
+LUA_FUNCTION(Palette_get_frameNumber)
 {
   auto obj = get_obj<PaletteObj>(L, 1);
   auto pal = obj->palette(L);
@@ -271,12 +271,13 @@ DEF_ITERATOR_PAIRS(Palette);
 DEF_MTNAME(PaletteObj);
 DEF_MTNAME_ALIAS(PaletteObj, Palette);
 
-void register_palette_class(lua_State* L)
+LUA_FUNCTION(register_palette_class)
 {
   using Palette = PaletteObj;
   REG_CLASS(L, Palette);
   REG_CLASS_NEW(L, Palette);
   REG_CLASS_PROPERTIES(L, Palette);
+  return 0;
 }
 
 void push_sprite_palette(lua_State* L, doc::Sprite* sprite, doc::Palette* palette)

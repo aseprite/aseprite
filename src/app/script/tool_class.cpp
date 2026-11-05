@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -18,7 +18,7 @@ namespace app { namespace script {
 
 namespace {
 
-int Tool_get_id(lua_State* L)
+LUA_FUNCTION(Tool_get_id)
 {
   auto tool = get_ptr<tools::Tool>(L, 1);
   lua_pushstring(L, tool->getId().c_str());
@@ -39,10 +39,11 @@ DEF_ITERATOR_PAIRS(Tool);
 using Tool = tools::Tool;
 DEF_MTNAME(Tool);
 
-void register_tool_class(lua_State* L)
+LUA_FUNCTION(register_tool_class)
 {
   REG_CLASS(L, Tool);
   REG_CLASS_PROPERTIES(L, Tool);
+  return 0;
 }
 
 void push_tool(lua_State* L, tools::Tool* tool)

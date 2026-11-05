@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -35,26 +35,26 @@ doc::Grid Grid_new(lua_State* L, int index)
   return grid;
 }
 
-int Grid_new(lua_State* L)
+LUA_FUNCTION(Grid_new)
 {
   push_obj(L, Grid_new(L, 1));
   return 1;
 }
 
-int Grid_gc(lua_State* L)
+LUA_FUNCTION(Grid_gc)
 {
   get_obj<doc::Grid>(L, 1)->~Grid();
   return 0;
 }
 
-int Grid_get_tileSize(lua_State* L)
+LUA_FUNCTION(Grid_get_tileSize)
 {
   auto grid = get_obj<doc::Grid>(L, 1);
   push_obj(L, grid->tileSize());
   return 1;
 }
 
-int Grid_get_origin(lua_State* L)
+LUA_FUNCTION(Grid_get_origin)
 {
   auto grid = get_obj<doc::Grid>(L, 1);
   push_obj(L, grid->origin());
@@ -76,12 +76,13 @@ DEF_ITERATOR_PAIRS(Grid);
 
 DEF_MTNAME(Grid);
 
-void register_grid_class(lua_State* L)
+LUA_FUNCTION(register_grid_class)
 {
   using Grid = doc::Grid;
   REG_CLASS(L, Grid);
   REG_CLASS_NEW(L, Grid);
   REG_CLASS_PROPERTIES(L, Grid);
+  return 0;
 }
 
 doc::Grid convert_args_into_grid(lua_State* L, int index)

@@ -116,12 +116,12 @@ int load_sprite_from_file(lua_State* L, const char* filename, const LoadSpriteFr
 
 namespace {
 
-int App_open(lua_State* L)
+LUA_FUNCTION(App_open)
 {
   return load_sprite_from_file(L, luaL_checkstring(L, 1), LoadSpriteFromFileParam::FullAniAsSprite);
 }
 
-int App_exit(lua_State* L)
+LUA_FUNCTION(App_exit)
 {
   app::Context* ctx = App::instance()->context();
   if (ctx && ctx->isUIAvailable()) {
@@ -131,7 +131,7 @@ int App_exit(lua_State* L)
   return 0;
 }
 
-int App_transaction(lua_State* L)
+LUA_FUNCTION(App_transaction)
 {
   int top = lua_gettop(L);
   int nresults = 0;
@@ -177,7 +177,7 @@ int App_transaction(lua_State* L)
   return nresults;
 }
 
-int App_undo(lua_State* L)
+LUA_FUNCTION(App_undo)
 {
   app::Context* ctx = App::instance()->context();
   if (ctx) {
@@ -187,7 +187,7 @@ int App_undo(lua_State* L)
   return 0;
 }
 
-int App_redo(lua_State* L)
+LUA_FUNCTION(App_redo)
 {
   app::Context* ctx = App::instance()->context();
   if (ctx) {
@@ -197,7 +197,7 @@ int App_redo(lua_State* L)
   return 0;
 }
 
-int App_alert(lua_State* L)
+LUA_FUNCTION(App_alert)
 {
   app::Context* ctx = App::instance()->context();
   if (!ctx || !ctx->isUIAvailable())
@@ -262,7 +262,7 @@ int App_alert(lua_State* L)
   return 0;
 }
 
-int App_refresh(lua_State* L)
+LUA_FUNCTION(App_refresh)
 {
   app::Context* ctx = App::instance()->context();
   if (ctx && ctx->isUIAvailable())
@@ -270,7 +270,7 @@ int App_refresh(lua_State* L)
   return 0;
 }
 
-int App_useTool(lua_State* L)
+LUA_FUNCTION(App_useTool)
 {
   // First argument must be a table
   if (!lua_istable(L, 1))
@@ -526,7 +526,7 @@ int App_useTool(lua_State* L)
   return 0;
 }
 
-int App_tip(lua_State* L)
+LUA_FUNCTION(App_tip)
 {
   const auto* ctx = App::instance()->context();
   if (!ctx || !ctx->isUIAvailable() || !StatusBar::instance())
@@ -564,25 +564,24 @@ int App_tip(lua_State* L)
   return 0;
 }
 
-int App_get_events(lua_State* L)
+LUA_FUNCTION(App_get_events)
 {
-  push_app_events(L);
-  return 1;
+  return push_app_events(L);
 }
 
-int App_get_theme(lua_State* L)
+LUA_FUNCTION(App_get_theme)
 {
   push_app_theme(L);
   return 1;
 }
 
-int App_get_uiScale(lua_State* L)
+LUA_FUNCTION(App_get_uiScale)
 {
   lua_pushinteger(L, ui::guiscale());
   return 1;
 }
 
-int App_get_editor(lua_State* L)
+LUA_FUNCTION(App_get_editor)
 {
   auto ctx = UIContext::instance();
   if (Editor* editor = ctx->activeEditor()) {
@@ -592,13 +591,13 @@ int App_get_editor(lua_State* L)
   return 0;
 }
 
-int App_get_clipboard(lua_State* L)
+LUA_FUNCTION(App_get_clipboard)
 {
   push_app_clipboard(L);
   return 1;
 }
 
-int App_get_sprite(lua_State* L)
+LUA_FUNCTION(App_get_sprite)
 {
   app::Context* ctx = App::instance()->context();
   Doc* doc = ctx->activeDocument();
@@ -609,7 +608,7 @@ int App_get_sprite(lua_State* L)
   return 1;
 }
 
-int App_get_layer(lua_State* L)
+LUA_FUNCTION(App_get_layer)
 {
   app::Context* ctx = App::instance()->context();
   Site site = ctx->activeSite();
@@ -620,7 +619,7 @@ int App_get_layer(lua_State* L)
   return 1;
 }
 
-int App_get_frame(lua_State* L)
+LUA_FUNCTION(App_get_frame)
 {
   app::Context* ctx = App::instance()->context();
   Site site = ctx->activeSite();
@@ -631,7 +630,7 @@ int App_get_frame(lua_State* L)
   return 1;
 }
 
-int App_get_cel(lua_State* L)
+LUA_FUNCTION(App_get_cel)
 {
   app::Context* ctx = App::instance()->context();
   Site site = ctx->activeSite();
@@ -642,7 +641,7 @@ int App_get_cel(lua_State* L)
   return 1;
 }
 
-int App_get_image(lua_State* L)
+LUA_FUNCTION(App_get_image)
 {
   app::Context* ctx = App::instance()->context();
   Site site = ctx->activeSite();
@@ -653,7 +652,7 @@ int App_get_image(lua_State* L)
   return 1;
 }
 
-int App_get_tag(lua_State* L)
+LUA_FUNCTION(App_get_tag)
 {
   Tag* tag = nullptr;
 
@@ -675,61 +674,61 @@ int App_get_tag(lua_State* L)
   return 1;
 }
 
-int App_get_sprites(lua_State* L)
+LUA_FUNCTION(App_get_sprites)
 {
   push_sprites(L);
   return 1;
 }
 
-int App_get_fgColor(lua_State* L)
+LUA_FUNCTION(App_get_fgColor)
 {
   push_obj<app::Color>(L, Preferences::instance().colorBar.fgColor());
   return 1;
 }
 
-int App_set_fgColor(lua_State* L)
+LUA_FUNCTION(App_set_fgColor)
 {
   Preferences::instance().colorBar.fgColor(convert_args_into_color(L, 2));
   return 0;
 }
 
-int App_get_bgColor(lua_State* L)
+LUA_FUNCTION(App_get_bgColor)
 {
   push_obj<app::Color>(L, Preferences::instance().colorBar.bgColor());
   return 1;
 }
 
-int App_set_bgColor(lua_State* L)
+LUA_FUNCTION(App_set_bgColor)
 {
   Preferences::instance().colorBar.bgColor(convert_args_into_color(L, 2));
   return 0;
 }
 
-int App_get_fgTile(lua_State* L)
+LUA_FUNCTION(App_get_fgTile)
 {
   lua_pushinteger(L, Preferences::instance().colorBar.fgTile());
   return 1;
 }
 
-int App_set_fgTile(lua_State* L)
+LUA_FUNCTION(App_set_fgTile)
 {
   Preferences::instance().colorBar.fgTile(lua_tointeger(L, 2));
   return 0;
 }
 
-int App_get_bgTile(lua_State* L)
+LUA_FUNCTION(App_get_bgTile)
 {
   lua_pushinteger(L, Preferences::instance().colorBar.bgTile());
   return 1;
 }
 
-int App_set_bgTile(lua_State* L)
+LUA_FUNCTION(App_set_bgTile)
 {
   Preferences::instance().colorBar.bgTile(lua_tointeger(L, 2));
   return 0;
 }
 
-int App_get_site(lua_State* L)
+LUA_FUNCTION(App_get_site)
 {
   app::Context* ctx = App::instance()->context();
   Site site = ctx->activeSite();
@@ -737,7 +736,7 @@ int App_get_site(lua_State* L)
   return 1;
 }
 
-int App_get_range(lua_State* L)
+LUA_FUNCTION(App_get_range)
 {
   app::Context* ctx = App::instance()->context();
   Site site = ctx->activeSite();
@@ -745,14 +744,14 @@ int App_get_range(lua_State* L)
   return 1;
 }
 
-int App_get_isUIAvailable(lua_State* L)
+LUA_FUNCTION(App_get_isUIAvailable)
 {
   app::Context* ctx = App::instance()->context();
   lua_pushboolean(L, ctx && ctx->isUIAvailable());
   return 1;
 }
 
-int App_get_version(lua_State* L)
+LUA_FUNCTION(App_get_version)
 {
   std::string ver = get_app_version();
   base::replace_string(ver, "-x64", ""); // Remove "-x64" suffix
@@ -760,20 +759,20 @@ int App_get_version(lua_State* L)
   return 1;
 }
 
-int App_get_apiVersion(lua_State* L)
+LUA_FUNCTION(App_get_apiVersion)
 {
   lua_pushinteger(L, API_VERSION);
   return 1;
 }
 
-int App_get_tool(lua_State* L)
+LUA_FUNCTION(App_get_tool)
 {
   tools::Tool* tool = App::instance()->activeToolManager()->activeTool();
   push_tool(L, tool);
   return 1;
 }
 
-int App_get_brush(lua_State* L)
+LUA_FUNCTION(App_get_brush)
 {
   App* app = App::instance();
   if (app->isGui()) {
@@ -785,7 +784,7 @@ int App_get_brush(lua_State* L)
   return 1;
 }
 
-int App_get_defaultPalette(lua_State* L)
+LUA_FUNCTION(App_get_defaultPalette)
 {
   const Palette* pal = get_default_palette();
   if (pal)
@@ -795,7 +794,7 @@ int App_get_defaultPalette(lua_State* L)
   return 1;
 }
 
-int App_get_window(lua_State* L)
+LUA_FUNCTION(App_get_window)
 {
   App* app = App::instance();
   if (app && app->mainWindow()) {
@@ -807,7 +806,7 @@ int App_get_window(lua_State* L)
   return 1;
 }
 
-int App_set_sprite(lua_State* L)
+LUA_FUNCTION(App_set_sprite)
 {
   auto sprite = may_get_docobj<Sprite>(L, 2);
   app::Context* ctx = App::instance()->context();
@@ -816,7 +815,7 @@ int App_set_sprite(lua_State* L)
   return 0;
 }
 
-int App_set_layer(lua_State* L)
+LUA_FUNCTION(App_set_layer)
 {
   auto layer = get_docobj<Layer>(L, 2);
   app::Context* ctx = App::instance()->context();
@@ -824,7 +823,7 @@ int App_set_layer(lua_State* L)
   return 0;
 }
 
-int App_set_frame(lua_State* L)
+LUA_FUNCTION(App_set_frame)
 {
   const doc::frame_t frame = get_frame_number_from_arg(L, 2);
   app::Context* ctx = App::instance()->context();
@@ -832,7 +831,7 @@ int App_set_frame(lua_State* L)
   return 0;
 }
 
-int App_set_cel(lua_State* L)
+LUA_FUNCTION(App_set_cel)
 {
   const auto cel = get_docobj<Cel>(L, 2);
   app::Context* ctx = App::instance()->context();
@@ -841,7 +840,7 @@ int App_set_cel(lua_State* L)
   return 0;
 }
 
-int App_set_image(lua_State* L)
+LUA_FUNCTION(App_set_image)
 {
   const auto cel = get_image_cel_from_arg(L, 2);
   if (!cel)
@@ -853,14 +852,14 @@ int App_set_image(lua_State* L)
   return 0;
 }
 
-int App_set_tool(lua_State* L)
+LUA_FUNCTION(App_set_tool)
 {
   if (auto tool = get_tool_from_arg(L, 2))
     App::instance()->activeToolManager()->setSelectedTool(tool);
   return 0;
 }
 
-int App_set_brush(lua_State* L)
+LUA_FUNCTION(App_set_brush)
 {
   if (auto brush = get_brush_from_arg(L, 2)) {
     App* app = App::instance();
@@ -870,7 +869,7 @@ int App_set_brush(lua_State* L)
   return 0;
 }
 
-int App_set_defaultPalette(lua_State* L)
+LUA_FUNCTION(App_set_defaultPalette)
 {
   if (const doc::Palette* pal = get_palette_from_arg(L, 2))
     set_default_palette(pal);
@@ -935,7 +934,7 @@ DEF_ITERATOR_PAIRS(App);
 
 DEF_MTNAME(App);
 
-void register_app_object(lua_State* L)
+LUA_FUNCTION(register_app_object)
 {
   REG_CLASS(L, App);
   REG_CLASS_PROPERTIES(L, App);
@@ -946,6 +945,8 @@ void register_app_object(lua_State* L)
   lua_setmetatable(L, -2);
   lua_setglobal(L, "app");
   lua_pop(L, 1); // Pop app table
+
+  return 0;
 }
 
 void set_app_params(lua_State* L, const Params& params)

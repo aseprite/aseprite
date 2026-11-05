@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2024  Igara Studio S.A.
+// Copyright (C) 2024-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -20,7 +20,7 @@ namespace {
 
 struct AppOS {};
 
-int AppOS_get_name(lua_State* L)
+LUA_FUNCTION(AppOS_get_name)
 {
 #if LAF_WINDOWS
   lua_pushstring(L, "Windows");
@@ -34,50 +34,50 @@ int AppOS_get_name(lua_State* L)
   return 1;
 }
 
-int AppOS_get_version(lua_State* L)
+LUA_FUNCTION(AppOS_get_version)
 {
   base::Platform p = base::get_platform();
   push_version(L, p.osVer);
   return 1;
 }
 
-int AppOS_get_fullName(lua_State* L)
+LUA_FUNCTION(AppOS_get_fullName)
 {
   lua_pushstring(L, updater::getFullOSString().c_str());
   return 1;
 }
 
-int AppOS_get_windows(lua_State* L)
+LUA_FUNCTION(AppOS_get_windows)
 {
   lua_pushboolean(L, base::Platform::os == base::Platform::OS::Windows);
   return 1;
 }
 
-int AppOS_get_macos(lua_State* L)
+LUA_FUNCTION(AppOS_get_macos)
 {
   lua_pushboolean(L, base::Platform::os == base::Platform::OS::macOS);
   return 1;
 }
 
-int AppOS_get_linux(lua_State* L)
+LUA_FUNCTION(AppOS_get_linux)
 {
   lua_pushboolean(L, base::Platform::os == base::Platform::OS::Linux);
   return 1;
 }
 
-int AppOS_get_x64(lua_State* L)
+LUA_FUNCTION(AppOS_get_x64)
 {
   lua_pushboolean(L, base::Platform::arch == base::Platform::Arch::x64);
   return 1;
 }
 
-int AppOS_get_x86(lua_State* L)
+LUA_FUNCTION(AppOS_get_x86)
 {
   lua_pushboolean(L, base::Platform::arch == base::Platform::Arch::x86);
   return 1;
 }
 
-int AppOS_get_arm64(lua_State* L)
+LUA_FUNCTION(AppOS_get_arm64)
 {
   lua_pushboolean(L, base::Platform::arch == base::Platform::Arch::arm64);
   return 1;
@@ -104,7 +104,7 @@ DEF_ITERATOR_PAIRS(AppOS);
 
 DEF_MTNAME(AppOS);
 
-void register_app_os_object(lua_State* L)
+LUA_FUNCTION(register_app_os_object)
 {
   REG_CLASS(L, AppOS);
   REG_CLASS_PROPERTIES(L, AppOS);
@@ -114,6 +114,8 @@ void register_app_os_object(lua_State* L)
   push_new<AppOS>(L);
   lua_rawset(L, -3);
   lua_pop(L, 1);
+
+  return 0;
 }
 
 }} // namespace app::script

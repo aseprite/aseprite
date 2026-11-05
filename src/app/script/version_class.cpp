@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -27,19 +27,19 @@ base::Version Version_new(lua_State* L, int index)
   return ver;
 }
 
-int Version_new(lua_State* L)
+LUA_FUNCTION(Version_new)
 {
   push_obj(L, Version_new(L, 1));
   return 1;
 }
 
-int Version_gc(lua_State* L)
+LUA_FUNCTION(Version_gc)
 {
   get_obj<base::Version>(L, 1)->~Version();
   return 0;
 }
 
-int Version_eq(lua_State* L)
+LUA_FUNCTION(Version_eq)
 {
   const auto a = get_obj<base::Version>(L, 1);
   const auto b = get_obj<base::Version>(L, 2);
@@ -47,7 +47,7 @@ int Version_eq(lua_State* L)
   return 1;
 }
 
-int Version_lt(lua_State* L)
+LUA_FUNCTION(Version_lt)
 {
   const auto a = get_obj<base::Version>(L, 1);
   const auto b = get_obj<base::Version>(L, 2);
@@ -55,7 +55,7 @@ int Version_lt(lua_State* L)
   return 1;
 }
 
-int Version_le(lua_State* L)
+LUA_FUNCTION(Version_le)
 {
   const auto a = get_obj<base::Version>(L, 1);
   const auto b = get_obj<base::Version>(L, 2);
@@ -63,14 +63,14 @@ int Version_le(lua_State* L)
   return 1;
 }
 
-int Version_tostring(lua_State* L)
+LUA_FUNCTION(Version_tostring)
 {
   const auto ver = get_obj<base::Version>(L, 1);
   lua_pushstring(L, ver->str().c_str());
   return 1;
 }
 
-int Version_get_major(lua_State* L)
+LUA_FUNCTION(Version_get_major)
 {
   const auto ver = get_obj<base::Version>(L, 1);
   const auto& numbers = ver->numbers();
@@ -78,7 +78,7 @@ int Version_get_major(lua_State* L)
   return 1;
 }
 
-int Version_get_minor(lua_State* L)
+LUA_FUNCTION(Version_get_minor)
 {
   const auto ver = get_obj<base::Version>(L, 1);
   const auto& numbers = ver->numbers();
@@ -86,7 +86,7 @@ int Version_get_minor(lua_State* L)
   return 1;
 }
 
-int Version_get_patch(lua_State* L)
+LUA_FUNCTION(Version_get_patch)
 {
   const auto ver = get_obj<base::Version>(L, 1);
   const auto& numbers = ver->numbers();
@@ -94,14 +94,14 @@ int Version_get_patch(lua_State* L)
   return 1;
 }
 
-int Version_get_prereleaseLabel(lua_State* L)
+LUA_FUNCTION(Version_get_prereleaseLabel)
 {
   const auto ver = get_obj<base::Version>(L, 1);
   lua_pushstring(L, ver->prereleaseLabel().c_str());
   return 1;
 }
 
-int Version_get_prereleaseNumber(lua_State* L)
+LUA_FUNCTION(Version_get_prereleaseNumber)
 {
   const auto ver = get_obj<base::Version>(L, 1);
   lua_pushinteger(L, ver->prereleaseNumber());
@@ -130,12 +130,13 @@ DEF_ITERATOR_PAIRS(Version);
 
 DEF_MTNAME(base::Version);
 
-void register_version_class(lua_State* L)
+LUA_FUNCTION(register_version_class)
 {
   using base::Version;
   REG_CLASS(L, Version);
   REG_CLASS_NEW(L, Version);
   REG_CLASS_PROPERTIES(L, Version);
+  return 0;
 }
 
 void push_version(lua_State* L, const base::Version& ver)

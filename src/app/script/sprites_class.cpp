@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -40,20 +40,20 @@ struct SpritesObj {
   SpritesObj& operator=(const SpritesObj&) = delete;
 };
 
-int Sprites_gc(lua_State* L)
+LUA_FUNCTION(Sprites_gc)
 {
   get_obj<SpritesObj>(L, 1)->~SpritesObj();
   return 0;
 }
 
-int Sprites_len(lua_State* L)
+LUA_FUNCTION(Sprites_len)
 {
   auto obj = get_obj<SpritesObj>(L, 1);
   lua_pushinteger(L, obj->docs.size());
   return 1;
 }
 
-int Sprites_index(lua_State* L)
+LUA_FUNCTION(Sprites_index)
 {
   auto obj = get_obj<SpritesObj>(L, 1);
   const int i = lua_tonumber(L, 2);
@@ -75,16 +75,18 @@ const luaL_Reg Sprites_methods[] = {
 
 DEF_MTNAME(SpritesObj);
 
-void register_sprites_class(lua_State* L)
+LUA_FUNCTION(register_sprites_class)
 {
   using Sprites = SpritesObj;
   REG_CLASS(L, Sprites);
+  return 0;
 }
 
-void push_sprites(lua_State* L)
+LUA_FUNCTION(push_sprites)
 {
   app::Context* ctx = App::instance()->context();
   push_new<SpritesObj>(L, ctx->documents());
+  return 1;
 }
 
 }} // namespace app::script

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -32,19 +32,19 @@ Uuid Uuid_new(lua_State* L, int index)
     return Uuid::Generate();
 }
 
-int Uuid_new(lua_State* L)
+LUA_FUNCTION(Uuid_new)
 {
   push_obj(L, Uuid_new(L, 1));
   return 1;
 }
 
-int Uuid_gc(lua_State* L)
+LUA_FUNCTION(Uuid_gc)
 {
   get_obj<Uuid>(L, 1)->~Uuid();
   return 0;
 }
 
-int Uuid_eq(lua_State* L)
+LUA_FUNCTION(Uuid_eq)
 {
   const auto a = get_obj<Uuid>(L, 1);
   const auto b = get_obj<Uuid>(L, 2);
@@ -52,14 +52,14 @@ int Uuid_eq(lua_State* L)
   return 1;
 }
 
-int Uuid_tostring(lua_State* L)
+LUA_FUNCTION(Uuid_tostring)
 {
   const auto uuid = get_obj<Uuid>(L, 1);
   lua_pushstring(L, base::convert_to<std::string>(*uuid).c_str());
   return 1;
 }
 
-int Uuid_index(lua_State* L)
+LUA_FUNCTION(Uuid_index)
 {
   const auto uuid = get_obj<Uuid>(L, 1);
   const int i = lua_tointeger(L, 2);
@@ -82,10 +82,11 @@ const luaL_Reg Uuid_methods[] = {
 
 DEF_MTNAME(Uuid);
 
-void register_uuid_class(lua_State* L)
+LUA_FUNCTION(register_uuid_class)
 {
   REG_CLASS(L, Uuid);
   REG_CLASS_NEW(L, Uuid);
+  return 0;
 }
 
 base::Uuid convert_args_into_uuid(lua_State* L, int index)

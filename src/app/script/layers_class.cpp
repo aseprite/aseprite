@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -42,20 +42,20 @@ struct LayersObj {
   LayersObj& operator=(const LayersObj&) = delete;
 };
 
-int Layers_gc(lua_State* L)
+LUA_FUNCTION(Layers_gc)
 {
   get_obj<LayersObj>(L, 1)->~LayersObj();
   return 0;
 }
 
-int Layers_len(lua_State* L)
+LUA_FUNCTION(Layers_len)
 {
   auto obj = get_obj<LayersObj>(L, 1);
   lua_pushinteger(L, obj->layers.size());
   return 1;
 }
 
-int Layers_index(lua_State* L)
+LUA_FUNCTION(Layers_index)
 {
   auto obj = get_obj<LayersObj>(L, 1);
 
@@ -91,10 +91,11 @@ const luaL_Reg Layers_methods[] = {
 
 DEF_MTNAME(LayersObj);
 
-void register_layers_class(lua_State* L)
+LUA_FUNCTION(register_layers_class)
 {
   using Layers = LayersObj;
   REG_CLASS(L, Layers);
+  return 0;
 }
 
 void push_sprite_layers(lua_State* L, Sprite* sprite)

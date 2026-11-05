@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023-2025  Igara Studio S.A.
+// Copyright (C) 2023-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -29,14 +29,14 @@ struct Tile {
   Tile(const Tileset* ts, const tile_index ti) : id(ts->id()), ti(ti) {}
 };
 
-int Tile_get_index(lua_State* L)
+LUA_FUNCTION(Tile_get_index)
 {
   auto tile = get_obj<Tile>(L, 1);
   lua_pushinteger(L, tile->ti);
   return 1;
 }
 
-int Tile_get_image(lua_State* L)
+LUA_FUNCTION(Tile_get_image)
 {
   auto tile = get_obj<Tile>(L, 1);
   auto ts = doc::get<Tileset>(tile->id);
@@ -47,7 +47,7 @@ int Tile_get_image(lua_State* L)
   return 1;
 }
 
-int Tile_set_image(lua_State* L)
+LUA_FUNCTION(Tile_set_image)
 {
   auto tile = get_obj<Tile>(L, 1);
   auto ts = doc::get<Tileset>(tile->id);
@@ -62,7 +62,7 @@ int Tile_set_image(lua_State* L)
   return 0;
 }
 
-int Tile_get_data(lua_State* L)
+LUA_FUNCTION(Tile_get_data)
 {
   auto tile = get_obj<Tile>(L, 1);
   auto ts = doc::get<Tileset>(tile->id);
@@ -74,7 +74,7 @@ int Tile_get_data(lua_State* L)
   return 1;
 }
 
-int Tile_get_color(lua_State* L)
+LUA_FUNCTION(Tile_get_color)
 {
   auto tile = get_obj<Tile>(L, 1);
   auto ts = doc::get<Tileset>(tile->id);
@@ -93,7 +93,7 @@ int Tile_get_color(lua_State* L)
   return 1;
 }
 
-int Tile_get_properties(lua_State* L)
+LUA_FUNCTION(Tile_get_properties)
 {
   auto tile = get_obj<Tile>(L, 1);
   auto ts = doc::get<Tileset>(tile->id);
@@ -104,7 +104,7 @@ int Tile_get_properties(lua_State* L)
   return 1;
 }
 
-int Tile_set_data(lua_State* L)
+LUA_FUNCTION(Tile_set_data)
 {
   auto tile = get_obj<Tile>(L, 1);
   auto ts = doc::get<Tileset>(tile->id);
@@ -129,7 +129,7 @@ int Tile_set_data(lua_State* L)
   return 0;
 }
 
-int Tile_set_color(lua_State* L)
+LUA_FUNCTION(Tile_set_color)
 {
   auto tile = get_obj<Tile>(L, 1);
   auto ts = doc::get<Tileset>(tile->id);
@@ -152,7 +152,7 @@ int Tile_set_color(lua_State* L)
   return 0;
 }
 
-int Tile_set_properties(lua_State* L)
+LUA_FUNCTION(Tile_set_properties)
 {
   auto tile = get_obj<Tile>(L, 1);
   auto ts = doc::get<Tileset>(tile->id);
@@ -207,10 +207,11 @@ DEF_ITERATOR_PAIRS(Tile);
 
 DEF_MTNAME(Tile);
 
-void register_tile_class(lua_State* L)
+LUA_FUNCTION(register_tile_class)
 {
   REG_CLASS(L, Tile);
   REG_CLASS_PROPERTIES(L, Tile);
+  return 0;
 }
 
 void push_tile(lua_State* L, const Tileset* ts, tile_index ti)

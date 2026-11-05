@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -34,13 +34,13 @@ struct FrameObj {
   Sprite* sprite(lua_State* L) { return check_docobj(L, doc::get<Sprite>(spriteId)); }
 };
 
-int Frame_gc(lua_State* L)
+LUA_FUNCTION(Frame_gc)
 {
   get_obj<FrameObj>(L, 1)->~FrameObj();
   return 0;
 }
 
-int Frame_eq(lua_State* L)
+LUA_FUNCTION(Frame_eq)
 {
   const auto a = get_obj<FrameObj>(L, 1);
   const auto b = get_obj<FrameObj>(L, 2);
@@ -48,21 +48,21 @@ int Frame_eq(lua_State* L)
   return 1;
 }
 
-int Frame_get_sprite(lua_State* L)
+LUA_FUNCTION(Frame_get_sprite)
 {
   auto obj = get_obj<FrameObj>(L, 1);
   push_docobj<Sprite>(L, obj->spriteId);
   return 1;
 }
 
-int Frame_get_frameNumber(lua_State* L)
+LUA_FUNCTION(Frame_get_frameNumber)
 {
   auto obj = get_obj<FrameObj>(L, 1);
   lua_pushinteger(L, obj->frame + 1);
   return 1;
 }
 
-int Frame_get_duration(lua_State* L)
+LUA_FUNCTION(Frame_get_duration)
 {
   auto obj = get_obj<FrameObj>(L, 1);
   auto sprite = obj->sprite(L);
@@ -70,7 +70,7 @@ int Frame_get_duration(lua_State* L)
   return 1;
 }
 
-int Frame_get_previous(lua_State* L)
+LUA_FUNCTION(Frame_get_previous)
 {
   auto obj = get_obj<FrameObj>(L, 1);
   auto sprite = obj->sprite(L);
@@ -82,7 +82,7 @@ int Frame_get_previous(lua_State* L)
   return 1;
 }
 
-int Frame_get_next(lua_State* L)
+LUA_FUNCTION(Frame_get_next)
 {
   auto obj = get_obj<FrameObj>(L, 1);
   auto sprite = obj->sprite(L);
@@ -94,7 +94,7 @@ int Frame_get_next(lua_State* L)
   return 1;
 }
 
-int Frame_set_duration(lua_State* L)
+LUA_FUNCTION(Frame_set_duration)
 {
   auto obj = get_obj<FrameObj>(L, 1);
   auto sprite = obj->sprite(L);
@@ -102,7 +102,7 @@ int Frame_set_duration(lua_State* L)
   Tx tx(sprite, Strings::tx_set_frame_duration());
   tx(new cmd::SetFrameDuration(sprite, obj->frame, int(duration)));
   tx.commit();
-  return 1;
+  return 0;
 }
 
 const luaL_Reg Frame_methods[] = {
@@ -124,11 +124,12 @@ DEF_ITERATOR_PAIRS(Frame);
 
 DEF_MTNAME(FrameObj);
 
-void register_frame_class(lua_State* L)
+LUA_FUNCTION(register_frame_class)
 {
   using Frame = FrameObj;
   REG_CLASS(L, Frame);
   REG_CLASS_PROPERTIES(L, Frame);
+  return 0;
 }
 
 void push_sprite_frame(lua_State* L, Sprite* sprite, frame_t frame)
