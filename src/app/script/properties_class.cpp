@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2025  Igara Studio S.A.
+// Copyright (C) 2022-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -79,7 +79,7 @@ struct Properties {
 
 using PropertiesIterator = doc::UserData::Properties::iterator;
 
-int Properties_len(lua_State* L)
+LUA_FUNCTION(Properties_len)
 {
   auto propObj = get_obj<Properties>(L, 1);
   auto& properties = propObj->properties(L);
@@ -87,7 +87,7 @@ int Properties_len(lua_State* L)
   return 1;
 }
 
-int Properties_index(lua_State* L)
+LUA_FUNCTION(Properties_index)
 {
   auto propObj = get_obj<Properties>(L, 1);
   const char* field = lua_tostring(L, 2);
@@ -105,7 +105,7 @@ int Properties_index(lua_State* L)
   return 1;
 }
 
-int Properties_newindex(lua_State* L)
+LUA_FUNCTION(Properties_newindex)
 {
   auto propObj = get_obj<Properties>(L, 1);
   const char* field = lua_tostring(L, 2);
@@ -143,7 +143,7 @@ int Properties_newindex(lua_State* L)
   return 0;
 }
 
-int Properties_call(lua_State* L)
+LUA_FUNCTION(Properties_call)
 {
   auto propObj = get_obj<Properties>(L, 1);
   const char* extID = lua_tostring(L, 2);
@@ -197,7 +197,7 @@ int Properties_call(lua_State* L)
   return 1;
 }
 
-int Properties_pairs_next(lua_State* L)
+LUA_FUNCTION(Properties_pairs_next)
 {
   auto propObj = get_obj<Properties>(L, 1);
   auto& properties = propObj->properties(L);
@@ -210,7 +210,7 @@ int Properties_pairs_next(lua_State* L)
   return 2;
 }
 
-int Properties_pairs(lua_State* L)
+LUA_FUNCTION(Properties_pairs)
 {
   auto propObj = get_obj<Properties>(L, 1);
   auto obj = static_cast<doc::WithUserData*>(get_object(propObj->id));
@@ -225,7 +225,7 @@ int Properties_pairs(lua_State* L)
   return 2;
 }
 
-int PropertiesIterator_gc(lua_State* L)
+LUA_FUNCTION(PropertiesIterator_gc)
 {
   get_obj<PropertiesIterator>(L, 1)->~PropertiesIterator();
   return 0;
@@ -250,10 +250,11 @@ const luaL_Reg PropertiesIterator_methods[] = {
 DEF_MTNAME(Properties);
 DEF_MTNAME(PropertiesIterator);
 
-void register_properties_class(lua_State* L)
+LUA_FUNCTION(register_properties_class)
 {
   REG_CLASS(L, Properties);
   REG_CLASS(L, PropertiesIterator);
+  return 0;
 }
 
 void push_properties(lua_State* L, doc::WithUserData* wud, const std::string& extID)

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -90,9 +90,6 @@ int ImageIterator_index(lua_State* L)
     { "__call",  ImageIterator_call<Prefix##Traits>  },                                              \
     { "__gc",    ImageIterator_gc<Prefix##Traits>    },                                                  \
     { nullptr,   nullptr                             }                                                                           \
-  };                                                                                               \
-  const luaL_Reg Prefix##ImageIterator_properties[] = {                                            \
-    { nullptr, nullptr }                                                                           \
   }
 
 DEFINE_METHODS(Rgb);
@@ -107,12 +104,13 @@ DEF_MTNAME(ImageIteratorObj<GrayscaleTraits>);
 DEF_MTNAME(ImageIteratorObj<IndexedTraits>);
 DEF_MTNAME(ImageIteratorObj<TilemapTraits>);
 
-void register_image_iterator_class(lua_State* L)
+LUA_FUNCTION(register_image_iterator_class)
 {
   REG_CLASS(L, RgbImageIterator);
   REG_CLASS(L, GrayscaleImageIterator);
   REG_CLASS(L, IndexedImageIterator);
   REG_CLASS(L, TilemapImageIterator);
+  return 0;
 }
 
 template<typename ImageTrais>

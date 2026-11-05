@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021  Igara Studio S.A.
+// Copyright (C) 2021-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -417,7 +417,7 @@ private:
   std::unique_ptr<std::thread> m_thread;
 };
 
-int WebSocket_new(lua_State* L)
+LUA_FUNCTION(WebSocket_new)
 {
   std::string url;
   int onreceiveRef = -1;
@@ -471,7 +471,7 @@ int WebSocket_new(lua_State* L)
   return 1;
 }
 
-int WebSocket_gc(lua_State* L)
+LUA_FUNCTION(WebSocket_gc)
 {
   auto* ws = get_obj<WebSocket>(L, 1);
   ws->~WebSocket();
@@ -496,7 +496,7 @@ base::buffer get_send_data(lua_State* L, WebSocket* ws)
   return data;
 }
 
-int WebSocket_sendText(lua_State* L)
+LUA_FUNCTION(WebSocket_sendText)
 {
   auto* ws = get_obj<WebSocket>(L, 1);
   auto data = get_send_data(L, ws);
@@ -505,7 +505,7 @@ int WebSocket_sendText(lua_State* L)
   return 0;
 }
 
-int WebSocket_sendBinary(lua_State* L)
+LUA_FUNCTION(WebSocket_sendBinary)
 {
   auto* ws = get_obj<WebSocket>(L, 1);
   auto data = get_send_data(L, ws);
@@ -514,28 +514,28 @@ int WebSocket_sendBinary(lua_State* L)
   return 0;
 }
 
-int WebSocket_sendPing(lua_State* L)
+LUA_FUNCTION(WebSocket_sendPing)
 {
   // TODO: Curl autopings so we should probably deprecate this and keep it no-op, maybe a devmode
   // warning.
   return 0;
 }
 
-int WebSocket_connect(lua_State* L)
+LUA_FUNCTION(WebSocket_connect)
 {
   auto* ws = get_obj<WebSocket>(L, 1);
   ws->connect();
   return 0;
 }
 
-int WebSocket_close(lua_State* L)
+LUA_FUNCTION(WebSocket_close)
 {
   auto* ws = get_obj<WebSocket>(L, 1);
   ws->close();
   return 0;
 }
 
-int WebSocket_get_url(lua_State* L)
+LUA_FUNCTION(WebSocket_get_url)
 {
   const auto* ws = get_obj<WebSocket>(L, 1);
   lua_pushstring(L, ws->url().c_str());
@@ -561,7 +561,7 @@ DEF_ITERATOR_PAIRS(WebSocket);
 
 DEF_MTNAME(WebSocket);
 
-void register_websocket_class(lua_State* L)
+LUA_FUNCTION(register_websocket_class)
 {
   REG_CLASS(L, WebSocket);
   REG_CLASS_NEW(L, WebSocket);
@@ -580,6 +580,8 @@ void register_websocket_class(lua_State* L)
   setfield_integer(L, "PONG", WebSocketMessageType::Pong);
   setfield_integer(L, "FRAGMENT", WebSocketMessageType::Fragment);
   lua_pop(L, 1);
+
+  return 0;
 }
 
 } // namespace app::script

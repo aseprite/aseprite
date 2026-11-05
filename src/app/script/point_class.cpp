@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2017-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -58,19 +58,19 @@ gfx::Point Point_new(lua_State* L, int index)
   return pt;
 }
 
-int Point_new(lua_State* L)
+LUA_FUNCTION(Point_new)
 {
   push_obj(L, Point_new(L, 1));
   return 1;
 }
 
-int Point_gc(lua_State* L)
+LUA_FUNCTION(Point_gc)
 {
   get_obj<gfx::Point>(L, 1)->~PointT();
   return 0;
 }
 
-int Point_eq(lua_State* L)
+LUA_FUNCTION(Point_eq)
 {
   const auto a = get_obj<gfx::Point>(L, 1);
   const auto b = get_obj<gfx::Point>(L, 2);
@@ -78,21 +78,21 @@ int Point_eq(lua_State* L)
   return 1;
 }
 
-int Point_tostring(lua_State* L)
+LUA_FUNCTION(Point_tostring)
 {
   const auto pt = get_obj<gfx::Point>(L, 1);
   lua_pushstring(L, fmt::format("Point{{ x={}, y={} }}", pt->x, pt->y).c_str());
   return 1;
 }
 
-int Point_unm(lua_State* L)
+LUA_FUNCTION(Point_unm)
 {
   const auto pt = get_obj<gfx::Point>(L, 1);
   push_obj(L, -(*pt));
   return 1;
 }
 
-int Point_add(lua_State* L)
+LUA_FUNCTION(Point_add)
 {
   gfx::Point result(0, 0);
   if (lua_isuserdata(L, 1))
@@ -107,7 +107,7 @@ int Point_add(lua_State* L)
   return 1;
 }
 
-int Point_sub(lua_State* L)
+LUA_FUNCTION(Point_sub)
 {
   gfx::Point result = *get_obj<gfx::Point>(L, 1);
   if (lua_isuserdata(L, 2))
@@ -118,7 +118,7 @@ int Point_sub(lua_State* L)
   return 1;
 }
 
-int Point_mul(lua_State* L)
+LUA_FUNCTION(Point_mul)
 {
   gfx::Point result = *get_obj<gfx::Point>(L, 1);
   result *= lua_tointeger(L, 2);
@@ -126,7 +126,7 @@ int Point_mul(lua_State* L)
   return 1;
 }
 
-int Point_div(lua_State* L)
+LUA_FUNCTION(Point_div)
 {
   gfx::Point result = *get_obj<gfx::Point>(L, 1);
   const int value = lua_tointeger(L, 2);
@@ -137,7 +137,7 @@ int Point_div(lua_State* L)
   return 1;
 }
 
-int Point_mod(lua_State* L)
+LUA_FUNCTION(Point_mod)
 {
   gfx::Point result = *get_obj<gfx::Point>(L, 1);
   const int value = lua_tointeger(L, 2);
@@ -149,7 +149,7 @@ int Point_mod(lua_State* L)
   return 1;
 }
 
-int Point_pow(lua_State* L)
+LUA_FUNCTION(Point_pow)
 {
   gfx::Point result = *get_obj<gfx::Point>(L, 1);
   const int value = lua_tointeger(L, 2);
@@ -159,28 +159,28 @@ int Point_pow(lua_State* L)
   return 1;
 }
 
-int Point_get_x(lua_State* L)
+LUA_FUNCTION(Point_get_x)
 {
   const auto pt = get_obj<gfx::Point>(L, 1);
   lua_pushinteger(L, pt->x);
   return 1;
 }
 
-int Point_get_y(lua_State* L)
+LUA_FUNCTION(Point_get_y)
 {
   const auto pt = get_obj<gfx::Point>(L, 1);
   lua_pushinteger(L, pt->y);
   return 1;
 }
 
-int Point_set_x(lua_State* L)
+LUA_FUNCTION(Point_set_x)
 {
   auto pt = get_obj<gfx::Point>(L, 1);
   pt->x = lua_tointeger(L, 2);
   return 0;
 }
 
-int Point_set_y(lua_State* L)
+LUA_FUNCTION(Point_set_y)
 {
   auto pt = get_obj<gfx::Point>(L, 1);
   pt->y = lua_tointeger(L, 2);
@@ -212,12 +212,13 @@ DEF_ITERATOR_PAIRS(Point);
 
 DEF_MTNAME(gfx::Point);
 
-void register_point_class(lua_State* L)
+LUA_FUNCTION(register_point_class)
 {
   using gfx::Point;
   REG_CLASS(L, Point);
   REG_CLASS_NEW(L, Point);
   REG_CLASS_PROPERTIES(L, Point);
+  return 0;
 }
 
 gfx::Point convert_args_into_point(lua_State* L, int index)

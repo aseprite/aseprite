@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2015-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -76,7 +76,7 @@ struct SelectionObj {
   }
 };
 
-int Selection_new(lua_State* L)
+LUA_FUNCTION(Selection_new)
 {
   gfx::Rect bounds = convert_args_into_rect(L, 1);
 
@@ -88,7 +88,7 @@ int Selection_new(lua_State* L)
   return 1;
 }
 
-int Selection_gc(lua_State* L)
+LUA_FUNCTION(Selection_gc)
 {
   auto obj = get_obj<SelectionObj>(L, 1);
   obj->gc(L);
@@ -96,7 +96,7 @@ int Selection_gc(lua_State* L)
   return 0;
 }
 
-int Selection_eq(lua_State* L)
+LUA_FUNCTION(Selection_eq)
 {
   auto a = get_obj<SelectionObj>(L, 1);
   auto b = get_obj<SelectionObj>(L, 2);
@@ -109,7 +109,7 @@ int Selection_eq(lua_State* L)
   return 1;
 }
 
-int Selection_deselect(lua_State* L)
+LUA_FUNCTION(Selection_deselect)
 {
   auto obj = get_obj<SelectionObj>(L, 1);
   if (auto sprite = obj->sprite(L)) {
@@ -213,24 +213,24 @@ int Selection_op(lua_State* L, OpMask opMask, OpRect opRect)
   return 0;
 }
 
-int Selection_select(lua_State* L)
+LUA_FUNCTION(Selection_select)
 {
   return Selection_op(L, replace<Mask>, replace<gfx::Rect>);
 }
-int Selection_add(lua_State* L)
+LUA_FUNCTION(Selection_add)
 {
   return Selection_op(L, add<Mask>, add<gfx::Rect>);
 }
-int Selection_subtract(lua_State* L)
+LUA_FUNCTION(Selection_subtract)
 {
   return Selection_op(L, subtract<Mask>, subtract<gfx::Rect>);
 }
-int Selection_intersect(lua_State* L)
+LUA_FUNCTION(Selection_intersect)
 {
   return Selection_op(L, intersect<Mask>, intersect<gfx::Rect>);
 }
 
-int Selection_selectAll(lua_State* L)
+LUA_FUNCTION(Selection_selectAll)
 {
   auto obj = get_obj<SelectionObj>(L, 1);
   if (auto sprite = obj->sprite(L)) {
@@ -252,7 +252,7 @@ int Selection_selectAll(lua_State* L)
   return 0;
 }
 
-int Selection_contains(lua_State* L)
+LUA_FUNCTION(Selection_contains)
 {
   const auto obj = get_obj<SelectionObj>(L, 1);
   const auto mask = obj->mask(L);
@@ -261,7 +261,7 @@ int Selection_contains(lua_State* L)
   return 1;
 }
 
-int Selection_get_bounds(lua_State* L)
+LUA_FUNCTION(Selection_get_bounds)
 {
   const auto obj = get_obj<SelectionObj>(L, 1);
   if (auto sprite = obj->sprite(L)) {
@@ -280,7 +280,7 @@ int Selection_get_bounds(lua_State* L)
   return 1;
 }
 
-int Selection_get_origin(lua_State* L)
+LUA_FUNCTION(Selection_get_origin)
 {
   const auto obj = get_obj<SelectionObj>(L, 1);
   if (auto sprite = obj->sprite(L)) {
@@ -299,7 +299,7 @@ int Selection_get_origin(lua_State* L)
   return 1;
 }
 
-int Selection_set_origin(lua_State* L)
+LUA_FUNCTION(Selection_set_origin)
 {
   auto obj = get_obj<SelectionObj>(L, 1);
   const auto pt = convert_args_into_point(L, 2);
@@ -318,7 +318,7 @@ int Selection_set_origin(lua_State* L)
   return 0;
 }
 
-int Selection_get_isEmpty(lua_State* L)
+LUA_FUNCTION(Selection_get_isEmpty)
 {
   const auto obj = get_obj<SelectionObj>(L, 1);
   const auto mask = obj->mask(L);
@@ -351,12 +351,13 @@ DEF_ITERATOR_PAIRS(Selection);
 DEF_MTNAME(SelectionObj);
 DEF_MTNAME_ALIAS(SelectionObj, Mask);
 
-void register_selection_class(lua_State* L)
+LUA_FUNCTION(register_selection_class)
 {
   using Selection = SelectionObj;
   REG_CLASS(L, Selection);
   REG_CLASS_NEW(L, Selection);
   REG_CLASS_PROPERTIES(L, Selection);
+  return 0;
 }
 
 void push_standalone_selection(lua_State* L, Mask* mask)

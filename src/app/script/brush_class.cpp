@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -104,7 +104,7 @@ BrushRef Brush_new(lua_State* L, int index)
   return brush;
 }
 
-int Brush_new(lua_State* L)
+LUA_FUNCTION(Brush_new)
 {
   BrushRef brush = Brush_new(L, 1);
   if (brush)
@@ -114,13 +114,13 @@ int Brush_new(lua_State* L)
   return 1;
 }
 
-int Brush_gc(lua_State* L)
+LUA_FUNCTION(Brush_gc)
 {
   get_obj<BrushObj>(L, 1)->~BrushObj();
   return 0;
 }
 
-int Brush_setFgColor(lua_State* L)
+LUA_FUNCTION(Brush_setFgColor)
 {
   auto obj = get_obj<BrushObj>(L, 1);
   if (obj->brush && obj->brush->image()) {
@@ -131,7 +131,7 @@ int Brush_setFgColor(lua_State* L)
   return 0;
 }
 
-int Brush_setBgColor(lua_State* L)
+LUA_FUNCTION(Brush_setBgColor)
 {
   auto obj = get_obj<BrushObj>(L, 1);
   if (obj->brush && obj->brush->image()) {
@@ -142,28 +142,28 @@ int Brush_setBgColor(lua_State* L)
   return 0;
 }
 
-int Brush_get_type(lua_State* L)
+LUA_FUNCTION(Brush_get_type)
 {
   const auto obj = get_obj<BrushObj>(L, 1);
   lua_pushinteger(L, (int)obj->brush->type());
   return 1;
 }
 
-int Brush_get_size(lua_State* L)
+LUA_FUNCTION(Brush_get_size)
 {
   const auto obj = get_obj<BrushObj>(L, 1);
   lua_pushinteger(L, obj->brush->size());
   return 1;
 }
 
-int Brush_get_angle(lua_State* L)
+LUA_FUNCTION(Brush_get_angle)
 {
   const auto obj = get_obj<BrushObj>(L, 1);
   lua_pushinteger(L, obj->brush->angle());
   return 1;
 }
 
-int Brush_get_image(lua_State* L)
+LUA_FUNCTION(Brush_get_image)
 {
   const auto obj = get_obj<BrushObj>(L, 1);
   if (obj->brush->type() == BrushType::kImageBrushType)
@@ -173,21 +173,21 @@ int Brush_get_image(lua_State* L)
   return 1;
 }
 
-int Brush_get_center(lua_State* L)
+LUA_FUNCTION(Brush_get_center)
 {
   const auto obj = get_obj<BrushObj>(L, 1);
   push_obj(L, obj->brush->center());
   return 1;
 }
 
-int Brush_get_pattern(lua_State* L)
+LUA_FUNCTION(Brush_get_pattern)
 {
   const auto obj = get_obj<BrushObj>(L, 1);
   lua_pushinteger(L, (int)obj->brush->pattern());
   return 1;
 }
 
-int Brush_get_patternOrigin(lua_State* L)
+LUA_FUNCTION(Brush_get_patternOrigin)
 {
   const auto obj = get_obj<BrushObj>(L, 1);
   push_obj(L, obj->brush->patternOrigin());
@@ -216,12 +216,13 @@ DEF_ITERATOR_PAIRS(Brush);
 
 DEF_MTNAME(BrushObj);
 
-void register_brush_class(lua_State* L)
+LUA_FUNCTION(register_brush_class)
 {
   using Brush = BrushObj;
   REG_CLASS(L, Brush);
   REG_CLASS_NEW(L, Brush);
   REG_CLASS_PROPERTIES(L, Brush);
+  return 0;
 }
 
 void push_brush(lua_State* L, const BrushRef& brush)

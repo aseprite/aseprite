@@ -11,30 +11,42 @@
 
 #include "app/script/luacpp.h"
 
-namespace app { namespace script {
+namespace app::script {
 
-int generic_mt_index(lua_State* L)
+// generic_mt_index = function(t, k)
+//   local mt = getmetatable(t)
+//   local f = mt[k]
+//   if f then return f end
+//   f = mt.__getters[k]
+//   if f then return f(t) end
+//   if type(t) == 'table' then return rawget(t, k) end
+//   error(debug.traceback()..': Field '..tostring(k)..' does not exist')
+// end
+LUA_FUNCTION(generic_mt_index)
 {
-  if (lua_getmetatable(L, 1)) {
-    lua_pushvalue(L, 2);
-    lua_gettable(L, 3);
-    if (!lua_isnil(L, -1))
-      return 1;
-    lua_pop(L, 1);
+  if (lua_getmetatable(L, 1)) { // mt = getmetatable(t)
+    lua_pushvalue(L, 2);        // push k
+    lua_gettable(L, 3);         // f = mt[k]
+    if (!lua_isnil(L, -1)) {    // if f != nil
+      lua_remove(L, -2);        // removes mt, keeps f
+      return 1;                 // returns f
+    }
+    lua_pop(L, 1); // pops f
 
     lua_getfield(L, 3, "__getters");
     if (lua_istable(L, -1)) {
-      lua_pushvalue(L, 2);
-      lua_gettable(L, -2);
+      lua_pushvalue(L, 2); // push k
+      lua_gettable(L, -2); // f = mt.__getters[k]
       if (!lua_isnil(L, -1)) {
-        lua_pushvalue(L, 1);
-        lua_call(L, 1, 1);
-        return 1;
+        lua_pushvalue(L, 1); // push t
+        lua_call(L, 1, 1);   // f(t)
+        lua_remove(L, -2);   // removes __getters
+        lua_remove(L, -2);   // removes mt
+        return 1;            // returns f(t) result
       }
-      lua_pop(L, 1);
+      lua_pop(L, 1); // pops f
     }
-    lua_pop(L, 1);
-    lua_pop(L, 1);
+    lua_pop(L, 2); // pops __getters, mt
   }
 
   if (lua_istable(L, 1)) {
@@ -56,36 +68,50 @@ int generic_mt_index(lua_State* L)
   return luaL_error(L, "%s: Field %s does not exist", tb ? tb : "", k ? k : "nil");
 }
 
-int generic_mt_newindex(lua_State* L)
+// generic_mt_newindex = function(t, k, v)
+//   local mt = getmetatable(t)
+//   local f = mt[k]
+//   if f then return f end
+//   f = mt.__setters[k]
+//   if f then return f(t, v) end
+//   if type(t) == 'table' then return rawset(t, k, v) end
+//   error(debug.traceback()..': Cannot set field '..tostring(k))
+// end;
+LUA_FUNCTION(generic_mt_newindex)
 {
-  if (lua_getmetatable(L, 1)) {
-    lua_pushvalue(L, 2);
-    lua_gettable(L, 4);
-    if (!lua_isnil(L, -1))
-      return 1;
-    lua_pop(L, 1);
+  if (lua_getmetatable(L, 1)) { // mt = getmetatable(t)
+    lua_pushvalue(L, 2);        // push k
+    lua_gettable(L, 4);         // f = mt[k]
+    if (!lua_isnil(L, -1)) {
+      lua_remove(L, -2); // removes mt, keeps f
+      return 1;          // return f
+    }
+    lua_pop(L, 1); // pops f
 
-    lua_getfield(L, 4, "__setters");
+    lua_getfield(L, 4, "__setters"); // mt.__setters
     if (lua_istable(L, -1)) {
       lua_pushvalue(L, 2);
-      lua_gettable(L, -2);
+      lua_gettable(L, -2); // f = mt.__setters[k]
       if (!lua_isnil(L, -1)) {
         lua_pushvalue(L, 1);
         lua_pushvalue(L, 3);
-        lua_call(L, 2, 1);
-        return 1;
+        lua_call(L, 2, 0);
+        lua_pop(L, 2); // pops __setters, mt
+        return 0;
       }
-      lua_pop(L, 1);
+      lua_pop(L, 1); // pops f
     }
-    lua_pop(L, 1);
-    lua_pop(L, 1);
+    lua_pop(L, 2); // pops __setters, mt
   }
 
   if (lua_istable(L, 1)) {
     lua_pushvalue(L, 2);
     lua_pushvalue(L, 3);
     lua_rawset(L, 1);
-    return 1;
+
+    // rawset(t, k, v) in Lua returns t
+    lua_pushvalue(L, 1); // push t
+    return 1;            // returns t
   }
 
   lua_getglobal(L, "debug");
@@ -157,4 +183,4 @@ bool lua_is_key_true(lua_State* L, int tableIndex, const char* keyName)
   return result;
 }
 
-}} // namespace app::script
+} // namespace app::script

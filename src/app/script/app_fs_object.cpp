@@ -24,7 +24,7 @@ namespace {
 
 struct AppFS {};
 
-int AppFS_pathSeparator(lua_State* L)
+LUA_FUNCTION(AppFS_pathSeparator)
 {
   const char sep[2] = { base::path_separator, 0 };
   lua_pushstring(L, sep);
@@ -42,7 +42,7 @@ int AppFS_pathElement(lua_State* L)
   return 1;
 }
 
-int AppFS_joinPath(lua_State* L)
+LUA_FUNCTION(AppFS_joinPath)
 {
   const char* fn = lua_tostring(L, 1);
   if (!fn) {
@@ -68,7 +68,7 @@ int AppFS_get_specialPath(lua_State* L)
   return 1;
 }
 
-int AppFS_get_userConfigPath(lua_State* L)
+LUA_FUNCTION(AppFS_get_userConfigPath)
 {
   ResourceFinder rf(false);
   rf.includeUserDir("");
@@ -77,7 +77,7 @@ int AppFS_get_userConfigPath(lua_State* L)
   return 1;
 }
 
-int AppFS_isFile(lua_State* L)
+LUA_FUNCTION(AppFS_isFile)
 {
   const char* fn = lua_tostring(L, 1);
   if (fn)
@@ -87,7 +87,7 @@ int AppFS_isFile(lua_State* L)
   return 1;
 }
 
-int AppFS_isDirectory(lua_State* L)
+LUA_FUNCTION(AppFS_isDirectory)
 {
   const char* fn = lua_tostring(L, 1);
   if (fn)
@@ -97,7 +97,7 @@ int AppFS_isDirectory(lua_State* L)
   return 1;
 }
 
-int AppFS_fileSize(lua_State* L)
+LUA_FUNCTION(AppFS_fileSize)
 {
   const char* fn = lua_tostring(L, 1);
   if (fn) {
@@ -112,7 +112,7 @@ int AppFS_fileSize(lua_State* L)
   return 1;
 }
 
-int AppFS_listFiles(lua_State* L)
+LUA_FUNCTION(AppFS_listFiles)
 {
   const char* path = lua_tostring(L, 1);
   lua_newtable(L);
@@ -126,7 +126,7 @@ int AppFS_listFiles(lua_State* L)
   return 1;
 }
 
-int AppFS_makeDirectory(lua_State* L)
+LUA_FUNCTION(AppFS_makeDirectory)
 {
   const char* path = luaL_checkstring(L, 1);
   if (base::is_directory(path)) {
@@ -147,7 +147,7 @@ int AppFS_makeDirectory(lua_State* L)
   return 1;
 }
 
-int AppFS_makeAllDirectories(lua_State* L)
+LUA_FUNCTION(AppFS_makeAllDirectories)
 {
   const char* path = luaL_checkstring(L, 1);
   if (base::is_directory(path)) {
@@ -167,7 +167,7 @@ int AppFS_makeAllDirectories(lua_State* L)
   return 1;
 }
 
-int AppFS_removeDirectory(lua_State* L)
+LUA_FUNCTION(AppFS_removeDirectory)
 {
   const char* path = luaL_checkstring(L, 1);
   if (!base::is_directory(path)) {
@@ -225,7 +225,7 @@ DEF_ITERATOR_PAIRS(AppFS);
 
 DEF_MTNAME(AppFS);
 
-void register_app_fs_object(lua_State* L)
+LUA_FUNCTION(register_app_fs_object)
 {
   REG_CLASS(L, AppFS);
   REG_CLASS_PROPERTIES(L, AppFS);
@@ -235,6 +235,8 @@ void register_app_fs_object(lua_State* L)
   push_new<AppFS>(L);
   lua_rawset(L, -3);
   lua_pop(L, 1);
+
+  return 0;
 }
 
 }} // namespace app::script

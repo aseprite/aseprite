@@ -22,7 +22,7 @@ using namespace doc;
 
 namespace {
 
-int Tileset_gc(lua_State* L)
+LUA_FUNCTION(Tileset_gc)
 {
   auto tileset = get_docobj<Tileset>(L, 1);
   // A tileset without sprite is a "standalone" tileset (e.g. a
@@ -32,7 +32,7 @@ int Tileset_gc(lua_State* L)
   return 0;
 }
 
-int Tileset_eq(lua_State* L)
+LUA_FUNCTION(Tileset_eq)
 {
   const auto a = get_docobj<Tileset>(L, 1);
   const auto b = get_docobj<Tileset>(L, 2);
@@ -40,14 +40,14 @@ int Tileset_eq(lua_State* L)
   return 1;
 }
 
-int Tileset_len(lua_State* L)
+LUA_FUNCTION(Tileset_len)
 {
   auto tileset = get_docobj<Tileset>(L, 1);
   lua_pushinteger(L, tileset->size());
   return 1;
 }
 
-int Tileset_getTile(lua_State* L)
+LUA_FUNCTION(Tileset_getTile)
 {
   auto tileset = get_docobj<Tileset>(L, 1);
   tile_index ti = lua_tointeger(L, 2);
@@ -55,7 +55,7 @@ int Tileset_getTile(lua_State* L)
   return 1;
 }
 
-int Tileset_tile(lua_State* L)
+LUA_FUNCTION(Tileset_tile)
 {
   auto tileset = get_docobj<Tileset>(L, 1);
   tile_index ti = lua_tointeger(L, 2);
@@ -66,14 +66,14 @@ int Tileset_tile(lua_State* L)
   return 1;
 }
 
-int Tileset_get_name(lua_State* L)
+LUA_FUNCTION(Tileset_get_name)
 {
   auto tileset = get_docobj<Tileset>(L, 1);
   lua_pushstring(L, tileset->name().c_str());
   return 1;
 }
 
-int Tileset_set_name(lua_State* L)
+LUA_FUNCTION(Tileset_set_name)
 {
   auto tileset = get_docobj<Tileset>(L, 1);
   if (const char* newName = lua_tostring(L, 2)) {
@@ -84,21 +84,21 @@ int Tileset_set_name(lua_State* L)
   return 0;
 }
 
-int Tileset_get_grid(lua_State* L)
+LUA_FUNCTION(Tileset_get_grid)
 {
   auto tileset = get_docobj<Tileset>(L, 1);
   push_obj(L, tileset->grid());
   return 1;
 }
 
-int Tileset_get_baseIndex(lua_State* L)
+LUA_FUNCTION(Tileset_get_baseIndex)
 {
   auto tileset = get_docobj<Tileset>(L, 1);
   lua_pushinteger(L, tileset->baseIndex());
   return 1;
 }
 
-int Tileset_set_baseIndex(lua_State* L)
+LUA_FUNCTION(Tileset_set_baseIndex)
 {
   auto tileset = get_docobj<Tileset>(L, 1);
   int i = lua_tointeger(L, 2);
@@ -131,11 +131,12 @@ DEF_ITERATOR_PAIRS(Tileset);
 
 DEF_MTNAME(Tileset);
 
-void register_tileset_class(lua_State* L)
+LUA_FUNCTION(register_tileset_class)
 {
   using Tileset = doc::Tileset;
   REG_CLASS(L, Tileset);
   REG_CLASS_PROPERTIES(L, Tileset);
+  return 0;
 }
 
 void push_tileset(lua_State* L, const Tileset* tileset)

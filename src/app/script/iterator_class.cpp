@@ -8,7 +8,7 @@
 
 namespace app::script {
 
-int ObjectIterator_pairs_next(lua_State* L)
+LUA_FUNCTION(ObjectIterator_pairs_next)
 {
   auto* it = get_obj<ObjectIterator>(L, lua_upvalueindex(1));
   const auto& prop = it->properties[it->i];
@@ -22,7 +22,7 @@ int ObjectIterator_pairs_next(lua_State* L)
 }
 
 namespace {
-int ObjectIterator_gc(lua_State* L)
+LUA_FUNCTION(ObjectIterator_gc)
 {
   get_obj<ObjectIterator>(L, 1)->~ObjectIterator();
   return 0;
@@ -36,8 +36,10 @@ const luaL_Reg ObjectIterator_methods[] = {
 
 DEF_MTNAME(ObjectIterator);
 
-void register_iterator_class(lua_State* L)
+LUA_FUNCTION(register_iterator_class)
 {
   REG_CLASS(L, ObjectIterator);
+  return 0;
 }
+
 } // namespace app::script
