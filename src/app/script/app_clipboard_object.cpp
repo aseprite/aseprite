@@ -25,7 +25,7 @@ namespace {
 
 struct Clipboard {};
 
-int Clipboard_clear(lua_State* L)
+LUA_FUNCTION(Clipboard_clear)
 {
   get_engine(L)->accessGate(Permission::ClipboardWrite);
 
@@ -35,19 +35,19 @@ int Clipboard_clear(lua_State* L)
   return 0;
 }
 
-int Clipboard_hasText(lua_State* L)
+LUA_FUNCTION(Clipboard_hasText)
 {
   lua_pushboolean(L, clip::has(clip::text_format()));
   return 1;
 }
 
-int Clipboard_hasImage(lua_State* L)
+LUA_FUNCTION(Clipboard_hasImage)
 {
   lua_pushboolean(L, clip::has(clip::image_format()));
   return 1;
 }
 
-int Clipboard_get_image(lua_State* L)
+LUA_FUNCTION(Clipboard_get_image)
 {
   get_engine(L)->accessGate(Permission::ClipboardRead);
 
@@ -66,7 +66,7 @@ int Clipboard_get_image(lua_State* L)
   return 1;
 }
 
-int Clipboard_get_text(lua_State* L)
+LUA_FUNCTION(Clipboard_get_text)
 {
   get_engine(L)->accessGate(Permission::ClipboardRead);
 
@@ -79,7 +79,7 @@ int Clipboard_get_text(lua_State* L)
   return 1;
 }
 
-int Clipboard_set_image(lua_State* L)
+LUA_FUNCTION(Clipboard_set_image)
 {
   get_engine(L)->accessGate(Permission::ClipboardWrite);
 
@@ -99,7 +99,7 @@ int Clipboard_set_image(lua_State* L)
   return 0;
 }
 
-int Clipboard_set_text(lua_State* L)
+LUA_FUNCTION(Clipboard_set_text)
 {
   get_engine(L)->accessGate(Permission::ClipboardWrite);
 
@@ -110,7 +110,7 @@ int Clipboard_set_text(lua_State* L)
   return 0;
 }
 
-int Clipboard_get_content(lua_State* L)
+LUA_FUNCTION(Clipboard_get_content)
 {
   get_engine(L)->accessGate(Permission::ClipboardRead);
 
@@ -155,7 +155,7 @@ int Clipboard_get_content(lua_State* L)
   return 1;
 }
 
-int Clipboard_set_content(lua_State* L)
+LUA_FUNCTION(Clipboard_set_content)
 {
   get_engine(L)->accessGate(Permission::ClipboardWrite);
 
@@ -250,15 +250,17 @@ DEF_ITERATOR_PAIRS(Clipboard);
 
 DEF_MTNAME(Clipboard);
 
-void register_clipboard_classes(lua_State* L)
+LUA_FUNCTION(register_clipboard_classes)
 {
   REG_CLASS(L, Clipboard);
   REG_CLASS_PROPERTIES(L, Clipboard);
+  return 0;
 }
 
-void push_app_clipboard(lua_State* L)
+LUA_FUNCTION(push_app_clipboard)
 {
   push_new<Clipboard>(L);
+  return 1;
 }
 
 }} // namespace app::script

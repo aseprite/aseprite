@@ -17,7 +17,7 @@ namespace app::script {
 namespace {
 struct AppBase64 {};
 
-int App_Base64_decode(lua_State* L)
+LUA_FUNCTION(App_Base64_decode)
 {
   const char* input = luaL_checkstring(L, 1);
   auto out = base::decode_base64s(input);
@@ -25,7 +25,7 @@ int App_Base64_decode(lua_State* L)
   return 1;
 }
 
-int App_Base64_encode(lua_State* L)
+LUA_FUNCTION(App_Base64_encode)
 {
   size_t len;
   const auto* bytes = lua_tolstring(L, 1, &len);
@@ -41,7 +41,7 @@ const luaL_Reg AppBase64_methods[] = {
 } // namespace
 DEF_MTNAME(AppBase64);
 
-void register_app_base64_object(lua_State* L)
+LUA_FUNCTION(register_app_base64_object)
 {
   REG_CLASS(L, AppBase64);
   lua_getglobal(L, "app");
@@ -49,6 +49,7 @@ void register_app_base64_object(lua_State* L)
   push_new<AppBase64>(L);
   lua_rawset(L, -3);
   lua_pop(L, 1);
+  return 0;
 }
 
 } // namespace app::script

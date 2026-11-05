@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -30,20 +30,20 @@ struct TagsObj {
   Sprite* sprite(lua_State* L) { return check_docobj(L, doc::get<Sprite>(spriteId)); }
 };
 
-int Tags_gc(lua_State* L)
+LUA_FUNCTION(Tags_gc)
 {
   get_obj<TagsObj>(L, 1)->~TagsObj();
   return 0;
 }
 
-int Tags_len(lua_State* L)
+LUA_FUNCTION(Tags_len)
 {
   auto obj = get_obj<TagsObj>(L, 1);
   lua_pushinteger(L, obj->sprite(L)->tags().size());
   return 1;
 }
 
-int Tags_index(lua_State* L)
+LUA_FUNCTION(Tags_index)
 {
   auto obj = get_obj<TagsObj>(L, 1);
   auto& tags = obj->sprite(L)->tags();
@@ -66,10 +66,11 @@ const luaL_Reg Tags_methods[] = {
 
 DEF_MTNAME(TagsObj);
 
-void register_tags_class(lua_State* L)
+LUA_FUNCTION(register_tags_class)
 {
   using Tags = TagsObj;
   REG_CLASS(L, Tags);
+  return 0;
 }
 
 void push_sprite_tags(lua_State* L, Sprite* sprite)

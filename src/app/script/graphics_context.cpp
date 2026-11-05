@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2025  Igara Studio S.A.
+// Copyright (C) 2022-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -198,35 +198,35 @@ void GraphicsContext::fill()
 
 namespace {
 
-int GraphicsContext_gc(lua_State* L)
+LUA_FUNCTION(GraphicsContext_gc)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   gc->~GraphicsContext();
   return 0;
 }
 
-int GraphicsContext_save(lua_State* L)
+LUA_FUNCTION(GraphicsContext_save)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   gc->save();
   return 0;
 }
 
-int GraphicsContext_restore(lua_State* L)
+LUA_FUNCTION(GraphicsContext_restore)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   gc->restore();
   return 0;
 }
 
-int GraphicsContext_clip(lua_State* L)
+LUA_FUNCTION(GraphicsContext_clip)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   gc->clip();
   return 0;
 }
 
-int GraphicsContext_strokeRect(lua_State* L)
+LUA_FUNCTION(GraphicsContext_strokeRect)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   const gfx::Rect rc = convert_args_into_rect(L, 2);
@@ -234,7 +234,7 @@ int GraphicsContext_strokeRect(lua_State* L)
   return 0;
 }
 
-int GraphicsContext_fillRect(lua_State* L)
+LUA_FUNCTION(GraphicsContext_fillRect)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   const gfx::Rect rc = convert_args_into_rect(L, 2);
@@ -242,7 +242,7 @@ int GraphicsContext_fillRect(lua_State* L)
   return 0;
 }
 
-int GraphicsContext_fillText(lua_State* L)
+LUA_FUNCTION(GraphicsContext_fillText)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   if (const char* text = lua_tostring(L, 2)) {
@@ -253,7 +253,7 @@ int GraphicsContext_fillText(lua_State* L)
   return 0;
 }
 
-int GraphicsContext_measureText(lua_State* L)
+LUA_FUNCTION(GraphicsContext_measureText)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   if (const char* text = lua_tostring(L, 2)) {
@@ -280,7 +280,7 @@ doc::Palette* get_image_palette(const doc::Image* img,
   return nullptr;
 }
 
-int GraphicsContext_drawImage(lua_State* L)
+LUA_FUNCTION(GraphicsContext_drawImage)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   if (const doc::Image* img = may_get_image_from_arg(L, 2)) {
@@ -316,14 +316,14 @@ int GraphicsContext_drawImage(lua_State* L)
   return 0;
 }
 
-int GraphicsContext_theme(lua_State* L)
+LUA_FUNCTION(GraphicsContext_theme)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   push_app_theme(L, gc->uiscale());
   return 1;
 }
 
-int GraphicsContext_drawThemeImage(lua_State* L)
+LUA_FUNCTION(GraphicsContext_drawThemeImage)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   if (const char* id = lua_tostring(L, 2)) {
@@ -333,7 +333,7 @@ int GraphicsContext_drawThemeImage(lua_State* L)
   return 0;
 }
 
-int GraphicsContext_drawThemeRect(lua_State* L)
+LUA_FUNCTION(GraphicsContext_drawThemeRect)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   if (const char* id = lua_tostring(L, 2)) {
@@ -343,7 +343,7 @@ int GraphicsContext_drawThemeRect(lua_State* L)
   return 0;
 }
 
-int GraphicsContext_beginPath(lua_State* L)
+LUA_FUNCTION(GraphicsContext_beginPath)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   gc->beginPath();
@@ -351,7 +351,7 @@ int GraphicsContext_beginPath(lua_State* L)
   return 1;
 }
 
-int GraphicsContext_closePath(lua_State* L)
+LUA_FUNCTION(GraphicsContext_closePath)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   gc->closePath();
@@ -359,7 +359,7 @@ int GraphicsContext_closePath(lua_State* L)
   return 1;
 }
 
-int GraphicsContext_moveTo(lua_State* L)
+LUA_FUNCTION(GraphicsContext_moveTo)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   float x = lua_tonumber(L, 2);
@@ -369,7 +369,7 @@ int GraphicsContext_moveTo(lua_State* L)
   return 1;
 }
 
-int GraphicsContext_lineTo(lua_State* L)
+LUA_FUNCTION(GraphicsContext_lineTo)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   float x = lua_tonumber(L, 2);
@@ -379,7 +379,7 @@ int GraphicsContext_lineTo(lua_State* L)
   return 1;
 }
 
-int GraphicsContext_cubicTo(lua_State* L)
+LUA_FUNCTION(GraphicsContext_cubicTo)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   float cp1x = lua_tonumber(L, 2);
@@ -393,7 +393,7 @@ int GraphicsContext_cubicTo(lua_State* L)
   return 1;
 }
 
-int GraphicsContext_oval(lua_State* L)
+LUA_FUNCTION(GraphicsContext_oval)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   const gfx::Rect rc = convert_args_into_rect(L, 2);
@@ -401,7 +401,7 @@ int GraphicsContext_oval(lua_State* L)
   return 0;
 }
 
-int GraphicsContext_rect(lua_State* L)
+LUA_FUNCTION(GraphicsContext_rect)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   const gfx::Rect rc = convert_args_into_rect(L, 2);
@@ -409,7 +409,7 @@ int GraphicsContext_rect(lua_State* L)
   return 0;
 }
 
-int GraphicsContext_roundedRect(lua_State* L)
+LUA_FUNCTION(GraphicsContext_roundedRect)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   const gfx::Rect rc = convert_args_into_rect(L, 2);
@@ -419,7 +419,7 @@ int GraphicsContext_roundedRect(lua_State* L)
   return 0;
 }
 
-int GraphicsContext_stroke(lua_State* L)
+LUA_FUNCTION(GraphicsContext_stroke)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   gc->stroke();
@@ -427,7 +427,7 @@ int GraphicsContext_stroke(lua_State* L)
   return 1;
 }
 
-int GraphicsContext_fill(lua_State* L)
+LUA_FUNCTION(GraphicsContext_fill)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   gc->fill();
@@ -435,28 +435,28 @@ int GraphicsContext_fill(lua_State* L)
   return 1;
 }
 
-int GraphicsContext_get_width(lua_State* L)
+LUA_FUNCTION(GraphicsContext_get_width)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   lua_pushinteger(L, gc->width());
   return 1;
 }
 
-int GraphicsContext_get_height(lua_State* L)
+LUA_FUNCTION(GraphicsContext_get_height)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   lua_pushinteger(L, gc->height());
   return 1;
 }
 
-int GraphicsContext_get_antialias(lua_State* L)
+LUA_FUNCTION(GraphicsContext_get_antialias)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   lua_pushboolean(L, gc->antialias());
   return 1;
 }
 
-int GraphicsContext_set_antialias(lua_State* L)
+LUA_FUNCTION(GraphicsContext_set_antialias)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   const bool antialias = lua_toboolean(L, 2);
@@ -464,7 +464,7 @@ int GraphicsContext_set_antialias(lua_State* L)
   return 1;
 }
 
-int GraphicsContext_get_color(lua_State* L)
+LUA_FUNCTION(GraphicsContext_get_color)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
 
@@ -486,51 +486,51 @@ int GraphicsContext_get_color(lua_State* L)
   return 1;
 }
 
-int GraphicsContext_set_color(lua_State* L)
+LUA_FUNCTION(GraphicsContext_set_color)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   const app::Color color = convert_args_into_color(L, 2);
   gc->color(color_utils::color_for_ui(color));
-  return 1;
+  return 0;
 }
 
-int GraphicsContext_get_strokeWidth(lua_State* L)
+LUA_FUNCTION(GraphicsContext_get_strokeWidth)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   lua_pushnumber(L, gc->strokeWidth());
   return 1;
 }
 
-int GraphicsContext_set_strokeWidth(lua_State* L)
+LUA_FUNCTION(GraphicsContext_set_strokeWidth)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   const float strokeWidth = lua_tonumber(L, 2);
   gc->strokeWidth(strokeWidth);
-  return 1;
+  return 0;
 }
 
-int GraphicsContext_get_blendMode(lua_State* L)
+LUA_FUNCTION(GraphicsContext_get_blendMode)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   lua_pushinteger(L, int(base::convert_to<app::script::BlendMode>(gc->blendMode())));
   return 0;
 }
 
-int GraphicsContext_set_blendMode(lua_State* L)
+LUA_FUNCTION(GraphicsContext_set_blendMode)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   gc->blendMode(base::convert_to<os::BlendMode>(app::script::BlendMode(lua_tointeger(L, 2))));
   return 0;
 }
 
-int GraphicsContext_get_opacity(lua_State* L)
+LUA_FUNCTION(GraphicsContext_get_opacity)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   lua_pushinteger(L, gc->opacity());
   return 1;
 }
 
-int GraphicsContext_set_opacity(lua_State* L)
+LUA_FUNCTION(GraphicsContext_set_opacity)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   const int opacity = lua_tointeger(L, 2);
@@ -538,19 +538,19 @@ int GraphicsContext_set_opacity(lua_State* L)
   return 0;
 }
 
-int GraphicsContext_get_palette(lua_State* L)
+LUA_FUNCTION(GraphicsContext_get_palette)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   push_palette(L, gc->palette());
   return 1;
 }
 
-int GraphicsContext_set_palette(lua_State* L)
+LUA_FUNCTION(GraphicsContext_set_palette)
 {
   auto gc = get_obj<GraphicsContext>(L, 1);
   doc::Palette* palette = get_palette_from_arg(L, 2);
   gc->palette(palette);
-  return 1;
+  return 0;
 }
 
 const luaL_Reg GraphicsContext_methods[] = {
@@ -595,10 +595,11 @@ DEF_ITERATOR_PAIRS(GraphicsContext);
 
 DEF_MTNAME(GraphicsContext);
 
-void register_graphics_context_class(lua_State* L)
+LUA_FUNCTION(register_graphics_context_class)
 {
   REG_CLASS(L, GraphicsContext);
   REG_CLASS_PROPERTIES(L, GraphicsContext);
+  return 0;
 }
 
 }} // namespace app::script

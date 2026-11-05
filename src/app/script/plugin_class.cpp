@@ -153,13 +153,13 @@ void deleteMenuGroupIfExistent(Extension* ext, const std::string& id)
     appMenus->removeMenuGroup(id);
 }
 
-int Plugin_gc(lua_State* L)
+LUA_FUNCTION(Plugin_gc)
 {
   get_obj<Plugin>(L, 1)->~Plugin();
   return 0;
 }
 
-int Plugin_newCommand(lua_State* L)
+LUA_FUNCTION(Plugin_newCommand)
 {
   auto plugin = get_obj<Plugin>(L, 1);
   if (lua_istable(L, 2)) {
@@ -238,7 +238,7 @@ int Plugin_newCommand(lua_State* L)
   return 0;
 }
 
-int Plugin_deleteCommand(lua_State* L)
+LUA_FUNCTION(Plugin_deleteCommand)
 {
   std::string id;
 
@@ -262,7 +262,7 @@ int Plugin_deleteCommand(lua_State* L)
   return 0;
 }
 
-int Plugin_newMenuGroup(lua_State* L)
+LUA_FUNCTION(Plugin_newMenuGroup)
 {
   auto plugin = get_obj<Plugin>(L, 1);
   if (lua_istable(L, 2)) {
@@ -308,7 +308,7 @@ int Plugin_newMenuGroup(lua_State* L)
   return 0;
 }
 
-int Plugin_deleteMenuGroup(lua_State* L)
+LUA_FUNCTION(Plugin_deleteMenuGroup)
 {
   std::string id;
 
@@ -331,7 +331,7 @@ int Plugin_deleteMenuGroup(lua_State* L)
   return 0;
 }
 
-int Plugin_newMenuSeparator(lua_State* L)
+LUA_FUNCTION(Plugin_newMenuSeparator)
 {
   auto* plugin = get_obj<Plugin>(L, 1);
   if (lua_istable(L, 2)) {
@@ -355,7 +355,7 @@ int Plugin_newMenuSeparator(lua_State* L)
   return 0;
 }
 
-int Plugin_newFileFormat(lua_State* L)
+LUA_FUNCTION(Plugin_newFileFormat)
 {
   auto* plugin = get_obj<Plugin>(L, 1);
   if (!lua_istable(L, 2))
@@ -437,28 +437,28 @@ int Plugin_newFileFormat(lua_State* L)
   return 0;
 }
 
-int Plugin_get_name(lua_State* L)
+LUA_FUNCTION(Plugin_get_name)
 {
   auto* plugin = get_obj<Plugin>(L, 1);
   lua_pushstring(L, plugin->ext->name().c_str());
   return 1;
 }
 
-int Plugin_get_displayName(lua_State* L)
+LUA_FUNCTION(Plugin_get_displayName)
 {
   auto* plugin = get_obj<Plugin>(L, 1);
   lua_pushstring(L, plugin->ext->displayName().c_str());
   return 1;
 }
 
-int Plugin_get_path(lua_State* L)
+LUA_FUNCTION(Plugin_get_path)
 {
   auto* plugin = get_obj<Plugin>(L, 1);
   lua_pushstring(L, plugin->ext->path().c_str());
   return 1;
 }
 
-int Plugin_get_version(lua_State* L)
+LUA_FUNCTION(Plugin_get_version)
 {
   auto* plugin = get_obj<Plugin>(L, 1);
   const base::Version version(plugin->ext->version());
@@ -466,17 +466,19 @@ int Plugin_get_version(lua_State* L)
   return 1;
 }
 
-int Plugin_get_preferences(lua_State* L)
+LUA_FUNCTION(Plugin_get_preferences)
 {
-  if (!lua_getuservalue(L, 1)) {
+  if (lua_getuservalue(L, 1) == LUA_TNIL) {
+    lua_pop(L, 1); // pops returned nil value
+
     lua_newtable(L);
     lua_pushvalue(L, -1);
-    lua_setuservalue(L, 1);
+    lua_setuservalue(L, 1); // keeps the new uservalue table to return
   }
   return 1;
 }
 
-int Plugin_set_preferences(lua_State* L)
+LUA_FUNCTION(Plugin_set_preferences)
 {
   lua_pushvalue(L, 2);
   lua_setuservalue(L, 1);
@@ -507,10 +509,11 @@ DEF_ITERATOR_PAIRS(Plugin)
 
 DEF_MTNAME(Plugin);
 
-void register_plugin_class(lua_State* L)
+LUA_FUNCTION(register_plugin_class)
 {
   REG_CLASS(L, Plugin);
   REG_CLASS_PROPERTIES(L, Plugin);
+  return 0;
 }
 
 void push_plugin(lua_State* L, Extension* ext)

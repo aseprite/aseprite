@@ -73,7 +73,7 @@ namespace app { namespace script {
 
 namespace {
 
-int Sprite_new(lua_State* L)
+LUA_FUNCTION(Sprite_new)
 {
   std::unique_ptr<Doc> doc;
 
@@ -150,7 +150,7 @@ int Sprite_new(lua_State* L)
   return 1;
 }
 
-int Sprite_eq(lua_State* L)
+LUA_FUNCTION(Sprite_eq)
 {
   const auto a = may_get_docobj<Sprite>(L, 1);
   const auto b = may_get_docobj<Sprite>(L, 2);
@@ -158,7 +158,7 @@ int Sprite_eq(lua_State* L)
   return 1;
 }
 
-int Sprite_resize(lua_State* L)
+LUA_FUNCTION(Sprite_resize)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   gfx::Size size = convert_args_into_size(L, 2);
@@ -184,7 +184,7 @@ int Sprite_resize(lua_State* L)
   return 0;
 }
 
-int Sprite_crop(lua_State* L)
+LUA_FUNCTION(Sprite_crop)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   Doc* doc = static_cast<Doc*>(sprite->document());
@@ -235,7 +235,7 @@ int Sprite_saveAs_base(lua_State* L, std::string& absFn)
   return 1;
 }
 
-int Sprite_saveAs(lua_State* L)
+LUA_FUNCTION(Sprite_saveAs)
 {
   std::string fn;
   int res = Sprite_saveAs_base(L, fn);
@@ -250,13 +250,13 @@ int Sprite_saveAs(lua_State* L)
   return res;
 }
 
-int Sprite_saveCopyAs(lua_State* L)
+LUA_FUNCTION(Sprite_saveCopyAs)
 {
   std::string fn;
   return Sprite_saveAs_base(L, fn);
 }
 
-int Sprite_close(lua_State* L)
+LUA_FUNCTION(Sprite_close)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   Doc* doc = static_cast<Doc*>(sprite->document());
@@ -270,7 +270,7 @@ int Sprite_close(lua_State* L)
   }
 }
 
-int Sprite_loadPalette(lua_State* L)
+LUA_FUNCTION(Sprite_loadPalette)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   const char* fn = luaL_checkstring(L, 2);
@@ -290,7 +290,7 @@ int Sprite_loadPalette(lua_State* L)
   return 0;
 }
 
-int Sprite_setPalette(lua_State* L)
+LUA_FUNCTION(Sprite_setPalette)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   auto pal = get_palette_from_arg(L, 2);
@@ -304,7 +304,7 @@ int Sprite_setPalette(lua_State* L)
   return 0;
 }
 
-int Sprite_assignColorSpace(lua_State* L)
+LUA_FUNCTION(Sprite_assignColorSpace)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   auto cs = get_obj<gfx::ColorSpace>(L, 2);
@@ -314,7 +314,7 @@ int Sprite_assignColorSpace(lua_State* L)
   return 1;
 }
 
-int Sprite_convertColorSpace(lua_State* L)
+LUA_FUNCTION(Sprite_convertColorSpace)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   auto cs = get_obj<gfx::ColorSpace>(L, 2);
@@ -324,7 +324,7 @@ int Sprite_convertColorSpace(lua_State* L)
   return 1;
 }
 
-int Sprite_flatten(lua_State* L)
+LUA_FUNCTION(Sprite_flatten)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
 
@@ -339,7 +339,7 @@ int Sprite_flatten(lua_State* L)
   return 0;
 }
 
-int Sprite_newLayer(lua_State* L)
+LUA_FUNCTION(Sprite_newLayer)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   doc::Layer* newLayer = new doc::LayerImage(sprite);
@@ -352,7 +352,7 @@ int Sprite_newLayer(lua_State* L)
   return 1;
 }
 
-int Sprite_newGroup(lua_State* L)
+LUA_FUNCTION(Sprite_newGroup)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   doc::Layer* newGroup = new doc::LayerGroup(sprite);
@@ -365,7 +365,7 @@ int Sprite_newGroup(lua_State* L)
   return 1;
 }
 
-int Sprite_deleteLayer(lua_State* L)
+LUA_FUNCTION(Sprite_deleteLayer)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   auto layer = may_get_docobj<Layer>(L, 2);
@@ -393,7 +393,7 @@ int Sprite_deleteLayer(lua_State* L)
   }
 }
 
-int Sprite_newFrame(lua_State* L)
+LUA_FUNCTION(Sprite_newFrame)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   doc::frame_t frame = sprite->lastFrame() + 1;
@@ -415,7 +415,7 @@ int Sprite_newFrame(lua_State* L)
   return 1;
 }
 
-int Sprite_newEmptyFrame(lua_State* L)
+LUA_FUNCTION(Sprite_newEmptyFrame)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   doc::frame_t frame = sprite->lastFrame() + 1;
@@ -435,7 +435,7 @@ int Sprite_newEmptyFrame(lua_State* L)
   return 1;
 }
 
-int Sprite_deleteFrame(lua_State* L)
+LUA_FUNCTION(Sprite_deleteFrame)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   doc::frame_t frame = get_frame_number_from_arg(L, 2);
@@ -450,7 +450,7 @@ int Sprite_deleteFrame(lua_State* L)
   return 0;
 }
 
-int Sprite_newCel(lua_State* L)
+LUA_FUNCTION(Sprite_newCel)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   auto layer = get_docobj<Layer>(L, 2);
@@ -511,7 +511,7 @@ int Sprite_newCel(lua_State* L)
   return 1;
 }
 
-int Sprite_deleteCel(lua_State* L)
+LUA_FUNCTION(Sprite_deleteCel)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   auto cel = may_get_docobj<doc::Cel>(L, 2);
@@ -536,7 +536,7 @@ int Sprite_deleteCel(lua_State* L)
   }
 }
 
-int Sprite_newTag(lua_State* L)
+LUA_FUNCTION(Sprite_newTag)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   auto from = get_frame_number_from_arg(L, 2);
@@ -551,7 +551,7 @@ int Sprite_newTag(lua_State* L)
   return 1;
 }
 
-int Sprite_deleteTag(lua_State* L)
+LUA_FUNCTION(Sprite_deleteTag)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   auto tag = may_get_docobj<Tag>(L, 2);
@@ -573,7 +573,7 @@ int Sprite_deleteTag(lua_State* L)
   }
 }
 
-int Sprite_newSlice(lua_State* L)
+LUA_FUNCTION(Sprite_newSlice)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   auto slice = new doc::Slice();
@@ -590,7 +590,7 @@ int Sprite_newSlice(lua_State* L)
   return 1;
 }
 
-int Sprite_deleteSlice(lua_State* L)
+LUA_FUNCTION(Sprite_deleteSlice)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   doc::Slice* slice = may_get_docobj<Slice>(L, 2);
@@ -612,7 +612,7 @@ int Sprite_deleteSlice(lua_State* L)
   }
 }
 
-int Sprite_newTileset(lua_State* L)
+LUA_FUNCTION(Sprite_newTileset)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   Tileset* tileset = nullptr;
@@ -670,7 +670,7 @@ int Sprite_newTileset(lua_State* L)
   return 1;
 }
 
-int Sprite_deleteTileset(lua_State* L)
+LUA_FUNCTION(Sprite_deleteTileset)
 {
   int tsi = -1;
   auto sprite = get_docobj<Sprite>(L, 1);
@@ -709,7 +709,7 @@ int Sprite_deleteTileset(lua_State* L)
   }
 }
 
-int Sprite_newTile(lua_State* L)
+LUA_FUNCTION(Sprite_newTile)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   auto ts = get_docobj<Tileset>(L, 2);
@@ -731,7 +731,7 @@ int Sprite_newTile(lua_State* L)
   return 1;
 }
 
-int Sprite_deleteTile(lua_State* L)
+LUA_FUNCTION(Sprite_deleteTile)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   tile_index ti = 0;
@@ -755,28 +755,28 @@ int Sprite_deleteTile(lua_State* L)
   return 1;
 }
 
-int Sprite_get_events(lua_State* L)
+LUA_FUNCTION(Sprite_get_events)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   push_sprite_events(L, sprite);
   return 1;
 }
 
-int Sprite_get_id(lua_State* L)
+LUA_FUNCTION(Sprite_get_id)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   lua_pushinteger(L, sprite->id());
   return 1;
 }
 
-int Sprite_get_filename(lua_State* L)
+LUA_FUNCTION(Sprite_get_filename)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   lua_pushstring(L, sprite->document()->filename().c_str());
   return 1;
 }
 
-int Sprite_get_isModified(lua_State* L)
+LUA_FUNCTION(Sprite_get_isModified)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   Doc* doc = static_cast<Doc*>(sprite->document());
@@ -784,7 +784,7 @@ int Sprite_get_isModified(lua_State* L)
   return 1;
 }
 
-int Sprite_get_hasAssociatedFile(lua_State* L)
+LUA_FUNCTION(Sprite_get_hasAssociatedFile)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   Doc* doc = static_cast<Doc*>(sprite->document());
@@ -792,28 +792,28 @@ int Sprite_get_hasAssociatedFile(lua_State* L)
   return 1;
 }
 
-int Sprite_get_width(lua_State* L)
+LUA_FUNCTION(Sprite_get_width)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   lua_pushinteger(L, sprite->width());
   return 1;
 }
 
-int Sprite_get_height(lua_State* L)
+LUA_FUNCTION(Sprite_get_height)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   lua_pushinteger(L, sprite->height());
   return 1;
 }
 
-int Sprite_get_colorMode(lua_State* L)
+LUA_FUNCTION(Sprite_get_colorMode)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   lua_pushinteger(L, sprite->pixelFormat());
   return 1;
 }
 
-int Sprite_get_colorSpace(lua_State* L)
+LUA_FUNCTION(Sprite_get_colorSpace)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   auto cs = sprite->colorSpace();
@@ -824,70 +824,70 @@ int Sprite_get_colorSpace(lua_State* L)
   return 1;
 }
 
-int Sprite_get_spec(lua_State* L)
+LUA_FUNCTION(Sprite_get_spec)
 {
   const auto sprite = get_docobj<Sprite>(L, 1);
   push_obj(L, sprite->spec());
   return 1;
 }
 
-int Sprite_get_selection(lua_State* L)
+LUA_FUNCTION(Sprite_get_selection)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   push_sprite_selection(L, sprite);
   return 1;
 }
 
-int Sprite_get_frames(lua_State* L)
+LUA_FUNCTION(Sprite_get_frames)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   push_sprite_frames(L, sprite);
   return 1;
 }
 
-int Sprite_get_palettes(lua_State* L)
+LUA_FUNCTION(Sprite_get_palettes)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   push_sprite_palettes(L, sprite);
   return 1;
 }
 
-int Sprite_get_layers(lua_State* L)
+LUA_FUNCTION(Sprite_get_layers)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   push_sprite_layers(L, sprite);
   return 1;
 }
 
-int Sprite_get_cels(lua_State* L)
+LUA_FUNCTION(Sprite_get_cels)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   push_cels(L, sprite);
   return 1;
 }
 
-int Sprite_get_tags(lua_State* L)
+LUA_FUNCTION(Sprite_get_tags)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   push_sprite_tags(L, sprite);
   return 1;
 }
 
-int Sprite_get_slices(lua_State* L)
+LUA_FUNCTION(Sprite_get_slices)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   push_sprite_slices(L, sprite);
   return 1;
 }
 
-int Sprite_get_tilesets(lua_State* L)
+LUA_FUNCTION(Sprite_get_tilesets)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   push_tilesets(L, sprite->tilesets());
   return 1;
 }
 
-int Sprite_get_backgroundLayer(lua_State* L)
+LUA_FUNCTION(Sprite_get_backgroundLayer)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   doc::Layer* layer = sprite->backgroundLayer();
@@ -898,14 +898,14 @@ int Sprite_get_backgroundLayer(lua_State* L)
   return 1;
 }
 
-int Sprite_get_transparentColor(lua_State* L)
+LUA_FUNCTION(Sprite_get_transparentColor)
 {
   const auto sprite = get_docobj<Sprite>(L, 1);
   lua_pushinteger(L, sprite->transparentColor());
   return 1;
 }
 
-int Sprite_set_transparentColor(lua_State* L)
+LUA_FUNCTION(Sprite_set_transparentColor)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   const int index = lua_tointeger(L, 2);
@@ -915,7 +915,7 @@ int Sprite_set_transparentColor(lua_State* L)
   return 0;
 }
 
-int Sprite_set_filename(lua_State* L)
+LUA_FUNCTION(Sprite_set_filename)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   const char* fn = lua_tostring(L, 2);
@@ -935,7 +935,7 @@ int Sprite_set_filename(lua_State* L)
   return 0;
 }
 
-int Sprite_set_width(lua_State* L)
+LUA_FUNCTION(Sprite_set_width)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   const int width = lua_tointeger(L, 2);
@@ -945,7 +945,7 @@ int Sprite_set_width(lua_State* L)
   return 0;
 }
 
-int Sprite_set_height(lua_State* L)
+LUA_FUNCTION(Sprite_set_height)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   const int height = lua_tointeger(L, 2);
@@ -955,7 +955,7 @@ int Sprite_set_height(lua_State* L)
   return 0;
 }
 
-int Sprite_set_selection(lua_State* L)
+LUA_FUNCTION(Sprite_set_selection)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   const auto mask = get_mask_from_arg(L, 2);
@@ -966,21 +966,21 @@ int Sprite_set_selection(lua_State* L)
   return 0;
 }
 
-int Sprite_get_bounds(lua_State* L)
+LUA_FUNCTION(Sprite_get_bounds)
 {
   const auto sprite = get_docobj<Sprite>(L, 1);
   push_obj<gfx::Rect>(L, sprite->bounds());
   return 1;
 }
 
-int Sprite_get_gridBounds(lua_State* L)
+LUA_FUNCTION(Sprite_get_gridBounds)
 {
   const auto sprite = get_docobj<Sprite>(L, 1);
   push_obj<gfx::Rect>(L, sprite->gridBounds());
   return 1;
 }
 
-int Sprite_set_gridBounds(lua_State* L)
+LUA_FUNCTION(Sprite_set_gridBounds)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   const gfx::Rect bounds = convert_args_into_rect(L, 2);
@@ -990,14 +990,14 @@ int Sprite_set_gridBounds(lua_State* L)
   return 0;
 }
 
-int Sprite_get_pixelRatio(lua_State* L)
+LUA_FUNCTION(Sprite_get_pixelRatio)
 {
   const auto sprite = get_docobj<Sprite>(L, 1);
   push_obj<gfx::Size>(L, sprite->pixelRatio());
   return 1;
 }
 
-int Sprite_set_pixelRatio(lua_State* L)
+LUA_FUNCTION(Sprite_set_pixelRatio)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   gfx::Size pixelRatio = convert_args_into_size(L, 2);
@@ -1013,7 +1013,7 @@ int Sprite_set_pixelRatio(lua_State* L)
   return 0;
 }
 
-int Sprite_get_tileManagementPlugin(lua_State* L)
+LUA_FUNCTION(Sprite_get_tileManagementPlugin)
 {
   const auto sprite = get_docobj<Sprite>(L, 1);
   if (sprite->hasTileManagementPlugin())
@@ -1023,7 +1023,7 @@ int Sprite_get_tileManagementPlugin(lua_State* L)
   return 1;
 }
 
-int Sprite_set_tileManagementPlugin(lua_State* L)
+LUA_FUNCTION(Sprite_set_tileManagementPlugin)
 {
   auto sprite = get_docobj<Sprite>(L, 1);
   std::string value;
@@ -1038,14 +1038,14 @@ int Sprite_set_tileManagementPlugin(lua_State* L)
   return 0;
 }
 
-int Sprite_get_useLayerUuids(lua_State* L)
+LUA_FUNCTION(Sprite_get_useLayerUuids)
 {
   auto* sprite = get_docobj<Sprite>(L, 1);
   lua_pushboolean(L, sprite->useLayerUuids());
   return 1;
 }
 
-int Sprite_set_useLayerUuids(lua_State* L)
+LUA_FUNCTION(Sprite_set_useLayerUuids)
 {
   auto* sprite = get_docobj<Sprite>(L, 1);
   if (lua_isboolean(L, 2)) {
@@ -1055,7 +1055,7 @@ int Sprite_set_useLayerUuids(lua_State* L)
   return 0;
 }
 
-int Sprite_get_undoHistory(lua_State* L)
+LUA_FUNCTION(Sprite_get_undoHistory)
 {
   const auto* sprite = get_docobj<Sprite>(L, 1);
   const auto* doc = static_cast<Doc*>(sprite->document());
@@ -1091,7 +1091,7 @@ int Sprite_get_undoHistory(lua_State* L)
   return 1;
 }
 
-int Sprite_get_isValid(lua_State* L)
+LUA_FUNCTION(Sprite_get_isValid)
 {
   lua_pushboolean(L, may_get_docobj<Sprite>(L, 1) ? true : false);
   return 1;
@@ -1172,12 +1172,13 @@ DEF_ITERATOR_PAIRS(Sprite);
 
 DEF_MTNAME(doc::Sprite);
 
-void register_sprite_class(lua_State* L)
+LUA_FUNCTION(register_sprite_class)
 {
   using doc::Sprite;
   REG_CLASS(L, Sprite);
   REG_CLASS_NEW(L, Sprite);
   REG_CLASS_PROPERTIES(L, Sprite);
+  return 0;
 }
 
 }} // namespace app::script

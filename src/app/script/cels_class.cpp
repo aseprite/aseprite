@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -43,20 +43,20 @@ struct CelsObj {
   CelsObj& operator=(const CelsObj&) = delete;
 };
 
-int Cels_gc(lua_State* L)
+LUA_FUNCTION(Cels_gc)
 {
   get_obj<CelsObj>(L, 1)->~CelsObj();
   return 0;
 }
 
-int Cels_len(lua_State* L)
+LUA_FUNCTION(Cels_len)
 {
   auto obj = get_obj<CelsObj>(L, 1);
   lua_pushinteger(L, obj->cels.size());
   return 1;
 }
 
-int Cels_index(lua_State* L)
+LUA_FUNCTION(Cels_index)
 {
   auto obj = get_obj<CelsObj>(L, 1);
   const int i = lua_tointeger(L, 2);
@@ -78,10 +78,11 @@ const luaL_Reg Cels_methods[] = {
 
 DEF_MTNAME(CelsObj);
 
-void register_cels_class(lua_State* L)
+LUA_FUNCTION(register_cels_class)
 {
   using Cels = CelsObj;
   REG_CLASS(L, Cels);
+  return 0;
 }
 
 void push_cels(lua_State* L, Sprite* sprite)

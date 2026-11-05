@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -29,20 +29,20 @@ struct PalettesObj {
   Sprite* sprite(lua_State* L) { return check_docobj(L, doc::get<Sprite>(spriteId)); }
 };
 
-int Palettes_gc(lua_State* L)
+LUA_FUNCTION(Palettes_gc)
 {
   get_obj<PalettesObj>(L, 1)->~PalettesObj();
   return 0;
 }
 
-int Palettes_len(lua_State* L)
+LUA_FUNCTION(Palettes_len)
 {
   auto obj = get_obj<PalettesObj>(L, 1);
   lua_pushinteger(L, obj->sprite(L)->getPalettes().size());
   return 1;
 }
 
-int Palettes_index(lua_State* L)
+LUA_FUNCTION(Palettes_index)
 {
   auto obj = get_obj<PalettesObj>(L, 1);
   auto sprite = obj->sprite(L);
@@ -65,10 +65,11 @@ const luaL_Reg Palettes_methods[] = {
 
 DEF_MTNAME(PalettesObj);
 
-void register_palettes_class(lua_State* L)
+LUA_FUNCTION(register_palettes_class)
 {
   using Palettes = PalettesObj;
   REG_CLASS(L, Palettes);
+  return 0;
 }
 
 void push_sprite_palettes(lua_State* L, Sprite* sprite)

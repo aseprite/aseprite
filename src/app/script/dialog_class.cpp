@@ -340,7 +340,7 @@ void Dialog_connect_signal(lua_State* L,
   });
 }
 
-int Dialog_new(lua_State* L)
+LUA_FUNCTION(Dialog_new)
 {
   // If we don't have UI, just return nil
   if (!App::instance()->isGui())
@@ -425,7 +425,7 @@ int Dialog_new(lua_State* L)
   return 1;
 }
 
-int Dialog_gc(lua_State* L)
+LUA_FUNCTION(Dialog_gc)
 {
   auto dlg = get_obj<Dialog>(L, 1);
   TRACE_DIALOG("Dialog_gc", dlg);
@@ -434,7 +434,7 @@ int Dialog_gc(lua_State* L)
   return 0;
 }
 
-int Dialog_show(lua_State* L)
+LUA_FUNCTION(Dialog_show)
 {
   auto dlg = get_obj<Dialog>(L, 1);
   dlg->refShow(L);
@@ -536,7 +536,7 @@ private:
 };
 } // namespace
 
-int Dialog_showMenu(lua_State* L)
+LUA_FUNCTION(Dialog_showMenu)
 {
   auto dlg = get_obj<Dialog>(L, 1);
   Menu popup;
@@ -560,7 +560,7 @@ int Dialog_showMenu(lua_State* L)
   return 1;
 }
 
-int Dialog_close(lua_State* L)
+LUA_FUNCTION(Dialog_close)
 {
   auto dlg = get_obj<Dialog>(L, 1);
   dlg->window.closeWindow(nullptr);
@@ -708,7 +708,7 @@ int Dialog_add_widget(lua_State* L, Widget* widget)
   return 1;
 }
 
-int Dialog_newrow(lua_State* L)
+LUA_FUNCTION(Dialog_newrow)
 {
   auto dlg = get_obj<Dialog>(L, 1);
   dlg->hbox = nullptr;
@@ -728,7 +728,7 @@ int Dialog_newrow(lua_State* L)
   return 1;
 }
 
-int Dialog_samerow(lua_State* L)
+LUA_FUNCTION(Dialog_samerow)
 {
   auto dlg = get_obj<Dialog>(L, 1);
 
@@ -745,7 +745,7 @@ int Dialog_samerow(lua_State* L)
   return 1;
 }
 
-int Dialog_separator(lua_State* L)
+LUA_FUNCTION(Dialog_separator)
 {
   auto dlg = get_obj<Dialog>(L, 1);
 
@@ -780,7 +780,7 @@ int Dialog_separator(lua_State* L)
   return Dialog_add_widget(L, widget);
 }
 
-int Dialog_label(lua_State* L)
+LUA_FUNCTION(Dialog_label)
 {
   std::string text;
   if (lua_istable(L, 2)) {
@@ -844,17 +844,17 @@ int Dialog_button_base(lua_State* L, T** outputWidget = nullptr)
   return Dialog_add_widget(L, widget);
 }
 
-int Dialog_button(lua_State* L)
+LUA_FUNCTION(Dialog_button)
 {
   return Dialog_button_base<ui::Button>(L);
 }
 
-int Dialog_check(lua_State* L)
+LUA_FUNCTION(Dialog_check)
 {
   return Dialog_button_base<ui::CheckBox>(L);
 }
 
-int Dialog_radio(lua_State* L)
+LUA_FUNCTION(Dialog_radio)
 {
   ui::RadioButton* radio = nullptr;
   const int res = Dialog_button_base<ui::RadioButton>(L, &radio);
@@ -878,12 +878,12 @@ int Dialog_radio(lua_State* L)
   return res;
 }
 
-int Dialog_menuItem(lua_State* L)
+LUA_FUNCTION(Dialog_menuItem)
 {
   return Dialog_button_base<ui::MenuItem>(L);
 }
 
-int Dialog_entry(lua_State* L)
+LUA_FUNCTION(Dialog_entry)
 {
   std::string text;
   if (lua_istable(L, 2)) {
@@ -919,7 +919,7 @@ int Dialog_entry(lua_State* L)
   return Dialog_add_widget(L, widget);
 }
 
-int Dialog_number(lua_State* L)
+LUA_FUNCTION(Dialog_number)
 {
   auto widget = new ExprEntry;
 
@@ -960,7 +960,7 @@ int Dialog_number(lua_State* L)
   return Dialog_add_widget(L, widget);
 }
 
-int Dialog_slider(lua_State* L)
+LUA_FUNCTION(Dialog_slider)
 {
   int min = 0;
   int max = 100;
@@ -1011,7 +1011,7 @@ int Dialog_slider(lua_State* L)
   return Dialog_add_widget(L, widget);
 }
 
-int Dialog_combobox(lua_State* L)
+LUA_FUNCTION(Dialog_combobox)
 {
   auto widget = new ui::ComboBox;
 
@@ -1053,7 +1053,7 @@ int Dialog_combobox(lua_State* L)
   return Dialog_add_widget(L, widget);
 }
 
-int Dialog_color(lua_State* L)
+LUA_FUNCTION(Dialog_color)
 {
   app::Color color;
   if (lua_istable(L, 2)) {
@@ -1077,7 +1077,7 @@ int Dialog_color(lua_State* L)
   return Dialog_add_widget(L, widget);
 }
 
-int Dialog_shades(lua_State* L)
+LUA_FUNCTION(Dialog_shades)
 {
   Shade colors;
   // 'pick' is the default mode anyway
@@ -1133,7 +1133,7 @@ int Dialog_shades(lua_State* L)
   return Dialog_add_widget(L, widget);
 }
 
-int Dialog_file(lua_State* L)
+LUA_FUNCTION(Dialog_file)
 {
   std::string title = Strings::open_file_title();
   std::string path;
@@ -1235,7 +1235,7 @@ int Dialog_file(lua_State* L)
   return Dialog_add_widget(L, widget);
 }
 
-int Dialog_folder(lua_State* L)
+LUA_FUNCTION(Dialog_folder)
 {
   std::string title = Strings::open_file_title();
   std::string path;
@@ -1373,7 +1373,7 @@ static void fill_touchmessage_values(lua_State* L, const ui::TouchMessage* msg)
   lua_setfield(L, -2, "magnification");
 }
 
-int Dialog_canvas(lua_State* L)
+LUA_FUNCTION(Dialog_canvas)
 {
   auto widget = new Canvas;
 
@@ -1483,7 +1483,7 @@ int Dialog_canvas(lua_State* L)
   return Dialog_add_widget(L, widget);
 }
 
-int Dialog_tab(lua_State* L)
+LUA_FUNCTION(Dialog_tab)
 {
   auto dlg = get_obj<Dialog>(L, 1);
 
@@ -1535,7 +1535,7 @@ int Dialog_tab(lua_State* L)
   return 1;
 }
 
-int Dialog_endtabs(lua_State* L)
+LUA_FUNCTION(Dialog_endtabs)
 {
   auto dlg = get_obj<Dialog>(L, 1);
 
@@ -1592,7 +1592,7 @@ int Dialog_endtabs(lua_State* L)
   return Dialog_add_widget(L, newTab);
 }
 
-int Dialog_modify(lua_State* L)
+LUA_FUNCTION(Dialog_modify)
 {
   auto dlg = get_obj<Dialog>(L, 1);
   if (lua_istable(L, 2)) {
@@ -1876,7 +1876,7 @@ int Dialog_modify(lua_State* L)
   return 1;
 }
 
-int Dialog_repaint(lua_State* L)
+LUA_FUNCTION(Dialog_repaint)
 {
   auto dlg = get_obj<Dialog>(L, 1);
   std::stack<ui::Widget*> widgets;
@@ -1897,7 +1897,7 @@ int Dialog_repaint(lua_State* L)
   return 0;
 }
 
-int Dialog_get_data(lua_State* L)
+LUA_FUNCTION(Dialog_get_data)
 {
   auto dlg = get_obj<Dialog>(L, 1);
   lua_newtable(L);
@@ -1989,7 +1989,7 @@ int Dialog_get_data(lua_State* L)
   return 1;
 }
 
-int Dialog_set_data(lua_State* L)
+LUA_FUNCTION(Dialog_set_data)
 {
   auto dlg = get_obj<Dialog>(L, 1);
   if (!lua_istable(L, 2))
@@ -2087,7 +2087,7 @@ int Dialog_set_data(lua_State* L)
   return 1;
 }
 
-int Dialog_get_bounds(lua_State* L)
+LUA_FUNCTION(Dialog_get_bounds)
 {
   auto dlg = get_obj<Dialog>(L, 1);
   if (!dlg->window.isVisible() && dlg->window.bounds().isEmpty() && dlg->window.isAutoRemap()) {
@@ -2103,28 +2103,28 @@ int Dialog_get_bounds(lua_State* L)
   return 1;
 }
 
-int Dialog_get_sizeHint(lua_State* L)
+LUA_FUNCTION(Dialog_get_sizeHint)
 {
   auto dlg = get_obj<Dialog>(L, 1);
   push_new<gfx::Size>(L, dlg->window.sizeHint());
   return 1;
 }
 
-int Dialog_get_autofit(lua_State* L)
+LUA_FUNCTION(Dialog_get_autofit)
 {
   auto dlg = get_obj<Dialog>(L, 1);
   lua_pushinteger(L, dlg->autofit);
   return 1;
 }
 
-int Dialog_set_autofit(lua_State* L)
+LUA_FUNCTION(Dialog_set_autofit)
 {
   auto dlg = get_obj<Dialog>(L, 1);
   dlg->setAutofit((ui::WidgetAlign)lua_tointeger(L, 2));
   return 0;
 }
 
-int Dialog_set_bounds(lua_State* L)
+LUA_FUNCTION(Dialog_set_bounds)
 {
   auto dlg = get_obj<Dialog>(L, 1);
   const auto rc = get_obj<gfx::Rect>(L, 2);
@@ -2178,11 +2178,12 @@ DEF_ITERATOR_PAIRS(Dialog);
 
 DEF_MTNAME(Dialog);
 
-void register_dialog_class(lua_State* L)
+LUA_FUNCTION(register_dialog_class)
 {
   REG_CLASS(L, Dialog);
   REG_CLASS_NEW(L, Dialog);
   REG_CLASS_PROPERTIES(L, Dialog);
+  return 0;
 }
 
 }} // namespace app::script

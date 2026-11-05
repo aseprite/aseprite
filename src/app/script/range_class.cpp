@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -115,27 +115,27 @@ struct RangeObj { // This is like DocRange but referencing objects with IDs
   }
 };
 
-int Range_gc(lua_State* L)
+LUA_FUNCTION(Range_gc)
 {
   get_obj<RangeObj>(L, 1)->~RangeObj();
   return 0;
 }
 
-int Range_get_sprite(lua_State* L)
+LUA_FUNCTION(Range_get_sprite)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   push_docobj<Sprite>(L, obj->spriteId);
   return 1;
 }
 
-int Range_get_type(lua_State* L)
+LUA_FUNCTION(Range_get_type)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   lua_pushinteger(L, int(obj->type));
   return 1;
 }
 
-int Range_contains(lua_State* L)
+LUA_FUNCTION(Range_contains)
 {
   bool result = false;
   auto obj = get_obj<RangeObj>(L, 1);
@@ -156,7 +156,7 @@ int Range_contains(lua_State* L)
   return 1;
 }
 
-int Range_containsColor(lua_State* L)
+LUA_FUNCTION(Range_containsColor)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   const color_t color = lua_tointeger(L, 2);
@@ -164,7 +164,7 @@ int Range_containsColor(lua_State* L)
   return 1;
 }
 
-int Range_containsTile(lua_State* L)
+LUA_FUNCTION(Range_containsTile)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   const tile_index tile = lua_tointeger(L, 2);
@@ -172,7 +172,7 @@ int Range_containsTile(lua_State* L)
   return 1;
 }
 
-int Range_clear(lua_State* L)
+LUA_FUNCTION(Range_clear)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   auto ctx = App::instance()->context();
@@ -194,14 +194,14 @@ int Range_clear(lua_State* L)
   return 0;
 }
 
-int Range_get_isEmpty(lua_State* L)
+LUA_FUNCTION(Range_get_isEmpty)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   lua_pushboolean(L, obj->type == DocRange::kNone);
   return 1;
 }
 
-int Range_get_layers(lua_State* L)
+LUA_FUNCTION(Range_get_layers)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   ObjectIds layers(obj->layers.size());
@@ -212,14 +212,14 @@ int Range_get_layers(lua_State* L)
   return 1;
 }
 
-int Range_get_frames(lua_State* L)
+LUA_FUNCTION(Range_get_frames)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   push_sprite_frames(L, obj->sprite(L), obj->frames);
   return 1;
 }
 
-int Range_get_cels(lua_State* L)
+LUA_FUNCTION(Range_get_cels)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   ObjectIds cels(obj->cels.size());
@@ -230,7 +230,7 @@ int Range_get_cels(lua_State* L)
   return 1;
 }
 
-int Range_get_images(lua_State* L)
+LUA_FUNCTION(Range_get_images)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   std::set<ObjectId> set;
@@ -247,7 +247,7 @@ int Range_get_images(lua_State* L)
   return 1;
 }
 
-int Range_get_editableImages(lua_State* L)
+LUA_FUNCTION(Range_get_editableImages)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   std::set<ObjectId> set;
@@ -265,7 +265,7 @@ int Range_get_editableImages(lua_State* L)
   return 1;
 }
 
-int Range_get_colors(lua_State* L)
+LUA_FUNCTION(Range_get_colors)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   lua_newtable(L);
@@ -277,7 +277,7 @@ int Range_get_colors(lua_State* L)
   return 1;
 }
 
-int Range_get_tiles(lua_State* L)
+LUA_FUNCTION(Range_get_tiles)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   lua_newtable(L);
@@ -289,7 +289,7 @@ int Range_get_tiles(lua_State* L)
   return 1;
 }
 
-int Range_get_slices(lua_State* L)
+LUA_FUNCTION(Range_get_slices)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   lua_newtable(L);
@@ -301,7 +301,7 @@ int Range_get_slices(lua_State* L)
   return 1;
 }
 
-int Range_set_layers(lua_State* L)
+LUA_FUNCTION(Range_set_layers)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   app::Context* ctx = App::instance()->context();
@@ -323,7 +323,7 @@ int Range_set_layers(lua_State* L)
   return 0;
 }
 
-int Range_set_frames(lua_State* L)
+LUA_FUNCTION(Range_set_frames)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   app::Context* ctx = App::instance()->context();
@@ -345,7 +345,7 @@ int Range_set_frames(lua_State* L)
   return 0;
 }
 
-int Range_set_colors(lua_State* L)
+LUA_FUNCTION(Range_set_colors)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   app::Context* ctx = App::instance()->context();
@@ -366,7 +366,7 @@ int Range_set_colors(lua_State* L)
   return 0;
 }
 
-int Range_set_tiles(lua_State* L)
+LUA_FUNCTION(Range_set_tiles)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   app::Context* ctx = App::instance()->context();
@@ -386,7 +386,7 @@ int Range_set_tiles(lua_State* L)
   return 0;
 }
 
-int Range_set_slices(lua_State* L)
+LUA_FUNCTION(Range_set_slices)
 {
   auto obj = get_obj<RangeObj>(L, 1);
   app::Context* ctx = App::instance()->context();
@@ -434,11 +434,12 @@ DEF_ITERATOR_PAIRS(Range);
 
 DEF_MTNAME(RangeObj);
 
-void register_range_class(lua_State* L)
+LUA_FUNCTION(register_range_class)
 {
   using Range = RangeObj;
   REG_CLASS(L, Range);
   REG_CLASS_PROPERTIES(L, Range);
+  return 0;
 }
 
 void push_doc_range(lua_State* L, Site& site)

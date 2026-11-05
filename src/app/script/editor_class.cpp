@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (c) 2023  Igara Studio S.A.
+// Copyright (c) 2023-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -199,7 +199,7 @@ private:
   std::unique_ptr<AskPoint> m_askPoint;
 };
 
-int Editor_gc(lua_State* L)
+LUA_FUNCTION(Editor_gc)
 {
   auto obj = get_obj<EditorObj>(L, 1);
   obj->gc(L);
@@ -207,7 +207,7 @@ int Editor_gc(lua_State* L)
   return 0;
 }
 
-int Editor_eq(lua_State* L)
+LUA_FUNCTION(Editor_eq)
 {
   auto a = get_obj<EditorObj>(L, 1);
   auto b = get_obj<EditorObj>(L, 2);
@@ -215,7 +215,7 @@ int Editor_eq(lua_State* L)
   return 1;
 }
 
-int Editor_askPoint(lua_State* L)
+LUA_FUNCTION(Editor_askPoint)
 {
   auto obj = get_obj<EditorObj>(L, 1);
   if (!lua_istable(L, 2))
@@ -282,42 +282,42 @@ int Editor_askPoint(lua_State* L)
   return 0;
 }
 
-int Editor_cancel(lua_State* L)
+LUA_FUNCTION(Editor_cancel)
 {
   auto obj = get_obj<EditorObj>(L, 1);
   obj->cancel();
   return 0;
 }
 
-int Editor_get_sprite(lua_State* L)
+LUA_FUNCTION(Editor_get_sprite)
 {
   auto obj = get_obj<EditorObj>(L, 1);
   push_docobj(L, obj->editor()->sprite());
   return 1;
 }
 
-int Editor_get_spritePos(lua_State* L)
+LUA_FUNCTION(Editor_get_spritePos)
 {
   auto obj = get_obj<EditorObj>(L, 1);
   push_obj(L, obj->editor()->screenToEditor(obj->editor()->display()->lastMousePos()));
   return 1;
 }
 
-int Editor_get_mousePos(lua_State* L)
+LUA_FUNCTION(Editor_get_mousePos)
 {
   auto obj = get_obj<EditorObj>(L, 1);
   push_obj(L, obj->editor()->display()->lastMousePos());
   return 1;
 }
 
-int Editor_get_zoom(lua_State* L)
+LUA_FUNCTION(Editor_get_zoom)
 {
   auto obj = get_obj<EditorObj>(L, 1);
   lua_pushnumber(L, obj->editor()->zoom().scale());
   return 1;
 }
 
-int Editor_get_scroll(lua_State* L)
+LUA_FUNCTION(Editor_get_scroll)
 {
   auto obj = get_obj<EditorObj>(L, 1);
   gfx::PointF scroll = obj->editor()->spritePointInCenter();
@@ -330,7 +330,7 @@ int Editor_get_scroll(lua_State* L)
   return 1;
 }
 
-int Editor_set_zoom(lua_State* L)
+LUA_FUNCTION(Editor_set_zoom)
 {
   auto obj = get_obj<EditorObj>(L, 1);
   auto scale = lua_tonumber(L, 2);
@@ -340,7 +340,7 @@ int Editor_set_zoom(lua_State* L)
   return 0;
 }
 
-int Editor_set_scroll(lua_State* L)
+LUA_FUNCTION(Editor_set_scroll)
 {
   auto obj = get_obj<EditorObj>(L, 1);
   gfx::PointF pt;
@@ -395,11 +395,12 @@ DEF_ITERATOR_PAIRS(Editor);
 
 DEF_MTNAME(EditorObj);
 
-void register_editor_class(lua_State* L)
+LUA_FUNCTION(register_editor_class)
 {
   using Editor = EditorObj;
   REG_CLASS(L, Editor);
   REG_CLASS_PROPERTIES(L, Editor);
+  return 0;
 }
 
 void push_editor(lua_State* L, Editor* editor)

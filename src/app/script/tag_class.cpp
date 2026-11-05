@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2023  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -28,7 +28,7 @@ using namespace doc;
 
 namespace {
 
-int Tag_eq(lua_State* L)
+LUA_FUNCTION(Tag_eq)
 {
   const auto a = may_get_docobj<Tag>(L, 1);
   const auto b = may_get_docobj<Tag>(L, 2);
@@ -36,14 +36,14 @@ int Tag_eq(lua_State* L)
   return 1;
 }
 
-int Tag_get_sprite(lua_State* L)
+LUA_FUNCTION(Tag_get_sprite)
 {
   auto tag = get_docobj<Tag>(L, 1);
   push_docobj(L, tag->owner()->sprite());
   return 1;
 }
 
-int Tag_get_fromFrame(lua_State* L)
+LUA_FUNCTION(Tag_get_fromFrame)
 {
   auto tag = get_docobj<Tag>(L, 1);
   if (tag->owner()->sprite())
@@ -53,7 +53,7 @@ int Tag_get_fromFrame(lua_State* L)
   return 1;
 }
 
-int Tag_get_toFrame(lua_State* L)
+LUA_FUNCTION(Tag_get_toFrame)
 {
   auto tag = get_docobj<Tag>(L, 1);
   if (tag->owner()->sprite())
@@ -63,35 +63,35 @@ int Tag_get_toFrame(lua_State* L)
   return 1;
 }
 
-int Tag_get_frames(lua_State* L)
+LUA_FUNCTION(Tag_get_frames)
 {
   auto tag = get_docobj<Tag>(L, 1);
   lua_pushinteger(L, tag->frames());
   return 1;
 }
 
-int Tag_get_name(lua_State* L)
+LUA_FUNCTION(Tag_get_name)
 {
   auto tag = get_docobj<Tag>(L, 1);
   lua_pushstring(L, tag->name().c_str());
   return 1;
 }
 
-int Tag_get_aniDir(lua_State* L)
+LUA_FUNCTION(Tag_get_aniDir)
 {
   auto tag = get_docobj<Tag>(L, 1);
   lua_pushinteger(L, (int)tag->aniDir());
   return 1;
 }
 
-int Tag_get_repeats(lua_State* L)
+LUA_FUNCTION(Tag_get_repeats)
 {
   auto tag = get_docobj<Tag>(L, 1);
   lua_pushinteger(L, (int)tag->repeat());
   return 1;
 }
 
-int Tag_set_fromFrame(lua_State* L)
+LUA_FUNCTION(Tag_set_fromFrame)
 {
   auto tag = get_docobj<Tag>(L, 1);
   const auto fromFrame = get_frame_number_from_arg(L, 2);
@@ -101,7 +101,7 @@ int Tag_set_fromFrame(lua_State* L)
   return 0;
 }
 
-int Tag_set_toFrame(lua_State* L)
+LUA_FUNCTION(Tag_set_toFrame)
 {
   auto tag = get_docobj<Tag>(L, 1);
   const auto toFrame = get_frame_number_from_arg(L, 2);
@@ -111,7 +111,7 @@ int Tag_set_toFrame(lua_State* L)
   return 0;
 }
 
-int Tag_set_name(lua_State* L)
+LUA_FUNCTION(Tag_set_name)
 {
   auto tag = get_docobj<Tag>(L, 1);
   const char* name = lua_tostring(L, 2);
@@ -123,7 +123,7 @@ int Tag_set_name(lua_State* L)
   return 0;
 }
 
-int Tag_set_aniDir(lua_State* L)
+LUA_FUNCTION(Tag_set_aniDir)
 {
   auto tag = get_docobj<Tag>(L, 1);
   const int aniDir = lua_tointeger(L, 2);
@@ -133,7 +133,7 @@ int Tag_set_aniDir(lua_State* L)
   return 0;
 }
 
-int Tag_set_repeats(lua_State* L)
+LUA_FUNCTION(Tag_set_repeats)
 {
   auto tag = get_docobj<Tag>(L, 1);
   const int repeat = lua_tointeger(L, 2);
@@ -166,11 +166,12 @@ DEF_ITERATOR_PAIRS(Tag);
 
 DEF_MTNAME(Tag);
 
-void register_tag_class(lua_State* L)
+LUA_FUNCTION(register_tag_class)
 {
   using Tag = doc::Tag;
   REG_CLASS(L, Tag);
   REG_CLASS_PROPERTIES(L, Tag);
+  return 0;
 }
 
 }} // namespace app::script

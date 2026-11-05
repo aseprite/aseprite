@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -16,21 +16,21 @@ namespace app { namespace script {
 
 namespace {
 
-int Window_get_width(lua_State* L)
+LUA_FUNCTION(Window_get_width)
 {
   auto window = get_ptr<ui::Window>(L, 1);
   lua_pushinteger(L, window->bounds().w);
   return 1;
 }
 
-int Window_get_height(lua_State* L)
+LUA_FUNCTION(Window_get_height)
 {
   auto window = get_ptr<ui::Window>(L, 1);
   lua_pushinteger(L, window->bounds().h);
   return 1;
 }
 
-int Window_get_events(lua_State* L)
+LUA_FUNCTION(Window_get_events)
 {
   auto window = get_ptr<ui::Window>(L, 1);
   push_window_events(L, window);
@@ -52,11 +52,12 @@ DEF_ITERATOR_PAIRS(Window);
 
 DEF_MTNAME(ui::Window);
 
-void register_window_class(lua_State* L)
+LUA_FUNCTION(register_window_class)
 {
   using ui::Window;
   REG_CLASS(L, Window);
   REG_CLASS_PROPERTIES(L, Window);
+  return 0;
 }
 
 }} // namespace app::script

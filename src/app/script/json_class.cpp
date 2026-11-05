@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -110,20 +110,21 @@ json get_json_value(lua_State* L, int index)
   return json();
 }
 
-int JsonObj_gc(lua_State* L)
+LUA_FUNCTION(JsonObj_gc)
 {
   get_obj<JsonObj>(L, 1)->~JsonObj();
   return 0;
 }
 
-int JsonObj_eq(lua_State* L)
+LUA_FUNCTION(JsonObj_eq)
 {
   auto a = get_obj<JsonObj>(L, 1);
   auto b = get_obj<JsonObj>(L, 2);
-  return (a->get() == b->get());
+  lua_pushboolean(L, a->get() == b->get());
+  return 1;
 }
 
-int JsonObj_len(lua_State* L)
+LUA_FUNCTION(JsonObj_len)
 {
   auto obj = get_obj<JsonObj>(L, 1);
   auto& value = obj->get();
@@ -138,7 +139,7 @@ int JsonObj_len(lua_State* L)
   return 1;
 }
 
-int JsonObj_index(lua_State* L)
+LUA_FUNCTION(JsonObj_index)
 {
   auto obj = get_obj<JsonObj>(L, 1);
   auto& value = obj->get();
@@ -158,7 +159,7 @@ int JsonObj_index(lua_State* L)
   return 0;
 }
 
-int JsonObj_newindex(lua_State* L)
+LUA_FUNCTION(JsonObj_newindex)
 {
   auto obj = get_obj<JsonObj>(L, 1);
   auto& value = obj->get();
@@ -179,7 +180,7 @@ int JsonObj_newindex(lua_State* L)
   return 0;
 }
 
-int JsonObj_pairs_next(lua_State* L)
+LUA_FUNCTION(JsonObj_pairs_next)
 {
   auto& itObj = *get_obj<JsonIterator>(L, lua_upvalueindex(1));
   auto& j = itObj.parent.get();
@@ -192,7 +193,7 @@ int JsonObj_pairs_next(lua_State* L)
   return 2;
 }
 
-int JsonObj_ipairs_next(lua_State* L)
+LUA_FUNCTION(JsonObj_ipairs_next)
 {
   auto& itObj = *get_obj<JsonIterator>(L, lua_upvalueindex(1));
   auto& j = itObj.parent.get();
@@ -206,7 +207,7 @@ int JsonObj_ipairs_next(lua_State* L)
   return 2;
 }
 
-int JsonObj_pairs(lua_State* L)
+LUA_FUNCTION(JsonObj_pairs)
 {
   auto obj = get_obj<JsonObj>(L, 1);
   auto& value = obj->get();
@@ -225,20 +226,20 @@ int JsonObj_pairs(lua_State* L)
   return 0;
 }
 
-int JsonObj_tostring(lua_State* L)
+LUA_FUNCTION(JsonObj_tostring)
 {
   auto obj = get_obj<JsonObj>(L, 1);
   lua_pushstring(L, obj->get().dump().c_str());
   return 1;
 }
 
-int JsonIterator_gc(lua_State* L)
+LUA_FUNCTION(JsonIterator_gc)
 {
   get_obj<JsonIterator>(L, 1)->~JsonIterator();
   return 0;
 }
 
-int Json_decode(lua_State* L)
+LUA_FUNCTION(Json_decode)
 {
   if (const char* s = lua_tostring(L, 1)) {
     try {
@@ -253,7 +254,7 @@ int Json_decode(lua_State* L)
   return 0;
 }
 
-int Json_encode(lua_State* L)
+LUA_FUNCTION(Json_encode)
 {
   // Encode a JsonObj, we deep copy it (create a deep copy)
   if (auto obj = may_get_obj<JsonObj>(L, 1)) {
@@ -296,7 +297,7 @@ DEF_MTNAME(Json);
 DEF_MTNAME(JsonObj);
 DEF_MTNAME(JsonIterator);
 
-void register_json_object(lua_State* L)
+LUA_FUNCTION(register_json_object)
 {
   REG_CLASS(L, JsonObj);
   REG_CLASS(L, JsonIterator);
@@ -308,6 +309,8 @@ void register_json_object(lua_State* L)
   lua_setmetatable(L, -2);
   lua_setglobal(L, "json");
   lua_pop(L, 1); // Pop json table
+
+  return 0;
 }
 
 }} // namespace app::script

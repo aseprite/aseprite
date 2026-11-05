@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2021  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -29,20 +29,20 @@ struct ImagesObj {
   ImagesObj& operator=(const ImagesObj&) = delete;
 };
 
-int Images_gc(lua_State* L)
+LUA_FUNCTION(Images_gc)
 {
   get_obj<ImagesObj>(L, 1)->~ImagesObj();
   return 0;
 }
 
-int Images_len(lua_State* L)
+LUA_FUNCTION(Images_len)
 {
   auto obj = get_obj<ImagesObj>(L, 1);
   lua_pushinteger(L, obj->cels.size());
   return 1;
 }
 
-int Images_index(lua_State* L)
+LUA_FUNCTION(Images_index)
 {
   auto obj = get_obj<ImagesObj>(L, 1);
   const int i = lua_tointeger(L, 2);
@@ -67,10 +67,11 @@ const luaL_Reg Images_methods[] = {
 
 DEF_MTNAME(ImagesObj);
 
-void register_images_class(lua_State* L)
+LUA_FUNCTION(register_images_class)
 {
   using Images = ImagesObj;
   REG_CLASS(L, Images);
+  return 0;
 }
 
 void push_cel_images(lua_State* L, const ObjectIds& cels)

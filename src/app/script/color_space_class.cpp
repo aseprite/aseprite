@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -17,7 +17,7 @@ namespace app { namespace script {
 
 namespace {
 
-int ColorSpace_new(lua_State* L)
+LUA_FUNCTION(ColorSpace_new)
 {
   // Copy color space
   if (auto cs2 = may_get_obj<gfx::ColorSpace>(L, 1)) {
@@ -40,24 +40,21 @@ int ColorSpace_new(lua_State* L)
 
     // Create sRGB profile with ColorSpace{ sRGB }
     if (lua_is_key_true(L, 1, "sRGB")) {
-      lua_pop(L, 1);
       push_new<gfx::ColorSpace>(L, *gfx::ColorSpace::MakeSRGB());
       return 1;
     }
-    else
-      lua_pop(L, 1);
   }
   push_new<gfx::ColorSpace>(L, *gfx::ColorSpace::MakeNone());
   return 1;
 }
 
-int ColorSpace_gc(lua_State* L)
+LUA_FUNCTION(ColorSpace_gc)
 {
   get_obj<gfx::ColorSpace>(L, 1)->~ColorSpace();
   return 0;
 }
 
-int ColorSpace_eq(lua_State* L)
+LUA_FUNCTION(ColorSpace_eq)
 {
   const auto a = get_obj<gfx::ColorSpace>(L, 1);
   const auto b = get_obj<gfx::ColorSpace>(L, 2);
@@ -65,14 +62,14 @@ int ColorSpace_eq(lua_State* L)
   return 1;
 }
 
-int ColorSpace_get_name(lua_State* L)
+LUA_FUNCTION(ColorSpace_get_name)
 {
   const auto cs = get_obj<gfx::ColorSpace>(L, 1);
   lua_pushstring(L, cs->name().c_str());
   return 1;
 }
 
-int ColorSpace_set_name(lua_State* L)
+LUA_FUNCTION(ColorSpace_set_name)
 {
   auto cs = get_obj<gfx::ColorSpace>(L, 1);
   if (auto name = lua_tostring(L, 2))
@@ -95,12 +92,13 @@ DEF_ITERATOR_PAIRS(ColorSpace);
 
 DEF_MTNAME(gfx::ColorSpace);
 
-void register_color_space_class(lua_State* L)
+LUA_FUNCTION(register_color_space_class)
 {
   using ColorSpace = gfx::ColorSpace;
   REG_CLASS(L, ColorSpace);
   REG_CLASS_NEW(L, ColorSpace);
   REG_CLASS_PROPERTIES(L, ColorSpace);
+  return 0;
 }
 
 void push_color_space(lua_State* L, const gfx::ColorSpace& cs)

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2024  Igara Studio S.A.
+// Copyright (C) 2021-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -464,7 +464,7 @@ void SpriteEvents::disconnectFromUndoHistory(Doc* doc)
   }
 }
 
-int Events_on(lua_State* L)
+LUA_FUNCTION(Events_on)
 {
   auto* evs = get_ptr<Events>(L, 1);
   const char* eventName = lua_tostring(L, 2);
@@ -489,7 +489,7 @@ int Events_on(lua_State* L)
   return 1;
 }
 
-int Events_off(lua_State* L)
+LUA_FUNCTION(Events_off)
 {
   auto* evs = get_ptr<Events>(L, 1);
   int callbackRef = LUA_REFNIL;
@@ -540,14 +540,16 @@ const luaL_Reg Events_methods[] = {
 
 DEF_MTNAME(Events);
 
-void register_events_class(lua_State* L)
+LUA_FUNCTION(register_events_class)
 {
   REG_CLASS(L, Events);
+  return 0;
 }
 
-void push_app_events(lua_State* L)
+LUA_FUNCTION(push_app_events)
 {
   push_ptr<Events>(L, get_engine(L)->appEvents());
+  return 1;
 }
 
 void push_sprite_events(lua_State* L, Sprite* sprite)
