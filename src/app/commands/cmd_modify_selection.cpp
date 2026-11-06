@@ -18,6 +18,7 @@
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/tx.h"
+#include "base/trim_string.h"
 #include "doc/algorithm/modify_selection.h"
 #include "doc/brush_type.h"
 #include "doc/mask.h"
@@ -154,7 +155,10 @@ std::string ModifySelectionCommand::onGetFriendlyName() const
   if (m_quantity > 0)
     quantity = Strings::commands_ModifySelection_Quantity(m_quantity);
 
-  return Strings::commands_ModifySelection(getActionName(), quantity);
+  auto name = Strings::commands_ModifySelection(getActionName(), quantity);
+  // Avoid trailing spaces on selection modifiers without a quantity.
+  base::trim_string(name, name);
+  return name;
 }
 
 std::string ModifySelectionCommand::getActionName() const
