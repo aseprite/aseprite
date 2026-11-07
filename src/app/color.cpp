@@ -12,6 +12,7 @@
 #include "app/color.h"
 
 #include "app/color_utils.h"
+#include "app/i18n/strings.h"
 #include "app/modules/palettes.h"
 #include "base/debug.h"
 #include "doc/image.h"
@@ -218,63 +219,72 @@ std::string Color::toHumanReadableString(PixelFormat pixelFormat,
 
   if (humanReadable == LongHumanReadableString) {
     switch (getType()) {
-      case Color::MaskType: result << "Mask"; break;
+      case Color::MaskType: result << Strings::color_format_mask(); break;
 
       case Color::RgbType:
         if (pixelFormat == IMAGE_GRAYSCALE) {
-          result << "Gray " << getGray();
+          result << Strings::color_format_long_gray(getGray());
         }
         else {
-          result << "RGB " << m_value.rgb.r << " " << m_value.rgb.g << " " << m_value.rgb.b;
+          result << Strings::color_format_rgb(m_value.rgb.r, m_value.rgb.g, m_value.rgb.b);
 
           if (pixelFormat == IMAGE_INDEXED)
-            result << " Index " << color_utils::color_for_image(*this, IMAGE_INDEXED);
+            result << ' '
+                   << Strings::color_format_long_index(
+                        color_utils::color_for_image(*this, IMAGE_INDEXED));
         }
         break;
 
       case Color::HsvType:
         if (pixelFormat == IMAGE_GRAYSCALE) {
-          result << "Gray " << getGray();
+          result << Strings::color_format_long_gray(getGray());
         }
         else {
-          result << "HSV " << int(m_value.hsv.h) << "\xc2\xb0 "
-                 << std::clamp(int(m_value.hsv.s * 100.0), 0, 100) << "% "
-                 << std::clamp(int(m_value.hsv.v * 100.0), 0, 100) << "%";
+          result << Strings::color_format_long_hsv(int(m_value.hsv.h),
+                                                   std::clamp(int(m_value.hsv.s * 100.0), 0, 100),
+                                                   std::clamp(int(m_value.hsv.v * 100.0), 0, 100));
 
           if (pixelFormat == IMAGE_INDEXED)
-            result << " Index " << color_utils::color_for_image(*this, IMAGE_INDEXED);
+            result << ' '
+                   << Strings::color_format_long_index(
+                        color_utils::color_for_image(*this, IMAGE_INDEXED));
 
-          result << " (RGB " << getRed() << " " << getGreen() << " " << getBlue() << ")";
+          result << " (" << Strings::color_format_rgb(getRed(), getGreen(), getBlue()) << ')';
         }
         break;
 
       case Color::HslType:
         if (pixelFormat == IMAGE_GRAYSCALE) {
-          result << "Gray " << getGray();
+          result << Strings::color_format_long_gray(getGray());
         }
         else {
-          result << "HSL " << int(m_value.hsl.h) << "\xc2\xb0 "
-                 << std::clamp(int(m_value.hsl.s * 100.0), 0, 100) << "% "
-                 << std::clamp(int(m_value.hsl.l * 100.0), 0, 100) << "%";
+          result << Strings::color_format_long_hsl(int(m_value.hsl.h),
+                                                   std::clamp(int(m_value.hsl.s * 100.0), 0, 100),
+                                                   std::clamp(int(m_value.hsl.l * 100.0), 0, 100));
 
           if (pixelFormat == IMAGE_INDEXED)
-            result << " Index " << color_utils::color_for_image(*this, IMAGE_INDEXED);
+            result << ' '
+                   << Strings::color_format_long_index(
+                        color_utils::color_for_image(*this, IMAGE_INDEXED));
 
-          result << " (RGB " << getRed() << " " << getGreen() << " " << getBlue() << ")";
+          result << " (" << Strings::color_format_rgb(getRed(), getGreen(), getBlue()) << ')';
         }
         break;
 
-      case Color::GrayType:  result << "Gray " << m_value.gray.g; break;
+      case Color::GrayType:  result << Strings::color_format_long_gray(m_value.gray.g); break;
 
       case Color::IndexType: {
         int i = m_value.index;
         if (i >= 0 && i < (int)get_current_palette()->size()) {
           uint32_t _c = get_current_palette()->getEntry(i);
-          result << "Index " << i << " (RGB " << (int)rgba_getr(_c) << " " << (int)rgba_getg(_c)
-                 << " " << (int)rgba_getb(_c) << ")";
+          result
+            << Strings::color_format_long_index(i) << " ("
+            << Strings::color_format_rgb((int)rgba_getr(_c), (int)rgba_getg(_c), (int)rgba_getb(_c))
+            << ')';
         }
         else {
-          result << "Index " << i << " (out of range)";
+          result << Strings::color_format_long_index(i) << ' '
+                 << Strings::color_format_out_of_range();
         }
         break;
       }
@@ -287,11 +297,11 @@ std::string Color::toHumanReadableString(PixelFormat pixelFormat,
   }
   else if (humanReadable == ShortHumanReadableString) {
     switch (getType()) {
-      case Color::MaskType: result << "Mask"; break;
+      case Color::MaskType: result << Strings::color_format_mask(); break;
 
       case Color::RgbType:
         if (pixelFormat == IMAGE_GRAYSCALE) {
-          result << "Gry-" << getGray();
+          result << Strings::color_format_short_gray(getGray());
         }
         else {
           result << "#" << std::hex << std::setfill('0') << std::setw(2) << m_value.rgb.r
@@ -301,29 +311,29 @@ std::string Color::toHumanReadableString(PixelFormat pixelFormat,
 
       case Color::HsvType:
         if (pixelFormat == IMAGE_GRAYSCALE) {
-          result << "Gry-" << getGray();
+          result << Strings::color_format_short_gray(getGray());
         }
         else {
-          result << int(m_value.hsv.h) << "\xc2\xb0"
-                 << std::clamp(int(m_value.hsv.s * 100.0), 0, 100) << ","
-                 << std::clamp(int(m_value.hsv.v * 100.0), 0, 100);
+          result << Strings::color_format_short_hsv(int(m_value.hsv.h),
+                                                    std::clamp(int(m_value.hsv.s * 100.0), 0, 100),
+                                                    std::clamp(int(m_value.hsv.v * 100.0), 0, 100));
         }
         break;
 
       case Color::HslType:
         if (pixelFormat == IMAGE_GRAYSCALE) {
-          result << "Gry-" << getGray();
+          result << Strings::color_format_short_gray(getGray());
         }
         else {
-          result << int(m_value.hsl.h) << "\xc2\xb0"
-                 << std::clamp(int(m_value.hsl.s * 100.0), 0, 100) << ","
-                 << std::clamp(int(m_value.hsl.l * 100.0), 0, 100);
+          result << Strings::color_format_short_hsl(int(m_value.hsl.h),
+                                                    std::clamp(int(m_value.hsl.s * 100.0), 0, 100),
+                                                    std::clamp(int(m_value.hsl.l * 100.0), 0, 100));
         }
         break;
 
-      case Color::GrayType:  result << "Gry-" << m_value.gray.g; break;
+      case Color::GrayType:  result << Strings::color_format_short_gray(m_value.gray.g); break;
 
-      case Color::IndexType: result << "Idx-" << m_value.index; break;
+      case Color::IndexType: result << Strings::color_format_short_index(m_value.index); break;
 
       default:               ASSERT(false); break;
     }
