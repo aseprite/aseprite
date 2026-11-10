@@ -31,7 +31,8 @@ enum class SymmetryIndex {
   ROT_FLIP_90 = 5,
   ROTATED_90 = 6,
   ROT_FLIP_270 = 7,
-  ELEMENTS = 8
+  ROTATED_180 = 8,
+  ELEMENTS = 9
 };
 
 class Brush;
