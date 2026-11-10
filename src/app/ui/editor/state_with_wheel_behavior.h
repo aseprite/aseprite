@@ -81,8 +81,6 @@ protected:
   tools::Tool* getActiveTool() const;
 
 private:
-  void setZoom(Editor* editor, const render::Zoom& zoom, const gfx::Point& mousePos);
-
   mutable doc::LayerList m_browsableLayers;
   tools::Tool* m_tool = nullptr;
 };
