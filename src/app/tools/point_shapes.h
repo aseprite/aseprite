@@ -148,7 +148,9 @@ public:
     Brush* brush = loop->getBrush();
 
     // Dynamics
-    if (m_useDynamics) {
+    if (m_useDynamics &&
+        // Do not apply dynamics to Contour Tool
+        !loop->getFilled()) {
       // Dynamic gradient info
       if (m_hasDynamicGradient && m_dynamics.ditheringMatrix.rows() == 1 &&
           m_dynamics.ditheringMatrix.cols() == 1) {
