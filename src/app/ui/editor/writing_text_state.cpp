@@ -830,7 +830,7 @@ void WritingTextState::drop()
 
 WritingTextState::Hit WritingTextState::calcHit(Editor* editor, const gfx::Point& mouseScreenPos)
 {
-  auto edges = editor->editorToScreen(m_bounds);
+  auto edges = editor->editorToScreen(m_bounds, EditorCoord::OnScreen);
   if (edges.contains(mouseScreenPos))
     return Hit::Inside;
   if (edges.enlarge(32 * guiscale()).contains(mouseScreenPos))

@@ -451,17 +451,18 @@ void BrushPreview::show(const gfx::Point& screenPos)
         gfx::Rect layerBounds = m_uiLayer->surface()->bounds();
 
         if (m_type & SELECTION_CROSSHAIR) {
-          layerBounds.setOrigin(m_editor->editorToScreen(spritePos) -
+          layerBounds.setOrigin(m_editor->editorToScreen(spritePos, EditorCoord::OnScreen) -
                                 gfx::Point(layerBounds.size() / 2) +
                                 gfx::Point(proj.applyX(1) / 2, proj.applyY(1) / 2));
         }
         else if (m_type & BRUSH_BOUNDARIES) {
           if (tilemapMode == TilemapMode::Tiles) {
             layerBounds.setOrigin(
-              m_editor->editorToScreen(grid.tileToCanvas(grid.canvasToTile(spritePos))));
+              m_editor->editorToScreen(grid.tileToCanvas(grid.canvasToTile(spritePos)),
+                                       EditorCoord::OnScreen));
           }
           else {
-            layerBounds.setOrigin(m_editor->editorToScreen(spritePos) -
+            layerBounds.setOrigin(m_editor->editorToScreen(spritePos, EditorCoord::OnScreen) -
                                   gfx::Point(layerBounds.w / 2 - proj.applyX(layerBounds.w % 2),
                                              layerBounds.h / 2 - proj.applyY(layerBounds.h % 2)));
           }
