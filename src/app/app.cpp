@@ -278,8 +278,11 @@ int App::initialize(const AppOptions& options)
   system->setAppName(get_app_name());
   system->setAppMode(m_isGui ? os::AppMode::GUI : os::AppMode::CLI);
 
-  if (m_isGui)
+  if (m_isGui) {
     m_uiSystem.reset(new ui::UISystem);
+
+    ui::set_wheel_speed_factor(pref.editor.wheelScrollSpeed() / 100.0);
+  }
 
   bool createLogInDesktop = false;
   switch (options.verboseLevel()) {
