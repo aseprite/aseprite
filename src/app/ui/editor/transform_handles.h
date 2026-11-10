@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2022  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/transformation.h"
+#include "app/ui/editor/editor_coord.h"
 #include "app/ui/editor/handle_type.h"
 #include "gfx/point.h"
 
@@ -38,15 +39,18 @@ public:
 private:
   gfx::Rect getPivotHandleBounds(Editor* editor,
                                  const Transformation& transform,
-                                 const Transformation::Corners& corners);
+                                 const Transformation::Corners& corners,
+                                 EditorCoord coord);
 
-  bool inHandle(const gfx::Point& pt, int x, int y, int gfx_w, int gfx_h, double angle);
+  bool
+  inHandle(Editor* editor, const gfx::Point& pt, int x, int y, int gfx_w, int gfx_h, double angle);
   void drawHandle(Editor* editor, ui::Graphics* g, int x, int y, double angle);
-  void adjustHandle(int& x, int& y, int handle_w, int handle_h, double angle);
+  void adjustHandle(Editor* editor, int& x, int& y, int handle_w, int handle_h, double angle);
   bool visiblePivot(double angle) const;
   void getScreenPoints(Editor* editor,
                        const Transformation::Corners& corners,
-                       std::vector<gfx::Point>& screenPoints) const;
+                       std::vector<gfx::Point>& screenPoints,
+                       EditorCoord coord) const;
 };
 
 } // namespace app

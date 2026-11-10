@@ -18,6 +18,7 @@
 #include "app/tools/tool_loop_modifiers.h"
 #include "app/ui/color_source.h"
 #include "app/ui/editor/brush_preview.h"
+#include "app/ui/editor/editor_coord.h"
 #include "app/ui/editor/editor_hit.h"
 #include "app/ui/editor/editor_observers.h"
 #include "app/ui/editor/editor_state.h"
@@ -175,19 +176,15 @@ public:
   // Convert ui::Display coordinates (pixel relative to the top-left
   // corner of the in the display content bounds) from/to
   // editor/sprite coordinates (pixel in the canvas).
-
-  enum class ToScreen : uint8_t {
-    Paint, // Without applying the ui::Graphics transformation (so the coordinate will be painted)
-    Final  // Applying the ui::Graphics transformation (so the coordinate is used as mouse/screen)
-  };
-
-  gfx::Point screenToEditor(const gfx::Point& pt) const;
-  gfx::PointF screenToEditorF(const gfx::Point& pt) const;
-  gfx::Point editorToScreen(const gfx::Point& pt, ToScreen to = ToScreen::Final) const;
-  gfx::PointF editorToScreenF(const gfx::PointF& pt, ToScreen to = ToScreen::Final) const;
-  gfx::Rect screenToEditor(const gfx::Rect& rc) const;
-  gfx::Rect editorToScreen(const gfx::Rect& rc, ToScreen to = ToScreen::Final) const;
-  gfx::RectF editorToScreenF(const gfx::RectF& rc, ToScreen to = ToScreen::Final) const;
+  gfx::Point screenToEditor(const gfx::Point& pt, EditorCoord coord = EditorCoord::OnScreen) const;
+  gfx::PointF screenToEditorF(const gfx::Point& pt,
+                              EditorCoord coord = EditorCoord::OnScreen) const;
+  gfx::Point editorToScreen(const gfx::Point& pt, EditorCoord coord = EditorCoord::OnScreen) const;
+  gfx::PointF editorToScreenF(const gfx::PointF& pt,
+                              EditorCoord coord = EditorCoord::OnScreen) const;
+  gfx::Rect screenToEditor(const gfx::Rect& rc, EditorCoord coord = EditorCoord::OnScreen) const;
+  gfx::Rect editorToScreen(const gfx::Rect& rc, EditorCoord coord = EditorCoord::OnScreen) const;
+  gfx::RectF editorToScreenF(const gfx::RectF& rc, EditorCoord coord = EditorCoord::OnScreen) const;
 
   void add_observer(EditorObserver* observer);
   void remove_observer(EditorObserver* observer);

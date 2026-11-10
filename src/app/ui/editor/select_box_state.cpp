@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2023  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -630,7 +630,8 @@ int SelectBoxState::hitTestRulers(Editor* editor,
 
   // Check moving all rulers at the same time
   if (align == 0 && !hasFlag(Flags::QuickBox)) {
-    if (editor->editorToScreen(getBoxBounds().offset(editor->mainTilePosition()))
+    if (editor
+          ->editorToScreen(getBoxBounds().offset(editor->mainTilePosition()), EditorCoord::OnScreen)
           .contains(mousePos)) {
       align = LEFT | TOP | RIGHT | BOTTOM;
       if (updateMovingRulers) {
@@ -650,7 +651,8 @@ int SelectBoxState::hitTestRuler(Editor* editor,
                                  const gfx::Point& mousePos)
 {
   gfx::Point pt = editor->mainTilePosition();
-  pt = editor->editorToScreen(pt + gfx::Point(ruler.position(), ruler.position()));
+  pt = editor->editorToScreen(pt + gfx::Point(ruler.position(), ruler.position()),
+                              EditorCoord::OnScreen);
 
   switch (ruler.align() & (HORIZONTAL | VERTICAL)) {
     case HORIZONTAL:
