@@ -48,6 +48,12 @@ struct FileOpConfig {
   // blend mode and opacity fields are valid for groups too.
   bool composeGroups = false;
 
+  // True if the save process first writes to a temporary file
+  // and then renames it to replace the original file.
+  // This method should be much safer than overwriting the
+  // original file directly.
+  bool safeSave = false;
+
   void fillFromPreferences();
 };
 
