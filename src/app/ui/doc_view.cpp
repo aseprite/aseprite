@@ -148,6 +148,11 @@ public:
     return KeyboardShortcuts::instance()->getCurrentActionModifiers(context);
   }
 
+  bool isSelectionModifiersPressed() override
+  {
+    return KeyboardShortcuts::instance()->isSelectionModifiersPressed();
+  }
+
   TagProvider* getTagProvider() override { return App::instance()->mainWindow()->getTimeline(); }
 
 protected:
@@ -227,6 +232,8 @@ public:
   }
 
   KeyAction getPressedKeyAction(KeyContext context) override { return KeyAction::None; }
+
+  bool isSelectionModifiersPressed() override { return false; }
 
   TagProvider* getTagProvider() override { return App::instance()->mainWindow()->getTimeline(); }
 };

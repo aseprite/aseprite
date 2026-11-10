@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2025  Igara Studio S.A.
+// Copyright (C) 2025-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -33,6 +33,10 @@ public:
 
   // Returns what action is pressed at this moment.
   virtual KeyAction getPressedKeyAction(KeyContext context) = 0;
+
+  // Returns true if the pressed keys exactly match a selection
+  // modifier combination or quick copy selection modifier.
+  virtual bool isSelectionModifiersPressed() = 0;
 
   // Returns the provider of active frame tag (it's the timeline).
   virtual TagProvider* getTagProvider() = 0;
