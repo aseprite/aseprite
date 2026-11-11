@@ -29,6 +29,7 @@
 #include "gfx/rect.h"
 #include "os/surface.h"
 #include "os/system.h"
+#include "ui/graphics.h"
 #include "ui/intern.h"
 #include "ui/paint.h"
 #include "ui/system.h"
@@ -255,10 +256,9 @@ void draw_tile(ui::Graphics* g, const Rect& rc, const Site& site, doc::tile_t ti
   m.postConcat(gfx::Matrix::MakeTrans(rc.x, rc.y));
   m.postConcat(g->matrix());
 
-  g->save();
+  ui::SaveGraphics save(g);
   g->setMatrix(m);
   g->drawRgbaSurface(surface.get(), 0, 0);
-  g->restore();
 }
 
 void draw_tile_button(ui::Graphics* g,

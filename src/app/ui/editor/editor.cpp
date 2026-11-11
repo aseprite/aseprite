@@ -1095,7 +1095,7 @@ void Editor::drawMaskSafe()
     getDrawableRegion(region, kCutTopWindows);
 
     GraphicsPtr g = getGraphics(clientBounds());
-    g->save();
+    SaveGraphics save(g.get());
     g->clipRegion(region);
 
     if (!m_matrix.isIdentity()) {
@@ -1111,8 +1111,6 @@ void Editor::drawMaskSafe()
       m_selectionToolMaskBoundaries->regen(m_selectionToolMask.get());
       drawMaskBoundaries(g.get(), *m_selectionToolMaskBoundaries, 0);
     }
-
-    g->restore();
   }
 }
 
@@ -2485,56 +2483,63 @@ void Editor::onPaint(ui::PaintEvent& ev)
     return;
   }
 
+  // This is going to be true if we aren't able to paint the sprite
+  // because it's locked (so we paint a gray background).
+  bool grayBg = false;
+
   // Editor with sprite
-  g->save();
-  try {
-    // Lock the sprite to read/render it. Here we don't wait if the
-    // document is locked (e.g. a filter is being applied to the
-    // sprite) to avoid locking the UI.
-    DocReader documentReader(m_document, 0);
+  {
+    SaveGraphics save(g);
+    try {
+      // Lock the sprite to read/render it. Here we don't wait if the
+      // document is locked (e.g. a filter is being applied to the
+      // sprite) to avoid locking the UI.
+      DocReader documentReader(m_document, 0);
 
-    if (!m_matrix.isIdentity()) {
-      gfx::Matrix m = m_matrix;
-      m.postConcat(g->matrix());
-      g->setMatrix(m);
+      if (!m_matrix.isIdentity()) {
+        gfx::Matrix m = m_matrix;
+        m.postConcat(g->matrix());
+        g->setMatrix(m);
+      }
+
+      // Draw the sprite in the editor
+      renderChrono.reset();
+      drawBackground(g);
+      drawSpriteUnclippedRect(g, m_sprite->bounds());
+      renderElapsed = renderChrono.elapsed();
+
+      // Show performance stats (TODO show performance stats in other widget)
+      if (App::instance()->isDevMode() && Preferences::instance().perf.showRenderTime()) {
+        std::string buf = fmt::format(
+          "{}{} {:.8f}ms",
+          Preferences::instance().render.renderEngine() == gen::RenderEngine::RASTER_V1 ? "R1" :
+          Preferences::instance().render.renderEngine() == gen::RenderEngine::RASTER_V2 ? "R2" :
+          Preferences::instance().render.renderEngine() == gen::RenderEngine::SHADER    ? "S3" :
+                                                                                          "",
+          Preferences::instance().render.tileBasedRenderEngine() ? "/TILED" : "",
+          renderElapsed * 1000.0);
+
+        StatusBar::instance()->setStatusText(1000, buf);
+      }
+
+      // Draw the mask boundaries
+      if (m_document->hasMaskBoundaries()) {
+        drawMask(g);
+        m_antsTimer.start();
+      }
+      else {
+        m_antsTimer.stop();
+      }
     }
-
-    // Draw the sprite in the editor
-    renderChrono.reset();
-    drawBackground(g);
-    drawSpriteUnclippedRect(g, m_sprite->bounds());
-    renderElapsed = renderChrono.elapsed();
-
-    // Show performance stats (TODO show performance stats in other widget)
-    if (App::instance()->isDevMode() && Preferences::instance().perf.showRenderTime()) {
-      std::string buf = fmt::format(
-        "{}{} {:.8f}ms",
-        Preferences::instance().render.renderEngine() == gen::RenderEngine::RASTER_V1 ? "R1" :
-        Preferences::instance().render.renderEngine() == gen::RenderEngine::RASTER_V2 ? "R2" :
-        Preferences::instance().render.renderEngine() == gen::RenderEngine::SHADER    ? "S3" :
-                                                                                        "",
-        Preferences::instance().render.tileBasedRenderEngine() ? "/TILED" : "",
-        renderElapsed * 1000.0);
-
-      StatusBar::instance()->setStatusText(1000, buf);
+    catch (const LockedDocException&) {
+      grayBg = true;
     }
-
-    // Draw the mask boundaries
-    if (m_document->hasMaskBoundaries()) {
-      drawMask(g);
-      m_antsTimer.start();
-    }
-    else {
-      m_antsTimer.stop();
-    }
-    g->restore();
   }
-  catch (const LockedDocException&) {
-    g->restore();
 
-    // The sprite is locked, so we cannot render it, we can draw an
-    // opaque background now, and defer the rendering of the sprite
-    // for later.
+  // The sprite is locked, so we cannot render it, we can draw an
+  // opaque background now, and defer the rendering of the sprite for
+  // later.
+  if (grayBg) {
     g->fillRect(theme->colors.editorFace(), rc);
     defer_invalid_rect(g->localClipBounds().offset(bounds().origin()));
   }
