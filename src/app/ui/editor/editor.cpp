@@ -104,29 +104,18 @@ public:
     gfx::Point b(x2, y2);
     a = m_editor->editorToScreen(a, EditorCoord::BeforePaint);
     b = m_editor->editorToScreen(b, EditorCoord::BeforePaint);
-    gfx::Rect bounds = m_editor->bounds();
-    a.x -= bounds.x;
-    a.y -= bounds.y;
-    b.x -= bounds.x;
-    b.y -= bounds.y;
     m_g->drawLine(color, a, b);
   }
 
   void drawRect(gfx::Color color, const gfx::Rect& rc) override
   {
     gfx::Rect rc2 = m_editor->editorToScreen(rc, EditorCoord::BeforePaint);
-    gfx::Rect bounds = m_editor->bounds();
-    rc2.x -= bounds.x;
-    rc2.y -= bounds.y;
     m_g->drawRect(color, rc2);
   }
 
   void fillRect(gfx::Color color, const gfx::Rect& rc) override
   {
     gfx::Rect rc2 = m_editor->editorToScreen(rc, EditorCoord::BeforePaint);
-    gfx::Rect bounds = m_editor->bounds();
-    rc2.x -= bounds.x;
-    rc2.y -= bounds.y;
     m_g->fillRect(color, rc2);
   }
 
@@ -928,7 +917,6 @@ void Editor::drawBackground(ui::Graphics* g)
   gfx::Size canvas = canvasSize();
   gfx::Rect rc(0, 0, canvas.w, canvas.h);
   rc = editorToScreen(rc, EditorCoord::BeforePaint);
-  rc.offset(-bounds().origin());
 
   // Fill the outside (parts of the editor that aren't covered by the
   // sprite).
@@ -1153,8 +1141,6 @@ void Editor::drawGrid(Graphics* g,
     return;
 
   // Adjust for client area
-  gridF.offset(-this->origin());
-
   while (gridF.x - gridF.w >= spriteBounds.x)
     gridF.x -= gridF.w;
   while (gridF.y - gridF.h >= spriteBounds.y)
@@ -1206,13 +1192,11 @@ void Editor::drawSlices(ui::Graphics* g)
     gfx::Rect out = key->bounds();
     out.offset(mainOffset);
     out = editorToScreen(out, EditorCoord::BeforePaint);
-    out.offset(-bounds().origin());
 
     // Center slices
     if (key->hasCenter()) {
       gfx::Rect in = editorToScreen(gfx::Rect(key->center()).offset(key->bounds().origin()),
-                                    EditorCoord::BeforePaint)
-                       .offset(-bounds().origin());
+                                    EditorCoord::BeforePaint);
 
       auto in_color = gfx::rgba(gfx::getr(color),
                                 gfx::getg(color),
@@ -1231,9 +1215,8 @@ void Editor::drawSlices(ui::Graphics* g)
     // Pivot
     if (key->hasPivot()) {
       gfx::Rect in = editorToScreen(
-                       gfx::Rect(key->pivot(), gfx::Size(1, 1)).offset(key->bounds().origin()),
-                       EditorCoord::BeforePaint)
-                       .offset(-bounds().origin());
+        gfx::Rect(key->pivot(), gfx::Size(1, 1)).offset(key->bounds().origin()),
+        EditorCoord::BeforePaint);
 
       auto in_color = gfx::rgba(gfx::getr(color),
                                 gfx::getg(color),
@@ -1328,8 +1311,7 @@ void Editor::drawCelGuides(ui::Graphics* g, const Cel* cel, const Cel* mouseCel)
   else {
     sprCmpBounds = m_sprite->bounds();
     scrCmpBounds = editorToScreen(gfx::Rect(sprCmpBounds).offset(mainTilePosition()),
-                                  EditorCoord::BeforePaint)
-                     .offset(gfx::Point(-bounds().origin()));
+                                  EditorCoord::BeforePaint);
   }
 
   const int midX = scrCelBounds.x + scrCelBounds.w / 2;
@@ -1501,13 +1483,11 @@ gfx::Rect Editor::getCelScreenBounds(const Cel* cel)
   gfx::Rect layerEdges;
   if (m_layer->isReference()) {
     layerEdges = editorToScreenF(gfx::RectF(cel->boundsF()).offset(mainOffset.x, mainOffset.y),
-                                 EditorCoord::BeforePaint)
-                   .offset(gfx::PointF(-bounds().origin()));
+                                 EditorCoord::BeforePaint);
   }
   else {
     layerEdges = editorToScreen(gfx::Rect(cel->bounds()).offset(mainOffset),
-                                EditorCoord::BeforePaint)
-                   .offset(-bounds().origin());
+                                EditorCoord::BeforePaint);
   }
   return layerEdges;
 }
@@ -1684,11 +1664,7 @@ bool Editor::isAutoSelectLayer()
 
 gfx::Point Editor::screenToEditor(const gfx::Point& pt, const EditorCoord coord) const
 {
-  View* view = View::getView(this);
-  Rect vp = view->viewportBounds();
-  Point scroll = view->viewScroll();
-
-  Point pt2(pt.x - vp.x + scroll.x, pt.y - vp.y + scroll.y);
+  Point pt2 = pt - origin();
   if (coord == EditorCoord::OnScreen)
     pt2 = Point(m_invMatrix.mapPoint(PointF(pt2)));
 
@@ -1698,11 +1674,7 @@ gfx::Point Editor::screenToEditor(const gfx::Point& pt, const EditorCoord coord)
 
 gfx::PointF Editor::screenToEditorF(const gfx::Point& pt, const EditorCoord coord) const
 {
-  View* view = View::getView(this);
-  Rect vp = view->viewportBounds();
-  Point scroll = view->viewScroll();
-
-  PointF pt2(pt.x - vp.x + scroll.x, pt.y - vp.y + scroll.y);
+  PointF pt2(pt - origin());
   if (coord == EditorCoord::OnScreen)
     pt2 = m_invMatrix.mapPoint(pt2);
 
@@ -1713,29 +1685,21 @@ gfx::PointF Editor::screenToEditorF(const gfx::Point& pt, const EditorCoord coor
 
 Point Editor::editorToScreen(const gfx::Point& pt, const EditorCoord coord) const
 {
-  View* view = View::getView(this);
-  Rect vp = view->viewportBounds();
-  Point scroll = view->viewScroll();
-
   PointF pt2(m_proj.applyX(pt.x) + m_padding.x, m_proj.applyY(pt.y) + m_padding.y);
-  if (coord == EditorCoord::OnScreen)
+  if (coord == EditorCoord::OnScreen) {
     pt2 = m_matrix.mapPoint(pt2);
-
-  pt2 += PointF(vp.x - scroll.x, vp.y - scroll.y);
+    pt2 += origin();
+  }
   return Point(pt2);
 }
 
 gfx::PointF Editor::editorToScreenF(const gfx::PointF& pt, const EditorCoord coord) const
 {
-  View* view = View::getView(this);
-  Rect vp = view->viewportBounds();
-  Point scroll = view->viewScroll();
-
   PointF pt2(m_proj.applyX<double>(pt.x) + m_padding.x, m_proj.applyY<double>(pt.y) + m_padding.y);
-  if (coord == EditorCoord::OnScreen)
+  if (coord == EditorCoord::OnScreen) {
     pt2 = m_matrix.mapPoint(pt2);
-
-  pt2 += PointF(vp.x - scroll.x, vp.y - scroll.y);
+    pt2 += origin();
+  }
   return pt2;
 }
 
@@ -2622,7 +2586,6 @@ gfx::Rect Editor::cvCanvasBounds()
 {
   gfx::Rect rc(canvasSize());
   rc = editorToScreen(rc, EditorCoord::BeforePaint);
-  rc.offset(-bounds().origin());
   return rc;
 }
 

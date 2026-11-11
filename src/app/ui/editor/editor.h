@@ -156,6 +156,7 @@ public:
   const render::Projection& projection() const { return m_proj; }
   const render::Zoom& zoom() const { return m_proj.zoom(); }
   const gfx::Point& padding() const { return m_padding; }
+  const gfx::Matrix& matrix() const { return m_matrix; }
 
   void setZoom(const render::Zoom& zoom);
   void setDefaultScroll();

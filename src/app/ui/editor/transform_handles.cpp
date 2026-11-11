@@ -102,6 +102,11 @@ void TransformHandles::drawHandles(Editor* editor, ui::Graphics* g, const Transf
 
 #if 0 // Uncomment this if you want to see the bounds in red (only for debugging purposes)
   {   // Bounds
+    SaveGraphics save(g);
+    gfx::Matrix m = editor->matrix();
+    m.postTranslate(editor->bounds().x, editor->bounds().y);
+    g->setMatrix(m);
+
     gfx::Point
       a(transform.bounds().origin()),
       b(transform.bounds().point2());

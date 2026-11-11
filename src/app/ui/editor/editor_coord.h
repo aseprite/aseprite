@@ -13,8 +13,9 @@
 namespace app {
 
 enum class EditorCoord : uint8_t {
-  // Coordinate Without applying the ui::Graphics transformation, so the
-  // coordinate will be painted.
+  // Coordinate without applying the ui::Graphics transformation, so
+  // the coordinate can be painted. The coordinate is relative to the
+  // Editor origin.
   BeforePaint = 0,
 
   // Coordinate on screen after applying the ui::Graphics
