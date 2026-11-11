@@ -1263,14 +1263,14 @@ void Editor::drawTileNumbers(ui::Graphics* g, const Cel* cel)
     editorToScreen(grid.tileToCanvas(gfx::Rect(0, 0, 1, 1)), EditorCoord::BeforePaint).size();
   const int th = font->lineHeight();
   if (tileSize.h > th) {
-    const gfx::Point offset = gfx::Point(tileSize.w / 2, tileSize.h / 2 - font->size() / 2) +
-                              mainTilePosition();
-
     int ti_offset = static_cast<LayerTilemap*>(cel->layer())->tileset()->baseIndex() - 1;
 
     const doc::Image* image = cel->image();
     if (!image)
       return;
+
+    SaveGraphics save(g);
+    g->resetMatrix();
 
     std::string text;
     for (int y = 0; y < image->height(); ++y) {
@@ -1281,13 +1281,14 @@ void Editor::drawTileNumbers(ui::Graphics* g, const Cel* cel)
           const doc::tile_index tf = doc::tile_getf(t);
 
           gfx::Point pt = editorToScreen(grid.tileToCanvas(gfx::Point(x, y)),
-                                         EditorCoord::BeforePaint);
-          pt -= bounds().origin();
-          pt += offset;
+                                         EditorCoord::OnScreen);
+          gfx::Point pt2 = editorToScreen(grid.tileToCanvas(gfx::Point(x + 1, y + 1)),
+                                          EditorCoord::OnScreen);
+          pt = (pt + pt2) / 2;
 
           text = fmt::format("{}", ti + ti_offset);
 
-          gfx::Point pt2(pt);
+          pt2 = pt;
           pt2.x -= font->textLength(text) / 2;
           g->drawText(text, fgColor, color, pt2);
 
