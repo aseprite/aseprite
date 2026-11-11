@@ -587,6 +587,11 @@ void Editor::setEditorAngle(const double angle)
   m_proj.setAngle(angle);
   calcMatrices();
   invalidate();
+
+  if (ContextBar* ctxBar = App::instance()->contextBar())
+    ctxBar->updateZoomAngle(angle);
+
+  StatusBar::instance()->updateZoomAngle(angle);
 }
 
 void Editor::updateEditor(const bool restoreScrollPos)

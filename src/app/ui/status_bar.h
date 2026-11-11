@@ -73,6 +73,8 @@ public:
   // Used by AppEditor to update the zoom level in the status bar.
   void updateFromEditor(Editor* editor);
 
+  void updateZoomAngle(double angle);
+
   void showBackupIcon(BackupIcon icon);
 
   // Dockable impl

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -75,6 +75,7 @@ public:
   bool updateSamplingVisibility(tools::Tool* tool = nullptr);
   void updateAutoSelectLayer(bool state);
   bool isAutoSelectLayer() const;
+  void updateZoomAngle(double angle);
 
   void setActiveBrush(const doc::BrushRef& brush);
   void setActiveBrushBySlot(tools::Tool* tool, int slot);
@@ -145,9 +146,11 @@ private:
   void registerCommands();
   void showBrushes();
   void showDynamics();
-  bool needZoomButtons(tools::Tool* tool) const;
+  bool needZoomFields(tools::Tool* tool) const;
 
   class ZoomButtons;
+  class ZoomAngle;
+  class ZoomFields;
   class BrushBackField;
   class BrushTypeField;
   class BrushAngleField;
@@ -177,8 +180,7 @@ private:
   class SliceFields;
   class FontSelector;
 
-  ZoomButtons* m_zoomButtons;
-  SamplingSelector* m_samplingSelector;
+  ZoomFields* m_zoomFields;
   BrushBackField* m_brushBack;
   BrushTypeField* m_brushType;
   BrushAngleField* m_brushAngle;
