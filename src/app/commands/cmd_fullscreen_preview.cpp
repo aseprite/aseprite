@@ -245,7 +245,8 @@ protected:
     tiledBounds.h = (2 + std::ceil(float(clientBounds().h) / h)) * h;
     tiledBounds.x = x - w;
     tiledBounds.y = y - h;
-    g->save();
+
+    SaveGraphics save(g);
 
     switch (m_tiled) {
       case TiledMode::NONE:
@@ -277,7 +278,6 @@ protected:
         }
         break;
     }
-    g->restore();
   }
 
 private:

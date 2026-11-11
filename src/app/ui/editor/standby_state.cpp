@@ -1017,7 +1017,7 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
 {
   Editor* editor = render->getEditor();
   ui::Graphics* g = render->getGraphics();
-  g->save();
+  SaveGraphics save(g);
   g->resetMatrix();
 
   // Draw transformation handles (if the mask is visible and isn't frozen).
@@ -1043,8 +1043,6 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
     for (const auto& handle : handles)
       g->drawRgbaSurface(part, handle.bounds.x, handle.bounds.y);
   }
-
-  g->restore();
 }
 
 void StandbyState::Decorator::getInvalidDecoratoredRegion(Editor* editor, gfx::Region& region)
