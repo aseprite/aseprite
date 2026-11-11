@@ -397,23 +397,23 @@ private:
   void drawCelBounds(ui::Graphics* g, const Cel* cel, const gfx::Color color);
   void drawCelGuides(ui::Graphics* g, const Cel* cel, const Cel* mouseCel);
   void drawCelHGuide(ui::Graphics* g,
-                     const int sprX1,
-                     const int sprX2,
-                     const int scrX1,
-                     const int scrX2,
-                     const int scrY,
+                     int sprX1,
+                     int sprX2,
+                     int scrX1,
+                     int scrX2,
+                     int scrY,
                      const gfx::Rect& scrCelBounds,
                      const gfx::Rect& scrCmpBounds,
-                     const int dottedX);
+                     int dottedX);
   void drawCelVGuide(ui::Graphics* g,
-                     const int sprY1,
-                     const int sprY2,
-                     const int scrY1,
-                     const int scrY2,
-                     const int scrX,
+                     int sprY1,
+                     int sprY2,
+                     int scrY1,
+                     int scrY2,
+                     int scrX,
                      const gfx::Rect& scrCelBounds,
                      const gfx::Rect& scrCmpBounds,
-                     const int dottedY);
+                     int dottedY);
   gfx::Rect getCelScreenBounds(const Cel* cel);
 
   void setCursor(const gfx::Point& mouseDisplayPos);

@@ -1415,9 +1415,9 @@ void Editor::drawCelGuides(ui::Graphics* g, const Cel* cel, const Cel* mouseCel)
 void Editor::drawCelHGuide(ui::Graphics* g,
                            const int sprX1,
                            const int sprX2,
-                           const int scrX1,
-                           const int scrX2,
-                           const int scrY,
+                           int scrX1,
+                           int scrX2,
+                           int scrY,
                            const gfx::Rect& scrCelBounds,
                            const gfx::Rect& scrCmpBounds,
                            const int dottedX)
@@ -1437,6 +1437,16 @@ void Editor::drawCelHGuide(ui::Graphics* g,
       g->drawVLine(dottedX, scrCmpBounds.y2(), scrCelBounds.y2() - scrCmpBounds.y2(), paint);
   }
 
+  // Convert the BeforePaint -> OnScreen coordinates so we can paint
+  // the text without transformation.
+  SaveGraphics save(g);
+  auto pt1 = m_matrix.mapPoint(gfx::PointF(scrX1, scrY)) + origin();
+  auto pt2 = m_matrix.mapPoint(gfx::PointF(scrX2, scrY)) + origin();
+  scrX1 = pt1.x;
+  scrX2 = pt2.x;
+  scrY = (pt1.y + pt2.y) / 2;
+  g->resetMatrix();
+
   auto text = fmt::format("{}px", ABS(sprX2 - sprX1));
   const int textW = font()->textLength(text);
   g->drawText(text,
@@ -1448,9 +1458,9 @@ void Editor::drawCelHGuide(ui::Graphics* g,
 void Editor::drawCelVGuide(ui::Graphics* g,
                            const int sprY1,
                            const int sprY2,
-                           const int scrY1,
-                           const int scrY2,
-                           const int scrX,
+                           int scrY1,
+                           int scrY2,
+                           int scrX,
                            const gfx::Rect& scrCelBounds,
                            const gfx::Rect& scrCmpBounds,
                            const int dottedY)
@@ -1469,6 +1479,14 @@ void Editor::drawCelVGuide(ui::Graphics* g,
     else if (scrX > scrCmpBounds.x2())
       g->drawHLine(scrCmpBounds.x2(), dottedY, scrCelBounds.x2() - scrCmpBounds.x2(), paint);
   }
+
+  SaveGraphics save(g);
+  auto pt1 = m_matrix.mapPoint(gfx::PointF(scrX, scrY1)) + origin();
+  auto pt2 = m_matrix.mapPoint(gfx::PointF(scrX, scrY2)) + origin();
+  scrX = (pt1.x + pt2.x) / 2;
+  scrY1 = pt1.y;
+  scrY2 = pt2.y;
+  g->resetMatrix();
 
   auto text = fmt::format("{}px", ABS(sprY2 - sprY1));
   g->drawText(text,
