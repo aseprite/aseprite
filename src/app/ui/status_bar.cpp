@@ -705,6 +705,7 @@ StatusBar::StatusBar(TooltipManager* tooltipManager)
     m_zoomEntry->ZoomChange.connect(&StatusBar::onChangeZoom, this);
 
     m_angleEntry = new ui::IntEntry(-180, 180);
+    m_angleEntry->setValue(0);
     m_angleEntry->setSuffix("º");
     m_angleEntry->ValueChange.connect([this] {
       if (auto* editor = Editor::activeEditor())
@@ -793,7 +794,14 @@ void StatusBar::updateFromEditor(Editor* editor)
   if (editor) {
     showIndicators();
     m_zoomEntry->setZoom(editor->zoom());
+    m_angleEntry->setValue(editor->projection().angle());
   }
+}
+
+void StatusBar::updateZoomAngle(double angle)
+{
+  if (m_angleEntry->getValue() != angle)
+    m_angleEntry->setValue(angle);
 }
 
 void StatusBar::showBackupIcon(BackupIcon icon)

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -139,6 +139,73 @@ private:
     deselectItems();
     manager()->freeFocus();
   }
+};
+
+class ContextBar::ZoomAngle : public HBox {
+public:
+  ZoomAngle() : m_label(Strings::context_bar_angle()), m_angle(-180, 180), m_preset(4)
+  {
+    addChild(&m_label);
+    addChild(&m_angle);
+    addChild(&m_preset);
+
+    m_angle.setValue(0);
+    m_angle.setSuffix("º");
+    m_angle.ValueChange.connect([this] {
+      if (auto* editor = Editor::activeEditor())
+        editor->setEditorAngle(m_angle.getValue());
+    });
+
+    m_preset.addItem("0º");
+    m_preset.addItem("45º");
+    m_preset.addItem("90º");
+    m_preset.addItem("180º");
+    m_preset.ItemChange.connect([this] {
+      double angle = 0.0;
+      switch (m_preset.selectedItem()) {
+        case 0: angle = 0.0; break;
+        case 1: angle = 45.0; break;
+        case 2: angle = 90.0; break;
+        case 3: angle = 180.0; break;
+      }
+      if (auto* editor = Editor::activeEditor())
+        editor->setEditorAngle(angle);
+    });
+  }
+  void setAngle(int angle)
+  {
+    if (m_angle.getValue() != angle)
+      m_angle.setValue(angle);
+  }
+
+private:
+  Label m_label;
+  IntEntry m_angle;
+  ButtonSet m_preset;
+};
+
+class ContextBar::ZoomFields : public HBox {
+public:
+  ZoomFields()
+  {
+    addChild(&m_buttons);
+    addChild(&m_angle);
+    addChild(&m_samplingSelector);
+  }
+  void updateZoomAngle(double angle) { m_angle.setAngle(angle); }
+  bool setSamplingVisibility(bool state)
+  {
+    if (state == m_samplingSelector.hasFlags(HIDDEN)) {
+      m_samplingSelector.setVisible(state);
+      return true;
+    }
+    return false;
+  }
+
+private:
+  ZoomButtons m_buttons;
+  ZoomAngle m_angle;
+  SamplingSelector m_samplingSelector;
 };
 
 class ContextBar::BrushBackField : public ButtonSet {
@@ -2040,8 +2107,7 @@ ContextBar::ContextBar(TooltipManager* tooltipManager, ColorBar* colorBar)
   m_selectionOptionsBox->addChild(m_pivot = new PivotField);
   m_selectionOptionsBox->addChild(m_rotAlgo = new RotAlgorithmField());
 
-  addChild(m_zoomButtons = new ZoomButtons);
-  addChild(m_samplingSelector = new SamplingSelector);
+  addChild(m_zoomFields = new ZoomFields);
 
   addChild(m_brushBack = new BrushBackField);
   addChild(m_brushType = new BrushTypeField(this));
@@ -2167,6 +2233,10 @@ void ContextBar::onToolSetContiguous()
 void ContextBar::onActiveSiteChange(const Site& site)
 {
   DocObserverWidget<ui::HBox>::onActiveSiteChange(site);
+  if (m_zoomFields->isVisible()) {
+    if (auto* editor = Editor::activeEditor())
+      updateZoomAngle(editor->projection().angle());
+  }
   if (m_sliceFields->isVisible())
     updateSliceFields(site);
 }
@@ -2411,7 +2481,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
                                 !hasImageBrush); // TODO add support for dynamics in custom brushes
 
   // Show/Hide fields
-  m_zoomButtons->setVisible(needZoomButtons(tool));
+  m_zoomFields->setVisible(needZoomFields(tool));
   m_brushBack->setVisible(supportOpacity && hasImageBrush && !withDithering);
   m_brushType->setVisible(supportOpacity && (!isFloodfill || (isFloodfill && !withDithering)));
   m_brushSize->setVisible(supportOpacity && !isFloodfill && !hasImageBrush);
@@ -2510,12 +2580,11 @@ bool ContextBar::updateSamplingVisibility(tools::Tool* tool)
     tool = App::instance()->activeTool();
 
   auto editor = Editor::activeEditor();
-  const bool newVisibility = needZoomButtons(tool) && editor &&
+  const bool newVisibility = needZoomFields(tool) && editor &&
                              (editor->projection().scaleX() < 1.0 ||
                               editor->projection().scaleY() < 1.0);
 
-  if (newVisibility == m_samplingSelector->hasFlags(HIDDEN)) {
-    m_samplingSelector->setVisible(newVisibility);
+  if (m_zoomFields->setSamplingVisibility(newVisibility)) {
     layout();
     return true;
   }
@@ -2530,6 +2599,11 @@ void ContextBar::updateAutoSelectLayer(bool state)
 bool ContextBar::isAutoSelectLayer() const
 {
   return m_autoSelectLayer->isSelected();
+}
+
+void ContextBar::updateZoomAngle(double angle)
+{
+  m_zoomFields->updateZoomAngle(angle);
 }
 
 void ContextBar::setActiveBrushBySlot(tools::Tool* tool, int slot)
@@ -2827,7 +2901,7 @@ void ContextBar::showDynamics()
     m_dynamics->switchPopup();
 }
 
-bool ContextBar::needZoomButtons(tools::Tool* tool) const
+bool ContextBar::needZoomFields(tools::Tool* tool) const
 {
   return tool && (tool->getInk(0)->isZoom() || tool->getInk(1)->isZoom() ||
                   tool->getInk(0)->isScrollMovement() || tool->getInk(1)->isScrollMovement());
