@@ -121,6 +121,7 @@ private:
   bool m_layerAdded = false;
   int m_cachedType = 0;
   int m_cachedBrushGen = 0;
+  float m_cachedProjAngle = 0.0f;
 
   // Information about current brush
   doc::MaskBoundaries m_brushBoundaries;

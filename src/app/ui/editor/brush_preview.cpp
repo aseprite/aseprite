@@ -475,7 +475,8 @@ void BrushPreview::show(const gfx::Point& screenPos)
       m_layerAdded = true;
 
       // Check if the cached brush painted in the m_uiLayer is still valid
-      if (m_cachedType != m_type || m_cachedBrushGen != m_brushGen) {
+      if (m_cachedType != m_type || m_cachedBrushGen != m_brushGen ||
+          m_cachedProjAngle != proj.angle()) {
         cached = false;
       }
 
@@ -523,6 +524,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
         m_cachedType = m_type;
         m_cachedBrushGen = m_brushGen;
+        m_cachedProjAngle = proj.angle();
       }
     }
   }
@@ -610,6 +612,16 @@ bool BrushPreview::createUILayer(const gfx::Rect& brushBounds)
   }
   else if (m_type & BRUSH_BOUNDARIES) {
     gfx::Size brushSize(proj.applyX(brushBounds.w + 2), proj.applyY(brushBounds.h + 2));
+
+    // Add extra space for the rotated boundaries
+    if (proj.hasAngle()) {
+      gfx::Matrix rot;
+      rot.setRotate(proj.angle());
+      gfx::RectF rc = rot.mapRect(gfx::RectF(gfx::SizeF(brushSize)));
+      brushSize.w = std::ceil(rc.w);
+      brushSize.h = std::ceil(rc.h);
+    }
+
     sizeHint = brushSize;
   }
 
@@ -879,6 +891,11 @@ void BrushPreview::strokeBrushBoundaries(ui::Graphics* g, gfx::Point pos, const 
 
   const render::Projection& proj = m_editor->projection();
   gfx::Matrix matrix = proj.scaleMatrix();
+  if (proj.hasAngle()) {
+    gfx::Matrix rot;
+    rot.setRotate(proj.angle());
+    matrix.postConcat(rot);
+  }
   matrix.postTranslate(pos.x, pos.y);
 
   gfx::Path path = segs.path().snapshot(matrix);
