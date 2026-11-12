@@ -684,23 +684,28 @@ void Theme::measureLayer(const Widget* widget,
           textSize = widget->textSize();
         }
 
-        textHint.offset(layer.offset());
-        textHint.w = std::max(textHint.w, textSize.w + ABS(layer.offset().x));
-        textHint.h = std::max(textHint.h, textSize.h + ABS(layer.offset().y));
+        // Avoid adding layer offsets for elements marked as "decorative", since these
+        // are not meant to affect sizing.
+        const gfx::Point& offset = layer.decorative() ? gfx::Point(0, 0) : layer.offset();
+        textHint.offset(offset);
+        textHint.w = std::max(textHint.w, textSize.w + ABS(offset.x));
+        textHint.h = std::max(textHint.h, textSize.h + ABS(offset.y));
+
         textAlign = layer.align();
       }
       break;
 
     case Style::Layer::Type::kIcon: {
       const os::Surface* icon = layer.icon();
-      if (const Style::Layer::IconSurfaceProvider* iconProvider =
-            dynamic_cast<const Style::Layer::IconSurfaceProvider*>(widget)) {
+      if (const auto* iconProvider = dynamic_cast<const Style::Layer::IconSurfaceProvider*>(
+            widget)) {
         icon = iconProvider->iconSurface() ? iconProvider->iconSurface() : icon;
       }
 
       if (icon) {
-        iconHint.w = std::max(iconHint.w, icon->width() + ABS(layer.offset().x));
-        iconHint.h = std::max(iconHint.h, icon->height() + ABS(layer.offset().y));
+        const gfx::Point& offset = layer.decorative() ? gfx::Point(0, 0) : layer.offset();
+        iconHint.w = std::max(iconHint.w, icon->width() + ABS(offset.x));
+        iconHint.h = std::max(iconHint.h, icon->height() + ABS(offset.y));
         iconAlign = layer.align();
       }
       break;

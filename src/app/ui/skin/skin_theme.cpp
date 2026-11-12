@@ -995,6 +995,9 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
           layer.setFlags(flags);
         }
 
+        if (xmlLayer->BoolAttribute("decorative"))
+          layer.setDecorative(true);
+
         // Align
         const char* alignValue = xmlLayer->Attribute("align");
         if (alignValue) {
