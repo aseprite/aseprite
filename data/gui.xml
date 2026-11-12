@@ -1030,6 +1030,39 @@
           <item command="ShowBrushPreview" text="@.view_show_brush_preview" />
         </menu>
         <separator />
+        <menu text="@.view_zoom">
+          <item command="Zoom" text="@.view_zoom_zoom_in">
+            <param name="action" value="in" />
+          </item>
+          <item command="Zoom" text="@.view_zoom_zoom_out">
+            <param name="action" value="out" />
+          </item>
+          <item command="Zoom" text="@.view_zoom_zoom_to_100">
+            <param name="percentage" value="100" />
+          </item>
+          <separator />
+          <item command="RotateView" text="@.view_zoom_rotate_view_ccv">
+            <param name="action" value="subtract" />
+            <param name="angle" value="15" />
+          </item>
+          <item command="RotateView" text="@.view_zoom_rotate_view_cv">
+            <param name="action" value="add" />
+            <param name="angle" value="15" />
+          </item>
+          <item command="RotateView" text="@.view_zoom_reset_view_rotation">
+            <param name="action" value="set" />
+            <param name="angle" value="0" />
+          </item>
+          <separator />
+          <item command="FlipView" text="@.view_zoom_flip_view_horizontally">
+            <param name="orientation" value="horizontal" />
+          </item>
+          <item command="FlipView" text="@.view_zoom_flip_view_vertically">
+            <param name="orientation" value="vertical" />
+          </item>
+          <separator />
+          <item command="ResetView" text="@.view_zoom_reset_view" />
+        </menu>
         <menu text="@.view_grid">
           <item command="GridSettings" text="@.view_grid_settings" />
           <item command="SelectionAsGrid" text="@.view_grid_selection_as_grid" />

@@ -528,11 +528,14 @@ target_sources(app-lib PRIVATE
   commands/filters/filter_target_buttons.cpp
   commands/filters/filter_window.cpp
   commands/filters/filter_worker.cpp
+  commands/flip_view.cpp
   commands/move_colors_command.cpp
   commands/move_thing.cpp
   commands/move_tiles_command.cpp
   commands/new_params.cpp
   commands/quick_command.cpp
+  commands/reset_view.cpp
+  commands/rotate_view.cpp
   commands/screenshot.cpp
   commands/set_playback_speed.cpp
   commands/show_menu.cpp
