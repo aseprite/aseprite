@@ -157,6 +157,8 @@ public:
   const render::Zoom& zoom() const { return m_proj.zoom(); }
   const gfx::Point& padding() const { return m_padding; }
   const gfx::Matrix& matrix() const { return m_matrix; }
+  bool xflip() const { return m_xflip; }
+  bool yflip() const { return m_yflip; }
 
   void setZoom(const render::Zoom& zoom);
   void setDefaultScroll();
@@ -165,6 +167,7 @@ public:
   void setEditorScroll(const gfx::Point& scroll);
   void setEditorZoom(const render::Zoom& zoom);
   void setEditorAngle(double angle);
+  void setEditorFlips(bool x, bool y);
 
   // Updates the Editor's view.
   void updateEditor(const bool restoreScrollPos);
@@ -456,6 +459,8 @@ private:
   Layer* m_layer;            // Active layer in the editor
   frame_t m_frame;           // Active frame in the editor
   render::Projection m_proj; // Zoom/pixel ratio in the editor
+  bool m_xflip = false;
+  bool m_yflip = false;
   gfx::Matrix m_matrix;
   gfx::Matrix m_invMatrix;
   DocumentPreferences& m_docPref;

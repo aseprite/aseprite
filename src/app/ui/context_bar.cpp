@@ -143,11 +143,12 @@ private:
 
 class ContextBar::ZoomAngle : public HBox {
 public:
-  ZoomAngle() : m_label(Strings::context_bar_angle()), m_angle(-180, 180), m_preset(4)
+  ZoomAngle() : m_label(Strings::context_bar_angle()), m_angle(-180, 180), m_preset(4), m_flips(2)
   {
     addChild(&m_label);
     addChild(&m_angle);
     addChild(&m_preset);
+    addChild(&m_flips);
 
     m_angle.setValue(0);
     m_angle.setSuffix("º");
@@ -171,6 +172,15 @@ public:
       if (auto* editor = Editor::activeEditor())
         editor->setEditorAngle(angle);
     });
+
+    m_flips.setMultiMode(ButtonSet::MultiMode::Set);
+    m_flips.addItem("X");
+    m_flips.addItem("Y");
+    m_flips.ItemChange.connect([this] {
+      if (auto* editor = Editor::activeEditor()) {
+        editor->setEditorFlips(m_flips.getItem(0)->isSelected(), m_flips.getItem(1)->isSelected());
+      }
+    });
   }
   void setAngle(int angle)
   {
@@ -182,6 +192,7 @@ private:
   Label m_label;
   IntEntry m_angle;
   ButtonSet m_preset;
+  ButtonSet m_flips;
 };
 
 class ContextBar::ZoomFields : public HBox {
