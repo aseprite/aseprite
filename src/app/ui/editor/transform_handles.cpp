@@ -256,7 +256,7 @@ void TransformHandles::adjustHandle(Editor* editor,
                                     int handle_h,
                                     double angle)
 {
-  angle -= PI * editor->projection().angle() / 180.0;
+  angle -= PI * editor->viewOptions().angle / 180.0;
   angle = base::fmod_radians(angle + PI) + PI;
   const int angleInt = std::clamp<int>(std::floor(8.0 * angle / (2.0 * PI) + 0.5), 0, 8) % 8;
 

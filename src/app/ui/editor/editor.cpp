@@ -571,24 +571,20 @@ void Editor::setEditorZoom(const render::Zoom& zoom)
   setZoomAndCenterInMouse(zoom, mousePosInDisplay(), Editor::ZoomBehavior::CENTER);
 }
 
-void Editor::setEditorAngle(const double angle)
+void Editor::setViewOptions(const ViewOptions& view)
 {
-  m_proj.setAngle(angle);
+  const bool angleChange = (m_view.angle != view.angle);
+
+  m_view = view;
   calcMatrices();
   invalidate();
 
-  if (ContextBar* ctxBar = App::instance()->contextBar())
-    ctxBar->updateZoomAngle(angle);
+  if (angleChange) {
+    if (ContextBar* ctxBar = App::instance()->contextBar())
+      ctxBar->updateZoomAngle(view.angle);
 
-  StatusBar::instance()->updateZoomAngle(angle);
-}
-
-void Editor::setEditorFlips(const bool x, const bool y)
-{
-  m_xflip = x;
-  m_yflip = y;
-  calcMatrices();
-  invalidate();
+    StatusBar::instance()->updateZoomAngle(view.angle);
+  }
 }
 
 void Editor::updateEditor(const bool restoreScrollPos)
@@ -1099,8 +1095,8 @@ void Editor::drawMaskSafe()
     SaveGraphics save(g.get());
     g->clipRegion(region);
 
-    if (!m_matrix.isIdentity()) {
-      gfx::Matrix m = m_matrix;
+    if (!matrix().isIdentity()) {
+      gfx::Matrix m = matrix();
       m.postConcat(g->matrix());
       g->setMatrix(m);
     }
@@ -1448,8 +1444,8 @@ void Editor::drawCelHGuide(ui::Graphics* g,
   // Convert the BeforePaint -> OnScreen coordinates so we can paint
   // the text without transformation.
   SaveGraphics save(g);
-  auto pt1 = m_matrix.mapPoint(gfx::PointF(scrX1, scrY)) + origin();
-  auto pt2 = m_matrix.mapPoint(gfx::PointF(scrX2, scrY)) + origin();
+  auto pt1 = matrix().mapPoint(gfx::PointF(scrX1, scrY)) + origin();
+  auto pt2 = matrix().mapPoint(gfx::PointF(scrX2, scrY)) + origin();
   scrX1 = pt1.x;
   scrX2 = pt2.x;
   scrY = (pt1.y + pt2.y) / 2;
@@ -1489,8 +1485,8 @@ void Editor::drawCelVGuide(ui::Graphics* g,
   }
 
   SaveGraphics save(g);
-  auto pt1 = m_matrix.mapPoint(gfx::PointF(scrX, scrY1)) + origin();
-  auto pt2 = m_matrix.mapPoint(gfx::PointF(scrX, scrY2)) + origin();
+  auto pt1 = matrix().mapPoint(gfx::PointF(scrX, scrY1)) + origin();
+  auto pt2 = matrix().mapPoint(gfx::PointF(scrX, scrY2)) + origin();
   scrX = (pt1.x + pt2.x) / 2;
   scrY1 = pt1.y;
   scrY2 = pt2.y;
@@ -1692,7 +1688,7 @@ gfx::Point Editor::screenToEditor(const gfx::Point& pt, const EditorCoord coord)
 {
   Point pt2 = pt - origin();
   if (coord == EditorCoord::OnScreen)
-    pt2 = Point(m_invMatrix.mapPoint(PointF(pt2)));
+    pt2 = Point(invMatrix().mapPoint(PointF(pt2)));
 
   pt2 = Point(m_proj.removeX(pt2.x - m_padding.x), m_proj.removeY(pt2.y - m_padding.y));
   return pt2;
@@ -1702,7 +1698,7 @@ gfx::PointF Editor::screenToEditorF(const gfx::Point& pt, const EditorCoord coor
 {
   PointF pt2(pt - origin());
   if (coord == EditorCoord::OnScreen)
-    pt2 = m_invMatrix.mapPoint(pt2);
+    pt2 = invMatrix().mapPoint(pt2);
 
   pt2 = PointF(m_proj.removeX<double>(pt2.x - m_padding.x),
                m_proj.removeY<double>(pt2.y - m_padding.y));
@@ -1713,7 +1709,7 @@ Point Editor::editorToScreen(const gfx::Point& pt, const EditorCoord coord) cons
 {
   PointF pt2(m_proj.applyX(pt.x) + m_padding.x, m_proj.applyY(pt.y) + m_padding.y);
   if (coord == EditorCoord::OnScreen) {
-    pt2 = m_matrix.mapPoint(pt2);
+    pt2 = matrix().mapPoint(pt2);
     pt2 += origin();
   }
   return Point(pt2);
@@ -1723,7 +1719,7 @@ gfx::PointF Editor::editorToScreenF(const gfx::PointF& pt, const EditorCoord coo
 {
   PointF pt2(m_proj.applyX<double>(pt.x) + m_padding.x, m_proj.applyY<double>(pt.y) + m_padding.y);
   if (coord == EditorCoord::OnScreen) {
-    pt2 = m_matrix.mapPoint(pt2);
+    pt2 = matrix().mapPoint(pt2);
     pt2 += origin();
   }
   return pt2;
@@ -1731,7 +1727,7 @@ gfx::PointF Editor::editorToScreenF(const gfx::PointF& pt, const EditorCoord coo
 
 Rect Editor::screenToEditor(const Rect& rc, const EditorCoord coord) const
 {
-  if (m_matrix.isIdentity()) {
+  if (matrix().isIdentity()) {
     PointF pt1 = screenToEditorF(rc.origin(), coord);
     PointF pt2 = screenToEditorF(rc.point2(), coord);
     return Rect(Point(std::floor(pt1.x), std::floor(pt1.y)),
@@ -1753,7 +1749,7 @@ Rect Editor::screenToEditor(const Rect& rc, const EditorCoord coord) const
 
 Rect Editor::editorToScreen(const Rect& rc, const EditorCoord coord) const
 {
-  if (m_matrix.isIdentity() || coord == EditorCoord::BeforePaint)
+  if (matrix().isIdentity() || coord == EditorCoord::BeforePaint)
     return gfx::Rect(editorToScreen(rc.origin(), coord), editorToScreen(rc.point2(), coord));
 
   Point pts[4] = { Point(rc.x, rc.y),
@@ -1768,7 +1764,7 @@ Rect Editor::editorToScreen(const Rect& rc, const EditorCoord coord) const
 
 gfx::RectF Editor::editorToScreenF(const gfx::RectF& rc, const EditorCoord coord) const
 {
-  if (m_matrix.isIdentity() || coord == EditorCoord::BeforePaint) {
+  if (matrix().isIdentity() || coord == EditorCoord::BeforePaint) {
     return gfx::RectF(editorToScreenF(rc.origin(), coord), editorToScreenF(rc.point2(), coord));
   }
 
@@ -2492,8 +2488,8 @@ void Editor::onPaint(ui::PaintEvent& ev)
       // sprite) to avoid locking the UI.
       DocReader documentReader(m_document, 0);
 
-      if (!m_matrix.isIdentity()) {
-        gfx::Matrix m = m_matrix;
+      if (!matrix().isIdentity()) {
+        gfx::Matrix m = matrix();
         m.postConcat(g->matrix());
         g->setMatrix(m);
       }
@@ -3401,24 +3397,9 @@ int Editor::otherLayersOpacity() const
 
 void Editor::calcMatrices()
 {
-  m_matrix.setIdentity();
-
-  if (m_proj.hasAngle() || m_xflip || m_yflip) {
-    gfx::Size sz = canvasSize();
-    if (m_proj.hasAngle())
-      m_matrix.setRotate(m_proj.angle());
-
-    gfx::PointF delta(m_padding.x + m_proj.applyX(sz.w) / 2, m_padding.y + m_proj.applyY(sz.h) / 2);
-    m_matrix.preTranslate(-delta.x, -delta.y);
-    if (m_xflip || m_yflip) {
-      gfx::Matrix scale = gfx::Matrix::MakeScale(m_xflip ? -1 : 1, m_yflip ? -1 : 1);
-      m_matrix.postConcat(scale);
-    }
-    m_matrix.postTranslate(delta.x, delta.y);
-  }
-
-  auto inv = m_matrix.invert();
-  m_invMatrix = (inv ? *inv : m_matrix);
+  gfx::PointF center(m_padding);
+  center += gfx::PointF(m_proj.apply(canvasSize())) / 2.0;
+  m_view.calcMatrices(center);
 }
 
 bool Editor::handleDevModeKeys(const ui::KeyMessage* msg)

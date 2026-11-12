@@ -1118,7 +1118,7 @@ bool StandbyState::Decorator::getSymmetryHandles(Editor* editor,
         for (auto& handle : handles) {
           // The case for rotated viewports is a little more complex,
           // we must limit the handle position along each axis.
-          if (editor->projection().hasAngle()) {
+          if (editor->viewOptions().isRotated()) {
             // TODO
           }
           else {
