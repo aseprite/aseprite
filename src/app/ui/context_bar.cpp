@@ -153,8 +153,11 @@ public:
     m_angle.setValue(0);
     m_angle.setSuffix("º");
     m_angle.ValueChange.connect([this] {
-      if (auto* editor = Editor::activeEditor())
-        editor->setEditorAngle(m_angle.getValue());
+      if (auto* editor = Editor::activeEditor()) {
+        auto opts = editor->viewOptions();
+        opts.angle = m_angle.getValue();
+        editor->setViewOptions(opts);
+      }
     });
 
     m_preset.addItem("0º");
@@ -169,8 +172,11 @@ public:
         case 2: angle = 90.0; break;
         case 3: angle = 180.0; break;
       }
-      if (auto* editor = Editor::activeEditor())
-        editor->setEditorAngle(angle);
+      if (auto* editor = Editor::activeEditor()) {
+        auto opts = editor->viewOptions();
+        opts.angle = angle;
+        editor->setViewOptions(opts);
+      }
     });
 
     m_flips.setMultiMode(ButtonSet::MultiMode::Set);
@@ -178,7 +184,10 @@ public:
     m_flips.addItem("Y");
     m_flips.ItemChange.connect([this] {
       if (auto* editor = Editor::activeEditor()) {
-        editor->setEditorFlips(m_flips.getItem(0)->isSelected(), m_flips.getItem(1)->isSelected());
+        auto opts = editor->viewOptions();
+        opts.xflip = m_flips.getItem(0)->isSelected();
+        opts.yflip = m_flips.getItem(1)->isSelected();
+        editor->setViewOptions(opts);
       }
     });
   }
@@ -2246,7 +2255,7 @@ void ContextBar::onActiveSiteChange(const Site& site)
   DocObserverWidget<ui::HBox>::onActiveSiteChange(site);
   if (m_zoomFields->isVisible()) {
     if (auto* editor = Editor::activeEditor())
-      updateZoomAngle(editor->projection().angle());
+      updateZoomAngle(editor->viewOptions().angle);
   }
   if (m_sliceFields->isVisible())
     updateSliceFields(site);

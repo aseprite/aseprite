@@ -708,8 +708,11 @@ StatusBar::StatusBar(TooltipManager* tooltipManager)
     m_angleEntry->setValue(0);
     m_angleEntry->setSuffix("º");
     m_angleEntry->ValueChange.connect([this] {
-      if (auto* editor = Editor::activeEditor())
-        editor->setEditorAngle(m_angleEntry->getValue());
+      if (auto* editor = Editor::activeEditor()) {
+        auto opts = editor->viewOptions();
+        opts.angle = m_angleEntry->getValue();
+        editor->setViewOptions(opts);
+      }
     });
 
     setup_mini_look(m_currentFrame);
@@ -794,7 +797,7 @@ void StatusBar::updateFromEditor(Editor* editor)
   if (editor) {
     showIndicators();
     m_zoomEntry->setZoom(editor->zoom());
-    m_angleEntry->setValue(editor->projection().angle());
+    m_angleEntry->setValue(editor->viewOptions().angle);
   }
 }
 

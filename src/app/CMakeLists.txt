@@ -661,6 +661,7 @@ target_sources(app-lib PRIVATE
   ui/editor/state_with_wheel_behavior.cpp
   ui/editor/tool_loop_impl.cpp
   ui/editor/transform_handles.cpp
+  ui/editor/view_options.cpp
   ui/editor/writing_text_state.cpp
   ui/editor/zooming_state.cpp
   ui/export_file_window.cpp

@@ -100,6 +100,8 @@ public:
     return gfx::RectF(u, v, applyX(r.x + r.w) - u, applyY(r.y + r.h) - v);
   }
 
+  gfx::Size apply(const gfx::Size& sz) const { return gfx::Size(applyX(sz.w), applyY(sz.h)); }
+
   gfx::Rect remove(const gfx::Rect& r) const
   {
     int u = removeX(r.x);
@@ -116,14 +118,9 @@ public:
 
   gfx::Matrix scaleMatrix() const { return gfx::Matrix::MakeScale(scaleX(), scaleY()); }
 
-  bool hasAngle() const { return m_angle != 0.0; }
-  double angle() const { return m_angle; }
-  void setAngle(const double angle) { m_angle = angle; }
-
 private:
   doc::PixelRatio m_pixelRatio;
   Zoom m_zoom;
-  double m_angle = 0.0;
 };
 
 } // namespace render

@@ -23,6 +23,7 @@
 #include "app/ui/editor/editor_observers.h"
 #include "app/ui/editor/editor_state.h"
 #include "app/ui/editor/editor_states_history.h"
+#include "app/ui/editor/view_options.h"
 #include "app/ui/tile_source.h"
 #include "app/util/tiled_mode.h"
 #include "doc/algorithm/flip_type.h"
@@ -31,7 +32,6 @@
 #include "doc/selected_objects.h"
 #include "filters/tiled_mode.h"
 #include "gfx/fwd.h"
-#include "gfx/matrix.h"
 #include "obs/connection.h"
 #include "os/color_space.h"
 #include "render/projection.h"
@@ -156,9 +156,9 @@ public:
   const render::Projection& projection() const { return m_proj; }
   const render::Zoom& zoom() const { return m_proj.zoom(); }
   const gfx::Point& padding() const { return m_padding; }
-  const gfx::Matrix& matrix() const { return m_matrix; }
-  bool xflip() const { return m_xflip; }
-  bool yflip() const { return m_yflip; }
+  const ViewOptions& viewOptions() const { return m_view; }
+  const gfx::Matrix& matrix() const { return m_view.matrix; }
+  const gfx::Matrix& invMatrix() const { return m_view.invMatrix; }
 
   void setZoom(const render::Zoom& zoom);
   void setDefaultScroll();
@@ -166,8 +166,7 @@ public:
   void setScrollAndZoomToFitScreen();
   void setEditorScroll(const gfx::Point& scroll);
   void setEditorZoom(const render::Zoom& zoom);
-  void setEditorAngle(double angle);
-  void setEditorFlips(bool x, bool y);
+  void setViewOptions(const ViewOptions& view);
 
   // Updates the Editor's view.
   void updateEditor(const bool restoreScrollPos);
@@ -459,10 +458,8 @@ private:
   Layer* m_layer;            // Active layer in the editor
   frame_t m_frame;           // Active frame in the editor
   render::Projection m_proj; // Zoom/pixel ratio in the editor
-  bool m_xflip = false;
-  bool m_yflip = false;
-  gfx::Matrix m_matrix;
-  gfx::Matrix m_invMatrix;
+  ViewOptions m_view;
+
   DocumentPreferences& m_docPref;
   // Helper functions affected by the current Tiled Mode.
   app::TiledModeHelper m_tiledModeHelper;
