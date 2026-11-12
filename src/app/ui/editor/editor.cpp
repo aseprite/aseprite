@@ -583,6 +583,14 @@ void Editor::setEditorAngle(const double angle)
   StatusBar::instance()->updateZoomAngle(angle);
 }
 
+void Editor::setEditorFlips(const bool x, const bool y)
+{
+  m_xflip = x;
+  m_yflip = y;
+  calcMatrices();
+  invalidate();
+}
+
 void Editor::updateEditor(const bool restoreScrollPos)
 {
   View::getView(this)->updateView(restoreScrollPos);
@@ -3394,14 +3402,21 @@ int Editor::otherLayersOpacity() const
 void Editor::calcMatrices()
 {
   m_matrix.setIdentity();
-  if (m_proj.hasAngle()) {
+
+  if (m_proj.hasAngle() || m_xflip || m_yflip) {
     gfx::Size sz = canvasSize();
-    m_matrix.setRotate(m_proj.angle());
+    if (m_proj.hasAngle())
+      m_matrix.setRotate(m_proj.angle());
 
     gfx::PointF delta(m_padding.x + m_proj.applyX(sz.w) / 2, m_padding.y + m_proj.applyY(sz.h) / 2);
     m_matrix.preTranslate(-delta.x, -delta.y);
+    if (m_xflip || m_yflip) {
+      gfx::Matrix scale = gfx::Matrix::MakeScale(m_xflip ? -1 : 1, m_yflip ? -1 : 1);
+      m_matrix.postConcat(scale);
+    }
     m_matrix.postTranslate(delta.x, delta.y);
   }
+
   auto inv = m_matrix.invert();
   m_invMatrix = (inv ? *inv : m_matrix);
 }
