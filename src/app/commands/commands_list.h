@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -52,6 +52,7 @@ FOR_EACH_COMMAND(Fill)
 FOR_EACH_COMMAND(FitScreen)
 FOR_EACH_COMMAND(FlattenLayers)
 FOR_EACH_COMMAND(Flip)
+FOR_EACH_COMMAND(FlipView)
 FOR_EACH_COMMAND(FrameProperties)
 FOR_EACH_COMMAND(FrameTagProperties)
 FOR_EACH_COMMAND(FullscreenMode)
@@ -125,8 +126,10 @@ FOR_EACH_COMMAND(ReopenClosedFile)
 FOR_EACH_COMMAND(RepeatLastExport)
 FOR_EACH_COMMAND(ReplaceColor)
 FOR_EACH_COMMAND(ReselectMask)
+FOR_EACH_COMMAND(ResetView)
 FOR_EACH_COMMAND(ReverseFrames)
 FOR_EACH_COMMAND(Rotate)
+FOR_EACH_COMMAND(RotateView)
 FOR_EACH_COMMAND(RunCommand)
 FOR_EACH_COMMAND(SaveFile)
 FOR_EACH_COMMAND(SaveFileAs)
