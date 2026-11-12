@@ -640,7 +640,7 @@
             <text color="button_normal_text"/>
             <text color="button_hot_text" state="mouse"/>
             <text color="button_selected_text" state="selected"/>
-            <text color="background" x="1" y="1" state="disabled"/>
+            <text color="background" x="1" y="1" state="disabled" decorative="true"/>
             <newlayer/>
             <text color="disabled" state="disabled"/>
         </style>
@@ -1166,7 +1166,7 @@
             <text color="button_hot_text" state="mouse"/>
             <text color="button_selected_text" state="mouse capture"/>
             <text color="button_selected_text" state="capture selected"/>
-            <text color="background" x="1" y="1" state="disabled"/>
+            <text color="background" x="1" y="1" state="disabled" decorative="true"/>
             <newlayer/>
             <text color="disabled" state="disabled"/>
         </style>
@@ -1176,7 +1176,7 @@
             <text color="button_hot_text" state="mouse" align="top"/>
             <text color="button_selected_text" state="mouse capture" align="top"/>
             <text color="button_selected_text" state="capture selected" align="top"/>
-            <text color="background" x="1" y="1" state="disabled" align="top"/>
+            <text color="background" x="1" y="1" state="disabled" align="top" decorative="true"/>
             <newlayer/>
             <text color="disabled" state="disabled" align="top"/>
         </style>
