@@ -43,9 +43,7 @@ int generic_mt_index(lua_State* L)
     return 1;
   }
 
-  lua_getglobal(L, "debug");
-  lua_getfield(L, -1, "traceback");
-  lua_call(L, 0, 1);
+  luaL_traceback(L, L, nullptr, 1);
   const char* tb = lua_tostring(L, -1);
 
   lua_getglobal(L, "tostring");
@@ -53,7 +51,7 @@ int generic_mt_index(lua_State* L)
   lua_call(L, 1, 1);
   const char* k = lua_tostring(L, -1);
 
-  return luaL_error(L, "%s: Field %s does not exist", tb ? tb : "", k ? k : "nil");
+  return luaL_error(L, "%s: Field '%s' does not exist", tb ? tb : "", k ? k : "nil");
 }
 
 int generic_mt_newindex(lua_State* L)
@@ -88,9 +86,7 @@ int generic_mt_newindex(lua_State* L)
     return 1;
   }
 
-  lua_getglobal(L, "debug");
-  lua_getfield(L, -1, "traceback");
-  lua_call(L, 0, 1);
+  luaL_traceback(L, L, nullptr, 1);
   const char* tb = lua_tostring(L, -1);
 
   lua_getglobal(L, "tostring");
@@ -98,7 +94,7 @@ int generic_mt_newindex(lua_State* L)
   lua_call(L, 1, 1);
   const char* k = lua_tostring(L, -1);
 
-  return luaL_error(L, "%s: Cannot set field %s", tb ? tb : "", k ? k : "nil");
+  return luaL_error(L, "%s: Cannot set field '%s'", tb ? tb : "", k ? k : "nil");
 }
 
 void create_mt_getters_setters(lua_State* L, const char* tname, const Property* properties)
