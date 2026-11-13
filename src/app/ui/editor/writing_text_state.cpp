@@ -724,7 +724,7 @@ gfx::Rect WritingTextState::calcEntryBounds()
 {
   const View* view = View::getView(m_editor);
   const gfx::Rect vp = view->viewportBounds();
-  const gfx::Point scroll = view->viewScroll();
+  const gfx::PointF scroll = view->viewScroll();
   const auto& padding = m_editor->padding();
   const auto& proj = m_editor->projection();
   gfx::Point pt1(m_bounds.origin());

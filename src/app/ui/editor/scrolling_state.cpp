@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -45,7 +46,7 @@ bool ScrollingState::onMouseUp(Editor* editor, MouseMessage* msg)
 bool ScrollingState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   View* view = View::getView(editor);
-  gfx::Point scroll = view->viewScroll();
+  gfx::PointF scroll = view->viewScroll();
   gfx::Point newPos = msg->position();
 
 #ifdef _WIN32

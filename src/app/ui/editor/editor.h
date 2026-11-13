@@ -164,7 +164,7 @@ public:
   void setDefaultScroll();
   void setScrollToCenter();
   void setScrollAndZoomToFitScreen();
-  void setEditorScroll(const gfx::Point& scroll);
+  void setEditorScroll(const gfx::PointF& scroll);
   void setEditorZoom(const render::Zoom& zoom);
   void setViewOptions(const ViewOptions& view);
 

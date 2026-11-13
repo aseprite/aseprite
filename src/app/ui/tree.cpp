@@ -149,10 +149,10 @@ void Tree::setSelected(TreeNode* node, bool scrollToNode)
   if (auto* view = View::getView(this); scrollToNode && node && view && view->hasScrollBars()) {
     // Fast paths first
     if (m_selected == root()) {
-      view->setViewScroll(gfx::Point(0, 0));
+      view->setViewScroll(gfx::PointF(0, 0));
     }
     else if (m_selected->hasChildren() && m_selected == m_root->lastChild()) {
-      view->setViewScroll(gfx::Point(0, view->getScrollableSize().h));
+      view->setViewScroll(gfx::PointF(0, view->getScrollableSize().h));
     }
     else {
       const auto fontHeight = font()->metrics(nullptr);
@@ -176,7 +176,7 @@ void Tree::setSelected(TreeNode* node, bool scrollToNode)
       viewRect.offset(-bounds().origin());
 
       if (!viewRect.contains(nodeRect)) {
-        gfx::Point point(viewRect.x, nodeRect.y);
+        gfx::PointF point(viewRect.x, nodeRect.y);
 
         if (nodeRect.y2() > viewRect.y2())
           point.y = nodeRect.y - (viewRect.h - nodeRect.h - (m_themeCache.itemSpacing * 2));

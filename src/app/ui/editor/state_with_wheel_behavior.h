@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2023  Igara Studio S.A.
+// Copyright (C) 2022-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -62,7 +62,7 @@ protected:
   virtual int initialBgTileIndex() const;
   virtual int initialBrushSize();
   virtual int initialBrushAngle();
-  virtual gfx::Point initialScroll(Editor* editor) const;
+  virtual gfx::PointF initialScroll(Editor* editor) const;
   virtual render::Zoom initialZoom(Editor* editor) const;
   virtual doc::frame_t initialFrame(Editor* editor) const;
   virtual doc::layer_t initialLayer(Editor* editor) const;

@@ -495,8 +495,8 @@ void Editor::setScrollToCenter()
   Rect vp = view->viewportBounds();
   gfx::Size canvas = canvasSize();
 
-  setEditorScroll(gfx::Point(m_padding.x - vp.w / 2 + m_proj.applyX(canvas.w) / 2,
-                             m_padding.y - vp.h / 2 + m_proj.applyY(canvas.h) / 2));
+  setEditorScroll(gfx::PointF(m_padding.x - vp.w / 2 + m_proj.applyX(canvas.w) / 2,
+                              m_padding.y - vp.h / 2 + m_proj.applyY(canvas.h) / 2));
 }
 
 void Editor::setScrollAndZoomToFitScreen()
@@ -556,12 +556,12 @@ void Editor::setScrollAndZoomToFitScreen()
   setZoom(m_proj.zoom());
 
   updateEditor(false);
-  setEditorScroll(gfx::Point(m_padding.x - vp.w / 2 + m_proj.applyX(canvas.w) / 2,
-                             m_padding.y - vp.h / 2 + m_proj.applyY(canvas.h) / 2));
+  setEditorScroll(gfx::PointF(m_padding.x - vp.w / 2 + m_proj.applyX(canvas.w) / 2,
+                              m_padding.y - vp.h / 2 + m_proj.applyY(canvas.h) / 2));
 }
 
 // Sets the scroll position of the editor
-void Editor::setEditorScroll(const gfx::Point& scroll)
+void Editor::setEditorScroll(const gfx::PointF& scroll)
 {
   View::getView(this)->setViewScroll(scroll);
 }
@@ -1578,7 +1578,7 @@ void Editor::onAutoScrollTick()
   m_autoScrollAccum.x -= delta.x;
   m_autoScrollAccum.y -= delta.y;
 
-  gfx::Point scroll = view->viewScroll();
+  gfx::PointF scroll = view->viewScroll();
   scroll += (m_autoScrollDir == AutoScroll::MouseDir ? delta : -delta);
 
   // Ignore scroll change events while the scroll is set from the auto-scroll
@@ -1827,8 +1827,8 @@ void Editor::centerInSpritePoint(const gfx::PointF& spritePos)
   View* view = View::getView(this);
   Rect vp = view->viewportBounds();
 
-  gfx::Point scroll(m_padding.x - (vp.w / 2) + m_proj.applyX(spritePos.x),
-                    m_padding.y - (vp.h / 2) + m_proj.applyY(spritePos.y));
+  gfx::PointF scroll(m_padding.x - (vp.w / 2) + m_proj.applyX(spritePos.x),
+                     m_padding.y - (vp.h / 2) + m_proj.applyY(spritePos.y));
 
   updateEditor(false);
   setEditorScroll(scroll);
@@ -2933,7 +2933,7 @@ void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
   }
 
   gfx::Point padding = calcExtraPadding(proj);
-  gfx::Point scrollPos(
+  gfx::PointF scrollPos(
     padding.x - (screenPos.x - vp.x) + proj.applyX(spritePos.x + proj.removeX(1) / 2) +
       int(proj.applyX(subpixelPos.x)),
     padding.y - (screenPos.y - vp.y) + proj.applyY(spritePos.y + proj.removeY(1) / 2) +

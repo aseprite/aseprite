@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -253,7 +253,7 @@ void StateWithWheelBehavior::processWheelAction(Editor* editor,
     case WheelAction::HScroll:
     case WheelAction::VScroll: {
       View* view = View::getView(editor);
-      gfx::Point scroll = initialScroll(editor);
+      gfx::PointF scroll = initialScroll(editor);
 
       if (preciseWheel == PreciseWheel::Off) {
         gfx::Rect vp = view->viewportBounds();
@@ -615,7 +615,7 @@ int StateWithWheelBehavior::initialBrushAngle()
   return brush.angle();
 }
 
-gfx::Point StateWithWheelBehavior::initialScroll(Editor* editor) const
+gfx::PointF StateWithWheelBehavior::initialScroll(Editor* editor) const
 {
   View* view = View::getView(editor);
   return view->viewScroll();
