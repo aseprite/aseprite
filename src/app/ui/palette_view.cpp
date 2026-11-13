@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -735,7 +735,7 @@ bool PaletteView::onProcessMessage(Message* msg)
         setBoxSize(m_boxsize + z);
       }
       else {
-        gfx::Point scroll = view->viewScroll();
+        gfx::PointF scroll = view->viewScroll();
 
         if (static_cast<MouseMessage*>(msg)->preciseWheel())
           scroll += delta;
@@ -1009,7 +1009,7 @@ void PaletteView::update_scroll(int color)
     return;
 
   gfx::Rect vp = view->viewportBounds();
-  gfx::Point scroll;
+  gfx::PointF scroll;
   int x, y, cols;
   div_t d;
   const int boxsize = boxSizePx();

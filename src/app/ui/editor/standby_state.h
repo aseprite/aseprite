@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/transformation.h"
+#include "app/ui/editor/editor_coord.h"
 #include "app/ui/editor/editor_decorator.h"
 #include "app/ui/editor/handle_type.h"
 #include "app/ui/editor/state_with_wheel_behavior.h"
@@ -71,13 +72,13 @@ protected:
       gfx::Rect bounds;
       Handle(int align, const gfx::Rect& bounds) : align(align), bounds(bounds) {}
     };
-    typedef std::vector<Handle> Handles;
+    using Handles = std::vector<Handle>;
 
     Decorator(StandbyState* standbyState);
     virtual ~Decorator();
 
     TransformHandles* getTransformHandles(Editor* editor);
-    bool getSymmetryHandles(Editor* editor, Handles& handles);
+    bool getSymmetryHandles(Editor* editor, Handles& handles, EditorCoord coord);
 
     bool onSetCursor(tools::Ink* ink, Editor* editor, const gfx::Point& mouseScreenPos);
 

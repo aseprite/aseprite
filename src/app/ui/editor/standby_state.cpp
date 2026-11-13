@@ -131,7 +131,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 
   // Move symmetry
   Decorator::Handles handles;
-  if (m_decorator->getSymmetryHandles(editor, handles)) {
+  if (m_decorator->getSymmetryHandles(editor, handles, EditorCoord::OnScreen)) {
     for (const auto& handle : handles) {
       if (handle.bounds.contains(msg->position())) {
         auto mode = (handle.align & (TOP | BOTTOM) ? app::gen::SymmetryMode::HORIZONTAL :
@@ -727,9 +727,8 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
     // Instead, aseprite switchs to TilemapMode::Pixels.
     // This limitation on TilemapMode::Tiles is to avoid involuntary tile break when
     // the canvas size is not a multiple of the tile size.
-    if (&editor->getTiledModeHelper() && editor->getTiledModeHelper().tiledEnabled() &&
-        site.layer()->isTilemap() && site.tilemapMode() == TilemapMode::Tiles &&
-        ColorBar::instance()) {
+    if (editor->getTiledModeHelper().tiledEnabled() && site.layer()->isTilemap() &&
+        site.tilemapMode() == TilemapMode::Tiles && ColorBar::instance()) {
       ColorBar::instance()->setTilemapMode(TilemapMode::Pixels);
       site.tilemapMode(TilemapMode::Pixels);
     }
@@ -840,7 +839,7 @@ gfx::Rect StandbyState::resizeCelBounds(Editor* editor) const
                    editor->layer()->cel(editor->frame()) :
                    nullptr);
   if (refCel) {
-    bounds = editor->editorToScreen(refCel->boundsF());
+    bounds = editor->editorToScreen(refCel->boundsF(), EditorCoord::OnScreen);
     bounds.w /= 4;
     bounds.h /= 4;
     bounds.x += 3 * bounds.w;
@@ -862,7 +861,7 @@ bool StandbyState::overSelectionEdges(Editor* editor, const gfx::Point& mouseScr
     for (const auto& seg : editor->document()->maskBoundaries()) {
       gfx::Rect segBounds = seg.bounds();
       segBounds.offset(mainOffset);
-      segBounds = editor->editorToScreen(segBounds);
+      segBounds = editor->editorToScreen(segBounds, EditorCoord::OnScreen);
       if (seg.vertical())
         segBounds.w = 1;
       else
@@ -997,7 +996,7 @@ bool StandbyState::Decorator::onSetCursor(tools::Ink* ink,
 
   // Move symmetry
   Handles handles;
-  if (getSymmetryHandles(editor, handles)) {
+  if (getSymmetryHandles(editor, handles, EditorCoord::OnScreen)) {
     for (const auto& handle : handles) {
       if (handle.bounds.contains(mouseScreenPos)) {
         switch (handle.align) {
@@ -1017,6 +1016,9 @@ bool StandbyState::Decorator::onSetCursor(tools::Ink* ink,
 void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
 {
   Editor* editor = render->getEditor();
+  ui::Graphics* g = render->getGraphics();
+  SaveGraphics save(g);
+  g->resetMatrix();
 
   // Draw transformation handles (if the mask is visible and isn't frozen).
   if (editor->isActive() && editor->editorFlags() & Editor::kShowMask &&
@@ -1026,7 +1028,7 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
 
     if (ink->isSelection()) {
       getTransformHandles(editor)->drawHandles(editor,
-                                               render->getGraphics(),
+                                               g,
                                                m_standbyState->getTransformation(editor));
 
       m_standbyState->m_transformSelectionHandlesAreVisible = true;
@@ -1035,25 +1037,26 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
 
   // Draw transformation handles (if the mask is visible and isn't frozen).
   Handles handles;
-  if (StandbyState::Decorator::getSymmetryHandles(editor, handles)) {
+  if (StandbyState::Decorator::getSymmetryHandles(editor, handles, EditorCoord::OnScreen)) {
     auto theme = skin::SkinTheme::get(editor);
     os::Surface* part = theme->parts.transformationHandle()->bitmap(0);
-    ui::Graphics g(editor->display());
     for (const auto& handle : handles)
-      g.drawRgbaSurface(part, handle.bounds.x, handle.bounds.y);
+      g->drawRgbaSurface(part, handle.bounds.x, handle.bounds.y);
   }
 }
 
 void StandbyState::Decorator::getInvalidDecoratoredRegion(Editor* editor, gfx::Region& region)
 {
   Handles handles;
-  if (getSymmetryHandles(editor, handles)) {
+  if (getSymmetryHandles(editor, handles, EditorCoord::OnScreen)) {
     for (const auto& handle : handles)
       region.createUnion(region, gfx::Region(handle.bounds));
   }
 }
 
-bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, Handles& handles)
+bool StandbyState::Decorator::getSymmetryHandles(Editor* editor,
+                                                 Handles& handles,
+                                                 const EditorCoord coord)
 {
   // Draw transformation handles (if the mask is visible and isn't frozen).
   if (editor->isActive() && editor->editorFlags() & Editor::kShowSymmetryLine &&
@@ -1062,8 +1065,8 @@ bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, Handles& handle
     auto mode = symmetry.mode();
     if (mode != app::gen::SymmetryMode::NONE) {
       gfx::Rect mainTileBounds(editor->mainTilePosition(), editor->sprite()->bounds().size());
-      gfx::Rect canvasBounds(gfx::Point(0, 0), editor->canvasSize());
-      gfx::RectF editorViewport(View::getView(editor)->viewportBounds());
+      gfx::RectF canvasBounds(gfx::PointF(0, 0), gfx::SizeF(editor->canvasSize()));
+
       auto theme = skin::SkinTheme::get(editor);
       os::Surface* part = theme->parts.transformationHandle()->bitmap(0);
 
@@ -1074,13 +1077,13 @@ bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, Handles& handle
         gfx::PointF pt1, pt2;
 
         pt1 = gfx::PointF(mainTileBounds.x + pos, canvasBounds.y);
-        pt1 = editor->editorToScreenF(pt1);
+        pt1 = editor->editorToScreenF(pt1, coord);
         pt2 = gfx::PointF(mainTileBounds.x + pos, canvasBounds.y2());
-        pt2 = editor->editorToScreenF(pt2);
-        pt1.y = std::max(pt1.y - part->height(), editorViewport.y);
-        pt2.y = std::min(pt2.y, editorViewport.point2().y - part->height());
+        pt2 = editor->editorToScreenF(pt2, coord);
         pt1.x -= part->width() / 2;
         pt2.x -= part->width() / 2;
+        pt1.y -= part->height() / 2;
+        pt2.y -= part->height() / 2;
 
         handles.push_back(
           Handle(TOP, gfx::Rect(int(pt1.x), int(pt1.y), part->width(), part->height())));
@@ -1095,11 +1098,11 @@ bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, Handles& handle
         gfx::PointF pt1, pt2;
 
         pt1 = gfx::PointF(canvasBounds.x, mainTileBounds.y + pos);
-        pt1 = editor->editorToScreenF(pt1);
+        pt1 = editor->editorToScreenF(pt1, coord);
         pt2 = gfx::PointF(canvasBounds.x2(), mainTileBounds.y + pos);
-        pt2 = editor->editorToScreenF(pt2);
-        pt1.x = std::max(pt1.x - part->width(), editorViewport.x);
-        pt2.x = std::min(pt2.x, editorViewport.point2().x - part->width());
+        pt2 = editor->editorToScreenF(pt2, coord);
+        pt1.x -= part->width() / 2;
+        pt2.x -= part->width() / 2;
         pt1.y -= part->height() / 2;
         pt2.y -= part->height() / 2;
 
@@ -1109,6 +1112,21 @@ bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, Handles& handle
           Handle(RIGHT, gfx::Rect(int(pt2.x), int(pt2.y), part->width(), part->height())));
       }
 
+      // All handles inside viewport area
+      if (!handles.empty()) {
+        gfx::Rect vp = View::getView(editor)->viewportBounds();
+        for (auto& handle : handles) {
+          // The case for rotated viewports is a little more complex,
+          // we must limit the handle position along each axis.
+          if (editor->viewOptions().isRotated()) {
+            // TODO
+          }
+          else {
+            handle.bounds.x = std::clamp(handle.bounds.x, vp.x, vp.x2() - handle.bounds.w);
+            handle.bounds.y = std::clamp(handle.bounds.y, vp.y, vp.y2() - handle.bounds.h);
+          }
+        }
+      }
       return true;
     }
   }

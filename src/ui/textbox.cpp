@@ -42,7 +42,7 @@ bool TextBox::onProcessMessage(Message* msg)
         View* view = View::getView(this);
         if (view) {
           gfx::Rect vp = view->viewportBounds();
-          gfx::Point scroll = view->viewScroll();
+          gfx::PointF scroll = view->viewScroll();
           int textheight = textHeight();
 
           switch (static_cast<KeyMessage*>(msg)->scancode()) {
@@ -107,7 +107,7 @@ bool TextBox::onProcessMessage(Message* msg)
     case kMouseMoveMessage: {
       View* view = View::getView(this);
       if (view && hasCapture()) {
-        gfx::Point scroll = view->viewScroll();
+        gfx::PointF scroll = view->viewScroll();
         gfx::Point newPos = static_cast<MouseMessage*>(msg)->position();
 
         scroll += m_oldPos - newPos;

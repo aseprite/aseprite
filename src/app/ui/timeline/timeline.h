@@ -149,8 +149,8 @@ public:
 
   // ScrollableViewDelegate impl
   gfx::Size visibleSize() const override;
-  gfx::Point viewScroll() const override;
-  void setViewScroll(const gfx::Point& pt) override;
+  gfx::PointF viewScroll() const override;
+  void setViewScroll(const gfx::PointF& pt) override;
 
   void lockRange();
   void unlockRange();

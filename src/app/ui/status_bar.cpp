@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -704,6 +704,19 @@ StatusBar::StatusBar(TooltipManager* tooltipManager)
     m_zoomEntry = new ZoomEntry;
     m_zoomEntry->ZoomChange.connect(&StatusBar::onChangeZoom, this);
 
+    m_angleEntry = new ui::IntEntry(-180, 180);
+    m_angleEntry->setValue(0);
+    m_angleEntry->setSuffix("º");
+    m_angleEntry->ValueChange.connect([this] {
+      if (auto* editor = Editor::activeEditor()) {
+        auto opts = editor->viewOptions();
+        if (opts.angle != m_angleEntry->getValue()) {
+          opts.angle = m_angleEntry->getValue();
+          editor->setViewOptions(opts);
+        }
+      }
+    });
+
     setup_mini_look(m_currentFrame);
 
     box4->addChild(m_currentFrame);
@@ -712,6 +725,7 @@ StatusBar::StatusBar(TooltipManager* tooltipManager)
     box1->addChild(m_frameLabel);
     box1->addChild(box4);
     box1->addChild(m_zoomEntry);
+    box1->addChild(m_angleEntry);
 
     m_docControls->addChild(box1);
     m_commandsBox = box1;
@@ -721,6 +735,7 @@ StatusBar::StatusBar(TooltipManager* tooltipManager)
   tooltipManager->addTooltipFor(m_currentFrame, Strings::statusbar_tips_current_frame(), BOTTOM);
   tooltipManager->addTooltipFor(m_zoomEntry, Strings::statusbar_tips_zoom_level(), BOTTOM);
   tooltipManager->addTooltipFor(m_newFrame, Strings::statusbar_tips_new_frame(), BOTTOM);
+  tooltipManager->addTooltipFor(m_angleEntry, Strings::statusbar_tips_angle(), BOTTOM);
 
   App::instance()->activeToolManager()->add_observer(this);
 
@@ -784,7 +799,14 @@ void StatusBar::updateFromEditor(Editor* editor)
   if (editor) {
     showIndicators();
     m_zoomEntry->setZoom(editor->zoom());
+    m_angleEntry->setValue(editor->viewOptions().angle);
   }
+}
+
+void StatusBar::updateZoomAngle(double angle)
+{
+  if (m_angleEntry->getValue() != angle)
+    m_angleEntry->setValue(angle);
 }
 
 void StatusBar::showBackupIcon(BackupIcon icon)

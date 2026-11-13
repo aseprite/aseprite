@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/extra_cel.h"
+#include "app/ui/editor/view_options.h"
 #include "doc/brush.h"
 #include "doc/color.h"
 #include "doc/frame.h"
@@ -121,6 +122,7 @@ private:
   bool m_layerAdded = false;
   int m_cachedType = 0;
   int m_cachedBrushGen = 0;
+  ViewOptions m_cachedViewOptions;
 
   // Information about current brush
   doc::MaskBoundaries m_brushBoundaries;

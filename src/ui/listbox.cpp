@@ -148,7 +148,7 @@ void ListBox::makeChildVisible(Widget* child)
   if (!view)
     return;
 
-  gfx::Point scroll = view->viewScroll();
+  gfx::PointF scroll = view->viewScroll();
   gfx::Rect vp = view->viewportBounds();
 
   if (child->bounds().y < vp.y)
@@ -167,7 +167,7 @@ void ListBox::centerScroll()
 
   if (view && item) {
     gfx::Rect vp = view->viewportBounds();
-    gfx::Point scroll = view->viewScroll();
+    gfx::PointF scroll = view->viewScroll();
 
     scroll.y = ((item->bounds().y - bounds().y) - vp.h / 2 + item->bounds().h / 2);
 
@@ -311,7 +311,7 @@ bool ListBox::onProcessMessage(Message* msg)
           case kKeyRight:
             if (view) {
               gfx::Rect vp = view->viewportBounds();
-              gfx::Point scroll = view->viewScroll();
+              gfx::PointF scroll = view->viewScroll();
               int sgn = (keymsg->scancode() == kKeyLeft) ? -1 : 1;
 
               scroll.x += vp.w / 2 * sgn;

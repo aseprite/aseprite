@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -1148,7 +1148,7 @@ void Menu::highlightItem(MenuItem* menuitem, bool click, bool open_submenu, bool
         gfx::Rect itemBounds = menuitem->bounds();
         itemBounds.y -= menuitem->parent()->origin().y;
 
-        gfx::Point scroll = view->viewScroll();
+        gfx::PointF scroll = view->viewScroll();
         gfx::Size visSize = view->visibleSize();
 
         if (itemBounds.y < scroll.y)

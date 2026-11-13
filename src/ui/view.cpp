@@ -123,12 +123,12 @@ Size View::visibleSize() const
               m_viewport.bounds().h - m_viewport.border().height());
 }
 
-Point View::viewScroll() const
+PointF View::viewScroll() const
 {
-  return Point(m_scrollbar_h.getPos(), m_scrollbar_v.getPos());
+  return PointF(m_scrollbar_h.getPos(), m_scrollbar_v.getPos());
 }
 
-void View::setViewScroll(const Point& pt)
+void View::setViewScroll(const PointF& pt)
 {
   onSetViewScroll(pt);
 }
@@ -139,7 +139,7 @@ void View::setViewScroll(const Point& pt)
 void View::updateView(const bool restoreScrollPos)
 {
   Widget* vw = UI_FIRST_WIDGET(m_viewport.children());
-  Point scroll = viewScroll();
+  PointF scroll = viewScroll();
 
   // Get current mouse capture just in case if one of the scroll bars
   // have the mouse captured, which means that while we were scrolling
@@ -167,7 +167,7 @@ void View::updateView(const bool restoreScrollPos)
     if (vw)
       setViewScroll(scroll);
     else
-      setViewScroll(Point(0, 0));
+      setViewScroll(PointF(0, 0));
   }
 
   if (Widget* child = attachedWidget()) {
@@ -216,7 +216,7 @@ void View::scrollByMessage(const Widget* widget, Message* message, std::optional
   if (!multiplier.has_value())
     multiplier = widget->textHeight() * 3;
 
-  gfx::Point scroll = view->viewScroll();
+  gfx::PointF scroll = view->viewScroll();
 
   if (mouseMsg->preciseWheel())
     scroll += mouseMsg->wheelDelta();
@@ -269,14 +269,14 @@ void View::onSizeHint(SizeHintEvent& ev)
   ev.setSizeHint(sz);
 }
 
-void View::onSetViewScroll(const gfx::Point& pt)
+void View::onSetViewScroll(const gfx::PointF& pt)
 {
   // If the view is not visible, we don't adjust any screen region.
   if (!isVisible())
     return;
 
-  Point oldScroll = viewScroll();
-  Point newScroll = limitScrollPosToViewport(pt);
+  PointF oldScroll = viewScroll();
+  PointF newScroll = limitScrollPosToViewport(pt);
   if (newScroll == oldScroll)
     return;
 
@@ -335,7 +335,7 @@ void View::onSetViewScroll(const gfx::Point& pt)
   // delta/movement).
   if (has_devmode_flags(ui::DevModeFlags::MoveRegionOnViewScroll) && display &&
       !display->nativeWindow()->gpuAcceleration()) {
-    const Point delta = oldScroll - newScroll;
+    const Point delta(oldScroll - newScroll);
     // The movable region includes the given "validRegion"
     // intersecting itself when it's in the new position, so we don't
     // overlap regions outside the "validRegion".
@@ -385,7 +385,7 @@ void View::onScrollChange()
   // Do nothing
 }
 
-void View::updateAttachedWidgetBounds(const gfx::Point& scrollPos)
+void View::updateAttachedWidgetBounds(const gfx::PointF& scrollPos)
 {
   Rect cpos = m_viewport.childrenBounds();
   cpos.offset(-scrollPos);
@@ -400,12 +400,12 @@ void View::updateAttachedWidgetBounds(const gfx::Point& scrollPos)
   }
 }
 
-gfx::Point View::limitScrollPosToViewport(const gfx::Point& pt) const
+gfx::PointF View::limitScrollPosToViewport(const gfx::PointF& pt) const
 {
   const Size maxSize = getScrollableSize();
   const Size visible = visibleSize();
-  return Point(std::clamp(pt.x, 0, std::max(0, maxSize.w - visible.w)),
-               std::clamp(pt.y, 0, std::max(0, maxSize.h - visible.h)));
+  return PointF(std::clamp<float>(pt.x, 0, std::max(0, maxSize.w - visible.w)),
+                std::clamp<float>(pt.y, 0, std::max(0, maxSize.h - visible.h)));
 }
 
 } // namespace ui

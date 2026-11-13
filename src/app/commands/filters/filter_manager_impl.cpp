@@ -369,7 +369,8 @@ void FilterManagerImpl::flush()
       // avoid screen artifacts when we apply filters like convolution
       // matrices.
       gfx::Rect rect(
-        editor->editorToScreen(gfx::Point(m_bounds.x, m_bounds.y + m_nextRowToFlush - 1)),
+        editor->editorToScreen(gfx::Point(m_bounds.x, m_bounds.y + m_nextRowToFlush - 1),
+                               EditorCoord::OnScreen),
         gfx::Size(editor->projection().applyX(m_bounds.w),
                   (editor->projection().scaleY() >= 1 ? editor->projection().applyY(h + 2) :
                                                         editor->projection().removeY(h + 2))));

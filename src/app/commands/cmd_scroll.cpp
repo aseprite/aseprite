@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2024  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -52,7 +52,7 @@ void ScrollCommand::onExecute(Context* context)
 {
   auto editor = Editor::activeEditor();
   ui::View* view = ui::View::getView(editor);
-  gfx::Point scroll = view->viewScroll();
+  gfx::PointF scroll = view->viewScroll();
   gfx::Point delta = m_moveThing.getDelta(context);
 
   editor->setEditorScroll(scroll + delta);

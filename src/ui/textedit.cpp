@@ -680,7 +680,7 @@ void TextEdit::ensureCaretVisible()
   if (!view->hasScrollBars())
     return;
 
-  gfx::Point scroll = view->viewScroll();
+  gfx::PointF scroll = view->viewScroll();
   gfx::Rect vp = view->viewportBounds();
   gfx::Rect caret = caretBounds();
 

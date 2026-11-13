@@ -18,10 +18,12 @@
 #include "app/tools/tool_loop_modifiers.h"
 #include "app/ui/color_source.h"
 #include "app/ui/editor/brush_preview.h"
+#include "app/ui/editor/editor_coord.h"
 #include "app/ui/editor/editor_hit.h"
 #include "app/ui/editor/editor_observers.h"
 #include "app/ui/editor/editor_state.h"
 #include "app/ui/editor/editor_states_history.h"
+#include "app/ui/editor/view_options.h"
 #include "app/ui/tile_source.h"
 #include "app/util/tiled_mode.h"
 #include "doc/algorithm/flip_type.h"
@@ -97,11 +99,6 @@ public:
                            kShowSymmetryLine | kShowSlices)
   };
 
-  enum class ZoomBehavior {
-    CENTER, // Zoom from center (don't change center of the editor)
-    MOUSE,  // Zoom from cursor
-  };
-
   static ui::WidgetType Type();
 
   Editor(Doc* document, EditorFlags flags = kDefaultEditorFlags, EditorStatePtr state = nullptr);
@@ -154,13 +151,17 @@ public:
   const render::Projection& projection() const { return m_proj; }
   const render::Zoom& zoom() const { return m_proj.zoom(); }
   const gfx::Point& padding() const { return m_padding; }
+  const ViewOptions& viewOptions() const { return m_view; }
+  const gfx::Matrix& matrix() const { return m_view.matrix; }
+  const gfx::Matrix& invMatrix() const { return m_view.invMatrix; }
 
   void setZoom(const render::Zoom& zoom);
   void setDefaultScroll();
   void setScrollToCenter();
   void setScrollAndZoomToFitScreen();
-  void setEditorScroll(const gfx::Point& scroll);
+  void setEditorScroll(const gfx::PointF& scroll);
   void setEditorZoom(const render::Zoom& zoom);
+  void setViewOptions(const ViewOptions& view);
 
   // Updates the Editor's view.
   void updateEditor(const bool restoreScrollPos);
@@ -173,16 +174,15 @@ public:
   // Convert ui::Display coordinates (pixel relative to the top-left
   // corner of the in the display content bounds) from/to
   // editor/sprite coordinates (pixel in the canvas).
-  //
-  // TODO we should rename these functions to displayToEditor() and editorToDisplay()
-  gfx::Point screenToEditor(const gfx::Point& pt) const;
-  gfx::Point screenToEditorCeiling(const gfx::Point& pt) const;
-  gfx::PointF screenToEditorF(const gfx::Point& pt) const;
-  gfx::Point editorToScreen(const gfx::Point& pt) const;
-  gfx::PointF editorToScreenF(const gfx::PointF& pt) const;
-  gfx::Rect screenToEditor(const gfx::Rect& rc) const;
-  gfx::Rect editorToScreen(const gfx::Rect& rc) const;
-  gfx::RectF editorToScreenF(const gfx::RectF& rc) const;
+  gfx::Point screenToEditor(const gfx::Point& pt, EditorCoord coord = EditorCoord::OnScreen) const;
+  gfx::PointF screenToEditorF(const gfx::Point& pt,
+                              EditorCoord coord = EditorCoord::OnScreen) const;
+  gfx::Point editorToScreen(const gfx::Point& pt, EditorCoord coord = EditorCoord::OnScreen) const;
+  gfx::PointF editorToScreenF(const gfx::PointF& pt,
+                              EditorCoord coord = EditorCoord::OnScreen) const;
+  gfx::Rect screenToEditor(const gfx::Rect& rc, EditorCoord coord = EditorCoord::OnScreen) const;
+  gfx::Rect editorToScreen(const gfx::Rect& rc, EditorCoord coord = EditorCoord::OnScreen) const;
+  gfx::RectF editorToScreenF(const gfx::RectF& rc, EditorCoord coord = EditorCoord::OnScreen) const;
 
   void add_observer(EditorObserver* observer);
   void remove_observer(EditorObserver* observer);
@@ -198,14 +198,18 @@ public:
   gfx::Rect getVisibleSpriteBounds();
 
   gfx::Size canvasSize() const;
+  gfx::Size rotatedCanvasSize(double angle) const;
+  gfx::Size rotatedCanvasSize() const { return rotatedCanvasSize(m_view.angle); }
   gfx::Point mainTilePosition() const;
   void expandRegionByTiledMode(gfx::Region& rgn, const bool withProj) const;
   void collapseRegionByTiledMode(gfx::Region& rgn) const;
 
   // Changes the scroll to see the given point as the center of the editor.
+  void matchSpriteWithScreenPoint(const gfx::PointF& spritePos, const gfx::Point& screenPos);
   void centerInSpritePoint(const gfx::PointF& spritePos);
   void centerInSpritePoint(const gfx::Point& spritePos);
   gfx::PointF spritePointInCenter() const;
+  gfx::Point screenPointInCenter() const;
 
   void updateStatusBar();
 
@@ -240,9 +244,7 @@ public:
   // in the given position.
   EditorHit calcHit(const gfx::Point& mouseScreenPos);
 
-  void setZoomAndCenterInMouse(const render::Zoom& zoom,
-                               const gfx::Point& mousePos,
-                               ZoomBehavior zoomBehavior);
+  void setZoomFromScreenPos(const render::Zoom& zoom, gfx::Point screenPos);
 
   void pasteImage(const ImageRef& image,
                   const Mask* mask = nullptr,
@@ -394,23 +396,23 @@ private:
   void drawCelBounds(ui::Graphics* g, const Cel* cel, const gfx::Color color);
   void drawCelGuides(ui::Graphics* g, const Cel* cel, const Cel* mouseCel);
   void drawCelHGuide(ui::Graphics* g,
-                     const int sprX1,
-                     const int sprX2,
-                     const int scrX1,
-                     const int scrX2,
-                     const int scrY,
+                     int sprX1,
+                     int sprX2,
+                     int scrX1,
+                     int scrX2,
+                     int scrY,
                      const gfx::Rect& scrCelBounds,
                      const gfx::Rect& scrCmpBounds,
-                     const int dottedX);
+                     int dottedX);
   void drawCelVGuide(ui::Graphics* g,
-                     const int sprY1,
-                     const int sprY2,
-                     const int scrY1,
-                     const int scrY2,
-                     const int scrX,
+                     int sprY1,
+                     int sprY2,
+                     int scrY1,
+                     int scrY2,
+                     int scrX,
                      const gfx::Rect& scrCelBounds,
                      const gfx::Rect& scrCmpBounds,
-                     const int dottedY);
+                     int dottedY);
   gfx::Rect getCelScreenBounds(const Cel* cel);
 
   void setCursor(const gfx::Point& mouseDisplayPos);
@@ -420,7 +422,8 @@ private:
   // routine.
   void drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, int dx, int dy);
 
-  gfx::Point calcExtraPadding(const render::Projection& proj);
+  gfx::Point calcExtraPadding(const render::Projection& proj, const ViewOptions& viewOpts);
+  void calcMatrices();
 
   void invalidateCanvasRegion(const gfx::Region& updateRegion);
   void invalidateCanvas();
@@ -452,6 +455,8 @@ private:
   Layer* m_layer;            // Active layer in the editor
   frame_t m_frame;           // Active frame in the editor
   render::Projection m_proj; // Zoom/pixel ratio in the editor
+  ViewOptions m_view;
+
   DocumentPreferences& m_docPref;
   // Helper functions affected by the current Tiled Mode.
   app::TiledModeHelper m_tiledModeHelper;

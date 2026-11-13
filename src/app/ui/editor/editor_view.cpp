@@ -73,7 +73,9 @@ void EditorView::onResize(ResizeEvent& ev)
   gfx::Point oldPos;
   if (editor) {
     switch (g_scrollUpdateMethod) {
-      case KeepOrigin: oldPos = editor->editorToScreen(gfx::Point(0, 0)); break;
+      case KeepOrigin:
+        oldPos = editor->editorToScreen(gfx::Point(0, 0), EditorCoord::OnScreen);
+        break;
       case KeepCenter: oldPos = editor->screenToEditor(viewportBounds().center()); break;
     }
   }
@@ -84,8 +86,8 @@ void EditorView::onResize(ResizeEvent& ev)
     switch (g_scrollUpdateMethod) {
       case KeepOrigin: {
         // This keeps the same scroll position for the editor
-        gfx::Point newPos = editor->editorToScreen(gfx::Point(0, 0));
-        gfx::Point oldScroll = viewScroll();
+        gfx::Point newPos = editor->editorToScreen(gfx::Point(0, 0), EditorCoord::OnScreen);
+        gfx::PointF oldScroll = viewScroll();
         editor->setEditorScroll(oldScroll + newPos - oldPos);
         break;
       }

@@ -334,9 +334,8 @@ int Editor_set_zoom(lua_State* L)
 {
   auto obj = get_obj<EditorObj>(L, 1);
   auto scale = lua_tonumber(L, 2);
-  obj->editor()->setZoomAndCenterInMouse(render::Zoom::fromScale(scale),
-                                         gfx::Point(),
-                                         Editor::ZoomBehavior::CENTER);
+  obj->editor()->setZoomFromScreenPos(render::Zoom::fromScale(scale),
+                                      obj->editor()->screenPointInCenter());
   return 0;
 }
 

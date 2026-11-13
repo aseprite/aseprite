@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2025  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -65,13 +65,14 @@ HandleType TransformHandles::getHandleAtPoint(Editor* editor,
   auto corners = transform.transformedCorners();
 
   std::vector<gfx::Point> screenPoints;
-  getScreenPoints(editor, corners, screenPoints);
+  getScreenPoints(editor, corners, screenPoints, EditorCoord::OnScreen);
 
   int handle_rs[2] = { gfx->width() * 2, gfx->width() * 3 };
   for (int i = 0; i < 2; ++i) {
     int handle_r = handle_rs[i];
     for (size_t c = 0; c < HANDLES; ++c) {
-      if (inHandle(pt,
+      if (inHandle(editor,
+                   pt,
                    (screenPoints[handles_info[c].i1].x + screenPoints[handles_info[c].i2].x) / 2,
                    (screenPoints[handles_info[c].i1].y + screenPoints[handles_info[c].i2].y) / 2,
                    handle_r,
@@ -83,7 +84,8 @@ HandleType TransformHandles::getHandleAtPoint(Editor* editor,
   }
 
   // Check if the cursor is in the pivot
-  if (visiblePivot(angle) && getPivotHandleBounds(editor, transform, corners).contains(pt))
+  if (visiblePivot(angle) &&
+      getPivotHandleBounds(editor, transform, corners, EditorCoord::OnScreen).contains(pt))
     return PivotHandle;
 
   return NoHandle;
@@ -96,28 +98,31 @@ void TransformHandles::drawHandles(Editor* editor, ui::Graphics* g, const Transf
   auto corners = transform.transformedCorners();
 
   std::vector<gfx::Point> screenPoints;
-  getScreenPoints(editor, corners, screenPoints);
-
-  const gfx::Point origin = editor->bounds().origin();
+  getScreenPoints(editor, corners, screenPoints, EditorCoord::OnScreen);
 
 #if 0 // Uncomment this if you want to see the bounds in red (only for debugging purposes)
   {   // Bounds
+    SaveGraphics save(g);
+    gfx::Matrix m = editor->matrix();
+    m.postTranslate(editor->bounds().x, editor->bounds().y);
+    g->setMatrix(m);
+
     gfx::Point
       a(transform.bounds().origin()),
       b(transform.bounds().point2());
-    a = editor->editorToScreen(a) - origin;
-    b = editor->editorToScreen(b) - origin;
+    a = editor->editorToScreen(a, EditorCoord::BeforePaint);
+    b = editor->editorToScreen(b, EditorCoord::BeforePaint);
     g->drawRect(gfx::rgba(255, 0, 0), gfx::Rect(a, b));
 
     a = transform.pivot();
-    a = editor->editorToScreen(a) - origin;
+    a = editor->editorToScreen(a, EditorCoord::BeforePaint);
     g->drawRect(gfx::rgba(255, 0, 0), gfx::Rect(a.x-2, a.y-2, 5, 5));
   }
   {   // Rotated bounds
-    const gfx::Point& a = screenPoints[0] - origin;
-    const gfx::Point& b = screenPoints[1] - origin;
-    const gfx::Point& c = screenPoints[2] - origin;
-    const gfx::Point& d = screenPoints[3] - origin;
+    const gfx::Point& a = screenPoints[0];
+    const gfx::Point& b = screenPoints[1];
+    const gfx::Point& c = screenPoints[2];
+    const gfx::Point& d = screenPoints[3];
 
     ui::Paint paint;
     paint.style(ui::Paint::Stroke);
@@ -142,9 +147,9 @@ void TransformHandles::drawHandles(Editor* editor, ui::Graphics* g, const Transf
     for (int i=0; i<2; ++i) {
       int handle_r = handle_rs[i];
       for (size_t c=0; c<HANDLES; ++c) {
-        int x = (screenPoints[handles_info[c].i1].x+screenPoints[handles_info[c].i2].x)/2 - origin.x;
-        int y = (screenPoints[handles_info[c].i1].y+screenPoints[handles_info[c].i2].y)/2 - origin.y;
-        adjustHandle(x, y, handle_r, handle_r, angle + handles_info[c].angle);
+        int x = (screenPoints[handles_info[c].i1].x+screenPoints[handles_info[c].i2].x)/2;
+        int y = (screenPoints[handles_info[c].i1].y+screenPoints[handles_info[c].i2].y)/2;
+        adjustHandle(editor, x, y, handle_r, handle_r, angle + handles_info[c].angle);
         g->drawRect(
           gfx::rgba(255, 0, 0),
           gfx::Rect(x, y, handle_r, handle_r));
@@ -155,21 +160,20 @@ void TransformHandles::drawHandles(Editor* editor, ui::Graphics* g, const Transf
 
   // Draw corner handle
   for (size_t c = 0; c < HANDLES; ++c) {
-    drawHandle(
-      editor,
-      g,
-      (screenPoints[handles_info[c].i1].x + screenPoints[handles_info[c].i2].x) / 2 - origin.x,
-      (screenPoints[handles_info[c].i1].y + screenPoints[handles_info[c].i2].y) / 2 - origin.y,
-      angle + handles_info[c].angle);
+    drawHandle(editor,
+               g,
+               (screenPoints[handles_info[c].i1].x + screenPoints[handles_info[c].i2].x) / 2,
+               (screenPoints[handles_info[c].i1].y + screenPoints[handles_info[c].i2].y) / 2,
+               angle + handles_info[c].angle);
   }
 
   // Draw the pivot
   if (visiblePivot(angle)) {
-    gfx::Rect pivotBounds = getPivotHandleBounds(editor, transform, corners);
+    gfx::Rect pivotBounds = getPivotHandleBounds(editor, transform, corners, EditorCoord::OnScreen);
     auto theme = SkinTheme::get(editor);
     os::Surface* part = theme->parts.pivotHandle()->bitmap(0);
 
-    g->drawRgbaSurface(part, pivotBounds.x - origin.x, pivotBounds.y - origin.y);
+    g->drawRgbaSurface(part, pivotBounds.x, pivotBounds.y);
   }
 }
 
@@ -181,7 +185,7 @@ void TransformHandles::invalidateHandles(Editor* editor, const Transformation& t
   auto corners = transform.transformedCorners();
 
   std::vector<gfx::Point> screenPoints;
-  getScreenPoints(editor, corners, screenPoints);
+  getScreenPoints(editor, corners, screenPoints, EditorCoord::OnScreen);
 
   // Invalidate each corner handle.
   for (size_t c = 0; c < HANDLES; ++c) {
@@ -189,14 +193,14 @@ void TransformHandles::invalidateHandles(Editor* editor, const Transformation& t
     int u = (screenPoints[handles_info[c].i1].x + screenPoints[handles_info[c].i2].x) / 2;
     int v = (screenPoints[handles_info[c].i1].y + screenPoints[handles_info[c].i2].y) / 2;
 
-    adjustHandle(u, v, part->width(), part->height(), angle + handles_info[c].angle);
+    adjustHandle(editor, u, v, part->width(), part->height(), angle + handles_info[c].angle);
 
     editor->invalidateRect(gfx::Rect(u, v, part->width(), part->height()));
   }
 
   // Invalidate area where the pivot is.
   if (visiblePivot(angle)) {
-    gfx::Rect pivotBounds = getPivotHandleBounds(editor, transform, corners);
+    gfx::Rect pivotBounds = getPivotHandleBounds(editor, transform, corners, EditorCoord::OnScreen);
     os::Surface* part = theme->parts.pivotHandle()->bitmap(0);
 
     editor->invalidateRect(gfx::Rect(pivotBounds.x, pivotBounds.y, part->width(), part->height()));
@@ -205,12 +209,13 @@ void TransformHandles::invalidateHandles(Editor* editor, const Transformation& t
 
 gfx::Rect TransformHandles::getPivotHandleBounds(Editor* editor,
                                                  const Transformation& transform,
-                                                 const Transformation::Corners& corners)
+                                                 const Transformation::Corners& corners,
+                                                 const EditorCoord coord)
 {
   auto theme = SkinTheme::get(editor);
   gfx::Size partSize = theme->parts.pivotHandle()->size();
   gfx::Point pivotPos = gfx::Point(transform.pivot()) + editor->mainTilePosition();
-  gfx::Point screenPivotPos = editor->editorToScreen(pivotPos);
+  gfx::Point screenPivotPos = editor->editorToScreen(pivotPos, coord);
 
   screenPivotPos.x += editor->projection().applyX(1) / 2;
   screenPivotPos.y += editor->projection().applyY(1) / 2;
@@ -221,14 +226,15 @@ gfx::Rect TransformHandles::getPivotHandleBounds(Editor* editor,
                    partSize.h);
 }
 
-bool TransformHandles::inHandle(const gfx::Point& pt,
+bool TransformHandles::inHandle(Editor* editor,
+                                const gfx::Point& pt,
                                 int x,
                                 int y,
                                 int gfx_w,
                                 int gfx_h,
                                 double angle)
 {
-  adjustHandle(x, y, gfx_w, gfx_h, angle);
+  adjustHandle(editor, x, y, gfx_w, gfx_h, angle);
 
   return (pt.x >= x && pt.x < x + gfx_w && pt.y >= y && pt.y < y + gfx_h);
 }
@@ -238,13 +244,19 @@ void TransformHandles::drawHandle(Editor* editor, Graphics* g, int x, int y, dou
   auto theme = SkinTheme::get(editor);
   os::Surface* part = theme->parts.transformationHandle()->bitmap(0);
 
-  adjustHandle(x, y, part->width(), part->height(), angle);
+  adjustHandle(editor, x, y, part->width(), part->height(), angle);
 
   g->drawRgbaSurface(part, x, y);
 }
 
-void TransformHandles::adjustHandle(int& x, int& y, int handle_w, int handle_h, double angle)
+void TransformHandles::adjustHandle(Editor* editor,
+                                    int& x,
+                                    int& y,
+                                    int handle_w,
+                                    int handle_h,
+                                    double angle)
 {
+  angle -= PI * editor->viewOptions().angle / 180.0;
   angle = base::fmod_radians(angle + PI) + PI;
   const int angleInt = std::clamp<int>(std::floor(8.0 * angle / (2.0 * PI) + 0.5), 0, 8) % 8;
 
@@ -286,14 +298,15 @@ bool TransformHandles::visiblePivot(double angle) const
 
 void TransformHandles::getScreenPoints(Editor* editor,
                                        const Transformation::Corners& corners,
-                                       std::vector<gfx::Point>& screenPoints) const
+                                       std::vector<gfx::Point>& screenPoints,
+                                       const EditorCoord coord) const
 {
   gfx::Point main = editor->mainTilePosition();
 
   screenPoints.resize(corners.size());
   for (size_t c = 0; c < corners.size(); ++c)
-    screenPoints[c] = editor->editorToScreenF(
-      gfx::PointF(corners[c].x + main.x, corners[c].y + main.y));
+    screenPoints[c] =
+      editor->editorToScreenF(gfx::PointF(corners[c].x + main.x, corners[c].y + main.y), coord);
 }
 
 } // namespace app

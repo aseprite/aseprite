@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -26,6 +26,7 @@ namespace ui {
 class Box;
 class Button;
 class Entry;
+class IntEntry;
 class Label;
 class TooltipManager;
 class Window;
@@ -72,6 +73,8 @@ public:
   // Used by AppEditor to update the zoom level in the status bar.
   void updateFromEditor(Editor* editor);
 
+  void updateZoomAngle(double angle);
+
   void showBackupIcon(BackupIcon icon);
 
   // Dockable impl
@@ -117,6 +120,7 @@ private:
   ui::Entry* m_currentFrame; // Current frame and go to frame entry
   ui::Button* m_newFrame;    // Button to create a new frame
   ZoomEntry* m_zoomEntry;
+  ui::IntEntry* m_angleEntry;
 
   // Tip window
   class CustomizedTipWindow;

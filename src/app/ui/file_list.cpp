@@ -300,8 +300,8 @@ bool FileList::onProcessMessage(Message* msg)
             }
             else if (select >= 0) {
               gfx::Rect vp = view->viewportBounds();
-              gfx::Point scroll = view->viewScroll();
-              scroll.x += vp.w / 2 * delta;
+              gfx::PointF scroll = view->viewScroll();
+              scroll.x += vp.w / 2.0 * delta;
               view->setViewScroll(scroll);
             }
             break;
@@ -816,7 +816,7 @@ void FileList::makeSelectedFileitemVisible()
 
   View* view = View::getView(this);
   gfx::Rect vp = view->viewportBounds();
-  gfx::Point scroll = view->viewScroll();
+  gfx::PointF scroll = view->viewScroll();
   ItemInfo info = getFileItemInfo(i);
 
   if (info.bounds.x + bounds().x <= vp.x)

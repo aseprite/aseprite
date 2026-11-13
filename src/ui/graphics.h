@@ -167,28 +167,33 @@ private:
   gfx::Rect m_dirtyBounds;
 };
 
+// Scoped Graphics::save() / restore() calls.
+class SaveGraphics {
+public:
+  SaveGraphics(Graphics* g) : m_graphics(g) { m_graphics->save(); }
+  ~SaveGraphics() { m_graphics->restore(); }
+  SaveGraphics(const SaveGraphics&) = delete;
+  const SaveGraphics& operator=(const SaveGraphics&) = delete;
+
+protected:
+  Graphics* m_graphics;
+};
+
 // Class to temporary set the Graphics' clip region to a sub-rectangle
 // (in the life-time of the IntersectClip instance).
-class IntersectClip {
+class IntersectClip : public SaveGraphics {
 public:
-  IntersectClip(Graphics* g, const gfx::Rect& rc) : m_graphics(g)
+  IntersectClip(Graphics* g, const gfx::Rect& rc) : SaveGraphics(g)
   {
-    m_graphics->save();
     m_notEmpty = m_graphics->clipRect(rc);
   }
-
-  ~IntersectClip() { m_graphics->restore(); }
-
   operator bool() const { return m_notEmpty; }
 
 private:
-  Graphics* m_graphics;
   bool m_notEmpty;
-
-  DISABLE_COPYING(IntersectClip);
 };
 
-typedef std::shared_ptr<Graphics> GraphicsPtr;
+using GraphicsPtr = std::shared_ptr<Graphics>;
 
 } // namespace ui
 

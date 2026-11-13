@@ -71,7 +71,7 @@ public:
     m_doc->setExtraCel(ExtraCelRef(nullptr));
 
     gfx::Rect vp = view->viewportBounds();
-    gfx::Point scroll = view->viewScroll();
+    gfx::PointF scroll = view->viewScroll();
 
     m_oldMousePos = mousePosInDisplay();
     m_pos.x = -scroll.x + vp.x + editor->padding().x;
@@ -245,7 +245,8 @@ protected:
     tiledBounds.h = (2 + std::ceil(float(clientBounds().h) / h)) * h;
     tiledBounds.x = x - w;
     tiledBounds.y = y - h;
-    g->save();
+
+    SaveGraphics save(g);
 
     switch (m_tiled) {
       case TiledMode::NONE:
@@ -277,7 +278,6 @@ protected:
         }
         break;
     }
-    g->restore();
   }
 
 private:
