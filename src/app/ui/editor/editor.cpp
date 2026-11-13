@@ -144,7 +144,6 @@ Editor::Editor(Doc* document, EditorFlags flags, EditorStatePtr state)
   , m_tiledModeHelper(app::TiledModeHelper(m_docPref.tiled.mode(), m_sprite))
   , m_brushPreview(this)
   , m_toolLoopModifiers(tools::ToolLoopModifiers::kNone)
-  , m_padding(0, 0)
   , m_antsTimer(100, this)
   , m_antsOffset(0)
   , m_autoScrollTimer(20, this)
@@ -478,7 +477,9 @@ void Editor::setZoom(const render::Zoom& zoom)
     // for better zooming experience in StateWithWheelBehavior.
     m_proj.setZoom(zoom);
   }
+
   calcMatrices();
+  updateEditor(false);
 }
 
 void Editor::setDefaultScroll()
@@ -491,19 +492,16 @@ void Editor::setDefaultScroll()
 
 void Editor::setScrollToCenter()
 {
-  View* view = View::getView(this);
-  Rect vp = view->viewportBounds();
-  gfx::Size canvas = canvasSize();
+  const gfx::Size canvas = canvasSize();
 
-  setEditorScroll(gfx::PointF(m_padding.x - vp.w / 2 + m_proj.applyX(canvas.w) / 2,
-                              m_padding.y - vp.h / 2 + m_proj.applyY(canvas.h) / 2));
+  centerInSpritePoint(gfx::PointF(canvas.w / 2.0, canvas.h / 2.0));
 }
 
 void Editor::setScrollAndZoomToFitScreen()
 {
   View* view = View::getView(this);
-  gfx::Rect vp = view->viewportBounds();
-  gfx::Size canvas = canvasSize();
+  const gfx::Rect vp = view->viewportBounds();
+  const gfx::Size canvas = rotatedCanvasSize();
   Zoom zoom = m_proj.zoom();
 
   if (float(vp.w) / float(canvas.w) < float(vp.h) / float(canvas.h)) {
@@ -556,8 +554,7 @@ void Editor::setScrollAndZoomToFitScreen()
   setZoom(m_proj.zoom());
 
   updateEditor(false);
-  setEditorScroll(gfx::PointF(m_padding.x - vp.w / 2 + m_proj.applyX(canvas.w) / 2,
-                              m_padding.y - vp.h / 2 + m_proj.applyY(canvas.h) / 2));
+  setScrollToCenter();
 }
 
 // Sets the scroll position of the editor
@@ -568,16 +565,25 @@ void Editor::setEditorScroll(const gfx::PointF& scroll)
 
 void Editor::setEditorZoom(const render::Zoom& zoom)
 {
-  setZoomAndCenterInMouse(zoom, mousePosInDisplay(), Editor::ZoomBehavior::CENTER);
+  setZoomFromScreenPos(zoom, screenPointInCenter());
 }
 
 void Editor::setViewOptions(const ViewOptions& view)
 {
+  if (view == m_view) {
+    // Do nothing
+    return;
+  }
+
+  const gfx::PointF spritePos = spritePointInCenter();
   const bool angleChange = (m_view.angle != view.angle);
 
   m_view = view;
+  m_padding = calcExtraPadding(m_proj, m_view);
   calcMatrices();
-  invalidate();
+  updateEditor(false);
+
+  centerInSpritePoint(spritePos);
 
   if (angleChange) {
     if (ContextBar* ctxBar = App::instance()->contextBar())
@@ -918,8 +924,7 @@ void Editor::drawBackground(ui::Graphics* g)
 
   auto theme = SkinTheme::get(this);
 
-  gfx::Size canvas = canvasSize();
-  gfx::Rect rc(0, 0, canvas.w, canvas.h);
+  gfx::Rect rc(canvasSize());
   rc = editorToScreen(rc, EditorCoord::BeforePaint);
 
   // Fill the outside (parts of the editor that aren't covered by the
@@ -947,7 +952,6 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
                        client.y + m_padding.y,
                        m_proj.applyX(m_sprite->width()),
                        m_proj.applyY(m_sprite->height()));
-  gfx::Rect enclosingRect = spriteRect;
 
   // Redraw the background when the selection tool mask draws over it
   static bool redrawBackground = false;
@@ -963,15 +967,11 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
   if (int(m_docPref.tiled.mode()) & int(filters::TiledMode::X_AXIS)) {
     drawOneSpriteUnclippedRect(g, rc, spriteRect.w, 0);
     drawOneSpriteUnclippedRect(g, rc, spriteRect.w * 2, 0);
-
-    enclosingRect = gfx::Rect(spriteRect.x, spriteRect.y, spriteRect.w * 3, spriteRect.h);
   }
 
   if (int(m_docPref.tiled.mode()) & int(filters::TiledMode::Y_AXIS)) {
     drawOneSpriteUnclippedRect(g, rc, 0, spriteRect.h);
     drawOneSpriteUnclippedRect(g, rc, 0, spriteRect.h * 2);
-
-    enclosingRect = gfx::Rect(spriteRect.x, spriteRect.y, spriteRect.w, spriteRect.h * 3);
   }
 
   if (m_docPref.tiled.mode() == filters::TiledMode::BOTH) {
@@ -979,8 +979,6 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
     drawOneSpriteUnclippedRect(g, rc, spriteRect.w * 2, spriteRect.h);
     drawOneSpriteUnclippedRect(g, rc, spriteRect.w, spriteRect.h * 2);
     drawOneSpriteUnclippedRect(g, rc, spriteRect.w * 2, spriteRect.h * 2);
-
-    enclosingRect = gfx::Rect(spriteRect.x, spriteRect.y, spriteRect.w * 3, spriteRect.h * 3);
   }
 
   // Draw active layer/cel edges
@@ -1707,7 +1705,7 @@ gfx::PointF Editor::screenToEditorF(const gfx::Point& pt, const EditorCoord coor
 
 Point Editor::editorToScreen(const gfx::Point& pt, const EditorCoord coord) const
 {
-  PointF pt2(m_proj.applyX(pt.x) + m_padding.x, m_proj.applyY(pt.y) + m_padding.y);
+  PointF pt2(m_proj.apply(pt) + m_padding);
   if (coord == EditorCoord::OnScreen) {
     pt2 = matrix().mapPoint(pt2);
     pt2 += origin();
@@ -1808,8 +1806,10 @@ Rect Editor::getViewportBounds()
 // Returns the visible area of the active sprite.
 Rect Editor::getVisibleSpriteBounds()
 {
-  if (m_sprite)
+  if (m_sprite) {
+    // TODO rotate canvas
     return getViewportBounds().createIntersection(gfx::Rect(canvasSize()));
+  }
 
   // This cannot happen, the sprite must be != nullptr. In old
   // Aseprite versions we were using one Editor to show multiple
@@ -1821,18 +1821,37 @@ Rect Editor::getVisibleSpriteBounds()
   return Rect();
 }
 
+void Editor::matchSpriteWithScreenPoint(const gfx::PointF& spritePos, const gfx::Point& screenPos)
+{
+  Rect vp = View::getView(this)->viewportBounds();
+
+  // From editorToScreen() formula:
+  //
+  //   q = proj.apply(spritePos) + padding
+  //   screenPos = matrix.mapPoint(q) + editorOrigin
+  //
+  // Where:
+  //
+  //   editorOrigin = viewport.origin() - scrollPos
+  //
+  // We have a well-known spritePos and screenPos but need to
+  // recalculate scrollPos:
+  //
+  //   screenPos = matrix.mapPoint(q) + editorOrigin
+  //   screenPos = matrix.mapPoint(q) + viewport.origin() - scrollPos
+  //   scrollPos = matrix.mapPoint(q) + viewport.origin() - screenPos
+  //
+  gfx::PointF q = m_proj.apply(spritePos) + m_padding;
+  gfx::PointF scrollPos(matrix().mapPoint(q) + vp.origin() - screenPos);
+
+  setEditorScroll(scrollPos);
+  invalidate();
+}
+
 // Changes the scroll to see the given point as the center of the editor.
 void Editor::centerInSpritePoint(const gfx::PointF& spritePos)
 {
-  View* view = View::getView(this);
-  Rect vp = view->viewportBounds();
-
-  gfx::PointF scroll(m_padding.x - (vp.w / 2) + m_proj.applyX(spritePos.x),
-                     m_padding.y - (vp.h / 2) + m_proj.applyY(spritePos.y));
-
-  updateEditor(false);
-  setEditorScroll(scroll);
-  invalidate();
+  matchSpriteWithScreenPoint(spritePos, screenPointInCenter());
 }
 
 void Editor::centerInSpritePoint(const gfx::Point& spritePos)
@@ -1842,10 +1861,12 @@ void Editor::centerInSpritePoint(const gfx::Point& spritePos)
 
 gfx::PointF Editor::spritePointInCenter() const
 {
-  View* view = View::getView(this);
-  Rect vp = view->viewportBounds();
-  gfx::Point screenPos(vp.x + vp.w / 2, vp.y + vp.h / 2);
-  return screenToEditorF(screenPos);
+  return screenToEditorF(screenPointInCenter());
+}
+
+gfx::Point Editor::screenPointInCenter() const
+{
+  return View::getView(this)->viewportBounds().center();
 }
 
 void Editor::updateStatusBar()
@@ -2441,8 +2462,8 @@ void Editor::onSizeHint(SizeHintEvent& ev)
 {
   gfx::Size sz(0, 0);
   if (m_sprite) {
-    gfx::Point padding = calcExtraPadding(m_proj);
-    gfx::Size canvas = canvasSize();
+    const gfx::Point padding = calcExtraPadding(m_proj, m_view);
+    const gfx::Size canvas = rotatedCanvasSize();
     sz.w = m_proj.applyX(canvas.w) + padding.x * 2;
     sz.h = m_proj.applyY(canvas.h) + padding.y * 2;
   }
@@ -2456,7 +2477,7 @@ void Editor::onSizeHint(SizeHintEvent& ev)
 void Editor::onResize(ui::ResizeEvent& ev)
 {
   Widget::onResize(ev);
-  m_padding = calcExtraPadding(m_proj);
+  m_padding = calcExtraPadding(m_proj, m_view);
   calcMatrices();
 
   if (m_state)
@@ -2584,7 +2605,7 @@ void Editor::onTiledModeChange()
   spritePos -= m_oldMainTilePos;
 
   // Update padding
-  m_padding = calcExtraPadding(m_proj);
+  m_padding = calcExtraPadding(m_proj, m_view);
   calcMatrices();
 
   spritePos += mainTilePosition();
@@ -2879,72 +2900,23 @@ EditorHit Editor::calcHit(const gfx::Point& mouseScreenPos)
   return EditorHit(EditorHit::None);
 }
 
-void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
-                                     const gfx::Point& mousePos,
-                                     ZoomBehavior zoomBehavior)
+void Editor::setZoomFromScreenPos(const Zoom& zoom, gfx::Point screenPos)
 {
-  View* view = View::getView(this);
-  Rect vp = view->viewportBounds();
-  Projection proj = m_proj;
-  proj.setZoom(zoom);
-
-  gfx::Point screenPos;
-  gfx::Point spritePos;
-  gfx::PointT<double> subpixelPos(0.5, 0.5);
-
-  switch (zoomBehavior) {
-    case ZoomBehavior::CENTER: screenPos = gfx::Point(vp.x + vp.w / 2, vp.y + vp.h / 2); break;
-    case ZoomBehavior::MOUSE:  screenPos = mousePos; break;
-  }
-
   // Limit zooming screen position to the visible sprite bounds (we
   // use canvasSize() because if the tiled mode is enabled, we need
-  // extra space for the zoom)
+  // extra space for the zoom).
   gfx::Rect visibleBounds = editorToScreen(
-    getViewportBounds().createIntersection(gfx::Rect(gfx::Point(0, 0), canvasSize())),
+    getViewportBounds().createIntersection(gfx::Rect(canvasSize())),
     EditorCoord::OnScreen);
   screenPos.x =
     std::clamp(screenPos.x, visibleBounds.x, std::max(visibleBounds.x, visibleBounds.x2() - 1));
   screenPos.y =
     std::clamp(screenPos.y, visibleBounds.y, std::max(visibleBounds.y, visibleBounds.y2() - 1));
 
-  spritePos = screenToEditor(screenPos);
-
-  if (zoomBehavior == ZoomBehavior::MOUSE) {
-    gfx::Point screenPos2 = editorToScreen(gfx::Point(spritePos), EditorCoord::OnScreen);
-
-    if (m_proj.scaleX() > 1.0) {
-      subpixelPos.x = (0.5 + screenPos.x - screenPos2.x) / m_proj.scaleX();
-      if (proj.scaleX() > m_proj.scaleX()) {
-        double t = 1.0 / proj.scaleX();
-        if (subpixelPos.x >= 0.5 - t && subpixelPos.x <= 0.5 + t)
-          subpixelPos.x = 0.5;
-      }
-    }
-
-    if (m_proj.scaleY() > 1.0) {
-      subpixelPos.y = (0.5 + screenPos.y - screenPos2.y) / m_proj.scaleY();
-      if (proj.scaleY() > m_proj.scaleY()) {
-        double t = 1.0 / proj.scaleY();
-        if (subpixelPos.y >= 0.5 - t && subpixelPos.y <= 0.5 + t)
-          subpixelPos.y = 0.5;
-      }
-    }
-  }
-
-  gfx::Point padding = calcExtraPadding(proj);
-  gfx::PointF scrollPos(
-    padding.x - (screenPos.x - vp.x) + proj.applyX(spritePos.x + proj.removeX(1) / 2) +
-      int(proj.applyX(subpixelPos.x)),
-    padding.y - (screenPos.y - vp.y) + proj.applyY(spritePos.y + proj.removeY(1) / 2) +
-      int(proj.applyY(subpixelPos.y)));
+  gfx::PointF spritePos = screenToEditorF(screenPos);
 
   setZoom(zoom);
-
-  if ((m_proj.zoom() != zoom) || (scrollPos != view->viewScroll())) {
-    updateEditor(false);
-    setEditorScroll(scrollPos);
-  }
+  matchSpriteWithScreenPoint(spritePos, screenPos);
 }
 
 void Editor::pasteImage(const ImageRef& image,
@@ -3279,21 +3251,33 @@ void Editor::showBrushPreview(const gfx::Point& screenPos)
   m_brushPreview.show(screenPos);
 }
 
-gfx::Point Editor::calcExtraPadding(const Projection& proj)
+gfx::Point Editor::calcExtraPadding(const Projection& proj, const ViewOptions& viewOpts)
 {
   View* view = View::getView(this);
-  if (view) {
-    Rect vp = view->viewportBounds();
-    gfx::Size canvas = canvasSize();
-    return gfx::Point(std::max<int>(vp.w / 2, vp.w - proj.applyX(canvas.w)),
-                      std::max<int>(vp.h / 2, vp.h - proj.applyY(canvas.h)));
-  }
-  return gfx::Point(0, 0);
+  if (!view)
+    return {};
+
+  const gfx::Rect vp = view->viewportBounds();
+  const gfx::Size rotCanvas = rotatedCanvasSize(viewOpts.angle);
+  return gfx::Point(std::max<int>(vp.w / 2, vp.w - proj.applyX(rotCanvas.w)),
+                    std::max<int>(vp.h / 2, vp.h - proj.applyY(rotCanvas.h)));
 }
 
 gfx::Size Editor::canvasSize() const
 {
   return m_tiledModeHelper.canvasSize();
+}
+
+gfx::Size Editor::rotatedCanvasSize(const double angle) const
+{
+  if (angle != 0.0) {
+    gfx::RectF canvas((gfx::SizeF(canvasSize())));
+    gfx::Matrix rot;
+    rot.setRotate(angle);
+    canvas = rot.mapRect(canvas);
+    return gfx::Size(std::ceil(canvas.w), std::ceil(canvas.h));
+  }
+  return canvasSize();
 }
 
 gfx::Point Editor::mainTilePosition() const
@@ -3398,8 +3382,15 @@ int Editor::otherLayersOpacity() const
 void Editor::calcMatrices()
 {
   gfx::PointF center(m_padding);
-  center += gfx::PointF(m_proj.apply(canvasSize())) / 2.0;
-  m_view.calcMatrices(center);
+
+  const gfx::Size rotCanvas = rotatedCanvasSize();
+  const gfx::Size canvas = canvasSize();
+  const gfx::PointF offset((m_proj.apply(rotCanvas - canvas)) / 2.0);
+
+  center += gfx::PointF(m_proj.apply(rotCanvas)) / 2.0;
+  center -= offset;
+
+  m_view.calcMatrices(center, offset);
 }
 
 bool Editor::handleDevModeKeys(const ui::KeyMessage* msg)

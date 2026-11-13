@@ -571,12 +571,15 @@ void StateWithWheelBehavior::setZoom(Editor* editor,
                                      const render::Zoom& zoom,
                                      const gfx::Point& mousePos)
 {
-  bool center = Preferences::instance().editor.zoomFromCenterWithWheel();
+  const bool center = Preferences::instance().editor.zoomFromCenterWithWheel();
 
-  editor->setZoomAndCenterInMouse(
-    zoom,
-    mousePos,
-    (center ? Editor::ZoomBehavior::CENTER : Editor::ZoomBehavior::MOUSE));
+  gfx::Point screenPos;
+  if (center)
+    screenPos = editor->screenPointInCenter();
+  else
+    screenPos = mousePos;
+
+  editor->setZoomFromScreenPos(zoom, screenPos);
 }
 
 Color StateWithWheelBehavior::initialFgColor() const

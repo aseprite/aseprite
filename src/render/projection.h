@@ -100,6 +100,8 @@ public:
     return gfx::RectF(u, v, applyX(r.x + r.w) - u, applyY(r.y + r.h) - v);
   }
 
+  gfx::Point apply(const gfx::Point& pt) const { return gfx::Point(applyX(pt.x), applyY(pt.y)); }
+  gfx::PointF apply(const gfx::PointF& pt) const { return gfx::PointF(applyX(pt.x), applyY(pt.y)); }
   gfx::Size apply(const gfx::Size& sz) const { return gfx::Size(applyX(sz.w), applyY(sz.h)); }
 
   gfx::Rect remove(const gfx::Rect& r) const

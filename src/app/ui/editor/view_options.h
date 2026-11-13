@@ -31,7 +31,7 @@ struct ViewOptions {
 
   gfx::Matrix flipMatrix() const { return gfx::Matrix::MakeScale(xflip ? -1 : 1, yflip ? -1 : 1); }
 
-  void calcMatrices(const gfx::PointF& center);
+  void calcMatrices(const gfx::PointF& pivot, const gfx::PointF& offset);
 };
 
 } // namespace app

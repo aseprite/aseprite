@@ -710,8 +710,10 @@ StatusBar::StatusBar(TooltipManager* tooltipManager)
     m_angleEntry->ValueChange.connect([this] {
       if (auto* editor = Editor::activeEditor()) {
         auto opts = editor->viewOptions();
-        opts.angle = m_angleEntry->getValue();
-        editor->setViewOptions(opts);
+        if (opts.angle != m_angleEntry->getValue()) {
+          opts.angle = m_angleEntry->getValue();
+          editor->setViewOptions(opts);
+        }
       }
     });
 
