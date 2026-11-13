@@ -21,7 +21,7 @@ using namespace gfx;
 
 // Internal stuff shared by all scroll-bars (as the user cannot move
 // two scroll-bars at the same time).
-int ScrollBar::m_wherepos = 0;
+float ScrollBar::m_wherepos = 0;
 int ScrollBar::m_whereclick = 0;
 bool ScrollBar::m_dragging = false;
 
@@ -30,14 +30,14 @@ ScrollBar::ScrollBar(const WidgetAlign align, ScrollableViewDelegate* delegate)
   , m_delegate(delegate)
   , m_thumbStyle(nullptr)
   , m_barWidth(0)
-  , m_pos(0)
+  , m_pos(0.0)
   , m_size(0)
 {
   setAlign(align);
   initTheme();
 }
 
-void ScrollBar::setPos(int pos)
+void ScrollBar::setPos(float pos)
 {
   if (m_pos != pos) {
     m_pos = pos;
@@ -87,7 +87,7 @@ bool ScrollBar::onProcessMessage(Message* msg)
       u2 = x2 - border().right();
       v2 = y2 - border().bottom();
 
-      Point scroll = m_delegate->viewScroll();
+      PointF scroll = m_delegate->viewScroll();
 
       if (align() & HORIZONTAL) {
         // in the bar
@@ -153,7 +153,7 @@ bool ScrollBar::onProcessMessage(Message* msg)
         getScrollBarInfo(&pos, &len, &bar_size, &viewport_size);
 
         if (bar_size > len) {
-          Point scroll = m_delegate->viewScroll();
+          PointF scroll = m_delegate->viewScroll();
 
           if (align() & HORIZONTAL) {
             pos = (m_wherepos + mousePos.x - m_whereclick);

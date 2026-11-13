@@ -17,8 +17,8 @@ class ScrollableViewDelegate {
 public:
   virtual ~ScrollableViewDelegate() {}
   virtual gfx::Size visibleSize() const = 0;
-  virtual gfx::Point viewScroll() const = 0;
-  virtual void setViewScroll(const gfx::Point& pt) = 0;
+  virtual gfx::PointF viewScroll() const = 0;
+  virtual void setViewScroll(const gfx::PointF& pt) = 0;
 };
 
 class ScrollBar : public Widget {
@@ -31,8 +31,8 @@ public:
   int getBarWidth() const { return m_barWidth; }
   void setBarWidth(int barWidth) { m_barWidth = barWidth; }
 
-  int getPos() const { return m_pos; }
-  void setPos(int pos);
+  float getPos() const { return m_pos; }
+  void setPos(float pos);
 
   int size() const { return m_size; }
   void setSize(int size);
@@ -52,10 +52,10 @@ private:
   ScrollableViewDelegate* m_delegate;
   Style* m_thumbStyle;
   int m_barWidth;
-  int m_pos;
+  float m_pos;
   int m_size;
 
-  static int m_wherepos;
+  static float m_wherepos;
   static int m_whereclick;
   static bool m_dragging;
 };

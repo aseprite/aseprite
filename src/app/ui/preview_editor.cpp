@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -384,7 +384,7 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
     layout();
 
     if (!autoScroll)
-      miniEditor->setEditorScroll(docPref.preview.scroll());
+      miniEditor->setEditorScroll(gfx::PointF(docPref.preview.scroll()));
   }
 
   m_centerButton->setSelected(autoScroll);
@@ -442,7 +442,7 @@ void PreviewEditorWindow::saveScrollPref()
   Editor* miniEditor = m_docView->editor();
   ASSERT(miniEditor);
 
-  docPref().preview.scroll(View::getView(miniEditor)->viewScroll());
+  docPref().preview.scroll(gfx::Point(View::getView(miniEditor)->viewScroll()));
   docPref().preview.zoom(miniEditor->zoom().scale());
 }
 

@@ -71,7 +71,7 @@ PermissionDialog::PermissionDialog(const std::string& origin,
     // Ensures we can see the most important part of long paths
     execute_from_ui_thread([this] {
       auto* view = View::getView(matchText());
-      view->setViewScroll(view->viewportBounds().point2());
+      view->setViewScroll(gfx::PointF(view->viewportBounds().point2()));
     });
 
     matchButtons()->ItemChange.connect([this, match](ButtonSet::Item*) {

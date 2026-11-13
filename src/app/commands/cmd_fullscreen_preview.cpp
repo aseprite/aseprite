@@ -71,7 +71,7 @@ public:
     m_doc->setExtraCel(ExtraCelRef(nullptr));
 
     gfx::Rect vp = view->viewportBounds();
-    gfx::Point scroll = view->viewScroll();
+    gfx::PointF scroll = view->viewScroll();
 
     m_oldMousePos = mousePosInDisplay();
     m_pos.x = -scroll.x + vp.x + editor->padding().x;

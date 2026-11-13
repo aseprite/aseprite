@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022  Igara Studio S.A.
+// Copyright (C) 2022-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -41,7 +41,7 @@ private:
   int initialBgTileIndex() const override { return m_initialBgTileIndex; }
   int initialBrushSize() override { return m_initialBrushSize; }
   int initialBrushAngle() override { return m_initialBrushAngle; }
-  gfx::Point initialScroll(Editor* editor) const override { return m_initialScroll; }
+  gfx::PointF initialScroll(Editor* editor) const override { return m_initialScroll; }
   render::Zoom initialZoom(Editor* editor) const override { return m_initialZoom; }
   doc::frame_t initialFrame(Editor* editor) const override { return m_initialFrame; }
   doc::layer_t initialLayer(Editor* editor) const override { return m_initialLayer; }
@@ -67,7 +67,7 @@ private:
   int m_initialBgTileIndex;
   int m_initialBrushSize;
   int m_initialBrushAngle;
-  gfx::Point m_initialScroll;
+  gfx::PointF m_initialScroll;
   render::Zoom m_initialZoom;
   doc::frame_t m_initialFrame;
   doc::layer_t m_initialLayer;

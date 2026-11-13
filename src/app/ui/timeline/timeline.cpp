@@ -3551,7 +3551,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
     hit.part = PART_SEPARATOR;
   }
   else {
-    gfx::Point scroll = viewScroll();
+    gfx::PointF scroll = viewScroll();
     int top = topHeight();
 
     hit.layer = lastLayer() -
@@ -3764,7 +3764,7 @@ Timeline::Hit Timeline::hitTestCel(const gfx::Point& mousePos)
   if (!m_document)
     return hit;
 
-  gfx::Point scroll = viewScroll();
+  gfx::PointF scroll = viewScroll();
   int top = topHeight();
 
   hit.layer = lastLayer() - ((mousePos.y - top - headerBoxHeight() + scroll.y) / layerBoxHeight());
@@ -3995,7 +3995,7 @@ void Timeline::updateStatusBarForFrame(const col_t col, const Tag* tag, const Ce
 
 void Timeline::showCel(layer_t layer, col_t frame)
 {
-  gfx::Point scroll = viewScroll();
+  gfx::PointF scroll = viewScroll();
 
   gfx::Rect viewport = m_viewportArea;
 
@@ -4273,18 +4273,18 @@ gfx::Size Timeline::visibleSize() const
   return getCelsBounds().size();
 }
 
-gfx::Point Timeline::viewScroll() const
+gfx::PointF Timeline::viewScroll() const
 {
-  return gfx::Point(m_hbar.getPos(), m_vbar.getPos());
+  return gfx::PointF(m_hbar.getPos(), m_vbar.getPos());
 }
 
-void Timeline::setViewScroll(const gfx::Point& pt)
+void Timeline::setViewScroll(const gfx::PointF& pt)
 {
-  const gfx::Point oldScroll = viewScroll();
+  const gfx::PointF oldScroll = viewScroll();
   const gfx::Point maxPos = getMaxScrollablePos();
-  gfx::Point newScroll = pt;
-  newScroll.x = std::clamp(newScroll.x, 0, maxPos.x);
-  newScroll.y = std::clamp(newScroll.y, 0, maxPos.y);
+  gfx::PointF newScroll = pt;
+  newScroll.x = std::clamp<float>(newScroll.x, 0, maxPos.x);
+  newScroll.y = std::clamp<float>(newScroll.y, 0, maxPos.y);
 
   if (newScroll.y != oldScroll.y) {
     gfx::Rect rc;

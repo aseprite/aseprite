@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2018-2022  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -40,7 +40,7 @@ void Viewport::onResize(ResizeEvent& ev)
   if (!view)
     return;
 
-  Point scroll = view->viewScroll();
+  PointF scroll = view->viewScroll();
 
   Rect cpos(0, 0, 0, 0);
   cpos.x = rect.x + border().left() - scroll.x;

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -345,7 +345,6 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
   Tool* activeTool = App::instance()->activeTool();
   ToolGroupList::iterator it = toolbox->begin_group();
   int groups = toolbox->getGroupsCount();
-  Rect toolrc;
   SkinPartPtr nw;
   os::Surface* icon;
 

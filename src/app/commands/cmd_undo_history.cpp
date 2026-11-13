@@ -74,7 +74,7 @@ public:
 
       invalidate();
 
-      gfx::Point scroll = view->viewScroll();
+      gfx::PointF scroll = view->viewScroll();
       if (state) {
         const gfx::Rect vp = view->viewportBounds();
         const gfx::Rect bounds = this->bounds();

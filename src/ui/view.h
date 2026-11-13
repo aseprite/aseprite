@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2019-2024  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -50,8 +50,8 @@ public:
 
   // Returns the visible/available size to see the attached widget.
   gfx::Size visibleSize() const override;
-  gfx::Point viewScroll() const override;
-  void setViewScroll(const gfx::Point& pt) override;
+  gfx::PointF viewScroll() const override;
+  void setViewScroll(const gfx::PointF& pt) override;
 
   void updateView(const bool restoreScrollPos = true);
 
@@ -74,13 +74,13 @@ protected:
   void onResize(ResizeEvent& ev) override;
   void onSizeHint(SizeHintEvent& ev) override;
 
-  virtual void onSetViewScroll(const gfx::Point& pt);
+  virtual void onSetViewScroll(const gfx::PointF& pt);
   virtual void onScrollRegion(ScrollRegionEvent& ev);
   virtual void onScrollChange();
 
 private:
-  void updateAttachedWidgetBounds(const gfx::Point& scrollPos);
-  gfx::Point limitScrollPosToViewport(const gfx::Point& pt) const;
+  void updateAttachedWidgetBounds(const gfx::PointF& scrollPos);
+  gfx::PointF limitScrollPosToViewport(const gfx::PointF& pt) const;
 
   bool m_hasBars;
   Viewport m_viewport;

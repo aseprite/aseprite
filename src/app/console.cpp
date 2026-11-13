@@ -92,7 +92,7 @@ public:
 
     gfx::Size maxSize = m_view.getScrollableSize();
     gfx::Size visible = m_view.visibleSize();
-    gfx::Point pt = m_view.viewScroll();
+    gfx::PointF pt = m_view.viewScroll();
     const bool autoScroll = (pt.y >= maxSize.h - visible.h);
 
     // Escape characters we can't show properly

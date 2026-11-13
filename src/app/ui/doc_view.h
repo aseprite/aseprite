@@ -56,8 +56,8 @@ public:
   bool isPreview() { return m_type == Preview; }
 
   // Preferred timeline scroll
-  const gfx::Point& timelineScroll() { return m_timelineScroll; }
-  void setTimelineScroll(const gfx::Point& pt) { m_timelineScroll = pt; }
+  const gfx::PointF& timelineScroll() { return m_timelineScroll; }
+  void setTimelineScroll(const gfx::PointF& pt) { m_timelineScroll = pt; }
 
   // TabView implementation
   std::string getTabText() override;
@@ -111,7 +111,7 @@ private:
   ui::View* m_view;
   DocViewPreviewDelegate* m_previewDelegate;
   Editor* m_editor;
-  gfx::Point m_timelineScroll;
+  gfx::PointF m_timelineScroll;
 };
 
 } // namespace app

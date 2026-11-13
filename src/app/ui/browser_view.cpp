@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2025  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2016-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -136,7 +136,7 @@ public:
     View* view = View::getView(this);
     if (m_sectionWidget) {
       int y = m_sectionWidget->bounds().y - bounds().y;
-      view->setViewScroll(gfx::Point(0, y));
+      view->setViewScroll(gfx::PointF(0, y));
 
       m_sectionWidget = nullptr;
     }
@@ -521,7 +521,7 @@ private:
     auto view = View::getView(this);
     if (view) {
       view->updateView();
-      view->setViewScroll(gfx::Point(0, 0));
+      view->setViewScroll(gfx::PointF(0, 0));
     }
     invalidate();
   }
