@@ -99,11 +99,6 @@ public:
                            kShowSymmetryLine | kShowSlices)
   };
 
-  enum class ZoomBehavior {
-    CENTER, // Zoom from center (don't change center of the editor)
-    MOUSE,  // Zoom from cursor
-  };
-
   static ui::WidgetType Type();
 
   Editor(Doc* document, EditorFlags flags = kDefaultEditorFlags, EditorStatePtr state = nullptr);
@@ -203,14 +198,18 @@ public:
   gfx::Rect getVisibleSpriteBounds();
 
   gfx::Size canvasSize() const;
+  gfx::Size rotatedCanvasSize(double angle) const;
+  gfx::Size rotatedCanvasSize() const { return rotatedCanvasSize(m_view.angle); }
   gfx::Point mainTilePosition() const;
   void expandRegionByTiledMode(gfx::Region& rgn, const bool withProj) const;
   void collapseRegionByTiledMode(gfx::Region& rgn) const;
 
   // Changes the scroll to see the given point as the center of the editor.
+  void matchSpriteWithScreenPoint(const gfx::PointF& spritePos, const gfx::Point& screenPos);
   void centerInSpritePoint(const gfx::PointF& spritePos);
   void centerInSpritePoint(const gfx::Point& spritePos);
   gfx::PointF spritePointInCenter() const;
+  gfx::Point screenPointInCenter() const;
 
   void updateStatusBar();
 
@@ -245,9 +244,7 @@ public:
   // in the given position.
   EditorHit calcHit(const gfx::Point& mouseScreenPos);
 
-  void setZoomAndCenterInMouse(const render::Zoom& zoom,
-                               const gfx::Point& mousePos,
-                               ZoomBehavior zoomBehavior);
+  void setZoomFromScreenPos(const render::Zoom& zoom, gfx::Point screenPos);
 
   void pasteImage(const ImageRef& image,
                   const Mask* mask = nullptr,
@@ -425,7 +422,7 @@ private:
   // routine.
   void drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, int dx, int dy);
 
-  gfx::Point calcExtraPadding(const render::Projection& proj);
+  gfx::Point calcExtraPadding(const render::Projection& proj, const ViewOptions& viewOpts);
   void calcMatrices();
 
   void invalidateCanvasRegion(const gfx::Region& updateRegion);

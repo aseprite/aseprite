@@ -108,10 +108,13 @@ void ZoomCommand::onExecute(Context* context)
     }
   }
 
-  editor->setZoomAndCenterInMouse(
-    zoom,
-    editor->display()->pointFromScreen(mousePos),
-    (focus == Focus::Center ? Editor::ZoomBehavior::CENTER : Editor::ZoomBehavior::MOUSE));
+  gfx::Point screenPos;
+  if (focus == Focus::Center)
+    screenPos = editor->screenPointInCenter();
+  else
+    screenPos = editor->display()->pointFromScreen(mousePos);
+
+  editor->setZoomFromScreenPos(zoom, screenPos);
 }
 
 std::string ZoomCommand::onGetFriendlyName() const

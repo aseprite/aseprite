@@ -12,7 +12,7 @@
 
 namespace app {
 
-void ViewOptions::calcMatrices(const gfx::PointF& center)
+void ViewOptions::calcMatrices(const gfx::PointF& pivot, const gfx::PointF& offset)
 {
   matrix.setIdentity();
 
@@ -20,10 +20,10 @@ void ViewOptions::calcMatrices(const gfx::PointF& center)
     if (isRotated())
       matrix.setRotate(angle);
 
-    matrix.preTranslate(-center.x, -center.y);
+    matrix.preTranslate(-pivot.x, -pivot.y);
     if (xflip || yflip)
       matrix.postConcat(flipMatrix());
-    matrix.postTranslate(center.x, center.y);
+    matrix.postTranslate(pivot.x + offset.x, pivot.y + offset.y);
   }
 
   auto inv = matrix.invert();
