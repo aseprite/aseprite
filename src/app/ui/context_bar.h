@@ -58,6 +58,7 @@ class FontInfo;
 class GradientTypeSelector;
 class SamplingSelector;
 class Transformation;
+struct ViewOptions;
 
 class ContextBar : public DocObserverWidget<ui::HBox>,
                    public obs::observable<ContextBarObserver>,
@@ -75,7 +76,7 @@ public:
   bool updateSamplingVisibility(tools::Tool* tool = nullptr);
   void updateAutoSelectLayer(bool state);
   bool isAutoSelectLayer() const;
-  void updateZoomAngle(double angle);
+  void updateZoomFields(const ViewOptions& opts);
 
   void setActiveBrush(const doc::BrushRef& brush);
   void setActiveBrushBySlot(tools::Tool* tool, int slot);

@@ -8,22 +8,31 @@
   #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/commands/command.h"
+#include "app/commands/new_params.h"
 #include "app/context.h"
 #include "app/i18n/strings.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/main_window.h"
+#include "app/ui/preview_editor.h"
 
 namespace app {
 
-class ResetViewCommand : public Command {
+struct ResetViewParams : public NewParams {
+  Param<bool> preview{ this, false, "preview" };
+};
+
+class ResetViewCommand : public CommandWithNewParams<ResetViewParams> {
 public:
   ResetViewCommand();
 
 protected:
   void onExecute(Context* ctx) override;
+  std::string onGetFriendlyName() const override;
 };
 
-ResetViewCommand::ResetViewCommand() : Command(CommandId::ResetView())
+ResetViewCommand::ResetViewCommand() : CommandWithNewParams<ResetViewParams>(CommandId::ResetView())
 {
 }
 
@@ -32,8 +41,20 @@ void ResetViewCommand::onExecute(Context* ctx)
   if (!ctx->isUIAvailable())
     return;
 
-  if (auto* editor = Editor::activeEditor())
+  Editor* editor;
+  if (params().preview())
+    editor = App::instance()->mainWindow()->getPreviewEditor()->previewEditor();
+  else
+    editor = Editor::activeEditor();
+
+  if (editor)
     editor->setViewOptions(ViewOptions());
+}
+
+std::string ResetViewCommand::onGetFriendlyName() const
+{
+  return (params().preview() ? Strings::commands_ResetView_Preview() :
+                               Strings::commands_ResetView());
 }
 
 Command* CommandFactory::createResetViewCommand()

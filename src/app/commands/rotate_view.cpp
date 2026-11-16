@@ -8,11 +8,14 @@
   #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/new_params.h"
 #include "app/context.h"
 #include "app/i18n/strings.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/main_window.h"
+#include "app/ui/preview_editor.h"
 #include "base/convert_to.h"
 
 namespace app {
@@ -43,7 +46,13 @@ void RotateViewCommand::onExecute(Context* ctx)
   if (!ctx->isUIAvailable())
     return;
 
-  if (auto* editor = Editor::activeEditor()) {
+  Editor* editor;
+  if (params().preview())
+    editor = App::instance()->mainWindow()->getPreviewEditor()->previewEditor();
+  else
+    editor = Editor::activeEditor();
+
+  if (editor) {
     auto opts = editor->viewOptions();
     const double a = params().angle();
     if (params().action() == "add")
@@ -67,7 +76,8 @@ std::string RotateViewCommand::onGetFriendlyName() const
     value = "=";
   value += base::convert_to<std::string>(params().angle());
   value += "º";
-  return Strings::commands_RotateView(value);
+  return (params().preview() ? Strings::commands_RotateView_Preview(value) :
+                               Strings::commands_RotateView(value));
 }
 
 Command* CommandFactory::createRotateViewCommand()

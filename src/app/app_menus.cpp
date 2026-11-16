@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2025  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -578,6 +578,15 @@ bool AppMenus::rebuildRecentList()
 Menu* AppMenus::getAnimationMenu()
 {
   auto menuItem = dynamic_cast<MenuItem*>(m_rootMenu->findItemById("animation_menu"));
+  if (menuItem)
+    return menuItem->getSubmenu();
+  else
+    return nullptr;
+}
+
+Menu* AppMenus::getPreviewMenu()
+{
+  auto menuItem = dynamic_cast<MenuItem*>(m_rootMenu->findItemById("preview_menu"));
   if (menuItem)
     return menuItem->getSubmenu();
   else

@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -57,6 +57,7 @@ private:
   DocumentPreferences& docPref();
   void onCenterClicked();
   void onPlayClicked();
+  void onPopupOptions();
   void onPopupSpeed();
   void hideWindow();
   void destroyDocView();

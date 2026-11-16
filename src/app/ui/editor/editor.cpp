@@ -577,6 +577,7 @@ void Editor::setViewOptions(const ViewOptions& view)
 
   const gfx::PointF spritePos = spritePointInCenter();
   const bool angleChange = (m_view.angle != view.angle);
+  const bool changes = (m_view != view);
 
   m_view = view;
   m_padding = calcExtraPadding(m_proj, m_view);
@@ -585,11 +586,12 @@ void Editor::setViewOptions(const ViewOptions& view)
 
   centerInSpritePoint(spritePos);
 
-  if (angleChange) {
+  if (changes && isActive()) {
     if (ContextBar* ctxBar = App::instance()->contextBar())
-      ctxBar->updateZoomAngle(view.angle);
+      ctxBar->updateZoomFields(view);
 
-    StatusBar::instance()->updateZoomAngle(view.angle);
+    if (angleChange)
+      StatusBar::instance()->updateZoomAngle(view.angle);
   }
 }
 

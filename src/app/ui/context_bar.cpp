@@ -191,10 +191,16 @@ public:
       }
     });
   }
-  void setAngle(int angle)
+  void updateZoomFields(const ViewOptions& opts)
   {
-    if (m_angle.getValue() != angle)
-      m_angle.setValue(angle);
+    if (m_angle.getValue() != opts.angle)
+      m_angle.setValue(opts.angle);
+
+    if (m_flips.getItem(0)->isSelected() != opts.xflip)
+      m_flips.getItem(0)->setSelected(opts.xflip);
+
+    if (m_flips.getItem(1)->isSelected() != opts.yflip)
+      m_flips.getItem(1)->setSelected(opts.yflip);
   }
 
 private:
@@ -212,7 +218,7 @@ public:
     addChild(&m_angle);
     addChild(&m_samplingSelector);
   }
-  void updateZoomAngle(double angle) { m_angle.setAngle(angle); }
+  void updateZoomFields(const ViewOptions& opts) { m_angle.updateZoomFields(opts); }
   bool setSamplingVisibility(bool state)
   {
     if (state == m_samplingSelector.hasFlags(HIDDEN)) {
@@ -2255,7 +2261,7 @@ void ContextBar::onActiveSiteChange(const Site& site)
   DocObserverWidget<ui::HBox>::onActiveSiteChange(site);
   if (m_zoomFields->isVisible()) {
     if (auto* editor = Editor::activeEditor())
-      updateZoomAngle(editor->viewOptions().angle);
+      updateZoomFields(editor->viewOptions());
   }
   if (m_sliceFields->isVisible())
     updateSliceFields(site);
@@ -2621,9 +2627,9 @@ bool ContextBar::isAutoSelectLayer() const
   return m_autoSelectLayer->isSelected();
 }
 
-void ContextBar::updateZoomAngle(double angle)
+void ContextBar::updateZoomFields(const ViewOptions& opts)
 {
-  m_zoomFields->updateZoomAngle(angle);
+  m_zoomFields->updateZoomFields(opts);
 }
 
 void ContextBar::setActiveBrushBySlot(tools::Tool* tool, int slot)

@@ -15,6 +15,8 @@
 #include "app/i18n/strings.h"
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/main_window.h"
+#include "app/ui/preview_editor.h"
 #include "base/convert_to.h"
 #include "render/zoom.h"
 #include "ui/manager.h"
@@ -40,6 +42,7 @@ private:
   Action m_action;
   render::Zoom m_zoom;
   Focus m_focus;
+  bool m_preview;
 };
 
 ZoomCommand::ZoomCommand()
@@ -47,6 +50,7 @@ ZoomCommand::ZoomCommand()
   , m_action(Action::In)
   , m_zoom(1, 1)
   , m_focus(Focus::Default)
+  , m_preview(false)
 {
 }
 
@@ -72,6 +76,8 @@ void ZoomCommand::onLoadParams(const Params& params)
     m_focus = Focus::Center;
   else if (focus == "mouse")
     m_focus = Focus::Mouse;
+
+  m_preview = params.get_as<bool>("preview");
 }
 
 bool ZoomCommand::onEnabled(Context* context)
@@ -81,14 +87,19 @@ bool ZoomCommand::onEnabled(Context* context)
 
 void ZoomCommand::onExecute(Context* context)
 {
-  // Use the current editor by default.
-  auto editor = Editor::activeEditor();
-  gfx::Point mousePos = ui::get_mouse_position();
+  Editor* editor;
+  if (m_preview)
+    editor = App::instance()->mainWindow()->getPreviewEditor()->previewEditor();
+  else
+    editor = Editor::activeEditor(); // Use the current editor by default.
 
   // Try to use the editor above the mouse.
-  ui::Widget* pick = ui::Manager::getDefault()->pickFromScreenPos(mousePos);
-  if (pick && pick->type() == Editor::Type())
-    editor = static_cast<Editor*>(pick);
+  gfx::Point mousePos = ui::get_mouse_position();
+  if (!m_preview) {
+    ui::Widget* pick = ui::Manager::getDefault()->pickFromScreenPos(mousePos);
+    if (pick && pick->type() == Editor::Type())
+      editor = static_cast<Editor*>(pick);
+  }
 
   render::Zoom zoom = editor->zoom();
 

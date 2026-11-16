@@ -12,6 +12,7 @@
 #include "app/ui/preview_editor.h"
 
 #include "app/app.h"
+#include "app/app_menus.h"
 #include "app/doc.h"
 #include "app/doc_event.h"
 #include "app/i18n/strings.h"
@@ -52,6 +53,8 @@ public:
     initTheme();
   }
 
+  obs::signal<void()> Popup;
+
 protected:
   void onInitTheme(ui::InitThemeEvent& ev) override
   {
@@ -83,6 +86,19 @@ protected:
   {
     switch (msg->type()) {
       case kSetCursorMessage: ui::set_mouse_cursor(kArrowCursor); return true;
+
+      case kMouseUpMessage:   {
+        MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+        if (mouseMsg->right()) {
+          if (hasCapture()) {
+            releaseMouse();
+            setSelected(!isSelected());
+            Popup();
+            return true;
+          }
+        }
+        break;
+      }
     }
 
     return CheckBox::onProcessMessage(msg);
@@ -191,6 +207,7 @@ PreviewEditorWindow::PreviewEditorWindow()
   m_isEnabled = get_config_bool("MiniEditor", "Enabled", true);
 
   m_centerButton->Click.connect([this] { onCenterClicked(); });
+  m_centerButton->Popup.connect([this] { onPopupOptions(); });
   m_playButton->Click.connect([this] { onPlayClicked(); });
   m_playButton->Popup.connect([this] { onPopupSpeed(); });
 
@@ -322,6 +339,16 @@ void PreviewEditorWindow::onPlayClicked()
     if (m_relatedEditor)
       miniEditor->setFrame(m_relatedEditor->frame());
   }
+}
+
+void PreviewEditorWindow::onPopupOptions()
+{
+  Editor* miniEditor = (m_docView ? m_docView->editor() : nullptr);
+  if (!miniEditor || !miniEditor->document())
+    return;
+
+  if (auto* menu = AppMenus::instance()->getPreviewMenu())
+    menu->showPopup(miniEditor->mousePosInDisplay(), display());
 }
 
 void PreviewEditorWindow::onPopupSpeed()

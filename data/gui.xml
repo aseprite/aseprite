@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Aseprite -->
-<!-- Copyright (C) 2018-2025  Igara Studio S.A. -->
+<!-- Copyright (C) 2018-present  Igara Studio S.A. -->
 <!-- Copyright (C) 2001-2018  David Capello -->
 <gui>
   <!-- Keyboard shortcuts -->
@@ -1090,7 +1090,7 @@
         <item command="Timeline" text="@.view_timeline">
           <param name="switch" value="true" />
         </item>
-        <menu text="@.view_preview">
+        <menu text="@.view_preview" id="preview_menu">
           <item command="TogglePreview" text="@.view_preview" />
           <separator />
           <item command="ToggleOtherLayersOpacity" text="@.view_preview_hide_other_layers">
@@ -1098,6 +1098,51 @@
             <param name="checkedIfZero" value="true" />
           </item>
           <item command="ShowBrushPreviewInPreview" text="@.view_preview_brush_preview"/>
+          <separator />
+          <item command="Zoom" text="@.view_preview_zoom_zoom_in">
+            <param name="action" value="in" />
+            <param name="focus" value="center" />
+            <param name="preview" value="true" />
+          </item>
+          <item command="Zoom" text="@.view_preview_zoom_zoom_out">
+            <param name="action" value="out" />
+            <param name="focus" value="center" />
+            <param name="preview" value="true" />
+          </item>
+          <item command="Zoom" text="@.view_preview_zoom_zoom_to_100">
+            <param name="percentage" value="100" />
+            <param name="focus" value="center" />
+            <param name="preview" value="true" />
+          </item>
+          <separator />
+          <item command="RotateView" text="@.view_preview_zoom_rotate_view_ccv">
+            <param name="action" value="subtract" />
+            <param name="angle" value="15" />
+            <param name="preview" value="true" />
+          </item>
+          <item command="RotateView" text="@.view_preview_zoom_rotate_view_cv">
+            <param name="action" value="add" />
+            <param name="angle" value="15" />
+            <param name="preview" value="true" />
+          </item>
+          <item command="RotateView" text="@.view_preview_zoom_reset_view_rotation">
+            <param name="action" value="set" />
+            <param name="angle" value="0" />
+            <param name="preview" value="true" />
+          </item>
+          <separator />
+          <item command="FlipView" text="@.view_preview_zoom_flip_view_horizontally">
+            <param name="orientation" value="horizontal" />
+            <param name="preview" value="true" />
+          </item>
+          <item command="FlipView" text="@.view_preview_zoom_flip_view_vertically">
+            <param name="orientation" value="vertical" />
+            <param name="preview" value="true" />
+          </item>
+          <separator />
+          <item command="ResetView" text="@.view_preview_zoom_reset_view">
+            <param name="preview" value="true" />
+          </item>
         </menu>
         <item command="AdvancedMode" text="@.view_advanced_mode" />
         <item command="FullscreenMode" text="@.view_full_screen_mode" />
