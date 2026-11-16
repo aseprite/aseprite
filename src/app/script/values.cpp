@@ -265,6 +265,22 @@ gfx::Point get_value_from_lua(lua_State* L, int index)
 }
 
 // ----------------------------------------------------------------------
+// PointF
+// TODO how to load/save PointF from/to Lua?
+
+template<>
+void push_value_to_lua(lua_State* L, const gfx::PointF& value)
+{
+  push_obj(L, gfx::Point(value));
+}
+
+template<>
+gfx::PointF get_value_from_lua(lua_State* L, int index)
+{
+  return gfx::PointF(convert_args_into_point(L, index));
+}
+
+// ----------------------------------------------------------------------
 // Size
 
 template<>

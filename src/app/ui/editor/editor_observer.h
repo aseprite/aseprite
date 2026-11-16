@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -25,6 +26,7 @@ public:
   // Called when the scroll or zoom of the editor changes.
   virtual void onScrollChanged(Editor* editor) {}
   virtual void onZoomChanged(Editor* editor) {}
+  virtual void onViewOptionsChanged(Editor* editor) {}
 
   // Called when the current frame of the editor changes.
   virtual void onBeforeFrameChanged(Editor* editor) {}

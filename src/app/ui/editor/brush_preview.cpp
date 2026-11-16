@@ -476,7 +476,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
       // Check if the cached brush painted in the m_uiLayer is still valid
       if (m_cachedType != m_type || m_cachedBrushGen != m_brushGen ||
-          m_cachedViewOptions != m_editor->viewOptions()) {
+          !m_cachedViewOptions.sameMatrix(m_editor->viewOptions())) {
         cached = false;
       }
 

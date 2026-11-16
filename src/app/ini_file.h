@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2019  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -49,6 +49,9 @@ void set_config_bool(const char* section, const char* name, bool value);
 
 gfx::Point get_config_point(const char* section, const char* name, const gfx::Point& point);
 void set_config_point(const char* section, const char* name, const gfx::Point& point);
+
+gfx::PointF get_config_point(const char* section, const char* name, const gfx::PointF& point);
+void set_config_point(const char* section, const char* name, const gfx::PointF& point);
 
 gfx::Size get_config_size(const char* section, const char* name, const gfx::Size& size);
 void set_config_size(const char* section, const char* name, const gfx::Size& size);
@@ -102,6 +105,11 @@ inline gfx::Point get_config_value(const char* section, const char* name, const 
   return get_config_point(section, name, value);
 }
 
+inline gfx::PointF get_config_value(const char* section, const char* name, const gfx::PointF& value)
+{
+  return get_config_point(section, name, value);
+}
+
 inline gfx::Size get_config_value(const char* section, const char* name, const gfx::Size& value)
 {
   return get_config_size(section, name, value);
@@ -149,6 +157,11 @@ inline void set_config_value(const char* section, const char* name, double value
 }
 
 inline void set_config_value(const char* section, const char* name, const gfx::Point& value)
+{
+  set_config_point(section, name, value);
+}
+
+inline void set_config_value(const char* section, const char* name, const gfx::PointF& value)
 {
   set_config_point(section, name, value);
 }

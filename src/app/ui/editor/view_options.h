@@ -14,6 +14,7 @@
 namespace app {
 
 struct ViewOptions {
+  gfx::PointF center;
   double angle = 0.0;
   bool xflip = false;
   bool yflip = false;
@@ -23,8 +24,7 @@ struct ViewOptions {
 
   bool isRotated() const { return angle != 0.0; }
 
-  bool operator!=(const ViewOptions& o) const { return !operator==(o); }
-  bool operator==(const ViewOptions& o) const
+  bool sameMatrix(const ViewOptions& o) const
   {
     return (angle == o.angle && xflip == o.xflip && yflip == o.yflip);
   }

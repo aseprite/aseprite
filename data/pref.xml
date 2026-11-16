@@ -655,8 +655,11 @@
     </section>
     <section id="preview">
       <option id="zoom" type="double" default="1.0" />
-      <option id="scroll" type="gfx::Point" />
       <option id="auto_scroll" type="bool" default="true" />
+      <option id="center" type="gfx::PointF" />
+      <option id="angle" type="double" default="0.0" />
+      <option id="yflip" type="bool" default="false" />
+      <option id="xflip" type="bool" default="false" />
     </section>
     <section id="show">
       <option id="layer_edges" type="bool" default="false" />

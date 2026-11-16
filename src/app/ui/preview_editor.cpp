@@ -393,7 +393,9 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
 
   // Document preferences used to store the preferred zoom/scroll point
   auto& docPref = Preferences::instance().document(document);
+
   bool autoScroll = docPref.preview.autoScroll();
+  gfx::PointF center;
 
   // Set the same location as in the given editor.
   if (!miniEditor || miniEditor->document() != document) {
@@ -402,25 +404,32 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
     m_docView = new DocView(document, DocView::Preview, this);
     addChild(m_docView);
 
+    ViewOptions opts;
+    opts.center = docPref.preview.center();
+    opts.angle = docPref.preview.angle();
+    opts.xflip = docPref.preview.xflip();
+    opts.yflip = docPref.preview.yflip();
+
     miniEditor = m_docView->editor();
     miniEditor->setZoom(render::Zoom::fromScale(docPref.preview.zoom()));
     miniEditor->setLayer(editor->layer());
     miniEditor->setFrame(editor->frame());
     miniEditor->setAnimationSpeedMultiplier(m_aniSpeed);
+    miniEditor->setViewOptions(opts);
     miniEditor->add_observer(this);
     layout();
 
-    if (!autoScroll)
-      miniEditor->setEditorScroll(gfx::PointF(docPref.preview.scroll()));
+    center = opts.center;
   }
+  else
+    center = miniEditor->viewOptions().center;
 
   m_centerButton->setSelected(autoScroll);
-  if (autoScroll) {
-    gfx::Point centerPoint = editor->getVisibleSpriteBounds().center();
-    miniEditor->centerInSpritePoint(centerPoint);
+  if (autoScroll)
+    center = editor->spritePointInCenter();
 
-    saveScrollPref();
-  }
+  miniEditor->centerInSpritePoint(center);
+  saveViewOptions();
 
   if (!m_playButton->isPlaying()) {
     miniEditor->stop();
@@ -450,17 +459,22 @@ void PreviewEditorWindow::onStateChanged(Editor* editor)
 void PreviewEditorWindow::onScrollChanged(Editor* miniEditor)
 {
   if (miniEditor->hasCapture()) {
-    saveScrollPref();
+    saveViewOptions();
     uncheckCenterButton();
   }
 }
 
 void PreviewEditorWindow::onZoomChanged(Editor* miniEditor)
 {
-  saveScrollPref();
+  saveViewOptions();
 }
 
-void PreviewEditorWindow::saveScrollPref()
+void PreviewEditorWindow::onViewOptionsChanged(Editor* miniEditor)
+{
+  saveViewOptions();
+}
+
+void PreviewEditorWindow::saveViewOptions()
 {
   ASSERT(m_docView);
   if (!m_docView)
@@ -469,7 +483,12 @@ void PreviewEditorWindow::saveScrollPref()
   Editor* miniEditor = m_docView->editor();
   ASSERT(miniEditor);
 
-  docPref().preview.scroll(gfx::Point(View::getView(miniEditor)->viewScroll()));
+  const ViewOptions& opts = miniEditor->viewOptions();
+
+  docPref().preview.center(opts.center);
+  docPref().preview.angle(opts.angle);
+  docPref().preview.xflip(opts.xflip);
+  docPref().preview.yflip(opts.yflip);
   docPref().preview.zoom(miniEditor->zoom().scale());
 }
 

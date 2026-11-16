@@ -1,4 +1,5 @@
 // Aseprite
+// Copyright (C) 2026-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -20,6 +21,7 @@ public:
   void notifyStateChanged(Editor* editor);
   void notifyScrollChanged(Editor* editor);
   void notifyZoomChanged(Editor* editor);
+  void notifyViewOptionsChanged(Editor* editor);
   void notifyBeforeFrameChanged(Editor* editor);
   void notifyAfterFrameChanged(Editor* editor);
   void notifyBeforeLayerChanged(Editor* editor);

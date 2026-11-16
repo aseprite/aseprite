@@ -579,6 +579,7 @@ private:
   // EditorObserver impl
   void onScrollChanged(Editor* editor) override { updateAllVisibleRegion(); }
   void onZoomChanged(Editor* editor) override { updateAllVisibleRegion(); }
+  void onViewOptionsChanged(Editor* editor) override { updateAllVisibleRegion(); }
 };
 
 //////////////////////////////////////////////////////////////////////

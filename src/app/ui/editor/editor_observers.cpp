@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -33,6 +33,11 @@ void EditorObservers::notifyScrollChanged(Editor* editor)
 void EditorObservers::notifyZoomChanged(Editor* editor)
 {
   notify_observers(&EditorObserver::onZoomChanged, editor);
+}
+
+void EditorObservers::notifyViewOptionsChanged(Editor* editor)
+{
+  notify_observers(&EditorObserver::onViewOptionsChanged, editor);
 }
 
 void EditorObservers::notifyBeforeFrameChanged(Editor* editor)

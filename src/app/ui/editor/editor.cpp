@@ -570,14 +570,13 @@ void Editor::setEditorZoom(const render::Zoom& zoom)
 
 void Editor::setViewOptions(const ViewOptions& view)
 {
-  if (view == m_view) {
+  if (view.sameMatrix(m_view)) {
     // Do nothing
     return;
   }
 
-  const gfx::PointF spritePos = spritePointInCenter();
+  const gfx::PointF spritePos = view.center;
   const bool angleChange = (m_view.angle != view.angle);
-  const bool changes = (m_view != view);
 
   m_view = view;
   m_padding = calcExtraPadding(m_proj, m_view);
@@ -585,8 +584,11 @@ void Editor::setViewOptions(const ViewOptions& view)
   updateEditor(false);
 
   centerInSpritePoint(spritePos);
+  m_view.center = view.center; // Keep same center
 
-  if (changes && isActive()) {
+  m_observers.notifyViewOptionsChanged(this);
+
+  if (isActive()) {
     if (ContextBar* ctxBar = App::instance()->contextBar())
       ctxBar->updateZoomFields(view);
 
@@ -3114,6 +3116,9 @@ void Editor::notifyScrollChanged()
   ASSERT(m_state);
   if (m_state)
     m_state->onScrollChange(this);
+
+  // Update view center
+  m_view.center = spritePointInCenter();
 
   // Update status bar and mouse cursor
   if (hasMouse()) {

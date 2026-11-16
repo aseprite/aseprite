@@ -38,6 +38,7 @@ public:
   void onStateChanged(Editor* editor) override;
   void onScrollChanged(Editor* editor) override;
   void onZoomChanged(Editor* editor) override;
+  void onViewOptionsChanged(Editor* editor) override;
 
   // DocViewPreviewDelegate impl
   void onScrollOtherEditor(Editor* editor) override;
@@ -61,7 +62,7 @@ private:
   void onPopupSpeed();
   void hideWindow();
   void destroyDocView();
-  void saveScrollPref();
+  void saveViewOptions();
   void adjustPlayingTag();
 
   bool m_isEnabled;

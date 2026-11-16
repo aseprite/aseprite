@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2024  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2001-2016  David Capello
 //
 // This program is distributed under the terms of
@@ -219,6 +219,27 @@ Point get_config_point(const char* section, const char* name, const Point& point
 }
 
 void set_config_point(const char* section, const char* name, const Point& point)
+{
+  std::string buf = fmt::format("{} {}", point.x, point.y);
+  set_config_string(section, name, buf.c_str());
+}
+
+PointF get_config_point(const char* section, const char* name, const PointF& point)
+{
+  PointF point2(point);
+  const char* value = get_config_string(section, name, "");
+  if (value) {
+    std::vector<std::string> parts;
+    base::split_string(value, parts, " ");
+    if (parts.size() == 2) {
+      point2.x = std::strtod(parts[0].c_str(), nullptr);
+      point2.y = std::strtod(parts[1].c_str(), nullptr);
+    }
+  }
+  return point2;
+}
+
+void set_config_point(const char* section, const char* name, const PointF& point)
 {
   std::string buf = fmt::format("{} {}", point.x, point.y);
   set_config_string(section, name, buf.c_str());
