@@ -3,6 +3,7 @@
 # Copyright (C) 2001-2018 David Capello
 
 add_library(render-lib
+  dithering_algorithm.cpp
   error_diffusion.cpp
   get_sprite_pixel.cpp
   gradient.cpp
