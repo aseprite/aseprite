@@ -1302,6 +1302,10 @@
       <item command="SetSameInk" text="@general.same_in_all_tools" group="ink_options" />
     </menu>
 
+    <menu id="tile_popup_menu">
+      <item command="TileProperties" text="@main_menu.tile_properties" group="tile_popup_properties" />
+    </menu>
+
   </menus>
 
   <!-- tools -->
