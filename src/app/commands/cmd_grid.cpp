@@ -104,11 +104,15 @@ void GridSettingsCommand::onExecute(Context* context)
 
   Site site = context->activeSite();
   Rect bounds = site.gridBounds();
+  auto& docPref = Preferences::instance().document(site.document());
+  gfx::Size subdiv = docPref.gridSubdivisions.subdivisions();
 
   window.gridX()->setTextf("%d", bounds.x);
   window.gridY()->setTextf("%d", bounds.y);
   window.gridW()->setTextf("%d", bounds.w);
   window.gridH()->setTextf("%d", bounds.h);
+  window.subdivX()->setTextf("%d", subdiv.w);
+  window.subdivY()->setTextf("%d", subdiv.h);
   window.gridW()->Leave.connect([&window] {
     // Prevent entering a width lesser than 1
     if (window.gridW()->textInt() <= 0)
@@ -119,25 +123,42 @@ void GridSettingsCommand::onExecute(Context* context)
     if (window.gridH()->textInt() <= 0)
       window.gridH()->setText("1");
   });
-  window.openWindowInForeground();
+  window.subdivX()->Leave.connect([&window] {
+    if (window.subdivX()->textInt() <= 0)
+      window.subdivX()->setText("1");
+  });
+  window.subdivY()->Leave.connect([&window] {
+    if (window.subdivY()->textInt() <= 0)
+      window.subdivY()->setText("1");
+  });
 
-  if (window.closer() == window.ok()) {
-    bounds.x = window.gridX()->textInt();
-    bounds.y = window.gridY()->textInt();
-    bounds.w = window.gridW()->textInt();
-    bounds.h = window.gridH()->textInt();
-    bounds.w = std::max(bounds.w, 1);
-    bounds.h = std::max(bounds.h, 1);
+  auto applySettings = [&]() {
+    Rect newBounds;
+    newBounds.x = window.gridX()->textInt();
+    newBounds.y = window.gridY()->textInt();
+    newBounds.w = std::max(window.gridW()->textInt(), 1);
+    newBounds.h = std::max(window.gridH()->textInt(), 1);
+
+    int sx = std::max(window.subdivX()->textInt(), 1);
+    int sy = std::max(window.subdivY()->textInt(), 1);
+    docPref.gridSubdivisions.subdivisions(gfx::Size(sx, sy));
 
     ContextWriter writer(context);
     Tx tx(writer, friendlyName(), ModifyDocument);
-    tx(new cmd::SetGridBounds(site.sprite(), bounds));
+    tx(new cmd::SetGridBounds(site.sprite(), newBounds));
     tx.commit();
 
-    auto& docPref = Preferences::instance().document(site.document());
-    if (!docPref.show.grid()) // Make grid visible
+    if (!docPref.show.grid())
       docPref.show.grid(true);
-  }
+    if ((sx > 1 || sy > 1) && !docPref.show.gridSubdivisions())
+      docPref.show.gridSubdivisions(true);
+  };
+
+  window.apply()->Click.connect([&] { applySettings(); });
+  window.openWindowInForeground();
+
+  if (window.closer() == window.ok())
+    applySettings();
 }
 
 Command* CommandFactory::createSnapToGridCommand()
