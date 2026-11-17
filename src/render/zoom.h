@@ -14,6 +14,8 @@
 namespace render {
 
 class Zoom {
+  explicit Zoom(double scale);
+
 public:
   Zoom(int num, int den);
 
@@ -52,7 +54,8 @@ public:
   // rendering techniques.
   bool isSimpleZoomLevel() const { return (m_num == 1 || m_den == 1); }
 
-  static Zoom fromScale(double scale);
+  static Zoom fromClosestScale(double scale);
+  static Zoom fromRealScale(double scale);
   static Zoom fromLinearScale(int i);
   static int linearValues();
 

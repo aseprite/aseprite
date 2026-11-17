@@ -17,31 +17,33 @@
 namespace render {
 
 static int scales[][2] = {
-  { 1,  64 },
-  { 1,  48 },
-  { 1,  32 },
-  { 1,  24 },
-  { 1,  16 },
-  { 1,  12 },
-  { 1,  8  },
-  { 1,  6  },
-  { 1,  5  },
-  { 1,  4  },
-  { 1,  3  },
-  { 1,  2  },
-  { 1,  1  }, // 100%
-  { 2,  1  },
-  { 3,  1  },
-  { 4,  1  },
-  { 5,  1  },
-  { 6,  1  },
-  { 8,  1  },
-  { 12, 1  },
-  { 16, 1  },
-  { 24, 1  },
-  { 32, 1  },
-  { 48, 1  },
-  { 64, 1  },
+  { 1,   64 },
+  { 1,   48 },
+  { 1,   32 },
+  { 1,   24 },
+  { 1,   16 },
+  { 1,   12 },
+  { 1,   8  },
+  { 1,   6  },
+  { 1,   5  },
+  { 1,   4  },
+  { 1,   3  },
+  { 1,   2  },
+  { 1,   1  }, // 100%
+  { 2,   1  },
+  { 3,   1  },
+  { 4,   1  },
+  { 5,   1  },
+  { 6,   1  },
+  { 8,   1  },
+  { 12,  1  },
+  { 16,  1  },
+  { 24,  1  },
+  { 32,  1  },
+  { 48,  1  },
+  { 64,  1  },
+  { 128, 1  },
+  { 256, 1  },
 };
 
 static int scales_size = sizeof(scales) / sizeof(scales[0]);
@@ -51,6 +53,14 @@ Zoom::Zoom(int num, int den) : m_num(num), m_den(den)
   ASSERT(m_num > 0);
   ASSERT(m_den > 0);
   m_internalScale = scale();
+}
+
+Zoom::Zoom(double scale)
+{
+  scale = std::clamp(scale, 1.0 / 64.0, 256.0);
+  m_num = 100.0 * scale;
+  m_den = 100.0;
+  m_internalScale = scale;
 }
 
 bool Zoom::in()
@@ -93,11 +103,17 @@ int Zoom::linearScale() const
 }
 
 // static
-Zoom Zoom::fromScale(double scale)
+Zoom Zoom::fromClosestScale(double scale)
 {
   Zoom zoom = fromLinearScale(findClosestLinearScale(scale));
   zoom.m_internalScale = scale;
   return zoom;
+}
+
+// static
+Zoom Zoom::fromRealScale(double scale)
+{
+  return Zoom(scale);
 }
 
 // static

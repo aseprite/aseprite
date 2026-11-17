@@ -27,7 +27,8 @@ public:
   virtual bool onUpdateStatusBar(Editor* editor) override;
 
 private:
-  gfx::Point m_startPos;
+  gfx::Point m_startScreenPos;
+  gfx::PointF m_startSpritePos;
   render::Zoom m_startZoom;
   bool m_moved;
 };

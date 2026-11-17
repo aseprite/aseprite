@@ -66,7 +66,7 @@ void ZoomCommand::onLoadParams(const Params& params)
 
   std::string percentage = params.get("percentage");
   if (!percentage.empty()) {
-    m_zoom = render::Zoom::fromScale(std::strtod(percentage.c_str(), NULL) / 100.0);
+    m_zoom = render::Zoom::fromRealScale(std::strtod(percentage.c_str(), NULL) / 100.0);
     m_action = Action::Set;
   }
 

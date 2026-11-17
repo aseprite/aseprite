@@ -243,6 +243,8 @@
         <!-- Editor -->
         <vbox id="section_editor">
           <separator text="@.section_editor" horizontal="true" />
+          <check text="@.smooth_zoom" id="smooth_zoom"
+                 pref="editor.smooth_zoom" />
           <check text="@.wheel_zoom" id="wheel_zoom"
                  pref="editor.zoom_with_wheel" />
           <check text="@.slide_zoom" id="slide_zoom"

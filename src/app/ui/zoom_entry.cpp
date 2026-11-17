@@ -35,7 +35,7 @@ using namespace ui;
 ZoomEntry::ZoomEntry() : IntEntry(0, render::Zoom::linearValues() - 1, this), m_locked(false)
 {
   setSuffix("%");
-  setMaxTextLength(6); // strlen("6400.0") == 6
+  setMaxTextLength(7); // strlen("25600.0") == 7
   setup_mini_look(this);
 
   setZoom(render::Zoom(1, 1));
@@ -47,7 +47,7 @@ void ZoomEntry::setZoom(const render::Zoom& zoom)
   if (m_locked)
     return;
 
-  std::string newText = onGetTextFromValue(zoom.linearScale());
+  std::string newText = fmt::format("{:.1f}", zoom.scale() * 100.0);
   if (newText != text())
     setText(newText);
 }
@@ -57,7 +57,7 @@ void ZoomEntry::onValueChange()
   base::ScopedValue lock(m_locked, true);
   IntEntry::onValueChange();
 
-  render::Zoom zoom = render::Zoom::fromLinearScale(getValue());
+  render::Zoom zoom = render::Zoom::fromRealScale(std::strtod(text().c_str(), nullptr) / 100.0);
   ZoomChange(zoom);
 }
 
@@ -70,7 +70,7 @@ std::string ZoomEntry::onGetTextFromValue(int value)
 int ZoomEntry::onGetValueFromText(const std::string& text)
 {
   double value = std::strtod(text.c_str(), nullptr);
-  return render::Zoom::fromScale(value / 100.0).linearScale();
+  return render::Zoom::fromRealScale(value / 100.0).linearScale();
 }
 
 } // namespace app
