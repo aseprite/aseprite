@@ -81,8 +81,10 @@ public:
   {
     assert_ui_thread();
 
-    if (m_ref == 0)
+    if (m_ref == 0) {
+      m_killing = false;
       m_paintingThread = std::thread([this] { paintingProc(); });
+    }
 
     ++m_ref;
   }
@@ -179,7 +181,7 @@ private:
 
     std::unique_lock<std::mutex> lock(m_mutex);
     while (true) {
-      m_paintingCV.wait(lock);
+      m_paintingCV.wait(lock, [this] { return m_killing || m_colorSelector != nullptr; });
 
       if (m_killing)
         break;
@@ -405,10 +407,9 @@ bool ColorSelector::onProcessMessage(ui::Message* msg)
 
 void ColorSelector::onInitTheme(ui::InitThemeEvent& ev)
 {
-  auto theme = SkinTheme::get(this);
-
   Widget::onInitTheme(ev);
-  setBorder(theme->calcBorder(this, theme->styles.editorView()));
+  if (auto theme = dynamic_cast<SkinTheme*>(this->theme()))
+    setBorder(theme->calcBorder(this, theme->styles.editorView()));
 }
 
 void ColorSelector::onResize(ui::ResizeEvent& ev)
