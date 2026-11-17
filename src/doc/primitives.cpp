@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2018-2023 Igara Studio S.A.
+// Copyright (c) 2018-2025 Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -353,6 +353,18 @@ bool is_plain_image_templ(const Image* img, const color_t color)
 }
 
 template<typename ImageTraits>
+bool is_color_used_templ(const Image* img, const doc::color_t color)
+{
+  const LockImageBits<ImageTraits> bits(img);
+  auto it = bits.begin(), end = bits.end();
+  for (; it != end; ++it) {
+    if (*it == color)
+      return true;
+  }
+  return false;
+}
+
+template<typename ImageTraits>
 int count_diff_between_images_templ(const Image* i1, const Image* i2)
 {
   int diff = 0;
@@ -460,6 +472,16 @@ bool is_plain_image(const Image* img, color_t c)
     case IMAGE_INDEXED:   return is_plain_image_templ<IndexedTraits>(img, c);
     case IMAGE_BITMAP:    return is_plain_image_templ<BitmapTraits>(img, c);
     case IMAGE_TILEMAP:   return is_plain_image_templ<TilemapTraits>(img, c);
+  }
+  return false;
+}
+
+bool is_color_used(const Image* img, color_t c)
+{
+  ASSERT(img->pixelFormat() == IMAGE_RGB || img->pixelFormat() == IMAGE_GRAYSCALE);
+  switch (img->pixelFormat()) {
+    case IMAGE_RGB:       return is_color_used_templ<RgbTraits>(img, c);
+    case IMAGE_GRAYSCALE: return is_color_used_templ<GrayscaleTraits>(img, c);
   }
   return false;
 }
