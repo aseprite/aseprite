@@ -118,6 +118,24 @@ bool Canvas::onProcessMessage(ui::Message* msg)
       break;
     }
 
+    case ui::kMouseEnterMessage: {
+      auto mouseMsg = *static_cast<ui::MouseMessage*>(msg);
+      if (m_autoScaling) {
+        mouseMsg = makeScaled(&mouseMsg, bounds().origin());
+      }
+      MouseEnter(&mouseMsg);
+      break;
+    }
+
+    case ui::kMouseLeaveMessage: {
+      auto mouseMsg = *static_cast<ui::MouseMessage*>(msg);
+      if (m_autoScaling) {
+        mouseMsg = makeScaled(&mouseMsg, bounds().origin());
+      }
+      MouseLeave(&mouseMsg);
+      break;
+    }
+
     case ui::kMouseDownMessage: {
       if (!hasCapture())
         captureMouse();
