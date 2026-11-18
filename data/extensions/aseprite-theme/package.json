@@ -2,11 +2,13 @@
   "name": "aseprite-theme",
   "displayName": "Aseprite Default Theme",
   "description": "Default Aseprite Pixel-Art Themes",
-  "version": "1.0",
-  "author": { "name": "David Capello", "email": "david@igarastudio.com", "url": "http://davidcapello.com/" },
+  "version": "1.4",
+  "author": { "name": "Igara Studio S.A.", "email": "support@igara.com", "url": "https://igara.com/" },
   "contributors": [
-    { "name": "Ilija Melentijevic", "url": "http://ilkke.blogspot.com/" },
-    { "name": "Nicolas Desilets", "url": "https://twitter.com/MapleGecko" }
+    { "name": "David Capello", "url": "https://davidcapello.com/" },
+    { "name": "Ilija Melentijevic", "url": "https://ilkke.net/" },
+    { "name": "Nicolas Desilets", "url": "https://twitter.com/MapleGecko" },
+    { "name": "Evorp", "url": "https://3vorp.github.io/" }
   ],
   "publisher": "aseprite",
   "license": "CC-BY-4.0",

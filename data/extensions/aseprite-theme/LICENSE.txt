@@ -1,4 +1,5 @@
 Aseprite Default Theme
+Copyright (C) 2018-present Igara Studio S.A. and contributors
 Copyright (C) 2009-2017 David Capello and Ilija Melentijevic
 http://www.aseprite.org/
 
