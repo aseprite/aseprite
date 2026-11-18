@@ -2164,30 +2164,30 @@ private:
         auto theme = skin::SkinTheme::get(this);
 
         // Read new scaling
-        const auto& [newUIScale, newScreenScale] = theme->readPreferredScaling(themeName);
+        const auto newScaling = theme->readPreferredScaling(themeName);
 
         if (updateScaling &&
-            ((newUIScale > 0 && m_pref.general.uiScale() != newUIScale) ||
-             (newScreenScale > 0 && m_pref.general.screenScale() != newScreenScale))) {
+            ((newScaling.ui && newScaling.ui != m_pref.general.uiScale()) ||
+             (newScaling.screen && newScaling.screen != m_pref.general.screenScale()))) {
           // Ask if the user want to adjust the Screen/UI Scaling
           const int result = ui::Alert::show(
             Strings::alerts_update_screen_ui_scaling_with_theme_values(
               themeName,
               100 * m_pref.general.screenScale(),
-              100 * (newScreenScale > 0 ? newScreenScale : m_pref.general.screenScale()),
+              100 * (newScaling.screen ? newScaling.screen : m_pref.general.screenScale()),
               100 * m_pref.general.uiScale(),
-              100 * (newUIScale > 0 ? newUIScale : m_pref.general.uiScale())));
+              100 * (newScaling.ui ? newScaling.ui : m_pref.general.uiScale())));
 
           switch (result) {
             case 1: {
               // Preferred UI Scaling factor
-              if (newUIScale > 0 && newUIScale != m_pref.general.uiScale()) {
-                m_pref.general.uiScale(newUIScale);
+              if (newScaling.ui && newScaling.ui != m_pref.general.uiScale()) {
+                m_pref.general.uiScale(newScaling.ui);
               }
 
               // Preferred Screen Scaling
-              if (newScreenScale > 0 && newScreenScale != m_pref.general.screenScale()) {
-                m_pref.general.screenScale(newScreenScale);
+              if (newScaling.screen && newScaling.screen != m_pref.general.screenScale()) {
+                m_pref.general.screenScale(newScaling.screen);
               }
 
               selectScalingItems();

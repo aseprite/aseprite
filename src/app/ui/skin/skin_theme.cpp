@@ -377,7 +377,7 @@ SkinTheme* SkinTheme::get(const ui::Widget* widget)
   return static_cast<SkinTheme*>(widget->theme());
 }
 
-SkinTheme::SkinTheme() : m_fonts(m_fontMgr), m_sheet(nullptr), m_preferredScaling({ -1, -1 })
+SkinTheme::SkinTheme() : m_fonts(m_fontMgr), m_sheet(nullptr)
 {
   m_standardCursors.fill(nullptr);
 }
@@ -511,16 +511,16 @@ void SkinTheme::loadXml(BackwardCompatibility* backward)
   XMLHandle handle(doc.get());
 
   // Load Preferred scaling
-  m_preferredScaling = { -1, -1 };
+  m_preferredScaling.reset();
   {
     XMLElement* xmlTheme = handle.FirstChildElement("theme").ToElement();
     if (xmlTheme) {
       const char* screenScaling = xmlTheme->Attribute("screenscaling");
       const char* uiScaling = xmlTheme->Attribute("uiscaling");
       if (screenScaling)
-        m_preferredScaling.screenScaling = std::strtol(screenScaling, nullptr, 10);
+        m_preferredScaling.screen = std::strtol(screenScaling, nullptr, 10);
       if (uiScaling)
-        m_preferredScaling.uiScaling = std::strtol(uiScaling, nullptr, 10);
+        m_preferredScaling.ui = std::strtol(uiScaling, nullptr, 10);
     }
   }
 
@@ -1923,16 +1923,16 @@ SkinTheme::PreferredScaling SkinTheme::readPreferredScaling(const std::string& t
   XMLDocumentRef doc = open_xml(xml_filename);
   XMLHandle handle(doc.get());
 
-  auto result = PreferredScaling{ -1, -1 };
+  PreferredScaling result;
   {
     XMLElement* xmlTheme = handle.FirstChildElement("theme").ToElement();
     if (xmlTheme) {
       const char* screenScaling = xmlTheme->Attribute("screenscaling");
       const char* uiScaling = xmlTheme->Attribute("uiscaling");
       if (screenScaling)
-        result.screenScaling = std::strtol(screenScaling, nullptr, 10);
+        result.screen = std::strtol(screenScaling, nullptr, 10);
       if (uiScaling)
-        result.uiScaling = std::strtol(uiScaling, nullptr, 10);
+        result.ui = std::strtol(uiScaling, nullptr, 10);
     }
   }
 

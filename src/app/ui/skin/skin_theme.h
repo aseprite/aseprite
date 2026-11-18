@@ -56,8 +56,9 @@ public:
   static SkinTheme* get(const ui::Widget* widget);
 
   struct PreferredScaling {
-    int uiScaling;
-    int screenScaling;
+    int ui = 0;
+    int screen = 0;
+    void reset() { ui = screen = 0; }
   };
 
   SkinTheme();
