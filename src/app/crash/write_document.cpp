@@ -264,6 +264,18 @@ private:
         // Do nothing (the layer parent/children structure is saved in
         // writeSprite/writeAllLayersID() functions)
         break;
+
+      case ObjectType::LayerFill:
+      case ObjectType::LayerMask:
+      case ObjectType::LayerFx:
+      case ObjectType::LayerText:
+      case ObjectType::LayerVector:
+      case ObjectType::LayerAudio:
+      case ObjectType::LayerSubsprite:
+      case ObjectType::LayerHitbox:    {
+        // TODO
+        break;
+      }
     }
 
     // Save cels
