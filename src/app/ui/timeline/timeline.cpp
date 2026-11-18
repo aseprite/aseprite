@@ -3555,7 +3555,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
     int top = topHeight();
 
     hit.layer = lastLayer() -
-                ((mousePos.y - top - headerBoxHeight() + scroll.y) / layerBoxHeight());
+                ((mousePos.y - top - headerBoxHeight() + int(scroll.y)) / layerBoxHeight());
 
     hit.frame = getFrameInXPos(mousePos.x - separatorX() - m_separator_w + scroll.x);
 
