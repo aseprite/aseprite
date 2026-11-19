@@ -453,7 +453,7 @@ void ColorButton::onActiveSiteChange(const Site& site)
 
 void ColorButton::updateText()
 {
-  setTextQuiet(m_color.toHumanReadableString(m_pixelFormat, app::Color::ShortHumanReadableString));
+  setTextQuiet(m_color.toShortHumanString(m_pixelFormat));
   invalidate();
 }
 
