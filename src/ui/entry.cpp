@@ -932,7 +932,7 @@ void Entry::recalcCharBoxes(const std::string& text)
 
 bool Entry::shouldStartTimer(bool hasFocus)
 {
-  return (!m_hidden && hasFocus && isEnabled());
+  return (!m_hidden && hasFocus);
 }
 
 void Entry::deleteRange(const Range& range, std::string& text)

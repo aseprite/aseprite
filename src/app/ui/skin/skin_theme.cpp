@@ -1437,8 +1437,7 @@ public:
     }
 
     // Disabled
-    if (!m_widget->isEnabled()) {
-      bg = ColorNone;
+    if (!m_widget->isEnabled() && fg != colors.selectedText()) {
       fg = colors.disabled();
     }
 
@@ -1468,7 +1467,7 @@ public:
   void postDrawChar(const gfx::Rect& charBounds) override
   {
     // Caret
-    if (m_state && m_index == m_caret && m_widget->hasFocus() && m_widget->isEnabled()) {
+    if (m_state && m_index == m_caret && m_widget->hasFocus()) {
       auto theme = SkinTheme::get(m_widget);
       theme->drawEntryCaret(m_graphics, m_widget, m_charStartX - m_widget->bounds().x, m_y);
       m_caretDrawn = true;
@@ -1914,7 +1913,7 @@ void SkinTheme::drawText(Graphics* g,
 
 void SkinTheme::drawEntryCaret(ui::Graphics* g, Entry* widget, int x, int y)
 {
-  gfx::Color color = colors.text();
+  gfx::Color color = widget->isEnabled() ? colors.text() : colors.disabled();
   int textHeight = widget->textHeight();
   gfx::Size caretSize = getCaretSize(widget);
 
