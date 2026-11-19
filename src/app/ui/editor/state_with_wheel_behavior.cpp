@@ -513,8 +513,8 @@ void StateWithWheelBehavior::processWheelAction(Editor* editor,
 bool StateWithWheelBehavior::onTouchMagnify(Editor* editor, ui::TouchMessage* msg)
 {
   render::Zoom zoom = editor->zoom();
-  zoom = render::Zoom::fromScale(zoom.internalScale() +
-                                 zoom.internalScale() * msg->magnification());
+  zoom = render::Zoom::fromRealScale(zoom.internalScale() +
+                                     zoom.internalScale() * msg->magnification());
 
   setZoom(editor, zoom, msg->position());
   return true;

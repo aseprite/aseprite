@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2021-2022  Igara Studio S.A.
+// Copyright (C) 2021-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -36,7 +36,8 @@ ZoomingState::ZoomingState() : m_startZoom(1, 1), m_moved(false)
 
 bool ZoomingState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
-  m_startPos = msg->position();
+  m_startScreenPos = msg->position();
+  m_startSpritePos = editor->screenToEditorF(m_startScreenPos);
   m_startZoom = editor->zoom();
 
   editor->captureMouse();
@@ -63,16 +64,25 @@ bool ZoomingState::onMouseUp(Editor* editor, MouseMessage* msg)
 
 bool ZoomingState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
-  gfx::Point pt = (msg->position() - m_startPos);
+  gfx::Point pt = (msg->position() - m_startScreenPos);
   int threshold = 8 * guiscale() * editor->display()->nativeWindow()->baseScale();
 
   if (m_moved || std::sqrt(pt.x * pt.x + pt.y * pt.y) > threshold) {
     m_moved = true;
 
-    int newScale = m_startZoom.linearScale() + pt.x / threshold;
-    render::Zoom newZoom = render::Zoom::fromLinearScale(newScale);
+    render::Zoom newZoom(1, 1);
 
-    editor->setZoomFromScreenPos(newZoom, m_startPos);
+    if (Preferences::instance().editor.smoothZoom()) {
+      const double newScale = m_startZoom.scale() + double(pt.x) / threshold;
+      newZoom = render::Zoom::fromRealScale(newScale);
+    }
+    else {
+      int newScale = m_startZoom.linearScale() + pt.x / threshold;
+      newZoom = render::Zoom::fromLinearScale(newScale);
+    }
+
+    editor->setZoom(newZoom);
+    editor->matchSpriteWithScreenPoint(m_startSpritePos, m_startScreenPos);
   }
   return true;
 }

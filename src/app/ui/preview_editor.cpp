@@ -411,7 +411,7 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
     opts.yflip = docPref.preview.yflip();
 
     miniEditor = m_docView->editor();
-    miniEditor->setZoom(render::Zoom::fromScale(docPref.preview.zoom()));
+    miniEditor->setZoom(render::Zoom::fromRealScale(docPref.preview.zoom()));
     miniEditor->setLayer(editor->layer());
     miniEditor->setFrame(editor->frame());
     miniEditor->setAnimationSpeedMultiplier(m_aniSpeed);

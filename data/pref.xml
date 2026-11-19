@@ -189,6 +189,7 @@
       <option id="show_tooltip" type="bool" default="true" />
     </section>
     <section id="editor">
+      <option id="smooth_zoom" type="bool" default="true" />
       <option id="zoom_with_wheel" type="bool" default="true" />
       <option id="zoom_with_slide" type="bool" default="false" />
       <option id="zoom_from_center_with_wheel" type="bool" default="false" />
