@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -34,8 +34,6 @@ public:
     TileType,
   };
 
-  enum HumanReadableString { ShortHumanReadableString, LongHumanReadableString };
-
   // Default ctor is mask color
   Color() : m_type(MaskType) {}
 
@@ -53,7 +51,8 @@ public:
 
   Color toRgb() const;
   std::string toString() const;
-  std::string toHumanReadableString(doc::PixelFormat format, HumanReadableString type) const;
+  std::string toLongHumanString(doc::PixelFormat pixelFormat) const;
+  std::string toShortHumanString(doc::PixelFormat pixelFormat) const;
 
   bool operator==(const Color& other) const;
   bool operator!=(const Color& other) const { return !operator==(other); }

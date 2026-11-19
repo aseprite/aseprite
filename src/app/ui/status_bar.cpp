@@ -479,10 +479,7 @@ public:
     m_indicators->addColorIndicator(color);
 
     // Color description
-    std::string str = color.toHumanReadableString(app_get_current_pixel_format(),
-                                                  app::Color::LongHumanReadableString);
-    if (color.getAlpha() < 255)
-      str += fmt::format(" A{}", color.getAlpha());
+    std::string str = color.toLongHumanString(app_get_current_pixel_format());
     m_indicators->addTextIndicator(str.c_str());
 
     return *this;

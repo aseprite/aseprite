@@ -1,5 +1,5 @@
 // Aseprite Code Generator
-// Copyright (c) 2024 Igara Studio S.A.
+// Copyright (c) 2024-present Igara Studio S.A.
 // Copyright (c) 2016-2017 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -27,7 +27,7 @@ static size_t count_fmt_args(const std::string& format)
   size_t n = 0;
   for (size_t i = 0; i < format.size(); ++i) {
     if (format[i] == '{') {
-      if (format[i + 1] == '}') {
+      if (format[i + 1] == '}' || format[i + 1] == ':') {
         ++n;
       }
       else if (std::isdigit(format[i + 1]) && format[i + 2] == '}') {
