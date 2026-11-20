@@ -1053,6 +1053,7 @@ int Dialog_color(lua_State* L)
         lua_setfield(L, -2, "color");
       });
     }
+    lua_pop(L, 1);
   }
 
   return Dialog_add_widget(L, widget);
