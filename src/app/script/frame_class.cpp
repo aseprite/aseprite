@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2018-2020  Igara Studio S.A.
+// Copyright (C) 2018-present  Igara Studio S.A.
 // Copyright (C) 2018  David Capello
 //
 // This program is distributed under the terms of
@@ -102,7 +102,7 @@ int Frame_set_duration(lua_State* L)
   Tx tx(sprite, Strings::tx_set_frame_duration());
   tx(new cmd::SetFrameDuration(sprite, obj->frame, int(duration)));
   tx.commit();
-  return 1;
+  return 0;
 }
 
 const luaL_Reg Frame_methods[] = {

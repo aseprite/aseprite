@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2022-2025  Igara Studio S.A.
+// Copyright (C) 2022-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -491,7 +491,7 @@ int GraphicsContext_set_color(lua_State* L)
   auto gc = get_obj<GraphicsContext>(L, 1);
   const app::Color color = convert_args_into_color(L, 2);
   gc->color(color_utils::color_for_ui(color));
-  return 1;
+  return 0;
 }
 
 int GraphicsContext_get_strokeWidth(lua_State* L)
@@ -506,7 +506,7 @@ int GraphicsContext_set_strokeWidth(lua_State* L)
   auto gc = get_obj<GraphicsContext>(L, 1);
   const float strokeWidth = lua_tonumber(L, 2);
   gc->strokeWidth(strokeWidth);
-  return 1;
+  return 0;
 }
 
 int GraphicsContext_get_blendMode(lua_State* L)
@@ -550,7 +550,7 @@ int GraphicsContext_set_palette(lua_State* L)
   auto gc = get_obj<GraphicsContext>(L, 1);
   doc::Palette* palette = get_palette_from_arg(L, 2);
   gc->palette(palette);
-  return 1;
+  return 0;
 }
 
 const luaL_Reg GraphicsContext_methods[] = {

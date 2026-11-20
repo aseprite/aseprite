@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2020-2023, 2025  Igara Studio S.A.
+// Copyright (C) 2020-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -444,10 +444,12 @@ int Plugin_get_version(lua_State* L)
 
 int Plugin_get_preferences(lua_State* L)
 {
-  if (!lua_getuservalue(L, 1)) {
+  if (lua_getuservalue(L, 1) == LUA_TNIL) {
+    lua_pop(L, 1); // pops returned nil value
+
     lua_newtable(L);
     lua_pushvalue(L, -1);
-    lua_setuservalue(L, 1);
+    lua_setuservalue(L, 1); // keeps the new uservalue table to return
   }
   return 1;
 }

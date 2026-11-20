@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2023  Igara Studio S.A.
+// Copyright (C) 2023-present  Igara Studio S.A.
 //
 // This program is distributed under the terms of
 // the End-User License Agreement for Aseprite.
@@ -92,7 +92,8 @@ int JsonObj_eq(lua_State* L)
 {
   auto a = get_obj<JsonObj>(L, 1);
   auto b = get_obj<JsonObj>(L, 2);
-  return (*a == *b);
+  lua_pushboolean(L, *a == *b);
+  return 1;
 }
 
 int JsonObj_len(lua_State* L)
