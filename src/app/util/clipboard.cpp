@@ -218,7 +218,7 @@ bool Clipboard::hasClipboardText()
   }
 }
 
-void Clipboard::setData(Image* image,
+void Clipboard::setData(const ImageRef& image,
                         Mask* mask,
                         Palette* palette,
                         Tileset* tileset,
@@ -233,9 +233,9 @@ void Clipboard::setData(Image* image,
   m_data->tileset.reset(tileset);
   m_data->mask.reset(mask);
   if (isTilemap)
-    m_data->tilemap.reset(image);
+    m_data->tilemap = image;
   else
-    m_data->image.reset(image);
+    m_data->image = image;
 
   if (slices) {
     for (auto* slice : *slices)
@@ -246,11 +246,11 @@ void Clipboard::setData(Image* image,
     // Copy tilemap to the native clipboard
     if (isTilemap) {
       ASSERT(tileset);
-      setNativeBitmap(image, mask, palette, tileset, -1);
+      setNativeBitmap(image.get(), mask, palette, tileset, -1);
     }
     // Copy non-tilemap images to the native clipboard
     else {
-      setNativeBitmap(image,
+      setNativeBitmap(image.get(),
                       mask,
                       palette,
                       nullptr,
@@ -270,7 +270,7 @@ bool Clipboard::copyFromDocument(const Site& site, bool merged)
       site.tilemapMode() == TilemapMode::Tiles) {
     const Tileset* ts = static_cast<LayerTilemap*>(site.layer())->tileset();
 
-    Image* image = new_tilemap_from_mask(site, mask);
+    ImageRef image(new_tilemap_from_mask(site, mask));
     if (!image)
       return false;
 
@@ -285,8 +285,8 @@ bool Clipboard::copyFromDocument(const Site& site, bool merged)
     return true;
   }
 
-  Image* image =
-    new_image_from_mask(site, mask, Preferences::instance().experimental.newBlend(), merged);
+  ImageRef image(
+    new_image_from_mask(site, mask, Preferences::instance().experimental.newBlend(), merged));
   if (!image)
     return false;
 
@@ -415,7 +415,7 @@ void Clipboard::copyRange(const ContextReader& reader, const DocRange& range)
 void Clipboard::copyImage(const Image* image, const Mask* mask, const Palette* pal)
 {
   ASSERT(image->pixelFormat() != IMAGE_TILEMAP);
-  setData(Image::createCopy(image),
+  setData(ImageRef(Image::createCopy(image)),
           (mask ? new Mask(*mask) : nullptr),
           (pal ? new Palette(*pal) : nullptr),
           nullptr,
@@ -430,7 +430,7 @@ void Clipboard::copyTilemap(const Image* image,
                             const Tileset* tileset)
 {
   ASSERT(image->pixelFormat() == IMAGE_TILEMAP);
-  setData(Image::createCopy(image),
+  setData(ImageRef(Image::createCopy(image)),
           (mask ? new Mask(*mask) : nullptr),
           (pal ? new Palette(*pal) : nullptr),
           Tileset::MakeCopyCopyingImages(tileset),
@@ -527,7 +527,7 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
         App::instance()->timeline()->clearAndInvalidateRange();
 
         // Change to MovingPixelsState
-        editor->pasteImage(src_image.get(), m_data->mask.get(), position);
+        editor->pasteImage(src_image, m_data->mask.get(), position);
       }
       else {
         // CLI version:
@@ -619,10 +619,7 @@ void Clipboard::paste(Context* ctx, const bool interactive, const gfx::Point* po
         // TODO add post-command parameters (issue #2324)
 
         // Change to MovingTilemapState
-        editor->pasteImage(m_data->tilemap.get(),
-                           m_data->mask.get(),
-                           position,
-                           m_data->tileset.get());
+        editor->pasteImage(m_data->tilemap, m_data->mask.get(), position, m_data->tileset.get());
       }
       else {
         // TODO non-interactive version (for scripts)
@@ -843,7 +840,7 @@ ImageRef Clipboard::getImage(Palette* palette)
     NativeData data;
     getNativeBitmap(data);
     if (data.image) {
-      setData(data.image.release(),
+      setData(ImageRef(data.image.release()),
               data.mask.release(),
               data.palette.release(),
               data.tileset.release(),

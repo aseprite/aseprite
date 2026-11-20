@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -539,7 +539,7 @@ void ExpandCelCanvas::validateSourceCanvas(const gfx::Region& rgn)
                             m_cel,
                             m_sprite,
                             m_celImage.get(),
-                            m_layer,
+                            m_layer->tileset(),
                             m_sprite->palette(m_frame),
                             gfx::RectF(0, 0, m_bounds.w, m_bounds.h),
                             gfx::Clip(rc.x,

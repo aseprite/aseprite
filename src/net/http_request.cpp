@@ -1,4 +1,5 @@
 // Aseprite Network Library
+// Copyright (c) 2026-present Igara Studio S.A.
 // Copyright (c) 2001-2016 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -29,6 +30,9 @@ public:
     curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, &HttpRequestImpl::writeBodyCallback);
     curl_easy_setopt(m_curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(m_curl, CURLOPT_NOSIGNAL, 1);
+
+    // Follows 301 redirects
+    curl_easy_setopt(m_curl, CURLOPT_FOLLOWLOCATION, 1);
   }
 
   ~HttpRequestImpl()

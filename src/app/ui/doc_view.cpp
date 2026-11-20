@@ -553,7 +553,8 @@ bool DocView::onCanPaste(Context* ctx)
       return true;
     }
     else if (format == ClipboardFormat::Tilemap &&
-             ctx->checkFlags(ContextFlags::ActiveLayerIsTilemap)) {
+             (ctx->checkFlags(ContextFlags::ActiveLayerIsImage) ||
+              ctx->checkFlags(ContextFlags::ActiveLayerIsTilemap))) {
       return true;
     }
   }

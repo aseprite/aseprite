@@ -23,6 +23,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui/workspace_tabs.h"
 #include "base/chrono.h"
+#include "base/trim_string.h"
 #include "commands.h"
 #include "tinyexpr.h"
 #include "ui/entry.h"
@@ -47,6 +48,20 @@ namespace {
 constexpr auto kMaxVisibleResults = 10;
 constexpr double kDisabledScore = 200;
 
+std::string get_param_string(const Params& params)
+{
+  std::string paramString;
+  if (!params.empty()) {
+    std::ostringstream stream;
+    for (const auto& [k, v] : params) {
+      stream << k << ' ' << v << ' ';
+    }
+    paramString = stream.str();
+    paramString.pop_back(); // Trailing space.
+  }
+  return paramString;
+}
+
 struct RunnerDB {
   struct Item {
     std::string label;
@@ -59,6 +74,45 @@ struct RunnerDB {
 
   std::vector<Item> items;
 };
+
+void fill_items_from_menu(const Menu* menu, std::unordered_map<std::string, RunnerDB::Item>& items)
+{
+  for (auto* child : menu->children()) {
+    if (auto* menuItem = dynamic_cast<AppMenuItem*>(child)) {
+      if (menuItem->isRecentFileItem())
+        continue;
+
+      if (auto* command = menuItem->getCommand()) {
+        const std::string paramString = get_param_string(menuItem->getParams());
+        const std::string itemKey = command->id() + paramString;
+        if (items.find(itemKey) != items.end())
+          continue;
+
+        // Load the params to get the proper name
+        command->loadParams(menuItem->getParams());
+
+        std::string friendlyNameLower = base::string_to_lower(command->friendlyName());
+        base::trim_string(friendlyNameLower, friendlyNameLower);
+
+        std::vector<std::string> labelWords;
+        base::split_string(friendlyNameLower, labelWords, " ");
+
+        const RunnerDB::Item item{
+          command->friendlyName(),
+          labelWords,
+          friendlyNameLower + " " + base::string_to_lower(command->id()),
+          {},
+          command,
+          menuItem->getParams(),
+        };
+        items.try_emplace(itemKey, item);
+      }
+
+      if (menuItem->hasSubmenu())
+        fill_items_from_menu(menuItem->getSubmenu(), items);
+    }
+  }
+}
 
 class RunnerWindow final : public gen::RunCommand {
   enum class Mode : uint8_t { Search, Script, Expression, ShowHelp };
@@ -335,7 +389,8 @@ private:
       return;
     }
 
-    const std::string& lowerText = base::string_to_lower(text);
+    std::string lowerText = base::string_to_lower(text);
+    base::trim_string(lowerText, lowerText);
     const MatchWords match(lowerText);
     std::multimap<double, const RunnerDB::Item*> results;
 
@@ -351,7 +406,7 @@ private:
 
           // Prioritize the ones starting with what we're typing.
           if (lowerLabel.find(lowerText) == 0)
-            score -= 10;
+            score -= 15;
 
           // Simpler commands go first.
           if (item.params.empty())
@@ -360,10 +415,6 @@ private:
           // Prioritize listed commands or ones with keyboard shortcuts
           if (item.command->isListed(item.params) || item.shortcutString.empty())
             score -= 5;
-
-          // Bias against longer labels vs our search text
-          if (lowerLabel.size() > lowerText.size())
-            score += std::clamp(static_cast<int>(lowerLabel.size() - lowerText.size()), 1, 10);
         }
 
         if (item.command->isPlugin())
@@ -490,15 +541,7 @@ void RunCommandCommand::loadDatabase()
     std::unordered_map<std::string, RunnerDB::Item> items;
     for (const KeyPtr& key : *KeyboardShortcuts::instance()) {
       if (const auto* cmd = key->command()) {
-        std::string paramString;
-        if (!key->params().empty()) {
-          std::ostringstream stream;
-          for (const auto& [k, v] : key->params()) {
-            stream << k << ' ' << v << ' ';
-          }
-          paramString = stream.str();
-          paramString.pop_back(); // Trailing space.
-        }
+        const std::string paramString = get_param_string(key->params());
 
         std::string shortcutString;
         if (!key->shortcuts().empty())
@@ -514,25 +557,32 @@ void RunCommandCommand::loadDatabase()
           continue; // Ignore duplicate.
         }
 
+        std::string triggerString;
+        base::trim_string(key->triggerString(), triggerString);
+
         // Ideally we'd want to have translatable "tags" of some kind for commands so they're easier
         // to find, for example if you search "Sprite New" you can't find "New File" (but you can
         // find New Sprite from Clipboard)
         std::ostringstream searchableStringStream;
-        searchableStringStream << key->triggerString() << ' ' << cmd->id() << ' ' << shortcutString;
+        searchableStringStream << triggerString << ' ' << cmd->id() << ' ' << shortcutString;
 
         // Separate the labels into words for fuzzy matching
         std::vector<std::string> labelWords;
-        base::split_string(base::string_to_lower(key->triggerString()), labelWords, " ");
+        base::split_string(base::string_to_lower(triggerString), labelWords, " ");
 
         const RunnerDB::Item item{
-          key->triggerString(), labelWords,     base::string_to_lower(searchableStringStream.str()),
-          shortcutString,       key->command(), key->params()
+          triggerString,  labelWords,     base::string_to_lower(searchableStringStream.str()),
+          shortcutString, key->command(), key->params(),
         };
+
         items.try_emplace(itemKey, item);
       }
     }
 
-    // Add any commands not covered by KeyboardShortcuts
+    // Grab commands from the application menu, since a lot of them do not have keyboard shortcuts.
+    fill_items_from_menu(AppMenus::instance()->getRootMenu(), items);
+
+    // Add any commands not covered by KeyboardShortcuts and Menu Items
     for (const std::string& id : allCommandIds) {
       // Ignore if it's already been added.
       if (items.find(id) != items.end())
@@ -544,15 +594,19 @@ void RunCommandCommand::loadDatabase()
       if (command->needsParams())
         continue;
 
-      std::vector<std::string> labelWords;
-      base::split_string(base::string_to_lower(command->friendlyName()), labelWords, " ");
+      std::string friendlyNameLower = base::string_to_lower(command->friendlyName());
 
-      const RunnerDB::Item item{ command->friendlyName(),
-                                 labelWords,
-                                 command->friendlyName() + " " + command->id(),
-                                 {},
-                                 command,
-                                 {} };
+      std::vector<std::string> labelWords;
+      base::split_string(friendlyNameLower, labelWords, " ");
+
+      const RunnerDB::Item item{
+        command->friendlyName(),
+        labelWords,
+        friendlyNameLower + " " + base::string_to_lower(command->id()),
+        {},
+        command,
+        {},
+      };
       items.try_emplace(id, item);
     }
 

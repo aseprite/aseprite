@@ -106,7 +106,8 @@ We have some rules for the changes and commits that are contributed:
 * Split your changes in the most atomic commits possible: one commit
   for feature, or fix.
 * Rebase your commits to the `main` branch (or `beta` if you are
-  targeting the beta version).
+  targeting the beta version). Do not merge the target branch into
+  your branch, as pull requests must not contain merge commits.
 * Wrap your commit messages at 72 characters.
 * The first line of the commit message is the subject line.
 * Write the subject line in the imperative mood, e.g. "Fix something",

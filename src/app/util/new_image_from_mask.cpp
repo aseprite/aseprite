@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2024 Igara Studio S.A.
+// Copyright (C) 2019-present Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -66,7 +66,7 @@ doc::Image* new_image_from_mask(const Site& site,
                          cel,
                          srcSprite,
                          cel->image(),
-                         cel->layer(),
+                         cel->layer()->tileset(),
                          srcSprite->palette(cel->frame()),
                          cel->bounds(),
                          gfx::Clip(0, 0, srcBounds),
@@ -122,7 +122,7 @@ doc::Image* new_image_from_mask(const Layer& layer,
                        cel,
                        srcSprite,
                        cel->image(),
-                       cel->layer(),
+                       cel->layer()->tileset(),
                        srcSprite->palette(cel->frame()),
                        cel->bounds(),
                        gfx::Clip(0, 0, srcBounds),

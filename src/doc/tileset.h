@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2019-2025  Igara Studio S.A.
+// Copyright (c) 2019-present  Igara Studio S.A.
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -109,8 +109,8 @@ public:
   tileset_index externalTileset() const { return m_external.tileset; }
 
   // Unused functions.
-  bool operator==(const Tileset& other) const = delete;
-  bool operator!=(const Tileset& other) const = delete;
+  bool operator==(const Tileset& other) const;
+  bool operator!=(const Tileset& other) const { return !operator==(other); }
 
   // Returns a new empty tile with the tileset specs.
   ImageRef makeEmptyTile();
@@ -122,7 +122,7 @@ public:
   //
   // Warning: Use preprocess_transparent_pixels() with tileImage
   // before calling this function.
-  bool findTileIndex(const ImageRef& tileImage, tile_index& ti);
+  bool findTileIndex(const ImageRef& tileImage, tile_index& ti) const;
 
   // Must be called when a tile image was modified externally, so
   // the hash elements are re-calculated for that specific tile.
@@ -140,10 +140,11 @@ public:
 #endif
 
 private:
+  void copyTileset(const Tileset* other);
   void removeFromHash(const tile_index ti, const bool adjustIndexes);
   void hashImage(const tile_index ti, const ImageRef& tileImage);
   void rehash();
-  TilesetHashTable& hashTable();
+  TilesetHashTable& hashTable() const;
 
   Sprite* m_sprite;
   Grid m_grid;

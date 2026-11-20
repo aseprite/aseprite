@@ -29,7 +29,7 @@ public:
   // Returns the tileset of this layer. New automatically-created
   // tiles should be stored into this tileset, and all tiles in the
   // layer should share the same Grid spec.
-  Tileset* tileset() const { return m_tileset; }
+  Tileset* tileset() const override { return m_tileset; }
   tileset_index tilesetIndex() const { return m_tilesetIndex; }
 
   void setTilesetIndex(tileset_index tsi);

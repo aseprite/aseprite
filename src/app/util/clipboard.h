@@ -109,7 +109,7 @@ public:
   bool getNativeBitmap(NativeData& data);
 
 private:
-  void setData(doc::Image* image,
+  void setData(const doc::ImageRef& image,
                doc::Mask* mask,
                doc::Palette* palette,
                doc::Tileset* tileset,

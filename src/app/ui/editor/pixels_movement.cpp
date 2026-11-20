@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2019-2026  Igara Studio S.A.
+// Copyright (C) 2019-present  Igara Studio S.A.
 // Copyright (C) 2001-2018  David Capello
 //
 // This program is distributed under the terms of
@@ -111,7 +111,7 @@ PixelsMovement::InnerCmd PixelsMovement::InnerCmd::MakeStamp(const Transformatio
 
 PixelsMovement::PixelsMovement(Context* context,
                                Site site,
-                               const Image* moveThis,
+                               const ImageRef& moveThis,
                                const Mask* mask,
                                const char* operationName,
                                const TiledModeHelper* tiledModeHelper)
@@ -122,7 +122,7 @@ PixelsMovement::PixelsMovement(Context* context,
   , m_isDragging(false)
   , m_adjustPivot(false)
   , m_handle(NoHandle)
-  , m_originalImage(Image::createCopy(moveThis))
+  , m_originalImage(moveThis)
   , m_opaque(false)
   , m_maskColor(m_site.sprite()->transparentColor())
   , m_tiledModeHelper(tiledModeHelper)
@@ -1391,39 +1391,6 @@ void PixelsMovement::drawTransformedTilemap(const Transformation& transformation
       draw_row(y, v, boxh);
   }
   draw_row(dst->height() - 1, src->height() - 1, 1);
-}
-
-void PixelsMovement::remapTilesForPaste(const Tileset* srcTileset)
-{
-  // Check that tile size matches before doing anything
-  LayerTilemap* dstLayer = static_cast<LayerTilemap*>(m_site.layer());
-  Tileset* dstTileset = dstLayer->tileset();
-  const doc::Grid& srcGrid = srcTileset->grid();
-  const doc::Grid& dstGrid = dstTileset->grid();
-  if (srcGrid.tileSize() != dstGrid.tileSize())
-    throw base::Exception("Tile size does not match.");
-
-  // Map source to destination
-  tile_index dstSz = dstTileset->size();
-  for (int y = 0; y < m_originalImage->height(); ++y) {
-    for (int x = 0; x < m_originalImage->width(); ++x) {
-      // Blank tile can be skipped
-      const color_t srcTi = m_originalImage->getPixel(x, y);
-      if (!srcTi)
-        continue;
-
-      // Add tile to destination if missing
-      tile_index dstTi;
-      const ImageRef t = srcTileset->get(srcTi);
-      if (!dstTileset->findTileIndex(t, dstTi)) {
-        m_tx(new cmd::AddTile(dstTileset, t, srcTileset->getTileData(srcTi)));
-        dstTi = dstSz++;
-      }
-
-      // Update tile index in image
-      m_originalImage->putPixel(x, y, dstTi);
-    }
-  }
 }
 
 void PixelsMovement::onPivotChange()

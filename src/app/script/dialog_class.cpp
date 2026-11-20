@@ -11,7 +11,6 @@
 
 #include "app/app.h"
 #include "app/color.h"
-#include "app/color_utils.h"
 #include "app/context.h"
 #include "app/doc.h"
 #include "app/file_selector.h"
@@ -21,7 +20,6 @@
 #include "app/script/keys.h"
 #include "app/script/luacpp.h"
 #include "app/script/tabs_widget.h"
-#include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/color_shades.h"
 #include "app/ui/editor/editor.h"
@@ -32,7 +30,6 @@
 #include "base/fs.h"
 #include "base/paths.h"
 #include "base/remove_from_container.h"
-#include "os/screen.h"
 #include "os/system.h"
 #include "ui/app_state.h"
 #include "ui/box.h"
@@ -52,6 +49,8 @@
 #include "ui/slider.h"
 #include "ui/system.h"
 #include "ui/view.h"
+
+#include "fmt/format.h"
 
 #include <map>
 #include <stack>
@@ -1722,6 +1721,7 @@ int Dialog_modify(lua_State* L)
     // to modify dialog's properties (which might generate a relayout)
     // during an ongoing resize event.
     if (relayout && !dlg->window.isResizing()) {
+      gfx::Rect prelayoutBounds = dlg->window.bounds();
       dlg->window.layout();
 
       if (dlg->autofit > 0) {
@@ -1790,6 +1790,10 @@ int Dialog_modify(lua_State* L)
                      }
                    });
       }
+
+      dlg->window.invalidate();
+      if (dlg->window.manager()->display())
+        dlg->window.manager()->display()->invalidateRect(prelayoutBounds);
     }
   }
   lua_pushvalue(L, 1);
@@ -1927,7 +1931,7 @@ int Dialog_set_data(lua_State* L)
           if (expr->decimals() == 0)
             expr->setTextf("%d", lua_tointeger(L, -1));
           else
-            expr->setTextf("%.*g", expr->decimals(), lua_tonumber(L, -1));
+            expr->setText(fmt::format("{:.{}f}", lua_tonumber(L, -1), expr->decimals()));
         }
         else if (auto p = lua_tostring(L, -1)) {
           widget->setText(p);
