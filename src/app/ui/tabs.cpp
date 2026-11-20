@@ -27,6 +27,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <string>
 
 #define ANI_ADDING_TAB_TICKS   5
 #define ANI_REMOVING_TAB_TICKS 10
@@ -256,6 +257,20 @@ void Tabs::selectPreviousTab()
     if (it != currentTabIt)
       selectTabInternal(*it);
   }
+}
+
+void Tabs::selectTabIndex(int index)
+{
+  if (!m_selected || index <= 0)
+    return;
+  // last index as cmd+9/ctrl+9 by default
+  if (index == 9) {
+    selectTabInternal(m_list[m_list.size() - 1]);
+    return;
+  }
+  if (m_list.size() < index)
+    return;
+  selectTabInternal(m_list[index - 1]);
 }
 
 TabView* Tabs::getSelectedTab()

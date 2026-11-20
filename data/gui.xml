@@ -182,6 +182,15 @@
       <key command="GotoPreviousTab" shortcut="Ctrl+Shift+Tab" />
       <key command="GotoNextTab" shortcut="Ctrl+PgDn" />
       <key command="GotoPreviousTab" shortcut="Ctrl+PgUp" />
+      <key command="GotoTabIndex" shortcut ="Ctrl+1" mac="Cmd+1"><param name="index" value="1"/></key>
+      <key command="GotoTabIndex" shortcut ="Ctrl+2" mac="Cmd+2"><param name="index" value="2"/></key>
+      <key command="GotoTabIndex" shortcut ="Ctrl+3" mac="Cmd+3"><param name="index" value="3"/></key>
+      <key command="GotoTabIndex" shortcut ="Ctrl+4" mac="Cmd+4"><param name="index" value="4"/></key>
+      <key command="GotoTabIndex" shortcut ="Ctrl+5" mac="Cmd+5"><param name="index" value="5"/></key>
+      <key command="GotoTabIndex" shortcut ="Ctrl+6" mac="Cmd+6"><param name="index" value="6"/></key>
+      <key command="GotoTabIndex" shortcut ="Ctrl+7" mac="Cmd+7"><param name="index" value="7"/></key>
+      <key command="GotoTabIndex" shortcut ="Ctrl+8" mac="Cmd+8"><param name="index" value="8"/></key>
+      <key command="GotoTabIndex" shortcut ="Ctrl+9" mac="Cmd+9"><param name="index" value="9"/></key>
       <!-- Others -->
       <key command="SwitchColors" shortcut="X" />
       <key command="ChangeColor" shortcut="9">
