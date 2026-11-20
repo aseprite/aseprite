@@ -91,6 +91,7 @@
         <color id="workspace" value="#7d929e"/>
         <color id="workspace_panel_face" value="#a1b1ba"/>
         <color id="workspace_text" value="#655561"/>
+        <color id="workspace_text_secondary" value="#655561"/>
         <color id="workspace_link" value="#655561"/>
         <color id="workspace_link_hover" value="#ffff7d"/>
         <color id="timeline_normal" value="#c6c6c6"/>
