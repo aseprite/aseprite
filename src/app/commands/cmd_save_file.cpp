@@ -294,14 +294,16 @@ void SaveFileCommand::onExecute(Context* context)
   // If the document is associated to a file in the file-system, we can
   // save it directly without user interaction.
   if (document->isAssociatedToFile()) {
-    const ContextReader reader(context);
-    const Doc* documentReader = reader.document();
+    std::string filename;
+    if (params().filename.isSet()) {
+      filename = params().filename();
+    }
+    else {
+      const ContextReader reader(context);
+      filename = reader.document()->filename();
+    }
 
-    saveDocumentInBackground(
-      context,
-      document,
-      (params().filename.isSet() ? params().filename() : documentReader->filename()),
-      MarkAsSaved::On);
+    saveDocumentInBackground(context, document, filename, MarkAsSaved::On);
   }
   // If the document isn't associated to a file, we must to show the
   // save-as dialog to the user to select for first time the file-name
