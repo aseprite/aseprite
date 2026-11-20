@@ -319,6 +319,7 @@ void RecentFile::onPaint(PaintEvent& ev)
 
   if (path) {
     textPoint += gfx::Point(0, m_filenameBlob->bounds().h + lineSeparation);
+    paint.color(theme->colors.workspaceTextSecondary());
     g->drawTextBlob(pathBlob(), textPoint, paint);
     if (underline)
       g->drawLine(textPoint + gfx::PointF(0, m_pathBlob->bounds().h),

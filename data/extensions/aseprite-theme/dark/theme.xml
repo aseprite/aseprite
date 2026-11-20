@@ -96,6 +96,7 @@
         <color id="workspace" value="#333333"/>
         <color id="workspace_panel_face" value="#3b3b3b"/>
         <color id="workspace_text" value="#c0c0c0"/>
+        <color id="workspace_text_secondary" value="#7d7d7d"/>
         <color id="workspace_link" value="#6e9adb"/>
         <color id="workspace_link_hover" value="#e1b85f"/>
         <color id="timeline_normal" value="#292b30"/>
@@ -880,7 +881,6 @@
         </style>
         <style id="workspace_separator" extends="horizontal_separator">
             <background color="workspace"/>
-            <background-border part="separator_horz" color="workspace_text" align="middle"/>
         </style>
         <style id="workspace_panel">
             <background color="workspace"/>
