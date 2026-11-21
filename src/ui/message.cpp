@@ -112,4 +112,9 @@ Shortcut MouseMessage::shortcut() const
   return Shortcut(modifiers(), button());
 }
 
+gfx::Point TouchMessage::screenPosition() const
+{
+  return display()->nativeWindow()->pointToScreen(position());
+}
+
 } // namespace ui
