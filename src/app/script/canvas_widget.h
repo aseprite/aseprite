@@ -42,6 +42,8 @@ public:
   obs::signal<void(ui::MouseMessage*)> MouseMove;
   obs::signal<void(ui::MouseMessage*)> MouseDown;
   obs::signal<void(ui::MouseMessage*)> MouseUp;
+  obs::signal<void(ui::MouseMessage*)> MouseEnter;
+  obs::signal<void(ui::MouseMessage*)> MouseLeave;
   obs::signal<void(ui::MouseMessage*)> DoubleClick;
   obs::signal<void(ui::MouseMessage*)> Wheel;
   obs::signal<void(ui::TouchMessage*)> TouchMagnify;
