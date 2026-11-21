@@ -44,7 +44,9 @@ public:
                    ConfigSection,
                    &filterMgr,
                    WithChannelsSelector,
-                   WithoutTiledCheckBox)
+                   WithoutTiledCheckBox,
+                   TiledMode::NONE,
+                   false)
   {
   }
 };

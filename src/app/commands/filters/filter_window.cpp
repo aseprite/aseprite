@@ -27,7 +27,8 @@ FilterWindow::FilterWindow(const char* title,
                            FilterManagerImpl* filterMgr,
                            WithChannels withChannels,
                            WithTiled withTiled,
-                           TiledMode tiledMode)
+                           TiledMode tiledMode,
+                           bool hasControls)
   : WindowWithHand(WithTitleBar, title)
   , m_cfgSection(cfgSection)
   , m_filterMgr(filterMgr)
@@ -60,9 +61,14 @@ FilterWindow::FilterWindow(const char* title,
   m_cancelButton.Click.connect(&FilterWindow::onCancel, this);
   m_showPreview.Click.connect(&FilterWindow::onShowPreview, this);
 
-  m_container.setExpansive(true);
+  if (hasControls) {
+    m_container.setExpansive(true);
+    m_hbox.addChild(&m_container);
+  }
+  else {
+    m_vbox.setExpansive(true);
+  }
 
-  m_hbox.addChild(&m_container);
   m_hbox.addChild(&m_vbox);
 
   m_vbox.addChild(&m_okButton);
