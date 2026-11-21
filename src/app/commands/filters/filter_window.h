@@ -35,7 +35,8 @@ public:
                FilterManagerImpl* filterMgr,
                WithChannels withChannels,
                WithTiled withTiled,
-               TiledMode tiledMode = TiledMode::NONE);
+               TiledMode tiledMode = TiledMode::NONE,
+               bool hasControls = true);
   ~FilterWindow();
 
   // Shows the window as modal (blocking interface), and returns true
