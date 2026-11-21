@@ -4,7 +4,7 @@
 <gui>
   <vbox expansive="true" id="controls">
     <hbox expansive="true">
-      <grid columns="2" id="controls">
+      <grid expansive="true" columns="2" id="controls">
         <label text="@replace_color.from" for="from" />
         <colorpicker id="from" cell_align="horizontal" />
         <label text="@replace_color.to" for="to" />
