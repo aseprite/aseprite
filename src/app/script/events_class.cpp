@@ -268,6 +268,21 @@ private:
     });
   }
 
+  std::string siteSource(const Site& site) const
+  {
+    if (site.inCels())
+      return "cel";
+    if (site.inFrames())
+      return "frame";
+    if (site.inLayers())
+      return "layer";
+    if (site.inColorBar())
+      return "colorbar";
+    if (site.inEditor())
+      return "editor";
+    return "unknown";
+  }
+
   // ContextObserver impl
   void onActiveSiteChange(const Site& site) override
   {
@@ -281,7 +296,11 @@ private:
     const bool fromUndo = (site.document() && site.document()->isUndoing());
     call(SiteChange,
          {
-           { "fromUndo", fromUndo }
+           { "fromUndo",     fromUndo                                                    },
+           { "source",       siteSource(site)                                            },
+           { "previousSite",
+            m_lastBeforeActiveSite.has_value() ? m_lastBeforeActiveSite.value() : Site() },
+           { "site",         site                                                        }
     });
     m_lastBeforeActiveSite = std::nullopt;
     m_lastActiveSite = site;
@@ -295,7 +314,9 @@ private:
     const bool fromUndo = (fromSite.document() && fromSite.document()->isUndoing());
     call(BeforeSiteChange,
          {
-           { "fromUndo", fromUndo }
+           { "fromUndo", fromUndo             },
+           { "source",   siteSource(fromSite) },
+           { "site",     fromSite             }
     });
     m_lastBeforeActiveSite = fromSite;
   }

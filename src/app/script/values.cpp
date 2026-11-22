@@ -225,6 +225,8 @@ void push_value_to_lua(lua_State* L, const std::any& value)
     push_docobj(L, *v);
   else if (auto v = std::any_cast<doc::Layer*>(&value))
     push_docobj(L, *v);
+  else if (auto v = std::any_cast<app::Site>(&value))
+    push_obj(L, *v);
   else if (auto v = std::any_cast<const Params>(&value)) {
     push_value_to_lua(L, *v);
   }
