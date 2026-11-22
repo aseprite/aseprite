@@ -187,8 +187,8 @@ void Canvas::onResize(ui::ResizeEvent& ev)
     int h = ev.bounds().h;
 
     if (m_autoScaling) {
-      w = w / ui::guiscale() + (w % ui::guiscale());
-      h = h / ui::guiscale() + (h % ui::guiscale());
+      w = (w / ui::guiscale()) + (w % ui::guiscale() ? 1 : 0);
+      h = (h / ui::guiscale()) + (h % ui::guiscale() ? 1 : 0);
     }
 
     if (!m_surface || m_surface->width() != w || m_surface->height() != h) {
@@ -207,10 +207,9 @@ void Canvas::onPaint(ui::PaintEvent& ev)
   auto g = ev.graphics();
   gfx::Rect rc = clientBounds();
   if (m_surface) {
-    if (m_autoScaling) {
-      rc.w += (rc.w % ui::guiscale());
-      rc.h += (rc.h % ui::guiscale());
-    }
+    if (m_autoScaling)
+      rc.setSize(m_surface->bounds().size() * ui::guiscale());
+
     g->drawSurface(m_surface.get(), m_surface->bounds(), rc, os::Sampling(), nullptr);
   }
 }
