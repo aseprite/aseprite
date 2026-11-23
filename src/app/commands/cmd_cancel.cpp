@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2024  Igara Studio S.A.
+// Copyright (C) 2024-present  Igara Studio S.A.
 // Copyright (C) 2001-2017  David Capello
 //
 // This program is distributed under the terms of
@@ -60,16 +60,18 @@ void CancelCommand::onExecute(Context* context)
       // Do nothing.
       break;
 
-    case All:
+    case All: {
       // TODO should the ContextBar be a InputChainElement to intercept onCancel()?
-      // Discard brush
-      if (context->isUIAvailable()) {
+      App::instance()->inputChain().cancel(context);
+
+      // Discard the custom brush only if there is no selection to deselect,
+      // so Esc is progressive: 1. deselect mask >> 2. discard custom brush.
+      if (context->isUIAvailable() && !context->checkFlags(ContextFlags::HasVisibleMask)) {
         Command* discardBrush = Commands::instance()->byId(CommandId::DiscardBrush());
         context->executeCommand(discardBrush);
       }
-
-      App::instance()->inputChain().cancel(context);
       break;
+    }
   }
 }
 
