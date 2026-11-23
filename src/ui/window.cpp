@@ -632,9 +632,7 @@ void Window::onInvalidateRegion(const gfx::Region& region)
 
 void Window::onResize(ResizeEvent& ev)
 {
-  windowSetPosition(ev.bounds());
-  // Fire Resize signal
-  Resize(ev);
+  windowSetPosition(ev.bounds(), &ev);
 
   // After resizing/positioning a window, we have to update the active
   // mouse widget, because the mouse might have been above a widget of
@@ -747,7 +745,7 @@ void Window::limitTitleLabelBounds()
   }
 }
 
-void Window::windowSetPosition(const gfx::Rect& rect)
+void Window::windowSetPosition(const gfx::Rect& rect, ResizeEvent* ev)
 {
   m_isResizing = (bounds().size() != rect.size());
 
@@ -770,6 +768,16 @@ void Window::windowSetPosition(const gfx::Rect& rect)
   limitTitleLabelBounds();
 
   onWindowResize();
+
+  if (m_isResizing) {
+    if (ev != nullptr) {
+      Resize(*ev);
+    }
+    else {
+      ResizeEvent tempEv(this, rect);
+      Resize(tempEv);
+    }
+  }
   m_isResizing = false;
 }
 
