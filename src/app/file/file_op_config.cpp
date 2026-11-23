@@ -27,6 +27,7 @@ void FileOpConfig::fillFromPreferences()
   fitCriteria = pref.quantization.fitCriteria();
   cacheCompressedTilesets = pref.tileset.cacheCompressedTilesets();
   composeGroups = pref.experimental.composeGroups();
+  safeSave = pref.experimental.safeSave();
 }
 
 } // namespace app

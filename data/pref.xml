@@ -271,6 +271,7 @@
       <option id="nonactive_layers_opacity" type="int" default="255" />
       <option id="nonactive_layers_opacity_preview" type="int" default="255" />
       <option id="tooltip_delay" type="int" default="300" />
+      <option id="safe_save" type="bool" default="false" />
     </section>
     <section id="developer">
       <option id="debug_paint_messages" type="bool" default="false" />
