@@ -14,6 +14,7 @@
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
+#include "app/modules/gui.h"
 #include "app/tools/controller.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
@@ -428,8 +429,12 @@ void DrawingState::destroyLoopIfCanceled(Editor* editor)
 
 void DrawingState::destroyLoop(Editor* editor)
 {
-  if (editor)
+  if (editor) {
     editor->renderEngine().removePreviewImage();
+
+    // Updates the screen to make sure no preview tile is left.
+    update_screen_for_document(editor->document());
+  }
 
   if (m_toolLoopManager)
     m_toolLoopManager->end();
