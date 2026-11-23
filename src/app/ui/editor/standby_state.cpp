@@ -1043,6 +1043,7 @@ bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, Handles& handle
       os::Surface* part = theme->parts.transformationHandle()->bitmap(0);
 
       if ((int(mode) & int(app::gen::SymmetryMode::HORIZONTAL)) ||
+          (int(mode) & int(app::gen::SymmetryMode::YIN_YANG)) ||
           (int(mode) & int(app::gen::SymmetryMode::RIGHT_DIAG)) ||
           (int(mode) & int(app::gen::SymmetryMode::LEFT_DIAG))) {
         double pos = symmetry.xAxis();
@@ -1064,6 +1065,7 @@ bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, Handles& handle
       }
 
       if ((int(mode) & int(app::gen::SymmetryMode::VERTICAL)) ||
+          (int(mode) & int(app::gen::SymmetryMode::YIN_YANG)) ||
           (int(mode) & int(app::gen::SymmetryMode::RIGHT_DIAG)) ||
           (int(mode) & int(app::gen::SymmetryMode::LEFT_DIAG))) {
         double pos = symmetry.yAxis();

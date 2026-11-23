@@ -22,6 +22,7 @@ static inline bool does_symmetry_rotate_image(doc::SymmetryIndex symmetry)
   return symmetry == doc::SymmetryIndex::ROTATED_90 ||
          symmetry == doc::SymmetryIndex::ROTATED_270 ||
          symmetry == doc::SymmetryIndex::ROT_FLIP_90 ||
+         symmetry == doc::SymmetryIndex::ROTATED_180 ||
          symmetry == doc::SymmetryIndex::ROT_FLIP_270;
 }
 

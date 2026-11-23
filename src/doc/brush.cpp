@@ -400,6 +400,19 @@ Image* Brush::getSymmetryImage(const SymmetryIndex index)
         }
         break;
       }
+      case SymmetryIndex::ROTATED_180: {
+        if (m_image) {
+          std::unique_ptr<Image> tempImage(Image::createCopy(m_image.get()));
+          rotate_image(m_image.get(), tempImage.get(), 180);
+          m_symmetryImages[i].reset(tempImage.release());
+        }
+        if (m_maskBitmap && !m_symmetryMasks[i]) {
+          std::unique_ptr<Image> tempImage(Image::createCopy(m_maskBitmap.get()));
+          rotate_image(m_maskBitmap.get(), tempImage.get(), 180);
+          m_symmetryMasks[i].reset(tempImage.release());
+        }
+        break;
+      }
       case SymmetryIndex::ROTATED_90:
       case SymmetryIndex::ROTATED_270: {
         const double angle = (index == SymmetryIndex::ROTATED_90 ? 90.0 : -90.0);
