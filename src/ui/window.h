@@ -119,7 +119,7 @@ protected:
 
 private:
   void limitTitleLabelBounds();
-  void windowSetPosition(const gfx::Rect& rect);
+  void windowSetPosition(const gfx::Rect& rect, ResizeEvent* ev = nullptr);
   int getAction(int x, int y);
   void limitSize(gfx::Size& size);
   void limitPosition(gfx::Rect& rect);
