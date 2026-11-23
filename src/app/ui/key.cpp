@@ -529,6 +529,13 @@ const AppShortcut* Key::isPressed(const Message* msg, const KeyContext keyContex
       const auto pressedMouseButton = (pressed ? mouseMsg->button() : kButtonNone);
 
       for (const AppShortcut& shortcut : shortcuts()) {
+        // Command shortcuts that are keyboard-only (e.g. Shift) must
+        // not match mouse events; otherwise they can consume
+        // interactions that rely on modifier actions in specific
+        // contexts (e.g. Shift+drag in selection tools).
+        if (m_type == KeyType::Command && shortcut.mouseButton() == kButtonNone)
+          continue;
+
         if ((shortcut.modifiers() == mouseMsg->modifiers()) &&
             ((shortcut.scancode() == kKeyNil && shortcut.unicodeChar() == 0) ||
              (shortcut.modifiers() == kKeySpaceModifier && shortcut.scancode() == kKeySpace &&
