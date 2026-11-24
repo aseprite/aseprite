@@ -67,6 +67,9 @@ public:
   void onBeforeLayerVisibilityChange(Editor* editor, doc::Layer* layer, bool newState) override;
   void onBeforeLayerEditableChange(Editor* editor, doc::Layer* layer, bool newState) override;
 
+  // Disable Shift+click (draw straight lines with the Pencil tool)
+  bool canCheckStartDrawingStraightLine() override { return false; }
+
   // EditorObserver
   void onDestroyEditor(Editor* editor) override;
   void onBeforeFrameChanged(Editor* editor) override;
