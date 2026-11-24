@@ -148,6 +148,7 @@ bool ButtonBase::onProcessMessage(Message* msg)
             }
             break;
 
+          case kRadioWidget: [[fallthrough]];
           case kCheckWidget: {
             KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
             KeyScancode scancode = keymsg->scancode();
