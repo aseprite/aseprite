@@ -658,6 +658,7 @@ void Window::onSizeHint(SizeHintEvent& ev)
     if (m_titleLabel)
       maxSize.w = maxSize.h = 16 * guiscale();
 
+    int titleWidgetsWidth = 0;
     for (auto child : children()) {
       if (!child->isDecorative()) {
         reqSize = child->sizeHint(ev.fitInSize());
@@ -665,10 +666,13 @@ void Window::onSizeHint(SizeHintEvent& ev)
         maxSize.w = std::max(maxSize.w, reqSize.w);
         maxSize.h = std::max(maxSize.h, reqSize.h);
       }
+      else if (child->type() != WidgetType::kWindowTitleLabelWidget) {
+        titleWidgetsWidth += child->sizeHint().w;
+      }
     }
 
     if (m_titleLabel)
-      maxSize.w = std::max(maxSize.w, m_titleLabel->sizeHint().w);
+      maxSize.w = std::max(maxSize.w, m_titleLabel->sizeHint().w + titleWidgetsWidth);
 
     ev.setSizeHint(maxSize.w + border().width(), maxSize.h + border().height());
   }
