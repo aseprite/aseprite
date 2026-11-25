@@ -1155,6 +1155,7 @@
         <item command="OpenBrowser" text="@.help_readme" group="help_readme">
           <param name="filename" value="README.md" />
         </item>
+        <item command="RecoverFiles" text="@.help_recover_files" />
         <separator />
         <item command="Launch" text="@.help_quick_reference">
           <param name="type" value="url" />

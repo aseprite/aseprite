@@ -467,6 +467,7 @@ target_sources(app-lib PRIVATE
   commands/cmd_paste_text.cpp
   commands/cmd_pixel_perfect_mode.cpp
   commands/cmd_play_animation.cpp
+  commands/cmd_recover_files.cpp
   commands/cmd_refresh.cpp
   commands/cmd_remove_frame.cpp
   commands/cmd_remove_frame_tag.cpp
