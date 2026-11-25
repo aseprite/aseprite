@@ -886,7 +886,9 @@ public:
     }
 
     if (timeChanges) {
+#ifdef ENABLE_DATA_RECOVERY
       App::instance()->dataRecovery()->updateConfig();
+#endif
       static_cast<UIContext*>(m_context)->closedDocs().updateFromPref(m_pref);
     }
 
