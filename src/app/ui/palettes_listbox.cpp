@@ -29,6 +29,7 @@
 #include "base/launcher.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
+#include "fmt/format.h"
 #include "os/surface.h"
 #include "ui/graphics.h"
 #include "ui/message.h"

@@ -15,6 +15,7 @@
 #include "app/context.h"
 #include "app/i18n/strings.h"
 #include "app/ui/color_bar.h"
+#include "fmt/format.h"
 
 namespace app {
 

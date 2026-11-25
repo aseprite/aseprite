@@ -20,6 +20,7 @@
 #include "base/debug.h"
 #include "base/fs.h"
 #include "cfg/cfg.h"
+#include "fmt/format.h"
 
 #include <algorithm>
 
