@@ -25,6 +25,7 @@
 #include "base/chrono.h"
 #include "base/trim_string.h"
 #include "commands.h"
+#include "fmt/format.h"
 #include "tinyexpr.h"
 #include "ui/entry.h"
 #include "ui/fit_bounds.h"

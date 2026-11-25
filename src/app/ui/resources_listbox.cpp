@@ -15,6 +15,7 @@
 #include "app/res/resource.h"
 #include "app/res/resources_loader.h"
 #include "app/ui/skin/skin_theme.h"
+#include "fmt/format.h"
 #include "ui/graphics.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
