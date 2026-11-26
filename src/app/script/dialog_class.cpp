@@ -27,6 +27,7 @@
 #include "app/ui/expr_entry.h"
 #include "app/ui/filename_field.h"
 #include "app/ui/main_window.h"
+#include "app/ui/mini_help_button.h"
 #include "app/ui/path_field.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/window_with_hand.h"
@@ -402,6 +403,19 @@ LUA_FUNCTION(Dialog_new)
       Dialog_connect_signal(L, -2, dlg->window.Close, [](lua_State*, CloseEvent&) {
         // Do nothing
       });
+    }
+    lua_pop(L, 1);
+
+    type = lua_getfield(L, 1, "onhelp");
+    if (type == LUA_TSTRING) {
+      dlg->window.addChild(new MiniHelpButton(lua_tostring(L, -1)));
+    }
+    else if (type == LUA_TFUNCTION) {
+      auto* helpButton = new MiniHelpButton("");
+      Dialog_connect_signal(L, -2, helpButton->Click, [](lua_State*) {
+        // Do nothing
+      });
+      dlg->window.addChild(helpButton);
     }
     lua_pop(L, 1);
 

@@ -12,8 +12,6 @@
 
 #include "app/ui/skin/skin_theme.h"
 #include "base/launcher.h"
-#include "ui/message.h"
-#include "ui/system.h"
 #include "ver/info.h"
 
 namespace app {
@@ -38,6 +36,8 @@ void MiniHelpButton::onInitTheme(InitThemeEvent& ev)
 void MiniHelpButton::onClick()
 {
   Button::onClick();
+  if (m_link.empty())
+    return;
 
   std::string url;
   if (m_link.find("http") != std::string::npos) {
